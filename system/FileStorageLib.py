@@ -44,14 +44,14 @@ class FileGetThread(threading.Thread):
 
 class FileStorageLib:
 	def __init__(self):
-		self.port = random.randint(16000, 17000)
+		self.bind_address = ''
 		self.local_address = 'localhost'
 		self.remote_address = 'localhost'
 		self.fs = xmlrpclib.ServerProxy('http://localhost:8000')
 	
 	def put(self, path):
 		putSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		putSocket.bind(('', self.port))
+		self.random_bind(putSocket, self.bind_address)
 		putSocket.listen(1)
 		with open(path) as putFile:
 			ft = FilePutThread(putSocket, putFile)
@@ -62,7 +62,7 @@ class FileStorageLib:
 
 	def get(self, dig, path):
 		getSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		getSocket.bind(('', self.port+1))
+		self.random_bind(getSocket, self.bind_address)
 		getSocket.listen(1)
 		with open(path, "w") as getFile:
 			ft = FileGetThread(getSocket, getFile)
@@ -71,6 +71,16 @@ class FileStorageLib:
 			ft.join()		
 		getSocket.close()
 		return res
+
+	def random_bind(self, socket, address):
+		ok = False
+		while not ok:
+			try:
+				socket.bind((address, random.randomint(10000, 60000)))
+				ok = True
+			except Error as (errno, strerror):
+				if errno != os.errno.EADDRINUSE:
+					raise
 
 if __name__ == "__main__":
 	FSL = FileStorageLib()
