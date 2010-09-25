@@ -56,7 +56,7 @@ class FileStorageLib:
 		with open(path) as putFile:
 			ft = FilePutThread(putSocket, putFile)
 			ft.start()
-			res = self.fs.put('localhost', self.port)
+			res = self.fs.put(self.local_address, self.port)
 		putSocket.close()
 		return res
 
@@ -67,7 +67,7 @@ class FileStorageLib:
 		with open(path, "w") as getFile:
 			ft = FileGetThread(getSocket, getFile)
 			ft.start()
-			res = self.fs.get('localhost', self.port+1, dig)
+			res = self.fs.get(self.local_address, self.port+1, dig)
 			ft.join()		
 		getSocket.close()
 		return res
@@ -78,3 +78,4 @@ if __name__ == "__main__":
 	print "Put file ciao.txt, digest = %s" % (dig)
 	res = FSL.get(dig, "ciao2.txt")
 	print "Got file ciao2.txt, value =", res
+
