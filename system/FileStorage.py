@@ -31,6 +31,9 @@ class FileStorage:
 		maybe_mkdir(self.tmpdir)
 		maybe_mkdir(self.objdir)
 
+		server.register_function(self.get)
+		server.register_function(self.put)
+
 		# Run the server's main loop
 		server.serve_forever()
 
@@ -71,4 +74,7 @@ class FileStorage:
 			return False
 		fileSocket.close()
 		return True
+
+if __name__ == "__main__":
+	fs = FileStorage()
 
