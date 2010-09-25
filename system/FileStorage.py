@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
@@ -20,7 +20,7 @@ def maybe_mkdir(d):
 class FileStorage:
 	def __init__(self):
 		# Create server
-		server = SimpleXMLRPCServer(("localhost", 8000))
+		server = SimpleXMLRPCServer(("", 8000))
 		server.register_introspection_functions()
 
 		# Create server directories
