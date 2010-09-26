@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-#import User
+import User
 #import Problem
 from CouchObject import CouchObject
 from time import time
@@ -12,8 +12,7 @@ class Submission(CouchObject):
     _to_copy_id_array = ["user","problem"]
 
     def __init__(self,user,problem,timestamp,files,evaluation,executables,compilation_result,evaluation_status,token_timestamp):
-        CouchObject.__init__(self)
-        self.couch_id = ''
+        CouchObject.__init__(self,"submission")
         self.user = user
         self.problem = problem
         self.timestamp = timestamp
@@ -24,11 +23,8 @@ class Submission(CouchObject):
         self.evaluation_status = evaluation_status
         self.token_timestamp = token_timestamp
         
-
 if __name__ == "__main__":
     s = Submission([],[],time(),[],[],[],"","",None)
     couch_id=s.to_couch()
     print "Couch ID: %s" % (couch_id)
-        
-        
 
