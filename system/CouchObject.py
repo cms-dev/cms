@@ -8,7 +8,8 @@ class CouchObject:
     _to_copy = []
     _to_copy_id_array = []
 
-    def __init__(self):
+    def __init__(self, document_type):
+        self.document_type = document_type
         self.couch_id = ''
 
     def get_couch_id(self):
@@ -18,6 +19,7 @@ class CouchObject:
         db = Utils.get_couchdb_database()
         if self.couch_id == '':
             ht = dict()
+            ht["document_type"] = self.document_type
         else:
             ht = db[self.couch_id]
         for i in self._to_copy:

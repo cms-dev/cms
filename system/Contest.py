@@ -9,7 +9,7 @@ class Contest(CouchObject):
     _to_copy_id_array = ["problems", "users"]
 
     def __init__(self, name, description, problems, users, token_num, token_min_interval, token_gen_time):
-        CouchObject.__init__(self)
+        CouchObject.__init__(self, "contest")
         self.name = name
         self.description = description
         self.problems = problems
