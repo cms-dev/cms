@@ -16,7 +16,7 @@ class CouchObject:
 
     def to_couch(self):
         ht = dict()
-        for i in CouchObject._to_copy:
+        for i in self._to_copy:
             if i in self.__dict__:
                 ht[i] = self.__dict__[i]
             for i in CouchObject._to_copy_id_array:
