@@ -27,7 +27,7 @@ class JobQueue:
             try:
                 timestamp = job[1].timestamp
             except:
-                raise KeyError("The job is not a submission, you have to specify a timestamp")
+                timestamp = time.time()
         heapq.heappush(self.queue, (priority, timestamp, job))
 
     def pop(self):
@@ -105,7 +105,8 @@ class JobDispatcher(threading.Thread):
         while True:
             job = self.queue.poll_queue()
             action = job[0]
-            if action == "bomb":
+            if action == EvaluationServer.JOB_TYPE_BOMB:
+                log("KABOOM!! (but I should wait for all the workers to finish their jobs)")
                 return
             else:
                 submission = job[1]
@@ -125,30 +126,33 @@ class JobDispatcher(threading.Thread):
                     p.evaluate(submission.couch_id)
 
 class EvaluationServer:
-    JOB_PRIORITY_HIGH, JOB_PRIORITY_MEDIUM, JOB_PRIORITY_LOW = range(3)
-    JOB_TYPE_COMPILATION, JOB_TYPE_EVALUATION = ["compile", "evaluate"]
+    JOB_PRIORITY_HIGH, JOB_PRIORITY_MEDIUM, JOB_PRIORITY_LOW, JOB_PRIORITY_EXTRA_LOW = range(4)
+    JOB_TYPE_COMPILATION, JOB_TYPE_EVALUATION, JOB_TYPE_BOMB = ["compile", "evaluate", "bomb"]
 
     def __init__(self, contest, listen_address = None, listen_port = None):
-        self.contest = contest
         if listen_address == None:
             listen_address = Configuration.evaluation_server[0]
         if listen_port == None:
             listen_port = Configuration.evaluation_server[1]
 
-        # Create server
         server = SimpleXMLRPCServer((listen_address, listen_port))
         server.register_introspection_functions()
 
         self.queue = JobQueue()
         self.workers = WorkerPool(len(Configuration.workers))
         self.jd = JobDispatcher(self.queue, self.workers)
-        self.jd.start()
+
+        self.contest = contest
+        for sub in self.contest.submissions:
+            sub.invalid()
+            self.add_job(sub.couch_id)
 
         server.register_function(self.add_job)
         server.register_function(self.compilation_finished)
         server.register_function(self.evaluation_finished)
+        server.register_function(self.self_destruct)
 
-        # Run forever the server's main loop
+        self.jd.start()
         server.serve_forever()
 
     def add_job(self, submission_id):
@@ -198,6 +202,12 @@ class EvaluationServer:
             log("Evaluation failed for submission %s" % (submission_id))
         return True
 
+    def self_destruct(self):
+        self.queue.lock()
+        self.queue.push((EvaluationServer.JOB_TYPE_BOMB, None),
+                        EvaluationServer.JOB_PRIORITY_EXTRA_LOW)
+        self.queue.unlock()
+        return True
 
 if __name__ == "__main__":
     import Worker
@@ -216,6 +226,10 @@ if __name__ == "__main__":
         c = CouchObject.from_couch('2bbb185b8b92bcfe51adf41c0ec89b3b')
 
         e = EvaluationServer(c, es_address, es_port)
+
+    elif sys.argv[1] == "destroy":
+        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es.self_destruct()
 
     else:
         s = CouchObject.from_couch('3bba67b41846e836d9c91f82c0ac4dd5')
