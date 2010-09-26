@@ -58,13 +58,25 @@ class CouchObject:
 def from_couch(couch_id):
     db = Utils.get_couchdb_database()
     ht = db[couch_id] # FIXME - Error handling
-    del ht['document_type']
     del ht['_rev']
     del ht['_id']
     if ht['document_type'] == 'contest':
+        del ht['document_type']
         from Contest import Contest
         return Contest(**ht)
-
+    elif ht['document_type'] == 'task':
+        del ht['document_type']
+        from Task import Task
+        return Task(**ht)
+    elif ht['document_type'] == 'user':
+        del ht['document_type']
+        from User import User
+        return User(**ht)
+    elif ht['document_type'] == 'submission':
+        del ht['document_type']
+        from Submission import Submission
+        return Submission(**ht)
+    
 if __name__ == "__main__":
     c = CouchObject()
     couch_id = c.to_couch()
