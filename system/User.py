@@ -22,5 +22,4 @@ def sample_user():
 
 if __name__ == "__main__":
     u = sample_user()
-    couch_id = u.to_couch()
-    print "Couch ID: %s" % (couch_id)
+    print "Couch ID: %s" % (u.couch_id)

@@ -20,13 +20,13 @@ class Contest(CouchObject):
         self.stop = stop
         CouchObject.__init__(self, "contest", couch_id)
 
+def sample_contest():
+    return Contest("hello", "Hello world", [], [], 3, 15, 30)
+
 if __name__ == "__main__":
-    c = Contest("hello", "Hello world", [], [], 3, 15, 30)
-    couch_id = c.to_couch()
-    print "Couch ID: %s" % (couch_id)
-    c = Contest("second", "Second test", [], [], 3, 15, 30)
-    couch_id = c.to_couch()
+    c = sample_contest()
+    print "Couch ID: %s" % (c.couch_id)
+    couch_id = c.couch_id
     c.name = "secondtest"
     couch_id2 = c.to_couch()
     assert couch_id == couch_id2
-    print "Couch ID: %s" % (couch_id)

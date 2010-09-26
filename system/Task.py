@@ -52,5 +52,4 @@ def sample_task():
 
 if __name__ == "__main__":
     t = sample_task()
-    couch_id = t.to_couch()
-    print "Couch ID: %s" % (couch_id)
+    print "Couch ID: %s" % (t.couch_id)
