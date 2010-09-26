@@ -39,7 +39,8 @@ class Task(CouchObject):
         CouchObject.__init__(self, "task", couch_id)
 
 def sample_task():
-    return Task("task", "Sample task", [], "SHA1 of statement",
+    import random
+    return Task("task-%d" % (random.randint(1,1000)), "Sample task", [], "SHA1 of statement",
                 1, 512,
                 "TaskTypeBatch", ["task.%l"], ["SHA1 of manager_task.%l"],
                 "ScoreTypeGroupMin", [{"multiplicator": 0, "testcases":1, "description":"Test of first function"},
