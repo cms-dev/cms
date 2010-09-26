@@ -9,12 +9,12 @@ class User(CouchObject):
     _to_copy_id_array = ["tokens"]
 
     def __init__(self, username, password, real_name, ip):
-        CouchObject.__init__(self, "user")
         self.username = username
         self.password = password
         self.real_name = real_name
         self.ip = ip
         self.tokens = []
+        CouchObject.__init__(self, "user")
 
 def sample_user():
     import random
