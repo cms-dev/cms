@@ -12,9 +12,6 @@ class CouchObject:
         self.document_type = document_type
         self.couch_id = ''
 
-    def get_couch_id(self):
-        return self.couch_id
-
     def to_couch(self):
         db = Utils.get_couchdb_database()
         if self.couch_id == '':
@@ -27,7 +24,7 @@ class CouchObject:
                 ht[i] = self.__dict__[i]
             for i in CouchObject._to_copy_id_array:
                 if i in self.__dict__:
-                    ht[i] = [j.get_couch_id() for j in self.__dict__[i]]
+                    ht[i] = [j.couch_id for j in self.__dict__[i]]
         if self.couch_id == '':
             self.couch_id = db.create(ht)
         else:
