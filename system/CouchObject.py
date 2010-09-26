@@ -6,6 +6,7 @@ import couchdb
 
 class CouchObject:
     _to_copy = []
+    _to_copy_id = []
     _to_copy_id_array = []
 
     def __init__(self, document_type):
@@ -22,10 +23,12 @@ class CouchObject:
         for i in self._to_copy:
             if self.__dict__[i] != None:
                 ht[i] = self.__dict__[i]
-        for i in self._to_copy_id_array:
+        for i in CouchObject._to_copy_id:
+            if self.__dict__[i] != None:
+                ht[i] = self.__dict__[i].couch_id
+        for i in CouchObject._to_copy_id_array:
             if self.__dict__[i] != None:
                 ht[i] = [j.couch_id for j in self.__dict__[i]]
-        print ht
         if self.couch_id == '':
             self.couch_id = db.create(ht)
         else:
