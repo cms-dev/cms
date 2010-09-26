@@ -19,7 +19,7 @@ class Task(CouchObject):
                  score_type, score_parameters,
                  testcases, public_testcases,
                  token_num, token_min_interval, token_gen_time,
-                 couch_id = ''):
+                 couch_id = None):
         self.name = name
         self.title = title
         self.attachments = attachments

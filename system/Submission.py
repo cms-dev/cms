@@ -15,7 +15,7 @@ class Submission(CouchObject):
     def __init__(self, user, task, timestamp,files,
                  outcome, executables, compilation_result,
                  evaluation_status, token_timestamp,
-                 couch_id = ''):
+                 couch_id = None):
         self.user = user
         self.task = task
         self.timestamp = timestamp
@@ -26,7 +26,7 @@ class Submission(CouchObject):
         self.evaluation_status = evaluation_status
         self.token_timestamp = token_timestamp
         CouchObject.__init__(self, "submission", couch_id)
-        
+
 if __name__ == "__main__":
     s = Submission(User.sample_user(),Task.sample_task(),time(),{},[],{},"","",None)
     print "Couch ID: %s" % (s.couch_id)
