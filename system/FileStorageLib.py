@@ -52,36 +52,38 @@ class FileStorageLib:
 
 	def put(self, path):
 		putSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.random_bind(putSocket, self.bind_address)
+		port = self.random_bind(putSocket, self.bind_address)
 		putSocket.listen(1)
 		with open(path) as putFile:
 			ft = FilePutThread(putSocket, putFile)
 			ft.start()
-			res = self.fs.put(self.local_address, self.port)
+			res = self.fs.put(self.local_address, port)
 		putSocket.close()
 		return res
 
 	def get(self, dig, path):
 		getSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.random_bind(getSocket, self.bind_address)
+		port = self.random_bind(getSocket, self.bind_address)
 		getSocket.listen(1)
 		with open(path, "w") as getFile:
 			ft = FileGetThread(getSocket, getFile)
 			ft.start()
-			res = self.fs.get(self.local_address, self.port+1, dig)
+			res = self.fs.get(self.local_address, port, dig)
 			ft.join()
 		getSocket.close()
 		return res
 
-	def random_bind(self, socket, address):
+	def random_bind(self, bindSocket, address):
 		ok = False
 		while not ok:
 			try:
-				socket.bind((address, random.randomint(10000, 60000)))
+				port = random.randint(10000, 60000)
+				bindSocket.bind((address, port))
 				ok = True
-			except Error as (errno, strerror):
+			except socket.error as (errno, strerror):
 				if errno != os.errno.EADDRINUSE:
 					raise
+                return port
 
 if __name__ == "__main__":
 	FSL = FileStorageLib()
