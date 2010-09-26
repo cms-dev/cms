@@ -83,13 +83,24 @@ class FileStorageLib:
             except socket.error as (errno, strerror):
                 if errno != os.errno.EADDRINUSE:
                     raise
-                return port
+        return port
 
 if __name__ == "__main__":
+    print "Give a filename you don't care of: ",
+    filename = raw_input()
+    assert(filename != '')
+    with open(filename, "w") as fileHandler:
+        fileHandler.write("1\n2\n3\n")
     FSL = FileStorageLib()
-    dig = FSL.put("ciao.txt", "Interesting file")
-    print "Put file ciao.txt, digest = %s" % (dig)
-    res = FSL.get(dig, "ciao2.txt")
-    print "Got file ciao2.txt, value =", res
-
+    dig = FSL.put(filename, "Interesting file")
+    print "Put file %s, digest = %s" % (filename, dig)
+    os.remove(filename)
+    res = FSL.get(dig, filename)
+    print "Got file %s, value = %s" % (filename, res)
+    content = open(filename).read()
+    if content == "1\n2\n3\n":
+        print "Correct"
+    else:
+        print "Wrong result"
+    os.remove(filename)
 
