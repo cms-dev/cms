@@ -18,13 +18,13 @@ def maybe_mkdir(d):
 		pass
 
 class FileStorage:
-	def __init__(self):
+	def __init__(self, basedir, listen_address = "", listen_port = 8000):
 		# Create server
-		server = SimpleXMLRPCServer(("", 8000))
+		server = SimpleXMLRPCServer((listen_address, listen_port))
 		server.register_introspection_functions()
 
 		# Create server directories
-		self.basedir = "fs"
+		self.basedir = basedir
 		self.tmpdir = os.path.join(self.basedir, "tmp")
 		self.objdir = os.path.join(self.basedir, "objects")
 		maybe_mkdir(self.basedir)
@@ -77,5 +77,5 @@ class FileStorage:
 		return True
 
 if __name__ == "__main__":
-	fs = FileStorage()
+	fs = FileStorage("fs")
 
