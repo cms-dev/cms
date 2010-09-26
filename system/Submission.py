@@ -30,6 +30,13 @@ class Submission(CouchObject):
     def __eq__(self, other):
         return self.couch_id == other.couch_id
 
+    def invalid(self):
+        self.outcome = None
+        self.compilation_result = None
+        self.evaluation_result = None
+        self.executables = None
+        self.to_couch()
+
 def sample_submission():
     return Submission(User.sample_user(), Task.sample_task(), time(), {}, [], {}, "", "", None)
 
