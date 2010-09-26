@@ -37,16 +37,19 @@ class Task(CouchObject):
         self.token_min_interval = token_min_interval
         self.token_gen_time = token_gen_time
 
+def sample_task():
+    return Task("task", "Sample task", [], "SHA1 of statement",
+                1, 512,
+                "TaskTypeBatch", ["task.%l"], ["SHA1 of manager_task.%l"],
+                "ScoreTypeGroupMin", [{"multiplicator": 0, "testcases":1, "description":"Test of first function"},
+                                      {"multiplicator": 0, "testcases":1, "description":"Test of second function"},
+                                      {"multiplicator": 1, "testcases":5, "description":"Border cases"},
+                                      {"multiplicator": 1, "testcases":5, "description":"First requirement"},
+                                      {"multiplicator": 1, "testcases":5, "description":"Second requirement"}],
+                [("SHA1 of input %d" % i, "SHA1 of output %d" % i) for i in xrange(17)], [0, 1],
+                3, 15, 30)
+
 if __name__ == "__main__":
-    t = Task("task", "Sample task", [], "SHA1 of statement",
-             1, 512,
-             "TaskTypeBatch", ["task.%l"], ["SHA1 of manager_task.%l"],
-             "ScoreTypeGroupMin", [{"multiplicator": 0, "testcases":1, "description":"Test of first function"},
-                                   {"multiplicator": 0, "testcases":1, "description":"Test of second function"},
-                                   {"multiplicator": 1, "testcases":5, "description":"Border cases"},
-                                   {"multiplicator": 1, "testcases":5, "description":"First requirement"},
-                                   {"multiplicator": 1, "testcases":5, "description":"Second requirement"}],
-             [("SHA1 of input %d" % i, "SHA1 of output %d" % i) for i in xrange(17)], [0, 1],
-             3, 15, 30)
+    t = sample_task()
     couch_id = t.to_couch()
     print "Couch ID: %s" % (couch_id)

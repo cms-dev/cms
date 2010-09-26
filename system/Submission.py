@@ -24,7 +24,7 @@ class Submission(CouchObject):
         self.token_timestamp = token_timestamp
         
 if __name__ == "__main__":
-    s = Submission([],[],time(),{},[],{},"","",None)
+    s = Submission(User.sample_user(),Task.sample_task(),time(),{},[],{},"","",None)
     couch_id=s.to_couch()
     print "Couch ID: %s" % (couch_id)
 

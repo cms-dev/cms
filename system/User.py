@@ -14,8 +14,13 @@ class User(CouchObject):
         self.password = password
         self.real_name = real_name
         self.ip = ip
+        self.tokens = []
+
+def sample_user():
+    import random
+    return User("username-%d" % (random.randint(1, 1000)), "password", "Mister Real Name", "10.0.0.101")
 
 if __name__ == "__main__":
-    u = User("username", "password", "Mister Real Name", "10.0.0.101")
+    u = sample_user()
     couch_id = u.to_couch()
     print "Couch ID: %s" % (couch_id)
