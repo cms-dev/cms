@@ -8,6 +8,7 @@ import os
 import threading
 import shutil
 import random
+import Configuration
 
 class FilePutThread(threading.Thread):
     def __init__(self, putSocket, putFile):
@@ -43,7 +44,11 @@ class FileGetThread(threading.Thread):
         conn.close()
 
 class FileStorageLib:
-    def __init__(self, fs_address = 'localhost', fs_port = 8000):
+    def __init__(self, fs_address = None, fs_port = None):
+        if fs_address == None:
+            fs_address = Configuration.file_storage[0]
+        if fs_port == None:
+            fs_port = Configuration.file_storage[1]
         self.bind_address = ''
         local_addresses = [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] + ['localhost']
         self.local_address = local_addresses[0]

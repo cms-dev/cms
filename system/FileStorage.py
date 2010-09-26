@@ -9,6 +9,7 @@ import os
 import tempfile
 import shutil
 import hashlib
+import Configuration
 
 # FIXME - Bad hack
 def maybe_mkdir(d):
@@ -18,7 +19,12 @@ def maybe_mkdir(d):
         pass
 
 class FileStorage:
-    def __init__(self, basedir, listen_address = "", listen_port = 8000):
+    def __init__(self, basedir, listen_address = None, listen_port = None):
+        if listen_address == None:
+            listen_address = Configuration.file_storage[0]
+        if listen_port == None:
+            listen_port = Configuration.file_storage[1]
+
         # Create server
         server = SimpleXMLRPCServer((listen_address, listen_port))
         server.register_introspection_functions()
