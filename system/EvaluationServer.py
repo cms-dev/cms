@@ -58,7 +58,7 @@ class JobQueue:
                 job = self.pop()
             except IndexError:
                 wait = True
-            self.queue.unlock()
+            self.unlock()
             if wait:
                 time.sleep(sleep_time)
             else:
