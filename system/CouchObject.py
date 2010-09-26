@@ -20,16 +20,27 @@ class CouchObject:
         else:
             ht = db[self.couch_id]
         for i in self._to_copy:
-            if i in self.__dict__:
+            if self.__dict__[i] != None:
                 ht[i] = self.__dict__[i]
-            for i in CouchObject._to_copy_id_array:
-                if i in self.__dict__:
-                    ht[i] = [j.couch_id for j in self.__dict__[i]]
+        for i in self._to_copy_id_array:
+            if self.__dict__[i] != None:
+                ht[i] = [j.couch_id for j in self.__dict__[i]]
+        print ht
         if self.couch_id == '':
             self.couch_id = db.create(ht)
         else:
             db[self.couch_id] = ht
         return self.couch_id
+
+def from_couch(couch_id):
+    db = Utils.get_couchdb_database()
+    ht = db[couch_id] # FIXME - Error handling
+    del ht['document_type']
+    del ht['_rev']
+    del ht['_id']
+    if ht['document_type'] == 'contest':
+        from Contest import Contest
+        return Contest(**ht)
 
 if __name__ == "__main__":
     c = CouchObject()
