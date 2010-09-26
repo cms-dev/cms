@@ -8,13 +8,13 @@ class User(CouchObject):
     _to_copy = ["username", "password", "real_name", "ip"]
     _to_copy_id_array = ["tokens"]
 
-    def __init__(self, username, password, real_name, ip):
+    def __init__(self, username, password, real_name, ip, tokens = [], couch_id = ''):
         self.username = username
         self.password = password
         self.real_name = real_name
         self.ip = ip
-        self.tokens = []
-        CouchObject.__init__(self, "user")
+        self.tokens = tokens
+        CouchObject.__init__(self, "user", couch_id)
 
 def sample_user():
     import random

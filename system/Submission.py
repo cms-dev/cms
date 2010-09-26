@@ -12,9 +12,10 @@ class Submission(CouchObject):
                 "compilation_result","evaluation_status","token_timestamp"]
     _to_copy_id = ["user","task"]
 
-    def __init__(self,user,task,timestamp,files,
-                outcome,executables,compilation_result,
-                evaluation_status,token_timestamp):
+    def __init__(self, user, task, timestamp,files,
+                 outcome, executables, compilation_result,
+                 evaluation_status, token_timestamp,
+                 couch_id = ''):
         self.user = user
         self.task = task
         self.timestamp = timestamp
@@ -24,7 +25,7 @@ class Submission(CouchObject):
         self.compilation_result = compilation_result
         self.evaluation_status = evaluation_status
         self.token_timestamp = token_timestamp
-        CouchObject.__init__(self, "submission")
+        CouchObject.__init__(self, "submission", couch_id)
         
 if __name__ == "__main__":
     s = Submission(User.sample_user(),Task.sample_task(),time(),{},[],{},"","",None)

@@ -18,7 +18,8 @@ class Task(CouchObject):
                  task_type, submission_format, managers,
                  score_type, score_parameters,
                  testcases, public_testcases,
-                 token_num, token_min_interval, token_gen_time):
+                 token_num, token_min_interval, token_gen_time,
+                 couch_id = ''):
         self.name = name
         self.title = title
         self.attachments = attachments
@@ -35,7 +36,7 @@ class Task(CouchObject):
         self.token_num = token_num
         self.token_min_interval = token_min_interval
         self.token_gen_time = token_gen_time
-        CouchObject.__init__(self, "task")
+        CouchObject.__init__(self, "task", couch_id)
 
 def sample_task():
     return Task("task", "Sample task", [], "SHA1 of statement",
