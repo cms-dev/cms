@@ -12,15 +12,15 @@ class CouchObject:
     _to_copy_id = []
     _to_copy_id_array = []
 
-    def __init__(self, document_type, couch_id = ''):
+    def __init__(self, document_type, couch_id = None):
         self.document_type = document_type
         self.couch_id = couch_id
-        if couch_id == '':
+        if couch_id == None:
             self.to_couch()
 
     def to_couch(self):
         db = Utils.get_couchdb_database()
-        if self.couch_id == '':
+        if self.couch_id == None:
             ht = dict()
             ht["document_type"] = self.document_type
         else:
@@ -51,7 +51,7 @@ class CouchObject:
             except AttributeError:
                 log("Key %s not pointing to a CouchObject." % (key))
 
-        if self.couch_id == '':
+        if self.couch_id == None:
             self.couch_id = db.create(ht)
             references[self.couch_id] = self
         else:
@@ -66,20 +66,22 @@ def from_couch(couch_id):
     del ht['_rev']
     del ht['_id']
     ht['couch_id'] = couch_id
-    if ht['document_type'] == 'contest':
-        del ht['document_type']
+    try:
+        document_type = ht['document_type']
+    except KeyError:
+        Utils.log("CouchDB document without document_type.")
+        return None
+    del ht['document_type']
+    if document_type == 'contest':
         from Contest import Contest
         obj = Contest(**ht)
-    elif ht['document_type'] == 'task':
-        del ht['document_type']
+    elif document_type == 'task':
         from Task import Task
         obj = Task(**ht)
-    elif ht['document_type'] == 'user':
-        del ht['document_type']
+    elif document_type == 'user':
         from User import User
         obj = User(**ht)
-    elif ht['document_type'] == 'submission':
-        del ht['document_type']
+    elif document_type == 'submission':
         from Submission import Submission
         obj = Submission(**ht)
     references[couch_id] = obj
