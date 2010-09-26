@@ -48,16 +48,16 @@ class FileStorageLib:
 		local_addresses = [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] + ['localhost']
 		self.local_address = local_addresses[0]
 		self.remote_address = fs_address
-		self.fs = xmlrpclib.ServerProxy('http://%s:%p' % (fs_address, fs_port))
+		self.fs = xmlrpclib.ServerProxy('http://%s:%d' % (fs_address, fs_port))
 
-	def put(self, path):
+	def put(self, path, description = ""):
 		putSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		port = self.random_bind(putSocket, self.bind_address)
 		putSocket.listen(1)
 		with open(path) as putFile:
 			ft = FilePutThread(putSocket, putFile)
 			ft.start()
-			res = self.fs.put(self.local_address, port)
+			res = self.fs.put(self.local_address, port, description)
 		putSocket.close()
 		return res
 
@@ -87,7 +87,7 @@ class FileStorageLib:
 
 if __name__ == "__main__":
 	FSL = FileStorageLib()
-	dig = FSL.put("ciao.txt")
+	dig = FSL.put("ciao.txt", "Interesting file")
 	print "Put file ciao.txt, digest = %s" % (dig)
 	res = FSL.get(dig, "ciao2.txt")
 	print "Got file ciao2.txt, value =", res
