@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 import Contest
@@ -121,7 +121,7 @@ class JobDispatcher(threading.Thread):
 
 class EvaluationServer:
     def __init__(self, contest, listen_address = None, listen_port = None):
-        self.contest = contest        
+        self.contest = contest
         if listen_address == None:
             listen_address = Configuration.evaluation_server[0]
         if listen_port == None:
@@ -149,7 +149,7 @@ class EvaluationServer:
                                                                 Configuration.workers[worker][0],
                                                                 Configuration.workers[worker][1],
                                                                 job[0],
-                                                                job[1].couch_id))                                                                
+                                                                job[1].couch_id))
 
     def compilation_finished(self, success, submission_id):
         self.action_finished(("compile", submission_id))
