@@ -74,6 +74,7 @@ class WorkerPool:
 
 class JobDispatcher(threading.Thread):
     def __init__(self, queue, workers):
+        threading.Thread.__init__(self)
         self.queue = queue
         self.workers = workers
 
@@ -137,8 +138,8 @@ class EvaluationServer:
 
         self.queue = JobQueue()
         self.workers = WorkerPool(len(Configuration.workers))
-        self.jd = JobDispatcher(queue, workers)
-        jd.start()
+        self.jd = JobDispatcher(self.queue, self.workers)
+        self.jd.start()
 
         server.register_function(self.add_job)
         server.register_function(self.compilation_finished)
