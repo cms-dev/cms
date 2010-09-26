@@ -13,6 +13,7 @@ class CouchObject:
     def __init__(self, document_type):
         self.document_type = document_type
         self.couch_id = ''
+        self.to_couch()
 
     def to_couch(self):
         db = Utils.get_couchdb_database()
@@ -32,7 +33,6 @@ class CouchObject:
         for key in self._to_copy_id:
             try:
                 obj = self.__dict__[key]
-                obj.to_couch()
                 ht[key] = obj.couch_id
             except KeyError:
                 log("Required key %s not found." % (key))
@@ -42,8 +42,6 @@ class CouchObject:
         for key in self._to_copy_id_array:
             try:
                 obj = self.__dict__[key]
-                for elem in obj:
-                    elem.to_couch()
                 ht[key] = [elem.couch_id for elem in obj]
             except KeyError:
                 log("Required key %s not found." % (key))
@@ -77,7 +75,7 @@ def from_couch(couch_id):
         del ht['document_type']
         from Submission import Submission
         return Submission(**ht)
-    
+
 if __name__ == "__main__":
     c = CouchObject()
     couch_id = c.to_couch()

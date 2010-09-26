@@ -9,7 +9,6 @@ class Contest(CouchObject):
     _to_copy_id_array = ["problems", "users"]
 
     def __init__(self, name, description, problems, users, token_num, token_min_interval, token_gen_time, start = None, stop = None):
-        CouchObject.__init__(self, "contest")
         self.name = name
         self.description = description
         self.problems = problems
@@ -19,6 +18,7 @@ class Contest(CouchObject):
         self.token_gen_time = token_gen_time
         self.start = start
         self.stop = stop
+        CouchObject.__init__(self, "contest")
 
 if __name__ == "__main__":
     c = Contest("hello", "Hello world", [], [], 3, 15, 30)
