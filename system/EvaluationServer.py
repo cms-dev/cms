@@ -83,6 +83,8 @@ class JobDispatcher(threading.Thread):
                 self.queue.unlock()
                 if wait:
                     time.sleep(2)
+                else:
+                    break
 
             action = job[0]
             if action == "bomb":
@@ -101,8 +103,8 @@ class JobDispatcher(threading.Thread):
                 p = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.workers[worker])
                 if action == "compile":
                     p.compile(submission.couch_id)
-                elif action == "evaluate":
-                    p.evaluate(submission.couch_id)
+                elif action == "execute":
+                    p.execute(submission.couch_id)
 
 class EvaluationServer:
     def __init__(self, contest, listen_address = None, listen_port = None):
@@ -121,5 +123,14 @@ class EvaluationServer:
         self.jd = JobDispatcher(queue, workers)
         jd.start()
 
+        server.register_function(self.compilation_finished)
+        server.register_function(self.execution_finished)
+
         # Run forever the server's main loop
         server.serve_forever()
+
+    def compilation_finished(self):
+        pass
+
+    def execution_finished(self):
+        pass
