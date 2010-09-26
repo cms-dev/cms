@@ -20,15 +20,35 @@ class CouchObject:
             ht["document_type"] = self.document_type
         else:
             ht = db[self.couch_id]
-        for i in self._to_copy:
-            if self.__dict__[i] != None:
-                ht[i] = self.__dict__[i]
-        for i in CouchObject._to_copy_id:
-            if self.__dict__[i] != None:
-                ht[i] = self.__dict__[i].couch_id
-        for i in CouchObject._to_copy_id_array:
-            if self.__dict__[i] != None:
-                ht[i] = [j.couch_id for j in self.__dict__[i]]
+
+        for key in self._to_copy:
+            try:
+                obj = self.__dict__[key]
+                ht[key] = obj
+            except KeyError:
+                log("Required key %s not found." % (key))
+
+        for key in self._to_copy_id:
+            try:
+                obj = self.__dict__[key]
+                ht[key] = obj.couch_id
+                obj.to_couch()
+            except KeyError:
+                log("Required key %s not found." % (key))
+            except AttributeError:
+                log("Key %s not pointing to a CouchObject." % (key))
+
+        for key in self._to_copy_id_array:
+            try:
+                obj = self.__dict__[key]
+                ht[key] = [elem.couch_id for elem in obj]
+                for elem in obj:
+                    elem.to_couch()
+            except KeyError:
+                log("Required key %s not found." % (key))
+            except AttributeError:
+                log("Key %s not pointing to a CouchObject." % (key))
+
         if self.couch_id == '':
             self.couch_id = db.create(ht)
         else:

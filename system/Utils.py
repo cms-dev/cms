@@ -16,3 +16,6 @@ def get_couchdb_database():
 def drop_couchdb_database():
     couch = couchdb.client.Server(Configuration.couchdb_server)
     del couch[Configuration.couchdb_database]
+
+def log(s):
+    print "LOG:", s
