@@ -1,0 +1,44 @@
+<html>
+<head>
+    <title>{{ title }}</title>
+</head>
+<body>
+    <h1>{{ header }}</h1>
+    <div>{{ description }}</div>
+    <!-- login form-->
+    {% if current_user == None %}
+        <form action="/login" method="POST">
+        <table>
+        <tr>
+            <td>
+                Username:
+            </td><td>
+                <input type="text" name="username">
+            </td>
+        </tr><tr>
+            <td>
+                Password:
+            </td><td>
+                <input type="password" name="password">
+            </td>
+        </tr><tr>
+            <td colspan=2>
+                <input type="submit" value="Sign in">
+            </td>
+        </tr>
+        </table>
+        </form>
+    {% else %}
+        <div>Benvenuto {{ current_user }}!</br>
+        <a href="/logout">Logout</a>
+        </div>
+        <div>
+        <h2>Problemi</h2>
+        <ul>
+        {% for t in contest.tasks %}
+            <li><a href="/tasks/{{ t.name }}">{{ t.name }}</a>
+        {% end %}
+        </ul>
+    {% end %}
+</body>
+</html>
