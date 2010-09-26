@@ -27,9 +27,11 @@ class FileStorage:
         self.basedir = basedir
         self.tmpdir = os.path.join(self.basedir, "tmp")
         self.objdir = os.path.join(self.basedir, "objects")
+        self.descdir = os.path.join(self.basedir, "descriptions")
         maybe_mkdir(self.basedir)
         maybe_mkdir(self.tmpdir)
         maybe_mkdir(self.objdir)
+        maybe_mkdir(self.descdir)
 
         server.register_function(self.get)
         server.register_function(self.put)
@@ -54,6 +56,9 @@ class FileStorage:
         fileSocket.close()
         digest = hasher.hexdigest()
         shutil.move(tempFilename, os.path.join(self.objdir, digest))
+        descFile = open(os.path.join(self.descdir, digest), "w")
+        print >> descFile, description
+        descFile.close()
         return digest
 
     def get(self, address, port, digest):
