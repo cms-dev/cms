@@ -43,12 +43,12 @@ class FileGetThread(threading.Thread):
 		conn.close()
 
 class FileStorageLib:
-	def __init__(self):
+	def __init__(self, fs_address = 'localhost', fs_port = 8000):
 		self.bind_address = ''
 		local_addresses = [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] + ['localhost']
 		self.local_address = local_addresses[0]
-		self.remote_address = 'localhost' # FIXME: get FileStorage ip from configuration
-		self.fs = xmlrpclib.ServerProxy('http://localhost:8000')
+		self.remote_address = fs_address
+		self.fs = xmlrpclib.ServerProxy('http://%s:%p' % (fs_address, fs_port))
 
 	def put(self, path):
 		putSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
