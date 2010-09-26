@@ -3,6 +3,7 @@
 
 import Utils
 import couchdb
+from Utils import log
 
 class CouchObject:
     _to_copy = []
@@ -31,8 +32,8 @@ class CouchObject:
         for key in self._to_copy_id:
             try:
                 obj = self.__dict__[key]
-                ht[key] = obj.couch_id
                 obj.to_couch()
+                ht[key] = obj.couch_id
             except KeyError:
                 log("Required key %s not found." % (key))
             except AttributeError:
@@ -41,9 +42,9 @@ class CouchObject:
         for key in self._to_copy_id_array:
             try:
                 obj = self.__dict__[key]
-                ht[key] = [elem.couch_id for elem in obj]
                 for elem in obj:
                     elem.to_couch()
+                ht[key] = [elem.couch_id for elem in obj]
             except KeyError:
                 log("Required key %s not found." % (key))
             except AttributeError:
