@@ -22,3 +22,9 @@ if __name__ == "__main__":
     c = Contest("hello", "Hello world", [], [], 3, 15, 30)
     couch_id = c.to_couch()
     print "Couch ID: %s" % (couch_id)
+    c = Contest("second", "Second test", [], [], 3, 15, 30)
+    couch_id = c.to_couch()
+    c.name = "secondtest"
+    couch_id2 = c.to_couch()
+    assert couch_id == couch_id2
+    print "Couch ID: %s" % (couch_id)
