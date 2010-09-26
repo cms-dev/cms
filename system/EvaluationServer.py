@@ -106,7 +106,7 @@ class JobDispatcher(threading.Thread):
 
 class EvaluationServer:
     def __init__(self, contest, listen_address = None, listen_port = None):
-        self.contest = contest        
+        self.contest = contest
         if listen_address == None:
             listen_address = Configuration.evaluation_server[0]
         if listen_port == None:
@@ -123,3 +123,4 @@ class EvaluationServer:
 
         # Run forever the server's main loop
         server.serve_forever()
+
