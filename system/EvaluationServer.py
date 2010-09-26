@@ -54,22 +54,23 @@ class WorkerPool:
     def __init__(self, worker_num):
         self.workers = [None] * worker_num
 
-    def acquire_worker(job):
+    def acquire_worker(self, job):
         try:
-            i = self.find_worker(None)
-            self.workers[i] = job
+            worker = self.find_worker(None)
+            self.workers[worker] = job
+            return worker
         except LookupError:
             raise LookupError("No available workers")
 
-    def release_worker(n):
+    def release_worker(self, n):
         if self.workers[n] == None:
             raise ValueError("Worker was inactive")
         self.workers[n] = None
 
-    def find_worker(job):
-        for i in self.workers:
-            if self.workers == job:
-                return i
+    def find_worker(self, job):
+        for worker, workerJob in enumerate(self.workers):
+            if workerJob == job:
+                return worker
         raise LookupError("No such job")
 
 class JobDispatcher(threading.Thread):
@@ -103,11 +104,10 @@ class JobDispatcher(threading.Thread):
                 # Wait a few seconds if there are no worker available
                 while True:
                     try:
-                        worker = self.workers.acquire_worker()
+                        worker = self.workers.acquire_worker(job)
                         break
                     except LookupError:
                         time.sleep(2)
-
                 log("Asking worker %d (%s:%d) to %s submission %s" %
                     (worker,
                      Configuration.workers[worker][0],
@@ -116,14 +116,14 @@ class JobDispatcher(threading.Thread):
                      submission.couch_id))
                 p = xmlrpclib.ServerProxy("http://%s:%d" %
                                           Configuration.workers[worker])
-                if action == "compile":
+                if action == EvaluationServer.JOB_TYPE_COMPILATION:
                     p.compile(submission.couch_id)
-                elif action == "evaluate":
+                elif action == EvaluationServer.JOB_TYPE_EVALUATION:
                     p.evaluate(submission.couch_id)
 
 class EvaluationServer:
-    JOB_PRIORITY_HIGH, JOB_PRIORITY_MEDIUM, JOB_PRIORITY_LOW = xrange(3)
-    JOB_TYPE_COMPILATION, JOB_TYPE_EVALUATION = xrange(2)
+    JOB_PRIORITY_HIGH, JOB_PRIORITY_MEDIUM, JOB_PRIORITY_LOW = range(3)
+    JOB_TYPE_COMPILATION, JOB_TYPE_EVALUATION = ["compile", "evaluate"]
 
     def __init__(self, contest, listen_address = None, listen_port = None):
         self.contest = contest
@@ -152,11 +152,10 @@ class EvaluationServer:
         log("Queueing compilation for submission %s" % (submission_id))
         submission = CouchObject.from_couch(submission_id)
         self.queue.lock()
-        self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION,
-                         submission_id),
-                        EvaluationServer.JOB_PRIORITY_HIGH,
-                        submission.timestamp)
+        self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION, submission),
+                        EvaluationServer.JOB_PRIORITY_HIGH)
         self.queue.unlock()
+        return True
 
     def action_finished(self, job):
         worker = self.workers.find_worker(job)
@@ -169,50 +168,53 @@ class EvaluationServer:
              job[1].couch_id))
 
     def compilation_finished(self, success, submission_id):
-        self.action_finished(("compile", submission_id))
+        submission = CouchObject.from_couch(submission_id)
+        self.action_finished((EvaluationServer.JOB_TYPE_COMPILATION, submission))
         if success:
             log("Compilation succeeded for submission %s" % (submission_id))
-            submission = CouchObject.from_couch(submission_id)
             log("Queueing evaluation for submission %s" % (submission_id))
             self.queue.lock()
-            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
-                             submission_id),
-                            EvaluationServer.JOB_PRIORITY_LOW,
-                            submission.timestamp)
+            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
+                            EvaluationServer.JOB_PRIORITY_LOW)
             self.queue.unlock()
         else:
             self.add_job(submission_id)
             log("Compilation failed for submission %s" % (submission_id))
+        return True
 
     def evaluation_finished(self, success, submission_id):
-        self.action_finished(("evaluate", submission_id))
+        submission = CouchObject.from_couch(submission_id)
+        self.action_finished((EvaluationServer.JOB_TYPE_EVALUATION, submission))
         if success:
             log("Evaluation succeeded for submission %s" % (submission_id))
         else:
-            submission = CouchObject.from_couch(submission_id)
             self.queue.lock()
-            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
-                             submission_id),
-                            EvaluationServer.JOB_PRIORITY_LOW,
-                            submission.timestamp)
+            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
+                            EvaluationServer.JOB_PRIORITY_LOW)
             self.queue.unlock()
             log("Evaluation failed for submission %s" % (submission_id))
+        return True
 
 
 if __name__ == "__main__":
     import Worker
     import Contest
     import Submission
-
-    c = Contest.sample_contest()
-    s = Submission.sample_submission()
-    c.submissions.append(s)
+    import sys
 
     es_address, es_port = Configuration.evaluation_server
-    e = EvaluationServer(c, es_address, es_port)
-    for worker in Configuration.workers:
-        address, port = worker
-        w = Worker(c, address, port)
+    if sys.argv[1] == "run":
+#        c = Contest.sample_contest()
+#        s = Submission.sample_submission()
+#        print "Submission ID:", s.couch_id
+#        c.submissions.append(s)
+#        c.to_couch()
+#        print "Contest ID:", c.couch_id
+        c = CouchObject.from_couch('2bbb185b8b92bcfe51adf41c0ec89b3b')
 
-    es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
-    es.add_job(s.couch_id)
+        e = EvaluationServer(c, es_address, es_port)
+
+    else:
+        s = CouchObject.from_couch('3bba67b41846e836d9c91f82c0ac4dd5')
+        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es.add_job(s.couch_id)
