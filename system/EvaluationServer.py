@@ -50,6 +50,20 @@ class JobQueue:
     def empty(self):
         return self.length() == 0
 
+    def poll_queue(self, sleep_time = 2):
+        while True:
+            self.lock()
+            wait = False
+            try:
+                job = self.pop()
+            except IndexError:
+                wait = True
+            self.queue.unlock()
+            if wait:
+                time.sleep(sleep_time)
+            else:
+                return job
+
 class WorkerPool:
     def __init__(self, worker_num):
         self.workers = [None] * worker_num
@@ -72,6 +86,14 @@ class WorkerPool:
                 return i
         raise LookupError("No such job")
 
+    def poll_worker(self, job, sleep_time = 2):
+        while True:
+            try:
+                worker = self.acquire_worker(job)
+                return worker
+            except LookupError:
+                time.sleep(sleep_time)
+
 class JobDispatcher(threading.Thread):
     def __init__(self, queue, workers):
         threading.Thread.__init__(self)
@@ -80,33 +102,13 @@ class JobDispatcher(threading.Thread):
 
     def run(self):
         while True:
-            # Wait a few seconds if the queue is empty
-            while True:
-                self.queue.lock()
-                wait = False
-                try:
-                    job = self.queue.pop()
-                except IndexError:
-                    wait = True
-                self.queue.unlock()
-                if wait:
-                    time.sleep(2)
-                else:
-                    break
-
+            job = self.queue.poll_queue()
             action = job[0]
             if action == "bomb":
                 return
             else:
                 submission = job[1]
-
-                # Wait a few seconds if there are no worker available
-                while True:
-                    try:
-                        worker = self.workers.acquire_worker()
-                        break
-                    except LookupError:
-                        time.sleep(2)
+                worker = self.workers.poll_worker(job)
 
                 log("Asking worker %d (%s:%d) to %s submission %s" %
                     (worker,
