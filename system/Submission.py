@@ -29,6 +29,5 @@ class Submission(CouchObject):
         
 if __name__ == "__main__":
     s = Submission(User.sample_user(),Task.sample_task(),time(),{},[],{},"","",None)
-    couch_id=s.to_couch()
-    print "Couch ID: %s" % (couch_id)
+    print "Couch ID: %s" % (s.couch_id)
 
