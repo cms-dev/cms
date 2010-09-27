@@ -21,6 +21,9 @@ class Contest(CouchObject):
         self.submissions = submissions
         CouchObject.__init__(self, "contest", couch_id)
 
+    def choose_couch_id_basename(self):
+        return "contest-%s" % (self.name)
+
 def sample_contest(couch_id = None):
     import User
     import Task

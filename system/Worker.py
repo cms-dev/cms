@@ -22,6 +22,8 @@ class CompileJob(Job):
 
     def run(self):
         time.sleep(3)
+        self.submission.compilation_result = "OK, gcc is proud of you"
+        self.submission.to_couch()
         self.es.compilation_finished(True, self.submission_id)
 
 class EvaluateJob(Job):
@@ -30,6 +32,8 @@ class EvaluateJob(Job):
 
     def run(self):
         time.sleep(3)
+        self.submission.evaluation_status = "Wonderful, you're a tough coder! :-)"
+        self.submission.to_couch()
         self.es.evaluation_finished(True, self.submission_id)
 
 class Worker:

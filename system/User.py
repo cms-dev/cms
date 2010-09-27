@@ -9,7 +9,7 @@ class User(CouchObject):
     _to_copy_id_array = ["tokens"]
 
     def __init__(self, username, password,
-                 real_name, ip, tokens = [], hidden = False
+                 real_name, ip, tokens = [], hidden = False,
                  couch_id = None):
         self.username = username
         self.password = password

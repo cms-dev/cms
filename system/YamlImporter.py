@@ -5,6 +5,8 @@ import yaml
 import os
 import sys
 from Task import Task
+from User import User
+from Contest import Contest
 import FileStorageLib
 
 def import_contest(path):
@@ -23,7 +25,7 @@ def import_contest(path):
     params["token_gen_time"] = conf.get("token_gen_time", 0)
     params["users"] = []
     for user in conf["utenti"]:
-        params["user"].append(import_user(user))
+        params["users"].append(import_user(user))
     params["start"] = conf["inizio"]
     params["stop"] = conf["fine"]
 
@@ -31,13 +33,16 @@ def import_contest(path):
 
 def import_user(user_dict):
     params = {}
-    params["username"] = user["username"]
-    params["password"] = user["password"]
-    params["name"] = " ".join(user["nome"], user["cognome"])
-    params["hidden"] = user["fake"]
+    params["username"] = user_dict["username"]
+    params["password"] = user_dict["password"]
+    name = user_dict.get("nome", "")
+    surname = user_dict.get("cognome", user_dict["username"])
+    params["real_name"] = " ".join([name, surname])
+    params["ip"] = user_dict.get("ip", "0.0.0.0")
+    params["hidden"] = user_dict.get("fake", False)
     params["tokens"] = []
 
-    return User(**uparams)
+    return User(**params)
 
 def import_task(path):
     path = os.path.realpath(path)

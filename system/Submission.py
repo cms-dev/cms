@@ -33,7 +33,7 @@ class Submission(CouchObject):
     def invalid(self):
         self.outcome = None
         self.compilation_result = None
-        self.evaluation_result = None
+        self.evaluation_status = None
         self.executables = None
         self.to_couch()
 

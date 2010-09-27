@@ -77,8 +77,19 @@ class CouchObject:
             db[self.couch_id] = ht
         return self.couch_id
 
-def from_couch(couch_id):
+    def refresh(self):
+        db = Utils.get_couchdb_database()
+        ht = db[self.couch_id]
+        del ht['_rev']
+        del ht['_id']
+        del ht['document_type']
+        self.__dict__.update(ht)
+        self.fix_references()
+
+def from_couch(couch_id, with_refresh = True):
     if couch_id in references:
+        if with_refresh:
+            references[couch_id].refresh()
         return references[couch_id]
     db = Utils.get_couchdb_database()
     ht = db[couch_id] # FIXME - Error handling
@@ -109,9 +120,9 @@ def from_couch(couch_id):
 
 def fix_references(obj):
     for key in obj._to_copy_id:
-        obj.__dict__[key] = from_couch(obj.__dict__[key])
+        obj.__dict__[key] = from_couch(obj.__dict__[key], with_refresh = False)
     for key in obj._to_copy_id_array:
-        obj.__dict__[key] = [from_couch(elem) for elem in obj.__dict__[key]]
+        obj.__dict__[key] = [from_couch(elem, with_refresh = False) for elem in obj.__dict__[key]]
 
 if __name__ == "__main__":
     c = CouchObject()
