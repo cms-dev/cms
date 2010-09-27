@@ -19,6 +19,9 @@ class User(CouchObject):
         self.hidden = hidden
         CouchObject.__init__(self, "user", couch_id)
 
+    def choose_couch_id_basename(self):
+        return "user-%s" % (self.username)
+
 def sample_user(couch_id = None):
     import random
     return User("username-%d" % (random.randint(1, 1000)), "password",
