@@ -7,6 +7,38 @@ import sys
 from Task import Task
 import FileStorageLib
 
+def import_contest(path):
+    path = os.path.realpath(path)
+    super_path, name = os.path.split(path)
+    conf = yaml.load(open(os.path.join(path,"contest.yaml")))
+
+    params = {"name": name}
+    assert name == conf["nome_breve"]
+    params["description"] = conf["nome"]
+    params["tasks"] = []
+    for task in conf["problemi"]:
+        params["tasks"].append(import_task(os.path.join(path, task)))
+    params["token_num"] = conf.get("token_num", 0)
+    params["token_min_interval"] = conf.get("token_min_interval", 0)
+    params["token_gen_time"] = conf.get("token_gen_time", 0)
+    params["users"] = []
+    for user in conf["utenti"]:
+        params["user"].append(import_user(user))
+    params["start"] = conf["inizio"]
+    params["stop"] = conf["fine"]
+
+    return Contest(**params)
+
+def import_user(user_dict):
+    params = {}
+    params["username"] = user["username"]
+    params["password"] = user["password"]
+    params["name"] = " ".join(user["nome"], user["cognome"])
+    params["hidden"] = user["fake"]
+    params["tokens"] = []
+
+    return User(**uparams)
+
 def import_task(path):
     path = os.path.realpath(path)
     super_path, name = os.path.split(path)
@@ -37,5 +69,5 @@ def import_task(path):
 
 if __name__ == "__main__":
     import sys
-    t = import_task(sys.argv[1])
-    print "Couch ID: %s" % (t.couch_id)
+    c = import_contest(sys.argv[1])
+    print "Couch ID: %s" % (c.couch_id)
