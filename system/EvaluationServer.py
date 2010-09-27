@@ -147,6 +147,7 @@ class EvaluationServer:
             sub.invalid()
             self.add_job(sub.couch_id)
 
+        server.register_function(self.user_token)
         server.register_function(self.add_job)
         server.register_function(self.compilation_finished)
         server.register_function(self.evaluation_finished)
@@ -154,6 +155,10 @@ class EvaluationServer:
 
         self.jd.start()
         server.serve_forever()
+
+    def use_token(self, submission_id):
+        # FIXME - Stub
+        return True
 
     def add_job(self, submission_id):
         log("Queueing compilation for submission %s" % (submission_id))
