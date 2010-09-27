@@ -8,6 +8,8 @@ import tornado.escape
 import CouchObject
 import Contest
 import WebConfig
+import xmlrpclib
+import Configuration
 from time import time
 
 def get_task(taskname):
@@ -19,6 +21,14 @@ def get_task(taskname):
 
 def token_available(user,task):
     return True
+
+def update_submissions():
+    for s in c.submissions:
+        s.refresh()
+
+def update_users():
+    for u in c.users:
+        u.refresh()
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -50,6 +60,7 @@ class LogoutHandler(BaseHandler):
 class SubmissionViewHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self,taskname):
+        update_submissions()
         try:
             task = get_task(taskname)
         except:
@@ -75,6 +86,7 @@ class TaskViewHandler(BaseHandler):
 class UseTokenHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
+        update_submissions()
         u = self.get_current_user()
         if(u == None):
             raise tornado.web.HTTPError(403)
@@ -84,12 +96,18 @@ class UseTokenHandler(BaseHandler):
         ident = self.get_argument("id")
         for s in c.submissions:
             if s.couch_id == ident:
+                #se utilizza già un token
+                if s.token_timestamp != None:
+                    self.write("This submission is already marked for detailed feedback.")
                 # ha token disponibili?
-                if token_available(u,s.task):
+                elif token_available(u,s.task):
                     s.token_timestamp = time()
+                    u.tokens.append(s)
                     # salvataggio in couchdb
                     s.to_couch()
-                    # FIXME - avvisare Eval Server
+                    # avvisare Eval Server
+                    es = xmlrpclib.ServerProxy("http://%s:%d"%Configuration.evaluation_server)
+                    es.use_token(s.couch_id)
                     self.redirect("/submissions/"+s.task.name)
                     return
                 else:
