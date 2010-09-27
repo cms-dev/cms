@@ -41,6 +41,9 @@ class Task(CouchObject):
         self.token_gen_time = token_gen_time
         CouchObject.__init__(self, "task", couch_id)
 
+    def choose_couch_id_basename(self):
+        return "task-%s" % (self.name)
+
 def sample_task(couch_id = None):
     import random
     return Task("task-%d" % (random.randint(1,1000)), "Sample task", [], "SHA1 of statement",

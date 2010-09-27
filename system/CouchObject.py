@@ -18,11 +18,26 @@ class CouchObject:
         if couch_id == None:
             self.to_couch()
 
+    def choose_couch_id_basename(self):
+        return self.document_type
+
+    def choose_couch_id(self):
+        # FIXME - This is not totally race free, but this shouldn't be a problem in most cases
+        basename = self.choose_couch_id_basename()
+        db = Utils.get_couchdb_database()
+        num = 0
+        while True:
+            couch_id = "%s-%d" % (basename, num)
+            if couch_id not in db:
+                return couch_id
+            num += 1
+
     def to_couch(self):
         db = Utils.get_couchdb_database()
         if self.couch_id == None:
             ht = dict()
             ht["document_type"] = self.document_type
+            self.couch_id = self.choose_couch_id()
         else:
             try:
                 ht = db[self.couch_id]
