@@ -8,17 +8,25 @@ import tornado.escape
 import CouchObject
 import Contest
 import WebConfig
+from time import time
 
 def get_task(taskname):
     for t in c.tasks:
         if t.name == taskname:
             return t
     else:
-        raise KeyError("Task not found");
+        raise KeyError("Task not found")
+
+def token_available(user,task):
+    return True
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
-        return self.get_secure_cookie("user")
+        for u in c.users:
+            if u.username == self.get_secure_cookie("user"):
+                return u
+        else:
+            return None
 
 class MainHandler(BaseHandler):
     def get(self):
@@ -49,9 +57,10 @@ class SubmissionViewHandler(BaseHandler):
             return
         subm=[]
         for s in c.submissions:
-            if s.user.username == self.current_user and s.task.name == task.name:
+            if s.user.username == self.current_user.username and s.task.name == task.name:
                 subm.append(s)
         self.render("submission.html",submissions=subm, task = task)
+
 class TaskViewHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self,taskname):
@@ -63,13 +72,40 @@ class TaskViewHandler(BaseHandler):
             #raise tornado.web.HTTPError(404)
         self.render("task.html",task=task);
         
+class UseTokenHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self):
+        u = self.get_current_user()
+        if(u == None):
+            raise tornado.web.HTTPError(403)
+
+        if(self.get_arguments("id")==[]):
+            raise tornado.web.HTTPError(404)
+        ident = self.get_argument("id")
+        for s in c.submissions:
+            if s.couch_id == ident:
+                # ha token disponibili?
+                if token_available(u,s.task):
+                    s.token_timestamp = time()
+                    # salvataggio in couchdb
+                    s.to_couch()
+                    # FIXME - avvisare Eval Server
+                    self.redirect("/submissions/"+s.task.name)
+                    return
+                else:
+                    self.write("No tokens available.")
+                    return
+        else:
+            raise tornado.web.HTTPError(404)            
         
+
 handlers = [
             (r"/",MainHandler),
             (r"/login",LoginHandler),
             (r"/logout",LogoutHandler),
             (r"/submissions/([a-zA-Z0-9-]+)",SubmissionViewHandler),
-            (r"/tasks/([a-zA-Z0-9-]+)",TaskViewHandler)
+            (r"/tasks/([a-zA-Z0-9-]+)",TaskViewHandler),
+            (r"/usetoken/",UseTokenHandler),
            ]
                                        
 application = tornado.web.Application( handlers, **WebConfig.parameters)

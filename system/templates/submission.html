@@ -21,7 +21,7 @@
                 <td>{{ s.evaluation_status }}</td>
                 <td>
                 {% if s.token_timestamp==None %}
-                    <form action="/usetoken/">
+                    <form action="/usetoken/" method="POST">
                     No 
                     <input type="hidden" name="id" value="{{ escape(s.couch_id) }}">
                     <input type="submit" value="Use Token">
