@@ -4,9 +4,17 @@
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
+import tornado.escape
 import CouchObject
 import Contest
 import WebConfig
+
+def get_task(taskname):
+    for t in c.tasks:
+        if t.name == taskname:
+            return t
+    else:
+        raise KeyError("Task not found");
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -33,25 +41,25 @@ class LogoutHandler(BaseHandler):
 
 class SubmissionViewHandler(BaseHandler):
     @tornado.web.authenticated
-    def get(self):
+    def get(self,taskname):
+        try:
+            task = get_task(taskname)
+        except:
+            self.write("Task not found: "+taskname)
+            return
         subm=[]
         for s in c.submissions:
-            if s.user.username == self.current_user:
+            if s.user.username == self.current_user and s.task.name == task.name:
                 subm.append(s)
-        if len(subm)==0:
-            self.write("No submissions")
-        else:
-            self.write(subm)
-
+        self.render("submission.html",submissions=subm, task = task)
 class TaskViewHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self,taskname):
-        for t in c.tasks:
-            if t.name == taskname:
-                task = t
-                break
-        else:
+        try:
+            task = get_task(taskname)
+        except:
             self.write("Task not found: "+taskname)
+            return
             #raise tornado.web.HTTPError(404)
         self.render("task.html",task=task);
         
@@ -60,7 +68,7 @@ handlers = [
             (r"/",MainHandler),
             (r"/login",LoginHandler),
             (r"/logout",LogoutHandler),
-            (r"/submissions",SubmissionViewHandler),
+            (r"/submissions/([a-zA-Z0-9-]+)",SubmissionViewHandler),
             (r"/tasks/([a-zA-Z0-9-]+)",TaskViewHandler)
            ]
                                        
