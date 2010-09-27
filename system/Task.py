@@ -44,6 +44,9 @@ class Task(CouchObject):
     def choose_couch_id_basename(self):
         return "task-%s" % (self.name)
 
+    def valid_submission(self, files):
+        return True
+
 def sample_task(couch_id = None):
     import random
     return Task("task-%d" % (random.randint(1,1000)), "Sample task", [], "SHA1 of statement",

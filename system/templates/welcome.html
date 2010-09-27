@@ -41,6 +41,10 @@
         {% for t in contest.tasks %}
             <li><a href="/tasks/{{ t.name }}">{{ t.name }}</a> - 
             <a href="/submissions/{{ t.name }}">Submissions</a>
+            <form enctype="multipart/form-data" action="/submit/{{ t.name }}" method="post">
+              <input type="file" name="{{ t.name }}"></input>
+              <input type="submit" value="Submit"></input>
+            </form>
         {% end %}
         </ul>
     {% end %}

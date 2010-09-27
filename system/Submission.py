@@ -12,9 +12,10 @@ class Submission(CouchObject):
                 "compilation_result", "evaluation_status", "token_timestamp"]
     _to_copy_id = ["user", "task"]
 
-    def __init__(self, user, task, timestamp,files,
-                 outcome, executables, compilation_result,
-                 evaluation_status, token_timestamp,
+    def __init__(self, user, task, timestamp, files,
+                 outcome = None, executables = None,
+                 compilation_result = None, evaluation_status = None,
+                 token_timestamp = None,
                  couch_id = None):
         self.user = user
         self.task = task
