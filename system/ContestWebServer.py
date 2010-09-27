@@ -8,6 +8,8 @@ import tornado.escape
 import CouchObject
 import Contest
 import WebConfig
+from StringIO import StringIO
+from FileStorageLib import FileStorageLib
 
 def get_task(taskname):
     for t in c.tasks:
@@ -62,14 +64,28 @@ class TaskViewHandler(BaseHandler):
             return
             #raise tornado.web.HTTPError(404)
         self.render("task.html",task=task);
-        
-        
+
+class TaskStatementViewHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self, taskname):
+        try:
+            task = get_task(taskname)
+        except:
+            self.write("Task not found: "+taskname)
+        statementFile = StringIO()
+        FSL = FileStorageLib()
+        FSL.get_file(task.statement, statementFile)
+        self.set_header("Content-Type", "application/pdf")
+        self.write(statementFile.getvalue())
+        statementFile.close()
+
 handlers = [
             (r"/",MainHandler),
             (r"/login",LoginHandler),
             (r"/logout",LogoutHandler),
             (r"/submissions/([a-zA-Z0-9-]+)",SubmissionViewHandler),
-            (r"/tasks/([a-zA-Z0-9-]+)",TaskViewHandler)
+            (r"/tasks/([a-zA-Z0-9-]+)",TaskViewHandler),
+            (r"/task_statement/([a-zA-Z0-9-]+)",TaskStatementViewHandler)
            ]
                                        
 application = tornado.web.Application( handlers, **WebConfig.parameters)
