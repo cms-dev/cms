@@ -106,8 +106,11 @@ class UseTokenHandler(BaseHandler):
                     # salvataggio in couchdb
                     s.to_couch()
                     # avvisare Eval Server
-                    es = xmlrpclib.ServerProxy("http://%s:%d"%Configuration.evaluation_server)
-                    es.use_token(s.couch_id)
+                    try
+                        es = xmlrpclib.ServerProxy("http://%s:%d"%Configuration.evaluation_server)
+                        es.use_token(s.couch_id)
+                    except:
+                        pass
                     self.redirect("/submissions/"+s.task.name)
                     return
                 else:
