@@ -41,6 +41,7 @@ class FileStorage:
 
         server.register_function(self.get)
         server.register_function(self.put)
+        server.register_function(self.delete)
 
         # Run the server's main loop
         server.serve_forever()
@@ -85,6 +86,14 @@ class FileStorage:
             fileSocket.close()
             return False
         fileSocket.close()
+        return True
+
+    def delete(self, digest):
+        try:
+            os.remove(os.path.join(self.descdir, digest))
+            os.remove(os.path.join(self.objdir, digest))
+        except IOError:
+            return False
         return True
 
 if __name__ == "__main__":
