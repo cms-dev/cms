@@ -55,7 +55,7 @@ class TaskViewHandler(BaseHandler):
 
 application = tornado.web.Application( [(r"/",MainHandler),(r"/login",LoginHandler),(r"/logout",LogoutHandler),
                                        (r"/submissions",SubmissionViewHandler),(r"/tasks/([a-zA-Z0-9-]+)",TaskViewHandler)], login_url="/" ,template_path="./templates")
-c = CouchObject.from_couch("f8863d4eeb5d68464810ca1de5156666")
+c = CouchObject.from_couch("sample_contest")
 
 if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(application)

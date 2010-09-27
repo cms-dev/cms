@@ -38,7 +38,7 @@ class Task(CouchObject):
         self.token_gen_time = token_gen_time
         CouchObject.__init__(self, "task", couch_id)
 
-def sample_task():
+def sample_task(couch_id = None):
     import random
     return Task("task-%d" % (random.randint(1,1000)), "Sample task", [], "SHA1 of statement",
                 1, 512,
@@ -49,7 +49,7 @@ def sample_task():
                                       {"multiplicator": 1, "testcases":5, "description":"First requirement"},
                                       {"multiplicator": 1, "testcases":5, "description":"Second requirement"}],
                 [("SHA1 of input %d" % i, "SHA1 of output %d" % i) for i in xrange(17)], [0, 1],
-                3, 15, 30)
+                3, 15, 30, couch_id = couch_id)
 
 if __name__ == "__main__":
     t = sample_task()

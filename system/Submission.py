@@ -37,8 +37,8 @@ class Submission(CouchObject):
         self.executables = None
         self.to_couch()
 
-def sample_submission():
-    return Submission(User.sample_user(), Task.sample_task(), time(), {}, [], {}, "", "", None)
+def sample_submission(couch_id = None):
+    return Submission(User.sample_user(), Task.sample_task(), time(), {}, [], {}, "", "", None, couch_id = couch_id)
 
 if __name__ == "__main__":
     s = sample_submission()

@@ -21,10 +21,10 @@ class Contest(CouchObject):
         self.submissions = submissions
         CouchObject.__init__(self, "contest", couch_id)
 
-def sample_contest():
+def sample_contest(couch_id = None):
     import User
     import Task
-    return Contest("hello", "Hello world", [Task.sample_task() for i in range(3)], [User.sample_user() for i in range(10)], 3, 15, 30)
+    return Contest("hello", "Hello world", [Task.sample_task() for i in range(3)], [User.sample_user() for i in range(10)], 3, 15, 30, couch_id = couch_id)
 
 if __name__ == "__main__":
     c = sample_contest()

@@ -217,13 +217,13 @@ if __name__ == "__main__":
 
     es_address, es_port = Configuration.evaluation_server
     if sys.argv[1] == "run":
-#        c = Contest.sample_contest()
-#        s = Submission.sample_submission()
-#        print "Submission ID:", s.couch_id
-#        c.submissions.append(s)
-#        c.to_couch()
-#        print "Contest ID:", c.couch_id
-        c = CouchObject.from_couch('2bbb185b8b92bcfe51adf41c0ec89b3b')
+        c = Contest.sample_contest(couch_id = 'sample_contest')
+        s = Submission.sample_submission(couch_id = 'sample_submission')
+        print "Submission ID:", s.couch_id
+        c.submissions.append(s)
+        c.to_couch()
+        print "Contest ID:", c.couch_id
+        #c = CouchObject.from_couch('sample_contest')
 
         e = EvaluationServer(c, es_address, es_port)
 
@@ -232,6 +232,6 @@ if __name__ == "__main__":
         es.self_destruct()
 
     else:
-        s = CouchObject.from_couch('3bba67b41846e836d9c91f82c0ac4dd5')
+        s = CouchObject.from_couch('sample_submission')
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
         es.add_job(s.couch_id)
