@@ -1,0 +1,36 @@
+<html>
+<head>
+    <title>{{ task.title }} - Submissions</title>
+</head>
+<body>
+    <h1>{{ task.title }}({{ task.name }}) - Submissions</h1>
+    {% if len(submissions)==0 %}
+    No sumbissions found.
+    {% else %}
+        <table>
+        <tr>
+            <th>Timestamp</th>
+            <th>Compilation</br>status</th>
+            <th>Evaluation</br>status</th>
+            <th>Detailed</br>Feedback</br>Requested</th>
+        </tr>
+        {% for s in submissions %}
+            <tr>
+                <td>{{ datetime.datetime.fromtimestamp(s.timestamp) }}</td>
+                <td>{{ s.compilation_result }}</td>
+                <td>{{ s.evaluation_status }}</td>
+                <td>
+                {% if s.token_timestamp==None %}
+                    <form action="/usetoken/">
+                    No 
+                    <input type="hidden" name="id" value="{{ escape(s.couch_id) }}">
+                    <input type="submit" value="Use Token">
+                    </form>
+                {% else %}
+                    Yes
+                {% end %}
+            </tr>
+        {% end %}
+    {% end %}
+</body>
+</html>
