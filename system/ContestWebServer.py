@@ -96,6 +96,7 @@ class TaskStatementViewHandler(BaseHandler):
         FSL = FileStorageLib()
         FSL.get_file(task.statement, statementFile)
         self.set_header("Content-Type", "application/pdf")
+        self.set_header("Content-Disposition", "attachment; filename=\"%s.pdf\"" % (task.name))
         self.write(statementFile.getvalue())
         statementFile.close()
         
