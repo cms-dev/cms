@@ -24,7 +24,7 @@ class LoginHandler(BaseHandler):
             if u.username == username and u.password == password:
                 self.set_secure_cookie("user",self.get_argument("username"))
                 break
-        self.redirect("/")
+        self.redirect("/?login_error=true")
 
 class LogoutHandler(BaseHandler):
     def get(self):
@@ -54,6 +54,8 @@ class TaskViewHandler(BaseHandler):
             self.write("Task not found: "+taskname)
             #raise tornado.web.HTTPError(404)
         self.render("task.html",task=task);
+        
+        
 handlers = [
             (r"/",MainHandler),
             (r"/login",LoginHandler),
