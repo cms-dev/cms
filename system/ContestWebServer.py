@@ -10,17 +10,35 @@ import Contest
 import WebConfig
 from StringIO import StringIO
 from FileStorageLib import FileStorageLib
+import xmlrpclib
+import Configuration
+from time import time
 
 def get_task(taskname):
     for t in c.tasks:
         if t.name == taskname:
             return t
     else:
-        raise KeyError("Task not found");
+        raise KeyError("Task not found")
+
+def token_available(user,task):
+    return True
+
+def update_submissions():
+    for s in c.submissions:
+        s.refresh()
+
+def update_users():
+    for u in c.users:
+        u.refresh()
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
-        return self.get_secure_cookie("user")
+        for u in c.users:
+            if u.username == self.get_secure_cookie("user"):
+                return u
+        else:
+            return None
 
 class MainHandler(BaseHandler):
     def get(self):
@@ -44,6 +62,7 @@ class LogoutHandler(BaseHandler):
 class SubmissionViewHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self,taskname):
+        update_submissions()
         try:
             task = get_task(taskname)
         except:
@@ -51,9 +70,10 @@ class SubmissionViewHandler(BaseHandler):
             return
         subm=[]
         for s in c.submissions:
-            if s.user.username == self.current_user and s.task.name == task.name:
+            if s.user.username == self.current_user.username and s.task.name == task.name:
                 subm.append(s)
         self.render("submission.html",submissions=subm, task = task)
+
 class TaskViewHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self,taskname):
@@ -78,6 +98,42 @@ class TaskStatementViewHandler(BaseHandler):
         self.set_header("Content-Type", "application/pdf")
         self.write(statementFile.getvalue())
         statementFile.close()
+        
+class UseTokenHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self):
+        update_submissions()
+        u = self.get_current_user()
+        if(u == None):
+            raise tornado.web.HTTPError(403)
+
+        if(self.get_arguments("id")==[]):
+            raise tornado.web.HTTPError(404)
+        ident = self.get_argument("id")
+        for s in c.submissions:
+            if s.couch_id == ident:
+                #se utilizza già un token
+                if s.token_timestamp != None:
+                    self.write("This submission is already marked for detailed feedback.")
+                # ha token disponibili?
+                elif token_available(u,s.task):
+                    s.token_timestamp = time()
+                    u.tokens.append(s)
+                    # salvataggio in couchdb
+                    s.to_couch()
+                    # avvisare Eval Server
+                    try:
+                        es = xmlrpclib.ServerProxy("http://%s:%d"%Configuration.evaluation_server)
+                        es.use_token(s.couch_id)
+                    except:
+                        pass
+                    self.redirect("/submissions/"+s.task.name)
+                    return
+                else:
+                    self.write("No tokens available.")
+                    return
+        else:
+            raise tornado.web.HTTPError(404)            
 
 handlers = [
             (r"/",MainHandler),
@@ -85,7 +141,8 @@ handlers = [
             (r"/logout",LogoutHandler),
             (r"/submissions/([a-zA-Z0-9-]+)",SubmissionViewHandler),
             (r"/tasks/([a-zA-Z0-9-]+)",TaskViewHandler),
-            (r"/task_statement/([a-zA-Z0-9-]+)",TaskStatementViewHandler)
+            (r"/task_statement/([a-zA-Z0-9-]+)",TaskStatementViewHandler),
+            (r"/usetoken/",UseTokenHandler),
            ]
                                        
 application = tornado.web.Application( handlers, **WebConfig.parameters)

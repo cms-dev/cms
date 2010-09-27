@@ -147,7 +147,7 @@ class EvaluationServer:
             sub.invalid()
             self.add_job(sub.couch_id)
 
-        server.register_function(self.user_token)
+        server.register_function(self.use_token)
         server.register_function(self.add_job)
         server.register_function(self.compilation_finished)
         server.register_function(self.evaluation_finished)

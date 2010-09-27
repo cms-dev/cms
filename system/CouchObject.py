@@ -84,7 +84,7 @@ class CouchObject:
         del ht['_id']
         del ht['document_type']
         self.__dict__.update(ht)
-        self.fix_references()
+        fix_references(self)
 
 def from_couch(couch_id, with_refresh = True):
     if couch_id in references:
