@@ -21,8 +21,13 @@
                 <td>{{ s.evaluation_status }}</td>
                 <td>
                 {% if s.token_timestamp==None %}
+<<<<<<< Updated upstream
                     <form action="/usetoken/" method="POST">
                     No 
+=======
+                    <form action="/usetoken/">
+                    No
+>>>>>>> Stashed changes
                     <input type="hidden" name="id" value="{{ escape(s.couch_id) }}">
                     <input type="submit" value="Use Token">
                     </form>

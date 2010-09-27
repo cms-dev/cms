@@ -1,18 +1,43 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+# Programming contest management system
+# Copyright (C) 2010 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright (C) 2010 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright (C) 2010 Matteo Boscariol <boscarim@hotmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import tornado.escape
+
+import os
+import tempfile
+import xmlrpclib
+
+from time import time
+from StringIO import StringIO
+
+import Configuration
+import WebConfig
 import CouchObject
 import Contest
-import WebConfig
-import xmlrpclib
-import Configuration
-import FileStorageLib
-from time import time
 from Submission import Submission
+from FileStorageLib import FileStorageLib
+
 
 def get_task(taskname):
     for t in c.tasks:
@@ -61,14 +86,14 @@ class LogoutHandler(BaseHandler):
 
 class SubmissionViewHandler(BaseHandler):
     @tornado.web.authenticated
-    def get(self,taskname):
+    def get(self, taskname):
         update_submissions()
         try:
             task = get_task(taskname)
         except:
-            self.write("Task not found: "+taskname)
+            self.write("Task not found: " + taskname)
             return
-        subm=[]
+        subm = []
         for s in c.submissions:
             if s.user.username == self.current_user.username and s.task.name == task.name:
                 subm.append(s)
@@ -76,15 +101,30 @@ class SubmissionViewHandler(BaseHandler):
 
 class TaskViewHandler(BaseHandler):
     @tornado.web.authenticated
-    def get(self,taskname):
+    def get(self, taskname):
+        try:
+            task = get_task(taskname)
+        except:
+            self.write("Task not found: " + taskname)
+            return
+            #raise tornado.web.HTTPError(404)
+        self.render("task.html",task=task);
+
+class TaskStatementViewHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self, taskname):
         try:
             task = get_task(taskname)
         except:
             self.write("Task not found: "+taskname)
-            return
-            #raise tornado.web.HTTPError(404)
-        self.render("task.html",task=task);
-        
+        statementFile = StringIO()
+        FSL = FileStorageLib()
+        FSL.get_file(task.statement, statementFile)
+        self.set_header("Content-Type", "application/pdf")
+        self.set_header("Content-Disposition", "attachment; filename=\"%s.pdf\"" % (task.name))
+        self.write(statementFile.getvalue())
+        statementFile.close()
+
 class UseTokenHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
@@ -123,24 +163,31 @@ class UseTokenHandler(BaseHandler):
         else:
             raise tornado.web.HTTPError(404)            
 
-class SendSubmissionHandler(BaseHandler):
+class SubmitHandler(BaseHandler):
     @tornado.web.authenticated
-    def post(self):
-        # parameters: files to be added to the FS, task
-        # check if the task is valid
-        try:
-            task=get_task(self.get_argument("task"))
-        except:
-            raise tornado.web.HTTPError(404)
-            
-        files= self.request.files["source"]
-        if files==[]:
-            self.write("No file sent.")
-        else:
+    def post(self, taskname):
+        timestamp = time()
+        uploaded = self.request.files[taskname][0]
+        files = {}
+        if uploaded["content_type"] == "application/zip":
+            # TODO: unpack zip and save each file
             pass
-            #inserire il file in FS!
-            #s=Submission(self.current_user,task,time(),.......)
-        
+        else:
+            files[uploaded["filename"]] = uploaded["body"]
+        task = get_task(taskname)
+        if not task.valid_submission(files.keys()):
+            raise tornado.web.HTTPError(404)
+        for filename, content in files.items():
+            tempFile, tempFilename = tempfile.mkstemp()
+            tempFile = os.fdopen(tempFile, "w")
+            tempFile.write(content)
+            tempFile.close()
+            files[filename] = FSL.put(tempFilename)
+        s = Submission(self.current_user,
+                       task,
+                       timestamp,
+                       files.values())
+        ES.add_job(s.couch_id)
 
 handlers = [
             (r"/",MainHandler),
@@ -148,13 +195,16 @@ handlers = [
             (r"/logout",LogoutHandler),
             (r"/submissions/([a-zA-Z0-9-]+)",SubmissionViewHandler),
             (r"/tasks/([a-zA-Z0-9-]+)",TaskViewHandler),
-            (r"/usetoken",UseTokenHandler),
-            (r"/submit",SendSubmissionHandler),
+            (r"/task_statement/([a-zA-Z0-9-]+)",TaskStatementViewHandler),
+            (r"/usetoken/",UseTokenHandler),
+            (r"/submit/([a-zA-Z0-9-]+)",SubmitHandler)
            ]
-                                       
-application = tornado.web.Application( handlers, **WebConfig.parameters)
 
-c = CouchObject.from_couch("sample_contest")
+application = tornado.web.Application( handlers, **WebConfig.parameters)
+FSL = FileStorageLib()
+ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
+
+c = CouchObject.from_couch("contest-gara1-0")
 
 if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(application)
