@@ -55,28 +55,35 @@ class FileStorageLib:
         self.remote_address = fs_address
         self.fs = xmlrpclib.ServerProxy('http://%s:%d' % (fs_address, fs_port))
 
-    def put(self, path, description = ""):
+    def put_file(self, putFile, description = ""):
         putSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         port = self.random_bind(putSocket, self.bind_address)
         putSocket.listen(1)
-        with open(path) as putFile:
-            ft = FilePutThread(putSocket, putFile)
-            ft.start()
-            res = self.fs.put(self.local_address, port, description)
+        ft = FilePutThread(putSocket, putFile)
+        ft.start()
+        res = self.fs.put(self.local_address, port, description)
+        ft.join()
         putSocket.close()
         return res
 
-    def get(self, dig, path):
+    def put(self, path, description = ""):
+        with open(path) as putFile:
+            return self.put_file(putFile, description)
+
+    def get_file(self, dig, getFile):
         getSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         port = self.random_bind(getSocket, self.bind_address)
         getSocket.listen(1)
-        with open(path, "w") as getFile:
-            ft = FileGetThread(getSocket, getFile)
-            ft.start()
-            res = self.fs.get(self.local_address, port, dig)
-            ft.join()
+        ft = FileGetThread(getSocket, getFile)
+        ft.start()
+        res = self.fs.get(self.local_address, port, dig)
+        ft.join()
         getSocket.close()
         return res
+
+    def get(self, dig, path):
+        with open(path, "w") as getFile:
+            return self.get_file(dig, getFile)
 
     def random_bind(self, bindSocket, address):
         ok = False
