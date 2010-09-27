@@ -24,7 +24,11 @@ class CouchObject:
             ht = dict()
             ht["document_type"] = self.document_type
         else:
-            ht = db[self.couch_id]
+            try:
+                ht = db[self.couch_id]
+            except couchdb.ResourceNotFound:
+                ht = dict()
+                ht["document_type"] = self.document_type
 
         for key in self._to_copy:
             try:
