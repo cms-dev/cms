@@ -24,5 +24,6 @@ couchdb_database = "ioi"
 
 file_storage = ("localhost", 8000)
 evaluation_server = ("localhost", 8002)
+log_server = ("localhost", 8003)
 
 workers = [ ("localhost", 8001) ]

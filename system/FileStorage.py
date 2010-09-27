@@ -28,13 +28,7 @@ import tempfile
 import shutil
 import hashlib
 import Configuration
-
-# FIXME - Bad hack
-def maybe_mkdir(d):
-    try:
-        os.mkdir(d)
-    except:
-        pass
+from Utils import maybe_mkdir
 
 class FileStorage:
     def __init__(self, basedir, listen_address = None, listen_port = None):

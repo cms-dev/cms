@@ -25,6 +25,8 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer
 import xmlrpclib
 import threading
 import time
+from Utils import log
+import Utils
 
 class Job(threading.Thread):
     def __init__(self, submission_id):
@@ -63,6 +65,8 @@ class Worker:
         server.register_function(self.compile)
         server.register_function(self.evaluate)
 
+        log("Worker started, waiting for connections..")
+
         # Run the server's main loop
         server.serve_forever()
 
@@ -79,6 +83,7 @@ class Worker:
 if __name__ == "__main__":
     import CouchObject
     import sys
-    address, port = Configuration.workers[int(sys.argv[1])]
+    worker_num = int(sys.argv[1])
+    address, port = Configuration.workers[worker_num]
+    Utils.set_service("worker %d (%s:%d)" % (worker_num, address, port))
     w = Worker(address, port)
-

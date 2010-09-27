@@ -21,6 +21,10 @@
 
 import couchdb
 import Configuration
+import xmlrpclib
+import time
+import datetime
+import os
 
 def get_couchdb_database():
     couch = couchdb.client.Server(Configuration.couchdb_server)
@@ -35,5 +39,43 @@ def drop_couchdb_database():
     couch = couchdb.client.Server(Configuration.couchdb_server)
     del couch[Configuration.couchdb_database]
 
+# FIXME - Bad hack
+def maybe_mkdir(d):
+    try:
+        os.mkdir(d)
+    except:
+        pass
+
+def format_log(msg, service, severity, timestamp):
+    d = datetime.datetime.fromtimestamp(timestamp)
+    return "%s - %s [%s] %s" % ('{0:%Y/%m/%d %H:%M:%S}'.format(d), severity, service, msg)
+
+class Logger:
+    SEVERITY_CRITICAL, SEVERITY_IMPORTANT, SEVERITY_NORMAL, SEVERITY_DEBUG = ["CRITICAL", "IMPORTANT", "NORMAL", "DEBUG"]
+
+    def __init__(self, service = "unknown", log_address = None, log_port = None, local_log = True):
+        if log_address == None:
+            log_address = Configuration.log_server[0]
+        if log_port == None:
+            log_port = Configuration.log_server[1]
+        self.service = service
+        self.log_proxy = xmlrpclib.ServerProxy('http://%s:%d' % (log_address, log_port))
+        self.local_log = local_log
+
+    def log(self, msg, severity = SEVERITY_NORMAL, timestamp = None):
+        if timestamp == None:
+            timestamp = time.time()
+        try:
+            self.log_proxy.log(msg, self.service, severity, timestamp)
+        except IOError:
+            print "Couldn't send log to remote server"
+        if self.local_log:
+            print format_log(msg, self.service, severity, timestamp)
+
+logger = Logger()
+
 def log(s):
-    print "LOG:", s
+    logger.log(s)
+
+def set_service(service):
+    logger.service = service
