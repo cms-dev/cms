@@ -13,6 +13,9 @@ class Task(CouchObject):
                 "token_num", "token_min_interval", "token_gen_time",
                 ]
 
+    TASK_TYPE_BATCH, TASK_TYPE_PROGRAMMING, TASK_TYPE_OUTPUT_ONLY = range(3)
+    SCORE_TYPE_SUM = range(1)
+
     def __init__(self, name, title, attachments, statement,
                  time_limit, memory_limit,
                  task_type, submission_format, managers,
