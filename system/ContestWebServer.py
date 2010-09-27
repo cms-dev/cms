@@ -5,14 +5,19 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import tornado.escape
+
+import os
+import tempfile
+import xmlrpclib
+from time import time
+from StringIO import StringIO
+
+import Configuration
+import WebConfig
 import CouchObject
 import Contest
-import WebConfig
-from StringIO import StringIO
+from Submission import Submission
 from FileStorageLib import FileStorageLib
-import xmlrpclib
-import Configuration
-from time import time
 
 def get_task(taskname):
     for t in c.tasks:
@@ -61,14 +66,14 @@ class LogoutHandler(BaseHandler):
 
 class SubmissionViewHandler(BaseHandler):
     @tornado.web.authenticated
-    def get(self,taskname):
+    def get(self, taskname):
         update_submissions()
         try:
             task = get_task(taskname)
         except:
-            self.write("Task not found: "+taskname)
+            self.write("Task not found: " + taskname)
             return
-        subm=[]
+        subm = []
         for s in c.submissions:
             if s.user.username == self.current_user.username and s.task.name == task.name:
                 subm.append(s)
@@ -76,11 +81,11 @@ class SubmissionViewHandler(BaseHandler):
 
 class TaskViewHandler(BaseHandler):
     @tornado.web.authenticated
-    def get(self,taskname):
+    def get(self, taskname):
         try:
             task = get_task(taskname)
         except:
-            self.write("Task not found: "+taskname)
+            self.write("Task not found: " + taskname)
             return
             #raise tornado.web.HTTPError(404)
         self.render("task.html",task=task);
@@ -98,7 +103,7 @@ class TaskStatementViewHandler(BaseHandler):
         self.set_header("Content-Type", "application/pdf")
         self.write(statementFile.getvalue())
         statementFile.close()
-        
+
 class UseTokenHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
@@ -135,6 +140,32 @@ class UseTokenHandler(BaseHandler):
         else:
             raise tornado.web.HTTPError(404)            
 
+class SubmitHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self, taskname):
+        timestamp = time()
+        uploaded = self.request.files[taskname][0]
+        files = {}
+        if uploaded["content_type"] == "application/zip":
+            # TODO: unpack zip and save each file
+            pass
+        else:
+            files[uploaded["filename"]] = uploaded["body"]
+        task = get_task(taskname)
+        if not task.valid_submission(files.keys()):
+            raise tornado.web.HTTPError(404)
+        for filename, content in files.items():
+            tempFile, tempFilename = tempfile.mkstemp()
+            tempFile = os.fdopen(tempFile, "w")
+            tempFile.write(content)
+            tempFile.close()
+            files[filename] = FSL.put(tempFilename)
+        s = Submission(self.current_user,
+                       task,
+                       timestamp,
+                       files.values())
+        ES.add_job(s.couch_id)
+
 handlers = [
             (r"/",MainHandler),
             (r"/login",LoginHandler),
@@ -143,11 +174,14 @@ handlers = [
             (r"/tasks/([a-zA-Z0-9-]+)",TaskViewHandler),
             (r"/task_statement/([a-zA-Z0-9-]+)",TaskStatementViewHandler),
             (r"/usetoken/",UseTokenHandler),
+            (r"/submit/([a-zA-Z0-9-]+)",SubmitHandler)
            ]
-                                       
-application = tornado.web.Application( handlers, **WebConfig.parameters)
 
-c = CouchObject.from_couch("sample_contest")
+application = tornado.web.Application( handlers, **WebConfig.parameters)
+FSL = FileStorageLib()
+ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
+
+c = CouchObject.from_couch("contest-gara1-0")
 
 if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(application)
