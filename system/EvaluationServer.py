@@ -210,21 +210,12 @@ class EvaluationServer:
         return True
 
 if __name__ == "__main__":
-    import Worker
-    import Contest
-    import Submission
     import sys
 
     es_address, es_port = Configuration.evaluation_server
-    if sys.argv[1] == "run":
-        c = Contest.sample_contest(couch_id = 'sample_contest')
-        s = Submission.sample_submission(couch_id = 'sample_submission')
-        print "Submission ID:", s.couch_id
-        c.submissions.append(s)
-        c.to_couch()
-        print "Contest ID:", c.couch_id
-        #c = CouchObject.from_couch('sample_contest')
 
+    if sys.argv[1] == "run":
+        c = CouchObject.from_couch('sample_contest')
         e = EvaluationServer(c, es_address, es_port)
 
     elif sys.argv[1] == "destroy":
