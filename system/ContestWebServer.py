@@ -10,7 +10,9 @@ import Contest
 import WebConfig
 import xmlrpclib
 import Configuration
+import FileStorageLib
 from time import time
+from Submission import Submission
 
 def get_task(taskname):
     for t in c.tasks:
@@ -105,11 +107,13 @@ class UseTokenHandler(BaseHandler):
                     u.tokens.append(s)
                     # salvataggio in couchdb
                     s.to_couch()
+                    u.to_couch()
                     # avvisare Eval Server
                     try:
                         es = xmlrpclib.ServerProxy("http://%s:%d"%Configuration.evaluation_server)
                         es.use_token(s.couch_id)
                     except:
+                        # FIXME - log
                         pass
                     self.redirect("/submissions/"+s.task.name)
                     return
@@ -118,6 +122,24 @@ class UseTokenHandler(BaseHandler):
                     return
         else:
             raise tornado.web.HTTPError(404)            
+
+class SendSubmissionHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self):
+        # parameters: files to be added to the FS, task
+        # check if the task is valid
+        try:
+            task=get_task(self.get_argument("task"))
+        except:
+            raise tornado.web.HTTPError(404)
+            
+        files= self.request.files["source"]
+        if files==[]:
+            self.write("No file sent.")
+        else:
+            pass
+            #inserire il file in FS!
+            #s=Submission(self.current_user,task,time(),.......)
         
 
 handlers = [
@@ -126,7 +148,8 @@ handlers = [
             (r"/logout",LogoutHandler),
             (r"/submissions/([a-zA-Z0-9-]+)",SubmissionViewHandler),
             (r"/tasks/([a-zA-Z0-9-]+)",TaskViewHandler),
-            (r"/usetoken/",UseTokenHandler),
+            (r"/usetoken",UseTokenHandler),
+            (r"/submit",SendSubmissionHandler),
            ]
                                        
 application = tornado.web.Application( handlers, **WebConfig.parameters)

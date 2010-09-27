@@ -5,5 +5,12 @@
 <body>
     <h1>{{ task.title }}({{ task.name }})</h1>
     <div>{{ task.statement }}</div>
+    </hr>
+    <h3>Submit files</h3>
+    <form enctype="multipart/form-data" action="/submit" method="POST">
+        <input type="hidden" name="task_id" value="{{ escape(task.name) }}">
+        <input type="file" name="source">
+        <input type="submit" value="Send"> 
+    </form>
 </body>
 </html>
