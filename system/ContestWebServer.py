@@ -64,7 +64,7 @@ handlers = [
                                        
 application = tornado.web.Application( handlers, **WebConfig.parameters)
 
-#c = CouchObject.from_couch("f8863d4eeb5d68464810ca1de5156666")
+c = CouchObject.from_couch("sample_contest")
 
 if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(application)

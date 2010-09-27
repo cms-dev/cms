@@ -18,10 +18,10 @@ class User(CouchObject):
         self.tokens = tokens
         CouchObject.__init__(self, "user", couch_id)
 
-def sample_user():
+def sample_user(couch_id = None):
     import random
     return User("username-%d" % (random.randint(1, 1000)), "password",
-                "Mister Real Name", "10.0.0.101")
+                "Mister Real Name", "10.0.0.101", couch_id = couch_id)
 
 if __name__ == "__main__":
     u = sample_user()

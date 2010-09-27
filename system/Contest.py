@@ -21,15 +21,22 @@ class Contest(CouchObject):
         self.submissions = submissions
         CouchObject.__init__(self, "contest", couch_id)
 
-def sample_contest():
+def sample_contest(couch_id = None):
     import User
     import Task
-    return Contest("hello", "Hello world", [Task.sample_task() for i in range(3)], [User.sample_user() for i in range(10)], 3, 15, 30)
+    import Submission
+    c = Contest("hello", "Hello world", [Task.sample_task() for i in range(3)], [User.sample_user() for i in range(10)], 3, 15, 30, couch_id = couch_id)
+    s = Submission.sample_submission(couch_id = 'sample_submission')
+    c.submissions.append(s)
+    c.to_couch()
+    s.task = c.tasks[0]
+    s.user = c.users[0]
+    s.to_couch()
+    u = c.users[0]
+    u.username = "username"
+    u.to_couch()
+    return c
 
 if __name__ == "__main__":
-    c = sample_contest()
+    c = sample_contest(couch_id = 'sample_contest')
     print "Couch ID: %s" % (c.couch_id)
-    couch_id = c.couch_id
-    c.name = "secondtest"
-    couch_id2 = c.to_couch()
-    assert couch_id == couch_id2

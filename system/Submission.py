@@ -8,9 +8,9 @@ import Task
 
 class Submission(CouchObject):
 
-    _to_copy = ["timestamp","files","outcome","executables",
-                "compilation_result","evaluation_status","token_timestamp"]
-    _to_copy_id = ["user","task"]
+    _to_copy = ["timestamp", "files", "outcome", "executables",
+                "compilation_result", "evaluation_status", "token_timestamp"]
+    _to_copy_id = ["user", "task"]
 
     def __init__(self, user, task, timestamp,files,
                  outcome, executables, compilation_result,
@@ -37,8 +37,8 @@ class Submission(CouchObject):
         self.executables = None
         self.to_couch()
 
-def sample_submission():
-    return Submission(User.sample_user(), Task.sample_task(), time(), {}, [], {}, "", "", None)
+def sample_submission(couch_id = None):
+    return Submission(User.sample_user(), Task.sample_task(), time(), {}, None, None, None, None, None, couch_id = couch_id)
 
 if __name__ == "__main__":
     s = sample_submission()
