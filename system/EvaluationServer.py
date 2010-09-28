@@ -27,6 +27,7 @@ import threading
 import heapq
 import time
 import xmlrpclib
+import signal
 from Utils import log
 
 class JobQueue:
@@ -161,6 +162,9 @@ class EvaluationServer:
         self.queue = JobQueue()
         self.workers = WorkerPool(len(Configuration.workers))
         self.jd = JobDispatcher(self.queue, self.workers)
+        self.st = threading.Thread()
+        self.st.run = server.serve_forever
+        self.st.daemon = True
 
         self.contest = contest
         for sub in self.contest.submissions:
@@ -173,8 +177,9 @@ class EvaluationServer:
         server.register_function(self.evaluation_finished)
         server.register_function(self.self_destruct)
 
+    def start(self):
         self.jd.start()
-        server.serve_forever()
+        self.st.start()
 
     def use_token(self, submission_id):
         # FIXME - Stub
@@ -234,6 +239,11 @@ class EvaluationServer:
         self.queue.unlock()
         return True
 
+def sigterm(signum, stack):
+    global e
+    print "Trying to self destruct"
+    e.self_destruct()
+
 if __name__ == "__main__":
     import sys
 
@@ -242,6 +252,13 @@ if __name__ == "__main__":
     if sys.argv[1] == "run":
         c = CouchObject.from_couch('sample_contest')
         e = EvaluationServer(c, es_address, es_port)
+        e.start()
+        signal.signal(signal.SIGTERM, sigterm)
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            e.self_destruct()
 
     elif sys.argv[1] == "destroy":
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
