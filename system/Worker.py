@@ -41,20 +41,30 @@ class CompileJob(Job):
         Job.__init__(self, submission_id)
 
     def run(self):
+        log("Compilation of submission %s started" % (self.submission_id))
         time.sleep(3)
         self.submission.compilation_result = "OK, gcc is proud of you"
         self.submission.to_couch()
-        self.es.compilation_finished(True, self.submission_id)
+        log("Compilation of submission %s finished" % (self.submission_id))
+        try:
+            self.es.compilation_finished(True, self.submission_id)
+        except IOError:
+            log("Could not report finished compilation for submission %s, dropping it" % (self.submission_id))
 
 class EvaluateJob(Job):
     def __init__(self, submission_id):
         Job.__init__(self, submission_id)
 
     def run(self):
+        log("Evaluation of submission %s started" % (self.submission_id))
         time.sleep(3)
         self.submission.evaluation_status = "Wonderful, you're a tough coder! :-)"
         self.submission.to_couch()
-        self.es.evaluation_finished(True, self.submission_id)
+        log("Evaluation of submission %s finished" % (self.submission_id))
+        try:
+            self.es.evaluation_finished(True, self.submission_id)
+        except IOError:
+            log("Could not report finished evaluation for submission %s, dropping it" % (self.submission_id))
 
 class Worker:
     def __init__(self, listen_address, listen_port):
@@ -71,11 +81,13 @@ class Worker:
         server.serve_forever()
 
     def compile(self, submission_id):
+        log("Request to compile submission %s received" % (submission_id))
         j = CompileJob(submission_id)
         j.start()
         return True
 
     def evaluate(self, submission_id):
+        log("Request to evaluate submission %s received" % (submission_id))
         j = EvaluateJob(submission_id)
         j.start()
         return True

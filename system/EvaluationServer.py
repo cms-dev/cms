@@ -148,6 +148,8 @@ class EvaluationServer:
     JOB_TYPE_COMPILATION, JOB_TYPE_EVALUATION, JOB_TYPE_BOMB = ["compile", "evaluate", "bomb"]
 
     def __init__(self, contest, listen_address = None, listen_port = None):
+        log("Spawning evaluation server for contest %s" % (contest.couch_id))
+
         if listen_address == None:
             listen_address = Configuration.evaluation_server[0]
         if listen_port == None:
