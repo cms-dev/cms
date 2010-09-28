@@ -1,10 +1,10 @@
 <html>
 <head>
-    <title>{{ title }}</title>
+    <title>{{ contest.name }}</title>
 </head>
 <body>
-    <h1>{{ header }}</h1>
-    <div>{{ description }}</div>
+    <h1>{{ contest.name }}</h1>
+    <div>{{ contest.description }}</div>
     <!-- login form-->
     {% if current_user == None %}
         {% if handler.get_arguments("login_error") != [] %}
