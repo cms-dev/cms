@@ -22,13 +22,14 @@
 import os
 import shutil
 import sys
-import StringIO
 import subprocess
 import Utils
+import FileStorageLib
 
 class Sandbox:
     def __init__(self):
         self.path = tempfile.mkdtemp()
+        self.FSL = FileStorageLib.FileStorageLib()
 
         # Default parameters for mo-box
         self.file_check = None        # -a
@@ -88,16 +89,20 @@ class Sandbox:
             res += ["-x", str(self.extra_timeout)]
         return res
 
-    def create_file(self, path, source):
+    def create_file(self, path):
         real_path = os.path.join(self.path, path)
         fd = open(real_path, 'w')
-        shutil.copyfileobj(source, fd)
+        return fd
+
+    def create_file_from_storage(self, path, digest):
+        fd = self.create_file(path)
+        FSL.get_file(digest, fd)
         fd.close()
 
     def create_file_from_string(self, path, content):
-        source = StringIO.StringIO(content)
-        self.create_file(path, source)
-        source.close()
+        fd = self.create_file(path)
+        fd.write(content)
+        fd.close()
 
     def get_file(self, path):
         real_path = os.path.join(self.path, path)
@@ -107,7 +112,14 @@ class Sandbox:
     def get_file_to_string(self, path):
         fd = self.get_file(path)
         content = fd.read()
+        fd.close()
         return content
+
+    def get_file_to_storage(self, path, description = ""):
+        fd = self.get_file(path)
+        digest = FSL.put_file(fd, description)
+        fd.close()
+        return digest
 
     def execute(self, command):
         return subprocess.call(["./mo-box"] +
