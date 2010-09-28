@@ -59,8 +59,12 @@ class Submission(CouchObject):
     def choose_couch_id_basename(self):
         return "submission-%s-%s" % (self.user.username, self.task.name)
 
-def sample_submission(couch_id = None):
-    return Submission(User.sample_user(), Task.sample_task(), time(), {}, None, None, None, None, None, couch_id = couch_id)
+def sample_submission(couch_id = None, user = None, task = None):
+    if user == None:
+        user = User.sample_user()
+    if task == None:
+        task = Task.sample_task()
+    return Submission(user, task, time(), {}, None, None, None, None, None, couch_id = couch_id)
 
 if __name__ == "__main__":
     s = sample_submission()

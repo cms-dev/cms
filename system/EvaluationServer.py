@@ -264,7 +264,11 @@ if __name__ == "__main__":
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
         es.self_destruct()
 
-    else:
-        s = CouchObject.from_couch('sample_submission')
+    elif sys.argv[1] == "submit":
+        import Submission
+        c = CouchObject.from_couch('sample_contest')
+        s = Submission.sample_submission(user = c.users[0], task = c.tasks[0])
+        c.submissions.append(s)
+        c.to_couch()
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
         es.add_job(s.couch_id)
