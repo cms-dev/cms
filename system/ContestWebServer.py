@@ -27,6 +27,7 @@ import tornado.escape
 import os
 import tempfile
 import xmlrpclib
+
 from time import time
 from StringIO import StringIO
 
@@ -36,6 +37,7 @@ import CouchObject
 import Contest
 from Submission import Submission
 from FileStorageLib import FileStorageLib
+
 
 def get_task(taskname):
     for t in c.tasks:
@@ -145,11 +147,13 @@ class UseTokenHandler(BaseHandler):
                     u.tokens.append(s)
                     # salvataggio in couchdb
                     s.to_couch()
+                    u.to_couch()
                     # avvisare Eval Server
                     try:
                         es = xmlrpclib.ServerProxy("http://%s:%d"%Configuration.evaluation_server)
                         es.use_token(s.couch_id)
                     except:
+                        # FIXME - log
                         pass
                     self.redirect("/submissions/"+s.task.name)
                     return
