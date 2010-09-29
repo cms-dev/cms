@@ -84,7 +84,9 @@ def sample_submission(couch_id = None, user = None, task = None):
         user = User.sample_user()
     if task == None:
         task = Task.sample_task()
-    return Submission(user, task, time(), {}, None, None, None, None, None, couch_id = couch_id)
+    from FileStorageLib import FileStorageLib
+    FSL = FileStorageLib()
+    return Submission(user, task, time(), {"monete.cpp": FSL.put("monete.cpp", "Test solution for task monete")}, couch_id = couch_id)
 
 if __name__ == "__main__":
     s = sample_submission()
