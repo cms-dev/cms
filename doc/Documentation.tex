@@ -1,0 +1,295 @@
+\documentclass[a4paper,8pt]{amsart}
+
+\usepackage[osf,sc]{mathpazo}
+\usepackage[a4paper]{geometry}
+\usepackage{fullpage}
+\usepackage{multicol}
+
+\newcommand{\CMS}{\textsc{cms}}
+
+\newcommand{\FS}{\textsc{fs}}
+\newcommand{\CDBS}{\textsc{cdbs}}
+\newcommand{\CWS}{\textsc{cws}}
+\newcommand{\ES}{\textsc{es}}
+\newcommand{\WS}{\textsc{ws}}
+\newcommand{\LWS}{\textsc{lws}}
+\newcommand{\RWS}{\textsc{rws}}
+
+\newenvironment{squishlist}{%
+  \begin{list}{\textbullet}%
+    { \setlength{\itemsep}{0pt}%
+      \setlength{\parsep}{3pt}%
+      \setlength{\topsep}{3pt}%
+      \setlength{\partopsep}{0pt}%
+      \setlength{\leftmargin}{1.5em}%
+      \setlength{\labelwidth}{1em}%
+      \setlength{\labelsep}{0.5em} }%
+}{\end{list}}
+
+\title{A Contest Management System for programming contests}
+\author{Matteo Boscariol, Massimo Cairo, Stefano Maggiolo, Giovanni
+  Mascellani}
+\date{\today}
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\begin{multicols}{2}
+
+  \section{Introduction}
+
+  When organizing a programming contest, there are three main stages:
+  \begin{squishlist}
+  \item the first is to develop all the data that the assigned tasks
+    need (i.e., the statement, solutions, testcases, information on
+    how to grade submissions, etc.);
+  \item the second, that happens when the contest is onsite, is to
+    properly configure the computers that the contestants are going to
+    use during the contest, in particular with respect to network
+    security;
+  \item the third is to manage the actual contest (accepting and
+    grading submissions, give feedback on them, display a live
+    ranking, etc.).
+  \end{squishlist}
+
+  The aim of this project is to give a good answer to the third
+  problem. We want to develop a contest management system that is
+  secure, extendable, adaptable to different situations, and easy to
+  use.
+
+  \section{General structure of the system}
+
+  The system is organized in a modular way, with different services
+  running (potentially) on different computers, and providing
+  extendability via service replications on several computers.
+
+  The system is composed of the following functional pieces:
+  \begin{squishlist}
+  \item File Storage (\FS{}), that stores files that can be accessed from
+    the rest of the system;
+  \item CouchDB Server (\CDBS{}), that stores the configuration and the
+    state of the contest;
+  \item Contest Web Server (\CWS{}), that interacts with the contestants;
+  \item Evaluation Server (\ES{}), that grades the submissions and keeps
+    track of the state of the contest;
+  \item Worker Server (\WS{}), that actually runs the submissions;
+  \item Ranking Web Server (\RWS{}), that expose in real time to the
+    world what we want the world to know about the contest;
+  \item Log Web Server (\LWS{}), that expose to the contest managers
+    everything about the contest, and gives the possibility to change
+    on the run some configurations.
+  \end{squishlist}
+
+  One is not forced to run everything; here are some examples.
+  \begin{squishlist}
+  \item Bare: there are only a \FS{}, a \CDBS{}, and a \CWS{}; the
+    system would accept submissions, but is unable to give feedback to
+    the users and to the world, lacking something that evaluate the
+    submissions.
+  \item Minimal: add an \ES{} and a \WS{}; now we can evaluate
+    submissions, so the users are informed of the state of the
+    submissions.
+  \item Complete: add a \RWS{} and a \LWS{}, in order to show the live
+    ranking and controls locally if anything strange is happening.
+  \item Redundant: add several other \WS{}'s to manage big contest
+    without having long evaluation queues.
+  \end{squishlist}
+
+  \subsection{Interaction with the task development}
+
+  The development of the tasks is completely detached from the
+  system. One can use some directory structure, ease the development
+  with the usage of makefiles, common libraries, or other
+  techniques. We believe that every contest manager has his own
+  preferred way on how to proceed in this stage, but we want him to
+  use our \CMS{} anyway.
+
+  Therefore, there is only one point of contact between our \CMS{} and
+  the actual structure on the contest manager's file system: anytime
+  after the finalization of the tasks and before the start of the
+  contest, the contest manager has to run an \emph{importer\/} that
+  configures \CMS{} and fills \FS{} with the needed files.
+
+  We wrote an example of importer that works for the structure used by
+  the Italian IOI team. Converting this program to use other
+  structures should be easy.
+
+  A slightly more complicated issue is that different contest managers
+  can use different type of tasks.
+
+  \subsubsection{An example}
+
+  Before IOI 2010 in Canada, the tasks assigned at the IOI were mainly
+  "batch" tasks, where the contestants have to submit a stand-alone
+  source file; there had been sporadic cases of "output-only" tasks,
+  where the contestants have the input cases and need to submit only
+  the outputs to these inputs, and of "interactive" tasks, where the
+  contestants submit a source file that will be linked to a given
+  library.
+
+  From IOI 2010, the distinction between batch and interactive tasks
+  vanished, being them united in the "programming" tasks. In all these
+  tasks, the contestants have to submit one or more source files that
+  implement one or more functions; these source files will be linked
+  to a given source file that implements the I/O and calls the
+  contestants' functions.
+
+  Note that the programming tasks may need to be threated differently
+  in the evaluation. For example, when the statement of the task says
+  that the contestants have to implement two functions that cannot
+  communicate between each other, the evaluation needs to ensure this.
+
+  These difference can be implemented *inside* the system, as
+  plugins. We believe that we internal structure of a task is flexible
+  enough to manage most task types.
+
+  \section{Description of the services}
+
+  We give here a detailed description of the capabilities and the
+  current role of the services that compose \CMS{}.
+
+  \subsection{Generalities}
+
+  We distinguish two kind of services in \CMS{}: external services and
+  local services. An external service is something that serves web
+  pages; there are three of them: \CWS{}, that serves the contestants,
+  \LWS{}, that serves the contest managers, and \RWS{}, that serves
+  everyone else. A local service instead is not accessible from
+  outside the system. Except \CDBS{}, which actually did not need any
+  line of code from us, all else are local services.
+
+  The services are written in Python; external services use Tornado to
+  serve dynamic web pages, and nginx to serve static files and do the
+  caching. All services communicate between each other using the
+  \texttt{SimpleXMLRPCServer} library.
+
+  \subsection{File Storage}
+
+  File Storage is a simple service, but is essential to any
+  contest. It is capable of accepting files, storing them and offering
+  them when asked to.
+
+  In particular, these are its uses:
+  \begin{squishlist}
+  \item before the contest, the importer ask \FS{} to store the tasks'
+    data: the statement in PDF (needed by \CWS{}), inputs, outputs,
+    source files that are going to be used during the evaluation of
+    submissions (needed by \WS{});
+  \item during the contest, after receiving a submission, \CWS{} ask
+    \FS{} to store its associated files (being them outputs or source
+    files); then, \WS{} needs these files to evaluate the submission.
+  \end{squishlist}
+
+  \subsection{CouchDB Server}
+
+  CouchDB Server is not actually a service of \CMS{}, but no more that
+  an istance of CouchDB. Therefore, it can stores \emph{documents\/},
+  that for us are serializations of Python objects, where a reference
+  to another object is translated to the CouchDB id of the referenced
+  object.
+
+  Its main use in \CMS{} is to store the contest's data, that is the
+  specification of the contest, tasks, contestants, submissions. The
+  documents in \CDBS{} may have links to files contained in \FS{}.
+
+  \subsection{Contest Web Server}
+
+  Contest Web Server is a Tornado application that serve (localized)
+  web pages to the contestants. Here are the main functionality
+  exposed to them.
+  \begin{squishlist}
+  \item View the tasks' statement and the attachments (that usually
+    are example of implementations of the functions, or big example of
+    test data).
+  \item Submit a (partial) solution for a task. Since a task may
+    require more than one file, if \CWS{} receives an archive (zip,
+    tar, tar.gzip, or tar.bzip2), it unpack the archive and assign the
+    files to the submission. It is a duty of the plugin specifying the
+    task type to decide what happens when there are some files
+    missing. For a programming task, it makes sense to reject the
+    submission; for an output-only task, it makes sense to use the
+    previously sent outputs. When a submission is received, \CWS{}
+    informs \ES{} and ask it to evaluate the submission.
+  \item View the state of submissions, in particular if they have been
+    compiled and executed against the inputs that ensure that the
+    submission is syntactically correct. If they are not, a message
+    should explain in as much details as possible what is wrong. All
+    submitted files can be downloaded.
+  \item Give the possibility to use a \emph{token\/} against a particular
+    submission (see next).
+  \item View a detailed feedback of the evaluation of a submission in
+    two cases: for tasks that are configured to have detailed
+    feedback, and for submissions against which the user has used a
+    token.
+  \item Interact with the contest managers, in particular for asking
+    questions concerning tasks' statements.
+  \end{squishlist}
+
+  \subsection{Evaluation Server}
+
+  Evaluation Server's goal is to transform submissions in evaluated
+  submissions, and to transform the set of evaluated submissions in a
+  ranking (the current ranking of the contest).
+
+  More precisely, these are its duties.
+  \begin{squishlist}
+  \item \ES{} maintains a queue of jobs to be assigned to some
+    \WS{}. A job is of two types. The first is the
+    \emph{compilation\/} of a submission (and the evaluation on a
+    small set of testcases to let the user know that the submission is
+    syntactically correct). The second is the complete
+    \emph{evaluation\/} of a submission on the whole testcases set.
+  \item \ES{} decides the priority assigned to jobs: compilation heve
+    top priority, followed by the evaluation of a submission for which
+    the contestant has used a token, followed by all other
+    evaluations.
+  \item A job is put in the queue When \CWS{} notifies that a
+    submission has been placed; at start, \ES{} look at already places
+    submissions to ensure that all of them are evaluated; also, the
+    contest managers can ask the \ES{} to reevaluate some submissions.
+  \item When a job is queued and when \WS{} finishes some job, \ES{}
+    update one or more \emph{views\/} of the contest. A view is a
+    snapshot of some part of the state of the contest integrated with
+    some derived data, saved in \CDBS{}; it is used by other services
+    so they do not need to compute the view several time.
+  \item When a \WS{} finishes an evaluation, it compute the
+    \emph{outcome\/} of the submission and, if necessary, updates the
+    outcomes of all the other submissions (this is needed for example
+    when the outcome depends on the best submission so far).
+  \end{squishlist}
+
+  \subsection{Worker Server}
+
+  Worker Server's aim is to do the low-level job of \ES{}. That is, it
+  has to take care of compiling the submissions and executing them
+  against the testcases, assigning to each of them their evaluation.
+
+  \subsection{Ranking Web Server}
+
+  Ranking Web Server is the interface of the contest to the
+  world. Typically, it shows the live ranking of the contest, maybe
+  skipping some problems, or hiding the data after a certain amount of
+  time.
+
+  \subsection{Logging Web Server}
+
+  Logging Web Server is the interface of the system to the contest
+  managers. It shows the complete state of the contest, including the
+  state of all services (load, memory usage, length of the queues,
+  etc.). It gives some control over the other services; for example,
+  contest managers can ask \ES{} to evaluate again some submissions.
+
+  \section{Internals}
+
+  Here we describe the RPC method offered by the services, and some
+  implementation details.
+
+  \section{Terms}
+
+  Here we describe all terms that have a specific meaning inside \CMS{}.
+
+\end{multicols}
+\end{document}

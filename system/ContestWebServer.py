@@ -24,7 +24,10 @@ import tornado.ioloop
 import tornado.web
 import tornado.escape
 
+import couchdb
 import os
+import pickle
+import sys
 import tempfile
 import xmlrpclib
 
@@ -35,6 +38,7 @@ import Configuration
 import WebConfig
 import CouchObject
 import Contest
+import Utils
 from Submission import Submission
 from FileStorageLib import FileStorageLib
 
@@ -59,15 +63,23 @@ def update_users():
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
+        if self.get_secure_cookie("login") == None:
+            return None
+        try:
+            username,cookie_time = pickle.loads(self.get_secure_cookie("login"))
+        except:
+            return None
+        if cookie_time==None or cookie_time<upsince:
+            return None
         for u in c.users:
-            if u.username == self.get_secure_cookie("user"):
+            if u.username == username:
                 return u
         else:
             return None
 
 class MainHandler(BaseHandler):
     def get(self):
-        self.render("welcome.html",title="Titolo",header="Header",description="Descrizione",contest=c )
+        self.render("welcome.html",contest=c , cookie = str(self.cookies))
 
 class LoginHandler(BaseHandler):
     def post(self):
@@ -75,13 +87,15 @@ class LoginHandler(BaseHandler):
         password = self.get_argument("password","")
         for u in c.users:
             if u.username == username and u.password == password:
-                self.set_secure_cookie("user",self.get_argument("username"))
+                self.set_secure_cookie("login",pickle.dumps( (self.get_argument("username"),time()) ))
+                self.redirect("/")
                 break
-        self.redirect("/?login_error=true")
+        else:
+            self.redirect("/?login_error=true")
 
 class LogoutHandler(BaseHandler):
     def get(self):
-        self.clear_cookie("user")
+        self.clear_cookie("login")
         self.redirect("/")
 
 class SubmissionViewHandler(BaseHandler):
@@ -204,9 +218,27 @@ application = tornado.web.Application( handlers, **WebConfig.parameters)
 FSL = FileStorageLib()
 ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 
-c = CouchObject.from_couch("contest-gara1-0")
+get_contests='''function(doc) {
+    if (doc.document_type=='contest')
+        emit(doc,null)
+}'''
 
 if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(8888);
+    if len(sys.argv)>1:
+        contestid=sys.argv[1]
+    else:
+        db = Utils.get_couchdb_database()
+        print "Contests available:"
+        for row in db.query(get_contests,include_docs=True):
+            print "ID: " + row.id + " - Name: " + row.doc["name"]
+        contestid=raw_input("Insert the contest ID:")
+    try:
+        c=CouchObject.from_couch(contestid)
+    except couchdb.client.ResourceNotFound:
+        print "Invalid contest ID"
+        exit(1)
+    print 'Contest "' + c.name + '" loaded.'
+    upsince=time()
     tornado.ioloop.IOLoop.instance().start()
