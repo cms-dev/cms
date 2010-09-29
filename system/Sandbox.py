@@ -27,6 +27,7 @@ import Utils
 import FileStorageLib
 import tempfile
 from Utils import log, Logger
+import stat
 
 class Sandbox:
     def __init__(self):
@@ -91,18 +92,20 @@ class Sandbox:
             res += ["-x", str(self.extra_timeout)]
         return res
 
-    def create_file(self, path):
+    def create_file(self, path, executable = False):
         real_path = os.path.join(self.path, path)
         fd = open(real_path, 'w')
+        if executable:
+            os.chmod(real_path, stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
         return fd
 
-    def create_file_from_storage(self, path, digest):
-        fd = self.create_file(path)
+    def create_file_from_storage(self, path, digest, executable = False):
+        fd = self.create_file(path, executable)
         self.FSL.get_file(digest, fd)
         fd.close()
 
-    def create_file_from_string(self, path, content):
-        fd = self.create_file(path)
+    def create_file_from_string(self, path, content, executable = False):
+        fd = self.create_file(path, executable)
         fd.write(content)
         fd.close()
 
