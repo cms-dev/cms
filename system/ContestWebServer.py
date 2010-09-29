@@ -30,6 +30,7 @@ import pickle
 import sys
 import tempfile
 import xmlrpclib
+import zipfile
 
 from time import time
 from StringIO import StringIO
@@ -224,8 +225,14 @@ class SubmitHandler(BaseHandler):
         uploaded = self.request.files[taskname][0]
         files = {}
         if uploaded["content_type"] == "application/zip":
-            # TODO: unpack zip and save each file
-            pass
+            tempZipFile,tempZipFilename=tempfile.mkstemp()
+            tempZipFile = os.fdopen(tempZipFile,"w")
+            tempZipFile.write(uploaded["body"])
+            tempZipFile.close()
+            
+            zipObject = zipfile.ZipFile(tempZipFilename,"r")
+            for item in zipObject.infolist():
+                files[item.filename]=zipObject.read(item)
         else:
             files[uploaded["filename"]] = uploaded["body"]
         task = get_task(taskname)
@@ -241,7 +248,10 @@ class SubmitHandler(BaseHandler):
                        task,
                        timestamp,
                        files.values())
+        c.submissions.append(s)
+        c.to_couch()
         ES.add_job(s.couch_id)
+        self.redirect("/submissions/"+taskname)
 
 handlers = [
             (r"/",MainHandler),
