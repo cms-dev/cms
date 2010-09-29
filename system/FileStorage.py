@@ -28,7 +28,7 @@ import tempfile
 import shutil
 import hashlib
 import Configuration
-from Utils import maybe_mkdir
+from Utils import maybe_mkdir, log, Logger, set_service
 
 class FileStorage:
     def __init__(self, basedir, listen_address = None, listen_port = None):
@@ -78,6 +78,7 @@ class FileStorage:
         descFile = open(os.path.join(self.descdir, digest), "w")
         print >> descFile, description
         descFile.close()
+        log("File with digest %s and description `%s' put" % (digest, description), Logger.SEVERITY_DEBUG)
         return digest
 
     def get(self, address, port, digest):
@@ -98,6 +99,7 @@ class FileStorage:
             fileSocket.close()
             return False
         fileSocket.close()
+        log("File with digest %s retrieved" % (digest), Logger.SEVERITY_DEBUG)
         return True
 
     def delete(self, digest):
@@ -109,5 +111,6 @@ class FileStorage:
         return True
 
 if __name__ == "__main__":
+    set_service("file storage")
     fs = FileStorage("fs")
 
