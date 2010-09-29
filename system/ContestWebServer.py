@@ -146,6 +146,33 @@ class SubmissionViewHandler(BaseHandler):
                 subm.append(s)
         self.render("submission.html",submissions=subm, task = task)
 
+class SubmissionFileHandler(BaseHandler):
+    """Shows a submission file
+    """
+    @tornado.web.authenticated
+    def get(self,subid,filename):
+        update_submissions()
+        
+        for s in c.submissions:
+            if s.user.username == self.current_user.username and s.couch_id == subid:
+                subm = s
+                break
+        else:
+            raise tornado.web.HTTPError(404)
+        for key, value in subm.files.items():
+            if key == filename:
+                subfile = StringIO()
+                FSL = FileStorageLib()
+                FSL.get_file(value,subfile)
+                # FIXME - Set the right headers
+                self.set_header("Content-Type","text/plain")
+                self.set_header("Content-Disposition", "attachment; filename=\"%s\"" % (filename))
+                self.write(subfile.getvalue())
+                subfile.close()
+                break
+        else:
+            raise tornado.web.HTTPError(404)
+        
 class TaskViewHandler(BaseHandler):
     """Shows the data of a task in the contest.
     """
@@ -203,8 +230,7 @@ class UseTokenHandler(BaseHandler):
                     u.to_couch()
                     # avvisare Eval Server
                     try:
-                        es = xmlrpclib.ServerProxy("http://%s:%d"%Configuration.evaluation_server)
-                        es.use_token(s.couch_id)
+                        ES.use_token(s.couch_id)
                     except:
                         # FIXME - log
                         pass
@@ -244,10 +270,11 @@ class SubmitHandler(BaseHandler):
             tempFile.write(content)
             tempFile.close()
             files[filename] = FSL.put(tempFilename)
+        # QUESTION - does Submission accept a dictionary with filenames as keys for files?
         s = Submission(self.current_user,
                        task,
                        timestamp,
-                       files.values())
+                       files)
         c.submissions.append(s)
         c.to_couch()
         ES.add_job(s.couch_id)
@@ -257,11 +284,12 @@ handlers = [
             (r"/",MainHandler),
             (r"/login",LoginHandler),
             (r"/logout",LogoutHandler),
-            (r"/submissions/([a-zA-Z0-9-]+)",SubmissionViewHandler),
-            (r"/tasks/([a-zA-Z0-9-]+)",TaskViewHandler),
-            (r"/task_statement/([a-zA-Z0-9-]+)",TaskStatementViewHandler),
+            (r"/submissions/([a-zA-Z0-9_-]+)",SubmissionViewHandler),
+            (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)",SubmissionFileHandler),
+            (r"/tasks/([a-zA-Z0-9_-]+)",TaskViewHandler),
+            (r"/task_statement/([a-zA-Z0-9_-]+)",TaskStatementViewHandler),
             (r"/usetoken/",UseTokenHandler),
-            (r"/submit/([a-zA-Z0-9-]+)",SubmitHandler)
+            (r"/submit/([a-zA-Z0-9_.-]+)",SubmitHandler)
            ]
 
 application = tornado.web.Application( handlers, **WebConfig.parameters)

@@ -12,6 +12,7 @@
             <th>Timestamp</th>
             <th>Compilation</br>status</th>
             <th>Evaluation</br>status</th>
+            <th>Files</th>
             <th>Detailed</br>Feedback</br>Requested</th>
         </tr>
         {% for s in submissions %}
@@ -19,6 +20,10 @@
                 <td>{{ datetime.datetime.fromtimestamp(s.timestamp) }}</td>
                 <td>{{ s.compilation_result }}</td>
                 <td>{{ s.evaluation_status }}</td>
+                <td>
+                {% for key,value in s.files.items() %}
+                    <a href="/submission_file/{{ escape(s.couch_id) }}/{{ escape(key) }}">{{ escape(key) }}</br>
+                {% end %}
                 <td>
                 {% if s.token_timestamp==None %}
                     <form action="/usetoken/" method="POST">
