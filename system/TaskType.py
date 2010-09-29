@@ -23,6 +23,7 @@ from Sandbox import Sandbox
 import FileStorageLib
 import Task
 import Utils
+import os
 from Utils import log
 
 def get_task_type_class(task_type):
@@ -43,7 +44,7 @@ class BatchTaskType:
         source_filename = submission.files.keys()[0]
         executable_filename = source_filename.replace(".%s" % (language), "")
         sandbox = Sandbox()
-        log("Created sandbox for submission %s in %s" % (submission.couch_id, sandbox.path))
+        log("Created sandbox for compiling submission %s in %s" % (submission.couch_id, sandbox.path))
         sandbox.create_file_from_storage(source_filename, submission.files[source_filename])
         if language == "c":
             command = "/usr/bin/gcc -DEVAL -static -O2 -lm -o %s %s" % (executable_filename, source_filename)
@@ -54,6 +55,8 @@ class BatchTaskType:
         sandbox.chdir = sandbox.path
         sandbox.preserve_env = True
         sandbox.filter_syscalls = 0
+        sandbox.timeout = 10
+        sandbox.address_space = 256 * 1024
         log("Starting compiling submission %s with command line: %s" % (submission.couch_id, command))
         compilation_return = sandbox.execute(command.split(" "))
         if compilation_return == 0:
@@ -65,9 +68,44 @@ class BatchTaskType:
             log("Compilation for submission %s failed" % (submission.couch_id))
             submission.compilation_result = "Failed"
         submission.to_couch()
-        #sandbox.delete()
-        #log("Sandbox deleted")
+        sandbox.delete()
+        log("Sandbox for compiling submission %s deleted" % (submission.couch_id))
         return compilation_return == 0
 
+    def execute_single(self, submission, test_number):
+        executable_filename = submission.executables.keys()[0]
+        sandbox = Sandbox()
+        sandbox.create_file_from_storage(executable_filename, submission.executables[executable_filename], executable = True)
+        sandbox.create_file_from_storage("input.txt", submission.task.testcases[test_number][0])
+        sandbox.chdir = sandbox.path
+        # FIXME - The sandbox isn't working as expected when filtering syscalls
+        sandbox.filter_syscalls = 0
+        sandbox.timeout = submission.task.time_limit
+        sandbox.address_space = submission.task.memory_limit * 1024
+        sandbox.file_check = 0
+        sandbox.allow_path = [ os.path.join(sandbox.path, "input.txt"), os.path.join(sandbox.path, "output.txt") ]
+        execution_return = sandbox.execute([os.path.join(sandbox.path, executable_filename)])
+        sandbox.create_file_from_storage("res.txt", submission.task.testcases[test_number][1])
+        sandbox.filter_syscalls = 0
+        sandbox.timeout = 0
+        sandbox.address_space = None
+        sandbox.file_check = 3
+        sandbox.allow_path = []
+        diff_return = sandbox.execute(["/usr/bin/diff", os.path.join(sandbox.path, "output.txt"), os.path.join(sandbox.path, "res.txt")])
+        if diff_return == 0:
+            submission.outcome[test_number] = 1
+        else:
+            submission.outcome[test_number] = 0
+        submission.to_couch()
+        #sandbox.delete()
+
     def execute(self, submission):
-        pass
+        if len(submission.executables) != 1:
+            log("Submission %s contains %d executables, expecting 1" % (submission.couch_id, len(submission.executables)))
+            return False
+        submission.outcome = [None] * len(submission.task.testcases)
+        for test_number in range(len(submission.task.testcases)):
+            self.execute_single(submission, test_number)
+        submission.evaluation_status = "OK"
+        submission.to_couch()
+        return True

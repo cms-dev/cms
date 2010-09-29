@@ -60,10 +60,11 @@ class EvaluateJob(Job):
 
     def run(self):
         log("Evaluation of submission %s started" % (self.submission_id))
-        time.sleep(3)
-        self.submission.evaluation_status = "Wonderful, you're a tough coder! :-)"
-        self.submission.to_couch()
-        log("Evaluation of submission %s finished" % (self.submission_id))
+        success = self.task_type.execute(self.submission)
+        if success:
+            log("Evaluation of submission %s finished successfully" % (self.submission_id))
+        else:
+            log("Evaluation of submission %s failed" % (self.submission_id))
         try:
             self.es.evaluation_finished(True, self.submission_id)
         except IOError:
