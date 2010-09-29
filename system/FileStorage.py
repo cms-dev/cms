@@ -54,6 +54,7 @@ class FileStorage:
         server.register_function(self.get)
         server.register_function(self.put)
         server.register_function(self.delete)
+        server.register_funciion(self.describe)
 
         # Run the server's main loop
         server.serve_forever()
@@ -99,7 +100,7 @@ class FileStorage:
             fileSocket.close()
             return False
         fileSocket.close()
-        log("File with digest %s retrieved" % (digest), Logger.SEVERITY_DEBUG)
+        log("File with digest %s and description `%s' retrieved" % (digest, self.describe(digest)), Logger.SEVERITY_DEBUG)
         return True
 
     def delete(self, digest):
@@ -109,6 +110,15 @@ class FileStorage:
         except IOError:
             return False
         return True
+
+    def describe(self, digest):
+        try:
+            fd = open(os.path.join(self.descdir, digest))
+            desc = fd.read()
+            fd.close()
+            return desc
+        except IOError:
+            return None
 
 if __name__ == "__main__":
     set_service("file storage")
