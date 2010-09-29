@@ -44,6 +44,8 @@ from FileStorageLib import FileStorageLib
 
 
 def get_task(taskname):
+    """Returns the first task in the contest with the given name.
+    """
     for t in c.tasks:
         if t.name == taskname:
             return t
@@ -51,18 +53,40 @@ def get_task(taskname):
         raise KeyError("Task not found")
 
 def token_available(user,task):
+    """Returns True if the given user can use a token for the given task.
+    """
+    # TODO - Implement this.
     return True
 
 def update_submissions():
+    """Updates all the submissions in the contest.
+    
+    Calls the refresh method for all the Submission objects 
+    in the current contest.
+    """
     for s in c.submissions:
         s.refresh()
 
 def update_users():
+    """Updates all the users in the contest.
+    
+    Calls the refresh method for all the User objects 
+    in the current contest.
+    """
     for u in c.users:
         u.refresh()
 
 class BaseHandler(tornado.web.RequestHandler):
+    """Base RequestHandler for this application
+    
+    Base RequestHandler for this application. All the RequestHandler 
+    classes in this application should be a child of this class."""
     def get_current_user(self):
+        """Gets the current user logged in from the cookies
+        
+        If a valid cookie is retrieved, returns a User object with the
+        username specified in the cookie. Otherwise, returns None.
+        """
         if self.get_secure_cookie("login") == None:
             return None
         try:
@@ -78,10 +102,14 @@ class BaseHandler(tornado.web.RequestHandler):
             return None
 
 class MainHandler(BaseHandler):
+    """Home page handler.
+    """
     def get(self):
         self.render("welcome.html",contest=c , cookie = str(self.cookies))
 
 class LoginHandler(BaseHandler):
+    """Login handler.
+    """
     def post(self):
         username = self.get_argument("username","")
         password = self.get_argument("password","")
@@ -94,11 +122,15 @@ class LoginHandler(BaseHandler):
             self.redirect("/?login_error=true")
 
 class LogoutHandler(BaseHandler):
+    """Logout handler.
+    """
     def get(self):
         self.clear_cookie("login")
         self.redirect("/")
 
 class SubmissionViewHandler(BaseHandler):
+    """Shows the submissions stored in the contest.
+    """
     @tornado.web.authenticated
     def get(self, taskname):
         update_submissions()
@@ -114,6 +146,8 @@ class SubmissionViewHandler(BaseHandler):
         self.render("submission.html",submissions=subm, task = task)
 
 class TaskViewHandler(BaseHandler):
+    """Shows the data of a task in the contest.
+    """
     @tornado.web.authenticated
     def get(self, taskname):
         try:
@@ -125,6 +159,8 @@ class TaskViewHandler(BaseHandler):
         self.render("task.html",task=task);
 
 class TaskStatementViewHandler(BaseHandler):
+    """Shows the statement file of a task in the contest.
+    """
     @tornado.web.authenticated
     def get(self, taskname):
         try:
@@ -140,6 +176,8 @@ class TaskStatementViewHandler(BaseHandler):
         statementFile.close()
 
 class UseTokenHandler(BaseHandler):
+    """Handles the detailed feedbaack requests.
+    """
     @tornado.web.authenticated
     def post(self):
         update_submissions()
@@ -178,6 +216,8 @@ class UseTokenHandler(BaseHandler):
             raise tornado.web.HTTPError(404)            
 
 class SubmitHandler(BaseHandler):
+    """Handles the received submissions.
+    """
     @tornado.web.authenticated
     def post(self, taskname):
         timestamp = time()
