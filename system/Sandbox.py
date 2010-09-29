@@ -25,6 +25,8 @@ import sys
 import subprocess
 import Utils
 import FileStorageLib
+import tempfile
+from Utils import log, Logger
 
 class Sandbox:
     def __init__(self):
@@ -96,7 +98,7 @@ class Sandbox:
 
     def create_file_from_storage(self, path, digest):
         fd = self.create_file(path)
-        FSL.get_file(digest, fd)
+        self.FSL.get_file(digest, fd)
         fd.close()
 
     def create_file_from_string(self, path, content):
@@ -117,14 +119,14 @@ class Sandbox:
 
     def get_file_to_storage(self, path, description = ""):
         fd = self.get_file(path)
-        digest = FSL.put_file(fd, description)
+        digest = self.FSL.put_file(fd, description)
         fd.close()
         return digest
 
     def execute(self, command):
-        return subprocess.call(["./mo-box"] +
-                               self.build_box_options() +
-                               ["--"] + command)
+        command_list = ["./mo-box"] + self.build_box_options() + ["--"] + command
+        log("Executing sandbox with command: %s" % (" ".join(command_list)), Logger.SEVERITY_DEBUG)
+        return subprocess.call(command_list)
 
     def delete(self):
         shutil.rmtree(self.path)
