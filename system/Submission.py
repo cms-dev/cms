@@ -66,17 +66,24 @@ class Submission(CouchObject):
             return (False, "Wrong number of files")
         language = None
         test_file = None
+
+        # Try to understand if the task type is language dependent
         for name in self.task.submission_format:
             if name.find("%l") != -1:
                 test_file = name
+
+        # Try to detect the language used in the submission
         for test_lang in Submission.LANGUAGES:
             if test_file.replace("%l", test_lang) in self.files:
                 language = test_lang
         if test_file != None and language == None:
             return (False, "Could not detect submission language")
+
+        # Check the mapping between the submission format and the actual submission
         for name in self.task.submission_format:
             if name.replace("%l", language) not in self.files:
                 return (False, "Files not corresponding to submission format")
+
         return (True, language)
 
 def sample_submission(couch_id = None, user = None, task = None):
