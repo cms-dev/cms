@@ -29,6 +29,7 @@ import time
 import xmlrpclib
 import signal
 from Utils import log
+import Utils
 
 class JobQueue:
     def __init__(self):
@@ -250,6 +251,7 @@ if __name__ == "__main__":
     es_address, es_port = Configuration.evaluation_server
 
     if sys.argv[1] == "run":
+        Utils.set_service("evaluation server")
         c = CouchObject.from_couch('sample_contest')
         e = EvaluationServer(c, es_address, es_port)
         e.start()
