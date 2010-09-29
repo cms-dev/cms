@@ -27,6 +27,7 @@ import threading
 import time
 from Utils import log
 import Utils
+import TaskType
 
 class Job(threading.Thread):
     def __init__(self, submission_id):
@@ -35,6 +36,7 @@ class Job(threading.Thread):
         self.es = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
         self.submission_id = submission_id
         self.submission = CouchObject.from_couch(submission_id)
+        self.task_type = TaskType.get_task_type_class(self.submission.task.task_type)
 
 class CompileJob(Job):
     def __init__(self, submission_id):
@@ -42,12 +44,13 @@ class CompileJob(Job):
 
     def run(self):
         log("Compilation of submission %s started" % (self.submission_id))
-        time.sleep(3)
-        self.submission.compilation_result = "OK, gcc is proud of you"
-        self.submission.to_couch()
-        log("Compilation of submission %s finished" % (self.submission_id))
+        success = self.task_type.compile(self.submission)
+        if success:
+            log("Compilation of submission %s finished successfully" % (self.submission_id))
+        else:
+            log("Compilation of submission %s failed" % (self.submission_id))            
         try:
-            self.es.compilation_finished(True, self.submission_id)
+            self.es.compilation_finished(success, self.submission_id)
         except IOError:
             log("Could not report finished compilation for submission %s, dropping it" % (self.submission_id))
 

@@ -30,6 +30,8 @@ class Submission(CouchObject):
                 "compilation_result", "evaluation_status", "token_timestamp"]
     _to_copy_id = ["user", "task"]
 
+    LANGUAGES = ["c", "cpp", "pas"]
+
     def __init__(self, user, task, timestamp, files,
                  outcome = None, executables = None,
                  compilation_result = None, evaluation_status = None,
@@ -59,12 +61,32 @@ class Submission(CouchObject):
     def choose_couch_id_basename(self):
         return "submission-%s-%s" % (self.user.username, self.task.name)
 
+    def verify_source(self):
+        if len(self.files) != len(self.task.submission_format):
+            return (False, "Wrong number of files")
+        language = None
+        test_file = None
+        for name in self.task.submission_format:
+            if name.find("%l") != -1:
+                test_file = name
+        for test_lang in Submission.LANGUAGES:
+            if test_file.replace("%l", test_lang) in self.files:
+                language = test_lang
+        if test_file != None and language == None:
+            return (False, "Could not detect submission language")
+        for name in self.task.submission_format:
+            if name.replace("%l", language) not in self.files:
+                return (False, "Files not corresponding to submission format")
+        return (True, language)
+
 def sample_submission(couch_id = None, user = None, task = None):
     if user == None:
         user = User.sample_user()
     if task == None:
         task = Task.sample_task()
-    return Submission(user, task, time(), {}, None, None, None, None, None, couch_id = couch_id)
+    from FileStorageLib import FileStorageLib
+    FSL = FileStorageLib()
+    return Submission(user, task, time(), {"monete.cpp": FSL.put("monete.cpp", "Test solution for task monete")}, couch_id = couch_id)
 
 if __name__ == "__main__":
     s = sample_submission()

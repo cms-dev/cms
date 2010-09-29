@@ -74,8 +74,8 @@ class Logger:
 
 logger = Logger()
 
-def log(s):
-    logger.log(s)
+def log(s, severity = Logger.SEVERITY_NORMAL):
+    logger.log(s, severity)
 
 def set_service(service):
     logger.service = service
