@@ -19,17 +19,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from SimpleXMLRPCServer import SimpleXMLRPCServer
-import Contest
-import CouchObject
-import Configuration
 import threading
 import heapq
 import time
 import xmlrpclib
 import signal
-from Utils import log
+from SimpleXMLRPCServer import SimpleXMLRPCServer
+
+import Configuration
 import Utils
+import CouchObject
 
 class JobQueue:
     def __init__(self):
@@ -126,13 +125,13 @@ class JobDispatcher(threading.Thread):
             job = self.queue.poll_queue()
             action = job[0]
             if action == EvaluationServer.JOB_TYPE_BOMB:
-                log("KABOOM!! (but I should wait for all the workers to finish their jobs)")
+                Utils.log("KABOOM!! (but I should wait for all the workers to finish their jobs)")
                 return
             else:
                 submission = job[1]
                 worker = self.workers.poll_worker(job)
 
-                log("Asking worker %d (%s:%d) to %s submission %s" %
+                Utils.log("Asking worker %d (%s:%d) to %s submission %s" %
                     (worker,
                      Configuration.workers[worker][0],
                      Configuration.workers[worker][1],
@@ -148,9 +147,10 @@ class JobDispatcher(threading.Thread):
 class EvaluationServer:
     JOB_PRIORITY_HIGH, JOB_PRIORITY_MEDIUM, JOB_PRIORITY_LOW, JOB_PRIORITY_EXTRA_LOW = range(4)
     JOB_TYPE_COMPILATION, JOB_TYPE_EVALUATION, JOB_TYPE_BOMB = ["compile", "evaluate", "bomb"]
+    MAX_COMPILATION_TENTATIVES, MAX_EVALUATION_TENTATIVES = [3, 3]
 
     def __init__(self, contest, listen_address = None, listen_port = None):
-        log("Spawning evaluation server for contest %s" % (contest.couch_id))
+        Utils.log("Evaluation Server for contest %s started..." % (contest.couch_id))
 
         if listen_address == None:
             listen_address = Configuration.evaluation_server[0]
@@ -187,7 +187,7 @@ class EvaluationServer:
         return True
 
     def add_job(self, submission_id):
-        log("Queueing compilation for submission %s" % (submission_id))
+        Utils.log("Queueing compilation for submission %s" % (submission_id))
         submission = CouchObject.from_couch(submission_id)
         self.queue.lock()
         self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION, submission),
@@ -198,7 +198,7 @@ class EvaluationServer:
     def action_finished(self, job):
         worker = self.workers.find_worker(job)
         self.workers.release_worker(worker)
-        log("Worker %d (%s:%d) finished to %s submission %s" %
+        Utils.log("Worker %d (%s:%d) finished to %s submission %s" %
             (worker,
              Configuration.workers[worker][0],
              Configuration.workers[worker][1],
@@ -207,30 +207,41 @@ class EvaluationServer:
 
     def compilation_finished(self, success, submission_id):
         submission = CouchObject.from_couch(submission_id)
+        submission.compilation_tentatives += 1
+        submission.to_couch()
+        print submission.compilation_tentatives
         self.action_finished((EvaluationServer.JOB_TYPE_COMPILATION, submission))
         if success:
-            log("Compilation succeeded for submission %s" % (submission_id))
-            log("Queueing evaluation for submission %s" % (submission_id))
+            Utils.log("Compilation succeeded for submission %s" % (submission_id))
+            Utils.log("Queueing evaluation for submission %s" % (submission_id))
             self.queue.lock()
             self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
                             EvaluationServer.JOB_PRIORITY_LOW)
             self.queue.unlock()
         else:
-            self.add_job(submission_id)
-            log("Compilation failed for submission %s" % (submission_id))
+            Utils.log("Compilation failed for submission %s" % (submission_id))
+            if submission.compilation_tentatives > EvaluationServer.MAX_COMPILATION_TENTATIVES:
+                Utils.log("Maximum tentatives (%d) reached for the compilation of submission %s - I will not try again" % (EvaluationServer.MAX_COMPILATION_TENTATIVES, submission_id), Utils.Logger.SEVERITY_IMPORTANT)
+            else:
+                self.add_job(submission_id)
         return True
 
     def evaluation_finished(self, success, submission_id):
         submission = CouchObject.from_couch(submission_id)
+        submission.evaluation_tentatives += 1
+        submission.to_couch()
         self.action_finished((EvaluationServer.JOB_TYPE_EVALUATION, submission))
         if success:
-            log("Evaluation succeeded for submission %s" % (submission_id))
+            Utils.log("Evaluation succeeded for submission %s" % (submission_id))
         else:
-            self.queue.lock()
-            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
-                            EvaluationServer.JOB_PRIORITY_LOW)
-            self.queue.unlock()
-            log("Evaluation failed for submission %s" % (submission_id))
+            Utils.log("Evaluation failed for submission %s" % (submission_id))
+            if submission.evaluation_tentatives > EvaluationServer.MAX_EVALUATION_TENTATIVES:
+                Utils.log("Maximum tentatives (%d) reached for the evaluation of submission %s - I will not try again" % (EvaluationServer.MAX_EVALUATION_TENTATIVES, submission_id), Utils.Logger.SEVERITY_IMPORTANT)
+            else:
+                self.queue.lock()
+                self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
+                                EvaluationServer.JOB_PRIORITY_LOW)
+                self.queue.unlock()
         return True
 
     def self_destruct(self):
@@ -252,7 +263,7 @@ if __name__ == "__main__":
 
     if sys.argv[1] == "run":
         Utils.set_service("evaluation server")
-        c = CouchObject.from_couch('sample_contest')
+        c = Utils.ask_for_contest(skip = 1)
         e = EvaluationServer(c, es_address, es_port)
         e.start()
         signal.signal(signal.SIGTERM, sigterm)
@@ -268,7 +279,7 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "submit":
         import Submission
-        c = CouchObject.from_couch('sample_contest')
+        c = Utils.ask_for_contest(skip = 1)
         s = Submission.sample_submission(user = c.users[0], task = c.tasks[0])
         c.submissions.append(s)
         c.to_couch()

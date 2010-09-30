@@ -19,15 +19,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import time
+
 from CouchObject import CouchObject
-from time import time
-import User
-import Task
 
 class Submission(CouchObject):
 
     _to_copy = ["timestamp", "files", "outcome", "executables",
-                "compilation_result", "evaluation_status", "token_timestamp"]
+                "compilation_result", "evaluation_status",
+                "compilation_tentatives", "evaluation_tentatives",
+                "token_timestamp"]
     _to_copy_id = ["user", "task"]
 
     LANGUAGES = ["c", "cpp", "pas"]
@@ -35,6 +36,7 @@ class Submission(CouchObject):
     def __init__(self, user, task, timestamp, files,
                  outcome = None, executables = None,
                  compilation_result = None, evaluation_status = None,
+                 compilation_tentatives = 0, evaluation_tentatives = 0,
                  token_timestamp = None,
                  couch_id = None):
         self.user = user
@@ -45,6 +47,8 @@ class Submission(CouchObject):
         self.executables = executables
         self.compilation_result = compilation_result
         self.evaluation_status = evaluation_status
+        self.compilation_tentatives = compilation_tentatives
+        self.evaluation_tentatives = evaluation_tentatives
         self.token_timestamp = token_timestamp
         CouchObject.__init__(self, "submission", couch_id)
 
@@ -87,13 +91,15 @@ class Submission(CouchObject):
         return (True, language)
 
 def sample_submission(couch_id = None, user = None, task = None):
+    import Task
+    import User
     if user == None:
         user = User.sample_user()
     if task == None:
         task = Task.sample_task()
     from FileStorageLib import FileStorageLib
     FSL = FileStorageLib()
-    return Submission(user, task, time(), {"monete.cpp": FSL.put("monete.cpp", "Test solution for task monete")}, couch_id = couch_id)
+    return Submission(user, task, time.time(), {"monete.cpp": FSL.put("monete.cpp", "Test solution for task monete")}, couch_id = couch_id)
 
 if __name__ == "__main__":
     s = sample_submission()

@@ -19,16 +19,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from SimpleXMLRPCServer import SimpleXMLRPCServer
-from SimpleXMLRPCServer import SimpleXMLRPCRequestHandler
 import socket
 import sys
 import os
 import tempfile
 import shutil
 import hashlib
+from SimpleXMLRPCServer import SimpleXMLRPCServer
+
 import Configuration
-from Utils import maybe_mkdir, log, Logger, set_service
+import Utils
 
 class FileStorage:
     def __init__(self, basedir, listen_address = None, listen_port = None):
@@ -46,15 +46,17 @@ class FileStorage:
         self.tmpdir = os.path.join(self.basedir, "tmp")
         self.objdir = os.path.join(self.basedir, "objects")
         self.descdir = os.path.join(self.basedir, "descriptions")
-        maybe_mkdir(self.basedir)
-        maybe_mkdir(self.tmpdir)
-        maybe_mkdir(self.objdir)
-        maybe_mkdir(self.descdir)
+        Utils.maybe_mkdir(self.basedir)
+        Utils.maybe_mkdir(self.tmpdir)
+        Utils.maybe_mkdir(self.objdir)
+        Utils.maybe_mkdir(self.descdir)
 
         server.register_function(self.get)
         server.register_function(self.put)
         server.register_function(self.delete)
         server.register_function(self.describe)
+
+        Utils.log("File Storage started...")
 
         # Run the server's main loop
         server.serve_forever()
@@ -79,7 +81,7 @@ class FileStorage:
         descFile = open(os.path.join(self.descdir, digest), "w")
         print >> descFile, description
         descFile.close()
-        log("File with digest %s and description `%s' put" % (digest, description), Logger.SEVERITY_DEBUG)
+        Utils.log("File with digest %s and description `%s' put" % (digest, description), Utils.Logger.SEVERITY_DEBUG)
         return digest
 
     def get(self, address, port, digest):
@@ -100,7 +102,7 @@ class FileStorage:
             fileSocket.close()
             return False
         fileSocket.close()
-        log("File with digest %s and description `%s' retrieved" % (digest, self.describe(digest)), Logger.SEVERITY_DEBUG)
+        Utils.log("File with digest %s and description `%s' retrieved" % (digest, self.describe(digest)), Logger.SEVERITY_DEBUG)
         return True
 
     def delete(self, digest):
@@ -121,6 +123,6 @@ class FileStorage:
             return None
 
 if __name__ == "__main__":
-    set_service("file storage")
+    Utils.set_service("file storage")
     fs = FileStorage("fs")
 

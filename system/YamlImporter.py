@@ -22,10 +22,11 @@
 import yaml
 import os
 import sys
+
 from Task import Task
 from User import User
 from Contest import Contest
-import FileStorageLib
+from FileStorageLib import FileStorageLib
 
 def import_contest(path):
     path = os.path.realpath(path)
@@ -66,7 +67,7 @@ def import_task(path):
     path = os.path.realpath(path)
     super_path, name = os.path.split(path)
     conf = yaml.load(open(os.path.join(super_path, name + ".yaml")))
-    FSL = FileStorageLib.FileStorageLib()
+    FSL = FileStorageLib()
 
     params = {"name": name}
     assert name == conf["nome_breve"]

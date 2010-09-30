@@ -31,70 +31,70 @@ import sys
 import tempfile
 import xmlrpclib
 import zipfile
-
-from time import time
+import time
 from StringIO import StringIO
 
 import Configuration
 import WebConfig
 import CouchObject
-import Contest
 import Utils
 from Submission import Submission
 from FileStorageLib import FileStorageLib
 
 
-def get_task(taskname):
+def get_task(task_name):
     """Returns the first task in the contest with the given name.
     """
     for t in c.tasks:
-        if t.name == taskname:
+        if t.name == task_name:
             return t
     else:
         raise KeyError("Task not found")
 
-def token_available(user,task):
-    """Returns True if the given user can use a token for the given task.
+def token_available(user, task):
+    """Returns True if the given user can use a token for the given
+    task.
     """
     # TODO - Implement this.
     return True
 
 def update_submissions():
     """Updates all the submissions in the contest.
-    
-    Calls the refresh method for all the Submission objects 
-    in the current contest.
+
+    Calls the refresh method for all the Submission objects in the
+    current contest.
     """
     for s in c.submissions:
         s.refresh()
 
 def update_users():
     """Updates all the users in the contest.
-    
-    Calls the refresh method for all the User objects 
-    in the current contest.
+
+    Calls the refresh method for all the User objects in the current
+    contest.
     """
     for u in c.users:
         u.refresh()
 
 class BaseHandler(tornado.web.RequestHandler):
-    """Base RequestHandler for this application
-    
-    Base RequestHandler for this application. All the RequestHandler 
-    classes in this application should be a child of this class."""
+    """Base RequestHandler for this application.
+
+    All the RequestHandler classes in this application should be a
+    child of this class.
+    """
     def get_current_user(self):
         """Gets the current user logged in from the cookies
-        
+
         If a valid cookie is retrieved, returns a User object with the
         username specified in the cookie. Otherwise, returns None.
         """
         if self.get_secure_cookie("login") == None:
             return None
         try:
-            username,cookie_time = pickle.loads(self.get_secure_cookie("login"))
+            username, cookie_time = pickle.loads(self.get_secure_cookie("login"))
         except:
             return None
-        if cookie_time==None or cookie_time<upsince:
+        if cookie_time == None or cookie_time < upsince:
             return None
         for u in c.users:
             if u.username == username:
@@ -106,17 +106,19 @@ class MainHandler(BaseHandler):
     """Home page handler.
     """
     def get(self):
-        self.render("welcome.html",contest=c , cookie = str(self.cookies))
+        self.render("welcome.html", contest = c , cookie = str(self.cookies))
 
 class LoginHandler(BaseHandler):
     """Login handler.
     """
     def post(self):
-        username = self.get_argument("username","")
-        password = self.get_argument("password","")
+        username = self.get_argument("username", "")
+        password = self.get_argument("password", "")
         for u in c.users:
             if u.username == username and u.password == password:
-                self.set_secure_cookie("login",pickle.dumps( (self.get_argument("username"),time()) ))
+                self.set_secure_cookie("login", pickle.dumps(
+                        (self.get_argument("username"), time.time())
+                        ))
                 self.redirect("/")
                 break
         else:
@@ -133,75 +135,79 @@ class SubmissionViewHandler(BaseHandler):
     """Shows the submissions stored in the contest.
     """
     @tornado.web.authenticated
-    def get(self, taskname):
+    def get(self, task_name):
         update_submissions()
         try:
-            task = get_task(taskname)
+            task = get_task(task_name)
         except:
-            self.write("Task not found: " + taskname)
+            self.write("Task %s not found." % (task_name))
             return
         subm = []
         for s in c.submissions:
             if s.user.username == self.current_user.username and s.task.name == task.name:
                 subm.append(s)
-        self.render("submission.html",submissions=subm, task = task)
+        self.render("submission.html", submissions = subm, task = task)
 
 class SubmissionFileHandler(BaseHandler):
-    """Shows a submission file
+    """Shows a submission file.
     """
     @tornado.web.authenticated
-    def get(self,subid,filename):
+    def get(self, submission_id, filename):
         update_submissions()
-        
+
         for s in c.submissions:
-            if s.user.username == self.current_user.username and s.couch_id == subid:
-                subm = s
+            if s.user.username == self.current_user.username and \
+                    s.couch_id == submission_id:
+                submission = s
                 break
         else:
             raise tornado.web.HTTPError(404)
-        for key, value in subm.files.items():
+        for key, value in submission.files.items():
             if key == filename:
-                subfile = StringIO()
+                submission_file = StringIO()
                 FSL = FileStorageLib()
-                FSL.get_file(value,subfile)
+                FSL.get_file(value, submission_file)
+
                 # FIXME - Set the right headers
                 self.set_header("Content-Type","text/plain")
-                self.set_header("Content-Disposition", "attachment; filename=\"%s\"" % (filename))
-                self.write(subfile.getvalue())
-                subfile.close()
+                self.set_header("Content-Disposition",
+                                "attachment; filename=\"%s\"" % (filename))
+                self.write(submission_file.getvalue())
+                submission_file.close()
                 break
         else:
             raise tornado.web.HTTPError(404)
-        
+
 class TaskViewHandler(BaseHandler):
     """Shows the data of a task in the contest.
     """
     @tornado.web.authenticated
-    def get(self, taskname):
+    def get(self, task_name):
         try:
-            task = get_task(taskname)
+            task = get_task(task_name)
         except:
-            self.write("Task not found: " + taskname)
+            self.write("Task %s not found." % (task_name))
             return
             #raise tornado.web.HTTPError(404)
-        self.render("task.html",task=task);
+        self.render("task.html", task = task);
 
 class TaskStatementViewHandler(BaseHandler):
     """Shows the statement file of a task in the contest.
     """
     @tornado.web.authenticated
-    def get(self, taskname):
+    def get(self, task_name):
         try:
-            task = get_task(taskname)
+            task = get_task(task_name)
         except:
-            self.write("Task not found: "+taskname)
-        statementFile = StringIO()
+            self.write("Task %s not found." % (task_name))
+        statement_file = StringIO()
         FSL = FileStorageLib()
-        FSL.get_file(task.statement, statementFile)
+        FSL.get_file(task.statement, statement_file)
         self.set_header("Content-Type", "application/pdf")
-        self.set_header("Content-Disposition", "attachment; filename=\"%s.pdf\"" % (task.name))
+        self.set_header("Content-Disposition",
+                        "attachment; filename=\"%s.pdf\"" % (task.name))
         self.write(statementFile.getvalue())
-        statementFile.close()
+        statement_file.close()
 
 class UseTokenHandler(BaseHandler):
     """Handles the detailed feedbaack requests.
@@ -213,64 +219,65 @@ class UseTokenHandler(BaseHandler):
         if(u == None):
             raise tornado.web.HTTPError(403)
 
-        if(self.get_arguments("id")==[]):
+        if self.get_arguments("id") == []:
             raise tornado.web.HTTPError(404)
         ident = self.get_argument("id")
         for s in c.submissions:
             if s.couch_id == ident:
-                #se utilizza già un token
+                # If the user already used a token on this
                 if s.token_timestamp != None:
                     self.write("This submission is already marked for detailed feedback.")
-                # ha token disponibili?
+                # Are there any tokens available?
                 elif token_available(u,s.task):
-                    s.token_timestamp = time()
+                    s.token_timestamp = time.time()
                     u.tokens.append(s)
-                    # salvataggio in couchdb
+                    # Save to CouchDB
                     s.to_couch()
                     u.to_couch()
-                    # avvisare Eval Server
+                    # We have to warn Evaluation Server
                     try:
                         ES.use_token(s.couch_id)
                     except:
                         # FIXME - log
                         pass
-                    self.redirect("/submissions/"+s.task.name)
+                    self.redirect("/submissions/%s" % (s.task.name))
                     return
                 else:
                     self.write("No tokens available.")
                     return
         else:
-            raise tornado.web.HTTPError(404)            
+            raise tornado.web.HTTPError(404)
 
 class SubmitHandler(BaseHandler):
     """Handles the received submissions.
     """
     @tornado.web.authenticated
-    def post(self, taskname):
-        timestamp = time()
-        uploaded = self.request.files[taskname][0]
+    def post(self, task_name):
+        timestamp = time.time()
+        uploaded = self.request.files[task_name][0]
         files = {}
         if uploaded["content_type"] == "application/zip":
-            tempZipFile,tempZipFilename=tempfile.mkstemp()
-            tempZipFile = os.fdopen(tempZipFile,"w")
-            tempZipFile.write(uploaded["body"])
-            tempZipFile.close()
-            
-            zipObject = zipfile.ZipFile(tempZipFilename,"r")
-            for item in zipObject.infolist():
-                files[item.filename]=zipObject.read(item)
+            temp_zip_file, temp_zip_filename = tempfile.mkstemp()
+            temp_zip_file = os.fdopen(temp_zip_file, "w")
+            temp_zip_file.write(uploaded["body"])
+            temp_zip_file.close()
+
+            zip_object = zipfile.ZipFile(temp_zip_filename, "r")
+            for item in zip_object.infolist():
+                files[item.filename] = zip_object.read(item)
         else:
             files[uploaded["filename"]] = uploaded["body"]
-        task = get_task(taskname)
+        task = get_task(task_name)
         if not task.valid_submission(files.keys()):
             raise tornado.web.HTTPError(404)
         for filename, content in files.items():
-            tempFile, tempFilename = tempfile.mkstemp()
-            tempFile = os.fdopen(tempFile, "w")
-            tempFile.write(content)
-            tempFile.close()
-            files[filename] = FSL.put(tempFilename)
-        # QUESTION - does Submission accept a dictionary with filenames as keys for files?
+            temp_file, temp_filename = tempfile.mkstemp()
+            temp_file = os.fdopen(temp_file, "w")
+            temp_file.write(content)
+            temp_file.close()
+            files[filename] = FSL.put(temp_filename)
+        # QUESTION - does Submission accept a dictionary with
+        # filenames as keys for files?
         s = Submission(self.current_user,
                        task,
                        timestamp,
@@ -278,7 +285,7 @@ class SubmitHandler(BaseHandler):
         c.submissions.append(s)
         c.to_couch()
         ES.add_job(s.couch_id)
-        self.redirect("/submissions/"+taskname)
+        self.redirect("/submissions/%s" % (task_name))
 
 handlers = [
             (r"/",MainHandler),
@@ -296,27 +303,11 @@ application = tornado.web.Application( handlers, **WebConfig.parameters)
 FSL = FileStorageLib()
 ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 
-get_contests='''function(doc) {
-    if (doc.document_type=='contest')
-        emit(doc,null)
-}'''
-
 if __name__ == "__main__":
+    Utils.set_service("contest web server)")
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(8888);
-    if len(sys.argv)>1:
-        contestid=sys.argv[1]
-    else:
-        db = Utils.get_couchdb_database()
-        print "Contests available:"
-        for row in db.query(get_contests,include_docs=True):
-            print "ID: " + row.id + " - Name: " + row.doc["name"]
-        contestid=raw_input("Insert the contest ID:")
-    try:
-        c=CouchObject.from_couch(contestid)
-    except couchdb.client.ResourceNotFound:
-        print "Invalid contest ID"
-        exit(1)
-    print 'Contest "' + c.name + '" loaded.'
-    upsince=time()
+    c = Utils.ask_for_contest()
+    Utils.log("Contest Web Server for contest %s started..." % (c.couch_id))
+    upsince = time.time()
     tornado.ioloop.IOLoop.instance().start()
