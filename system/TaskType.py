@@ -91,6 +91,8 @@ class BatchTaskType:
         sandbox.address_space = None
         sandbox.file_check = 3
         sandbox.allow_path = []
+        # FIXME - Use manager if present
+        # FIXME - Ignore stdout from diff
         diff_return = sandbox.execute(["/usr/bin/diff", "-w", os.path.join(sandbox.path, "output.txt"), os.path.join(sandbox.path, "res.txt")])
         if diff_return == 0:
             submission.outcome[test_number] = 1
