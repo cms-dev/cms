@@ -36,6 +36,9 @@ class CouchObject:
         if couch_id == None:
             self.to_couch()
 
+    def __eq__(self, other):
+        return self.couch_id == other.couch_id
+
     def choose_couch_id_basename(self):
         return self.document_type
 

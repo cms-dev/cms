@@ -225,10 +225,10 @@ class UseTokenHandler(BaseHandler):
         for s in c.submissions:
             if s.couch_id == ident:
                 # If the user already used a token on this
-                if s.token_timestamp != None:
+                if s.tokened():
                     self.write("This submission is already marked for detailed feedback.")
                 # Are there any tokens available?
-                elif token_available(u,s.task):
+                elif token_available(u, s.task):
                     s.token_timestamp = time.time()
                     u.tokens.append(s)
                     # Save to CouchDB

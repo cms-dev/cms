@@ -53,8 +53,8 @@ class Submission(CouchObject):
         self.token_timestamp = token_timestamp
         CouchObject.__init__(self, "submission", couch_id)
 
-    def __eq__(self, other):
-        return self.couch_id == other.couch_id
+    def tokened(self):
+        return self.token_timestamp != None
 
     def invalid(self):
         self.outcome = None

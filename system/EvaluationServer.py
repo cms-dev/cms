@@ -31,6 +31,11 @@ import Utils
 import CouchObject
 
 class JobQueue:
+    """A job is a couple (job_type, submission).
+
+    Elements of the queue are of the form (priority, timestamp, job).
+    """
+
     def __init__(self):
         self.semaphore = threading.BoundedSemaphore()
         self.queue = []
@@ -54,13 +59,26 @@ class JobQueue:
 
     def search(self, job):
         for i in self.queue:
-            if queue[i][2] == job:
+            if self.queue[i][2] == job:
                 return i
         raise LookupError("Job not present in queue")
 
     def delete(self, pos):
         self.queue[pos] = self.queue[-1]
         self.queue = self.queue[:-1]
+        heapq.heapify(self.queue)
+
+    def set_priority(self, job, priority):
+        """Change the priority of a job inside the queue.
+
+        Used (only?) when the user use a token, to increase the
+        priority of the evaluation of its submission.
+        """
+        try:
+            pos = self.search(job)
+        except LookupError:
+            return
+        self.queue[pos][0] == priority
         heapq.heapify(self.queue)
 
     def length(self):
@@ -150,7 +168,8 @@ class EvaluationServer:
     MAX_COMPILATION_TENTATIVES, MAX_EVALUATION_TENTATIVES = [3, 3]
 
     def __init__(self, contest, listen_address = None, listen_port = None):
-        Utils.log("Evaluation Server for contest %s started..." % (contest.couch_id))
+        Utils.log("Evaluation Server for contest %s started..." %
+                  (contest.couch_id))
 
         if listen_address == None:
             listen_address = Configuration.evaluation_server[0]
@@ -183,7 +202,17 @@ class EvaluationServer:
         self.st.start()
 
     def use_token(self, submission_id):
-        # FIXME - Stub
+        """Called by CWS when the user wants to use a token.
+
+        If the evaluation of the submission is already in the queue,
+        we increase its priority; otherwise, we do nothing, since the
+        priority will be set as medium when we queue the evaluation.
+        """
+        submission = CouchObject.from_couch(submission_id)
+        self.queue.lock()
+        self.queue.set_priority((EvaluationServer.JOB_TYPE_EVALUATION,submission),
+                                EvaluationServer.JOB_PRIORITY_MEDIUM)
+        self.queue.unlock()
         return True
 
     def add_job(self, submission_id):
@@ -209,19 +238,24 @@ class EvaluationServer:
         submission = CouchObject.from_couch(submission_id)
         submission.compilation_tentatives += 1
         submission.to_couch()
-        print submission.compilation_tentatives
         self.action_finished((EvaluationServer.JOB_TYPE_COMPILATION, submission))
         if success:
             Utils.log("Compilation succeeded for submission %s" % (submission_id))
             Utils.log("Queueing evaluation for submission %s" % (submission_id))
+            priority = EvaluationServer.JOB_PRIORITY_LOW
+            if self.submission.tokened():
+                priority = EvaluationServer.JOB_PRIORITY_MEDIUM
             self.queue.lock()
             self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
-                            EvaluationServer.JOB_PRIORITY_LOW)
+                            priority)
             self.queue.unlock()
         else:
             Utils.log("Compilation failed for submission %s" % (submission_id))
-            if submission.compilation_tentatives > EvaluationServer.MAX_COMPILATION_TENTATIVES:
-                Utils.log("Maximum tentatives (%d) reached for the compilation of submission %s - I will not try again" % (EvaluationServer.MAX_COMPILATION_TENTATIVES, submission_id), Utils.Logger.SEVERITY_IMPORTANT)
+            if submission.compilation_tentatives > \
+                    EvaluationServer.MAX_COMPILATION_TENTATIVES:
+                Utils.log("Maximum tentatives (%d) reached for the compilation of submission %s - I will not try again" %
+                          (EvaluationServer.MAX_COMPILATION_TENTATIVES,
+                           submission_id), Utils.Logger.SEVERITY_IMPORTANT)
             else:
                 self.add_job(submission_id)
         return True
@@ -235,8 +269,11 @@ class EvaluationServer:
             Utils.log("Evaluation succeeded for submission %s" % (submission_id))
         else:
             Utils.log("Evaluation failed for submission %s" % (submission_id))
-            if submission.evaluation_tentatives > EvaluationServer.MAX_EVALUATION_TENTATIVES:
-                Utils.log("Maximum tentatives (%d) reached for the evaluation of submission %s - I will not try again" % (EvaluationServer.MAX_EVALUATION_TENTATIVES, submission_id), Utils.Logger.SEVERITY_IMPORTANT)
+            if submission.evaluation_tentatives > \
+                    EvaluationServer.MAX_EVALUATION_TENTATIVES:
+                Utils.log("Maximum tentatives (%d) reached for the evaluation of submission %s - I will not try again" %
+                          (EvaluationServer.MAX_EVALUATION_TENTATIVES,
+                           submission_id), Utils.Logger.SEVERITY_IMPORTANT)
             else:
                 self.queue.lock()
                 self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
