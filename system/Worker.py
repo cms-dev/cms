@@ -77,7 +77,7 @@ class Worker:
         server.register_function(self.compile)
         server.register_function(self.evaluate)
 
-        Utils.log("Worker started, waiting for connections...")
+        Utils.log("Worker started...")
 
         # Run the server's main loop
         server.serve_forever()

@@ -55,7 +55,7 @@ class FileStorage:
         server.register_function(self.put)
         server.register_function(self.delete)
 
-        Utils.log("File Storage started, waiting for connections...")
+        Utils.log("File Storage started...")
 
         # Run the server's main loop
         server.serve_forever()
@@ -113,6 +113,6 @@ class FileStorage:
         return True
 
 if __name__ == "__main__":
-    set_service("file storage")
+    Utils.set_service("file storage")
     fs = FileStorage("fs")
 
