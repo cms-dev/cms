@@ -77,7 +77,19 @@ def import_task(path):
     params["statement"] = FSL.put(os.path.join(path, "testo", "testo.pdf"), "PDF statement for task %s" % (name))
     params["task_type"] = Task.TASK_TYPE_BATCH
     params["submission_format"] = ["%s.%%l" % (name)]
-    params["managers"] = [] # FIXME - Add managers
+    try:
+        manager_name = "correttore.c"
+        fd = open(os.path.join(path, "cor", manager_name))
+    except IOError:
+        try:
+            manager_name = "correttore.cpp"
+            fd = open(os.path.join(path, "cor", manager_name))
+        except IOError:
+            fd = None
+    if fd != None:
+        params["managers"] = { manager_name: FSL.put_file(fd) }
+    else:
+        params["managers"] = {}
     params["score_type"] = Task.SCORE_TYPE_SUM
     params["score_parameters"] = [],
     params["testcases"] = [ (FSL.put(os.path.join(path, "input", "input%d.txt" % (i)), "Input %d for task %s" % (i, name)),
