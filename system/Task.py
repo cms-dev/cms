@@ -69,7 +69,7 @@ def sample_task(couch_id = None):
     import random
     return Task("task-%d" % (random.randint(1,1000)), "Sample task", [], "SHA1 of statement",
                 1, 512,
-                "TaskTypeBatch", ["task.%l"], ["SHA1 of manager_task.%l"],
+                "TaskTypeBatch", ["task.%l"], {"manager_task.%l": "SHA1 of manager_task.%l"},
                 "ScoreTypeGroupMin", [{"multiplicator": 0, "testcases":1, "description":"Test of first function"},
                                       {"multiplicator": 0, "testcases":1, "description":"Test of second function"},
                                       {"multiplicator": 1, "testcases":5, "description":"Border cases"},
