@@ -26,6 +26,8 @@
       \setlength{\labelsep}{0.5em} }%
 }{\end{list}}
 
+\newcommand{\id}[1]{\texttt{#1}}
+
 \title{A Contest Management System for programming contests}
 \author{Matteo Boscariol, Massimo Cairo, Stefano Maggiolo, Giovanni
   Mascellani}
@@ -164,7 +166,7 @@
   The services are written in Python; external services use Tornado to
   serve dynamic web pages, and nginx to serve static files and do the
   caching. All services communicate between each other using the
-  \texttt{SimpleXMLRPCServer} library.
+  \id{SimpleXMLRPCServer} library.
 
   \subsection{File Storage}
 
@@ -281,6 +283,193 @@
   state of all services (load, memory usage, length of the queues,
   etc.). It gives some control over the other services; for example,
   contest managers can ask \ES{} to evaluate again some submissions.
+
+  \section{Data structures}
+
+  Here we describe the four main classes that describe the structure
+  and the inner working of a contest.
+
+  \subsection{The \id{Contest} class}
+
+  \begin{squishlist}
+
+  \item \id{name} (string): the name used to refer to the contest;
+
+  \item \id{description} (string): a textual description of the
+    task;
+
+  \item \id{tasks} (list): the tasks composing this contest; each
+    element of the list is the CouchDB id of a \id{Task} object;
+
+  \item \id{users} (list): the contestants taking part to the
+    contest; each element of the list is the CouchDB id of a
+    \id{User} object;
+
+  \item \id{token\_num} (integer): the maximum number of tokens
+    that can be used by a contestant during the whole contest; setting
+    it to zero means not enforcing this limit;
+
+  \item \id{token\_min\_interval} (float): the minimum interval
+    (in minutes) between using two tokens;
+
+  \item \id{token\_gen\_time} (float): the time (in minutes) after
+    which a new token is made available to the contestant; more
+    precisely, each \id{token\_gen\_time} minutes a new token is
+    available, until \id{token\_num} of them are created; setting
+    this time to zero, of course, implies that all tokens are
+    immediately available at the beginning of the contest;
+
+  \item \id{start} (integer): the UNIX timestamp of the beginning
+    of the contest; it's not set when setting up the contest, but when
+    scheduling its timings;
+
+  \item \id{stop} (integer): the UNIX timestamp of the end of the
+    contest; like \id{start}, it's set when scheduling the contest's
+    timings;
+
+  \item \id{submissions} (list): the submissions issued during the
+    contest; it's empty at the beginning of the contest and gets
+    filled while the contest is running; each element of the list if
+    the CouchDB id of a \id{Submission} object.
+
+  \end{squishlist}
+
+  \subsection{The \id{User} class}
+
+  \begin{squishlist}
+
+  \item \id{username} (string): the identifier used to authenticate
+    the contestant to the contest system;
+
+  \item \id{password} (string): the password used to authenticate the
+    contestant to the contest system;
+
+  \item \id{real\_name} (string): the real name of the contestant;
+
+  \item \id{ip} (string): the IP address (in dotted quad notation) of
+    the machine used by the contestant; it's used to check that
+    requests for this contestant come from the correct machine and
+    avoid cheating; this check is not enforced when \id{ip} is set to
+    the null address (``\texttt{0.0.0.0}''); currently there is no
+    support for checking against IPv6 addresses;
+
+  \item \id{tokens} (list): the tokens used by this contestant; each
+    element of the list if the CouchDB id of a \id{Submission} object,
+    on which the contestant used a token;
+
+  \item \id{hidden} (boolean): when this flag is set the user is not
+    shown on public rankings; this flag in meant to be used for
+    testing accounts (for example, the managers of the contest could
+    add a test user to check if the system is correctly receiving and
+    validating submissions).
+
+  \end{squishlist}
+
+  \subsection{The \id{Task} class}
+
+  \begin{squishlist}
+
+  \item \id{name} (string): the name used to refer to the task;
+
+  \item \id{title} (string): a title for this task;
+
+  \item \id{attachments} (dictionary): the files attached to the
+    statement of the problem (example code snippets, files to
+    complement the problem description, \dots); in each entry the key
+    is the filename and each value is the \FS{} id of an attachment;
+
+  \item \id{statement} (string): the \FS{} id of the statement PDF,
+    that describes the task to the contestant;
+
+  \item \id{time\_limit} (float): the timeout for this task (in
+    seconds);
+
+  \item \id{memory\_limit} (float): the memory limit for this task (in
+    megabytes);
+
+  \item \id{task\_type} (integer): the type of this task; how
+    submissions for this task gets compiled, executed and checked
+    depend on this value via a plugin system;
+
+  \item \id{submission\_format} (list): the description of the files
+    expected within a submission for this task; each element of the
+    list is the name of a file that must exist in the submission, with
+    the language extension replaced with ``\texttt{\%l}'';
+
+  \item \id{managers} (dictionary): the files provided by the contest
+    organizers used when compiling and evaluating contestants'
+    submissions; its use depends on the \id{task\_type}; in each entry
+    the key is the filename and each value is the \FS{} id of a
+    manager;
+
+  \item \id{score\_type} (integer): the type of scoring method for
+    this task; how the score for this task is assigned to the
+    contestants depends on this value via a plugin system;
+
+  \item \id{score\_parameters} (dictionary): the parameters passed to
+    the scoring system for this task; its meaning depends on the value
+    of \id{score\_type};
+
+  \item \id{testcases} (list): the description of the testcases for
+    this task; each element of the list describes a case, but its
+    meaning depends on the value of \id{task\_type};
+
+  \item \id{public\_testcases} (list): the testcases that contestants
+    are able to see even without using a token; each element is an
+    index in the \id{testcases} list;
+
+  \item \id{token\_num} (integer), \id{token\_min\_interval} (float),
+    \id{token\_gen\_time} (float): these parameters have the same
+    meaning of those present in \id{Contest}, but are specific for
+    this task.
+
+  \end{squishlist}
+
+  \subsection{The \id{Submission} class}
+
+  \begin{squishlist}
+
+  \item \id{user} (string): the contastant that made this submission;
+    it is the CouchDB id of a \id{User} object;
+
+  \item \id{task} (string): the task for which this submission was
+    filed; it is the CouchDB id of a \id{Task} object;
+
+  \item \id{timestamp} (integer): the UNIX timestamp of the instant in
+    which this submission was issued;
+
+  \item \id{files} (dictionary): the files submitted by the
+    contestant; in each entry the key is the filename and each value
+    is the \FS{} id of a file;
+
+  \item \id{outcome} (list): the description of the result obtained by
+    this submission on each testcase; each element of the list
+    describes the result on the corresponding testcase, but its format
+    and meaning depends on the specific task; this value is used by
+    the scoring function to compute the score for all the contestants;
+    this value is set when evaluating the submission;
+
+  \item \id{executables} (dictionary): the compiled files for this
+    submission; in each entry the key is the filename and each value
+    is the \FS{} id of an executable, but its meaning depends on the
+    task (some tasks could even have no executables at all, like
+    output-only tasks); this value is set when compiling the
+    submission;
+
+  \item \id{compilation\_result} (string): a textual description of
+    the result of the compilation, shown to the contestant; this value
+    is set when compiling the submission;
+
+  \item \id{evaluation\_status} (string): a textual description of the
+    result of the evaluation, shown to the contestant if a token was
+    used on this submission; this value is set when evaluatiing the
+    submission;
+
+  \item \id{token\_timestamp} (integer): the UNIX timestamp of the
+    instant when the token was used for this submission; not set if no
+    token was used;
+
+  \end{squishlist}
 
   \section{Internals}
 
