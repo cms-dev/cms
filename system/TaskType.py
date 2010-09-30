@@ -57,7 +57,10 @@ class BatchTaskType:
         sandbox.timeout = 10
         sandbox.address_space = 256 * 1024
         Utils.log("Starting compiling submission %s with command line: %s" % (submission.couch_id, command))
-        compilation_return = sandbox.execute(command.split(" "))
+        try:
+            compilation_return = sandbox.execute(command.split(" "))
+        except:
+            compilation_return = 1
         if compilation_return == 0:
             submission.executables = {}
             submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename)
