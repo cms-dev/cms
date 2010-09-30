@@ -26,7 +26,9 @@ from CouchObject import CouchObject
 class Submission(CouchObject):
 
     _to_copy = ["timestamp", "files", "outcome", "executables",
-                "compilation_result", "evaluation_status", "token_timestamp"]
+                "compilation_result", "evaluation_status",
+                "compilation_tentatives", "evaluation_tentatives",
+                "token_timestamp"]
     _to_copy_id = ["user", "task"]
 
     LANGUAGES = ["c", "cpp", "pas"]
@@ -34,6 +36,7 @@ class Submission(CouchObject):
     def __init__(self, user, task, timestamp, files,
                  outcome = None, executables = None,
                  compilation_result = None, evaluation_status = None,
+                 compilation_tentatives = 0, evaluation_tentatives = 0,
                  token_timestamp = None,
                  couch_id = None):
         self.user = user
@@ -44,6 +47,8 @@ class Submission(CouchObject):
         self.executables = executables
         self.compilation_result = compilation_result
         self.evaluation_status = evaluation_status
+        self.compilation_tentatives = compilation_tentatives
+        self.evaluation_tentatives = evaluation_tentatives
         self.token_timestamp = token_timestamp
         CouchObject.__init__(self, "submission", couch_id)
 
