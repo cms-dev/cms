@@ -19,12 +19,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from SimpleXMLRPCServer import SimpleXMLRPCServer
-import Configuration
 import datetime
 import time
 import os
-from Utils import Logger, format_log, maybe_mkdir
+from SimpleXMLRPCServer import SimpleXMLRPCServer
+
+import Configuration
+import Utils
 
 class LogServer:
     def __init__(self, listen_address = None, listen_port = None):
@@ -39,16 +40,16 @@ class LogServer:
 
         server.register_function(self.log)
 
-        maybe_mkdir("logs")
+        Utils.maybe_mkdir("logs")
         self.log_file = open(os.path.join("logs", "%d.log" % (time.time())), "w")
 
         # Run the server's main loop
         server.serve_forever()
 
-    def log(self, msg, service, severity = Logger.SEVERITY_NORMAL, timestamp = None):
+    def log(self, msg, service, severity = Utils.Logger.SEVERITY_NORMAL, timestamp = None):
         if timestamp == None:
             timestamp = time.time()
-        line = format_log(msg, service, severity, timestamp)
+        line = Utils.format_log(msg, service, severity, timestamp)
         print line
         print >> self.log_file, line
         return True

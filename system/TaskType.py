@@ -19,15 +19,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from Sandbox import Sandbox
-import FileStorageLib
-import Task
-import Utils
 import os
-from Utils import log
+
+import Utils
+from Sandbox import Sandbox
+from Task import Task
 
 def get_task_type_class(task_type):
-    if task_type == Task.Task.TASK_TYPE_BATCH:
+    if task_type == Task.TASK_TYPE_BATCH:
         return BatchTaskType()
     else:
         return None
@@ -36,15 +35,15 @@ class BatchTaskType:
     def compile(self, submission):
         valid, language = submission.verify_source()
         if not valid or language == None:
-            log("Invalid files in submission %s, detected language %s" % (submission.couch_id, str(language)))
+            Utils.log("Invalid files in submission %s, detected language %s" % (submission.couch_id, str(language)))
             return False
         if len(submission.files) != 1:
-            log("Submission %s cointains %d files, expecting 1" % (submission.couch_id, len(submission.files)))
+            Utils.log("Submission %s cointains %d files, expecting 1" % (submission.couch_id, len(submission.files)))
             return False
         source_filename = submission.files.keys()[0]
         executable_filename = source_filename.replace(".%s" % (language), "")
         sandbox = Sandbox()
-        log("Created sandbox for compiling submission %s in %s" % (submission.couch_id, sandbox.path))
+        Utils.log("Created sandbox for compiling submission %s in %s" % (submission.couch_id, sandbox.path))
         sandbox.create_file_from_storage(source_filename, submission.files[source_filename])
         if language == "c":
             command = "/usr/bin/gcc -DEVAL -static -O2 -lm -o %s %s" % (executable_filename, source_filename)
@@ -57,19 +56,19 @@ class BatchTaskType:
         sandbox.filter_syscalls = 0
         sandbox.timeout = 10
         sandbox.address_space = 256 * 1024
-        log("Starting compiling submission %s with command line: %s" % (submission.couch_id, command))
+        Utils.log("Starting compiling submission %s with command line: %s" % (submission.couch_id, command))
         compilation_return = sandbox.execute(command.split(" "))
         if compilation_return == 0:
             submission.executables = {}
             submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename)
             submission.compilation_result = "OK"
-            log("Compilation for submission %s successfully terminated" % (submission.couch_id))
+            Utils.log("Compilation for submission %s successfully terminated" % (submission.couch_id))
         else:
-            log("Compilation for submission %s failed" % (submission.couch_id))
+            Utils.log("Compilation for submission %s failed" % (submission.couch_id))
             submission.compilation_result = "Failed"
         submission.to_couch()
         sandbox.delete()
-        log("Sandbox for compiling submission %s deleted" % (submission.couch_id))
+        Utils.log("Sandbox for compiling submission %s deleted" % (submission.couch_id))
         return compilation_return == 0
 
     def execute_single(self, submission, test_number):
@@ -101,7 +100,7 @@ class BatchTaskType:
 
     def execute(self, submission):
         if len(submission.executables) != 1:
-            log("Submission %s contains %d executables, expecting 1" % (submission.couch_id, len(submission.executables)))
+            Utils.log("Submission %s contains %d executables, expecting 1" % (submission.couch_id, len(submission.executables)))
             return False
         submission.outcome = [None] * len(submission.task.testcases)
         for test_number in range(len(submission.task.testcases)):

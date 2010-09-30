@@ -23,16 +23,16 @@ import os
 import shutil
 import sys
 import subprocess
-import Utils
-import FileStorageLib
 import tempfile
-from Utils import log, Logger
 import stat
+
+import Utils
+from FileStorageLib import FileStorageLib
 
 class Sandbox:
     def __init__(self):
         self.path = tempfile.mkdtemp()
-        self.FSL = FileStorageLib.FileStorageLib()
+        self.FSL = FileStorageLib()
 
         # Default parameters for mo-box
         self.file_check = None        # -a
@@ -128,7 +128,7 @@ class Sandbox:
 
     def execute(self, command):
         command_list = ["./mo-box"] + self.build_box_options() + ["--"] + command
-        log("Executing sandbox with command: %s" % (" ".join(command_list)), Logger.SEVERITY_DEBUG)
+        Utils.log("Executing sandbox with command: %s" % (" ".join(command_list)), Utils.Logger.SEVERITY_DEBUG)
         return subprocess.call(command_list)
 
     def delete(self):

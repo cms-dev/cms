@@ -19,16 +19,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from SimpleXMLRPCServer import SimpleXMLRPCServer
-import Contest
-import CouchObject
-import Configuration
 import threading
 import heapq
 import time
 import xmlrpclib
 import signal
+from SimpleXMLRPCServer import SimpleXMLRPCServer
+
+import Configuration
 import Utils
+import CouchObject
 
 class JobQueue:
     def __init__(self):

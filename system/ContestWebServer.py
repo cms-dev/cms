@@ -31,14 +31,12 @@ import sys
 import tempfile
 import xmlrpclib
 import zipfile
-
 from time import time
 from StringIO import StringIO
 
 import Configuration
 import WebConfig
 import CouchObject
-import Contest
 import Utils
 from Submission import Submission
 from FileStorageLib import FileStorageLib
