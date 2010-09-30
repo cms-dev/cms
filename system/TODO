@@ -1,0 +1,20 @@
+*** FileStorage
+
+*** FileStorageLib
+
+*** CouchObject and related (Contest, User, ...)
+
+*** Sandbox
+
+*** Worker
+
+*** EvaluationServer
+
+*** ContestWebServer
+
+*** Task types
+
+*** Score types
+
+*** Importer
+* Provide facilities to translate the task's statement.
