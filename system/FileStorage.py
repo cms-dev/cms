@@ -102,7 +102,7 @@ class FileStorage:
             fileSocket.close()
             return False
         fileSocket.close()
-        Utils.log("File with digest %s and description `%s' retrieved" % (digest, self.describe(digest)), Logger.SEVERITY_DEBUG)
+        Utils.log("File with digest %s and description `%s' retrieved" % (digest, self.describe(digest)), Utils.Logger.SEVERITY_DEBUG)
         return True
 
     def delete(self, digest):

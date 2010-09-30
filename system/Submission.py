@@ -21,6 +21,7 @@
 
 import time
 
+import Utils
 from CouchObject import CouchObject
 
 class Submission(CouchObject):
@@ -81,7 +82,22 @@ class Submission(CouchObject):
             if test_file.replace("%l", test_lang) in self.files:
                 language = test_lang
         if test_file != None and language == None:
-            return (False, "Could not detect submission language")
+            # If the task requires only one source file, be more
+            # relaxed on the verification
+            if len(self.task.submission_format) == 1:
+                submitted_file = self.files.keys()[0]
+                submitted_file_part = submitted_file.split(".")
+                if len(submitted_file_part) > 1 and \
+                        submitted_file_part[-1] in Submission.LANGUAGES:
+                    language = submitted_file_part[-1]
+                    correct_file = self.task.submission_format[0].replace("%l", language)
+                    Utils.log("Adapted submission %s to %s" % (submitted_file, correct_file), Utils.Logger.SEVERITY_DEBUG)
+                    self.files[correct_file] = self.files[submitted_file]
+                    del self.files[submitted_file]
+                else:
+                    return (False, "Could not detect submission language")
+            else:
+                return (False, "Could not detect submission language")
 
         # Check the mapping between the submission format and the actual submission
         for name in self.task.submission_format:
