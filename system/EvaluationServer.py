@@ -28,7 +28,6 @@ import heapq
 import time
 import xmlrpclib
 import signal
-from Utils import log
 import Utils
 
 class JobQueue:
@@ -126,13 +125,13 @@ class JobDispatcher(threading.Thread):
             job = self.queue.poll_queue()
             action = job[0]
             if action == EvaluationServer.JOB_TYPE_BOMB:
-                log("KABOOM!! (but I should wait for all the workers to finish their jobs)")
+                Utils.log("KABOOM!! (but I should wait for all the workers to finish their jobs)")
                 return
             else:
                 submission = job[1]
                 worker = self.workers.poll_worker(job)
 
-                log("Asking worker %d (%s:%d) to %s submission %s" %
+                Utils.log("Asking worker %d (%s:%d) to %s submission %s" %
                     (worker,
                      Configuration.workers[worker][0],
                      Configuration.workers[worker][1],
@@ -150,7 +149,7 @@ class EvaluationServer:
     JOB_TYPE_COMPILATION, JOB_TYPE_EVALUATION, JOB_TYPE_BOMB = ["compile", "evaluate", "bomb"]
 
     def __init__(self, contest, listen_address = None, listen_port = None):
-        log("Spawning evaluation server for contest %s" % (contest.couch_id))
+        Utils.log("Spawning evaluation server for contest %s" % (contest.couch_id))
 
         if listen_address == None:
             listen_address = Configuration.evaluation_server[0]
@@ -187,7 +186,7 @@ class EvaluationServer:
         return True
 
     def add_job(self, submission_id):
-        log("Queueing compilation for submission %s" % (submission_id))
+        Utils.log("Queueing compilation for submission %s" % (submission_id))
         submission = CouchObject.from_couch(submission_id)
         self.queue.lock()
         self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION, submission),
@@ -198,7 +197,7 @@ class EvaluationServer:
     def action_finished(self, job):
         worker = self.workers.find_worker(job)
         self.workers.release_worker(worker)
-        log("Worker %d (%s:%d) finished to %s submission %s" %
+        Utils.log("Worker %d (%s:%d) finished to %s submission %s" %
             (worker,
              Configuration.workers[worker][0],
              Configuration.workers[worker][1],
@@ -209,28 +208,28 @@ class EvaluationServer:
         submission = CouchObject.from_couch(submission_id)
         self.action_finished((EvaluationServer.JOB_TYPE_COMPILATION, submission))
         if success:
-            log("Compilation succeeded for submission %s" % (submission_id))
-            log("Queueing evaluation for submission %s" % (submission_id))
+            Utils.log("Compilation succeeded for submission %s" % (submission_id))
+            Utils.log("Queueing evaluation for submission %s" % (submission_id))
             self.queue.lock()
             self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
                             EvaluationServer.JOB_PRIORITY_LOW)
             self.queue.unlock()
         else:
             self.add_job(submission_id)
-            log("Compilation failed for submission %s" % (submission_id))
+            Utils.log("Compilation failed for submission %s" % (submission_id))
         return True
 
     def evaluation_finished(self, success, submission_id):
         submission = CouchObject.from_couch(submission_id)
         self.action_finished((EvaluationServer.JOB_TYPE_EVALUATION, submission))
         if success:
-            log("Evaluation succeeded for submission %s" % (submission_id))
+            Utils.log("Evaluation succeeded for submission %s" % (submission_id))
         else:
             self.queue.lock()
             self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
                             EvaluationServer.JOB_PRIORITY_LOW)
             self.queue.unlock()
-            log("Evaluation failed for submission %s" % (submission_id))
+            Utils.log("Evaluation failed for submission %s" % (submission_id))
         return True
 
     def self_destruct(self):
@@ -252,7 +251,7 @@ if __name__ == "__main__":
 
     if sys.argv[1] == "run":
         Utils.set_service("evaluation server")
-        c = CouchObject.from_couch('sample_contest')
+        c = Utils.ask_for_contest(skip = 1)
         e = EvaluationServer(c, es_address, es_port)
         e.start()
         signal.signal(signal.SIGTERM, sigterm)
@@ -268,7 +267,7 @@ if __name__ == "__main__":
 
     elif sys.argv[1] == "submit":
         import Submission
-        c = CouchObject.from_couch('sample_contest')
+        c = Utils.ask_for_contest(skip = 1)
         s = Submission.sample_submission(user = c.users[0], task = c.tasks[0])
         c.submissions.append(s)
         c.to_couch()

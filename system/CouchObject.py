@@ -21,7 +21,6 @@
 
 import Utils
 import couchdb
-from Utils import log
 
 references = dict()
 
@@ -68,25 +67,25 @@ class CouchObject:
                 obj = self.__dict__[key]
                 ht[key] = obj
             except KeyError:
-                log("Required key %s not found." % (key))
+                Utils.log("Required key %s not found." % (key))
 
         for key in self._to_copy_id:
             try:
                 obj = self.__dict__[key]
                 ht[key] = obj.couch_id
             except KeyError:
-                log("Required key %s not found." % (key))
+                Utils.log("Required key %s not found." % (key))
             except AttributeError:
-                log("Key %s not pointing to a CouchObject." % (key))
+                Utils.log("Key %s not pointing to a CouchObject." % (key))
 
         for key in self._to_copy_id_array:
             try:
                 obj = self.__dict__[key]
                 ht[key] = [elem.couch_id for elem in obj]
             except KeyError:
-                log("Required key %s not found." % (key))
+                Utils.log("Required key %s not found." % (key))
             except AttributeError:
-                log("Key %s not pointing to a CouchObject." % (key))
+                Utils.log("Key %s not pointing to a CouchObject." % (key))
 
         if self.couch_id == None:
             self.couch_id = db.create(ht)

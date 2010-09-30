@@ -55,6 +55,8 @@ class FileStorage:
         server.register_function(self.put)
         server.register_function(self.delete)
 
+        Utils.log("File Storage started, waiting for connections...")
+
         # Run the server's main loop
         server.serve_forever()
 

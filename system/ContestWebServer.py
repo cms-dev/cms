@@ -296,27 +296,9 @@ application = tornado.web.Application( handlers, **WebConfig.parameters)
 FSL = FileStorageLib()
 ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 
-get_contests='''function(doc) {
-    if (doc.document_type=='contest')
-        emit(doc,null)
-}'''
-
 if __name__ == "__main__":
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(8888);
-    if len(sys.argv)>1:
-        contestid=sys.argv[1]
-    else:
-        db = Utils.get_couchdb_database()
-        print "Contests available:"
-        for row in db.query(get_contests,include_docs=True):
-            print "ID: " + row.id + " - Name: " + row.doc["name"]
-        contestid=raw_input("Insert the contest ID:")
-    try:
-        c=CouchObject.from_couch(contestid)
-    except couchdb.client.ResourceNotFound:
-        print "Invalid contest ID"
-        exit(1)
-    print 'Contest "' + c.name + '" loaded.'
+    c = Utils.ask_for_contest()
     upsince=time()
     tornado.ioloop.IOLoop.instance().start()

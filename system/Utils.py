@@ -20,11 +20,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import couchdb
-import Configuration
 import xmlrpclib
 import time
 import datetime
 import os
+import sys
+
+import Configuration
+import CouchObject
+
+get_contests='''function(doc) {
+    if (doc.document_type=='contest')
+        emit(doc,null)
+}'''
 
 def get_couchdb_database():
     couch = couchdb.client.Server(Configuration.couchdb_server)
@@ -38,6 +46,37 @@ def get_couchdb_database():
 def drop_couchdb_database():
     couch = couchdb.client.Server(Configuration.couchdb_server)
     del couch[Configuration.couchdb_database]
+
+def ask_for_contest(skip = 0):
+    if len(sys.argv) > skip + 1:
+        contest_id = sys.argv[skip + 1]
+    else:
+        db = get_couchdb_database()
+        contests = list(db.query(get_contests, include_docs = True))
+        print "Contests available:"
+        for i, row in enumerate(contests):
+            print "%3d  -  ID: %s  -  Name: %s" % (i + 1, row.id, row.doc["name"]),
+            if i == 0:
+                print " (default)"
+            else:
+                print
+        try:
+            contest_number = raw_input("Insert the number next to the contest you want to load: ")
+            if contest_number == "":
+                contest_number = 1
+            contest_number = int(contest_number) - 1
+            contest_id = contests[contest_number].id
+        except:
+            print "Insert a correct number."
+            sys.exit(1)
+        print contest_id
+    try:
+        c = CouchObject.from_couch(contest_id)
+    except couchdb.client.ResourceNotFound:
+        print "Cannot load contest %s." % (contest_id)
+        sys.exit(1)
+    print "Contest %s loaded." % (c.name)
+    return c
 
 # FIXME - Bad hack
 def maybe_mkdir(d):
