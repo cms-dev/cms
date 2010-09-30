@@ -54,7 +54,7 @@ class FileStorage:
         server.register_function(self.get)
         server.register_function(self.put)
         server.register_function(self.delete)
-        server.register_funciion(self.describe)
+        server.register_function(self.describe)
 
         # Run the server's main loop
         server.serve_forever()
