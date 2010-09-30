@@ -91,7 +91,7 @@ class BatchTaskType:
         sandbox.address_space = None
         sandbox.file_check = 3
         sandbox.allow_path = []
-        diff_return = sandbox.execute(["/usr/bin/diff", os.path.join(sandbox.path, "output.txt"), os.path.join(sandbox.path, "res.txt")])
+        diff_return = sandbox.execute(["/usr/bin/diff", "-w", os.path.join(sandbox.path, "output.txt"), os.path.join(sandbox.path, "res.txt")])
         if diff_return == 0:
             submission.outcome[test_number] = 1
         else:
