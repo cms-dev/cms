@@ -28,7 +28,8 @@ class Task(CouchObject):
                 "task_type", "submission_format", "managers",
                 "score_type", "score_parameters",
                 "testcases", "public_testcases",
-                "token_num", "token_min_interval", "token_gen_time",
+                "token_initial", "token_max", "token_total",
+                "token_min_interval", "token_gen_time"
                 ]
 
     TASK_TYPE_BATCH, TASK_TYPE_PROGRAMMING, TASK_TYPE_OUTPUT_ONLY = range(3)
@@ -39,7 +40,8 @@ class Task(CouchObject):
                  task_type, submission_format, managers,
                  score_type, score_parameters,
                  testcases, public_testcases,
-                 token_num, token_min_interval, token_gen_time,
+                 token_initial, token_max, token_total,
+                 token_min_interval, token_gen_time,
                  couch_id = None):
         self.name = name
         self.title = title
@@ -54,7 +56,9 @@ class Task(CouchObject):
         self.score_parameters = score_parameters
         self.testcases = testcases
         self.public_testcases = public_testcases
-        self.token_num = token_num
+        self.token_initial = token_initial
+        self.token_max = token_max
+        self.token_total = token_total
         self.token_min_interval = token_min_interval
         self.token_gen_time = token_gen_time
         CouchObject.__init__(self, "task", couch_id)
@@ -67,16 +71,17 @@ class Task(CouchObject):
 
 def sample_task(couch_id = None):
     import random
-    return Task("task-%d" % (random.randint(1,1000)), "Sample task", [], "SHA1 of statement",
-                1, 512,
-                "TaskTypeBatch", ["task.%l"], {"manager_task.%l": "SHA1 of manager_task.%l"},
-                "ScoreTypeGroupMin", [{"multiplicator": 0, "testcases":1, "description":"Test of first function"},
-                                      {"multiplicator": 0, "testcases":1, "description":"Test of second function"},
-                                      {"multiplicator": 1, "testcases":5, "description":"Border cases"},
-                                      {"multiplicator": 1, "testcases":5, "description":"First requirement"},
-                                      {"multiplicator": 1, "testcases":5, "description":"Second requirement"}],
+    return Task("task-%d" % (random.randint(1,1000)), "Sample task", [],
+                "SHA1 of statement", 1, 512, "TaskTypeBatch", ["task.%l"],
+                {"manager_task.%l": "SHA1 of manager_task.%l"}, "ScoreTypeGroupMin",
+                [{"multiplicator": 0, "testcases":1, "description":"Test of first function"},
+                 {"multiplicator": 0, "testcases":1, "description":"Test of second function"},
+                 {"multiplicator": 1, "testcases":5, "description":"Border cases"},
+                 {"multiplicator": 1, "testcases":5, "description":"First requirement"},
+                 {"multiplicator": 1, "testcases":5, "description":"Second requirement"}],
                 [("SHA1 of input %d" % i, "SHA1 of output %d" % i) for i in xrange(17)], [0, 1],
-                3, 15, 30, couch_id = couch_id)
+                10, 3, 3, 30, 60,
+                couch_id = couch_id)
 
 if __name__ == "__main__":
     t = sample_task()

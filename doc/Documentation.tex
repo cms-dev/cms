@@ -305,19 +305,25 @@
     contest; each element of the list is the CouchDB id of a
     \id{User} object;
 
-  \item \id{token\_num} (integer): the maximum number of tokens
-    that can be used by a contestant during the whole contest; setting
-    it to zero means not enforcing this limit;
+  \item \id{token\_total\_num} (integer): the total number of tokens
+    that a contestant can use during the whole contest; a value of
+    $-1$ means that the limit is not enforced;
 
-  \item \id{token\_min\_interval} (float): the minimum interval
-    (in minutes) between using two tokens;
+  \item \id{token\_num} (integer): the initial number of tokens
+    available to a contestant for all tasks;
 
-  \item \id{token\_gen\_time} (float): the time (in minutes) after
+  \item \id{token\_max\_num} (integer): the maximum number of tokens
+    available to a contestant for all tasks at a given time; a value
+    of $-1$ means that the limit is not enforced;
+
+  \item \id{token\_min\_interval} (integer): the minimum interval (in
+    minutes) between using two tokens;
+
+  \item \id{token\_gen\_time} (integer): the time (in minutes) after
     which a new token is made available to the contestant; more
     precisely, each \id{token\_gen\_time} minutes a new token is
-    available, until \id{token\_num} of them are created; setting
-    this time to zero, of course, implies that all tokens are
-    immediately available at the beginning of the contest;
+    available if there are less than \id{token\_max\_num} tokens
+    available;
 
   \item \id{start} (integer): the UNIX timestamp of the beginning
     of the contest; it's not set when setting up the contest, but when
@@ -418,10 +424,11 @@
     are able to see even without using a token; each element is an
     index in the \id{testcases} list;
 
-  \item \id{token\_num} (integer), \id{token\_min\_interval} (float),
-    \id{token\_gen\_time} (float): these parameters have the same
-    meaning of those present in \id{Contest}, but are specific for
-    this task.
+  \item \id{token\_total\_num} (integer), \id{token\_max\_num}
+    (integer), \id{token\_num} (integer), \id{token\_min\_interval}
+    (integer), \id{token\_gen\_time} (integer): these parameters have
+    the same meaning of those present in \id{Contest}, but are
+    specific for this task.
 
   \end{squishlist}
 
@@ -429,7 +436,7 @@
 
   \begin{squishlist}
 
-  \item \id{user} (string): the contastant that made this submission;
+  \item \id{user} (string): the contestant that made this submission;
     it is the CouchDB id of a \id{User} object;
 
   \item \id{task} (string): the task for which this submission was

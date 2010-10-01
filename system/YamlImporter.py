@@ -39,9 +39,11 @@ def import_contest(path):
     params["tasks"] = []
     for task in conf["problemi"]:
         params["tasks"].append(import_task(os.path.join(path, task)))
-    params["token_num"] = conf.get("token_num", 0)
+    params["token_initial"] = conf.get("token_initial", 0)
+    params["token_max"] = conf.get("token_max", 0)
+    params["token_total"] = conf.get("token_total", 0)
     params["token_min_interval"] = conf.get("token_min_interval", 0)
-    params["token_gen_time"] = conf.get("token_gen_time", 0)
+    params["token_gen_time"] = conf.get("token_gen_time", 1)
     params["users"] = []
     for user in conf["utenti"]:
         params["users"].append(import_user(user))
@@ -97,9 +99,11 @@ def import_task(path):
                              FSL.put(os.path.join(path, "output", "output%d.txt" % (i)), "Output %d for task %s" % (i, name)))
                             for i in range(int(conf["n_input"]))]
     params["public_testcases"] = [ 0 ]
-    params["token_num"] = conf.get("token_num", 0)
+    params["token_initial"] = conf.get("token_initial", 0)
+    params["token_max"] = conf.get("token_max", 0)
+    params["token_total"] = conf.get("token_total", 0)
     params["token_min_interval"] = conf.get("token_min_interval", 0)
-    params["token_gen_time"] = conf.get("token_gen_time", 0)
+    params["token_gen_time"] = conf.get("token_gen_time", 60)
 
     return Task(**params)
 

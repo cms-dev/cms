@@ -51,11 +51,52 @@ def get_task(task_name):
     else:
         raise KeyError("Task not found")
 
-def token_available(user, task):
+def token_available(user, task, timestamp):
     """Returns True if the given user can use a token for the given
     task.
     """
-    # TODO - Implement this.
+    tokens_timestamp = [s.token_timestamp
+                        for s in user.tokens]
+    task_tokens_timestamp = [s.token_timestamp
+                             for s in user.tokens
+                             if s.task == task]
+    # These should not be needed, but let's be safe
+    tokens_timestamp.sort()
+    task_tokens_timestamp.sort()
+
+    def ensure(object_with_tokens_specs, timestamps):
+        o = object_with_tokens_specs
+        # Ensure min_interval
+        if timestamps != [] and \
+                timestamp - timestamps[-1] < 60 * o.token_min_interval:
+            return False
+        # Ensure total
+        if len(timestamps) >= o.token_total:
+            return False
+        # Ensure availability
+        available = o.token_initial
+        remaining_before_gen = o.token_gen_time
+        last_t = 0
+        for t in timestamps + [timestamp]:
+            interval = t - last_t
+            interval += 60 * (o.token_gen_time - remaining_before_gen)
+            int_interval = int(interval)
+            gen_tokens = int_interval / (60 * o.token_gen_time)
+            if available + gen_tokens >= o.token_max:
+                remaining_before_gen = o.token_gen_time
+                available = o.token_max - 1
+            else:
+                remaining_before_gen = interval % (60 * o.token_gen_time)
+                available = available + gen_tokens - 1
+            last_t = t
+        if available < 0:
+            return False
+        return True
+
+    if not ensure(c, tokens_timestamp):
+        return False
+    if not ensure(task, task_tokens_timestamp):
+        return False
     return True
 
 def update_submissions():
@@ -214,6 +255,7 @@ class UseTokenHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def post(self):
+        timestamp = time.time()
         update_submissions()
         u = self.get_current_user()
         if(u == None):
@@ -228,8 +270,8 @@ class UseTokenHandler(BaseHandler):
                 if s.tokened():
                     self.write("This submission is already marked for detailed feedback.")
                 # Are there any tokens available?
-                elif token_available(u, s.task):
-                    s.token_timestamp = time.time()
+                elif token_available(u, s.task, timestamp):
+                    s.token_timestamp = timestamp
                     u.tokens.append(s)
                     # Save to CouchDB
                     s.to_couch()

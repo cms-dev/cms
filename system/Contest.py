@@ -23,15 +23,26 @@ import Utils
 from CouchObject import CouchObject
 
 class Contest(CouchObject):
-    _to_copy = ["name", "description", "token_num", "token_min_interval", "token_gen_time", "start", "stop"]
+    _to_copy = ["name", "description",
+                "token_initial", "token_max", "token_total",
+                "token_min_interval", "token_gen_time",
+                "start", "stop"]
     _to_copy_id_array = ["tasks", "users", "submissions"]
 
-    def __init__(self, name, description, tasks, users, token_num, token_min_interval, token_gen_time, start = None, stop = None, submissions = [], couch_id = None):
+    def __init__(self, name, description,
+                 tasks, users,
+                 token_initial, token_max, token_total,
+                 token_min_interval, token_gen_time,
+                 start = None, stop = None,
+                 submissions = [],
+                 couch_id = None):
         self.name = name
         self.description = description
         self.tasks = tasks
         self.users = users
-        self.token_num = token_num
+        self.token_initial = token_initial
+        self.token_max = token_max
+        self.token_total = token_total
         self.token_min_interval = token_min_interval
         self.token_gen_time = token_gen_time
         self.start = start
@@ -46,7 +57,11 @@ def sample_contest(couch_id = None):
     import User
     import Task
     import Submission
-    c = Contest("hello", "Hello world", [Task.sample_task() for i in range(3)], [User.sample_user() for i in range(10)], 3, 15, 30, couch_id = couch_id)
+    c = Contest("hello", "Hello world",
+                [Task.sample_task() for i in range(3)],
+                [User.sample_user() for i in range(10)],
+                10, 3, 3, 30, 60,
+                couch_id = couch_id)
     s = Submission.sample_submission(couch_id = 'sample_submission')
     c.submissions.append(s)
     c.to_couch()
