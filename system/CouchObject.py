@@ -37,6 +37,8 @@ class CouchObject:
             self.to_couch()
 
     def __eq__(self, other):
+        if other.__class__ != self.__class__:
+            return False
         return self.couch_id == other.couch_id
 
     def choose_couch_id_basename(self):
