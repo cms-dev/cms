@@ -106,7 +106,7 @@ class Submission(CouchObject):
 
         return (True, language)
 
-def sample_submission(couch_id = None, user = None, task = None):
+def sample_submission(couch_id = None, user = None, task = None, files = []):
     import Task
     import User
     if user == None:
@@ -115,7 +115,10 @@ def sample_submission(couch_id = None, user = None, task = None):
         task = Task.sample_task()
     from FileStorageLib import FileStorageLib
     FSL = FileStorageLib()
-    return Submission(user, task, time.time(), {"monete.cpp": FSL.put("monete.cpp", "Test solution for task monete")}, couch_id = couch_id)
+    files_dict = {}
+    for f in files:
+        files_dict[f] = FSL.put(f, "Submission file n. %d")
+    return Submission(user, task, time.time(), files_dict, couch_id = couch_id)
 
 if __name__ == "__main__":
     s = sample_submission()

@@ -317,7 +317,9 @@ if __name__ == "__main__":
     elif sys.argv[1] == "submit":
         import Submission
         c = Utils.ask_for_contest(skip = 1)
-        s = Submission.sample_submission(user = c.users[0], task = c.tasks[0])
+        s = Submission.sample_submission(user = c.users[0],
+                                         task = c.tasks[0],
+                                         files = sys.argv[3:])
         c.submissions.append(s)
         c.to_couch()
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
