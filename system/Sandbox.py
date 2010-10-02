@@ -48,9 +48,9 @@ class Sandbox:
         self.stdout_file = None       # -o
         self.allow_path = []          # -p
         self.set_path = {}            # -p
-        self.sterr_file = None        # -r
+        self.stderr_file = None       # -r
         self.allow_syscall = []       # -s
-        self.set_stscall = {}         # -s
+        self.set_syscall = {}         # -s
         self.deny_timing = False      # -S
         self.timeout = 0              # -t, mandatory
         self.verbosity = 0            # -v
@@ -83,6 +83,12 @@ class Sandbox:
             res += ["-p", path]
         for path, action in self.set_path:
             res += ["-p", "%s=%s" % (path, action)]
+        if self.stderr_file != None:
+            res += ["-r", self.stderr_file]
+        for syscall in self.allow_syscall:
+            res += ["-s", syscall]
+        for syscall, action in self.set_syscall:
+            res += ["-s", "%s=%s" % (syscall, action)]
         if self.deny_timing:
             res += ["-S"]
         res += ["-t", str(self.timeout)]
