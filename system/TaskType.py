@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import subprocess
 
 import Utils
 from Sandbox import Sandbox
@@ -89,17 +90,42 @@ class BatchTaskType:
         sandbox.allow_path = [ os.path.join(sandbox.path, "input.txt"), os.path.join(sandbox.path, "output.txt") ]
         execution_return = sandbox.execute([os.path.join(sandbox.path, executable_filename)])
         sandbox.create_file_from_storage("res.txt", submission.task.testcases[test_number][1])
+        # The diff or the manager are executed with relaxed security constraints
         sandbox.filter_syscalls = 0
         sandbox.timeout = 0
         sandbox.address_space = None
         sandbox.file_check = 3
         sandbox.allow_path = []
-        # FIXME - Use manager if present
-        diff_return = sandbox.execute_without_std(["/usr/bin/diff", "-w", os.path.join(sandbox.path, "output.txt"), os.path.join(sandbox.path, "res.txt")])
-        if diff_return == 0:
-            submission.outcome[test_number] = 1
+        if len(submission.task.managers) == 0:
+            diff_return = sandbox.execute_without_std(["/usr/bin/diff", "-w",
+                                                       os.path.join(sandbox.path, "output.txt"),
+                                                       os.path.join(sandbox.path, "res.txt")])
+            if diff_return == 0:
+                submission.outcome[test_number] = 1.0
+            else:
+                submission.outcome[test_number] = 0.0
         else:
-            submission.outcome[test_number] = 0
+            manager_filename = submission.task.managers.keys()[0]
+            sandbox.create_file_from_storage(manager_filename, submission.task.managers[manager_filename], executable = True)
+            stdout_filename = os.path.join(sandbox.path, "manager_stdout.txt")
+            stderr_filename = os.path.join(sandbox.path, "manager_stderr.txt")
+            sandbox.stdout_file = stdout_filename
+            sandbox.stderr_file = stderr_filename
+            manager_popen = sandbox.execute_without_std(["./%s" % (manager_filename),
+                                                         os.path.join(sandbox.path, "input.txt"),
+                                                         os.path.join(sandbox.path, "res.txt"), 
+                                                         os.path.join(sandbox.path, "output.txt")])
+            with open(stdout_filename) as stdout_file:
+                with open(stderr_filename) as stderr_file:
+                    value = stdout_file.readline()
+                    # FIXME - Do someting with text
+                    text = stderr_file.readline()
+            try:
+                value = float(value)
+            except ValueError:
+                Utils.log("Wrong value `%s' from manager when evaluating submission %s" % (value.strip(), submission.couch_id))
+                value = 0.0
+            submission.outcome[test_number] = value
         submission.to_couch()
         #sandbox.delete()
 
