@@ -81,16 +81,11 @@ def import_task(path):
     params["task_type"] = Task.TASK_TYPE_BATCH
     params["submission_format"] = ["%s.%%l" % (name)]
     try:
-        manager_name = "correttore.c"
-        fd = open(os.path.join(path, "cor", manager_name))
+        fd = open(os.path.join(path, "cor", "correttore"))
     except IOError:
-        try:
-            manager_name = "correttore.cpp"
-            fd = open(os.path.join(path, "cor", manager_name))
-        except IOError:
-            fd = None
+        fd = None
     if fd != None:
-        params["managers"] = { manager_name: FSL.put_file(fd) }
+        params["managers"] = { "checker": FSL.put_file(fd) }
     else:
         params["managers"] = {}
     params["score_type"] = Task.SCORE_TYPE_SUM

@@ -25,6 +25,7 @@ import sys
 import subprocess
 import tempfile
 import stat
+import select
 
 import Utils
 from FileStorageLib import FileStorageLib
@@ -127,9 +128,30 @@ class Sandbox:
         return digest
 
     def execute(self, command):
-        command_list = ["./mo-box"] + self.build_box_options() + ["--"] + command
-        Utils.log("Executing sandbox with command: %s" % (" ".join(command_list)), Utils.Logger.SEVERITY_DEBUG)
-        return subprocess.call(command_list)
+        args = ["./mo-box"] + self.build_box_options() + ["--"] + command
+        Utils.log("Executing sandbox with command: %s" % (" ".join(args)), Utils.Logger.SEVERITY_DEBUG)
+        return subprocess.call(args)
+
+    def popen(self, command, stdin = None, stdout = None, stderr = None, close_fds = False):
+        args = ["./mo-box"] + self.build_box_options() + ["--"] + command
+        Utils.log("Executing sandbox with command: %s" % (" ".join(args)), Utils.Logger.SEVERITY_DEBUG)
+        return subprocess.Popen(args, stdin = stdin, stdout = stdout, stderr = stderr, close_fds = close_fds)
+
+    def execute_without_std(self, command):
+        popen = self.popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE, close_fds = True)
+        popen.stdin.close()
+
+        # Read stdout and stderr to the end without having to block because of insufficient buffering
+        # (and without allocating too much memory)
+        to_consume = [popen.stdout, popen.stderr]
+        while len(to_consume) > 0:
+            read, tmp1, tmp2 = select.select(to_consume, [], [])
+            finished = list()
+            for f in read:
+                if f.read(8192) == '':
+                    to_consume.remove(f)
+
+        return popen.wait()
 
     def delete(self):
         shutil.rmtree(self.path)

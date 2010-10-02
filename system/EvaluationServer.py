@@ -240,10 +240,9 @@ class EvaluationServer:
         submission.to_couch()
         self.action_finished((EvaluationServer.JOB_TYPE_COMPILATION, submission))
         if success:
-            Utils.log("Compilation succeeded for submission %s" % (submission_id))
-            Utils.log("Queueing evaluation for submission %s" % (submission_id))
+            Utils.log("Compilation succeeded for submission %s, queueing evaluation" % (submission_id))
             priority = EvaluationServer.JOB_PRIORITY_LOW
-            if self.submission.tokened():
+            if submission.tokened():
                 priority = EvaluationServer.JOB_PRIORITY_MEDIUM
             self.queue.lock()
             self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
