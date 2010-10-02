@@ -247,7 +247,7 @@ class TaskStatementViewHandler(BaseHandler):
         self.set_header("Content-Type", "application/pdf")
         self.set_header("Content-Disposition",
                         "attachment; filename=\"%s.pdf\"" % (task.name))
-        self.write(statementFile.getvalue())
+        self.write(statement_file.getvalue())
         statement_file.close()
 
 class UseTokenHandler(BaseHandler):
