@@ -467,10 +467,10 @@
     the result of the compilation, shown to the contestant; this value
     is set when compiling the submission;
 
-  \item \id{evaluation\_status} (string): a textual description of the
-    result of the evaluation, shown to the contestant if a token was
-    used on this submission; this value is set when evaluatiing the
-    submission;
+  \item \id{evaluation\_status} (list): a textual and human-readable
+    description of the result of the evaluation; each element of the
+    list refers to the corresponding testcase; this value is set when
+    evaluating the submission;
 
   \item \id{token\_timestamp} (integer): the UNIX timestamp of the
     instant when the token was used for this submission; not set if no

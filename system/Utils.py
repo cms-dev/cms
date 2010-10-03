@@ -78,6 +78,18 @@ def ask_for_contest(skip = 0):
     print "Contest %s loaded." % (c.name)
     return c
 
+def filter_ansi_escape(s):
+    ansi_mode = False
+    res = ''
+    for c in s:
+        if c == u'\x1b':
+            ansi_mode = True
+        if not ansi_mode:
+            res += c
+        if c == u'm':
+            ansi_mode = False
+    return res
+
 # FIXME - Bad hack
 def maybe_mkdir(d):
     try:

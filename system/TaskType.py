@@ -59,6 +59,7 @@ class BatchTaskType:
         sandbox.address_space = 256 * 1024
         Utils.log("Starting compiling submission %s with command line: %s" % (submission.couch_id, command))
         # FIXME - Differentiate between compilation errors and popen errors
+        # FIXME - Detect sandbox problems (timeout, out of memory, ...)
         try:
             compilation_return = sandbox.execute(command.split(" "))
         except:
@@ -88,6 +89,8 @@ class BatchTaskType:
         sandbox.address_space = submission.task.memory_limit * 1024
         sandbox.file_check = 0
         sandbox.allow_path = [ os.path.join(sandbox.path, "input.txt"), os.path.join(sandbox.path, "output.txt") ]
+        # FIXME - Differentiate between compilation errors and popen errors
+        # FIXME - Detect sandbox problems (timeout, out of memory, ...)
         execution_return = sandbox.execute([os.path.join(sandbox.path, executable_filename)])
         sandbox.create_file_from_storage("res.txt", submission.task.testcases[test_number][1])
         # The diff or the manager are executed with relaxed security constraints
@@ -102,8 +105,10 @@ class BatchTaskType:
                                                        os.path.join(sandbox.path, "res.txt")])
             if diff_return == 0:
                 submission.outcome[test_number] = 1.0
+                submission.evaluation_status[test_number] = "OK"
             else:
                 submission.outcome[test_number] = 0.0
+                submission.evaluation_status[test_number] = "Failed"
         else:
             manager_filename = submission.task.managers.keys()[0]
             sandbox.create_file_from_storage(manager_filename, submission.task.managers[manager_filename], executable = True)
@@ -118,14 +123,15 @@ class BatchTaskType:
             with open(stdout_filename) as stdout_file:
                 with open(stderr_filename) as stderr_file:
                     value = stdout_file.readline()
-                    # FIXME - Do someting with text
-                    text = stderr_file.readline()
+                    text = Utils.filter_ansi_escape(stderr_file.readline())
             try:
                 value = float(value)
             except ValueError:
                 Utils.log("Wrong value `%s' from manager when evaluating submission %s" % (value.strip(), submission.couch_id))
                 value = 0.0
+                text = "Error while evaluating"
             submission.outcome[test_number] = value
+            submission.evaluation_status[test_number] = text
         submission.to_couch()
         #sandbox.delete()
 
@@ -134,8 +140,8 @@ class BatchTaskType:
             Utils.log("Submission %s contains %d executables, expecting 1" % (submission.couch_id, len(submission.executables)))
             return False
         submission.outcome = [None] * len(submission.task.testcases)
+        submission.evaluation_status = [None] * len(submission.task.testcases)
+        submission.to_couch()
         for test_number in range(len(submission.task.testcases)):
             self.execute_single(submission, test_number)
-        submission.evaluation_status = "OK"
-        submission.to_couch()
         return True
