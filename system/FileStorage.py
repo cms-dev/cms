@@ -62,6 +62,9 @@ class FileStorage:
         server.serve_forever()
 
     def put(self, address, port, description = ""):
+        # Avoid too long descriptions, that can bloat our logs
+        if len(description) > 1024:
+            description = description[:1024]
         fileSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         fileSocket.connect((address, port))
         # FIXME - Error management
