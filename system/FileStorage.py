@@ -121,7 +121,7 @@ class FileStorage:
             fd = open(os.path.join(self.descdir, digest))
             desc = fd.read()
             fd.close()
-            return desc
+            return desc.strip()
         except IOError:
             return None
 
