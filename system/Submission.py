@@ -116,8 +116,10 @@ def sample_submission(couch_id = None, user = None, task = None, files = []):
     from FileStorageLib import FileStorageLib
     FSL = FileStorageLib()
     files_dict = {}
+    n = 0
     for f in files:
-        files_dict[f] = FSL.put(f, "Submission file n. %d")
+        files_dict[f] = FSL.put(f, "Submission file %s, n. %d" % (f, n))
+        n += 1
     return Submission(user, task, time.time(), files_dict, couch_id = couch_id)
 
 if __name__ == "__main__":

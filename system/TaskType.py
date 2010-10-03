@@ -66,7 +66,7 @@ class BatchTaskType:
             compilation_return = 1
         if compilation_return == 0:
             submission.executables = {}
-            submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename)
+            submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, submission.couch_id))
             submission.compilation_result = "OK"
             Utils.log("Compilation for submission %s successfully terminated" % (submission.couch_id))
         else:
