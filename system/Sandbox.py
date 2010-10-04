@@ -34,6 +34,7 @@ class Sandbox:
     def __init__(self):
         self.path = tempfile.mkdtemp()
         self.FSL = FileStorageLib()
+        Utils.log("Sandbox in %s created" % (self.path), Utils.Logger.SEVERITY_DEBUG)
 
         # Default parameters for mo-box
         self.file_check = None        # -a
@@ -100,6 +101,10 @@ class Sandbox:
         return res
 
     def create_file(self, path, executable = False):
+        if executable:
+            Utils.log("Creating executable file %s in sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
+        else:
+            Utils.log("Creating plain file %s in sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
         real_path = os.path.join(self.path, path)
         fd = open(real_path, 'w')
         if executable:
@@ -117,6 +122,7 @@ class Sandbox:
         fd.close()
 
     def get_file(self, path):
+        Utils.log("Retrieving file %s from sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
         real_path = os.path.join(self.path, path)
         fd = open(real_path, 'r')
         return fd
@@ -135,12 +141,12 @@ class Sandbox:
 
     def execute(self, command):
         args = ["./mo-box"] + self.build_box_options() + ["--"] + command
-        Utils.log("Executing sandbox with command: %s" % (" ".join(args)), Utils.Logger.SEVERITY_DEBUG)
+        Utils.log("Executing program in sandbox with command: %s" % (" ".join(args)), Utils.Logger.SEVERITY_DEBUG)
         return subprocess.call(args)
 
     def popen(self, command, stdin = None, stdout = None, stderr = None, close_fds = False):
         args = ["./mo-box"] + self.build_box_options() + ["--"] + command
-        Utils.log("Executing sandbox with command: %s" % (" ".join(args)), Utils.Logger.SEVERITY_DEBUG)
+        Utils.log("Executing program in sandbox with command: %s" % (" ".join(args)), Utils.Logger.SEVERITY_DEBUG)
         return subprocess.Popen(args, stdin = stdin, stdout = stdout, stderr = stderr, close_fds = close_fds)
 
     def execute_without_std(self, command):
@@ -149,6 +155,7 @@ class Sandbox:
 
         # Read stdout and stderr to the end without having to block because of insufficient buffering
         # (and without allocating too much memory)
+        # FIXME - Probably UNIX-specific (shouldn't work on Windows)
         to_consume = [popen.stdout, popen.stderr]
         while len(to_consume) > 0:
             read, tmp1, tmp2 = select.select(to_consume, [], [])
@@ -160,4 +167,5 @@ class Sandbox:
         return popen.wait()
 
     def delete(self):
+        Utils.log("Deleting sandbox in %s" % (self.path), Utils.Logger.SEVERITY_DEBUG)
         shutil.rmtree(self.path)

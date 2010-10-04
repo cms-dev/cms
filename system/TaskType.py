@@ -33,19 +33,49 @@ def get_task_type_class(task_type):
         return None
 
 class BatchTaskType:
+    def terminate_compilation(self, submission, msg):
+        """Terminate the compilation because of an error in the
+        submission (i.e., an error that cannot be fixed in another
+        compilation of the same submission: the user has to fix the
+        submission).
+        """
+        submission.compilation_result = msg
+        submission.to_couch()
+        return True
+
     def compile(self, submission):
+        """Tries to compile the specified submission.
+
+        It returns True when the compilation is successful or when the
+        submission cannot be compiled successfully, and False when the
+        compilation fails because of environment problems (trying
+        again to compile the same submission in a sane environment
+        should lead to returning True).
+        """
         valid, language = submission.verify_source()
         if not valid or language == None:
             Utils.log("Invalid files in submission %s, detected language %s" % (submission.couch_id, str(language)))
-            return False
+            return self.terminate_compilation("Invalid files in submission")
         if len(submission.files) != 1:
             Utils.log("Submission %s cointains %d files, expecting 1" % (submission.couch_id, len(submission.files)))
-            return False
+            return self.terminate_compilation("Invalid files in submission")
+
         source_filename = submission.files.keys()[0]
         executable_filename = source_filename.replace(".%s" % (language), "")
-        sandbox = Sandbox()
-        Utils.log("Created sandbox for compiling submission %s in %s" % (submission.couch_id, sandbox.path))
-        sandbox.create_file_from_storage(source_filename, submission.files[source_filename])
+
+        try:
+            sandbox = Sandbox()
+        except:
+            Utils.log("Couldn't create sandbox when compiling submission %s" % (submission.couch_id), Utils.Logger.SEVERITY_IMPORTANT)
+            return False
+        Utils.log("Created sandbox in %s for compiling submission %s" % (sandbox.path, submission.couch_id))
+
+        try:
+            sandbox.create_file_from_storage(source_filename, submission.files[source_filename])
+        except:
+            Utils.log("Couldn't copy file %s in sandbox %s when compiling submission %s" % (source_filename, sandbox.path, submission.couch_id))
+            return False
+
         if language == "c":
             command = "/usr/bin/gcc -DEVAL -static -O2 -lm -o %s %s" % (executable_filename, source_filename)
         elif language == "cpp":
