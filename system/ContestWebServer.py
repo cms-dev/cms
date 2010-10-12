@@ -163,6 +163,7 @@ class LoginHandler(BaseHandler):
                 self.redirect("/")
                 break
         else:
+            
             self.redirect("/?login_error=true")
 
 class LogoutHandler(BaseHandler):
@@ -280,8 +281,9 @@ class UseTokenHandler(BaseHandler):
                     try:
                         ES.use_token(s.couch_id)
                     except:
-                        # FIXME - log
-                        pass
+                        # FIXME - quali informazioni devono essere fornite?
+                        Utils.log("Failed to warn the Evaluation Server about a detailed feedback request.",
+                                  Utils.Logger.SEVERITY_IMPORTANT)
                     self.redirect("/submissions/%s" % (s.task.name))
                     return
                 else:
@@ -326,7 +328,12 @@ class SubmitHandler(BaseHandler):
                        files)
         c.submissions.append(s)
         c.to_couch()
-        ES.add_job(s.couch_id)
+        try:
+            ES.add_job(s.couch_id)
+        except:
+            # FIXME - quali informazioni devono essere fornite?
+            Utils.log("Failed to queue the submission to the Evaluation Server",
+                      Utils.Logger.SEVERITY_IMPORTANT)
         self.redirect("/submissions/%s" % (task_name))
 
 handlers = [
