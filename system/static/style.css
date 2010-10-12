@@ -1,0 +1,19 @@
+body {
+	height:100%;
+	font-family: Verdana, Arial, Sans-serif;
+	padding: 0px;
+}
+
+.header {
+    height:80px;
+    background-color:#AAAAFF;
+    text-align: center;
+    font-size:40px;
+}
+
+.loginbar {
+    height:30px;
+
+    background-color: #DDDDFF;
+    text-align: right;
+}

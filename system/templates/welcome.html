@@ -1,40 +1,15 @@
 <html>
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
     <title>{{ contest.name }}</title>
 </head>
 <body>
-    <h1>{{ contest.name }}</h1>
-    <div>{{ contest.description }}</div>
-    <!-- login form-->
-    {% if current_user == None %}
-        {% if handler.get_arguments("login_error") != [] %}
-            <p style="color:red">Failed to log in.</p>
-        {% end %}
-        <form action="/login" method="POST">
-        <table>
-        <tr>
-            <td>
-                Username:
-            </td><td>
-                <input type="text" name="username">
-            </td>
-        </tr><tr>
-            <td>
-                Password:
-            </td><td>
-                <input type="password" name="password">
-            </td>
-        </tr><tr>
-            <td colspan=2>
-                <input type="submit" value="Sign in">
-            </td>
-        </tr>
-        </table>
-        </form>
-    {% else %}
-        <div>Benvenuto {{ current_user.username }}!</br>
-        <a href="/logout">Logout</a>
-        </div>
+    {% include header.html %}
+
+    {% include loginbar.html %}
+    {% if current_user != None %}
+        <div>{{ contest.description }}</div>
         <div>
         <h2>Problemi</h2>
         <ul>
@@ -47,6 +22,8 @@
             </form>
         {% end %}
         </ul>
-    {% end %}
+    {% else %}
+        Authentication required.
+    {% end %} 
 </body>
 </html>

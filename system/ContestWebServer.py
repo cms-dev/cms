@@ -179,16 +179,20 @@ class SubmissionViewHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, task_name):
         update_submissions()
+        
+        # get the task object
         try:
             task = get_task(task_name)
         except:
             self.write("Task %s not found." % (task_name))
             return
+            
+        # get the list of the submissions
         subm = []
         for s in c.submissions:
             if s.user.username == self.current_user.username and s.task.name == task.name:
                 subm.append(s)
-        self.render("submission.html", submissions = subm, task = task)
+        self.render("submission.html", submissions = subm, task = task, contest = c)
 
 class SubmissionFileHandler(BaseHandler):
     """Shows a submission file.
@@ -197,6 +201,7 @@ class SubmissionFileHandler(BaseHandler):
     def get(self, submission_id, filename):
         update_submissions()
 
+        # search the submission in the contest
         for s in c.submissions:
             if s.user.username == self.current_user.username and \
                     s.couch_id == submission_id:
@@ -204,6 +209,7 @@ class SubmissionFileHandler(BaseHandler):
                 break
         else:
             raise tornado.web.HTTPError(404)
+        
         for key, value in submission.files.items():
             if key == filename:
                 submission_file = StringIO()
@@ -231,7 +237,7 @@ class TaskViewHandler(BaseHandler):
             self.write("Task %s not found." % (task_name))
             return
             #raise tornado.web.HTTPError(404)
-        self.render("task.html", task = task);
+        self.render("task.html", task = task, contest = c);
 
 class TaskStatementViewHandler(BaseHandler):
     """Shows the statement file of a task in the contest.
@@ -353,7 +359,7 @@ FSL = FileStorageLib()
 ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 
 if __name__ == "__main__":
-    Utils.set_service("contest web server)")
+    Utils.set_service("contest web server")
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(8888);
     c = Utils.ask_for_contest()

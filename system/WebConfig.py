@@ -19,8 +19,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
 parameters={
             "login_url": "/" ,
             "template_path": "./templates",
             "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
+            "static_path": os.path.join(os.path.dirname(__file__), "static"),
            }

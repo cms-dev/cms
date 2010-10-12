@@ -1,8 +1,13 @@
 <html>
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
     <title>{{ task.title }}</title>
 </head>
 <body>
+    {% include header.html %}
+    {% include loginbar.html %}
+    
     <h1>{{ task.title }}({{ task.name }})</h1>
     <div><a href="/task_statement/{{ task.name }}">Download task statement</a></div>
 </body>
