@@ -34,6 +34,7 @@ class Sandbox:
     def __init__(self):
         self.path = tempfile.mkdtemp()
         self.FSL = FileStorageLib()
+        self.info_file = "run.log"
         Utils.log("Sandbox in %s created" % (self.path), Utils.Logger.SEVERITY_DEBUG)
 
         # Default parameters for mo-box
@@ -45,7 +46,6 @@ class Sandbox:
         self.filter_syscalls = None   # -f
         self.stdin_file = None        # -i
         self.address_space = None     # -m
-        self.info_file = None         # -M
         self.stdout_file = None       # -o
         self.allow_path = []          # -p
         self.set_path = {}            # -p
@@ -76,8 +76,6 @@ class Sandbox:
             res += ["-i", self.stdin_file]
         if self.address_space != None:
             res += ["-m", str(self.address_space)]
-        if self.info_file != None:
-            res += ["-M", self.info_file]
         if self.stdout_file != None:
             res += ["-o", self.stdout_file]
         for path in self.allow_path:
@@ -98,7 +96,17 @@ class Sandbox:
             res += ["-w", str(self.wallclock_timeout)]
         if self.extra_timeout != None:
             res += ["-x", str(self.extra_timeout)]
+        res += ["-M", self.relative_path(self.info_file)]
         return res
+
+    def get_status(self):
+        log = list()
+        for line in self.get_file(self.info_file):
+            log.append(line.split(":", 2))
+        return log
+
+    def relative_path(self, path):
+        return os.path.join(self.path, path)
 
     def create_file(self, path, executable = False):
         if executable:
