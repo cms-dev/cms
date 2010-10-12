@@ -1,16 +1,16 @@
-    <!-- login form-->
-    {% if current_user == None %}
-        {% if handler.get_arguments("login_error") != [] %}
-            <p style="color:red">Failed to log in.</p>
-        {% end %}
-        <form action="/login" method="POST">
-                Username:
-                <input type="text" name="username">
-                Password:
-                <input type="password" name="password">
-                <input type="submit" value="Sign in">
-        </form>
-    {% else %}
-        Benvenuto {{ current_user.username }}!
-        <a href="/logout">Logout</a>
-    {% end %}
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <title>{{ contest.name }}</title>
+</head>
+<body>
+    {% include header.html %}
+
+    {% include loginbar.html %}
+    
+    <div class="core">
+    {% block core %}{% end %}
+    </div>
+</body>
+</html>
