@@ -99,11 +99,76 @@ class Sandbox:
         res += ["-M", self.relative_path(self.info_file)]
         return res
 
-    def get_status(self):
-        log = list()
-        for line in self.get_file(self.info_file):
-            log.append(line.split(":", 2))
-        return log
+    def get_log(self):
+        if log not in self:
+            self.log = list()
+            try:
+                with self.get_file(self.info_file) as log_file:
+                    for line in log_file:
+                        self.log.append(line.split(":", 2))
+            except IOError:
+                raise IOError("Error while reading execution log")
+        return self.log
+
+    def get_execution_time(self):
+        for k, v in self.log:
+            if k == 'time':
+                return float(v)
+        return None
+
+    def get_execution_wall_clock_time(self):
+        for k, v in self.log:
+            if k == 'wall-time':
+                return float(v)
+        return None
+
+    def get_memory_used(self):
+        for k, v in self.log:
+            if k == 'mem':
+                return float(v)
+        return None
+
+    def get_status_list(self):
+        if status_list not in self:
+            self.status_list = list()
+            for k, v in self.get_log():
+                if k == 'status':
+                    self.status_list.append(v)
+        return self.status_list
+
+    EXIT_SANDBOX_ERROR = 'sandbox error'
+    EXIT_OK = 'ok'
+    EXIT_SIGNAL = 'signal'
+    EXIT_TIMEOUT = 'timeout'
+    EXIT_FILE_ACCESS = 'file access'
+    EXIT_SYSCALL = 'syscall'
+
+    def get_exit_style(self):
+        self.get_status_list()
+        if 'XX' in self.status_list:
+            return self.EXIT_SANDBOX_ERROR
+        elif 'OK' in self.status_list:
+            return self.EXIT_OK
+        elif 'FO' in self.status_list:
+            return self.EXIT_SYSCALL
+        elif 'FA' in self.status_list:
+            return self.EXIT_FILE_ACCESS
+        elif 'TO' in self.status_list:
+            return self.EXIT_TIMEOUT
+        elif 'SG' in self.status_list:
+            return self.EXIT_SIGNAL
+
+    def get_killing_signal(self):
+        for k, v in self.get_log():
+            if k == 'exitsig':
+                return int(v)
+        return None
+
+    def get_exit_code(self):
+        for k, v in self.get_log():
+            if k == 'exitcode':
+                return int(v)
+        return 0
 
     def relative_path(self, path):
         return os.path.join(self.path, path)
@@ -113,7 +178,7 @@ class Sandbox:
             Utils.log("Creating executable file %s in sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
         else:
             Utils.log("Creating plain file %s in sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
-        real_path = os.path.join(self.path, path)
+        real_path = self.relative_path(path)
         fd = open(real_path, 'w')
         if executable:
             os.chmod(real_path, stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
@@ -131,7 +196,7 @@ class Sandbox:
 
     def get_file(self, path):
         Utils.log("Retrieving file %s from sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
-        real_path = os.path.join(self.path, path)
+        real_path = self.relative_path(path)
         fd = open(real_path, 'r')
         return fd
 
@@ -146,6 +211,15 @@ class Sandbox:
         digest = self.FSL.put_file(fd, description)
         fd.close()
         return digest
+
+    def stat_file(self, path):
+        return os.stat(self.relative_path(path))
+
+    def remove_file(self, path):
+        os.remove(self.relative_path(path))
+
+    def clean(self):
+        del self.log
 
     def execute(self, command):
         args = ["./mo-box"] + self.build_box_options() + ["--"] + command
