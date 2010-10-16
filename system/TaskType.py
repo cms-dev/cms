@@ -77,32 +77,40 @@ class BatchTaskType:
             return False
 
         if language == "c":
-            command = "/usr/bin/gcc -DEVAL -static -O2 -lm -o %s %s" % (executable_filename, source_filename)
+            command = ["/usr/bin/gcc", "-DEVAL", "-static", "-O2", "-lm", "-o", executable_filename, source_filename]
         elif language == "cpp":
-            command = "/usr/bin/g++ -DEVAL -static -O2 -o %s %s" % (executable_filename, source_filename)
+            command = ["/usr/bin/g++", "-DEVAL", "-static", "-O2", "-o", executable_filename, source_filename]
         elif language == "pas":
-            command = "/usr/bin/gpc -dEVAL -XS -O2 -o %s %s" % (executable_filename, source_filename)
+            command = ["/usr/bin/gpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename), source_filename]
         sandbox.chdir = sandbox.path
         sandbox.preserve_env = True
         sandbox.filter_syscalls = 0
         sandbox.timeout = 10
         sandbox.address_space = 256 * 1024
-        Utils.log("Starting compiling submission %s with command line: %s" % (submission.couch_id, command))
-        # FIXME - Differentiate between compilation errors and popen errors
-        # FIXME - Detect sandbox problems (timeout, out of memory, ...)
+        sandbox.stdout_file = sandbox.relative_path("compiler_stdout.txt")
+        sandbox.stderr_file = sandbox.relative_path("compiler_stderr.txt")
+        Utils.log("Compiling submission %s" % (submission.couch_id))
         try:
-            compilation_return = sandbox.execute(command.split(" "))
+            sandbox.execute(command)
         except:
-            compilation_return = 1
-        if compilation_return == 0:
+            Utils.log("Couldn't spawn sandbox when trying to compile submission %s" % (submission.couch_id))
+            return False
+
+        executable_present = True
+        try:
+            sandbox.stat_file(executable_filename)
+        except IOError:
+            executable_present = False
+
+        if sandbox.get_exit_status() == Sandbox.EXIT_OK and executable_present:
             submission.executables = {}
             submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, submission.couch_id))
             submission.compilation_result = "OK"
             Utils.log("Compilation for submission %s successfully terminated" % (submission.couch_id))
+            submission.to_couch()
         else:
-            Utils.log("Compilation for submission %s failed" % (submission.couch_id))
-            submission.compilation_result = "Failed"
-        submission.to_couch()
+            # FIXME - Manage compilation and sandbox problems
+            pass
         #sandbox.delete()
         #Utils.log("Sandbox for compiling submission %s deleted" % (submission.couch_id))
         return compilation_return == 0
