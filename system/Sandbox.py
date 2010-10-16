@@ -143,7 +143,7 @@ class Sandbox:
     EXIT_FILE_ACCESS = 'file access'
     EXIT_SYSCALL = 'syscall'
 
-    def get_exit_style(self):
+    def get_exit_status(self):
         self.get_status_list()
         if 'XX' in self.status_list:
             return self.EXIT_SANDBOX_ERROR
@@ -157,6 +157,7 @@ class Sandbox:
             return self.EXIT_TIMEOUT
         elif 'SG' in self.status_list:
             return self.EXIT_SIGNAL
+        return self.EXIT_SANDBOX_ERROR
 
     def get_killing_signal(self):
         for k, v in self.get_log():
@@ -170,6 +171,21 @@ class Sandbox:
                 return int(v)
         return 0
 
+    def get_human_exit_description(self):
+        status = self.get_exit_status()
+        if status == self.EXIT_OK:
+            return "Execution successfully finished (with exit code %d)" % (self.get_exit_code())
+        elif status == self.EXIT_SANDBOX_ERROR:
+            return "Execution failed because of sandbox error"
+        elif status == self.EXIT_SYSCALL:
+            return "Execution killed because of forbidden syscall"
+        elif status == self.EXIT_FILE_ACCESS:
+            return "Execution killed because of forbidden file access"
+        elif status == self.EXIT_TIMEOUT:
+            return "Execution timed out"
+        elif status == self.EXIT_SIGNAL:
+            return "Execution killed with signal %d" % (self.get_killing_signal())
+
     def relative_path(self, path):
         return os.path.join(self.path, path)
 
@@ -180,8 +196,10 @@ class Sandbox:
             Utils.log("Creating plain file %s in sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
         real_path = self.relative_path(path)
         fd = open(real_path, 'w')
+        mod = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR
         if executable:
-            os.chmod(real_path, stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+            mod |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
+        os.chmod(real_path, mod)
         return fd
 
     def create_file_from_storage(self, path, digest, executable = False):
