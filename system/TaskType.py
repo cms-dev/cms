@@ -103,8 +103,8 @@ class BatchTaskType:
             Utils.log("Compilation for submission %s failed" % (submission.couch_id))
             submission.compilation_result = "Failed"
         submission.to_couch()
-        sandbox.delete()
-        Utils.log("Sandbox for compiling submission %s deleted" % (submission.couch_id))
+        #sandbox.delete()
+        #Utils.log("Sandbox for compiling submission %s deleted" % (submission.couch_id))
         return compilation_return == 0
 
     def execute_single(self, submission, test_number):
