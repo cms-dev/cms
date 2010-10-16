@@ -365,4 +365,7 @@ if __name__ == "__main__":
     c = Utils.ask_for_contest()
     Utils.log("Contest Web Server for contest %s started..." % (c.couch_id))
     upsince = time.time()
-    tornado.ioloop.IOLoop.instance().start()
+    try:
+        tornado.ioloop.IOLoop.instance().start()
+    except KeyboardInterrupt:
+        Utils.log("Contest Web Server for contest %s stopped." % (c.couch_id))
