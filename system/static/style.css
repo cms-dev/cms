@@ -1,6 +1,6 @@
 body {
 	height:100%;
-	font-family: Verdana, Arial, Sans-serif;
+	font-family: sans-serif;
 	padding: 0px;
 }
 
@@ -9,6 +9,7 @@ body {
     background-color:#AAAAFF;
     text-align: center;
     font-size:40px;
+    line-height: 80px;
 }
 
 .loginbar {
@@ -16,4 +17,5 @@ body {
 
     background-color: #DDDDFF;
     text-align: right;
+    line-height: 30px;
 }
