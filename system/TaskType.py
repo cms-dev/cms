@@ -102,15 +102,46 @@ class BatchTaskType:
         except IOError:
             executable_present = False
 
-        if sandbox.get_exit_status() == Sandbox.EXIT_OK and executable_present:
-            submission.executables = {}
-            submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, submission.couch_id))
-            submission.compilation_result = "OK"
-            Utils.log("Compilation for submission %s successfully terminated" % (submission.couch_id))
-            submission.to_couch()
-        else:
-            # FIXME - Manage compilation and sandbox problems
+        exit_status = sandbox.get_exit_status()
+        exit_code = sandbox.get_exit_code()
+        if exit_status == Sandbox.EXIT_OK and exit_code == 0:
+            try:
+                submission.executables = {}
+                submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, submission.couch_id))
+                submission.compilation_result = "OK %s\n" % (sandbox.get_stats())
+                submission.to_couch()
+                Utils.log("Compilation for submission %s successfully finished" % (submission.couch_id))
+                return True
+            except:
+                Utils.log("Compilation for submission %s successfully finished, but coudln't update the database" % (submission.couch_id), Utils.Logger.SEVERITY_IMPORTANT)
+                return False
+
+        if exit_status == Sandbox.EXIT_OK and exit_code != 0:
+            try:
+                error = submission.get_file_to_string("compiler_stderr.txt")
+                submission.compilation_result = "Failed %s\nCompiler output:\n%s" % (sandbox.get_stats(), error)
+                submission.to_couch()
+                Utils.log("Compilation for submission %s failed" % (submission_couch_id))
+                return True
+            except:
+                Utils.log("Compilation for submission %s failed, but couldn't update the database" % (submission.couch_id), Utils.Logger.SEVERITY_IMPORTANT)
+                return False
+
+        if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
             pass
+
+        if exit_status == Sandbox.EXIT_SYSCALL:
+            pass
+
+        if exit_status == Sandbox.EXIT_FILE_ACCESS:
+            pass
+
+        if exit_status == Sandbox.EXIT_TIMEOUT:
+            pass
+
+        if exit_status == Sandbox.EXIT_SIGNAL:
+            pass
+
         #sandbox.delete()
         #Utils.log("Sandbox for compiling submission %s deleted" % (submission.couch_id))
         return compilation_return == 0
