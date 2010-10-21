@@ -186,6 +186,9 @@ class Sandbox:
         elif status == self.EXIT_SIGNAL:
             return "Execution killed with signal %d" % (self.get_killing_signal())
 
+    def get_stats(self):
+        return "[%.3f sec - %.2f MB]" % (self.get_execution_time(), float(self.get_memory_used()) / (1024 * 1024))
+
     def relative_path(self, path):
         return os.path.join(self.path, path)
 
