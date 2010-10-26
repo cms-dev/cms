@@ -70,8 +70,8 @@ class Sandbox:
             res += ["-E", var]
         for var, value in self.set_env:
             res += ["-E", "%s=%s" % (var, value)]
-        if self.filter_syscalls != None:
-            res += ["-f", str(self.filter_syscalls)]
+        if self.filter_syscalls != None and self.filter_syscalls > 0:
+            res += ["-%s" % ("f" * self.filter_syscall)]
         if self.stdin_file != None:
             res += ["-i", self.stdin_file]
         if self.address_space != None:
@@ -100,14 +100,15 @@ class Sandbox:
         return res
 
     def get_log(self):
-        if log not in self:
+        if "log" not in self.__dict__:
             self.log = list()
             try:
                 with self.get_file(self.info_file) as log_file:
                     for line in log_file:
-                        self.log.append(line.split(":", 2))
+                        self.log.append(line.strip().split(":", 2))
             except IOError:
                 raise IOError("Error while reading execution log")
+        #Utils.log("Execution log: %s" % (repr(self.log)), Utils.Logger.SEVERITY_DEBUG)
         return self.log
 
     def get_execution_time(self):
@@ -129,11 +130,12 @@ class Sandbox:
         return None
 
     def get_status_list(self):
-        if status_list not in self:
+        if "status_list" not in self.__dict__:   # No better way to do this?
             self.status_list = list()
             for k, v in self.get_log():
                 if k == 'status':
                     self.status_list.append(v)
+        #Utils.log("Status list: %s" % (repr(self.status_list)), Utils.Logger.SEVERITY_DEBUG)
         return self.status_list
 
     EXIT_SANDBOX_ERROR = 'sandbox error'
@@ -147,8 +149,9 @@ class Sandbox:
         self.get_status_list()
         if 'XX' in self.status_list:
             return self.EXIT_SANDBOX_ERROR
-        elif 'OK' in self.status_list:
-            return self.EXIT_OK
+        # New version seems not to report OK
+        #elif 'OK' in self.status_list:
+        #    return self.EXIT_OK
         elif 'FO' in self.status_list:
             return self.EXIT_SYSCALL
         elif 'FA' in self.status_list:
@@ -157,7 +160,7 @@ class Sandbox:
             return self.EXIT_TIMEOUT
         elif 'SG' in self.status_list:
             return self.EXIT_SIGNAL
-        return self.EXIT_SANDBOX_ERROR
+        return self.EXIT_OK
 
     def get_killing_signal(self):
         for k, v in self.get_log():
