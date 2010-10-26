@@ -41,33 +41,31 @@ class CompileJob(Job):
         Job.__init__(self, submission_id)
 
     def run(self):
-        Utils.log("Compilation of submission %s started" % (self.submission_id))
         success = self.task_type.compile(self.submission)
-        if success:
-            Utils.log("Compilation of submission %s finished successfully" % (self.submission_id))
-        else:
-            Utils.log("Compilation of submission %s failed" % (self.submission_id))
         try:
             self.es.compilation_finished(success, self.submission_id)
+            if success:
+                Utils.log("Reported successful operation")
+            else:
+                Utils.log("Reported failed operation")
         except IOError:
-            Utils.log("Could not report finished compilation for submission %s, dropping it" % (self.submission_id))
+            Utils.log("Could not report finished operation, dropping it")
 
 class EvaluateJob(Job):
     def __init__(self, submission_id):
         Job.__init__(self, submission_id)
 
     def run(self):
-        Utils.log("Evaluation of submission %s started" % (self.submission_id))
         success = self.task_type.execute(self.submission)
-        if success:
-            Utils.log("Evaluation of submission %s finished successfully" % (self.submission_id))
-        else:
-            Utils.log("Evaluation of submission %s failed" % (self.submission_id))
         try:
             self.es.evaluation_finished(True, self.submission_id)
+            if success:
+                Utils.log("Reported successful operation")
+            else:
+                Utils.log("Reported failed operation")
         except IOError:
-            Utils.log("Could not report finished evaluation for submission %s, dropping it" % (self.submission_id))
-
+            Utils.log("Could not report finished operation, dropping it")
+ 
 class Worker:
     def __init__(self, listen_address, listen_port):
         # Create server
@@ -83,13 +81,15 @@ class Worker:
         server.serve_forever()
 
     def compile(self, submission_id):
-        Utils.log("Request to compile submission %s received" % (submission_id))
+        Utils.set_operation("compiling submission %s" % (submission_id))
+        Utils.log("Request received")
         j = CompileJob(submission_id)
         j.start()
         return True
 
     def evaluate(self, submission_id):
-        Utils.log("Request to evaluate submission %s received" % (submission_id))
+        Utils.set_operation("evaluating submission %s" % (submission_id))
+        Utils.log("Request received")
         j = EvaluateJob(submission_id)
         j.start()
         return True

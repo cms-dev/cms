@@ -54,7 +54,7 @@ class BatchTaskType:
         """
         valid, language = submission.verify_source()
         if not valid or language == None:
-            Utils.log("Invalid files in submission %s, detected language %s" % (submission.couch_id, str(language)))
+            Utils.log("Compiling submission %s: invalid submission or couldn't detect language" % (submission.couch_id))
             return self.terminate_compilation("Invalid files in submission")
         if len(submission.files) != 1:
             Utils.log("Submission %s cointains %d files, expecting 1" % (submission.couch_id, len(submission.files)))
@@ -85,6 +85,7 @@ class BatchTaskType:
         sandbox.chdir = sandbox.path
         sandbox.preserve_env = True
         sandbox.filter_syscalls = 0
+        sandbox.file_check = 9
         sandbox.timeout = 10
         sandbox.address_space = 256 * 1024
         sandbox.stdout_file = sandbox.relative_path("compiler_stdout.txt")
@@ -99,7 +100,7 @@ class BatchTaskType:
         executable_present = True
         try:
             sandbox.stat_file(executable_filename)
-        except IOError:
+        except OSError:
             executable_present = False
 
         exit_status = sandbox.get_exit_status()
@@ -112,39 +113,39 @@ class BatchTaskType:
                 submission.to_couch()
                 Utils.log("Compilation for submission %s successfully finished" % (submission.couch_id))
                 return True
-            except:
-                Utils.log("Compilation for submission %s successfully finished, but coudln't update the database" % (submission.couch_id), Utils.Logger.SEVERITY_IMPORTANT)
+            except (IOError, OSError) as e:
+                Utils.log("Compilation for submission %s successfully finished, but coudln't update the database (exception: %s)" % (submission.couch_id, repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
                 return False
 
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
             try:
-                error = submission.get_file_to_string("compiler_stderr.txt")
+                error = sandbox.get_file_to_string("compiler_stderr.txt")
                 submission.compilation_result = "Failed %s\nCompiler output:\n%s" % (sandbox.get_stats(), error)
                 submission.to_couch()
-                Utils.log("Compilation for submission %s failed" % (submission_couch_id))
+                Utils.log("Compilation for submission %s failed" % (submission.couch_id))
                 return True
-            except:
-                Utils.log("Compilation for submission %s failed, but couldn't update the database" % (submission.couch_id), Utils.Logger.SEVERITY_IMPORTANT)
+            except (IOError, OSError) as e:
+                Utils.log("Compilation for submission %s failed, but couldn't update the database (exception: %s)" % (submission.couch_id, repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
                 return False
 
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-            pass
+            Utils.log("Sandbox error")
 
         if exit_status == Sandbox.EXIT_SYSCALL:
-            pass
+            Utils.log("Forbidden syscall")
 
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            pass
+            Utils.log("Forbidden file access")
 
         if exit_status == Sandbox.EXIT_TIMEOUT:
-            pass
+            Utils.log("Timeout")
 
         if exit_status == Sandbox.EXIT_SIGNAL:
-            pass
+            Utils.log("Killed with signal")
 
         #sandbox.delete()
         #Utils.log("Sandbox for compiling submission %s deleted" % (submission.couch_id))
-        return compilation_return == 0
+        return True
 
     def execute_single(self, submission, test_number):
         executable_filename = submission.executables.keys()[0]
