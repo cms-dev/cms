@@ -46,10 +46,10 @@ class LogServer:
         # Run the server's main loop
         server.serve_forever()
 
-    def log(self, msg, service, severity = Utils.Logger.SEVERITY_NORMAL, timestamp = None):
+    def log(self, msg, service, operation = "", severity = Utils.Logger.SEVERITY_NORMAL, timestamp = None):
         if timestamp == None:
             timestamp = time.time()
-        line = Utils.format_log(msg, service, severity, timestamp)
+        line = Utils.format_log(msg, service, operation, severity, timestamp)
         print line
         print >> self.log_file, line
         return True

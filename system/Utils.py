@@ -97,9 +97,12 @@ def maybe_mkdir(d):
     except:
         pass
 
-def format_log(msg, service, severity, timestamp):
+def format_log(msg, service, operation, severity, timestamp):
     d = datetime.datetime.fromtimestamp(timestamp)
-    return "%s - %s [%s] %s" % ('{0:%Y/%m/%d %H:%M:%S}'.format(d), severity, service, msg)
+    service_full = service
+    if operation != "":
+        service_full += "/%s" % (operation)
+    return "%s - %s [%s] %s" % ('{0:%Y/%m/%d %H:%M:%S}'.format(d), severity, service_full, msg)
 
 class Logger:
     SEVERITY_CRITICAL, SEVERITY_IMPORTANT, SEVERITY_NORMAL, SEVERITY_DEBUG = ["CRITICAL", "IMPORTANT", "NORMAL", "DEBUG"]
@@ -110,6 +113,7 @@ class Logger:
         if log_port == None:
             log_port = Configuration.log_server[1]
         self.service = service
+        self.operation = ""
         self.log_proxy = xmlrpclib.ServerProxy('http://%s:%d' % (log_address, log_port))
         self.local_log = local_log
 
@@ -117,11 +121,11 @@ class Logger:
         if timestamp == None:
             timestamp = time.time()
         try:
-            self.log_proxy.log(msg, self.service, severity, timestamp)
+            self.log_proxy.log(msg, self.service, self.operation, severity, timestamp)
         except IOError:
             print "Couldn't send log to remote server"
         if self.local_log:
-            print format_log(msg, self.service, severity, timestamp)
+            print format_log(msg, self.service, self.operation, severity, timestamp)
 
 logger = Logger()
 
@@ -130,3 +134,6 @@ def log(s, severity = Logger.SEVERITY_NORMAL):
 
 def set_service(service):
     logger.service = service
+
+def set_operation(operation):
+    logger.operation = operation
