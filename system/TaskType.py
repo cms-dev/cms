@@ -110,6 +110,7 @@ class BatchTaskType:
                 submission.executables = {}
                 submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, submission.couch_id))
                 submission.compilation_text = "OK %s\n" % (sandbox.get_stats())
+                submission.compilation_outcome = "ok"
                 submission.to_couch()
                 Utils.log("Compilation for submission %s successfully finished" % (submission.couch_id))
                 return True
@@ -121,6 +122,7 @@ class BatchTaskType:
             try:
                 error = sandbox.get_file_to_string("compiler_stderr.txt")
                 submission.compilation_text = "Failed %s\nCompiler output:\n%s" % (sandbox.get_stats(), error)
+                submission.compilation_outcome = "fail"
                 submission.to_couch()
                 Utils.log("Compilation for submission %s failed" % (submission.couch_id))
                 return True

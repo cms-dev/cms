@@ -239,7 +239,7 @@ class EvaluationServer:
         submission.compilation_tentatives += 1
         submission.to_couch()
         self.action_finished((EvaluationServer.JOB_TYPE_COMPILATION, submission))
-        if success:
+        if success and submission.compilation_outcome == "ok":
             Utils.log("Compilation succeeded for submission %s, queueing evaluation" % (submission_id))
             priority = EvaluationServer.JOB_PRIORITY_LOW
             if submission.tokened():
@@ -248,6 +248,8 @@ class EvaluationServer:
             self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
                             priority)
             self.queue.unlock()
+        elif success and submission.compilation_outcome == "fail":
+            Utils.log("Compilation finished for submission %s, but the submission was not accepted; I'm not queueing evaluation" % (submission_id))
         else:
             Utils.log("Compilation failed for submission %s" % (submission_id))
             if submission.compilation_tentatives > \
