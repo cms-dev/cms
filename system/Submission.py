@@ -26,8 +26,8 @@ from CouchObject import CouchObject
 
 class Submission(CouchObject):
 
-    _to_copy = ["timestamp", "files", "outcome", "executables",
-                "compilation_result", "evaluation_status",
+    _to_copy = ["timestamp", "files", "evaluation_outcome", "executables",
+                "compilation_text", "evaluation_text",
                 "compilation_tentatives", "evaluation_tentatives",
                 "token_timestamp"]
     _to_copy_id = ["user", "task"]
@@ -35,8 +35,8 @@ class Submission(CouchObject):
     LANGUAGES = ["c", "cpp", "pas"]
 
     def __init__(self, user, task, timestamp, files,
-                 outcome = None, executables = None,
-                 compilation_result = None, evaluation_status = None,
+                 evaluation_outcome = None, executables = None,
+                 compilation_text = None, evaluation_text = None,
                  compilation_tentatives = 0, evaluation_tentatives = 0,
                  token_timestamp = None,
                  couch_id = None):
@@ -44,10 +44,10 @@ class Submission(CouchObject):
         self.task = task
         self.timestamp = timestamp
         self.files = files
-        self.outcome = outcome
+        self.evaluation_outcome = outcome
         self.executables = executables
-        self.compilation_result = compilation_result
-        self.evaluation_status = evaluation_status
+        self.compilation_text = compilation_text
+        self.evaluation_text = evaluation_text
         self.compilation_tentatives = compilation_tentatives
         self.evaluation_tentatives = evaluation_tentatives
         self.token_timestamp = token_timestamp
@@ -57,9 +57,9 @@ class Submission(CouchObject):
         return self.token_timestamp != None
 
     def invalid(self):
-        self.outcome = None
-        self.compilation_result = None
-        self.evaluation_status = None
+        self.evaluation_outcome = None
+        self.compilation_text = None
+        self.evaluation_text = None
         self.executables = None
         self.to_couch()
 

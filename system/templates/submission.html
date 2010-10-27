@@ -16,8 +16,8 @@
         {% for s in submissions %}
             <tr>
                 <td>{{ datetime.datetime.fromtimestamp(s.timestamp) }}</td>
-                <td>{{ s.compilation_result }}</td>
-                <td>{{ s.evaluation_status }}</td>
+                <td>{{ s.compilation_text }}</td>
+                <td>{{ s.evaluation_text }}</td>
                 <td>
                 {% for key,value in s.files.items() %}
                     <a href="/submission_file/{{ escape(s.couch_id) }}/{{ escape(key) }}">{{ escape(key) }}</br>

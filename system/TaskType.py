@@ -39,7 +39,7 @@ class BatchTaskType:
         compilation of the same submission: the user has to fix the
         submission).
         """
-        submission.compilation_result = msg
+        submission.compilation_text = msg
         submission.to_couch()
         return True
 
@@ -109,7 +109,7 @@ class BatchTaskType:
             try:
                 submission.executables = {}
                 submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, submission.couch_id))
-                submission.compilation_result = "OK %s\n" % (sandbox.get_stats())
+                submission.compilation_text = "OK %s\n" % (sandbox.get_stats())
                 submission.to_couch()
                 Utils.log("Compilation for submission %s successfully finished" % (submission.couch_id))
                 return True
@@ -120,7 +120,7 @@ class BatchTaskType:
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
             try:
                 error = sandbox.get_file_to_string("compiler_stderr.txt")
-                submission.compilation_result = "Failed %s\nCompiler output:\n%s" % (sandbox.get_stats(), error)
+                submission.compilation_text = "Failed %s\nCompiler output:\n%s" % (sandbox.get_stats(), error)
                 submission.to_couch()
                 Utils.log("Compilation for submission %s failed" % (submission.couch_id))
                 return True
@@ -174,11 +174,11 @@ class BatchTaskType:
                                                        os.path.join(sandbox.path, "output.txt"),
                                                        os.path.join(sandbox.path, "res.txt")])
             if diff_return == 0:
-                submission.outcome[test_number] = 1.0
-                submission.evaluation_status[test_number] = "OK"
+                submission.evaluation_outcome[test_number] = 1.0
+                submission.evaluation_text[test_number] = "OK"
             else:
-                submission.outcome[test_number] = 0.0
-                submission.evaluation_status[test_number] = "Failed"
+                submission.evaluation_outcome[test_number] = 0.0
+                submission.evaluation_text[test_number] = "Failed"
         else:
             manager_filename = submission.task.managers.keys()[0]
             sandbox.create_file_from_storage(manager_filename, submission.task.managers[manager_filename], executable = True)
@@ -200,8 +200,8 @@ class BatchTaskType:
                 Utils.log("Wrong value `%s' from manager when evaluating submission %s" % (value.strip(), submission.couch_id))
                 value = 0.0
                 text = "Error while evaluating"
-            submission.outcome[test_number] = value
-            submission.evaluation_status[test_number] = text
+            submission.evaluation_outcome[test_number] = value
+            submission.evaluation_text[test_number] = text
         submission.to_couch()
         #sandbox.delete()
 
@@ -209,8 +209,8 @@ class BatchTaskType:
         if len(submission.executables) != 1:
             Utils.log("Submission %s contains %d executables, expecting 1" % (submission.couch_id, len(submission.executables)))
             return False
-        submission.outcome = [None] * len(submission.task.testcases)
-        submission.evaluation_status = [None] * len(submission.task.testcases)
+        submission.evaluation_outcome = [None] * len(submission.task.testcases)
+        submission.evaluation_text = [None] * len(submission.task.testcases)
         submission.to_couch()
         for test_number in range(len(submission.task.testcases)):
             self.execute_single(submission, test_number)
