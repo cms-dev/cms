@@ -449,13 +449,6 @@
     contestant; in each entry the key is the filename and each value
     is the \FS{} id of a file;
 
-  \item \id{outcome} (list): the description of the result obtained by
-    this submission on each testcase; each element of the list
-    describes the result on the corresponding testcase, but its format
-    and meaning depends on the specific task; this value is used by
-    the scoring function to compute the score for all the contestants;
-    this value is set when evaluating the submission;
-
   \item \id{executables} (dictionary): the compiled files for this
     submission; in each entry the key is the filename and each value
     is the \FS{} id of an executable, but its meaning depends on the
@@ -463,14 +456,30 @@
     output-only tasks); this value is set when compiling the
     submission;
 
-  \item \id{compilation\_result} (string): a textual description of
-    the result of the compilation, shown to the contestant; this value
-    is set when compiling the submission;
+  \item \id{compilation\_outcome} (string): the description of the
+    compilation outcome, used by the \ES{} and \CWS{} to know whether
+    the submission has to be evaluated or not; it's content should be
+    the string ``ok'' if the compilation was successful (and, thus,
+    the submission accepted), or ``fail'' if there were errors that
+    made the submission to be rejected; this value is set when
+    compiling the submission;
 
-  \item \id{evaluation\_status} (list): a textual and human-readable
-    description of the result of the evaluation; each element of the
-    list refers to the corresponding testcase; this value is set when
-    evaluating the submission;
+  \item \id{evaluation\_outcome} (list): the description of the
+    outcome obtained by this submission on each testcase; each element
+    of the list describes the outcome on the corresponding testcase,
+    but its format and meaning depends on the specific task; this
+    value is used by the scoring function to compute the score for all
+    the contestants; this value is set when evaluating the submission;
+
+  \item \id{compilation\_text} (string): a textual and human-readable
+    description of the outcome of the compilation, shown to the
+    contestant; this value is set when compiling the submission;
+
+  \item \id{evaluation\_text} (list): a textual and human-readable
+    description of the outcome of the evaluation, shown to the
+    contestant if a token was used on this submission; each element of
+    the list refers to the corresponding testcase; this value is set
+    when evaluating the submission;
 
   \item \id{token\_timestamp} (integer): the UNIX timestamp of the
     instant when the token was used for this submission; not set if no
