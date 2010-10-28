@@ -277,6 +277,7 @@ class EvaluationServer:
                            submission_id), Utils.Logger.SEVERITY_IMPORTANT)
             else:
                 self.queue.lock()
+                # TODO - should check the original priority of the job
                 self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
                                 EvaluationServer.JOB_PRIORITY_LOW)
                 self.queue.unlock()
