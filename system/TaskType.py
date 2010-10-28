@@ -26,24 +26,32 @@ import Utils
 from Sandbox import Sandbox
 from Task import Task
 
-def get_task_type_class(task_type):
-    if task_type == Task.TASK_TYPE_BATCH:
-        return BatchTaskType()
+def get_task_type_class(submission):
+    if submission.task.task_type == Task.TASK_TYPE_BATCH:
+        return BatchTaskType(submission)
     else:
         return None
 
 class BatchTaskType:
-    def terminate_compilation(self, submission, msg):
-        """Terminate the compilation because of an error in the
-        submission (i.e., an error that cannot be fixed in another
-        compilation of the same submission: the user has to fix the
-        submission).
-        """
-        submission.compilation_text = msg
-        submission.to_couch()
-        return True
+    def __init__(self, submission):
+        self.submission = submission
 
-    def compile(self, submission):
+    def finish_compilation(self, success, compilation_success = False, text = ""):
+        if not success:
+            return False
+        if compilation_success:
+            self.submission.compilation_outcome = "ok"
+        else:
+            self.submission.compilation_outcome = "fail"
+        self.submission.compilation_text = text
+        try:
+            self.submission.to_couch()
+            return True
+        except Exception as e:
+            Utils.log("Couldn't update database, aborting compilation (exception: %s)" % (repr(e)))
+            return False
+
+    def compile(self):
         """Tries to compile the specified submission.
 
         It returns True when the compilation is successful or when the
@@ -52,28 +60,28 @@ class BatchTaskType:
         again to compile the same submission in a sane environment
         should lead to returning True).
         """
-        valid, language = submission.verify_source()
+        valid, language = self.submission.verify_source()
         if not valid or language == None:
-            Utils.log("Compiling submission %s: invalid submission or couldn't detect language" % (submission.couch_id))
+            Utils.log("Invalid submission or couldn't detect language")
             return self.terminate_compilation("Invalid files in submission")
-        if len(submission.files) != 1:
-            Utils.log("Submission %s cointains %d files, expecting 1" % (submission.couch_id, len(submission.files)))
+        if len(self.submission.files) != 1:
+            Utils.log("Submission %s cointains %d files, expecting 1" % (self.submission.couch_id, len(self.submission.files)))
             return self.terminate_compilation("Invalid files in submission")
 
-        source_filename = submission.files.keys()[0]
+        source_filename = self.submission.files.keys()[0]
         executable_filename = source_filename.replace(".%s" % (language), "")
 
         try:
             sandbox = Sandbox()
         except:
-            Utils.log("Couldn't create sandbox when compiling submission %s" % (submission.couch_id), Utils.Logger.SEVERITY_IMPORTANT)
+            Utils.log("Couldn't create sandbox when compiling submission %s" % (self.submission.couch_id), Utils.Logger.SEVERITY_IMPORTANT)
             return False
-        Utils.log("Created sandbox in %s for compiling submission %s" % (sandbox.path, submission.couch_id))
+        Utils.log("Created sandbox in %s for compiling submission %s" % (sandbox.path, self.submission.couch_id))
 
         try:
-            sandbox.create_file_from_storage(source_filename, submission.files[source_filename])
+            sandbox.create_file_from_storage(source_filename, self.submission.files[source_filename])
         except:
-            Utils.log("Couldn't copy file %s in sandbox %s when compiling submission %s" % (source_filename, sandbox.path, submission.couch_id))
+            Utils.log("Couldn't copy file %s in sandbox %s when compiling submission %s" % (source_filename, sandbox.path, self.submission.couch_id))
             return False
 
         if language == "c":
@@ -90,11 +98,11 @@ class BatchTaskType:
         sandbox.address_space = 256 * 1024
         sandbox.stdout_file = sandbox.relative_path("compiler_stdout.txt")
         sandbox.stderr_file = sandbox.relative_path("compiler_stderr.txt")
-        Utils.log("Compiling submission %s" % (submission.couch_id))
+        Utils.log("Compiling submission %s" % (self.submission.couch_id))
         try:
             sandbox.execute(command)
         except:
-            Utils.log("Couldn't spawn sandbox when trying to compile submission %s" % (submission.couch_id))
+            Utils.log("Couldn't spawn sandbox when trying to compile submission %s" % (self.submission.couch_id))
             return False
 
         executable_present = True
@@ -107,27 +115,27 @@ class BatchTaskType:
         exit_code = sandbox.get_exit_code()
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
             try:
-                submission.executables = {}
-                submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, submission.couch_id))
-                submission.compilation_text = "OK %s\n" % (sandbox.get_stats())
-                submission.compilation_outcome = "ok"
-                submission.to_couch()
-                Utils.log("Compilation for submission %s successfully finished" % (submission.couch_id))
+                self.submission.executables = {}
+                self.submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, self.submission.couch_id))
+                self.submission.compilation_text = "OK %s\n" % (sandbox.get_stats())
+                self.submission.compilation_outcome = "ok"
+                self.submission.to_couch()
+                Utils.log("Compilation for submission %s successfully finished" % (self.submission.couch_id))
                 return True
             except (IOError, OSError) as e:
-                Utils.log("Compilation for submission %s successfully finished, but coudln't update the database (exception: %s)" % (submission.couch_id, repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
+                Utils.log("Compilation for submission %s successfully finished, but coudln't update the database (exception: %s)" % (self.submission.couch_id, repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
                 return False
 
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
             try:
                 error = sandbox.get_file_to_string("compiler_stderr.txt")
-                submission.compilation_text = "Failed %s\nCompiler output:\n%s" % (sandbox.get_stats(), error)
-                submission.compilation_outcome = "fail"
-                submission.to_couch()
-                Utils.log("Compilation for submission %s failed" % (submission.couch_id))
+                self.submission.compilation_text = "Failed %s\nCompiler output:\n%s" % (sandbox.get_stats(), error)
+                self.submission.compilation_outcome = "fail"
+                self.submission.to_couch()
+                Utils.log("Compilation for submission %s failed" % (self.submission.couch_id))
                 return True
             except (IOError, OSError) as e:
-                Utils.log("Compilation for submission %s failed, but couldn't update the database (exception: %s)" % (submission.couch_id, repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
+                Utils.log("Compilation for submission %s failed, but couldn't update the database (exception: %s)" % (self.submission.couch_id, repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
                 return False
 
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
@@ -146,44 +154,44 @@ class BatchTaskType:
             Utils.log("Killed with signal")
 
         #sandbox.delete()
-        #Utils.log("Sandbox for compiling submission %s deleted" % (submission.couch_id))
+        #Utils.log("Sandbox for compiling submission %s deleted" % (self.submission.couch_id))
         return True
 
-    def execute_single(self, submission, test_number):
-        executable_filename = submission.executables.keys()[0]
+    def execute_single(self, test_number):
+        executable_filename = self.submission.executables.keys()[0]
         sandbox = Sandbox()
-        sandbox.create_file_from_storage(executable_filename, submission.executables[executable_filename], executable = True)
-        sandbox.create_file_from_storage("input.txt", submission.task.testcases[test_number][0])
+        sandbox.create_file_from_storage(executable_filename, self.submission.executables[executable_filename], executable = True)
+        sandbox.create_file_from_storage("input.txt", self.submission.task.testcases[test_number][0])
         sandbox.chdir = sandbox.path
         # FIXME - The sandbox isn't working as expected when filtering syscalls
         sandbox.filter_syscalls = 0
-        sandbox.timeout = submission.task.time_limit
-        sandbox.address_space = submission.task.memory_limit * 1024
+        sandbox.timeout = self.submission.task.time_limit
+        sandbox.address_space = self.submission.task.memory_limit * 1024
         sandbox.file_check = 0
         sandbox.allow_path = [ os.path.join(sandbox.path, "input.txt"), os.path.join(sandbox.path, "output.txt") ]
         # FIXME - Differentiate between compilation errors and popen errors
         # FIXME - Detect sandbox problems (timeout, out of memory, ...)
         execution_return = sandbox.execute([os.path.join(sandbox.path, executable_filename)])
-        sandbox.create_file_from_storage("res.txt", submission.task.testcases[test_number][1])
+        sandbox.create_file_from_storage("res.txt", self.submission.task.testcases[test_number][1])
         # The diff or the manager are executed with relaxed security constraints
         sandbox.filter_syscalls = 0
         sandbox.timeout = 0
         sandbox.address_space = None
         sandbox.file_check = 3
         sandbox.allow_path = []
-        if len(submission.task.managers) == 0:
+        if len(self.submission.task.managers) == 0:
             diff_return = sandbox.execute_without_std(["/usr/bin/diff", "-w",
                                                        os.path.join(sandbox.path, "output.txt"),
                                                        os.path.join(sandbox.path, "res.txt")])
             if diff_return == 0:
-                submission.evaluation_outcome[test_number] = 1.0
-                submission.evaluation_text[test_number] = "OK"
+                self.submission.evaluation_outcome[test_number] = 1.0
+                self.submission.evaluation_text[test_number] = "OK"
             else:
-                submission.evaluation_outcome[test_number] = 0.0
-                submission.evaluation_text[test_number] = "Failed"
+                self.submission.evaluation_outcome[test_number] = 0.0
+                self.submission.evaluation_text[test_number] = "Failed"
         else:
-            manager_filename = submission.task.managers.keys()[0]
-            sandbox.create_file_from_storage(manager_filename, submission.task.managers[manager_filename], executable = True)
+            manager_filename = self.submission.task.managers.keys()[0]
+            sandbox.create_file_from_storage(manager_filename, self.submission.task.managers[manager_filename], executable = True)
             stdout_filename = os.path.join(sandbox.path, "manager_stdout.txt")
             stderr_filename = os.path.join(sandbox.path, "manager_stderr.txt")
             sandbox.stdout_file = stdout_filename
@@ -199,21 +207,21 @@ class BatchTaskType:
             try:
                 value = float(value)
             except ValueError:
-                Utils.log("Wrong value `%s' from manager when evaluating submission %s" % (value.strip(), submission.couch_id))
+                Utils.log("Wrong value `%s' from manager when evaluating submission %s" % (value.strip(), self.submission.couch_id))
                 value = 0.0
                 text = "Error while evaluating"
-            submission.evaluation_outcome[test_number] = value
-            submission.evaluation_text[test_number] = text
-        submission.to_couch()
+            self.submission.evaluation_outcome[test_number] = value
+            self.submission.evaluation_text[test_number] = text
+        self.submission.to_couch()
         #sandbox.delete()
 
-    def execute(self, submission):
-        if len(submission.executables) != 1:
-            Utils.log("Submission %s contains %d executables, expecting 1" % (submission.couch_id, len(submission.executables)))
+    def execute(self):
+        if len(self.submission.executables) != 1:
+            Utils.log("Submission %s contains %d executables, expecting 1" % (self.submission.couch_id, len(self.submission.executables)))
             return False
-        submission.evaluation_outcome = [None] * len(submission.task.testcases)
-        submission.evaluation_text = [None] * len(submission.task.testcases)
-        submission.to_couch()
-        for test_number in range(len(submission.task.testcases)):
-            self.execute_single(submission, test_number)
+        self.submission.evaluation_outcome = [None] * len(self.submission.task.testcases)
+        self.submission.evaluation_text = [None] * len(self.submission.task.testcases)
+        self.submission.to_couch()
+        for test_number in range(len(self.submission.task.testcases)):
+            self.execute_single(test_number)
         return True

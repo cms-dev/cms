@@ -34,14 +34,14 @@ class Job(threading.Thread):
         self.es = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
         self.submission_id = submission_id
         self.submission = CouchObject.from_couch(submission_id)
-        self.task_type = TaskType.get_task_type_class(self.submission.task.task_type)
+        self.task_type = TaskType.get_task_type_class(self.submission)
 
 class CompileJob(Job):
     def __init__(self, submission_id):
         Job.__init__(self, submission_id)
 
     def run(self):
-        success = self.task_type.compile(self.submission)
+        success = self.task_type.compile()
         try:
             self.es.compilation_finished(success, self.submission_id)
             if success:
@@ -56,9 +56,9 @@ class EvaluateJob(Job):
         Job.__init__(self, submission_id)
 
     def run(self):
-        success = self.task_type.execute(self.submission)
+        success = self.task_type.execute()
         try:
-            self.es.evaluation_finished(True, self.submission_id)
+            self.es.evaluation_finished(success, self.submission_id)
             if success:
                 Utils.log("Reported successful operation")
             else:
