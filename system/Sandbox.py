@@ -34,7 +34,7 @@ class Sandbox:
     def __init__(self):
         self.path = tempfile.mkdtemp()
         self.FSL = FileStorageLib()
-        self.info_file = "run.log"
+        self.info_file = "run.log"    # -M
         Utils.log("Sandbox in %s created" % (self.path), Utils.Logger.SEVERITY_DEBUG)
 
         # Default parameters for mo-box
@@ -44,7 +44,9 @@ class Sandbox:
         self.inherit_env = []         # -E
         self.set_env = {}             # -E
         self.filter_syscalls = None   # -f
+        self.allow_fork = False       # -F
         self.stdin_file = None        # -i
+        self.stack_space = None       # -k
         self.address_space = None     # -m
         self.stdout_file = None       # -o
         self.allow_path = []          # -p
@@ -53,7 +55,7 @@ class Sandbox:
         self.allow_syscall = []       # -s
         self.set_syscall = {}         # -s
         self.deny_timing = False      # -S
-        self.timeout = 0              # -t, mandatory
+        self.timeout = None           # -t
         self.verbosity = 0            # -v
         self.wallclock_timeout = None # -w
         self.extra_timeout = None     # -x
@@ -72,8 +74,12 @@ class Sandbox:
             res += ["-E", "%s=%s" % (var, value)]
         if self.filter_syscalls != None and self.filter_syscalls > 0:
             res += ["-%s" % ("f" * self.filter_syscall)]
+        if self.allow_fork:
+            res += ["-F"]
         if self.stdin_file != None:
             res += ["-i", self.stdin_file]
+        if self.stack_space != None:
+            res += ["-k", str(self.stack_space)]
         if self.address_space != None:
             res += ["-m", str(self.address_space)]
         if self.stdout_file != None:
@@ -90,7 +96,8 @@ class Sandbox:
             res += ["-s", "%s=%s" % (syscall, action)]
         if self.deny_timing:
             res += ["-S"]
-        res += ["-t", str(self.timeout)]
+        if self.timeout != None:
+            res += ["-t", str(self.timeout)]
         res += ["-v"] * self.verbosity
         if self.wallclock_timeout != None:
             res += ["-w", str(self.wallclock_timeout)]
