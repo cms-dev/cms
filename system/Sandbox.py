@@ -73,7 +73,7 @@ class Sandbox:
         for var, value in self.set_env:
             res += ["-E", "%s=%s" % (var, value)]
         if self.filter_syscalls != None and self.filter_syscalls > 0:
-            res += ["-%s" % ("f" * self.filter_syscall)]
+            res += ["-%s" % ("f" * self.filter_syscalls)]
         if self.allow_fork:
             res += ["-F"]
         if self.stdin_file != None:
