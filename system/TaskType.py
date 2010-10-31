@@ -92,8 +92,13 @@ class BatchTaskType:
             command = ["/usr/bin/gpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename), source_filename]
         sandbox.chdir = sandbox.path
         sandbox.preserve_env = True
-        sandbox.filter_syscalls = 0
-        sandbox.file_check = 9
+        sandbox.filter_syscalls = 1
+        sandbox.allow_fork = True
+        sandbox.file_check = 1
+        # FIXME - This allows the compiler to read files in other temporary directories,
+        # so they should be cleaned beforehand; moreover, file access limits are not
+        # enforced on children processes (like ld); and these paths are tested only with g++
+        sandbox.allow_path = ['/etc/', '/lib/', '/usr/', '/tmp/', source_filename, executable_filename]
         sandbox.timeout = 10
         sandbox.address_space = 256 * 1024
         sandbox.stdout_file = sandbox.relative_path("compiler_stdout.txt")
@@ -101,8 +106,8 @@ class BatchTaskType:
         Utils.log("Compiling submission %s" % (self.submission.couch_id))
         try:
             sandbox.execute(command)
-        except:
-            Utils.log("Couldn't spawn sandbox when trying to compile submission %s" % (self.submission.couch_id))
+        except Exception as e:
+            Utils.log("Couldn't spawn sandbox, raised exception %s" % (repr(e)))
             return False
 
         executable_present = True
