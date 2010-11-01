@@ -65,7 +65,7 @@ class BatchTaskType:
             Utils.log("Invalid submission or couldn't detect language")
             return self.terminate_compilation("Invalid files in submission")
         if len(self.submission.files) != 1:
-            Utils.log("Submission %s cointains %d files, expecting 1" % (self.submission.couch_id, len(self.submission.files)))
+            Utils.log("Submission cointains %d files, expecting 1" % (len(self.submission.files)))
             return self.terminate_compilation("Invalid files in submission")
 
         source_filename = self.submission.files.keys()[0]
@@ -74,14 +74,14 @@ class BatchTaskType:
         try:
             sandbox = Sandbox()
         except:
-            Utils.log("Couldn't create sandbox when compiling submission %s" % (self.submission.couch_id), Utils.Logger.SEVERITY_IMPORTANT)
+            Utils.log("Couldn't create sandbox", Utils.Logger.SEVERITY_IMPORTANT)
             return False
-        Utils.log("Created sandbox in %s for compiling submission %s" % (sandbox.path, self.submission.couch_id))
+        Utils.log("Created sandbox in %s" % (sandbox.path, self.submission.couch_id))
 
         try:
             sandbox.create_file_from_storage(source_filename, self.submission.files[source_filename])
         except:
-            Utils.log("Couldn't copy file %s in sandbox %s when compiling submission %s" % (source_filename, sandbox.path, self.submission.couch_id))
+            Utils.log("Couldn't copy file %s in sandbox" % (source_filename))
             return False
 
         if language == "c":
@@ -103,7 +103,7 @@ class BatchTaskType:
         sandbox.address_space = 256 * 1024
         sandbox.stdout_file = sandbox.relative_path("compiler_stdout.txt")
         sandbox.stderr_file = sandbox.relative_path("compiler_stderr.txt")
-        Utils.log("Compiling submission %s" % (self.submission.couch_id))
+        Utils.log("Starting compilation")
         try:
             sandbox.execute(command)
         except Exception as e:
@@ -118,11 +118,16 @@ class BatchTaskType:
 
         exit_status = sandbox.get_exit_status()
         exit_code = sandbox.get_exit_code()
+        try:
+            stderr = sandbox.get_file_to_string("compiler_stderr.txt")
+        except IOError as e:
+            Utils.log("Couldn't retrieve compiler stderr (exception: %s)" % (repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
+            return False
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
             try:
                 self.submission.executables = {}
                 self.submission.executables[executable_filename] = sandbox.get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, self.submission.couch_id))
-                self.submission.compilation_text = "OK %s\n" % (sandbox.get_stats())
+                self.submission.compilation_text = "OK %s\nCompiler output:\n%s" % (sandbox.get_stats(), stderr)
                 self.submission.compilation_outcome = "ok"
                 self.submission.to_couch()
                 Utils.log("Compilation for submission %s successfully finished" % (self.submission.couch_id))
@@ -133,34 +138,53 @@ class BatchTaskType:
 
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
             try:
-                error = sandbox.get_file_to_string("compiler_stderr.txt")
-                self.submission.compilation_text = "Failed %s\nCompiler output:\n%s" % (sandbox.get_stats(), error)
+                self.submission.compilation_text = "Failed %s\nCompiler output:\n%s" % (sandbox.get_stats(), stderr)
                 self.submission.compilation_outcome = "fail"
                 self.submission.to_couch()
-                Utils.log("Compilation for submission %s failed" % (self.submission.couch_id))
+                Utils.log("Compilation failed")
                 return True
             except (IOError, OSError) as e:
-                Utils.log("Compilation for submission %s failed, but couldn't update the database (exception: %s)" % (self.submission.couch_id, repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
+                Utils.log("Compilation failed, but couldn't update the database (exception: %s)" % (repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
                 return False
 
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-            Utils.log("Sandbox error")
+            Utils.log("Compilation aborted because of sandbox error", Utils.Logger.SEVERITY_IMPORTANT)
+            return False
 
         if exit_status == Sandbox.EXIT_SYSCALL:
-            Utils.log("Forbidden syscall")
+            Utils.log("Compilation aborted becasue of forbidden syscall", Utils.Logger.SEVERITY_IMPORTANT)
+            return False
 
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            Utils.log("Forbidden file access")
+            Utils.log("Compilaton aborted because of forbidden file access", Utils.Logger.SEVERITY_IMPORTANT)
+            return False
 
         if exit_status == Sandbox.EXIT_TIMEOUT:
-            Utils.log("Timeout")
+            try:
+                self.submission.compilation_test = "Time out %s\nCompiler output:\n%s" % (sandbox.get_stats(), stderr)
+                self.submission.compilation_outcome = "fail"
+                self.submission.to_couch()
+                Utils.log("Compilation timed out")
+                return True
+            except (IOError, OSError) as e:
+                Utils.log("Compilation timed out, but couldn't update the database (exception: %s)" % (repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
+                return False
 
         if exit_status == Sandbox.EXIT_SIGNAL:
-            Utils.log("Killed with signal")
+            try:
+                signal = sandbox.get_killing_signal()
+                self.submission.compilation_test = "Killed with signal %d %s\nThis could be triggered by violating memory limits\nCompiler output:\n%s" % (signal, sandbox.get_stats(), stderr)
+                self.submission.compilation_outcome = "fail"
+                self.submission.to_couch()
+                Utils.log("Compilation killed with signal %d" % (signal))
+                return True
+            except (IOError, OSError) as e:
+                Utils.log("Compilation killed with signal %d, but couldn't update the database (exception: %s)" % (signal, repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
+                return False
 
         #sandbox.delete()
         #Utils.log("Sandbox for compiling submission %s deleted" % (self.submission.couch_id))
-        return True
+        return False
 
     def execute_single(self, test_number):
         executable_filename = self.submission.executables.keys()[0]
