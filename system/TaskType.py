@@ -112,7 +112,6 @@ class BatchTaskType:
             Utils.log("Couldn't spawn sandbox (exception %s)" % (repr(e)))
             return self.finish_compilation(False)
 
-        executable_present = self.sandbox.file_exists(executable_filename)
         exit_status = self.sandbox.get_exit_status()
         exit_code = self.sandbox.get_exit_code()
         try:
@@ -127,9 +126,8 @@ class BatchTaskType:
             except (IOError, OSError) as e:
                 Utils.log("Compilation apparently successfully finished, but coudln't retrieve executable file (exception: %s)" % (repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
                 return self.finish_compilation(False)
-            else:
-                Utils.log("Compilation successfully finished")
-                return self.finish_compilation(True, True, "OK %s\nCompiler output:\n%s" % (self.sandbox.get_stats(), stderr))                
+            Utils.log("Compilation successfully finished")
+            return self.finish_compilation(True, True, "OK %s\nCompiler output:\n%s" % (self.sandbox.get_stats(), stderr))                
 
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
             Utils.log("Compilation failed")
