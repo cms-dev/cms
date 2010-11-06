@@ -246,6 +246,9 @@ class Sandbox:
     def stat_file(self, path):
         return os.stat(self.relative_path(path))
 
+    def file_exists(self, path):
+        return os.path.exists(self.relative_path(path))
+
     def remove_file(self, path):
         os.remove(self.relative_path(path))
 
