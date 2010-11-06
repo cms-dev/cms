@@ -3,6 +3,7 @@
 *** FileStorageLib
 
 *** CouchObject and related (Contest, User, ...)
+* to_couch causes much unnecessary traffic with the database
 
 *** Sandbox
 
