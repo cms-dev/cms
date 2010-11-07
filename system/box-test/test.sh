@@ -16,6 +16,7 @@ for i in $PROGLIST ; do
 	echo Exited with code $?
 done
 
+echo
 redecho STATUS
 for i in $PROGLIST ; do
 	redecho "==> $i <=="
