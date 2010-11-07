@@ -27,6 +27,12 @@ import Configuration
 import Utils
 import TaskType
 
+class JobException(Exception):
+    def __init__(self, msg = ""):
+        self.msg = msg
+    def __str__(self):
+        return repr(self.msg)
+
 class Job(threading.Thread):
     def __init__(self, submission_id):
         threading.Thread.__init__(self)
@@ -41,7 +47,10 @@ class CompileJob(Job):
         Job.__init__(self, submission_id)
 
     def run(self):
-        success = self.task_type.compile()
+        try:
+            success = self.task_type.compile()
+        except JobException:
+            success = False
         try:
             self.es.compilation_finished(success, self.submission_id)
             if success:

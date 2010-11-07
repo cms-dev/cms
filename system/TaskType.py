@@ -25,6 +25,7 @@ import subprocess
 import Utils
 from Sandbox import Sandbox
 from Task import Task
+from Worker import JobException
 
 def get_task_type_class(submission):
     if submission.task.task_type == Task.TASK_TYPE_BATCH:
@@ -39,8 +40,7 @@ class BatchTaskType:
     KEEP_SANDBOX = True
 
     def finish_compilation(self, success, compilation_success = False, text = ""):
-        if "sandbox" in self.__dict__ and not self.KEEP_SANDBOX:
-            self.sandbox.delete()
+        self.safe_delete_sandbox()
         if not success:
             return False
         if compilation_success:
@@ -51,13 +51,12 @@ class BatchTaskType:
         try:
             self.submission.to_couch()
             return True
-        except Exception as e:
+        except (OSError, IOError) as e:
             Utils.log("Couldn't update database, aborting compilation (exception: %s)" % (repr(e)))
             return False
 
     def finish_single_evaluation(self, test_number, success, outcome = 0, text = ""):
-        if "sandbox" in self.__dict__ and not self.KEEP_SANDBOX:
-            self.sandbox.delete()
+        self.safe_delete_sandbox()
         if not success:
             return False
         self.submission.evaluation_outcome[test_number] = outcome
@@ -69,6 +68,48 @@ class BatchTaskType:
             return False
         self.submission.to_couch()
         return True
+
+    def safe_delete_sandbox(self):
+        if "sandbox" in self.__dict__ and not self.KEEP_SANDBOX:
+            try:
+                self.sandbox.delete()
+            except (IOError, OSError):
+                Utils.log("Couldn't delete sandbox", Utils.Logger.SEVERITY_IMPORTANT)
+
+    def safe_create_sandbox(self):
+        try:
+            self.sandbox = Sandbox()
+        except (OSError, IOError):
+            Utils.log("Couldn't create sandbox", Utils.Logger.SEVERITY_IMPORTANT)
+            self.safe_delete_sandbox()
+            raise JobException()
+
+    def safe_create_file_from_storage(self, name, digest):
+        try:
+            self.sandbox.create_file_from_storage(name, digest)
+        except (OSError, IOError):
+            Utils.log("Couldn't copy file `%s' in sandbox" % (name), Utils.Logger.SEVERITY_IMPORTANT)
+            self.safe_delete_sandbox()
+            raise JobException()
+
+    def safe_get_file_to_storage(self, name, msg = ""):
+        try:
+            return self.sandbox.get_file_to_storage(name, msg)
+        except (IOError, OSError) as e:
+            Utils.log("Coudln't retrieve file `%s' from storage" % (name), Utils.Logger.SEVERITY_IMPORTANT)
+            self.safe_delete_sandbox()
+            raise JobException()
+
+    def safe_get_file_to_string(self, name):
+        
+
+    def safe_sandbox_execute(self, command):
+        try:
+            self.sandbox.execute(command)
+        except (OSError, IOError) as e:
+            Utils.log("Couldn't spawn `%s' (exception %s)" % (command[0], repr(e)))
+            self.safe_delete_sandbox()
+            raise JobException()
 
     def compile(self):
         """Tries to compile the specified submission.
@@ -90,17 +131,8 @@ class BatchTaskType:
         source_filename = self.submission.files.keys()[0]
         executable_filename = source_filename.replace(".%s" % (language), "")
 
-        try:
-            self.sandbox = Sandbox()
-        except:
-            Utils.log("Couldn't create sandbox", Utils.Logger.SEVERITY_IMPORTANT)
-            return self.finish_compilation(False)
-
-        try:
-            self.sandbox.create_file_from_storage(source_filename, self.submission.files[source_filename])
-        except:
-            Utils.log("Couldn't copy file %s in sandbox" % (source_filename))
-            return self.finish_compilation(False)
+        self.safe_create_sandbox()
+        self.safe_create_file_from_storage(source_filename, self.submission.files[source_filename])
 
         if language == "c":
             command = ["/usr/bin/gcc", "-DEVAL", "-static", "-O2", "-lm", "-o", executable_filename, source_filename]
@@ -123,11 +155,7 @@ class BatchTaskType:
         self.sandbox.stdout_file = self.sandbox.relative_path("compiler_stdout.txt")
         self.sandbox.stderr_file = self.sandbox.relative_path("compiler_stderr.txt")
         Utils.log("Starting compilation")
-        try:
-            self.sandbox.execute(command)
-        except Exception as e:
-            Utils.log("Couldn't spawn compilation (exception %s)" % (repr(e)))
-            return self.finish_compilation(False)
+        self.safe_sandbox_execute(command)
 
         exit_status = self.sandbox.get_exit_status()
         exit_code = self.sandbox.get_exit_code()
@@ -138,11 +166,7 @@ class BatchTaskType:
             return self.finish_compilation(False)
 
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
-            try:
-                self.submission.executables = {executable_filename: self.sandbox.get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, self.submission.couch_id))}
-            except (IOError, OSError) as e:
-                Utils.log("Compilation apparently successfully finished, but coudln't retrieve executable file (exception: %s)" % (repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
-                return self.finish_compilation(False)
+            self.submission.executables = {executable_filename: self.safe_get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, self.submission.couch_id))}
             Utils.log("Compilation successfully finished")
             return self.finish_compilation(True, True, "OK %s\nCompiler output:\n%s" % (self.sandbox.get_stats(), stderr))                
 
@@ -175,11 +199,7 @@ class BatchTaskType:
         return self.finish_compilation(False)
 
     def execute_single(self, test_number):
-        try:
-            self.sandbox = Sandbox()
-        except:
-            Utils.log("Couldn't create sandbox", Utils.Logger.SEVERITY_IMPORTANT)
-            return self.finish_compilation(False)
+        self.safe_create_sandbox()
 
         try:
             self.sandbox.create_file_from_storage(self.executable_filename, self.submission.executables[self.executable_filename], executable = True)
