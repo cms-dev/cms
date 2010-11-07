@@ -101,7 +101,12 @@ class BatchTaskType:
             raise JobException()
 
     def safe_get_file_to_string(self, name):
-        
+        try:
+            res = self.sandbox.get_file_to_string(name)
+        except (IOError, OSError):
+            Utils.log("Couldn't retrieve file `%s' from storage" % (name), Utils.Logger.SEVERITY_IMPORTANT)
+            self.safe_delete_sandbox()
+            raise JobException()
 
     def safe_sandbox_execute(self, command):
         try:
@@ -159,11 +164,7 @@ class BatchTaskType:
 
         exit_status = self.sandbox.get_exit_status()
         exit_code = self.sandbox.get_exit_code()
-        try:
-            stderr = self.sandbox.get_file_to_string("compiler_stderr.txt")
-        except IOError as e:
-            Utils.log("Couldn't retrieve compiler stderr (exception: %s)" % (repr(e)), Utils.Logger.SEVERITY_IMPORTANT)
-            return self.finish_compilation(False)
+        stderr = self.safe_get_file_to_string("compiler_stderr.txt")
 
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
             self.submission.executables = {executable_filename: self.safe_get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, self.submission.couch_id))}
