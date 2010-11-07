@@ -126,7 +126,7 @@ class BatchTaskType:
         try:
             self.sandbox.execute(command)
         except Exception as e:
-            Utils.log("Couldn't spawn sandbox (exception %s)" % (repr(e)))
+            Utils.log("Couldn't spawn compilation (exception %s)" % (repr(e)))
             return self.finish_compilation(False)
 
         exit_status = self.sandbox.get_exit_status()
@@ -175,19 +175,37 @@ class BatchTaskType:
         return self.finish_compilation(False)
 
     def execute_single(self, test_number):
-        self.sandbox = Sandbox()
-        self.sandbox.create_file_from_storage(self.executable_filename, self.submission.executables[self.executable_filename], executable = True)
-        self.sandbox.create_file_from_storage("input.txt", self.submission.task.testcases[test_number][0])
+        try:
+            self.sandbox = Sandbox()
+        except:
+            Utils.log("Couldn't create sandbox", Utils.Logger.SEVERITY_IMPORTANT)
+            return self.finish_compilation(False)
+
+        try:
+            self.sandbox.create_file_from_storage(self.executable_filename, self.submission.executables[self.executable_filename], executable = True)
+        except:
+            Utils.log("Couldn't copy executable in sandbox")
+            return self.finish_single_execution(False)
+        try:
+            self.sandbox.create_file_from_storage("input.txt", self.submission.task.testcases[test_number][0])
+        except:
+            Utils.log("Couldn't copy input file in sandbox")
+            return self.finish_single_execution(False)
+            
         self.sandbox.chdir = self.sandbox.path
-        # FIXME - The sandbox isn't working as expected when filtering syscalls
-        self.sandbox.filter_syscalls = 0
+        self.sandbox.filter_syscalls = 2
         self.sandbox.timeout = self.submission.task.time_limit
         self.sandbox.address_space = self.submission.task.memory_limit * 1024
-        self.sandbox.file_check = 0
-        self.sandbox.allow_path = [ os.path.join(self.sandbox.path, "input.txt"), os.path.join(self.sandbox.path, "output.txt") ]
+        self.sandbox.file_check = 1
+        self.sandbox.allow_path = [ "input.txt", "output.txt" ]
         # FIXME - Differentiate between compilation errors and popen errors
         # FIXME - Detect sandbox problems (timeout, out of memory, ...)
-        execution_return = self.sandbox.execute([os.path.join(self.sandbox.path, self.executable_filename)])
+        try:
+            self.sandbox.execute([self.sandbox.relative_path(self.executable_filename)])
+        except Exception as e:
+            Utils.log("Couldn't spawn execution (exception %s)" % (repr(e)))
+            return self.finish_single_execution(False)
+
         self.sandbox.create_file_from_storage("res.txt", self.submission.task.testcases[test_number][1])
         # The diff or the manager are executed with relaxed security constraints
         self.sandbox.filter_syscalls = 0
