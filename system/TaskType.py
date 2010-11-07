@@ -36,8 +36,10 @@ class BatchTaskType:
     def __init__(self, submission):
         self.submission = submission
 
+    KEEP_SANDBOX = True
+
     def finish_compilation(self, success, compilation_success = False, text = ""):
-        if "sandbox" in self.__dict__:
+        if "sandbox" in self.__dict__ and not self.KEEP_SANDBOX:
             self.sandbox.delete()
         if not success:
             return False
@@ -54,7 +56,7 @@ class BatchTaskType:
             return False
 
     def finish_single_evaluation(self, test_number, success, outcome = 0, text = ""):
-        if "sandbox" in self.__dict__:
+        if "sandbox" in self.__dict__ and not self.KEEP_SANDBOX:
             self.sandbox.delete()
         if not success:
             return False
