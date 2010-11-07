@@ -53,6 +53,21 @@ class BatchTaskType:
             Utils.log("Couldn't update database, aborting compilation (exception: %s)" % (repr(e)))
             return False
 
+    def finish_single_evaluation(self, test_number, success, outcome = 0, text = ""):
+        if "sandbox" in self.__dict__:
+            self.sandbox.delete()
+        if not success:
+            return False
+        self.submission.evaluation_outcome[test_number] = outcome
+        self.submission.evaluation_text[test_number] = text
+        return True
+
+    def finish_evaluation(self, success):
+        if not success:
+            return False
+        self.submission.to_couch()
+        return True
+
     def compile(self):
         """Tries to compile the specified submission.
 
@@ -158,70 +173,70 @@ class BatchTaskType:
         return self.finish_compilation(False)
 
     def execute_single(self, test_number):
-        executable_filename = self.submission.executables.keys()[0]
-        sandbox = Sandbox()
-        sandbox.create_file_from_storage(executable_filename, self.submission.executables[executable_filename], executable = True)
-        sandbox.create_file_from_storage("input.txt", self.submission.task.testcases[test_number][0])
-        sandbox.chdir = sandbox.path
+        self.sandbox = Sandbox()
+        self.sandbox.create_file_from_storage(self.executable_filename, self.submission.executables[self.executable_filename], executable = True)
+        self.sandbox.create_file_from_storage("input.txt", self.submission.task.testcases[test_number][0])
+        self.sandbox.chdir = self.sandbox.path
         # FIXME - The sandbox isn't working as expected when filtering syscalls
-        sandbox.filter_syscalls = 0
-        sandbox.timeout = self.submission.task.time_limit
-        sandbox.address_space = self.submission.task.memory_limit * 1024
-        sandbox.file_check = 0
-        sandbox.allow_path = [ os.path.join(sandbox.path, "input.txt"), os.path.join(sandbox.path, "output.txt") ]
+        self.sandbox.filter_syscalls = 0
+        self.sandbox.timeout = self.submission.task.time_limit
+        self.sandbox.address_space = self.submission.task.memory_limit * 1024
+        self.sandbox.file_check = 0
+        self.sandbox.allow_path = [ os.path.join(self.sandbox.path, "input.txt"), os.path.join(self.sandbox.path, "output.txt") ]
         # FIXME - Differentiate between compilation errors and popen errors
         # FIXME - Detect sandbox problems (timeout, out of memory, ...)
-        execution_return = sandbox.execute([os.path.join(sandbox.path, executable_filename)])
-        sandbox.create_file_from_storage("res.txt", self.submission.task.testcases[test_number][1])
+        execution_return = self.sandbox.execute([os.path.join(self.sandbox.path, self.executable_filename)])
+        self.sandbox.create_file_from_storage("res.txt", self.submission.task.testcases[test_number][1])
         # The diff or the manager are executed with relaxed security constraints
-        sandbox.filter_syscalls = 0
-        sandbox.timeout = 0
-        sandbox.address_space = None
-        sandbox.file_check = 3
-        sandbox.allow_path = []
+        self.sandbox.filter_syscalls = 0
+        self.sandbox.timeout = 0
+        self.sandbox.address_space = None
+        self.sandbox.file_check = 3
+        self.sandbox.allow_path = []
         if len(self.submission.task.managers) == 0:
-            diff_return = sandbox.execute_without_std(["/usr/bin/diff", "-w",
-                                                       os.path.join(sandbox.path, "output.txt"),
-                                                       os.path.join(sandbox.path, "res.txt")])
+            diff_return = self.sandbox.execute_without_std(["/usr/bin/diff", "-w",
+                                                       os.path.join(self.sandbox.path, "output.txt"),
+                                                       os.path.join(self.sandbox.path, "res.txt")])
             if diff_return == 0:
-                self.submission.evaluation_outcome[test_number] = 1.0
-                self.submission.evaluation_text[test_number] = "OK"
+                outcome = 1.0
+                text = "OK"
             else:
-                self.submission.evaluation_outcome[test_number] = 0.0
-                self.submission.evaluation_text[test_number] = "Failed"
+                outcome = 0.0
+                text = "Failed"
         else:
             manager_filename = self.submission.task.managers.keys()[0]
-            sandbox.create_file_from_storage(manager_filename, self.submission.task.managers[manager_filename], executable = True)
-            stdout_filename = os.path.join(sandbox.path, "manager_stdout.txt")
-            stderr_filename = os.path.join(sandbox.path, "manager_stderr.txt")
-            sandbox.stdout_file = stdout_filename
-            sandbox.stderr_file = stderr_filename
-            manager_popen = sandbox.execute_without_std(["./%s" % (manager_filename),
-                                                         os.path.join(sandbox.path, "input.txt"),
-                                                         os.path.join(sandbox.path, "res.txt"), 
-                                                         os.path.join(sandbox.path, "output.txt")])
+            self.sandbox.create_file_from_storage(manager_filename, self.submission.task.managers[manager_filename], executable = True)
+            stdout_filename = os.path.join(self.sandbox.path, "manager_stdout.txt")
+            stderr_filename = os.path.join(self.sandbox.path, "manager_stderr.txt")
+            self.sandbox.stdout_file = stdout_filename
+            self.sandbox.stderr_file = stderr_filename
+            manager_popen = self.sandbox.execute_without_std(["./%s" % (manager_filename),
+                                                         os.path.join(self.sandbox.path, "input.txt"),
+                                                         os.path.join(self.sandbox.path, "res.txt"), 
+                                                         os.path.join(self.sandbox.path, "output.txt")])
             with open(stdout_filename) as stdout_file:
                 with open(stderr_filename) as stderr_file:
-                    value = stdout_file.readline()
+                    outcome = stdout_file.readline().strip()
                     text = Utils.filter_ansi_escape(stderr_file.readline())
             try:
-                value = float(value)
+                outcome = float(outcome)
             except ValueError:
-                Utils.log("Wrong value `%s' from manager when evaluating submission %s" % (value.strip(), self.submission.couch_id))
-                value = 0.0
+                Utils.log("Wrong outcome `%s' from manager" % (outcome), Utils.Logger.SEVERITY_IMPORTANT)
+                outcome = 0.0
                 text = "Error while evaluating"
-            self.submission.evaluation_outcome[test_number] = value
-            self.submission.evaluation_text[test_number] = text
-        self.submission.to_couch()
-        #sandbox.delete()
+        return self.finish_single_evaluation(test_number, True, outcome, text)
 
     def execute(self):
         if len(self.submission.executables) != 1:
-            Utils.log("Submission %s contains %d executables, expecting 1" % (self.submission.couch_id, len(self.submission.executables)))
-            return False
+            Utils.log("Submission contains %d executables, expecting 1" % (len(self.submission.executables)))
+            return self.finish_evaluation(False)
+
+        self.executable_filename = self.submission.executables.keys()[0]
         self.submission.evaluation_outcome = [None] * len(self.submission.task.testcases)
         self.submission.evaluation_text = [None] * len(self.submission.task.testcases)
-        self.submission.to_couch()
+
         for test_number in range(len(self.submission.task.testcases)):
-            self.execute_single(test_number)
-        return True
+            success = self.execute_single(test_number)
+            if not success:
+                return self.finish_evaluation(False)
+        return self.finish_evaluation(True)
