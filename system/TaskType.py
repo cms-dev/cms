@@ -84,9 +84,9 @@ class BatchTaskType:
             self.safe_delete_sandbox()
             raise JobException()
 
-    def safe_create_file_from_storage(self, name, digest):
+    def safe_create_file_from_storage(self, name, digest, executable = False):
         try:
-            self.sandbox.create_file_from_storage(name, digest)
+            self.sandbox.create_file_from_storage(name, digest, executable)
         except (OSError, IOError):
             Utils.log("Couldn't copy file `%s' in sandbox" % (name), Utils.Logger.SEVERITY_IMPORTANT)
             self.safe_delete_sandbox()
@@ -102,7 +102,7 @@ class BatchTaskType:
 
     def safe_get_file_to_string(self, name):
         try:
-            res = self.sandbox.get_file_to_string(name)
+            return self.sandbox.get_file_to_string(name)
         except (IOError, OSError):
             Utils.log("Couldn't retrieve file `%s' from storage" % (name), Utils.Logger.SEVERITY_IMPORTANT)
             self.safe_delete_sandbox()
@@ -148,20 +148,19 @@ class BatchTaskType:
         elif language == "cpp":
             command = ["/usr/bin/g++", "-DEVAL", "-static", "-O2", "-o", executable_filename, source_filename]
         elif language == "pas":
-            command = ["/usr/bin/gpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename), source_filename]
+            command = ["/usr/bin/fpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename), source_filename]
 
         # Execute the compilation inside the sandbox
         self.sandbox.chdir = self.sandbox.path
         self.sandbox.preserve_env = True
         self.sandbox.filter_syscalls = 1
         self.sandbox.allow_fork = True
-        self.sandbox.file_check = 1
-        # FIXME - This allows the compiler to read files in other
-        # temporary directories, so they should be cleaned beforehand;
-        # moreover, file access limits are not enforced on children
+        self.sandbox.file_check = 2
+        # FIXME - File access limits are not enforced on children
         # processes (like ld); and these paths are tested only with
-        # g++
-        self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/', '/tmp/', source_filename, executable_filename]
+        # g++ (I believe gcc to be ok too, but I never tried fpc)
+        self.sandbox.set_env['TMPDIR'] = self.sandbox.path
+        self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/', '%s/' % (self.sandbox.path)]
         self.sandbox.timeout = 10
         self.sandbox.address_space = 256 * 1024
         self.sandbox.stdout_file = self.sandbox.relative_path("compiler_stdout.txt")
@@ -173,6 +172,8 @@ class BatchTaskType:
         exit_status = self.sandbox.get_exit_status()
         exit_code = self.sandbox.get_exit_code()
         stderr = self.safe_get_file_to_string("compiler_stderr.txt")
+        if stderr == "":
+            stderr = "(empty)\n"
 
         # Execution finished successfully: the submission was
         # correctly compiled
@@ -214,7 +215,7 @@ class BatchTaskType:
         # including a forbidden file or too strict sandbox contraints;
         # the administrator should have a look at it
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            Utils.log("Compilaton aborted because of forbidden file access", Utils.Logger.SEVERITY_IMPORTANT)
+            Utils.log("Compilation aborted because of forbidden file access", Utils.Logger.SEVERITY_IMPORTANT)
             return self.finish_compilation(False)
 
         # Why the exit status hasn't been captured before?
@@ -223,60 +224,48 @@ class BatchTaskType:
 
     def execute_single(self, test_number):
         self.safe_create_sandbox()
-
-        try:
-            self.sandbox.create_file_from_storage(self.executable_filename, self.submission.executables[self.executable_filename], executable = True)
-        except:
-            Utils.log("Couldn't copy executable in sandbox")
-            return self.finish_single_execution(False)
-        try:
-            self.sandbox.create_file_from_storage("input.txt", self.submission.task.testcases[test_number][0])
-        except:
-            Utils.log("Couldn't copy input file in sandbox")
-            return self.finish_single_execution(False)
+        self.safe_create_file_from_storage(self.executable_filename, self.submission.executables[self.executable_filename], executable = True)
+        self.safe_create_file_from_storage("input.txt", self.submission.task.testcases[test_number][0])
             
         self.sandbox.chdir = self.sandbox.path
         self.sandbox.filter_syscalls = 2
         self.sandbox.timeout = self.submission.task.time_limit
         self.sandbox.address_space = self.submission.task.memory_limit * 1024
         self.sandbox.file_check = 1
-        self.sandbox.allow_path = [ "input.txt", "output.txt" ]
+        self.sandbox.allow_path = ["input.txt", "output.txt"]
         # FIXME - Differentiate between compilation errors and popen errors
         # FIXME - Detect sandbox problems (timeout, out of memory, ...)
-        try:
-            self.sandbox.execute([self.sandbox.relative_path(self.executable_filename)])
-        except Exception as e:
-            Utils.log("Couldn't spawn execution (exception %s)" % (repr(e)))
-            return self.finish_single_execution(False)
+        self.safe_sandbox_execute([self.sandbox.relative_path(self.executable_filename)])
 
-        self.sandbox.create_file_from_storage("res.txt", self.submission.task.testcases[test_number][1])
-        # The diff or the manager are executed with relaxed security constraints
-        self.sandbox.filter_syscalls = 0
+        if not self.sandbox.file_exists("output.txt"):
+            outcome = 0.0
+            text = "Execution didn't produce file output.txt"
+            return self.finish_single_evaluation(test_number, True, outcome, text)
+
+        self.safe_create_file_from_storage("res.txt", self.submission.task.testcases[test_number][1])
+        self.sandbox.filter_syscalls = 2
         self.sandbox.timeout = 0
         self.sandbox.address_space = None
-        self.sandbox.file_check = 3
-        self.sandbox.allow_path = []
+        self.sandbox.file_check = 1
+        self.sandbox.allow_path = ["input.txt", "output.txt", "res.txt"]
+        stdout_filename = os.path.join(self.sandbox.path, "manager_stdout.txt")
+        stderr_filename = os.path.join(self.sandbox.path, "manager_stderr.txt")
+        self.sandbox.stdout_file = stdout_filename
+        self.sandbox.stderr_file = stderr_filename
         if len(self.submission.task.managers) == 0:
-            diff_return = self.sandbox.execute_without_std(["/usr/bin/diff", "-w",
-                                                       os.path.join(self.sandbox.path, "output.txt"),
-                                                       os.path.join(self.sandbox.path, "res.txt")])
+            # FIXME - Not the correct way to extract exit code
+            # FIXME - Security constraints too strict for diff, probably it should be better implementing it in Python
+            diff_return = self.safe_sandbox_execute(["/usr/bin/diff", "-w", "output.txt", "res.txt"])
             if diff_return == 0:
                 outcome = 1.0
-                text = "OK"
+                text = "Output file is correct"
             else:
                 outcome = 0.0
-                text = "Failed"
+                text = "Output file isn't correct"
         else:
             manager_filename = self.submission.task.managers.keys()[0]
-            self.sandbox.create_file_from_storage(manager_filename, self.submission.task.managers[manager_filename], executable = True)
-            stdout_filename = os.path.join(self.sandbox.path, "manager_stdout.txt")
-            stderr_filename = os.path.join(self.sandbox.path, "manager_stderr.txt")
-            self.sandbox.stdout_file = stdout_filename
-            self.sandbox.stderr_file = stderr_filename
-            manager_popen = self.sandbox.execute_without_std(["./%s" % (manager_filename),
-                                                         os.path.join(self.sandbox.path, "input.txt"),
-                                                         os.path.join(self.sandbox.path, "res.txt"), 
-                                                         os.path.join(self.sandbox.path, "output.txt")])
+            self.safe_create_file_from_storage(manager_filename, self.submission.task.managers[manager_filename], executable = True)
+            manager_popen = self.safe_sandbox_execute(["./%s" % (manager_filename), "input.txt", "res.txt", "output.txt"])
             with open(stdout_filename) as stdout_file:
                 with open(stderr_filename) as stderr_file:
                     outcome = stdout_file.readline().strip()
@@ -284,9 +273,9 @@ class BatchTaskType:
             try:
                 outcome = float(outcome)
             except ValueError:
+                # FIXME - This should be considered as an error for the administrator
                 Utils.log("Wrong outcome `%s' from manager" % (outcome), Utils.Logger.SEVERITY_IMPORTANT)
-                outcome = 0.0
-                text = "Error while evaluating"
+                return self.finish_single_evaluation(test_number, False)
         return self.finish_single_evaluation(test_number, True, outcome, text)
 
     def execute(self):

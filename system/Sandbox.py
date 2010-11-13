@@ -70,7 +70,7 @@ class Sandbox:
             res += ["-e"]
         for var in self.inherit_env:
             res += ["-E", var]
-        for var, value in self.set_env:
+        for var, value in self.set_env.items():
             res += ["-E", "%s=%s" % (var, value)]
         if self.filter_syscalls != None and self.filter_syscalls > 0:
             res += ["-%s" % ("f" * self.filter_syscalls)]
@@ -86,13 +86,13 @@ class Sandbox:
             res += ["-o", self.stdout_file]
         for path in self.allow_path:
             res += ["-p", path]
-        for path, action in self.set_path:
+        for path, action in self.set_path.items():
             res += ["-p", "%s=%s" % (path, action)]
         if self.stderr_file != None:
             res += ["-r", self.stderr_file]
         for syscall in self.allow_syscall:
             res += ["-s", syscall]
-        for syscall, action in self.set_syscall:
+        for syscall, action in self.set_syscall.items():
             res += ["-s", "%s=%s" % (syscall, action)]
         if self.deny_timing:
             res += ["-S"]
