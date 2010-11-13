@@ -125,6 +125,9 @@ class BatchTaskType:
         again to compile the same submission in a sane environment
         should lead to returning True).
         """
+
+        # Detect the submission's language and check that it contains
+        # exactly one source file
         valid, language = self.submission.verify_source()
         if not valid or language == None:
             Utils.log("Invalid submission or couldn't detect language")
@@ -136,6 +139,7 @@ class BatchTaskType:
         source_filename = self.submission.files.keys()[0]
         executable_filename = source_filename.replace(".%s" % (language), "")
 
+        # Setup the compilation environment
         self.safe_create_sandbox()
         self.safe_create_file_from_storage(source_filename, self.submission.files[source_filename])
 
@@ -146,14 +150,17 @@ class BatchTaskType:
         elif language == "pas":
             command = ["/usr/bin/gpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename), source_filename]
 
+        # Execute the compilation inside the sandbox
         self.sandbox.chdir = self.sandbox.path
         self.sandbox.preserve_env = True
         self.sandbox.filter_syscalls = 1
         self.sandbox.allow_fork = True
         self.sandbox.file_check = 1
-        # FIXME - This allows the compiler to read files in other temporary directories,
-        # so they should be cleaned beforehand; moreover, file access limits are not
-        # enforced on children processes (like ld); and these paths are tested only with g++
+        # FIXME - This allows the compiler to read files in other
+        # temporary directories, so they should be cleaned beforehand;
+        # moreover, file access limits are not enforced on children
+        # processes (like ld); and these paths are tested only with
+        # g++
         self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/', '/tmp/', source_filename, executable_filename]
         self.sandbox.timeout = 10
         self.sandbox.address_space = 256 * 1024
@@ -162,40 +169,55 @@ class BatchTaskType:
         Utils.log("Starting compilation")
         self.safe_sandbox_execute(command)
 
+        # Detect the outcome of the compilation
         exit_status = self.sandbox.get_exit_status()
         exit_code = self.sandbox.get_exit_code()
         stderr = self.safe_get_file_to_string("compiler_stderr.txt")
 
+        # Execution finished successfully: the submission was
+        # correctly compiled
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
             self.submission.executables = {executable_filename: self.safe_get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, self.submission.couch_id))}
             Utils.log("Compilation successfully finished")
             return self.finish_compilation(True, True, "OK %s\nCompiler output:\n%s" % (self.sandbox.get_stats(), stderr))                
 
+        # Error in compilation: returning the error to the user
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
             Utils.log("Compilation failed")
             return self.finish_compilation(True, False, "Failed %s\nCompiler output:\n%s" % (self.sandbox.get_stats(), stderr))
 
+        # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
             Utils.log("Compilation timed out")
             return self.finish_compilation(True, False, "Time out %s\nCompiler output:\n%s" % (self.sandbox.get_stats(), stderr))
 
+        # Suicide with signale (probably memory limit): returning the
+        # error to the user
         if exit_status == Sandbox.EXIT_SIGNAL:
             signal = self.sandbox.get_killing_signal()
             Utils.log("Compilation killed with signal %d" % (signal))
             return self.finish_compilation(True, False, "Killed with signal %d %s\nThis could be triggered by violating memory limits\nCompiler output:\n%s" % (signal, self.sandbox.get_stats(), stderr))
 
+        # Sandbox error: this isn't a user error, the administrator
+        # needs to check the environment
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
             Utils.log("Compilation aborted because of sandbox error", Utils.Logger.SEVERITY_IMPORTANT)
             return self.finish_compilation(False)
 
+        # Forbidden syscall: this shouldn't happen, probably the
+        # administrator should relax the syscall constraints
         if exit_status == Sandbox.EXIT_SYSCALL:
             Utils.log("Compilation aborted because of forbidden syscall", Utils.Logger.SEVERITY_IMPORTANT)
             return self.finish_compilation(False)
 
+        # Forbidden file access: this could be triggered by the user
+        # including a forbidden file or too strict sandbox contraints;
+        # the administrator should have a look at it
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
             Utils.log("Compilaton aborted because of forbidden file access", Utils.Logger.SEVERITY_IMPORTANT)
             return self.finish_compilation(False)
 
+        # Why the exit status hasn't been captured before?
         Utils.log("Shouldn't arrive here, failing", Utils.Logger.SEVERITY_IMPORTANT)
         return self.finish_compilation(False)
 
