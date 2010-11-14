@@ -33,6 +33,57 @@ def get_task_type_class(submission):
     else:
         return None
 
+WHITES = " \t\n"
+
+def white_diff_canonicalize(s):
+    """Convert the input string to a canonical form for the white diff
+    algorithm; that is, the strings a and b are mapped to the same
+    string by white_diff_canonicalize() if and only if they have to be
+    considered equivalent for the purposes of the white_diff
+    algorithm.
+
+    More specificly, this function strips all the leading and trailing
+    whitespaces from s and collpase all the runs of consecutive
+    whitespaces into just one copy of one specific whitespace."""
+
+    # Replace all the whitespaces with copies of the first, making the
+    # rest of the algorithm simpler
+    for c in WHITES[1:]:
+        s = s.replace(c, WHITES[0])
+
+    # Splits the string according to the first whitespace, filters out
+    # empty tokens and join again the string using just one copy of
+    # the first whitespace; this way, runs of more than one
+    # whitespaces are collapsed into just one copy.
+    s = WHITES[0].join(filter(lambda x: x != '', s.split(WHITES[0])))
+    return s
+
+def white_diff(output, res):
+    """Compare the two input files, ignoring in each line repeated,
+    heading or trailing whitespaces and empty traling lines."""
+
+    while True:
+        lout = output.readline()
+        lres = res.readline()
+
+        # Both files finished: comparison succeded
+        if lres == '' and lout == '':
+            return True
+
+        # Only one file finished: ok if the other contains only blanks
+        elif lres == '' or lout == '':
+            lout = lout.strip(WHITES)
+            lres = lres.strip(WHITES)
+            if lout != '' or lres != '':
+                return False
+
+        # Both file still have lines to go: ok if they agree except for the number of whitespaces
+        else:
+            lout = white_diff_canonicalize(lout)
+            lres = white_diff_canonicalize(lres)
+            if lout != lres:
+                return False
+
 class BatchTaskType:
     def __init__(self, submission):
         self.submission = submission
@@ -107,6 +158,14 @@ class BatchTaskType:
             Utils.log("Couldn't retrieve file `%s' from storage" % (name), Utils.Logger.SEVERITY_IMPORTANT)
             self.safe_delete_sandbox()
             raise JobException()
+
+    def safe_get_file(self, name):
+        try:
+            return self.sandbox.get_file(name)
+        except (IOError, OSError):
+            Utils.log("Couldn't retrieve file `%s' from storage" % (name), Utils.Logger.SEVERITY_IMPORTANT)
+            self.safe_delete_sandbox()
+            raise JobException()        
 
     def safe_sandbox_execute(self, command):
         try:
@@ -252,16 +311,22 @@ class BatchTaskType:
         stderr_filename = os.path.join(self.sandbox.path, "manager_stderr.txt")
         self.sandbox.stdout_file = stdout_filename
         self.sandbox.stderr_file = stderr_filename
+
+        # No manager: I'll do a white_diff between output.txt and res.txt
         if len(self.submission.task.managers) == 0:
-            # FIXME - Not the correct way to extract exit code
-            # FIXME - Security constraints too strict for diff, probably it should be better implementing it in Python
-            diff_return = self.safe_sandbox_execute(["/usr/bin/diff", "-w", "output.txt", "res.txt"])
-            if diff_return == 0:
+            # WARNING - This code still needs testing
+            out_file = self.sandbox.safe_get_file("output.txt")
+            # FIXME - Probably it would be more intelligent to get the
+            # res.txt file directly from the storage
+            res_file = self.sandbox.safe_get_file("res.txt")
+            if white_diff(out_file, res_file):
                 outcome = 1.0
                 text = "Output file is correct"
             else:
                 outcome = 0.0
                 text = "Output file isn't correct"
+
+        # Manager present: wonderful, he'll do all the job
         else:
             manager_filename = self.submission.task.managers.keys()[0]
             self.safe_create_file_from_storage(manager_filename, self.submission.task.managers[manager_filename], executable = True)
@@ -273,9 +338,10 @@ class BatchTaskType:
             try:
                 outcome = float(outcome)
             except ValueError:
-                # FIXME - This should be considered as an error for the administrator
                 Utils.log("Wrong outcome `%s' from manager" % (outcome), Utils.Logger.SEVERITY_IMPORTANT)
                 return self.finish_single_evaluation(test_number, False)
+
+        # Finally returns the result
         return self.finish_single_evaluation(test_number, True, outcome, text)
 
     def execute(self):
