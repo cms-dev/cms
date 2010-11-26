@@ -39,6 +39,8 @@ class JobQueue:
     def __init__(self):
         self.main_lock = threading.RLock()
         self.queue = []
+        # The semaphore counts the number of items in the queue
+        self.semaphore = threading.Semaphore(0)
 
     def lock(self):
         self.main_lock.acquire()
@@ -52,46 +54,38 @@ class JobQueue:
                 timestamp = job[1].timestamp
             except:
                 timestamp = time.time()
-        self.lock()
-        try:
+        with self.main_lock:
             heapq.heappush(self.queue, (priority, timestamp, job))
-        finally:
-            self.unlock()
+        self.semaphore.release()
 
     def pop(self):
-        self.lock()
-        try:
-            return heapq.heappop(self.queue)[2]
-        finally:
-            self.unlock()
+        self.semaphore.acquire()
+        with self.main_lock:
+            try:
+                return heapq.heappop(self.queue)[2]
+            except IndexError:
+                raise RuntimeError("Job queue went out-of-sync with semaphore")
 
     def search(self, job):
-        self.lock()
-        try:
+        with self.main_lock:
             for i in self.queue:
                 # FIXME - Is this `for' correct?
                 if self.queue[i][2] == job:
                     return i
-        finally:
-            self.unlock()
         raise LookupError("Job not present in queue")
 
-    def delete_by_position(self, pos):
-        self.lock()
-        try:
-            self.queue[pos] = self.queue[-1]
-            self.queue = self.queue[:-1]
-            heapq.heapify(self.queue)
-        finally:
-            self.unlock()
+    # FIXME - Add semaphore handling
+    #def delete_by_position(self, pos):
+    #    with self.main_lock:
+    #        self.queue[pos] = self.queue[-1]
+    #        self.queue = self.queue[:-1]
+    #        heapq.heapify(self.queue)
 
-    def delete_by_job(self, job):
-        self.lock()
-        try:
-            pos = self.search(job)
-            self.delete_by_position(pos)
-        finally:
-            self.unlock()
+    # FIXME - Add semaphore handling
+    #def delete_by_job(self, job):
+    #    with self.main_lock:
+    #        pos = self.search(job)
+    #        self.delete_by_position(pos)
 
     def set_priority(self, job, priority):
         """Change the priority of a job inside the queue.
@@ -99,13 +93,10 @@ class JobQueue:
         Used (only?) when the user use a token, to increase the
         priority of the evaluation of its submission.
         """
-        self.lock()
-        try:
+        with self.main_lock:
             pos = self.search(job)
             self.queue[pos][0] == priority
             heapq.heapify(self.queue)
-        finally:
-            self.unlock()
 
     def length(self):
         return len(self.queue)
@@ -113,50 +104,58 @@ class JobQueue:
     def empty(self):
         return self.length() == 0
 
-    def poll_queue(self, sleep_time = 2):
-        while True:
-            self.lock()
-            wait = False
-            try:
-                job = self.pop()
-            except IndexError:
-                wait = True
-            self.unlock()
-            if wait:
-                time.sleep(sleep_time)
-            else:
-                return job
-
 class WorkerPool:
+    WORKER_INACTIVE, WORKER_DISABLED = (None, "disabled")
+
     def __init__(self, worker_num):
-        self.workers = [None] * worker_num
+        self.workers = [self.WORKER_INACTIVE] * worker_num
+        # The semaphore counts the number of _inactive_ workers
+        self.semaphore = threading.Semaphore(worker_num)
+        self.main_lock = threading.RLock()
+
+        # FIXME - Unimplemented
+        self.error_count = [0] * worker_num
+        self.schedule_disabling = [False] * worker_num
+        self.ignore_result = [False] * worker_num
 
     def acquire_worker(self, job):
-        try:
-            worker = self.find_worker(None)
+        self.semaphore.acquire()
+        with self.main_lock:
+            try:
+                worker = self.find_worker(None)
+            except LookupError:
+                raise RuntimeError("Worker array went out-of-sync with semaphore")
             self.workers[worker] = job
             return worker
-        except LookupError:
-            raise LookupError("No available workers")
 
     def release_worker(self, n):
-        if self.workers[n] == None:
-            raise ValueError("Worker was inactive")
-        self.workers[n] = None
+        with self.main_lock:
+            if self.workers[n] == None:
+                raise ValueError("Worker was inactive")
+            self.workers[n] = None
+        self.semaphore.release()
 
     def find_worker(self, job):
-        for worker, workerJob in enumerate(self.workers):
-            if workerJob == job:
-                return worker
-        raise LookupError("No such job")
+        with self.main_lock:
+            for worker, workerJob in enumerate(self.workers):
+                if workerJob == job:
+                    return worker
+            raise LookupError("No such job")
 
-    def poll_worker(self, job, sleep_time = 2):
-        while True:
-            try:
-                worker = self.acquire_worker(job)
-                return worker
-            except LookupError:
-                time.sleep(sleep_time)
+    def disable_worker(self, n):
+        self.semaphore.acquire()
+        with self.main_lock:
+            if self.workers[n] != WORKER_INACTIVE:
+                self.semaphore.release()
+                raise ValueError("Worker wasn't inactive")
+            self.workers[n] = WOKER_DISABLED
+
+    def enable_worker(self, n):
+        with self.main_lock:
+            if self.workers[n] != WORKER_DISABLED:
+                raise ValueError("Worker wasn't disabled")
+            self.workers[n] = WORKER_INACTIVE
+        self.semaphore.release()
 
 class JobDispatcher(threading.Thread):
     def __init__(self, queue, workers):
@@ -166,14 +165,14 @@ class JobDispatcher(threading.Thread):
 
     def run(self):
         while True:
-            job = self.queue.poll_queue()
+            job = self.queue.pop()
             action = job[0]
             if action == EvaluationServer.JOB_TYPE_BOMB:
                 Utils.log("KABOOM!! (but I should wait for all the workers to finish their jobs)")
                 return
             else:
                 submission = job[1]
-                worker = self.workers.poll_worker(job)
+                worker = self.workers.acquire_worker(job)
 
                 Utils.log("Asking worker %d (%s:%d) to %s submission %s" %
                     (worker,
@@ -189,7 +188,7 @@ class JobDispatcher(threading.Thread):
                     p.evaluate(submission.couch_id)
 
 class EvaluationServer:
-    JOB_PRIORITY_HIGH, JOB_PRIORITY_MEDIUM, JOB_PRIORITY_LOW, JOB_PRIORITY_EXTRA_LOW = range(4)
+    JOB_PRIORITY_EXTRA_HIGH, JOB_PRIORITY_HIGH, JOB_PRIORITY_MEDIUM, JOB_PRIORITY_LOW, JOB_PRIORITY_EXTRA_LOW = range(5)
     JOB_TYPE_COMPILATION, JOB_TYPE_EVALUATION, JOB_TYPE_BOMB = ["compile", "evaluate", "bomb"]
     MAX_COMPILATION_TENTATIVES, MAX_EVALUATION_TENTATIVES = [3, 3]
 
