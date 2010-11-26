@@ -285,16 +285,56 @@ class BatchTaskType:
         self.safe_create_sandbox()
         self.safe_create_file_from_storage(self.executable_filename, self.submission.executables[self.executable_filename], executable = True)
         self.safe_create_file_from_storage("input.txt", self.submission.task.testcases[test_number][0])
-            
+
         self.sandbox.chdir = self.sandbox.path
         self.sandbox.filter_syscalls = 2
         self.sandbox.timeout = self.submission.task.time_limit
         self.sandbox.address_space = self.submission.task.memory_limit * 1024
         self.sandbox.file_check = 1
         self.sandbox.allow_path = ["input.txt", "output.txt"]
-        # FIXME - Differentiate between compilation errors and popen errors
-        # FIXME - Detect sandbox problems (timeout, out of memory, ...)
+
         self.safe_sandbox_execute([self.sandbox.relative_path(self.executable_filename)])
+
+        # Detect the outcome of the execution
+        exit_status = self.sandbox.get_exit_status()
+        exit_code = self.sandbox.get_exit_code()
+
+        # Timeout: returning the error to the user
+        if exit_status == Sandbox.EXIT_TIMEOUT:
+            Utils.log("Execution timed out")
+            return self.finish_single_evaluation(test_number, True, 0.0, "Execution timed out\n")
+
+        # Suicide with signal (memory limit, segfault, abort):
+        # returning the error to the user
+        if exit_status == Sandbox.EXIT_SIGNAL:
+            signal = self.sandbox.get_killing_signal()
+            Utils.log("Execution killed with signal %d" % (signal))
+            return self.finish_single_evaluation(test_number, True, 0.0, "Execution killed with signal %d\n" % (signal))
+
+        # Sandbox error: this isn't a user error, the administrator
+        # needs to check the environment
+        if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
+            Utils.log("Evaluation aborted because of sandbox error", Utils.Logger.SEVERITY_IMPORTANT)
+            return self.finish_single_evaluation(test_number, False)
+
+        # Forbidden syscall: returning the error to the user
+        # FIXME - Tell which syscall raised this error
+        if exit_status == Sandbox.EXIT_SYSCALL:
+            Utils.log("Execution killed because of forbidden syscall")
+            return self.finish_single_execution(test_number, True, 0.0, "Execution killed because of forbidden syscall")
+
+        # Forbidden file access: returning the error to the user
+        # FIXME - Tell which file raised this error
+        if exit_status == Sandbox.EXIT_FILE_ACCESS:
+            Utils.log("Execution killed because of forbidden file access")
+            return self.finish_single_execution(test_number, True, 0.0, "Execution killed because of forbidden file access")
+
+        # Last check before assuming that execution finished
+        # successfully; we accept the execution even if the exit code
+        # isn't 0
+        if exit_status != Sandbox.EXIT_OK:
+            Utils.log("Shouldn't arrive here, failing", Utils.Logger.SEVERITY_IMPORTANT)
+            return self.finish_single_execution(test_number, False)
 
         if not self.sandbox.file_exists("output.txt"):
             outcome = 0.0
