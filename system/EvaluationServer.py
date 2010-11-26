@@ -37,14 +37,14 @@ class JobQueue:
     """
 
     def __init__(self):
-        self.semaphore = threading.BoundedSemaphore()
+        self.main_lock = threading.RLock()
         self.queue = []
 
     def lock(self):
-        self.semaphore.acquire()
+        self.main_lock.acquire()
 
     def unlock(self):
-        self.semaphore.release()
+        self.main_lock.release()
 
     def push(self, job, priority, timestamp = None):
         if timestamp == None:
@@ -52,21 +52,46 @@ class JobQueue:
                 timestamp = job[1].timestamp
             except:
                 timestamp = time.time()
-        heapq.heappush(self.queue, (priority, timestamp, job))
+        self.lock()
+        try:
+            heapq.heappush(self.queue, (priority, timestamp, job))
+        finally:
+            self.unlock()
 
     def pop(self):
-        return heapq.heappop(self.queue)[2]
+        self.lock()
+        try:
+            return heapq.heappop(self.queue)[2]
+        finally:
+            self.unlock()
 
     def search(self, job):
-        for i in self.queue:
-            if self.queue[i][2] == job:
-                return i
+        self.lock()
+        try:
+            for i in self.queue:
+                # FIXME - Is this `for' correct?
+                if self.queue[i][2] == job:
+                    return i
+        finally:
+            self.unlock()
         raise LookupError("Job not present in queue")
 
-    def delete(self, pos):
-        self.queue[pos] = self.queue[-1]
-        self.queue = self.queue[:-1]
-        heapq.heapify(self.queue)
+    def delete_by_position(self, pos):
+        self.lock()
+        try:
+            self.queue[pos] = self.queue[-1]
+            self.queue = self.queue[:-1]
+            heapq.heapify(self.queue)
+        finally:
+            self.unlock()
+
+    def delete_by_job(self, job):
+        self.lock()
+        try:
+            pos = self.search(job)
+            self.delete_by_position(pos)
+        finally:
+            self.unlock()
 
     def set_priority(self, job, priority):
         """Change the priority of a job inside the queue.
@@ -74,12 +99,13 @@ class JobQueue:
         Used (only?) when the user use a token, to increase the
         priority of the evaluation of its submission.
         """
+        self.lock()
         try:
             pos = self.search(job)
-        except LookupError:
-            return
-        self.queue[pos][0] == priority
-        heapq.heapify(self.queue)
+            self.queue[pos][0] == priority
+            heapq.heapify(self.queue)
+        finally:
+            self.unlock()
 
     def length(self):
         return len(self.queue)
