@@ -62,7 +62,7 @@ class JobQueue:
         self.semaphore.acquire()
         with self.main_lock:
             try:
-                return heapq.heappop(self.queue)[2]
+                return heapq.heappop(self.queue)
             except IndexError:
                 raise RuntimeError("Job queue went out-of-sync with semaphore")
 
@@ -112,6 +112,7 @@ class WorkerPool:
         # The semaphore counts the number of _inactive_ workers
         self.semaphore = threading.Semaphore(worker_num)
         self.main_lock = threading.RLock()
+        self.start_time = [None] * worker_num
 
         # FIXME - Unimplemented
         self.error_count = [0] * worker_num
@@ -165,7 +166,7 @@ class JobDispatcher(threading.Thread):
 
     def run(self):
         while True:
-            job = self.queue.pop()
+            priority, timestamp, job = self.queue.pop()
             action = job[0]
             if action == EvaluationServer.JOB_TYPE_BOMB:
                 Utils.log("KABOOM!! (but I should wait for all the workers to finish their jobs)")
@@ -173,13 +174,16 @@ class JobDispatcher(threading.Thread):
             else:
                 submission = job[1]
                 worker = self.workers.acquire_worker(job)
+                self.workers.start_time[worker] = time.time()
+                queue_time = self.workers.start_time[worker] - timestamp
 
-                Utils.log("Asking worker %d (%s:%d) to %s submission %s" %
+                Utils.log("Asking worker %d (%s:%d) to %s submission %s (after around %s seconds of queue)" %
                     (worker,
                      Configuration.workers[worker][0],
                      Configuration.workers[worker][1],
                      action,
-                     submission.couch_id))
+                     submission.couch_id,
+                     queue_time))
                 p = xmlrpclib.ServerProxy("http://%s:%d" %
                                           Configuration.workers[worker])
                 if action == EvaluationServer.JOB_TYPE_COMPILATION:
@@ -251,13 +255,15 @@ class EvaluationServer:
 
     def action_finished(self, job):
         worker = self.workers.find_worker(job)
+        time_elapsed = time.time() - self.workers.start_time[worker]
         self.workers.release_worker(worker)
-        Utils.log("Worker %d (%s:%d) finished to %s submission %s" %
+        Utils.log("Worker %d (%s:%d) finished to %s submission %s (took around %d seconds)" %
             (worker,
              Configuration.workers[worker][0],
              Configuration.workers[worker][1],
              job[0],
-             job[1].couch_id))
+             job[1].couch_id,
+             time_elapsed))
 
     def compilation_finished(self, success, submission_id):
         submission = CouchObject.from_couch(submission_id)
@@ -311,7 +317,7 @@ class EvaluationServer:
     def self_destruct(self):
         self.queue.lock()
         self.queue.push((EvaluationServer.JOB_TYPE_BOMB, None),
-                        EvaluationServer.JOB_PRIORITY_EXTRA_LOW)
+                        EvaluationServer.JOB_PRIORITY_EXTRA_HIGH)
         self.queue.unlock()
         return True
 
