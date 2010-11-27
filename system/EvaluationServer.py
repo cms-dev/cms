@@ -166,6 +166,7 @@ class JobDispatcher(threading.Thread):
 
     def run(self):
         while True:
+            # FIXME - Shouldn't lock on a certain job if there are no workers available
             priority, timestamp, job = self.queue.pop()
             action = job[0]
             if action == EvaluationServer.JOB_TYPE_BOMB:
