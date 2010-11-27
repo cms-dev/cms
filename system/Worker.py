@@ -78,7 +78,7 @@ class EvaluateJob(Job):
 class Worker:
     def __init__(self, listen_address, listen_port):
         # Create server
-        server = SimpleXMLRPCServer((listen_address, listen_port))
+        server = SimpleXMLRPCServer((listen_address, listen_port), logRequests = False)
         server.register_introspection_functions()
 
         server.register_function(self.compile)

@@ -206,7 +206,7 @@ class EvaluationServer:
         if listen_port == None:
             listen_port = Configuration.evaluation_server[1]
 
-        server = SimpleXMLRPCServer((listen_address, listen_port))
+        server = SimpleXMLRPCServer((listen_address, listen_port), logRequests = False)
         server.register_introspection_functions()
 
         self.queue = JobQueue()

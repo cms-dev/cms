@@ -38,7 +38,7 @@ class FileStorage:
             listen_port = Configuration.file_storage[1]
 
         # Create server
-        server = SimpleXMLRPCServer((listen_address, listen_port))
+        server = SimpleXMLRPCServer((listen_address, listen_port), logRequests = False)
         server.register_introspection_functions()
 
         # Create server directories
