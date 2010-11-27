@@ -1,4 +1,6 @@
 *~
 *.pyc
 fs
+logs
 *.txt
+mo-box
