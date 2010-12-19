@@ -58,6 +58,13 @@ class JobQueue:
             heapq.heappush(self.queue, (priority, timestamp, job))
         self.semaphore.release()
 
+    def top(self):
+        with self.main_lock:
+            if len(self.queue) > 0:
+                return self.queue[0]
+            else:
+                raise LookupError("Empty queue")
+
     def pop(self):
         self.semaphore.acquire()
         with self.main_lock:
@@ -119,11 +126,13 @@ class WorkerPool:
         self.schedule_disabling = [False] * worker_num
         self.ignore_result = [False] * worker_num
 
-    def acquire_worker(self, job):
-        self.semaphore.acquire()
+    def acquire_worker(self, job, blocking = True):
+        available = self.semaphore.acquire(blocking)
+        if not available:
+            return None
         with self.main_lock:
             try:
-                worker = self.find_worker(None)
+                worker = self.find_worker(self.WORKER_INACTIVE)
             except LookupError:
                 raise RuntimeError("Worker array went out-of-sync with semaphore")
             self.workers[worker] = job
@@ -131,9 +140,9 @@ class WorkerPool:
 
     def release_worker(self, n):
         with self.main_lock:
-            if self.workers[n] == None:
+            if self.workers[n] == self.WORKER_INACTIVE:
                 raise ValueError("Worker was inactive")
-            self.workers[n] = None
+            self.workers[n] = self.WORKER_INACTIVE
         self.semaphore.release()
 
     def find_worker(self, job):
@@ -146,39 +155,60 @@ class WorkerPool:
     def disable_worker(self, n):
         self.semaphore.acquire()
         with self.main_lock:
-            if self.workers[n] != WORKER_INACTIVE:
+            if self.workers[n] != self.WORKER_INACTIVE:
                 self.semaphore.release()
                 raise ValueError("Worker wasn't inactive")
-            self.workers[n] = WOKER_DISABLED
+            self.workers[n] = self.WOKER_DISABLED
 
     def enable_worker(self, n):
         with self.main_lock:
-            if self.workers[n] != WORKER_DISABLED:
+            if self.workers[n] != self.WORKER_DISABLED:
                 raise ValueError("Worker wasn't disabled")
-            self.workers[n] = WORKER_INACTIVE
+            self.workers[n] = self.WORKER_INACTIVE
         self.semaphore.release()
 
-class JobDispatcher(threading.Thread):
-    def __init__(self, queue, workers):
-        threading.Thread.__init__(self)
-        self.queue = queue
-        self.workers = workers
+    def working_workers(self):
+        with self.main_lock:
+            return len(filter(lambda x: x != self.WORKER_INACTIVE and x != self.WORKER_DISABLED, self.workers))
 
-    def run(self):
-        while True:
-            # FIXME - Shouldn't lock on a certain job if there are no workers available
-            priority, timestamp, job = self.queue.pop()
-            action = job[0]
-            if action == EvaluationServer.JOB_TYPE_BOMB:
-                Utils.log("KABOOM!! (but I should wait for all the workers to finish their jobs)")
-                return
+class JobDispatcher(threading.Thread):
+    def __init__(self, worker_num):
+        threading.Thread.__init__(self)
+        self.queue = JobQueue()
+        self.workers = WorkerPool(worker_num)
+        self.main_lock = threading.RLock()
+        self.bomb_primed = False
+        self.touched = threading.Event()
+
+    def check_action(self, priority, timestamp, job):
+        """Try to execute the specified action immediately: if it's
+        possible, do it and returns True; otherwise returns False."""
+
+        action = job[0]
+
+        # A bomb is never accepted and block the queue forever, so no
+        # further jobs can be assigned to workers; moreover, schedule
+        # another evaluation of the queue, in order to make the bomb
+        # explode if workers are already free.
+        if action == EvaluationServer.JOB_TYPE_BOMB:
+            if not self.bomb_primed:
+                Utils.log("Priming the bomb")
+                self.bomb_primed = True
+                self.touched.set()
+            return False
+
+        else:
+            worker = self.workers.acquire_worker(job, blocking = False)
+
+            if worker == None:
+                return False
+
             else:
                 submission = job[1]
-                worker = self.workers.acquire_worker(job)
                 self.workers.start_time[worker] = time.time()
                 queue_time = self.workers.start_time[worker] - timestamp
 
-                Utils.log("Asking worker %d (%s:%d) to %s submission %s (after around %s seconds of queue)" %
+                Utils.log("Asking worker %d (%s:%d) to %s submission %s (after around %.2f seconds of queue)" %
                     (worker,
                      Configuration.workers[worker][0],
                      Configuration.workers[worker][1],
@@ -191,6 +221,51 @@ class JobDispatcher(threading.Thread):
                     p.compile(submission.couch_id)
                 elif action == EvaluationServer.JOB_TYPE_EVALUATION:
                     p.evaluate(submission.couch_id)
+
+                return True
+
+    def process_queue(self):
+        with self.main_lock:
+            while True:
+                try:
+                    priority, timestamp, job = self.queue.top()
+                except LookupError:
+                    # The queue is empty, there is nothing other to do. Good! :-)
+                    return
+
+                if self.check_action(priority, timestamp, job):
+                    self.queue.pop()
+                else:
+                    return
+
+    def run(self):
+        while True:
+            self.touched.wait()
+            self.touched.clear()
+            with self.main_lock:
+                if self.bomb_primed and self.workers.working_workers() == 0:
+                    Utils.log("KABOOM!!")
+                    return
+                self.process_queue()
+
+    def queue_push(self, job, priority, timestamp = None):
+        with self.main_lock:
+            self.queue.push(job, priority, timestamp)
+        self.touched.set()
+
+    def queue_set_priority(self, job, priority):
+        with self.main_lock:
+            self.queue.set_priority(job, priority)
+        self.touched.set()
+
+    def release_worker(self, worker):
+        with self.main_lock:
+            self.workers.release_worker(worker)
+        self.touched.set()
+
+    def find_worker(self, job):
+        with self.main_lock:
+            return self.workers.find_worker(job)
 
 class EvaluationServer:
     JOB_PRIORITY_EXTRA_HIGH, JOB_PRIORITY_HIGH, JOB_PRIORITY_MEDIUM, JOB_PRIORITY_LOW, JOB_PRIORITY_EXTRA_LOW = range(5)
@@ -209,9 +284,7 @@ class EvaluationServer:
         server = SimpleXMLRPCServer((listen_address, listen_port), logRequests = False)
         server.register_introspection_functions()
 
-        self.queue = JobQueue()
-        self.workers = WorkerPool(len(Configuration.workers))
-        self.jd = JobDispatcher(self.queue, self.workers)
+        self.jd = JobDispatcher(len(Configuration.workers))
         self.st = threading.Thread()
         self.st.run = server.serve_forever
         self.st.daemon = True
@@ -239,32 +312,28 @@ class EvaluationServer:
         priority will be set as medium when we queue the evaluation.
         """
         submission = CouchObject.from_couch(submission_id)
-        self.queue.lock()
-        self.queue.set_priority((EvaluationServer.JOB_TYPE_EVALUATION,submission),
-                                EvaluationServer.JOB_PRIORITY_MEDIUM)
-        self.queue.unlock()
+        self.jd.queue_set_priority((EvaluationServer.JOB_TYPE_EVALUATION, submission),
+                                   EvaluationServer.JOB_PRIORITY_MEDIUM)
         return True
 
     def add_job(self, submission_id):
         Utils.log("Queueing compilation for submission %s" % (submission_id))
         submission = CouchObject.from_couch(submission_id)
-        self.queue.lock()
-        self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION, submission),
-                        EvaluationServer.JOB_PRIORITY_HIGH)
-        self.queue.unlock()
+        self.jd.queue_push((EvaluationServer.JOB_TYPE_COMPILATION, submission),
+                           EvaluationServer.JOB_PRIORITY_HIGH)
         return True
 
     def action_finished(self, job):
-        worker = self.workers.find_worker(job)
-        time_elapsed = time.time() - self.workers.start_time[worker]
-        self.workers.release_worker(worker)
-        Utils.log("Worker %d (%s:%d) finished to %s submission %s (took around %d seconds)" %
+        worker = self.jd.find_worker(job)
+        time_elapsed = time.time() - self.jd.workers.start_time[worker]
+        Utils.log("Worker %d (%s:%d) finished to %s submission %s (took around %.2f seconds)" %
             (worker,
              Configuration.workers[worker][0],
              Configuration.workers[worker][1],
              job[0],
              job[1].couch_id,
              time_elapsed))
+        self.jd.release_worker(worker)
 
     def compilation_finished(self, success, submission_id):
         submission = CouchObject.from_couch(submission_id)
@@ -276,10 +345,8 @@ class EvaluationServer:
             priority = EvaluationServer.JOB_PRIORITY_LOW
             if submission.tokened():
                 priority = EvaluationServer.JOB_PRIORITY_MEDIUM
-            self.queue.lock()
-            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
-                            priority)
-            self.queue.unlock()
+            self.jd.queue_push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
+                               priority)
         elif success and submission.compilation_outcome == "fail":
             Utils.log("Compilation finished for submission %s, but the submission was not accepted; I'm not queueing evaluation" % (submission_id))
         else:
@@ -290,7 +357,8 @@ class EvaluationServer:
                           (EvaluationServer.MAX_COMPILATION_TENTATIVES,
                            submission_id), Utils.Logger.SEVERITY_IMPORTANT)
             else:
-                self.add_job(submission_id)
+                self.jd.queue_push((EvaluationServer.JOB_TYPE_COMPILATION, submission),
+                                   EvaluationServer.JOB_PRIORITY_HIGH)
         return True
 
     def evaluation_finished(self, success, submission_id):
@@ -308,18 +376,14 @@ class EvaluationServer:
                           (EvaluationServer.MAX_EVALUATION_TENTATIVES,
                            submission_id), Utils.Logger.SEVERITY_IMPORTANT)
             else:
-                self.queue.lock()
                 # TODO - should check the original priority of the job
-                self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
-                                EvaluationServer.JOB_PRIORITY_LOW)
-                self.queue.unlock()
+                self.jd.queue_push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
+                                   EvaluationServer.JOB_PRIORITY_LOW)
         return True
 
     def self_destruct(self):
-        self.queue.lock()
-        self.queue.push((EvaluationServer.JOB_TYPE_BOMB, None),
-                        EvaluationServer.JOB_PRIORITY_EXTRA_HIGH)
-        self.queue.unlock()
+        self.jd.queue_push((EvaluationServer.JOB_TYPE_BOMB, None),
+                           EvaluationServer.JOB_PRIORITY_EXTRA_HIGH)
         return True
 
 def sigterm(signum, stack):

@@ -10,6 +10,9 @@
 *** Worker
 
 *** EvaluationServer
+* Job Dispatcher sometimes dies before responding to the XML-RPC request
+  or messing up things with the closing Python interpreter.
+* Isn't able to cope with an unreachable worker.
 
 *** ContestWebServer
 
