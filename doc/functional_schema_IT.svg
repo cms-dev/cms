@@ -15,7 +15,10 @@
    id="svg4058"
    version="1.1"
    inkscape:version="0.47 r22583"
-   sodipodi:docname="functional_schema_IT.svg">
+   sodipodi:docname="functional_schema_IT.svg"
+   inkscape:export-filename="/home/giovanni/devel/olimpiadi/oiisys/doc/functional_schema_IT.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300">
   <defs
      id="defs4060">
     <linearGradient
@@ -19417,11 +19420,11 @@
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
-     inkscape:pageopacity="0.0"
+     inkscape:pageopacity="1"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="537.31547"
-     inkscape:cy="411.10161"
+     inkscape:zoom="0.5"
+     inkscape:cx="340.16608"
+     inkscape:cy="615.03951"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
