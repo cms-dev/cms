@@ -396,9 +396,9 @@
   \item \id{memory\_limit} (float): the memory limit for this task (in
     megabytes);
 
-  \item \id{task\_type} (integer): the type of this task; how
-    submissions for this task gets compiled, executed and checked
-    depend on this value via a plugin system;
+  \item \id{task\_type} (string): the type of this task; it encode a
+    task type, that is a plugin that specifies how submissions for
+    this task gets compiled, executed and checked;
 
   \item \id{submission\_format} (list): the description of the files
     expected within a submission for this task; each element of the
