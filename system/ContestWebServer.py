@@ -155,15 +155,16 @@ class LoginHandler(BaseHandler):
     def post(self):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
-        for u in c.users:
-            if u.username == username and u.password == password:
-                self.set_secure_cookie("login", pickle.dumps(
-                        (self.get_argument("username"), time.time())
-                        ))
-                self.redirect("/")
-                break
+        if [] != [user for users in c.users
+                  if u.username == username and \
+                      u.password == password]:
+            self.set_secure_cookie("login", pickle.dumps(
+                    (self.get_argument("username"), time.time())
+                    ))
+            self.redirect("/")
         else:
-            
+            Utils.log("Login error: user=%s pass=%s." %
+                      (username, password))
             self.redirect("/?login_error=true")
 
 class LogoutHandler(BaseHandler):
@@ -179,19 +180,18 @@ class SubmissionViewHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, task_name):
         update_submissions()
-        
+
         # get the task object
         try:
             task = get_task(task_name)
         except:
             self.write("Task %s not found." % (task_name))
             return
-            
+
         # get the list of the submissions
-        subm = []
-        for s in c.submissions:
-            if s.user.username == self.current_user.username and s.task.name == task.name:
-                subm.append(s)
+        subm = [s for s in c.submissions
+                if s.user.username == self.current_user.username and \
+                    s.task.name == task.name]
         self.render("submission.html", submissions = subm, task = task, contest = c)
 
 class SubmissionFileHandler(BaseHandler):
@@ -209,7 +209,7 @@ class SubmissionFileHandler(BaseHandler):
                 break
         else:
             raise tornado.web.HTTPError(404)
-        
+
         for key, value in submission.files.items():
             if key == filename:
                 submission_file = StringIO()

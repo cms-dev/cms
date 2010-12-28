@@ -43,7 +43,7 @@ def white_diff_canonicalize(s):
     algorithm.
 
     More specificly, this function strips all the leading and trailing
-    whitespaces from s and collpase all the runs of consecutive
+    whitespaces from s and collapse all the runs of consecutive
     whitespaces into just one copy of one specific whitespace."""
 
     # Replace all the whitespaces with copies of the first, making the
@@ -77,7 +77,8 @@ def white_diff(output, res):
             if lout != '' or lres != '':
                 return False
 
-        # Both file still have lines to go: ok if they agree except for the number of whitespaces
+        # Both file still have lines to go: ok if they agree except
+        # for the number of whitespaces
         else:
             lout = white_diff_canonicalize(lout)
             lres = white_diff_canonicalize(lres)
