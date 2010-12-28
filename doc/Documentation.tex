@@ -257,17 +257,18 @@
     snapshot of some parts of the state of the contest integrated with
     some derived data, saved in \CDBS{}; it is used by other services
     so that a view is not computed several times.
-  \item When a \WS{} finishes an evaluation, it compute the
-    \emph{outcome\/} of the submission and, if necessary, updates the
-    outcomes of all the other submissions (this is needed for example
-    when the outcome depends on the best submission so far).
+  \item When a \WS{} finishes an evaluation, it computes the
+    \emph{outcome\/} of the submission.
+  \item Then the \ES{} computes the score of the submission, process
+    that may change also the scores of all others submissions (for
+    example when the score depends on the best submission so far).
   \end{squishlist}
 
   \subsection{Worker Server}
 
   Worker Server's aim is to do the low-level job of \ES{}. That is, it
   has to take care of compiling the submissions and executing them
-  against the testcases, assigning to each of them their evaluation.
+  against the testcases, assigning to each of them their outcome.
 
   \subsection{Ranking Web Server}
 
@@ -516,23 +517,23 @@
     consists in the compilation of the submission and the execution
     against a large number of testcases; for each testcase, \WS{}
     produces an evaluation.
-  \item[Evalutation (data).] \WS{} produces a numerical value for each
-    submission and each testcase, called evaluation; this is not the
-    correct value to use to build the ranking of the contest. The
-    evaluation is given by a manager of the task.
   \item[Manager (source code)] Managers are source code provided by
     the contest managers, that is going to be linked to the source
     code provided by the contestants, or used to evaluate the output
     of the submission after its execution against a testcase.
-  \item[Outcome (data).] The outcome is a numerical value assigned by
-    \ES{} to a submission, that depends on the evaluations of all
+  \item[Outcome (data).] \WS{} produces a numerical value for each
+    submission and each testcase, called outcome; this is not the
+    correct value to use to build the ranking of the contest. The
+    outcome is given by a manager of the task.
+  \item[Score (data).] The score is a numerical value assigned by
+    \ES{} to a submission, that depends on the outcomes of all
     testcases and all submissions sent before. The method used to
-    compute the outcome is determined by the outcome type. This is the
+    compute the score is determined by the score type. This is the
     value to use to build the rank of the contest.
-  \item[Outcome type (class).] An outcome type is a class that
-    specifyies how to translate the evaluations of the submissions
-    into outcomes. Its behaviour is influenced by parameters
-    sepecified in the configuration of the task.
+  \item[Score type (class).] A score type is a class that specifies
+    how to translate the outcomes of the submissions into scores. Its
+    behaviour is influenced by parameters specified in the
+    configuration of the task.
   \item[Task type (class).] A task type is a class that specifies how
     to treat the files submitted by the contestant and the managers
     provided by the contest managers; usually, this turns out to be
