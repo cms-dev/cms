@@ -26,6 +26,7 @@ import sys
 from Task import Task
 from User import User
 from Contest import Contest
+from ScoreType import ScoreTypes
 from FileStorageLib import FileStorageLib
 
 def import_contest(path):
@@ -88,7 +89,7 @@ def import_task(path):
         params["managers"] = { "checker": FSL.put_file(fd) }
     else:
         params["managers"] = {}
-    params["score_type"] = Task.SCORE_TYPE_SUM
+    params["score_type"] = ScoreTypes.SCORE_TYPE_SUM
     params["score_parameters"] = [],
     params["testcases"] = [ (FSL.put(os.path.join(path, "input", "input%d.txt" % (i)), "Input %d for task %s" % (i, name)),
                              FSL.put(os.path.join(path, "output", "output%d.txt" % (i)), "Output %d for task %s" % (i, name)))

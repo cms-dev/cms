@@ -169,7 +169,10 @@ class WorkerPool:
 
     def working_workers(self):
         with self.main_lock:
-            return len(filter(lambda x: x != self.WORKER_INACTIVE and x != self.WORKER_DISABLED, self.workers))
+            return len(filter(lambda x:
+                                  x != self.WORKER_INACTIVE and \
+                                  x != self.WORKER_DISABLED,
+                              self.workers))
 
 class JobDispatcher(threading.Thread):
     def __init__(self, worker_num):
@@ -310,8 +313,15 @@ class EvaluationServer:
         If the evaluation of the submission is already in the queue,
         we increase its priority; otherwise, we do nothing, since the
         priority will be set as medium when we queue the evaluation.
+
+        Instead, if we already evaluated the submission, we signal to
+        the scorer. This is used by scorers that use both the last
+        submission and the best tokenized submission to build the
+        score.
         """
         submission = CouchObject.from_couch(submission_id)
+        if submission.evaluation_outcome != None:
+            submission.task.scorer.add_token(submission)
         self.jd.queue_set_priority((EvaluationServer.JOB_TYPE_EVALUATION, submission),
                                    EvaluationServer.JOB_PRIORITY_MEDIUM)
         return True
@@ -336,6 +346,10 @@ class EvaluationServer:
         self.jd.release_worker(worker)
 
     def compilation_finished(self, success, submission_id):
+        """
+        RPC method called by a Worker when a compilation has been
+        completed.
+        """
         submission = CouchObject.from_couch(submission_id)
         submission.compilation_tentatives += 1
         submission.to_couch()
@@ -362,12 +376,17 @@ class EvaluationServer:
         return True
 
     def evaluation_finished(self, success, submission_id):
+        """
+        RPC method called by a Worker when an evaluation has been
+        completed.
+        """
         submission = CouchObject.from_couch(submission_id)
         submission.evaluation_tentatives += 1
         submission.to_couch()
         self.action_finished((EvaluationServer.JOB_TYPE_EVALUATION, submission))
         if success:
             Utils.log("Evaluation succeeded for submission %s" % (submission_id))
+            self.update_evaluation(submission_id)
         else:
             Utils.log("Evaluation failed for submission %s" % (submission_id))
             if submission.evaluation_tentatives > \
@@ -380,6 +399,16 @@ class EvaluationServer:
                 self.jd.queue_push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
                                    EvaluationServer.JOB_PRIORITY_LOW)
         return True
+
+    def update_evaluation(self, submission_id):
+        """
+        Compute the evaluation for all submissions of the same task as
+        submission_id's task, assuming that only submission_id has
+        changed from last evaluation.
+        """
+        submission = CouchObject.from_couch(submission_id)
+        scorer = submission.task.scorer
+        scorer.add_submission(submission)
 
     def self_destruct(self):
         self.jd.queue_push((EvaluationServer.JOB_TYPE_BOMB, None),

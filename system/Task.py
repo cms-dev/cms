@@ -21,6 +21,7 @@
 
 import Utils
 from CouchObject import CouchObject
+from ScoreType import ScoreTypes
 
 class Task(CouchObject):
     _to_copy = ["name", "title", "attachments", "statement",
@@ -35,7 +36,6 @@ class Task(CouchObject):
     TASK_TYPE_BATCH = "TaskTypeBatch"
     TASK_TYPE_PROGRAMMING = "TaskTypeProgramming"
     TASK_TYPE_OUTPUT_ONLY = "TaskTypeOutputOnly"
-    SCORE_TYPE_SUM = range(1)
 
     def __init__(self, name, title, attachments, statement,
                  time_limit, memory_limit,
@@ -56,6 +56,8 @@ class Task(CouchObject):
         self.managers = managers
         self.score_type = score_type
         self.score_parameters = score_parameters
+        self.scorer = ScoreTypes.get_score_type_class(score_type,
+                                                      score_parameters)
         self.testcases = testcases
         self.public_testcases = public_testcases
         self.token_initial = token_initial
