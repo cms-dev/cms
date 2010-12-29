@@ -53,6 +53,17 @@ class Contest(CouchObject):
     def choose_couch_id_basename(self):
         return "contest-%s" % (self.name)
 
+    def get_task(self, task_name):
+        """
+        Returns the first task in the contest with the given name.
+        """
+        for t in c.tasks:
+            if t.name == task_name:
+                return t
+        raise KeyError("Task not found")
+
+
+
 def sample_contest(couch_id = None):
     import User
     import Task

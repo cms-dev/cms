@@ -42,15 +42,6 @@ from Submission import Submission
 from FileStorageLib import FileStorageLib
 
 
-def get_task(task_name):
-    """Returns the first task in the contest with the given name.
-    """
-    for t in c.tasks:
-        if t.name == task_name:
-            return t
-    else:
-        raise KeyError("Task not found")
-
 def token_available(user, task, timestamp):
     """Returns True if the given user can use a token for the given
     task.
@@ -147,7 +138,7 @@ class MainHandler(BaseHandler):
     """Home page handler.
     """
     def get(self):
-        self.render("welcome.html", contest = c , cookie = str(self.cookies))
+        self.render("welcome.html", contest = c, cookie = str(self.cookies))
 
 class LoginHandler(BaseHandler):
     """Login handler.
@@ -155,8 +146,8 @@ class LoginHandler(BaseHandler):
     def post(self):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
-        if [] != [user for user in c.users
-                  if user.username == username and \
+        if [] != [user for user in c.users \
+                      if user.username == username and \
                       user.password == password]:
             self.set_secure_cookie("login", pickle.dumps(
                     (self.get_argument("username"), time.time())
@@ -183,7 +174,7 @@ class SubmissionViewHandler(BaseHandler):
 
         # get the task object
         try:
-            task = get_task(task_name)
+            task = c.get_task(task_name)
         except:
             self.write("Task %s not found." % (task_name))
             return
@@ -232,7 +223,7 @@ class TaskViewHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, task_name):
         try:
-            task = get_task(task_name)
+            task = c.get_task(task_name)
         except:
             self.write("Task %s not found." % (task_name))
             return
@@ -245,7 +236,7 @@ class TaskStatementViewHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self, task_name):
         try:
-            task = get_task(task_name)
+            task = c.get_task(task_name)
         except:
             self.write("Task %s not found." % (task_name))
         statement_file = StringIO()
@@ -317,7 +308,7 @@ class SubmitHandler(BaseHandler):
                 files[item.filename] = zip_object.read(item)
         else:
             files[uploaded["filename"]] = uploaded["body"]
-        task = get_task(task_name)
+        task = c.get_task(task_name)
         if not task.valid_submission(files.keys()):
             raise tornado.web.HTTPError(404)
         for filename, content in files.items():
@@ -354,7 +345,7 @@ handlers = [
             (r"/submit/([a-zA-Z0-9_.-]+)",SubmitHandler)
            ]
 
-application = tornado.web.Application( handlers, **WebConfig.parameters)
+application = tornado.web.Application(handlers, **WebConfig.parameters)
 FSL = FileStorageLib()
 ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 
