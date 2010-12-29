@@ -137,3 +137,32 @@ def set_service(service):
 
 def set_operation(operation):
     logger.operation = operation
+
+
+class FileExplorer:
+    def __init__(self, directory = "./fs"):
+        self.directory = directory
+
+    def list_files(self):
+        import glob
+        self.files = {}
+        for f in glob.glob(os.path.join(self.directory, "descriptions", "*")):
+            self.files[os.path.basename(f)] = open(f).read().strip()
+        self.sorted_files = self.files.keys()
+        self.sorted_files.sort(lambda x, y: cmp(self.files[x], self.files[y]))
+        for i, f in enumerate(self.sorted_files):
+            print "%3d - %s" % (i+1, self.files[f])
+
+    def get_file(self, i):
+        f = os.path.join(self.directory, "objects", self.sorted_files[i])
+        os.system("less %s" % f)
+
+    def run(self):
+        while True:
+            self.list_files()
+            print "Display file number: ",
+            self.get_file(int(raw_input())-1)
+
+if __name__ == "__main__":
+    if len(sys.argv) == 2 and sys.argv[1] == "fs_explorer":
+        FileExplorer().run()
