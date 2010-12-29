@@ -2,30 +2,38 @@
 {% block core %}
 
     <h1>{{ task.title }} ({{ task.name }}) - Submissions</h1>
-    {% if len(submissions)==0 %}
-    No sumbissions found.
+    {% if submissions == [] %}
+    No submissions found.
     {% else %}
         <table>
         <tr>
             <th>Timestamp</th>
-            <th>Compilation</br>status</th>
-            <th>Evaluation</br>status</th>
+            <th>Compilation<br/>status</th>
+            <th>Evaluation<br/>status</th>
             <th>Files</th>
-            <th>Detailed</br>Feedback</br>Requested</th>
+            <th>Detailed<br/>Feedback<br/>Requested</th>
         </tr>
         {% for s in submissions %}
             <tr>
                 <td>{{ datetime.datetime.fromtimestamp(s.timestamp) }}</td>
                 <td>{{ s.compilation_text }}</td>
-                <td>{{ s.evaluation_text }}</td>
+                <td>
+                    {% if s.evaluation_text != None %}
+                        {% for ev in s.evaluation_text %}
+                            {{ ev }}<br/>
+                        {% end %}
+                    {% else %}
+                        Not evaluated
+                    {% end %}
+                </td>
                 <td>
                 {% for key,value in s.files.items() %}
-                    <a href="/submission_file/{{ escape(s.couch_id) }}/{{ escape(key) }}">{{ escape(key) }}</br>
+                    <a href="/submission_file/{{ escape(s.couch_id) }}/{{ escape(key) }}">{{ escape(key) }}<br/>
                 {% end %}
                 <td>
                 {% if s.token_timestamp==None %}
                     <form action="/usetoken/" method="POST">
-                    No 
+                    No
                     <input type="hidden" name="id" value="{{ escape(s.couch_id) }}">
                     <input type="submit" value="Use Token">
                     </form>

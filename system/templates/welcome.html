@@ -7,7 +7,7 @@
         <h2>Problemi</h2>
         <ul>
         {% for t in contest.tasks %}
-            <li><a href="/tasks/{{ t.name }}">{{ t.name }}</a> - 
+            <li><a href="/tasks/{{ t.name }}">{{ t.name }}</a> -
             <a href="/submissions/{{ t.name }}">Submissions</a>
             <form enctype="multipart/form-data" action="/submit/{{ t.name }}" method="post">
               <input type="file" name="{{ t.name }}"></input>
@@ -17,5 +17,5 @@
         </ul>
     {% else %}
         Authentication required.
-    {% end %} 
+    {% end %}
 {% end %}
