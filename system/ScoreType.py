@@ -125,9 +125,7 @@ class ScoreTypeAlone:
                 score = max(score, s.score)
         if submissions != []:
             score = max(score, submissions[-1])
-        if username not in self.scores:
-            self.scores[username] = {}
-        self.scores[username][submission.task.name] = score
+        self.scores[username] = score
 
 
 
@@ -263,7 +261,4 @@ class ScoreTypeRelative:
                     score = max(score, s.score)
             if submissions != []:
                 score = max(score, submissions[-1])
-            if username not in self.scores:
-                self.scores[username] = {}
-            self.scores[username][taskname] = score
-
+            self.scores[username] = score
