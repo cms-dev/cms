@@ -137,9 +137,9 @@ class BaseHandler(tornado.web.RequestHandler):
             return None
         if cookie_time == None or cookie_time < upsince:
             return None
-        for u in c.users:
-            if u.username == username:
-                return u
+        for user in c.users:
+            if user.username == username:
+                return user
         else:
             return None
 
@@ -155,9 +155,9 @@ class LoginHandler(BaseHandler):
     def post(self):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
-        if [] != [user for users in c.users
-                  if u.username == username and \
-                      u.password == password]:
+        if [] != [user for user in c.users
+                  if user.username == username and \
+                      user.password == password]:
             self.set_secure_cookie("login", pickle.dumps(
                     (self.get_argument("username"), time.time())
                     ))
