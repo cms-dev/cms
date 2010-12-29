@@ -107,7 +107,7 @@ class BatchTaskType:
             Utils.log("Couldn't update database, aborting compilation (exception: %s)" % (repr(e)))
             return False
 
-    def finish_single_evaluation(self, test_number, success, outcome = 0, text = ""):
+    def finish_single_execution(self, test_number, success, outcome = 0, text = ""):
         self.safe_delete_sandbox()
         if not success:
             return False
@@ -303,20 +303,20 @@ class BatchTaskType:
         # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
             Utils.log("Execution timed out")
-            return self.finish_single_evaluation(test_number, True, 0.0, "Execution timed out\n")
+            return self.finish_single_execution(test_number, True, 0.0, "Execution timed out\n")
 
         # Suicide with signal (memory limit, segfault, abort):
         # returning the error to the user
         if exit_status == Sandbox.EXIT_SIGNAL:
             signal = self.sandbox.get_killing_signal()
             Utils.log("Execution killed with signal %d" % (signal))
-            return self.finish_single_evaluation(test_number, True, 0.0, "Execution killed with signal %d\n" % (signal))
+            return self.finish_single_execution(test_number, True, 0.0, "Execution killed with signal %d\n" % (signal))
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
             Utils.log("Evaluation aborted because of sandbox error", Utils.Logger.SEVERITY_IMPORTANT)
-            return self.finish_single_evaluation(test_number, False)
+            return self.finish_single_execution(test_number, False)
 
         # Forbidden syscall: returning the error to the user
         # FIXME - Tell which syscall raised this error
@@ -340,7 +340,7 @@ class BatchTaskType:
         if not self.sandbox.file_exists("output.txt"):
             outcome = 0.0
             text = "Execution didn't produce file output.txt"
-            return self.finish_single_evaluation(test_number, True, outcome, text)
+            return self.finish_single_execution(test_number, True, outcome, text)
 
         self.safe_create_file_from_storage("res.txt", self.submission.task.testcases[test_number][1])
         self.sandbox.filter_syscalls = 2
@@ -380,10 +380,10 @@ class BatchTaskType:
                 outcome = float(outcome)
             except ValueError:
                 Utils.log("Wrong outcome `%s' from manager" % (outcome), Utils.Logger.SEVERITY_IMPORTANT)
-                return self.finish_single_evaluation(test_number, False)
+                return self.finish_single_execution(test_number, False)
 
         # Finally returns the result
-        return self.finish_single_evaluation(test_number, True, outcome, text)
+        return self.finish_single_execution(test_number, True, outcome, text)
 
     def execute(self):
         if len(self.submission.executables) != 1:
