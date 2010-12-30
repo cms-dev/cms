@@ -143,7 +143,8 @@ def from_couch(couch_id, with_refresh = True):
 
 def fix_references(obj):
     for key in obj._to_copy_id:
-        obj.__dict__[key] = from_couch(obj.__dict__[key], with_refresh = False)
+        if obj.__dict__[key] != None:
+            obj.__dict__[key] = from_couch(obj.__dict__[key], with_refresh = False)
     for key in obj._to_copy_id_array:
         obj.__dict__[key] = [from_couch(elem, with_refresh = False) for elem in obj.__dict__[key]]
 

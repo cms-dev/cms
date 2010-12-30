@@ -237,8 +237,8 @@ class ScoreTypeRelative:
             # Also, if the currently updated submission is tokenized,
             # we update also the best tokenized outcomes.
             if submission.token_timestamp != None:
-                self.best_tokenized_outcomes = max(outcome,
-                                                   submission.evaluation_outcome[i])
+                self.best_tokenized_outcomes[i] = max(outcome,
+                                                      submission.evaluation_outcome[i])
             best_outcomes.append(outcome)
 
         # Then looking at all last submissions.
