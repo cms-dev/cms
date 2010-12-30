@@ -67,11 +67,20 @@ class Contest(CouchObject):
         """
         Returns the first task in the contest with the given name.
         """
-        for t in c.tasks:
+        for t in self.tasks:
             if t.name == task_name:
                 return t
         raise KeyError("Task not found")
 
+    def get_task_index(self, task_name):
+        """
+        Returns the index of the first task in the contest with the
+        given name.
+        """
+        for i, t in enumerate(self.tasks):
+            if t.name == task_name:
+                return i
+        raise KeyError("Task not found")
 
 
 def sample_contest(couch_id = None):
