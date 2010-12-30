@@ -137,6 +137,9 @@ def from_couch(couch_id, with_refresh = True):
     elif document_type == 'submission':
         from Submission import Submission
         obj = Submission(**ht)
+    elif document_type == 'rankingview':
+        from View import RankingView
+        obj = RankingView(**ht)
     references[couch_id] = obj
     fix_references(obj)
     return obj

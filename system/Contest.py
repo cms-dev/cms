@@ -27,6 +27,7 @@ class Contest(CouchObject):
                 "token_initial", "token_max", "token_total",
                 "token_min_interval", "token_gen_time",
                 "start", "stop"]
+    _to_copy_id = ["ranking_view"]
     _to_copy_id_array = ["tasks", "users", "submissions"]
 
     def __init__(self, name, description,
@@ -34,7 +35,7 @@ class Contest(CouchObject):
                  token_initial, token_max, token_total,
                  token_min_interval, token_gen_time,
                  start = None, stop = None,
-                 submissions = [],
+                 submissions = [], ranking_view = None,
                  couch_id = None):
         self.name = name
         self.description = description
@@ -48,10 +49,19 @@ class Contest(CouchObject):
         self.start = start
         self.stop = stop
         self.submissions = submissions
+        self.ranking_view = ranking_view
         CouchObject.__init__(self, "contest", couch_id)
 
     def choose_couch_id_basename(self):
         return "contest-%s" % (self.name)
+
+    def update_ranking_view(self):
+        self.ranking_view.scores = {}
+        for user in self.users:
+            self.ranking_view.scores[user.username] = []
+            for i, task in enumerate(self.tasks):
+                score = task.scorer.scores.get(user.username, 0.0)
+                self.ranking_view.scores[user.username].append(score)
 
     def get_task(self, task_name):
         """

@@ -29,6 +29,7 @@ from SimpleXMLRPCServer import SimpleXMLRPCServer
 import Configuration
 import Utils
 import CouchObject
+from View import RankingView
 
 class JobQueue:
     """A job is a couple (job_type, submission).
@@ -293,6 +294,7 @@ class EvaluationServer:
         self.st.daemon = True
 
         self.contest = contest
+        self.contest.ranking_view = RankingView(contest, 0.0, None)
         for sub in self.contest.submissions:
             sub.invalid()
             self.add_job(sub.couch_id)
@@ -409,6 +411,9 @@ class EvaluationServer:
         submission = CouchObject.from_couch(submission_id)
         scorer = submission.task.scorer
         scorer.add_submission(submission)
+        self.contest.update_ranking_view()
+        self.contest.ranking_view.to_couch()
+        self.contest.to_couch()
 
     def self_destruct(self):
         self.jd.queue_push((EvaluationServer.JOB_TYPE_BOMB, None),
