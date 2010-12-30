@@ -69,7 +69,6 @@ def ask_for_contest(skip = 0):
         except:
             print "Insert a correct number."
             sys.exit(1)
-        print contest_id
     try:
         c = CouchObject.from_couch(contest_id)
     except couchdb.client.ResourceNotFound:
