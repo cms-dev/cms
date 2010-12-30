@@ -106,7 +106,6 @@ application = tornado.web.Application(handlers, **WebConfig.parameters)
 FSL = FileStorageLib()
 
 def update_ranking():
-    Utils.log("Refreshing scores.")
     c.ranking_view.refresh()
     instance.add_timeout(time.time() + 5, update_ranking)
 

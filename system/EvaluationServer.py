@@ -24,7 +24,7 @@ import heapq
 import time
 import xmlrpclib
 import signal
-from SimpleXMLRPCServer import SimpleXMLRPCServer
+from RPCServer import RPCServer
 
 import Configuration
 import Utils
@@ -271,7 +271,7 @@ class JobDispatcher(threading.Thread):
         with self.main_lock:
             return self.workers.find_worker(job)
 
-class EvaluationServer:
+class EvaluationServer(RPCServer):
     JOB_PRIORITY_EXTRA_HIGH, JOB_PRIORITY_HIGH, JOB_PRIORITY_MEDIUM, JOB_PRIORITY_LOW, JOB_PRIORITY_EXTRA_LOW = range(5)
     JOB_TYPE_COMPILATION, JOB_TYPE_EVALUATION, JOB_TYPE_BOMB = ["compile", "evaluate", "bomb"]
     MAX_COMPILATION_TENTATIVES, MAX_EVALUATION_TENTATIVES = [3, 3]
@@ -285,13 +285,8 @@ class EvaluationServer:
         if listen_port == None:
             listen_port = Configuration.evaluation_server[1]
 
-        server = SimpleXMLRPCServer((listen_address, listen_port), logRequests = False)
-        server.register_introspection_functions()
-
         self.jd = JobDispatcher(len(Configuration.workers))
         self.st = threading.Thread()
-        self.st.run = server.serve_forever
-        self.st.daemon = True
 
         self.contest = contest
         self.contest.ranking_view = RankingView(contest, 0.0, None)
@@ -299,11 +294,14 @@ class EvaluationServer:
             sub.invalid()
             self.add_job(sub.couch_id)
 
-        server.register_function(self.use_token)
-        server.register_function(self.add_job)
-        server.register_function(self.compilation_finished)
-        server.register_function(self.evaluation_finished)
-        server.register_function(self.self_destruct)
+        RPCServer.__init__(self, "EvaluationServer", listen_address, listen_port,
+                           [self.use_token,
+                            self.add_job,
+                            self.compilation_finished,
+                            self.evaluation_finished,
+                            self.self_destruct],
+                           thread = self.st,
+                           start_now = False)
 
     def start(self):
         self.jd.start()

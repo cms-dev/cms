@@ -25,21 +25,17 @@ import os
 import tempfile
 import shutil
 import hashlib
-from SimpleXMLRPCServer import SimpleXMLRPCServer
+from RPCServer import RPCServer
 
 import Configuration
 import Utils
 
-class FileStorage:
+class FileStorage(RPCServer):
     def __init__(self, basedir, listen_address = None, listen_port = None):
         if listen_address == None:
             listen_address = Configuration.file_storage[0]
         if listen_port == None:
             listen_port = Configuration.file_storage[1]
-
-        # Create server
-        server = SimpleXMLRPCServer((listen_address, listen_port), logRequests = False)
-        server.register_introspection_functions()
 
         # Create server directories
         self.basedir = basedir
@@ -51,15 +47,11 @@ class FileStorage:
         Utils.maybe_mkdir(self.objdir)
         Utils.maybe_mkdir(self.descdir)
 
-        server.register_function(self.get)
-        server.register_function(self.put)
-        server.register_function(self.delete)
-        server.register_function(self.describe)
-
-        Utils.log("File Storage started...")
-
-        # Run the server's main loop
-        server.serve_forever()
+        RPCServer.__init__(self, "FileStorage", listen_address, listen_port,
+                           [self.get,
+                            self.put,
+                            self.delete,
+                            self.describe])
 
     def put(self, address, port, description = ""):
         # Avoid too long descriptions, that can bloat our logs

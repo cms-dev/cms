@@ -22,31 +22,27 @@
 import datetime
 import time
 import os
-from SimpleXMLRPCServer import SimpleXMLRPCServer
+from RPCServer import RPCServer
 
 import Configuration
 import Utils
 
-class LogServer:
+class LogServer(RPCServer):
     def __init__(self, listen_address = None, listen_port = None):
         if listen_address == None:
             listen_address = Configuration.log_server[0]
         if listen_port == None:
             listen_port = Configuration.log_server[1]
 
-        # Create server
-        server = SimpleXMLRPCServer((listen_address, listen_port), logRequests = False)
-        server.register_introspection_functions()
-
-        server.register_function(self.log)
-
         Utils.maybe_mkdir("logs")
         self.log_file = open(os.path.join("logs", "%d.log" % (time.time())), "w")
 
-        # Run the server's main loop
-        server.serve_forever()
+        RPCServer.__init__(self, "LogServer", listen_address, listen_port,
+                           [self.log])
 
-    def log(self, msg, service, operation = "", severity = Utils.Logger.SEVERITY_NORMAL, timestamp = None):
+    def log(self, msg, service, operation = "",
+            severity = Utils.Logger.SEVERITY_NORMAL,
+            timestamp = None):
         if timestamp == None:
             timestamp = time.time()
         line = Utils.format_log(msg, service, operation, severity, timestamp)

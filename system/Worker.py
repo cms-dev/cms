@@ -21,7 +21,7 @@
 
 import xmlrpclib
 import threading
-from SimpleXMLRPCServer import SimpleXMLRPCServer
+from RPCServer import RPCServer
 
 import Configuration
 import Utils
@@ -75,19 +75,11 @@ class EvaluateJob(Job):
         except IOError:
             Utils.log("Could not report finished operation, dropping it")
  
-class Worker:
+class Worker(RPCServer):
     def __init__(self, listen_address, listen_port):
-        # Create server
-        server = SimpleXMLRPCServer((listen_address, listen_port), logRequests = False)
-        server.register_introspection_functions()
-
-        server.register_function(self.compile)
-        server.register_function(self.evaluate)
-
-        Utils.log("Worker started...")
-
-        # Run the server's main loop
-        server.serve_forever()
+        RPCServer.__init__(self, "Worker", listen_address, listen_port,
+                           [self.compile,
+                            self.evaluate])
 
     def compile(self, submission_id):
         Utils.set_operation("compiling submission %s" % (submission_id))
