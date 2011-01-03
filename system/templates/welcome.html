@@ -2,9 +2,9 @@
 
 {% block core %}
     {% if current_user != None %}
+
+        <h1>Home</h1>
         <div>{{ contest.description }}</div>
-        <div>
-        <h2>Problemi</h2>
         <ul>
         {% for t in contest.tasks %}
             <li><a href="/tasks/{{ t.name }}">{{ t.name }}</a> -

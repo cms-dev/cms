@@ -152,13 +152,14 @@ class LoginHandler(BaseHandler):
     def post(self):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
+        next = self.get_argument("next","/")
         if [] != [user for user in c.users \
                       if user.username == username and \
                       user.password == password]:
             self.set_secure_cookie("login", pickle.dumps(
                     (self.get_argument("username"), time.time())
                     ))
-            self.redirect("/")
+            self.redirect(next)
         else:
             Utils.log("Login error: user=%s pass=%s." %
                       (username, password))
@@ -192,7 +193,23 @@ class SubmissionViewHandler(BaseHandler):
                 if s.user.username == self.current_user.username and \
                     s.task.name == task.name]
         self.render("submission.html", submissions = subm, task = task, contest = c)
-
+class SubmissionDetailHandler(BaseHandler):
+    """
+    Shows additional details for the specified submission.
+    """
+    @tornado.web.authenticated
+    def get(self, submission_id):
+        update_submissions()
+        
+        # search the submission in the contest
+        for s in c.submissions:
+            if s.user.username == self.current_user.username and \
+                    s.couch_id == submission_id:
+                submission = s
+                break
+        else:
+            raise tornado.web.HTTPError(404)
+        self.render("submission_detail.html", submission = s, task = s.task, contest = c)    
 class SubmissionFileHandler(BaseHandler):
     """
     Shows a submission file.
@@ -308,7 +325,11 @@ class SubmitHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self, task_name):
         timestamp = time.time()
-        uploaded = self.request.files[task_name][0]
+        try:
+          uploaded = self.request.files[task_name][0]
+        except KeyError:
+          self.write("No file chosen.")
+          return
         files = {}
         if uploaded["content_type"] == "application/zip":
             temp_zip_file, temp_zip_filename = tempfile.mkstemp()
@@ -351,6 +372,7 @@ handlers = [
             (r"/login", LoginHandler),
             (r"/logout", LogoutHandler),
             (r"/submissions/([a-zA-Z0-9_-]+)", SubmissionViewHandler),
+            (r"/submissions/details/([a-zA-Z0-9_-]+)", SubmissionDetailHandler),
             (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", SubmissionFileHandler),
             (r"/tasks/([a-zA-Z0-9_-]+)", TaskViewHandler),
             (r"/task_statement/([a-zA-Z0-9_-]+)", TaskStatementViewHandler),

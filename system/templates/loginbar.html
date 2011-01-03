@@ -5,6 +5,7 @@
             <span style="display: inline-block; color:red">Failed to log in.</span>
         {% end %}
         <form style="display: inline-block" action="/login" method="POST">
+                <input type="hidden" name="next" value="{{ handler.get_argument("next","/") }}">
                 Username:
                 <input type="text" name="username" size=8>
                 Password:
