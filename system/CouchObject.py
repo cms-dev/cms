@@ -68,6 +68,13 @@ class CouchObject:
                 ht = dict()
                 ht["document_type"] = self.document_type
 
+        def get_couch_id(obj):
+            """Simple wrapper to manage correctly None references."""
+            if obj == None:
+                return None
+            else:
+                return obj.couch_id
+
         for key in self._to_copy:
             try:
                 obj = self.__dict__[key]
@@ -78,7 +85,7 @@ class CouchObject:
         for key in self._to_copy_id:
             try:
                 obj = self.__dict__[key]
-                ht[key] = obj.couch_id
+                ht[key] = get_couch_id(obj)
             except KeyError:
                 Utils.log("Required key %s not found." % (key))
             except AttributeError:
@@ -87,7 +94,7 @@ class CouchObject:
         for key in self._to_copy_id_array:
             try:
                 obj = self.__dict__[key]
-                ht[key] = [elem.couch_id for elem in obj]
+                ht[key] = [get_couch_id(elem) for elem in obj]
             except KeyError:
                 Utils.log("Required key %s not found." % (key))
             except AttributeError:

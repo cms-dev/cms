@@ -290,6 +290,7 @@ class EvaluationServer(RPCServer):
 
         self.contest = contest
         self.contest.ranking_view = RankingView(contest, 0.0, None)
+        self.contest.to_couch()
         for sub in self.contest.submissions:
             sub.invalid()
             self.add_job(sub.couch_id)

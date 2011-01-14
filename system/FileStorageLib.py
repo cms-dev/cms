@@ -26,8 +26,10 @@ import os
 import threading
 import shutil
 import random
+import tempfile
 
 import Configuration
+import Utils
 
 class FilePutThread(threading.Thread):
     def __init__(self, putSocket, putFile):
@@ -48,10 +50,10 @@ class FilePutThread(threading.Thread):
         conn.close()
 
 class FileGetThread(threading.Thread):
-    def __init__(self, getSocket, getFile):
+    def __init__(self, getSocket, getFiles):
         threading.Thread.__init__(self)
         self.getSocket = getSocket
-        self.getFile = getFile
+        self.getFiles = getFiles
 
     def run(self):
         (conn, addr) = self.getSocket.accept()
@@ -59,19 +61,38 @@ class FileGetThread(threading.Thread):
             data = conn.recv(8192)
             if not data:
                 break
-            self.getFile.write(data)
+            for (getFile, errorHandler) in self.getFiles:
+                try:
+                    getFile.write(data)
+                except IOError:
+                    del self.getFiles[(getFile, errorHandler)]
+                    if errorHandler != None:
+                        errorHandler()
         conn.close()
 
 class FileStorageLib:
-    def __init__(self, fs_address = None, fs_port = None):
+    def __init__(self, fs_address = None, fs_port = None, basedir = None):
         if fs_address == None:
             fs_address = Configuration.file_storage[0]
         if fs_port == None:
             fs_port = Configuration.file_storage[1]
+        if basedir == None:
+            basedir = Configuration.file_storage_cache_basedir
+        self.basedir = basedir
+
+        # Create directories
+        self.tmpdir = os.path.join(self.basedir, "tmp")
+        self.objdir = os.path.join(self.basedir, "objects")
+        Utils.maybe_mkdir(self.basedir)
+        Utils.maybe_mkdir(self.tmpdir)
+        Utils.maybe_mkdir(self.objdir)
+
+        # Bad hack to detect our address
         self.bind_address = ''
         local_addresses = [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] + ['localhost']
         self.local_address = local_addresses[0]
         self.remote_address = fs_address
+
         self.fs = xmlrpclib.ServerProxy('http://%s:%d' % (fs_address, fs_port))
 
     def put_file(self, putFile, description = ""):
@@ -93,11 +114,13 @@ class FileStorageLib:
         getSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         port = self.random_bind(getSocket, self.bind_address)
         getSocket.listen(1)
-        ft = FileGetThread(getSocket, getFile)
+        tempFile, tempFilename = tempfile.mkstemp(dir = self.tmpdir)
+        ft = FileGetThread(getSocket, [(getFile, None), (os.fdopen(tempFile, 'w'), None)])
         ft.start()
         res = self.fs.get(self.local_address, port, dig)
         ft.join()
         getSocket.close()
+        shutil.move(tempFilename, os.path.join(self.objdir, dig))
         return res
 
     def get(self, dig, path):
@@ -105,6 +128,10 @@ class FileStorageLib:
             return self.get_file(dig, getFile)
 
     def random_bind(self, bindSocket, address):
+        """Try to bind bindSocket to a random port using the specified
+        address. Keeps searching a free port until one if found, but
+        raise an exception if the bind() call failed for some other
+        reason."""
         ok = False
         while not ok:
             try:

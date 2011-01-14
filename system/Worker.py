@@ -39,8 +39,16 @@ class Job(threading.Thread):
         print "Initializing Job", submission_id
         self.es = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
         self.submission_id = submission_id
+
         self.submission = CouchObject.from_couch(submission_id)
+        if self.submission == None:
+            Utils.log("Couldn't find submission %s con CouchDB" % (submission_id), Utils.Logger.SEVERITY_IMPORTANT)
+            raise Exception
+
         self.task_type = TaskType.get_task_type_class(self.submission)
+        if self.task_type == None:
+            Utils.log("Task type `%s' not known for submission %s" % (self.submission.task.task_type, submission_id), Utils.Logger.SEVERITY_IMPORTANT)
+            raise Exception
 
 class CompileJob(Job):
     def __init__(self, submission_id):

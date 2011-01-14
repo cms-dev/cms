@@ -110,7 +110,7 @@ class ScoreTypeAlone:
         Utility internal method to sort submissions of a user by time.
         """
         self.submissions[username].sort(lambda x, y:
-                                            y.timestamp - x.timestamp)
+                                            int(y.timestamp) - int(x.timestamp))
 
     def update_scores(self, submission):
         """
