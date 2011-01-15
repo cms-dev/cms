@@ -36,7 +36,7 @@ class Contest(CouchObject):
                  token_min_interval, token_gen_time,
                  start = None, stop = None,
                  submissions = [], ranking_view = None,
-                 couch_id = None):
+                 couch_id = None, couch_rev = None):
         self.name = name
         self.description = description
         self.tasks = tasks
@@ -50,7 +50,7 @@ class Contest(CouchObject):
         self.stop = stop
         self.submissions = submissions
         self.ranking_view = ranking_view
-        CouchObject.__init__(self, "contest", couch_id)
+        CouchObject.__init__(self, "contest", couch_id, couch_rev)
 
     def choose_couch_id_basename(self):
         return "contest-%s" % (self.name)

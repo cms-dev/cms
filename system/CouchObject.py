@@ -23,20 +23,40 @@ import couchdb
 
 import Utils
 
+# Global cache of known CouchObjects, used to build inter-object
+# references
 references = dict()
 
 class CouchObject:
+
+    # Fields that just have to be copied in CouchDB
     _to_copy = []
+
+    # Fields that have to be treated as CouchObjects themselves, thus
+    # copied with their IDs
     _to_copy_id = []
+
+    # Fields that have to be treated as arrays of CouchObjects
     _to_copy_id_array = []
 
-    def __init__(self, document_type, couch_id = None):
+    def __init__(self, document_type, couch_id = None, couch_rev = None):
+        """Create a new objects and, if couch_id is not specified,
+        instantiate it on the database."""
+
+        # couch_id and couch_rev must be specified both or none
+        if (couch_id == None and couch_rev != None) or (couch_id != None and couch_rev == None):
+            raise ValueError("couch_id and couch_rev must be specified both or none")
+
         self.document_type = document_type
         self.couch_id = couch_id
+        self.couch_rev = couch_rev
+
+        # Istantiate the object if it's not on the database
         if couch_id == None:
             self.to_couch()
 
     def __eq__(self, other):
+        """Compare two objects by ID."""
         if other.__class__ != self.__class__:
             return False
         return self.couch_id == other.couch_id
@@ -57,16 +77,15 @@ class CouchObject:
 
     def to_couch(self):
         db = Utils.get_couchdb_database()
+        ht = dict()
+        ht["document_type"] = self.document_type
+
         if self.couch_id == None:
-            ht = dict()
-            ht["document_type"] = self.document_type
-            self.couch_id = self.choose_couch_id()
+            newdoc = True
         else:
-            try:
-                ht = db[self.couch_id]
-            except couchdb.ResourceNotFound:
-                ht = dict()
-                ht["document_type"] = self.document_type
+            newdoc = False
+            ht["_id"] = self.couch_id
+            ht["_rev"] = self.couch_rev
 
         def get_couch_id(obj):
             """Simple wrapper to manage correctly None references."""
@@ -100,16 +119,29 @@ class CouchObject:
             except AttributeError:
                 Utils.log("Key %s not pointing to a CouchObject." % (key))
 
-        if self.couch_id == None:
-            self.couch_id = db.create(ht)
-            references[self.couch_id] = self
-        else:
+        if newdoc:
+            # Choose an ID, save the object and update revision number
+            self.couch_id = self.choose_couch_id()
             db[self.couch_id] = ht
+            self.couch_rev = ht['_rev']
+
+            # Save the new object in the cache
+            references[self.couch_id] = self
+
+        else:
+            # Update the object in the database and the revision
+            # number in the object
+            db[self.couch_id] = ht
+            self.couch_rev = ht['_rev']
+
         return self.couch_id
 
     def refresh(self):
+        # FIXME - While being refreshed, the object can be in an
+        # inconsistent state
         db = Utils.get_couchdb_database()
         ht = db[self.couch_id]
+        self.couch_rev = ht['_rev']
         del ht['_rev']
         del ht['_id']
         del ht['document_type']
@@ -117,21 +149,44 @@ class CouchObject:
         fix_references(self)
 
 def from_couch(couch_id, with_refresh = True):
+    """Retrieve a document from the CouchDB database and convert it
+    into the relevant object type. If with_references is set, then the
+    object is refreshed from the database even if it's already present
+    in the cache: this is recommended operation mode. Disabling
+    with_refresh is intended for internal use only."""
+
+    # If present, get the document from the cache, maybe after having
+    # refreshed it
     if couch_id in references:
         if with_refresh:
             references[couch_id].refresh()
         return references[couch_id]
+
+    # Retrieve the requested document from the database
     db = Utils.get_couchdb_database()
-    ht = db[couch_id] # FIXME - Error handling
+    try:
+        ht = db[couch_id]
+    except ResourceNotFound:
+        return None
+
+    # Field conversion; this piece of code is heavily dependent on the
+    # internal structure of the Document class
+    ht['couch_id'] = couch_id
+    ht['couch_rev'] = ht['_rev']
     del ht['_rev']
     del ht['_id']
-    ht['couch_id'] = couch_id
+
+    # Detect the document_type for this document
     try:
         document_type = ht['document_type']
     except KeyError:
         Utils.log("CouchDB document without document_type.")
         return None
     del ht['document_type']
+
+    # Depending on the document_type, build the correct object; when
+    # contructing the present object, references to other objects
+    # still have to be resolved
     if document_type == 'contest':
         from Contest import Contest
         obj = Contest(**ht)
@@ -147,8 +202,14 @@ def from_couch(couch_id, with_refresh = True):
     elif document_type == 'rankingview':
         from View import RankingView
         obj = RankingView(**ht)
+
+    # Update the cache
     references[couch_id] = obj
+
+    # Fix the references; this _MUST_ happen after the cache is
+    # updated, otherwise infinite loop can arise
     fix_references(obj)
+
     return obj
 
 def fix_references(obj):

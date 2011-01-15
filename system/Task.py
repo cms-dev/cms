@@ -44,7 +44,7 @@ class Task(CouchObject):
                  testcases, public_testcases,
                  token_initial, token_max, token_total,
                  token_min_interval, token_gen_time,
-                 couch_id = None):
+                 couch_id = None, couch_rev = None):
         self.name = name
         self.title = title
         self.attachments = attachments
@@ -65,7 +65,7 @@ class Task(CouchObject):
         self.token_total = token_total
         self.token_min_interval = token_min_interval
         self.token_gen_time = token_gen_time
-        CouchObject.__init__(self, "task", couch_id)
+        CouchObject.__init__(self, "task", couch_id, couch_rev)
 
     def choose_couch_id_basename(self):
         return "task-%s" % (self.name)

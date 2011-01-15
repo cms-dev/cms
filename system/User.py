@@ -28,14 +28,14 @@ class User(CouchObject):
 
     def __init__(self, username, password,
                  real_name, ip, tokens = [], hidden = False,
-                 couch_id = None):
+                 couch_id = None, couch_rev = None):
         self.username = username
         self.password = password
         self.real_name = real_name
         self.ip = ip
         self.tokens = tokens
         self.hidden = hidden
-        CouchObject.__init__(self, "user", couch_id)
+        CouchObject.__init__(self, "user", couch_id, couch_rev)
 
     def choose_couch_id_basename(self):
         return "user-%s" % (self.username)

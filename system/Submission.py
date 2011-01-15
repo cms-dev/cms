@@ -41,7 +41,7 @@ class Submission(CouchObject):
                  compilation_text = None, evaluation_text = None,
                  compilation_tentatives = 0, evaluation_tentatives = 0,
                  score = None, token_timestamp = None,
-                 couch_id = None):
+                 couch_id = None, couch_rev = None):
         self.user = user
         self.task = task
         self.timestamp = timestamp
@@ -55,7 +55,7 @@ class Submission(CouchObject):
         self.evaluation_tentatives = evaluation_tentatives
         self.token_timestamp = token_timestamp
         self.score = score
-        CouchObject.__init__(self, "submission", couch_id)
+        CouchObject.__init__(self, "submission", couch_id, couch_rev)
 
     def tokened(self):
         return self.token_timestamp != None

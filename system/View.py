@@ -28,11 +28,11 @@ class RankingView(CouchObject):
 
     def __init__(self, contest = None,
                  timestamp = None, scores = None,
-                 couch_id = None):
+                 couch_id = None, couch_rev = None):
         self.contest = contest
         self.timestamp = timestamp
         self.scores = scores
-        CouchObject.__init__(self, "rankingview", couch_id)
+        CouchObject.__init__(self, "rankingview", couch_id, couch_rev)
 
     def choose_couch_id_basename(self):
         return "rankingview-%s" % (self.contest.name)
