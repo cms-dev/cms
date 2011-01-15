@@ -110,7 +110,17 @@ class FileStorageLib:
         with open(path) as putFile:
             return self.put_file(putFile, description)
 
+    def get_file_from_cache(self, dig, getFile):
+        try:
+            with open(os.path.join(self.objdir, dig)) as cachedFile:
+                shutil.copyfileobj(cachedFile, getFile)
+                return True
+        except IOError:
+            return None
+
     def get_file(self, dig, getFile):
+        if self.get_file_from_cache(dig, getFile):
+            return True
         getSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         port = self.random_bind(getSocket, self.bind_address)
         getSocket.listen(1)

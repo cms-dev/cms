@@ -328,6 +328,7 @@ class EvaluationServer(RPCServer):
         return True
 
     def add_job(self, submission_id):
+        self.contest.refresh()
         Utils.log("Queueing compilation for submission %s" % (submission_id))
         submission = CouchObject.from_couch(submission_id)
         self.jd.queue_push((EvaluationServer.JOB_TYPE_COMPILATION, submission),
