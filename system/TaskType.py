@@ -217,8 +217,7 @@ class BatchTaskType:
         self.sandbox.allow_fork = True
         self.sandbox.file_check = 2
         # FIXME - File access limits are not enforced on children
-        # processes (like ld); and these paths are tested only with
-        # g++ (I believe gcc to be ok too, but I never tried fpc)
+        # processes (like ld)
         self.sandbox.set_env['TMPDIR'] = self.sandbox.path
         self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/', '%s/' % (self.sandbox.path)]
         self.sandbox.timeout = 10
@@ -362,10 +361,7 @@ class BatchTaskType:
 
         # No manager: I'll do a white_diff between output.txt and res.txt
         if len(self.submission.task.managers) == 0:
-            # WARNING - This code still needs testing
             out_file = self.safe_get_file("output.txt")
-            # FIXME - Probably it would be more intelligent to get the
-            # res.txt file directly from the storage
             res_file = self.safe_get_file("res.txt")
             if white_diff(out_file, res_file):
                 outcome = 1.0
