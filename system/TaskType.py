@@ -243,7 +243,7 @@ class BatchTaskType:
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
             self.submission.executables = {executable_filename: self.safe_get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, self.submission.couch_id))}
             Utils.log("Compilation successfully finished")
-            return self.finish_compilation(True, True, "OK %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))                
+            return self.finish_compilation(True, True, "OK %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
 
         # Error in compilation: returning the error to the user
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
@@ -363,10 +363,10 @@ class BatchTaskType:
         # No manager: I'll do a white_diff between output.txt and res.txt
         if len(self.submission.task.managers) == 0:
             # WARNING - This code still needs testing
-            out_file = self.sandbox.safe_get_file("output.txt")
+            out_file = self.safe_get_file("output.txt")
             # FIXME - Probably it would be more intelligent to get the
             # res.txt file directly from the storage
-            res_file = self.sandbox.safe_get_file("res.txt")
+            res_file = self.safe_get_file("res.txt")
             if white_diff(out_file, res_file):
                 outcome = 1.0
                 text = "Output file is correct"
