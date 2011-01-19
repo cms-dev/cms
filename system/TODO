@@ -25,6 +25,8 @@
 * Check that white_diff() really does what we want it to do
 
 *** Score types
+* Fix ScoreTypeRelative, which at the moment still use the deprecated
+  Submission.score field.
 
 *** Importer
 * Provide facilities to translate the task's statement.
