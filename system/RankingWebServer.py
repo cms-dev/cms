@@ -64,6 +64,7 @@ class MainHandler(BaseHandler):
     Home page handler.
     """
     def get(self):
+        c.refresh()
         self.render("ranking.html", contest = c)
 
 class TaskViewHandler(BaseHandler):

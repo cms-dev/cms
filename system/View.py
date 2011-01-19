@@ -27,7 +27,7 @@ class RankingView(CouchObject):
     _to_copy_id = ["contest"]
 
     def __init__(self, contest = None,
-                 timestamp = None, scores = None,
+                 timestamp = 0.0, scores = {},
                  couch_id = None, couch_rev = None):
         self.contest = contest
         self.timestamp = timestamp

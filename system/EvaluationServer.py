@@ -289,7 +289,9 @@ class EvaluationServer(RPCServer):
         self.st = threading.Thread()
 
         self.contest = contest
-        self.contest.ranking_view = RankingView(contest, 0.0, None)
+        self.contest.ranking_view = RankingView(contest)
+        self.contest.update_ranking_view()
+        self.contest.ranking_view.to_couch()
         self.contest.to_couch()
         for sub in self.contest.submissions:
             sub.invalid()
