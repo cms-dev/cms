@@ -357,6 +357,7 @@ class SubmitHandler(BaseHandler):
                        task,
                        timestamp,
                        files)
+        c.refresh()
         c.submissions.append(s)
         c.to_couch()
         try:

@@ -5,7 +5,7 @@
     {% if submissions == [] %}
     No submissions found.
     {% else %}
-        <table>
+        <table border="1">
         <tr>
             <th>Timestamp</th>
             <th>Compilation<br/>status</th>
@@ -22,8 +22,6 @@
                         {% for ev in s.evaluation_outcome %}
                             {{ ev }}<br/>
                         {% end %}
-                        ---</br>
-                        {{ s.score }}
                     {% else %}
                         Not evaluated
                     {% end %}
