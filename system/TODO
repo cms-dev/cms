@@ -3,6 +3,7 @@
 *** FileStorageLib
 
 *** CouchObject and related (Contest, User, ...)
+* Manage all conflicts arising from to_couch(), everywhere in the source code.
 
 *** Sandbox
 
