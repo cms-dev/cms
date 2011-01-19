@@ -59,7 +59,7 @@ class Contest(CouchObject):
         self.ranking_view.scores = {}
         for user in self.users:
             self.ranking_view.scores[user.username] = []
-            for i, task in enumerate(self.tasks):
+            for task in self.tasks:
                 score = task.scorer.scores.get(user.username, 0.0)
                 self.ranking_view.scores[user.username].append(score)
 

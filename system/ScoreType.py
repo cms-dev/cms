@@ -61,7 +61,6 @@ class ScoreTypes:
             return None
 
 
-
 class ScoreTypeAlone:
     """
     Base class for scoring systems where the score of a submission
@@ -69,6 +68,7 @@ class ScoreTypeAlone:
     """
     def __init__(self, parameters):
         self.scores = {}
+        self.submission_scores = {}
         self.parameters = parameters
         self.submissions = {}
 
@@ -79,6 +79,7 @@ class ScoreTypeAlone:
         """
         self._insert_submission(submission)
         self._sort_submissions(submission.user.username)
+        self._insert_submission_score(submission, self.compute_score(submission))
         self.update_scores(submission)
 
     def add_token(self, submission):
@@ -105,6 +106,16 @@ class ScoreTypeAlone:
         except:
             self.submissions[username] = [submission]
 
+    def _insert_submission_score(self, submission, score):
+        """
+        Utility internal method to add a score to a submission.
+        """
+        username = submission.user.username
+        try:
+            self.submission_scores[username][submission.couch_id] = score
+        except:
+            self.submission_scores[username] = {submission.couch_id: score}
+
     def _sort_submissions(self, username):
         """
         Utility internal method to sort submissions of a user by time.
@@ -122,9 +133,9 @@ class ScoreTypeAlone:
         submissions = self.submissions[username]
         for s in submissions:
             if s.token_timestamp != None:
-                score = max(score, s.score)
+                score = max(score, self.submission_scores[username][s.couch_id])
         if submissions != []:
-            score = max(score, submissions[-1])
+            score = max(score, self.submission_scores[username][submissions[-1].couch_id])
         self.scores[username] = score
 
 
@@ -135,7 +146,7 @@ class ScoreTypeSum(ScoreTypeAlone):
             Utils.log("Evaluated submission without outcome!",
                       Utils.Logger.SEVERITY_IMPORTANT)
         else:
-            submission.score = sum(submission.evaluation_outcome)
+            return sum(submission.evaluation_outcome)
 
 class ScoreTypeGroupMin(ScoreTypeAlone):
     def compute_score(self, submission):
@@ -143,7 +154,7 @@ class ScoreTypeGroupMin(ScoreTypeAlone):
             Utils.log("Evaluated submission without outcome!",
                       Utils.Logger.SEVERITY_IMPORTANT)
         else:
-            score = sum(
+            return sum(
                 [min(submission.evaluation_outcome[current:
                                                        current+par.testcases]) \
                      * par.multiplier
@@ -155,11 +166,11 @@ class ScoreTypeGroupMul(ScoreTypeAlone):
             Utils.log("Evaluated submission without outcome!",
                       Utils.Logger.SEVERITY_IMPORTANT)
         else:
-            score = reduce(lambda x, y: x*y,
-                           [(submission.evaluation_outcome[current:
-                                                               current+par.testcases]) \
-                                * par.multiplier
-                            for par in self.score_parameters])
+            return reduce(lambda x, y: x*y,
+                          [(submission.evaluation_outcome[current:
+                                                              current+par.testcases]) \
+                               * par.multiplier
+                           for par in self.score_parameters])
 
 
 

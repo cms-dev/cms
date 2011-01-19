@@ -30,7 +30,7 @@ class Submission(CouchObject):
                 "executables",
                 "compilation_text", "evaluation_text",
                 "compilation_tentatives", "evaluation_tentatives",
-                "score", "token_timestamp"]
+                "token_timestamp"]
     _to_copy_id = ["user", "task"]
 
     LANGUAGES = ["c", "cpp", "pas"]
@@ -40,7 +40,7 @@ class Submission(CouchObject):
                  executables = None,
                  compilation_text = None, evaluation_text = None,
                  compilation_tentatives = 0, evaluation_tentatives = 0,
-                 score = None, token_timestamp = None,
+                 token_timestamp = None,
                  couch_id = None, couch_rev = None):
         self.user = user
         self.task = task
@@ -54,7 +54,6 @@ class Submission(CouchObject):
         self.compilation_tentatives = compilation_tentatives
         self.evaluation_tentatives = evaluation_tentatives
         self.token_timestamp = token_timestamp
-        self.score = score
         CouchObject.__init__(self, "submission", couch_id, couch_rev)
 
     def tokened(self):
@@ -65,7 +64,6 @@ class Submission(CouchObject):
         self.evaluation_outcome = None
         self.compilation_text = None
         self.evaluation_text = None
-        self.score = None
         self.executables = None
         self.to_couch()
 
