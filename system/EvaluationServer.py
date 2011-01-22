@@ -72,6 +72,7 @@ class JobQueue:
             try:
                 return heapq.heappop(self.queue)
             except IndexError:
+                Utils.log("Job queue went out-of-sync with semaphore", Utils.Logger.SEVERITY_CRITICAL)
                 raise RuntimeError("Job queue went out-of-sync with semaphore")
 
     def search(self, job):
@@ -115,17 +116,18 @@ class JobQueue:
 class WorkerPool:
     WORKER_INACTIVE, WORKER_DISABLED = (None, "disabled")
 
-    def __init__(self, worker_num):
-        self.workers = [self.WORKER_INACTIVE] * worker_num
+    def __init__(self):
+        self.workers = {}
         # The semaphore counts the number of _inactive_ workers
-        self.semaphore = threading.Semaphore(worker_num)
+        self.semaphore = threading.Semaphore(0)
         self.main_lock = threading.RLock()
-        self.start_time = [None] * worker_num
+        self.start_time = {}
+        self.address = {}
 
         # FIXME - Unimplemented
-        self.error_count = [0] * worker_num
-        self.schedule_disabling = [False] * worker_num
-        self.ignore_result = [False] * worker_num
+        #self.error_count = [0] * worker_num
+        #self.schedule_disabling = [False] * worker_num
+        #self.ignore_result = [False] * worker_num
 
     def acquire_worker(self, job, blocking = True):
         available = self.semaphore.acquire(blocking)
@@ -135,6 +137,7 @@ class WorkerPool:
             try:
                 worker = self.find_worker(self.WORKER_INACTIVE)
             except LookupError:
+                Utils.log("Worker array went out-of-sync with semaphore", Utils.Logger.SEVERITY_CRITICAL)
                 raise RuntimeError("Worker array went out-of-sync with semaphore")
             self.workers[worker] = job
             return worker
@@ -142,13 +145,14 @@ class WorkerPool:
     def release_worker(self, n):
         with self.main_lock:
             if self.workers[n] == self.WORKER_INACTIVE:
-                raise ValueError("Worker was inactive")
+                Utils.log("Trying to release worker while it's inactive", Utils.Logger.SEVERITY_IMPORTANT)
+                raise ValueError("Trying to release worker while it's inactive")
             self.workers[n] = self.WORKER_INACTIVE
         self.semaphore.release()
 
     def find_worker(self, job):
         with self.main_lock:
-            for worker, workerJob in enumerate(self.workers):
+            for worker, workerJob in self.workers.iteritems():
                 if workerJob == job:
                     return worker
             raise LookupError("No such job")
@@ -158,28 +162,57 @@ class WorkerPool:
         with self.main_lock:
             if self.workers[n] != self.WORKER_INACTIVE:
                 self.semaphore.release()
-                raise ValueError("Worker wasn't inactive")
+                Utils.log("Trying to disable worker while it isn't inactive", Utils.Logger.SEVERITY_IMPORTANT)
+                raise ValueError("Trying to release worker while it isn't inactive")
             self.workers[n] = self.WOKER_DISABLED
 
     def enable_worker(self, n):
         with self.main_lock:
             if self.workers[n] != self.WORKER_DISABLED:
-                raise ValueError("Worker wasn't disabled")
+                Utils.log("Trying to enable worker while is isn't disabled", Utils.Logger.SEVERITY_IMPORTANT)
+                raise ValueError("Trying to enable worker while is isn't disabled")
             self.workers[n] = self.WORKER_INACTIVE
         self.semaphore.release()
+
+    def add_worker(self, n, host, port):
+        with self.main_lock:
+            if n in self.workers:
+                Utils.log("There is already a worker with name `%s'" % (str(n)))
+                raise ValueError("There is already a worker with name `%s'" % (str(n)))
+            self.workers[n] = self.WORKER_INACTIVE
+            self.start_time[n] = None
+            self.address[n] = (host, port)
+        self.semaphore.release()
+
+    def del_worker(self, n):
+        self.semaphore.acquire()
+        with self.main_lock:
+            if n not in self.workers:
+                self.semaphore.release()
+                Utils.log("No worker known with name `%s'" % (str(n)), Utils.Logger.SEVERITY_IMPORTANT)
+                raise ValueError("No worker known with name `%s'" % (str(n)))
+            if self.workers[n] != self.WORKER_DISABLED:
+                self.sempahore.release()
+                Utils.log("Trying to delete a worker while it's not disabled", Utils.Logger.SEVERITY_IMPORTANT)
+                raise ValueError("Trying to delete a worker while it's not disabled")
+            del self.workers[n]
+            del self.start_time[n]
+            del self.address[n]
 
     def working_workers(self):
         with self.main_lock:
             return len(filter(lambda x:
                                   x != self.WORKER_INACTIVE and \
                                   x != self.WORKER_DISABLED,
-                              self.workers))
+                              self.workers.values()))
 
 class JobDispatcher(threading.Thread):
     def __init__(self, worker_num):
         threading.Thread.__init__(self)
         self.queue = JobQueue()
-        self.workers = WorkerPool(worker_num)
+        self.workers = WorkerPool()
+        for i, w in enumerate(Configuration.workers):
+            self.workers.add_worker(i, w[0], w[1])
         self.main_lock = threading.RLock()
         self.bomb_primed = False
         self.touched = threading.Event()
@@ -211,16 +244,16 @@ class JobDispatcher(threading.Thread):
                 submission = job[1]
                 self.workers.start_time[worker] = time.time()
                 queue_time = self.workers.start_time[worker] - timestamp
+                host, port = self.workers.address[worker]
 
                 Utils.log("Asking worker %d (%s:%d) to %s submission %s (after around %.2f seconds of queue)" %
-                    (worker,
-                     Configuration.workers[worker][0],
-                     Configuration.workers[worker][1],
-                     action,
-                     submission.couch_id,
-                     queue_time))
-                p = xmlrpclib.ServerProxy("http://%s:%d" %
-                                          Configuration.workers[worker])
+                          (worker,
+                           host,
+                           port,
+                           action,
+                           submission.couch_id,
+                           queue_time))
+                p = xmlrpclib.ServerProxy("http://%s:%d" % (host, port))
                 if action == EvaluationServer.JOB_TYPE_COMPILATION:
                     p.compile(submission.couch_id)
                 elif action == EvaluationServer.JOB_TYPE_EVALUATION:

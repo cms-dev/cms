@@ -67,6 +67,11 @@ class Submission(CouchObject):
         self.executables = None
         self.to_couch()
 
+    def invalid_evaluation(self):
+        self.evaluation_outcome = None
+        self.evaluation_text = None
+        self.to_couch()
+
     def choose_couch_id_basename(self):
         return "submission-%s-%s" % (self.user.username, self.task.name)
 

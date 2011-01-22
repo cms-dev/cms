@@ -34,11 +34,12 @@ class JobException(Exception):
         return repr(self.msg)
 
 class Job(threading.Thread):
-    def __init__(self, submission_id):
+    def __init__(self, submission_id, worker):
         threading.Thread.__init__(self)
         print "Initializing Job", submission_id
         self.es = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
         self.submission_id = submission_id
+        self.worker = worker
 
         self.submission = CouchObject.from_couch(submission_id)
         if self.submission == None:
@@ -51,13 +52,13 @@ class Job(threading.Thread):
             raise Exception
 
 class CompileJob(Job):
-    def __init__(self, submission_id):
-        Job.__init__(self, submission_id)
+    def __init__(self, submission_id, worker):
+        Job.__init__(self, submission_id, worker)
 
     def run(self):
         try:
             success = self.task_type.compile()
-        except JobException:
+        except:
             success = False
         try:
             self.es.compilation_finished(success, self.submission_id)
@@ -67,13 +68,18 @@ class CompileJob(Job):
                 Utils.log("Reported failed operation")
         except IOError:
             Utils.log("Could not report finished operation, dropping it")
+        finally:
+            self.worker.working_thread = None
 
 class EvaluateJob(Job):
-    def __init__(self, submission_id):
-        Job.__init__(self, submission_id)
+    def __init__(self, submission_id, worker):
+        Job.__init__(self, submission_id, worker)
 
     def run(self):
-        success = self.task_type.execute()
+        try:
+            success = self.task_type.execute()
+        except:
+            success = False
         try:
             self.es.evaluation_finished(success, self.submission_id)
             if success:
@@ -82,24 +88,29 @@ class EvaluateJob(Job):
                 Utils.log("Reported failed operation")
         except IOError:
             Utils.log("Could not report finished operation, dropping it")
+        finally:
+            self.worker.working_thread = None
  
 class Worker(RPCServer):
     def __init__(self, listen_address, listen_port):
         RPCServer.__init__(self, "Worker", listen_address, listen_port,
                            [self.compile,
                             self.evaluate])
+        self.working_thread = None
 
     def compile(self, submission_id):
         Utils.set_operation("compiling submission %s" % (submission_id))
         Utils.log("Request received")
-        j = CompileJob(submission_id)
+        j = CompileJob(submission_id, self)
+        self.working_thread = j
         j.start()
         return True
 
     def evaluate(self, submission_id):
         Utils.set_operation("evaluating submission %s" % (submission_id))
         Utils.log("Request received")
-        j = EvaluateJob(submission_id)
+        j = EvaluateJob(submission_id, self)
+        self.working_thread = j
         j.start()
         return True
 
