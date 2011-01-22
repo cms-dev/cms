@@ -31,3 +31,5 @@ workers = [ ("localhost", 8001) ]
 logging_web_server = ("localhost", 8080)
 
 file_storage_cache_basedir = "fs-cache"
+
+FS_connection_timeout = 10.0

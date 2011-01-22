@@ -31,6 +31,7 @@ import sys
 import tempfile
 import xmlrpclib
 import zipfile
+import threading
 import time
 from StringIO import StringIO
 
@@ -179,8 +180,12 @@ class SubmissionViewHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, task_name):
-        update_submissions()
-
+        try:
+            update_submissions()
+        except AttributeError:
+            Utils.log("CouchDB server unavailable!",Utils.Logger.SEVERITY_CRITICAL)
+            self.write("Can't connect to CouchDB Server")
+            return
         # get the task object
         try:
             task = c.get_task(task_name)
@@ -199,8 +204,12 @@ class SubmissionDetailHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, submission_id):
-        update_submissions()
-        
+        try:
+            update_submissions()
+        except AttributeError:
+            Utils.log("CouchDB server unavailable!",Utils.Logger.SEVERITY_CRITICAL)
+            self.write("Can't connect to CouchDB Server")
+            return
         # search the submission in the contest
         for s in c.submissions:
             if s.user.username == self.current_user.username and \
@@ -209,14 +218,20 @@ class SubmissionDetailHandler(BaseHandler):
                 break
         else:
             raise tornado.web.HTTPError(404)
-        self.render("submission_detail.html", submission = s, task = s.task, contest = c)    
+        self.render("submission_detail.html", submission = s, task = s.task, contest = c)
+
 class SubmissionFileHandler(BaseHandler):
     """
     Shows a submission file.
     """
     @tornado.web.authenticated
     def get(self, submission_id, filename):
-        update_submissions()
+        try:
+            update_submissions()
+        except AttributeError:
+            Utils.log("CouchDB server unavailable!",Utils.Logger.SEVERITY_CRITICAL)
+            self.write("Can't connect to CouchDB Server")
+            return
 
         # search the submission in the contest
         for s in c.submissions:
@@ -269,10 +284,19 @@ class TaskStatementViewHandler(BaseHandler):
             self.write("Task %s not found." % (task_name))
         statement_file = StringIO()
         FSL = FileStorageLib()
-        FSL.get_file(task.statement, statement_file)
-        self.set_header("Content-Type", "application/pdf")
-        self.set_header("Content-Disposition",
-                        "attachment; filename=\"%s.pdf\"" % (task.name))
+        try:
+            if( not FSL.get_file(task.statement, statement_file) ):
+                Utils.log("FileStorageLib get_file returned False",Utils.Logger.SEVERITY_DEBUG)
+                self.write("File unavailable")
+                return
+        except Exception as e:
+            Utils.log("FileStorageLib raised an exception: "+repr(e),Utils.Logger.SEVERITY_DEBUG)
+            self.write("FileStorage exception: "+repr(e))
+            return
+        #self.set_header("Content-Type", "application/pdf")
+        #self.set_header("Content-Disposition",
+        #                "attachment; filename=\"%s.pdf\"" % (task.name))
+        
         self.write(statement_file.getvalue())
         statement_file.close()
 
@@ -283,7 +307,12 @@ class UseTokenHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         timestamp = time.time()
-        update_submissions()
+        try:
+            update_submissions()
+        except AttributeError:
+            Utils.log("CouchDB server unavailable!",Utils.Logger.SEVERITY_CRITICAL)
+            self.write("Can't connect to CouchDB Server")
+            return
         u = self.get_current_user()
         if(u == None):
             raise tornado.web.HTTPError(403)
@@ -324,6 +353,12 @@ class SubmitHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def post(self, task_name):
+        try:
+            c.refresh()
+        except AttributeError:
+            Utils.log("CouchDB server unavailable!",Utils.Logger.SEVERITY_CRITICAL)
+            self.write("Can't connect to CouchDB Server")
+            return
         timestamp = time.time()
         try:
           uploaded = self.request.files[task_name][0]
@@ -350,14 +385,18 @@ class SubmitHandler(BaseHandler):
             temp_file = os.fdopen(temp_file, "w")
             temp_file.write(content)
             temp_file.close()
-            files[filename] = FSL.put(temp_filename)
+            try:
+              files[filename] = FSL.put(temp_filename)
+            except Exception as e:
+              self.write("File Storage failed: " + repr(e) + "<br> Submission aborted.");
+              return
         # QUESTION - does Submission accept a dictionary with
         # filenames as keys for files?
         s = Submission(self.current_user,
                        task,
                        timestamp,
                        files)
-        c.refresh()
+
         c.submissions.append(s)
         c.to_couch()
         try:
@@ -389,10 +428,15 @@ if __name__ == "__main__":
     Utils.set_service("contest web server")
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(8888);
-    c = Utils.ask_for_contest()
+    try:
+        c = Utils.ask_for_contest()
+    except AttributeError:
+        Utils.log("CouchDB server unavailable!", Utils.Logger.SEVERITY_CRITICAL)
+        exit(1)
     Utils.log("Contest Web Server for contest %s started..." % (c.couch_id))
     upsince = time.time()
     try:
         tornado.ioloop.IOLoop.instance().start()
     except KeyboardInterrupt:
-        Utils.log("Contest Web Server for contest %s stopped." % (c.couch_id))
+        Utils.log("Contest Web Server for contest %s stopped. %d threads alive" % (c.couch_id,threading.activeCount() ))
+        exit(0)

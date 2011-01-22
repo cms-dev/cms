@@ -1,0 +1,73 @@
+{% extends base.html %}
+
+{% block core %}
+    <h1><a href="/">Home</a> - Add Contest</h1>
+    
+    <form name="addcontest" action="/addcontest" method="POST">
+    <table>
+    <tr>
+      <td>Name</td>
+      <td><input type="text" name="name"></td>
+    </tr>
+    <tr>
+      <td>Description</td>
+      <td><textarea name="description"></textarea></td>
+    </tr>
+    <tr>
+      <td>Initial number of tokens</td>
+      <td><input type="text" name="token_initial" size=3></td>
+    </tr>
+    <tr>
+      <td>Maximum accumulated tokens</td>
+      <td><input type="text" name="token_max" size=3></td>
+    </tr>
+    <tr>
+      <td>Total number of tokens</td>
+      <td><input type="text" name="token_total" size=3></td>
+    </tr>
+    <tr>
+      <td>Interval between tokens</td>
+      <td>
+      <select name="min_interval_hour">
+      {% for hour in range(0,24) %}
+        <option>{{ hour }}</option>
+      {% end %}
+      </select>
+      <select name="min_interval_minute">
+      {% for minute in range(0,60) %}
+        <option>{{ minute }}</option>
+      {% end %}
+      </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Token generation period</td>
+      <td>
+      <select name="token_gen_hour">
+      {% for hour in range(0,24) %}
+        <option>{{ hour }}</option>
+      {% end %}
+      </select>
+      <select name="token_gen_minute">
+      {% for minute in range(0,60) %}
+        <option>{{ minute }}</option>
+      {% end %}
+      </select>
+      </td>
+    </tr>
+    <tr>
+      <td>Start</td>
+      {% for fieldname in ["start"] %}
+      <td>{% include datetimefield.html %}</td>
+      {% end %}
+    </tr>
+    <tr>
+      <td>End</td>
+      {% for fieldname in ["end"] %}
+      <td>{% include datetimefield.html %}</td>
+      {% end %}
+    </tr>
+    </table>
+    <input type="submit">
+    </form>
+{% end %}

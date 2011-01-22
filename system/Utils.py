@@ -34,6 +34,12 @@ get_contests='''function(doc) {
         emit(doc,null)
 }'''
 
+def get_contest_list():
+    db = get_couchdb_database()
+    contests = list(db.query(get_contests, include_docs = True))
+    contest_list = [CouchObject.from_couch(x.id) for x in contests]
+    return contest_list
+
 def get_couchdb_database():
     couch = couchdb.client.Server(Configuration.couchdb_server)
     try:

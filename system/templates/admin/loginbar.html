@@ -1,0 +1,18 @@
+    <!-- login form-->
+    <div class="loginbar">
+    {% if current_user == None %}
+        {% if handler.get_arguments("login_error") != [] %}
+            <span style="display: inline-block; color:red">Failed to log in.</span>
+        {% end %}
+        <form style="display: inline-block" action="/login" method="POST">
+                Username:
+                <input type="text" name="username" size=8>
+                Password:
+                <input type="password" name="password" size=8>
+                <input type="submit" value="Sign in">
+        </form>
+    {% else %}
+        Benvenuto {{ current_user.username }}!
+        <a href="/logout">Logout</a>
+    {% end %}
+    </div>

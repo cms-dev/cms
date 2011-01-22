@@ -1,0 +1,25 @@
+{% extends base.html %}
+
+{% block core %}
+    <h1>Home</h1>
+    <h2>Contests</h2>
+    <a href="/addcontest">Add contest</a></br></br>
+    <table>
+    <tr>
+    <th>Name</th>
+    <th>Description</th>
+    <th>Start</th>
+    <th>End</th>
+    <th>Delete</th>
+    </tr>
+    {% for c in contests %}
+        <tr>
+        <td><a href="/contest/{{c.couch_id}}">{{ c.name }}</a> </td>
+        <td>{{ c.description[0:20] }}{% if len(c.description)>20 %}...{% end %}</td>
+        <td>{{ c.start }}</td>
+        <td>{{ c.stop }}</td>
+        <td><a href="/delcontest/{{c.couch_id}}">X</a></td>
+        </tr>
+    {% end %}
+    </table>
+{% end %}

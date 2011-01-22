@@ -38,16 +38,20 @@ class FilePutThread(threading.Thread):
         self.putFile = putFile
 
     def run(self):
-        (conn, addr) = self.putSocket.accept()
-        while True:
-            data = self.putFile.read(8192)
-            if not data:
-                break
-            remaining = len(data)
-            while remaining > 0:
-                sent = conn.send(data[-remaining:])
-                remaining -= sent
-        conn.close()
+        try:
+            (conn, addr) = self.putSocket.accept()
+            while True:
+                data = self.putFile.read(8192)
+                if not data:
+                    break
+                remaining = len(data)
+                while remaining > 0:
+                    sent = conn.send(data[-remaining:])
+                    remaining -= sent
+            conn.close()
+        except socket.timeout:
+            Utils.log("Failed to put a file: connection timeout.",Utils.Logger.SEVERITY_IMPORTANT)
+            return
 
 class FileGetThread(threading.Thread):
     def __init__(self, getSocket, getFiles):
@@ -56,19 +60,23 @@ class FileGetThread(threading.Thread):
         self.getFiles = getFiles
 
     def run(self):
-        (conn, addr) = self.getSocket.accept()
-        while True:
-            data = conn.recv(8192)
-            if not data:
-                break
-            for (getFile, errorHandler) in self.getFiles:
-                try:
-                    getFile.write(data)
-                except IOError:
-                    del self.getFiles[(getFile, errorHandler)]
-                    if errorHandler != None:
-                        errorHandler()
-        conn.close()
+        try:
+            (conn, addr) = self.getSocket.accept()
+            while True:
+                data = conn.recv(8192)
+                if not data:
+                    break
+                for (getFile, errorHandler) in self.getFiles:
+                    try:
+                        getFile.write(data)
+                    except IOError:
+                        del self.getFiles[(getFile, errorHandler)]
+                        if errorHandler != None:
+                            errorHandler()
+            conn.close()
+        except socket.timeout:
+            Utils.log("Failed to get a file: connection timeout.",Utils.Logger.SEVERITY_IMPORTANT)
+            return
 
 class FileStorageLib:
     def __init__(self, fs_address = None, fs_port = None, basedir = None):
@@ -99,6 +107,8 @@ class FileStorageLib:
         putSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         port = self.random_bind(putSocket, self.bind_address)
         putSocket.listen(1)
+        # Timeout needed to gracefully stop the thread
+        putSocket.settimeout(Configuration.FS_connection_timeout)
         ft = FilePutThread(putSocket, putFile)
         ft.start()
         res = self.fs.put(self.local_address, port, description)
@@ -119,11 +129,15 @@ class FileStorageLib:
             return None
 
     def get_file(self, dig, getFile):
+        # TODO: Clear cache periodically, or when the file is too old
         if self.get_file_from_cache(dig, getFile):
             return True
         getSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         port = self.random_bind(getSocket, self.bind_address)
         getSocket.listen(1)
+        # Timeout needed to gracefully stop the thread
+        getSocket.settimeout(Configuration.FS_connection_timeout)
+        
         tempFile, tempFilename = tempfile.mkstemp(dir = self.tmpdir)
         ft = FileGetThread(getSocket, [(getFile, None), (os.fdopen(tempFile, 'w'), None)])
         ft.start()

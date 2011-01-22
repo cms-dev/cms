@@ -1,0 +1,55 @@
+{% extends base.html %}
+{% block core %}
+
+    <h1><a href="/">Home</a> >> <a href="/tasks/{{ task.name }}">{{ task.title }} ({{ task.name }})</a> >> <a href="/submissions/{{ task.name }}" > Submissions</a> >> Detail </h1>
+      <table>
+      <tr>
+          <th>Timestamp</th>
+          <td>{{ datetime.datetime.fromtimestamp(submission.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</td>
+      </tr>
+      <tr>
+          <th>Compilation outcome</th>
+          <td>{{ submission.compilation_outcome }}</td>
+      </tr>
+      <tr>
+          <th>Compilation detail</th>
+          <td>{{ submission.compilation_text }}</td>
+      </tr>
+      <tr>
+          <th>Evaluation outcome</th>
+          <td>
+              {% if submission.evaluation_outcome != None %}
+                  <table>
+                  <tr><th>Score</th><th>Details</th></tr>
+                  {% for ev_o, ev_t in zip(submission.evaluation_outcome, submission.evaluation_text) %}
+                      <tr><td>{{ ev_o }}</td><td>{{ ev_t }}</td><tr/>
+                  {% end %}
+                  </table>
+              {% else %}
+                  Not evaluated
+              {% end %}
+          </td>
+      </tr>
+      <tr>
+          <th>Files</th>
+          <td>
+          {% for key,value in submission.files.items() %}
+              <a href="/submission_file/{{ escape(submission.couch_id) }}/{{ escape(key) }}">{{ escape(key) }}<br/>
+          {% end %}
+          </td>
+      </tr>
+      <tr>
+          <th>Detailed<br/>Feedback<br/>Requested</th>
+          <td>
+          {% if submission.token_timestamp==None %}
+              <form action="/usetoken/" method="POST">
+              No
+              <input type="hidden" name="id" value="{{ escape(submission.couch_id) }}">
+              <input type="submit" value="Use Token">
+              </form>
+          {% else %}
+              Yes
+          {% end %}
+          </td>
+      </tr>
+{% end %}

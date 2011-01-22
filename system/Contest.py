@@ -92,7 +92,7 @@ def sample_contest(couch_id = None):
                 [User.sample_user() for i in range(10)],
                 10, 3, 3, 30, 60,
                 couch_id = couch_id)
-    s = Submission.sample_submission(couch_id = 'sample_submission')
+    s = Submission.sample_submission()
     c.submissions.append(s)
     c.to_couch()
     s.task = c.tasks[0]
@@ -104,5 +104,5 @@ def sample_contest(couch_id = None):
     return c
 
 if __name__ == "__main__":
-    c = sample_contest(couch_id = 'sample_contest')
+    c = sample_contest()
     print "Couch ID: %s" % (c.couch_id)
