@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright (C) 2010 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright (C) 2010 Stefano Maggiolo <s.maggiolo@gmail.com>
-# Copyright (C) 2010 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2011 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
