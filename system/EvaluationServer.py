@@ -123,11 +123,8 @@ class WorkerPool:
         self.main_lock = threading.RLock()
         self.start_time = {}
         self.address = {}
-
-        # FIXME - Unimplemented
-        #self.error_count = [0] * worker_num
-        #self.schedule_disabling = [False] * worker_num
-        #self.ignore_result = [False] * worker_num
+        self.error_count = {}
+        self.schedule_disabling = {}
 
     def acquire_worker(self, job, blocking = True):
         available = self.semaphore.acquire(blocking)
@@ -144,11 +141,15 @@ class WorkerPool:
 
     def release_worker(self, n):
         with self.main_lock:
-            if self.workers[n] == self.WORKER_INACTIVE:
+            if self.workers[n] == self.WORKER_INACTIVE or self.workers[n] == self.WORKER_DISABLED:
                 Utils.log("Trying to release worker while it's inactive", Utils.Logger.SEVERITY_IMPORTANT)
                 raise ValueError("Trying to release worker while it's inactive")
-            self.workers[n] = self.WORKER_INACTIVE
-        self.semaphore.release()
+            if self.schedule_disabling[n]:
+                self.workers[n] = self.WORKER_DISABLED
+                self.schedule_disabling[n] = False
+            else:
+                self.workers[n] = self.WORKER_INACTIVE
+                self.semaphore.release()
 
     def find_worker(self, job):
         with self.main_lock:
@@ -158,13 +159,15 @@ class WorkerPool:
             raise LookupError("No such job")
 
     def disable_worker(self, n):
+        # TODO - Implement disabling or queueing, depending on the current status of the worker
+        # FIXME - Verifying blocking and racing
         self.semaphore.acquire()
         with self.main_lock:
             if self.workers[n] != self.WORKER_INACTIVE:
                 self.semaphore.release()
                 Utils.log("Trying to disable worker while it isn't inactive", Utils.Logger.SEVERITY_IMPORTANT)
                 raise ValueError("Trying to release worker while it isn't inactive")
-            self.workers[n] = self.WOKER_DISABLED
+            self.workers[n] = self.WORKER_DISABLED
 
     def enable_worker(self, n):
         with self.main_lock:
@@ -182,6 +185,8 @@ class WorkerPool:
             self.workers[n] = self.WORKER_INACTIVE
             self.start_time[n] = None
             self.address[n] = (host, port)
+            self.error_count[n] = 0
+            self.schedule_disabling[n] = False
         self.semaphore.release()
 
     def del_worker(self, n):
@@ -198,6 +203,8 @@ class WorkerPool:
             del self.workers[n]
             del self.start_time[n]
             del self.address[n]
+            del self.error_count[n]
+            del self.schedule_disabling[n]
 
     def working_workers(self):
         with self.main_lock:
@@ -207,6 +214,8 @@ class WorkerPool:
                               self.workers.values()))
 
 class JobDispatcher(threading.Thread):
+    ACTION_OK, ACTION_FAIL, ACTION_REQUEUE = True, False, "requeue"
+
     def __init__(self, worker_num):
         threading.Thread.__init__(self)
         self.queue = JobQueue()
@@ -218,6 +227,7 @@ class JobDispatcher(threading.Thread):
         self.touched = threading.Event()
 
     def check_action(self, priority, timestamp, job):
+        # FIXME - Update docstring
         """Try to execute the specified action immediately: if it's
         possible, do it and returns True; otherwise returns False."""
 
@@ -232,13 +242,13 @@ class JobDispatcher(threading.Thread):
                 Utils.log("Priming the bomb")
                 self.bomb_primed = True
                 self.touched.set()
-            return False
+            return self.ACTION_FAIL
 
         else:
             worker = self.workers.acquire_worker(job, blocking = False)
 
             if worker == None:
-                return False
+                return self.ACTION_FAIL
 
             else:
                 submission = job[1]
@@ -253,13 +263,21 @@ class JobDispatcher(threading.Thread):
                            action,
                            submission.couch_id,
                            queue_time))
-                p = xmlrpclib.ServerProxy("http://%s:%d" % (host, port))
-                if action == EvaluationServer.JOB_TYPE_COMPILATION:
-                    p.compile(submission.couch_id)
-                elif action == EvaluationServer.JOB_TYPE_EVALUATION:
-                    p.evaluate(submission.couch_id)
+                try:
+                    p = xmlrpclib.ServerProxy("http://%s:%d" % (host, port))
+                    if action == EvaluationServer.JOB_TYPE_COMPILATION:
+                        p.compile(submission.couch_id)
+                    elif action == EvaluationServer.JOB_TYPE_EVALUATION:
+                        p.evaluate(submission.couch_id)
+                except:
+                    Utils.log("Couldn't contact worker %d (%s:%d), disabling it and requeuing submission %s" %
+                              (worker, host, port, submission.couch_id), Utils.Logger.SEVERITY_IMPORTANT)
+                    self.workers.error_count[worker] += 1
+                    self.workers.release_worker(worker)
+                    self.workers.disable_worker(worker)
+                    return self.ACTION_REQUEUE
 
-                return True
+                return self.ACTION_OK
 
     def process_queue(self):
         with self.main_lock:
@@ -270,10 +288,13 @@ class JobDispatcher(threading.Thread):
                     # The queue is empty, there is nothing other to do. Good! :-)
                     return
 
-                if self.check_action(priority, timestamp, job):
+                res = self.check_action(priority, timestamp, job)
+                if res == self.ACTION_OK:
                     self.queue.pop()
-                else:
+                elif res == self.ACTION_FAIL:
                     return
+                elif res == self.ACTION_REQUEUE:
+                    pass
 
     def run(self):
         while True:
