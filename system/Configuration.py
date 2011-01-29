@@ -26,7 +26,7 @@ file_storage = ("localhost", 8000)
 evaluation_server = ("localhost", 8002)
 log_server = ("localhost", 8003)
 
-workers = [ ("localhost", 8001) ]
+workers = [ ("localhost", 8001), ("localhost", 8004) ]
 
 logging_web_server = ("localhost", 8080)
 
