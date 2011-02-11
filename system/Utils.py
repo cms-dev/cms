@@ -122,6 +122,10 @@ class Logger:
         self.log_proxy = xmlrpclib.ServerProxy('http://%s:%d' % (log_address, log_port))
         self.local_log = local_log
 
+        maybe_mkdir("logs")
+        import random
+        self.local_log_file = open(os.path.join("logs", "%d-%d.local-log" % (time.time(), random.randint(1, 65535))), "w")
+
     def log(self, msg, severity = SEVERITY_NORMAL, timestamp = None):
         if timestamp == None:
             timestamp = time.time()
@@ -130,7 +134,9 @@ class Logger:
         except IOError:
             print "Couldn't send log to remote server"
         if self.local_log:
-            print format_log(msg, self.service, self.operation, severity, timestamp)
+            line = format_log(msg, self.service, self.operation, severity, timestamp)
+            print line
+            print >> self.local_log_file, line
 
 logger = Logger()
 
