@@ -21,6 +21,8 @@
   no services other than CouchDB and File Storage are available; if
   CouchDB or File Storage are missing it _MUST_ behave nicely anyway,
   informing the user to seek assistance and without crashing.
+* Factor out buisiness logic from presentation logic, in order to make it
+  avaiable also for different clients.
 
 *** Task types
 * Check that white_diff() really does what we want it to do

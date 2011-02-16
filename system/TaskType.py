@@ -101,7 +101,16 @@ class BatchTaskType:
             self.submission.compilation_outcome = "fail"
         self.submission.compilation_text = text
         try:
-            self.submission.to_couch()
+            retry = True
+            while retry:
+                retry = False
+                try:
+                    self.submission.to_couch()
+                except ResourceConflict:
+                    Utils.log("Conflict when updating CouchDB", Utils.Logger.SEVERITY_IMPORTANT)
+                    #server_sub = CouchObject.from_couch(self.submission.couch_id)
+                    # Check and update the document
+                    #retry = True
             return True
         except (OSError, IOError) as e:
             Utils.log("Couldn't update database, aborting compilation (exception: %s)" % (repr(e)))

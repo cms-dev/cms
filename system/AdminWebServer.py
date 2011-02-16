@@ -132,6 +132,8 @@ class EditContestHandler(BaseHandler):
         c.token_gen_time = token_gen_time
         c.start = start
         c.stop = end
+        # FIXME - Shouldn't just fail if to_couch() fails; instead, it
+        # should update the document and try again
         try:
           c.to_couch()
         except:
@@ -185,6 +187,8 @@ class AddContestHandler(BaseHandler):
         if c == None:
           self.write("Contest creation failed!")
           return
+        # FIXME - Shouldn't just fail if to_couch() fails; instead, it
+        # should update the document and try again
         try:
           print c
           c.to_couch()

@@ -345,6 +345,8 @@ class EvaluationServer(RPCServer):
         self.contest = contest
         self.contest.ranking_view = RankingView(contest)
         self.contest.update_ranking_view()
+        # These two to_couch() calls shouldn't fail, because nothing
+        # other should own and modify the objects they act on
         self.contest.ranking_view.to_couch()
         self.contest.to_couch()
         for sub in self.contest.submissions:
@@ -409,8 +411,15 @@ class EvaluationServer(RPCServer):
         completed.
         """
         submission = CouchObject.from_couch(submission_id)
-        submission.compilation_tentatives += 1
-        submission.to_couch()
+        retry = True
+        while retry:
+            retry = False
+            submission.compilation_tentatives += 1
+            try:
+                submission.to_couch()
+            except ResourceConflict:
+                retry = True
+                submission.refresh()
         self.action_finished((EvaluationServer.JOB_TYPE_COMPILATION, submission))
         if success and submission.compilation_outcome == "ok":
             Utils.log("Compilation succeeded for submission %s, queueing evaluation" % (submission_id))
@@ -439,8 +448,15 @@ class EvaluationServer(RPCServer):
         completed.
         """
         submission = CouchObject.from_couch(submission_id)
-        submission.evaluation_tentatives += 1
-        submission.to_couch()
+        retry = True
+        while retry:
+            retry = False
+            submission.evaluation_tentatives += 1
+            try:
+                submission.to_couch()
+            except ResourceConflict:
+                retry = True
+                submission.refresh()
         self.action_finished((EvaluationServer.JOB_TYPE_EVALUATION, submission))
         if success:
             Utils.log("Evaluation succeeded for submission %s" % (submission_id))
@@ -468,8 +484,6 @@ class EvaluationServer(RPCServer):
         scorer = submission.task.scorer
         scorer.add_submission(submission)
         self.contest.update_ranking_view()
-        self.contest.ranking_view.to_couch()
-        self.contest.to_couch()
 
     def self_destruct(self):
         self.jd.queue_push((EvaluationServer.JOB_TYPE_BOMB, None),
@@ -482,6 +496,7 @@ def sigterm(signum, stack):
     e.self_destruct()
 
 if __name__ == "__main__":
+    global c
     import sys
 
     es_address, es_port = Configuration.evaluation_server
@@ -515,3 +530,53 @@ if __name__ == "__main__":
         c.to_couch()
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
         es.add_job(s.couch_id)
+        print "Submission %s" % (s.couch_id)
+
+    elif sys.argv[1] == "token":
+        # FIXME - This piece of code is a copy from its equivalent in
+        # ContestWebServer.py. This is bad: they should be merged in
+        # some client library which is used by all those who want to
+        # interact with the ES.
+        c = Utils.ask_for_contest(skip = 1)
+        timestamp = time.time()
+        ident = sys.argv[3]
+        for s in c.submissions:
+            if s.couch_id == ident:
+                from ContestWebServer import token_available
+                # If the user already used a token on this
+                if s.tokened():
+                    print "This submission is already marked for detailed feedback."
+                # Are there any tokens available?
+                # FIXME - Concurrency problems: the user could use
+                # more tokens than those available, exploting the fact
+                # that the update on the database is performed some
+                # time after the availablility check
+                elif token_available(c, s.user, s.task, timestamp):
+                    s.token_timestamp = timestamp
+                    u.tokens.append(s)
+                    # Save to CouchDB
+                    # FIXME - Should catch ResourceConflict exception:
+                    # update the documents, do some sanity checks,
+                    # modify them again and try again to store them on
+                    # CouchDB
+                    s.to_couch()
+                    u.to_couch()
+                    # We have to warn Evaluation Server
+                    try:
+                        ES.use_token(s.couch_id)
+                    except:
+                        # FIXME - quali informazioni devono essere fornite?
+                        Utils.log("Failed to warn the Evaluation Server about a detailed feedback request.",
+                                  Utils.Logger.SEVERITY_IMPORTANT)
+                    self.redirect("/submissions/%s" % (s.task.name))
+                    break
+                else:
+                    print "No tokens available."
+                    break
+        else:
+            print "Submission not found in the specified contest"
+
+    elif sys.argv[1] == "dump":
+        obj = CouchObject.from_couch(sys.argv[2])
+        print obj.dump()
+

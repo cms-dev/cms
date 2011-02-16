@@ -62,6 +62,9 @@ class Contest(CouchObject):
             for task in self.tasks:
                 score = task.scorer.scores.get(user.username, 0.0)
                 self.ranking_view.scores[user.username].append(score)
+        # This to_couch() call should never fail, because only
+        # Evaluation Server modifies the ranking view
+        self.ranking_view.to_couch()
 
     def get_task(self, task_name):
         """
@@ -94,6 +97,8 @@ def sample_contest(couch_id = None):
                 couch_id = couch_id)
     s = Submission.sample_submission()
     c.submissions.append(s)
+    # These to_couch() calls should never fail, because they act on
+    # freshly created document
     c.to_couch()
     s.task = c.tasks[0]
     s.user = c.users[0]

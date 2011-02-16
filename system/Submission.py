@@ -60,17 +60,31 @@ class Submission(CouchObject):
         return self.token_timestamp != None
 
     def invalid(self):
-        self.compilation_outcome = None
-        self.evaluation_outcome = None
-        self.compilation_text = None
-        self.evaluation_text = None
-        self.executables = None
-        self.to_couch()
+        retry = True
+        while retry:
+            retry = False
+            self.compilation_outcome = None
+            self.evaluation_outcome = None
+            self.compilation_text = None
+            self.evaluation_text = None
+            self.executables = None
+            try:
+                self.to_couch()
+            except ResourceConflict:
+                self.refresh()
+                retry = True
 
     def invalid_evaluation(self):
-        self.evaluation_outcome = None
-        self.evaluation_text = None
-        self.to_couch()
+        retry = True
+        while retry:
+            retry = False
+            self.evaluation_outcome = None
+            self.evaluation_text = None
+            try:
+                self.to_couch()
+            except ResourceConflict:
+                self.refresh()
+                retry = True
 
     def choose_couch_id_basename(self):
         return "submission-%s-%s" % (self.user.username, self.task.name)

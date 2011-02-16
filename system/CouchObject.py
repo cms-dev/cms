@@ -65,7 +65,8 @@ class CouchObject:
         return self.document_type
 
     def choose_couch_id(self):
-        # FIXME - This is not totally race free, but this shouldn't be a problem in most cases
+        # FIXME - This is not totally race free, but this shouldn't be
+        # a problem in most cases
         basename = self.choose_couch_id_basename()
         db = Utils.get_couchdb_database()
         num = 0
@@ -147,6 +148,25 @@ class CouchObject:
         del ht['document_type']
         self.__dict__.update(ht)
         fix_references(self)
+
+    def differences(self, x):
+        """Find the fields that has different values than the object
+        x, which has to be of the same type as self."""
+        diff = []
+        for f in self._to_copy + self._to_copy_id + self._to_copy_id_array:
+            if x.__dict__[f] != self.__dict__[f]:
+                diff.append(f)
+        return diff
+
+    def dump(self):
+        res = "document_type: %s\ncouch_id: %s\ncouch_rev: %s" % (self.document_type, self.couch_id, self.couch_rev)
+        for f in self._to_copy:
+            res += "\n%s: %s" % (f, str(self.__dict__[f]))
+        for f in self._to_copy_id:
+            res += "\n%s: %s" % (f, self.__dict__[f].couch_id)
+        for f in self._to_copy_id_array:
+            res += "\n%s: %s" % (f, map(lambda x: x.couch_id, self.__dict__[f]))
+        return res
 
 def from_couch(couch_id, with_refresh = True):
     """Retrieve a document from the CouchDB database and convert it

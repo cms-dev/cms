@@ -43,7 +43,7 @@ from Submission import Submission
 from FileStorageLib import FileStorageLib
 
 
-def token_available(user, task, timestamp):
+def token_available(contest, user, task, timestamp):
     """
     Returns True if the given user can use a token for the given task.
     """
@@ -85,7 +85,7 @@ def token_available(user, task, timestamp):
             return False
         return True
 
-    if not ensure(c, tokens_timestamp):
+    if not ensure(contest, tokens_timestamp):
         return False
     if not ensure(task, task_tokens_timestamp):
         return False
@@ -323,13 +323,21 @@ class UseTokenHandler(BaseHandler):
         for s in c.submissions:
             if s.couch_id == ident:
                 # If the user already used a token on this
+                # FIXME - Concurrency problems: the user could use
+                # more tokens than those available, exploting the fact
+                # that the update on the database is performed some
+                # time after the availablility check
                 if s.tokened():
                     self.write("This submission is already marked for detailed feedback.")
                 # Are there any tokens available?
-                elif token_available(u, s.task, timestamp):
+                elif token_available(c, u, s.task, timestamp):
                     s.token_timestamp = timestamp
                     u.tokens.append(s)
                     # Save to CouchDB
+                    # FIXME - Should catch ResourceConflict exception:
+                    # update the documents, do some sanity checks,
+                    # modify them again and try again to store them on
+                    # CouchDB
                     s.to_couch()
                     u.to_couch()
                     # We have to warn Evaluation Server
@@ -398,6 +406,9 @@ class SubmitHandler(BaseHandler):
                        files)
 
         c.submissions.append(s)
+        # FIXME - Should catch ResourceConflict exception: update the
+        # document, do some sanity checks, modify it again and try
+        # again to store it on CouchDB
         c.to_couch()
         try:
             ES.add_job(s.couch_id)
