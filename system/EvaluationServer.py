@@ -137,6 +137,7 @@ class WorkerPool:
                 Utils.log("Worker array went out-of-sync with semaphore", Utils.Logger.SEVERITY_CRITICAL)
                 raise RuntimeError("Worker array went out-of-sync with semaphore")
             self.workers[worker] = job
+            Utils.log("Worker %d acquired" % (worker), Utils.Logger.SEVERITY_DEBUG)
             return worker
 
     def release_worker(self, n):
@@ -147,9 +148,11 @@ class WorkerPool:
             if self.schedule_disabling[n]:
                 self.workers[n] = self.WORKER_DISABLED
                 self.schedule_disabling[n] = False
+                Utils.log("Worker %d released and disabled" % (worker), Utils.Logger.SEVERITY_DEBUG)
             else:
                 self.workers[n] = self.WORKER_INACTIVE
                 self.semaphore.release()
+                Utils.log("Worker %d released" % (n), Utils.Logger.SEVERITY_DEBUG)
 
     def find_worker(self, job):
         with self.main_lock:
@@ -168,14 +171,19 @@ class WorkerPool:
                 Utils.log("Trying to disable worker while it isn't inactive", Utils.Logger.SEVERITY_IMPORTANT)
                 raise ValueError("Trying to release worker while it isn't inactive")
             self.workers[n] = self.WORKER_DISABLED
+        Utils.log("Worker %d disabled" % (n), Utils.Logger.SEVERITY_DEBUG)
 
     def enable_worker(self, n):
         with self.main_lock:
+            if n not in self.workers.keys():
+                Utils.log("Trying to enable a non existing worker (`%s')" % (n), Utils.Logger.SEVERITY_IMPORTANT)
+                raise ValueError("Trying to enable a non existing worker")
             if self.workers[n] != self.WORKER_DISABLED:
                 Utils.log("Trying to enable worker while is isn't disabled", Utils.Logger.SEVERITY_IMPORTANT)
                 raise ValueError("Trying to enable worker while is isn't disabled")
             self.workers[n] = self.WORKER_INACTIVE
         self.semaphore.release()
+        Utils.log("Worker %d enabled" % (n), Utils.Logger.SEVERITY_DEBUG)
 
     def add_worker(self, n, host, port):
         with self.main_lock:
@@ -188,6 +196,7 @@ class WorkerPool:
             self.error_count[n] = 0
             self.schedule_disabling[n] = False
         self.semaphore.release()
+        Utils.log("Worker %d added with address %s:%d" % (n, host, port), Utils.Logger.SEVERITY_DEBUG)
 
     def del_worker(self, n):
         self.semaphore.acquire()
@@ -205,6 +214,7 @@ class WorkerPool:
             del self.address[n]
             del self.error_count[n]
             del self.schedule_disabling[n]
+        Utils.log("Worker %d deleted" % (worker), Utils.Logger.SEVERITY_DEBUG)
 
     def working_workers(self):
         with self.main_lock:
@@ -212,6 +222,10 @@ class WorkerPool:
                                   x != self.WORKER_INACTIVE and \
                                   x != self.WORKER_DISABLED,
                               self.workers.values()))
+
+    def get_workers_status(self):
+        return dict([(str(n), {'job': self.workers[n], 'address': self.address[n], 'start_time': self.start_time[n], 'error_count': self.error_count[n]})
+                for n in self.workers.keys()])
 
 class JobDispatcher(threading.Thread):
     ACTION_OK, ACTION_FAIL, ACTION_REQUEUE = True, False, "requeue"
@@ -325,6 +339,22 @@ class JobDispatcher(threading.Thread):
         with self.main_lock:
             return self.workers.find_worker(job)
 
+    def get_workers_status(self):
+        with self.main_lock:
+            return self.workers.get_workers_status()
+
+    def enable_worker(self, n):
+        with self.main_lock:
+            self.workers.enable_worker(n)
+
+    def add_worker(self, n, addr, port):
+        with self.main_lock:
+            self.workers.add_worker(n, addr, port)
+
+    def del_worker(self, n):
+        with self.main_lock:
+            self.workers.del_worker(n)
+
 class EvaluationServer(RPCServer):
     JOB_PRIORITY_EXTRA_HIGH, JOB_PRIORITY_HIGH, JOB_PRIORITY_MEDIUM, JOB_PRIORITY_LOW, JOB_PRIORITY_EXTRA_LOW = range(5)
     JOB_TYPE_COMPILATION, JOB_TYPE_EVALUATION, JOB_TYPE_BOMB = ["compile", "evaluate", "bomb"]
@@ -358,9 +388,14 @@ class EvaluationServer(RPCServer):
                             self.add_job,
                             self.compilation_finished,
                             self.evaluation_finished,
-                            self.self_destruct],
+                            self.self_destruct,
+                            self.get_workers_status,
+                            self.add_worker,
+                            self.del_worker,
+                            self.enable_worker],
                            thread = self.st,
-                           start_now = False)
+                           start_now = False,
+                           allow_none = True)
 
     def start(self):
         self.jd.start()
@@ -490,6 +525,18 @@ class EvaluationServer(RPCServer):
                            EvaluationServer.JOB_PRIORITY_EXTRA_HIGH)
         return True
 
+    def get_workers_status(self):
+        return self.jd.get_workers_status()
+
+    def enable_worker(self, n):
+        self.jd.enable_worker(n)
+
+    def add_worker(self, n, addr, port):
+        self.jd.add_worker(n, addr, port)
+
+    def del_worker(self, n):
+        self.jd.del_worker(n)
+
 def sigterm(signum, stack):
     global e
     print "Trying to self destruct"
@@ -580,3 +627,11 @@ if __name__ == "__main__":
         obj = CouchObject.from_couch(sys.argv[2])
         print obj.dump()
 
+    elif sys.argv[1] == "workers_status":
+        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        status = es.get_workers_status()
+        print status
+
+    elif sys.argv[1] == "enable_worker":
+        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es.enable_worker(int(sys.argv[2]))

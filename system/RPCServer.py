@@ -29,12 +29,13 @@ import Utils
 
 class RPCServer:
     def __init__(self, name, listen_address, listen_port,
-                 functions, thread = None, start_now = True):
+                 functions, thread = None, start_now = True,
+                 allow_none = False):
         # Store the LWS for later use
         self.lws = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.logging_web_server)
 
         # Create server
-        server = SimpleXMLRPCServer((listen_address, listen_port), logRequests = False)
+        server = SimpleXMLRPCServer((listen_address, listen_port), allow_none = allow_none, logRequests = False)
         server.register_introspection_functions()
 
         for function in functions:
