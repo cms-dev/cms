@@ -137,6 +137,7 @@ class WorkerPool:
                 Utils.log("Worker array went out-of-sync with semaphore", Utils.Logger.SEVERITY_CRITICAL)
                 raise RuntimeError("Worker array went out-of-sync with semaphore")
             self.workers[worker] = job
+            self.start_time[worker] = time.time()
             Utils.log("Worker %d acquired" % (worker), Utils.Logger.SEVERITY_DEBUG)
             return worker
 
@@ -145,6 +146,7 @@ class WorkerPool:
             if self.workers[n] == self.WORKER_INACTIVE or self.workers[n] == self.WORKER_DISABLED:
                 Utils.log("Trying to release worker while it's inactive", Utils.Logger.SEVERITY_IMPORTANT)
                 raise ValueError("Trying to release worker while it's inactive")
+            self.start_time[n] = None
             if self.schedule_disabling[n]:
                 self.workers[n] = self.WORKER_DISABLED
                 self.schedule_disabling[n] = False
@@ -223,8 +225,16 @@ class WorkerPool:
                                   x != self.WORKER_DISABLED,
                               self.workers.values()))
 
+    def represent_job(self, job):
+        if job == None:
+            return 'None'
+        if isinstance(job, str):
+            return job
+        else:
+            return (job[0], job[1].couch_id)
+
     def get_workers_status(self):
-        return dict([(str(n), {'job': self.workers[n], 'address': self.address[n], 'start_time': self.start_time[n], 'error_count': self.error_count[n]})
+        return dict([(str(n), {'job': self.represent_job(self.workers[n]), 'address': self.address[n], 'start_time': self.start_time[n], 'error_count': self.error_count[n]})
                 for n in self.workers.keys()])
 
 class JobDispatcher(threading.Thread):
@@ -266,7 +276,6 @@ class JobDispatcher(threading.Thread):
 
             else:
                 submission = job[1]
-                self.workers.start_time[worker] = time.time()
                 queue_time = self.workers.start_time[worker] - timestamp
                 host, port = self.workers.address[worker]
 
@@ -630,7 +639,8 @@ if __name__ == "__main__":
     elif sys.argv[1] == "workers_status":
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
         status = es.get_workers_status()
-        print status
+        for k in sorted(status.keys()):
+            print "%5s: %s" % (k, str(status[k]))
 
     elif sys.argv[1] == "enable_worker":
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
