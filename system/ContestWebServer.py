@@ -449,5 +449,5 @@ if __name__ == "__main__":
     try:
         tornado.ioloop.IOLoop.instance().start()
     except KeyboardInterrupt:
-        Utils.log("Contest Web Server for contest %s stopped. %d threads alive" % (c.couch_id,threading.activeCount() ))
+        Utils.log("Contest Web Server for contest %s stopped. %d threads alive" % (c.couch_id, threading.activeCount()))
         exit(0)
