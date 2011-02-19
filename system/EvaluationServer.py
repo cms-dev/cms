@@ -166,7 +166,9 @@ class WorkerPool:
     def disable_worker(self, n):
         # TODO - Implement disabling or queueing, depending on the current status of the worker
         # FIXME - Verifying blocking and racing
-        self.semaphore.acquire()
+        avail = self.semaphore.acquire(blocking = False)
+        if not avail:
+            raise ValueError("No inactive workers available")
         with self.main_lock:
             if self.workers[n] != self.WORKER_INACTIVE:
                 self.semaphore.release()
@@ -201,22 +203,19 @@ class WorkerPool:
         Utils.log("Worker %d added with address %s:%d" % (n, host, port), Utils.Logger.SEVERITY_DEBUG)
 
     def del_worker(self, n):
-        self.semaphore.acquire()
         with self.main_lock:
             if n not in self.workers:
-                self.semaphore.release()
-                Utils.log("No worker known with name `%s'" % (str(n)), Utils.Logger.SEVERITY_IMPORTANT)
-                raise ValueError("No worker known with name `%s'" % (str(n)))
+                Utils.log("Trying to delete a non existing worker (`%s')" % (str(n)), Utils.Logger.SEVERITY_IMPORTANT)
+                raise ValueError("Trying to delete a non existing worker")
             if self.workers[n] != self.WORKER_DISABLED:
-                self.sempahore.release()
-                Utils.log("Trying to delete a worker while it's not disabled", Utils.Logger.SEVERITY_IMPORTANT)
+                Utils.log("Trying to delete a worker while it's not disabled (`%s')" % (str(n)), Utils.Logger.SEVERITY_IMPORTANT)
                 raise ValueError("Trying to delete a worker while it's not disabled")
             del self.workers[n]
             del self.start_time[n]
             del self.address[n]
             del self.error_count[n]
             del self.schedule_disabling[n]
-        Utils.log("Worker %d deleted" % (worker), Utils.Logger.SEVERITY_DEBUG)
+        Utils.log("Worker %d deleted" % (n), Utils.Logger.SEVERITY_DEBUG)
 
     def working_workers(self):
         with self.main_lock:
