@@ -650,5 +650,5 @@ if __name__ == "__main__":
         es.del_worker(int(sys.argv[2]))
 
     elif sys.argv[1] == "add_worker":
-        es = xmltpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
         es.add_worker(int(sys.argv[2]), sys.argv[3], int(sys.argv[4]))
