@@ -320,6 +320,7 @@ class JobDispatcher(threading.Thread):
 
     def run(self):
         while True:
+            # FIXME - An atomic wait-and-clear would be better
             self.touched.wait()
             self.touched.clear()
             with self.main_lock:
@@ -354,10 +355,12 @@ class JobDispatcher(threading.Thread):
     def enable_worker(self, n):
         with self.main_lock:
             self.workers.enable_worker(n)
+        self.touched.set()
 
     def add_worker(self, n, addr, port):
         with self.main_lock:
             self.workers.add_worker(n, addr, port)
+        self.touched.set()
 
     def del_worker(self, n):
         with self.main_lock:
@@ -441,8 +444,8 @@ class EvaluationServer(RPCServer):
         time_elapsed = time.time() - self.jd.workers.start_time[worker]
         Utils.log("Worker %d (%s:%d) finished to %s submission %s (took around %.2f seconds)" %
             (worker,
-             Configuration.workers[worker][0],
-             Configuration.workers[worker][1],
+             self.jd.workers.address[worker][0],
+             self.jd.workers.address[worker][1],
              job[0],
              job[1].couch_id,
              time_elapsed))
