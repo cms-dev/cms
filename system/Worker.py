@@ -26,6 +26,7 @@ from RPCServer import RPCServer
 import Configuration
 import Utils
 import TaskType
+import CouchObject
 
 class JobException(Exception):
     def __init__(self, msg = ""):
@@ -115,9 +116,13 @@ class Worker(RPCServer):
         return True
 
 if __name__ == "__main__":
-    import CouchObject
     import sys
-    worker_num = int(sys.argv[1])
-    address, port = Configuration.workers[worker_num]
-    Utils.set_service("worker %d (%s:%d)" % (worker_num, address, port))
+    try:
+        worker_num = int(sys.argv[1])
+        address, port = Configuration.workers[worker_num]
+        Utils.set_service("worker %d (%s:%d)" % (worker_num, address, port))
+    except ValueError:
+        address, port = sys.argv[1:3]
+        port = int(port)
+        Utils.set_service("worker (%s:%d)" % (address, port))
     w = Worker(address, port)
