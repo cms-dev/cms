@@ -186,7 +186,7 @@ def from_couch(couch_id, with_refresh = True):
     db = Utils.get_couchdb_database()
     try:
         ht = db[couch_id]
-    except ResourceNotFound:
+    except couchdb.ResourceNotFound:
         return None
 
     # Field conversion; this piece of code is heavily dependent on the

@@ -13,7 +13,7 @@
       </tr>
       <tr>
           <th>Compilation detail</th>
-          <td>{{ submission.compilation_text }}</td>
+          <td>{{ submission.compilation_text.replace("\n","<br/>") }}</td>
       </tr>
       <tr>
           <th>Evaluation outcome</th>

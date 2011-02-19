@@ -1,7 +1,7 @@
     <!-- login form-->
     <div class="loginbar">
     {% if current_user == None %}
-        {% if handler.get_arguments("login_error") != [] %}
+        {% if handler.get_argument("login_error","") != "" %}
             <span style="display: inline-block; color:red">Failed to log in.</span>
         {% end %}
         <form style="display: inline-block" action="/login" method="POST">

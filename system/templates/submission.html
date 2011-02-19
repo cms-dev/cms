@@ -7,21 +7,19 @@
     {% else %}
         <table border="1">
         <tr>
-            <th>Timestamp</th>
+            <th>Date</th>
             <th>Compilation<br/>status</th>
             <th>Evaluation<br/>status</th>
             <th>Files</th>
             <th>Detailed<br/>Feedback<br/>Requested</th>
         </tr>
-        {% for s in submissions %}
+        {% for s in sorted(submissions, key=lambda s: s.timestamp , reverse = True) %}
             <tr>
                 <td><a href="details/{{escape(s.couch_id)}}">{{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</a></td>
                 <td>{{ s.compilation_outcome }}</td>
                 <td>
                     {% if s.evaluation_outcome != None %}
-                        {% for ev in s.evaluation_outcome %}
-                            {{ ev }}<br/>
-                        {% end %}
+                        Evaluated
                     {% else %}
                         Not evaluated
                     {% end %}

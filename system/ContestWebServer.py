@@ -33,83 +33,14 @@ import xmlrpclib
 import zipfile
 import threading
 import time
-from StringIO import StringIO
 
+import BusinessLayer
 import Configuration
 import WebConfig
 import CouchObject
 import Utils
 from Submission import Submission
 from FileStorageLib import FileStorageLib
-
-
-def token_available(contest, user, task, timestamp):
-    """
-    Returns True if the given user can use a token for the given task.
-    """
-    tokens_timestamp = [s.token_timestamp
-                        for s in user.tokens]
-    task_tokens_timestamp = [s.token_timestamp
-                             for s in user.tokens
-                             if s.task == task]
-    # These should not be needed, but let's be safe
-    tokens_timestamp.sort()
-    task_tokens_timestamp.sort()
-
-    def ensure(object_with_tokens_specs, timestamps):
-        o = object_with_tokens_specs
-        # Ensure min_interval
-        if timestamps != [] and \
-                timestamp - timestamps[-1] < 60 * o.token_min_interval:
-            return False
-        # Ensure total
-        if len(timestamps) >= o.token_total:
-            return False
-        # Ensure availability
-        available = o.token_initial
-        remaining_before_gen = o.token_gen_time
-        last_t = 0
-        for t in timestamps + [timestamp]:
-            interval = t - last_t
-            interval += 60 * (o.token_gen_time - remaining_before_gen)
-            int_interval = int(interval)
-            gen_tokens = int_interval / (60 * o.token_gen_time)
-            if available + gen_tokens >= o.token_max:
-                remaining_before_gen = o.token_gen_time
-                available = o.token_max - 1
-            else:
-                remaining_before_gen = interval % (60 * o.token_gen_time)
-                available = available + gen_tokens - 1
-            last_t = t
-        if available < 0:
-            return False
-        return True
-
-    if not ensure(contest, tokens_timestamp):
-        return False
-    if not ensure(task, task_tokens_timestamp):
-        return False
-    return True
-
-def update_submissions():
-    """
-    Updates all the submissions in the contest.
-
-    Calls the refresh method for all the Submission objects in the
-    current contest.
-    """
-    for s in c.submissions:
-        s.refresh()
-
-def update_users():
-    """
-    Updates all the users in the contest.
-
-    Calls the refresh method for all the User objects in the current
-    contest.
-    """
-    for u in c.users:
-        u.refresh()
 
 class BaseHandler(tornado.web.RequestHandler):
     """
@@ -118,6 +49,21 @@ class BaseHandler(tornado.web.RequestHandler):
     All the RequestHandler classes in this application should be a
     child of this class.
     """
+    def prepare(self):
+        """
+        This method is executed at the beginning of each request.
+        """
+        # Attempt to update the contest and all its references
+        # If this fails, the request terminates.
+        try:
+            c.refresh()
+            BusinessLayer.update_submissions(c)
+            BusinessLayer.update_users(c)
+        except Exception as e:
+            Utils.log("CouchDB exception:"+repr(e),Utils.Logger.SEVERITY_CRITICAL)
+            self.write("Can't connect to CouchDB Server")
+            self.finish()
+
     def get_current_user(self):
         """
         Gets the current user logged in from the cookies
@@ -133,11 +79,7 @@ class BaseHandler(tornado.web.RequestHandler):
             return None
         if cookie_time == None or cookie_time < upsince:
             return None
-        for user in c.users:
-            if user.username == username:
-                return user
-        else:
-            return None
+        return BusinessLayer.get_user_by_username(c, username)
 
 class MainHandler(BaseHandler):
     """
@@ -154,9 +96,8 @@ class LoginHandler(BaseHandler):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
         next = self.get_argument("next","/")
-        if [] != [user for user in c.users \
-                      if user.username == username and \
-                      user.password == password]:
+        user = BusinessLayer.get_user_by_username(c, username)
+        if user != None and user.password == password:
             self.set_secure_cookie("login", pickle.dumps(
                     (self.get_argument("username"), time.time())
                     ))
@@ -180,12 +121,6 @@ class SubmissionViewHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, task_name):
-        try:
-            update_submissions()
-        except AttributeError:
-            Utils.log("CouchDB server unavailable!",Utils.Logger.SEVERITY_CRITICAL)
-            self.write("Can't connect to CouchDB Server")
-            return
         # get the task object
         try:
             task = c.get_task(task_name)
@@ -194,29 +129,18 @@ class SubmissionViewHandler(BaseHandler):
             return
 
         # get the list of the submissions
-        subm = [s for s in c.submissions
-                if s.user.username == self.current_user.username and \
-                    s.task.name == task.name]
+        subm = BusinessLayer.get_submissions_by_username(c, self.current_user.username, task_name)
         self.render("submission.html", submissions = subm, task = task, contest = c)
+
 class SubmissionDetailHandler(BaseHandler):
     """
     Shows additional details for the specified submission.
     """
     @tornado.web.authenticated
     def get(self, submission_id):
-        try:
-            update_submissions()
-        except AttributeError:
-            Utils.log("CouchDB server unavailable!",Utils.Logger.SEVERITY_CRITICAL)
-            self.write("Can't connect to CouchDB Server")
-            return
         # search the submission in the contest
-        for s in c.submissions:
-            if s.user.username == self.current_user.username and \
-                    s.couch_id == submission_id:
-                submission = s
-                break
-        else:
+        s = BusinessLayer.get_submission(c, submission_id, self.current_user.username)
+        if s == None:
             raise tornado.web.HTTPError(404)
         self.render("submission_detail.html", submission = s, task = s.task, contest = c)
 
@@ -226,37 +150,19 @@ class SubmissionFileHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, submission_id, filename):
-        try:
-            update_submissions()
-        except AttributeError:
-            Utils.log("CouchDB server unavailable!",Utils.Logger.SEVERITY_CRITICAL)
-            self.write("Can't connect to CouchDB Server")
-            return
 
         # search the submission in the contest
-        for s in c.submissions:
-            if s.user.username == self.current_user.username and \
-                    s.couch_id == submission_id:
-                submission = s
-                break
-        else:
+        file_content = BusinessLayer.get_file_from_submission( \
+                        BusinessLayer.get_submission(c, submission_id, self.current_user.username), \
+                        filename )
+        if file_content == None:
             raise tornado.web.HTTPError(404)
 
-        for key, value in submission.files.items():
-            if key == filename:
-                submission_file = StringIO()
-                FSL = FileStorageLib()
-                FSL.get_file(value, submission_file)
-
-                # FIXME - Set the right headers
-                self.set_header("Content-Type","text/plain")
-                self.set_header("Content-Disposition",
-                                "attachment; filename=\"%s\"" % (filename))
-                self.write(submission_file.getvalue())
-                submission_file.close()
-                break
-        else:
-            raise tornado.web.HTTPError(404)
+        # FIXME - Set the right headers
+        self.set_header("Content-Type","text/plain")
+        self.set_header("Content-Disposition",
+                        "attachment; filename=\"%s\"" % (filename))
+        self.write(file_content)
 
 class TaskViewHandler(BaseHandler):
     """
@@ -282,23 +188,17 @@ class TaskStatementViewHandler(BaseHandler):
             task = c.get_task(task_name)
         except:
             self.write("Task %s not found." % (task_name))
-        statement_file = StringIO()
-        FSL = FileStorageLib()
-        try:
-            if( not FSL.get_file(task.statement, statement_file) ):
-                Utils.log("FileStorageLib get_file returned False",Utils.Logger.SEVERITY_DEBUG)
-                self.write("File unavailable")
-                return
-        except Exception as e:
-            Utils.log("FileStorageLib raised an exception: "+repr(e),Utils.Logger.SEVERITY_DEBUG)
-            self.write("FileStorage exception: "+repr(e))
-            return
-        #self.set_header("Content-Type", "application/pdf")
-        #self.set_header("Content-Disposition",
-        #                "attachment; filename=\"%s.pdf\"" % (task.name))
+
+        statement = BusinessLayer.get_task_statement(task)
         
-        self.write(statement_file.getvalue())
-        statement_file.close()
+        if statement == None:
+            raise tornado.web.HTTPError(404)
+
+        self.set_header("Content-Type", "application/pdf")
+        self.set_header("Content-Disposition",
+                        "attachment; filename=\"%s.pdf\"" % (task.name))
+        self.write(statement)
+
 
 class UseTokenHandler(BaseHandler):
     """
@@ -307,53 +207,36 @@ class UseTokenHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         timestamp = time.time()
-        try:
-            update_submissions()
-        except AttributeError:
-            Utils.log("CouchDB server unavailable!",Utils.Logger.SEVERITY_CRITICAL)
-            self.write("Can't connect to CouchDB Server")
-            return
+
         u = self.get_current_user()
         if(u == None):
             raise tornado.web.HTTPError(403)
 
-        if self.get_arguments("id") == []:
+        sub_id = self.get_argument("id","")
+        if sub_id == "":
             raise tornado.web.HTTPError(404)
-        ident = self.get_argument("id")
-        for s in c.submissions:
-            if s.couch_id == ident:
-                # If the user already used a token on this
-                # FIXME - Concurrency problems: the user could use
-                # more tokens than those available, exploting the fact
-                # that the update on the database is performed some
-                # time after the availablility check
-                if s.tokened():
-                    self.write("This submission is already marked for detailed feedback.")
-                # Are there any tokens available?
-                elif token_available(c, u, s.task, timestamp):
-                    s.token_timestamp = timestamp
-                    u.tokens.append(s)
-                    # Save to CouchDB
-                    # FIXME - Should catch ResourceConflict exception:
-                    # update the documents, do some sanity checks,
-                    # modify them again and try again to store them on
-                    # CouchDB
-                    s.to_couch()
-                    u.to_couch()
-                    # We have to warn Evaluation Server
-                    try:
-                        ES.use_token(s.couch_id)
-                    except:
-                        # FIXME - quali informazioni devono essere fornite?
-                        Utils.log("Failed to warn the Evaluation Server about a detailed feedback request.",
-                                  Utils.Logger.SEVERITY_IMPORTANT)
-                    self.redirect("/submissions/%s" % (s.task.name))
-                    return
-                else:
-                    self.write("No tokens available.")
-                    return
-        else:
+
+        
+        s = BusinessLayer.get_submission(c, sub_id, u.username)
+        if s == None:
             raise tornado.web.HTTPError(404)
+
+        try:
+            BusinessLayer.enable_detailed_feedback(c, s, timestamp)
+        except BusinessLayer.FeedbackAlreadyRequestedException:
+            # Either warn the user about the issue or simply
+            # redirect him to the detail page.
+            self.redirect("/submissions/details/"+sub_id)
+            return
+        except BusinessLayer.TokenUnavailableException:
+            # Redirect the user to the detail page
+            # warning him about the unavailable tokens.
+            self.redirect("/submissions/details/"+sub_id+"?notokens=true")
+            return
+        except couchdb.ResourceConflict:
+            self.write("I'm sorry, Dave, I'm afraid I can't do that.")
+            return
+        self.redirect("/submissions/details/"+sub_id)
 
 class SubmitHandler(BaseHandler):
     """
@@ -361,62 +244,35 @@ class SubmitHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def post(self, task_name):
-        try:
-            c.refresh()
-        except AttributeError:
-            Utils.log("CouchDB server unavailable!",Utils.Logger.SEVERITY_CRITICAL)
-            self.write("Can't connect to CouchDB Server")
-            return
+
+        task = c.get_task(task_name)
+
         timestamp = time.time()
+        
         try:
           uploaded = self.request.files[task_name][0]
         except KeyError:
           self.write("No file chosen.")
           return
         files = {}
+
         if uploaded["content_type"] == "application/zip":
+            #Extract the files from the archive 
             temp_zip_file, temp_zip_filename = tempfile.mkstemp()
-            temp_zip_file = os.fdopen(temp_zip_file, "w")
-            temp_zip_file.write(uploaded["body"])
-            temp_zip_file.close()
+            with os.fdopen(temp_zip_file, "w") as temp_zip_file:
+                temp_zip_file.write(uploaded["body"])
 
             zip_object = zipfile.ZipFile(temp_zip_filename, "r")
             for item in zip_object.infolist():
                 files[item.filename] = zip_object.read(item)
         else:
             files[uploaded["filename"]] = uploaded["body"]
-        task = c.get_task(task_name)
+
         if not task.valid_submission(files.keys()):
             raise tornado.web.HTTPError(404)
-        for filename, content in files.items():
-            temp_file, temp_filename = tempfile.mkstemp()
-            temp_file = os.fdopen(temp_file, "w")
-            temp_file.write(content)
-            temp_file.close()
-            try:
-              files[filename] = FSL.put(temp_filename)
-            except Exception as e:
-              self.write("File Storage failed: " + repr(e) + "<br> Submission aborted.");
-              return
-        # QUESTION - does Submission accept a dictionary with
-        # filenames as keys for files?
-        s = Submission(self.current_user,
-                       task,
-                       timestamp,
-                       files)
 
-        c.submissions.append(s)
-        # FIXME - Should catch ResourceConflict exception: update the
-        # document, do some sanity checks, modify it again and try
-        # again to store it on CouchDB
-        c.to_couch()
-        try:
-            ES.add_job(s.couch_id)
-        except:
-            # FIXME - quali informazioni devono essere fornite?
-            Utils.log("Failed to queue the submission to the Evaluation Server",
-                      Utils.Logger.SEVERITY_IMPORTANT)
-        self.redirect("/submissions/%s" % (task_name))
+        s = BusinessLayer.submit( c, task, self.current_user, files, timestamp)
+        self.redirect("/submissions/details/%s" % (s.couch_id))
 
 handlers = [
             (r"/", MainHandler),
@@ -426,14 +282,12 @@ handlers = [
             (r"/submissions/details/([a-zA-Z0-9_-]+)", SubmissionDetailHandler),
             (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", SubmissionFileHandler),
             (r"/tasks/([a-zA-Z0-9_-]+)", TaskViewHandler),
-            (r"/task_statement/([a-zA-Z0-9_-]+)", TaskStatementViewHandler),
+            (r"/tasks/([a-zA-Z0-9_-]+)/statement", TaskStatementViewHandler),
             (r"/usetoken/", UseTokenHandler),
             (r"/submit/([a-zA-Z0-9_.-]+)", SubmitHandler)
            ]
 
 application = tornado.web.Application(handlers, **WebConfig.parameters)
-FSL = FileStorageLib()
-ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 
 if __name__ == "__main__":
     Utils.set_service("contest web server")

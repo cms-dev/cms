@@ -1,5 +1,5 @@
 {% extends base.html %}
 {% block core %}
     <h1><a href="/">Home</a> >> {{ task.title }} ({{ task.name }})</h1>
-    <div><a href="/task_statement/{{ task.name }}">Download task statement</a></div>
+    <div><a href="/tasks/{{ task.name }}/statement">Download task statement</a></div>
 {% end %}
