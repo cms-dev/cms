@@ -635,7 +635,7 @@ if __name__ == "__main__":
         obj = CouchObject.from_couch(sys.argv[2])
         print obj.dump()
 
-    elif sys.argv[1] == "workers_status":
+    elif sys.argv[1] == "get_workers_status":
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
         status = es.get_workers_status()
         for k in sorted(status.keys()):
@@ -644,3 +644,11 @@ if __name__ == "__main__":
     elif sys.argv[1] == "enable_worker":
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
         es.enable_worker(int(sys.argv[2]))
+
+    elif sys.argv[1] == "del_worker":
+        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es.del_worker(int(sys.argv[2]))
+
+    elif sys.argv[1] == "add_worker":
+        es = xmltpclib.ServerProxy("http://localhost:%d" % es_port)
+        es.add_worker(int(sys.argv[2]), sys.argv[3], int(sys.argv[4]))
