@@ -1,8 +1,58 @@
+{% import BusinessLayer %}
+{% import time %}
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <title>{{ contest.name }}</title>
+    <script type="text/javascript">
+<!--
+    function getTime()
+    {
+      {% if contest.stop != None %}
+      var sec_to_end = {{ contest.stop - timestamp }};
+      {% else %}
+      var sec_to_end = Infinity;
+      {% end %}
+      
+      {% if contest.start != None %}
+      var sec_to_start = {{ contest.start - timestamp }};
+      {% else %}
+      var sec_to_start = -Infinity;
+      {% end %}
+      var now = new Date();
+
+      var nowsec_to_end = sec_to_end - (now - firstDate) / 1000;
+      var nowsec_to_start = sec_to_start - (now - firstDate) / 1000;
+      if ((nowsec_to_end <= 0 && {{ phase }} == 0 ) ||
+          (nowsec_to_start <= 0 && {{ phase }} == -1 ))
+	    window.location.href = "/";
+
+      countdown = nowsec_to_end;
+
+      if ( {{ phase }} == -1 )
+        countdown = nowsec_to_start;
+
+      var hours = countdown / 60 / 60;
+      var hoursR = Math.floor(hours);
+      var minutes = countdown / 60 - (60*hoursR);
+      var minutesR = Math.floor(minutes);
+      var seconds = countdown - (60*60*hoursR) - (60*minutesR);
+      var secondsR = Math.floor(seconds);
+      if (minutesR < 10) m = "0" + minutesR;
+      else m = minutesR;
+      if (secondsR < 10) s = "0" + secondsR;
+      else s = secondsR;
+      
+      if (document.getElementById("remaining"))
+	    document.getElementById("remaining").innerHTML = hoursR+":"+m+":"+s;;
+    }
+
+    firstDate = new Date();
+    setInterval(getTime, 1000);
+
+//-->
+  </script>
 </head>
 <body>
     <div id="global">

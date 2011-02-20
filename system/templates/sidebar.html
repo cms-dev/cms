@@ -1,7 +1,7 @@
 <div class="sidebar">
     <ul class="menu">
         <a href="/"><li class="menu_entry">Home</li></a>
-        {% if current_user != None %}
+        {% if current_user != None and phase == 0 %}
             <li class="menu_entry">Tasks and submissions</li>
             <ul class="submenu">
             {% for t in contest.tasks %}

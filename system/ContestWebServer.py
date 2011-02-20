@@ -81,12 +81,29 @@ class BaseHandler(tornado.web.RequestHandler):
             return None
         return BusinessLayer.get_user_by_username(c, username)
 
+    def render_params(self):
+        r = {}
+        r["timestamp"] = time.time();
+        r["contest"] = c;
+        r["phase"] = BusinessLayer.contest_phase(**r)
+        r["cookie"] = str(self.cookies)
+        return r
+
+    def valid_phase(self,r_param):
+        if r_param["phase"] != 0:
+            self.redirect("/")
+            return False
+        return True
+            
+
+
 class MainHandler(BaseHandler):
     """
     Home page handler.
     """
     def get(self):
-        self.render("welcome.html", contest = c, cookie = str(self.cookies))
+        r_params = self.render_params()
+        self.render("welcome.html", **r_params)
 
 class LoginHandler(BaseHandler):
     """
@@ -121,16 +138,20 @@ class SubmissionViewHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, task_name):
+
+        r_params = self.render_params()
+        if not self.valid_phase(r_params):
+            return 
         # get the task object
         try:
-            task = c.get_task(task_name)
+            r_params["task"] = c.get_task(task_name)
         except:
             self.write("Task %s not found." % (task_name))
             return
 
         # get the list of the submissions
-        subm = BusinessLayer.get_submissions_by_username(c, self.current_user.username, task_name)
-        self.render("submission.html", submissions = subm, task = task, contest = c)
+        r_params["submissions"] = BusinessLayer.get_submissions_by_username(c, self.current_user.username, task_name)
+        self.render("submission.html", **r_params)
 
 class SubmissionDetailHandler(BaseHandler):
     """
@@ -138,11 +159,17 @@ class SubmissionDetailHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, submission_id):
+    
+        r_params = self.render_params()
+        if not self.valid_phase(r_params):
+            return
         # search the submission in the contest
         s = BusinessLayer.get_submission(c, submission_id, self.current_user.username)
         if s == None:
             raise tornado.web.HTTPError(404)
-        self.render("submission_detail.html", submission = s, task = s.task, contest = c)
+        r_params["submission"] = s;
+        r_params["task"] = s.task;
+        self.render("submission_detail.html", **r_params)
 
 class SubmissionFileHandler(BaseHandler):
     """
@@ -150,7 +177,10 @@ class SubmissionFileHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, submission_id, filename):
-
+        
+        r_params = self.render_params()
+        if not self.valid_phase(r_params):
+            return
         # search the submission in the contest
         file_content = BusinessLayer.get_file_from_submission( \
                         BusinessLayer.get_submission(c, submission_id, self.current_user.username), \
@@ -170,14 +200,16 @@ class TaskViewHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, task_name):
-        try:
-            task = c.get_task(task_name)
-        except:
-            self.write("Task %s not found." % (task_name))
+    
+        r_params = self.render_params()
+        if not self.valid_phase(r_params):
             return
-            #raise tornado.web.HTTPError(404)
-        subm = BusinessLayer.get_submissions_by_username(c, self.current_user.username, task_name)
-        self.render("task.html", task = task, contest = c, submissions = subm);
+        try:
+            r_params["task"] = c.get_task(task_name)
+        except:
+            raise tornado.web.HTTPError(404)
+        r_params["submissions"] = BusinessLayer.get_submissions_by_username(c, self.current_user.username, task_name)
+        self.render("task.html", **r_params);
 
 class TaskStatementViewHandler(BaseHandler):
     """
@@ -185,6 +217,10 @@ class TaskStatementViewHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, task_name):
+    
+        r_params = self.render_params()
+        if not self.valid_phase(r_params):
+            return
         try:
             task = c.get_task(task_name)
         except:
@@ -207,8 +243,11 @@ class UseTokenHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def post(self):
-        timestamp = time.time()
-
+        r_params = self.render_params()
+        if not self.valid_phase(r_params):
+            return
+        timestamp = r_params["timestamp"]
+        
         u = self.get_current_user()
         if(u == None):
             raise tornado.web.HTTPError(403)
@@ -245,10 +284,13 @@ class SubmitHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def post(self, task_name):
-
+        
+        r_params = self.render_params()
+        if not self.valid_phase(r_params):
+            return
+        timestamp = r_params["timestamp"]
+        
         task = c.get_task(task_name)
-
-        timestamp = time.time()
         
         try:
           uploaded = self.request.files[task_name][0]
@@ -296,8 +338,8 @@ if __name__ == "__main__":
     http_server.listen(8888);
     try:
         c = Utils.ask_for_contest()
-    except AttributeError:
-        Utils.log("CouchDB server unavailable!", Utils.Logger.SEVERITY_CRITICAL)
+    except AttributeError as e:
+        Utils.log("CouchDB server unavailable: "+repr(e), Utils.Logger.SEVERITY_CRITICAL)
         exit(1)
     Utils.log("Contest Web Server for contest %s started..." % (c.couch_id))
     upsince = time.time()

@@ -5,16 +5,26 @@
 
         <h1>Home</h1>
         <div>{{ contest.description }}</div>
-        <ul>
-        {% for t in contest.tasks %}
-            <li><a href="/tasks/{{ t.name }}">{{ t.name }}</a> -
-            <a href="/submissions/{{ t.name }}">Submissions</a>
-            <form enctype="multipart/form-data" action="/submit/{{ t.name }}" method="post">
-              <input type="file" name="{{ t.name }}"></input>
-              <input type="submit" value="Submit"></input>
-            </form>
+        {% if phase == 0 %}
+            <ul>
+            {% for t in contest.tasks %}
+                <li><a href="/tasks/{{ t.name }}">{{ t.name }}</a> -
+                <a href="/submissions/{{ t.name }}">Submissions</a>
+                <form enctype="multipart/form-data" action="/submit/{{ t.name }}" method="post">
+                  <input type="file" name="{{ t.name }}"></input>
+                  <input type="submit" value="Submit"></input>
+                </form>
+            {% end %}
+            </ul>
+        {% elif phase == -1 %}
+            <div class="precontest_message">
+            The contest starts at {{ time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime(contest.start)) }}.
+            </div>
+        {% elif phase == 1 %}
+            <div class="postcontest_message">
+            The contest has ended.
+            </div>
         {% end %}
-        </ul>
     {% else %}
         Authentication required.
     {% end %}

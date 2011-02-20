@@ -43,6 +43,18 @@ class FeedbackAlreadyRequestedException(Exception):
 class TokenUnavailableException(Exception):
     pass
 
+def contest_phase(contest, timestamp):
+    """
+    Returns: -1 if the contest isn't started yet,
+              0 if the contest is active
+              1 if the contest has ended.
+    """
+    if contest.start != None and contest.start > timestamp :
+        return -1
+    if contest.stop == None or contest.stop > timestamp :
+        return 0
+    return 1
+
 def available_tokens(contest, user, task, timestamp):
     """
     Returns the number of available tokens the given user can use

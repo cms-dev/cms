@@ -15,9 +15,7 @@
     </form>
 
     <h2>Previous submissions</h2>
-    
-    {% import BusinessLayer %}
-    {% import time %}
+
     <div class="task_tokens">
     {% if BusinessLayer.token_available(contest, current_user, task, time.time() ) %}
         <i>You can use up to <b>{{ BusinessLayer.available_tokens(c, current, task, time.time()) }}</b> tokens for this task.</i>

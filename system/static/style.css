@@ -44,6 +44,10 @@ body {
     line-height: 30px;
 }
 
+.loginbar_left {
+    float:left;
+}
+
 .sidebar {
     float:left;
     min-height: 700px;

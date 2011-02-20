@@ -13,7 +13,8 @@
                 <input type="submit" value="Sign in">
         </form>
     {% else %}
-        <div class="loginbar_left"></div>
+        <div class="loginbar_left">
+        Time remaining: <span id="remaining"></span></div>
         <div class="loginbar_right">
             <a href="/user">{{ current_user.real_name }}</a> - <a href="/logout">Logout</a>
         </div>

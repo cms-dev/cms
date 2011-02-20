@@ -27,6 +27,7 @@ import os
 import sys
 
 import Configuration
+from Contest import Contest
 import CouchObject
 
 get_contests='''function(doc) {
@@ -75,9 +76,16 @@ def ask_for_contest(skip = 0):
         except:
             print "Insert a correct number."
             sys.exit(1)
+
     try:
         c = CouchObject.from_couch(contest_id)
     except couchdb.client.ResourceNotFound:
+        print "Cannot load contest %s." % (contest_id)
+        sys.exit(1)
+    # from_couch returns None when the contest is not found,
+    # and a different item if the provided ID is not a
+    # contest.
+    if c == None or not isinstance( c, Contest ):
         print "Cannot load contest %s." % (contest_id)
         sys.exit(1)
     print "Contest %s loaded." % (c.name)
