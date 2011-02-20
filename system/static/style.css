@@ -49,6 +49,7 @@ body {
 }
 
 .sidebar {
+    padding-top:10px;
     float:left;
     min-height: 700px;
     width: 200px;
@@ -62,7 +63,7 @@ ul.menu {
 
 .menu_entry {
     margin: 0;
-    padding: 1em 0;
+    padding: 0 0;
     font-size: 18px;
 }
 
@@ -88,6 +89,9 @@ ul.submenu {
     min-height:700px;
 }
 
+.core h1 {
+    margin: 0;
+}
 #footer {
     clear: left;
     text-align: center;
