@@ -5,12 +5,18 @@
     <title>{{ contest.name }}</title>
 </head>
 <body>
-    {% include header.html %}
+    <div id="global">
+        {% include header.html %}
 
-    {% include loginbar.html %}
+        {% include loginbar.html %}
 
-    <div class="core">
-    {% block core %}{% end %}
+        {% include sidebar.html %}
+        <div class="core">
+        {% block core %}{% end %}
+        </div>
+        <div id="footer">
+        ---
+        </div>
     </div>
 </body>
 </html>

@@ -1,0 +1,13 @@
+<div class="sidebar">
+    <ul class="menu">
+        <a href="/"><li class="menu_entry">Home</li></a>
+        {% if current_user != None %}
+            <li class="menu_entry">Tasks and submissions</li>
+            <ul class="submenu">
+            {% for t in contest.tasks %}
+                <a href="/tasks/{{t.name}}"><li class="submenu_entry">{{t.name}}</li></a>
+            {% end %}
+            </ul>
+        {% end %}
+    </ul>
+</div>

@@ -13,7 +13,9 @@
                 <input type="submit" value="Sign in">
         </form>
     {% else %}
-        Benvenuto {{ current_user.username }}!
-        <a href="/logout">Logout</a>
+        <div class="loginbar_left"></div>
+        <div class="loginbar_right">
+            <a href="/user">{{ current_user.real_name }}</a> - <a href="/logout">Logout</a>
+        </div>
     {% end %}
     </div>

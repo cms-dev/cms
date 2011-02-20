@@ -176,7 +176,8 @@ class TaskViewHandler(BaseHandler):
             self.write("Task %s not found." % (task_name))
             return
             #raise tornado.web.HTTPError(404)
-        self.render("task.html", task = task, contest = c);
+        subm = BusinessLayer.get_submissions_by_username(c, self.current_user.username, task_name)
+        self.render("task.html", task = task, contest = c, submissions = subm);
 
 class TaskStatementViewHandler(BaseHandler):
     """

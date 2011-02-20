@@ -43,6 +43,46 @@ class FeedbackAlreadyRequestedException(Exception):
 class TokenUnavailableException(Exception):
     pass
 
+def available_tokens(contest, user, task, timestamp):
+    """
+    Returns the number of available tokens the given user can use
+    for the given task.
+    """
+    tokens_timestamp = [s.token_timestamp
+                        for s in user.tokens]
+    task_tokens_timestamp = [s.token_timestamp
+                             for s in user.tokens
+                             if s.task == task]
+    # These should not be needed, but let's be safe
+    tokens_timestamp.sort()
+    task_tokens_timestamp.sort()
+    
+    def count_tokens(object_with_tokens_specs, timestamps):
+        o = object_with_tokens_specs
+            
+        # Ensure availability
+        available = o.token_initial
+        # Time left from the last iteration
+        leftover_time = 0
+        # FIXME: Generation starts from the Epoch?
+        last_t = 0
+        for t in timestamps + [timestamp]:
+            interval = t - last_t
+            interval += leftover_time
+            int_interval = int(interval)
+            gen_tokens = int_interval / (60 * o.token_gen_time)
+            if available + gen_tokens >= o.token_max:
+                leftover_time = 0
+                available = o.token_max - 1
+            else:
+                leftover_time = interval % (60 * o.token_gen_time)
+                available = available + gen_tokens - 1
+            last_t = t
+        if available < 0:
+            return 0
+        return available + 1
+    return min(count_tokens(contest, tokens_timestamp), \
+               count_tokens(task, task_tokens_timestamp))
 
 def token_available(contest, user, task, timestamp):
     """
@@ -66,31 +106,31 @@ def token_available(contest, user, task, timestamp):
         # Ensure total
         if len(timestamps) >= o.token_total:
             return False
+            
         # Ensure availability
         available = o.token_initial
-        remaining_before_gen = o.token_gen_time
+        # Time left from the last iteration
+        leftover_time = 0
+        # FIXME: Generation starts from the Epoch?
         last_t = 0
         for t in timestamps + [timestamp]:
             interval = t - last_t
-            interval += 60 * (o.token_gen_time - remaining_before_gen)
+            interval += leftover_time
             int_interval = int(interval)
             gen_tokens = int_interval / (60 * o.token_gen_time)
             if available + gen_tokens >= o.token_max:
-                remaining_before_gen = o.token_gen_time
+                leftover_time = 0
                 available = o.token_max - 1
             else:
-                remaining_before_gen = interval % (60 * o.token_gen_time)
+                leftover_time = interval % (60 * o.token_gen_time)
                 available = available + gen_tokens - 1
             last_t = t
         if available < 0:
             return False
         return True
 
-    if not ensure(contest, tokens_timestamp):
-        return False
-    if not ensure(task, task_tokens_timestamp):
-        return False
-    return True
+    return ensure(contest, tokens_timestamp) and ensure(task, task_tokens_timestamp)
+
 
 def update_submissions(contest):
     """

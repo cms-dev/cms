@@ -1,5 +1,70 @@
 {% extends base.html %}
 {% block core %}
     <h1><a href="/">Home</a> >> {{ task.title }} ({{ task.name }})</h1>
+    <h2>Task Information</h2>
+    
     <div><a href="/tasks/{{ task.name }}/statement">Download task statement</a></div>
+    
+    Time limit: {{ task.time_limit }} second(s)</br>
+    Memory limit: {{ task.memory_limit }} MB
+    
+    <h2>Submit a solution</h2>
+    <form enctype="multipart/form-data" action="/submit/{{ t.name }}" method="post">
+        <input type="file" name="{{ t.name }}"></input>
+        <input type="submit" value="Submit"></input>
+    </form>
+
+    <h2>Previous submissions</h2>
+    
+    {% import BusinessLayer %}
+    {% import time %}
+    <div class="task_tokens">
+    {% if BusinessLayer.token_available(contest, current_user, task, time.time() ) %}
+        <i>You can use up to <b>{{ BusinessLayer.available_tokens(c, current, task, time.time()) }}</b> tokens for this task.</i>
+    {% else %}
+        <i>You can't use tokens for this task at this time.</i>
+    {% end %}
+    </div>
+
+    {% if submissions == [] %}
+    No submissions found.
+    {% else %}
+        <table border="1">
+        <tr>
+            <th>Date</th>
+            <th>Compilation<br/>status</th>
+            <th>Evaluation<br/>status</th>
+            <th>Files</th>
+            <th>Detailed<br/>Feedback<br/>Requested</th>
+        </tr>
+        {% for s in sorted(submissions, key=lambda s: s.timestamp , reverse = True) %}
+            <tr>
+                <td><a href="/submissions/details/{{escape(s.couch_id)}}">{{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</a></td>
+                <td>{{ s.compilation_outcome }}</td>
+                <td>
+                    {% if s.evaluation_outcome != None %}
+                        Evaluated
+                    {% else %}
+                        Not evaluated
+                    {% end %}
+                </td>
+                <td>
+                {% for key,value in s.files.items() %}
+                    <a href="/submission_file/{{ escape(s.couch_id) }}/{{ escape(key) }}">{{ escape(key) }}<br/>
+                {% end %}
+                <td>
+                {% if s.token_timestamp==None %}
+                    <form action="/usetoken/" method="POST">
+                    No
+                    <input type="hidden" name="id" value="{{ escape(s.couch_id) }}">
+                    <input type="submit" value="Use Token">
+                    </form>
+                {% else %}
+                    Yes
+                {% end %}
+            </tr>
+        {% end %}
+        </table>
+    {% end %}
+
 {% end %}
