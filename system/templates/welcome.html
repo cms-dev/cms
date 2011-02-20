@@ -18,7 +18,7 @@
             </ul>
         {% elif phase == -1 %}
             <div class="precontest_message">
-            The contest starts at {{ time.strftime("%a, %d %b %Y %H:%M:%S", time.gmtime(contest.start)) }}.
+            The contest starts at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.start)) }}.
             </div>
         {% elif phase == 1 %}
             <div class="postcontest_message">
