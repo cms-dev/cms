@@ -236,6 +236,26 @@ class WorkerPool:
         return dict([(str(n), {'job': self.represent_job(self.workers[n]), 'address': self.address[n], 'start_time': self.start_time[n], 'error_count': self.error_count[n]})
                 for n in self.workers.keys()])
 
+    def check_timeout(self):
+        with self.main_lock:
+            now = time.time()
+            lost_jobs = []
+            for worker in self.workers:
+                if self.start_time[worker] != None:
+                    active_for = self.start_time[worker] - now
+                    if active_for > Configuration.worker_timeout:
+                        host, port = self.address[worker]
+                        Utils.log("Disabling and shutting down worker %d (%s:%d) because of no reponse in %.2f seconds" %
+                                  (worker, host, port, active_for), Utils.Logging.SEVERITY_IMPORTANT)
+                        assert self.workers[worker] != self.WORKER_INACTIVE and self.workers[worker] != self.WORKER_DISABLED
+                        job = self.workers[worker]
+                        lost_jobs.append(jobs)
+                        self.schedule_disabling[worker] = True
+                        self.release_worker(worker) 
+                        p = xmlrpclib.ServerProxy("http://%s:%d" % (host, port))
+                        p.shut_down("No response in %.2f seconds" % (active_for))
+        return lost_jobs
+
 class JobDispatcher(threading.Thread):
     ACTION_OK, ACTION_FAIL, ACTION_REQUEUE = True, False, "requeue"
 
@@ -638,6 +658,16 @@ if __name__ == "__main__":
         obj = CouchObject.from_couch(sys.argv[2])
         print obj.dump()
 
+    elif sys.argv[1] == "set":
+        obj = CouchObject.from_couch(sys.argv[2])
+        try:
+            val = int(sys.argv[4])
+        except ValueError:
+            val = sys.argv[4]
+        obj.__dict__[sys.argv[3]] = val
+        obj.to_couch()
+        print obj.dump()
+
     elif sys.argv[1] == "get_workers_status":
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
         status = es.get_workers_status()
@@ -655,3 +685,7 @@ if __name__ == "__main__":
     elif sys.argv[1] == "add_worker":
         es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
         es.add_worker(int(sys.argv[2]), sys.argv[3], int(sys.argv[4]))
+
+    elif sys.argv[1] == "exit_worker":
+        wor = xmlrpclib.ServerProxy("http://%s:%d" % (sys.argv[2], int(sys.argv[3])))
+        wor.shut_down(sys.argv[4])
