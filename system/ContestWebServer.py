@@ -94,7 +94,7 @@ class BaseHandler(tornado.web.RequestHandler):
             self.redirect("/")
             return False
         return True
-            
+
 
 
 class MainHandler(BaseHandler):
@@ -141,7 +141,7 @@ class SubmissionViewHandler(BaseHandler):
 
         r_params = self.render_params()
         if not self.valid_phase(r_params):
-            return 
+            return
         # get the task object
         try:
             r_params["task"] = c.get_task(task_name)
@@ -159,7 +159,7 @@ class SubmissionDetailHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, submission_id):
-    
+
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
@@ -177,7 +177,7 @@ class SubmissionFileHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, submission_id, filename):
-        
+
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
@@ -200,7 +200,7 @@ class TaskViewHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, task_name):
-    
+
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
@@ -217,7 +217,7 @@ class TaskStatementViewHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self, task_name):
-    
+
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
@@ -227,7 +227,7 @@ class TaskStatementViewHandler(BaseHandler):
             self.write("Task %s not found." % (task_name))
 
         statement = BusinessLayer.get_task_statement(task)
-        
+
         if statement == None:
             raise tornado.web.HTTPError(404)
 
@@ -247,7 +247,7 @@ class UseTokenHandler(BaseHandler):
         if not self.valid_phase(r_params):
             return
         timestamp = r_params["timestamp"]
-        
+
         u = self.get_current_user()
         if(u == None):
             raise tornado.web.HTTPError(403)
@@ -256,7 +256,7 @@ class UseTokenHandler(BaseHandler):
         if sub_id == "":
             raise tornado.web.HTTPError(404)
 
-        
+
         s = BusinessLayer.get_submission(c, sub_id, u.username)
         if s == None:
             raise tornado.web.HTTPError(404)
@@ -284,14 +284,14 @@ class SubmitHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def post(self, task_name):
-        
+
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
         timestamp = r_params["timestamp"]
-        
+
         task = c.get_task(task_name)
-        
+
         try:
           uploaded = self.request.files[task_name][0]
         except KeyError:
@@ -300,7 +300,7 @@ class SubmitHandler(BaseHandler):
         files = {}
 
         if uploaded["content_type"] == "application/zip":
-            #Extract the files from the archive 
+            #Extract the files from the archive
             temp_zip_file, temp_zip_filename = tempfile.mkstemp()
             with os.fdopen(temp_zip_file, "w") as temp_zip_file:
                 temp_zip_file.write(uploaded["body"])

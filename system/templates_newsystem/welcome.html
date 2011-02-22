@@ -92,8 +92,7 @@
   <div id="esito" class="popup"></div>
 
   <div id="content">
-   <h1>{{ contest.name }}</h1>
-   <h3>{{ contest.description }}</h3>
+   <h1>{{ contest.description }}</h1>
 
 
 {% if contest.start != None and contest.start > time.time() %}
@@ -126,14 +125,14 @@
         <div class="rprob" style="border-top: 0px;">
       {% end %}
     {% end %}
-    
+
     <p><a href="tasks/{{task.name}}/statement">{{task.name}}</a> ({{task.name}})</p>
 
         <p id="ultima_{{task.name}}" class="ultima_sottoposizione">
         <a href="/submissions/{{task.name}}" target="sottoponi_target">View submissions</a></p>
-        
+
             <form enctype="multipart/form-data" action="/submit/{{ task.name }}" method="post" target="sottoponi_target">
-              <p>Submit a file or an archive: 
+              <p>Submit a file or an archive:
               <input type="file" name="{{ task.name }}" size="20"></input>
               <p style="text-align:center"><input id="submit_{{ task.name }}" type="submit" name="{{ task.name }}" value="Submit" class="probbutton"></p>
             </form>
