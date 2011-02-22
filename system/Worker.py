@@ -28,6 +28,8 @@ import Utils
 import TaskType
 import CouchObject
 
+shutting_down = False
+
 class JobException(Exception):
     def __init__(self, msg = ""):
         self.msg = msg
@@ -96,8 +98,9 @@ class Worker(RPCServer):
     def __init__(self, listen_address, listen_port):
         RPCServer.__init__(self, "Worker", listen_address, listen_port,
                            [self.compile,
-                            self.evaluate])
-        self.working_thread = None
+                            self.evaluate,
+                            self.shut_down],
+                           thread = threading.Thread())
 
     def compile(self, submission_id):
         Utils.set_operation("compiling submission %s" % (submission_id))
@@ -115,6 +118,13 @@ class Worker(RPCServer):
         j.start()
         return True
 
+    def shut_down(self, reason):
+        global shutting_down
+        Utils.set_operation("")
+        Utils.log("Shutting down the worker because of reason `%s'" % (reason))
+        shutting_down = True
+        return True
+
 if __name__ == "__main__":
     import sys
     try:
@@ -126,3 +136,6 @@ if __name__ == "__main__":
         port = int(port)
         Utils.set_service("worker (%s:%d)" % (address, port))
     w = Worker(address, port)
+    import time
+    while not shutting_down:
+        time.sleep(1)
