@@ -9,8 +9,8 @@
     Memory limit: {{ task.memory_limit }} MB
     
     <h2>Submit a solution</h2>
-    <form enctype="multipart/form-data" action="/submit/{{ t.name }}" method="post">
-        <input type="file" name="{{ t.name }}"></input>
+    <form enctype="multipart/form-data" action="/submit/{{ task.name }}" method="post">
+        <input type="file" name="{{ task.name }}"></input>
         <input type="submit" value="Submit"></input>
     </form>
 

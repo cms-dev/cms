@@ -23,7 +23,7 @@ import os
 
 parameters={
             "login_url": "/" ,
-            "template_path": "./templates_newsystem",
+            "template_path": "./templates",
             "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
             "static_path": os.path.join(os.path.dirname(__file__), "static"),
            }

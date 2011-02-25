@@ -262,8 +262,10 @@ class UseTokenHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
 
         try:
-            BusinessLayer.enable_detailed_feedback(c, s, timestamp)
-        except BusinessLayer.FeedbackAlreadyRequestedException:
+            warned = BusinessLayer.enable_detailed_feedback(c, s, timestamp)
+            r_params["sub_id"] = sub_id
+            self.render("successfulToken.html", **r_params)
+        except BusinessLayer.FeedbackAlreadyRequested:
             # Either warn the user about the issue or simply
             # redirect him to the detail page.
             self.redirect("/submissions/details/"+sub_id)
@@ -273,10 +275,12 @@ class UseTokenHandler(BaseHandler):
             # warning him about the unavailable tokens.
             self.redirect("/submissions/details/"+sub_id+"?notokens=true")
             return
+        except BusinessLayer.ConnectionFailure:
+            self.render("errors/connectionFailure.html")
         except couchdb.ResourceConflict:
-            self.write("I'm sorry, Dave, I'm afraid I can't do that.")
+            self.render("errors/conflictError.html")
             return
-        self.redirect("/submissions/details/"+sub_id)
+
 
 class SubmitHandler(BaseHandler):
     """
@@ -311,11 +315,19 @@ class SubmitHandler(BaseHandler):
         else:
             files[uploaded["filename"]] = uploaded["body"]
 
-        if not task.valid_submission(files.keys()):
-            raise tornado.web.HTTPError(404)
-
-        s = BusinessLayer.submit( c, task, self.current_user, files, timestamp)
-        self.redirect("/submissions/details/%s" % (s.couch_id))
+        try:
+            s, warned = BusinessLayer.submit( c, task, self.current_user, files, timestamp)
+            r_params["submission"] = s
+            r_params["warned"] = warned
+            self.render("successfulSub.html", **r_params)
+        except couchdb.ResourceConflict:
+            self.render("errors/conflictError.html")
+        except BusinessLayer.ConnectionFailure:
+            self.render("errors/connectionFailure.html")
+        except BusinessLayer.StorageFailure:
+            self.render("errors/storageFailure.html")
+        except BusinessLayer.InvalidSubmission:
+            self.render("errors/invalidSubmission.html")
 
 handlers = [
             (r"/", MainHandler),

@@ -36,12 +36,23 @@ from Submission import Submission
 FSL = FileStorageLib()
 ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 
-class FeedbackAlreadyRequestedException(Exception):
-    pass
+# Some exceptions that can be raised by these functions.
 
+class FeedbackAlreadyRequested(Exception):
+    pass
 
 class TokenUnavailableException(Exception):
     pass
+
+class ConnectionFailure(Exception):
+    pass
+
+class InvalidSubmission(Exception):
+    pass
+
+class StorageFailure(Exception):
+    pass
+
 
 def contest_phase(contest, timestamp):
     """
@@ -105,6 +116,13 @@ def token_available(contest, user, task, timestamp):
     task_tokens_timestamp = [s.token_timestamp
                              for s in user.tokens
                              if s.task == task]
+    
+    # A token without timestamp means that there is another process that is
+    # attempting to enable the token for the respective submission: if
+    # this happens, forbid the usage of tokens.
+    if None in tokens_timestamp:
+        return False
+    
     # These should not be needed, but let's be safe
     tokens_timestamp.sort()
     task_tokens_timestamp.sort()
@@ -192,7 +210,8 @@ def get_file_from_submission(submission, filename):
             try:
                 FSL.get_file(value, submission_file)
             except Exception as e:
-                Utils.log("FileStorageLib raised an exception: "+repr(e),Utils.Logger.SEVERITY_DEBUG)
+                Utils.log("FileStorageLib raised an exception: "+repr(e),\
+                            Utils.Logger.SEVERITY_DEBUG)
                 return None
             file_content = submission_file.getvalue()
             submission_file.close()
@@ -213,87 +232,170 @@ def get_task_statement(task):
     return statement
 
 
-#This lock attempts to avoid resource conflicts inside the module.
+# This lock attempts to avoid resource conflicts inside the module.
+# ALWAYS acquire this when you attempt to modify an object.
+# Acquire this also if you think the objects shouldn't change
+# while reading them.
 writelock = Lock()
 
-def enable_detailed_feedback(contest, submission, timestamp):
+
+def enable_detailed_feedback(contest, submission, timestamp, user):
+    """
+    Attempts to enable the given submission for detailed feedback.
+    
+    If the given user has available tokens and the submission is not
+    yet marked for detailed feedback, this function attempts to mark
+    that submisssion for detailed feedback.
+    Returns True if the submission has been marked for detailed feedback
+    AND the EvaluationServer has been warned about its state change;
+    Returns False if the sumbission has been marked for detailed feedback
+    but the EvaluationServer has not been warned.
+    Any exception indicates that the submission hasn't been marked
+    for detailed feedback, possibly with inconsistencies.
+    """
+
+    def _refresh_objects(contest):
+        """
+        Refreshes the objects that are necessary to the function.
+        """
+        try:
+            contest.refresh()
+            update_submissions(contest)
+            update_users(contest)
+        except AttributeError:
+            raise ConnectionFailure()
 
     # If the user already used a token on this
     # FIXME - Concurrency problems: the user could use
-    # more tokens than those available, exploting the fact
-    # that the update on the database is performed some
-    # time after the availablility check.
-    # This requires to make the whole operation isolated.
-    # Who should be responsible about the correct use of tokens?
-    # If more interfaces alter the token of the same user, they
-    # should coordinate in order to avoid issues.
+    # more tokens than those available when there is
+    # more than one interface server.
 
     with writelock:
 
-        user = submission.user
-        if submission.tokened():
-            raise FeedbackAlreadyRequestedException()
-        # Are there any tokens available?
-        elif not token_available(contest, user, submission.task, timestamp):
-            raise TokenUnavailableException()
-        else: 
+        # The objects should be up-to-date when 
+        # the lock is acquired to avoid conflicts
+        # with other internal requests.
+        _refresh_objects(contest)
 
-            # Save to CouchDB
-            # FIXME - Should catch ResourceConflict exception:
-            # update the documents, do some sanity checks,
-            # modify them again and try again to store them on
-            # CouchDB
-            for tentatives in xrange(3):
+        if submission.tokened():
+            raise FeedbackAlreadyRequested()
+
+        else:
+
+            # Inconsistency flag
+            inconsistent = False
+
+            for tentatives in xrange(Configuration.maximum_conflict_attempts):
                 try:
-                    # Finding the submission tokened again might happen when
-                    # there are conflicts; In this case we only have to ensure
-                    # that the user is updated.
-                    
+                    # Update the user's tokenized submissions.
+                    # Skip this step if the submission is already in the list.
+                    if submission not in user.tokens:
+                        if not token_available(contest, user, submission.task,\
+                                                timestamp):
+                            raise TokenUnavailableException()
+                        user.tokens.append(submission)
+                        user.to_couch()
+                        inconsistent = True
+                    # Update the token timestamp if this is not already marked
+                    # by someone else when we attempt again.
                     if not submission.tokened():
                         submission.token_timestamp = timestamp
                         submission.to_couch()
-                    
-                    if submission not in user.tokens:
-                        user.tokens.append(submission)
-                        user.to_couch()
+                        inconsistent = False
                     break
-                except couchdb.ResourceConflictException:
+
+                except couchdb.ResourceConflict:
                     # A conflict has happened: refresh the objects,
                     # check their status and try again. 
-                    Utils.log("enable_detailed_feedback: ResourceConflict for "+submission.couch_id,\
-                                Utils.Logger.SEVERITY_DEBUG)
-                    contest.refresh()
-                    update_submissions(contest)
-                    update_users(contest)
-                    # Instead of simply refreshing, get it again to 
-                    # check if the submission is still in the DB
-                    
-                    # If this fails, either the submission doesn't exist anymore, or the owner has changed.
-                    submission = get_submission(contest,submission.submission_id,user.username)
-                    if submission == None:
-                        raise couchdb.ResourceNotFound()
+                    Utils.log("enable_detailed_feedback: ResourceConflict for "\
+                              +submission.couch_id, Utils.Logger.SEVERITY_DEBUG)
+                    try:
+                        _refresh_objects(contest)
+                    except (couchdb.ResourceNotFound, ConnectionFailure) as e:
+                        if inconsistent:
+                            # TODO - Attempt a last triage by reverting
+                            # user.tokens
+                            log_message = "enable_detailed_feedback: inconsistency "\
+                               +"due to unrecoverable resources for "+submission.couch_id
+                            Utils.log(log_message,Utils.Logger.SEVERITY_CRITICAL)
+                            raise e
 
             else:
-                Utils.log("enable_detailed_feedback: Maximum number of retries reached for "+submission.couch_id,\
-                            Utils.Logger.SEVERITY_CRITICAL)
+                log_message = "enable_detailed_feedback: Maximum number of attempts "\
+                              +"reached for "+submission.couch_id
+                if inconsistent:
+                    # TODO - Attempt a last triage by reverting
+                    # user.tokens
+                    log_message += " and it was left in an inconsistent state!"
+                Utils.log(log_message,Utils.Logger.SEVERITY_CRITICAL)
                 raise couchdb.ResourceConflict()
-            # We have to warn Evaluation Server
+
+            # Warn the Evaluation Server
             try:
                 ES.use_token(submission.couch_id)
             except:
                 # FIXME - quali informazioni devono essere fornite?
-                Utils.log("Failed to warn the Evaluation Server about a detailed feedback request.",
+                Utils.log("Failed to warn the Evaluation Server about a detailed"\
+                          "feedback request for "+submission.couch_id+".",
                           Utils.Logger.SEVERITY_IMPORTANT)
-            return
+                return False
+            return True
 
 
-class StorageFailure(Exception):
-    pass
-    
 
 
 def submit(contest, task, user, files, timestamp):
+    """
+    Attempts to submit a solution.
     
+    This function attempts to store the given files in the FS and to
+    store the submission in the database.
+    Returns True if the submission is stored in the DB
+    AND the EvaluationServer has been warned about its state change;
+    Returns False if the sumbission is stored in the DB
+    but the EvaluationServer has not been warned.
+    Any exception indicates that the submission hasn't been stored,
+    possibly with inconsistencies.
+    """
+
+    def _refresh_objects(contest):
+        """
+        Refreshes the objects that are necessary to the function.
+        """
+        try:
+            contest.refresh()
+            update_submissions(contest)
+            update_users(contest)
+        except AttributeError:
+            raise ConnectionFailure()
+
+
+    if not task.valid_submission(files.keys()):
+        raise InvalidSubmission()
+
+    # Attempt to store the submission locally to be able to recover
+    # a failure.
+    # TODO: Determine when the submission is to be considered accepted
+    # and pre-emptively stored.
+    if Configuration.submit_local_copy:
+        import os
+        import pickle
+        try:
+            path = os.path.join(Configuration.submit_local_copy_path, user.username)
+            if not os.path.exists(path):
+                os.mkdir(path)
+            with open(os.path.join(path,str(int(timestamp)) ), "w") as fd:
+                pickle.dump((contest.couch_id, user.couch_id, task, files), fd)
+        except Exception as e:
+            Utils.log("submit: local copy failed - "+repr(e),\
+                         Utils.Logger.SEVERITY_IMPORTANT)
+
+    # Check if we can connect to the DB before sending files to the FS.
+    _refresh_objects(contest)
+
+
+    # TODO: Check the timestamp here?
+
     for filename, content in files.items():
         temp_file, temp_filename = tempfile.mkstemp()
         with os.fdopen(temp_file, "w") as temp_file:
@@ -305,43 +407,62 @@ def submit(contest, task, user, files, timestamp):
 
     with writelock:
 
+        # The objects should be up-to-date when 
+        # the lock is acquired to avoid conflicts
+        # with other requests.
+        _refresh_objects(contest)
+
+        # Save the submission.
         # A new document shouldn't have resource conflicts...
-        for tentatives in xrange(3):
+        for tentatives in xrange(Configuration.maximum_conflict_attempts):
             try:
                 s = Submission(user, task, timestamp, files)
                 break
             except couchdb.ResourceConflict as e:
-                contest.refresh()
-                update_users(contest)
-                update_submissions(contest)
-                # What else should this do?
+                Utils.log("submit: ResourceConflict for "\
+                          +" a submission by "+user.username, Utils.Logger.SEVERITY_DEBUG)
+                try:
+                    _refresh_objects(contest)
+                except ConnectionFailure as e:
+                    Utils.log("submit: Refresh failed while attempting to recover"\
+                              +"a conflict.", Utils.Logger.SEVERITY_CRITICAL)
+                    raise e
         else:
-            Utils.log("submit: Failed to add the submission to couchdb. "+submission.couch_id+" by "+user.username,\
+            Utils.log("submit: Maximum number of attempts reached to add submission"\
+                      +submission.couch_id+" by "+user.username,\
                             Utils.Logger.SEVERITY_CRITICAL)
             raise couchdb.ResourceConflict()
 
-        # FIXME - Should catch ResourceConflict exception: update the
-        # document, do some sanity checks, modify it again and try
-        # again to store it on CouchDB
-        for tentatives in xrange(3):
+        # Append the submission to the contest.
+        for tentatives in xrange(Configuration.maximum_conflict_attempts):
             contest.submissions.append(s)
             try:
                 contest.to_couch()
                 break
             except couchdb.ResourceConflict as e:
-                contest.refresh()
-                update_users(contest)
-                update_submissions(contest)
-                # What else should this do?      
+                Utils.log("submit: ResourceConflict for "\
+                              +s.couch_id, Utils.Logger.SEVERITY_DEBUG)
+                try:
+                    _refresh_objects(contest)
+                except ConnectionFailure as e:
+                    Utils.log("submit: Refresh failed while attempting to recover"\
+                              +"a conflict.", Utils.Logger.SEVERITY_CRITICAL)
+                    raise e
         else:
-            Utils.log("submit: Failed to append to contest. "+submission.couch_id+" by "+user.username,\
+            Utils.log("submit: Maximum number of attempts reached to append to contest. "\
+                       +submission.couch_id+" by "+user.username,\
                             Utils.Logger.SEVERITY_CRITICAL)
             raise couchdb.ResourceConflict()
 
+    # The submission should be successful:
+    # Warn the Evaluation Server.
+    warned = False
     try:
         ES.add_job(s.couch_id)
+        warned = True
     except Exception as e:
-        Utils.log("Failed to queue the submission to the Evaluation Server: "+s.couch_id+", exception: "+repr(e),\
+        Utils.log("Failed to queue the submission to the Evaluation Server: "\
+                  +s.couch_id+", exception: "+repr(e),\
                   Utils.Logger.SEVERITY_IMPORTANT)
-    return s
+    return (s, warned)
 
