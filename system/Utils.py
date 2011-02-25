@@ -27,7 +27,6 @@ import os
 import sys
 
 import Configuration
-from Contest import Contest
 import CouchObject
 
 get_contests='''function(doc) {
@@ -85,6 +84,7 @@ def ask_for_contest(skip = 0):
     # from_couch returns None when the contest is not found,
     # and a different item if the provided ID is not a
     # contest.
+    from Contest import Contest
     if c == None or not isinstance( c, Contest ):
         print "Cannot load contest %s." % (contest_id)
         sys.exit(1)
