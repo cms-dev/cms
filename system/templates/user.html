@@ -1,0 +1,28 @@
+{% extends base.html %}
+
+{% block core %}
+    <div class="core_title">
+    <h1>{{ current_user.username}}</h1>
+    </div>
+    
+    <h2 onclick="toggleVisibility(&quot;user_messages&quot;);">
+    <span class="toggle" id="user_messages_toggle">-</span>Messages</h2>
+    <div id="user_messages">
+    {% if current_user.messages != [] %}
+        <table>
+        <tr>
+            <td>Date</td>
+            <td>Subject</td>
+        </tr>
+        {% for i, msg in enumerate(current_user.messages) %}
+        <tr>
+            <td>{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</td>
+            <td><a href="messages/{{ i }}">{{msg["subject"]}}</a></td>
+        </tr>
+        {% end %}
+        </table>
+    {% else %}
+    No messages.
+    {% end %}
+    </div>
+{% end %}

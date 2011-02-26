@@ -1,7 +1,8 @@
 {% extends base.html %}
 {% block core %}
-
-    <h1><a href="/">Home</a> >> <a href="/tasks/{{ task.name }}">{{ task.title }} ({{ task.name }})</a> >> <a href="/submissions/{{ task.name }}" > Submissions</a> >> Detail </h1>
+    <div class="core_title">
+    <h1>{{ task.title }} ({{ task.name }}) - Submission Detail </h1>
+    </div>
       <table>
       <tr>
           <th>Timestamp</th>

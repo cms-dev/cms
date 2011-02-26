@@ -4,9 +4,90 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="stylesheet" type="text/css" href="/static/style.css">
-    <title>{{ contest.name }}</title>
+    <title>{{ contest.description }}</title>
     <script type="text/javascript">
 <!--
+    
+    var last_notification = {{ timestamp }}
+    
+    function getXMLHTTP()
+    {
+        var xmlhttp;
+        if (window.XMLHttpRequest) { xmlhttp=new XMLHttpRequest(); }
+        else if (window.ActiveXObject) { xmlhttp=new ActiveXObject("Microsoft.XMLHTTP"); }
+        return xmlhttp;
+    }
+    
+    function toggleVisibility(item_id)
+    {
+        var item = document.getElementById(item_id);
+        var toggler = document.getElementById(item_id+"_toggle")
+        if (item.style.display != "none")
+        {
+            item.style.display = "none"
+            toggler.innerHTML = "+"
+        }
+        else
+        {
+            item.style.display = "block"
+            toggler.innerHTML = "-"
+        }
+    }
+
+    function notifications()
+    {
+        xmlhttp = getXMLHTTP();
+        xmlhttp.onreadystatechange = function()
+        {
+          if(xmlhttp.readyState==4)
+            if(xmlhttp.status==200)
+            {
+                if(xmlhttp.responseXML)
+                {
+                    var root = xmlhttp.responseXML;
+                    var announcements = root.getElementsByTagName("announcements")[0].firstChild.nodeValue
+                    var messages = root.getElementsByTagName("messages")[0].firstChild.nodeValue
+
+                    notification = "";
+                    if( announcements != 0)
+                        notification += announcements + " new announcement(s)";
+                    if( messages != 0)
+                    {
+                        if(notification != "")
+                            notification += " and ";
+                        notification += messages + " new message(s)";
+                    }
+                    if(notification != "")
+                    {
+                        document.getElementById("notification_content").innerHTML = notification;
+                        document.getElementById("notification").style.display="block";
+                        document.getElementById("global").style.marginTop="40px";
+                    }
+
+                    last_notification = new Date() / 1000;
+                }
+                else
+                {
+                    //alert(xmlhttp.responseText);
+                }
+            }
+            else
+            {
+                //alert(xmlhttp.status);
+            }
+        }
+      var params = "lastrequest="+last_notification;
+      xmlhttp.open("POST", "/notifications", true);
+      xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+      xmlhttp.send(params);
+    }
+
+    function hideNotification(item)
+    {
+        item.parentNode.style.display="none";
+        document.getElementById("global").style.marginTop="0";
+    }
+
     function getTime()
     {
       {% if contest.stop != None %}
@@ -50,23 +131,29 @@
 
     firstDate = new Date();
     setInterval(getTime, 1000);
+    notifications();
+    setInterval(notifications, 15000);
 
 //-->
   </script>
 </head>
 <body>
+    <div id="notification">
+        <div id="notification_close" 
+        onclick="hideNotification(this)">
+        <a href="#">X</a></div>
+        <div id="notification_content"></div>
+    </div>
     <div id="global">
+
         {% include header.html %}
 
-        {% include loginbar.html %}
-
-        {% include sidebar.html %}
-        <div class="core">
-        {% block core %}{% end %}
-        </div>
-        <div id="footer">
-        ---
-        </div>
+        {% comment include loginbar.html %}
+            {% include sidebar.html %}
+            <div class="core">
+            {% block core %}{% end %}
+            </div>
+        {% include footer.html %}
     </div>
 </body>
 </html>

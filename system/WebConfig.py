@@ -26,4 +26,5 @@ parameters={
             "template_path": "./templates",
             "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
             "static_path": os.path.join(os.path.dirname(__file__), "static"),
+            "debug" : "True",
            }

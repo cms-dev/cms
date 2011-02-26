@@ -26,7 +26,7 @@ class Contest(CouchObject):
     _to_copy = ["name", "description",
                 "token_initial", "token_max", "token_total",
                 "token_min_interval", "token_gen_time",
-                "start", "stop"]
+                "start", "stop", "announcements"]
     _to_copy_id = ["ranking_view"]
     _to_copy_id_array = ["tasks", "users", "submissions"]
 
@@ -34,9 +34,9 @@ class Contest(CouchObject):
                  tasks, users,
                  token_initial, token_max, token_total,
                  token_min_interval, token_gen_time,
-                 start = None, stop = None,
+                 start = None, stop = None, announcements = [],
                  submissions = [], ranking_view = None,
-                 couch_id = None, couch_rev = None):
+                 couch_id = None, couch_rev = None, ):
         self.name = name
         self.description = description
         self.tasks = tasks
@@ -48,6 +48,7 @@ class Contest(CouchObject):
         self.token_gen_time = token_gen_time
         self.start = start
         self.stop = stop
+        self.announcements = announcements
         self.submissions = submissions
         self.ranking_view = ranking_view
         CouchObject.__init__(self, "contest", couch_id, couch_rev)

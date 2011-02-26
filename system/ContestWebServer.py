@@ -262,7 +262,7 @@ class UseTokenHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
 
         try:
-            warned = BusinessLayer.enable_detailed_feedback(c, s, timestamp)
+            warned = BusinessLayer.enable_detailed_feedback(c, s, timestamp, self.current_user)
             r_params["sub_id"] = sub_id
             self.render("successfulToken.html", **r_params)
         except BusinessLayer.FeedbackAlreadyRequested:
@@ -329,6 +329,34 @@ class SubmitHandler(BaseHandler):
         except BusinessLayer.InvalidSubmission:
             self.render("errors/invalidSubmission.html")
 
+class UserHandler(BaseHandler):
+    
+    @tornado.web.authenticated
+    def get(self):
+        r_params = self.render_params()
+        self.render("user.html",**r_params)
+
+class InstructionHandler(BaseHandler):
+    def get(self):
+        r_params = self.render_params()
+        self.render("instructions.html",**r_params)
+
+class NotificationsHandler(BaseHandler):
+    def post(self):
+        last_request = self.get_argument("lastrequest",time.time())
+        messages = []
+        announcements = []
+        if last_request != "":
+            announcements = [x for x in c.announcements if x["date"] > time.time()]
+            if self.current_user != None:
+                messages = [x for x in self.current_user.messages if x["date"] > last_request]
+        self.set_header("Content-Type", "text/xml")
+        self.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+        self.write("<root>")
+        self.write("<announcements>"+str(len(announcements))+"</announcements>")
+        self.write("<messages>"+str(len(messages))+"</messages>")
+        self.write("</root>")
+
 handlers = [
             (r"/", MainHandler),
             (r"/login", LoginHandler),
@@ -339,7 +367,10 @@ handlers = [
             (r"/tasks/([a-zA-Z0-9_-]+)", TaskViewHandler),
             (r"/tasks/([a-zA-Z0-9_-]+)/statement", TaskStatementViewHandler),
             (r"/usetoken/", UseTokenHandler),
-            (r"/submit/([a-zA-Z0-9_.-]+)", SubmitHandler)
+            (r"/submit/([a-zA-Z0-9_.-]+)", SubmitHandler),
+            (r"/user", UserHandler),
+            (r"/instructions",InstructionHandler),
+            (r"/notifications",NotificationsHandler),
            ]
 
 application = tornado.web.Application(handlers, **WebConfig.parameters)

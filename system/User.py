@@ -23,11 +23,11 @@ import Utils
 from CouchObject import CouchObject
 
 class User(CouchObject):
-    _to_copy = ["username", "password", "real_name", "ip", "hidden"]
+    _to_copy = ["username", "password", "real_name", "ip", "hidden", "messages"]
     _to_copy_id_array = ["tokens"]
 
     def __init__(self, username, password,
-                 real_name, ip, tokens = [], hidden = False,
+                 real_name, ip, tokens = [], hidden = False, messages = [],
                  couch_id = None, couch_rev = None):
         self.username = username
         self.password = password
@@ -35,6 +35,7 @@ class User(CouchObject):
         self.ip = ip
         self.tokens = tokens
         self.hidden = hidden
+        self.messages = messages
         CouchObject.__init__(self, "user", couch_id, couch_rev)
 
     def choose_couch_id_basename(self):
