@@ -125,8 +125,9 @@ class WorkerPool:
         self.address = {}
         self.error_count = {}
         self.schedule_disabling = {}
+        self.side_data = {}
 
-    def acquire_worker(self, job, blocking = True):
+    def acquire_worker(self, job, blocking = True, side_data = None):
         available = self.semaphore.acquire(blocking)
         if not available:
             return None
@@ -138,6 +139,7 @@ class WorkerPool:
                 raise RuntimeError("Worker array went out-of-sync with semaphore")
             self.workers[worker] = job
             self.start_time[worker] = time.time()
+            self.side_data[worker] = side_data
             Utils.log("Worker %d acquired" % (worker), Utils.Logger.SEVERITY_DEBUG)
             return worker
 
@@ -147,14 +149,17 @@ class WorkerPool:
                 Utils.log("Trying to release worker while it's inactive", Utils.Logger.SEVERITY_IMPORTANT)
                 raise ValueError("Trying to release worker while it's inactive")
             self.start_time[n] = None
+            side_data = self.side_data[n]
+            self.side_data[n] = None
             if self.schedule_disabling[n]:
                 self.workers[n] = self.WORKER_DISABLED
                 self.schedule_disabling[n] = False
-                Utils.log("Worker %d released and disabled" % (worker), Utils.Logger.SEVERITY_DEBUG)
+                Utils.log("Worker %d released and disabled" % (n), Utils.Logger.SEVERITY_DEBUG)
             else:
                 self.workers[n] = self.WORKER_INACTIVE
                 self.semaphore.release()
                 Utils.log("Worker %d released" % (n), Utils.Logger.SEVERITY_DEBUG)
+        return side_data
 
     def find_worker(self, job):
         with self.main_lock:
@@ -199,6 +204,7 @@ class WorkerPool:
             self.address[n] = (host, port)
             self.error_count[n] = 0
             self.schedule_disabling[n] = False
+            self.side_data[n] = None
         self.semaphore.release()
         Utils.log("Worker %d added with address %s:%d" % (n, host, port), Utils.Logger.SEVERITY_DEBUG)
 
@@ -215,6 +221,7 @@ class WorkerPool:
             del self.address[n]
             del self.error_count[n]
             del self.schedule_disabling[n]
+            del self.side_data[n]
         Utils.log("Worker %d deleted" % (n), Utils.Logger.SEVERITY_DEBUG)
 
     def working_workers(self):
@@ -233,7 +240,11 @@ class WorkerPool:
             return (job[0], job[1].couch_id)
 
     def get_workers_status(self):
-        return dict([(str(n), {'job': self.represent_job(self.workers[n]), 'address': self.address[n], 'start_time': self.start_time[n], 'error_count': self.error_count[n]})
+        return dict([(str(n), {'job': self.represent_job(self.workers[n]),
+                               'address': self.address[n],
+                               'start_time': self.start_time[n],
+                               'error_count': self.error_count[n],
+                               'side_data': self.side_data[n]})
                 for n in self.workers.keys()])
 
     def check_timeout(self):
@@ -242,18 +253,24 @@ class WorkerPool:
             lost_jobs = []
             for worker in self.workers:
                 if self.start_time[worker] != None:
-                    active_for = self.start_time[worker] - now
+                    active_for = now - self.start_time[worker]
                     if active_for > Configuration.worker_timeout:
                         host, port = self.address[worker]
                         Utils.log("Disabling and shutting down worker %d (%s:%d) because of no reponse in %.2f seconds" %
-                                  (worker, host, port, active_for), Utils.Logging.SEVERITY_IMPORTANT)
+                                  (worker, host, port, active_for), Utils.Logger.SEVERITY_IMPORTANT)
                         assert self.workers[worker] != self.WORKER_INACTIVE and self.workers[worker] != self.WORKER_DISABLED
                         job = self.workers[worker]
-                        lost_jobs.append(jobs)
+                        (priority, timestamp) = self.side_data[worker]
+                        lost_jobs.append((priority, timestamp, job))
                         self.schedule_disabling[worker] = True
-                        self.release_worker(worker) 
+                        self.release_worker(worker)
                         p = xmlrpclib.ServerProxy("http://%s:%d" % (host, port))
-                        p.shut_down("No response in %.2f seconds" % (active_for))
+                        try:
+                            p.shut_down("No response in %.2f seconds" % (active_for))
+                        except:
+                            # No problem, probably the worker already
+                            # crashed or got disconnected
+                            pass
         return lost_jobs
 
 class JobDispatcher(threading.Thread):
@@ -268,6 +285,21 @@ class JobDispatcher(threading.Thread):
         self.main_lock = threading.RLock()
         self.bomb_primed = False
         self.touched = threading.Event()
+        self.check_thread = threading.Thread(target = self.check_timeout_thread)
+        self.check_thread.daemon = True
+
+    def check_timeout(self):
+        Utils.log("Check for timeouting workers started", Utils.Logger.SEVERITY_DEBUG)
+        lost_jobs = self.workers.check_timeout()
+        for priority, timestamp, job in lost_jobs:
+            Utils.log("Requeuing job (%s, %s), lost because of timeouting worker" % (job[0], job[1].couch_id))
+            self.queue_push(priority = priority, timestamp = timestamp, job = job)
+        Utils.log("Check for timeouting workers finished", Utils.Logger.SEVERITY_DEBUG)
+
+    def check_timeout_thread(self):
+        while True:
+            time.sleep(Configuration.worker_timeout_check_time)
+            self.check_timeout()
 
     def check_action(self, priority, timestamp, job):
         # FIXME - Update docstring
@@ -288,7 +320,7 @@ class JobDispatcher(threading.Thread):
             return self.ACTION_FAIL
 
         else:
-            worker = self.workers.acquire_worker(job, blocking = False)
+            worker = self.workers.acquire_worker(job, blocking = False, side_data = (priority, timestamp))
 
             if worker == None:
                 return self.ACTION_FAIL
@@ -339,6 +371,7 @@ class JobDispatcher(threading.Thread):
                     pass
 
     def run(self):
+        self.check_thread.start()
         while True:
             # FIXME - An atomic wait-and-clear would be better
             self.touched.wait()
@@ -361,8 +394,9 @@ class JobDispatcher(threading.Thread):
 
     def release_worker(self, worker):
         with self.main_lock:
-            self.workers.release_worker(worker)
+            side_data = self.workers.release_worker(worker)
         self.touched.set()
+        return side_data
 
     def find_worker(self, job):
         with self.main_lock:
@@ -469,7 +503,7 @@ class EvaluationServer(RPCServer):
              job[0],
              job[1].couch_id,
              time_elapsed))
-        self.jd.release_worker(worker)
+        return self.jd.release_worker(worker)
 
     def compilation_finished(self, success, submission_id):
         """
@@ -523,7 +557,7 @@ class EvaluationServer(RPCServer):
             except ResourceConflict:
                 retry = True
                 submission.refresh()
-        self.action_finished((EvaluationServer.JOB_TYPE_EVALUATION, submission))
+        (priority, timestamp) = self.action_finished((EvaluationServer.JOB_TYPE_EVALUATION, submission))
         if success:
             Utils.log("Evaluation succeeded for submission %s" % (submission_id))
             self.update_evaluation(submission_id)
@@ -535,9 +569,8 @@ class EvaluationServer(RPCServer):
                           (EvaluationServer.MAX_EVALUATION_TENTATIVES,
                            submission_id), Utils.Logger.SEVERITY_IMPORTANT)
             else:
-                # TODO - should check the original priority of the job
                 self.jd.queue_push((EvaluationServer.JOB_TYPE_EVALUATION, submission),
-                                   EvaluationServer.JOB_PRIORITY_LOW)
+                                   priority)
         return True
 
     def update_evaluation(self, submission_id):
