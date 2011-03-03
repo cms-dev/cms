@@ -1,0 +1,17 @@
+To run this example, open four terminals, and run these programs:
+
+./Checker
+./ServiceA.py
+./ServiceB.py 0
+./ServiceB.py 1
+
+You can try to start one of them with the other switched off, or
+simulate busyness of a service by interrupting it (Ctrl-S and Ctrl-Q
+on the terminal).
+
+ServiceB (0 and 1) only listen for RPC requests. ServiceA ask for echo
+to both ServiceBs every 10 seconds, and ask to ServiceB,0 for the file
+aaa (just once). Checker evaluates the response time of all services
+(included itself).
+
+Modify the INFO to DEBUG in Util.py to show all methods in the logs.
