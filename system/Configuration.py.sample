@@ -33,3 +33,9 @@ logging_web_server = ("localhost", 8080)
 file_storage_cache_basedir = "fs-cache"
 
 FS_connection_timeout = 10.0
+
+
+# --- BusinessLayer Configuration ---
+maximum_conflict_attempts = 50
+submit_local_copy = False
+submit_local_copy_path = "submissions/"
