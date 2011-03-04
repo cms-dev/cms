@@ -97,6 +97,7 @@ def import_task(path):
     params["public_testcases"] = conf.get("risultati", "").split(",")
     if params["public_testcases"] == [""]:
         params["public_testcases"] = []
+    params["public_testcases"] = [ int(x) for x in params["public_testcases"] ]
     params["token_initial"] = conf.get("token_initial", 0)
     params["token_max"] = conf.get("token_max", 0)
     params["token_total"] = conf.get("token_total", 0)
