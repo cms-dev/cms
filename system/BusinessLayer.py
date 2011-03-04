@@ -464,11 +464,14 @@ def submit(contest, task, user, files, timestamp):
         ES.add_job(s.couch_id)
         warned = True
     except Exception as e:
-        Utils.log("Failed to queue the submission to the Evaluation Server: "\
-                  +s.couch_id+", exception: "+repr(e),\
+        Utils.log("Failed to queue the submission to the Evaluation Server: " \
+                  + s.couch_id + ", exception: " + repr(e), \
                   Utils.Logger.SEVERITY_IMPORTANT)
     return (s, warned)
 
 def reevaluate_submission(submission):
     submission.invalid()
     ES.add_job(submission.couch_id)
+
+def get_workers_status():
+    return ES.get_workers_status()

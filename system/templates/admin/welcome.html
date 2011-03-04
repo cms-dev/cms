@@ -16,7 +16,7 @@
                 <span class="announcement_text">{{msg["subject"]}}</span>
             </div>
             {% end %}
-            
+
         {% else %}
         No announcements.
         {% end %}
@@ -31,5 +31,26 @@
             The contest has ended.
         {% end %}
 
+        <h2>Workers status</h2>
 
+        <table class="sub_table">
+          <tr>
+            <th>Id</th>
+            <th>Address</th>
+            <th>Errors</th>
+            <th>Current job</th>
+          </tr>
+          {% for i, w in workers_status.iteritems() %}
+          <tr>
+            <td>{{ i }}</td>
+            <td>{{ w['address'][0] }}:{{ w['address'][1] }}</td>
+            <td>{{ w['error_count'] }}</td>
+            {% if isinstance(w['job'], str) %}
+            <td>{{ w['job'] }}</td>
+            {% else %}
+            <td>{{ w['job'][0] }} submission {{ w['job'][1] }} since {{ time.ctime(w['start_time']) }}</td>
+            {% end %}
+          <tr>
+          {% end %}
+        </table>
 {% end %}

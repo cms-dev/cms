@@ -103,6 +103,7 @@ class MainHandler(BaseHandler):
     def get(self):
         #Retrieve the contest list
         r_params = self.render_params()
+        r_params["workers_status"] = BusinessLayer.get_workers_status()
         self.render("welcome.html", **r_params)
 
 class ContestViewHandler(BaseHandler):
