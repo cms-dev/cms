@@ -310,8 +310,8 @@ class BatchTaskType:
         self.sandbox.address_space = self.submission.task.memory_limit * 1024
         self.sandbox.file_check = 1
         self.sandbox.allow_path = ["input.txt", "output.txt"]
-        stdout_filename = os.path.join(self.sandbox.path, "manager_stdout.txt")
-        stderr_filename = os.path.join(self.sandbox.path, "manager_stderr.txt")
+        stdout_filename = os.path.join(self.sandbox.path, "submission_stdout.txt")
+        stderr_filename = os.path.join(self.sandbox.path, "submission_stderr.txt")
         self.sandbox.stdout_file = stdout_filename
         self.sandbox.stderr_file = stderr_filename
 
