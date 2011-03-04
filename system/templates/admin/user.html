@@ -4,7 +4,7 @@
     <div class="core_title">
     <h1>{{ selected_user }}</h1>
     </div>
-    
+
     <h2 onclick="toggleVisibility(&quot;user_submissions&quot;);">
     <span class="toggle" id="user_submissions_toggle">-</span>Submissions</h2>
     <div id="user_submissions">
@@ -17,6 +17,7 @@
                 <th>Evaluation<br/>status</th>
                 <th>Files</th>
                 <th>Detailed<br/>Feedback<br/>Requested</th>
+                <th>Re-evaluate?</th>
             </tr>
             {% for s in sorted(submissions, key=lambda s: s.timestamp , reverse = True) %}
                 <tr>
@@ -34,12 +35,17 @@
                     {% for key,value in s.files.items() %}
                         <a href="/submission_file/{{ escape(s.couch_id) }}/{{ escape(key) }}">{{ escape(key) }}<br/>
                     {% end %}
+                    </td>
                     <td>
                     {% if s.token_timestamp==None %}
                         No
                     {% else %}
                         Yes
                     {% end %}
+                    </td>
+                    <td>
+                        <a href="submissions/reevaluate/{{escape(s.couch_id)}}">Go ahead!</a>
+                    </td>
                 </tr>
             {% end %}
             </table>
@@ -47,7 +53,7 @@
     No submissions.
     {% end %}
     </div>
-    
+
     <h2 onclick="toggleVisibility(&quot;user_messages&quot;);">
     <span class="toggle" id="user_messages_toggle">-</span>Messages</h2>
     <div id="user_messages">

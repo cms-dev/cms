@@ -79,10 +79,10 @@ def available_tokens(contest, user, task, timestamp):
     # These should not be needed, but let's be safe
     tokens_timestamp.sort()
     task_tokens_timestamp.sort()
-    
+
     def count_tokens(object_with_tokens_specs, timestamps):
         o = object_with_tokens_specs
-            
+
         # Ensure availability
         available = o.token_initial
         # Time left from the last iteration
@@ -116,13 +116,13 @@ def token_available(contest, user, task, timestamp):
     task_tokens_timestamp = [s.token_timestamp
                              for s in user.tokens
                              if s.task == task]
-    
+
     # A token without timestamp means that there is another process that is
     # attempting to enable the token for the respective submission: if
     # this happens, forbid the usage of tokens.
     if None in tokens_timestamp:
         return False
-    
+
     # These should not be needed, but let's be safe
     tokens_timestamp.sort()
     task_tokens_timestamp.sort()
@@ -136,7 +136,7 @@ def token_available(contest, user, task, timestamp):
         # Ensure total
         if len(timestamps) >= o.token_total:
             return False
-            
+
         # Ensure availability
         available = o.token_initial
         # Time left from the last iteration
@@ -188,19 +188,19 @@ def get_user_by_username(contest, username):
             return user
     else:
         return None
-        
+
 def get_submission(contest, sub_id, owner = None):
     for s in contest.submissions:
         if s.couch_id == sub_id and (owner == None or s.user.username == owner) :
             return s
     else:
         return None
-        
+
 def get_submissions_by_username(contest, owner, taskname = None):
     return [s for s in contest.submissions \
             if s.user.username == owner and \
             ( taskname == None or s.task.name == taskname)]
-            
+
 def get_file_from_submission(submission, filename):
     if( submission == None or filename == None ):
         return None
@@ -242,7 +242,7 @@ writelock = Lock()
 def enable_detailed_feedback(contest, submission, timestamp, user):
     """
     Attempts to enable the given submission for detailed feedback.
-    
+
     If the given user has available tokens and the submission is not
     yet marked for detailed feedback, this function attempts to mark
     that submisssion for detailed feedback.
@@ -272,7 +272,7 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
 
     with writelock:
 
-        # The objects should be up-to-date when 
+        # The objects should be up-to-date when
         # the lock is acquired to avoid conflicts
         # with other internal requests.
         _refresh_objects(contest)
@@ -306,7 +306,7 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
 
                 except couchdb.ResourceConflict:
                     # A conflict has happened: refresh the objects,
-                    # check their status and try again. 
+                    # check their status and try again.
                     Utils.log("enable_detailed_feedback: ResourceConflict for "\
                               +submission.couch_id, Utils.Logger.SEVERITY_DEBUG)
                     try:
@@ -347,7 +347,7 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
 def submit(contest, task, user, files, timestamp):
     """
     Attempts to submit a solution.
-    
+
     This function attempts to store the given files in the FS and to
     store the submission in the database.
     Returns True if the submission is stored in the DB
@@ -406,7 +406,7 @@ def submit(contest, task, user, files, timestamp):
 
     with writelock:
 
-        # The objects should be up-to-date when 
+        # The objects should be up-to-date when
         # the lock is acquired to avoid conflicts
         # with other requests.
         _refresh_objects(contest)
@@ -465,3 +465,6 @@ def submit(contest, task, user, files, timestamp):
                   Utils.Logger.SEVERITY_IMPORTANT)
     return (s, warned)
 
+def reevaluate_submission(submission):
+    submission.invalid()
+    ES.add_job(submission.couch_id()
