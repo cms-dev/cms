@@ -254,7 +254,7 @@ class SubmissionReevaluateHandler(BaseHandler):
         if s == None:
             raise tornado.web.HTTPError(404)
         BusinessLayer.reevaluate_submission(s)
-
+        self.redirect("/user/%s" % s.user.username)
 
 class SubmissionFileHandler(BaseHandler):
     """
