@@ -285,8 +285,12 @@ class JobDispatcher(threading.Thread):
         self.main_lock = threading.RLock()
         self.bomb_primed = False
         self.touched = threading.Event()
-        self.check_thread = threading.Thread(target = self.check_timeout_thread)
-        self.check_thread.daemon = True
+# TODO: Fix this: it is useful to have the ES check the Workers, when
+# most of the time would not be the Workers stalling, whereas would be
+# the network that fall down (in which case ES cannot restart the
+# Workers)?
+#        self.check_thread = threading.Thread(target = self.check_timeout_thread)
+#        self.check_thread.daemon = True
 
     def check_timeout(self):
         Utils.log("Check for timeouting workers started", Utils.Logger.SEVERITY_DEBUG)
@@ -371,7 +375,8 @@ class JobDispatcher(threading.Thread):
                     pass
 
     def run(self):
-        self.check_thread.start()
+# See previous TODO on ES checking the Workers
+#        self.check_thread.start()
         while True:
             # FIXME - An atomic wait-and-clear would be better
             self.touched.wait()
