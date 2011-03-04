@@ -2,7 +2,7 @@
 * {
     /*Only for layout debug purposes.*/
    /*border: 1px solid black;*/
-   
+
 }
 
 a {
@@ -123,7 +123,7 @@ a, a:visited {
 .footer_left {
     float: left;
     width: 33%;
-    
+
 }
 
 .footer_middle {
@@ -189,7 +189,7 @@ a, a:visited {
     background-color: #FFFF88;
     display: none;
     z-index: 10;
-    border: 1px solid gray; 
+    border: 1px solid gray;
     padding: 0px;
     text-align: center;
     overflow: auto;
@@ -201,7 +201,7 @@ a, a:visited {
     line-height:20px;
     border-bottom: 1px solid gray;
     text-align: center;
-    font-weight:bold; 
+    font-weight:bold;
 }
 
 #popup_question_close {
@@ -227,9 +227,14 @@ a, a:visited {
   display: block;
 }
 
-.announcement_text {
+.announcement_subject {
+  display: block;
   margin-left: 10px;
-  font-weight:bold;
+  font-weight: bold;
+}
+
+.announcement_text {
+  margin-left: 15px;
 }
 
 .displayed {

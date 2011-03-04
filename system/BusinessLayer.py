@@ -19,19 +19,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from StringIO import StringIO
-from FileStorageLib import FileStorageLib
-
-from threading import Lock
-import couchdb
 import os
 import tempfile
+import time
+
 import xmlrpclib
+from StringIO import StringIO
+from threading import Lock
+import couchdb
 
 import Configuration
 import CouchObject
 import Utils
 from Submission import Submission
+from FileStorageLib import FileStorageLib
 
 FSL = FileStorageLib()
 ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
@@ -475,3 +476,16 @@ def reevaluate_submission(submission):
 
 def get_workers_status():
     return ES.get_workers_status()
+
+def add_announcement(contest, subject, text):
+    announcement = {
+        "date": time.time(),
+        "subject": subject,
+        "text": text
+        }
+    contest.announcements.append(announcement)
+    contest.to_couch()
+
+def remove_announcement(contest, index):
+    del contest.announcements[index]
+    contest.to_couch()

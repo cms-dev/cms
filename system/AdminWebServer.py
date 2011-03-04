@@ -298,6 +298,31 @@ class SubmissionFileHandler(BaseHandler):
         self.write(file_content)
 
 
+class AddAnnouncementHandler(BaseHandler):
+    def post(self):
+        subject = self.get_argument("subject", "")
+        text = self.get_argument("text", "")
+        if subject != "":
+            BusinessLayer.add_announcement(c, subject, text)
+        self.redirect("/")
+
+
+class RemoveAnnouncementHandler(BaseHandler):
+    def post(self):
+        index = self.get_argument("index", "-1")
+        subject = self.get_argument("subject", "")
+        text = self.get_argument("text", "")
+        try:
+            index = int(index)
+            announcement = c.announcements[index]
+        except:
+            raise tornado.web.HTTPError(404)
+        if announcement['subject'] == subject and \
+                announcement['text'] == text:
+            BusinessLayer.remove_announcement(c, index)
+        self.redirect("/")
+
+
 class UserViewHandler(BaseHandler):
     def get(self, user_id):
         r_params = self.render_params()
@@ -324,6 +349,8 @@ handlers = [
             (r"/submissions/details/([a-zA-Z0-9_-]+)", SubmissionDetailHandler),
             (r"/reevaluate/submission/([a-zA-Z0-9_-]+)", SubmissionReevaluateHandler),
             (r"/reevaluate/user/([a-zA-Z0-9_-]+)", UserReevaluateHandler),
+            (r"/add_announcement", AddAnnouncementHandler),
+            (r"/remove_announcement", RemoveAnnouncementHandler),
             (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", SubmissionFileHandler),
             (r"/user/([a-zA-Z0-9_-]+)",UserViewHandler),
             (r"/user",UserListHandler),

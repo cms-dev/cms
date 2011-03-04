@@ -7,18 +7,28 @@
         </div>
         <h2>Announcements</h2>
         <div id="announcements">
+        <form method="post" action="/add_announcement">
+          <input name="subject" size="20" /><br/>
+          <textarea name="text" rows="3" cols="40"></textarea><br/>
+          <input type="submit" value="Add announcement" />
+        </form>
         {% if contest.announcements != [] %}
-
-            <a href="/addAnnouncement/">[TODO] New announcement</a>
             {% for msg_i, msg in enumerate(reversed(contest.announcements)) %}
             <div class="announcement_item displayed">
-                <span class="announcement_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
-                <span class="announcement_text">{{msg["subject"]}}</span>
+                <span class="announcement_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}
+                  <form method="post" action="/remove_announcement">
+                    <input type="hidden" name="index" value="{{ len(contest.announcements) - msg_i - 1 }}" />
+                    <input type="hidden" name="subject" value="{{ msg["subject"] }}" />
+                    <input type="hidden" name="text" value="{{ msg["text"] }}" />
+                    <input type="submit" value="Remove announcement" />
+                  </form>
+                </span>
+                <span class="announcement_subject">{{msg["subject"]}}</span>
+                <span class="announcement_text">{{msg["text"]}}</span>
             </div>
             {% end %}
-
         {% else %}
-        No announcements.
+            No announcements.
         {% end %}
         </div>
         <h2>General information</h2>
