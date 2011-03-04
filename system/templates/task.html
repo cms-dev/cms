@@ -52,8 +52,10 @@
                     <td>
                         {% if s.evaluation_outcome != None %}
                             Evaluated
+                        {% elif s.compilation_outcome == "fail" %}
+                            Ignored
                         {% else %}
-                            Not evaluated
+                            Queued, please wait
                         {% end %}
                     </td>
                     <td>
