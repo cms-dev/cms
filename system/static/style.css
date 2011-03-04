@@ -255,3 +255,30 @@ a, a:visited {
     padding: 5px;
 }
 
+#compilazione
+{
+    padding: 10px 40px;
+}
+
+#compilazione td
+{
+    padding: 5px 10px;
+}
+
+pre
+{
+    border-left: 3px solid #36393D;
+    padding: 5px;
+    margin-left: 10px;
+    font-family: monospace;
+    min-height: 1ex;
+}
+
+code
+{
+    font-family: monospace;
+    border: 1px solid #36393D;
+    padding: 2px;
+    margin: 2px;
+}
+

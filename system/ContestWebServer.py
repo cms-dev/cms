@@ -115,14 +115,20 @@ class LoginHandler(BaseHandler):
         password = self.get_argument("password", "")
         next = self.get_argument("next","/")
         user = BusinessLayer.get_user_by_username(c, username)
-        if user != None and user.password == password:
-            self.set_secure_cookie("login", pickle.dumps(
-                    (self.get_argument("username"), time.time())
-                    ))
-            self.redirect(next)
+        if user != None and user.password == password and \
+          ( not ip_lock or user.ip == "0.0.0.0" or user.ip == self.request.remote_ip):
+            if not user.hidden or not WebConfig.block_hidden_users:
+                self.set_secure_cookie("login", pickle.dumps(
+                        (self.get_argument("username"), time.time())
+                        ))
+                self.redirect(next)
+            else:
+                Utils.log("Hidden user login attempt: user=%s pass=%s remote_ip=%s." %
+                          (username, password, self.request.remote_ip))
+                self.redirect("/?login_error=true")
         else:
-            Utils.log("Login error: user=%s pass=%s." %
-                      (username, password))
+            Utils.log("Login error: user=%s pass=%s remote_ip=%s." %
+                      (username, password, self.request.remote_ip))
             self.redirect("/?login_error=true")
 
 class LogoutHandler(BaseHandler):

@@ -13,7 +13,11 @@
     <h2 onclick="toggleVisibility(&quot;instruction_comp&quot;);" >
     <span class="toggle" id="instruction_comp_toggle" >-</span>Compilation</h2>
     <div id="instruction_comp">
-        A lot of instructions about compiling.
+     <table id="compilazione">
+      <tr><td><strong>C</strong></td><td><code>gcc -DEVAL -static -O2 -lm task.c -o task</code></td></tr>
+      <tr><td><strong>C++</strong></td><td><code>g++ -DEVAL -static -O2 task.cpp -o task</code></td></tr>
+      <tr><td><strong>Pascal</strong></td><td><code>fpc -dEVAL -XS -O2 task.pas -o task</code></td></tr>
+     </table>
     </div>
 
     <h2 onclick="toggleVisibility(&quot;instruction_doc&quot;);">
