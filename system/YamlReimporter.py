@@ -28,6 +28,7 @@ from User import User
 from Contest import Contest
 from ScoreType import ScoreTypes
 from FileStorageLib import FileStorageLib
+import Configuration
 import Utils
 
 def reimport_contest(path, old_contest):
@@ -62,16 +63,19 @@ def reimport_contest(path, old_contest):
     params["start"] = conf["inizio"]
     params["stop"] = conf["fine"]
 
-    renewed_contest = Contest(**params)
-    renewed_contest.to_couch()
-    return renewed_contest
+    for i in xrange(Configuration.maximum_conflict_attempts):
+      try:
+          old_contest.__dict__.update(params)
+          old_contest.to_couch()
+          return old_contest
+      except couchdb.ResourceConflict as e:
+          old_contest.refresh()
+    else:
+        raise couchdb.ResourceConflict()
 
 def reimport_user(old_user, user_dict):
     
     params = {}
-    if old_user != None:
-        params["couch_id"] = old_user.couch_id
-        params["couch_rev"] = old_user.couch_rev
 
     params["username"] = user_dict["username"]
     params["password"] = user_dict["password"]
@@ -82,9 +86,21 @@ def reimport_user(old_user, user_dict):
     params["hidden"] = user_dict.get("fake", False)
     params["tokens"] = []
 
-    renewed_user = User(**params)
-    renewed_user.to_couch()
-    return renewed_user
+    for i in xrange(Configuration.maximum_conflict_attempts):
+        try:
+            if old_user == None:
+                renewed_user = User(**params)
+            else:
+                old_user.__dict__.update(params)
+                renewed_user = old_user
+            renewed_user.to_couch()
+            return renewed_user
+        except couchdb.ResourceConflict as e:
+            old_user.refresh()
+    else:
+        raise couchdb.ResourceConflict()
+
+
 
 def reimport_task(old_task, path):
     path = os.path.realpath(path)
@@ -93,9 +109,7 @@ def reimport_task(old_task, path):
     FSL = FileStorageLib()
 
     params = {"name": name}
-    if old_task != None:
-        params["couch_id"] = old_task.couch_id
-        params["couch_rev"] = old_task.couch_rev
+
     assert name == conf["nome_breve"]
     params["title"] = conf["nome"]
     params["time_limit"] = conf["timeout"]
@@ -127,9 +141,20 @@ def reimport_task(old_task, path):
     params["token_min_interval"] = conf.get("token_min_interval", 0)
     params["token_gen_time"] = conf.get("token_gen_time", 60)
 
-    renewed_task = Task(**params)
-    renewed_task.to_couch()
-    return renewed_task
+    for i in xrange(Configuration.maximum_conflict_attempts):
+        try:
+            if old_task == None:
+                renewed_task = Task(**params)
+            else:
+                old_task.__dict__.update(params)
+                renewed_task = old_task
+
+            renewed_task.to_couch()
+            return renewed_task
+        except couchdb.ResourceConflict as e:
+            old_task.refresh()
+    else:
+        raise couchdb.ResourceConflict()
 
 if __name__ == "__main__":
     import sys
