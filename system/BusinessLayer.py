@@ -467,4 +467,4 @@ def submit(contest, task, user, files, timestamp):
 
 def reevaluate_submission(submission):
     submission.invalid()
-    ES.add_job(submission.couch_id()
+    ES.add_job(submission.couch_id)
