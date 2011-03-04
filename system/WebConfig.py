@@ -21,6 +21,13 @@
 
 import os
 
+listen_port = 8888
+
+# ssl_options are the same options for ssl.wrap_socket.
+# server side is already included.
+# ssl_options = {"certfile" : "cert.pem"}
+ssl_options = None
+
 parameters={
             "login_url": "/" ,
             "template_path": "./templates",

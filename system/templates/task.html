@@ -28,7 +28,7 @@
     <div id="previous_submissions">
         <div class="task_tokens">
         {% if BusinessLayer.token_available(contest, current_user, task, time.time() ) %}
-            <i>You can use up to <b>{{ BusinessLayer.available_tokens(c, current, task, time.time()) }}</b> tokens for this task.</i>
+            <i>You can use up to <b>{{ BusinessLayer.available_tokens(contest, current_user, task, time.time()) }}</b> tokens for this task.</i>
         {% else %}
             <i>You can't use tokens for this task at this time.</i>
         {% end %}
@@ -64,8 +64,8 @@
                     {% if s.token_timestamp==None %}
                         <form style="display:inline;" action="/usetoken/" method="POST">
                         No
-                        <input type="hidden" name="id" value="{{ escape(s.couch_id) }}">
-                        <input type="submit" value="Use Token">
+                        <input type="hidden" name="id" value="{{ escape(s.couch_id) }}"/>
+                        <input type="submit" value="Use Token"/>
                         </form>
                     {% else %}
                         Yes

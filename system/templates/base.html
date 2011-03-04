@@ -17,7 +17,7 @@
         else if (window.ActiveXObject) { xmlhttp=new ActiveXObject("Microsoft.XMLHTTP"); }
         return xmlhttp;
     }
-    
+
     function toggleVisibility(item_id)
     {
         var item = document.getElementById(item_id);
@@ -34,6 +34,12 @@
         }
     }
 
+    function popupQuestion()
+    {
+        document.getElementById("popup_question").style.display="block";
+        return false;
+    }
+
     function notifications()
     {
         xmlhttp = getXMLHTTP();
@@ -47,6 +53,7 @@
                     var root = xmlhttp.responseXML;
                     var announcements = root.getElementsByTagName("announcements")[0].firstChild.nodeValue
                     var messages = root.getElementsByTagName("messages")[0].firstChild.nodeValue
+                    last_notification = root.getElementsByTagName("requestdate")[0].firstChild.nodeValue
 
                     notification = "";
                     if( announcements != 0)
@@ -64,7 +71,6 @@
                         document.getElementById("global").style.marginTop="40px";
                     }
 
-                    last_notification = new Date() / 1000;
                 }
                 else
                 {
@@ -141,8 +147,23 @@
     <div id="notification">
         <div id="notification_close" 
         onclick="hideNotification(this)">
-        <a href="#">X</a></div>
+        <a href="#">X</a>
+        </div>
         <div id="notification_content"></div>
+    </div>
+    <div id="popup_question">
+      <div id="popup_question_header">
+        <div id="popup_question_close">
+        <a href="#" onclick="document.getElementById(&quot;popup_question&quot;).style.display=&quot;none&quot;">X</a>
+        </div>
+        Ask a question
+      </div>
+      <form name="question" action="/question" method="POST">
+        <label for="question_text">Type your question:</label></br>
+        <textarea name="question_text"></textarea><br/>
+        <input type="submit" value="Send"/>
+        <input type="reset"/>
+      </form>
     </div>
     <div id="global">
 

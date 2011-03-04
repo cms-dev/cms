@@ -10,18 +10,15 @@
         <h2>Announcements</h2>
         <div id="announcements">
         {% if contest.announcements != [] %}
-            <table>
-            <tr>
-                <td>Date</td>
-                <td>Subject</td>
-            </tr>
-            {% for i, msg in enumerate(contest.announcements) %}
-            <tr>
-                <td>{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</td>
-                <td><a href="messages/{{ i }}">{{msg["subject"]}}</a></td>
-            </tr>
+
+
+            {% for msg_i, msg in enumerate(reversed(contest.announcements)) %}
+            <div class="announcement_item {% if msg_i == 0 %}displayed{% end %}">
+                <span class="announcement_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
+                <span class="announcement_text">{{msg["subject"]}}</span>
+            </div>
             {% end %}
-            </table>
+            
         {% else %}
         No announcements.
         {% end %}

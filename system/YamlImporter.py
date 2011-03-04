@@ -94,7 +94,9 @@ def import_task(path):
     params["testcases"] = [ (FSL.put(os.path.join(path, "input", "input%d.txt" % (i)), "Input %d for task %s" % (i, name)),
                              FSL.put(os.path.join(path, "output", "output%d.txt" % (i)), "Output %d for task %s" % (i, name)))
                             for i in range(int(conf["n_input"]))]
-    params["public_testcases"] = [ 0 ]
+    params["public_testcases"] = conf.get("risultati","").split(",")
+    if params["public_testcases"] == [""]:
+        params["public_testcases"] = []
     params["token_initial"] = conf.get("token_initial", 0)
     params["token_max"] = conf.get("token_max", 0)
     params["token_total"] = conf.get("token_total", 0)

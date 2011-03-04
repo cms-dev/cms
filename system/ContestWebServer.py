@@ -343,18 +343,20 @@ class InstructionHandler(BaseHandler):
 
 class NotificationsHandler(BaseHandler):
     def post(self):
-        last_request = self.get_argument("lastrequest",time.time())
+        timestamp = time.time();
+        last_request = self.get_argument("lastrequest",timestamp)
         messages = []
         announcements = []
         if last_request != "":
-            announcements = [x for x in c.announcements if x["date"] > time.time()]
+            announcements = [x for x in c.announcements if x["date"] > float(last_request) and x["date"] < timestamp]
             if self.current_user != None:
-                messages = [x for x in self.current_user.messages if x["date"] > last_request]
+                messages = [x for x in self.current_user.messages if x["date"] > float(last_request) and x["date"] < timestamp]
         self.set_header("Content-Type", "text/xml")
         self.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         self.write("<root>")
         self.write("<announcements>"+str(len(announcements))+"</announcements>")
         self.write("<messages>"+str(len(messages))+"</messages>")
+        self.write("<requestdate>"+str(timestamp)+"</requestdate>");
         self.write("</root>")
 
 handlers = [
@@ -377,8 +379,8 @@ application = tornado.web.Application(handlers, **WebConfig.parameters)
 
 if __name__ == "__main__":
     Utils.set_service("contest web server")
-    http_server = tornado.httpserver.HTTPServer(application)
-    http_server.listen(8888);
+    http_server = tornado.httpserver.HTTPServer(application,ssl_options = WebConfig.ssl_options)
+    http_server.listen(WebConfig.listen_port);
     try:
         c = Utils.ask_for_contest()
     except AttributeError as e:

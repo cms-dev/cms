@@ -168,13 +168,69 @@ a, a:visited {
 
 #notification_close {
     float: left;
-    font-family: "Verdana";
+    font-family: sans-serif;
     font-weight: bold;
     font-size: 20px;
     margin-left: 10px;
     line-height: 40px;
 }
-#notification_close a {
+#notification_close a, #popup_question_close a {
     text-decoration: none;
     color: black;
+}
+
+#popup_question {
+    position: fixed;
+    top:10%;
+    left:10%;
+    width: 80%;
+    height:80%;
+    background-color: #FFFF88;
+    display: none;
+    z-index: 10;
+    border: 1px solid gray; 
+    padding: 0px;
+    text-align: center;
+    overflow: auto;
+}
+
+#popup_question_header {
+    width: 100%;
+    height: 20px;
+    line-height:20px;
+    border-bottom: 1px solid gray;
+    text-align: center;
+    font-weight:bold; 
+}
+
+#popup_question_close {
+    font-family: sans-serif;
+    float:left;
+
+}
+
+#popup_question textarea {
+    width:80%;
+    height:80%;
+}
+
+.announcement_item {
+    border: 1px solid gray;
+    background-color: #EEEEFF;
+    margin: 2px;
+    padding: 4px;
+    display:none;
+}
+
+.announcement_date {
+  display: block;
+}
+
+.announcement_text {
+  margin-left: 10px;
+  font-weight:bold;
+}
+
+.displayed {
+    display: block;
 }
