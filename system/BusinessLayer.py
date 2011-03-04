@@ -378,7 +378,6 @@ def submit(contest, task, user, files, timestamp):
     # TODO: Determine when the submission is to be considered accepted
     # and pre-emptively stored.
     if Configuration.submit_local_copy:
-        import os
         import pickle
         try:
             path = os.path.join(Configuration.submit_local_copy_path, user.username)
