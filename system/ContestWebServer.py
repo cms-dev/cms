@@ -78,8 +78,8 @@ class BaseHandler(tornado.web.RequestHandler):
             username, cookie_time = pickle.loads(self.get_secure_cookie("login"))
         except:
             return None
-        if cookie_time == None or cookie_time < upsince:
-            return None
+        #if cookie_time == None or cookie_time < upsince:
+        #    return None
         return BusinessLayer.get_user_by_username(c, username)
 
     def render_params(self):
