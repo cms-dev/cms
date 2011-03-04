@@ -4,6 +4,7 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <link rel="stylesheet" type="text/css" href="/static/style_admin.css">
     <title>{{ contest.description }}</title>
     <script type="text/javascript">
 <!--
@@ -51,18 +52,21 @@
                 if(xmlhttp.responseXML)
                 {
                     var root = xmlhttp.responseXML;
-                    var announcements = root.getElementsByTagName("announcements")[0].firstChild.nodeValue
-                    var messages = root.getElementsByTagName("messages")[0].firstChild.nodeValue
-                    last_notification = root.getElementsByTagName("requestdate")[0].firstChild.nodeValue
+                    var announcements = root.getElementsByTagName("announcement");
+                    var messages = root.getElementsByTagName("message");
 
+                    last_notification = root.getElementsByTagName("requestdate")[0].firstChild.nodeValue
                     notification = "";
-                    if( announcements != 0)
-                        notification += announcements + " new announcement(s)";
-                    if( messages != 0)
+                    
+                    if( announcements.length != 0)
                     {
-                        if(notification != "")
-                            notification += " and ";
-                        notification += messages + " new message(s)";
+                        var announcement_subject = root.getElementsByTagName("announcement")[0].firstChild.nodeValue;
+                        notification += "Announcement: " + announcement_subject ;
+                    }
+                    else if( messages.length != 0)
+                    {
+                        var message_subject = root.getElementsByTagName("message")[0].firstChild.nodeValue;
+                        notification += "Message: " + message_subject;
                     }
                     if(notification != "")
                     {

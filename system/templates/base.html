@@ -51,18 +51,21 @@
                 if(xmlhttp.responseXML)
                 {
                     var root = xmlhttp.responseXML;
-                    var announcements = root.getElementsByTagName("announcements")[0].firstChild.nodeValue
-                    var messages = root.getElementsByTagName("messages")[0].firstChild.nodeValue
-                    last_notification = root.getElementsByTagName("requestdate")[0].firstChild.nodeValue
+                    var announcements = root.getElementsByTagName("announcement");
+                    var messages = root.getElementsByTagName("message");
 
+                    last_notification = root.getElementsByTagName("requestdate")[0].firstChild.nodeValue
                     notification = "";
-                    if( announcements != 0)
-                        notification += announcements + " new announcement(s)";
-                    if( messages != 0)
+
+                    if( announcements.length != 0)
                     {
-                        if(notification != "")
-                            notification += " and ";
-                        notification += messages + " new message(s)";
+                        var announcement_subject = root.getElementsByTagName("announcement")[0].firstChild.nodeValue;
+                        notification += "<a href=\"/\">Announcement: " + announcement_subject + "</a>";
+                    }
+                    else if( messages.length != 0)
+                    {
+                        var message_subject = root.getElementsByTagName("message")[0].firstChild.nodeValue;
+                        notification += "<a href=\"/user\">Message: " + message_subject + "</a>";
                     }
                     if(notification != "")
                     {
