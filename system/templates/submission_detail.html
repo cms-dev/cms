@@ -22,7 +22,7 @@
               {% if submission.evaluation_outcome != None %}
                   <table>
                   <tr><th>Score</th><th>Details</th></tr>
-                  {% for i, ev_o, ev_t in enumerate(zip(submission.evaluation_outcome, submission.evaluation_text)) %}
+                  {% for i, (ev_o, ev_t) in enumerate(zip(submission.evaluation_outcome, submission.evaluation_text)) %}
                     {% if i in task.public_testcases %}
                       <tr><td>{{ ev_o }}</td><td>{{ ev_t }}</td><tr/>
                     {% end %}
