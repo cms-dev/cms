@@ -53,7 +53,7 @@ def reimport_contest(path, old_contest):
     params["token_gen_time"] = conf.get("token_gen_time", 1)
     params["users"] = []
     for user in conf["utenti"]:
-        matching_users = [ x for x in old_contest.users if x.username == user ]
+        matching_users = [ x for x in old_contest.users if x.username == user["username"] ]
         if matching_users != []:
             params["users"].append(reimport_user(matching_users[0],user))
         else:
