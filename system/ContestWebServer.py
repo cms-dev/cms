@@ -321,13 +321,13 @@ class SubmitHandler(BaseHandler):
             r_params["warned"] = warned
             self.render("successfulSub.html", **r_params)
         except couchdb.ResourceConflict:
-            self.render("errors/conflictError.html")
+            self.render("errors/conflictError.html", **r_params)
         except BusinessLayer.ConnectionFailure:
-            self.render("errors/connectionFailure.html")
+            self.render("errors/connectionFailure.html", **r_params)
         except BusinessLayer.StorageFailure:
-            self.render("errors/storageFailure.html")
+            self.render("errors/storageFailure.html", **r_params)
         except BusinessLayer.InvalidSubmission:
-            self.render("errors/invalidSubmission.html")
+            self.render("errors/invalidSubmission.html", **r_params)
 
 class UserHandler(BaseHandler):
     

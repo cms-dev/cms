@@ -14,7 +14,7 @@
       </tr>
       <tr>
           <th>Compilation detail</th>
-          <td>{{ submission.compilation_text.replace("\n","<br/>") }}</td>
+          <td>{% if submission.compilation_text %}{{ submission.compilation_text.replace("\n","<br/>") }}{% end %}</td>
       </tr>
       <tr>
           <th>Evaluation outcome</th>
@@ -22,8 +22,10 @@
               {% if submission.evaluation_outcome != None %}
                   <table>
                   <tr><th>Score</th><th>Details</th></tr>
-                  {% for ev_o, ev_t in zip(submission.evaluation_outcome, submission.evaluation_text) %}
+                  {% for i, ev_o, ev_t in enumerate(zip(submission.evaluation_outcome, submission.evaluation_text)) %}
+                    {% if i in task.public_testcases %}
                       <tr><td>{{ ev_o }}</td><td>{{ ev_t }}</td><tr/>
+                    {% end %}
                   {% end %}
                   </table>
               {% else %}
