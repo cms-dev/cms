@@ -182,6 +182,10 @@ def update_users(contest):
     for u in contest.users:
         u.refresh()
 
+def refresh_array(array):
+    for x in array:
+        x.refresh()
+
 def get_user_by_username(contest, username):
     for user in contest.users:
         if user.username == username:
