@@ -1,25 +1,35 @@
 {% extends base.html %}
 
 {% block core %}
-    <h1>Home</h1>
-    <h2>Contests</h2>
-    <a href="/addcontest">Add contest</a></br></br>
-    <table>
-    <tr>
-    <th>Name</th>
-    <th>Description</th>
-    <th>Start</th>
-    <th>End</th>
-    <th>Delete</th>
-    </tr>
-    {% for c in contests %}
-        <tr>
-        <td><a href="/contest/{{c.couch_id}}">{{ c.name }}</a> </td>
-        <td>{{ c.description[0:20] }}{% if len(c.description)>20 %}...{% end %}</td>
-        <td>{{ c.start }}</td>
-        <td>{{ c.stop }}</td>
-        <td><a href="/delcontest/{{c.couch_id}}">X</a></td>
-        </tr>
-    {% end %}
-    </table>
+
+        <div class="core_title">
+        <h1>Contest Overview</h1>
+        </div>
+        <h2>Announcements</h2>
+        <div id="announcements">
+        {% if contest.announcements != [] %}
+
+            <a href="/addAnnouncement/">[TODO] New announcement</a>
+            {% for msg_i, msg in enumerate(reversed(contest.announcements)) %}
+            <div class="announcement_item displayed">
+                <span class="announcement_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
+                <span class="announcement_text">{{msg["subject"]}}</span>
+            </div>
+            {% end %}
+            
+        {% else %}
+        No announcements.
+        {% end %}
+        </div>
+        <h2>General information</h2>
+
+        {% if phase == 0 %}
+            The contest started at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.start)) }};<br/>it will end at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.stop)) }}.</p>
+        {% elif phase == -1 %}
+            The contest starts at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.start)) }} and will end at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.stop)) }}.
+        {% elif phase == 1 %}
+            The contest has ended.
+        {% end %}
+
+
 {% end %}
