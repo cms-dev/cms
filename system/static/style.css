@@ -234,3 +234,24 @@ a, a:visited {
 .displayed {
     display: block;
 }
+
+.sub_table, .sub_details {
+  border-collapse: collapse;
+  margin-top:10px;
+}
+
+.sub_table td, .sub_table th{
+    border: 1px solid gray;
+    padding: 5px;
+}
+
+.sub_details td, .sub_details th {
+    border: 1px solid gray;
+    padding: 5px;
+}
+
+.sub_score td, .sub_score th {
+    border: 0;
+    padding: 5px;
+}
+

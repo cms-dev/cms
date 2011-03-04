@@ -55,6 +55,7 @@ class BaseHandler(tornado.web.RequestHandler):
         """
         # Attempt to update the contest and all its references
         # If this fails, the request terminates.
+        self.set_header("Cache-Control", "no-cache, must-revalidate")
         try:
             c.refresh()
             BusinessLayer.update_submissions(c)
@@ -263,7 +264,7 @@ class UseTokenHandler(BaseHandler):
 
         try:
             warned = BusinessLayer.enable_detailed_feedback(c, s, timestamp, self.current_user)
-            r_params["sub_id"] = sub_id
+            r_params["submission"] = s
             self.render("successfulToken.html", **r_params)
         except BusinessLayer.FeedbackAlreadyRequested:
             # Either warn the user about the issue or simply

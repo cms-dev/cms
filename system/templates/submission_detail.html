@@ -3,27 +3,33 @@
     <div class="core_title">
     <h1>{{ task.title }} ({{ task.name }}) - Submission Detail </h1>
     </div>
-      <table>
+      <table class="sub_details">
       <tr>
           <th>Timestamp</th>
           <td>{{ datetime.datetime.fromtimestamp(submission.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</td>
       </tr>
       <tr>
-          <th>Compilation outcome</th>
+          <th>Compilation<br/>outcome</th>
           <td>{{ submission.compilation_outcome }}</td>
       </tr>
       <tr>
-          <th>Compilation detail</th>
+          <th>Compilation<br/>detail</th>
           <td>{% if submission.compilation_text %}{{ submission.compilation_text.replace("\n","<br/>") }}{% end %}</td>
       </tr>
       <tr>
-          <th>Evaluation outcome</th>
+          <th>
+          {% if submission.token_timestamp == None %}
+            Partial<br/>evaluation<br/>outcome
+          {% else %}
+            Detailed<br/>evaluation<br/>outcome
+          {% end %}
+          </th>
           <td>
               {% if submission.evaluation_outcome != None %}
-                  <table>
+                  <table class="sub_score">
                   <tr><th>Score</th><th>Details</th></tr>
                   {% for i, (ev_o, ev_t) in enumerate(zip(submission.evaluation_outcome, submission.evaluation_text)) %}
-                    {% if i in task.public_testcases %}
+                    {% if submission.token_timestamp!= None or i in task.public_testcases %}
                       <tr><td>{{ ev_o }}</td><td>{{ ev_t }}</td><tr/>
                     {% end %}
                   {% end %}
