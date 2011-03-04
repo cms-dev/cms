@@ -6,7 +6,6 @@
         <div class="core_title">
         <h1>Contest Overview</h1>
         </div>
-        <div>
         <h2>Announcements</h2>
         <div id="announcements">
         {% if contest.announcements != [] %}
@@ -26,17 +25,11 @@
         <h2>General information</h2>
 
         {% if phase == 0 %}
-            <p>
             The contest started at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.start)) }};<br/>it will end at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.stop)) }}.</p>
-            </div>
         {% elif phase == -1 %}
-            <div class="precontest_message">
             The contest starts at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.start)) }} and will end at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.stop)) }}.
-            </div>
         {% elif phase == 1 %}
-            <div class="postcontest_message">
             The contest has ended.
-            </div>
         {% end %}
 
     {% else %}
