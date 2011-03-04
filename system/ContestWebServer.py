@@ -370,6 +370,11 @@ class NotificationsHandler(BaseHandler):
         self.write("<requestdate>"+str(timestamp)+"</requestdate>");
         self.write("</root>")
 
+class QuestionHandler(BaseHandler):
+    @tornado.web.authenticated
+    def post(self):
+        pass
+
 handlers = [
             (r"/", MainHandler),
             (r"/login", LoginHandler),
@@ -384,6 +389,7 @@ handlers = [
             (r"/user", UserHandler),
             (r"/instructions",InstructionHandler),
             (r"/notifications",NotificationsHandler),
+            (r"/questions",QuestionHandler),
             (r"/stl/(.*)", tornado.web.StaticFileHandler, {"path": WebConfig.stl_path} ),
 
            ]

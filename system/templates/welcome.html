@@ -12,7 +12,7 @@
 
 
             {% for msg_i, msg in enumerate(reversed(contest.announcements)) %}
-            <div class="announcement_item {% if msg_i == 0 %}displayed{% end %}">
+            <div class="announcement_item displayed">
                 <span class="announcement_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
                 <span class="announcement_text">{{msg["subject"]}}</span>
             </div>
