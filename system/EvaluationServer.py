@@ -450,8 +450,8 @@ class EvaluationServer(RPCServer):
         self.contest.ranking_view.to_couch()
         self.contest.to_couch()
         for sub in self.contest.submissions:
-            sub.invalid()
-            self.add_job(sub.couch_id)
+            if sub.evaluation_outcome == None:
+                self.add_job(sub.couch_id)
 
         RPCServer.__init__(self, "EvaluationServer", listen_address, listen_port,
                            [self.use_token,

@@ -33,7 +33,7 @@ import sys
 import xmlrpclib
 import time
 
-import BusinessLayer 
+import BusinessLayer
 import Configuration
 import WebConfig
 import CouchObject
@@ -114,6 +114,41 @@ class ContestViewHandler(BaseHandler):
         return
       self.render("contest.html", contest = c, cookie = str(self.cookies))
 
+class SubmissionReevaluateHandler(BaseHandler):
+    """
+    Re-evaluate the specified submission and go back to the details of
+    the user.
+    """
+    def get(self, submission_id):
+
+        r_params = self.render_params()
+
+        # search the submission in the contest
+        s = BusinessLayer.get_submission(c, submission_id)
+        if s == None:
+            raise tornado.web.HTTPError(404)
+        BusinessLayer.reevaluate_submission(s)
+        self.redirect("/user/%s" % s.user.username)
+
+
+class UserReevaluateHandler(BaseHandler):
+    """
+    Re-evaluate the submissions of the specified user and go back to
+    the details of the user.
+    """
+    def get(self, user_id):
+
+        r_params = self.render_params()
+
+        u = BusinessLayer.get_user_by_username(c, user_id)
+        if u == None:
+            raise tornado.web.HTTPError(404)
+        submissions = BusinessLayer.get_submissions_by_username(c, user_id)
+        for submission in submissions:
+            BusinessLayer.reevaluate_submission(submission)
+        self.redirect("/user/%s" % user_id)
+
+
 #class EditContestHandler(BaseHandler):
 #    def post(self,contest_id):
 #        try:
@@ -125,7 +160,7 @@ class ContestViewHandler(BaseHandler):
 #          return
 #        name = self.get_argument("name")
 #        description = self.get_argument("description","")
-#        
+#
 #        try:
 #          token_initial = int(self.get_argument("token_initial","0"))
 #          token_max = int(self.get_argument("token_max","0"))
@@ -134,12 +169,12 @@ class ContestViewHandler(BaseHandler):
 #          self.write("Invalid token number field(s).")
 #          return;
 #        timearguments = ["_hour","_minute"]
-#        
+#
 #        token_min_interval = int(self.get_argument("min_interval_hour","0")) * 60 + \
 #                             int(self.get_argument("min_interval_minute","0"))
 #        token_gen_time = int(self.get_argument("token_gen_hour","0")) * 60 + \
 #                             int(self.get_argument("token_gen_minute","0"))
-#        
+#
 #        datetimearguments = ["_year","_month","_day","_hour","_minute"]
 #        try:
 #          start = datetime.datetime(*[int(self.get_argument("start"+x)) for x in datetimearguments] )
@@ -166,11 +201,11 @@ class ContestViewHandler(BaseHandler):
 #        except:
 #          self.write("Contest storage in CouchDB failed!")
 #        self.redirect("/")
-#        return 
+#        return
 
 #class AddContestHandler(BaseHandler):
 #    def get(self):
-#        self.render("addcontest.html", cookie = str(self.cookies))        
+#        self.render("addcontest.html", cookie = str(self.cookies))
 #    def post(self):
 #        from Contest import Contest
 #        if self.get_arguments("name") == []:
@@ -178,7 +213,7 @@ class ContestViewHandler(BaseHandler):
 #          return
 #        name = self.get_argument("name")
 #        description = self.get_argument("description","")
-#        
+#
 #        try:
 #          token_initial = int(self.get_argument("token_initial","0"))
 #          token_max = int(self.get_argument("token_max","0"))
@@ -187,15 +222,15 @@ class ContestViewHandler(BaseHandler):
 #          self.write("Invalid token number field(s).")
 #          return;
 #        timearguments = ["_hour","_minute"]
-#        
+#
 #        token_min_interval = int(self.get_argument("min_interval_hour","0")) * 60 + \
 #                             int(self.get_argument("min_interval_minute","0"))
 #        token_gen_time = int(self.get_argument("token_gen_hour","0")) * 60 + \
 #                             int(self.get_argument("token_gen_minute","0"))
-#        
+#
 #        datetimearguments = ["_year","_month","_day","_hour","_minute"]
 #        try:
-#          time_start = time.mktime(time.strptime(" ".join([self.get_argument("start"+x,"0") for x in datetimearguments]) ,  "%Y %m %d %H %M")) 
+#          time_start = time.mktime(time.strptime(" ".join([self.get_argument("start"+x,"0") for x in datetimearguments]) ,  "%Y %m %d %H %M"))
 #          time_stop = time.mktime(time.strptime(" ".join([self.get_argument("end"+x,"0") for x in datetimearguments]) , "%Y %m %d %H %M" ))
 #        except Exception as e:
 #          self.write("Invalid date(s)." + repr(e))
@@ -205,7 +240,7 @@ class ContestViewHandler(BaseHandler):
 #          return
 #        try:
 #          c = Contest(name,description,[],[],
-#                      token_initial, token_max, token_total, 
+#                      token_initial, token_max, token_total,
 #                      token_min_interval, token_gen_time,
 #                      start = time_start, stop = time_stop )
 #        except:
@@ -222,7 +257,7 @@ class ContestViewHandler(BaseHandler):
 #        except:
 #          self.write("Contest storage in CouchDB failed!")
 #        self.redirect("/")
-#        return 
+#        return
 
 class SubmissionDetailHandler(BaseHandler):
     """
@@ -274,6 +309,7 @@ class UserViewHandler(BaseHandler):
         r_params["submissions"] = submissions
         self.render("user.html", **r_params)
 
+
 class UserListHandler(BaseHandler):
     def get(self):
         r_params = self.render_params()
@@ -285,6 +321,8 @@ handlers = [
 #            (r"/contest/([a-zA-Z0-9_-]+)",ContestViewHandler),
 #            (r"/contest/([a-zA-Z0-9_-]+)/edit",EditContestHandler),
             (r"/submissions/details/([a-zA-Z0-9_-]+)", SubmissionDetailHandler),
+            (r"/reevaluate/submission/([a-zA-Z0-9_-]+)", SubmissionReevaluateHandler),
+            (r"/reevaluate/user/([a-zA-Z0-9_-]+)", UserReevaluateHandler),
             (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", SubmissionFileHandler),
             (r"/user/([a-zA-Z0-9_-]+)",UserViewHandler),
             (r"/user",UserListHandler),

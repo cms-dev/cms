@@ -2,10 +2,10 @@
 
 {% block core %}
     <div class="core_title">
-    <h1>User list</h1>
+    <h1>Users list</h1>
     </div>
     <ul>
-    {% for u in contest.users %}
-        <li><a href="/user/{{u.username}}">{{u.username}}</a></li>
+    {% for u in sorted(contest.users, cmp = lambda x, y: cmp(x.username, y.username))  %}
+        <li>{{u.real_name}} (<a href="/user/{{u.username}}">{{u.username}}</a>) &mdash; [<a href="/reevaluate/user/{{ u.username }}">re-evaluate all</a>]</li>
     {% end %}
 {% end %}
