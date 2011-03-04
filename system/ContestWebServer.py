@@ -354,6 +354,7 @@ class InstructionHandler(BaseHandler):
 
 class NotificationsHandler(BaseHandler):
     def post(self):
+        raise tornado.web.HTTPError(404)
         timestamp = time.time();
         last_request = self.get_argument("lastrequest",timestamp)
         messages = []

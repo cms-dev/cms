@@ -2,7 +2,7 @@
 
 {% block core %}
     <div class="core_title">
-    <h1>{{ selected_user }}</h1>
+    <h1>{{ selected_user.real_name }} ({{ selected_user.username }})</h1>
     </div>
 
     <h2 onclick="toggleVisibility(&quot;user_submissions&quot;);">
@@ -44,7 +44,7 @@
                     {% end %}
                     </td>
                     <td>
-                        <a href="/submissions/reevaluate/{{escape(s.couch_id)}}">Go ahead!</a>
+                        <a href="/reevaluate/submission/{{escape(s.couch_id)}}">Go ahead!</a>
                     </td>
                 </tr>
             {% end %}

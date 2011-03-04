@@ -114,6 +114,41 @@ class ContestViewHandler(BaseHandler):
         return
       self.render("contest.html", contest = c, cookie = str(self.cookies))
 
+class SubmissionReevaluateHandler(BaseHandler):
+    """
+    Re-evaluate the specified submission and go back to the details of
+    the user.
+    """
+    def get(self, submission_id):
+
+        r_params = self.render_params()
+
+        # search the submission in the contest
+        s = BusinessLayer.get_submission(c, submission_id)
+        if s == None:
+            raise tornado.web.HTTPError(404)
+        BusinessLayer.reevaluate_submission(s)
+        self.redirect("/user/%s" % s.user.username)
+
+
+class UserReevaluateHandler(BaseHandler):
+    """
+    Re-evaluate the submissions of the specified user and go back to
+    the details of the user.
+    """
+    def get(self, user_id):
+
+        r_params = self.render_params()
+
+        u = BusinessLayer.get_user_by_username(c, user_id)
+        if u == None:
+            raise tornado.web.HTTPError(404)
+        submissions = BusinessLayer.get_submissions_by_username(c, user_id)
+        for submission in submissions:
+            BusinessLayer.reevaluate_submission(submission)
+        self.redirect("/user/%s" % user_id)
+
+
 #class EditContestHandler(BaseHandler):
 #    def post(self,contest_id):
 #        try:
@@ -241,21 +276,6 @@ class SubmissionDetailHandler(BaseHandler):
         self.render("submission_detail.html", **r_params)
 
 
-class SubmissionReevaluateHandler(BaseHandler):
-    """
-    Shows additional details for the specified submission.
-    """
-    def get(self, submission_id):
-
-        r_params = self.render_params()
-
-        # search the submission in the contest
-        s = BusinessLayer.get_submission(c, submission_id)
-        if s == None:
-            raise tornado.web.HTTPError(404)
-        BusinessLayer.reevaluate_submission(s)
-        self.redirect("/user/%s" % s.user.username)
-
 class SubmissionFileHandler(BaseHandler):
     """
     Shows a submission file.
@@ -289,6 +309,7 @@ class UserViewHandler(BaseHandler):
         r_params["submissions"] = submissions
         self.render("user.html", **r_params)
 
+
 class UserListHandler(BaseHandler):
     def get(self):
         r_params = self.render_params()
@@ -300,7 +321,8 @@ handlers = [
 #            (r"/contest/([a-zA-Z0-9_-]+)",ContestViewHandler),
 #            (r"/contest/([a-zA-Z0-9_-]+)/edit",EditContestHandler),
             (r"/submissions/details/([a-zA-Z0-9_-]+)", SubmissionDetailHandler),
-            (r"/submissions/reevaluate/([a-zA-Z0-9_-]+)", SubmissionReevaluateHandler),
+            (r"/reevaluate/submission/([a-zA-Z0-9_-]+)", SubmissionReevaluateHandler),
+            (r"/reevaluate/user/([a-zA-Z0-9_-]+)", UserReevaluateHandler),
             (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", SubmissionFileHandler),
             (r"/user/([a-zA-Z0-9_-]+)",UserViewHandler),
             (r"/user",UserListHandler),
