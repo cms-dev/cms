@@ -1,0 +1,22 @@
+{% extends base_noauth.html %}
+
+{% block core %}
+    <table>
+      <tr>
+        <th><strong>Name</strong></th>
+        <th><strong>Total</strong></th>
+        {% for t in contest.tasks %}
+          <th><a href="/tasks/{{ t.name }}">{{ t.name }}</a></th>
+        {% end %}
+      </tr>
+      {% for u in contest.users %}
+      <tr>
+        <td>{{ u.real_name }}</td>
+        <td>{{ sum(contest.ranking_view.scores[u.username]) }}</td>
+        {% for i, t in enumerate(contest.tasks) %}
+          <td>{{ contest.ranking_view.scores[u.username][i] }}</td>
+        {% end %}
+      </tr>
+      {% end %}
+    </table>
+{% end %}

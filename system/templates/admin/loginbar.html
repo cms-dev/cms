@@ -1,18 +1,25 @@
-    <!-- login form-->
-    <div class="loginbar">
-    {% if current_user == None %}
-        {% if handler.get_arguments("login_error") != [] %}
-            <span style="display: inline-block; color:red">Failed to log in.</span>
-        {% end %}
-        <form style="display: inline-block" action="/login" method="POST">
-                Username:
-                <input type="text" name="username" size=8>
-                Password:
-                <input type="password" name="password" size=8>
-                <input type="submit" value="Sign in">
-        </form>
-    {% else %}
-        Benvenuto {{ current_user.username }}!
-        <a href="/logout">Logout</a>
+<!-- login form-->
+<div class="loginbar">
+{% if current_user == None %}
+    {% if handler.get_argument("login_error","") != "" %}
+        <span style="display: inline-block; color:red">Failed to log in.</span>
+    {% end %}
+    <form style="display: inline-block" action="/login" method="POST">
+            <input type="hidden" name="next" value="{{ handler.get_argument("next","/") }}">
+            Username:
+            <input type="text" name="username" size=8>
+            Password:
+            <input type="password" name="password" size=8>
+            <input type="submit" value="Sign in">
+    </form>
+{% else %}
+    <div class="loginbar_left">
+    {% if phase != 1 %}
+    Time remaining: <span id="remaining"></span>
     {% end %}
     </div>
+    <div class="loginbar_right">
+        <a href="/user">{{ current_user.real_name }}</a> - <a href="/logout">Logout</a>
+    </div>
+{% end %}
+</div>
