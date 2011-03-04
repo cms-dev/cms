@@ -374,6 +374,8 @@ handlers = [
             (r"/user", UserHandler),
             (r"/instructions",InstructionHandler),
             (r"/notifications",NotificationsHandler),
+            (r"/stl/(.*)", tornado.web.StaticFileHandler, {"path": WebConfig.stl_path} ),
+
            ]
 
 application = tornado.web.Application(handlers, **WebConfig.parameters)

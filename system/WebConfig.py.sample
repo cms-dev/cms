@@ -28,6 +28,8 @@ listen_port = 8888
 # ssl_options = {"certfile" : "cert.pem"}
 ssl_options = None
 
+stl_path = "/usr/share/doc/stl-manual/html/"
+
 parameters={
             "login_url": "/" ,
             "template_path": "./templates",
