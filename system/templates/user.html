@@ -13,9 +13,7 @@
             <div class="message_item displayed">
                 <span class="message_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
                 <span class="message_subject">{{msg["subject"]}}</span>
-                {% if msg["quick_answer"] in WebConfig.quick_answers %}
-                <span class="message_quick_answer">{{ WebConfig.quick_answers[msg["quick_answer"]] }}</span>
-                {% end %}
+
                 <span class="message_text">{{msg["text"]}}</span>
             </div>
         {% end %}
@@ -33,6 +31,13 @@
                 <span class="question_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
                 <span class="question_subject">{{escape(msg["subject"])}}</span>
                 <span class="question_text">{{escape(msg["text"])}}</span>
+                {% if msg["reply_date"] != None %}
+                    <hr/>
+                    <div class="reply_question_quick_answer">Replied with quick answer: {{ WebConfig.quick_answers[msg["quick_answer"]] }}</div>
+                    {% if msg["reply_text"] %}
+                    <div class="reply_question_additional">Additional message: {{ msg["reply_text"] }}</div>
+                    {% end %}
+                {% end %}
             </div>
         {% end %}
     {% else %}

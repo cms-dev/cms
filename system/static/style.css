@@ -211,7 +211,7 @@ a, a:visited {
     margin-top: 50px;
     margin-left: auto;
     margin-right: auto;
-    background-color: #FFFF88;
+    background-color: #FFFFDD;
     visibility: show;
     border: 1px solid gray;
     padding: 0px;
@@ -273,12 +273,7 @@ a, a:visited {
   margin-left: 15px;
 }
 
-.message_quick_answer {
-  display: block;
-  margin-left: 15px;
-  font-style: italic;
-  text-decoration: underline;
-}
+
 .displayed {
     display: block;
 }
@@ -338,4 +333,27 @@ code
     background-color: #EEEEEE;
     color: red;
     font-weight: bold;
+}
+
+.question_content {
+    position: relative;
+}
+
+.reply_question_toggle {
+    position: absolute;
+    bottom:0;
+    right:0;
+}
+
+.reply_question {
+    display: none;
+}
+.reply_question_quick_answer {
+  display: block;
+  margin-left: 15px;
+  font-style: italic;
+  text-decoration: underline;
+}
+.reply_question textarea {
+    width: 100%;
 }
