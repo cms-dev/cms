@@ -58,7 +58,7 @@
             {% if isinstance(w['job'], str) %}
             <td>{{ w['job'] }}</td>
             {% else %}
-            <td>{{ w['job'][0] }} {{ w['job'][1] }} since {{ "%.2f" % (timestamp - w['start_time']) }} seconds</td>
+            <td>{{ w['job'][0] }} {{ w['job'][1] }} for {{ "%.2f" % (timestamp - w['start_time']) }} seconds</td>
             {% end %}
           <tr>
           {% end %}
