@@ -169,7 +169,7 @@ class BatchTaskType:
 
     def safe_get_file_to_string(self, name):
         try:
-            return self.sandbox.get_file_to_string(name)
+            return self.sandbox.get_file_to_string(name, maxlen=1024)
         except (IOError, OSError):
             Utils.log("Couldn't retrieve file `%s' from storage" % (name), Utils.Logger.SEVERITY_IMPORTANT)
             self.safe_delete_sandbox()

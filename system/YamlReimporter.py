@@ -21,6 +21,7 @@
 
 import yaml
 import os
+import couchdb
 import sys
 
 from Task import Task
