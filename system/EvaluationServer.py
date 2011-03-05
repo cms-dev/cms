@@ -444,6 +444,8 @@ class JobDispatcher(threading.Thread):
                            action,
                            submission.couch_id,
                            queue_time))
+                Utils.log("Still %d jobs in the queue" % self.queue.length(),
+                          Utils.Logger.SEVERITY_DEBUG)
                 try:
                     p = xmlrpclib.ServerProxy("http://%s:%d" % (host, port))
                     if action == EvaluationServer.JOB_TYPE_COMPILATION:
@@ -558,12 +560,9 @@ class EvaluationServer(RPCServer):
         self.st = threading.Thread()
 
         self.contest = contest
-        self.contest.ranking_view = RankingView(contest)
-        self.contest.update_ranking_view()
-        # These two to_couch() calls shouldn't fail, because nothing
-        # other should own and modify the objects they act on
-        self.contest.ranking_view.to_couch()
-        self.contest.to_couch()
+        if self.contest.ranking_view == None:
+            self.contest.ranking_view = RankingView(self.contest)
+            self.contest.to_couch()
         for submission in self.contest.submissions:
             if submission.evaluation_outcome == None:
                 if submission.compilation_outcome != "fail":
@@ -572,6 +571,7 @@ class EvaluationServer(RPCServer):
                 scorer = submission.task.scorer
                 scorer.add_submission(submission)
         self.contest.update_ranking_view()
+
 
         RPCServer.__init__(self, "EvaluationServer",
                            listen_address, listen_port,
