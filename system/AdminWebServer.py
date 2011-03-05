@@ -375,6 +375,35 @@ class MessageHandler(BaseHandler):
         self.render("successfulMessage.html", **r_params)
 
 
+class QuestionReplyHandler(BaseHandler):
+
+    def post(self, user_name):
+        r_params = self.render_params()
+
+        user = BusinessLayer.get_user_by_username(c, user_name)
+        if user == None:
+            raise tornado.web.HTTPError(404)
+        r_params["selected_user"] = user
+
+        message_index = self.get_argument("reply_question_index",None)
+        message_quick_answer = self.get_argument("reply_question_quick_answer","")
+        message_text = self.get_argument("reply_question_text","")
+
+        if message_index == None:
+            raise tornado.web.HTTPError(404)
+        message_index = int(message_index)
+
+        # Ignore invalid answers
+        if message_quick_answer not in WebConfig.quick_answers:
+            message_quick_answer = None
+
+        BusinessLayer.reply_question(user,message_index, time.time(),\
+                 message_quick_answer, message_text)
+        Utils.log("Reply sent to user %s for question '%s'." 
+                  % (user_name,user.questions[message_index]["subject"]) ,
+                  Utils.logger.SEVERITY_NORMAL)
+        self.render("successfulMessage.html", **r_params)
+
 handlers = [
             (r"/",MainHandler),
 #            (r"/addcontest",AddContestHandler),
@@ -389,6 +418,7 @@ handlers = [
             (r"/user/([a-zA-Z0-9_-]+)", UserViewHandler),
             (r"/user", UserListHandler),
             (r"/message/([a-zA-Z0-9_-]+)", MessageHandler),
+            (r"/question/([a-zA-Z0-9_-]+)", QuestionReplyHandler),
            ]
 
 admin_parameters={

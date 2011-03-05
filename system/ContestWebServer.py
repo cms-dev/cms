@@ -99,23 +99,6 @@ class BaseHandler(tornado.web.RequestHandler):
             return False
         return True
 
-#class RefreshingHandler(BaseHandler):
-#    def prepare(self):
-#        """This method is executed at the beginning of each request.
-#        """
-#        # Attempt to update the contest and all its references
-#        # If this fails, the request terminates.
-#        self.set_header("Cache-Control", "no-cache, must-revalidate")
-#        try:
-#            c.refresh()
-#            BusinessLayer.update_submissions(c)
-#            BusinessLayer.update_users(c)
-#        except Exception as e:
-#            Utils.log("CouchDB exception:" + repr(e),
-#                      Utils.Logger.SEVERITY_CRITICAL)
-#            self.write("Can't connect to CouchDB Server")
-#            self.finish()
-
 
 class MainHandler(BaseHandler):
     """Home page handler.
@@ -435,7 +418,7 @@ class QuestionHandler(BaseHandler):
         print self.request
         r_params = self.render_params()
         question_subject = self.get_argument("question_subject","")
-        # For some reason, the argument question_text is a tuple.
+
         question_text = self.get_argument("question_text","")
         BusinessLayer.add_user_question(self.current_user,time.time(),\
                 question_subject, question_text)

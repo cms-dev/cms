@@ -66,9 +66,6 @@
             <div class="message_item displayed">
                 <span class="message_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
                 <span class="message_subject">{{msg["subject"]}}</span>
-                {% if msg["quick_answer"] in WebConfig.quick_answers %}
-                <span class="message_quick_answer">{{ WebConfig.quick_answers[msg["quick_answer"]] }}</span>
-                {% end %}
                 <span class="message_text">{{msg["text"]}}</span>
             </div>
         {% end %}
@@ -99,12 +96,17 @@
     </div>
 
     <script>
-    function message_reply(subject) {
-        document.getElementById("send_message_form").reset();
-        document.getElementById("send_message_subject").value = "Reply to: "+subject;
-        util.setVisibility("user_messages");
-        util.setVisibility("send_message");
-        window.location="#send_message";
+    function question_reply_toggle(element, invoker) {
+        if(document.getElementsByClassName("reply_question")[element].style.display!="block")
+        {
+            document.getElementsByClassName("reply_question")[element].style.display="block";
+            invoker.innerHTML = "Hide Reply";
+        }
+        else
+        {
+            document.getElementsByClassName("reply_question")[element].style.display="none";
+            invoker.innerHTML = "Reply";
+        }
         return false;
     }
     </script>
@@ -115,10 +117,40 @@
     {% if selected_user.questions != [] %}
         {% for i, msg in enumerate(reversed(selected_user.questions)) %}
             <div class="question_item displayed">
-                <span class="question_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
-                <span class="question_subject">{{escape(msg["subject"])}}</span>
-                <span class="question_text">{{escape(msg["text"])}}</span>
-                <div class="question_options"><a href="#" onclick="return message_reply(&quot;{{escape(msg["subject"])}}&quot;);">Reply</a></div>
+                <div class="question_content">
+                    <span class="question_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
+                    <span class="question_subject">{{escape(msg["subject"])}}</span>
+                    <span class="question_text">{{escape(msg["text"])}}</span>
+                    {% if msg["reply_date"] != None %}
+                        <hr/>
+                        <div class="reply_question_quick_answer">Replied with quick answer: {{ WebConfig.quick_answers[msg["quick_answer"]] }}</div>
+                        {% if msg["reply_text"] %}
+                        <div class="reply_question_additional">Additional message: {{ msg["reply_text"] }}</div>
+                        {% end %}
+                    {% end %}
+                    <div class="reply_question_toggle">
+                        <a href="#" onclick="return question_reply_toggle({{ i }},this);">Reply</a>
+                    </div>
+                </div>
+                <div class="reply_question" >
+                    <hr/>
+                    <form class="reply_question_form" action="/question/{{selected_user.username}}" method="POST">
+                        <input type="hidden" name="reply_question_index" value="{{len(selected_user.questions) - i - 1}}" />
+                        Quick answer: 
+                        <select name="reply_question_quick_answer">
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                            <option value="answered">Answered in task description</option>
+                            <option value="invalid">Invalid question</option>
+                            <option value="nocomment">No comment</option>
+                            <option selected value="other">Other</option>
+                        </select>
+                        </br>
+                        Additional text: </br><textarea name="reply_question_text"></textarea><br/>
+                        <input type="submit" value="Send"/>
+                    </form>
+                </div>
+
             </div>
         {% end %}
     {% else %}

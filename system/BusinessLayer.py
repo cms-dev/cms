@@ -381,10 +381,6 @@ def submit(contest, task, user, files, timestamp):
         except AttributeError:
             raise ConnectionFailure()
 
-
-    if not task.valid_submission(files.keys()):
-        raise InvalidSubmission()
-
     # Attempt to store the submission locally to be able to recover
     # a failure.
     # TODO: Determine when the submission is to be considered accepted
@@ -444,6 +440,10 @@ def submit(contest, task, user, files, timestamp):
                             Utils.Logger.SEVERITY_CRITICAL)
             raise couchdb.ResourceConflict()
 
+        # Check if the submission is valid.
+        if not s.verify_source()[0]:
+            raise InvalidSubmission()
+
         # Append the submission to the contest.
         for tentatives in xrange(Configuration.maximum_conflict_attempts):
             contest.submissions.append(s)
@@ -496,8 +496,9 @@ def add_announcement(contest, subject, text):
     contest.to_couch()
 
 def remove_announcement(contest, index):
-    del contest.announcements[index]
-    contest.to_couch()
+    with writelock:
+        del contest.announcements[index]
+        contest.to_couch()
 
 def add_user_question(user, date, question_subject, question_text):
     with writelock:
@@ -506,7 +507,18 @@ def add_user_question(user, date, question_subject, question_text):
         question["date"] = date
         question["subject"] = question_subject
         question["text"] = question_text
+        question["reply_date"] = None
+        question["quick_answer"] = None
+        question["reply_text"] = None
         user.questions.append(question)
+        user.to_couch()
+        
+def reply_question(user, index, date, quick_answer, text):
+    with writelock:
+        question = user.questions[index]
+        question["reply_date"] = date
+        question["quick_answer"] = quick_answer
+        question["reply_text"] = text
         user.to_couch()
 
 def add_user_message(user, date, message_subject, message_quick_answer, message_text):
