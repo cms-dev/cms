@@ -35,9 +35,15 @@ from View import RankingView
 
 
 class JobQueue:
-    """A job is a couple (job_type, submission).
+    """An instance of this class will contains the (unique) priority
+    queue of jobs (compilations, evaluations, ...) that the ES needs
+    to process next.
 
-    Elements of the queue are of the form (priority, timestamp, job).
+    A job is a couple (job_type, submission), where job_type is a
+    constant defined in EvaluationServer.
+
+    Elements of the queue are of the form (priority, timestamp, job),
+    where priority is a constant defined in EvaluationServer.
     """
 
     def __init__(self):
@@ -53,6 +59,14 @@ class JobQueue:
         self.main_lock.release()
 
     def push(self, job, priority, timestamp=None):
+        """Push a job in the queue. If timestamp is not specified,
+        tries to extract the timestamp from the submission's timestamp
+        in the job, or uses the current time.
+
+        job: a couple (job_type, submission)
+        priority: the priority of the job
+        timestamp: the time of the submission
+        """
         if timestamp == None:
             try:
                 timestamp = job[1].timestamp
@@ -63,6 +77,11 @@ class JobQueue:
         self.semaphore.release()
 
     def top(self):
+        """Returns the first element in the queue without extracting
+        it. If the queue is empty raises an exception.
+
+        returns (job): first element in the queue
+        """
         with self.main_lock:
             if len(self.queue) > 0:
                 return self.queue[0]
@@ -70,6 +89,10 @@ class JobQueue:
                 raise LookupError("Empty queue")
 
     def pop(self):
+        """Extracts (and returns) the first element in the queue.
+
+        returns (job): first element in the queue
+        """
         self.semaphore.acquire()
         with self.main_lock:
             try:
@@ -80,6 +103,12 @@ class JobQueue:
                 raise RuntimeError("Job queue went out-of-sync with semaphore")
 
     def search(self, job):
+        """Returns a specific job in the queue, if present. If not,
+        raises an exception.
+
+        returns (priority, timestamp, job): the data corresponding to
+                                            job
+        """
         with self.main_lock:
             for i in self.queue:
                 # FIXME - Is this `for' correct?
@@ -112,14 +141,27 @@ class JobQueue:
             heapq.heapify(self.queue)
 
     def length(self):
+        """Returns the number of elements in the queue.
+
+        returns (int): length of the queue
+        """
         return len(self.queue)
 
     def empty(self):
+        """Returns if the queue is empty.
+
+        returns (bool): is the queue empty?
+        """
         return self.length() == 0
 
 
 class WorkerPool:
-    WORKER_INACTIVE, WORKER_DISABLED = (None, "disabled")
+    """This class keeps the state of the workers attached to ES, and
+    allow the ES to get a usable worker when it needs it.
+    """
+
+    WORKER_INACTIVE = None
+    WORKER_DISABLED = "disabled"
 
     def __init__(self):
         self.workers = {}
@@ -129,10 +171,25 @@ class WorkerPool:
         self.start_time = {}
         self.address = {}
         self.error_count = {}
-        self.schedule_disabling = {}
         self.side_data = {}
 
+        # If schedule_disabling is True, then the next time the worker is
+        # inactive it will be disabled.
+        self.schedule_disabling = {}
+
     def acquire_worker(self, job, blocking=True, side_data=None):
+        """Tries to assign a job to an available worker. If no workers
+        are available and the request is non-blocking, then this
+        returns None, otherwise this returns the chosen worker.
+
+        job (job): the job to assign to a worker
+        blocking (bool): if False we do not wait for a worker to free
+        side_data (object): object to attach to the worker for later
+                            use
+
+        returns: None if no workers are available and blocking is
+                 False, the worker assigned to the job otherwise
+        """
         available = self.semaphore.acquire(blocking)
         if not available:
             return None
@@ -151,26 +208,37 @@ class WorkerPool:
                       Utils.Logger.SEVERITY_DEBUG)
             return worker
 
-    def release_worker(self, n):
+    def release_worker(self, worker):
+        """To be called to indicate that the job assigned to the
+        worker is concluded (in a successfull way or not). It returns
+        the side_data associated to the worker for that job.
+
+        Note: if the worker is scheduled to be disabled, then we
+        disable it.
+
+        worker (int): the worker to release, as got by acquire_worker
+
+        returns (object): side_data associated to worker
+        """
         with self.main_lock:
-            if self.workers[n] == self.WORKER_INACTIVE or \
-                    self.workers[n] == self.WORKER_DISABLED:
+            if self.workers[worker] == self.WORKER_INACTIVE or \
+                    self.workers[worker] == self.WORKER_DISABLED:
                 Utils.log("Trying to release worker while it's inactive",
                           Utils.Logger.SEVERITY_IMPORTANT)
                 raise ValueError("Trying to release worker " +
                                  "while it's inactive")
-            self.start_time[n] = None
-            side_data = self.side_data[n]
-            self.side_data[n] = None
-            if self.schedule_disabling[n]:
-                self.workers[n] = self.WORKER_DISABLED
-                self.schedule_disabling[n] = False
-                Utils.log("Worker %d released and disabled" % n,
+            self.start_time[worker] = None
+            side_data = self.side_data[worker]
+            self.side_data[worker] = None
+            if self.schedule_disabling[worker]:
+                self.workers[worker] = self.WORKER_DISABLED
+                self.schedule_disabling[worker] = False
+                Utils.log("Worker %d released and disabled" % worker,
                           Utils.Logger.SEVERITY_DEBUG)
             else:
-                self.workers[n] = self.WORKER_INACTIVE
+                self.workers[worker] = self.WORKER_INACTIVE
                 self.semaphore.release()
-                Utils.log("Worker %d released" % n,
+                Utils.log("Worker %d released" % worker,
                           Utils.Logger.SEVERITY_DEBUG)
         return side_data
 
