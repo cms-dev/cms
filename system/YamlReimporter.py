@@ -19,33 +19,34 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import yaml
 import os
 import couchdb
 import sys
 
+from YamlImporter import get_params_for_contest, \
+    get_params_for_user, get_params_for_task
 from Task import Task
 from User import User
-from ScoreType import ScoreTypes
-from FileStorageLib import FileStorageLib
 import Configuration
 import Utils
 
 
 def reimport_contest(path, old_contest):
-    path = os.path.realpath(path)
-    name = os.path.split(path)[1]
-    conf = yaml.load(open(os.path.join(path, "contest.yaml")))
+    """Tries to overwrite a given contest already in the system with
+    the data coming from another contest outside the system. After
+    doing this, it is at least needed to restart ES.
 
-    params = {
-        "name": name,
-        "couch_id": old_contest.couch_id,
-        "couch_rev": old_contest.couch_rev,
-        }
-    assert name == conf["nome_breve"]
-    params["description"] = conf["nome"]
+    Note: if the reimport fails for too many conflicts in the contest,
+    then tasks and users not linked to any contest may appear in the
+    couchdb.
+    """
+    params, tasks, users = get_params_for_contest(path)
+
+    params["couch_id"] = old_contest.couch_id
+    params["couch_rev"] = old_contest.couch_rev
+
     params["tasks"] = []
-    for task in conf["problemi"]:
+    for task in tasks:
         matching_tasks = [x for x in old_contest.tasks if x.name == task]
         if matching_tasks != []:
             params["tasks"].append(reimport_task(matching_tasks[0],
@@ -54,22 +55,14 @@ def reimport_contest(path, old_contest):
             params["tasks"].append(reimport_task(None,
                                                  os.path.join(path, task)))
 
-    params["token_initial"] = conf.get("token_initial", 0)
-    params["token_max"] = conf.get("token_max", 0)
-    params["token_total"] = conf.get("token_total", 0)
-    params["token_min_interval"] = conf.get("token_min_interval", 0)
-    params["token_gen_time"] = conf.get("token_gen_time", 1)
     params["users"] = []
-    for user in conf["utenti"]:
+    for user in users:
         matching_users = [x for x in old_contest.users
                           if x.username == user["username"]]
         if matching_users != []:
             params["users"].append(reimport_user(matching_users[0], user))
         else:
             params["users"].append(reimport_user(None, user))
-
-    params["start"] = conf["inizio"]
-    params["stop"] = conf["fine"]
 
     for i in xrange(Configuration.maximum_conflict_attempts):
         try:
@@ -83,18 +76,9 @@ def reimport_contest(path, old_contest):
 
 
 def reimport_user(old_user, user_dict):
-
-    params = {}
-
-    params["username"] = user_dict["username"]
-    params["password"] = user_dict["password"]
-    name = user_dict.get("nome", "")
-    surname = user_dict.get("cognome", user_dict["username"])
-    params["real_name"] = " ".join([name, surname])
-    params["ip"] = user_dict.get("ip", "0.0.0.0")
-    params["hidden"] = user_dict.get("fake", False)
-    params["tokens"] = []
-
+    """Refresh the information of a user.
+    """
+    params = get_params_for_user(user_dict)
     for i in xrange(Configuration.maximum_conflict_attempts):
         try:
             if old_user == None:
@@ -111,50 +95,9 @@ def reimport_user(old_user, user_dict):
 
 
 def reimport_task(old_task, path):
-    path = os.path.realpath(path)
-    super_path, name = os.path.split(path)
-    conf = yaml.load(open(os.path.join(super_path, name + ".yaml")))
-    FSL = FileStorageLib()
-
-    params = {"name": name}
-
-    assert name == conf["nome_breve"]
-    params["title"] = conf["nome"]
-    params["time_limit"] = conf["timeout"]
-    params["memory_limit"] = conf["memlimit"]
-    params["attachments"] = [] # FIXME - Use auxiliary
-    params["statement"] = FSL.put(os.path.join(path, "testo", "testo.pdf"),
-                                  "PDF statement for task %s" % (name))
-    params["task_type"] = Task.TASK_TYPE_BATCH
-    params["submission_format"] = ["%s.%%l" % (name)]
-    try:
-        fd = open(os.path.join(path, "cor", "correttore"))
-    except IOError:
-        fd = None
-    if fd != None:
-        params["managers"] = {"checker": FSL.put_file(fd)}
-    else:
-        params["managers"] = {}
-    params["score_type"] = ScoreTypes.SCORE_TYPE_SUM
-    params["score_parameters"] = [],
-    params["testcases"] = [(FSL.put(os.path.join(path, "input",
-                                                 "input%d.txt" % (i)),
-                                    "Input %d for task %s" % (i, name)),
-                            FSL.put(os.path.join(path, "output",
-                                                 "output%d.txt" % (i)),
-                                    "Output %d for task %s" % (i, name)))
-                           for i in range(int(conf["n_input"]))]
-
-    params["public_testcases"] = conf.get("risultati", "").split(",")
-    if params["public_testcases"] == [""]:
-        params["public_testcases"] = []
-    params["public_testcases"] = [int(x) for x in params["public_testcases"]]
-    params["token_initial"] = conf.get("token_initial", 0)
-    params["token_max"] = conf.get("token_max", 0)
-    params["token_total"] = conf.get("token_total", 0)
-    params["token_min_interval"] = conf.get("token_min_interval", 0)
-    params["token_gen_time"] = conf.get("token_gen_time", 60)
-
+    """Refresh the information of a task (also the files in FS).
+    """
+    params = get_params_for_task(path)
     for i in xrange(Configuration.maximum_conflict_attempts):
         try:
             if old_task == None:
@@ -165,10 +108,11 @@ def reimport_task(old_task, path):
 
             renewed_task.to_couch()
             return renewed_task
-        except couchdb.ResourceConflict as e:
+        except couchdb.ResourceConflict:
             old_task.refresh()
     else:
         raise couchdb.ResourceConflict()
+
 
 if __name__ == "__main__":
     c = Utils.ask_for_contest(1)

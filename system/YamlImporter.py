@@ -30,7 +30,14 @@ from ScoreType import ScoreTypes
 from FileStorageLib import FileStorageLib
 
 
-def import_contest(path):
+def get_params_for_contest(path):
+    """Given the path of a contest, extract the data from its
+    contest.yaml file, and create a dictionary with the parameter to
+    give to the Contest class. Since tasks and users need to be
+    handled differently if we are doing an import or a reimport, we do
+    not fill the dictionary with tasks' and users' information, but we
+    return the lists of their names after the dictionay of parameters.
+    """
     path = os.path.realpath(path)
     name = os.path.split(path)[1]
     conf = yaml.load(open(os.path.join(path, "contest.yaml")))
@@ -38,24 +45,21 @@ def import_contest(path):
     params = {"name": name}
     assert name == conf["nome_breve"]
     params["description"] = conf["nome"]
-    params["tasks"] = []
-    for task in conf["problemi"]:
-        params["tasks"].append(import_task(os.path.join(path, task)))
     params["token_initial"] = conf.get("token_initial", 0)
     params["token_max"] = conf.get("token_max", 0)
     params["token_total"] = conf.get("token_total", 0)
     params["token_min_interval"] = conf.get("token_min_interval", 0)
     params["token_gen_time"] = conf.get("token_gen_time", 1)
-    params["users"] = []
-    for user in conf["utenti"]:
-        params["users"].append(import_user(user))
     params["start"] = conf["inizio"]
     params["stop"] = conf["fine"]
+    return params, conf["tasks"], conf["utenti"]
 
-    return Contest(**params)
 
-
-def import_user(user_dict):
+def get_params_for_user(user_dict):
+    """Given the dictionary of information of a user (extracted from
+    contest.yaml), it fills another dictionary with the parameters to
+    give to our class User.
+    """
     params = {}
     params["username"] = user_dict["username"]
     params["password"] = user_dict["password"]
@@ -65,11 +69,14 @@ def import_user(user_dict):
     params["ip"] = user_dict.get("ip", "0.0.0.0")
     params["hidden"] = user_dict.get("fake", False)
     params["tokens"] = []
+    return params
 
-    return User(**params)
 
-
-def import_task(path):
+def get_params_for_task(path):
+    """Given the path of a task, this function put all needed data
+    into FS, and fills the dictionary of parameters to pass to the
+    class Task.
+    """
     path = os.path.realpath(path)
     super_path, name = os.path.split(path)
     conf = yaml.load(open(os.path.join(super_path, name + ".yaml")))
@@ -111,8 +118,22 @@ def import_task(path):
     params["token_total"] = conf.get("token_total", 0)
     params["token_min_interval"] = conf.get("token_min_interval", 0)
     params["token_gen_time"] = conf.get("token_gen_time", 60)
+    return params
 
-    return Task(**params)
+
+def import_contest(path):
+    """Import a contest into the system.
+    """
+    params, tasks, users = get_params_for_contest(path)
+    params["tasks"] = []
+    for task in tasks:
+        params["tasks"].append(Task(get_params_for_task(os.path.join(path,
+                                                                     task))))
+    params["users"] = []
+    for user in users:
+        params["users"].append(User(**get_params_for_user(user)))
+    return Contest(**params)
+
 
 if __name__ == "__main__":
     c = import_contest(sys.argv[1])
