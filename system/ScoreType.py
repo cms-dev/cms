@@ -19,11 +19,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#import Utils
+import Utils
 #from Sandbox import Sandbox
 #from Task import Task
 #from Worker import JobException
-
 
 class ScoreTypes:
     """
