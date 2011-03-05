@@ -159,6 +159,12 @@ def set_operation(operation):
 
 
 def get_compilation_command(language, source_filename, executable_filename):
+    # For compiling in 32-bit mode under 64-bit OS: add "-march=i686",
+    # "-m32" for gcc/g++. Don't know about Pascal. Anyway, this will
+    # require some better support from the evaluation environment
+    # (particularly the sandbox, which has to be compiled in a
+    # different way depending on whether it will execute 32- or 64-bit
+    # programs).
     if language == "c":
         command = ["/usr/bin/gcc", "-DEVAL", "-static", "-O2", "-lm", "-o", executable_filename, source_filename]
     elif language == "cpp":
