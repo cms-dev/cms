@@ -158,6 +158,16 @@ def set_operation(operation):
     logger.operation = operation
 
 
+def get_compilation_command(language, source_filename, executable_filename):
+    if language == "c":
+        command = ["/usr/bin/gcc", "-DEVAL", "-static", "-O2", "-lm", "-o", executable_filename, source_filename]
+    elif language == "cpp":
+        command = ["/usr/bin/g++", "-DEVAL", "-static", "-O2", "-o", executable_filename, source_filename]
+    elif language == "pas":
+        command = ["/usr/bin/fpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename), source_filename]
+    return command
+
+
 class FileExplorer:
     def __init__(self, directory = "./fs"):
         self.directory = directory
