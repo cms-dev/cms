@@ -26,28 +26,34 @@ import sys
 
 from Task import Task
 from User import User
-from Contest import Contest
 from ScoreType import ScoreTypes
 from FileStorageLib import FileStorageLib
 import Configuration
 import Utils
 
+
 def reimport_contest(path, old_contest):
     path = os.path.realpath(path)
-    super_path, name = os.path.split(path)
-    conf = yaml.load(open(os.path.join(path,"contest.yaml")))
+    name = os.path.split(path)[1]
+    conf = yaml.load(open(os.path.join(path, "contest.yaml")))
 
-    params = {"name": name, "couch_id": old_contest.couch_id, "couch_rev": old_contest.couch_rev}
+    params = {
+        "name": name,
+        "couch_id": old_contest.couch_id,
+        "couch_rev": old_contest.couch_rev,
+        }
     assert name == conf["nome_breve"]
     params["description"] = conf["nome"]
     params["tasks"] = []
     for task in conf["problemi"]:
-        matching_tasks = [ x for x in old_contest.tasks if x.name == task ]
+        matching_tasks = [x for x in old_contest.tasks if x.name == task]
         if matching_tasks != []:
-          params["tasks"].append(reimport_task(matching_tasks[0], os.path.join(path, task)))
+            params["tasks"].append(reimport_task(matching_tasks[0],
+                                                 os.path.join(path, task)))
         else:
-          params["tasks"].append(reimport_task(None, os.path.join(path, task)))
-        
+            params["tasks"].append(reimport_task(None,
+                                                 os.path.join(path, task)))
+
     params["token_initial"] = conf.get("token_initial", 0)
     params["token_max"] = conf.get("token_max", 0)
     params["token_total"] = conf.get("token_total", 0)
@@ -55,27 +61,29 @@ def reimport_contest(path, old_contest):
     params["token_gen_time"] = conf.get("token_gen_time", 1)
     params["users"] = []
     for user in conf["utenti"]:
-        matching_users = [ x for x in old_contest.users if x.username == user["username"] ]
+        matching_users = [x for x in old_contest.users
+                          if x.username == user["username"]]
         if matching_users != []:
-            params["users"].append(reimport_user(matching_users[0],user))
+            params["users"].append(reimport_user(matching_users[0], user))
         else:
-            params["users"].append(reimport_user(None,user))
+            params["users"].append(reimport_user(None, user))
 
     params["start"] = conf["inizio"]
     params["stop"] = conf["fine"]
 
     for i in xrange(Configuration.maximum_conflict_attempts):
-      try:
-          old_contest.__dict__.update(params)
-          old_contest.to_couch()
-          return old_contest
-      except couchdb.ResourceConflict as e:
-          old_contest.refresh()
+        try:
+            old_contest.__dict__.update(params)
+            old_contest.to_couch()
+            return old_contest
+        except couchdb.ResourceConflict:
+            old_contest.refresh()
     else:
         raise couchdb.ResourceConflict()
 
+
 def reimport_user(old_user, user_dict):
-    
+
     params = {}
 
     params["username"] = user_dict["username"]
@@ -96,11 +104,10 @@ def reimport_user(old_user, user_dict):
                 renewed_user = old_user
             renewed_user.to_couch()
             return renewed_user
-        except couchdb.ResourceConflict as e:
+        except couchdb.ResourceConflict:
             old_user.refresh()
     else:
         raise couchdb.ResourceConflict()
-
 
 
 def reimport_task(old_task, path):
@@ -116,7 +123,8 @@ def reimport_task(old_task, path):
     params["time_limit"] = conf["timeout"]
     params["memory_limit"] = conf["memlimit"]
     params["attachments"] = [] # FIXME - Use auxiliary
-    params["statement"] = FSL.put(os.path.join(path, "testo", "testo.pdf"), "PDF statement for task %s" % (name))
+    params["statement"] = FSL.put(os.path.join(path, "testo", "testo.pdf"),
+                                  "PDF statement for task %s" % (name))
     params["task_type"] = Task.TASK_TYPE_BATCH
     params["submission_format"] = ["%s.%%l" % (name)]
     try:
@@ -124,18 +132,23 @@ def reimport_task(old_task, path):
     except IOError:
         fd = None
     if fd != None:
-        params["managers"] = { "checker": FSL.put_file(fd) }
+        params["managers"] = {"checker": FSL.put_file(fd)}
     else:
         params["managers"] = {}
     params["score_type"] = ScoreTypes.SCORE_TYPE_SUM
     params["score_parameters"] = [],
-    params["testcases"] = [ (FSL.put(os.path.join(path, "input", "input%d.txt" % (i)), "Input %d for task %s" % (i, name)),
-                             FSL.put(os.path.join(path, "output", "output%d.txt" % (i)), "Output %d for task %s" % (i, name)))
-                            for i in range(int(conf["n_input"]))]
+    params["testcases"] = [(FSL.put(os.path.join(path, "input",
+                                                 "input%d.txt" % (i)),
+                                    "Input %d for task %s" % (i, name)),
+                            FSL.put(os.path.join(path, "output",
+                                                 "output%d.txt" % (i)),
+                                    "Output %d for task %s" % (i, name)))
+                           for i in range(int(conf["n_input"]))]
+
     params["public_testcases"] = conf.get("risultati", "").split(",")
     if params["public_testcases"] == [""]:
         params["public_testcases"] = []
-    params["public_testcases"] = [ int(x) for x in params["public_testcases"] ]
+    params["public_testcases"] = [int(x) for x in params["public_testcases"]]
     params["token_initial"] = conf.get("token_initial", 0)
     params["token_max"] = conf.get("token_max", 0)
     params["token_total"] = conf.get("token_total", 0)
@@ -158,7 +171,6 @@ def reimport_task(old_task, path):
         raise couchdb.ResourceConflict()
 
 if __name__ == "__main__":
-    import sys
     c = Utils.ask_for_contest(1)
     c = reimport_contest(sys.argv[1], c)
     print "Couch ID: %s" % (c.couch_id)

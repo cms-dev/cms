@@ -29,10 +29,11 @@ from Contest import Contest
 from ScoreType import ScoreTypes
 from FileStorageLib import FileStorageLib
 
+
 def import_contest(path):
     path = os.path.realpath(path)
-    super_path, name = os.path.split(path)
-    conf = yaml.load(open(os.path.join(path,"contest.yaml")))
+    name = os.path.split(path)[1]
+    conf = yaml.load(open(os.path.join(path, "contest.yaml")))
 
     params = {"name": name}
     assert name == conf["nome_breve"]
@@ -53,6 +54,7 @@ def import_contest(path):
 
     return Contest(**params)
 
+
 def import_user(user_dict):
     params = {}
     params["username"] = user_dict["username"]
@@ -66,6 +68,7 @@ def import_user(user_dict):
 
     return User(**params)
 
+
 def import_task(path):
     path = os.path.realpath(path)
     super_path, name = os.path.split(path)
@@ -78,7 +81,8 @@ def import_task(path):
     params["time_limit"] = conf["timeout"]
     params["memory_limit"] = conf["memlimit"]
     params["attachments"] = [] # FIXME - Use auxiliary
-    params["statement"] = FSL.put(os.path.join(path, "testo", "testo.pdf"), "PDF statement for task %s" % (name))
+    params["statement"] = FSL.put(os.path.join(path, "testo", "testo.pdf"),
+                                  "PDF statement for task %s" % (name))
     params["task_type"] = Task.TASK_TYPE_BATCH
     params["submission_format"] = ["%s.%%l" % (name)]
     try:
@@ -86,18 +90,22 @@ def import_task(path):
     except IOError:
         fd = None
     if fd != None:
-        params["managers"] = { "checker": FSL.put_file(fd) }
+        params["managers"] = {"checker": FSL.put_file(fd)}
     else:
         params["managers"] = {}
     params["score_type"] = ScoreTypes.SCORE_TYPE_SUM
     params["score_parameters"] = [],
-    params["testcases"] = [ (FSL.put(os.path.join(path, "input", "input%d.txt" % (i)), "Input %d for task %s" % (i, name)),
-                             FSL.put(os.path.join(path, "output", "output%d.txt" % (i)), "Output %d for task %s" % (i, name)))
-                            for i in range(int(conf["n_input"]))]
+    params["testcases"] = [(FSL.put(os.path.join(path, "input",
+                                                 "input%d.txt" % (i)),
+                                    "Input %d for task %s" % (i, name)),
+                            FSL.put(os.path.join(path, "output",
+                                                 "output%d.txt" % (i)),
+                                    "Output %d for task %s" % (i, name)))
+                           for i in range(int(conf["n_input"]))]
     params["public_testcases"] = conf.get("risultati", "").split(",")
     if params["public_testcases"] == [""]:
         params["public_testcases"] = []
-    params["public_testcases"] = [ int(x) for x in params["public_testcases"] ]
+    params["public_testcases"] = [int(x) for x in params["public_testcases"]]
     params["token_initial"] = conf.get("token_initial", 0)
     params["token_max"] = conf.get("token_max", 0)
     params["token_total"] = conf.get("token_total", 0)
@@ -107,6 +115,5 @@ def import_task(path):
     return Task(**params)
 
 if __name__ == "__main__":
-    import sys
     c = import_contest(sys.argv[1])
     print "Couch ID: %s" % (c.couch_id)
