@@ -420,8 +420,10 @@ class NotificationsHandler(BaseHandler):
         self.set_header("Content-Type", "text/xml")
         self.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
         self.write("<root>")
-        self.write("<announcements>%d</announcements>" % len(announcements))
-        self.write("<messages>%d</messages>" % len(messages))
+        for ann_item in announcements:
+            self.write("<announcement>%s</announcement>" % ann_item["subject"])
+        for mess_item in messages:
+            self.write("<message>%s</message>" % mess_item["subject"])
         self.write("<requestdate>%s</requestdate>" % str(timestamp))
         self.write("</root>")
 
@@ -430,7 +432,17 @@ class QuestionHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self):
-        pass
+        print self.request
+        r_params = self.render_params()
+        question_subject = self.get_argument("question_subject","")
+        # For some reason, the argument question_text is a tuple.
+        question_text = self.get_argument("question_text","")
+        BusinessLayer.add_user_question(self.current_user,time.time(),\
+                question_subject, question_text)
+        Utils.log("Question submitted by user %s." 
+                  % self.current_user.username,
+                  Utils.logger.SEVERITY_NORMAL)
+        self.render("successfulQuestion.html", **r_params)
 
 handlers = [
             (r"/", \
@@ -459,7 +471,7 @@ handlers = [
                  InstructionHandler),
             (r"/notifications", \
                  NotificationsHandler),
-            (r"/questions", \
+            (r"/question", \
                  QuestionHandler),
             (r"/stl/(.*)", \
                  tornado.web.StaticFileHandler, {"path": WebConfig.stl_path}),

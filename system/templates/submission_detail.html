@@ -3,6 +3,11 @@
     <div class="core_title">
     <h1>{{ task.title }} ({{ task.name }}) - Submission Detail </h1>
     </div>
+
+    {% if handler.get_argument("notokens","") == "true" %}
+    <span class="error">No tokens available.</span>
+    {% end %}
+
       <table class="sub_details">
       <tr>
           <th>Timestamp</th>

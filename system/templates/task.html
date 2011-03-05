@@ -4,7 +4,7 @@
     <h1>{{ task.title }} ({{ task.name }})</h1>
     </div>
     
-    <h2 onclick="toggleVisibility(&quot;task_information&quot;);">
+    <h2 onclick="util.toggleVisibility(&quot;task_information&quot;);">
     <span class="toggle" id="task_information_toggle" >-</span>Task Information</h2>
     <div id="task_information">
         <div><a href="/tasks/{{ task.name }}/statement">Download task statement</a></div>
@@ -14,7 +14,7 @@
     </div>
     
     
-    <h2 onclick="toggleVisibility(&quot;submit_solution&quot;);">
+    <h2 onclick="util.toggleVisibility(&quot;submit_solution&quot;);">
     <span class="toggle" id="submit_solution_toggle" >-</span>Submit a solution</h2>
     <div id="submit_solution">
         <form enctype="multipart/form-data" action="/submit/{{ task.name }}" method="post">
@@ -23,7 +23,7 @@
         </form>
     </div>
 
-    <h2 onclick="toggleVisibility(&quot;previous_submissions&quot;);">
+    <h2 onclick="util.toggleVisibility(&quot;previous_submissions&quot;);">
     <span class="toggle" id="previous_submissions_toggle" >-</span>Previous submissions</h2>
     <div id="previous_submissions">
         <div class="task_tokens">

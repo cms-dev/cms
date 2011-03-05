@@ -52,7 +52,7 @@ def get_params_for_contest(path):
     params["token_gen_time"] = conf.get("token_gen_time", 1)
     params["start"] = conf["inizio"]
     params["stop"] = conf["fine"]
-    return params, conf["tasks"], conf["utenti"]
+    return params, conf["problemi"], conf["utenti"]
 
 
 def get_params_for_user(user_dict):
@@ -127,8 +127,8 @@ def import_contest(path):
     params, tasks, users = get_params_for_contest(path)
     params["tasks"] = []
     for task in tasks:
-        params["tasks"].append(Task(get_params_for_task(os.path.join(path,
-                                                                     task))))
+        params["tasks"].append(Task(**get_params_for_task(os.path.join(path,
+                                                                       task))))
     params["users"] = []
     for user in users:
         params["users"].append(User(**get_params_for_user(user)))
