@@ -61,9 +61,9 @@ def contest_phase(contest, timestamp):
               0 if the contest is active
               1 if the contest has ended.
     """
-    if contest.start != None and contest.start > timestamp :
+    if contest.start != None and contest.start > timestamp:
         return -1
-    if contest.stop == None or contest.stop > timestamp :
+    if contest.stop == None or contest.stop > timestamp:
         return 0
     return 1
 
@@ -160,7 +160,8 @@ def token_available(contest, user, task, timestamp):
             return False
         return True
 
-    return ensure(contest, tokens_timestamp) and ensure(task, task_tokens_timestamp)
+    return ensure(contest, tokens_timestamp)\
+        and ensure(task, task_tokens_timestamp)
 
 
 def update_submissions(contest):
@@ -194,20 +195,21 @@ def get_user_by_username(contest, username):
     else:
         return None
 
-def get_submission(contest, sub_id, owner = None):
+def get_submission(contest, sub_id, owner=None):
     for s in contest.submissions:
-        if s.couch_id == sub_id and (owner == None or s.user.username == owner) :
+        if s.couch_id == sub_id and\
+            (owner == None or s.user.username == owner):
             return s
     else:
         return None
 
-def get_submissions_by_username(contest, owner, taskname = None):
+def get_submissions_by_username(contest, owner, taskname=None):
     return [s for s in contest.submissions \
             if s.user.username == owner and \
-            ( taskname == None or s.task.name == taskname)]
+            (taskname == None or s.task.name == taskname)]
 
 def get_file_from_submission(submission, filename):
-    if( submission == None or filename == None ):
+    if submission == None or filename == None:
         return None
     for key, value in submission.files.items():
         if key == filename:
@@ -215,7 +217,7 @@ def get_file_from_submission(submission, filename):
             try:
                 FSL.get_file(value, submission_file)
             except Exception as e:
-                Utils.log("FileStorageLib raised an exception: "+repr(e),\
+                Utils.log("FileStorageLib raised an exception: " + repr(e),\
                             Utils.Logger.SEVERITY_DEBUG)
                 return None
             file_content = submission_file.getvalue()
@@ -226,11 +228,13 @@ def get_file_from_submission(submission, filename):
 def get_task_statement(task):
     statement_file = StringIO()
     try:
-        if( not FSL.get_file(task.statement, statement_file) ):
-            Utils.log("FileStorageLib get_file returned False",Utils.Logger.SEVERITY_DEBUG)
+        if not FSL.get_file(task.statement, statement_file):
+            Utils.log("FileStorageLib get_file returned False",
+                Utils.Logger.SEVERITY_DEBUG)
             return None
     except Exception as e:
-        Utils.log("FileStorageLib raised an exception: "+repr(e),Utils.Logger.SEVERITY_DEBUG)
+        Utils.log("FileStorageLib raised an exception: %S" % repr(e),
+        Utils.Logger.SEVERITY_DEBUG)
         return None
     statement = statement_file.getvalue()
     statement_file.close()
@@ -259,14 +263,13 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
     for detailed feedback, possibly with inconsistencies.
     """
 
-    def _refresh_objects(contest):
+    def _refresh(item):
         """
-        Refreshes the objects that are necessary to the function.
+        Refreshes the given object, raising ConnectionFailure when
+        the refresh fails.
         """
         try:
-            contest.refresh()
-            update_submissions(contest)
-            update_users(contest)
+            item.refresh()
         except AttributeError:
             raise ConnectionFailure()
 
@@ -280,7 +283,9 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
         # The objects should be up-to-date when
         # the lock is acquired to avoid conflicts
         # with other internal requests.
-        _refresh_objects(contest)
+        _refresh(contest)
+        _refresh(user)
+        _refresh(submission)
 
         if submission.tokened():
             raise FeedbackAlreadyRequested()
@@ -312,27 +317,30 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
                 except couchdb.ResourceConflict:
                     # A conflict has happened: refresh the objects,
                     # check their status and try again.
-                    Utils.log("enable_detailed_feedback: ResourceConflict for "\
-                              +submission.couch_id, Utils.Logger.SEVERITY_DEBUG)
+                    Utils.log("enable_detailed_feedback: ResourceConflict for %s."
+                              % submission.couch_id, Utils.Logger.SEVERITY_DEBUG)
                     try:
-                        _refresh_objects(contest)
+                        _refresh(contest)
+                        _refresh(user)
+                        _refresh(submission)
                     except (couchdb.ResourceNotFound, ConnectionFailure) as e:
                         if inconsistent:
                             # TODO - Attempt a last triage by reverting
                             # user.tokens
                             log_message = "enable_detailed_feedback: inconsistency "\
-                               +"due to unrecoverable resources for "+submission.couch_id
-                            Utils.log(log_message,Utils.Logger.SEVERITY_CRITICAL)
+                                + "due to unrecoverable resources for %s " \
+                                % submission.couch_id
+                            Utils.log(log_message, Utils.Logger.SEVERITY_CRITICAL)
                             raise e
 
             else:
                 log_message = "enable_detailed_feedback: Maximum number of attempts "\
-                              +"reached for "+submission.couch_id
+                              + "reached for " + submission.couch_id
                 if inconsistent:
                     # TODO - Attempt a last triage by reverting
                     # user.tokens
                     log_message += " and it was left in an inconsistent state!"
-                Utils.log(log_message,Utils.Logger.SEVERITY_CRITICAL)
+                Utils.log(log_message, Utils.Logger.SEVERITY_CRITICAL)
                 raise couchdb.ResourceConflict()
 
             # Warn the Evaluation Server
@@ -341,7 +349,7 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
             except:
                 # FIXME - quali informazioni devono essere fornite?
                 Utils.log("Failed to warn the Evaluation Server about a detailed"\
-                          "feedback request for "+submission.couch_id+".",
+                          "feedback request for " + submission.couch_id + ".",
                           Utils.Logger.SEVERITY_IMPORTANT)
                 return False
             return True
@@ -363,14 +371,13 @@ def submit(contest, task, user, files, timestamp):
     possibly with inconsistencies.
     """
 
-    def _refresh_objects(contest):
+    def _refresh(item):
         """
-        Refreshes the objects that are necessary to the function.
+        Refreshes the given object, raising ConnectionFailure when
+        the refresh fails.
         """
         try:
-            contest.refresh()
-            update_submissions(contest)
-            update_users(contest)
+            item.refresh()
         except AttributeError:
             raise ConnectionFailure()
 
@@ -388,15 +395,11 @@ def submit(contest, task, user, files, timestamp):
             path = os.path.join(Configuration.submit_local_copy_path, user.username)
             if not os.path.exists(path):
                 os.mkdir(path)
-            with open(os.path.join(path,str(int(timestamp)) ), "w") as fd:
+            with open(os.path.join(path, str(int(timestamp))), "w") as fd:
                 pickle.dump((contest.couch_id, user.couch_id, task, files), fd)
         except Exception as e:
-            Utils.log("submit: local copy failed - "+repr(e),\
+            Utils.log("submit: local copy failed - " + repr(e),\
                          Utils.Logger.SEVERITY_IMPORTANT)
-
-    # Check if we can connect to the DB before sending files to the FS.
-    _refresh_objects(contest)
-
 
     # TODO: Check the timestamp here?
 
@@ -414,7 +417,9 @@ def submit(contest, task, user, files, timestamp):
         # The objects should be up-to-date when
         # the lock is acquired to avoid conflicts
         # with other requests.
-        _refresh_objects(contest)
+        _refresh(contest)
+        _refresh(user)
+        _refresh(task)
 
         # Save the submission.
         # A new document shouldn't have resource conflicts...
@@ -424,16 +429,18 @@ def submit(contest, task, user, files, timestamp):
                 break
             except couchdb.ResourceConflict as e:
                 Utils.log("submit: ResourceConflict for "\
-                          +" a submission by "+user.username, Utils.Logger.SEVERITY_DEBUG)
+                           + " a submission by " + user.username, Utils.Logger.SEVERITY_DEBUG)
                 try:
-                    _refresh_objects(contest)
+                    _refresh(contest)
+                    _refresh(user)
+                    _refresh(task)
                 except ConnectionFailure as e:
                     Utils.log("submit: Refresh failed while attempting to recover"\
-                              +"a conflict.", Utils.Logger.SEVERITY_CRITICAL)
+                              + "a conflict.", Utils.Logger.SEVERITY_CRITICAL)
                     raise e
         else:
             Utils.log("submit: Maximum number of attempts reached to add submission"\
-                      +submission.couch_id+" by "+user.username,\
+                      + submission.couch_id + " by " + user.username,\
                             Utils.Logger.SEVERITY_CRITICAL)
             raise couchdb.ResourceConflict()
 
@@ -445,16 +452,18 @@ def submit(contest, task, user, files, timestamp):
                 break
             except couchdb.ResourceConflict as e:
                 Utils.log("submit: ResourceConflict for "\
-                              +s.couch_id, Utils.Logger.SEVERITY_DEBUG)
+                              + s.couch_id, Utils.Logger.SEVERITY_DEBUG)
                 try:
-                    _refresh_objects(contest)
+                    _refresh(contest)
+                    _refresh(user)
+                    _refresh(task)
                 except ConnectionFailure as e:
                     Utils.log("submit: Refresh failed while attempting to recover"\
-                              +"a conflict.", Utils.Logger.SEVERITY_CRITICAL)
+                              + "a conflict.", Utils.Logger.SEVERITY_CRITICAL)
                     raise e
         else:
             Utils.log("submit: Maximum number of attempts reached to append to contest. "\
-                       +submission.couch_id+" by "+user.username,\
+                       + submission.couch_id + " by " + user.username,\
                             Utils.Logger.SEVERITY_CRITICAL)
             raise couchdb.ResourceConflict()
 
@@ -481,7 +490,7 @@ def add_announcement(contest, subject, text):
     announcement = {
         "date": time.time(),
         "subject": subject,
-        "text": text
+        "text": text,
         }
     contest.announcements.append(announcement)
     contest.to_couch()
@@ -489,3 +498,25 @@ def add_announcement(contest, subject, text):
 def remove_announcement(contest, index):
     del contest.announcements[index]
     contest.to_couch()
+
+def add_user_question(user, date, question_subject, question_text):
+    with writelock:
+        user.refresh()
+        question = dict()
+        question["date"] = date
+        question["subject"] = question_subject
+        question["text"] = question_text
+        user.questions.append(question)
+        user.to_couch()
+
+def add_user_message(user, date, message_subject, message_quick_answer, message_text):
+    with writelock:
+        print message_quick_answer
+        user.refresh()
+        message = dict()
+        message["date"] = date
+        message["subject"] = message_subject
+        message["quick_answer"] = message_quick_answer
+        message["text"] = message_text
+        user.messages.append(message)
+        user.to_couch()

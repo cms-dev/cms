@@ -33,6 +33,15 @@ stl_path = "/usr/share/doc/stl-manual/html/"
 ip_lock = True
 block_hidden_users = False
 
+
+quick_answers={
+                "yes": "Yes",
+                "no" : "No",
+                "answered" : "Answered in task description",
+                "invalid" : "Invalid question",
+                "nocomment" : "No comment",
+        }
+
 parameters={
             "login_url": "/" ,
             "template_path": "./templates",

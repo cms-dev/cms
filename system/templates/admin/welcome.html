@@ -42,7 +42,7 @@
         {% end %}
 
         <h2>Workers status</h2>
-
+        {% if workers_status != None %}
         <table class="sub_table">
           <tr>
             <th>Id</th>
@@ -63,4 +63,7 @@
           <tr>
           {% end %}
         </table>
+        {% else %}
+        Workers status unavailable.
+        {% end %}
 {% end %}

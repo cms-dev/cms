@@ -4,25 +4,40 @@
     <div class="core_title">
     <h1>{{ current_user.username}}</h1>
     </div>
-    
-    <h2 onclick="toggleVisibility(&quot;user_messages&quot;);">
+
+    <h2 onclick="util.toggleVisibility(&quot;user_messages&quot;);">
     <span class="toggle" id="user_messages_toggle">-</span>Messages</h2>
     <div id="user_messages">
     {% if current_user.messages != [] %}
-        <table>
-        <tr>
-            <td>Date</td>
-            <td>Subject</td>
-        </tr>
-        {% for i, msg in enumerate(current_user.messages) %}
-        <tr>
-            <td>{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</td>
-            <td><a href="messages/{{ i }}">{{msg["subject"]}}</a></td>
-        </tr>
+        {% for i, msg in enumerate(reversed(current_user.messages)) %}
+            <div class="message_item displayed">
+                <span class="message_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
+                <span class="message_subject">{{msg["subject"]}}</span>
+                {% if msg["quick_answer"] in WebConfig.quick_answers %}
+                <span class="message_quick_answer">{{ WebConfig.quick_answers[msg["quick_answer"]] }}</span>
+                {% end %}
+                <span class="message_text">{{msg["text"]}}</span>
+            </div>
         {% end %}
-        </table>
     {% else %}
     No messages.
     {% end %}
     </div>
+
+    <h2 onclick="util.toggleVisibility(&quot;user_questions&quot;);">
+    <span class="toggle" id="user_questions_toggle">-</span>Submitted Questions</h2>
+    <div id="user_questions">
+    {% if current_user.questions != [] %}
+        {% for i, msg in enumerate(reversed(current_user.questions)) %}
+            <div class="question_item displayed">
+                <span class="question_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
+                <span class="question_subject">{{escape(msg["subject"])}}</span>
+                <span class="question_text">{{escape(msg["text"])}}</span>
+            </div>
+        {% end %}
+    {% else %}
+    No submitted questions.
+    {% end %}
+    </div>
+
 {% end %}
