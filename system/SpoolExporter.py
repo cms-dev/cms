@@ -48,35 +48,38 @@ def main():
         os.mkdir(user_dir)
 
     for submission in c.submissions:
+        print "Exporting submission %s" % (submission.couch_id)
         username = submission.user.username
         task = submission.task.name
         timestamp = int(submission.timestamp)
         checked, language = submission.verify_source()
         if not checked:
-            print "Could not verify language for submission %s, aborting" % (submission.couch_id)
-            sys.exit(1)
+            print "Could not verify language for submission %s, dropping it" % (submission.couch_id)
+            continue
         user_dir = os.path.join(upload_dir, username)
 
         file_digest = submission.files["%s.%s" % (task, language)]
         upload_filename = os.path.join(user_dir, "%s.%d.%s" % (task, timestamp, language))
         fsl.get(file_digest, upload_filename)
         upload_filename = os.path.join(user_dir, "%s.%s" % (task, language))
-        fsl.get(file_digest, upload_filename)        
+        fsl.get(file_digest, upload_filename)
         print >> queue_file, "./upload/%s/%s.%d.%s" % (username, task, timestamp, language)
 
-        res_file = open(os.path.join(spool_dir, "%d.%s.%s.%s.res" % (timestamp, username, task, language)), 'w')
-        res2_file = open(os.path.join(spool_dir, "%s.%s.%s.res" % (username, task, language)), 'w')
-        sum = 0.0
-        for num in xrange(len(submission.evaluation_outcome)):
-            sum += submission.evaluation_outcome[num]
-            line = "Executing on file n. %2d %s" % (num, submission.evaluation_text[num])
+        if submission.evaluation_outcome != None:
+            res_file = open(os.path.join(spool_dir, "%d.%s.%s.%s.res" % (timestamp, username, task, language)), 'w')
+            res2_file = open(os.path.join(spool_dir, "%s.%s.%s.res" % (username, task, language)), 'w')
+            sum = 0.0
+            for num in xrange(len(submission.evaluation_outcome)):
+                sum += submission.evaluation_outcome[num]
+                line = "Executing on file n. %2d %s (%.4f)" % (num, submission.evaluation_text[num],
+                                                               submission.evaluation_outcome[num])
+                print >> res_file, line
+                print >> res2_file, line
+            line = "Score: %.6f" % (sum)
             print >> res_file, line
             print >> res2_file, line
-        line = "Score: %.6f" % (sum)
-        print >> res_file, line
-        print >> res2_file, line
-        res_file.close()
-        res2_file.close()
+            res_file.close()
+            res2_file.close()
 
     print >> queue_file
     queue_file.close()
