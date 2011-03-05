@@ -235,7 +235,8 @@ class BatchTaskType:
         # processes (like ld)
         self.sandbox.set_env['TMPDIR'] = self.sandbox.path
         self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/', '%s/' % (self.sandbox.path)]
-        self.sandbox.timeout = 10
+        self.sandbox.timeout = 8
+        self.sandbox.wallclock_timeout = 10
         self.sandbox.address_space = 256 * 1024
         self.sandbox.stdout_file = self.sandbox.relative_path("compiler_stdout.txt")
         self.sandbox.stderr_file = self.sandbox.relative_path("compiler_stderr.txt")
@@ -269,7 +270,7 @@ class BatchTaskType:
             Utils.log("Compilation timed out")
             return self.finish_compilation(True, False, "Time out %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
 
-        # Suicide with signale (probably memory limit): returning the
+        # Suicide with signal (probably memory limit): returning the
         # error to the user
         if exit_status == Sandbox.EXIT_SIGNAL:
             signal = self.sandbox.get_killing_signal()
