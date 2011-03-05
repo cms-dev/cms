@@ -159,13 +159,19 @@ class CouchObject:
         return diff
 
     def dump(self):
+        def couch_id_or_none(obj):
+            if obj == None:
+                return 'None'
+            else:
+                return obj.couch_id
+
         res = "document_type: %s\ncouch_id: %s\ncouch_rev: %s" % (self.document_type, self.couch_id, self.couch_rev)
         for f in self._to_copy:
             res += "\n%s: %s" % (f, str(self.__dict__[f]))
         for f in self._to_copy_id:
-            res += "\n%s: %s" % (f, self.__dict__[f].couch_id)
+            res += "\n%s: %s" % (f, couch_id_or_none(self.__dict__[f]))
         for f in self._to_copy_id_array:
-            res += "\n%s: %s" % (f, map(lambda x: x.couch_id, self.__dict__[f]))
+            res += "\n%s: %s" % (f, map(couch_id_or_none, self.__dict__[f]))
         return res
 
 def from_couch(couch_id, with_refresh = True):

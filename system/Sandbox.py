@@ -231,9 +231,12 @@ class Sandbox:
         fd = open(real_path, 'r')
         return fd
 
-    def get_file_to_string(self, path):
+    def get_file_to_string(self, path, maxlen=None):
         fd = self.get_file(path)
-        content = fd.read()
+        if maxlen == None:
+            contest = fd.read()
+        else:
+            content = fd.read(maxlen)
         fd.close()
         return content
 

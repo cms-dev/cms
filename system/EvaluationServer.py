@@ -444,10 +444,14 @@ class EvaluationServer(RPCServer):
         # other should own and modify the objects they act on
         self.contest.ranking_view.to_couch()
         self.contest.to_couch()
-        for sub in self.contest.submissions:
-            if sub.evaluation_outcome == None \
-                    and sub.compilation_outcome != "fail":
-                self.add_job(sub.couch_id)
+        for submission in self.contest.submissions:
+            if submission.evaluation_outcome == None:
+                if submission.compilation_outcome != "fail":
+                    self.add_job(submission.couch_id)
+            else:
+                scorer = submission.task.scorer
+                scorer.add_submission(submission)
+        self.contest.update_ranking_view()
 
         RPCServer.__init__(self, "EvaluationServer", listen_address, listen_port,
                            [self.use_token,

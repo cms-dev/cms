@@ -169,7 +169,7 @@ class BatchTaskType:
 
     def safe_get_file_to_string(self, name):
         try:
-            return self.sandbox.get_file_to_string(name)
+            return self.sandbox.get_file_to_string(name, maxlen=1024)
         except (IOError, OSError):
             Utils.log("Couldn't retrieve file `%s' from storage" % (name), Utils.Logger.SEVERITY_IMPORTANT)
             self.safe_delete_sandbox()
@@ -218,12 +218,7 @@ class BatchTaskType:
         self.safe_create_sandbox()
         self.safe_create_file_from_storage(source_filename, self.submission.files[source_filename])
 
-        if language == "c":
-            command = ["/usr/bin/gcc", "-DEVAL", "-static", "-O2", "-lm", "-o", executable_filename, source_filename]
-        elif language == "cpp":
-            command = ["/usr/bin/g++", "-DEVAL", "-static", "-O2", "-o", executable_filename, source_filename]
-        elif language == "pas":
-            command = ["/usr/bin/fpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename), source_filename]
+        command = Utils.get_compilation_command(language, source_filename, executable_filename)
 
         # Execute the compilation inside the sandbox
         self.sandbox.chdir = self.sandbox.path
@@ -235,7 +230,8 @@ class BatchTaskType:
         # processes (like ld)
         self.sandbox.set_env['TMPDIR'] = self.sandbox.path
         self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/', '%s/' % (self.sandbox.path)]
-        self.sandbox.timeout = 10
+        self.sandbox.timeout = 8
+        self.sandbox.wallclock_timeout = 10
         self.sandbox.address_space = 256 * 1024
         self.sandbox.stdout_file = self.sandbox.relative_path("compiler_stdout.txt")
         self.sandbox.stderr_file = self.sandbox.relative_path("compiler_stderr.txt")
@@ -246,10 +242,10 @@ class BatchTaskType:
         exit_status = self.sandbox.get_exit_status()
         exit_code = self.sandbox.get_exit_code()
         stdout = self.safe_get_file_to_string("compiler_stdout.txt")
-        if stdout == "":
+        if stdout.strip() == "":
             stdout == "(empty)\n"
         stderr = self.safe_get_file_to_string("compiler_stderr.txt")
-        if stderr == "":
+        if stderr.strip() == "":
             stderr = "(empty)\n"
 
         # Execution finished successfully: the submission was
@@ -269,7 +265,7 @@ class BatchTaskType:
             Utils.log("Compilation timed out")
             return self.finish_compilation(True, False, "Time out %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
 
-        # Suicide with signale (probably memory limit): returning the
+        # Suicide with signal (probably memory limit): returning the
         # error to the user
         if exit_status == Sandbox.EXIT_SIGNAL:
             signal = self.sandbox.get_killing_signal()
