@@ -247,10 +247,10 @@ class BatchTaskType:
         exit_status = self.sandbox.get_exit_status()
         exit_code = self.sandbox.get_exit_code()
         stdout = self.safe_get_file_to_string("compiler_stdout.txt")
-        if stdout == "":
+        if stdout.strip() == "":
             stdout == "(empty)\n"
         stderr = self.safe_get_file_to_string("compiler_stderr.txt")
-        if stderr == "":
+        if stderr.strip() == "":
             stderr = "(empty)\n"
 
         # Execution finished successfully: the submission was
