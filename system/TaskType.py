@@ -243,7 +243,7 @@ class BatchTaskType:
         exit_code = self.sandbox.get_exit_code()
         stdout = self.safe_get_file_to_string("compiler_stdout.txt")
         if stdout.strip() == "":
-            stdout == "(empty)\n"
+            stdout = "(empty)\n"
         stderr = self.safe_get_file_to_string("compiler_stderr.txt")
         if stderr.strip() == "":
             stderr = "(empty)\n"
