@@ -13,6 +13,7 @@ a {
 html, body {
     margin: 0;
     padding: 0;
+    font-size: 14px;
 }
 
 body {
@@ -149,6 +150,7 @@ a, a:visited {
 
 .core_title {
     text-align:center;
+    margin-bottom: 10px;
 }
 
 #notification {
@@ -175,24 +177,47 @@ a, a:visited {
     margin-left: 10px;
     line-height: 40px;
 }
+
 #notification_close a, #popup_question_close a {
     text-decoration: none;
     color: black;
 }
 
-#popup_question {
+#popup_question_background {
     position: fixed;
-    top:10%;
-    left:10%;
-    width: 80%;
-    height:80%;
-    background-color: #FFFF88;
     display: none;
+    top: 0;
+    left: 0;
+    right:0;
+    bottom: 0;
+    z-index: 9;
+    background-color: gray;
+    opacity: 0.4;
+}
+
+#popup_question_container {
+    position: absolute;
+    display: none;
+    top: 0;
+    left: 0;
+    right:0;
+    bottom:0;
     z-index: 10;
+}
+
+#popup_question {
+    width: 600px;
+    height: 450px;
+    margin-top: 50px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #FFFF88;
+    visibility: show;
     border: 1px solid gray;
     padding: 0px;
     text-align: center;
     overflow: auto;
+    visibility: visible;
 }
 
 #popup_question_header {
@@ -204,18 +229,29 @@ a, a:visited {
     font-weight:bold;
 }
 
+#popup_question_body {
+    width: 550px;
+    margin: 0 auto;
+    text-align: left;
+    padding: 10px 0;
+}
+
 #popup_question_close {
     font-family: sans-serif;
     float:left;
+}
 
+#popup_question_subject {
+    width:550px;
 }
 
 #popup_question textarea {
-    width:80%;
-    height:80%;
+    resize: none;
+    width:550px;
+    height:300px;
 }
 
-.announcement_item {
+.announcement_item, .message_item, .question_item {
     border: 1px solid gray;
     background-color: #EEEEFF;
     margin: 2px;
@@ -223,20 +259,26 @@ a, a:visited {
     display:none;
 }
 
-.announcement_date {
+.announcement_date, .message_date, .question_date{
   display: block;
 }
 
-.announcement_subject {
+.announcement_subject, .message_subject, .question_subject {
   display: block;
   margin-left: 10px;
   font-weight: bold;
 }
 
-.announcement_text {
+.announcement_text, .message_text, .question_text {
   margin-left: 15px;
 }
 
+.message_quick_answer {
+  display: block;
+  margin-left: 15px;
+  font-style: italic;
+  text-decoration: underline;
+}
 .displayed {
     display: block;
 }
@@ -288,3 +330,12 @@ code
     margin: 2px;
 }
 
+.error {
+    display: block;
+    text-align: center;
+    margin: auto;
+    padding: 4px;
+    background-color: #EEEEEE;
+    color: red;
+    font-weight: bold;
+}

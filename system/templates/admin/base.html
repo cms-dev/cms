@@ -1,4 +1,5 @@
 {% import BusinessLayer %}
+{% import WebConfig %}
 {% import time %}
 <html>
 <head>
@@ -6,169 +7,50 @@
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="stylesheet" type="text/css" href="/static/style_admin.css">
     <title>{{ contest.description }}</title>
-    <script type="text/javascript">
+
+<script language="Javascript">
 <!--
-    
-    var last_notification = {{ timestamp }}
-    
-    function getXMLHTTP()
+    var util
+    function init()
     {
-        var xmlhttp;
-        if (window.XMLHttpRequest) { xmlhttp=new XMLHttpRequest(); }
-        else if (window.ActiveXObject) { xmlhttp=new ActiveXObject("Microsoft.XMLHTTP"); }
-        return xmlhttp;
+        util = new Utilities({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }}); 
+
+        firstDate = new Date();
+        util.getTime();
+        setInterval("util.getTime()", 1000);
+        util.notifications();
+        setInterval("util.notifications()", 15000);
     }
-
-    function toggleVisibility(item_id)
-    {
-        var item = document.getElementById(item_id);
-        var toggler = document.getElementById(item_id+"_toggle")
-        if (item.style.display != "none")
-        {
-            item.style.display = "none"
-            toggler.innerHTML = "+"
-        }
-        else
-        {
-            item.style.display = "block"
-            toggler.innerHTML = "-"
-        }
-    }
-
-    function popupQuestion()
-    {
-        document.getElementById("popup_question").style.display="block";
-        return false;
-    }
-
-    function notifications()
-    {
-        xmlhttp = getXMLHTTP();
-        xmlhttp.onreadystatechange = function()
-        {
-          if(xmlhttp.readyState==4)
-            if(xmlhttp.status==200)
-            {
-                if(xmlhttp.responseXML)
-                {
-                    var root = xmlhttp.responseXML;
-                    var announcements = root.getElementsByTagName("announcement");
-                    var messages = root.getElementsByTagName("message");
-
-                    last_notification = root.getElementsByTagName("requestdate")[0].firstChild.nodeValue
-                    notification = "";
-                    
-                    if( announcements.length != 0)
-                    {
-                        var announcement_subject = root.getElementsByTagName("announcement")[0].firstChild.nodeValue;
-                        notification += "Announcement: " + announcement_subject ;
-                    }
-                    else if( messages.length != 0)
-                    {
-                        var message_subject = root.getElementsByTagName("message")[0].firstChild.nodeValue;
-                        notification += "Message: " + message_subject;
-                    }
-                    if(notification != "")
-                    {
-                        document.getElementById("notification_content").innerHTML = notification;
-                        document.getElementById("notification").style.display="block";
-                        document.getElementById("global").style.marginTop="40px";
-                    }
-
-                }
-                else
-                {
-                    //alert(xmlhttp.responseText);
-                }
-            }
-            else
-            {
-                //alert(xmlhttp.status);
-            }
-        }
-      var params = "lastrequest="+last_notification;
-      xmlhttp.open("POST", "/notifications", true);
-      xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-      xmlhttp.send(params);
-    }
-
-    function hideNotification(item)
-    {
-        item.parentNode.style.display="none";
-        document.getElementById("global").style.marginTop="0";
-    }
-
-    function getTime()
-    {
-      {% if contest.stop != None %}
-      var sec_to_end = {{ contest.stop - timestamp }};
-      {% else %}
-      var sec_to_end = Infinity;
-      {% end %}
-      
-      {% if contest.start != None %}
-      var sec_to_start = {{ contest.start - timestamp }};
-      {% else %}
-      var sec_to_start = -Infinity;
-      {% end %}
-      var now = new Date();
-
-      var nowsec_to_end = sec_to_end - (now - firstDate) / 1000;
-      var nowsec_to_start = sec_to_start - (now - firstDate) / 1000;
-      if ((nowsec_to_end <= 0 && {{ phase }} == 0 ) ||
-          (nowsec_to_start <= 0 && {{ phase }} == -1 ))
-	    window.location.href = "/";
-
-      countdown = nowsec_to_end;
-
-      if ( {{ phase }} == -1 )
-        countdown = nowsec_to_start;
-
-      var hours = countdown / 60 / 60;
-      var hoursR = Math.floor(hours);
-      var minutes = countdown / 60 - (60*hoursR);
-      var minutesR = Math.floor(minutes);
-      var seconds = countdown - (60*60*hoursR) - (60*minutesR);
-      var secondsR = Math.floor(seconds);
-      if (minutesR < 10) m = "0" + minutesR;
-      else m = minutesR;
-      if (secondsR < 10) s = "0" + secondsR;
-      else s = secondsR;
-      
-      if (document.getElementById("remaining"))
-	    document.getElementById("remaining").innerHTML = hoursR+":"+m+":"+s;;
-    }
-
-    firstDate = new Date();
-    getTime();
-    setInterval(getTime, 1000);
-    //notifications();
-    //setInterval(notifications, 15000);
-
 //-->
-  </script>
+</script>
+<script language="Javascript" src="/static/scripts.js" onload="init()">
+</script>
 </head>
 <body>
     <div id="notification">
         <div id="notification_close" 
-        onclick="hideNotification(this)">
+        onclick="util.hideNotification(this)">
         <a href="#">X</a>
         </div>
         <div id="notification_content"></div>
     </div>
-    <div id="popup_question">
-      <div id="popup_question_header">
-        <div id="popup_question_close">
-        <a href="#" onclick="document.getElementById(&quot;popup_question&quot;).style.display=&quot;none&quot;">X</a>
+    <div id="popup_question_background">
+    </div>
+    <div id="popup_question_container">
+        <div id="popup_question">
+          <div id="popup_question_header">
+            <div id="popup_question_close">
+            <a href="#" onclick="document.getElementById(&quot;popup_question&quot;).style.display=&quot;none&quot;">X</a>
+            </div>
+            Ask a question
+          </div>
+          <form name="question" action="/question" method="POST">
+            <label for="question_text">Type your question:</label></br>
+            <textarea name="question_text"></textarea><br/>
+            <input type="submit" value="Send"/>
+            <input type="reset"/>
+          </form>
         </div>
-        Ask a question
-      </div>
-      <form name="question" action="/question" method="POST">
-        <label for="question_text">Type your question:</label></br>
-        <textarea name="question_text"></textarea><br/>
-        <input type="submit" value="Send"/>
-        <input type="reset"/>
-      </form>
     </div>
     <div id="global">
 

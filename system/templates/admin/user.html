@@ -5,7 +5,11 @@
     <h1>{{ selected_user.real_name }} ({{ selected_user.username }})</h1>
     </div>
 
-    <h2 onclick="toggleVisibility(&quot;user_submissions&quot;);">
+    {% if handler.get_argument("notext","") == "true" %}
+    <span class="error">No subject or no text given.</span>
+    {% end %}
+
+    <h2 onclick="util.toggleVisibility(&quot;user_submissions&quot;);">
     <span class="toggle" id="user_submissions_toggle">-</span>Submissions</h2>
     <div id="user_submissions">
     {% if submissions != [] %}
@@ -54,24 +58,72 @@
     {% end %}
     </div>
 
-    <h2 onclick="toggleVisibility(&quot;user_messages&quot;);">
+    <h2 onclick="util.toggleVisibility(&quot;user_messages&quot;);">
     <span class="toggle" id="user_messages_toggle">-</span>Messages</h2>
     <div id="user_messages">
     {% if selected_user.messages != [] %}
-        <table>
-        <tr>
-            <td>Date</td>
-            <td>Subject</td>
-        </tr>
-        {% for i, msg in enumerate(selected_user.messages) %}
-        <tr>
-            <td>{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</td>
-            <td><a href="messages/{{ i }}">{{msg["subject"]}}</a></td>
-        </tr>
+        {% for i, msg in enumerate(reversed(selected_user.messages)) %}
+            <div class="message_item displayed">
+                <span class="message_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
+                <span class="message_subject">{{msg["subject"]}}</span>
+                {% if msg["quick_answer"] in WebConfig.quick_answers %}
+                <span class="message_quick_answer">{{ WebConfig.quick_answers[msg["quick_answer"]] }}</span>
+                {% end %}
+                <span class="message_text">{{msg["text"]}}</span>
+            </div>
         {% end %}
-        </table>
     {% else %}
     No messages.
     {% end %}
+
+        <h3 onclick="util.toggleVisibility(&quot;send_message&quot;);">
+        <a name="send_message"></a>
+        <span class="toggle" id="send_message_toggle">-</span>Send a message</h2>
+        <div id="send_message">
+            <form id="send_message_form" action="/message/{{selected_user.username}}" method="POST">
+                Subject: <input id="send_message_subject" type="text" name="send_message_subject"></br>
+                Quick answer: 
+                <select name="send_message_quick_answer">
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                    <option value="answered">Answered in task description</option>
+                    <option value="invalid">Invalid question</option>
+                    <option value="nocomment">No comment</option>
+                    <option selected value="other">Other</option>
+                </select>
+                </br>
+                Additional text: <textarea name="send_message_text"></textarea><br/>
+                <input type="submit" value="Send"/>
+            </form>
+        </div>
     </div>
+
+    <script>
+    function message_reply(subject) {
+        document.getElementById("send_message_form").reset();
+        document.getElementById("send_message_subject").value = "Reply to: "+subject;
+        util.setVisibility("user_messages");
+        util.setVisibility("send_message");
+        window.location="#send_message";
+        return false;
+    }
+    </script>
+
+    <h2 onclick="util.toggleVisibility(&quot;user_questions&quot;);">
+    <span class="toggle" id="user_questions_toggle">-</span>Submitted Questions</h2>
+    <div id="user_questions">
+    {% if selected_user.questions != [] %}
+        {% for i, msg in enumerate(reversed(selected_user.questions)) %}
+            <div class="question_item displayed">
+                <span class="question_date">{{ datetime.datetime.fromtimestamp(msg["date"]).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
+                <span class="question_subject">{{escape(msg["subject"])}}</span>
+                <span class="question_text">{{escape(msg["text"])}}</span>
+                <div class="question_options"><a href="#" onclick="return message_reply(&quot;{{escape(msg["subject"])}}&quot;);">Reply</a></div>
+            </div>
+        {% end %}
+    {% else %}
+    No submitted questions.
+    {% end %}
+    </div>
+
 {% end %}

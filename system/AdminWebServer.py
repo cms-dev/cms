@@ -103,7 +103,12 @@ class MainHandler(BaseHandler):
     def get(self):
         #Retrieve the contest list
         r_params = self.render_params()
-        r_params["workers_status"] = BusinessLayer.get_workers_status()
+        try:
+            r_params["workers_status"] = BusinessLayer.get_workers_status()
+        except Exception as e:
+            Utils.log("Worker status unavailable: %s" % e,
+                Utils.logger.SEVERITY_IMPORTANT)
+            r_params["workers_status"] = None
         self.render("welcome.html", **r_params)
 
 class ContestViewHandler(BaseHandler):
@@ -288,7 +293,6 @@ class SubmissionFileHandler(BaseHandler):
         # search the submission in the contest
         file_content = BusinessLayer.get_file_from_submission(submission, filename)
         if file_content == None:
-            print "huh?"
             raise tornado.web.HTTPError(404)
 
         # FIXME - Set the right headers
@@ -329,7 +333,6 @@ class UserViewHandler(BaseHandler):
         user = BusinessLayer.get_user_by_username(c, user_id)
         submissions = BusinessLayer.get_submissions_by_username(c,user_id)
         if user == None:
-            print "huh?"
             raise tornado.web.HTTPError(404)
         r_params["selected_user"] = user
         r_params["submissions"] = submissions
@@ -340,6 +343,37 @@ class UserListHandler(BaseHandler):
     def get(self):
         r_params = self.render_params()
         self.render("userlist.html", **r_params)
+
+class MessageHandler(BaseHandler):
+
+    def post(self, user_name):
+        r_params = self.render_params()
+
+        user = BusinessLayer.get_user_by_username(c, user_name)
+        if user == None:
+            raise tornado.web.HTTPError(404)
+        r_params["selected_user"] = user
+
+        message_subject = self.get_argument("send_message_subject","")
+        message_quick_answer = self.get_argument("send_message_quick_answer","")
+        message_text = self.get_argument("send_message_text","")
+
+        # Ignore invalid answers
+        if message_quick_answer not in WebConfig.quick_answers:
+            message_quick_answer = None
+
+        # Abort if the subject is empty
+        if message_subject == "" :
+            self.redirect("/user/%s?notext=true" % user_name)
+            return
+
+        BusinessLayer.add_user_message(user,time.time(),\
+                message_subject, message_quick_answer, message_text)
+        Utils.log("Message submitted to user %s." 
+                  % user_name,
+                  Utils.logger.SEVERITY_NORMAL)
+        self.render("successfulMessage.html", **r_params)
+
 
 handlers = [
             (r"/",MainHandler),
@@ -352,8 +386,9 @@ handlers = [
             (r"/add_announcement", AddAnnouncementHandler),
             (r"/remove_announcement", RemoveAnnouncementHandler),
             (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", SubmissionFileHandler),
-            (r"/user/([a-zA-Z0-9_-]+)",UserViewHandler),
-            (r"/user",UserListHandler),
+            (r"/user/([a-zA-Z0-9_-]+)", UserViewHandler),
+            (r"/user", UserListHandler),
+            (r"/message/([a-zA-Z0-9_-]+)", MessageHandler),
            ]
 
 admin_parameters={
