@@ -138,7 +138,6 @@ class ScoreTypeAlone:
         self.scores[username] = score
 
 
-
 class ScoreTypeSum(ScoreTypeAlone):
     def compute_score(self, submission):
         if submission.evaluation_outcome == None:
@@ -147,17 +146,23 @@ class ScoreTypeSum(ScoreTypeAlone):
         else:
             return sum(submission.evaluation_outcome)
 
+
 class ScoreTypeGroupMin(ScoreTypeAlone):
     def compute_score(self, submission):
         if submission.evaluation_outcome == None:
             Utils.log("Evaluated submission without outcome!",
                       Utils.Logger.SEVERITY_IMPORTANT)
         else:
-            return sum(
-                [min(submission.evaluation_outcome[current:
-                                                       current+par.testcases]) \
-                     * par.multiplier
-                 for par in self.score_parameters])
+            username = submission.user.username
+            current = 0
+            score = 0.0
+            for parameter in submission.task.score_parameters:
+                next = current + parameter['testcases']
+                score += min(submission.evaluation_outcome[current:next]) * \
+                    parameter['multiplier']
+                current = next
+            return score
+
 
 class ScoreTypeGroupMul(ScoreTypeAlone):
     def compute_score(self, submission):
@@ -165,12 +170,16 @@ class ScoreTypeGroupMul(ScoreTypeAlone):
             Utils.log("Evaluated submission without outcome!",
                       Utils.Logger.SEVERITY_IMPORTANT)
         else:
-            return reduce(lambda x, y: x*y,
-                          [(submission.evaluation_outcome[current:
-                                                              current+par.testcases]) \
-                               * par.multiplier
-                           for par in self.score_parameters])
-
+            username = submission.user.username
+            current = 0
+            score = 0.0
+            for parameter in submission.task.score_parameters:
+                next = current + parameter['testcases']
+                score += reduce(lambda x, y: x * y,
+                                submission.evaluation_outcome[current:next]) * \
+                                parameter['multiplier']
+                current = next
+            return score
 
 
 class ScoreTypeRelative:
