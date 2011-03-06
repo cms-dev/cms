@@ -31,14 +31,18 @@
           </th>
           <td>
               {% if submission.evaluation_outcome != None %}
-                  <table class="sub_score">
-                  <tr><th>Score</th><th>Details</th></tr>
-                  {% for i, (ev_o, ev_t) in enumerate(zip(submission.evaluation_outcome, submission.evaluation_text)) %}
-                    {% if submission.token_timestamp!= None or i in task.public_testcases %}
-                      <tr><td>{{ ev_o }}</td><td>{{ ev_t }}</td><tr/>
-                    {% end %}
-                  {% end %}
-                  </table>
+                  {% if submission.token_timestamp != None or task.public_testcases != [] %}
+                      <table class="sub_score">
+                      <tr><th>Score</th><th>Details</th></tr>
+                      {% for i, (ev_o, ev_t) in enumerate(zip(submission.evaluation_outcome, submission.evaluation_text)) %}
+                        {% if submission.token_timestamp!= None or i in task.public_testcases %}
+                          <tr><td>{{ ev_o }}</td><td>{{ ev_t }}</td><tr/>
+                        {% end %}
+                      {% end %}
+                      </table>
+                  {% else %}
+                        No specified testcases<br/> for partial feedback for this task.
+                  {% end%}
               {% else %}
                   Not evaluated
               {% end %}
@@ -56,7 +60,7 @@
           <th>Detailed<br/>Feedback<br/>Requested</th>
           <td>
           {% if submission.token_timestamp==None %}
-              <form action="/usetoken/" method="POST">
+              <form class="submit_form" action="/usetoken/" method="POST">
               No
               <input type="hidden" name="id" value="{{ escape(submission.couch_id) }}">
               <input type="submit" value="Use Token">
