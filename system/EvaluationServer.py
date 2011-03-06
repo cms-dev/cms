@@ -763,7 +763,7 @@ if __name__ == "__main__":
             e.self_destruct()
 
     elif sys.argv[1] == "destroy":
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         es.self_destruct()
 
     elif sys.argv[1] == "submit":
@@ -777,7 +777,7 @@ if __name__ == "__main__":
                                          files=[sys.argv[3]])
         c.submissions.append(s)
         c.to_couch()
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         es.add_job(s.couch_id)
         print "Submission %s" % s.couch_id
 
@@ -816,21 +816,21 @@ if __name__ == "__main__":
         print obj.dump()
 
     elif sys.argv[1] == "get_workers_status":
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         status = es.get_workers_status()
         for k in sorted(status.keys()):
             print "%5s: %s" % (k, str(status[k]))
 
     elif sys.argv[1] == "enable_worker":
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         es.enable_worker(int(sys.argv[2]))
 
     elif sys.argv[1] == "del_worker":
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         es.del_worker(int(sys.argv[2]))
 
     elif sys.argv[1] == "add_worker":
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         es.add_worker(int(sys.argv[2]), sys.argv[3], int(sys.argv[4]))
 
     elif sys.argv[1] == "exit_worker":
