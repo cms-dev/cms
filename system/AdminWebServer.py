@@ -26,10 +26,8 @@ import tornado.web
 import tornado.escape
 
 import couchdb
-import datetime
 import os
 import pickle
-import sys
 import xmlrpclib
 import time
 
@@ -38,22 +36,17 @@ import Configuration
 import WebConfig
 import CouchObject
 import Utils
-from Submission import Submission
-from FileStorageLib import FileStorageLib
-from Contest import Contest
 
 
 class BaseHandler(tornado.web.RequestHandler):
-    """
-    Base RequestHandler for this application.
+    """Base RequestHandler for this application.
 
     All the RequestHandler classes in this application should be a
     child of this class.
     """
 
     def prepare(self):
-        """
-        This method is executed at the beginning of each request.
+        """This method is executed at the beginning of each request.
         """
         # Attempt to update the contest and all its references
         # If this fails, the request terminates.
@@ -69,8 +62,7 @@ class BaseHandler(tornado.web.RequestHandler):
             self.finish()
 
     def get_current_user(self):
-        """
-        Gets the current user logged in from the cookies
+        """Gets the current user logged in from the cookies
 
         If a valid cookie is retrieved, returns a User object with the
         username specified in the cookie. Otherwise, returns None.
@@ -94,17 +86,19 @@ class BaseHandler(tornado.web.RequestHandler):
         r["cookie"] = str(self.cookies)
         return r
 
-    def valid_phase(self,r_param):
+    def valid_phase(self, r_param):
         if r_param["phase"] != 0:
             self.redirect("/")
             return False
         return True
 
+
 class MainHandler(BaseHandler):
     """Home page handler.
     """
+
     def get(self):
-        #Retrieve the contest list
+        # Retrieve the contest list
         r_params = self.render_params()
         try:
             r_params["workers_status"] = BusinessLayer.get_workers_status()
@@ -120,24 +114,24 @@ class MainHandler(BaseHandler):
             r_params["queue_status"] = None
         self.render("welcome.html", **r_params)
 
+
 class ContestViewHandler(BaseHandler):
-    def get(self,contest_id):
-      try:
-        c = CouchObject.from_couch(contest_id)
-      except couchdb.client.ResourceNotFound:
-        self.write("Cannot load contest %s." % (contest_id))
-        return
-      self.render("contest.html", contest = c, cookie = str(self.cookies))
+
+    def get(self, contest_id):
+        try:
+            c = CouchObject.from_couch(contest_id)
+        except couchdb.client.ResourceNotFound:
+            self.write("Cannot load contest %s." % (contest_id))
+            return
+        self.render("contest.html", contest=c, cookie=str(self.cookies))
+
 
 class SubmissionReevaluateHandler(BaseHandler):
+    """Re-evaluate the specified submission and go back to the details
+    of the user.
     """
-    Re-evaluate the specified submission and go back to the details of
-    the user.
-    """
+
     def get(self, submission_id):
-
-        r_params = self.render_params()
-
         # search the submission in the contest
         s = BusinessLayer.get_submission(c, submission_id)
         if s == None:
@@ -147,14 +141,11 @@ class SubmissionReevaluateHandler(BaseHandler):
 
 
 class UserReevaluateHandler(BaseHandler):
+    """Re-evaluate the submissions of the specified user and go back
+    to the details of the user.
     """
-    Re-evaluate the submissions of the specified user and go back to
-    the details of the user.
-    """
+
     def get(self, user_id):
-
-        r_params = self.render_params()
-
         u = BusinessLayer.get_user_by_username(c, user_id)
         if u == None:
             raise tornado.web.HTTPError(404)
@@ -185,15 +176,18 @@ class UserReevaluateHandler(BaseHandler):
 #          return
 #        timearguments = ["_hour","_minute"]
 #
-#        token_min_interval = int(self.get_argument("min_interval_hour","0")) * 60 + \
-#                             int(self.get_argument("min_interval_minute","0"))
+#        token_min_interval = \
+#            int(self.get_argument("min_interval_hour","0")) * 60 + \
+#            int(self.get_argument("min_interval_minute","0"))
 #        token_gen_time = int(self.get_argument("token_gen_hour","0")) * 60 + \
 #                             int(self.get_argument("token_gen_minute","0"))
 #
 #        datetimearguments = ["_year","_month","_day","_hour","_minute"]
 #        try:
-#          start = datetime.datetime(*[int(self.get_argument("start"+x)) for x in datetimearguments] )
-#          end = datetime.datetime(*[int(self.get_argument("end"+x)) for x in datetimearguments] )
+#          start = datetime.datetime(*[int(self.get_argument("start"+x))
+#                                      for x in datetimearguments] )
+#          end = datetime.datetime(*[int(self.get_argument("end"+x))
+#                                    for x in datetimearguments] )
 #        except:
 #          self.write("Invalid date(s).")
 #          return
@@ -238,15 +232,22 @@ class UserReevaluateHandler(BaseHandler):
 #          return
 #        timearguments = ["_hour","_minute"]
 #
-#        token_min_interval = int(self.get_argument("min_interval_hour","0")) * 60 + \
-#                             int(self.get_argument("min_interval_minute","0"))
+#        token_min_interval = \
+#            int(self.get_argument("min_interval_hour","0")) * 60 + \
+#            int(self.get_argument("min_interval_minute","0"))
 #        token_gen_time = int(self.get_argument("token_gen_hour","0")) * 60 + \
 #                             int(self.get_argument("token_gen_minute","0"))
 #
 #        datetimearguments = ["_year","_month","_day","_hour","_minute"]
 #        try:
-#          time_start = time.mktime(time.strptime(" ".join([self.get_argument("start"+x,"0") for x in datetimearguments]) ,  "%Y %m %d %H %M"))
-#          time_stop = time.mktime(time.strptime(" ".join([self.get_argument("end"+x,"0") for x in datetimearguments]) , "%Y %m %d %H %M" ))
+#          time_start = time.mktime(time.strptime(
+#                  " ".join([self.get_argument("start"+x,"0")
+#                            for x in datetimearguments]),
+#                  "%Y %m %d %H %M"))
+#          time_stop = time.mktime(time.strptime(
+#                  " ".join([self.get_argument("end"+x,"0")
+#                            for x in datetimearguments]),
+#                  "%Y %m %d %H %M" ))
 #        except Exception as e:
 #          self.write("Invalid date(s)." + repr(e))
 #          return
@@ -274,10 +275,11 @@ class UserReevaluateHandler(BaseHandler):
 #        self.redirect("/")
 #        return
 
+
 class SubmissionDetailHandler(BaseHandler):
+    """Shows additional details for the specified submission.
     """
-    Shows additional details for the specified submission.
-    """
+
     def get(self, submission_id):
 
         r_params = self.render_params()
@@ -292,26 +294,27 @@ class SubmissionDetailHandler(BaseHandler):
 
 
 class SubmissionFileHandler(BaseHandler):
+    """Shows a submission file.
     """
-    Shows a submission file.
-    """
-    def get(self, submission_id, filename):
 
-        r_params = self.render_params()
+    def get(self, submission_id, filename):
         submission = BusinessLayer.get_submission(c, submission_id)
         # search the submission in the contest
-        file_content = BusinessLayer.get_file_from_submission(submission, filename)
+        file_content = BusinessLayer.get_file_from_submission(submission,
+                                                              filename)
         if file_content == None:
             raise tornado.web.HTTPError(404)
 
         # FIXME - Set the right headers
-        self.set_header("Content-Type","text/plain")
+        self.set_header("Content-Type", "text/plain")
         self.set_header("Content-Disposition",
-                        "attachment; filename=\"%s-%s\"" % (submission.couch_id,filename))
+                        "attachment; filename=\"%s-%s\"" %
+                        (submission.couch_id, filename))
         self.write(file_content)
 
 
 class AddAnnouncementHandler(BaseHandler):
+
     def post(self):
         subject = self.get_argument("subject", "")
         text = self.get_argument("text", "")
@@ -321,6 +324,7 @@ class AddAnnouncementHandler(BaseHandler):
 
 
 class RemoveAnnouncementHandler(BaseHandler):
+
     def post(self):
         index = self.get_argument("index", "-1")
         subject = self.get_argument("subject", "")
@@ -337,10 +341,11 @@ class RemoveAnnouncementHandler(BaseHandler):
 
 
 class UserViewHandler(BaseHandler):
+
     def get(self, user_id):
         r_params = self.render_params()
         user = BusinessLayer.get_user_by_username(c, user_id)
-        submissions = BusinessLayer.get_submissions_by_username(c,user_id)
+        submissions = BusinessLayer.get_submissions_by_username(c, user_id)
         if user == None:
             raise tornado.web.HTTPError(404)
         r_params["selected_user"] = user
@@ -349,9 +354,11 @@ class UserViewHandler(BaseHandler):
 
 
 class UserListHandler(BaseHandler):
+
     def get(self):
         r_params = self.render_params()
         self.render("userlist.html", **r_params)
+
 
 class MessageHandler(BaseHandler):
 
@@ -363,23 +370,23 @@ class MessageHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
         r_params["selected_user"] = user
 
-        message_subject = self.get_argument("send_message_subject","")
-        message_quick_answer = self.get_argument("send_message_quick_answer","")
-        message_text = self.get_argument("send_message_text","")
+        message_subject = self.get_argument("send_message_subject", "")
+        message_quick_answer = self.get_argument("send_message_quick_answer",
+                                                 "")
+        message_text = self.get_argument("send_message_text", "")
 
         # Ignore invalid answers
         if message_quick_answer not in WebConfig.quick_answers:
             message_quick_answer = None
 
         # Abort if the subject is empty
-        if message_subject == "" :
+        if message_subject == "":
             self.redirect("/user/%s?notext=true" % user_name)
             return
 
-        BusinessLayer.add_user_message(user,time.time(),\
+        BusinessLayer.add_user_message(user, time.time(), \
                 message_subject, message_quick_answer, message_text)
-        Utils.log("Message submitted to user %s." 
-                  % user_name,
+        Utils.log("Message submitted to user %s." % user_name,
                   Utils.logger.SEVERITY_NORMAL)
         self.render("successfulMessage.html", **r_params)
 
@@ -394,9 +401,10 @@ class QuestionReplyHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
         r_params["selected_user"] = user
 
-        message_index = self.get_argument("reply_question_index",None)
-        message_quick_answer = self.get_argument("reply_question_quick_answer","")
-        message_text = self.get_argument("reply_question_text","")
+        message_index = self.get_argument("reply_question_index", None)
+        message_quick_answer = self.get_argument("reply_question_quick_answer",
+                                                 "")
+        message_text = self.get_argument("reply_question_text", "")
 
         if message_index == None:
             raise tornado.web.HTTPError(404)
@@ -406,39 +414,53 @@ class QuestionReplyHandler(BaseHandler):
         if message_quick_answer not in WebConfig.quick_answers:
             message_quick_answer = None
 
-        BusinessLayer.reply_question(user,message_index, time.time(),\
+        BusinessLayer.reply_question(user, message_index, time.time(), \
                  message_quick_answer, message_text)
-        Utils.log("Reply sent to user %s for question '%s'." 
-                  % (user_name,user.questions[message_index]["subject"]) ,
+        Utils.log("Reply sent to user %s for question '%s'."
+                  % (user_name, user.questions[message_index]["subject"]),
                   Utils.logger.SEVERITY_NORMAL)
         self.render("successfulMessage.html", **r_params)
 
 handlers = [
-            (r"/",MainHandler),
-#            (r"/addcontest",AddContestHandler),
-#            (r"/contest/([a-zA-Z0-9_-]+)",ContestViewHandler),
-#            (r"/contest/([a-zA-Z0-9_-]+)/edit",EditContestHandler),
-            (r"/submissions/details/([a-zA-Z0-9_-]+)", SubmissionDetailHandler),
-            (r"/reevaluate/submission/([a-zA-Z0-9_-]+)", SubmissionReevaluateHandler),
-            (r"/reevaluate/user/([a-zA-Z0-9_-]+)", UserReevaluateHandler),
-            (r"/add_announcement", AddAnnouncementHandler),
-            (r"/remove_announcement", RemoveAnnouncementHandler),
-            (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", SubmissionFileHandler),
-            (r"/user/([a-zA-Z0-9_-]+)", UserViewHandler),
-            (r"/user", UserListHandler),
-            (r"/message/([a-zA-Z0-9_-]+)", MessageHandler),
-            (r"/question/([a-zA-Z0-9_-]+)", QuestionReplyHandler),
+            (r"/", \
+                 MainHandler),
+            # (r"/addcontest", \
+            #      AddContestHandler),
+            # (r"/contest/([a-zA-Z0-9_-]+)", \
+            #      ContestViewHandler),
+            # (r"/contest/([a-zA-Z0-9_-]+)/edit", \
+            #      EditContestHandler),
+            (r"/submissions/details/([a-zA-Z0-9_-]+)", \
+                 SubmissionDetailHandler),
+            (r"/reevaluate/submission/([a-zA-Z0-9_-]+)", \
+                 SubmissionReevaluateHandler),
+            (r"/reevaluate/user/([a-zA-Z0-9_-]+)", \
+                 UserReevaluateHandler),
+            (r"/add_announcement", \
+                 AddAnnouncementHandler),
+            (r"/remove_announcement", \
+                 RemoveAnnouncementHandler),
+            (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", \
+                 SubmissionFileHandler),
+            (r"/user/([a-zA-Z0-9_-]+)", \
+                 UserViewHandler),
+            (r"/user", \
+                 UserListHandler),
+            (r"/message/([a-zA-Z0-9_-]+)", \
+                 MessageHandler),
+            (r"/question/([a-zA-Z0-9_-]+)", \
+                 QuestionReplyHandler),
            ]
 
-admin_parameters={
-            "login_url": "/" ,
-            "template_path": "./templates/admin",
-            "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
-            "static_path": os.path.join(os.path.dirname(__file__), "static"),
-            "debug": True,
-           }
+admin_parameters = {
+    "login_url": "/",
+    "template_path": "./templates/admin",
+    "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
+    "static_path": os.path.join(os.path.dirname(__file__), "static"),
+    "debug": True,
+    }
 
-application = tornado.web.Application( handlers, **admin_parameters)
+application = tornado.web.Application(handlers, **admin_parameters)
 ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 
 if __name__ == "__main__":
@@ -448,9 +470,11 @@ if __name__ == "__main__":
     try:
         c = Utils.ask_for_contest()
     except AttributeError as e:
-        Utils.log("CouchDB server unavailable: "+repr(e), Utils.Logger.SEVERITY_CRITICAL)
+        Utils.log("CouchDB server unavailable: " + repr(e),
+                  Utils.Logger.SEVERITY_CRITICAL)
         exit(1)
-    Utils.log("Administration Web Server for contest %s started..." % (c.couch_id))
+    Utils.log("Administration Web Server for contest %s started..."
+              % (c.couch_id))
 
     upsince = time.time()
     try:
