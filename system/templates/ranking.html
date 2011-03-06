@@ -2,19 +2,19 @@
 
 {% block core %}
     <table>
-      <tr>
-        <th><strong>Name</strong></th>
-        <th><strong>Total</strong></th>
+      <tr style="margin-bottom: 20px; vertical-align: bottom; height: 120px;">
+        <th style="width: 200px; padding-bottom: 20px;"><strong style="width:10px; position: absolute; -webkit-transform: rotate(-90deg); -moz-transform: rotate(-90deg);">Name</strong></th>
+        <th style="width: 50px; padding-bottom: 20px;"><strong style="width:10px; position: absolute; -webkit-transform: rotate(-90deg); -moz-transform: rotate(-90deg);">Total</strong></th>
         {% for t in contest.tasks %}
-          <th><a href="/tasks/{{ t.name }}">{{ t.name }}</a></th>
+          <th style="width: 50px; padding-bottom: 20px;"><a style="width:10px; position: absolute; -webkit-transform: rotate(-90deg); -moz-transform: rotate(-90deg);" href="/tasks/{{ t.name }}">{{ t.name }}</a></th>
         {% end %}
       </tr>
-      {% for u in contest.users %}
+      {% for u in sorted(contest.users, lambda x, y: cmp(sum(contest.ranking_view.scores[y.username]), sum(contest.ranking_view.scores[x.username]))) %}
       <tr>
         <td>{{ u.real_name }}</td>
-        <td>{{ sum(contest.ranking_view.scores[u.username]) }}</td>
+        <td style="text-align: right;">{{ sum(contest.ranking_view.scores[u.username]) }}</td>
         {% for i, t in enumerate(contest.tasks) %}
-          <td>{{ contest.ranking_view.scores[u.username][i] }}</td>
+          <td style="text-align: right;">{{ contest.ranking_view.scores[u.username][i] }}</td>
         {% end %}
       </tr>
       {% end %}
