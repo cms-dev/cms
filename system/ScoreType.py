@@ -98,7 +98,8 @@ class ScoreTypeAlone:
         dictionary.
         """
         username = submission.user.username
-        if self.submissions[username] == None:
+        if username not in self.submissions or \
+                self.submissions[username] == None:
             self.submissions[username] = [submission]
         else:
             self.submissions[username].append(submission)
@@ -107,7 +108,8 @@ class ScoreTypeAlone:
         """Utility internal method to add a score to a submission.
         """
         username = submission.user.username
-        if self.submission_scores[username] == None:
+        if username not in self.submission_scores or \
+                self.submission_scores[username] == None:
             self.submission_scores[username] = {submission.couch_id: score}
         else:
             self.submission_scores[username][submission.couch_id] = score
