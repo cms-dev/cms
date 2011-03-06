@@ -1,8 +1,0 @@
-{% extends base_noauth.html %}
-{% block core %}
-    {% set i = contest.get_task_index(task.name) %}
-    <h1>{{ task.title }} ({{ task.name }})</h1>
-    <div><a href="/task_statement/{{ task.name }}">Download task statement</a></div>
-    <div>Average score: {{ 1.0*sum([contest.ranking_view.scores[u.username][i] for u in contest.users]) / len(contest.users) }}</div>
-    <div>Graph</div>
-{% end %}

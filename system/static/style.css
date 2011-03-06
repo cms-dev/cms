@@ -280,7 +280,10 @@ a, a:visited {
 
 .sub_table, .sub_details {
   border-collapse: collapse;
+  margin: 0 auto;
   margin-top:10px;
+  width: 90%;
+
 }
 
 .sub_table td, .sub_table th{
@@ -296,6 +299,10 @@ a, a:visited {
 .sub_score td, .sub_score th {
     border: 0;
     padding: 5px;
+}
+
+.submit_form {
+    display: inline;
 }
 
 #compilazione
@@ -329,6 +336,7 @@ code
     display: block;
     text-align: center;
     margin: auto;
+    width: 90%;
     padding: 4px;
     background-color: #EEEEEE;
     color: red;
