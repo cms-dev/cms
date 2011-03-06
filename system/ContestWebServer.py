@@ -76,10 +76,14 @@ class BaseHandler(tornado.web.RequestHandler):
             username, cookie_time = \
                 pickle.loads(self.get_secure_cookie("login"))
         except:
+            self.clear_cookie("login")
             return None
         #if cookie_time == None or cookie_time < upsince:
         #    return None
         current_user = BusinessLayer.get_user_by_username(c, username)
+        if current_user == None:
+            self.clear_cookie("login")
+            return None
         current_user.refresh()
         return current_user
 
