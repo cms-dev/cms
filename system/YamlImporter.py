@@ -67,7 +67,7 @@ def get_params_for_user(user_dict):
     surname = user_dict.get("cognome", user_dict["username"])
     params["real_name"] = " ".join([name, surname])
     params["ip"] = user_dict.get("ip", "0.0.0.0")
-    params["hidden"] = user_dict.get("fake", False)
+    params["hidden"] = "True" == user_dict.get("fake", "False")
     params["tokens"] = []
     return params
 
