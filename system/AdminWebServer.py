@@ -50,6 +50,7 @@ class BaseHandler(tornado.web.RequestHandler):
     All the RequestHandler classes in this application should be a
     child of this class.
     """
+
     def prepare(self):
         """
         This method is executed at the beginning of each request.
@@ -62,7 +63,8 @@ class BaseHandler(tornado.web.RequestHandler):
             BusinessLayer.update_submissions(c)
             BusinessLayer.update_users(c)
         except Exception as e:
-            Utils.log("CouchDB exception:"+repr(e),Utils.Logger.SEVERITY_CRITICAL)
+            Utils.log("CouchDB exception:" + repr(e),
+                      Utils.Logger.SEVERITY_CRITICAL)
             self.write("Can't connect to CouchDB Server")
             self.finish()
 
@@ -76,7 +78,8 @@ class BaseHandler(tornado.web.RequestHandler):
         if self.get_secure_cookie("login") == None:
             return None
         try:
-            username, cookie_time = pickle.loads(self.get_secure_cookie("login"))
+            username, cookie_time = \
+                pickle.loads(self.get_secure_cookie("login"))
         except:
             return None
         if cookie_time == None or cookie_time < upsince:
@@ -85,8 +88,8 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def render_params(self):
         r = {}
-        r["timestamp"] = time.time();
-        r["contest"] = c;
+        r["timestamp"] = time.time()
+        r["contest"] = c
         r["phase"] = BusinessLayer.contest_phase(**r)
         r["cookie"] = str(self.cookies)
         return r
@@ -107,8 +110,14 @@ class MainHandler(BaseHandler):
             r_params["workers_status"] = BusinessLayer.get_workers_status()
         except Exception as e:
             Utils.log("Worker status unavailable: %s" % e,
-                Utils.logger.SEVERITY_IMPORTANT)
+                      Utils.logger.SEVERITY_IMPORTANT)
             r_params["workers_status"] = None
+        try:
+            r_params["queue_status"] = BusinessLayer.get_queue_status()
+        except Exception as e:
+            Utils.log("Queue status unavailable: %s" % e,
+                      Utils.logger.SEVERITY_IMPORTANT)
+            r_params["queue_status"] = None
         self.render("welcome.html", **r_params)
 
 class ContestViewHandler(BaseHandler):
@@ -173,7 +182,7 @@ class UserReevaluateHandler(BaseHandler):
 #          token_total = int(self.get_argument("token_total","0"))
 #        except:
 #          self.write("Invalid token number field(s).")
-#          return;
+#          return
 #        timearguments = ["_hour","_minute"]
 #
 #        token_min_interval = int(self.get_argument("min_interval_hour","0")) * 60 + \
@@ -226,7 +235,7 @@ class UserReevaluateHandler(BaseHandler):
 #          token_total = int(self.get_argument("token_total","0"))
 #        except:
 #          self.write("Invalid token number field(s).")
-#          return;
+#          return
 #        timearguments = ["_hour","_minute"]
 #
 #        token_min_interval = int(self.get_argument("min_interval_hour","0")) * 60 + \
@@ -277,8 +286,8 @@ class SubmissionDetailHandler(BaseHandler):
         s = BusinessLayer.get_submission(c, submission_id)
         if s == None:
             raise tornado.web.HTTPError(404)
-        r_params["submission"] = s;
-        r_params["task"] = s.task;
+        r_params["submission"] = s
+        r_params["task"] = s.task
         self.render("submission_detail.html", **r_params)
 
 
@@ -435,7 +444,7 @@ ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 if __name__ == "__main__":
     Utils.set_service("administration web server")
     http_server = tornado.httpserver.HTTPServer(application)
-    http_server.listen(8889);
+    http_server.listen(8889)
     try:
         c = Utils.ask_for_contest()
     except AttributeError as e:
