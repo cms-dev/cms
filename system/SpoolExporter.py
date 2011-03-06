@@ -87,13 +87,17 @@ def main():
 
     print "Exporting ranking"
     ranking_file = codecs.open(os.path.join(spool_dir, "classifica.txt"), 'w', encoding='utf-8')
+    ranking_csv = codecs.open(os.path.join(spool_dir, "classifica.csv"), 'w', encoding='utf-8')
     print >> ranking_file, "Classifica finale del contest `%s'" % (c.description)
     users = [(sum(c.ranking_view.scores[u]), u, c.ranking_view.scores[u]) for u in c.ranking_view.scores.keys()]
     users.sort(reverse = True)
     print >> ranking_file, ("%20s %10s" + " %10s" * len(c.tasks)) % (("Utente", "Totale") + tuple([t.name for t in c.tasks]))
+    print >> ranking_csv, ("%s,%s" + ",%s" * len(c.tasks)) % (("utente", "totale") + tuple([t.name for t in c.tasks]))
     for total, user, problems in users:
         print >> ranking_file, ("%20s %10.3f" + " %10.3f" * len(c.tasks)) % ((user, total) + tuple(problems))
+        print >> ranking_csv, ("%s,%.6f" + ",%.6f" * len(c.tasks)) % ((user, total) + tuple(problems))
     ranking_file.close()
+    ranking_csv.close()
 
 if __name__ == "__main__":
     main()
