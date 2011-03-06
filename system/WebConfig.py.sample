@@ -44,8 +44,16 @@ quick_answers = {
 
 parameters = {
     "login_url": "/" ,
-    "template_path": "./templates",
+    "template_path": "./templates/contest",
     "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
     "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "debug" : "True",
     }
+
+ranking_parameters = {
+    "login_url": "/" ,
+    "template_path": "./templates/ranking",
+    "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
+    "static_path": os.path.join(os.path.dirname(__file__), "static"),
+    "debug" : "True",
+   }
