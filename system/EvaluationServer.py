@@ -34,6 +34,15 @@ import CouchObject
 from View import RankingView
 
 
+def represent_job(job):
+    if job == None:
+        return 'None'
+    if isinstance(job, str):
+        return job
+    else:
+        return (job[0], job[1].couch_id)
+
+
 class JobQueue:
     """An instance of this class will contains the (unique) priority
     queue of jobs (compilations, evaluations, ...) that the ES needs
@@ -153,6 +162,21 @@ class JobQueue:
         returns (bool): is the queue empty?
         """
         return self.length() == 0
+
+    def get_status(self):
+        """Returns the content of the queue.
+
+        returns: a list of dictionary containing the representation of
+                 the job, the priority and the timestamp
+        """
+        myqueue = self.queue[:]
+        ret = []
+        while myqueue != []:
+            el = heapq.heappop(myqueue)
+            ret.append({'job': represent_job(el[2]),
+                        'priority': el[0],
+                        'timestamp': el[1]})
+        return ret
 
 
 class WorkerPool:
@@ -324,16 +348,8 @@ class WorkerPool:
                         if x != self.WORKER_INACTIVE and \
                             x != self.WORKER_DISABLED])
 
-    def represent_job(self, job):
-        if job == None:
-            return 'None'
-        if isinstance(job, str):
-            return job
-        else:
-            return (job[0], job[1].couch_id)
-
     def get_workers_status(self):
-        return dict([(str(n), {'job': self.represent_job(self.workers[n]),
+        return dict([(str(n), {'job': represent_job(self.workers[n]),
                                'address': self.address[n],
                                'start_time': self.start_time[n],
                                'error_count': self.error_count[n],
@@ -518,6 +534,9 @@ class JobDispatcher(threading.Thread):
         with self.main_lock:
             return self.workers.get_workers_status()
 
+    def get_queue_status(self):
+        return self.queue.get_status()
+
     def enable_worker(self, n):
         with self.main_lock:
             self.workers.enable_worker(n)
@@ -581,6 +600,7 @@ class EvaluationServer(RPCServer):
                             self.evaluation_finished,
                             self.self_destruct,
                             self.get_workers_status,
+                            self.get_queue_status,
                             self.add_worker,
                             self.del_worker,
                             self.enable_worker],
@@ -729,6 +749,9 @@ class EvaluationServer(RPCServer):
     def get_workers_status(self):
         return self.jd.get_workers_status()
 
+    def get_queue_status(self):
+        return self.jd.get_queue_status()
+
     def enable_worker(self, n):
         self.jd.enable_worker(n)
 
@@ -763,7 +786,7 @@ if __name__ == "__main__":
             e.self_destruct()
 
     elif sys.argv[1] == "destroy":
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         es.self_destruct()
 
     elif sys.argv[1] == "submit":
@@ -777,7 +800,7 @@ if __name__ == "__main__":
                                          files=[sys.argv[3]])
         c.submissions.append(s)
         c.to_couch()
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         es.add_job(s.couch_id)
         print "Submission %s" % s.couch_id
 
@@ -816,21 +839,27 @@ if __name__ == "__main__":
         print obj.dump()
 
     elif sys.argv[1] == "get_workers_status":
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         status = es.get_workers_status()
         for k in sorted(status.keys()):
             print "%5s: %s" % (k, str(status[k]))
 
+    elif sys.argv[1] == "get_queue_status":
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
+        status = es.get_queue_status()
+        for i, k in enumerate(status):
+            print "%3d" % i, k
+
     elif sys.argv[1] == "enable_worker":
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         es.enable_worker(int(sys.argv[2]))
 
     elif sys.argv[1] == "del_worker":
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         es.del_worker(int(sys.argv[2]))
 
     elif sys.argv[1] == "add_worker":
-        es = xmlrpclib.ServerProxy("http://localhost:%d" % es_port)
+        es = xmlrpclib.ServerProxy("http://%s:%d" % (es_address, es_port))
         es.add_worker(int(sys.argv[2]), sys.argv[3], int(sys.argv[4]))
 
     elif sys.argv[1] == "exit_worker":

@@ -486,6 +486,9 @@ def reevaluate_submission(submission):
 def get_workers_status():
     return ES.get_workers_status()
 
+def get_queue_status():
+    return ES.get_queue_status()
+
 def add_announcement(contest, subject, text):
     announcement = {
         "date": time.time(),
@@ -512,7 +515,7 @@ def add_user_question(user, date, question_subject, question_text):
         question["reply_text"] = None
         user.questions.append(question)
         user.to_couch()
-        
+
 def reply_question(user, index, date, quick_answer, text):
     with writelock:
         question = user.questions[index]

@@ -103,7 +103,7 @@ handlers = [
             (r"/task_statement/([a-zA-Z0-9_-]+)", TaskStatementViewHandler),
            ]
 
-application = tornado.web.Application(handlers, **WebConfig.parameters)
+application = tornado.web.Application(handlers, **WebConfig.ranking_parameters)
 FSL = FileStorageLib()
 
 def update_ranking():

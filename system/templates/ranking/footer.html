@@ -1,8 +1,7 @@
-<!-- login form-->
-<div class="loginbar">
+<div class="footer">
 {% if current_user == None %}
     {% if handler.get_argument("login_error","") != "" %}
-        <span style="display: inline-block; color:red">Failed to log in.</span>
+        <span class="login_error">Failed to log in.</span>
     {% end %}
     <form style="display: inline-block" action="/login" method="POST">
             <input type="hidden" name="next" value="{{ handler.get_argument("next","/") }}">
@@ -13,12 +12,16 @@
             <input type="submit" value="Sign in">
     </form>
 {% else %}
-    <div class="loginbar_left">
+    <div class="footer_left">
     {% if phase != 1 %}
     Time remaining: <span id="remaining"></span>
     {% end %}
     </div>
-    <div class="loginbar_right">
+    <div class="footer_middle">
+        <a href="/questions" onclick="return(util.popupQuestion());">Questions</a>
+        <a href="/help" onclick="popupHelp();">Help</a>
+    </div>
+    <div class="footer_right">
         <a href="/user">{{ current_user.real_name }}</a> - <a href="/logout">Logout</a>
     </div>
 {% end %}
