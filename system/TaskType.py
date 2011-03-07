@@ -127,7 +127,8 @@ class BatchTaskType:
         if not success:
             return False
         self.submission.evaluation_outcome[test_number] = outcome
-        self.submission.evaluation_text[test_number] = text
+        # FIXME badhack user in a contest please fix me please please please!
+        self.submission.evaluation_text[test_number] = text.replace("à", "a'").replace("è", "e'")
         return True
 
     def finish_evaluation(self, success):
