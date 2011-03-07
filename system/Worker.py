@@ -61,7 +61,8 @@ class CompileJob(Job):
     def run(self):
         try:
             success = self.task_type.compile()
-        except:
+        except Exception as e:
+            Utils.log("Compilation failed with not caught exception `%s'" % (repr(e)), Utils.Logger.SEVERITY_CRITICAL)
             success = False
         try:
             self.es.compilation_finished(success, self.submission_id)
@@ -81,7 +82,8 @@ class EvaluateJob(Job):
     def run(self):
         try:
             success = self.task_type.execute()
-        except:
+        except Exception as e:
+            Utils.log("Evaluation failed with not caught exception `%s'" % (repr(e)), Utils.Logger.SEVERITY_CRITICAL)
             success = False
         try:
             self.es.evaluation_finished(success, self.submission_id)
