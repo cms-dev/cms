@@ -55,7 +55,7 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
         document.getElementById("popup_question_background").style.display="none";
         return false;
     }
-
+    var caller = this;
     this.notifications = function()
     {
         xmlhttp = this.getXMLHTTP();
@@ -64,23 +64,23 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
           if(xmlhttp.readyState==4)
             if(xmlhttp.status==200)
             {
+
                 if(xmlhttp.responseXML)
                 {
                     var root = xmlhttp.responseXML;
                     var announcements = root.getElementsByTagName("announcement");
                     var messages = root.getElementsByTagName("message");
-
-                    this.last_notification = root.getElementsByTagName("requestdate")[0].firstChild.nodeValue
+                    caller.last_notification = parseFloat(root.getElementsByTagName("requestdate")[0].firstChild.nodeValue);
                     notification = "";
                     
                     if( announcements.length != 0)
                     {
-                        var announcement_subject = root.getElementsByTagName("announcement")[0].firstChild.nodeValue;
+                        var announcement_subject = announcements[0].firstChild.nodeValue;
                         notification += "Announcement: " + announcement_subject ;
                     }
                     else if( messages.length != 0)
                     {
-                        var message_subject = root.getElementsByTagName("message")[0].firstChild.nodeValue;
+                        var message_subject = messages[0].firstChild.nodeValue;
                         notification += "Message: " + message_subject;
                     }
                     if(notification != "")
@@ -101,10 +101,11 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
                 //alert(xmlhttp.status);
             }
         }
-      var params = "lastrequest="+this.last_notification;
+      var params = "lastrequest="+caller.last_notification;
       xmlhttp.open("POST", "/notifications", true);
       xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
       xmlhttp.send(params);
+      return xmlhttp;
     }
 
     this.hideNotification = function(item)

@@ -21,7 +21,11 @@
         {% for u in contest.users %}
           {% set scores = contest.ranking_view.scores[u.username] %}
           {% if u.hidden %}
-            <tr class="hidden">
+            {% if handler.get_argument("hidden","") == "true" %}
+              <tr class="hidden">
+            {% else %}
+              <tr class="hidden" style="display: none">
+            {% end %}
           {% else %}
             <tr>
           {% end %}
