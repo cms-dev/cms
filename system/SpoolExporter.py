@@ -44,11 +44,17 @@ def main():
 
     fsl = FileStorageLib.FileStorageLib()
 
+    hidden_users = []
     for user in c.users:
-        user_dir = os.path.join(upload_dir, user.username)
-        os.mkdir(user_dir)
+        if not user.hidden:
+            user_dir = os.path.join(upload_dir, user.username)
+            os.mkdir(user_dir)
+        else:
+            hidden_users.append(user.username)
 
     for submission in c.submissions:
+        if submission.user.hidden:
+            continue
         print "Exporting submission %s" % (submission.couch_id)
         username = submission.user.username
         task = submission.task.name
@@ -89,7 +95,7 @@ def main():
     ranking_file = codecs.open(os.path.join(spool_dir, "classifica.txt"), 'w', encoding='utf-8')
     ranking_csv = codecs.open(os.path.join(spool_dir, "classifica.csv"), 'w', encoding='utf-8')
     print >> ranking_file, "Classifica finale del contest `%s'" % (c.description)
-    users = [(sum(c.ranking_view.scores[u]), u, c.ranking_view.scores[u]) for u in c.ranking_view.scores.keys()]
+    users = [(sum(c.ranking_view.scores[u]), u, c.ranking_view.scores[u]) for u in c.ranking_view.scores.keys() if u not in hidden_users]
     users.sort(reverse = True)
     print >> ranking_file, ("%20s %10s" + " %10s" * len(c.tasks)) % (("Utente", "Totale") + tuple([t.name for t in c.tasks]))
     print >> ranking_csv, ("%s,%s" + ",%s" * len(c.tasks)) % (("utente", "totale") + tuple([t.name for t in c.tasks]))
