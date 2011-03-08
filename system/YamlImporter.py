@@ -67,7 +67,7 @@ def get_params_for_user(user_dict):
     surname = user_dict.get("cognome", user_dict["username"])
     params["real_name"] = " ".join([name, surname])
     params["ip"] = user_dict.get("ip", "0.0.0.0")
-    params["hidden"] = user_dict.get("fake", False)
+    params["hidden"] = "True" == user_dict.get("fake", "False")
     params["tokens"] = []
     return params
 
@@ -97,11 +97,11 @@ def get_params_for_task(path):
     except IOError:
         fd = None
     if fd != None:
-        params["managers"] = {"checker": FSL.put_file(fd)}
+        params["managers"] = {"checker": FSL.put_file(fd, "Manager for task %s" % (name))}
     else:
         params["managers"] = {}
-    params["score_type"] = ScoreTypes.SCORE_TYPE_SUM
-    params["score_parameters"] = [],
+    params["score_type"] = conf.get("score_type", ScoreTypes.SCORE_TYPE_SUM)
+    params["score_parameters"] = conf.get("score_parameters", [])
     params["testcases"] = [(FSL.put(os.path.join(path, "input",
                                                  "input%d.txt" % (i)),
                                     "Input %d for task %s" % (i, name)),
@@ -109,10 +109,11 @@ def get_params_for_task(path):
                                                  "output%d.txt" % (i)),
                                     "Output %d for task %s" % (i, name)))
                            for i in range(int(conf["n_input"]))]
-    params["public_testcases"] = conf.get("risultati", "").split(",")
-    if params["public_testcases"] == [""]:
+    public_testcases = conf.get("risultati", "").split(",")
+    if public_testcases == [""]:
         params["public_testcases"] = []
-    params["public_testcases"] = [int(x) for x in params["public_testcases"]]
+    else:
+        params["public_testcases"] = map(int, public_testcases)
     params["token_initial"] = conf.get("token_initial", 0)
     params["token_max"] = conf.get("token_max", 0)
     params["token_total"] = conf.get("token_total", 0)

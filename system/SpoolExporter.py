@@ -21,6 +21,7 @@
 
 import sys
 import os
+import codecs
 
 import CouchObject
 import Utils
@@ -37,7 +38,7 @@ def main():
     except OSError:
         print "The specified directory already exists, I won't overwrite it"
         sys.exit(1)
-    queue_file = open(os.path.join(spool_dir, "queue"), 'w')
+    queue_file = codecs.open(os.path.join(spool_dir, "queue"), 'w', encoding='utf-8')
     upload_dir = os.path.join(spool_dir, "upload")
     os.mkdir(upload_dir)
 
@@ -66,16 +67,16 @@ def main():
         print >> queue_file, "./upload/%s/%s.%d.%s" % (username, task, timestamp, language)
 
         if submission.evaluation_outcome != None:
-            res_file = open(os.path.join(spool_dir, "%d.%s.%s.%s.res" % (timestamp, username, task, language)), 'w')
-            res2_file = open(os.path.join(spool_dir, "%s.%s.%s.res" % (username, task, language)), 'w')
-            sum = 0.0
+            res_file = codecs.open(os.path.join(spool_dir, "%d.%s.%s.%s.res" % (timestamp, username, task, language)), 'w', encoding='utf-8')
+            res2_file = codecs.open(os.path.join(spool_dir, "%s.%s.%s.res" % (username, task, language)), 'w', encoding='utf-8')
+            total = 0.0
             for num in xrange(len(submission.evaluation_outcome)):
-                sum += submission.evaluation_outcome[num]
+                total += submission.evaluation_outcome[num]
                 line = "Executing on file n. %2d %s (%.4f)" % (num, submission.evaluation_text[num],
                                                                submission.evaluation_outcome[num])
                 print >> res_file, line
                 print >> res2_file, line
-            line = "Score: %.6f" % (sum)
+            line = "Score: %.6f" % (total)
             print >> res_file, line
             print >> res2_file, line
             res_file.close()
@@ -83,6 +84,20 @@ def main():
 
     print >> queue_file
     queue_file.close()
+
+    print "Exporting ranking"
+    ranking_file = codecs.open(os.path.join(spool_dir, "classifica.txt"), 'w', encoding='utf-8')
+    ranking_csv = codecs.open(os.path.join(spool_dir, "classifica.csv"), 'w', encoding='utf-8')
+    print >> ranking_file, "Classifica finale del contest `%s'" % (c.description)
+    users = [(sum(c.ranking_view.scores[u]), u, c.ranking_view.scores[u]) for u in c.ranking_view.scores.keys()]
+    users.sort(reverse = True)
+    print >> ranking_file, ("%20s %10s" + " %10s" * len(c.tasks)) % (("Utente", "Totale") + tuple([t.name for t in c.tasks]))
+    print >> ranking_csv, ("%s,%s" + ",%s" * len(c.tasks)) % (("utente", "totale") + tuple([t.name for t in c.tasks]))
+    for total, user, problems in users:
+        print >> ranking_file, ("%20s %10.3f" + " %10.3f" * len(c.tasks)) % ((user, total) + tuple(problems))
+        print >> ranking_csv, ("%s,%.6f" + ",%.6f" * len(c.tasks)) % ((user, total) + tuple(problems))
+    ranking_file.close()
+    ranking_csv.close()
 
 if __name__ == "__main__":
     main()

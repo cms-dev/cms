@@ -190,9 +190,9 @@ class ScoreTypeGroupMin(ScoreTypeAlone):
             current = 0
             score = 0.0
             for parameter in submission.task.score_parameters:
-                next_ = current + parameter['testcases']
+                next_ = current + parameter[1]
                 score += min(submission.evaluation_outcome[current:next_]) * \
-                    parameter['multiplier']
+                    parameter[0]
                 current = next_
             return score
 
@@ -216,11 +216,11 @@ class ScoreTypeGroupMul(ScoreTypeAlone):
             current = 0
             score = 0.0
             for parameter in submission.task.score_parameters:
-                next_ = current + parameter['testcases']
+                next_ = current + parameter[1]
                 score += \
                     reduce(lambda x, y: x * y,
                            submission.evaluation_outcome[current:next_]) * \
-                           parameter['multiplier']
+                           parameter[0]
                 current = next_
             return score
 
