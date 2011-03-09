@@ -50,6 +50,9 @@ class ConnectionFailure(Exception):
 
 class InvalidSubmission(Exception):
     pass
+    
+class RepeatedSubmission(Exception):
+    pass
 
 class StorageFailure(Exception):
     pass
@@ -443,6 +446,14 @@ def submit(contest, task, user, files, timestamp):
         # Check if the submission is valid.
         if not s.verify_source()[0]:
             raise InvalidSubmission()
+
+        # Check if there is the last submission has the same files.
+        try:
+          last_sub = get_submissions_by_username(contest, user.username, task.name)[-1]
+          if(last_sub.files == files):
+            raise RepeatedSubmission()
+        except IndexError:
+          pass
 
         # Append the submission to the contest.
         for tentatives in xrange(Configuration.maximum_conflict_attempts):
