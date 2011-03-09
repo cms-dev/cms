@@ -92,7 +92,7 @@ def available_tokens(contest, user, task, timestamp):
         # Time left from the last iteration
         leftover_time = 0
         # FIXME: Generation starts from the Epoch?
-        last_t = 0
+        last_t = contest.start
         for t in timestamps + [timestamp]:
             interval = t - last_t
             interval += leftover_time
