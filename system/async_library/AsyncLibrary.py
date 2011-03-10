@@ -183,8 +183,14 @@ class Service:
 
         """
         while True:
-            asyncore.loop(1, True, None, 1)
-            self.trigger()
+            self._step()
+
+    def _step(self):
+        """One step of the main loop.
+
+        """
+        asyncore.loop(0.02, True, None, 1)
+        self.trigger()
 
     def _reconnect(self):
         """Reconnect to all remote services that have been disconnected.

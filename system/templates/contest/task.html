@@ -4,6 +4,10 @@
     <h1>{{ task.title }} ({{ task.name }})</h1>
     </div>
 
+    {% if handler.get_argument("repeated","") == "true" %}
+    <span class="error">Your last submission is the same.</span>
+    {% end %}
+
     <h2 onclick="util.toggleVisibility(&quot;task_information&quot;);">
     <span class="toggle" id="task_information_toggle" >-</span>Task Information</h2>
     <div id="task_information">

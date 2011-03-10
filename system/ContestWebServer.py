@@ -122,7 +122,8 @@ class LoginHandler(BaseHandler):
         password = self.get_argument("password", "")
         next = self.get_argument("next", "/")
         user = BusinessLayer.get_user_by_username(c, username)
-        user.refresh()
+        if user != None:
+          user.refresh()
         if user == None or user.password != password:
             Utils.log("Login error: user=%s pass=%s remote_ip=%s." %
                       (username, password, self.request.remote_ip))
@@ -372,6 +373,8 @@ class SubmitHandler(BaseHandler):
             self.render("errors/storageFailure.html", **r_params)
         except BusinessLayer.InvalidSubmission:
             self.render("errors/invalidSubmission.html", **r_params)
+        except BusinessLayer.RepeatedSubmission:
+            self.redirect("/tasks/%s?repeated=true" % task.name)
 
 
 class UserHandler(BaseHandler):

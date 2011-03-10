@@ -22,6 +22,7 @@ class Checker(Service):
         self.connect_to(ServiceCoord("ServiceA", 0))
         self.connect_to(ServiceCoord("ServiceB", 0))
         self.connect_to(ServiceCoord("ServiceB", 1))
+        self.connect_to(ServiceCoord("WebServer", 0))
         self.add_timeout(self.check, None, 10, immediately=True)
 
         self.waiting_for = {}
@@ -47,6 +48,7 @@ class Checker(Service):
             else:
                 log.info("Service %s not connected."
                          % str(coordinates))
+        return True
 
     @rpc_callback
     def echo_callback(self, data, error=None):
