@@ -26,8 +26,8 @@ function request()
 function request2()
 {
     rpc.request("ServiceB", 1,
-                "long_rpc_method",
-                {"string": "test OK!"},
+                "sum_of_two",
+                {"a": 3, "b": 7},
                 function(response) {
                     var span = document.getElementById("response2");
                     span.innerHTML += response['data'];
@@ -37,8 +37,8 @@ function request2()
 </script>
   </head>
   <body>
-    <div>Response 1: <span id="response"></span></div>
-    <div>Response 2: <span id="response2"></span></div>
+    <div>Response 1 (what's this?): <span id="response"></span></div>
+    <div>Response 2 (3 and 7 is?): <span id="response2"></span></div>
     <hr/>
     <div>Raw responses: <span id="__raw"></span></div>
   </body>

@@ -50,7 +50,7 @@
                 span.innerHTML += '<br/>&nbsp;&nbsp;' + rid +
                     ' - ' + response;
             // END DEBUG
-            eval('response='+response);
+            response = JSON.parse(response);
             if (response['status'] != 'wait')
             {
                 timeout_id = this.timeout_ids[rid];
@@ -82,7 +82,7 @@
             var args = "";
             for (var i in arguments)
             {
-                var a = arguments[i].replace("%", "%25");
+                var a = JSON.stringify(arguments[i]).replace("%", "%25");
                 a = a.replace("&", "%26");
                 args += "&" + i + "=" + a;
             }

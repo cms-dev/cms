@@ -10,7 +10,7 @@ import tornado.ioloop
 import tornado.web
 import tornado.escape
 
-from AsyncLibrary import Service, rpc_callback, encode_json
+from AsyncLibrary import Service, rpc_callback, encode_json, decode_json
 from Util import ServiceCoord, log
 
 
@@ -28,7 +28,7 @@ class RPCRequestHandler(tornado.web.RequestHandler):
 
         # Tornado gives for every key a list of arguments, we need
         # only one
-        arguments = dict((k, arguments[k][0]) for k in arguments)
+        arguments = dict((k, decode_json(arguments[k][0])) for k in arguments)
 
         service = ServiceCoord(service, int(shard))
         if service not in self.application.service.remote_services or \
