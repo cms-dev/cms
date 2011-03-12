@@ -63,6 +63,15 @@ class ServiceB(Service):
         log.info("Ended catting.")
         return data
 
+    def sum_of_two(self, a, b):
+        """RPC method that returns the sum of two integers.
+
+        a, b (int): summands
+        returns (int): the sum
+        """
+        log.debug("ServiceB.sum_of_two")
+        return a + b
+
 
 if __name__ == "__main__":
     import sys
