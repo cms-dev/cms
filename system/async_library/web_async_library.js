@@ -2,6 +2,7 @@
  * This module defines a way to ask the server to execute a remote RPC
  * call, and to get the result back using polling.
  */
+
 (function() {
 
     CMSAjaxRPC = function()
