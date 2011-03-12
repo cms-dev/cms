@@ -15,12 +15,14 @@ from Util import ServiceCoord, log
 
 
 class RPCRequestHandler(tornado.web.RequestHandler):
-    """AJAX request handler.
+    """This handler receives a request for a RPC method, interprets
+    the request, and call the method.
 
     """
-    def get(self, service, shard, method, arguments, rid):
+    def get(self, service, shard, method, arguments):
         # TODO: still lacking configurable arguments - some of these
         # should be GET arguments.
+        rid = self.get_argument("__rid")
         service = ServiceCoord(service, int(shard))
         if service not in self.application.service.remote_services or \
                not self.application.service.remote_services[service].connected:
@@ -31,17 +33,19 @@ class RPCRequestHandler(tornado.web.RequestHandler):
         self.application.service.__responses[rid] = "wait"
         self.application.service.remote_services[service].__getattr__(method)(\
             string=arguments,
-            callback=self.application.service._default_callback,
+            callback=WebService._default_callback,
             plus=rid)
         self.render("rpc_answer.html",
                     response=encode_json({'status': 'wait'}))
 
 
 class RPCAnswerHandler(tornado.web.RequestHandler):
-    """AJAX request handler.
+    """This handler check if a previously requested request has
+    finished and inform the client of the status of the request.
 
     """
-    def get(self, rid):
+    def get(self):
+        rid = self.get_argument("__rid")
         responses = self.application.service.__responses
         if rid in responses:
             if responses[rid] == "wait":
@@ -72,9 +76,9 @@ class WebService(Service):
         self._RPCRequestHandler__responses = self.__responses
         self._RPCAnswerHandler__responses = self.__responses
         handlers += [(r"/rpc_request/([a-zA-Z0-9_-]+)/" + \
-                      "([0-9_-]+)/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)/" + \
-                      "([a-zA-Z0-9_-]+)", RPCRequestHandler),
-                     (r"/rpc_answer/([a-zA-Z0-9_-]+)", RPCAnswerHandler)]
+                      "([0-9]+)/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)",
+                      RPCRequestHandler),
+                     (r"/rpc_answer", RPCAnswerHandler)]
         self.application = tornado.web.Application(handlers, **parameters)
 
         self.application.service = self
@@ -104,11 +108,10 @@ class WebService(Service):
         self.instance.add_callback(self._webstep)
 
     @rpc_callback
-    def _default_callback(self, self2, data, plus, error=None):
+    def _default_callback(self, data, plus, error=None):
         """This is the callback for the RPC method called from a web
         page, that just collect the response.
 
         """
-        # TODO: Why this method gets two self variables?
         log.debug("WebService._default_callback")
         self.__responses[plus] = (data, error)

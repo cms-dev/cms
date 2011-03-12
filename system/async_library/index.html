@@ -24,24 +24,20 @@ function randomString(length)
 {
     var string = "";
     var letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    for( var i=0; i < length; i++ )
+    for(var i = 0; i < length; i++)
         string += letters.charAt(Math.floor(Math.random() * letters.length));
     return string;
 }
 
 function ajaxRPCRequest(service, shard, method, arguments, cb)
 {
-    console.log("ciao");
     rid = randomString(16);
     window.timeout_ids[rid];
 
     plus = {'cb': cb, 'rid': rid};
     window.timeout_ids[rid] = setInterval(wait_for_answer, 2000, plus);
 
-    ajaxRequest("rpc_request/" + service + "/" + shard + "/" + method + "/" + arguments + "/" + rid, "",
-//                "service=" + service +
-//                "&shard=" + shard +
-//                "&method=" + method +
+    ajaxRequest("rpc_request/" + service + "/" + shard + "/" + method + "/" + arguments, "__rid=" + rid,
 //                "&string=" + arguments +
 //                "&rid=" + rid,
                 function(response)
@@ -49,16 +45,14 @@ function ajaxRPCRequest(service, shard, method, arguments, cb)
                     got_answer(response, cb, rid);
                 }
                );
-
-
 }
 
 function wait_for_answer(plus)
 {
     cb = plus['cb'];
     rid = plus['rid'];
-    ajaxRequest("rpc_answer/"
-                + rid, "",
+    ajaxRequest("rpc_answer",
+                "__rid=" + rid,
                 function(response)
                 {
                     got_answer(response, cb, rid);
