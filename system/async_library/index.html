@@ -14,7 +14,9 @@ window.onload = function()
 
 function request()
 {
-    rpc.request("ServiceB", 1, "long_rpc_method", "stringa",
+    rpc.request("ServiceB", 1,
+                "long_rpc_method",
+                {"string": "tricky&test=OK!"},
                 function(response) {
                     var span = document.getElementById("response");
                     span.innerHTML += response['data'];
@@ -23,7 +25,9 @@ function request()
 
 function request2()
 {
-    rpc.request("ServiceB", 1, "long_rpc_method", "stringa",
+    rpc.request("ServiceB", 1,
+                "long_rpc_method",
+                {"string": "test OK!"},
                 function(response) {
                     var span = document.getElementById("response2");
                     span.innerHTML += response['data'];

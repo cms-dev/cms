@@ -19,10 +19,17 @@ class RPCRequestHandler(tornado.web.RequestHandler):
     the request, and call the method.
 
     """
-    def get(self, service, shard, method, arguments):
+    def get(self, service, shard, method):
         # TODO: still lacking configurable arguments - some of these
         # should be GET arguments.
         rid = self.get_argument("__rid")
+        arguments = self.request.arguments
+        del arguments["__rid"]
+
+        # Tornado gives for every key a list of arguments, we need
+        # only one
+        arguments = dict((k, arguments[k][0]) for k in arguments)
+
         service = ServiceCoord(service, int(shard))
         if service not in self.application.service.remote_services or \
                not self.application.service.remote_services[service].connected:
@@ -32,9 +39,9 @@ class RPCRequestHandler(tornado.web.RequestHandler):
 
         self.application.service.__responses[rid] = "wait"
         self.application.service.remote_services[service].__getattr__(method)(\
-            string=arguments,
             callback=WebService._default_callback,
-            plus=rid)
+            plus=rid,
+            **arguments)
         self.render("rpc_answer.html",
                     response=encode_json({'status': 'wait'}))
 
@@ -76,7 +83,7 @@ class WebService(Service):
         self._RPCRequestHandler__responses = self.__responses
         self._RPCAnswerHandler__responses = self.__responses
         handlers += [(r"/rpc_request/([a-zA-Z0-9_-]+)/" + \
-                      "([0-9]+)/([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+)",
+                      "([0-9]+)/([a-zA-Z0-9_-]+)",
                       RPCRequestHandler),
                      (r"/rpc_answer", RPCAnswerHandler)]
         self.application = tornado.web.Application(handlers, **parameters)
