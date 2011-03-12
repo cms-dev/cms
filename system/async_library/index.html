@@ -2,104 +2,32 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Title</title>
+    <script type="text/javascript" src="./static/utils.js"></script>
+    <script type="text/javascript" src="./static/web_async_library.js"></script>
 <script type="text/javascript">
-function ajaxRequest(url, par, cb)
-{
-    var xmlhttp;
-    if (window.XMLHttpRequest) { xmlhttp=new XMLHttpRequest(); }
-    else if (window.ActiveXObject) { xmlhttp=new ActiveXObject("Microsoft.XMLHTTP"); }
-    else { alert("Your browser does not support XMLHTTP!"); }
-    xmlhttp.onreadystatechange=function()
-    {
-        if(xmlhttp.readyState==4)
-        {
-            cb(xmlhttp.responseText);
-        }
-    }
-    xmlhttp.open("GET", url+"?"+par, true);
-    xmlhttp.send();
-}
-
-function randomString(length)
-{
-    var string = "";
-    var letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-    for(var i = 0; i < length; i++)
-        string += letters.charAt(Math.floor(Math.random() * letters.length));
-    return string;
-}
-
-function ajaxRPCRequest(service, shard, method, arguments, cb)
-{
-    rid = randomString(16);
-    window.timeout_ids[rid];
-
-    plus = {'cb': cb, 'rid': rid};
-    window.timeout_ids[rid] = setInterval(wait_for_answer, 2000, plus);
-
-    ajaxRequest("rpc_request/" + service + "/" + shard + "/" + method + "/" + arguments, "__rid=" + rid,
-//                "&string=" + arguments +
-//                "&rid=" + rid,
-                function(response)
-                {
-                    got_answer(response, cb, rid);
-                }
-               );
-}
-
-function wait_for_answer(plus)
-{
-    cb = plus['cb'];
-    rid = plus['rid'];
-    ajaxRequest("rpc_answer",
-                "__rid=" + rid,
-                function(response)
-                {
-                    got_answer(response, cb, rid);
-                }
-               );
-
-}
-
-function got_answer(response, cb, rid)
-{
-    var span = document.getElementById("raw");
-    span.innerHTML += '<br/>&nbsp;&nbsp;' + rid + ' - ' + response;
-    eval('response='+response);
-    if (response['status'] != 'wait')
-    {
-        timeout_id = window.timeout_ids[rid];
-        delete window.timeout_ids[rid];
-        clearTimeout(timeout_id);
-    }
-    if (response['status'] == 'ok')
-        cb(response);
-}
-
-var a;
 window.onload = function()
 {
-    window.timeout_ids = new Object();
+    rpc = new CMSAjaxRPC();
     setTimeout(request, 1000);
     setTimeout(request2, 1500);
 }
 
 function request()
 {
-    ajaxRPCRequest("ServiceB", 1, "long_rpc_method", "stringa",
-                   function(response) {
-                       var span = document.getElementById("response");
-                       span.innerHTML += response['data'];
-                   });
+    rpc.request("ServiceB", 1, "long_rpc_method", "stringa",
+                function(response) {
+                    var span = document.getElementById("response");
+                    span.innerHTML += response['data'];
+                });
 }
 
 function request2()
 {
-    ajaxRPCRequest("ServiceB", 1, "long_rpc_method", "stringa",
-                   function(response) {
-                       var span = document.getElementById("response2");
-                       span.innerHTML += response['data'];
-                   });
+    rpc.request("ServiceB", 1, "long_rpc_method", "stringa",
+                function(response) {
+                    var span = document.getElementById("response2");
+                    span.innerHTML += response['data'];
+                });
 }
 
 </script>
@@ -108,6 +36,6 @@ function request2()
     <div>Response 1: <span id="response"></span></div>
     <div>Response 2: <span id="response2"></span></div>
     <hr/>
-    <div>Raw responses: <span id="raw"></span></div>
+    <div>Raw responses: <span id="__raw"></span></div>
   </body>
 </html>
