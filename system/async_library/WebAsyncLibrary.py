@@ -74,9 +74,9 @@ class WebService(Service):
 
     """
 
-    def __init__(self, shard, listen_port, handlers, parameters):
+    def __init__(self, listen_port, handlers, parameters, shard=0):
         log.debug("WebService.__init__")
-        Service.__init__(self)
+        Service.__init__(self, shard)
 
         self.__responses = {}
         # TODO: why are the following two lines needed?
@@ -110,7 +110,8 @@ class WebService(Service):
         to execute one (or more) step of the tornado loop.
 
         """
-        log.debug("WebService._webstep")
+        # Let's not spam the logs...
+        # log.debug("WebService._webstep")
         self._step()
         self.instance.add_callback(self._webstep)
 

@@ -190,7 +190,8 @@ class Service:
         """One step of the main loop.
 
         """
-        log.debug("Service._step")
+        # Let's not spam the logs...
+        # log.debug("Service._step")
         asyncore.loop(0.02, True, None, 1)
         self.trigger()
 
