@@ -9,7 +9,7 @@ import os
 import tornado.web
 
 from WebAsyncLibrary import WebService
-from Util import log, ServiceCoord
+from Utils import log, ServiceCoord
 
 
 class WebServiceA(WebService):

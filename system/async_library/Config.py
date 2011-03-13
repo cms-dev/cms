@@ -4,7 +4,7 @@
 
 """
 
-from Util import Address, ServiceCoord
+from Utils import Address, ServiceCoord
 
 class Config:
     """This class just contains the addresses configurations.

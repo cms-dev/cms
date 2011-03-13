@@ -9,7 +9,7 @@ import time
 import base64
 
 from AsyncLibrary import Service, rpc_callback
-from Util import ServiceCoord, log
+from Utils import ServiceCoord, log
 
 
 class ServiceA(Service):

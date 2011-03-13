@@ -7,7 +7,7 @@
 import time
 
 from AsyncLibrary import Service, rpc_callback
-from Util import ServiceCoord, log
+from Utils import ServiceCoord, log
 
 
 class Checker(Service):

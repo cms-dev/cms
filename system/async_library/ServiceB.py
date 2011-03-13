@@ -9,7 +9,7 @@ import time
 import base64
 
 from AsyncLibrary import Service
-from Util import log
+from Utils import log
 
 
 class ServiceB(Service):

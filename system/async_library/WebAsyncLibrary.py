@@ -11,7 +11,7 @@ import tornado.web
 import tornado.escape
 
 from AsyncLibrary import Service, rpc_callback, encode_json, decode_json
-from Util import ServiceCoord, log
+from Utils import ServiceCoord, log
 
 
 class RPCRequestHandler(tornado.web.RequestHandler):

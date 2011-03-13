@@ -14,7 +14,7 @@ import asynchat
 import simplejson
 
 from Config import get_service_address
-from Util import log, Address, ServiceCoord, random_string
+from Utils import log, Address, ServiceCoord, random_string
 
 
 def encode_json(obj):
