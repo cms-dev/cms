@@ -429,7 +429,7 @@ class QuestionHandler(BaseHandler):
         question_text = self.get_argument("question_text","")
         BusinessLayer.add_user_question(self.current_user,time.time(),\
                 question_subject, question_text)
-        Utils.log("Question submitted by user %s." 
+        Utils.log("Question submitted by user %s."
                   % self.current_user.username,
                   Utils.logger.SEVERITY_NORMAL)
         self.render("successfulQuestion.html", **r_params)
@@ -467,7 +467,7 @@ handlers = [
                  tornado.web.StaticFileHandler, {"path": WebConfig.stl_path}),
            ]
 
-application = tornado.web.Application(handlers, **WebConfig.parameters)
+application = tornado.web.Application(handlers, **WebConfig.contest_parameters)
 
 if __name__ == "__main__":
     Utils.set_service("contest web server")

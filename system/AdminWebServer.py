@@ -452,15 +452,7 @@ handlers = [
                  QuestionReplyHandler),
            ]
 
-admin_parameters = {
-    "login_url": "/",
-    "template_path": "./templates/admin",
-    "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
-    "static_path": os.path.join(os.path.dirname(__file__), "static"),
-    "debug": True,
-    }
-
-application = tornado.web.Application(handlers, **admin_parameters)
+application = tornado.web.Application(handlers, **WebConfig.admin_parameters)
 ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 
 if __name__ == "__main__":

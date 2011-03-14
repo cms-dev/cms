@@ -42,18 +42,33 @@ quick_answers = {
     "nocomment" : "No comment",
     }
 
-parameters = {
+contest_parameters = {
     "login_url": "/" ,
-    "template_path": "./templates/contest",
+    "template_path": os.path.join(os.path.dirname(__file__),
+                                  "templates", "contest"),
+    "static_path": os.path.join(os.path.dirname(__file__),
+                                "static", "contest"),
     "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
-    "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "debug" : "True",
     }
 
 ranking_parameters = {
     "login_url": "/" ,
-    "template_path": "./templates/ranking",
+    "template_path": os.path.join(os.path.dirname(__file__),
+                                  "templates", "ranking"),
+    "static_path": os.path.join(os.path.dirname(__file__),
+                                "static", "ranking"),
     "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
-    "static_path": os.path.join(os.path.dirname(__file__), "static"),
     "debug" : "True",
    }
+
+admin_parameters = {
+    "login_url": "/",
+    "template_path": os.path.join(os.path.dirname(__file__),
+                                  "templates", "admin"),
+    "static_path": os.path.join(os.path.dirname(__file__),
+                                "static", "admin"),
+    "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
+    "debug": True,
+    }
+
