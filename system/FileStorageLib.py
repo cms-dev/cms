@@ -137,7 +137,7 @@ class FileStorageLib:
         getSocket.listen(1)
         # Timeout needed to gracefully stop the thread
         getSocket.settimeout(Configuration.FS_connection_timeout)
-        
+
         tempFile, tempFilename = tempfile.mkstemp(dir = self.tmpdir)
         ft = FileGetThread(getSocket, [(getFile, None), (os.fdopen(tempFile, 'w'), None)])
         ft.start()

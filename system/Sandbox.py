@@ -26,6 +26,7 @@ import subprocess
 import tempfile
 import stat
 import select
+import codecs
 
 import Utils
 from FileStorageLib import FileStorageLib
@@ -208,7 +209,7 @@ class Sandbox:
         else:
             Utils.log("Creating plain file %s in sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
         real_path = self.relative_path(path)
-        fd = open(real_path, 'w')
+        fd = codecs.open(real_path, "w", "utf-8")
         mod = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR
         if executable:
             mod |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
@@ -228,15 +229,20 @@ class Sandbox:
     def get_file(self, path):
         Utils.log("Retrieving file %s from sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
         real_path = self.relative_path(path)
-        fd = open(real_path, 'r')
+        fd = codecs.open(real_path, "r", "utf-8")
         return fd
 
     def get_file_to_string(self, path, maxlen=None):
         fd = self.get_file(path)
-        if maxlen == None:
-            contest = fd.read()
-        else:
-            content = fd.read(maxlen)
+        try:
+            if maxlen == None:
+                contest = fd.read()
+            else:
+                content = fd.read(maxlen)
+        except UnicodeDecodeError as e:
+            Utils.log("Unable to interpret file as UTF-8. %s" % repr(e),
+                      Utils.Logger.SEVERITY_IMPORTANT)
+            return None
         fd.close()
         return content
 

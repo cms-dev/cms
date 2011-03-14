@@ -25,6 +25,7 @@ import time
 import datetime
 import os
 import sys
+import codecs
 
 import Configuration
 import CouchObject
@@ -132,7 +133,10 @@ class Logger:
 
         maybe_mkdir("logs")
         import random
-        self.local_log_file = open(os.path.join("logs", "%d-%d.local-log" % (time.time(), random.randint(1, 65535))), "w")
+        self.local_log_file = codecs.open(\
+            os.path.join("logs","%d-%d.local-log" %
+                         (time.time(), random.randint(1, 65535))),
+            "w", "utf-8")
 
     def log(self, msg, severity = SEVERITY_NORMAL, timestamp = None):
         if timestamp == None:

@@ -350,6 +350,7 @@ class SubmitHandler(BaseHandler):
         if uploaded["content_type"] == "application/zip":
             #Extract the files from the archive
             temp_zip_file, temp_zip_filename = tempfile.mkstemp()
+            # Note: this is just a binary copy, so no utf-8 wtf-ery here.
             with os.fdopen(temp_zip_file, "w") as temp_zip_file:
                 temp_zip_file.write(uploaded["body"])
 

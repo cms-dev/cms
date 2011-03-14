@@ -22,6 +22,7 @@
 import datetime
 import time
 import os
+import codecs
 from RPCServer import RPCServer
 
 import Configuration
@@ -35,7 +36,9 @@ class LogServer(RPCServer):
             listen_port = Configuration.log_server[1]
 
         Utils.maybe_mkdir("logs")
-        self.log_file = open(os.path.join("logs", "%d.log" % (time.time())), "w")
+        self.log_file = codecs.open(os.path.join("logs", "%d.log" %
+                                                 time.time()),
+                                    "w", "utf-8")
 
         RPCServer.__init__(self, "LogServer", listen_address, listen_port,
                            [self.log])

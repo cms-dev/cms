@@ -22,6 +22,7 @@
 import os
 import tempfile
 import time
+import codecs
 
 import xmlrpclib
 from StringIO import StringIO
@@ -50,7 +51,7 @@ class ConnectionFailure(Exception):
 
 class InvalidSubmission(Exception):
     pass
-    
+
 class RepeatedSubmission(Exception):
     pass
 
@@ -393,7 +394,7 @@ def submit(contest, task, user, files, timestamp):
             path = os.path.join(Configuration.submit_local_copy_path, user.username)
             if not os.path.exists(path):
                 os.mkdir(path)
-            with open(os.path.join(path, str(int(timestamp))), "w") as fd:
+            with codecs.open(os.path.join(path, str(int(timestamp))), "w", "utf-8") as fd:
                 pickle.dump((contest.couch_id, user.couch_id, task, files), fd)
         except Exception as e:
             Utils.log("submit: local copy failed - " + repr(e),\
@@ -403,6 +404,7 @@ def submit(contest, task, user, files, timestamp):
 
     for filename, content in files.items():
         temp_file, temp_filename = tempfile.mkstemp()
+        # Note: this is just a binary copy, so no utf-8 wtf-ery here.
         with os.fdopen(temp_file, "w") as temp_file:
             temp_file.write(content)
         try:

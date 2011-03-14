@@ -22,6 +22,7 @@
 import yaml
 import os
 import sys
+import codecs
 
 from Task import Task
 from User import User
@@ -40,7 +41,9 @@ def get_params_for_contest(path):
     """
     path = os.path.realpath(path)
     name = os.path.split(path)[1]
-    conf = yaml.load(open(os.path.join(path, "contest.yaml")))
+    conf = yaml.load(codecs.open(\
+        os.path.join(path, "contest.yaml"),
+        "r", "utf-8"))
 
     params = {"name": name}
     assert name == conf["nome_breve"]
@@ -79,7 +82,9 @@ def get_params_for_task(path):
     """
     path = os.path.realpath(path)
     super_path, name = os.path.split(path)
-    conf = yaml.load(open(os.path.join(super_path, name + ".yaml")))
+    conf = yaml.load(codecs.open(\
+        os.path.join(super_path, name + ".yaml")),
+        "r", "utf-8")
     FSL = FileStorageLib()
 
     params = {"name": name}

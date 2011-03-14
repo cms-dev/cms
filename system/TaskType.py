@@ -22,6 +22,7 @@
 import os
 import subprocess
 import couchdb
+import codecs
 
 import Utils
 from Sandbox import Sandbox
@@ -182,7 +183,7 @@ class BatchTaskType:
         except (IOError, OSError):
             Utils.log("Couldn't retrieve file `%s' from storage" % (name), Utils.Logger.SEVERITY_IMPORTANT)
             self.safe_delete_sandbox()
-            raise JobException()        
+            raise JobException()
 
     def safe_sandbox_execute(self, command):
         try:
@@ -394,10 +395,22 @@ class BatchTaskType:
             manager_filename = self.submission.task.managers.keys()[0]
             self.safe_create_file_from_storage(manager_filename, self.submission.task.managers[manager_filename], executable = True)
             manager_popen = self.safe_sandbox_execute(["./%s" % (manager_filename), "input.txt", "res.txt", "output.txt"])
-            with open(stdout_filename) as stdout_file:
-                with open(stderr_filename) as stderr_file:
-                    outcome = stdout_file.readline().strip()
-                    text = Utils.filter_ansi_escape(stderr_file.readline())
+            with codecs.open(stdout_filename, "r", "utf-8") as stdout_file:
+                with codecs.open(stderr_filename, "r", "utf-8") as stderr_file:
+                    try:
+                        outcome = stdout_file.readline().strip()
+                    except UnicodeDecodeError as e:
+                        Utils.log("Unable to interpret manager stdout " +
+                                  "(outcome) as unicode. %s" % repr(e),
+                                  Utils.Logger.SEVERITY_IMPORTANT))
+                        return self.finish_single_execution(test_number, False)
+                    try:
+                        text = Utils.filter_ansi_escape(stderr_file.readline())
+                    except UnicodeDecodeError as e:
+                        Utils.log("Unable to interpret manager stderr " +
+                                  "(text) as unicode. %s" % repr(e),
+                                  Utils.Logger.SEVERITY_IMPORTANT))
+                        return self.finish_single_execution(test_number, False)
             try:
                 outcome = float(outcome)
             except ValueError:
