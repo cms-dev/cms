@@ -8,7 +8,7 @@ method, and offer a quite long version of the echo method.
 import time
 import base64
 
-from AsyncLibrary import Service
+from AsyncLibrary import Service, rpc_method
 from Utils import log
 
 
@@ -22,6 +22,7 @@ class ServiceB(Service):
         log.debug("ServiceB.__init__")
         Service.__init__(self, shard)
 
+    @rpc_method
     def long_rpc_method(self, string):
         """Anoter example RPC method that takes a while.
 
@@ -32,6 +33,7 @@ class ServiceB(Service):
         log.info("End long method")
         return string
 
+    @rpc_method
     def echo(self, string):
         """Overwritten RPC method echo.
 
@@ -40,6 +42,7 @@ class ServiceB(Service):
         log.info("Echo received.")
         return string
 
+    @rpc_method
     def binary_cat(self, filename):
         """RPC method that returns the base64 encoded content of a
         file.
@@ -52,6 +55,7 @@ class ServiceB(Service):
         log.info("Ended catting.")
         return data
 
+    @rpc_method
     def text_cat(self, filename):
         """RPC method that returns the content of a file.
 
@@ -63,6 +67,7 @@ class ServiceB(Service):
         log.info("Ended catting.")
         return data
 
+    @rpc_method
     def sum_of_two(self, a, b):
         """RPC method that returns the sum of two integers.
 

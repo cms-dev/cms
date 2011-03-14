@@ -67,6 +67,20 @@ def rpc_callback(func):
     return newfunc
 
 
+def rpc_method(func):
+    """Decorator for a method that other services are allowed to
+    call. Does not do a lot, just defines the right method's
+    attribute.
+
+    """
+    func.rpc_callable = True
+    return func
+
+
+class AuthorizationError(Exception):
+    pass
+
+
 class RPCRequest:
     """Class to keep the state of an RPC request, while we were
     waiting for the response. There is also a class variable that
@@ -193,7 +207,7 @@ class Service:
         # Let's not spam the logs...
         # log.debug("Service._step")
         asyncore.loop(0.02, True, None, 1)
-        self.trigger()
+        self._trigger()
 
     def _reconnect(self):
         """Reconnect to all remote services that have been disconnected.
@@ -209,7 +223,7 @@ class Service:
                     pass
         return True
 
-    def trigger(self):
+    def _trigger(self):
         """Call the timeouts that have expired.
 
         """
@@ -225,6 +239,7 @@ class Service:
                 if not ret:
                     del self._timeouts[func]
 
+    @rpc_method
     def echo(self, string):
         """Simple RPC method.
 
@@ -267,6 +282,10 @@ class Service:
             method = getattr(self, method_name)
         except:
             raise KeyError("Service has no method " + method_name)
+
+        if not hasattr(method, "rpc_callable"):
+            raise AuthorizationError("Method %s not callable from RPC" %
+                                     method)
 
         if "__data" not in message:
             raise ValueError("No data present.")
