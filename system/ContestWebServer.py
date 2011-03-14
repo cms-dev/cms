@@ -473,7 +473,7 @@ if __name__ == "__main__":
     Utils.set_service("contest web server")
     http_server = tornado.httpserver.HTTPServer(\
         application, ssl_options=WebConfig.ssl_options)
-    http_server.listen(WebConfig.listen_port)
+    http_server.listen(WebConfig.contest_listen_port)
     try:
         c = Utils.ask_for_contest()
     except AttributeError as e:

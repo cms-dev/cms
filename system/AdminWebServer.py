@@ -458,7 +458,7 @@ ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 if __name__ == "__main__":
     Utils.set_service("administration web server")
     http_server = tornado.httpserver.HTTPServer(application)
-    http_server.listen(8889)
+    http_server.listen(WebConfig.admin_listen_port)
     try:
         c = Utils.ask_for_contest()
     except AttributeError as e:

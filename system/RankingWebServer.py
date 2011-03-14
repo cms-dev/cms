@@ -113,7 +113,7 @@ def update_ranking():
 if __name__ == "__main__":
     Utils.set_service("ranking web server")
     http_server = tornado.httpserver.HTTPServer(application)
-    http_server.listen(9999);
+    http_server.listen(WebConfig.ranking_listen_port);
     c = Utils.ask_for_contest()
     Utils.log("Ranking Web Server for contest %s started..." % (c.couch_id))
     upsince = time.time()

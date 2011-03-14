@@ -21,7 +21,9 @@
 
 import os
 
-listen_port = 8888
+contest_listen_port = 8888
+ranking_listen_port = 9999
+admin_listen_port = 8889
 
 # ssl_options are the same options for ssl.wrap_socket.
 # server side is already included.
