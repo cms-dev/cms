@@ -35,8 +35,8 @@ file_storage_cache_basedir = "fs-cache"
 FS_connection_timeout = 10.0
 
 # Worker timeout in seconds
-worker_timeout = 10.0
-worker_timeout_check_time = 3.0
+worker_timeout = 600.0
+worker_timeout_check_time = 301.0
 
 # --- BusinessLayer Configuration ---
 maximum_conflict_attempts = 50
