@@ -1,11 +1,11 @@
 {% extends base_noauth.html %}
 
 {% block core %}
-  {% set lenvisible = len([u for u in contest.users if not u.hidden]) %}
+  {% set lenvisible = max(1, len([u for u in contest.users if not u.hidden])) %}
   {% set lentasks = len(contest.tasks) %}
   {% set sums = [sum([contest.ranking_view.scores[u.username][i] for u in contest.users if not u.hidden]) for i in range(lentasks)] %}
-  {% set maxs = [max([contest.ranking_view.scores[u.username][i] for u in contest.users if not u.hidden]) for i in range(lentasks)] %}
-  {% set user_max = max(sum(contest.ranking_view.scores[u.username]) for u in contest.users if not u.hidden) %}
+  {% set maxs = [max([0] + [contest.ranking_view.scores[u.username][i] for u in contest.users if not u.hidden]) for i in range(lentasks)] %}
+  {% set user_max = max([0] + [sum(contest.ranking_view.scores[u.username]) for u in contest.users if not u.hidden]) %}
     <table id="ranking">
       <thead>
         <tr>
