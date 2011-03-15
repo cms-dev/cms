@@ -8,8 +8,8 @@ method, and offer a quite long version of the echo method.
 import time
 import base64
 
-from AsyncLibrary import Service, rpc_method
-from Utils import log
+from AsyncLibrary import Service, rpc_method, logger
+from Utils import ServiceCoord
 
 
 class ServiceB(Service):
@@ -19,7 +19,8 @@ class ServiceB(Service):
     """
 
     def __init__(self, shard):
-        log.debug("ServiceB.__init__")
+        logger.initialize(ServiceCoord("ServiceB", shard))
+        logger.debug("ServiceB.__init__")
         Service.__init__(self, shard)
 
     @rpc_method
@@ -27,10 +28,10 @@ class ServiceB(Service):
         """Anoter example RPC method that takes a while.
 
         """
-        log.debug("ServiceB.long_rpc_method")
-        log.info("Start long method")
+        logger.debug("ServiceB.long_rpc_method")
+        logger.info("Start long method")
         time.sleep(7)
-        log.info("End long method")
+        logger.info("End long method")
         return string
 
     @rpc_method
@@ -38,8 +39,8 @@ class ServiceB(Service):
         """Overwritten RPC method echo.
 
         """
-        log.debug("ServiceB.echo")
-        log.info("Echo received.")
+        logger.debug("ServiceB.echo")
+        logger.info("Echo received.")
         return string
 
     @rpc_method
@@ -49,10 +50,10 @@ class ServiceB(Service):
 
         filename (string): the file to cat.
         """
-        log.debug("ServiceB.binary_cat")
-        log.info("Catting %s." % filename)
+        logger.debug("ServiceB.binary_cat")
+        logger.info("Catting %s." % filename)
         data = base64.encodestring(open(filename).read())
-        log.info("Ended catting.")
+        logger.info("Ended catting.")
         return data
 
     @rpc_method
@@ -61,10 +62,10 @@ class ServiceB(Service):
 
         filename (string): the file to cat.
         """
-        log.debug("ServiceB.text_cat")
-        log.info("Catting %s." % filename)
+        logger.debug("ServiceB.text_cat")
+        logger.info("Catting %s." % filename)
         data = open(filename).read()
-        log.info("Ended catting.")
+        logger.info("Ended catting.")
         return data
 
     @rpc_method
@@ -74,7 +75,7 @@ class ServiceB(Service):
         a, b (int): summands
         returns (int): the sum
         """
-        log.debug("ServiceB.sum_of_two")
+        logger.debug("ServiceB.sum_of_two")
         return a + b
 
 

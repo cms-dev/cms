@@ -8,8 +8,9 @@ import os
 
 import tornado.web
 
+from AsyncLibrary import logger
 from WebAsyncLibrary import WebService
-from Utils import log, ServiceCoord
+from Utils import ServiceCoord
 
 
 class WebServiceA(WebService):
@@ -18,7 +19,8 @@ class WebServiceA(WebService):
     """
 
     def __init__(self):
-        log.debug("WebServiceA.__init__")
+        logger.initialize(ServiceCoord("WebServiceA", 0))
+        logger.debug("WebServiceA.__init__")
         WebService.__init__(self,
             9999,
             [(r"/", MainHandler)],

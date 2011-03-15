@@ -8,13 +8,16 @@ usinc asynchat and JSON encoding.
 import socket
 import time
 import sys
+import os
 
 import asyncore
 import asynchat
 import simplejson
+import datetime
+import codecs
 
 from Config import get_service_address
-from Utils import log, Address, ServiceCoord, random_string
+from Utils import Address, ServiceCoord, random_string
 
 
 def encode_json(obj):
@@ -26,7 +29,7 @@ def encode_json(obj):
     try:
         return simplejson.dumps(obj)
     except:
-        log.error("Can't encode JSON: %s" % repr(obj))
+        logger.error("Can't encode JSON: %s" % repr(obj))
         raise ValueError
 
 
@@ -41,7 +44,7 @@ def decode_json(string):
         string = string.decode("utf8")
         return simplejson.loads(string)
     except simplejson.JSONDecodeError:
-        log.error("Can't decode JSON: %s" % string)
+        logger.error("Can't decode JSON: %s" % string)
         raise ValueError
 
 
@@ -98,7 +101,7 @@ class RPCRequest:
         plus (object): additional argument for callback.
 
         """
-        log.debug("RPCRequest.__init__")
+        logger.debug("RPCRequest.__init__")
         self.message = message
         self.bind_obj = bind_obj
         self.callback = callback
@@ -110,7 +113,7 @@ class RPCRequest:
 
         return (object): the object to send.
         """
-        log.debug("RPCRequest.pre_execute")
+        logger.debug("RPCRequest.pre_execute")
         self.message["__id"] = random_string(16)
         RPCRequest.pending_requests[self.message["__id"]] = self
 
@@ -122,7 +125,7 @@ class RPCRequest:
 
         response (object): The response, already decoded from JSON.
         """
-        log.debug("RPCRequest.complete")
+        logger.debug("RPCRequest.complete")
         del RPCRequest.pending_requests[response["__id"]]
         if self.callback != None:
             if self.plus == None:
@@ -144,17 +147,17 @@ class Service:
 
     """
     def __init__(self, shard=0):
-        log.debug("Service.__init__")
+        logger.debug("Service.__init__")
         self.shard = shard
         self._timeouts = {}
         self._seconds = 0
         self._connections = set([])
         self.remote_services = {}
 
+        self._my_coord = ServiceCoord(self.__class__.__name__, self.shard)
         self.add_timeout(self._reconnect, None, 10, immediately=True)
         try:
-            address = get_service_address(
-                ServiceCoord(self.__class__.__name__, self.shard))
+            address = get_service_address(self._my_coord)
         except KeyError:
             address = None
         if address != None:
@@ -196,7 +199,7 @@ class Service:
         """Starts the main loop of the service.
 
         """
-        log.debug("Service.run")
+        logger.debug("Service.run")
         while True:
             self._step()
 
@@ -205,7 +208,7 @@ class Service:
 
         """
         # Let's not spam the logs...
-        # log.debug("Service._step")
+        # logger.debug("Service._step")
         asyncore.loop(0.02, True, None, 1)
         self._trigger()
 
@@ -213,7 +216,7 @@ class Service:
         """Reconnect to all remote services that have been disconnected.
 
         """
-        log.debug("Service._reconnect")
+        logger.debug("Service._reconnect")
         for service in self._connections:
             remote_service = self.remote_services[service]
             if not remote_service.connected:
@@ -247,7 +250,7 @@ class Service:
         return (string): string, again.
 
         """
-        log.debug("Service.echo")
+        logger.debug("Service.echo")
         return string
 
     def handle_rpc_response(self, message):
@@ -257,7 +260,7 @@ class Service:
 
         message (object): the decoded message.
         """
-        log.debug("Service.handle_rpc_response")
+        logger.debug("Service.handle_rpc_response")
         if "__id" not in message:
             return
         ident = message["__id"]
@@ -265,7 +268,7 @@ class Service:
             rpc = RPCRequest.pending_requests[ident]
             rpc.complete(message)
         else:
-            log.error("No pending request with id %s found." % ident)
+            logger.error("No pending request with id %s found." % ident)
 
     def handle_message(self, message):
         """To be called when the channel finishes to collect a message
@@ -275,7 +278,7 @@ class Service:
         return (bool, object): (False, None) if it was a response,
                                (True, result) if it was a request.
         """
-        log.debug("Service.handle_message")
+        logger.debug("Service.handle_message")
 
         method_name = message["__method"]
         try:
@@ -315,7 +318,8 @@ class RemoteService(asynchat.async_chat):
                            (used when accepting a connection).
 
         """
-        log.debug("RemoteService.__init__")
+        # Can't log using logger here, since it is not yet defined.
+        # logger.debug("RemoteService.__init__")
         if address == None and remote_service_coord == None:
             raise
         self.service = service
@@ -334,7 +338,7 @@ class RemoteService(asynchat.async_chat):
 
         sock (socket): the socket to use as a communication channel.
         """
-        log.debug("RemoteService._initialize_channel")
+        logger.debug("RemoteService._initialize_channel")
         asynchat.async_chat.__init__(self, sock)
         self.set_terminator("\r\n")
 
@@ -343,7 +347,9 @@ class RemoteService(asynchat.async_chat):
 
         data (string): arrived data.
         """
-        log.debug("RemoteService.collect_incoming_data")
+        logger.debug("RemoteService.collect_incoming_data")
+        if self.service == None:
+            return
         self.data.append(data)
 
     def found_terminator(self):
@@ -353,7 +359,9 @@ class RemoteService(asynchat.async_chat):
         respond, it sends back the response.
 
         """
-        log.debug("RemoteService.found_terminator")
+        logger.debug("RemoteService.found_terminator")
+        if self.service == None:
+            return
         data = "".join(self.data)
         self.data = []
 
@@ -376,7 +384,7 @@ class RemoteService(asynchat.async_chat):
             try:
                 json_string = encode_json(response)
             except ValueError:
-                log.error("Cannot send response because of " +
+                logger.error("Cannot send response because of " +
                           "JSON encoding error.")
                 return
             self._push_right(json_string)
@@ -395,12 +403,11 @@ class RemoteService(asynchat.async_chat):
                            local service).
 
         """
-        log.debug("RemoteService.execute_rpc")
+        logger.debug("RemoteService.execute_rpc")
         if not self.connected:
             self.connect_remote_service()
-            if not self.connect:
-                # TODO: put a good error here
-                raise
+            if not self.connected:
+                return False
         if bind_obj == None:
             bind_obj = self.service
         message = {}
@@ -410,11 +417,12 @@ class RemoteService(asynchat.async_chat):
         try:
             json_string = encode_json(request.pre_execute())
         except ValueError:
-            log.error("Cannot send request because of " +
+            logger.error("Cannot send request because of " +
                       "JSON encoding error.")
             request.complete(None)
             return
         self._push_right(json_string)
+        return True
 
     def __getattr__(self, method):
         """Syntactic sugar to call a remote method without using
@@ -424,7 +432,7 @@ class RemoteService(asynchat.async_chat):
         method (string): the method to call.
 
         """
-        log.debug("RemoteService.__getattr__(%s)" % method)
+        logger.debug("RemoteService.__getattr__(%s)" % method)
 
         def remote_method(callback=None,
                           plus=None,
@@ -444,7 +452,7 @@ class RemoteService(asynchat.async_chat):
         data (string): the data to send.
 
         """
-        log.debug("RemoteService._push_right")
+        logger.debug("RemoteService._push_right")
         to_push = "".join(data) + "\r\n"
         self.push(to_push)
 
@@ -452,7 +460,7 @@ class RemoteService(asynchat.async_chat):
         """Handle a generic error in the communication.
 
         """
-        log.debug("RemoteService.handle_error")
+        logger.debug("RemoteService.handle_error")
         self.handle_close()
         raise
 
@@ -460,7 +468,7 @@ class RemoteService(asynchat.async_chat):
         """Handle the case when the connection fall.
 
         """
-        log.debug("RemoteService.handle_close")
+        logger.debug("RemoteService.handle_close")
         self.close()
         self.connected = False
 
@@ -468,12 +476,12 @@ class RemoteService(asynchat.async_chat):
         """Try to connect to the remote service.
 
         """
-        log.debug("RemoteService.connect_remote_service")
+        logger.debug("RemoteService.connect_remote_service")
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(self.address)
         except:
-            raise
+            return
         else:
             self.connected = True
             self._initialize_channel(sock)
@@ -493,7 +501,7 @@ class ListeningSocket(asyncore.dispatcher):
         address (Address): the address to listen at.
 
         """
-        log.debug("ListeningSocket.__init__")
+        logger.debug("ListeningSocket.__init__")
         asyncore.dispatcher.__init__(self)
         self._service = service
         self._address = address
@@ -508,17 +516,17 @@ class ListeningSocket(asyncore.dispatcher):
         manage the connection.
 
         """
-        log.debug("ListeningSocket.handle_accept")
+        logger.debug("ListeningSocket.handle_accept")
         try:
             connection, address = self.accept()
         except socket.error:
-            log.error("Error: %s %s" % (sys.exc_info()[:2]))
+            logger.error("Error: %s %s" % (sys.exc_info()[:2]))
             return
         try:
             ipaddr, port = socket.getnameinfo(address, socket.NI_NOFQDN)
             address = Address(ipaddr, int(port))
         except:
-            log.error("Error: %s %s" % (sys.exc_info()[:2]))
+            logger.error("Error: %s %s" % (sys.exc_info()[:2]))
             return
         remote_service = RemoteService(self._service,
                                        address=address)
@@ -529,4 +537,122 @@ class ListeningSocket(asyncore.dispatcher):
         """Handle when the connection falls.
 
         """
-        log.debug("ListeningSocket.handle_close")
+        logger.debug("ListeningSocket.handle_close")
+
+
+class Logger:
+    """Utility class to connect to the remote log service and to
+    store/display locally and remotely log messages.
+
+    """
+
+
+    def __init__(self):
+        Logger.CRITICAL = "CRITICAL"
+        Logger.ERROR    = "ERROR   "
+        Logger.INFO     = "INFO    "
+        Logger.DEBUG    = "DEBUG   "
+
+        Logger.TO_STORE = [
+            Logger.CRITICAL,
+            Logger.ERROR,
+            Logger.INFO,
+            Logger.DEBUG,
+            ]
+        Logger.TO_DISPLAY = [
+            Logger.CRITICAL,
+            Logger.ERROR,
+            Logger.INFO,
+            ]
+        Logger.TO_SEND = [
+            Logger.CRITICAL,
+            Logger.ERROR,
+            Logger.INFO,
+            ]
+
+        self._log_service = RemoteService(None,
+                                          ServiceCoord("LogService", 0))
+
+    def initialize(self, service):
+        """To be set by the service we are currently running.
+
+        service (ServiceCoord): the service that we are running
+
+        """
+        self._my_coord = service
+        self._log_file = codecs.open(\
+            os.path.join("logs","%d-%s-%d.local-log" %
+                         (time.time(), service.name, service.shard)),
+            "w", "utf-8")
+
+
+    def log(self, msg, operation="", severity=None, timestamp=None):
+        """Record locally a log message and tries to send it to the
+        log service.
+
+        msg (string): the message to log
+        operation (string): a high-level description of the long-term
+                            operation that is going on in the service
+        severity (string): a constant defined in Logger
+        timestamp (float): seconds from epoch
+
+        """
+        if severity == None:
+            severity = Logger.INFO
+        if timestamp == None:
+            timestamp = time.time()
+
+        log = self.format_log(msg, operation, severity, timestamp)
+
+        if severity in Logger.TO_DISPLAY:
+            print log
+        if severity in Logger.TO_STORE:
+            print >> self._log_file, log
+        if severity in Logger.TO_SEND:
+            self._log_service.Log(msg=log)
+
+    def debug(self, msg, operation="", timestamp=None):
+        """Syntactic sugar.
+
+        """
+        return self.log(msg, operation, Logger.DEBUG, timestamp)
+
+    def info(self, msg, operation="", timestamp=None):
+        """Syntactic sugar.
+
+        """
+        return self.log(msg, operation, Logger.INFO, timestamp)
+
+    def error(self, msg, operation="", timestamp=None):
+        """Syntactic sugar.
+
+        """
+        return self.log(msg, operation, Logger.ERROR, timestamp)
+
+    def critical(self, msg, operation="", timestamp=None):
+        """Syntactic sugar.
+
+        """
+        return self.log(msg, operation, Logger.CRITICAL, timestamp)
+
+    def format_log(self, msg, operation, severity, timestamp):
+        """Format a log message in a common way (for local and remote
+        logging).
+
+        msg (string): the message to log
+        operation (string): a high-level description of the long-term
+                            operation that is going on in the service
+        severity (string): a constant defined in Logger
+        timestamp (float): seconds from epoch
+        returns (string): the formatted log
+
+        """
+        d = datetime.datetime.fromtimestamp(timestamp)
+        service_full = repr(self._my_coord)
+        if operation != "":
+            service_full += "/%s" % (operation)
+        return "%s - %s [%s] %s" % ('{0:%Y/%m/%d %H:%M:%S}'.format(d),
+                                    severity, service_full, msg)
+
+
+logger = Logger()

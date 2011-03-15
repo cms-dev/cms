@@ -8,6 +8,9 @@ import logging
 from collections import namedtuple
 from random import choice
 
+
+# This is superseeded by the LogService, but we keep it here because
+# we may need to debug the access to the LogServer itself.
 logging.basicConfig(level=logging.INFO,
                     format="%(created)-15s %(msecs)3d %(levelname)8s " +
                     "%(message)s")

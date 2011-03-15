@@ -11,6 +11,7 @@ class Config:
 
     """
     services = {
+        ServiceCoord("LogService", 0): Address("localhost", 29000),
         ServiceCoord("WebServiceA", 0): Address("localhost", 23000),
         ServiceCoord("Checker", 0): Address("localhost", 22000),
         ServiceCoord("ServiceA", 0): Address("localhost", 20000),
