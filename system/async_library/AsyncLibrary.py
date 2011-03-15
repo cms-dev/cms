@@ -383,7 +383,8 @@ class RemoteService(asynchat.async_chat):
         else:
             self.service.handle_rpc_response(message)
 
-    def execute_rpc(self, method, data, callback, plus, bind_obj=None):
+    def execute_rpc(self, method, data,
+                    callback=None, plus=None, bind_obj=None):
         """Method to send an RPC request to the remote service.
 
         method (string): the name of the method to call.
@@ -396,7 +397,10 @@ class RemoteService(asynchat.async_chat):
         """
         log.debug("RemoteService.execute_rpc")
         if not self.connected:
-            return
+            self.connect_remote_service()
+            if not self.connect:
+                # TODO: put a good error here
+                raise
         if bind_obj == None:
             bind_obj = self.service
         message = {}
