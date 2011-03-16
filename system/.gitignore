@@ -4,3 +4,5 @@ fs
 logs
 *.txt
 mo-box
+Configuration.py
+WebConfig.py
