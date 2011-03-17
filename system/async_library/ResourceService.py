@@ -21,10 +21,10 @@ class ResourceService(Service):
 
     """
 
-    def __init__(self):
-        logger.initialize(ServiceCoord("ResourceService", 0))
+    def __init__(self, shard):
+        logger.initialize(ServiceCoord("ResourceService", shard))
         logger.debug("ResourceService.__init__")
-        Service.__init__(self)
+        Service.__init__(self, shard)
 
         # _local_store is a dictionary indexed by time in int(epoch)
         self._local_store = []
@@ -50,6 +50,7 @@ class ResourceService(Service):
                         name and shard
 
         """
+        logger.debug("ResourceService._find_local_services")
         services = Config.services
         local_machine = services[self._my_coord].ip
         local_services = [x
@@ -65,6 +66,7 @@ class ResourceService(Service):
                                   not found
 
         """
+        logger.debug("ResourceService._find_proc")
         cmdline = Config.process_cmdline[:]
         for i in range(len(cmdline)):
             cmdline[i] = cmdline[i].replace("%s", service.name)
@@ -86,6 +88,7 @@ class ResourceService(Service):
                       previous values
 
         """
+        logger.debug("ResourceService._store_resources")
         now = time.time()
         delta = now - self._last_saved_time
         self._last_saved_time = now
@@ -180,6 +183,7 @@ class ResourceService(Service):
         TODO: this won't be necessary when we have psutil > 0.2.0.
 
         """
+        logger.debug("ResourceService._isnone")
         try:
             proc.pid
         except:
@@ -194,6 +198,7 @@ class ResourceService(Service):
         returns (int): the index of the first element >= time
 
         """
+        logger.debug("ResourceService._locate")
         if end == None:
             end = len(self._local_store) - 1
         if self._local_store[start][0] >= time:
@@ -213,9 +218,15 @@ class ResourceService(Service):
         """Returns the current resources usage.
 
         """
+        logger.debug("ResourceService._get_resources")
         index = self._locate(last_time + 1)
         return self._local_store[index:]
 
 
 if __name__ == "__main__":
-    ResourceService().run()
+    import sys
+    if len(sys.argv) != 2:
+        print sys.argv[0], "shard"
+    else:
+        ResourceService(int(sys.argv[1])).run()
+

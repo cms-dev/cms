@@ -18,8 +18,8 @@ class WebServiceA(WebService):
 
     """
 
-    def __init__(self):
-        logger.initialize(ServiceCoord("WebServiceA", 0))
+    def __init__(self, shard):
+        logger.initialize(ServiceCoord("WebServiceA", shard))
         logger.debug("WebServiceA.__init__")
         WebService.__init__(self,
             9999,
@@ -30,7 +30,8 @@ class WebServiceA(WebService):
                 "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
                 "static_path": os.path.join(os.path.dirname(__file__), "./"),
                 "debug": "True",
-            })
+            },
+            shard=shard)
         self.ServiceB = self.connect_to(ServiceCoord("ServiceB", 1))
 
 
@@ -43,4 +44,9 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 if __name__ == "__main__":
-    WebServiceA().run()
+    import sys
+    if len(sys.argv) != 2:
+        print sys.argv[0], "shard"
+    else:
+        WebServiceA(int(sys.argv[1])).run()
+

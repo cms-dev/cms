@@ -15,10 +15,10 @@ class Checker(Service):
 
     """
 
-    def __init__(self):
-        logger.initialize(ServiceCoord("Checker", 0))
+    def __init__(self, shard):
+        logger.initialize(ServiceCoord("Checker", shard))
         logger.debug("Checker.__init__")
-        Service.__init__(self)
+        Service.__init__(self, shard)
         self.connect_to(ServiceCoord("Checker", 0))
         self.connect_to(ServiceCoord("LogService", 0))
         self.connect_to(ServiceCoord("ServiceA", 0))
@@ -81,4 +81,8 @@ class Checker(Service):
 
 
 if __name__ == "__main__":
-    Checker().run()
+    import sys
+    if len(sys.argv) != 2:
+        print sys.argv[0], "shard"
+    else:
+        Checker(int(sys.argv[1])).run()

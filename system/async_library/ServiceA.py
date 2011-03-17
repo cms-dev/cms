@@ -18,10 +18,10 @@ class ServiceA(Service):
 
     """
 
-    def __init__(self):
-        logger.initialize(ServiceCoord("ServiceA", 0))
+    def __init__(self, shard):
+        logger.initialize(ServiceCoord("ServiceA", shard))
         logger.debug("ServiceA.__init__")
-        Service.__init__(self)
+        Service.__init__(self, shard)
         self.ServiceB = []
         self.ServiceB.append(self.connect_to(
                 ServiceCoord("ServiceB", 0)))
@@ -93,4 +93,8 @@ class ServiceA(Service):
 
 
 if __name__ == "__main__":
-    ServiceA().run()
+    import sys
+    if len(sys.argv) != 2:
+        print sys.argv[0], "shard"
+    else:
+        ServiceA(int(sys.argv[1])).run()

@@ -17,14 +17,14 @@ class LogService(Service):
 
     """
 
-    def __init__(self):
-        logger.initialize(ServiceCoord("LogService", 0))
+    def __init__(self, shard):
+        logger.initialize(ServiceCoord("LogService", shard))
+        Service.__init__(self, shard)
 
         self._log_file = codecs.open(os.path.join("logs", "%d.log" %
                                                   time.time()),
                                      "w", "utf-8")
 
-        Service.__init__(self)
 
     @rpc_method
     def Log(self, msg):
@@ -37,4 +37,8 @@ class LogService(Service):
 
 
 if __name__ == "__main__":
-    LogService().run()
+    import sys
+    if len(sys.argv) != 2:
+        print sys.argv[0], "shard"
+    else:
+        LogService(int(sys.argv[1])).run()
