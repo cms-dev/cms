@@ -6,7 +6,6 @@ file from ServiceB,0.
 """
 
 import time
-import base64
 
 from AsyncLibrary import Service, rpc_callback, logger
 from Utils import ServiceCoord
@@ -69,8 +68,8 @@ class ServiceA(Service):
             logger.info("Not asking file because not connected!")
             return True
         self.ServiceB[0].binary_cat(filename="./aaa",
-                                     callback=ServiceA.file_callback,
-                                     plus=time.time())
+                                    callback=ServiceA.file_callback,
+                                    plus=time.time())
         return False
 
     @rpc_callback
@@ -83,11 +82,10 @@ class ServiceA(Service):
             return
         logger.debug("ServiceA.file_callback")
         seconds = time.time() - plus
-        data = base64.decodestring(data)
         megabytes = len(data) / 1024.0 / 1024.0
         logger.info("%5.3lf MB in %5.3lf seconds (%5.3lf MB/s)"
                     % (megabytes, seconds, megabytes / seconds))
-        bbb = open("bbb", "w")
+        bbb = open("bbb", "wb")
         bbb.write(data)
         bbb.close()
 

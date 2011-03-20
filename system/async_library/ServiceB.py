@@ -6,9 +6,8 @@ method, and offer a quite long version of the echo method.
 """
 
 import time
-import base64
 
-from AsyncLibrary import Service, rpc_method, logger
+from AsyncLibrary import Service, rpc_method, rpc_binary_response, logger
 from Utils import ServiceCoord
 
 
@@ -44,15 +43,15 @@ class ServiceB(Service):
         return string
 
     @rpc_method
+    @rpc_binary_response
     def binary_cat(self, filename):
-        """RPC method that returns the base64 encoded content of a
-        file.
+        """RPC method that returns the content of a file.
 
         filename (string): the file to cat.
         """
         logger.debug("ServiceB.binary_cat")
         logger.info("Catting %s." % filename)
-        data = base64.encodestring(open(filename).read())
+        data = open(filename, "rb").read()
         logger.info("Ended catting.")
         return data
 

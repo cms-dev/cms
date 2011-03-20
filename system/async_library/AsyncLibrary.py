@@ -25,6 +25,7 @@ def encode_json(obj):
 
     obj (object): the object to encode
     return (string): an encoded string
+
     """
     try:
         return simplejson.dumps(obj)
@@ -37,14 +38,44 @@ def decode_json(string):
     """Decode a JSON string to a dictionary; on failure, raises an
     exception.
 
-    string (string): the Unicode string to decode.
-    return (object): the decoded object.
+    string (string): the Unicode string to decode
+    return (object): the decoded object
+
     """
     try:
         string = string.decode("utf8")
         return simplejson.loads(string)
     except simplejson.JSONDecodeError:
         logger.error("Can't decode JSON: %s" % string)
+        raise ValueError
+
+
+def encode_binary(string):
+    """Encode a string for binary transmission - escape character is
+    '\' and we escape '\n', so we can use again "\r\n" as terminator
+    string.
+
+    string (string): the binary string to encode
+    returns (string): the escaped string
+
+    """
+    try:
+        return string.replace('\\', '\\\\').replace('\n', '\\\n')
+    except:
+        logger.error("Can't encode binary.")
+        raise ValueError
+
+
+def decode_binary(string):
+    """Decode an escaped string to a usual string.
+
+    string (string): the escaped string to decode
+    return (object): the decoded string
+    """
+    try:
+        return string.replace('\\\n', '\n').replace('\\\\', '\\')
+    except:
+        logger.error("Can't decode binary.")
         raise ValueError
 
 
@@ -77,6 +108,15 @@ def rpc_method(func):
 
     """
     func.rpc_callable = True
+    return func
+
+
+def rpc_binary_response(func):
+    """Decorator for a RPC method that wants its response to be
+    treated as a binary string.
+
+    """
+    func.binary_response = True
     return func
 
 
@@ -131,12 +171,12 @@ class RPCRequest:
             if self.plus == None:
                 self.callback(self.bind_obj,
                               response["__data"],
-                              __error=response["__error"])
+                              __error=response.get("__error", None))
             else:
                 self.callback(self.bind_obj,
                               response["__data"],
                               self.plus,
-                              __error=response["__error"])
+                              __error=response.get("__error", None))
 
 
 class Service:
@@ -275,8 +315,10 @@ class Service:
         that is a RPC request. It calls the requested method.
 
         message (object): the decoded message.
-        return (bool, object): (False, None) if it was a response,
-                               (True, result) if it was a request.
+        return (object, bool): the object is the value returned by the
+                               method, the bool is True if the object
+                               is to be interpreted as a binary
+                               string.
         """
         logger.debug("Service.handle_message")
 
@@ -295,7 +337,7 @@ class Service:
 
         result = method(**message["__data"])
 
-        return result
+        return result, hasattr(method, "binary_response")
 
 
 class RemoteService(asynchat.async_chat):
@@ -366,8 +408,19 @@ class RemoteService(asynchat.async_chat):
         self.data = []
 
         try:
-            message = decode_json(data)
+            c = data[0]
+            if c == 'J':
+                message = decode_json(data[1:])
+            elif c == 'B':
+                message = {}
+                message["__data"] = decode_binary(data[17:])
+                message["__id"] = data[1:17]
+            else:
+                logger.error(("Cannot understand incoming message " +
+                              "starting with '%s', discarding" % c))
+                return
         except:
+            log.error("Cannot understand incominc message, discarding.")
             return
 
         response = {"__data": None,
@@ -375,19 +428,25 @@ class RemoteService(asynchat.async_chat):
         if "__id" in message:
             response["__id"] = message["__id"]
         if "__method" in message:
+            binary_response = False
             try:
-                response["__data"] = self.service.handle_message(message)
+                response["__data"], binary_response = \
+                                    self.service.handle_message(message)
             except Exception, exception:
                 response["__error"] = "%s: %s" % (
                     exception.__class__.__name__,
                     " ".join([str(x) for x in exception.args]))
             try:
-                json_string = encode_json(response)
-            except ValueError:
+                if binary_response:
+                    to_be_pushed = "B" + response["__id"].encode("ascii") + \
+                                   encode_binary(response["__data"])
+                else:
+                    to_be_pushed = "J" + encode_json(response)
+            except ValueError as e:
                 logger.error("Cannot send response because of " +
-                          "JSON encoding error.")
+                             "encoding error. %s" % repr(e))
                 return
-            self._push_right(json_string)
+            self._push_right(to_be_pushed)
         else:
             self.service.handle_rpc_response(message)
 
@@ -415,10 +474,10 @@ class RemoteService(asynchat.async_chat):
         message["__data"] = data
         request = RPCRequest(message, bind_obj, callback, plus)
         try:
-            json_string = encode_json(request.pre_execute())
+            json_string = "J" + encode_json(request.pre_execute())
         except ValueError:
             logger.error("Cannot send request because of " +
-                      "JSON encoding error.")
+                         "JSON encoding error.")
             request.complete(None)
             return
         self._push_right(json_string)
