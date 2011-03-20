@@ -100,6 +100,9 @@ class WebService(Service):
         """
         log.debug("WebService.run")
         try:
+            # TODO: to have a less hacky collaboration between tornado
+            # and asyncore, we may use a solution similar to the one
+            # in https://gist.github.com/338680
             self.instance.add_callback(self._webstep)
             self.instance.start()
         except KeyboardInterrupt:
