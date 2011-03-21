@@ -22,6 +22,7 @@
 import socket
 import sys
 import os
+import codecs
 import tempfile
 import shutil
 import hashlib
@@ -73,7 +74,7 @@ class FileStorage(RPCServer):
         fileSocket.close()
         digest = hasher.hexdigest()
         shutil.move(tempFilename, os.path.join(self.objdir, digest))
-        descFile = open(os.path.join(self.descdir, digest), "w")
+        descFile = codecs.open(os.path.join(self.descdir, digest), "w", "utf-8")
         print >> descFile, description
         descFile.close()
         Utils.log("File with digest %s and description `%s' put" % (digest, description), Utils.Logger.SEVERITY_DEBUG)
@@ -110,7 +111,7 @@ class FileStorage(RPCServer):
 
     def describe(self, digest):
         try:
-            fd = open(os.path.join(self.descdir, digest))
+            fd = codecs.open(os.path.join(self.descdir, digest), "utf-8")
             desc = fd.read()
             fd.close()
             return desc.strip()
