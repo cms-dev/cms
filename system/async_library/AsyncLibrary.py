@@ -20,6 +20,48 @@ from Config import get_service_address
 from Utils import Address, ServiceCoord, random_string
 
 
+def encode_length(length):
+    """Encode an integer as a 4 bytes string
+
+    length (int): the integer to encode
+    return (string): a 4 bytes representation of length
+
+    """
+    try:
+        s = ""
+        tmp = length / (2 << 24)
+        s += chr(tmp)
+        length -= tmp * (2 << 24)
+        tmp = length / (2 << 16)
+        s += chr(tmp)
+        length -= tmp * (2 << 16)
+        tmp = length / (2 << 8)
+        s += chr(tmp)
+        length -= tmp * (2 << 8)
+        s += chr(length)
+        return s
+    except:
+        logger.error("Can't encode length: %d" % length)
+        raise ValueError
+
+
+def decode_length(string):
+    """Decode an integer from a 4 bytes string
+
+    string (string): a 4 bytes representation of an integer
+    return (int): the corresponding integer
+
+    """
+    try:
+        return ord(string[0]) * (2 << 24) + \
+               ord(string[1]) * (2 << 16) + \
+               ord(string[2]) * (2 << 8) + \
+               ord(string[3])
+    except:
+        logger.error("Can't decode length")
+        raise ValueError
+
+
 def encode_json(obj):
     """Encode a dictionary as a JSON string; on failure, returns None.
 
@@ -408,19 +450,17 @@ class RemoteService(asynchat.async_chat):
         self.data = []
 
         try:
-            c = data[0]
-            if c == 'J':
-                message = decode_json(data[1:])
-            elif c == 'B':
-                message = {}
-                message["__data"] = decode_binary(data[17:])
-                message["__id"] = data[1:17]
-            else:
-                logger.error(("Cannot understand incoming message " +
-                              "starting with '%s', discarding" % c))
-                return
+            json_length = decode_length(data[:4])
+            message = decode_json(data[4:json_length + 4])
+            if len(data) > json_length + 4:
+                if message["__data"] == None:
+                    message["__data"] = \
+                        decode_binary(data[json_length + 4:])
+                else:
+                    message["__data"]["binary_data"] = \
+                        decode_binary(data[json_length + 4:])
         except:
-            log.error("Cannot understand incominc message, discarding.")
+            logger.error("Cannot understand incoming message, discarding.")
             return
 
         response = {"__data": None,
@@ -430,29 +470,47 @@ class RemoteService(asynchat.async_chat):
         if "__method" in message:
             binary_response = False
             try:
-                response["__data"], binary_response = \
-                                    self.service.handle_message(message)
+                method_response, binary_response = \
+                                 self.service.handle_message(message)
             except Exception, exception:
                 response["__error"] = "%s: %s" % (
                     exception.__class__.__name__,
                     " ".join([str(x) for x in exception.args]))
+                binary_response = False
+                method_response = {}
             try:
                 if binary_response:
-                    to_be_pushed = "B" + response["__id"].encode("ascii") + \
-                                   encode_binary(response["__data"])
+                    response["__data"] = None
+                    binary_message = encode_binary(method_response)
                 else:
-                    to_be_pushed = "J" + encode_json(response)
+                    response["__data"] = method_response
+                    binary_message = ""
+                json_message = encode_json(response)
+                json_length = encode_length(len(json_message))
             except ValueError as e:
                 logger.error("Cannot send response because of " +
                              "encoding error. %s" % repr(e))
                 return
-            self._push_right(to_be_pushed)
+            self._push_right(json_length + json_message + binary_message)
         else:
             self.service.handle_rpc_response(message)
 
     def execute_rpc(self, method, data,
                     callback=None, plus=None, bind_obj=None):
         """Method to send an RPC request to the remote service.
+
+        The message sent to the remote service is of this kind:
+        {"__method": <name of the requested method>
+         "__data": {"<name of first arg>": <value of first arg,
+                    ...
+                   }
+         "__id": <16 letters random ID>
+        }
+
+        The __id field is put by the pre_execute method of
+        RPCRequest. Also, if in the arguments we have a field
+        named "binary_data", we send it separatedly as a binary
+        attachment after the JSON encoded message.
 
         method (string): the name of the method to call.
         data (object): the object to pass to the remote method.
@@ -473,14 +531,30 @@ class RemoteService(asynchat.async_chat):
         message["__method"] = method
         message["__data"] = data
         request = RPCRequest(message, bind_obj, callback, plus)
-        try:
-            json_string = "J" + encode_json(request.pre_execute())
-        except ValueError:
-            logger.error("Cannot send request because of " +
-                         "JSON encoding error.")
-            request.complete(None)
-            return
-        self._push_right(json_string)
+        message = request.pre_execute()
+        if "binary_data" not in data:
+            try:
+                json_message = encode_json(message)
+                json_length = encode_length(len(json_message))
+                binary_message = ""
+            except ValueError:
+                logger.error(("Cannot send request of method %s because of " +
+                             "encoding error.") % method)
+                request.complete(None)
+                return
+        else:
+            try:
+                binary_data = data["binary_data"]
+                del data["binary_data"]
+                json_message = encode_json(message)
+                json_length = encode_length(len(json_message))
+                binary_message = encode_binary(binary_data)
+            except ValueError:
+                logger.error(("Cannot send request of method %s because of " +
+                             "encoding error.") % method)
+                request.complete(None)
+                return
+        self._push_right(json_length + json_message + binary_message)
         return True
 
     def __getattr__(self, method):

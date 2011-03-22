@@ -85,9 +85,14 @@ class ServiceA(Service):
         megabytes = len(data) / 1024.0 / 1024.0
         logger.info("%5.3lf MB in %5.3lf seconds (%5.3lf MB/s)"
                     % (megabytes, seconds, megabytes / seconds))
-        bbb = open("bbb", "wb")
-        bbb.write(data)
-        bbb.close()
+        with open("bbb", "wb") as bbb:
+            bbb.write(data)
+
+        # Now giving back the file
+        with open("bbb", "rb") as bbb:
+            self.ServiceB[0].binary_write(filename="ccc",
+                                          binary_data=bbb.read())
+
 
 
 if __name__ == "__main__":

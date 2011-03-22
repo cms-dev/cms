@@ -56,6 +56,17 @@ class ServiceB(Service):
         return data
 
     @rpc_method
+    def binary_write(self, filename, binary_data):
+        """Write content in a file.
+
+        filename (string): where to put the data
+        binary_data (string): what to put
+
+        """
+        open(filename, "wb").write(binary_data)
+        return True
+
+    @rpc_method
     def text_cat(self, filename):
         """RPC method that returns the content of a file.
 
