@@ -13,8 +13,9 @@ class Config:
     services = {
         ServiceCoord("LogService", 0): Address("localhost", 29000),
         ServiceCoord("ResourceService", 0): Address("localhost", 28000),
-        ServiceCoord("WebServiceA", 0): Address("localhost", 23000),
+        ServiceCoord("FileStorage", 0): Address("localhost", 27000),
         ServiceCoord("Checker", 0): Address("localhost", 22000),
+        ServiceCoord("WebServiceA", 0): Address("localhost", 23000),
         ServiceCoord("ServiceA", 0): Address("localhost", 20000),
         ServiceCoord("ServiceB", 0): Address("localhost", 21000),
         ServiceCoord("ServiceB", 1): Address("localhost", 21001),
