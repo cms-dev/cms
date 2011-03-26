@@ -16,6 +16,9 @@ class Config:
         ServiceCoord("FileStorage", 0): Address("localhost", 27000),
         ServiceCoord("Checker", 0): Address("localhost", 22000),
         ServiceCoord("WebServiceA", 0): Address("localhost", 23000),
+
+        ServiceCoord("TestFileStorage", 0): Address("localhost", 27500),
+
         ServiceCoord("ServiceA", 0): Address("localhost", 20000),
         ServiceCoord("ServiceB", 0): Address("localhost", 21000),
         ServiceCoord("ServiceB", 1): Address("localhost", 21001),

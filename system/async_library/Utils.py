@@ -4,19 +4,10 @@
 
 """
 
-import logging
+import os
+
 from collections import namedtuple
 from random import choice
-
-
-# This is superseeded by the LogService, but we keep it here because
-# we may need to debug the access to the LogServer itself.
-logging.basicConfig(level=logging.INFO,
-                    format="%(created)-15s %(msecs)3d %(levelname)8s " +
-                    "%(message)s")
-log = logging.getLogger(__name__)
-BACKLOG = 5
-SIZE = 1024
 
 
 Address = namedtuple("Address", "ip port")
@@ -40,3 +31,19 @@ def random_string(length):
     for i in range(length):
         string += choice(letters)
     return string
+
+
+def mkdir(path):
+    """Make a directory without complaining for errors.
+
+    path (string): the path of the directory to create
+    returns (bool): True if the dir is ok, False if it is not
+
+    """
+    try:
+        os.mkdir(path)
+        return True
+    except OSError:
+        if os.path.isdir(path):
+            return True
+    return False
