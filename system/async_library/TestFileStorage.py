@@ -7,11 +7,12 @@
 import time
 import random
 
-from AsyncLibrary import Service, rpc_callback, logger
+from AsyncLibrary import rpc_callback, logger
+from DecoratedServices import TestService
 from Utils import ServiceCoord, random_string
 
 
-class TestFileStorage(Service):
+class TestFileStorage(TestService):
     """Service that performs automatically some tests for the
     FileStorage service.
 
@@ -20,61 +21,12 @@ class TestFileStorage(Service):
     def __init__(self, shard):
         logger.initialize(ServiceCoord("TestFileStorage", shard))
         logger.debug("TestFileStorage.__init__")
-        Service.__init__(self, shard)
-
-        self.start = 0
-        self.ok = 0
-        self.current = -1
-        self.ongoing = False
-        self.failed = False
-        self.warned = False
+        TestService.__init__(self, shard)
         self.FS = self.connect_to(
             ServiceCoord("FileStorage", 0))
-        self.add_timeout(self.test, None, 0.1,
-                         immediately=True)
-
-    def test(self):
-        """Test suite.
-
-        """
-        if self.ongoing:
-            return True
-        elif self.current >= 0 and not self.failed:
-            logger.info("Test #%03d performed in %.1lf seconds." %
-                        (self.current, time.time() - self.start))
-
         if not self.FS.connected:
-            if not self.warned:
-                logger.info("Not performing tests because FS is not connected.")
-            self.warned = True
-            return True
-        self.warned = False
-
-        self.current += 1
-        if self.ok != self.current:
-            self.failed = True
-
-        try:
-            method = getattr(self, "test_%03d" % self.current)
-        except AttributeError as e:
-            total = self.current
-            if total == 0:
-                logger.info("Test suite for FileStorage completed.")
-                return False
-            else:
-                logger.info(("Test suite for FileStorage completed. " +
-                             "Result: %d/%d (%.2f%%).") %
-                            (self.ok, total, self.ok * 100.0 / total))
-                return False
-
-        if not self.failed:
-            self.ongoing = True
-            logger.info("Performing Test #%03d..." % self.current)
-            self.start = time.time()
-            method()
-        else:
-            logger.info("Not performing Test #%03d." % self.current)
-        return True
+            logger.error("Please run the FileStorage service.")
+            self.exit()
 
 
 ### TEST 000 ###
@@ -235,7 +187,7 @@ class TestFileStorage(Service):
         """Getting the description of the unexisting file.
 
         """
-        logger.info("  Describingthe unexisting file from FileStorage")
+        logger.info("  Describing the unexisting file from FileStorage")
         self.FS.delete(digest=self.digest,
                        callback=TestFileStorage.test_005_callback,
                        plus=("Test #", 5))
