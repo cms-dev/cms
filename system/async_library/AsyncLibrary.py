@@ -477,7 +477,7 @@ class RemoteService(asynchat.async_chat):
                     exception.__class__.__name__,
                     " ".join([str(x) for x in exception.args]))
                 binary_response = False
-                method_response = {}
+                method_response = None
             try:
                 if binary_response:
                     response["__data"] = None
