@@ -234,6 +234,7 @@ class Service:
         self._timeouts = {}
         self._seconds = 0
         self._connections = set([])
+        self._exit = False
         self.remote_services = {}
 
         self._my_coord = ServiceCoord(self.__class__.__name__, self.shard)
@@ -277,12 +278,18 @@ class Service:
             last -= seconds
         self._timeouts[func] = [plus, seconds, last]
 
+    def exit(self):
+        """Terminate the service at the next step.
+
+        """
+        self._exit = True
+
     def run(self):
         """Starts the main loop of the service.
 
         """
         logger.debug("Service.run")
-        while True:
+        while not self._exit:
             self._step()
 
     def _step(self):
