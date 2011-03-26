@@ -1,6 +1,7 @@
 *~
 *.pyc
 fs
+fs-cache
 logs
 *.txt
 mo-box
