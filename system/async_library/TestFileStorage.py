@@ -49,13 +49,14 @@ class TestFileStorage(TestService):
     def test_000_callback(self, data, plus, error=None):
         if error != None:
             logger.info("  Error received: %s." % error)
+            self.test_end(False)
         elif plus != ("Test #", 0):
             logger.info("  Plus object not received correctly.")
+            self.test_end(False)
         else:
             logger.info("  Data sent without error and plus object received.")
-            self.ok += 1
             self.digest = data
-        self.test_end()
+            self.test_end(True)
 
 
 ### TEST 001 ###
@@ -73,14 +74,16 @@ class TestFileStorage(TestService):
     def test_001_callback(self, data, plus, error=None):
         if error != None:
             logger.info("  Error received: %s." % error)
+            self.test_end(False)
         elif plus != ("Test #", 1):
             logger.info("  Plus object not received correctly.")
+            self.test_end(False)
         elif data != self.content:
             logger.info("  Content differ.")
+            self.test_end(False)
         else:
             logger.info("  Data and plus object received correctly.")
-            self.ok += 1
-        self.test_end()
+            self.test_end(True)
 
 
 ### TEST 002 ###
@@ -98,14 +101,16 @@ class TestFileStorage(TestService):
     def test_002_callback(self, data, plus, error=None):
         if error != None:
             logger.info("  Error received: %s." % error)
+            self.test_end(False)
         elif plus != ("Test #", 2):
             logger.info("  Plus object not received correctly.")
+            self.test_end(False)
         elif data != "Test #000":
             logger.info("  Description not correct.")
+            self.test_end(False)
         else:
             logger.info("  Description and plus object received correctly.")
-            self.ok += 1
-        self.test_end()
+            self.test_end(True)
 
 
 ### TEST 003 ###
@@ -140,13 +145,16 @@ class TestFileStorage(TestService):
     def test_003_callback_2(self, data, plus, error=None):
         if error == None:
             logger.info("  No error received.")
+            self.test_end(False)
         elif plus != ("Test #", 3):
             logger.info("  Plus object not received correctly.")
+            self.test_end(False)
         elif data != None:
             logger.info("  Some data received.")
+            self.test_end(False)
         else:
             logger.info("  Correctly received an error: %s." % error)
-        self.test_end()
+            self.test_end(True)
 
 
 ### TEST 004 ###
@@ -164,14 +172,16 @@ class TestFileStorage(TestService):
     def test_004_callback(self, data, plus, error=None):
         if error == None:
             logger.info("  No error received.")
+            self.test_end(False)
         elif plus != ("Test #", 4):
             logger.info("  Plus object not received correctly.")
+            self.test_end(False)
         elif data != None:
             logger.info("  Some data received.")
+            self.test_end(False)
         else:
             logger.info("  Correctly received an error: %s." % error)
-            self.ok += 1
-        self.test_end()
+            self.test_end(True)
 
 
 ### TEST 005 ###
@@ -189,14 +199,16 @@ class TestFileStorage(TestService):
     def test_005_callback(self, data, plus, error=None):
         if error == None:
             logger.info("  No error received.")
+            self.test_end(False)
         elif plus != ("Test #", 5):
             logger.info("  Plus object not received correctly.")
+            self.test_end(False)
         elif data != None:
             logger.info("  Some data received.")
+            self.test_end(False)
         else:
             logger.info("  Correctly received an error: %s." % error)
-            self.ok += 1
-        self.test_end()
+            self.test_end(True)
 
 
 if __name__ == "__main__":

@@ -68,8 +68,15 @@ class TestService(Service):
             logger.info("Not performing Test #%03d." % self.current)
         return True
 
-    def test_end(self):
+    def test_end(self, success):
+        """This method is to be called when finishing a test.
+
+        success (bool): True if the test was successful
+
+        """
         self.ongoing = False
+        if success:
+            self.ok += 1
         self.delta = time.time() - self.start
 
 
