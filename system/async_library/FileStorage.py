@@ -33,7 +33,7 @@ import hashlib
 from AsyncLibrary import Service, \
      rpc_method, rpc_binary_response, rpc_callback, \
      logger
-from Utils import ServiceCoord, Address, mkdir
+from Utils import ServiceCoord, Address, mkdir, random_string
 
 
 class FileStorage(Service):
@@ -129,6 +129,11 @@ class FileStorage(Service):
         return True
 
     @rpc_method
+    def is_file_present(self, digest):
+        logger.debug("FileStorage.is_file_present")
+        return os.path.exists(os.path.join(self.obj_dir, digest))
+
+    @rpc_method
     def describe(self, digest):
         logger.debug("FileStorage.describe")
         try:
@@ -196,10 +201,14 @@ class FileCacher:
                     "plus": plus}
 
         if from_cache != None:
+            # If there is the file in the cache, maybe it has been
+            # deleted remotely. We need to ask.
             new_plus["error"] = None
             new_plus["data"] = from_cache
-            self.service.add_timeout(self._got_file, new_plus,
-                                     100, immediately=True)
+            self.file_storage.is_file_present(digest=digest,
+                bind_obj=self,
+                callback=FileCacher._got_file,
+                plus=new_plus)
         else:
             self.file_storage.get_file(digest=digest,
                 bind_obj=self,
@@ -219,7 +228,6 @@ class FileCacher:
 
         """
         plus["data"] = data
-        plus["error"] = error
         if error == None:
             try:
                 path = os.path.join(self.obj_dir, plus["digest"])
@@ -228,21 +236,31 @@ class FileCacher:
             except IOError as e:
                 log.info("Cannot store file in cache: %s" % repr(e))
                 pass
-        self._got_file(plus)
+        self._got_file(True, plus, error)
 
-    def _got_file(self, plus):
-        """Callback for get_file when the file is taken from the
-        local cache.
+    @rpc_callback
+    def _got_file(self, data, plus, error=None):
+        """Callback for get_file when the file is taken from the local
+        cache. This is the callback for the is_file_present request.
 
+        data (bool): if the file is really present in the storage
         plus (dict): a dictionary with the fields: path, digest,
                      callback, plus, data, error
 
         """
         callback = plus["callback"]
-        if plus["error"] != None:
-            logger.error(plus["error"])
+        if error != None:
+            logger.error(error)
             if callback != None:
-                callback(None, plus["plus"], plus["error"])
+                callback(self.service, None, plus["plus"], error)
+        elif not data:
+            try:
+                os.unlink(os.path.join(self.obj_dir, plus["digest"]))
+            except:
+                pass
+            if callback != None:
+                callback(self.service, None, plus["plus"],
+                         "IOError: 2 No such file or directory.")
         else:
             if plus["path"] != None:
                 try:
@@ -250,24 +268,27 @@ class FileCacher:
                         f.write(plus["data"])
                 except IOError as e:
                     if callback != None:
-                        callback(None, plus["plus"], repr(e))
+                        callback(self.service, None, plus["plus"], repr(e))
                     return
-            callback(plus["data"], plus["plus"], plus["error"])
+            if callback != None:
+                callback(self.service, plus["data"], plus["plus"], error)
 
         # Do not call me again:
         return False
 
-    def put_file(self, data=None, path=None, callback=None, plus=None):
+    def put_file(self, binary_data=None, description="",
+                 path=None, callback=None, plus=None):
         """Send a file to FileStorage, and keep a copy locally.
 
-        data (string): the content of the file to send
+        binary_data (string): the content of the file to send
+        description (string): a human-readable description of the content
         path (string): the file to send
         callback (function): to be called with the digest of the file
         plus (object): additional data for the callback
 
         """
-        if (data == None and path == None) or \
-               (data != None and path != None):
+        if (binary_data == None and path == None) or \
+               (binary_data != None and path != None):
             logger.error("No content (or too many) specified in put_file.")
             raise ValueError
 
@@ -286,7 +307,7 @@ class FileCacher:
             # But if we cannot read the actual data, we are forced to
             # report
             try:
-                data = open(path, "rb").read()
+                binary_data = open(path, "rb").read()
             except IOError as e:
                 new_plus["error"] = repr(e)
                 new_plus["digest"] = None
@@ -295,14 +316,15 @@ class FileCacher:
         else:
             # Again, no error for inability of caching locally
             try:
-                open(temp_path, "wb").write(data)
+                open(temp_path, "wb").write(binary_data)
             except IOError:
                 pass
 
-        self.FS.put_file(binary_data=data,
-                         callback=FileCacher._put_file_remote_callback,
-                         bind_obj=self,
-                         plus = new_plus)
+        self.file_storage.put_file(binary_data=binary_data,
+            description=description,
+            callback=FileCacher._put_file_remote_callback,
+            bind_obj=self,
+            plus = new_plus)
 
     @rpc_callback
     def _put_file_remote_callback(self, data, plus, error=None):
@@ -325,14 +347,15 @@ class FileCacher:
                      callback, plus, error, temp_path
 
         """
+        callback = plus["callback"]
         if plus["error"] != None:
             logger.error(plus["error"])
             if callback != None:
-                callback(None, plus["plus"], plus["error"])
+                callback(self.service, None, plus["plus"], plus["error"])
         else:
             shutil.move(plus["temp_path"],
                         os.path.join(self.obj_dir, plus["digest"]))
-            callback(plus["digest"], plus["plus"], None)
+            callback(self.service, plus["digest"], plus["plus"], None)
 
         # Do not call me again:
         return False
