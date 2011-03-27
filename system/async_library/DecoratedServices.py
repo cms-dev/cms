@@ -27,7 +27,7 @@ class TestService(Service):
         self.ongoing = False
         self.failed = False
         self.warned = False
-        self.add_timeout(self.test, None, 0.1, immediately=True)
+        self.add_timeout(self.test, None, 0.2, immediately=True)
 
     def test(self):
         """Runs the test suite.
@@ -36,10 +36,9 @@ class TestService(Service):
         if self.ongoing:
             return True
         elif self.current >= 0 and not self.failed:
-            delta = time.time() - self.start
-            self.total_time += delta
-            logger.info("Test #%03d performed in %.1lf seconds." %
-                        (self.current, delta))
+            self.total_time += self.delta
+            logger.info("Test #%03d performed in %.2lf seconds." %
+                        (self.current, self.delta))
 
         self.current += 1
         if self.ok != self.current:
@@ -53,7 +52,7 @@ class TestService(Service):
                 logger.info("Test suite completed.")
                 return False
             else:
-                logger.info(("Test suite completed in %.1f seconds. " +
+                logger.info(("Test suite completed in %.2f seconds. " +
                              "Result: %d/%d (%.2f%%).") %
                             (self.total_time, self.ok, total,
                              self.ok * 100.0 / total))
@@ -68,5 +67,9 @@ class TestService(Service):
         else:
             logger.info("Not performing Test #%03d." % self.current)
         return True
+
+    def test_end(self):
+        self.ongoing = False
+        self.delta = time.time() - self.start
 
 

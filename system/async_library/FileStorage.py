@@ -110,7 +110,7 @@ class FileStorage(Service):
                           the file
 
         """
-        logger.info("FileStorage.get")
+        logger.debug("FileStorage.get")
         # Errors are managed by the caller
         input_file = open(os.path.join(self.obj_dir, digest), "rb")
         data = input_file.read()

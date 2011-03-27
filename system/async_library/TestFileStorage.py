@@ -57,7 +57,7 @@ class TestFileStorage(TestService):
                 logger.info("  Error received: %s." % error)
             if plus != ("Test #", 0):
                 logger.info("  Plus object not received correctly.")
-        self.ongoing = False
+        self.test_end()
 
 
 ### TEST 001 ###
@@ -83,7 +83,7 @@ class TestFileStorage(TestService):
                 logger.info("  Plus object not received correctly.")
             if data != self.content:
                 logger.info("  Content differ.")
-        self.ongoing = False
+        self.test_end()
 
 
 ### TEST 002 ###
@@ -109,7 +109,7 @@ class TestFileStorage(TestService):
                 logger.info("  Plus object not received correctly.")
             if data != self.content:
                 logger.info("  Description not correct.")
-        self.ongoing = False
+        self.test_end()
 
 
 ### TEST 003 ###
@@ -137,7 +137,7 @@ class TestFileStorage(TestService):
                 logger.info("  Plus object not received correctly.")
             if not data:
                 logger.info("  File not deleted correctly.")
-            self.ongoing = False
+            self.test_end()
 
     @rpc_callback
     def test_003_callback_2(self, data, plus, error=None):
@@ -152,7 +152,7 @@ class TestFileStorage(TestService):
             if data != None:
                 logger.info("  Some data received.")
                 print data
-        self.ongoing = False
+        self.test_end()
 
 
 ### TEST 004 ###
@@ -178,7 +178,7 @@ class TestFileStorage(TestService):
                 logger.info("  Plus object not received correctly.")
             if data != None:
                 logger.info("  Some data received.")
-        self.ongoing = False
+        self.test_end()
 
 
 ### TEST 005 ###
@@ -204,7 +204,9 @@ class TestFileStorage(TestService):
                 logger.info("  Plus object not received correctly.")
             if data != None:
                 logger.info("  Some data received.")
-        self.ongoing = False
+        self.test_end()
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) != 2:
