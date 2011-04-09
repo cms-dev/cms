@@ -55,24 +55,21 @@ class TestFileCacher(TestService):
     @rpc_callback
     def test_000_callback(self, data, plus, error=None):
         if error != None:
-            logger.info("  Error received: %s." % error)
-            self.test_end(False)
+            self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 0):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
-        elif not os.path.exists(os.path.join("fs-cache", "objects", data)):
-            logger.info("  File not stored in local cache.")
-            self.test_end(False)
-        elif open(os.path.join("fs-cache", "objects", data), "rb").read() != \
-             self.content:
-            logger.info("  Local cache's content differ from original file.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
+        elif not os.path.exists(
+            os.path.join("fs-cache", "objects", data)):
+            self.test_end(False, "File not stored in local cache.")
+        elif open(os.path.join("fs-cache", "objects", data),
+                  "rb").read() != self.content:
+            self.test_end(False, "Local cache's content differ " +
+                          "from original file.")
         else:
-            logger.info("  Data sent and cached without error " +
-                        "and plus object received.")
             self.cache_path = os.path.join("fs-cache", "objects", data)
             self.digest = data
-            self.test_end(True)
+            self.test_end(True, "Data sent and cached without error " +
+                          "and plus object received.")
 
 
 ### TEST 001 ###
@@ -92,20 +89,17 @@ class TestFileCacher(TestService):
     @rpc_callback
     def test_001_callback(self, data, plus, error=None):
         if error != None:
-            logger.info("  Error received: %s." % error)
-            self.test_end(False)
+            self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 1):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         elif data != self.fake_content:
             if data == self.content:
-                logger.info("  Did not use the cache even if it could.")
+                self.test_end(False,
+                              "Did not use the cache even if it could.")
             else:
-                logger.info("  Content differ.")
-            self.test_end(False)
+                self.test_end(False, "Content differ.")
         else:
-            logger.info("  Data and plus object received correctly.")
-            self.test_end(True)
+            self.test_end(True, "Data and plus object received correctly.")
 
 
 ### TEST 002 ###
@@ -114,7 +108,8 @@ class TestFileCacher(TestService):
         """Get file from FileCacher
 
         """
-        logger.info("  I am retrieving the file from FileCacher after deleting the cache.")
+        logger.info("  I am retrieving the file from FileCacher " +
+                    "after deleting the cache.")
         os.unlink(self.cache_path)
         self.FC.get_file(digest=self.digest,
                          callback=TestFileCacher.test_002_callback,
@@ -123,23 +118,19 @@ class TestFileCacher(TestService):
     @rpc_callback
     def test_002_callback(self, data, plus, error=None):
         if error != None:
-            logger.info("  Error received: %s." % error)
-            self.test_end(False)
+            self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 2):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         elif data != self.content:
-            logger.info("  Content differ.")
-            self.test_end(False)
+            self.test_end(False, "Content differ.")
         elif not os.path.exists(self.cache_path):
-            logger.info("  File not stored in local cache.")
-            self.test_end(False)
+            self.test_end(False, "File not stored in local cache.")
         elif open(self.cache_path).read() != self.content:
-            logger.info("  Local cache's content differ from original file.")
-            self.test_end(False)
+            self.test_end(False, "Local cache's content differ " +
+                          "from original file.")
         else:
-            logger.info("  Content and plus object received and cached correctly.")
-            self.test_end(True)
+            self.test_end(True, "Content and plus object received " +
+                          "and cached correctly.")
 
 
 ### TEST 003 ###
@@ -156,14 +147,11 @@ class TestFileCacher(TestService):
     @rpc_callback
     def test_003_callback(self, data, plus, error=None):
         if error != None:
-            logger.info("  Error received: %s." % error)
-            self.test_end(False)
+            self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 3):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         elif not data:
-            logger.info("  File not deleted correctly.")
-            self.test_end(False)
+            self.test_end(False, "File not deleted correctly.")
         else:
             logger.info("  File deleted correctly.")
             logger.info("  I am getting the file from FileCacher.")
@@ -174,17 +162,13 @@ class TestFileCacher(TestService):
     @rpc_callback
     def test_003_callback_2(self, data, plus, error=None):
         if error == None:
-            logger.info("  No error received.")
-            self.test_end(False)
+            self.test_end(False, "No error received.")
         elif plus != ("Test #", 3):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         elif data != None:
-            logger.info("  Some data received.")
-            self.test_end(False)
+            self.test_end(False, "Some data received.")
         else:
-            logger.info("  Correctly received an error: %s." % error)
-            self.test_end(True)
+            self.test_end(True, "Correctly received an error: %s." % error)
 
 
 ### TEST 004 ###
@@ -201,17 +185,13 @@ class TestFileCacher(TestService):
     @rpc_callback
     def test_004_callback(self, data, plus, error=None):
         if error == None:
-            logger.info("  No error received.")
-            self.test_end(False)
+            self.test_end(False, "No error received.")
         elif plus != ("Test #", 4):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         elif data != None:
-            logger.info("  Some data received.")
-            self.test_end(False)
+            self.test_end(False, "Some data received.")
         else:
-            logger.info("  Correctly received an error: %s." % error)
-            self.test_end(True)
+            self.test_end(True, "Correctly received an error: %s." % error)
 
 
 if __name__ == "__main__":

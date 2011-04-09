@@ -48,15 +48,13 @@ class TestFileStorage(TestService):
     @rpc_callback
     def test_000_callback(self, data, plus, error=None):
         if error != None:
-            logger.info("  Error received: %s." % error)
-            self.test_end(False)
+            self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 0):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         else:
-            logger.info("  Data sent without error and plus object received.")
             self.digest = data
-            self.test_end(True)
+            self.test_end(True, "Data sent without error " +
+                          "and plus object received.")
 
 
 ### TEST 001 ###
@@ -73,17 +71,14 @@ class TestFileStorage(TestService):
     @rpc_callback
     def test_001_callback(self, data, plus, error=None):
         if error != None:
-            logger.info("  Error received: %s." % error)
-            self.test_end(False)
+            self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 1):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         elif data != self.content:
-            logger.info("  Content differ.")
-            self.test_end(False)
+            self.test_end(False, "Content differ.")
         else:
-            logger.info("  Data and plus object received correctly.")
-            self.test_end(True)
+            self.test_end(True, "Data and plus object " +
+                          "received correctly.")
 
 
 ### TEST 002 ###
@@ -100,17 +95,14 @@ class TestFileStorage(TestService):
     @rpc_callback
     def test_002_callback(self, data, plus, error=None):
         if error != None:
-            logger.info("  Error received: %s." % error)
-            self.test_end(False)
+            self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 2):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         elif data != "Test #000":
-            logger.info("  Description not correct.")
-            self.test_end(False)
+            self.test_end(False, "Description not correct.")
         else:
-            logger.info("  Description and plus object received correctly.")
-            self.test_end(True)
+            self.test_end(True, "Description and plus object " +
+                          "received correctly.")
 
 
 ### TEST 003 ###
@@ -127,14 +119,11 @@ class TestFileStorage(TestService):
     @rpc_callback
     def test_003_callback(self, data, plus, error=None):
         if error != None:
-            logger.info("  Error received: %s." % error)
-            self.test_end(False)
+            self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 3):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         elif not data:
-            logger.info("  File not deleted correctly.")
-            self.test_end(False)
+            self.test_end(False, "File not deleted correctly.")
         else:
             logger.info("  File deleted correctly.")
             self.FS.get_file(digest=self.digest,
@@ -144,17 +133,14 @@ class TestFileStorage(TestService):
     @rpc_callback
     def test_003_callback_2(self, data, plus, error=None):
         if error == None:
-            logger.info("  No error received.")
-            self.test_end(False)
+            self.test_end(False, "No error received.")
         elif plus != ("Test #", 3):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         elif data != None:
-            logger.info("  Some data received.")
-            self.test_end(False)
+            self.test_end(False, "Some data received.")
         else:
-            logger.info("  Correctly received an error: %s." % error)
-            self.test_end(True)
+            self.test_end(True,
+                          "Correctly received an error: %s." % error)
 
 
 ### TEST 004 ###
@@ -171,17 +157,14 @@ class TestFileStorage(TestService):
     @rpc_callback
     def test_004_callback(self, data, plus, error=None):
         if error == None:
-            logger.info("  No error received.")
-            self.test_end(False)
+            self.test_end(False, "No error received.")
         elif plus != ("Test #", 4):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         elif data != None:
-            logger.info("  Some data received.")
-            self.test_end(False)
+            self.test_end(False, "Some data received.")
         else:
-            logger.info("  Correctly received an error: %s." % error)
-            self.test_end(True)
+            self.test_end(True,
+                          "Correctly received an error: %s." % error)
 
 
 ### TEST 005 ###
@@ -198,17 +181,14 @@ class TestFileStorage(TestService):
     @rpc_callback
     def test_005_callback(self, data, plus, error=None):
         if error == None:
-            logger.info("  No error received.")
-            self.test_end(False)
+            self.test_end(False, "No error received.")
         elif plus != ("Test #", 5):
-            logger.info("  Plus object not received correctly.")
-            self.test_end(False)
+            self.test_end(False, "Plus object not received correctly.")
         elif data != None:
-            logger.info("  Some data received.")
-            self.test_end(False)
+            self.test_end(False, "Some data received.")
         else:
-            logger.info("  Correctly received an error: %s." % error)
-            self.test_end(True)
+            self.test_end(True,
+                          "Correctly received an error: %s." % error)
 
 
 if __name__ == "__main__":
