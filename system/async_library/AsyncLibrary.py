@@ -12,113 +12,14 @@ import os
 
 import asyncore
 import asynchat
-import simplejson
 import datetime
 import codecs
 
 from Config import get_service_address
-from Utils import Address, ServiceCoord, random_string
+from Utils import Address, ServiceCoord, random_string, \
+     encode_binary, encode_length, encode_json, \
+     decode_binary, decode_length, decode_json
 
-
-def encode_length(length):
-    """Encode an integer as a 4 bytes string
-
-    length (int): the integer to encode
-    return (string): a 4 bytes representation of length
-
-    """
-    try:
-        s = ""
-        tmp = length / (2 << 24)
-        s += chr(tmp)
-        length -= tmp * (2 << 24)
-        tmp = length / (2 << 16)
-        s += chr(tmp)
-        length -= tmp * (2 << 16)
-        tmp = length / (2 << 8)
-        s += chr(tmp)
-        length -= tmp * (2 << 8)
-        s += chr(length)
-        return s
-    except:
-        logger.error("Can't encode length: %d" % length)
-        raise ValueError
-
-
-def decode_length(string):
-    """Decode an integer from a 4 bytes string
-
-    string (string): a 4 bytes representation of an integer
-    return (int): the corresponding integer
-
-    """
-    try:
-        return ord(string[0]) * (2 << 24) + \
-               ord(string[1]) * (2 << 16) + \
-               ord(string[2]) * (2 << 8) + \
-               ord(string[3])
-    except:
-        logger.error("Can't decode length")
-        raise ValueError
-
-
-def encode_json(obj):
-    """Encode a dictionary as a JSON string; on failure, returns None.
-
-    obj (object): the object to encode
-    return (string): an encoded string
-
-    """
-    try:
-        return simplejson.dumps(obj)
-    except:
-        logger.error("Can't encode JSON: %s" % repr(obj))
-        raise ValueError
-
-
-def decode_json(string):
-    """Decode a JSON string to a dictionary; on failure, raises an
-    exception.
-
-    string (string): the Unicode string to decode
-    return (object): the decoded object
-
-    """
-    try:
-        string = string.decode("utf8")
-        return simplejson.loads(string)
-    except simplejson.JSONDecodeError:
-        logger.error("Can't decode JSON: %s" % string)
-        raise ValueError
-
-
-def encode_binary(string):
-    """Encode a string for binary transmission - escape character is
-    '\' and we escape '\n', so we can use again "\r\n" as terminator
-    string.
-
-    string (string): the binary string to encode
-    returns (string): the escaped string
-
-    """
-    try:
-        return string.replace('\\', '\\\\').replace('\n', '\\\n')
-    except:
-        logger.error("Can't encode binary.")
-        raise ValueError
-
-
-def decode_binary(string):
-    """Decode an escaped string to a usual string.
-
-    string (string): the escaped string to decode
-    return (object): the decoded string
-    """
-    try:
-        return string.replace('\\\n', '\n').replace('\\\\', '\\')
-    except:
-        logger.error("Can't decode binary.")
-        raise ValueError
 
 
 def rpc_callback(func):
@@ -208,7 +109,7 @@ class RPCRequest:
         response (object): The response, already decoded from JSON.
         """
         logger.debug("RPCRequest.complete")
-        del RPCRequest.pending_requests[response["__id"]]
+        del RPCRequest.pending_requests[self.message["__id"]]
         if self.callback != None:
             if self.plus == None:
                 self.callback(self.bind_obj,
@@ -219,6 +120,10 @@ class RPCRequest:
                               response["__data"],
                               self.plus,
                               __error=response.get("__error", None))
+        else:
+            error = response.get("__error", None)
+            if error != None:
+                logger.error("Error in a call without callback: %s" % error)
 
 
 class Service:
@@ -351,6 +256,7 @@ class Service:
         """
         logger.debug("Service.handle_rpc_response")
         if "__id" not in message:
+            logger.error("Response without __id field detected, discarding.")
             return
         ident = message["__id"]
         if ident in RPCRequest.pending_requests:
