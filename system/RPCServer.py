@@ -35,7 +35,7 @@ class RPCServer:
         self.lws = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.logging_web_server)
 
         # Create server
-        server = SimpleXMLRPCServer((listen_address, listen_port), allow_none = allow_none, logRequests = False)
+        server = SimpleXMLRPCServer(("", listen_port), allow_none = allow_none, logRequests = False)
         server.register_introspection_functions()
 
         for function in functions:
