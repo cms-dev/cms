@@ -83,8 +83,8 @@ def get_params_for_task(path):
     path = os.path.realpath(path)
     super_path, name = os.path.split(path)
     conf = yaml.load(codecs.open(\
-        os.path.join(super_path, name + ".yaml")),
-        "r", "utf-8")
+        os.path.join(super_path, name + ".yaml"),
+        "r", "utf-8"))
     FSL = FileStorageLib()
 
     params = {"name": name}
