@@ -26,7 +26,6 @@ import subprocess
 import tempfile
 import stat
 import select
-import codecs
 
 import Utils
 from FileStorageLib import FileStorageLib
@@ -210,10 +209,7 @@ class Sandbox:
         else:
             Utils.log("Creating plain file %s in sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
         real_path = self.relative_path(path)
-        if executable:
-            fd = open(real_path, "w")
-        else:
-            fd = codecs.open(real_path, "w", "utf-8")
+        fd = open(real_path, "wb")
         mod = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR
         if executable:
             mod |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
