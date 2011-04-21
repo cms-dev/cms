@@ -128,8 +128,7 @@ class BatchTaskType:
         if not success:
             return False
         self.submission.evaluation_outcome[test_number] = outcome
-        # FIXME badhack user in a contest please fix me please please please!
-        self.submission.evaluation_text[test_number] = text.replace("à", "a'").replace("è", "e'")
+        self.submission.evaluation_text[test_number] = text
         return True
 
     def finish_evaluation(self, success):
@@ -402,14 +401,14 @@ class BatchTaskType:
                     except UnicodeDecodeError as e:
                         Utils.log("Unable to interpret manager stdout " +
                                   "(outcome) as unicode. %s" % repr(e),
-                                  Utils.Logger.SEVERITY_IMPORTANT))
+                                  Utils.Logger.SEVERITY_IMPORTANT)
                         return self.finish_single_execution(test_number, False)
                     try:
                         text = Utils.filter_ansi_escape(stderr_file.readline())
                     except UnicodeDecodeError as e:
                         Utils.log("Unable to interpret manager stderr " +
                                   "(text) as unicode. %s" % repr(e),
-                                  Utils.Logger.SEVERITY_IMPORTANT))
+                                  Utils.Logger.SEVERITY_IMPORTANT)
                         return self.finish_single_execution(test_number, False)
             try:
                 outcome = float(outcome)

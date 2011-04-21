@@ -62,7 +62,7 @@ class FileStorage(RPCServer):
         fileSocket.connect((address, port))
         # FIXME - Error management
         tempFile, tempFilename = tempfile.mkstemp(dir = self.tmpdir)
-        tempFile = os.fdopen(tempFile, "w")
+        tempFile = os.fdopen(tempFile, "wb")
         hasher = hashlib.sha1()
         while True:
             data = fileSocket.recv(8192)
@@ -85,7 +85,7 @@ class FileStorage(RPCServer):
         fileSocket.connect((address, port))
         # FIXME - Error management
         try:
-            with open(os.path.join(self.objdir, digest)) as inputFile:
+            with open(os.path.join(self.objdir, digest), "rb") as inputFile:
                 while True:
                     data = inputFile.read(8192)
                     if not data:
@@ -111,7 +111,7 @@ class FileStorage(RPCServer):
 
     def describe(self, digest):
         try:
-            fd = codecs.open(os.path.join(self.descdir, digest), "utf-8")
+            fd = codecs.open(os.path.join(self.descdir, digest), "r", "utf-8")
             desc = fd.read()
             fd.close()
             return desc.strip()

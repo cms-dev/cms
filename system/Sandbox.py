@@ -26,7 +26,6 @@ import subprocess
 import tempfile
 import stat
 import select
-import codecs
 
 import Utils
 from FileStorageLib import FileStorageLib
@@ -113,7 +112,7 @@ class Sandbox:
             try:
                 with self.get_file(self.info_file) as log_file:
                     for line in log_file:
-                        self.log.append(line.strip().split(":", 2))
+                        self.log.append(line.strip().split(":", 1))
             except IOError:
                 raise IOError("Error while reading execution log")
         #Utils.log("Execution log: %s" % (repr(self.log)), Utils.Logger.SEVERITY_DEBUG)
@@ -144,6 +143,7 @@ class Sandbox:
                 if k == 'status':
                     self.status_list.append(v)
         #Utils.log("Status list: %s" % (repr(self.status_list)), Utils.Logger.SEVERITY_DEBUG)
+
         return self.status_list
 
     EXIT_SANDBOX_ERROR = 'sandbox error'
@@ -209,7 +209,7 @@ class Sandbox:
         else:
             Utils.log("Creating plain file %s in sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
         real_path = self.relative_path(path)
-        fd = codecs.open(real_path, "w", "utf-8")
+        fd = open(real_path, "wb")
         mod = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR
         if executable:
             mod |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
@@ -229,7 +229,7 @@ class Sandbox:
     def get_file(self, path):
         Utils.log("Retrieving file %s from sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
         real_path = self.relative_path(path)
-        fd = codecs.open(real_path, "r", "utf-8")
+        fd = open(real_path, "rb")
         return fd
 
     def get_file_to_string(self, path, maxlen=None):

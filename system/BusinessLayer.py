@@ -236,7 +236,7 @@ def get_task_statement(task):
                 Utils.Logger.SEVERITY_DEBUG)
             return None
     except Exception as e:
-        Utils.log("FileStorageLib raised an exception: %S" % repr(e),
+        Utils.log("FileStorageLib raised an exception: %s" % repr(e),
         Utils.Logger.SEVERITY_DEBUG)
         return None
     statement = statement_file.getvalue()
