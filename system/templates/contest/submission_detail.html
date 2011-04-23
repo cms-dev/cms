@@ -19,7 +19,7 @@
       </tr>
       <tr>
           <th>Compilation<br/>detail</th>
-          <td>{% if submission.compilation_text %}{{ submission.compilation_text.replace("\n","<br/>") }}{% end %}</td>
+          <td>{% if submission.compilation_text %}{{ escape(submission.compilation_text).replace("\n", "<br/>") }}{% end %}</td>
       </tr>
       <tr>
           <th>
@@ -36,7 +36,7 @@
                       <tr><th>Score</th><th>Details</th></tr>
                       {% for i, (ev_o, ev_t) in enumerate(zip(submission.evaluation_outcome, submission.evaluation_text)) %}
                         {% if submission.token_timestamp!= None or i in task.public_testcases %}
-                          <tr><td>{{ ev_o }}</td><td>{{ ev_t }}</td><tr/>
+                          <tr><td>{{ ev_o }}</td><td>{{ escape(ev_t) }}</td><tr/>
                         {% end %}
                       {% end %}
                       </table>
