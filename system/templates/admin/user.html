@@ -79,7 +79,7 @@
         <div id="send_message">
             <form id="send_message_form" action="/message/{{selected_user.username}}" method="POST">
                 Subject: <input id="send_message_subject" type="text" name="send_message_subject"></br>
-                Quick answer: 
+                Quick answer:
                 <select name="send_message_quick_answer">
                     <option value="yes">Yes</option>
                     <option value="no">No</option>
@@ -123,9 +123,9 @@
                     <span class="question_text">{{escape(msg["text"])}}</span>
                     {% if msg["reply_date"] != None %}
                         <hr/>
-                        <div class="reply_question_quick_answer">Replied with quick answer: {{ WebConfig.quick_answers[msg["quick_answer"]] }}</div>
+                        <div class="reply_question_quick_answer">Replied with quick answer: {{ WebConfig.quick_answers.get(msg["quick_answer"], "No quick answer.") }}</div>
                         {% if msg["reply_text"] %}
-                        <div class="reply_question_additional">Additional message: {{ msg["reply_text"] }}</div>
+                        <div class="reply_question_additional">Additional message: {{ escape(msg["reply_text"]) }}</div>
                         {% end %}
                     {% end %}
                     <div class="reply_question_toggle">
@@ -136,7 +136,7 @@
                     <hr/>
                     <form class="reply_question_form" action="/question/{{selected_user.username}}" method="POST">
                         <input type="hidden" name="reply_question_index" value="{{len(selected_user.questions) - i - 1}}" />
-                        Quick answer: 
+                        Quick answer:
                         <select name="reply_question_quick_answer">
                             <option value="yes">Yes</option>
                             <option value="no">No</option>

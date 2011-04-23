@@ -33,9 +33,9 @@
                 <span class="question_text">{{escape(msg["text"])}}</span>
                 {% if msg["reply_date"] != None %}
                     <hr/>
-                    <div class="reply_question_quick_answer">Replied with quick answer: {{ WebConfig.quick_answers[msg["quick_answer"]] }}</div>
+                    <div class="reply_question_quick_answer">Replied with quick answer: {{ WebConfig.quick_answers.get(msg["quick_answer"], "No quick answer.") }}</div>
                     {% if msg["reply_text"] %}
-                    <div class="reply_question_additional">Additional message: {{ msg["reply_text"] }}</div>
+                    <div class="reply_question_additional">Additional message: {{ escape(msg["reply_text"]) }}</div>
                     {% end %}
                 {% end %}
             </div>
