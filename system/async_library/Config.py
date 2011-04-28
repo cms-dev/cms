@@ -14,14 +14,17 @@ class Config:
         ServiceCoord("LogService", 0): Address("localhost", 29000),
         ServiceCoord("ResourceService", 0): Address("localhost", 28000),
         ServiceCoord("FileStorage", 0): Address("localhost", 27000),
+        ServiceCoord("Sofa", 0): Address("localhost", 26000),
         ServiceCoord("Checker", 0): Address("localhost", 22000),
-        ServiceCoord("WebServiceA", 0): Address("localhost", 23000),
 
         ServiceCoord("TestFileStorage", 0): Address("localhost", 27500),
+        ServiceCoord("TestFileCacher", 0): Address("localhost", 27501),
+        ServiceCoord("TestSofa", 0): Address("localhost", 26500),
 
         ServiceCoord("ServiceA", 0): Address("localhost", 20000),
         ServiceCoord("ServiceB", 0): Address("localhost", 21000),
         ServiceCoord("ServiceB", 1): Address("localhost", 21001),
+        ServiceCoord("WebServiceA", 0): Address("localhost", 23000),
         }
 
     # This is a template for the commandline used by services, and it

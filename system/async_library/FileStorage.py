@@ -59,7 +59,7 @@ class FileStorage(Service):
         ret = ret and mkdir(self.desc_dir)
         if not ret:
             logger.critical("Cannot create necessary directories.")
-
+            self.exit()
 
     @rpc_method
     def put_file(self, binary_data, description=""):
