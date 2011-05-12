@@ -22,6 +22,7 @@
 import os
 import couchdb
 import sys
+import optparse
 
 from YamlImporter import get_params_for_contest, \
     get_params_for_user, get_params_for_task
@@ -31,7 +32,7 @@ import Configuration
 import Utils
 
 
-def reimport_contest(path, old_contest):
+def reimport_contest(path, old_contest, zero_time=False):
     """Tries to overwrite a given contest already in the system with
     the data coming from another contest outside the system. After
     doing this, it is at least needed to restart ES.
@@ -40,7 +41,7 @@ def reimport_contest(path, old_contest):
     then tasks and users not linked to any contest may appear in the
     couchdb.
     """
-    params, tasks, users = get_params_for_contest(path)
+    params, tasks, users = get_params_for_contest(path, zero_time=zero_time)
 
     params["couch_id"] = old_contest.couch_id
     params["couch_rev"] = old_contest.couch_rev
@@ -115,6 +116,16 @@ def reimport_task(old_task, path):
 
 
 if __name__ == "__main__":
-    c = Utils.ask_for_contest(1)
-    c = reimport_contest(sys.argv[1], c)
+    parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
+    parser.add_option("-z", "--zero-time",
+                      dest="zero_time", help="set to zero contest start and stop time",
+                      default=False, action="store_true")
+    parser.add_option("-c", "--contest",
+                      dest="contest", help="use the specified contest",
+                      default=None, metavar="contest")
+    options, args = parser.parse_args()
+    if len(args) != 1:
+        parser.error("I need exactly one parameter, the contest directory")
+    c = Utils.ask_for_contest(options.contest)
+    c = reimport_contest(args[0], c, zero_time=options.zero_time)
     print "Couch ID: %s" % (c.couch_id)

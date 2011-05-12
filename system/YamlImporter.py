@@ -23,6 +23,7 @@ import yaml
 import os
 import sys
 import codecs
+import optparse
 
 from Task import Task
 from User import User
@@ -31,7 +32,7 @@ from ScoreType import ScoreTypes
 from FileStorageLib import FileStorageLib
 
 
-def get_params_for_contest(path):
+def get_params_for_contest(path, zero_time=False):
     """Given the path of a contest, extract the data from its
     contest.yaml file, and create a dictionary with the parameter to
     give to the Contest class. Since tasks and users need to be
@@ -53,8 +54,12 @@ def get_params_for_contest(path):
     params["token_total"] = conf.get("token_total", 0)
     params["token_min_interval"] = conf.get("token_min_interval", 0)
     params["token_gen_time"] = conf.get("token_gen_time", 1)
-    params["start"] = conf["inizio"]
-    params["stop"] = conf["fine"]
+    if zero_time:
+        params["start"] = 0
+        params["stop"] = 0
+    else:
+        params["start"] = conf["inizio"]
+        params["stop"] = conf["fine"]
     return params, conf["problemi"], conf["utenti"]
 
 
@@ -127,10 +132,10 @@ def get_params_for_task(path):
     return params
 
 
-def import_contest(path):
+def import_contest(path, zero_time=False):
     """Import a contest into the system.
     """
-    params, tasks, users = get_params_for_contest(path)
+    params, tasks, users = get_params_for_contest(path, zero_time=zero_time)
     params["tasks"] = []
     for task in tasks:
         params["tasks"].append(Task(**get_params_for_task(os.path.join(path,
@@ -142,5 +147,12 @@ def import_contest(path):
 
 
 if __name__ == "__main__":
-    c = import_contest(sys.argv[1])
+    parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
+    parser.add_option("-z", "--zero-time",
+                      dest="zero_time", help="set to zero contest start and stop time",
+                      default=False, action="store_true")
+    options, args = parser.parse_args()
+    if len(args) != 1:
+        parser.error("I need exactly one parameter, the contest directory")
+    c = import_contest(args[0], zero_time=options.zero_time)
     print "Couch ID: %s" % (c.couch_id)
