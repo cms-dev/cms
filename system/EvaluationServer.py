@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
+import datetime
 
 import threading
 import heapq
@@ -866,3 +867,20 @@ if __name__ == "__main__":
         wor = xmlrpclib.ServerProxy("http://%s:%d" % (sys.argv[2],
                                                       int(sys.argv[3])))
         wor.shut_down(sys.argv[4])
+
+    elif sys.argv[1] == "set_times":
+        c = Utils.ask_for_contest(skip=None)
+        start_time_hhmm = sys.argv[2]
+        duration = datetime.timedelta(minutes=int(sys.argv[3]))
+        days_future = 0
+        if len(sys.argv) >= 5:
+            days_future = int(sys.argv[4])
+
+        start_h, start_m = map(int, start_time_hhmm.split(":"))
+        start_time = datetime.datetime.combine(datetime.date.today(), datetime.time(hour=start_h, minute=start_m, second=0))
+        start_time += datetime.timedelta(days=days_future)
+        stop_time = start_time + duration
+        print "Contest will start ad %s and stop at %s" % (start_time, stop_time)
+        c.start = time.mktime(list(start_time.timetuple()))
+        c.stop = time.mktime(list(stop_time.timetuple()))
+        c.to_couch()
