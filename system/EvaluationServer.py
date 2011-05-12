@@ -805,26 +805,6 @@ if __name__ == "__main__":
         es.add_job(s.couch_id)
         print "Submission %s" % s.couch_id
 
-    elif sys.argv[1] == "token":
-        # FIXME - This piece of code is a copy from its equivalent in
-        # ContestWebServer.py. This is bad: they should be merged in
-        # some client library which is used by all those who want to
-        # interact with the ES.
-        c = Utils.ask_for_contest(skip=1)
-        timestamp = time.time()
-        ident = sys.argv[3]
-        for s in c.submissions:
-            if s.couch_id == ident:
-                # If the user already used a token on this
-                if s.tokened():
-                    print "This submission is already marked for " + \
-                        "for detailed feedback."
-                else:
-                    print "No tokens available."
-                    break
-        else:
-            print "Submission not found in the specified contest"
-
     elif sys.argv[1] == "dump":
         obj = CouchObject.from_couch(sys.argv[2])
         print obj.dump()
