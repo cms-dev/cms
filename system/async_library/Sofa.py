@@ -87,6 +87,7 @@ class Sofa(Service):
         Service.__init__(self, shard)
 
         self.documents = {}
+        self.notification_list = {}
 
         # Create server directories
         self.base_dir = base_dir
@@ -171,6 +172,11 @@ class Sofa(Service):
         else:
             logger.error("Unable to create directory %s." % cls_dir)
             raise IOError("Cannot store document.")
+
+        if document[u"_id"] in self.notification_list:
+            for s in self.notification_list[document[u"_id"]]:
+                s[0].execute_rpc(s[1], s[2])
+
         return document[u"_id"], document[u"_rev"]
 
     def update_rev(self, obj):
@@ -251,12 +257,34 @@ class Sofa(Service):
                 return [self.documents[cls][x][u"_id"]
                         for x in self.documents[cls]]
 
+    @rpc_method
+    def subscribe(self, _id, service, shard, method, plus):
+        """The caller will be notified when the document identified by
+        the _id changes.
+
+        _id (string): the _id of the object we are interested in
+        service (string): the service to notify
+        shard (int): the shard to notify
+        method (string): the method to send the notification to
+        plus (object): the object to send together with the
+                       notification
+
+        return (bool): False if the object does not exists
+
+        """
+        if _id in self.notification_list:
+            self.notification_list[_id].add(ServiceCoord(service, shard),
+                                            method, plus)
+        else:
+            self.notification_list[_id] = set(ServiceCoord(service, shard),
+                                             method, plus)
+
 
 class SofaClass:
     """The parent class of any class that wants to be stored in Sofa.
 
     """
-    _to_delete = ["Sofa", "service"]
+    _to_delete = ["sofa", "service"]
     _subobjects = {}
     _vector_subobjects = {}
 
