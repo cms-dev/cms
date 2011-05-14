@@ -6,7 +6,7 @@
 
 import os
 
-from AsyncLibrary import rpc_callback, logger
+from AsyncLibrary import rpc_callback, rpc_method, logger
 from DecoratedServices import TestService
 from Utils import ServiceCoord, decode_json
 from Sofa import SofaClass
@@ -39,7 +39,6 @@ class ParentClass(SofaClass):
         SofaClass.__init__(self, service, sofa)
         self.parent_member = "parent"
         self.id = "id_parent"
-
 
 
 class TestSofa(TestService):
@@ -280,7 +279,7 @@ class TestSofa(TestService):
                self.children_dict["child_member"] != "new_child_1" or \
                self.children_dict["_rev"] != self.children_rev + 1 or \
                self.parent.children[1]._rev != self.children_rev + 1:
-            
+
             self.test_end(False, "Children 1 not stored correctly.")
         else:
             self.test_end(True, "Document stored correctly " +
@@ -311,6 +310,94 @@ class TestSofa(TestService):
             self.test_end(False, "Did not get parent correctly.")
         else:
             self.test_end(True, "Parent and plus received correctly.")
+
+
+### TEST 008 ###
+
+    def test_008(self):
+        """Subscribing to the parent.
+
+        """
+        logger.info("  I am subscring to the parent.")
+        self.SofaService.subscribe(_id=self.new_parent._id,
+                                   service=self.__class__.__name__,
+                                   shard=self.shard,
+                                   method="on_parent_change",
+                                   plus_obj=("Test #", 8, "b"),
+                                   callback=TestSofa.test_008_callback,
+                                   plus=("Test #", 8))
+
+    @rpc_callback
+    def test_008_callback(self, data, plus, error=None):
+        if error != None:
+            self.test_end(False, "Error received: %s." % error)
+        elif plus != ("Test #", 8):
+            self.test_end(False, "Plus object not received correctly.")
+        elif not data:
+            self.test_end(False, "Did not received True.")
+        else:
+            self.test_end(True, "Parent and plus received correctly.")
+
+
+### TEST 009 ###
+
+    def test_009(self):
+        """Updating the parent
+
+        """
+        logger.info("  I am updating the parent to get the notification.")
+        self.new_parent._put(TestSofa.test_009_callback,
+                             ("Test #", 9))
+
+    @rpc_callback
+    def test_009_callback(self, data, plus, error=None):
+        if error != None:
+            self.test_end(False, "Error received: %s." % error)
+        elif plus != ("Test #", 9):
+            self.test_end(False, "Plus object not received correctly.")
+        elif not os.path.exists(os.path.join("sf", "ParentClass", data[0])):
+            self.test_end(False, "Parent not stored in local cache.")
+        elif not os.path.exists(os.path.join("sf", "ChildClass",
+                self.parent.child._id)):
+            self.test_end(False, "Child not stored in local cache.")
+        elif not os.path.exists(os.path.join("sf", "ChildClass",
+                self.parent.children[1]._id)):
+            self.test_end(False, "Children not stored in local cache.")
+
+        self.parent_dict = decode_json(open(
+            os.path.join("sf", "ParentClass", data[0])).read())
+        self.child_dict = decode_json(open(
+            os.path.join("sf", "ChildClass",
+                         self.parent.child._id)).read())
+        self.children_dict = decode_json(open(
+            os.path.join("sf", "ChildClass",
+                         self.parent.children[1]._id)).read())
+
+        if self.parent_dict["id"] != "id_parent" or \
+               self.parent_dict["parent_member"] != "parent" or \
+               self.parent_dict["child"] != ["ChildClass",
+                                             self.parent.child._id,
+                                             self.parent.child._rev] or \
+               self.parent_dict["children"][1] != \
+                            ["ChildClass",
+                             self.parent.children[1]._id,
+                             self.parent.children[1]._rev]:
+            self.test_end(False, "Parent not stored correctly.")
+        elif self.child_dict["id"] != "id_child" or \
+                 self.child_dict["child_member"] != "new_child_alone":
+            self.test_end(False, "Child not stored correctly.")
+        elif self.children_dict["id"] != "id_child" or \
+                 self.children_dict["child_member"] != "new_child_1":
+            self.test_end(False, "Children not stored correctly.")
+
+    @rpc_method
+    def on_parent_change(self, _id, plus):
+        if plus != ["Test #", 8, "b"]:
+            self.test_end(False, "Plus object not received correctly.")
+        elif _id[:9] != "id_parent":
+            self.test_end(False, "Wrong id received.")
+        else:
+            self.test_end(True, "Notification received correctly.")
 
 
 if __name__ == "__main__":

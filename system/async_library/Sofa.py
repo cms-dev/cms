@@ -68,7 +68,7 @@ import re
 
 import codecs
 
-from AsyncLibrary import Service, \
+from AsyncLibrary import Service, RemoteService, \
      rpc_method, rpc_callback, logger
 from Utils import ServiceCoord, mkdir, encode_json, decode_json
 
@@ -175,7 +175,9 @@ class Sofa(Service):
 
         if document[u"_id"] in self.notification_list:
             for s in self.notification_list[document[u"_id"]]:
-                s[0].execute_rpc(s[1], s[2])
+                rs = RemoteService(self, s[0])
+                rs.execute_rpc(s[1], {'_id': document[u"_id"],
+                                      'plus': s[2]})
 
         return document[u"_id"], document[u"_rev"]
 
@@ -258,7 +260,7 @@ class Sofa(Service):
                         for x in self.documents[cls]]
 
     @rpc_method
-    def subscribe(self, _id, service, shard, method, plus):
+    def subscribe(self, _id, service, shard, method, plus_obj):
         """The caller will be notified when the document identified by
         the _id changes.
 
@@ -266,18 +268,19 @@ class Sofa(Service):
         service (string): the service to notify
         shard (int): the shard to notify
         method (string): the method to send the notification to
-        plus (object): the object to send together with the
+        plus_obj (object): the object to send together with the
                        notification
 
-        return (bool): False if the object does not exists
+        return (bool): True
 
         """
         if _id in self.notification_list:
-            self.notification_list[_id].add(ServiceCoord(service, shard),
-                                            method, plus)
+            self.notification_list[_id].append([ServiceCoord(service, shard),
+                                               method, plus_obj])
         else:
-            self.notification_list[_id] = set(ServiceCoord(service, shard),
-                                             method, plus)
+            self.notification_list[_id] = [[ServiceCoord(service, shard),
+                                            method, plus_obj]]
+        return True
 
 
 class SofaClass:
