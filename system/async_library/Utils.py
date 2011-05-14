@@ -5,6 +5,7 @@
 """
 
 import os
+import sys
 
 import simplejson
 from collections import namedtuple
@@ -71,7 +72,7 @@ def encode_length(length):
         s += chr(length)
         return s
     except Exception as e:
-        logger.error("Can't encode length: %d %s" % (length, repr(e)))
+        print >> sys.stderr, "Can't encode length: %d %s" % (length, repr(e))
         raise ValueError
 
 
@@ -88,7 +89,7 @@ def decode_length(string):
                ord(string[2]) * (2 << 8) + \
                ord(string[3])
     except:
-        logger.error("Can't decode length")
+        print >> sys.stderr, "Can't decode length"
         raise ValueError
 
 
@@ -102,7 +103,7 @@ def encode_json(obj):
     try:
         return simplejson.dumps(obj)
     except:
-        logger.error("Can't encode JSON: %s" % repr(obj))
+        print >> sys.stderr, "Can't encode JSON: %s" % repr(obj)
         raise ValueError
 
 
@@ -118,7 +119,7 @@ def decode_json(string):
         string = string.decode("utf8")
         return simplejson.loads(string)
     except simplejson.JSONDecodeError:
-        logger.error("Can't decode JSON: %s" % string)
+        print >> sys.stderr, "Can't decode JSON: %s" % string
         raise ValueError
 
 
@@ -134,7 +135,7 @@ def encode_binary(string):
     try:
         return string.replace('\\', '\\\\').replace('\r', '\\r')
     except:
-        logger.error("Can't encode binary.")
+        print >> sys.stderr, "Can't encode binary."
         raise ValueError
 
 
@@ -147,7 +148,7 @@ def decode_binary(string):
     try:
         return string.replace('\\r', '\r').replace('\\\\', '\\')
     except:
-        logger.error("Can't decode binary.")
+        print >> sys.stderr, "Can't decode binary."
         raise ValueError
 
 
