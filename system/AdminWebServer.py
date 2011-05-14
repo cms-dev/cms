@@ -42,7 +42,6 @@ from functools import wraps
 def contestRequired(f):
     @wraps(f)
     def wrapper(*args, **kwds):
-        print "contest: " +repr(args[0].c)
         if args[0].c != None:
           return f(*args, **kwds)
         else:
@@ -208,62 +207,62 @@ class UserReevaluateHandler(BaseHandler):
         self.redirect("/user/%s" % user_id)
 
 
-#class EditContestHandler(BaseHandler):
-#    def post(self,contest_id):
-#        try:
-#          c = CouchObject.from_couch(contest_id)
-#        except couchdb.client.ResourceNotFound:
-#          self.write("Cannot load contest %s." % (contest_id))
-#        if self.get_arguments("name") == []:
-#          self.write("No contest name specified")
-#          return
-#        name = self.get_argument("name")
-#        description = self.get_argument("description","")
-#
-#        try:
-#          token_initial = int(self.get_argument("token_initial","0"))
-#          token_max = int(self.get_argument("token_max","0"))
-#          token_total = int(self.get_argument("token_total","0"))
-#        except:
-#          self.write("Invalid token number field(s).")
-#          return
-#        timearguments = ["_hour","_minute"]
-#
-#        token_min_interval = \
-#            int(self.get_argument("min_interval_hour","0")) * 60 + \
-#            int(self.get_argument("min_interval_minute","0"))
-#        token_gen_time = int(self.get_argument("token_gen_hour","0")) * 60 + \
-#                             int(self.get_argument("token_gen_minute","0"))
-#
-#        datetimearguments = ["_year","_month","_day","_hour","_minute"]
-#        try:
-#          start = datetime.datetime(*[int(self.get_argument("start"+x))
-#                                      for x in datetimearguments] )
-#          end = datetime.datetime(*[int(self.get_argument("end"+x))
-#                                    for x in datetimearguments] )
-#        except:
-#          self.write("Invalid date(s).")
-#          return
-#        if start > end :
-#          self.write("Contest ends before it starts")
-#          return
-#        self.c.name = name
-#        self.c.description = description
-#        self.c.token_initial = token_initial
-#        self.c.token_max = token_max
-#        self.c.token_total = token_total
-#        self.c.token_min_interval = token_min_interval
-#        self.c.token_gen_time = token_gen_time
-#        self.c.start = start
-#        self.c.stop = end
-#        # FIXME - Shouldn't just fail if to_couch() fails; instead, it
-#        # should update the document and try again
-#        try:
-#          self.c.to_couch()
-#        except:
-#          self.write("Contest storage in CouchDB failed!")
-#        self.redirect("/")
-#        return
+class EditContestHandler(BaseHandler):
+    def post(self):
+
+        if self.get_arguments("name") == []:
+          self.write("No contest name specified")
+          return
+        name = self.get_argument("name")
+        description = self.get_argument("description","")
+
+        try:
+          token_initial = int(self.get_argument("token_initial","0"))
+          token_max = int(self.get_argument("token_max","0"))
+          token_total = int(self.get_argument("token_total","0"))
+        except:
+          self.write("Invalid token number field(s).")
+          return
+        timearguments = ["_hour","_minute"]
+
+        token_min_interval = \
+            int(self.get_argument("min_interval_hour","0")) * 60 + \
+            int(self.get_argument("min_interval_minute","0"))
+        token_gen_time = int(self.get_argument("token_gen_hour","0")) * 60 + \
+                             int(self.get_argument("token_gen_minute","0"))
+
+        datetimearguments = ["_year","_month","_day","_hour","_minute"]
+        try:
+          start = time.mktime(time.strptime(
+                  self.get_argument("start",""),
+                  "%d/%m/%Y %H:%M:%S" ))
+          stop = time.mktime(time.strptime(
+                  self.get_argument("end",""),
+                  "%d/%m/%Y %H:%M:%S" ))
+        except Exception as e:
+          self.write("Invalid date(s)." + repr(e))
+          return
+        if start > stop :
+          self.write("Contest ends before it starts")
+          return
+        self.c.name = name
+        self.c.description = description
+        self.c.token_initial = token_initial
+        self.c.token_max = token_max
+        self.c.token_total = token_total
+        self.c.token_min_interval = token_min_interval
+        self.c.token_gen_time = token_gen_time
+        self.c.start = start
+        self.c.stop = stop
+        # FIXME - Shouldn't just fail if to_couch() fails; instead, it
+        # should update the document and try again
+        try:
+          self.c.to_couch()
+        except:
+          self.write("Contest storage in CouchDB failed!")
+          return
+        self.redirect("/contest")
+        return
 
 class AddContestHandler(BaseHandler):
     def get(self):
@@ -479,8 +478,8 @@ handlers = [
                  AddContestHandler),
             (r"/contest", \
                  ContestViewHandler),
-            # (r"/contest/([a-zA-Z0-9_-]+)/edit", \
-            #      EditContestHandler),
+            (r"/contest/edit", \
+                 EditContestHandler),
             (r"/submissions/details/([a-zA-Z0-9_-]+)", \
                  SubmissionDetailHandler),
             (r"/reevaluate/submission/([a-zA-Z0-9_-]+)", \

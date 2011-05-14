@@ -1,7 +1,9 @@
 {% extends base.html %}
 
 {% block core %}
-    <h1>{{contest.name}}</h1>
+    <div class="core_title">
+    <h1>Contest information</h1>
+    </div>
     
     <form name="addcontest" action="/contest/edit" method="POST">
     <table class="sub_table">
