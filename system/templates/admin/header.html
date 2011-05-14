@@ -1,1 +1,1 @@
-    <div class="header">Admin: {{ contest.description }}</div>
+    <div class="header">Admin{% if contest != None %}: {{ contest.description }}{% end %}</div>

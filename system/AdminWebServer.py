@@ -37,6 +37,18 @@ import WebConfig
 import CouchObject
 import Utils
 
+from functools import wraps
+
+def contestRequired(f):
+    @wraps(f)
+    def wrapper(*args, **kwds):
+        print "contest: " +repr(args[0].c)
+        if args[0].c != None:
+          return f(*args, **kwds)
+        else:
+          raise tornado.web.HTTPError(404)
+    return wrapper
+
 
 class BaseHandler(tornado.web.RequestHandler):
     """Base RequestHandler for this application.
@@ -51,15 +63,51 @@ class BaseHandler(tornado.web.RequestHandler):
         # Attempt to update the contest and all its references
         # If this fails, the request terminates.
         self.set_header("Cache-Control", "no-cache, must-revalidate")
-        try:
-            c.refresh()
-            BusinessLayer.update_submissions(c)
-            BusinessLayer.update_users(c)
-        except Exception as e:
+        
+        self.c = None
+        # Retrieve the selected contest.
+        selected_contest = self.get_argument("selected_contest",None)
+        
+        if selected_contest == "null":
+          self.clear_cookie("selected_contest")
+          self.redirect("/contest")
+          return
+
+        if selected_contest != None:
+          try:
+            self.c = CouchObject.from_couch(selected_contest, True)
+            if self.c != None:
+              # If we're here, the selected contest exists. Set the cookie.
+              self.set_secure_cookie("selected_contest", selected_contest)
+              print "Set cookie."
+          except couchdb.client.ResourceNotFound:
+            # The selected contest isn't valid.
+            pass
+          except Exception as e:
             Utils.log("CouchDB exception:" + repr(e),
                       Utils.Logger.SEVERITY_CRITICAL)
             self.write("Can't connect to CouchDB Server")
             self.finish()
+            return
+        if self.c == None:
+          # No (valid) contest specified: either it was never specified,
+          # or it was already specified in the cookies.
+          cookie_contest = self.get_secure_cookie("selected_contest")
+          if cookie_contest != None:
+            try:
+              self.c = CouchObject.from_couch(cookie_contest, True)
+              # If we're here, the selected contest exists. Set the cookie.
+            except couchdb.client.ResourceNotFound:
+              # The contest is invalid. Unset the cookie.
+              print "Unset cookie."
+              self.clear_cookie("selected_contest")
+              self.c = None
+            except Exception as e:
+              Utils.log("CouchDB exception:" + repr(e),
+                        Utils.Logger.SEVERITY_CRITICAL)
+              self.write("Can't connect to CouchDB Server")
+              self.finish()
+              return
 
     def get_current_user(self):
         """Gets the current user logged in from the cookies
@@ -81,8 +129,10 @@ class BaseHandler(tornado.web.RequestHandler):
     def render_params(self):
         r = {}
         r["timestamp"] = time.time()
-        r["contest"] = c
-        r["phase"] = BusinessLayer.contest_phase(**r)
+        r["contest"] = self.c
+        if(self.c != None):
+          r["phase"] = BusinessLayer.contest_phase(**r)
+        r["contest_list"] = Utils.get_contest_list()
         r["cookie"] = str(self.cookies)
         return r
 
@@ -116,24 +166,25 @@ class MainHandler(BaseHandler):
 
 
 class ContestViewHandler(BaseHandler):
+    @contestRequired
+    def get(self):
+        r_params = self.render_params()
+        self.render("contest.html", **r_params)
 
-    def get(self, contest_id):
-        try:
-            c = CouchObject.from_couch(contest_id)
-        except couchdb.client.ResourceNotFound:
-            self.write("Cannot load contest %s." % (contest_id))
-            return
-        self.render("contest.html", contest=c, cookie=str(self.cookies))
-
+class AnnouncementsHandler(BaseHandler):
+    @contestRequired
+    def get(self):
+        r_params = self.render_params()
+        self.render("announcements.html", **r_params)
 
 class SubmissionReevaluateHandler(BaseHandler):
     """Re-evaluate the specified submission and go back to the details
     of the user.
     """
-
+    @contestRequired
     def get(self, submission_id):
         # search the submission in the contest
-        s = BusinessLayer.get_submission(c, submission_id)
+        s = BusinessLayer.get_submission(self.c, submission_id)
         if s == None:
             raise tornado.web.HTTPError(404)
         BusinessLayer.reevaluate_submission(s)
@@ -144,12 +195,14 @@ class UserReevaluateHandler(BaseHandler):
     """Re-evaluate the submissions of the specified user and go back
     to the details of the user.
     """
-
+    @contestRequired
     def get(self, user_id):
-        u = BusinessLayer.get_user_by_username(c, user_id)
+        BusinessLayer.update_users(self.c)
+        BusinessLayer.update_submissions(self.c)
+        u = BusinessLayer.get_user_by_username(self.c, user_id)
         if u == None:
             raise tornado.web.HTTPError(404)
-        submissions = BusinessLayer.get_submissions_by_username(c, user_id)
+        submissions = BusinessLayer.get_submissions_by_username(self.c, user_id)
         for submission in submissions:
             BusinessLayer.reevaluate_submission(submission)
         self.redirect("/user/%s" % user_id)
@@ -194,98 +247,88 @@ class UserReevaluateHandler(BaseHandler):
 #        if start > end :
 #          self.write("Contest ends before it starts")
 #          return
-#        c.name = name
-#        c.description = description
-#        c.token_initial = token_initial
-#        c.token_max = token_max
-#        c.token_total = token_total
-#        c.token_min_interval = token_min_interval
-#        c.token_gen_time = token_gen_time
-#        c.start = start
-#        c.stop = end
+#        self.c.name = name
+#        self.c.description = description
+#        self.c.token_initial = token_initial
+#        self.c.token_max = token_max
+#        self.c.token_total = token_total
+#        self.c.token_min_interval = token_min_interval
+#        self.c.token_gen_time = token_gen_time
+#        self.c.start = start
+#        self.c.stop = end
 #        # FIXME - Shouldn't just fail if to_couch() fails; instead, it
 #        # should update the document and try again
 #        try:
-#          c.to_couch()
+#          self.c.to_couch()
 #        except:
 #          self.write("Contest storage in CouchDB failed!")
 #        self.redirect("/")
 #        return
 
-#class AddContestHandler(BaseHandler):
-#    def get(self):
-#        self.render("addcontest.html", cookie = str(self.cookies))
-#    def post(self):
-#        from Contest import Contest
-#        if self.get_arguments("name") == []:
-#          self.write("No contest name specified")
-#          return
-#        name = self.get_argument("name")
-#        description = self.get_argument("description","")
-#
-#        try:
-#          token_initial = int(self.get_argument("token_initial","0"))
-#          token_max = int(self.get_argument("token_max","0"))
-#          token_total = int(self.get_argument("token_total","0"))
-#        except:
-#          self.write("Invalid token number field(s).")
-#          return
-#        timearguments = ["_hour","_minute"]
-#
-#        token_min_interval = \
-#            int(self.get_argument("min_interval_hour","0")) * 60 + \
-#            int(self.get_argument("min_interval_minute","0"))
-#        token_gen_time = int(self.get_argument("token_gen_hour","0")) * 60 + \
-#                             int(self.get_argument("token_gen_minute","0"))
-#
-#        datetimearguments = ["_year","_month","_day","_hour","_minute"]
-#        try:
-#          time_start = time.mktime(time.strptime(
-#                  " ".join([self.get_argument("start"+x,"0")
-#                            for x in datetimearguments]),
-#                  "%Y %m %d %H %M"))
-#          time_stop = time.mktime(time.strptime(
-#                  " ".join([self.get_argument("end"+x,"0")
-#                            for x in datetimearguments]),
-#                  "%Y %m %d %H %M" ))
-#        except Exception as e:
-#          self.write("Invalid date(s)." + repr(e))
-#          return
-#        if time_start > time_stop :
-#          self.write("Contest ends before it starts")
-#          return
-#        try:
-#          c = Contest(name,description,[],[],
-#                      token_initial, token_max, token_total,
-#                      token_min_interval, token_gen_time,
-#                      start = time_start, stop = time_stop )
-#        except:
-#          self.write("Contest creation failed!")
-#          return
-#        if c == None:
-#          self.write("Contest creation failed!")
-#          return
-#        # FIXME - Shouldn't just fail if to_couch() fails; instead, it
-#        # should update the document and try again
-#        try:
-#          print c
-#          c.to_couch()
-#        except:
-#          self.write("Contest storage in CouchDB failed!")
-#        self.redirect("/")
-#        return
+class AddContestHandler(BaseHandler):
+    def get(self):
+        r_params = self.render_params()
+        self.render("addcontest.html",**r_params)
+    def post(self):
+        from Contest import Contest
+        if self.get_arguments("name") == []:
+          self.write("No contest name specified")
+          return
+        name = self.get_argument("name")
+        description = self.get_argument("description","")
+
+        try:
+          token_initial = int(self.get_argument("token_initial","0"))
+          token_max = int(self.get_argument("token_max","0"))
+          token_total = int(self.get_argument("token_total","0"))
+        except:
+          self.write("Invalid token number field(s).")
+          return
+        timearguments = ["_hour","_minute"]
+
+        token_min_interval = \
+            int(self.get_argument("min_interval_hour","0")) * 60 + \
+            int(self.get_argument("min_interval_minute","0"))
+        token_gen_time = int(self.get_argument("token_gen_hour","0")) * 60 + \
+                             int(self.get_argument("token_gen_minute","0"))
+
+        datetimearguments = ["_year","_month","_day","_hour","_minute"]
+        try:
+          time_start = time.mktime(time.strptime(
+                  self.get_argument("start",""),
+                  "%d/%m/%Y %H:%M:%S" ))
+          time_stop = time.mktime(time.strptime(
+                  self.get_argument("end",""),
+                  "%d/%m/%Y %H:%M:%S" ))
+        except Exception as e:
+          self.write("Invalid date(s)." + repr(e))
+          return
+        if time_start > time_stop :
+          self.write("Contest ends before it starts")
+          return
+        
+        c = BusinessLayer.add_contest(name,description,[],[],
+                      token_initial, token_max, token_total,
+                      token_min_interval, token_gen_time,
+                      start = time_start, stop = time_stop )
+        if c == None:
+          self.write("Contest creation failed!")
+          return
+        self.set_secure_cookie("selected_contest", c.couch_id)
+        self.redirect("/contest")
+        return
 
 
 class SubmissionDetailHandler(BaseHandler):
     """Shows additional details for the specified submission.
     """
-
+    @contestRequired
     def get(self, submission_id):
-
+        BusinessLayer.update_submissions(self.c)
         r_params = self.render_params()
 
         # search the submission in the contest
-        s = BusinessLayer.get_submission(c, submission_id)
+        s = BusinessLayer.get_submission(self.c, submission_id)
         if s == None:
             raise tornado.web.HTTPError(404)
         r_params["submission"] = s
@@ -296,9 +339,9 @@ class SubmissionDetailHandler(BaseHandler):
 class SubmissionFileHandler(BaseHandler):
     """Shows a submission file.
     """
-
+    @contestRequired
     def get(self, submission_id, filename):
-        submission = BusinessLayer.get_submission(c, submission_id)
+        submission = BusinessLayer.get_submission(self.c, submission_id)
         # search the submission in the contest
         file_content = BusinessLayer.get_file_from_submission(submission,
                                                               filename)
@@ -314,58 +357,63 @@ class SubmissionFileHandler(BaseHandler):
 
 
 class AddAnnouncementHandler(BaseHandler):
-
+    @contestRequired
     def post(self):
         subject = self.get_argument("subject", "")
         text = self.get_argument("text", "")
         if subject != "":
-            BusinessLayer.add_announcement(c, subject, text)
-        self.redirect("/")
+            BusinessLayer.add_announcement(self.c, subject, text)
+        self.redirect("/announcements")
 
 
 class RemoveAnnouncementHandler(BaseHandler):
-
+    @contestRequired
     def post(self):
         index = self.get_argument("index", "-1")
         subject = self.get_argument("subject", "")
         text = self.get_argument("text", "")
         try:
             index = int(index)
-            announcement = c.announcements[index]
+            announcement = self.c.announcements[index]
         except:
             raise tornado.web.HTTPError(404)
         if announcement['subject'] == subject and \
                 announcement['text'] == text:
-            BusinessLayer.remove_announcement(c, index)
-        self.redirect("/")
+            BusinessLayer.remove_announcement(self.c, index)
+        self.redirect("/announcements")
 
 
 class UserViewHandler(BaseHandler):
-
+    @contestRequired
     def get(self, user_id):
+        BusinessLayer.update_users(self.c)
+        BusinessLayer.update_submissions(self.c)
         r_params = self.render_params()
-        user = BusinessLayer.get_user_by_username(c, user_id)
-        submissions = BusinessLayer.get_submissions_by_username(c, user_id)
+        user = BusinessLayer.get_user_by_username(self.c, user_id)
+        submissions = BusinessLayer.get_submissions_by_username(self.c, user_id)
         if user == None:
             raise tornado.web.HTTPError(404)
+
         r_params["selected_user"] = user
         r_params["submissions"] = submissions
         self.render("user.html", **r_params)
 
 
 class UserListHandler(BaseHandler):
-
+    @contestRequired
     def get(self):
+        BusinessLayer.update_users(self.c)
         r_params = self.render_params()
         self.render("userlist.html", **r_params)
 
 
 class MessageHandler(BaseHandler):
-
+    @contestRequired
     def post(self, user_name):
+        BusinessLayer.update_users(self.c)
         r_params = self.render_params()
 
-        user = BusinessLayer.get_user_by_username(c, user_name)
+        user = BusinessLayer.get_user_by_username(self.c, user_name)
         if user == None:
             raise tornado.web.HTTPError(404)
         r_params["selected_user"] = user
@@ -392,11 +440,12 @@ class MessageHandler(BaseHandler):
 
 
 class QuestionReplyHandler(BaseHandler):
-
+    @contestRequired
     def post(self, user_name):
+        BusinessLayer.update_users(self.c)
         r_params = self.render_params()
 
-        user = BusinessLayer.get_user_by_username(c, user_name)
+        user = BusinessLayer.get_user_by_username(self.c, user_name)
         if user == None:
             raise tornado.web.HTTPError(404)
         r_params["selected_user"] = user
@@ -424,10 +473,12 @@ class QuestionReplyHandler(BaseHandler):
 handlers = [
             (r"/", \
                  MainHandler),
-            # (r"/addcontest", \
-            #      AddContestHandler),
-            # (r"/contest/([a-zA-Z0-9_-]+)", \
-            #      ContestViewHandler),
+            (r"/announcements", \
+                 AnnouncementsHandler),
+            (r"/addcontest", \
+                 AddContestHandler),
+            (r"/contest", \
+                 ContestViewHandler),
             # (r"/contest/([a-zA-Z0-9_-]+)/edit", \
             #      EditContestHandler),
             (r"/submissions/details/([a-zA-Z0-9_-]+)", \
@@ -459,14 +510,8 @@ if __name__ == "__main__":
     Utils.set_service("administration web server")
     http_server = tornado.httpserver.HTTPServer(application)
     http_server.listen(WebConfig.admin_listen_port)
-    try:
-        c = Utils.ask_for_contest()
-    except AttributeError as e:
-        Utils.log("CouchDB server unavailable: " + repr(e),
-                  Utils.Logger.SEVERITY_CRITICAL)
-        exit(1)
-    Utils.log("Administration Web Server for contest %s started..."
-              % (c.couch_id))
+
+    Utils.log("Administration Web Server started...")
 
     upsince = time.time()
     try:

@@ -32,12 +32,12 @@
       {% for hour in range(0,24) %}
         <option>{{ hour }}</option>
       {% end %}
-      </select>
+      </select> hours</br>
       <select name="min_interval_minute">
       {% for minute in range(0,60) %}
         <option>{{ minute }}</option>
       {% end %}
-      </select>
+      </select> minutes</br>
       </td>
     </tr>
     <tr>
@@ -45,27 +45,23 @@
       <td>
       <select name="token_gen_hour">
       {% for hour in range(0,24) %}
-        <option>{{ hour }}</option>
+        <option>{{ hour }}</option> 
       {% end %}
-      </select>
+      </select> hours</br>
       <select name="token_gen_minute">
       {% for minute in range(0,60) %}
         <option>{{ minute }}</option>
       {% end %}
-      </select>
+      </select> minutes</br>
       </td>
     </tr>
     <tr>
       <td>Start</td>
-      {% for fieldname in ["start"] %}
-      <td>{% include datetimefield.html %}</td>
-      {% end %}
+      <td><input type="text" name="start" value="{{ datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")}}"></td>
     </tr>
     <tr>
       <td>End</td>
-      {% for fieldname in ["end"] %}
-      <td>{% include datetimefield.html %}</td>
-      {% end %}
+      <td><input type="text" name="end" value="{{ datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")}}"></td>
     </tr>
     </table>
     <input type="submit">

@@ -6,6 +6,19 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <link rel="stylesheet" type="text/css" href="/static/style_admin.css">
+    
+{% if contest == None %}
+      <title>Admin</title>
+      <script language="Javascript">
+<!--
+      var util
+      function init()
+      {
+      }
+//-->
+    </script>
+
+{% else %}
     <title>Admin: {{ contest.description }}</title>
 
 <script language="Javascript">
@@ -23,6 +36,8 @@
     }
 //-->
 </script>
+{% end %}
+
 <script language="Javascript" src="/static/scripts.js" onload="init()">
 </script>
 </head>

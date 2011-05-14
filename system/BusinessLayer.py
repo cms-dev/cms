@@ -32,6 +32,7 @@ import couchdb
 import Configuration
 import CouchObject
 import Utils
+from Contest import Contest
 from Submission import Submission
 from FileStorageLib import FileStorageLib
 
@@ -547,3 +548,21 @@ def add_user_message(user, date, message_subject, message_quick_answer, message_
         message["text"] = message_text
         user.messages.append(message)
         user.to_couch()
+
+
+def add_contest(*args, **kwargs):
+        try:
+          c = Contest(*args, **kwargs)
+        except Exception as e:
+          Utils.log(repr(e))
+          return None
+        if c == None:
+          return None
+        # FIXME - Shouldn't just fail if to_couch() fails; instead, it
+        # should update the document and try again
+        try:
+          c.to_couch()
+        except Exception as e:
+          Utils.log(repr(e))
+          return None
+        return c

@@ -1,10 +1,10 @@
 {% extends base.html %}
 
 {% block core %}
-    <h1><a href="/">Home</a> - {{contest.name}}</h1>
+    <h1>{{contest.name}}</h1>
     
-    <form name="addcontest" action="/contest/{{contest.couch_id}}/edit" method="POST">
-    <table>
+    <form name="addcontest" action="/contest/edit" method="POST">
+    <table class="sub_table">
     <tr>
       <td>Name</td>
       <td><input type="text" name="name" value={{contest.name}}></td>
@@ -30,14 +30,14 @@
       <td>
       <select name="min_interval_hour">
       {% for hour in range(0,24) %}
-        <option {% if contest.token_min_interval % 60 == hour %}selected{% end %}>{{ hour }}</option>
+        <option {% if contest.token_min_interval / 60 == hour %}selected{% end %}>{{ hour }}</option>
       {% end %}
-      </select>
+      </select> hours<br/>
       <select name="min_interval_minute">
       {% for minute in range(0,60) %}
-        <option {% if contest.token_min_interval / 60 == minute %}selected{% end %} >{{ minute }}</option>
+        <option {% if contest.token_min_interval % 60 == minute %}selected{% end %} >{{ minute }}</option>
       {% end %}
-      </select>
+      </select> minutes<br/>
       </td>
     </tr>
     <tr>
@@ -45,32 +45,32 @@
       <td>
       <select name="token_gen_hour">
       {% for hour in range(0,24) %}
-        <option {% if contest.token_gen_time % 60 == hour %}selected{% end %} >{{ hour }}</option>
+        <option {% if contest.token_gen_time / 60 == hour %}selected{% end %} >{{ hour }}</option>
       {% end %}
-      </select>
+      </select> hours<br/>
       <select name="token_gen_minute">
       {% for minute in range(0,60) %}
-        <option {% if contest.token_gen_time / 60 == minute %}selected{% end %} >{{ minute }}</option>
+        <option {% if contest.token_gen_time % 60 == minute %}selected{% end %} >{{ minute }}</option>
       {% end %}
-      </select>
+      </select>  minutes<br/>
       </td>
     </tr>
     <tr>
       <td>Start</td>
-      {% for fieldname in ["start"] %}
-      <td>{% include datetimefield.html %}</td>
-      {% end %}
+      <td><input type="text" name="start" value="{{ datetime.datetime.fromtimestamp(contest.start).strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
     </tr>
     <tr>
       <td>End</td>
-      {% for fieldname in ["end"] %}
-      <td>{% include datetimefield.html %}</td>
-      {% end %}
+      <td><input type="text" name="end" value="{{ datetime.datetime.fromtimestamp(contest.stop).strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
     </tr>
     </table>
-    <input type="submit">
+    <input type="submit" value="Edit"><input type="reset" value="Reset">
     </form>
     
     <h2>Tasks</h2>
-    <h2>Users</h2>
+    <ul>
+    {% for task in contest.tasks %}
+      <li><a href="/tasks/{{task.name}}">{{task.name}}</a></li>
+    {% end %}
+    </ul>
 {% end %}
