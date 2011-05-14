@@ -69,7 +69,7 @@ class BaseHandler(tornado.web.RequestHandler):
         
         if selected_contest == "null":
           self.clear_cookie("selected_contest")
-          self.redirect("/contest")
+          self.redirect("/")
           return
 
         if selected_contest != None:
@@ -78,7 +78,7 @@ class BaseHandler(tornado.web.RequestHandler):
             if self.c != None:
               # If we're here, the selected contest exists. Set the cookie.
               self.set_secure_cookie("selected_contest", selected_contest)
-              print "Set cookie."
+              self.redirect("/contest")
           except couchdb.client.ResourceNotFound:
             # The selected contest isn't valid.
             pass
@@ -95,7 +95,6 @@ class BaseHandler(tornado.web.RequestHandler):
           if cookie_contest != None:
             try:
               self.c = CouchObject.from_couch(cookie_contest, True)
-              # If we're here, the selected contest exists. Set the cookie.
             except couchdb.client.ResourceNotFound:
               # The contest is invalid. Unset the cookie.
               print "Unset cookie."
@@ -107,6 +106,7 @@ class BaseHandler(tornado.web.RequestHandler):
               self.write("Can't connect to CouchDB Server")
               self.finish()
               return
+
 
     def get_current_user(self):
         """Gets the current user logged in from the cookies
