@@ -91,7 +91,7 @@ class BatchTaskType:
     def __init__(self, submission):
         self.submission = submission
 
-    KEEP_SANDBOX = True
+    KEEP_SANDBOX = False
 
     def finish_compilation(self, success, compilation_success = False, text = ""):
         self.safe_delete_sandbox()
