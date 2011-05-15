@@ -58,8 +58,8 @@ def get_params_for_contest(path, zero_time=False):
         params["start"] = 0
         params["stop"] = 0
     else:
-        params["start"] = conf["inizio"]
-        params["stop"] = conf["fine"]
+        params["start"] = conf.get("inizio", 0)
+        params["stop"] = conf.get("fine", 0)
     return params, conf["problemi"], conf["utenti"]
 
 
