@@ -27,10 +27,10 @@
 }{\end{list}}
 
 \newcommand{\id}[1]{\texttt{#1}}
+\newcommand{\file}[1]{\texttt{#1}}
 
 \title{A Contest Management System for programming contests}
-\author{Matteo Boscariol, Massimo Cairo, Stefano Maggiolo, Giovanni
-  Mascellani}
+\author{Matteo Boscariol, Stefano Maggiolo, Giovanni Mascellani}
 \date{\today}
 
 
@@ -496,9 +496,145 @@
   Here we describe the RPC method offered by the services, and some
   implementation details.
 
+  \section{Importing from YAML}
+
+  Currently this is the only supported method to load a contest into
+  the CouchDB database. It originates from the contest and tasks
+  descriptions used by the Italian trainer team, so some strings are
+  in Italian. This, of course, is going to change.
+
+  \subsection{Contest YAML description specifications}
+
+  A contest is represented as one directory with a few YAML files and
+  subdirectories that describe the contest properties. More
+  specifically it has:
+
+  \begin{squishlist}
+
+  \item A YAML file named \file{contest.yaml}, that describes the
+    general contest properties;
+
+  \item For each task \id{taskname}, a YAML file \file{taskname.yaml}
+    that describes the task and a directory \file{taskname} that
+    contains all the files needed to build the statement of the
+    problem, the input and output cases, the reference solution and
+    (when used) the solution checker.
+
+  \end{squishlist}
+
+  The exact structure of these files and directories is detailed
+  below.
+
+  \subsubsection{General contest description}
+
+  The \file{contest.yaml} file is a plain YAML file, with at least the
+  following keys:
+
+  \begin{squishlist}
+
+  \item \id{nome\_breve} (``short name'', string): the contest's short
+    name, used for internal reference (copied in the \id{name} field);
+    it has to match with the name of the directory that serves as
+    contest root;
+
+  \item \id{nome}: (``name'', string): the contest's real name, showed
+    in Web pages (copied in the \id{description} field);
+
+  \item \id{token\_*}: token parameters; still not implemented; % FIXME
+
+  \item \id{inizio} (``start'', integer): the UNIX timestamp of the
+    beginning of the contest (copied in the \id{start} field);
+    defaults to zero, meaning that contest times haven't yet been
+    decided;
+
+  \item \id{fine} (``stop'', integer): the UNIX timestamp of the end
+    of the contest (copied in the \id{stop} field); defaults to zero,
+    meaning that contest times haven't yet been decided;
+
+  \item \id{problemi} (``tasks'', list of strings): a list of the
+    tasks belonging to this contest; for each of these strings, say
+    \id{taskname}, a file named \file{taskname.yaml} is searched and
+    used to extract the description of that task;
+
+  \item \id{utenti} (``users'', list of associative arrays): each of
+    the elements of the list describes one user of the contest; the
+    exact structure of the record is described below.
+
+  \end{squishlist}
+
+  \subsubsection{User description}
+
+  As cleared above, each contest user is described in one element of
+  the \id{utenti} key in the \file{contest.yaml} file. Each record has
+  to contains the following keys:
+
+  \begin{squishlist}
+
+  \item \id{username} (string): obviously, the username;
+
+  \item \id{password} (string): obviusly as before, the user's
+    password;
+
+  \item \id{nome} (``name'', string): the user real first name;
+    defaults as the empty string;
+
+  \item \id{cognome} (``surname'', string): the user real last name;
+    default as the \id{username};
+
+  \item \id{ip} (string): the IP address from which incoming
+    connections for this user are accepted; default to
+    ``\id{0.0.0.0}'', meaning that no IP check is performed;
+
+  \item \id{fake} (string): when set to ``\id{True}'' (at the moment
+    this is case-sensitive) set the \id{hidden} flag in the user;
+    defaults to false.
+
+  \end{squishlist}
+
+  \subsubsection{Task description}
+
+  The task YAML files required the following keys:
+
+  \begin{squishlist}
+
+  \item \id{nome\_breve} (``short name'', string): the name used to
+    reference this task (copied in the \id{name} field);
+
+  \item \id{nome} (``name'', string): the long name used in the Web
+    interface (copied in the \id{title} field);
+
+  \item \id{timeout} (float): the timeout limit for this task in
+    seconds (copied in the \id{time\_limit} field);
+
+  \item \id{memlimit} (integer): the memory limit for this task in
+    megabytes (copied in the \id{time\_limit} field);
+
+  \item \id{score\_parameters} (list): copied in the
+    \id{score\_parameters} field; all task imported from YAML have
+    \id{score\_type} set to ``\id{ScoreTypeSum}'';
+
+  \item \id{n\_input} (integer): number of test cases to be evaluated
+    for this task; the actual test cases are fetched according to the
+    description of the task directory below;
+
+  \item \id{risultati} (``results'', string): a comma-separated list
+    of test cases (identified by their numbers, running from $0$ to
+    $\text{\id{n\_input}}-1$) that are available for live evaluation to
+    users during the contest (the unpacked list is copied in the
+    \id{public\_testcases} field);
+
+  \item \id{token\_*}: token parameters; still not implemented. % FIXME
+
+  \end{squishlist}
+
+  \subsubsection{Task directory structure}
+
+  % FIXME
+
   \section{Terms}
 
-  Here we describe all terms that have a specific meaning inside \CMS{}.
+  Here we describe all terms that have a specific meaning inside
+  \CMS{}.
 
   \begin{squishlist}
   \item[Importer (program).] An importer is a program that fills the
