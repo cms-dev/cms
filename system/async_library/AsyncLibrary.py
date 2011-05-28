@@ -635,6 +635,8 @@ class Logger:
             Logger.INFO,
             ]
 
+        self._operation = None
+
         self._log_service = RemoteService(None,
                                           ServiceCoord("LogService", 0))
 
@@ -650,6 +652,12 @@ class Logger:
                          (time.time(), service.name, service.shard)),
             "w", "utf-8")
 
+
+    def set_operation(self, operation):
+        self.operation = operation
+
+    def unset_operatrion(self):
+        self.operation = None
 
     def log(self, msg, operation="", severity=None, timestamp=None):
         """Record locally a log message and tries to send it to the
@@ -714,8 +722,8 @@ class Logger:
         """
         d = datetime.datetime.fromtimestamp(timestamp)
         service_full = repr(self._my_coord)
-        if operation != "":
-            service_full += "/%s" % (operation)
+        if self.operation != None:
+            service_full += " (%s)" % (self.operation)
         return "%s - %s [%s] %s" % ('{0:%Y/%m/%d %H:%M:%S}'.format(d),
                                     severity, service_full, msg)
 
