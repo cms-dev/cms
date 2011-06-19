@@ -21,7 +21,7 @@
 
 from sqlalchemy import Column, Integer, String, Boolean, Unicode, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
 
 from SQLAlchemyUtils import Base
@@ -31,24 +31,26 @@ class Task(Base):
     __tablename__ = 'tasks'
 
     id = Column(Integer, primary_key=True)
+    contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
     num = Column(Integer, nullable=False)
     name = Column(String, nullable=False)
     title = Column(String, nullable=False)
-    #attachments (skipped for now)
     statement = Column(String, nullable=False)
     time_limit = Column(Float, nullable=False)
     task_type = Column(String, nullable=False)
+    score_type = Column(String, nullable=False)
+    score_parameters = Column(String, nullable=False)
     #submission_format (skipped for now)
-    #managers (skipped for now)
     #public_testcases (skipped for now)
     token_initial = Column(Integer, nullable=False)
     token_max = Column(Integer, nullable=False)
     token_total = Column(Integer, nullable=False)
     token_min_interval = Column(Float, nullable=False)
     token_gen_time = Column(Float, nullable=False)
-    contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
 
     #testcases (backref)
+    #attachments (backref)
+    #managers (backref)
     contest = relationship(Contest,
                            backref=backref('tasks', collection_class=ordering_list('num'), order_by=[num]))
 
@@ -64,6 +66,11 @@ class Task(Base):
                  token_initial, token_max, token_total,
                  token_min_interval, token_gen_time,
                  contest):
+        for filename, attachment in attachments.iteritems():
+            attachment.filename = filename
+        for filename, manager in managers.iteritems():
+            manager.filename = filename
+
         self.name = name
         self.title = title
         self.attachments = attachments
@@ -110,16 +117,48 @@ class Testcase(Base):
         self.num = num
         self.task = task
 
+class Attachment(Base):
+    __tablename__ = 'attachments'
+
+    id = Column(Integer, primary_key=True)
+    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    filename = Column(String, nullable=False)
+    digest = Column(String, nullable=False)
+
+    task = relationship(Task,
+                        backref=backref('attachments', collection_class=column_mapped_collection(filename)))
+
+    def __init__(self, digest, filename=None, task=None):
+        self.filename = filename
+        self.digest = digest
+        self.task = task
+
+class Manager(Base):
+    __tablename__ = 'managers'
+
+    id = Column(Integer, primary_key=True)
+    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    filename = Column(String, nullable=False)
+    digest = Column(String, nullable=False)
+
+    task = relationship(Task,
+                        backref=backref('managers', collection_class=column_mapped_collection(filename)))
+
+    def __init__(self, digest, filename=None, task=None):
+        self.filename = filename
+        self.digest = digest
+        self.task = task
+
 def sample_task(contest):
     import random
-    return Task("task-%d" % (random.randint(1,1000)), "Sample task", [],
+    return Task("task-%d" % (random.randint(1,1000)), "Sample task", {"filename.txt": Attachment("SHA1 of attachment")},
                 "SHA1 of statement", 1, 512, "TaskTypeBatch", ["task.%l"],
-                {"manager_task.%l": "SHA1 of manager_task.%l"}, "ScoreTypeGroupMin",
-                [{"multiplicator": 0, "testcases":1, "description":"Test of first function"},
+                {"manager_task.%l": Manager("SHA1 of manager_task.%l")}, "ScoreTypeGroupMin",
+                str([{"multiplicator": 0, "testcases":1, "description":"Test of first function"},
                  {"multiplicator": 0, "testcases":1, "description":"Test of second function"},
                  {"multiplicator": 1, "testcases":5, "description":"Border cases"},
                  {"multiplicator": 1, "testcases":5, "description":"First requirement"},
-                 {"multiplicator": 1, "testcases":5, "description":"Second requirement"}],
+                 {"multiplicator": 1, "testcases":5, "description":"Second requirement"}]),
                 [Testcase("SHA1 of input %d" % i, "SHA1 of output %d" % i) for i in xrange(17)],
                 [0, 1], 10, 3, 3, 30, 60,
                 contest)

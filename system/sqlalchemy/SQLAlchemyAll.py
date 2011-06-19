@@ -28,6 +28,7 @@ def main():
     print c.id
     print v.id
     print u.id
+    print t.attachments["filename.txt"]
     session.commit()
     session.close()
 
