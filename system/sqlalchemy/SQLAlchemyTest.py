@@ -1,3 +1,4 @@
+#!/usr/bin/python
 
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, Boolean, Unicode, Float, ForeignKey
 from sqlalchemy.orm import relationship, backref
@@ -8,31 +9,6 @@ from sqlalchemy.orm.collections import attribute_mapped_collection
 db = create_engine("postgresql://oiisys:ciaociao@localhost/oiisys2", echo=True)
 
 Base = declarative_base()
-
-class User(Base):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
-    username = Column(String)
-    password = Column(String)
-    real_name = Column(Unicode)
-    ip = Column(String)
-    #tokens =
-    hidden = Column(Boolean)
-    #messages =
-    #questions =
-
-    def __init__(self, username, password,
-                 real_name, ip, tokens = [], hidden = False, messages = [],
-                 questions = []):
-        self.username = username
-        self.password = password
-        self.real_name = real_name
-        self.ip = ip
-        self.tokens = tokens
-        self.hidden = hidden
-        self.messages = messages
-        self.questions = questions
 
 class Task(Base):
     __tablename__ = 'tasks'
@@ -95,7 +71,7 @@ class Testcase(Base):
     num = Column(Integer)
     input = Column(String)
     output = Column(String)
-    task_id = Column(Integer, ForeignKey('tasks.id'))
+    task_id = Column(Integer, ForeignKey(Task.id))
 
     task = relationship(Task, backref=backref('testcases', collection_class=attribute_mapped_collection('num')))
 
