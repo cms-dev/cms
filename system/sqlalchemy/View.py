@@ -21,16 +21,19 @@
 
 from sqlalchemy import Column, Integer, String, Boolean, Unicode, Float, ForeignKey
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm.collections import mapped_collection
 
 from SQLAlchemyUtils import Base
 from Contest import Contest
+from User import User
+from Task import Task
 
 class RankingView(Base):
     __tablename__ = 'rankingviews'
 
     id = Column(Integer, primary_key=True)
-    timestamp = Column(Float, nullable=False)
     contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
+    timestamp = Column(Float, nullable=False)
 
     #scores (backref)
     contest = relationship(Contest, backref=backref("ranking_view", uselist=False))
@@ -41,3 +44,28 @@ class RankingView(Base):
 
     #def choose_couch_id_basename(self):
     #    return "rankingview-%s" % (self.contest.name)
+
+    def set_score(self, score):
+        score.rankingview = self
+        self.scores[(score.user.username, score.task.num)] = score
+
+
+class Score(Base):
+    __tablename__ = 'scores'
+
+    id = Column(Integer, primary_key=True)
+    rankingview_id = Column(Integer, ForeignKey(RankingView.id), nullable=False)
+    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    score = Column(Float, nullable=False)
+
+    rankingview = relationship(RankingView,
+                               backref=backref("scores", collection_class=mapped_collection(lambda s: (s.user.username, s.task.num))))
+    task = relationship(Task)
+    user = relationship(User)
+
+    def __init__(self, score, task=None, user=None, rankingview=None):
+        self.score = score
+        self.task = task
+        self.user = user
+        self.rankingview = rankingview

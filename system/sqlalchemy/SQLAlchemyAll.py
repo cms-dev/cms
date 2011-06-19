@@ -7,12 +7,13 @@ from SQLAlchemyUtils import *
 import Contest
 import View
 import User
+import Task
 
 if __name__ == "__main__" and "redrop" in sys.argv[1:]:
     metadata.drop_all()
 metadata.create_all()
 
-if __name__ == "__main__":
+def main():
     session = Session()
     c = Contest.sample_contest()
     session.add(c)
@@ -20,9 +21,15 @@ if __name__ == "__main__":
     #session.add(v)
     u = User.sample_user(c)
     #session.add(u)
+    t = Task.sample_task(c)
+    #session.add(t)
+    v.set_score(View.Score(20.0, t, u))
     session.flush()
     print c.id
     print v.id
     print u.id
     session.commit()
     session.close()
+
+if __name__ == "__main__":
+    main()

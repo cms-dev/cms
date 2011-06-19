@@ -19,19 +19,38 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import Utils
-from CouchObject import CouchObject
-from ScoreType import ScoreTypes
+from sqlalchemy import Column, Integer, String, Boolean, Unicode, Float, ForeignKey, DateTime
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm.collections import attribute_mapped_collection
+from sqlalchemy.ext.orderinglist import ordering_list
 
-class Task(CouchObject):
-    _to_copy = ["name", "title", "attachments", "statement",
-                "time_limit", "memory_limit",
-                "task_type", "submission_format", "managers",
-                "score_type", "score_parameters",
-                "testcases", "public_testcases",
-                "token_initial", "token_max", "token_total",
-                "token_min_interval", "token_gen_time"
-                ]
+from SQLAlchemyUtils import Base
+from Contest import Contest
+
+class Task(Base):
+    __tablename__ = 'tasks'
+
+    id = Column(Integer, primary_key=True)
+    num = Column(Integer, nullable=False)
+    name = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    #attachments (skipped for now)
+    statement = Column(String, nullable=False)
+    time_limit = Column(Float, nullable=False)
+    task_type = Column(String, nullable=False)
+    #submission_format (skipped for now)
+    #managers (skipped for now)
+    #public_testcases (skipped for now)
+    token_initial = Column(Integer, nullable=False)
+    token_max = Column(Integer, nullable=False)
+    token_total = Column(Integer, nullable=False)
+    token_min_interval = Column(Float, nullable=False)
+    token_gen_time = Column(Float, nullable=False)
+    contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
+
+    #testcases (backref)
+    contest = relationship(Contest,
+                           backref=backref('tasks', collection_class=ordering_list('num'), order_by=[num]))
 
     TASK_TYPE_BATCH = "TaskTypeBatch"
     TASK_TYPE_PROGRAMMING = "TaskTypeProgramming"
@@ -44,7 +63,7 @@ class Task(CouchObject):
                  testcases, public_testcases,
                  token_initial, token_max, token_total,
                  token_min_interval, token_gen_time,
-                 couch_id = None, couch_rev = None):
+                 contest):
         self.name = name
         self.title = title
         self.attachments = attachments
@@ -56,8 +75,8 @@ class Task(CouchObject):
         self.managers = managers
         self.score_type = score_type
         self.score_parameters = score_parameters
-        self.scorer = ScoreTypes.get_score_type_class(score_type,
-                                                      score_parameters)
+        #self.scorer = ScoreTypes.get_score_type_class(score_type,
+        #                                              score_parameters)
         self.testcases = testcases
         self.public_testcases = public_testcases
         self.token_initial = token_initial
@@ -65,15 +84,33 @@ class Task(CouchObject):
         self.token_total = token_total
         self.token_min_interval = token_min_interval
         self.token_gen_time = token_gen_time
-        CouchObject.__init__(self, "task", couch_id, couch_rev)
+        self.contest = contest
 
-    def choose_couch_id_basename(self):
-        return "task-%s" % (self.name)
+    #def choose_couch_id_basename(self):
+    #    return "task-%s" % (self.name)
 
-    def valid_submission(self, files):
-        return True
+    #def valid_submission(self, files):
+    #    return True
 
-def sample_task(couch_id = None):
+class Testcase(Base):
+    __tablename__ = 'task_testcases'
+
+    id = Column(Integer, primary_key=True)
+    num = Column(Integer, nullable=False)
+    input = Column(String, nullable=False)
+    output = Column(String, nullable=False)
+    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+
+    task = relationship(Task,
+                        backref=backref('testcases', collection_class=ordering_list('num'), order_by=[num]))
+
+    def __init__(self, input, output, num=None, task=None):
+        self.input = input
+        self.output = output
+        self.num = num
+        self.task = task
+
+def sample_task(contest):
     import random
     return Task("task-%d" % (random.randint(1,1000)), "Sample task", [],
                 "SHA1 of statement", 1, 512, "TaskTypeBatch", ["task.%l"],
@@ -83,10 +120,6 @@ def sample_task(couch_id = None):
                  {"multiplicator": 1, "testcases":5, "description":"Border cases"},
                  {"multiplicator": 1, "testcases":5, "description":"First requirement"},
                  {"multiplicator": 1, "testcases":5, "description":"Second requirement"}],
-                [("SHA1 of input %d" % i, "SHA1 of output %d" % i) for i in xrange(17)], [0, 1],
-                10, 3, 3, 30, 60,
-                couch_id = couch_id)
-
-if __name__ == "__main__":
-    t = sample_task()
-    print "Couch ID: %s" % (t.couch_id)
+                [Testcase("SHA1 of input %d" % i, "SHA1 of output %d" % i) for i in xrange(17)],
+                [0, 1], 10, 3, 3, 30, 60,
+                contest)
