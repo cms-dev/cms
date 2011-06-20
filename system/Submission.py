@@ -21,17 +21,32 @@
 
 import time
 
-import Utils
-from CouchObject import CouchObject
+from sqlalchemy import Column, Integer, String, Boolean, Unicode, Float, ForeignKey, DateTime
+from sqlalchemy.orm import relationship, backref
 
-class Submission(CouchObject):
+from SQLAlchemyUtils import Base
+from Task import Task
+from User import User
 
-    _to_copy = ["timestamp", "files", "compilation_outcome", "evaluation_outcome",
-                "executables",
-                "compilation_text", "evaluation_text",
-                "compilation_tentatives", "evaluation_tentatives",
-                "token_timestamp"]
-    _to_copy_id = ["user", "task"]
+class Submission(Base):
+    __tablename__ = 'submissions'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    timestamp = Column(Integer, nullable=False)
+    #files (skipped for now)
+    compilation_outcome = Column(String, nullable=True)
+    #evaluation_outcome (skipped for now)
+    #executables (skipped for now)
+    compilation_text = Column(String, nullable=True)
+    #evaluation_text (skipped for now)
+    compilation_tries = Column(Integer, nullable=False)
+    evaluation_tries = Column(Integer, nullable=False)
+
+    #token_timestamp (backref) FIXME the backref is to the token, not to the timestamp
+    user = relationship(User, backref=backref("tokens"))
+    task = relationship(Task)
 
     LANGUAGES = ["c", "cpp", "pas"]
 
@@ -39,9 +54,8 @@ class Submission(CouchObject):
                  compilation_outcome = None, evaluation_outcome = None,
                  executables = None,
                  compilation_text = None, evaluation_text = None,
-                 compilation_tentatives = 0, evaluation_tentatives = 0,
-                 token_timestamp = None,
-                 couch_id = None, couch_rev = None):
+                 compilation_tries = 0, evaluation_tries = 0,
+                 token_timestamp = None):
         self.user = user
         self.task = task
         self.timestamp = timestamp
@@ -51,43 +65,42 @@ class Submission(CouchObject):
         self.executables = executables
         self.compilation_text = compilation_text
         self.evaluation_text = evaluation_text
-        self.compilation_tentatives = compilation_tentatives
-        self.evaluation_tentatives = evaluation_tentatives
+        self.compilation_tries = compilation_tries
+        self.evaluation_tries = evaluation_tries
         self.token_timestamp = token_timestamp
-        CouchObject.__init__(self, "submission", couch_id, couch_rev)
 
-    def tokened(self):
-        return self.token_timestamp != None
+    #def tokened(self):
+    #    return self.token_timestamp != None
 
-    def invalid(self):
-        retry = True
-        while retry:
-            retry = False
-            self.compilation_outcome = None
-            self.evaluation_outcome = None
-            self.compilation_text = None
-            self.evaluation_text = None
-            self.executables = None
-            try:
-                self.to_couch()
-            except ResourceConflict:
-                self.refresh()
-                retry = True
+    #def invalid(self):
+    #    retry = True
+    #    while retry:
+    #        retry = False
+    #        self.compilation_outcome = None
+    #        self.evaluation_outcome = None
+    #        self.compilation_text = None
+    #        self.evaluation_text = None
+    #        self.executables = None
+    #        try:
+    #            self.to_couch()
+    #        except ResourceConflict:
+    #            self.refresh()
+    #            retry = True
 
-    def invalid_evaluation(self):
-        retry = True
-        while retry:
-            retry = False
-            self.evaluation_outcome = None
-            self.evaluation_text = None
-            try:
-                self.to_couch()
-            except ResourceConflict:
-                self.refresh()
-                retry = True
+    #def invalid_evaluation(self):
+    #    retry = True
+    #    while retry:
+    #        retry = False
+    #        self.evaluation_outcome = None
+    #        self.evaluation_text = None
+    #        try:
+    #            self.to_couch()
+    #        except ResourceConflict:
+    #            self.refresh()
+    #            retry = True
 
-    def choose_couch_id_basename(self):
-        return "submission-%s-%s" % (self.user.username, self.task.name)
+    #def choose_couch_id_basename(self):
+    #    return "submission-%s-%s" % (self.user.username, self.task.name)
 
     def verify_source(self):
         if len(self.files) != len(self.task.submission_format):
@@ -129,23 +142,37 @@ class Submission(CouchObject):
 
         return (True, language)
 
-def sample_submission(couch_id = None, user = None, task = None, files = []):
+    def play_token(self, timestamp=None):
+        Token(timestamp=timestamp, submission=self)
+
+class Token(Base):
+    __tablename__ = 'tokens'
+
+    id = Column(Integer, primary_key=True)
+    submission_id = Column(Integer, ForeignKey(Submission.id), nullable=False)
+    timestamp = Column(Integer, nullable=False)
+
+    submission = relationship(Submission, backref=backref("token_timestamp", uselist=False))
+
+    def __init__(self, timestamp=None, submission=None):
+        if timestamp == None:
+            timestamp = time.time()
+
+        self.timestamp = timestamp
+        self.submission = submission
+
+def sample_submission(user = None, task = None, files = []):
     import Task
     import User
     if user == None:
         user = User.sample_user()
     if task == None:
         task = Task.sample_task()
-    from FileStorageLib import FileStorageLib
-    FSL = FileStorageLib()
+    #from FileStorageLib import FileStorageLib
+    #FSL = FileStorageLib()
     files_dict = {}
     n = 0
     for f in files:
         files_dict[f] = FSL.put(f, "Submission file %s, n. %d" % (f, n))
         n += 1
-    return Submission(user, task, time.time(), files_dict, couch_id = couch_id)
-
-if __name__ == "__main__":
-    s = sample_submission()
-    print "Couch ID: %s" % (s.couch_id)
-
+    return Submission(user, task, time.time(), files_dict)

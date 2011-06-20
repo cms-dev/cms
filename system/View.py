@@ -19,21 +19,53 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import Utils
-from CouchObject import CouchObject
+from sqlalchemy import Column, Integer, String, Boolean, Unicode, Float, ForeignKey
+from sqlalchemy.orm import relationship, backref
+from sqlalchemy.orm.collections import mapped_collection
 
-class RankingView(CouchObject):
-    _to_copy = ["timestamp", "scores"]
-    _to_copy_id = ["contest"]
+from SQLAlchemyUtils import Base
+from Contest import Contest
+from User import User
+from Task import Task
 
-    def __init__(self, contest = None,
-                 timestamp = 0.0, scores = {},
-                 couch_id = None, couch_rev = None):
+class RankingView(Base):
+    __tablename__ = 'rankingviews'
+
+    id = Column(Integer, primary_key=True)
+    contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
+    timestamp = Column(Float, nullable=False)
+
+    #scores (backref)
+    contest = relationship(Contest, backref=backref("ranking_view", uselist=False))
+
+    def __init__(self, contest, timestamp = 0.0):
         self.contest = contest
         self.timestamp = timestamp
-        self.scores = scores
-        CouchObject.__init__(self, "rankingview", couch_id, couch_rev)
 
-    def choose_couch_id_basename(self):
-        return "rankingview-%s" % (self.contest.name)
+    #def choose_couch_id_basename(self):
+    #    return "rankingview-%s" % (self.contest.name)
 
+    def set_score(self, score):
+        score.rankingview = self
+        self.scores[(score.user.username, score.task.num)] = score
+
+
+class Score(Base):
+    __tablename__ = 'scores'
+
+    id = Column(Integer, primary_key=True)
+    rankingview_id = Column(Integer, ForeignKey(RankingView.id), nullable=False)
+    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    score = Column(Float, nullable=False)
+
+    rankingview = relationship(RankingView,
+                               backref=backref("scores", collection_class=mapped_collection(lambda s: (s.user.username, s.task.num))))
+    task = relationship(Task)
+    user = relationship(User)
+
+    def __init__(self, score, task=None, user=None, rankingview=None):
+        self.score = score
+        self.task = task
+        self.user = user
+        self.rankingview = rankingview

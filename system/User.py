@@ -19,18 +19,31 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import Utils
-from CouchObject import CouchObject
+from sqlalchemy import Column, Integer, String, Boolean, Unicode, Float, ForeignKey, DateTime
+from sqlalchemy.orm import relationship, backref
 
+from SQLAlchemyUtils import Base
+from Contest import Contest
 
-class User(CouchObject):
-    _to_copy = ["username", "password", "real_name", "ip", \
-                "hidden", "messages", "questions"]
-    _to_copy_id_array = ["tokens"]
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String, nullable=False)
+    password = Column(String, nullable=False)
+    real_name = Column(String, nullable=False)
+    ip = Column(String, nullable=True)
+    hidden = Column(Boolean, nullable=False)
+    #messages (skipped for now)
+    #questions (skipped for now)
+    contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
+
+    #tokens (backref)
+    contest = relationship(Contest, backref=backref("users"))
 
     def __init__(self, username, password,
-                 real_name, ip, tokens = [], hidden = False, messages = [],
-                 questions = [], couch_id = None, couch_rev = None):
+                 real_name, ip, contest, tokens = [], hidden = False,
+                 messages = [], questions = []):
         self.username = username
         self.password = password
         self.real_name = real_name
@@ -39,16 +52,12 @@ class User(CouchObject):
         self.hidden = hidden
         self.messages = messages
         self.questions = questions
-        CouchObject.__init__(self, "user", couch_id, couch_rev)
+        self.contest = contest
 
-    def choose_couch_id_basename(self):
-        return "user-%s" % (self.username)
+    #def choose_couch_id_basename(self):
+    #    return "user-%s" % (self.username)
 
-def sample_user(couch_id = None):
+def sample_user(contest):
     import random
     return User("username-%d" % (random.randint(1, 1000)), "password",
-                "Mister Real Name", "10.0.0.101", couch_id = couch_id)
-
-if __name__ == "__main__":
-    u = sample_user()
-    print "Couch ID: %s" % (u.couch_id)
+                "Mister Real Name", "10.0.0.101", contest=contest)
