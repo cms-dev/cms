@@ -30,9 +30,13 @@ class Contest(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String, nullable=False)
     description = Column(String, nullable=True)
-    #token_* (skipped for now)
-    start = Column(DateTime, nullable=True)
-    stop = Column(DateTime, nullable=True)
+    token_initial = Column(Integer, nullable=False)
+    token_max = Column(Integer, nullable=False)
+    token_total = Column(Integer, nullable=False)
+    token_min_interval = Column(Float, nullable=False)
+    token_gen_time = Column(Float, nullable=False)
+    start = Column(Integer, nullable=True)
+    stop = Column(Integer, nullable=True)
 
     #tasks (backref)
     #announcements (backref)
@@ -42,12 +46,19 @@ class Contest(Base):
     #submission (backref)
 
     def __init__(self, name, description, tasks, users,
+                 token_initial, token_max, token_total,
+                 token_min_interval, token_gen_time,
                  start = None, stop = None, announcements = [],
                  submissions = [], ranking_view = None):
         self.name = name
         self.description = description
         self.tasks = tasks
         self.users = users
+        self.token_initial = token_initial
+        self.token_max = token_max
+        self.token_total = token_total
+        self.token_min_interval = token_min_interval
+        self.token_gen_time = token_gen_time
         self.start = start
         self.stop = stop
         self.announcements = announcements

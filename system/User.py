@@ -42,7 +42,7 @@ class User(Base):
     contest = relationship(Contest, backref=backref("users"))
 
     def __init__(self, username, password,
-                 real_name, ip, contest, tokens = [], hidden = False,
+                 real_name, ip, contest=None, tokens = [], hidden = False,
                  messages = [], questions = []):
         self.username = username
         self.password = password

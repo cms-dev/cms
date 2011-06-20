@@ -28,7 +28,6 @@ import sys
 import codecs
 
 import Configuration
-import CouchObject
 
 get_contests='''function(doc) {
     if (doc.document_type=='contest')
@@ -40,19 +39,6 @@ def get_contest_list():
     contests = list(db.query(get_contests, include_docs = True))
     contest_list = [CouchObject.from_couch(x.id) for x in contests]
     return contest_list
-
-def get_couchdb_database():
-    couch = couchdb.client.Server(Configuration.couchdb_server)
-    try:
-        db = couch[Configuration.couchdb_database]
-    except couchdb.ResourceNotFound:
-        couch.create(Configuration.couchdb_database)
-        db = couch[Configuration.couchdb_database]
-    return db
-
-def drop_couchdb_database():
-    couch = couchdb.client.Server(Configuration.couchdb_server)
-    del couch[Configuration.couchdb_database]
 
 def ask_for_contest(skip = 0):
     if isinstance(skip, int) and len(sys.argv) > skip + 1:

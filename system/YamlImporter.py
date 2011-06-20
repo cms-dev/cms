@@ -25,7 +25,8 @@ import sys
 import codecs
 import optparse
 
-from Task import Task
+from SQLAlchemyAll import metadata, Session
+from Task import Task, Manager, Testcase
 from User import User
 from Contest import Contest
 from ScoreType import ScoreTypes
@@ -97,7 +98,7 @@ def get_params_for_task(path):
     params["title"] = conf["nome"]
     params["time_limit"] = conf["timeout"]
     params["memory_limit"] = conf["memlimit"]
-    params["attachments"] = [] # FIXME - Use auxiliary
+    params["attachments"] = {} # FIXME - Use auxiliary
     params["statement"] = FSL.put(os.path.join(path, "testo", "testo.pdf"),
                                   "PDF statement for task %s" % (name))
     params["task_type"] = Task.TASK_TYPE_BATCH
@@ -107,17 +108,17 @@ def get_params_for_task(path):
     except IOError:
         fd = None
     if fd != None:
-        params["managers"] = {"checker": FSL.put_file(fd, "Manager for task %s" % (name))}
+        params["managers"] = {"checker": Manager(FSL.put_file(fd, "Manager for task %s" % (name)))}
     else:
         params["managers"] = {}
     params["score_type"] = conf.get("score_type", ScoreTypes.SCORE_TYPE_SUM)
     params["score_parameters"] = conf.get("score_parameters", [])
-    params["testcases"] = [(FSL.put(os.path.join(path, "input",
-                                                 "input%d.txt" % (i)),
-                                    "Input %d for task %s" % (i, name)),
-                            FSL.put(os.path.join(path, "output",
-                                                 "output%d.txt" % (i)),
-                                    "Output %d for task %s" % (i, name)))
+    params["testcases"] = [Testcase(FSL.put(os.path.join(path, "input",
+                                                         "input%d.txt" % (i)),
+                                            "Input %d for task %s" % (i, name)),
+                                    FSL.put(os.path.join(path, "output",
+                                                         "output%d.txt" % (i)),
+                                            "Output %d for task %s" % (i, name)))
                            for i in range(int(conf["n_input"]))]
     public_testcases = conf.get("risultati", "").split(",")
     if public_testcases == [""]:
@@ -138,11 +139,12 @@ def import_contest(path, zero_time=False):
     params, tasks, users = get_params_for_contest(path, zero_time=zero_time)
     params["tasks"] = []
     for task in tasks:
-        params["tasks"].append(Task(**get_params_for_task(os.path.join(path,
-                                                                       task))))
+        task_params = get_params_for_task(os.path.join(path, task))
+        params["tasks"].append(Task(**task_params))
     params["users"] = []
     for user in users:
-        params["users"].append(User(**get_params_for_user(user)))
+        user_params = get_params_for_user(user)
+        params["users"].append(User(**user_params))
     return Contest(**params)
 
 
@@ -151,8 +153,17 @@ if __name__ == "__main__":
     parser.add_option("-z", "--zero-time",
                       dest="zero_time", help="set to zero contest start and stop time",
                       default=False, action="store_true")
+    parser.add_option("-d", "--drop",
+                      dest="drop", help="drop everything from the database before importing",
+                      default=False, action="store_true")
     options, args = parser.parse_args()
     if len(args) != 1:
         parser.error("I need exactly one parameter, the contest directory")
+    if options.drop:
+        metadata.drop_all()
+    metadata.create_all()
     c = import_contest(args[0], zero_time=options.zero_time)
-    print "Couch ID: %s" % (c.couch_id)
+    session = Session()
+    session.add(c)
+    session.commit()
+    session.close()

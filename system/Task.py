@@ -65,7 +65,7 @@ class Task(Base):
                  testcases, public_testcases,
                  token_initial, token_max, token_total,
                  token_min_interval, token_gen_time,
-                 contest):
+                 contest=None):
         for filename, attachment in attachments.iteritems():
             attachment.filename = filename
         for filename, manager in managers.iteritems():
