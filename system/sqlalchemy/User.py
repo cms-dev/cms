@@ -33,12 +33,12 @@ class User(Base):
     password = Column(String, nullable=False)
     real_name = Column(String, nullable=False)
     ip = Column(String, nullable=True)
-    #tokens (skipped for now)
     hidden = Column(Boolean, nullable=False)
     #messages (skipped for now)
     #questions (skipped for now)
     contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
 
+    #tokens (backref)
     contest = relationship(Contest, backref=backref("users"))
 
     def __init__(self, username, password,

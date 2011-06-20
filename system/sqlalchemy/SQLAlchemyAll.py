@@ -8,6 +8,7 @@ import Contest
 import View
 import User
 import Task
+import Submission
 
 if __name__ == "__main__" and "redrop" in sys.argv[1:]:
     metadata.drop_all()
@@ -24,6 +25,9 @@ def main():
     t = Task.sample_task(c)
     #session.add(t)
     v.set_score(View.Score(20.0, t, u))
+    s = Submission.sample_submission(user=u, task=t)
+    #session.add(s)
+    s.play_token()
     session.flush()
     print c.id
     print v.id
