@@ -168,8 +168,8 @@ def sample_submission(user = None, task = None, files = []):
         user = User.sample_user()
     if task == None:
         task = Task.sample_task()
-    #from FileStorageLib import FileStorageLib
-    #FSL = FileStorageLib()
+    from FileStorageLib import FileStorageLib
+    FSL = FileStorageLib()
     files_dict = {}
     n = 0
     for f in files:

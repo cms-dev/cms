@@ -22,6 +22,9 @@
 couchdb_server = "http://localhost:5984/"
 couchdb_database = "ioi"
 
+#sqlalchemy_database = "sqlite:///test.sqlite"
+sqlalchemy_database = "postgresql://cmsuser:cmspasswd@localhost/cms"
+
 file_storage = ("localhost", 8000)
 evaluation_server = ("localhost", 8002)
 log_server = ("localhost", 8003)
@@ -42,4 +45,3 @@ worker_timeout_check_time = 301.0
 maximum_conflict_attempts = 50
 submit_local_copy = False
 submit_local_copy_path = "submissions/"
-

@@ -4,8 +4,9 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-#db = create_engine("sqlite:///test.sqlite", echo=True)
-db = create_engine("postgresql://oiisys:ciaociao@localhost/oiisys2", echo=True)
+import Configuration
+
+db = create_engine(Configuration.sqlalchemy_database, echo=True)
 
 Base = declarative_base(db)
 metadata = Base.metadata
