@@ -2,6 +2,8 @@
 
 import sys
 
+from sqlalchemy.orm import relationship, backref
+
 from SQLAlchemyUtils import *
 
 import Contest
@@ -9,6 +11,11 @@ import View
 import User
 import Task
 import Submission
+
+# Last relationship configurations
+def get_submissions(self, session):
+    return session.query(Submission.Submission).join(Task.Task).filter(Task.Task.contest == self).all()
+Contest.Contest.get_submissions = get_submissions
 
 if __name__ == "__main__" and "redrop" in sys.argv[1:]:
     metadata.drop_all()
@@ -29,10 +36,8 @@ def main():
     #session.add(s)
     s.play_token()
     session.flush()
-    print c.id
-    print v.id
-    print u.id
-    print t.attachments["filename.txt"]
+    print "Submissions:"
+    print c.get_submissions(session)
     session.commit()
     session.close()
 

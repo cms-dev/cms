@@ -39,17 +39,18 @@ class Contest(Base):
     stop = Column(Integer, nullable=True)
 
     #tasks (backref)
-    #announcements (backref)
+    #announcements (skipped for now)
     #ranking_view (backref)
     #tasks (backref)
     #users (backref)
-    #submission (backref)
+
+    #get_submissions (in SQLAlchemyAll)
 
     def __init__(self, name, description, tasks, users,
                  token_initial, token_max, token_total,
                  token_min_interval, token_gen_time,
                  start = None, stop = None, announcements = [],
-                 submissions = [], ranking_view = None):
+                 ranking_view = None):
         self.name = name
         self.description = description
         self.tasks = tasks
@@ -62,7 +63,6 @@ class Contest(Base):
         self.start = start
         self.stop = stop
         self.announcements = announcements
-        self.submissions = submissions
         self.ranking_view = ranking_view
 
     #def choose_couch_id_basename(self):
@@ -106,7 +106,8 @@ def sample_contest():
     c = Contest("hello", "Hello world",
                 #[Task.sample_task() for i in range(3)],
                 #[User.sample_user() for i in range(10)],
-                [], [])
+                [], [],
+                10, 3, 3, 30, 60)
     #s = Submission.sample_submission()
     #c.submissions.append(s)
     # These to_couch() calls should never fail, because they act on
