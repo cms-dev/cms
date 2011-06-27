@@ -99,6 +99,7 @@ class FileStorageLib:
         self.bind_address = ''
         local_addresses = [ip for ip in socket.gethostbyname_ex(socket.gethostname())[2] if not ip.startswith("127.")] + ['localhost']
         self.local_address = local_addresses[0]
+        Utils.log("Using %s as local address." % self.local_address, Utils.Logger.SEVERITY_DEBUG)
         self.remote_address = fs_address
 
         self.fs = xmlrpclib.ServerProxy('http://%s:%d' % (fs_address, fs_port))
