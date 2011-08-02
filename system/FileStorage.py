@@ -61,7 +61,7 @@ class FileStorage(RPCServer):
         fileSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         fileSocket.connect((address, port))
         # FIXME - Error management
-        tempFile, tempFilename = tempfile.mkstemp(dir = self.tmpdir)
+        tempFile, tempFilename = tempfile.mkstemp(dir=self.tmpdir)
         tempFile = os.fdopen(tempFile, "wb")
         hasher = hashlib.sha1()
         while True:

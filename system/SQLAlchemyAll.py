@@ -1,4 +1,23 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Programming contest management system
+# Copyright © 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2011 Matteo Boscariol <boscarim@hotmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import sys
 
@@ -6,16 +25,16 @@ from sqlalchemy.orm import relationship, backref
 
 from SQLAlchemyUtils import *
 
-import Contest
-import View
-import User
-import Task
-import Submission
+from Contest import Contest
+from View import RankingView
+from User import User
+from Task import Task, Manager, Testcase, Attachment
+from Submission import Submission, Token
 
 # Last relationship configurations
 def get_submissions(self, session):
     return session.query(Submission.Submission).join(Task.Task).filter(Task.Task.contest == self).all()
-Contest.Contest.get_submissions = get_submissions
+Contest.get_submissions = get_submissions
 
 if __name__ == "__main__" and "redrop" in sys.argv[1:]:
     metadata.drop_all()

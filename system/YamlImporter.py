@@ -25,10 +25,7 @@ import sys
 import codecs
 import optparse
 
-from SQLAlchemyAll import metadata, Session
-from Task import Task, Manager, Testcase
-from User import User
-from Contest import Contest
+from SQLAlchemyAll import metadata, Session, Task, Manager, Testcase, User, Contest
 from ScoreType import ScoreTypes
 from FileStorageLib import FileStorageLib
 
