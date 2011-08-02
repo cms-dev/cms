@@ -25,7 +25,7 @@ import sys
 import codecs
 import optparse
 
-from SQLAlchemyAll import metadata, Session, Task, Manager, Testcase, User, Contest
+from SQLAlchemyAll import metadata, Session, Task, Manager, Testcase, User, Contest, PublicTestcase, SubmissionFormatElement
 from ScoreType import ScoreTypes
 from FileStorageLib import FileStorageLib
 
@@ -99,7 +99,7 @@ def get_params_for_task(path):
     params["statement"] = FSL.put(os.path.join(path, "testo", "testo.pdf"),
                                   "PDF statement for task %s" % (name))
     params["task_type"] = Task.TASK_TYPE_BATCH
-    params["submission_format"] = ["%s.%%l" % (name)]
+    params["submission_format"] = [SubmissionFormatElement("%s.%%l" % (name))]
     try:
         fd = open(os.path.join(path, "cor", "correttore"))
     except IOError:
@@ -121,7 +121,7 @@ def get_params_for_task(path):
     if public_testcases == [""]:
         params["public_testcases"] = []
     else:
-        params["public_testcases"] = map(int, public_testcases)
+        params["public_testcases"] = map(lambda x: PublicTestcase(int(x)), public_testcases)
     params["token_initial"] = conf.get("token_initial", 0)
     params["token_max"] = conf.get("token_max", 0)
     params["token_total"] = conf.get("token_total", 0)

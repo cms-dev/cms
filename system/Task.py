@@ -40,14 +40,14 @@ class Task(Base):
     task_type = Column(String, nullable=False)
     score_type = Column(String, nullable=False)
     score_parameters = Column(String, nullable=False)
-    #submission_format (skipped for now)
-    #public_testcases (skipped for now)
     token_initial = Column(Integer, nullable=False)
     token_max = Column(Integer, nullable=False)
     token_total = Column(Integer, nullable=False)
     token_min_interval = Column(Float, nullable=False)
     token_gen_time = Column(Float, nullable=False)
 
+    #submission_format (backref) FIXME Backref is to the object, not the format
+    #public_testcases (backref) FIXME Backref is to the object, not the number
     #testcases (backref)
     #attachments (backref)
     #managers (backref)
@@ -147,6 +147,34 @@ class Manager(Base):
     def __init__(self, digest, filename=None, task=None):
         self.filename = filename
         self.digest = digest
+        self.task = task
+
+class PublicTestcase(Base):
+    __tablename__ = 'public_testcases'
+
+    id = Column(Integer, primary_key=True)
+    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    testcase = Column(Integer, nullable=False)
+
+    task = relationship(Task,
+                        backref=backref('public_testcases'))
+
+    def __init__(self, testcase, task=None):
+        self.testcase = testcase
+        self.task = task
+
+class SubmissionFormatElement(Base):
+    __tablename__ = 'submission_format_elements'
+
+    id = Column(Integer, primary_key=True)
+    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    filename = Column(String)
+
+    task = relationship(Task,
+                        backref=backref('submission_format'))
+
+    def __init__(self, filename, task=None):
+        self.filename = filename
         self.task = task
 
 def sample_task(contest):
