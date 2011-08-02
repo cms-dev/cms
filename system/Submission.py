@@ -24,6 +24,7 @@ import time
 from sqlalchemy import Column, Integer, String, Boolean, Unicode, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
+from sqlalchemy.ext.orderinglist import ordering_list
 
 from SQLAlchemyUtils import Base
 from Task import Task
@@ -37,12 +38,10 @@ class Submission(Base):
     task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
     timestamp = Column(Integer, nullable=False)
     compilation_outcome = Column(String, nullable=True)
-    #evaluation_outcome (skipped for now)
     compilation_text = Column(String, nullable=True)
-    #evaluation_text (skipped for now)
     compilation_tries = Column(Integer, nullable=False)
-    evaluation_tries = Column(Integer, nullable=False)
 
+    #evaluations (backref)
     #files (backref)
     #executables (backref)
     #token_timestamp (backref) FIXME the backref is to the token, not to the timestamp
@@ -165,14 +164,14 @@ class File(Base):
     __tablename__ = 'files'
 
     id = Column(Integer, primary_key=True)
-    task_id = Column(Integer, ForeignKey(Submission.id), nullable=False)
+    submission_id = Column(Integer, ForeignKey(Submission.id), nullable=False)
     filename = Column(String, nullable=False)
     digest = Column(String, nullable=False)
 
     submission = relationship(Submission,
                         backref=backref('files', collection_class=column_mapped_collection(filename)))
 
-    def __init__(self, digest, filename=None, task=None):
+    def __init__(self, digest, filename=None, submission=None):
         self.filename = filename
         self.digest = digest
         self.submission = submission
@@ -181,19 +180,39 @@ class Executable(Base):
     __tablename__ = 'executables'
 
     id = Column(Integer, primary_key=True)
-    task_id = Column(Integer, ForeignKey(Submission.id), nullable=False)
+    submission_id = Column(Integer, ForeignKey(Submission.id), nullable=False)
     filename = Column(String, nullable=False)
     digest = Column(String, nullable=False)
 
     submission = relationship(Submission,
                         backref=backref('executables', collection_class=column_mapped_collection(filename)))
 
-    def __init__(self, digest, filename=None, task=None):
+    def __init__(self, digest, filename=None, submission=None):
         self.filename = filename
         self.digest = digest
         self.submission = submission
 
-def sample_submission(user = None, task = None, files = []):
+class Evaluation(Base):
+    __tablename__ = 'evaluations'
+
+    id = Column(Integer, primary_key=True)
+    num = Column(Integer, nullable=False)
+    submission_id = Column(Integer, ForeignKey(Submission.id), nullable=False)
+    text = Column(String, nullable=True)
+    evaluation = Column(String, nullable=True)
+    tries = Column(Integer, nullable=False)
+
+    submission = relationship(Submission,
+                              backref=backref('evaluations', collection_class=ordering_list('num'), order_by=[num]))
+
+    def __init__(self, text, evaluation, num=None, submission=None, tries=0):
+        self.text = text
+        self.evaluation = evaluation
+        self.num = num
+        self.submission = submission
+        self.tries = tries
+
+def sample_submission(user=None, task=None, files=[]):
     import Task
     import User
     if user == None:

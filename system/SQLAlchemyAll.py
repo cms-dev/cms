@@ -29,7 +29,7 @@ from Contest import Contest
 from View import RankingView
 from User import User
 from Task import Task, Manager, Testcase, Attachment, PublicTestcase, SubmissionFormatElement
-from Submission import Submission, Token
+from Submission import Submission, Token, Evaluation
 
 # Last relationship configurations
 def get_submissions(self, session):
