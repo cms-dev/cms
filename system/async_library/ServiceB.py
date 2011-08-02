@@ -57,6 +57,7 @@ class ServiceB(Service):
         """Overwritten RPC method echo.
 
         """
+        time.sleep(7)
         logger.debug("ServiceB.echo")
         logger.info("Echo received.")
         return string

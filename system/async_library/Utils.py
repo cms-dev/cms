@@ -170,4 +170,43 @@ def decode_binary(string):
         print >> sys.stderr, "Can't decode binary."
         raise ValueError
 
+def get_compilation_command(language, source_filename, executable_filename):
+    """For compiling in 32-bit mode under 64-bit OS: add
+    '-march=i686', '-m32' for gcc/g++. Don't know about
+    Pascal. Anyway, this will require some better support from the
+    evaluation environment (particularly the sandbox, which has to be
+    compiled in a different way depending on whether it will execute
+    32- or 64-bit programs).
+     
+    """
+    if language == "c":
+        command = ["/usr/bin/gcc", "-DEVAL", "-static", "-O2","-lm",
+                   "-o", executable_filename, source_filename]
+    elif language == "cpp":
+        command = ["/usr/bin/g++", "-DEVAL", "-static", "-O2",
+                   "-o", executable_filename, source_filename]
+    elif language == "pas":
+        command = ["/usr/bin/fpc", "-dEVAL", "-XS", "-O2",
+                   "-o%s" % (executable_filename), source_filename]
+    return command
+
+
+def filter_ansi_escape(s):
+    """Remove ansi codes from a string.
+
+    s (string): the input string
+
+    return (string): s without ansi codes.
+
+    """
+    ansi_mode = False
+    res = ''
+    for c in s:
+        if c == u'\x1b':
+            ansi_mode = True
+        if not ansi_mode:
+            res += c
+        if c == u'm':
+            ansi_mode = False
+    return res
 
