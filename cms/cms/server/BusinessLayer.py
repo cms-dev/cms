@@ -29,14 +29,15 @@ from StringIO import StringIO
 from threading import Lock
 import couchdb
 
-import Configuration
-import CouchObject
-import Utils
-from Contest import Contest
-from Submission import Submission
-from FileStorageLib import FileStorageLib
+import cms.util.Configuration as Configuration
+import cms.util.Utils as Utils
+from cms.db.SQLAlchemyAll import Contest, Submission
 
-FSL = FileStorageLib()
+#from FileStorageLib import FileStorageLib
+from cms.async.AsyncLibrary import Service, rpc_method, rpc_binary_response, logger
+#from Utils import ServiceCoord
+
+#FSL = FileStorageLib()
 ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 
 # Some exceptions that can be raised by these functions.
@@ -212,38 +213,44 @@ def get_submissions_by_username(contest, owner, taskname=None):
             if s.user.username == owner and \
             (taskname == None or s.task.name == taskname)]
 
+#def get_file_from_submission(submission, filename):
+#    if submission == None or filename == None:
+#        return None
+#    for key, value in submission.files.items():
+#        if key == filename:
+#            submission_file = StringIO()
+#            try:
+#                FSL.get_file(value, submission_file)
+#            except Exception as e:
+#                Utils.log("FileStorageLib raised an exception: " + repr(e),\
+#                            Utils.Logger.SEVERITY_DEBUG)
+#                return None
+#            file_content = submission_file.getvalue()
+#            submission_file.close()
+#            return file_content
+#    return None
+
+#def get_task_statement(task):
+#    statement_file = StringIO()
+#    try:
+#        if not FSL.get_file(task.statement, statement_file):
+#            Utils.log("FileStorageLib get_file returned False",
+#                Utils.Logger.SEVERITY_DEBUG)
+#            return None
+#    except Exception as e:
+#        Utils.log("FileStorageLib raised an exception: %s" % repr(e),
+#        Utils.Logger.SEVERITY_DEBUG)
+#        return None
+#    statement = statement_file.getvalue()
+#    statement_file.close()
+#    return statement
+
+# Placeholder functions
 def get_file_from_submission(submission, filename):
-    if submission == None or filename == None:
-        return None
-    for key, value in submission.files.items():
-        if key == filename:
-            submission_file = StringIO()
-            try:
-                FSL.get_file(value, submission_file)
-            except Exception as e:
-                Utils.log("FileStorageLib raised an exception: " + repr(e),\
-                            Utils.Logger.SEVERITY_DEBUG)
-                return None
-            file_content = submission_file.getvalue()
-            submission_file.close()
-            return file_content
-    return None
+  return None
 
 def get_task_statement(task):
-    statement_file = StringIO()
-    try:
-        if not FSL.get_file(task.statement, statement_file):
-            Utils.log("FileStorageLib get_file returned False",
-                Utils.Logger.SEVERITY_DEBUG)
-            return None
-    except Exception as e:
-        Utils.log("FileStorageLib raised an exception: %s" % repr(e),
-        Utils.Logger.SEVERITY_DEBUG)
-        return None
-    statement = statement_file.getvalue()
-    statement_file.close()
-    return statement
-
+  return None
 
 # This lock attempts to avoid resource conflicts inside the module.
 # ALWAYS acquire this when you attempt to modify an object.
@@ -359,138 +366,143 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
             return True
 
 
+# ------- Disabled until the file storage is fixed.
 
+#def submit(contest, task, user, files, timestamp):
+#    """
+#    Attempts to submit a solution.
+
+#    This function attempts to store the given files in the FS and to
+#    store the submission in the database.
+#    Returns True if the submission is stored in the DB
+#    AND the EvaluationServer has been warned about its state change;
+#    Returns False if the sumbission is stored in the DB
+#    but the EvaluationServer has not been warned.
+#    Any exception indicates that the submission hasn't been stored,
+#    possibly with inconsistencies.
+#    """
+
+#    def _refresh(item):
+#        """
+#        Refreshes the given object, raising ConnectionFailure when
+#        the refresh fails.
+#        """
+#        try:
+#            item.refresh()
+#        except AttributeError:
+#            raise ConnectionFailure()
+
+#    # Attempt to store the submission locally to be able to recover
+#    # a failure.
+#    # TODO: Determine when the submission is to be considered accepted
+#    # and pre-emptively stored.
+#    if Configuration.submit_local_copy:
+#        import pickle
+#        try:
+#            path = os.path.join(Configuration.submit_local_copy_path, user.username)
+#            if not os.path.exists(path):
+#                os.mkdir(path)
+#            with codecs.open(os.path.join(path, str(int(timestamp))), "w", "utf-8") as fd:
+#                pickle.dump((contest.couch_id, user.couch_id, task, files), fd)
+#        except Exception as e:
+#            Utils.log("submit: local copy failed - " + repr(e),\
+#                         Utils.Logger.SEVERITY_IMPORTANT)
+
+#    # TODO: Check the timestamp here?
+
+#    for filename, content in files.items():
+#        temp_file, temp_filename = tempfile.mkstemp()
+#        # Note: this is just a binary copy, so no utf-8 wtf-ery here.
+#        with os.fdopen(temp_file, "w") as temp_file:
+#            temp_file.write(content)
+#        try:
+#            files[filename] = FSL.put(temp_filename)
+#        except Exception as e:
+#            raise StorageFailure(e)
+
+#    with writelock:
+
+#        # The objects should be up-to-date when
+#        # the lock is acquired to avoid conflicts
+#        # with other requests.
+#        _refresh(contest)
+#        _refresh(user)
+#        _refresh(task)
+
+#        # Save the submission.
+#        # A new document shouldn't have resource conflicts...
+#        for tentatives in xrange(Configuration.maximum_conflict_attempts):
+#            try:
+#                s = Submission(user, task, timestamp, files)
+#                break
+#            except couchdb.ResourceConflict as e:
+#                Utils.log("submit: ResourceConflict for "\
+#                           + " a submission by " + user.username, Utils.Logger.SEVERITY_DEBUG)
+#                try:
+#                    _refresh(contest)
+#                    _refresh(user)
+#                    _refresh(task)
+#                except ConnectionFailure as e:
+#                    Utils.log("submit: Refresh failed while attempting to recover"\
+#                              + "a conflict.", Utils.Logger.SEVERITY_CRITICAL)
+#                    raise e
+#        else:
+#            Utils.log("submit: Maximum number of attempts reached to add submission"\
+#                      + submission.couch_id + " by " + user.username,\
+#                            Utils.Logger.SEVERITY_CRITICAL)
+#            raise couchdb.ResourceConflict()
+
+#        # Check if the submission is valid.
+#        if not s.verify_source()[0]:
+#            raise InvalidSubmission()
+
+#        # Check if there is the last submission has the same files.
+#        try:
+#          last_sub = get_submissions_by_username(contest, user.username, task.name)[-1]
+#          if(last_sub.files == files):
+#            raise RepeatedSubmission()
+#        except IndexError:
+#          pass
+
+#        # Append the submission to the contest.
+#        for tentatives in xrange(Configuration.maximum_conflict_attempts):
+#            contest.submissions.append(s)
+#            try:
+#                contest.to_couch()
+#                break
+#            except couchdb.ResourceConflict as e:
+#                Utils.log("submit: ResourceConflict for "\
+#                              + s.couch_id, Utils.Logger.SEVERITY_DEBUG)
+#                try:
+#                    _refresh(contest)
+#                    _refresh(user)
+#                    _refresh(task)
+#                except ConnectionFailure as e:
+#                    Utils.log("submit: Refresh failed while attempting to recover"\
+#                              + "a conflict.", Utils.Logger.SEVERITY_CRITICAL)
+#                    raise e
+#        else:
+#            Utils.log("submit: Maximum number of attempts reached to append to contest. "\
+#                       + submission.couch_id + " by " + user.username,\
+#                            Utils.Logger.SEVERITY_CRITICAL)
+#            raise couchdb.ResourceConflict()
+
+#    # The submission should be successful:
+#    # Warn the Evaluation Server.
+#    warned = False
+#    try:
+#        ES.add_job(s.couch_id)
+#        warned = True
+#    except Exception as e:
+#        Utils.log("Failed to queue the submission to the Evaluation Server: " \
+#                  + s.couch_id + ", exception: " + repr(e), \
+#                  Utils.Logger.SEVERITY_IMPORTANT)
+#    return (s, warned)
+
+# ----- Placeholder
 
 def submit(contest, task, user, files, timestamp):
-    """
-    Attempts to submit a solution.
-
-    This function attempts to store the given files in the FS and to
-    store the submission in the database.
-    Returns True if the submission is stored in the DB
-    AND the EvaluationServer has been warned about its state change;
-    Returns False if the sumbission is stored in the DB
-    but the EvaluationServer has not been warned.
-    Any exception indicates that the submission hasn't been stored,
-    possibly with inconsistencies.
-    """
-
-    def _refresh(item):
-        """
-        Refreshes the given object, raising ConnectionFailure when
-        the refresh fails.
-        """
-        try:
-            item.refresh()
-        except AttributeError:
-            raise ConnectionFailure()
-
-    # Attempt to store the submission locally to be able to recover
-    # a failure.
-    # TODO: Determine when the submission is to be considered accepted
-    # and pre-emptively stored.
-    if Configuration.submit_local_copy:
-        import pickle
-        try:
-            path = os.path.join(Configuration.submit_local_copy_path, user.username)
-            if not os.path.exists(path):
-                os.mkdir(path)
-            with codecs.open(os.path.join(path, str(int(timestamp))), "w", "utf-8") as fd:
-                pickle.dump((contest.couch_id, user.couch_id, task, files), fd)
-        except Exception as e:
-            Utils.log("submit: local copy failed - " + repr(e),\
-                         Utils.Logger.SEVERITY_IMPORTANT)
-
-    # TODO: Check the timestamp here?
-
-    for filename, content in files.items():
-        temp_file, temp_filename = tempfile.mkstemp()
-        # Note: this is just a binary copy, so no utf-8 wtf-ery here.
-        with os.fdopen(temp_file, "w") as temp_file:
-            temp_file.write(content)
-        try:
-            files[filename] = FSL.put(temp_filename)
-        except Exception as e:
-            raise StorageFailure(e)
-
-    with writelock:
-
-        # The objects should be up-to-date when
-        # the lock is acquired to avoid conflicts
-        # with other requests.
-        _refresh(contest)
-        _refresh(user)
-        _refresh(task)
-
-        # Save the submission.
-        # A new document shouldn't have resource conflicts...
-        for tentatives in xrange(Configuration.maximum_conflict_attempts):
-            try:
-                s = Submission(user, task, timestamp, files)
-                break
-            except couchdb.ResourceConflict as e:
-                Utils.log("submit: ResourceConflict for "\
-                           + " a submission by " + user.username, Utils.Logger.SEVERITY_DEBUG)
-                try:
-                    _refresh(contest)
-                    _refresh(user)
-                    _refresh(task)
-                except ConnectionFailure as e:
-                    Utils.log("submit: Refresh failed while attempting to recover"\
-                              + "a conflict.", Utils.Logger.SEVERITY_CRITICAL)
-                    raise e
-        else:
-            Utils.log("submit: Maximum number of attempts reached to add submission"\
-                      + submission.couch_id + " by " + user.username,\
-                            Utils.Logger.SEVERITY_CRITICAL)
-            raise couchdb.ResourceConflict()
-
-        # Check if the submission is valid.
-        if not s.verify_source()[0]:
-            raise InvalidSubmission()
-
-        # Check if there is the last submission has the same files.
-        try:
-          last_sub = get_submissions_by_username(contest, user.username, task.name)[-1]
-          if(last_sub.files == files):
-            raise RepeatedSubmission()
-        except IndexError:
-          pass
-
-        # Append the submission to the contest.
-        for tentatives in xrange(Configuration.maximum_conflict_attempts):
-            contest.submissions.append(s)
-            try:
-                contest.to_couch()
-                break
-            except couchdb.ResourceConflict as e:
-                Utils.log("submit: ResourceConflict for "\
-                              + s.couch_id, Utils.Logger.SEVERITY_DEBUG)
-                try:
-                    _refresh(contest)
-                    _refresh(user)
-                    _refresh(task)
-                except ConnectionFailure as e:
-                    Utils.log("submit: Refresh failed while attempting to recover"\
-                              + "a conflict.", Utils.Logger.SEVERITY_CRITICAL)
-                    raise e
-        else:
-            Utils.log("submit: Maximum number of attempts reached to append to contest. "\
-                       + submission.couch_id + " by " + user.username,\
-                            Utils.Logger.SEVERITY_CRITICAL)
-            raise couchdb.ResourceConflict()
-
-    # The submission should be successful:
-    # Warn the Evaluation Server.
-    warned = False
-    try:
-        ES.add_job(s.couch_id)
-        warned = True
-    except Exception as e:
-        Utils.log("Failed to queue the submission to the Evaluation Server: " \
-                  + s.couch_id + ", exception: " + repr(e), \
-                  Utils.Logger.SEVERITY_IMPORTANT)
-    return (s, warned)
+    raise StorageFailure()
 
 def reevaluate_submission(submission):
     submission.invalid()
