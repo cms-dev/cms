@@ -19,10 +19,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This file defines some classes built on top of Service in order to
-provide some additional facilities. AsyncLibrary is designed to be
-quite general and reusable, this file instead is more
-project-specific.
+"""This file defines a class built on top of Service in order to
+provide facilities to build a service that does test a production
+service.
 
 """
 

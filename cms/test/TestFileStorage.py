@@ -25,9 +25,9 @@
 
 import random
 
-from AsyncLibrary import rpc_callback, logger
-from DecoratedServices import TestService
-from Utils import ServiceCoord, random_string
+from cms.async.AsyncLibrary import rpc_callback, logger
+from cms.async.TestService import TestService
+from cms.async.Utils import ServiceCoord, random_string
 
 
 class TestFileStorage(TestService):

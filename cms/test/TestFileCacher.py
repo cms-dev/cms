@@ -26,10 +26,10 @@
 import os
 import random
 
-from AsyncLibrary import rpc_callback, logger
-from DecoratedServices import TestService
-from Utils import ServiceCoord, random_string
-from FileStorage import FileCacher
+from cms.async.AsyncLibrary import rpc_callback, logger
+from cms.async.TestService import TestService
+from cms.async.Utils import ServiceCoord, random_string
+from cms.service.FileStorage import FileCacher
 
 
 class TestFileCacher(TestService):
