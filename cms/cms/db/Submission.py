@@ -26,9 +26,9 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
 
-from SQLAlchemyUtils import Base
-from Task import Task
-from User import User
+from cms.db.SQLAlchemyUtils import Base
+from cms.db.Task import Task
+from cms.db.User import User
 
 class Submission(Base):
     __tablename__ = 'submissions'

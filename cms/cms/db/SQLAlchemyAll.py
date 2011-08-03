@@ -23,13 +23,13 @@ import sys
 
 from sqlalchemy.orm import relationship, backref
 
-from SQLAlchemyUtils import *
+from cms.db.SQLAlchemyUtils import db, Base, metadata, Session
 
-from Contest import Contest, Announcement
-from View import RankingView
-from User import User, Message, Question
-from Task import Task, Manager, Testcase, Attachment, PublicTestcase, SubmissionFormatElement
-from Submission import Submission, Token, Evaluation
+from cms.db.Contest import Contest, Announcement
+from cms.db.View import RankingView
+from cms.db.User import User, Message, Question
+from cms.db.Task import Task, Manager, Testcase, Attachment, PublicTestcase, SubmissionFormatElement
+from cms.db.Submission import Submission, Token, Evaluation
 
 # Last relationship configurations
 def get_submissions(self, session):

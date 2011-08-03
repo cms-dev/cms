@@ -22,8 +22,8 @@
 from sqlalchemy import Column, Integer, String, Boolean, Unicode, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship, backref
 
-from SQLAlchemyUtils import Base
-from Contest import Contest
+from cms.db.SQLAlchemyUtils import Base
+from cms.db.Contest import Contest
 
 class User(Base):
     __tablename__ = 'users'
