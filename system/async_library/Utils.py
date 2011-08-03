@@ -1,4 +1,23 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Programming contest management system
+# Copyright © 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2011 Matteo Boscariol <boscarim@hotmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Random utility and logging facilities.
 
@@ -151,4 +170,43 @@ def decode_binary(string):
         print >> sys.stderr, "Can't decode binary."
         raise ValueError
 
+def get_compilation_command(language, source_filename, executable_filename):
+    """For compiling in 32-bit mode under 64-bit OS: add
+    '-march=i686', '-m32' for gcc/g++. Don't know about
+    Pascal. Anyway, this will require some better support from the
+    evaluation environment (particularly the sandbox, which has to be
+    compiled in a different way depending on whether it will execute
+    32- or 64-bit programs).
+     
+    """
+    if language == "c":
+        command = ["/usr/bin/gcc", "-DEVAL", "-static", "-O2","-lm",
+                   "-o", executable_filename, source_filename]
+    elif language == "cpp":
+        command = ["/usr/bin/g++", "-DEVAL", "-static", "-O2",
+                   "-o", executable_filename, source_filename]
+    elif language == "pas":
+        command = ["/usr/bin/fpc", "-dEVAL", "-XS", "-O2",
+                   "-o%s" % (executable_filename), source_filename]
+    return command
+
+
+def filter_ansi_escape(s):
+    """Remove ansi codes from a string.
+
+    s (string): the input string
+
+    return (string): s without ansi codes.
+
+    """
+    ansi_mode = False
+    res = ''
+    for c in s:
+        if c == u'\x1b':
+            ansi_mode = True
+        if not ansi_mode:
+            res += c
+        if c == u'm':
+            ansi_mode = False
+    return res
 

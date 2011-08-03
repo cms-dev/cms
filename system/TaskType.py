@@ -147,8 +147,8 @@ class BatchTaskType:
     def safe_create_sandbox(self):
         try:
             self.sandbox = Sandbox()
-        except (OSError, IOError):
-            Utils.log("Couldn't create sandbox", Utils.Logger.SEVERITY_IMPORTANT)
+        except (OSError, IOError), e:
+            Utils.log("Couldn't create sandbox (error: %s)" % repr(e), Utils.Logger.SEVERITY_IMPORTANT)
             self.safe_delete_sandbox()
             raise JobException()
 
