@@ -54,10 +54,10 @@ class Config:
         ServiceCoord("TestFileCacher", 0): Address("localhost", 27501),
         ServiceCoord("TestSofa", 0): Address("localhost", 26500),
 
-        ServiceCoord("ServiceA", 0): Address("localhost", 20000),
-        ServiceCoord("ServiceB", 0): Address("localhost", 21000),
-        ServiceCoord("ServiceB", 1): Address("localhost", 21001),
-        ServiceCoord("WebServiceA", 0): Address("localhost", 23000),
+#        ServiceCoord("ServiceA", 0): Address("localhost", 20000),
+#        ServiceCoord("ServiceB", 0): Address("localhost", 21000),
+#        ServiceCoord("ServiceB", 1): Address("localhost", 21001),
+#        ServiceCoord("WebServiceA", 0): Address("localhost", 23000),
         }
 
 

@@ -25,8 +25,8 @@
 
 import time
 
-from AsyncLibrary import Service, rpc_callback, logger
-from Utils import ServiceCoord, log
+from cms.async.AsyncLibrary import Service, rpc_callback, logger
+from cms.async import ServiceCoord, Config
 
 
 class Checker(Service):
@@ -38,12 +38,8 @@ class Checker(Service):
         logger.initialize(ServiceCoord("Checker", shard))
         logger.debug("Checker.__init__")
         Service.__init__(self, shard)
-        self.connect_to(ServiceCoord("Checker", 0))
-        self.connect_to(ServiceCoord("LogService", 0))
-        self.connect_to(ServiceCoord("ServiceA", 0))
-        self.connect_to(ServiceCoord("ServiceB", 0))
-        self.connect_to(ServiceCoord("ServiceB", 1))
-        self.connect_to(ServiceCoord("WebServiceA", 0))
+        for service in Config.services:
+            self.connect_to(service)
         self.add_timeout(self.check, None, 10, immediately=True)
 
         self.waiting_for = {}

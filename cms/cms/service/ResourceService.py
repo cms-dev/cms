@@ -28,9 +28,8 @@ import time
 
 import psutil
 
-from AsyncLibrary import Service, rpc_method, logger
-from Utils import ServiceCoord
-from Config import Config
+from cms.async.AsyncLibrary import Service, rpc_method, logger
+from cms.async import ServiceCoord, Config
 
 
 class ResourceService(Service):

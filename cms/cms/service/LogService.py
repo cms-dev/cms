@@ -29,7 +29,9 @@ import time
 import codecs
 import base64
 
-from AsyncLibrary import Service, rpc_method, logger, ServiceCoord
+from cms.async.AsyncLibrary import Service, rpc_method, logger
+from cms.async import ServiceCoord
+
 
 class LogService(Service):
     """Logger service.

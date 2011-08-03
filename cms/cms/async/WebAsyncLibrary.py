@@ -29,8 +29,9 @@ import tornado.ioloop
 import tornado.web
 import tornado.escape
 
-from AsyncLibrary import Service, rpc_callback, encode_json, decode_json
-from Utils import ServiceCoord, log
+from cms.async.AsyncLibrary import Service, rpc_callback, logger
+from cms.async.Utils encode_json, decode_json
+from cms.async import ServiceCoord
 
 
 class RPCRequestHandler(tornado.web.RequestHandler):
@@ -94,7 +95,7 @@ class WebService(Service):
     """
 
     def __init__(self, listen_port, handlers, parameters, shard=0):
-        log.debug("WebService.__init__")
+        logger.debug("WebService.__init__")
         Service.__init__(self, shard)
 
         self.__responses = {}
@@ -117,7 +118,7 @@ class WebService(Service):
         loops).
 
         """
-        log.debug("WebService.run")
+        logger.debug("WebService.run")
         try:
             # TODO: to have a less hacky collaboration between tornado
             # and asyncore, we may use a solution similar to the one
@@ -133,7 +134,7 @@ class WebService(Service):
 
         """
         # Let's not spam the logs...
-        # log.debug("WebService._webstep")
+        # logger.debug("WebService._webstep")
         self._step()
         self.instance.add_callback(self._webstep)
 
@@ -143,5 +144,5 @@ class WebService(Service):
         page, that just collect the response.
 
         """
-        log.debug("WebService._default_callback")
+        logger.debug("WebService._default_callback")
         self.__responses[plus] = (data, error)
