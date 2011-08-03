@@ -45,7 +45,7 @@ import cms.util.Configuration as Configuration
 import cms.util.WebConfig as WebConfig
 import cms.util.Utils as Utils
 from cms.db.SQLAlchemyAll import Submission
-from FileStorageLib import FileStorageLib
+#from FileStorageLib import FileStorageLib
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -86,14 +86,17 @@ class TaskStatementViewHandler(BaseHandler):
             task = c.get_task(task_name)
         except:
             self.write("Task %s not found." % (task_name))
-        statement_file = StringIO()
-        FSL = FileStorageLib()
-        FSL.get_file(task.statement, statement_file)
+        task.refresh()
+
+        statement = BusinessLayer.get_task_statement(task)
+
+        if statement == None:
+            raise tornado.web.HTTPError(404)
+
         self.set_header("Content-Type", "application/pdf")
         self.set_header("Content-Disposition",
                         "attachment; filename=\"%s.pdf\"" % (task.name))
-        self.write(statement_file.getvalue())
-        statement_file.close()
+        self.write(statement)
 
 handlers = [
             (r"/", MainHandler),
@@ -102,7 +105,6 @@ handlers = [
            ]
 
 application = tornado.web.Application(handlers, **WebConfig.ranking_parameters)
-FSL = FileStorageLib()
 
 def update_ranking():
     c.ranking_view.refresh()

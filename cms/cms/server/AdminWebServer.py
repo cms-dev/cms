@@ -33,7 +33,7 @@ import time
 import BusinessLayer
 import cms.util.Configuration as Configuration
 import cms.util.WebConfig as WebConfig
-import cms.util.Utils
+import cms.util.Utils as Utils
 
 from functools import wraps
 
