@@ -22,7 +22,7 @@
 from sqlalchemy import Column, Integer, String, Boolean, Unicode, Float, ForeignKey, DateTime
 from sqlalchemy.orm import relationship, backref
 
-from SQLAlchemyUtils import Base
+from cms.db.SQLAlchemyUtils import Base
 
 class Contest(Base):
     __tablename__ = 'contests'
@@ -94,6 +94,22 @@ class Contest(Base):
     #            return i
     #    raise KeyError("Task not found")
 
+class Announcement(Base):
+    __tablename__ = 'announcements'
+
+    id = Column(Integer, primary_key=True)
+    contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
+    timestamp = Column(Integer, nullable=False)
+    subject = Column(String, nullable=False)
+    text = Column(String, nullable=False)
+
+    contest = relationship(Contest, backref=backref('announcements'))
+
+    def __init__(self, timestamp, subject, text, contest=None):
+        self.timestamp = timestamp
+        self.subject = subject
+        self.text = text
+        self.contest = contest
 
 def sample_contest():
     c = Contest("hello", "Hello world",

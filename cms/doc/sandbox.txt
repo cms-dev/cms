@@ -1,0 +1,15 @@
+XX -> errore della sandbox
+FO -> cannot read syscall instruction, forbidden
+FA -> file access forbidden, too long, out of memory
+SG -> suicide by signal
+TO -> timeout
+RE -> exited with error status
+OK -> OK
+
+time:
+time-wall:
+mem:
+killed:  (killed by sandbox)
+status:  message:
+exitsig: (suicided with signal)
+exitcode: (exit code)

@@ -23,10 +23,10 @@ from sqlalchemy import Column, Integer, String, Boolean, Unicode, Float, Foreign
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import mapped_collection
 
-from SQLAlchemyUtils import Base
-from Contest import Contest
-from User import User
-from Task import Task
+from cms.db.SQLAlchemyUtils import Base
+from cms.db.Contest import Contest
+from cms.db.User import User
+from cms.db.Task import Task
 
 class RankingView(Base):
     __tablename__ = 'rankingviews'

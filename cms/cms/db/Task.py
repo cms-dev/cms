@@ -24,8 +24,8 @@ from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
 
-from SQLAlchemyUtils import Base
-from Contest import Contest
+from cms.db.SQLAlchemyUtils import Base
+from cms.db.Contest import Contest
 
 class Task(Base):
     __tablename__ = 'tasks'
