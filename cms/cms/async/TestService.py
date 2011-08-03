@@ -28,7 +28,7 @@ service.
 import time
 
 from AsyncLibrary import Service, logger
-from Utils import ServiceCoord
+from cms.async import ServiceCoord
 
 
 class TestService(Service):

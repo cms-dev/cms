@@ -27,20 +27,7 @@ import os
 import sys
 
 import simplejson
-from collections import namedtuple
 from random import choice
-
-
-Address = namedtuple("Address", "ip port")
-
-
-class ServiceCoord(namedtuple("ServiceCoord", "name shard")):
-    """A compact representation for the name and the shard number of a
-    service (thus identifying it).
-
-    """
-    def __repr__(self):
-        return "%s,%d" % (self.name, self.shard)
 
 
 def random_string(length):
@@ -177,7 +164,7 @@ def get_compilation_command(language, source_filename, executable_filename):
     evaluation environment (particularly the sandbox, which has to be
     compiled in a different way depending on whether it will execute
     32- or 64-bit programs).
-     
+
     """
     if language == "c":
         command = ["/usr/bin/gcc", "-DEVAL", "-static", "-O2","-lm",

@@ -34,11 +34,10 @@ import asynchat
 import datetime
 import codecs
 
-from Config import get_service_address
-from Utils import Address, ServiceCoord, random_string, \
+from Utils import random_string, mkdir, \
      encode_binary, encode_length, encode_json, \
      decode_binary, decode_length, decode_json
-
+from cms.async import ServiceCoord, Address, get_service_address
 
 
 def rpc_callback(func):
@@ -645,8 +644,9 @@ class Logger:
 
         """
         self._my_coord = service
+        mkdir("logs")
         self._log_file = codecs.open(\
-            os.path.join("logs","%d-%s-%d.local-log" %
+            os.path.join("logs", "%d-%s-%d.local-log" %
                          (time.time(), service.name, service.shard)),
             "w", "utf-8")
 

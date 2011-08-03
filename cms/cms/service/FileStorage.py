@@ -30,10 +30,11 @@ import shutil
 import codecs
 import hashlib
 
-from AsyncLibrary import Service, \
+from cms.async.AsyncLibrary import Service, \
      rpc_method, rpc_binary_response, rpc_callback, \
      logger
-from Utils import ServiceCoord, Address, mkdir, random_string
+from cms.async import ServiceCoord, Address
+from cms.service.Utils import mkdir, random_string
 
 
 class FileStorage(Service):

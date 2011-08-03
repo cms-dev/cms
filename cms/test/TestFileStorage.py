@@ -25,9 +25,10 @@
 
 import random
 
+from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import rpc_callback, logger
 from cms.async.TestService import TestService
-from cms.async.Utils import ServiceCoord, random_string
+from cms.async.Utils import random_string
 
 
 class TestFileStorage(TestService):

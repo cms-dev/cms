@@ -62,5 +62,5 @@ if "install" in sys.argv:
     shutil.copy(os.path.join(".", "box", "mo-box"),
                 os.path.join("/", "usr", "local", "bin"))
     shutil.copy(os.path.join(".", "examples", "cms.conf"),
-                os.path.join("/", "etc", "cms.conf"))
+                os.path.join("/", "usr", "local", "etc", "cms.conf"))
 
