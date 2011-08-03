@@ -25,17 +25,15 @@ import tornado.ioloop
 import tornado.web
 import tornado.escape
 
-import couchdb
 import os
 import pickle
 import xmlrpclib
 import time
 
 import BusinessLayer
-import Configuration
-import WebConfig
-import CouchObject
-import Utils
+import cms.util.Configuration as Configuration
+import cms.util.WebConfig as WebConfig
+import cms.util.Utils
 
 from functools import wraps
 
@@ -74,6 +72,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
         if selected_contest != None:
           try:
+            # TODO: Change retrieval mode
             self.c = CouchObject.from_couch(selected_contest, True)
             if self.c != None:
               # If we're here, the selected contest exists. Set the cookie.
@@ -94,6 +93,7 @@ class BaseHandler(tornado.web.RequestHandler):
           cookie_contest = self.get_secure_cookie("selected_contest")
           if cookie_contest != None:
             try:
+            # TODO: Change retrieval mode
               self.c = CouchObject.from_couch(cookie_contest, True)
             except couchdb.client.ResourceNotFound:
               # The contest is invalid. Unset the cookie.

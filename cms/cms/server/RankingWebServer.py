@@ -32,7 +32,6 @@ import tornado.ioloop
 import tornado.web
 import tornado.escape
 
-import couchdb
 import os
 import pickle
 import sys
@@ -42,11 +41,10 @@ import zipfile
 import time
 from StringIO import StringIO
 
-import Configuration
-import WebConfig
-import CouchObject
-import Utils
-from Submission import Submission
+import cms.util.Configuration as Configuration
+import cms.util.WebConfig as WebConfig
+import cms.util.Utils as Utils
+from cms.db.SQLAlchemyAll import Submission
 from FileStorageLib import FileStorageLib
 
 
