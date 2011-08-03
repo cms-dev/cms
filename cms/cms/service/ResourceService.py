@@ -69,7 +69,7 @@ class ResourceService(Service):
 
         """
         logger.debug("ResourceService._find_local_services")
-        services = Config.services
+        services = Config.core_services
         local_machine = services[self._my_coord].ip
         local_services = [x
                           for x in services

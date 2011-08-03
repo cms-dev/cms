@@ -19,11 +19,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Load the configuration of the services.
+"""Useful classes for async.
 
 """
 
-import os
 from collections import namedtuple
 
 
@@ -40,25 +39,21 @@ class ServiceCoord(namedtuple("ServiceCoord", "name shard")):
 
 
 class Config:
-    """This class just contains the addresses configurations.
+    """This class will contain the configuration for the
+    services. This needs to be populated at the initilization stage.
+
+    The *_services variables are dictionaries indexed by ServiceCoord
+    with values of type Address.
+
+    Core services are the ones that are supposed to run whenever the
+    system is up.
+
+    Test services are not supposed to run when the system is up, or
+    anyway not constantly.
 
     """
-    services = {
-        ServiceCoord("LogService", 0): Address("localhost", 29000),
-        ServiceCoord("ResourceService", 0): Address("localhost", 28000),
-        ServiceCoord("FileStorage", 0): Address("localhost", 27000),
-        ServiceCoord("Sofa", 0): Address("localhost", 26000),
-        ServiceCoord("Checker", 0): Address("localhost", 22000),
-
-        ServiceCoord("TestFileStorage", 0): Address("localhost", 27500),
-        ServiceCoord("TestFileCacher", 0): Address("localhost", 27501),
-        ServiceCoord("TestSofa", 0): Address("localhost", 26500),
-
-#        ServiceCoord("ServiceA", 0): Address("localhost", 20000),
-#        ServiceCoord("ServiceB", 0): Address("localhost", 21000),
-#        ServiceCoord("ServiceB", 1): Address("localhost", 21001),
-#        ServiceCoord("WebServiceA", 0): Address("localhost", 23000),
-        }
+    core_services = {}
+    test_services = {}
 
 
 def get_service_address(key):
@@ -68,7 +63,11 @@ def get_service_address(key):
     returns (Address): listening address of key.
 
     """
-    if key in Config.services:
-        return Config.services[key]
+    if key in Config.core_services:
+        return Config.core_services[key]
+    elif key in Config.test_services:
+        return Config.test_services[key]
     else:
         raise KeyError
+
+

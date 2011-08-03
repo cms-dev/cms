@@ -38,7 +38,7 @@ class Checker(Service):
         logger.initialize(ServiceCoord("Checker", shard))
         logger.debug("Checker.__init__")
         Service.__init__(self, shard)
-        for service in Config.services:
+        for service in Config.core_services:
             self.connect_to(service)
         self.add_timeout(self.check, None, 10, immediately=True)
 
