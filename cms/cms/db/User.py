@@ -34,10 +34,10 @@ class User(Base):
     real_name = Column(String, nullable=False)
     ip = Column(String, nullable=True)
     hidden = Column(Boolean, nullable=False)
-    #messages (skipped for now)
-    #questions (skipped for now)
     contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
 
+    #messages (backref)
+    #questions (backref)
     #tokens (backref)
     contest = relationship(Contest, backref=backref("users"))
 
@@ -53,6 +53,48 @@ class User(Base):
         self.messages = messages
         self.questions = questions
         self.contest = contest
+
+class Message(Base):
+    __tablename__ = 'messages'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    timestamp = Column(Integer, nullable=False)
+    subject = Column(String, nullable=False)
+    text = Column(String, nullable=False)
+
+    user = relationship(User, backref=backref('messages'))
+
+    def __init__(self, timestamp, subject, text, user=None):
+        self.timestamp = timestamp
+        self.subject = subject
+        self.text = text
+        self.user = user
+
+class Question(Base):
+    __tablename__ = 'questions'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    question_timestamp = Column(Integer, nullable=False)
+    subject = Column(String, nullable=False)
+    text = Column(String, nullable=False)
+    reply_timestamp = Column(Integer, nullable=True)
+    short_reply = Column(String, nullable=True)
+    long_reply = Column(String, nullable=True)
+
+    user = relationship(User, backref=backref('questions'))
+
+    def __init__(self, question_timestamp, subject, text,
+                 reply_timestamp=None, short_reply=None, long_reply=None,
+                 user=None):
+        self.question_timestamp = question_timestamp
+        self.subject = subject
+        self.text = text
+        self.reply_timestamp = reply_timestamp
+        self.short_reply = short_reply
+        self.long_reply = long_reply
+        self.user = user
 
 def sample_user(contest):
     import random
