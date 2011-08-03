@@ -25,9 +25,9 @@ from sqlalchemy.orm import relationship, backref
 
 from SQLAlchemyUtils import *
 
-from Contest import Contest
+from Contest import Contest, Announcement
 from View import RankingView
-from User import User
+from User import User, Message, Question
 from Task import Task, Manager, Testcase, Attachment, PublicTestcase, SubmissionFormatElement
 from Submission import Submission, Token, Evaluation
 
