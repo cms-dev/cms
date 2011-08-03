@@ -43,7 +43,6 @@ class Contest(Base):
     #ranking_view (backref)
     #tasks (backref)
     #users (backref)
-
     #get_submissions (in SQLAlchemyAll)
 
     def __init__(self, name, description, tasks, users,
@@ -64,9 +63,6 @@ class Contest(Base):
         self.stop = stop
         self.announcements = announcements
         self.ranking_view = ranking_view
-
-    #def choose_couch_id_basename(self):
-    #    return "contest-%s" % (self.name)
 
     #def update_ranking_view(self):
     #    self.ranking_view.scores = {}
@@ -100,9 +96,6 @@ class Contest(Base):
 
 
 def sample_contest():
-    #import User
-    #import Task
-    #import Submission
     c = Contest("hello", "Hello world",
                 #[Task.sample_task() for i in range(3)],
                 #[User.sample_user() for i in range(10)],

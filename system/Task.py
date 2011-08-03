@@ -93,9 +93,6 @@ class Task(Base):
         self.token_gen_time = token_gen_time
         self.contest = contest
 
-    #def choose_couch_id_basename(self):
-    #    return "task-%s" % (self.name)
-
     #def valid_submission(self, files):
     #    return True
 

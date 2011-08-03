@@ -99,9 +99,6 @@ class Submission(Base):
     #            self.refresh()
     #            retry = True
 
-    #def choose_couch_id_basename(self):
-    #    return "submission-%s-%s" % (self.user.username, self.task.name)
-
     def verify_source(self):
         if len(self.files) != len(self.task.submission_format):
             return (False, "Wrong number of files")

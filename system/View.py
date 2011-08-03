@@ -42,9 +42,6 @@ class RankingView(Base):
         self.contest = contest
         self.timestamp = timestamp
 
-    #def choose_couch_id_basename(self):
-    #    return "rankingview-%s" % (self.contest.name)
-
     def set_score(self, score):
         score.rankingview = self
         self.scores[(score.user.username, score.task.num)] = score

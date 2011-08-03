@@ -54,9 +54,6 @@ class User(Base):
         self.questions = questions
         self.contest = contest
 
-    #def choose_couch_id_basename(self):
-    #    return "user-%s" % (self.username)
-
 def sample_user(contest):
     import random
     return User("username-%d" % (random.randint(1, 1000)), "password",
