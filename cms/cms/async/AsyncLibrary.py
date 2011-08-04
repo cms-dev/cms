@@ -179,15 +179,12 @@ class Service:
         return (RemoteService): the connected RemoteService istance.
         """
         self._connections.add(service)
-        self.remote_services[service] = RemoteService(self, service)
+        self.remote_services[service] = RemoteService(self, service, sync=sync)
         try:
             self.remote_services[service].connect_remote_service()
         except:
             pass
-        if not sync:
-            return self.remote_services[service]
-        else:
-            return SyncRemoteService(self.remote_services[service])
+        return self.remote_services[service]
 
     def add_timeout(self, func, plus, seconds, immediately=False):
         """Registers a function to be called every tot seconds.
@@ -326,7 +323,8 @@ class RemoteService(asynchat.async_chat):
 
     """
 
-    def __init__(self, service, remote_service_coord=None, address=None):
+    def __init__(self, service, remote_service_coord=None,
+                 address=None, sync=False):
         """Create a communication channel to a remote service.
 
         service (Service): the local service.
@@ -335,6 +333,7 @@ class RemoteService(asynchat.async_chat):
                                              to.
         address (Address): alternatively, the address to connect to
                            (used when accepting a connection).
+        sync (bool): if True, all rpc calls return immediately
 
         """
         # Can't log using logger here, since it is not yet defined.
@@ -342,6 +341,7 @@ class RemoteService(asynchat.async_chat):
         if address == None and remote_service_coord == None:
             raise
         self.service = service
+        self.sync = sync
         if address == None:
             self.remote_service_coord = remote_service_coord
             self.address = get_service_address(remote_service_coord)
@@ -465,6 +465,9 @@ class RemoteService(asynchat.async_chat):
         message = {}
         message["__method"] = method
         message["__data"] = data
+        if self.sync:
+            callback = self.execute_rpc_callback
+            plus = None
         request = RPCRequest(message, bind_obj, callback, plus)
         message = request.pre_execute()
         if "binary_data" not in data:
@@ -490,7 +493,31 @@ class RemoteService(asynchat.async_chat):
                 request.complete(None)
                 return
         self._push_right(json_length + json_message + binary_message)
+        if self.sync:
+            self.response = None
+            self.answered = False
+            while not self.answered:
+                asyncore.loop(0.02, True, None, 1)
+            response = self.response
+            self.response = None
+            return response
         return True
+
+    @rpc_callback
+    def execute_rpc_callback(self, data, plus, error=None):
+        """If the connection is synchronous, we use this callback that
+        collects the response and signal to the waiting execute_rpc
+        that the rpc ended and we can return. Note that plus is lost,
+        but if calls are synchronous, plus is useless anyway.
+
+        data (object): response of the rpc.
+        plus (object): plus object of the call, should be None in all
+                       practical behaviours.
+        error (string): errors from the callee.
+
+        """
+        self.answered = True
+        self.response = data
 
     def __getattr__(self, method):
         """Syntactic sugar to call a remote method without using
@@ -554,38 +581,6 @@ class RemoteService(asynchat.async_chat):
             self.connected = True
             self._initialize_channel(sock)
 
-
-class SyncRemoteService:
-
-    def __init__(self, remote_service):
-        self.remote_service = remote_service
-
-    @rpc_callback
-    def execute_rpc_callback(self, data, plus, errore=None):
-        self.response = data
-        self.answered = False
-
-    def execute_rpc(self, method, data):
-        self.answered = True
-        self.remote_service.execute_rpc(method=method, data=data,
-                                        callback=self.execute_rpc_callback)
-
-        # Waiting for callback to be called
-        while self.answered:
-            asyncore.loop(0.02, True, None, 1)
-
-        return self.response
-
-    def __getattr__(self, method):
-        logger.debug("SyncRemoteService.__getattr__(%s)" % method)
-
-        if method == "connected":
-            return self.remote_service.connected
-
-        def remote_method(**data):
-            return self.execute_rpc(method, data)
-
-        return remote_method
 
 class ListeningSocket(asyncore.dispatcher):
     """This class starts a listening socket. It is needed by a Service
