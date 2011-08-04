@@ -571,7 +571,7 @@ class SyncRemoteService:
                                         callback=self.execute_rpc_callback)
 
         # Waiting for callback to be called
-        while self.locked:
+        while self.answered:
             asyncore.loop(0.02, True, None, 1)
 
         return self.response
