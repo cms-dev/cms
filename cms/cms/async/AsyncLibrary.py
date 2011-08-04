@@ -370,6 +370,7 @@ class RemoteService(asynchat.async_chat):
         if self.service == None:
             return
         self.data.append(data)
+        print len("".join(data))
 
     def found_terminator(self):
         """Function called when a terminator is detected in the
@@ -562,18 +563,19 @@ class SyncRemoteService:
 
     @rpc_callback
     def execute_rpc_callback(self, data, plus, errore=None):
-        plus[1] = data
-        evt.set()
+        self.response = data
+        self.answered = False
 
     def execute_rpc(self, method, data):
-        evt = threading.Event()
-        plus = [evt, None]
+        self.answered = True
         self.remote_service.execute_rpc(method=method, data=data,
-                                        plus=plus, callback=self.execute_rpc_callback)
-        evt.wait()
+                                        callback=self.execute_rpc_callback)
 
-        # The callback sets plus[1]
-        return plus[1]
+        # Waiting for callback to be called
+        while self.locked:
+            asyncore.loop(0.02, True, None, 1)
+
+        return self.response
 
     def __getattr__(self, method):
         logger.debug("SyncRemoteService.__getattr__(%s)" % method)
