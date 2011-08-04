@@ -211,6 +211,59 @@ class TestFileStorage(TestService):
                           "Correctly received an error: %s." % error)
 
 
+### TEST 006 ###
+
+    def test_006(self):
+        """Send a long random binary file to FileStorage.
+
+        """
+        path = random_string(16)
+        self.content = ""
+        for i in xrange(10000):
+            self.content += chr(random.randint(0, 255))
+
+        logger.info("  I am sending the long binary file to FileStorage")
+        self.FS.put_file(binary_data=self.content,
+                         description="Test #006",
+                         callback=TestFileStorage.test_006_callback,
+                         plus=("Test #", 6))
+
+    @rpc_callback
+    def test_006_callback(self, data, plus, error=None):
+        if error != None:
+            self.test_end(False, "Error received: %s." % error)
+        elif plus != ("Test #", 6):
+            self.test_end(False, "Plus object not received correctly.")
+        else:
+            self.digest = data
+            self.test_end(True, "Data sent without error " +
+                          "and plus object received.")
+
+
+### TEST 007 ###
+
+    def test_007(self):
+        """Retrieve the file.
+
+        """
+        logger.info("  I am retrieving the long binary file from FileStorage")
+        self.FS.get_file(digest=self.digest,
+                         callback=TestFileStorage.test_007_callback,
+                         plus=("Test #", 7))
+
+    @rpc_callback
+    def test_007_callback(self, data, plus, error=None):
+        if error != None:
+            self.test_end(False, "Error received: %s." % error)
+        elif plus != ("Test #", 7):
+            self.test_end(False, "Plus object not received correctly.")
+        elif data != self.content:
+            self.test_end(False, "Content differ.")
+        else:
+            self.test_end(True, "Data and plus object " +
+                          "received correctly.")
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) != 2:
