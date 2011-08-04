@@ -139,7 +139,7 @@ def encode_binary(string):
 
     """
     try:
-        return string.replace('\\', '\\\\').replace('\r', '\\r')
+        return string.replace('\n', '\\\n')
     except:
         print >> sys.stderr, "Can't encode binary."
         raise ValueError
@@ -152,7 +152,7 @@ def decode_binary(string):
     return (object): the decoded string
     """
     try:
-        return string.replace('\\r', '\r').replace('\\\\', '\\')
+        return string.replace('\\\n', '\n')
     except:
         print >> sys.stderr, "Can't decode binary."
         raise ValueError

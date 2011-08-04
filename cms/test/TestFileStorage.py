@@ -219,7 +219,7 @@ class TestFileStorage(TestService):
         """
         path = random_string(16)
         self.content = ""
-        for i in xrange(10000):
+        for i in xrange(100000):
             self.content += chr(random.randint(0, 255))
 
         logger.info("  I am sending the long binary file to FileStorage")
