@@ -53,7 +53,7 @@ class Config:
 
     """
     core_services = {}
-    test_services = {}
+    other_services = {}
 
 
 def get_service_address(key):
@@ -65,8 +65,8 @@ def get_service_address(key):
     """
     if key in Config.core_services:
         return Config.core_services[key]
-    elif key in Config.test_services:
-        return Config.test_services[key]
+    elif key in Config.other_services:
+        return Config.other_services[key]
     else:
         raise KeyError
 

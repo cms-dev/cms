@@ -32,7 +32,7 @@ def load_config_file(cmsconf):
     """Populate the Config class with everything that sits inside the
     JSON file cmsconf (usually something/etc/cms.conf). The only
     pieces of data treated differently are the elements of
-    core_services and test_services.
+    core_services and other_services.
 
     cmsconf (string): the path of the JSON config file
 
@@ -47,11 +47,11 @@ def load_config_file(cmsconf):
                 Address(*shard)
     del d["core_services"]
 
-    for service in d["test_services"]:
-        for shard_number, shard in enumerate(d["test_services"][service]):
-            Config.test_services[ServiceCoord(service, shard_number)] = \
+    for service in d["other_services"]:
+        for shard_number, shard in enumerate(d["other_services"][service]):
+            Config.other_services[ServiceCoord(service, shard_number)] = \
                 Address(*shard)
-    del d["test_services"]
+    del d["other_services"]
 
     # Put everything else. Note that we re-use the Config class, which
     # async thinks it is just for itself. This should cause no
