@@ -1,0 +1,45 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Title</title>
+    <script type="text/javascript" src="./static/utils.js"></script>
+    <script type="text/javascript" src="./static/web_async_library.js"></script>
+<script type="text/javascript">
+window.onload = function()
+{
+    rpc = new CMSAjaxRPC();
+    setTimeout(request, 1000);
+    setTimeout(request2, 1500);
+}
+
+function request()
+{
+    rpc.request("ServiceB", 1,
+                "long_rpc_method",
+                {"string": "tricky&test=OK!"},
+                function(response) {
+                    var span = document.getElementById("response");
+                    span.innerHTML += response['data'];
+                });
+}
+
+function request2()
+{
+    rpc.request("ServiceB", 1,
+                "sum_of_two",
+                {"a": 3, "b": 7},
+                function(response) {
+                    var span = document.getElementById("response2");
+                    span.innerHTML += response['data'];
+                });
+}
+
+</script>
+  </head>
+  <body>
+    <div>Response 1 (what's this?): <span id="response"></span></div>
+    <div>Response 2 (3 and 7 is?): <span id="response2"></span></div>
+    <hr/>
+    <div>Raw responses: <span id="__raw"></span></div>
+  </body>
+</html>
