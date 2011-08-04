@@ -30,7 +30,7 @@ import tornado.web
 import tornado.escape
 
 from cms.async.AsyncLibrary import Service, rpc_callback, logger
-from cms.async.Utils encode_json, decode_json
+from cms.async.Utils import encode_json, decode_json
 from cms.async import ServiceCoord
 
 
