@@ -15,8 +15,8 @@
     {
 
         /**
-         * This is called every tot millisecs and ask the server if
-         * the answer to a request has arrived.
+         * This is called every x millisecs and ask the server if the
+         * answer to a request has arrived.
          *
          * cb (function): the callback provided by the user
          * rid (string): the id of the request

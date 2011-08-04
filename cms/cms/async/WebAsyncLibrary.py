@@ -36,7 +36,7 @@ from cms.async import ServiceCoord
 
 class RPCRequestHandler(tornado.web.RequestHandler):
     """This handler receives a request for a RPC method, interprets
-    the request, and call the method.
+    the request, and calls the method.
 
     """
     def get(self, service, shard, method):
@@ -53,8 +53,7 @@ class RPCRequestHandler(tornado.web.RequestHandler):
         service = ServiceCoord(service, int(shard))
         if service not in self.application.service.remote_services or \
                not self.application.service.remote_services[service].connected:
-            self.render("rpc_answer.html",
-                        response=encode_json({'status': 'unconnected'}))
+            self.write({'status': 'unconnected'})
             return
 
         self.application.service.__responses[rid] = "wait"
@@ -62,8 +61,7 @@ class RPCRequestHandler(tornado.web.RequestHandler):
             callback=WebService._default_callback,
             plus=rid,
             **arguments)
-        self.render("rpc_answer.html",
-                    response=encode_json({'status': 'wait'}))
+        self.write({'status': 'wait'})
 
 
 class RPCAnswerHandler(tornado.web.RequestHandler):
@@ -76,17 +74,14 @@ class RPCAnswerHandler(tornado.web.RequestHandler):
         responses = self.application.service.__responses
         if rid in responses:
             if responses[rid] == "wait":
-                self.render("rpc_answer.html",
-                            response=encode_json({'status': 'wait'}))
+                self.write({'status': 'wait'})
             else:
-                self.render("rpc_answer.html",
-                            response=encode_json({'status': 'ok',
-                                                  'data': responses[rid][0],
-                                                  'error': responses[rid][1]}))
+                self.write({'status': 'ok',
+                            'data': responses[rid][0],
+                            'error': responses[rid][1]})
                 del responses[rid]
         else:
-            self.render("rpc_answer.html",
-                        response=encode_json({'status': 'fail'}))
+            self.write({'status': 'fail'})
 
 
 class WebService(Service):
