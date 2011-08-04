@@ -130,15 +130,14 @@ class RPCRequest:
         logger.debug("RPCRequest.complete")
         del RPCRequest.pending_requests[self.message["__id"]]
         if self.callback != None:
-            if self.plus == None:
-                self.callback(self.bind_obj,
-                              response["__data"],
-                              __error=response.get("__error", None))
-            else:
-                self.callback(self.bind_obj,
-                              response["__data"],
-                              self.plus,
-                              __error=response.get("__error", None))
+            params = []
+            if self.bind_obj != None:
+                params.append(self.bind_obj)
+            params.append(response["__data"])
+            if self.plus != None:
+                params.append(self.plus)
+            self.callback(*params,
+                          __error=response.get("__error", None))
         else:
             error = response.get("__error", None)
             if error != None:
@@ -342,6 +341,7 @@ class RemoteService(asynchat.async_chat):
             raise
         self.service = service
         self.sync = sync
+        self.sync_responses = {}
         if address == None:
             self.remote_service_coord = remote_service_coord
             self.address = get_service_address(remote_service_coord)
@@ -466,8 +466,9 @@ class RemoteService(asynchat.async_chat):
         message["__method"] = method
         message["__data"] = data
         if self.sync:
+            bind_obj = None
+            plus = random_string(16)
             callback = self.execute_rpc_callback
-            plus = None
         request = RPCRequest(message, bind_obj, callback, plus)
         message = request.pre_execute()
         if "binary_data" not in data:
@@ -494,12 +495,10 @@ class RemoteService(asynchat.async_chat):
                 return
         self._push_right(json_length + json_message + binary_message)
         if self.sync:
-            self.response = None
-            self.answered = False
-            while not self.answered:
+            while not plus in self.sync_responses:
                 asyncore.loop(0.02, True, None, 1)
-            response = self.response
-            self.response = None
+            response = self.sync_responses[plus]
+            del self.sync_responses[plus]
             return response
         return True
 
@@ -511,13 +510,12 @@ class RemoteService(asynchat.async_chat):
         but if calls are synchronous, plus is useless anyway.
 
         data (object): response of the rpc.
-        plus (object): plus object of the call, should be None in all
-                       practical behaviours.
+        plus (string): plus object of the call, the random_id assigned
+                       by execute_rpc
         error (string): errors from the callee.
 
         """
-        self.answered = True
-        self.response = data
+        self.sync_responses[plus] = data
 
     def __getattr__(self, method):
         """Syntactic sugar to call a remote method without using
