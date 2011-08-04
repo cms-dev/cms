@@ -370,7 +370,6 @@ class RemoteService(asynchat.async_chat):
         if self.service == None:
             return
         self.data.append(data)
-        print len("".join(data))
 
     def found_terminator(self):
         """Function called when a terminator is detected in the
