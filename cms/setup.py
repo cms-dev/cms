@@ -51,7 +51,7 @@ if "build" in sys.argv:
     import os
     print "compiling mo-box..."
     os.chdir("box")
-    os.system(os.path.join(".", "compile32.sh"))
+    os.system(os.path.join(".", "compile.sh"))
     os.chdir("..")
     print "  done."
 

@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Detect dir
+SCRIPT_DIR="`dirname "$0"`"
+cd "$SCRIPT_DIR"
+
 # Common configuration
 echo > autoconf.h
 echo '#define CONFIG_BOX_KERNEL_AMD64' >> autoconf.h
