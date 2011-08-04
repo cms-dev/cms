@@ -81,7 +81,7 @@ class FileStorage(Service):
         logger.info("New file added: `%s'" % description)
 
         # FIXME - Error management
-        temp_file, temp_filename = tempfile.mkstemp(dir = self.tmp_dir)
+        temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
         temp_file = os.fdopen(temp_file, "wb")
 
         # Get the file and compute the hash

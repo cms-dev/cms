@@ -28,6 +28,7 @@ import socket
 import time
 import sys
 import os
+import threading
 
 import asyncore
 import asynchat
@@ -169,7 +170,7 @@ class Service:
         if address != None:
             self.server = ListeningSocket(self, address)
 
-    def connect_to(self, service):
+    def connect_to(self, service, sync=False):
         """Ask the service to connect to another service. A channel is
         established and connected. The connection will be reopened if
         closed.
@@ -183,7 +184,10 @@ class Service:
             self.remote_services[service].connect_remote_service()
         except:
             pass
-        return self.remote_services[service]
+        if not sync:
+            return self.remote_services[service]
+        else:
+            return SyncRemoteService(self.remote_services[service])
 
     def add_timeout(self, func, plus, seconds, immediately=False):
         """Registers a function to be called every tot seconds.
@@ -551,6 +555,37 @@ class RemoteService(asynchat.async_chat):
             self._initialize_channel(sock)
 
 
+class SyncRemoteService:
+
+    def __init__(self, remote_service):
+        self.remote_service = remote_service
+
+    @rpc_callback
+    def execute_rpc_callback(self, data, plus, errore=None):
+        plus[1] = data
+        evt.set()
+
+    def execute_rpc(self, method, data):
+        evt = threading.Event()
+        plus = [evt, None]
+        self.remote_service.execute_rpc(method=method, data=data,
+                                        plus=plus, callback=self.execute_rpc_callback)
+        evt.wait()
+
+        # The callback sets plus[1]
+        return plus[1]
+
+    def __getattr__(self, method):
+        logger.debug("SyncRemoteService.__getattr__(%s)" % method)
+
+        if method == "connected":
+            return self.remote_service.connected
+
+        def remote_method(**data):
+            return self.execute_rpc(method, data)
+
+        return remote_method
+
 class ListeningSocket(asyncore.dispatcher):
     """This class starts a listening socket. It is needed by a Service
     that wants to be able to receive RPC requests.
@@ -627,6 +662,7 @@ class Logger:
             Logger.CRITICAL,
             Logger.ERROR,
             Logger.INFO,
+            Logger.DEBUG
             ]
         Logger.TO_SEND = [
             Logger.CRITICAL,
