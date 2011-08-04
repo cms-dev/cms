@@ -60,6 +60,13 @@ def load_config_file(cmsconf):
     for key in d:
         setattr(Config, key, d[key])
 
+CONFIGURATION_FILES = [os.path.join(".", "examples", "cms.conf"),
+                       os.path.join("/", "usr", "local", "etc", "cms.conf")]
 
-load_config_file(os.path.join("/", "usr", "local", "etc", "cms.conf"))
-
+for conffile in CONFIGURATION_FILES:
+    try:
+        load_config_file(conffile)
+    except IOError:
+        pass
+    else:
+        break
