@@ -283,6 +283,27 @@ class Service:
         else:
             logger.error("No pending request with id %s found." % ident)
 
+    def method_info(self, method_name):
+        """Returns some information about the requested method, or
+        exceptions if the method does not exists.
+
+        method_name (string): the requested method
+        return (dict): infos about the method
+
+        """
+        logger.debug("Service.method_info")
+
+        try:
+            method = getattr(self, method_name)
+        except:
+            raise KeyError("Service has no method " + method_name)
+
+        res = {}
+        res["callable"] = hasattr(method, "rpc_callable")
+        res["binary_response"] = hasattr(method, "binary_response")
+
+        return res
+
     def handle_message(self, message):
         """To be called when the channel finishes to collect a message
         that is a RPC request. It calls the requested method.
@@ -310,7 +331,7 @@ class Service:
 
         result = method(**message["__data"])
 
-        return result, hasattr(method, "binary_response")
+        return result
 
 
 class RemoteService(asynchat.async_chat):
@@ -403,10 +424,18 @@ class RemoteService(asynchat.async_chat):
         if "__id" in message:
             response["__id"] = message["__id"]
         if "__method" in message:
-            binary_response = False
             try:
-                method_response, binary_response = \
-                                 self.service.handle_message(message)
+                method_info = self.service.method_info(message["__method"])
+                binary_response = method_info["binary_response"]
+            except KeyError:
+                response["__error"] = "%s: %s" % (
+                    exception.__class__.__name__,
+                    " ".join([str(x) for x in exception.args]))
+                binary_response = False
+                method_response = None
+
+            try:
+                method_response = self.service.handle_message(message)
             except Exception, exception:
                 response["__error"] = "%s: %s" % (
                     exception.__class__.__name__,
