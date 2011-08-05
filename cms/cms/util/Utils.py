@@ -28,6 +28,7 @@ import sys
 import codecs
 
 import Configuration
+from cms.db.SQLAlchemyAll import Session, metadata, Contest
 
 get_contests='''function(doc) {
     if (doc.document_type=='contest')
@@ -46,11 +47,11 @@ def ask_for_contest(skip = 0):
     elif isinstance(skip, str):
         contest_id = skip
     else:
-        db = get_couchdb_database()
-        contests = list(db.query(get_contests, include_docs = True))
+        session = Session()
+        contests = session.query(Contest).all()
         print "Contests available:"
         for i, row in enumerate(contests):
-            print "%3d  -  ID: %s  -  Name: %s" % (i + 1, row.id, row.doc["name"]),
+            print "%3d  -  ID: %s  -  Name: %s" % (i + 1, row.id, row.name),
             if i == 0:
                 print " (default)"
             else:
@@ -64,21 +65,8 @@ def ask_for_contest(skip = 0):
         except:
             print "Insert a correct number."
             sys.exit(1)
-
-    try:
-        c = CouchObject.from_couch(contest_id)
-    except couchdb.client.ResourceNotFound:
-        print "Cannot load contest %s." % (contest_id)
-        sys.exit(1)
-    # from_couch returns None when the contest is not found,
-    # and a different item if the provided ID is not a
-    # contest.
-    from Contest import Contest
-    if c == None or not isinstance( c, Contest ):
-        print "Cannot load contest %s." % (contest_id)
-        sys.exit(1)
-    print "Contest %s loaded." % (c.name)
-    return c
+        session.close()
+    return contest_id
 
 def filter_ansi_escape(s):
     ansi_mode = False

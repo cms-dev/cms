@@ -1,0 +1,28 @@
+{% extends base.html %}
+
+{% block core %}
+    <div class="core_title">
+    <h1>Instructions</h1>
+    </div>
+    <h2 onclick="util.toggleVisibility(&quot;instruction_general&quot;);">
+    <span class="toggle" id="instruction_general_toggle" >-</span>General</h2>
+    <div id="instruction_general">
+        A lot of instructions about the contest.
+    </div>
+    
+    <h2 onclick="util.toggleVisibility(&quot;instruction_comp&quot;);" >
+    <span class="toggle" id="instruction_comp_toggle" >-</span>Compilation</h2>
+    <div id="instruction_comp">
+     <table id="compilazione">
+      <tr><td><strong>C</strong></td><td><code>{{ " ".join(Utils.get_compilation_command("c", "task.c", "task")) }}</code></td></tr>
+      <tr><td><strong>C++</strong></td><td><code>{{ " ".join(Utils.get_compilation_command("cpp", "task.cpp", "task")) }}</code></td></tr>
+      <tr><td><strong>Pascal</strong></td><td><code>{{ " ".join(Utils.get_compilation_command("pas", "task.pas", "task")) }}</code></td></tr>
+     </table>
+    </div>
+
+    <h2 onclick="util.toggleVisibility(&quot;instruction_doc&quot;);">
+    <span class="toggle" id="instruction_doc_toggle">-</span>Documentation</h2>
+    <div id="instruction_doc">
+        <ul><li><a href="/stl/index.html">Standard Template Library</a></li></ul>
+    </div>
+{% end %}

@@ -1,0 +1,60 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="/static/style_ranking.css">
+    <title>{{ contest.description }}</title>
+<script type="text/javascript">
+function sort_ranking(intestazione)
+{
+  var thead = document.getElementById('ranking').getElementsByTagName("thead")[0];
+  var ths = thead.getElementsByTagName('th');
+  if (!intestazione)
+    intestazione = ths[indice_ordinamento];
+  for (var i = 0; i < ths.length; i++)
+    {
+      ths[i].style.fontWeight = 'normal';
+      if (ths[i] == intestazione)
+        {
+          indice_ordinamento = i;
+          ths[i].style.fontWeight = 'bold';
+        }
+    }
+  var tbody = document.getElementById('ranking').getElementsByTagName("tbody")[0];
+  var trs = tbody.getElementsByTagName('tr');
+  var array = [];
+  for (var i = 0; i < trs.length; i++)
+    {
+      var obj = trs[i].getElementsByTagName('td')[indice_ordinamento];
+      while (obj.childNodes.length != 0)
+        obj = obj.childNodes[0];
+      obj = obj.nodeValue;
+      var contname = trs[i].getElementsByTagName('td')[1];
+      while (contname.childNodes.length != 0)
+        contname = contname.childNodes[0];
+      contname = contname.nodeValue;
+      array.push([obj, trs[i], contname]);
+    }
+
+  array.sort(function(a, b) { return indice_ordinamento < 2? (a[0] < b[0]? -1: a[0] > b[0]? 1: 0): b[0] - a[0] == 0 ? (a[2] < b[2]? -1: a[2] > b[2]? 1: 0) : b[0] - a[0] ; });
+  for (var i = trs.length-1; i >= 0; i--)
+    {
+      tbody.insertBefore(array[i][1], tbody.firstChild);
+    }
+}
+
+window.onload = function()
+{
+  window.indice_ordinamento = 2;
+  var table = document.getElementById('ranking');
+  sort_ranking(table.getElementsByTagName('th')[2]);
+}
+</script>
+</head>
+<body>
+    {% include header.html %}
+
+    <div class="core">
+    {% block core %}{% end %}
+    </div>
+</body>
+</html>
