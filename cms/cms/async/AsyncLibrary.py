@@ -410,6 +410,8 @@ class ThreadedRPC(threading.Thread):
              self.binary_response)))
         self.service._threaded_responses_lock.release()
 
+class SyncRPCError(Exception):
+    pass
 
 class RemoteService(asynchat.async_chat):
     """This class mimick the local presence of a remote service. A
@@ -585,7 +587,10 @@ class RemoteService(asynchat.async_chat):
         if not self.connected:
             self.connect_remote_service()
             if not self.connected:
-                return False
+                if self.sync:
+                    raise SyncRPCError("Couldn't connect to remote service")
+                else:
+                    return False
         if bind_obj == None:
             bind_obj = self.service
         message = {}
@@ -623,8 +628,10 @@ class RemoteService(asynchat.async_chat):
         if self.sync:
             while not plus in self.sync_responses:
                 asyncore.loop(0.02, True, None, 1)
-            response = self.sync_responses[plus]
+            (response, error) = self.sync_responses[plus]
             del self.sync_responses[plus]
+            if error is not None:
+                raise SyncRPCError(error)
             return response
         return True
 
@@ -641,7 +648,7 @@ class RemoteService(asynchat.async_chat):
         error (string): errors from the callee.
 
         """
-        self.sync_responses[plus] = data
+        self.sync_responses[plus] = (data, error)
 
     def __getattr__(self, method):
         """Syntactic sugar to call a remote method without using
@@ -914,8 +921,7 @@ def sync_call(function, args,
         error = plus['error']
         data = plus['data']
         if error is not None:
-            # FIXME Improve error handling
-            raise Exception(repr(error))
+            raise SyncRPCError(error)
         else:
             return data
 
