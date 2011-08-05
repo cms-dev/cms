@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8"?><root>{% for ann_item in announcements %}<announcement>{{ ann_item.subject }}</announcement>{% end %}{% for mess_item in messages %}<message>{{ mess_item.subject }}</message>{% end %}<requestdate>{{ timestamp }}</requestdate></root>

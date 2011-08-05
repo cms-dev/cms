@@ -1,0 +1,150 @@
+{% extends base.html %}
+
+{% block core %}
+    <div class="core_title">
+    <h1>{{ selected_user.real_name }} ({{ selected_user.username }})</h1>
+    </div>
+
+    {% if handler.get_argument("notext","") == "true" %}
+    <span class="error">No subject or no text given.</span>
+    {% end %}
+
+    <h2 onclick="util.toggleVisibility(&quot;user_submissions&quot;);">
+    <span class="toggle" id="user_submissions_toggle">-</span>Submissions</h2>
+    <div id="user_submissions">
+    {% if submissions != [] %}
+           <table class="sub_table">
+            <tr>
+                <th>Date</th>
+                <th>Task</th>
+                <th>Compilation<br/>status</th>
+                <th>Evaluation<br/>status</th>
+                <th>Files</th>
+                <th>Detailed<br/>Feedback<br/>Requested</th>
+                <th>Re-evaluate?</th>
+            </tr>
+            {% for s in sorted(submissions, key=lambda s: s.timestamp , reverse = True) %}
+                <tr>
+                    <td><a href="/submissions/details/{{escape(s.id)}}">{{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</a></td>
+                    <td>{{ s.task.name }}</td>
+                    <td>{{ s.compilation_outcome }}</td>
+                    <td>
+                        {% if s.evaluation_outcome != None %}
+                            Evaluated
+                        {% else %}
+                            Not evaluated
+                        {% end %}
+                    </td>
+                    <td>
+                    {% for key,value in s.files.items() %}
+                        <a href="/submission_file/{{ escape(s.id) }}/{{ escape(key) }}">{{ escape(key) }}<br/>
+                    {% end %}
+                    </td>
+                    <td>
+                    {% if s.token_timestamp==None %}
+                        No
+                    {% else %}
+                        Yes
+                    {% end %}
+                    </td>
+                    <td>
+                        <a href="/reevaluate/submission/{{escape(s.id)}}">Go ahead!</a>
+                    </td>
+                </tr>
+            {% end %}
+            </table>
+    {% else %}
+    No submissions.
+    {% end %}
+    </div>
+
+    <h2 onclick="util.toggleVisibility(&quot;user_messages&quot;);">
+    <span class="toggle" id="user_messages_toggle">-</span>Messages</h2>
+    <div id="user_messages">
+    {% if selected_user.messages != [] %}
+        {% for i, msg in enumerate(reversed(selected_user.messages)) %}
+            <div class="message_item displayed">
+                <span class="message_date">{{ datetime.datetime.fromtimestamp(msg.timestamp).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
+                <span class="message_subject">{{msg.subject}}</span>
+                <span class="message_text">{{msg.text}}</span>
+            </div>
+        {% end %}
+    {% else %}
+    No messages.
+    {% end %}
+
+        <h3 onclick="util.toggleVisibility(&quot;send_message&quot;);">
+        <a name="send_message"></a>
+        <span class="toggle" id="send_message_toggle">-</span>Send a message</h2>
+        <div id="send_message">
+            <form id="send_message_form" action="/message/{{selected_user.id}}" method="POST">
+                Subject: <input id="send_message_subject" type="text" name="send_message_subject"></br>
+                Text: <textarea name="send_message_text"></textarea><br/>
+                <input type="submit" value="Send"/>
+            </form>
+        </div>
+    </div>
+
+    <script>
+    function question_reply_toggle(element, invoker) {
+        if(document.getElementsByClassName("reply_question")[element].style.display!="block")
+        {
+            document.getElementsByClassName("reply_question")[element].style.display="block";
+            invoker.innerHTML = "Hide Reply";
+        }
+        else
+        {
+            document.getElementsByClassName("reply_question")[element].style.display="none";
+            invoker.innerHTML = "Reply";
+        }
+        return false;
+    }
+    </script>
+
+    <h2 onclick="util.toggleVisibility(&quot;user_questions&quot;);">
+    <span class="toggle" id="user_questions_toggle">-</span>Submitted Questions</h2>
+    <div id="user_questions">
+    {% if selected_user.questions != [] %}
+        {% for i, question in enumerate(reversed(selected_user.questions)) %}
+            <div class="question_item displayed">
+                <div class="question_content">
+                    <span class="question_date">{{ datetime.datetime.fromtimestamp(question.question_timestamp).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
+                    <span class="question_subject">{{escape(question.subject)}}</span>
+                    <span class="question_text">{{escape(question.text)}}</span>
+                    {% if question.reply_timestamp != None %}
+                        <hr/>
+                        <div class="reply_question_quick_answer">Replied with short answer: {{ WebConfig.quick_answers.get(question.short_reply, "No short reply.") }}</div>
+                        {% if question.long_reply %}
+                        <div class="reply_question_additional">Additional message: {{ escape(question.long_reply) }}</div>
+                        {% end %}
+                    {% end %}
+                    <div class="reply_question_toggle">
+                        <a href="#" onclick="return question_reply_toggle({{ i }},this);">Reply</a>
+                    </div>
+                </div>
+                <div class="reply_question" >
+                    <hr/>
+                    <form class="reply_question_form" action="/question/{{question.id}}" method="POST">
+                        Short answer:
+                        <select name="reply_question_quick_answer">
+                            <option value="yes">Yes</option>
+                            <option value="no">No</option>
+                            <option value="answered">Answered in task description</option>
+                            <option value="invalid">Invalid question</option>
+                            <option value="nocomment">No comment</option>
+                            <option selected value="other">Other</option>
+                        </select>
+                        </br>
+                        Additional text: </br><textarea name="reply_question_text"></textarea><br/>
+                        <input type="submit" value="Send"/>
+                    </form>
+                </div>
+
+            </div>
+        {% end %}
+    {% else %}
+    No submitted questions.
+    {% end %}
+    </div>
+
+{% end %}

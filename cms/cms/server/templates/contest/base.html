@@ -1,0 +1,71 @@
+{% import cms.server.BusinessLayer as BusinessLayer %}
+{% import cms.util.WebConfig as WebConfig %}
+{% import time %}
+{% import cms.util.Utils as Utils%}
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <title>{{ contest.description }}</title>
+
+<script language="Javascript">
+<!--
+    var util
+    function init()
+    {
+        util = new Utilities({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }}); 
+
+        firstDate = new Date();
+        util.getTime();
+        setInterval("util.getTime()", 1000);
+        util.notifications();
+        setInterval("util.notifications()", 15000);
+    }
+//-->
+  </script>
+  <script language="Javascript" src="/static/scripts.js" onload="init()">
+  </script>
+</head>
+<body>
+    <div id="notification">
+        <div id="notification_close" 
+        onclick="util.hideNotification(this)">
+        <a href="#">X</a>
+        </div>
+        <div id="notification_content"></div>
+    </div>
+
+    <div id="global">
+    <div id="popup_question_background">
+    </div>
+    <div id="popup_question_container">
+        <div id="popup_question">
+          <div id="popup_question_header">
+            <div id="popup_question_close">
+            <a href="#" onclick="util.closePopupQuestion()">X</a>
+            </div>
+            Ask a question
+            </div>
+          <div id="popup_question_body">
+            <form name="question" action="/question" method="POST">
+              <label for="subject">Subject: </label>
+              <input id="popup_question_subject" name="question_subject"></br>
+              <label for="question_text">Type your question:</label></br>
+              <textarea name="question_text"></textarea><br/>
+              <input type="submit" value="Send"/>
+              <input type="reset"/>
+              </form>
+          </div>
+        </div>
+    </div>
+        {% include header.html %}
+
+        {% comment include loginbar.html %}
+            {% include sidebar.html %}
+            <div class="core">
+            {% block core %}{% end %}
+            </div>
+        {% include footer.html %}
+    </div>
+</body>
+</html>

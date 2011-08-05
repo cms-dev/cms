@@ -1,0 +1,83 @@
+{% extends base.html %}
+{% block core %}
+    <div class="core_title">
+    <h1>Add task</h1>
+    </div>
+    
+    <form enctype="multipart/form-data" action="/add_task" method="post" >
+    <h2 onclick="util.toggleVisibility(&quot;task_information&quot;);">
+    <span class="toggle" id="task_information_toggle" >-</span>Task Information</h2>
+    <div id="task_information">
+        <table>
+        <tr>
+        <td>Name</td><td><input type="text" name="name"/></td>
+        </tr><tr>
+        <td>Title</td><td><input type="text" name="title"/></td>
+        </tr><tr>
+        <td>Statement</td><td>
+        <input type="file" name="statement"></input>
+        </td>
+        </tr><tr>
+        <td>Attachments</td><td>
+        <input type="file" name="attachments"></input>
+        </td>
+        </tr><tr>
+        <td>Time limit</td><td><input type="text" name="time_limit" value="1"/> second(s)</td>
+        </tr><tr>
+        <td>Memory limit</td><td><input type="text" name="memory_limit" value="512"/> MB</td>
+        </tr><tr>
+        <td>Task type</td>
+        <td>
+        <select name="task_type">
+        <option value="TaskTypeBatch">Batch</option>
+        <option value="TaskTypeProgramming">Programming</option>
+        <option value="TaskTypeOutputOnly">Output Only</option>
+        </select>
+        </td>
+        </tr><tr>
+        <td>Submission format</td>
+        <td>
+        <input type="text" name="submission_format"/>
+        </td>
+        </tr><tr>
+        <td>Managers</td><td>
+        <input type="file" name="manager"></input>
+        </td>
+        </tr><tr>
+        <td>Score Type</td>
+        <td>
+        {% comment TODO: Fetch the score types from ScoreType. %}
+        <select name="score_type">
+        <option value="ScoreTypeSum">Sum</option>
+        <option value="ScoreTypeMin">Minimum</option>
+        <option value="ScoreTypeMul">Multiply</option>
+        <option value="ScoreTypeRelative">Relative</option>
+        </select>
+        </td>
+        </tr><tr>
+        <td>Score Parameters</td><td><textarea name="score_parameters"></textarea></td>
+        </tr><tr>
+        <td>Testcases</td><td>
+          <table style="border: 1px solid gray;">
+          <tr><th>File</th><th>Public</th></tr>
+          <tr>
+          <td><input type="file" name="test_case"></input></td>
+          <td><input type="checkbox" name="public_test_case"/></td>
+          </tr>
+          </table>
+        </td>
+        </tr><tr>
+        <td>Initial number of tokens</td><td><input type="text" name="token_initial" value="0"/></td>
+        </tr><tr>
+        <td>Maximum number of tokens</td><td><input type="text" name="token_max" value="0"/></td>
+        </tr><tr>
+        <td>Total number of tokens</td><td><input type="text" name="token_total" value="0"/></td>
+        </tr><tr>
+        <td>Minimum interval between tokens</td><td><input type="text" name="token_min_interval" value="0"/></td>
+        </tr><tr>
+        <td>Token generation period</td><td><input type="text" name="token_gen_time" value="1"/></td>
+        </tr>
+        </table>
+    </div>
+    </form>
+{% end %}

@@ -1,0 +1,32 @@
+{% extends base.html %}
+
+{% block core %}
+
+        <div class="core_title">
+        <h1>Announcements</h1>
+        </div>
+          <div id="announcements">
+          <form method="post" action="/add_announcement">
+            <input name="subject" size="20" /><br/>
+            <textarea name="text" rows="3" cols="40"></textarea><br/>
+            <input type="submit" value="Add announcement" />
+          </form>
+          {% if contest.announcements != [] %}
+              {% for msg_i, msg in enumerate(reversed(contest.announcements)) %}
+              <div class="announcement_item displayed">
+                  <span class="announcement_date">{{ datetime.datetime.fromtimestamp(msg.timestamp).strftime("%d/%m/%Y %H:%M:%S")  }}
+                    <form method="post" action="/remove_announcement" style="float:right;">
+                      <input type="hidden" name="id" value="{{ msg.id}}"/>
+                      <input type="submit" value="Remove announcement" />
+                    </form>
+                  </span>
+                  <span class="announcement_subject">{{msg.subject}}</span>
+                  <span class="announcement_text">{{msg.text}}</span>
+              </div>
+              {% end %}
+          {% else %}
+              No announcements.
+          {% end %}
+          </div>
+
+{% end %}

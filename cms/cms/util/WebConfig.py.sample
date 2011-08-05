@@ -21,6 +21,8 @@
 
 import os
 
+import cms
+
 contest_listen_port = 8888
 ranking_listen_port = 9999
 admin_listen_port = 8889
@@ -46,30 +48,30 @@ quick_answers = {
 
 contest_parameters = {
     "login_url": "/" ,
-    "template_path": os.path.join(os.path.dirname(__file__),
-                                  "templates", "contest"),
-    "static_path": os.path.join(os.path.dirname(__file__),
-                                "static", "contest"),
+#    "template_path": os.path.join(os.path.dirname(__file__),
+#                                  "templates", "contest"),
+#    "static_path": os.path.join(os.path.dirname(__file__),
+#                                "static", "contest"),
     "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
     "debug" : "True",
     }
 
 ranking_parameters = {
     "login_url": "/" ,
-    "template_path": os.path.join(os.path.dirname(__file__),
-                                  "templates", "ranking"),
-    "static_path": os.path.join(os.path.dirname(__file__),
-                                "static", "ranking"),
+#    "template_path": os.path.join(os.path.dirname(__file__),
+#                                  "templates", "ranking"),
+#    "static_path": os.path.join(os.path.dirname(__file__),
+#                                "static", "ranking"),
     "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
     "debug" : "True",
    }
 
 admin_parameters = {
     "login_url": "/",
-    "template_path": os.path.join(os.path.dirname(__file__),
-                                  "templates", "admin"),
-    "static_path": os.path.join(os.path.dirname(__file__),
-                                "static", "admin"),
+#    "template_path": os.path.join(os.path.dirname(__file__),
+#                                  "templates", "admin"),
+#    "static_path": os.path.join(os.path.dirname(__file__),
+#                                "static", "admin"),
     "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
     "debug": True,
     }

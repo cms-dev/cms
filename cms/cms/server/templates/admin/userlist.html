@@ -1,0 +1,23 @@
+{% extends base.html %}
+
+{% block core %}
+    <div class="core_title">
+    <h1>Users list</h1>
+    </div>
+    <table>
+      <tr>
+        <th>Name</th>
+        <th>Username</th>
+        <th></th>
+        <th></th>
+      </tr>
+      {% for u in sorted(contest.users, cmp = lambda x, y: cmp(x.username, y.username))  %}
+      <tr>
+        <td>{{ u.real_name }}</td>
+        <td>{{ u.username }}</td>
+        <td>[<a href="/user/{{u.id}}">Submissions</a>]</td>
+        <td>[<a href="/reevaluate/user/{{ u.id }}">Re-evaluate all</a>]</td>
+      </tr>
+      {% end %}
+    </table>
+{% end %}

@@ -1,0 +1,155 @@
+{% extends base.html %}
+{% block core %}
+    <div class="core_title">
+    <h1>{{ task.title }} ({{ task.name }})</h1>
+    </div>
+
+    <h2 onclick="util.toggleVisibility(&quot;task_information&quot;);">
+    <span class="toggle" id="task_information_toggle" >-</span>Task Information</h2>
+    <div id="task_information">
+      <form enctype="multipart/form-data" action="/task/{{task.name}}" method="POST">
+        <table>
+        <tr>
+        <td>Name</td><td><input type="text" name="name" value="{{task.name}}"/></td>
+        </tr><tr>
+        <td>Title</td><td><input type="text" name="title" value="{{task.title}}"/></td>
+        </tr><tr>
+        
+        <td><a href="/task/{{task.name}}/statement">Statement</a></td><td>
+        <input type="file" name="statement"></input>
+        </td>
+        </tr><tr>
+        <td>Attachments</td><td>
+        <input type="file" name="attachments"></input>
+        </td>
+        </tr><tr>
+        
+        <td>Time limit</td><td>
+        <input type="text" name="time_limit" value="{{ task.time_limit }}"/> second(s)</td>
+        </tr><tr>
+        <td>Memory limit</td><td>
+        <input type="text" name="memory_limit" value="{{ task.memory_limit }}"/> MB</td>
+        </tr><tr>
+
+        
+        <td>Task type</td>
+        <td>
+        <select name="task_type">
+        <option value="TaskTypeBatch" 
+          {% if task.task_type == "TaskTypeBatch" %}selected{% end %} >
+          Batch
+        </option>
+        <option value="TaskTypeProgramming"
+          {% if task.task_type == "TaskTypeProgramming" %}selected{% end %} >
+          Programming
+        </option>
+        <option value="TaskTypeOutputOnly"
+          {% if task.task_type == "TaskTypeOutputOnly" %}selected{% end %} >
+          Output Only
+        </option>
+        </select>
+        </td>
+        </tr><tr>
+
+        <td>Submission format</td>
+        <td>
+        {% for i in task.submission_format %}
+        <input type="text" name="submission_format" value="{{ i }}"/></br>
+        {% end %}
+        </td>
+        </tr><tr>
+
+        <td>Managers</td><td>
+        {% for k, v in task.managers.iteritems() %}
+          <a href="/file/{{v}}">{{ k }}</a>
+        {% end %}
+        </td>
+        </tr><tr>
+
+        <td>Score Type</td>
+        <td>
+        {% comment TODO: Fetch the score types from ScoreType. %}
+        <select name="score_type">
+        <option value="ScoreTypeSum"
+        {% if task.score_type == "ScoreTypeSum" %}selected{% end %} >
+        Sum
+        </option>
+        <option value="ScoreTypeMin"
+        {% if task.score_type == "ScoreTypeMin" %}selected{% end %} >
+        Minimum
+        </option>
+        <option value="ScoreTypeMul"
+        {% if task.score_type == "ScoreTypeMul" %}selected{% end %} >
+        Multiply
+        </option>
+        <option value="ScoreTypeRelative"
+        {% if task.score_type == "ScoreTypeRelative" %}selected{% end %} >
+        Relative
+        </option>
+        </select>
+        </td>
+        </tr><tr>
+        <td>Score Parameters</td><td><textarea name="score_parameters">{{ task.score_parameters }}</textarea></td>
+        </tr><tr>
+        <td>Testcases</td><td>
+        <div style="overflow: auto; height: 400px; width: 400px;">
+          <table style="width: 100%">
+            <tr>
+            <th>Position</th>
+            <th>Public</th>
+            <th>Test cases</th>
+            </tr>
+          {% for position, test_set in enumerate(task.testcases) %}
+            <tr>
+            <th>
+            {{ position }}
+            </th>
+            <td>
+            {% if position in task.public_testcases %}
+              Yes
+            {% else %}
+              No
+            {% end %}
+            </td>
+            <td>
+            {% for set_position, testcase in enumerate(test_set) %}
+            <a href="/file/{{testcase}}">Test {{ position }}.{{ set_position }}</a></br>
+            {% end %}
+            </td>
+          {% end %}
+          </table>
+        </div>
+        </td>
+        </tr><tr>
+        <td>Initial number of tokens</td>
+        <td>
+        <input type="text" name="token_initial" value="{{ task.token_initial }}"/>
+        </td>
+        </tr><tr>
+        <td>Maximum number of tokens</td>
+        <td>
+        <input type="text" name="token_max" value="{{ task.token_max }}"/>
+        </td>
+        </tr><tr>
+        <td>Total number of tokens</td>
+        <td>
+        <input type="text" name="token_total" value="{{ task.token_total }}"/>
+        </td>
+        </tr><tr>
+        <td>Minimum interval between tokens</td>
+        <td>
+        <input type="text" name="token_min_interval" value="{{ task.token_min_interval }}"/>
+        </td>
+        </tr><tr>
+        <td>Token generation period</td>
+        <td>
+        <input type="text" name="token_gen_time" value="{{ task.token_gen_time }}"/>
+        </td>
+        </tr>
+        </table>
+      <input type="submit" value="Edit">
+      <input type="reset" value="Reset">
+      </form>
+    </div>
+
+{% end %}

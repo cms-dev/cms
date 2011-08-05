@@ -1,0 +1,15 @@
+<div class="sidebar">
+    <ul class="menu">
+        <li class="menu_entry"><a class="menu_link" href="/">Overview</a></li>
+        <li class="menu_entry"><a class="menu_link" href="/instructions">Instructions</a></li>
+        {% if current_user != None and phase == 0 %}
+            <li class="menu_entry">Tasks</li>
+            <ul class="submenu">
+            {% for t_iter in contest.tasks %}
+                <li class="submenu_entry"><a class="submenu_link" href="/tasks/{{t_iter.name}}">{{t_iter.name}}</a></li>
+            {% end %}
+            </ul>
+        {% end %}
+    </ul>
+</div>
+<div id="sidebar_bg"></div>

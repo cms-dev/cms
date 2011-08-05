@@ -1,0 +1,63 @@
+{% extends base.html %}
+
+{% block core %}
+
+        <div class="core_title">
+        <h1>Overview</h1>
+        </div>
+        
+        <h2>Queue status</h2>
+        {% if queue_status != None %}
+        <table class="sub_table">
+          <tr>
+            <th>Id</th>
+            <th>Job type</th>
+            <th>Submission</th>
+            <th>Priority</th>
+            <th>Since</th>
+          </tr>
+          {% for i, el in enumerate(queue_status) %}
+          <tr>
+            <td>{{ i }}</td>
+            {% if isinstance(el['job'], str) %}
+            <td></td>
+            <td>{{ el['job'] }}</td>
+            {% else %}
+            <td>{{ el['job'][0] }}</td>
+            <td>{{ el['job'][1] }}</td>
+            {% end %}
+            <td>{{ el['priority'] }}</td>
+            <td>{{ int(time.time() - el['timestamp']) }} seconds ago</td>
+          <tr>
+          {% end %}
+        </table>
+        {% else %}
+        Queue status unavailable.
+        {% end %}
+
+        <h2>Workers status</h2>
+        {% if workers_status != None %}
+        <table class="sub_table">
+          <tr>
+            <th>Id</th>
+            <th>Address</th>
+            <th>Errors</th>
+            <th>Current job</th>
+          </tr>
+          {% for i, w in workers_status.iteritems() %}
+          <tr>
+            <td>{{ i }}</td>
+            <td>{{ w['address'][0] }}:{{ w['address'][1] }}</td>
+            <td>{{ w['error_count'] }}</td>
+            {% if isinstance(w['job'], str) %}
+            <td>{{ w['job'] }}</td>
+            {% else %}
+            <td>{{ w['job'][0] }} {{ w['job'][1] }} for {{ "%.2f" % (timestamp - w['start_time']) }} seconds</td>
+            {% end %}
+          <tr>
+          {% end %}
+        </table>
+        {% else %}
+        Workers status unavailable.
+        {% end %}
+{% end %}
