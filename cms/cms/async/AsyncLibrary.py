@@ -425,7 +425,7 @@ class RemoteService(asynchat.async_chat):
             response["__id"] = message["__id"]
         if "__method" in message:
             try:
-                method_info = self.service.method_info(message["__method"]))
+                method_info = self.service.method_info(message["__method"])
                 binary_response = method_info["binary_response"]
             except KeyError:
                 response["__error"] = "%s: %s" % (
