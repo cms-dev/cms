@@ -25,9 +25,10 @@ method, and offer a quite long version of the echo method.
 """
 
 import time
+import threading
 
 from cms.async.AsyncLibrary import Service, rpc_method, \
-     rpc_binary_response, logger
+     rpc_binary_response, rpc_threaded, logger
 from cms.async import ServiceCoord
 
 
@@ -43,18 +44,20 @@ class ServiceB(Service):
         Service.__init__(self, shard)
 
     @rpc_method
+    @rpc_threaded
     def long_rpc_method(self, string):
         """Anoter example RPC method that takes a while.
 
         """
         logger.debug("ServiceB.long_rpc_method")
-        logger.info("Start long method")
+        logger.info("Start long method, par = %s" % string)
         time.sleep(3)
         logger.info("End long method")
         return string
 
     @rpc_method
     @rpc_binary_response
+    @rpc_threaded
     def binary_cat(self, filename):
         """RPC method that returns the content of a file.
 
