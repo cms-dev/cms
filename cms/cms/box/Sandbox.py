@@ -36,8 +36,10 @@ class Sandbox:
 
         self.path = tempfile.mkdtemp()
         self.FC = FileCacher(service, file_service)
+        self.exec_name = 'mo-box'
+        self.box_exec = self.detect_box_executable()
         self.info_file = "run.log"    # -M
-        logger.debug("Sandbox in %s created" % (self.path))
+        logger.debug("Sandbox in `%s' created, using box `%s'" % (self.path, self.box_exec))
 
         # Default parameters for mo-box
         self.file_check = None        # -a
@@ -61,6 +63,18 @@ class Sandbox:
         self.verbosity = 0            # -v
         self.wallclock_timeout = None # -w
         self.extra_timeout = None     # -x
+
+    def detect_box_executable(self):
+        PATHS = [os.path.join('.', self.exec_name),
+                 os.path.join('.', 'box', self.exec_name),
+                 self.exec_name]
+        for p in PATHS:
+            if os.path.exists(p):
+                return p
+
+        # As default, return self.exec_name alone, that means that
+        # standard path is used.
+        return PATHS[-1]
 
     def build_box_options(self):
         res = list()
@@ -293,3 +307,16 @@ class Sandbox:
     def delete(self):
         logger.debug("Deleting sandbox in %s" % (self.path))
         shutil.rmtree(self.path)
+
+def main():
+    from cms.async.AsyncLibrary import Service
+    from cms.async import ServiceCoord
+    logger.initialize(ServiceCoord('ServiceA', 0))
+    class ServiceA(Service):
+        def __init__(self, shard):
+            Service.__init__(self, shard)
+    s = ServiceA(0)
+    sb = Sandbox(s, s.connect_to(ServiceCoord('FileStorage', 0)))
+
+if __name__ == '__main__':
+    main()
