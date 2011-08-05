@@ -21,6 +21,7 @@
 
 from distutils.core import setup
 import sys
+import os
 
 setup(name="cms",
       version="0.1",
@@ -36,6 +37,8 @@ setup(name="cms",
                 "cms.service",
                 "cms.util",
                 "cms.async"],
+      package_data={"cms.async":
+                    [os.path.join("static", "*")]},
       keywords="ioi programming contest grader management system",
       license="Lesser Affero General Public License v3",
       classifiers=["Development Status :: 3 - Alpha",
