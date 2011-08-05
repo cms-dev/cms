@@ -27,15 +27,17 @@ import tempfile
 import stat
 import select
 
-import Utils
-from FileStorageLib import FileStorageLib
+from cms.async.AsyncLibrary import logger
 
 class Sandbox:
-    def __init__(self):
+    def __init__(self, service):
+        self.service = service 
+
         self.path = tempfile.mkdtemp()
-        self.FSL = FileStorageLib()
+        self.FS = service.connect_to(
+            ServiceCoord("FileStorage", 0))
         self.info_file = "run.log"    # -M
-        Utils.log("Sandbox in %s created" % (self.path), Utils.Logger.SEVERITY_DEBUG)
+        logger.debug("Sandbox in %s created" % (self.path))
 
         # Default parameters for mo-box
         self.file_check = None        # -a
@@ -115,7 +117,6 @@ class Sandbox:
                         self.log.append(line.strip().split(":", 1))
             except IOError:
                 raise IOError("Error while reading execution log")
-        #Utils.log("Execution log: %s" % (repr(self.log)), Utils.Logger.SEVERITY_DEBUG)
         return self.log
 
     def get_execution_time(self):
@@ -142,7 +143,6 @@ class Sandbox:
             for k, v in self.get_log():
                 if k == 'status':
                     self.status_list.append(v)
-        #Utils.log("Status list: %s" % (repr(self.status_list)), Utils.Logger.SEVERITY_DEBUG)
 
         return self.status_list
 
@@ -205,9 +205,9 @@ class Sandbox:
 
     def create_file(self, path, executable = False):
         if executable:
-            Utils.log("Creating executable file %s in sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
+            logger.debug("Creating executable file %s in sandbox" % (path))
         else:
-            Utils.log("Creating plain file %s in sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
+            logger.debug("Creating plain file %s in sandbox" % (path))
         real_path = self.relative_path(path)
         fd = open(real_path, "wb")
         mod = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR
@@ -227,7 +227,7 @@ class Sandbox:
         fd.close()
 
     def get_file(self, path):
-        Utils.log("Retrieving file %s from sandbox" % (path), Utils.Logger.SEVERITY_DEBUG)
+        logger.debug("Retrieving file %s from sandbox" % (path))
         real_path = self.relative_path(path)
         fd = open(real_path, "rb")
         return fd
@@ -240,8 +240,7 @@ class Sandbox:
             else:
                 content = fd.read(maxlen)
         except UnicodeDecodeError as e:
-            Utils.log("Unable to interpret file as UTF-8. %s" % repr(e),
-                      Utils.Logger.SEVERITY_IMPORTANT)
+            logger.important("Unable to interpret file as UTF-8. %s" % repr(e))
             return None
         fd.close()
         return content
@@ -266,12 +265,12 @@ class Sandbox:
 
     def execute(self, command):
         args = ["./mo-box"] + self.build_box_options() + ["--"] + command
-        Utils.log("Executing program in sandbox with command: %s" % (" ".join(args)), Utils.Logger.SEVERITY_DEBUG)
+        logger.debug("Executing program in sandbox with command: %s" % (" ".join(args)))
         return subprocess.call(args)
 
     def popen(self, command, stdin = None, stdout = None, stderr = None, close_fds = False):
         args = ["./mo-box"] + self.build_box_options() + ["--"] + command
-        Utils.log("Executing program in sandbox with command: %s" % (" ".join(args)), Utils.Logger.SEVERITY_DEBUG)
+        logger.debug("Executing program in sandbox with command: %s" % (" ".join(args)))
         return subprocess.Popen(args, stdin = stdin, stdout = stdout, stderr = stderr, close_fds = close_fds)
 
     def execute_without_std(self, command):
@@ -292,5 +291,5 @@ class Sandbox:
         return popen.wait()
 
     def delete(self):
-        Utils.log("Deleting sandbox in %s" % (self.path), Utils.Logger.SEVERITY_DEBUG)
+        logger.debug("Deleting sandbox in %s" % (self.path))
         shutil.rmtree(self.path)
