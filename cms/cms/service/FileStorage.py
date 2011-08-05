@@ -303,15 +303,49 @@ class FileCacher:
             else:
                 file_content = data.read()
                 orig_callback(bind_obj, file_content, orig_plus)
-        
 
-    def get_file_to_string(self, digest, callback=None, plus=None, bind_obj=None):
+    ## GET VARIATIONS ##
+
+    def get_file_to_file(self, digest,
+                         callback=None, plus=None, bind_obj=None):
+        """Get a file from the cache or from the service if not
+        present. Returns it as a file-like object.
+
+        digest (string): the sha1 sum of the file
+        callback (function): to be called with the received
+                             file-like object
+        plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCacher)
+
+        """
+        return self.get_file(digest=digest, callback=callback,
+                             plus=plus, bind_obj=bind_obj)
+
+    def get_file_to_path(self, digest, path,
+                         callback=None, plus=None, bind_obj=None):
+        """Get a file from the cache or from the service if not
+        present. Returns it by putting it in the specified path.
+
+        digest (string): the sha1 sum of the file
+        path (string): the path where to copy the received file
+        callback (function): to be called upon completion
+        plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCacher)
+
+        """
+        return self.get_file(digest=digest, callback=callback,
+                             path=path, plus=plus, bind_obj=bind_obj)
+
+    def get_file_to_string(self, digest,
+                           callback=None, plus=None, bind_obj=None):
         """Get a file from the cache or from the service if not
         present. Returns it as a string.
 
         digest (string): the sha1 sum of the file
-        path (string): a path where to save the file
-        callback (function): to be called with the file content
+        callback (function): to be called with the received
+                             file content
         plus (object): additional data for the callback
         bind_obj (object): context for the callback (None means
                            the service that created the FileCacher)
@@ -427,6 +461,62 @@ class FileCacher:
 
         # Do not call me again:
         return False
+
+    ## PUT SYNTACTIC SUGARS ##
+
+    def put_file_from_string(self, content, description="",
+                             callback=None, plus=None, bind_obj=None):
+        """Send a file to FileStorage keeping a copy locally. The file is
+        obtained from a string.
+
+        This call is actually a syntactic sugar over put_file().
+
+        content (string): the content of the file to send
+        description (string): a human-readable description of the content
+        callback (function): to be called with the digest of the file
+        plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCached)
+
+        """
+        return self.put_file(binary_data=content, description=description,
+                             callback=callback, plus=plus, bind_obj=bind_obj)
+
+    def put_file_from_file(self, file_obj, description="",
+                           callback=None, plus=None, bind_obj=None):
+        """Send a file to FileStorage keeping a copy locally. The file is
+        obtained from a file-like object.
+
+        This call is actually a syntactic sugar over put_file().
+
+        file_obj (file): the file-like object to send
+        description (string): a human-readable description of the content
+        callback (function): to be called with the digest of the file
+        plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCached)
+
+        """
+        return self.put_file(file_obj=file_obj, description=description,
+                             callback=callback, plus=plus, bind_obj=bind_obj)
+
+    def put_file_from_path(self, path, description="",
+                           callback=None, plus=None, bind_obj=None):
+        """Send a file to FileStorage keeping a copy locally. The file is
+        obtained from a file specified by its path.
+
+        This call is actually a syntactic sugar over put_file().
+
+        path (string): the file to send
+        description (string): a human-readable description of the content
+        callback (function): to be called with the digest of the file
+        plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCached)
+
+        """
+        return self.put_file(path=path, description=description,
+                             callback=callback, plus=plus, bind_obj=bind_obj)
 
 if __name__ == "__main__":
     import sys
