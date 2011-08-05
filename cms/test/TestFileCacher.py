@@ -68,10 +68,10 @@ class TestFileCacher(TestService):
             self.content += chr(random.randint(0, 255))
 
         logger.info("  I am sending the short binary file to FileCacher")
-        self.FC.put_file(file_obj=StringIO(self.content),
-                         description="Test #000",
-                         callback=TestFileCacher.test_000_callback,
-                         plus=("Test #", 0))
+        self.FC.put_file_from_file(file_obj=StringIO(self.content),
+                                   description="Test #000",
+                                   callback=TestFileCacher.test_000_callback,
+                                   plus=("Test #", 0))
 
     @rpc_callback
     def test_000_callback(self, data, plus, error=None):
@@ -103,9 +103,9 @@ class TestFileCacher(TestService):
         self.fake_content = "Fake content.\n"
         with open(self.cache_path, "wb") as f:
             f.write(self.fake_content)
-        self.FC.get_file(digest=self.digest,
-                         callback=TestFileCacher.test_001_callback,
-                         plus=("Test #", 1))
+        self.FC.get_file_to_file(digest=self.digest,
+                                 callback=TestFileCacher.test_001_callback,
+                                 plus=("Test #", 1))
 
     @rpc_callback
     def test_001_callback(self, data, plus, error=None):
@@ -135,9 +135,9 @@ class TestFileCacher(TestService):
         logger.info("  I am retrieving the file from FileCacher " +
                     "after deleting the cache.")
         os.unlink(self.cache_path)
-        self.FC.get_file(digest=self.digest,
-                         callback=TestFileCacher.test_002_callback,
-                         plus=("Test #", 2))
+        self.FC.get_file_to_file(digest=self.digest,
+                                 callback=TestFileCacher.test_002_callback,
+                                 plus=("Test #", 2))
 
     @rpc_callback
     def test_002_callback(self, data, plus, error=None):
@@ -205,9 +205,9 @@ class TestFileCacher(TestService):
 
         """
         logger.info("  I am retrieving an unexisting file from FileCacher.")
-        self.FC.get_file(digest=self.digest,
-                         callback=TestFileCacher.test_004_callback,
-                         plus=("Test #", 4))
+        self.FC.get_file_to_file(digest=self.digest,
+                                 callback=TestFileCacher.test_004_callback,
+                                 plus=("Test #", 4))
 
     @rpc_callback
     def test_004_callback(self, data, plus, error=None):
@@ -234,10 +234,10 @@ class TestFileCacher(TestService):
             self.content += chr(random.randint(0, 255))
 
         logger.info("  I am sending the short binary file to FileCacher")
-        self.FC.put_file(binary_data=self.content,
-                         description="Test #005",
-                         callback=TestFileCacher.test_005_callback,
-                         plus=("Test #", 5))
+        self.FC.put_file_from_string(content=self.content,
+                                     description="Test #005",
+                                     callback=TestFileCacher.test_005_callback,
+                                     plus=("Test #", 5))
 
     @rpc_callback
     def test_005_callback(self, data, plus, error=None):
