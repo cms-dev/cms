@@ -329,28 +329,35 @@ class FileCacher:
 
     ## PUT ##
 
-    def put_file(self, binary_data=None, description="",
-                 path=None, callback=None, plus=None):
-        """Send a file to FileStorage, and keep a copy locally.
+    def put_file(self, binary_data=None, description="", file_obj=None,
+                 path=None, callback=None, plus=None, bind_obj=None):
+        """Send a file to FileStorage, and keep a copy locally. The caller has to
+        provide exactly one among binary_data, file_obj and path.
 
         binary_data (string): the content of the file to send
         description (string): a human-readable description of the content
+        file_obj (file): the file-like object to send
         path (string): the file to send
         callback (function): to be called with the digest of the file
         plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCacher)
 
         """
-        if (binary_data == None and path == None) or \
-               (binary_data != None and path != None):
+        if sum(map(lambda x: {True: 1, False: 0}[x is not None],
+                   [binary_data, file_obj, path])) != 1:
             logger.error("No content (or too many) specified in put_file.")
             raise ValueError
 
+        if bind_obj is None:
+            bind_obj = self.service
         temp_path = os.path.join(self.tmp_dir, random_string(16))
         new_plus = {"callback": callback,
                     "plus": plus,
-                    "temp_path": temp_path
+                    "temp_path": temp_path,
+                    "bind_obj": bind_obj
                     }
-        if path != None:
+        if path is not None:
             # If we cannot store locally the file, we do not report
             # errors
             try:
@@ -366,12 +373,20 @@ class FileCacher:
                 new_plus["digest"] = None
                 self.service.add_timeout(self._put_file_callback, new_plus,
                                          100, immediately=True)
-        else:
+
+        elif binary_data is not None:
             # Again, no error for inability of caching locally
             try:
                 open(temp_path, "wb").write(binary_data)
             except IOError:
                 pass
+
+        else: # file_obj is not None
+            binary_data = file_obj.read()
+            try:
+                open(temp_path, "wb").write(binary_data)
+            except IOError:
+                pass            
 
         self.file_storage.put_file(binary_data=binary_data,
             description=description,
@@ -400,15 +415,15 @@ class FileCacher:
                      callback, plus, error, temp_path
 
         """
-        callback = plus["callback"]
+        callback, bind_obj = plus["callback"], plus["bind_obj"]
         if plus["error"] != None:
             logger.error(plus["error"])
             if callback != None:
-                callback(self.service, None, plus["plus"], plus["error"])
+                callback(bind_obj, None, plus["plus"], plus["error"])
         else:
             shutil.move(plus["temp_path"],
                         os.path.join(self.obj_dir, plus["digest"]))
-            callback(self.service, plus["digest"], plus["plus"], None)
+            callback(bind_obj, plus["digest"], plus["plus"], None)
 
         # Do not call me again:
         return False

@@ -25,6 +25,7 @@
 
 import os
 import random
+from StringIO import StringIO
 
 from cms.async.AsyncLibrary import rpc_callback, logger
 from cms.async.TestService import TestService
@@ -58,7 +59,7 @@ class TestFileCacher(TestService):
 
     def test_000(self):
         """Send a short random binary file to FileCacher through
-        FileCacher. FC should cache the content locally.
+        FileCacher as a file-like object. FC should cache the content locally.
 
         """
         path = random_string(16)
@@ -67,7 +68,7 @@ class TestFileCacher(TestService):
             self.content += chr(random.randint(0, 255))
 
         logger.info("  I am sending the short binary file to FileCacher")
-        self.FC.put_file(binary_data=self.content,
+        self.FC.put_file(file_obj=StringIO(self.content),
                          description="Test #000",
                          callback=TestFileCacher.test_000_callback,
                          plus=("Test #", 0))
@@ -223,22 +224,60 @@ class TestFileCacher(TestService):
 ### TEST 005 ###
 
     def test_005(self):
-        """Retrieve the file as a string.
+        """Send a short random binary file to FileCacher through
+        FileCacher as a string. FC should cache the content locally.
 
         """
-        logger.info("  I am retrieving the short binary file from FileCacher")
-        self.fake_content = "Fake content.\n"
-        with open(self.cache_path, "wb") as f:
-            f.write(self.fake_content)
-        self.FC.get_file_to_string(digest=self.digest,
-                                   callback=TestFileCacher.test_005_callback,
-                                   plus=("Test #", 5))
+        path = random_string(16)
+        self.content = ""
+        for i in xrange(100):
+            self.content += chr(random.randint(0, 255))
+
+        logger.info("  I am sending the short binary file to FileCacher")
+        self.FC.put_file(binary_data=self.content,
+                         description="Test #005",
+                         callback=TestFileCacher.test_005_callback,
+                         plus=("Test #", 5))
 
     @rpc_callback
     def test_005_callback(self, data, plus, error=None):
         if error != None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 5):
+            self.test_end(False, "Plus object not received correctly.")
+        elif not os.path.exists(
+            os.path.join("fs-cache", "objects", data)):
+            self.test_end(False, "File not stored in local cache.")
+        elif open(os.path.join("fs-cache", "objects", data),
+                  "rb").read() != self.content:
+            self.test_end(False, "Local cache's content differ " +
+                          "from original file.")
+        else:
+            self.cache_path = os.path.join("fs-cache", "objects", data)
+            self.digest = data
+            self.test_end(True, "Data sent and cached without error " +
+                          "and plus object received.")
+
+
+### TEST 006 ###
+
+    def test_006(self):
+        """Retrieve the file as a string.
+
+        """
+        logger.info("  I am retrieving the short binary file from FileCacher using get_file_from_string()")
+        self.fake_content = "Fake content.\n"
+        with open(self.cache_path, "wb") as f:
+            f.write(self.fake_content)
+        self.FC.get_file_to_string(digest=self.digest,
+                                   callback=TestFileCacher.test_006_callback,
+                                   plus=("Test #", 6))
+
+    @rpc_callback
+    def test_006_callback(self, data, plus, error=None):
+        if error != None:
+            self.test_end(False, "Error received: %s." % error)
+        elif plus != ("Test #", 6):
             self.test_end(False, "Plus object not received correctly.")
         elif data != self.fake_content:
             if data == self.content:
