@@ -28,14 +28,14 @@ import stat
 import select
 
 from cms.async.AsyncLibrary import logger
+from cms.service.FileStorage import FileCacher
 
 class Sandbox:
-    def __init__(self, service):
+    def __init__(self, service, file_service):
         self.service = service 
 
         self.path = tempfile.mkdtemp()
-        self.FS = service.connect_to(
-            ServiceCoord("FileStorage", 0))
+        self.FC = FileCacher(service, file_service)
         self.info_file = "run.log"    # -M
         logger.debug("Sandbox in %s created" % (self.path))
 
@@ -218,7 +218,7 @@ class Sandbox:
 
     def create_file_from_storage(self, path, digest, executable = False):
         fd = self.create_file(path, executable)
-        self.FSL.get_file(digest, fd)
+        self.FC.get_file_to_write_file(digest, fd, sync=True)
         fd.close()
 
     def create_file_from_string(self, path, content, executable = False):
@@ -247,7 +247,7 @@ class Sandbox:
 
     def get_file_to_storage(self, path, description = ""):
         fd = self.get_file(path)
-        digest = self.FSL.put_file(fd, description)
+        digest = self.FC.put_file_from_file(fd, description, sync=True)
         fd.close()
         return digest
 
