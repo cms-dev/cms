@@ -24,10 +24,11 @@ import subprocess
 import couchdb
 import codecs
 
-import Utils
-from Sandbox import Sandbox
-from Task import Task
-from Worker import JobException
+from cms.async.AsyncLibrary import logger
+from cms.box.Sandbox import Sandbox
+from cms.db.SQLAlchemyAll import Task
+from cms.service.Worker import JobException
+from cms.service.Utils import get_compilation_command, filter_ansi_escape
 
 def get_task_type_class(submission):
     if submission.task.task_type == Task.TASK_TYPE_BATCH:
@@ -105,8 +106,7 @@ class BatchTaskType:
             self.submission.compilation_text = text.decode("utf-8")
         except UnicodeDecodeError:
             self.submission.compilation_text("Cannot decode compilation text.")
-            Utils.log("Unable to decode UTF-8 for string %s." % text,
-                      Utils.Logger.SEVERITY_NORMAL)
+            logger.info("Unable to decode UTF-8 for string %s." % (text))
         try:
             retry = True
             while retry:
@@ -114,13 +114,13 @@ class BatchTaskType:
                 try:
                     self.submission.to_couch()
                 except couchdb.ResourceConflict:
-                    Utils.log("Conflict when updating CouchDB", Utils.Logger.SEVERITY_IMPORTANT)
+                    logger.error("Conflict when updating CouchDB")
                     #server_sub = CouchObject.from_couch(self.submission.couch_id)
                     # Check and update the document
                     #retry = True
             return True
         except (OSError, IOError) as e:
-            Utils.log("Couldn't update database, aborting compilation (exception: %s)" % (repr(e)))
+            logger.info("Couldn't update database, aborting compilation (exception: %s)" % (repr(e)))
             return False
 
     def finish_single_execution(self, test_number, success, outcome = 0, text = ""):
@@ -142,13 +142,13 @@ class BatchTaskType:
             try:
                 self.sandbox.delete()
             except (IOError, OSError):
-                Utils.log("Couldn't delete sandbox", Utils.Logger.SEVERITY_IMPORTANT)
+                logger.warning("Couldn't delete sandbox")
 
     def safe_create_sandbox(self):
         try:
             self.sandbox = Sandbox()
         except (OSError, IOError), e:
-            Utils.log("Couldn't create sandbox (error: %s)" % repr(e), Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Couldn't create sandbox (error: %s)" % repr(e))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -156,7 +156,7 @@ class BatchTaskType:
         try:
             self.sandbox.create_file_from_storage(name, digest, executable)
         except (OSError, IOError):
-            Utils.log("Couldn't copy file `%s' in sandbox" % (name), Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Couldn't copy file `%s' in sandbox" % (name))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -164,7 +164,7 @@ class BatchTaskType:
         try:
             return self.sandbox.get_file_to_storage(name, msg)
         except (IOError, OSError) as e:
-            Utils.log("Coudln't retrieve file `%s' from storage" % (name), Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Coudln't retrieve file `%s' from storage" % (name))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -172,7 +172,7 @@ class BatchTaskType:
         try:
             return self.sandbox.get_file_to_string(name, maxlen=1024)
         except (IOError, OSError):
-            Utils.log("Couldn't retrieve file `%s' from storage" % (name), Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Couldn't retrieve file `%s' from storage" % (name))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -180,7 +180,7 @@ class BatchTaskType:
         try:
             return self.sandbox.get_file(name)
         except (IOError, OSError):
-            Utils.log("Couldn't retrieve file `%s' from storage" % (name), Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Couldn't retrieve file `%s' from storage" % (name))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -188,7 +188,7 @@ class BatchTaskType:
         try:
             self.sandbox.execute(command)
         except (OSError, IOError) as e:
-            Utils.log("Couldn't spawn `%s' (exception %s)" % (command[0], repr(e)))
+            logger.error("Couldn't spawn `%s' (exception %s)" % (command[0], repr(e)))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -206,10 +206,10 @@ class BatchTaskType:
         # exactly one source file
         valid, language = self.submission.verify_source()
         if not valid or language == None:
-            Utils.log("Invalid submission or couldn't detect language")
+            logger.info("Invalid submission or couldn't detect language")
             return self.finish_compilation(True, False, "Invalid files in submission")
         if len(self.submission.files) != 1:
-            Utils.log("Submission cointains %d files, expecting 1" % (len(self.submission.files)))
+            logger.info("Submission cointains %d files, expecting 1" % (len(self.submission.files)))
             return self.finish_compilation(True, False, "Invalid files in submission")
 
         source_filename = self.submission.files.keys()[0]
@@ -219,7 +219,7 @@ class BatchTaskType:
         self.safe_create_sandbox()
         self.safe_create_file_from_storage(source_filename, self.submission.files[source_filename])
 
-        command = Utils.get_compilation_command(language, source_filename, executable_filename)
+        command = get_compilation_command(language, source_filename, executable_filename)
 
         # Execute the compilation inside the sandbox
         self.sandbox.chdir = self.sandbox.path
@@ -236,7 +236,7 @@ class BatchTaskType:
         self.sandbox.address_space = 256 * 1024
         self.sandbox.stdout_file = self.sandbox.relative_path("compiler_stdout.txt")
         self.sandbox.stderr_file = self.sandbox.relative_path("compiler_stderr.txt")
-        Utils.log("Starting compilation")
+        logger.info("Starting compilation")
         self.safe_sandbox_execute(command)
 
         # Detect the outcome of the compilation
@@ -253,47 +253,47 @@ class BatchTaskType:
         # correctly compiled
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
             self.submission.executables = {executable_filename: self.safe_get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, self.submission.couch_id))}
-            Utils.log("Compilation successfully finished")
+            logger.info("Compilation successfully finished")
             return self.finish_compilation(True, True, "OK %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
 
         # Error in compilation: returning the error to the user
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
-            Utils.log("Compilation failed")
+            logger.info("Compilation failed")
             return self.finish_compilation(True, False, "Failed %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
 
         # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
-            Utils.log("Compilation timed out")
+            logger.info("Compilation timed out")
             return self.finish_compilation(True, False, "Time out %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
 
         # Suicide with signal (probably memory limit): returning the
         # error to the user
         if exit_status == Sandbox.EXIT_SIGNAL:
             signal = self.sandbox.get_killing_signal()
-            Utils.log("Compilation killed with signal %d" % (signal))
+            logger.info("Compilation killed with signal %d" % (signal))
             return self.finish_compilation(True, False, "Killed with signal %d %s\nThis could be triggered by violating memory limits\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (signal, self.sandbox.get_stats(), stdout, stderr))
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-            Utils.log("Compilation aborted because of sandbox error", Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Compilation aborted because of sandbox error")
             return self.finish_compilation(False)
 
         # Forbidden syscall: this shouldn't happen, probably the
         # administrator should relax the syscall constraints
         if exit_status == Sandbox.EXIT_SYSCALL:
-            Utils.log("Compilation aborted because of forbidden syscall", Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Compilation aborted because of forbidden syscall")
             return self.finish_compilation(False)
 
         # Forbidden file access: this could be triggered by the user
         # including a forbidden file or too strict sandbox contraints;
         # the administrator should have a look at it
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            Utils.log("Compilation aborted because of forbidden file access", Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Compilation aborted because of forbidden file access")
             return self.finish_compilation(False)
 
         # Why the exit status hasn't been captured before?
-        Utils.log("Shouldn't arrive here, failing", Utils.Logger.SEVERITY_IMPORTANT)
+        logger.error("Shouldn't arrive here, failing")
         return self.finish_compilation(False)
 
     def execute_single(self, test_number):
@@ -327,39 +327,39 @@ class BatchTaskType:
 
         # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
-            Utils.log("Execution timed out")
+            logger.info("Execution timed out")
             return self.finish_single_execution(test_number, True, 0.0, "Execution timed out\n")
 
         # Suicide with signal (memory limit, segfault, abort):
         # returning the error to the user
         if exit_status == Sandbox.EXIT_SIGNAL:
             signal = self.sandbox.get_killing_signal()
-            Utils.log("Execution killed with signal %d" % (signal))
+            logger.info("Execution killed with signal %d" % (signal))
             return self.finish_single_execution(test_number, True, 0.0, "Execution killed with signal %d\n" % (signal))
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-            Utils.log("Evaluation aborted because of sandbox error", Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Evaluation aborted because of sandbox error")
             return self.finish_single_execution(test_number, False)
 
         # Forbidden syscall: returning the error to the user
         # FIXME - Tell which syscall raised this error
         if exit_status == Sandbox.EXIT_SYSCALL:
-            Utils.log("Execution killed because of forbidden syscall")
+            logger.info("Execution killed because of forbidden syscall")
             return self.finish_single_execution(test_number, True, 0.0, "Execution killed because of forbidden syscall")
 
         # Forbidden file access: returning the error to the user
         # FIXME - Tell which file raised this error
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            Utils.log("Execution killed because of forbidden file access")
+            logger.info("Execution killed because of forbidden file access")
             return self.finish_single_execution(test_number, True, 0.0, "Execution killed because of forbidden file access")
 
         # Last check before assuming that execution finished
         # successfully; we accept the execution even if the exit code
         # isn't 0
         if exit_status != Sandbox.EXIT_OK:
-            Utils.log("Shouldn't arrive here, failing", Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Shouldn't arrive here, failing")
             return self.finish_single_execution(test_number, False)
 
         if not self.sandbox.file_exists("output.txt"):
@@ -399,21 +399,19 @@ class BatchTaskType:
                     try:
                         outcome = stdout_file.readline().strip()
                     except UnicodeDecodeError as e:
-                        Utils.log("Unable to interpret manager stdout " +
-                                  "(outcome) as unicode. %s" % repr(e),
-                                  Utils.Logger.SEVERITY_IMPORTANT)
+                        logger.error("Unable to interpret manager stdout " +
+                                     "(outcome) as unicode. %s" % repr(e))
                         return self.finish_single_execution(test_number, False)
                     try:
-                        text = Utils.filter_ansi_escape(stderr_file.readline())
+                        text = filter_ansi_escape(stderr_file.readline())
                     except UnicodeDecodeError as e:
-                        Utils.log("Unable to interpret manager stderr " +
-                                  "(text) as unicode. %s" % repr(e),
-                                  Utils.Logger.SEVERITY_IMPORTANT)
+                        logger.error("Unable to interpret manager stderr " +
+                                     "(text) as unicode. %s" % repr(e))
                         return self.finish_single_execution(test_number, False)
             try:
                 outcome = float(outcome)
             except ValueError:
-                Utils.log("Wrong outcome `%s' from manager" % (outcome), Utils.Logger.SEVERITY_IMPORTANT)
+                logger.error("Wrong outcome `%s' from manager" % (outcome))
                 return self.finish_single_execution(test_number, False)
 
         # Finally returns the result
@@ -421,7 +419,7 @@ class BatchTaskType:
 
     def execute(self):
         if len(self.submission.executables) != 1:
-            Utils.log("Submission contains %d executables, expecting 1" % (len(self.submission.executables)))
+            logger.info("Submission contains %d executables, expecting 1" % (len(self.submission.executables)))
             return self.finish_evaluation(False)
 
         self.executable_filename = self.submission.executables.keys()[0]
