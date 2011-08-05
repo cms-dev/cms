@@ -175,13 +175,13 @@ class FileCacher:
         """Check if a file is present in the local cache.
 
         digest (string): the sha1 sum of the file
-        returns (string): the content of the file, or None
+        returns (file): the cached open file, or None; the caller is responsible
+        for closing it
 
         """
         try:
-            with open(os.path.join(self.obj_dir, digest), "rb") \
-                     as cached_file:
-                return cached_file.read()
+            cached_file = open(os.path.join(self.obj_dir, digest), "rb")
+            return cached_file
         except IOError:
             return None
 
@@ -191,7 +191,7 @@ class FileCacher:
 
         digest (string): the sha1 sum of the file
         path (string): a path where to save the file
-        callback (function): to be called with the content of the file
+        callback (function): to be called with the open file
         plus (object): additional data for the callback
 
         """
@@ -235,8 +235,7 @@ class FileCacher:
                 with open(path, "wb") as f:
                     f.write(plus["data"])
             except IOError as e:
-                log.info("Cannot store file in cache: %s" % repr(e))
-                pass
+                error = repr(e)
         self._got_file(True, plus, error)
 
     @rpc_callback
@@ -257,7 +256,7 @@ class FileCacher:
         elif not data:
             try:
                 os.unlink(os.path.join(self.obj_dir, plus["digest"]))
-            except:
+            except OSError:
                 pass
             if callback != None:
                 callback(self.service, None, plus["plus"],
@@ -272,10 +271,45 @@ class FileCacher:
                         callback(self.service, None, plus["plus"], repr(e))
                     return
             if callback != None:
-                callback(self.service, plus["data"], plus["plus"], error)
+                cached_file = open(os.path.join(self.obj_dir, plus["digest"]), "rb")
+                callback(self.service, cached_file, plus["plus"], error)
 
         # Do not call me again:
         return False
+
+    @rpc_callback
+    def _got_file_to_string(self, data, plus, error=None):
+        """Callback for get_file_to_string that unpacks the file-like object
+        to a string representing its content.
+
+        data(file): the file got from get_file()
+        plus(dict): a dictionary with the fields: callback, plus
+
+        """
+        orig_callback, orig_plus = plus['callback'], plus['plus']
+        if orig_callback != None:
+            if error != None:
+                orig_callback(self.service, None, orig_plus, error)
+            else:
+                file_content = data.read()
+                orig_callback(self.service, file_content, orig_plus)
+        
+
+    def get_file_to_string(self, digest, callback=None, plus=None):
+        """Get a file from the cache or from the service if not
+        present. Returns it as a string.
+
+        digest (string): the sha1 sum of the file
+        path (string): a path where to save the file
+        callback (function): to be called with the file content
+        plus (object): additional data for the callback
+
+        """
+        new_plus = {'callback': callback,
+                    'plus': plus}
+        self.get_file(digest,
+                      self._got_file_to_string,
+                      new_plus)
 
     def put_file(self, binary_data=None, description="",
                  path=None, callback=None, plus=None):
