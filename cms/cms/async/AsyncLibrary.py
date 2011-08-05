@@ -643,24 +643,28 @@ class Logger:
     def __init__(self):
         Logger.CRITICAL = "CRITICAL"
         Logger.ERROR    = "ERROR   "
+        Logger.WARNING  = "WARNING "
         Logger.INFO     = "INFO    "
         Logger.DEBUG    = "DEBUG   "
 
         Logger.TO_STORE = [
             Logger.CRITICAL,
             Logger.ERROR,
+            Logger.WARNING,
             Logger.INFO,
             Logger.DEBUG,
             ]
         Logger.TO_DISPLAY = [
             Logger.CRITICAL,
             Logger.ERROR,
+            Logger.WARNING,
             Logger.INFO,
             Logger.DEBUG
             ]
         Logger.TO_SEND = [
             Logger.CRITICAL,
             Logger.ERROR,
+            Logger.WARNING,
             Logger.INFO,
             ]
 
@@ -717,6 +721,12 @@ class Logger:
 
         """
         return self.log(msg, operation, Logger.INFO, timestamp)
+
+    def warning(self, msg, operation="", timestamp=None):
+        """Syntactic sugar.
+
+        """
+        return self.log(msg, operation, Logger.WARNING, timestamp)
 
     def error(self, msg, operation="", timestamp=None):
         """Syntactic sugar.
