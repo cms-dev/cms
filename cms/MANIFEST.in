@@ -1,2 +1,2 @@
 recursive-include doc/html *
-include LICENSE.txt
+include LICENSE.txt README.txt
