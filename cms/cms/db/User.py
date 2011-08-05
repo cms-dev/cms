@@ -101,4 +101,4 @@ class Question(Base):
 def sample_user(contest):
     import random
     return User("username-%d" % (random.randint(1, 1000)), "password",
-                "Mister Real Name", 0.0, "10.0.0.101", contest=contest)
+                "Mister Real Name", "10.0.0.101", 0.0, contest=contest)
