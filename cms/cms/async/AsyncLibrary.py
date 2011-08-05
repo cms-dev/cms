@@ -168,6 +168,7 @@ class Service:
         self._connections = set([])
         self._exit = False
         self._threaded_responses = []
+        self._threaded_responses_lock = threading.Lock()
         self.remote_services = {}
 
         self._my_coord = ServiceCoord(self.__class__.__name__, self.shard)
@@ -255,9 +256,10 @@ class Service:
         current = time.time()
 
         # Check if some threaded RPC call ended
-        # TODO: lock these two lines
+        self._threaded_responses_lock.acquire()
         local_threaded_responses = self._threaded_responses[:]
         self._threaded_responses = []
+        self._threaded_responses_lock.release()
         for remote_service, response in local_threaded_responses:
             remote_service.send_reply(*response)
 
@@ -393,7 +395,7 @@ class ThreadedRPC(threading.Thread):
 
         """
         try:
-            method_response = self.remote_service.service.handle_message(self.message)
+            method_response = self.service.handle_message(self.message)
         except Exception, exception:
             print exception
             self.response["__error"] = "%s: %s" % (
@@ -401,10 +403,12 @@ class ThreadedRPC(threading.Thread):
                 " ".join([str(x) for x in exception.args]))
             self.binary_response = False
             method_response = None
-        self.remote_service.service._threaded_responses.append((self.remote_service,
+        self.service._threaded_responses_lock.acquire()
+        self.service._threaded_responses.append((self.remote_service,
             (self.response,
              method_response,
              self.binary_response)))
+        self.service._threaded_responses_lock.release()
 
 
 class RemoteService(asynchat.async_chat):
