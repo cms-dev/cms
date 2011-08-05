@@ -33,6 +33,7 @@ class User(Base):
     password = Column(String, nullable=False)
     real_name = Column(String, nullable=False)
     ip = Column(String, nullable=True)
+    time_zone = Column(Float, nullable=False)
     hidden = Column(Boolean, nullable=False)
     contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
 
@@ -42,11 +43,12 @@ class User(Base):
     contest = relationship(Contest, backref=backref("users"))
 
     def __init__(self, username, password,
-                 real_name, ip, contest=None, tokens = [], hidden = False,
-                 messages = [], questions = []):
+                 real_name, ip, time_zone = 0.0, contest=None, tokens = [], 
+                 hidden = False, messages = [], questions = []):
         self.username = username
         self.password = password
         self.real_name = real_name
+        self.time_zone = time_zone
         self.ip = ip
         self.tokens = tokens
         self.hidden = hidden
@@ -99,4 +101,4 @@ class Question(Base):
 def sample_user(contest):
     import random
     return User("username-%d" % (random.randint(1, 1000)), "password",
-                "Mister Real Name", "10.0.0.101", contest=contest)
+                "Mister Real Name", "10.0.0.101", 0.0, contest=contest)

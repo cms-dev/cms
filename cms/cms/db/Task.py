@@ -37,6 +37,7 @@ class Task(Base):
     title = Column(String, nullable=False)
     statement = Column(String, nullable=False)
     time_limit = Column(Float, nullable=False)
+    memory_limit = Column(Integer, nullable=False)
     task_type = Column(String, nullable=False)
     score_type = Column(String, nullable=False)
     score_parameters = Column(String, nullable=False)
