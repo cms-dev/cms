@@ -112,14 +112,17 @@ class TestFileCacher(TestService):
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 1):
             self.test_end(False, "Plus object not received correctly.")
-        elif data != self.fake_content:
-            if data == self.content:
-                self.test_end(False,
-                              "Did not use the cache even if it could.")
-            else:
-                self.test_end(False, "Content differ.")
         else:
-            self.test_end(True, "Data and plus object received correctly.")
+            received = data.read()
+            data.close()
+            if received != self.fake_content:
+                if received == self.content:
+                    self.test_end(False,
+                                  "Did not use the cache even if it could.")
+                else:
+                    self.test_end(False, "Content differ.")
+            else:
+                self.test_end(True, "Data and plus object received correctly.")
 
 
 ### TEST 002 ###
@@ -141,16 +144,19 @@ class TestFileCacher(TestService):
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 2):
             self.test_end(False, "Plus object not received correctly.")
-        elif data != self.content:
-            self.test_end(False, "Content differ.")
-        elif not os.path.exists(self.cache_path):
-            self.test_end(False, "File not stored in local cache.")
-        elif open(self.cache_path).read() != self.content:
-            self.test_end(False, "Local cache's content differ " +
-                          "from original file.")
         else:
-            self.test_end(True, "Content and plus object received " +
-                          "and cached correctly.")
+            received = data.read()
+            data.close()
+            if received != self.content:
+                self.test_end(False, "Content differ.")
+            elif not os.path.exists(self.cache_path):
+                self.test_end(False, "File not stored in local cache.")
+            elif open(self.cache_path).read() != self.content:
+                self.test_end(False, "Local cache's content differ " +
+                              "from original file.")
+            else:
+                self.test_end(True, "Content and plus object received " +
+                              "and cached correctly.")
 
 
 ### TEST 003 ###
