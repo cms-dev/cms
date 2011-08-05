@@ -265,7 +265,7 @@ class TestFileCacher(TestService):
         """Retrieve the file as a string.
 
         """
-        logger.info("  I am retrieving the short binary file from FileCacher using get_file_from_string()")
+        logger.info("  I am retrieving the short binary file from FileCacher using get_file_to_string()")
         self.fake_content = "Fake content.\n"
         with open(self.cache_path, "wb") as f:
             f.write(self.fake_content)
@@ -327,7 +327,7 @@ class TestFileCacher(TestService):
         """Retrieve the file as a string. Use the synchronous interface.
 
         """
-        logger.info("  I am retrieving the short binary file from FileCacher using get_file_from_string() and the synchronous interface")
+        logger.info("  I am retrieving the short binary file from FileCacher using get_file_to_string() and the synchronous interface")
         self.fake_content = "Fake content.\n"
         with open(self.cache_path, "wb") as f:
             f.write(self.fake_content)
@@ -336,6 +336,66 @@ class TestFileCacher(TestService):
 
         if data != self.fake_content:
             if data == self.content:
+                self.test_end(False,
+                              "Did not use the cache even if it could.")
+            else:
+                self.test_end(False, "Content differ.")
+        else:
+            self.test_end(True, "Data and plus object received correctly.")
+
+
+### TEST 009 ###
+
+    def test_009(self):
+        """Retrieve the file writing it on a file-like object.
+
+        """
+        logger.info("  I am retrieving the short binary file from FileCacher using get_file_to_write_file()")
+        self.fake_content = "Fake content.\n"
+        with open(self.cache_path, "wb") as f:
+            f.write(self.fake_content)
+        self.file_obj = StringIO()
+        self.FC.get_file_to_write_file(digest=self.digest,
+                                       file_obj=self.file_obj,
+                                       callback=TestFileCacher.test_009_callback,
+                                       plus=("Test #", 9))
+
+    @rpc_callback
+    def test_009_callback(self, data, plus, error=None):
+        if error != None:
+            self.test_end(False, "Error received: %s." % error)
+        elif plus != ("Test #", 9):
+            self.test_end(False, "Plus object not received correctly.")
+        else:
+            content = self.file_obj.getvalue()
+            if content != self.fake_content:
+                if content == self.content:
+                    self.test_end(False,
+                                  "Did not use the cache even if it could.")
+                else:
+                    self.test_end(False, "Content differ.")
+            else:
+                self.test_end(True, "Data and plus object received correctly.")
+
+
+### TEST 010 ###
+
+    def test_010(self):
+        """Retrieve the file writing it on a file-like object. Use the
+        synchronous interface.
+
+        """
+        logger.info("  I am retrieving the short binary file from FileCacher using get_file_to_write_file() and the synchronous interface")
+        self.fake_content = "Fake content.\n"
+        with open(self.cache_path, "wb") as f:
+            f.write(self.fake_content)
+        self.file_obj = StringIO()
+        data = self.FC.get_file_to_write_file(digest=self.digest,
+                                              file_obj=self.file_obj,
+                                              sync=True)
+        content = self.file_obj.getvalue()
+        if content != self.fake_content:
+            if content == self.content:
                 self.test_end(False,
                               "Did not use the cache even if it could.")
             else:

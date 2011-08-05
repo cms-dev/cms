@@ -293,7 +293,7 @@ class FileCacher:
         to a string representing its content.
 
         data(file): the file got from get_file()
-        plus(dict): a dictionary with the fields: callback, plus
+        plus(dict): a dictionary with the fields: callback, plus, bind_obj
 
         """
         orig_callback, orig_plus, bind_obj = plus['callback'], plus['plus'], plus['bind_obj']
@@ -303,6 +303,26 @@ class FileCacher:
             else:
                 file_content = data.read()
                 data.close()
+                orig_callback(bind_obj, file_content, orig_plus)
+
+    @rpc_callback
+    def _got_file_to_write_file(self, data, plus, error=None):
+        """Callback for get_file_to_write_file that copies the content
+        of the received file to the specified file-like object.
+
+        data(file): the file got from get_file()
+        plus(dict): a dictionary with the fields: callback, plus, bind_obj,
+                    file_obj
+
+        """
+        orig_callback, orig_plus, bind_obj, file_obj = \
+            plus['callback'], plus['plus'], plus['bind_obj'], plus['file_obj']
+        if orig_callback != None:
+            if error != None:
+                orig_callback(bind_obj, None, orig_plus, error)
+            else:
+                file_content = data.read()
+                file_obj.write(file_content)
                 orig_callback(bind_obj, file_content, orig_plus)
 
     ## GET VARIATIONS ##
@@ -327,6 +347,44 @@ class FileCacher:
                          plus=plus,
                          bind_obj=bind_obj,
                          sync=sync)
+
+    def get_file_to_write_file(self, digest, file_obj,
+                               callback=None, plus=None, bind_obj=None, sync=False):
+        """Get a file from the cache or from the service if not
+        present. It writes it on a file-like object.
+
+        digest (string): the sha1 sum of the file
+        file_obj (file): the file-like object on which to write
+                         the received file
+        callback (function): to be called upon completion
+        plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCacher)
+
+        """
+        if bind_obj is None:
+            bind_obj = self.service
+        new_plus = {'callback': callback,
+                    'plus': plus,
+                    'bind_obj': bind_obj,
+                    'file_obj': file_obj}
+
+        args = {'digest': digest}
+        if not sync:
+            return sync_call(function=self.get_file,
+                             args=args,
+                             callback=FileCacher._got_file_to_write_file,
+                             plus=new_plus,
+                             bind_obj=self,
+                             sync=False)
+
+        else:
+            read_file_obj = sync_call(function=self.get_file,
+                                      args=args,
+                                      sync=True)
+            content = read_file_obj.read()
+            file_obj.write(content)
+            return content
 
     def get_file_to_path(self, digest, path,
                          callback=None, plus=None, bind_obj=None, sync=False):
