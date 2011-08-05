@@ -24,6 +24,7 @@
 """
 
 import os
+import sys
 
 import tempfile
 import shutil
@@ -171,6 +172,8 @@ class FileCacher:
         if not ret:
             logger.critical("Cannot create necessary directories.")
 
+    ## GET ##
+
     def _get_from_cache(self, digest):
         """Check if a file is present in the local cache.
 
@@ -185,7 +188,8 @@ class FileCacher:
         except IOError:
             return None
 
-    def get_file(self, digest, path=None, callback=None, plus=None):
+    def get_file(self, digest, path=None, callback=None,
+                 plus=None, bind_obj=None):
         """Get a file from the cache or from the service if not
         present.
 
@@ -193,13 +197,18 @@ class FileCacher:
         path (string): a path where to save the file
         callback (function): to be called with the open file
         plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCacher)
 
         """
         from_cache = self._get_from_cache(digest)
+        if bind_obj is None:
+            bind_obj = self.service
         new_plus = {"path": path,
                     "digest": digest,
                     "callback": callback,
-                    "plus": plus}
+                    "plus": plus,
+                    "bind_obj": bind_obj}
 
         if from_cache != None:
             # If there is the file in the cache, maybe it has been
@@ -249,17 +258,18 @@ class FileCacher:
 
         """
         callback = plus["callback"]
+        bind_obj = plus["bind_obj"]
         if error != None:
             logger.error(error)
             if callback != None:
-                callback(self.service, None, plus["plus"], error)
+                callback(bind_obj, None, plus["plus"], error)
         elif not data:
             try:
                 os.unlink(os.path.join(self.obj_dir, plus["digest"]))
             except OSError:
                 pass
             if callback != None:
-                callback(self.service, None, plus["plus"],
+                callback(bind_obj, None, plus["plus"],
                          "IOError: 2 No such file or directory.")
         else:
             if plus["path"] != None:
@@ -268,11 +278,11 @@ class FileCacher:
                         f.write(plus["data"])
                 except IOError as e:
                     if callback != None:
-                        callback(self.service, None, plus["plus"], repr(e))
+                        callback(bind_obj, None, plus["plus"], repr(e))
                     return
             if callback != None:
                 cached_file = open(os.path.join(self.obj_dir, plus["digest"]), "rb")
-                callback(self.service, cached_file, plus["plus"], error)
+                callback(bind_obj, cached_file, plus["plus"], error)
 
         # Do not call me again:
         return False
@@ -286,16 +296,16 @@ class FileCacher:
         plus(dict): a dictionary with the fields: callback, plus
 
         """
-        orig_callback, orig_plus = plus['callback'], plus['plus']
+        orig_callback, orig_plus, bind_obj = plus['callback'], plus['plus'], plus['bind_obj']
         if orig_callback != None:
             if error != None:
-                orig_callback(self.service, None, orig_plus, error)
+                orig_callback(bind_obj, None, orig_plus, error)
             else:
                 file_content = data.read()
-                orig_callback(self.service, file_content, orig_plus)
+                orig_callback(bind_obj, file_content, orig_plus)
         
 
-    def get_file_to_string(self, digest, callback=None, plus=None):
+    def get_file_to_string(self, digest, callback=None, plus=None, bind_obj=None):
         """Get a file from the cache or from the service if not
         present. Returns it as a string.
 
@@ -303,13 +313,21 @@ class FileCacher:
         path (string): a path where to save the file
         callback (function): to be called with the file content
         plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCacher)
 
         """
+        if bind_obj is None:
+            bind_obj = self.service
         new_plus = {'callback': callback,
-                    'plus': plus}
-        self.get_file(digest,
-                      self._got_file_to_string,
-                      new_plus)
+                    'plus': plus,
+                    'bind_obj': bind_obj}
+        self.get_file(digest=digest,
+                      callback=FileCacher._got_file_to_string,
+                      plus=new_plus,
+                      bind_obj=self)
+
+    ## PUT ##
 
     def put_file(self, binary_data=None, description="",
                  path=None, callback=None, plus=None):

@@ -220,6 +220,36 @@ class TestFileCacher(TestService):
             self.test_end(True, "Correctly received an error: %s." % error)
 
 
+### TEST 005 ###
+
+    def test_005(self):
+        """Retrieve the file as a string.
+
+        """
+        logger.info("  I am retrieving the short binary file from FileCacher")
+        self.fake_content = "Fake content.\n"
+        with open(self.cache_path, "wb") as f:
+            f.write(self.fake_content)
+        self.FC.get_file_to_string(digest=self.digest,
+                                   callback=TestFileCacher.test_005_callback,
+                                   plus=("Test #", 5))
+
+    @rpc_callback
+    def test_005_callback(self, data, plus, error=None):
+        if error != None:
+            self.test_end(False, "Error received: %s." % error)
+        elif plus != ("Test #", 5):
+            self.test_end(False, "Plus object not received correctly.")
+        elif data != self.fake_content:
+            if data == self.content:
+                self.test_end(False,
+                              "Did not use the cache even if it could.")
+            else:
+                self.test_end(False, "Content differ.")
+        else:
+            self.test_end(True, "Data and plus object received correctly.")
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) != 2:
