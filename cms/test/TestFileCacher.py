@@ -289,6 +289,61 @@ class TestFileCacher(TestService):
             self.test_end(True, "Data and plus object received correctly.")
 
 
+### TEST 007 ###
+
+    def test_007(self):
+        """Send a short random binary file to FileCacher through
+        FileCacher as a string. FC should cache the content locally.
+        Use the synchronous interface.
+
+        """
+        path = random_string(16)
+        self.content = ""
+        for i in xrange(100):
+            self.content += chr(random.randint(0, 255))
+
+        logger.info("  I am sending the short binary file to FileCacher, using the synchronous interface")
+        data = self.FC.put_file_from_string(content=self.content,
+                                            description="Test #007",
+                                            sync=True)
+
+        if not os.path.exists(
+            os.path.join("fs-cache", "objects", data)):
+            self.test_end(False, "File not stored in local cache.")
+        elif open(os.path.join("fs-cache", "objects", data),
+                  "rb").read() != self.content:
+            self.test_end(False, "Local cache's content differ " +
+                          "from original file.")
+        else:
+            self.cache_path = os.path.join("fs-cache", "objects", data)
+            self.digest = data
+            self.test_end(True, "Data sent and cached without error " +
+                          "and plus object received.")
+
+
+### TEST 008 ###
+
+    def test_008(self):
+        """Retrieve the file as a string. Use the synchronous interface.
+
+        """
+        logger.info("  I am retrieving the short binary file from FileCacher using get_file_from_string() and the synchronous interface")
+        self.fake_content = "Fake content.\n"
+        with open(self.cache_path, "wb") as f:
+            f.write(self.fake_content)
+        data = self.FC.get_file_to_string(digest=self.digest,
+                                          sync=True)
+
+        if data != self.fake_content:
+            if data == self.content:
+                self.test_end(False,
+                              "Did not use the cache even if it could.")
+            else:
+                self.test_end(False, "Content differ.")
+        else:
+            self.test_end(True, "Data and plus object received correctly.")
+
+
 if __name__ == "__main__":
     import sys
     if len(sys.argv) != 2:

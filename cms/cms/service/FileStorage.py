@@ -302,6 +302,7 @@ class FileCacher:
                 orig_callback(bind_obj, None, orig_plus, error)
             else:
                 file_content = data.read()
+                data.close()
                 orig_callback(bind_obj, file_content, orig_plus)
 
     ## GET VARIATIONS ##
@@ -369,12 +370,21 @@ class FileCacher:
                     'bind_obj': bind_obj}
 
         args = {'digest': digest}
-        return sync_call(function=self.get_file,
-                         args=args,
-                         callback=FileCacher._got_file_to_string,
-                         plus=new_plus,
-                         bind_obj=self,
-                         sync=sync)
+        if not sync:
+            return sync_call(function=self.get_file,
+                             args=args,
+                             callback=FileCacher._got_file_to_string,
+                             plus=new_plus,
+                             bind_obj=self,
+                             sync=False)
+
+        else:
+            file_obj = sync_call(function=self.get_file,
+                                 args=args,
+                                 sync=True)
+            content = file_obj.read()
+            file_obj.close()
+            return content
 
     ## PUT ##
 

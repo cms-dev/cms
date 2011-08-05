@@ -889,24 +889,30 @@ class Logger:
 logger = Logger()
 
 
-def sync_call(function, args, callback, plus, bind_obj, sync=False):
+def sync_call(function, args,
+              callback=None, plus=None, bind_obj=None,
+              sync=False):
     if sync:
-        finished = False
-        data = None
-        error = None
+        plus = {'finished': False,
+                'data': None,
+                'error':None}
 
         @rpc_callback
-        def sync_callback(context, data_, plus, error_=None):
-            data = data_
-            error = error_
-            finished = True
+        def sync_callback(context, data, plus, error=None):
+            logger.debug("sync_callback: callback for sync function received")
+            plus['data'] = data
+            plus['error'] = error
+            plus['finished'] = True
 
         function(callback=sync_callback,
-                 plus=None,
-                 bind_obj=self,
+                 plus=plus,
+                 bind_obj=None,
                  **args)
-        while not finished:
+        while not plus['finished']:
             asyncore.loop(0.02, True, None, 1)
+
+        error = plus['error']
+        data = plus['data']
         if error is not None:
             # FIXME Improve error handling
             raise Exception(repr(error))
