@@ -82,6 +82,15 @@ def rpc_binary_response(func):
     return func
 
 
+def rpc_threaded(func):
+    """Decorator for a RPC method that we want to execute in a
+    separate thread.
+
+    """
+    func.threaded = True
+    return func
+
+
 class AuthorizationError(Exception):
     pass
 
@@ -158,6 +167,8 @@ class Service:
         self._seconds = 0
         self._connections = set([])
         self._exit = False
+        self._threaded_responses = []
+        self._threaded_responses_lock = threading.Lock()
         self.remote_services = {}
 
         self._my_coord = ServiceCoord(self.__class__.__name__, self.shard)
@@ -243,6 +254,16 @@ class Service:
 
         """
         current = time.time()
+
+        # Check if some threaded RPC call ended
+        self._threaded_responses_lock.acquire()
+        local_threaded_responses = self._threaded_responses[:]
+        self._threaded_responses = []
+        self._threaded_responses_lock.release()
+        for remote_service, response in local_threaded_responses:
+            remote_service.send_reply(*response)
+
+        # Check if some scheduled function needs to be called
         for func in self._timeouts.keys():
             plus, seconds, timestamp = self._timeouts[func]
             if current - timestamp > seconds:
@@ -301,6 +322,7 @@ class Service:
         res = {}
         res["callable"] = hasattr(method, "rpc_callable")
         res["binary_response"] = hasattr(method, "binary_response")
+        res["threaded"] = hasattr(method, "threaded")
 
         return res
 
@@ -332,6 +354,61 @@ class Service:
         result = method(**message["__data"])
 
         return result
+
+
+class ThreadedRPC(threading.Thread):
+    """In this class we run the computation of rpc methods defined
+    with the @rpc_threaded decorator. The found_terminator method
+    start this thread and then returns immediately. When the
+    computation is done, we store the result in a list in the service
+    class, that send the appropriate reply to the remote service when
+    it can.
+
+    """
+    def __init__(self, remote_service, message,
+                 response, binary_response):
+        """Initialize the thread.
+
+        remote_service (RemoteService): the service that called our
+                                        method.
+        message (dict): the coordinate to pass to the local service
+                          to run the appropriate rpc method with the
+                          right parameters.
+        response (dict): the partial reply (to be integrated with the
+                         actual value returned by the rpc method).
+        binary_response (bool): if the method is supposed to return a
+                                binary string.
+
+        """
+        threading.Thread.__init__(self)
+        self.remote_service = remote_service
+        self.service = self.remote_service.service
+        self.response = response
+        self.binary_response = binary_response
+        self.message = message
+
+    def run(self):
+        """When the thread runs, it execute the rpc method and fill
+        the appropriate list in the service class with the result. The
+        list _threaded_responses contains elements of this format:
+        (remote_service, parameters_of_the_send_reply_method).
+
+        """
+        try:
+            method_response = self.service.handle_message(self.message)
+        except Exception, exception:
+            print exception
+            self.response["__error"] = "%s: %s" % (
+                exception.__class__.__name__,
+                " ".join([str(x) for x in exception.args]))
+            self.binary_response = False
+            method_response = None
+        self.service._threaded_responses_lock.acquire()
+        self.service._threaded_responses.append((self.remote_service,
+            (self.response,
+             method_response,
+             self.binary_response)))
+        self.service._threaded_responses_lock.release()
 
 
 class RemoteService(asynchat.async_chat):
@@ -424,9 +501,11 @@ class RemoteService(asynchat.async_chat):
         if "__id" in message:
             response["__id"] = message["__id"]
         if "__method" in message:
+            # We first find the properties of the called rpc method.
             try:
                 method_info = self.service.method_info(message["__method"])
                 binary_response = method_info["binary_response"]
+                threaded = method_info["threaded"]
             except KeyError:
                 response["__error"] = "%s: %s" % (
                     exception.__class__.__name__,
@@ -434,6 +513,14 @@ class RemoteService(asynchat.async_chat):
                 binary_response = False
                 method_response = None
 
+            # If the rpc method is threaded, then we start the thread
+            # and return immediately.
+            if threaded:
+                t = ThreadedRPC(self, message, response, binary_response)
+                t.start()
+                return
+            # Otherwise, we compute the method here and send the reply
+            # right away.
             try:
                 method_response = self.service.handle_message(message)
             except Exception, exception:
@@ -442,22 +529,32 @@ class RemoteService(asynchat.async_chat):
                     " ".join([str(x) for x in exception.args]))
                 binary_response = False
                 method_response = None
-            try:
-                if binary_response:
-                    response["__data"] = None
-                    binary_message = encode_binary(method_response)
-                else:
-                    response["__data"] = method_response
-                    binary_message = ""
-                json_message = encode_json(response)
-                json_length = encode_length(len(json_message))
-            except ValueError as e:
-                logger.error("Cannot send response because of " +
-                             "encoding error. %s" % repr(e))
-                return
-            self._push_right(json_length + json_message + binary_message)
+            self.send_reply(response, method_response, binary_response)
         else:
             self.service.handle_rpc_response(message)
+
+    def send_reply(self, response, method_response, binary_response):
+        """Send back a reply to an rpc call.
+
+        response (dict): the metadata of the reply.
+        method_response (object): the actual returned value.
+        binary_response (bool): True if method_response is a binary string.
+
+        """
+        try:
+            if binary_response:
+                response["__data"] = None
+                binary_message = encode_binary(method_response)
+            else:
+                response["__data"] = method_response
+                binary_message = ""
+            json_message = encode_json(response)
+            json_length = encode_length(len(json_message))
+        except ValueError as e:
+            logger.error("Cannot send response because of " +
+                         "encoding error. %s" % repr(e))
+            return
+        self._push_right(json_length + json_message + binary_message)
 
     def execute_rpc(self, method, data,
                     callback=None, plus=None, bind_obj=None):

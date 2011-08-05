@@ -46,6 +46,11 @@ class ServiceA(Service):
         self.ServiceB.append(self.connect_to(
                 ServiceCoord("ServiceB", 1)))
 
+        for i in xrange(10):
+            self.ServiceB[1].long_rpc_method(string="%d - %s" %
+                                             (i, str(time.time())),
+                                             callback=ServiceA.echo_callback,
+                                             plus=i)
         self.add_timeout(self.ask_for_echo, None, 4,
                          immediately=True)
         self.t = 5
