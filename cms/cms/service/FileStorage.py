@@ -33,7 +33,7 @@ import hashlib
 
 from cms.async.AsyncLibrary import Service, \
      rpc_method, rpc_binary_response, rpc_callback, \
-     logger
+     logger, sync_call
 from cms.async import ServiceCoord, Address
 from cms.service.Utils import mkdir, random_string
 
@@ -307,7 +307,7 @@ class FileCacher:
     ## GET VARIATIONS ##
 
     def get_file_to_file(self, digest,
-                         callback=None, plus=None, bind_obj=None):
+                         callback=None, plus=None, bind_obj=None, sync=False):
         """Get a file from the cache or from the service if not
         present. Returns it as a file-like object.
 
@@ -319,11 +319,16 @@ class FileCacher:
                            the service that created the FileCacher)
 
         """
-        return self.get_file(digest=digest, callback=callback,
-                             plus=plus, bind_obj=bind_obj)
+        args = {'digest': digest}
+        return sync_call(function=self.get_file,
+                         args=args,
+                         callback=callback,
+                         plus=plus,
+                         bind_obj=bind_obj,
+                         sync=sync)
 
     def get_file_to_path(self, digest, path,
-                         callback=None, plus=None, bind_obj=None):
+                         callback=None, plus=None, bind_obj=None, sync=False):
         """Get a file from the cache or from the service if not
         present. Returns it by putting it in the specified path.
 
@@ -335,11 +340,17 @@ class FileCacher:
                            the service that created the FileCacher)
 
         """
-        return self.get_file(digest=digest, callback=callback,
-                             path=path, plus=plus, bind_obj=bind_obj)
+        args = {'digest': digest,
+                'path': path}
+        return sync_call(function=self.get_file,
+                         args=args,
+                         callback=callback,
+                         plus=plus,
+                         bind_obj=bind_obj,
+                         sync=sync)
 
     def get_file_to_string(self, digest,
-                           callback=None, plus=None, bind_obj=None):
+                           callback=None, plus=None, bind_obj=None, sync=False):
         """Get a file from the cache or from the service if not
         present. Returns it as a string.
 
@@ -356,10 +367,14 @@ class FileCacher:
         new_plus = {'callback': callback,
                     'plus': plus,
                     'bind_obj': bind_obj}
-        self.get_file(digest=digest,
-                      callback=FileCacher._got_file_to_string,
-                      plus=new_plus,
-                      bind_obj=self)
+
+        args = {'digest': digest}
+        return sync_call(function=self.get_file,
+                         args=args,
+                         callback=FileCacher._got_file_to_string,
+                         plus=new_plus,
+                         bind_obj=self,
+                         sync=sync)
 
     ## PUT ##
 
@@ -465,7 +480,7 @@ class FileCacher:
     ## PUT SYNTACTIC SUGARS ##
 
     def put_file_from_string(self, content, description="",
-                             callback=None, plus=None, bind_obj=None):
+                             callback=None, plus=None, bind_obj=None, sync=False):
         """Send a file to FileStorage keeping a copy locally. The file is
         obtained from a string.
 
@@ -479,11 +494,17 @@ class FileCacher:
                            the service that created the FileCached)
 
         """
-        return self.put_file(binary_data=content, description=description,
-                             callback=callback, plus=plus, bind_obj=bind_obj)
+        args = {'binary_data': content,
+                'description': description}
+        return sync_call(function=self.put_file,
+                         args=args,
+                         callback=callback,
+                         plus=plus,
+                         bind_obj=bind_obj,
+                         sync=sync)
 
     def put_file_from_file(self, file_obj, description="",
-                           callback=None, plus=None, bind_obj=None):
+                           callback=None, plus=None, bind_obj=None, sync=False):
         """Send a file to FileStorage keeping a copy locally. The file is
         obtained from a file-like object.
 
@@ -497,11 +518,17 @@ class FileCacher:
                            the service that created the FileCached)
 
         """
-        return self.put_file(file_obj=file_obj, description=description,
-                             callback=callback, plus=plus, bind_obj=bind_obj)
+        args = {'file_obj': file_obj,
+                'description': description}
+        return sync_call(function=self.put_file,
+                         args=args,
+                         callback=callback,
+                         plus=plus,
+                         bind_obj=bind_obj,
+                         sync=sync)
 
     def put_file_from_path(self, path, description="",
-                           callback=None, plus=None, bind_obj=None):
+                           callback=None, plus=None, bind_obj=None, sync=False):
         """Send a file to FileStorage keeping a copy locally. The file is
         obtained from a file specified by its path.
 
@@ -515,8 +542,14 @@ class FileCacher:
                            the service that created the FileCached)
 
         """
-        return self.put_file(path=path, description=description,
-                             callback=callback, plus=plus, bind_obj=bind_obj)
+        args = {'path': path,
+                'description': description}
+        return sync_call(function=self.put_file,
+                         args=args,
+                         callback=callback,
+                         plus=plus,
+                         bind_obj=bind_obj,
+                         sync=sync)
 
 if __name__ == "__main__":
     import sys
