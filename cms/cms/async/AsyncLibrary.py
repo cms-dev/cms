@@ -803,6 +803,7 @@ class Logger:
 
         self._log_service = RemoteService(None,
                                           ServiceCoord("LogService", 0))
+        self.operation = ""
 
     def initialize(self, service):
         """To be set by the service we are currently running.
@@ -818,7 +819,7 @@ class Logger:
             "w", "utf-8")
 
 
-    def log(self, msg, operation="", severity=None, timestamp=None):
+    def log(self, msg, operation=None, severity=None, timestamp=None):
         """Record locally a log message and tries to send it to the
         log service.
 
@@ -829,10 +830,12 @@ class Logger:
         timestamp (float): seconds from epoch
 
         """
-        if severity == None:
+        if severity is None:
             severity = Logger.INFO
-        if timestamp == None:
+        if timestamp is None:
             timestamp = time.time()
+        if operation is None:
+            operation = self.operation
 
         log = self.format_log(msg, operation, severity, timestamp)
 
