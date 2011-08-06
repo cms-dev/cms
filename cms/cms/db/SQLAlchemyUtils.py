@@ -31,3 +31,12 @@ Base = declarative_base(db)
 metadata = Base.metadata
 
 Session = sessionmaker(db)
+
+def get_from_id(self, id, session):
+    res = session.query(self.__class__).filter(self.__class__.id == id)
+    try:
+        [tmp] = res
+        return tmp
+    except ValueError:
+        return None
+Base.get_from_id = get_from_id
