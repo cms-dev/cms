@@ -24,7 +24,7 @@ import threading
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import logger, Service, rpc_method, rpc_threaded
 from cms.service.TaskType import get_task_type_class
-from cms.db.SQLAlchemyAll import Submission
+from cms.db.SQLAlchemyAll import Session, Submission
 from cms.service import JobException
 
 class Worker(Service):
@@ -34,15 +34,16 @@ class Worker(Service):
         logger.debug("Worker.__init__")
         Service.__init__(self, shard)
         self.work_lock = threading.Lock()
+        self.session = None
 
     def get_submission_data(self, submission_id):
-        submission = Submission.get_from_id(submission_id)
+        submission = Submission.get_from_id(submission_id, self.session)
         if submission is None:
             err_msg = "Couldn't find submission %d in the database" % (submission_id)
             logger.critical(msg_err)
             raise JobException(msg_err)
 
-        task_type = get_task_type_class(submission)
+        task_type = get_task_type_class(submission, session)
         if task_type is None:
             err_msg = "Task type `%s' not known for submission %d" \
                 % (self.submission.task.task_type, submission_id)
@@ -57,8 +58,11 @@ class Worker(Service):
         if self.work_lock.acquire(blocking=False):
 
             try:
-                logger.set_operation("compiling submission %s" % (submission_id))
+                logger.operation = "compiling submission %s" % (submission_id)
                 logger.info("Request received")
+
+                # Initialize the database session
+                self.session = Session()
 
                 # Retrieve submission and task_type
                 (submission, task_type) = self.get_submission_data(submission_id)
@@ -75,6 +79,10 @@ class Worker(Service):
                 return success
 
             finally:
+                self.session.commit()
+                self.session.close()
+                self.session = None
+                logger.operation = ""
                 self.work_lock.release()
 
         else:
@@ -87,8 +95,11 @@ class Worker(Service):
         if self.work_lock.acquire(blocking=False):
 
             try:
-                logger.set_operation("evaluating submission %s" % (submission_id))
+                logger.operation = "evaluating submission %s" % (submission_id)
                 logger.info("Request received")
+
+                # Initialize the database session
+                self.session = Session()
 
                 # Retrieve submission and task_type
                 (submission, task_type) = self.get_submission_data(submission_id)
@@ -105,6 +116,10 @@ class Worker(Service):
                 return success
 
             finally:
+                self.session.commit()
+                self.session.close()
+                self.session = None
+                logger.operation = ""
                 self.work_lock.release()
 
         else:

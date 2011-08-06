@@ -30,9 +30,9 @@ from cms.db.SQLAlchemyAll import Task
 from cms.service import JobException
 from cms.service.Utils import get_compilation_command, filter_ansi_escape
 
-def get_task_type_class(submission):
+def get_task_type_class(submission, session):
     if submission.task.task_type == Task.TASK_TYPE_BATCH:
-        return BatchTaskType(submission)
+        return BatchTaskType(submission, session)
     else:
         return None
 
@@ -89,8 +89,9 @@ def white_diff(output, res):
                 return False
 
 class BatchTaskType:
-    def __init__(self, submission):
+    def __init__(self, submission, session):
         self.submission = submission
+        self.session = session
 
     KEEP_SANDBOX = False
 
@@ -106,22 +107,7 @@ class BatchTaskType:
             self.submission.compilation_text = text.decode("utf-8")
         except UnicodeDecodeError:
             self.submission.compilation_text("Cannot decode compilation text.")
-            logger.info("Unable to decode UTF-8 for string %s." % (text))
-        try:
-            retry = True
-            while retry:
-                retry = False
-                try:
-                    self.submission.to_couch()
-                except couchdb.ResourceConflict:
-                    logger.error("Conflict when updating CouchDB")
-                    #server_sub = CouchObject.from_couch(self.submission.couch_id)
-                    # Check and update the document
-                    #retry = True
-            return True
-        except (OSError, IOError) as e:
-            logger.info("Couldn't update database, aborting compilation (exception: %s)" % (repr(e)))
-            return False
+            logger.error("Unable to decode UTF-8 for string %s." % (text))
 
     def finish_single_execution(self, test_number, success, outcome = 0, text = ""):
         self.safe_delete_sandbox()
@@ -134,7 +120,6 @@ class BatchTaskType:
     def finish_evaluation(self, success):
         if not success:
             return False
-        self.submission.to_couch()
         return True
 
     def safe_delete_sandbox(self):
@@ -152,7 +137,7 @@ class BatchTaskType:
             self.safe_delete_sandbox()
             raise JobException()
 
-    def safe_create_file_from_storage(self, name, digest, executable = False):
+    def safe_create_file_from_storage(self, name, digest, executable=False):
         try:
             self.sandbox.create_file_from_storage(name, digest, executable)
         except (OSError, IOError):
