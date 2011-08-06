@@ -169,9 +169,11 @@ class Service:
         self._exit = False
         self._threaded_responses = []
         self._threaded_responses_lock = threading.Lock()
+        self._async_lock = threading.Lock()
         self.remote_services = {}
 
         self._my_coord = ServiceCoord(self.__class__.__name__, self.shard)
+
         self.add_timeout(self._reconnect, None, 10, immediately=True)
         try:
             address = get_service_address(self._my_coord)
@@ -232,7 +234,8 @@ class Service:
         """
         # Let's not spam the logs...
         # logger.debug("Service._step")
-        asyncore.loop(0.02, True, None, 1)
+        with self._async_lock:
+            asyncore.loop(0.02, True, None, 1)
         self._trigger()
 
     def _reconnect(self):
@@ -792,7 +795,7 @@ class Logger:
             Logger.ERROR,
             Logger.WARNING,
             Logger.INFO,
-            Logger.DEBUG
+#            Logger.DEBUG
             ]
         Logger.TO_SEND = [
             Logger.CRITICAL,

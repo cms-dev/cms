@@ -76,9 +76,14 @@ class RPCAnswerHandler(tornado.web.RequestHandler):
             if responses[rid] == "wait":
                 self.write({'status': 'wait'})
             else:
-                self.write({'status': 'ok',
-                            'data': responses[rid][0],
-                            'error': responses[rid][1]})
+                try:
+                    self.write({'status': 'ok',
+                                'data': responses[rid][0],
+                                'error': responses[rid][1]})
+                except UnicodeDecodeError:
+                    self.write({'status': 'ok',
+                                'data': '',
+                                'error': 'Cannot call binary RPC methods.'})
                 del responses[rid]
         else:
             self.write({'status': 'fail'})

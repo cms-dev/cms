@@ -113,6 +113,7 @@ class FileStorage(Service):
 
         """
         logger.debug("FileStorage.get")
+        logger.info("Getting file %s." % digest)
         # Errors are managed by the caller
         input_file = open(os.path.join(self.obj_dir, digest), "rb")
         data = input_file.read()
@@ -199,6 +200,7 @@ class FileCacher:
         plus (object): additional data for the callback
         bind_obj (object): context for the callback (None means
                            the service that created the FileCacher)
+        return (bool): True if request got passed along
 
         """
         from_cache = self._get_from_cache(digest)
@@ -503,7 +505,7 @@ class FileCacher:
             try:
                 open(temp_path, "wb").write(binary_data)
             except IOError:
-                pass            
+                pass
 
         self.file_storage.put_file(binary_data=binary_data,
             description=description,
