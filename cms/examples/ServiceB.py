@@ -49,10 +49,12 @@ class ServiceB(Service):
         """Anoter example RPC method that takes a while.
 
         """
-        logger.debug("ServiceB.long_rpc_method")
-        logger.info("Start long method, par = %s" % string)
+        with self._async_lock:
+            logger.debug("ServiceB.long_rpc_method")
+            logger.info("Start long method, par = %s" % string)
         time.sleep(3)
-        logger.info("End long method")
+        with self._async_lock:
+            logger.info("End long method, par = %s" % string)
         return string
 
     @rpc_method
