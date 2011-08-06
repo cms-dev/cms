@@ -28,7 +28,7 @@ import time
 import threading
 
 from cms.async.AsyncLibrary import Service, rpc_method, \
-     rpc_binary_response, rpc_threaded, logger
+     rpc_binary_response, rpc_threaded, logger, async_lock
 from cms.async import ServiceCoord
 
 
@@ -49,11 +49,11 @@ class ServiceB(Service):
         """Anoter example RPC method that takes a while.
 
         """
-        with self._async_lock:
+        with async_lock:
             logger.debug("ServiceB.long_rpc_method")
             logger.info("Start long method, par = %s" % string)
         time.sleep(3)
-        with self._async_lock:
+        with async_lock:
             logger.info("End long method, par = %s" % string)
         return string
 

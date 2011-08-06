@@ -169,7 +169,6 @@ class Service:
         self._exit = False
         self._threaded_responses = []
         self._threaded_responses_lock = threading.Lock()
-        self._async_lock = threading.Lock()
         self.remote_services = {}
 
         self._my_coord = ServiceCoord(self.__class__.__name__, self.shard)
@@ -234,7 +233,7 @@ class Service:
         """
         # Let's not spam the logs...
         # logger.debug("Service._step")
-        with self._async_lock:
+        with async_lock:
             asyncore.loop(0.02, True, None, 1)
         self._trigger()
 
@@ -400,7 +399,6 @@ class ThreadedRPC(threading.Thread):
         try:
             method_response = self.service.handle_message(self.message)
         except Exception, exception:
-            print exception
             self.response["__error"] = "%s: %s" % (
                 exception.__class__.__name__,
                 " ".join([str(x) for x in exception.args]))
@@ -900,6 +898,9 @@ class Logger:
 
 
 logger = Logger()
+
+
+async_lock = threading.Lock()
 
 
 def sync_call(function, args,
