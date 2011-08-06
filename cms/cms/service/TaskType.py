@@ -27,7 +27,7 @@ import codecs
 from cms.async.AsyncLibrary import logger
 from cms.box.Sandbox import Sandbox
 from cms.db.SQLAlchemyAll import Task
-from cms.service.Worker import JobException
+from cms.service import JobException
 from cms.service.Utils import get_compilation_command, filter_ansi_escape
 
 def get_task_type_class(submission):
