@@ -21,118 +21,102 @@
 
 import threading
 
-import TaskType
-import Submission
-
-shutting_down = False
-
-
-class JobException(Exception):
-    def __init__(self, msg = ""):
-        self.msg = msg
-    def __str__(self):
-        return repr(self.msg)
-
-
-class Job(threading.Thread):
-    def __init__(self, submission_id, worker):
-        threading.Thread.__init__(self)
-        logger.info("Initializing Job %s" % submission_id)
-        self.es = xmlrpclib.ServerProxy("http://%s:%d"
-                                        % Configuration.evaluation_server)
-        self.submission_id = submission_id
-        self.worker = worker
-
-        self.submission = CouchObject.from_couch(submission_id)
-        if self.submission == None:
-            logger.error("Couldn't find submission %s con CouchDB"
-                         % submission_id)
-            raise Exception
-
-        self.task_type = TaskType.get_task_type_class(self.submission)
-        if self.task_type == None:
-            logger.error("Task type `%s' not known for submission %s"
-                         % (self.submission.task.task_type, submission_id))
-            raise Exception
-
-
-class CompileJob(Job):
-    def __init__(self, submission_id, worker):
-        Job.__init__(self, submission_id, worker)
-
-    def run(self):
-        try:
-            success = self.task_type.compile()
-        except Exception as e:
-            logger.critical("Compilation failed with not caught exception `%s'"
-                            % repr(e))
-            success = False
-        try:
-            self.es.compilation_finished(success, self.submission_id)
-            if success:
-                logger.info("Reported successful operation")
-            else:
-                logger.info("Reported failed operation")
-        except IOError:
-            logger.info("Could not report finished operation, dropping it")
-        finally:
-            self.worker.working_thread = None
-
-
-class EvaluateJob(Job):
-    def __init__(self, submission_id, worker):
-        Job.__init__(self, submission_id, worker)
-
-    def run(self):
-        try:
-            success = self.task_type.execute()
-        except Exception as e:
-            logger.critical("Evaluation failed with not caught exception `%s'"
-                            % repr(e))
-            success = False
-        try:
-            self.es.evaluation_finished(success, self.submission_id)
-            if success:
-                logger.info("Reported successful operation")
-            else:
-                logger.info("Reported failed operation")
-        except IOError:
-            logger.info("Could not report finished operation, dropping it")
-        finally:
-            self.worker.working_thread = None
-
+from cms.async import ServiceCoord
+from cms.async.AsyncLibrary import logger, Service, rpc_method, rpc_threaded
+from cms.service.TaskType import get_task_type_class
+from cms.db.SQLAlchemyAll import Submission
+from cms.service import JobException
 
 class Worker(Service):
+
     def __init__(self, shard):
         logger.initialize(ServiceCoord("Worker", shard))
         logger.debug("Worker.__init__")
         Service.__init__(self, shard)
+        self.work_lock = threading.Lock()
+
+    def get_submission_data(self, submission_id):
+        submission = Submission.get_from_id(submission_id)
+        if submission is None:
+            err_msg = "Couldn't find submission %d in the database" % (submission_id)
+            logger.critical(msg_err)
+            raise JobException(msg_err)
+
+        task_type = get_task_type_class(submission)
+        if task_type is None:
+            err_msg = "Task type `%s' not known for submission %d" \
+                % (self.submission.task.task_type, submission_id)
+            logger.critical(err_msg)
+            raise JobException(msg_err)
+
+        return (submission, task_type)
 
     @rpc_method
+    @rpc_threaded
     def compile(self, submission_id):
-        logger.set_operation("compiling submission %s" % submission_id)
-        logger.info("Request received")
-        j = CompileJob(submission_id, self)
-        self.working_thread = j
-        j.start()
-        return True
+        if self.work_lock.acquire(blocking=False):
+
+            try:
+                logger.set_operation("compiling submission %s" % (submission_id))
+                logger.info("Request received")
+
+                # Retrieve submission and task_type
+                (submission, task_type) = self.get_submission_data(submission_id)
+
+                # Do the actual work
+                try:
+                    success = self.task_type.compile()
+                except Exception as e:
+                    err_msg = "Compilation failed with not caught exception `%s'" % (repr(e))
+                    logger.critical(err_msg)
+                    raise JobException(err_msg)
+
+                logger.info("Request finished")
+                return success
+
+            finally:
+                self.work_lock.release()
+
+        else:
+            logger.info("Request to compile submission %d received, but declined because of acquired lock" % (submission_id))
+            return False
 
     @rpc_method
+    @rpc_threaded
     def evaluate(self, submission_id):
-        logger.set_operation("evaluating submission %s" % submission_id)
-        logger.info("Request received")
-        j = EvaluateJob(submission_id, self)
-        self.working_thread = j
-        j.start()
-        return True
+        if self.work_lock.acquire(blocking=False):
+
+            try:
+                logger.set_operation("evaluating submission %s" % (submission_id))
+                logger.info("Request received")
+
+                # Retrieve submission and task_type
+                (submission, task_type) = self.get_submission_data(submission_id)
+
+                # Do the actual work
+                try:
+                    success = self.task_type.execute()
+                except Exception as e:
+                    err_msg = "Evaluation failed with not caught exception `%s'" % (repr(e))
+                    logger.critical(err_msg)
+                    raise JobException(err_msg)
+
+                logger.info("Request finished")
+                return success
+
+            finally:
+                self.work_lock.release()
+
+        else:
+            logger.info("Request to evaluate submission %d received, but declined because of acquired lock" % (submission_id))
+            return False
+
 
     @rpc_method
     def shut_down(self, reason):
-        global shutting_down
-        logger.unset_operation()
-        logger.info("Shutting down the worker because of reason `%s'" % reason)
-        shutting_down = True
-        return True
+        #logger.operation = ""
+        #logger.info("Shutting down the worker because of reason `%s'" % reason)
+        raise NotImplementedError, "Worker.shut_down not implemented yet"
 
 
 if __name__ == "__main__":
