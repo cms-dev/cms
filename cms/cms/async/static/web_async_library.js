@@ -50,15 +50,27 @@
                 span.innerHTML += '<br/>&nbsp;&nbsp;' + rid +
                     ' - ' + response;
             // END DEBUG
-            response = JSON.parse(response);
-            if (response['status'] != 'wait')
+            try
+            {
+                response = JSON.parse(response);
+                if (response['status'] != 'wait')
+                {
+                    timeout_id = this.timeout_ids[rid];
+                    delete this.timeout_ids[rid];
+                    clearTimeout(timeout_id);
+                }
+                if (response['status'] == 'ok')
+                    cb(response, null);
+                else if (response['status'] != 'wait')
+                    cb(response, response['status']);
+            }
+            catch(e)
             {
                 timeout_id = this.timeout_ids[rid];
                 delete this.timeout_ids[rid];
                 clearTimeout(timeout_id);
+                cb(null, response);
             }
-            if (response['status'] == 'ok')
-                cb(response);
         },
 
         /**

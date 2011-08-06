@@ -53,6 +53,7 @@ class WebServiceA(WebService):
             },
             shard=shard)
         self.ServiceB = self.connect_to(ServiceCoord("ServiceB", 1))
+        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
 
 
 class MainHandler(tornado.web.RequestHandler):
