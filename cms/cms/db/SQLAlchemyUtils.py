@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from contextlib import contextmanager
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -31,6 +33,23 @@ Base = declarative_base(db)
 metadata = Base.metadata
 
 Session = sessionmaker(db)
+
+@contextmanager
+def SessionGen():
+    """This allows us to create handy local sessions simply with:
+
+    with SessionGen as session:
+        session.do_something()
+
+    and at the end, commit & close are automatically called.
+
+    """
+    session = _Session()
+    try:
+        yield session
+    finally:
+        session.commit()
+        session.close()
 
 def get_from_id(self, id, session):
     res = session.query(self.__class__).filter(self.__class__.id == id)
