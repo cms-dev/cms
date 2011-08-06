@@ -241,7 +241,7 @@ class QuestionHandler(BaseHandler):
     @tornado.web.authenticated
     def post(self):
         r_params = self.render_params()
-        
+
         q = Question(time.time(), \
                 self.get_argument("question_subject",""), \
                 self.get_argument("question_text",""),
