@@ -59,15 +59,15 @@ class Submission(Base):
         self.user = user
         self.task = task
         self.timestamp = timestamp
-        self.files = files
+#        self.files = files
         self.compilation_outcome = compilation_outcome
         self.evaluation_outcome = evaluation_outcome
-        self.executables = executables
+#        self.executables = executables
         self.compilation_text = compilation_text
         self.evaluation_text = evaluation_text
         self.compilation_tries = compilation_tries
         self.evaluation_tries = evaluation_tries
-        self.token_timestamp = token_timestamp
+#        self.token_timestamp = token_timestamp
 
     #def tokened(self):
     #    return self.token_timestamp != None

@@ -51,26 +51,29 @@
             </tr>
             {% for s in sorted(submissions, key=lambda s: s.timestamp , reverse = True) %}
                 <tr>
-                    <td><a href="/submissions/details/{{escape(s.couch_id)}}">{{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</a></td>
+                    <td><a href="/submissions/details/{{ s.id }}">{{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</a></td>
                     <td>{{ s.compilation_outcome }}</td>
                     <td>
-                        {% if s.evaluation_outcome != None %}
+                    Not yet implemented!
+                    <!--
+                        {% comment if s.evaluation_outcome != None %}
                             Evaluated
-                        {% elif s.compilation_outcome == "fail" %}
+                        {% comment elif s.compilation_outcome == "fail" %}
                             Ignored
-                        {% else %}
+                        {% comment else %}
                             Queued, please wait
-                        {% end %}
+                        {% comment end %}
+                    -->
                     </td>
                     <td>
                     {% for key,value in s.files.items() %}
-                        <a href="/submission_file/{{ escape(s.couch_id) }}/{{ escape(key) }}">{{ escape(key) }}<br/>
+                        <a href="/submission_file/{{ s.id }}/{{ escape(key) }}">{{ escape(key) }}<br/>
                     {% end %}
                     <td>
                     {% if s.token_timestamp==None %}
                         <form class="submit_form" action="/usetoken/" method="POST">
                         No
-                        <input type="hidden" name="id" value="{{ escape(s.couch_id) }}"/>
+                        <input type="hidden" name="id" value="{{ s.id }}"/>
                         <input type="submit" value="Use Token"/>
                         </form>
                     {% else %}

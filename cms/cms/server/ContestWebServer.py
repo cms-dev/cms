@@ -44,8 +44,10 @@ from cms.async.AsyncLibrary import logger
 from cms.async.WebAsyncLibrary import WebService, rpc_callback
 from cms.async import ServiceCoord
 
-from cms.db.SQLAlchemyAll import Session, Contest, User, Question
+from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
+                                 Submission, Task, File
 
+import cms.util.Configuration as Configuration
 import cms.util.WebConfig as WebConfig
 import cms.util.Utils as Utils
 import cms.server.BusinessLayer as BusinessLayer
@@ -243,8 +245,11 @@ class TaskViewHandler(BaseHandler):
                                 if x.name == task_name][0]
         except:
             raise tornado.web.HTTPError(404)
-        r_params["submissions"] = [x for x in self.get_current_user().tokens
+            [x for x in self.get_current_user().tokens
                                    if x.task == r_params["task"]]
+        r_params["submissions"] = self.sql_session.query(Submission)\
+                          .filter_by(user = self.get_current_user())\
+                          .filter_by(task = r_params["task"]).all()
 
         self.render("task.html", **r_params)
 
@@ -347,6 +352,108 @@ class QuestionHandler(BaseHandler):
                        % self.current_user.username)
         self.render("successfulQuestion.html", **r_params)
 
+class SubmitHandler(BaseHandler):
+    """Handles the received submissions.
+    """
+
+    @tornado.web.authenticated
+    @tornado.web.asynchronous
+    def post(self, task_id):
+
+        self.r_params = self.render_params()
+        if not self.valid_phase(self.r_params):
+            return
+        self.timestamp = self.r_params["timestamp"]
+
+        self.task = self.sql_session.query(Task).filter_by(name = task_id)\
+              .filter_by(contest = self.contest).first()
+
+        if self.task == None:
+            self.send_error(404)
+            self.finish()
+            return
+
+        try:
+            uploaded = self.request.files[self.task.name][0]
+        except KeyError:
+            self.write("No file chosen.")
+            self.finish()
+            return
+
+        self.files = {}
+
+        if uploaded["content_type"] == "application/zip":
+            #Extract the files from the archive
+            temp_zip_file, temp_zip_filename = tempfile.mkstemp()
+            # Note: this is just a binary copy, so no utf-8 wtf-ery here.
+            with os.fdopen(temp_zip_file, "w") as temp_zip_file:
+                temp_zip_file.write(uploaded["body"])
+
+            zip_object = zipfile.ZipFile(temp_zip_filename, "r")
+            for item in zip_object.infolist():
+                self.files[item.filename] = zip_object.read(item)
+        else:
+            self.files[uploaded["filename"]] = uploaded["body"]
+
+        # submit the files.
+
+        # Attempt to store the submission locally to be able to recover
+        # a failure.
+        # TODO: Determine when the submission is to be considered accepted
+        # and pre-emptively stored.
+        if Configuration.submit_local_copy:
+            import pickle
+            import codecs
+            try:
+                path = os.path.join(Configuration.submit_local_copy_path, user.username)
+                if not os.path.exists(path):
+                    os.mkdir(path)
+                with codecs.open(os.path.join(path, str(int(timestamp))), "w", "utf-8") as fd:
+                    pickle.dump((self.contest.id, self.get_current_user().id, self.task, self.files), fd)
+            except Exception as e:
+                logger.warning("submit: local copy failed - " + repr(e))
+
+        # We now have to send all the files to the destination...
+
+        self.file_digests = {}
+
+        for filename, content in self.files.items():
+            self.application.service.FS.put_file(\
+              callback = SubmitHandler.storage_callback, \
+              plus = filename, \
+              binary_data = content, \
+              description = "submission file " + filename \
+                            + " sent by " + self.get_current_user().username \
+                            + " at " + str(self.timestamp),
+              bind_obj = self
+              )
+
+    @rpc_callback
+    def storage_callback(self, data, plus, error = None):
+        logger.info("Storage callback")
+        if error == None:
+            self.file_digests[plus] = data
+            if len(self.file_digests) == len(self.files):
+                # TODO: All the files are stored, ready to submit!
+                logger.info("I saved all the files")
+                s = Submission(\
+                 user = self.get_current_user(), \
+                 task = self.task, \
+                 timestamp = self.timestamp, \
+                 files = {}, \
+                 )
+
+                for filename, digest in self.file_digests.items():
+                    self.sql_session.add(File(digest, filename, s))
+                self.sql_session.add(s)
+                self.sql_session.commit()
+                self.r_params["submission"] = s
+                self.r_params["warned"] = False
+                self.render("successfulSub.html", **self.r_params)
+        else:
+            logger.warning("Storage failed! " + error)
+            self.finish()
+
 
 handlers = [
             (r"/", \
@@ -355,8 +462,6 @@ handlers = [
                  LoginHandler),
             (r"/logout", \
                  LogoutHandler),
-#            (r"/submissions/([a-zA-Z0-9_-]+)", \
-#                 SubmissionViewHandler),
 #            (r"/submissions/details/([a-zA-Z0-9_-]+)", \
 #                 SubmissionDetailHandler),
 #            (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", \
@@ -367,8 +472,8 @@ handlers = [
                  TaskStatementViewHandler),
 #            (r"/usetoken/", \
 #                 UseTokenHandler),
-#            (r"/submit/([a-zA-Z0-9_.-]+)", \
-#                 SubmitHandler),
+            (r"/submit/([a-zA-Z0-9_.-]+)", \
+                 SubmitHandler),
             (r"/user", \
                  UserHandler),
             (r"/instructions", \

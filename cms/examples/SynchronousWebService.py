@@ -59,7 +59,6 @@ class SynchronousRPCRequestHandler(tornado.web.RequestHandler):
 
     @rpc_callback
     def _request_callback(self, caller, data, plus, error=None):
-        logger.info("Request callback")
         try:
             self.write({'status': 'ok',
                         'data': data,
