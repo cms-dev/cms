@@ -33,12 +33,14 @@ import time
 import codecs
 import base64
 
-from cms.async.AsyncLibrary import Service, rpc_method, logger, async_lock
-from cms.async import ServiceCoord
+from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback, \
+     logger, async_lock
+from cms.async import ServiceCoord, get_service_shards
 import cms.util.Utils as Utils
 
-from cms.db.SQLAlchemyAll import Session, SessionGen, metadata, \
+from cms.db.SQLAlchemyAll import Session, metadata, \
      Contest, User, Announcement, Question
+from cms.db.SQLAlchemyUtils import SessionGen
 
 
 class JobQueue:
@@ -215,7 +217,6 @@ class WorkerPool:
             shard = self.find_shard(self.WORKER_INACTIVE)
         except LookupError:
             return None
-            logger.critical("Worker array went out-of-sync "
 
         # Then we fill the info for future memory
         self.job[shard] = job
@@ -268,7 +269,7 @@ class WorkerPool:
             logger.info("Worker %d released and disabled" % shard)
             return True
         else:
-            self.workers[shard] = self.WORKER_INACTIVE
+            self.worker[shard] = self.WORKER_INACTIVE
             logger.debug("Worker %d released" % shard)
             return False
 
@@ -309,11 +310,11 @@ class WorkerPool:
         """
         return dict([(str(shard), {
             'job': represent_job(self.job[shard]),
-            'address': self.workers[shard].remote_service_coord,
+            'address': self.worker[shard].remote_service_coord,
             'start_time': self.start_time[shard],
             'error_count': self.error_count[shard],
             'side_data': self.side_data[shard]})
-            for shard in self.workers.keys()])
+            for shard in self.worker.keys()])
 
     def check_timeouts(self):
         """Check if some worker is not responding in too much time. If
@@ -323,7 +324,7 @@ class WorkerPool:
         """
         now = time.time()
         lost_jobs = []
-        for shard in self.workers:
+        for shard in self.worker:
             if self.start_time[shard] != None:
                 active_for = now - self.start_time[shard]
                 if active_for > Configuration.worker_timeout:
@@ -333,8 +334,8 @@ class WorkerPool:
                                  "worker %d because of no reponse "
                                  "in %.2f seconds" %
                                  (shard, active_for))
-                    assert self.workers[shard] != self.WORKER_INACTIVE \
-                        and self.workers[shard] != self.WORKER_DISABLED
+                    assert self.worker[shard] != self.WORKER_INACTIVE \
+                        and self.worker[shard] != self.WORKER_DISABLED
 
                     # So we put again its current job in the queue
                     job = self.job[shard]
@@ -346,7 +347,7 @@ class WorkerPool:
                     # life.
                     self.schedule_disabling[shard] = True
                     self.release_worker(shard)
-                    self.workers[shard].shut_down("No response in %.2f "
+                    self.worker[shard].shut_down("No response in %.2f "
                                                   "seconds" % active_for)
 
         return lost_jobs
@@ -384,7 +385,7 @@ class EvaluationServer(Service):
 
         self.session = None
 
-        for i in xrange(len(Config.core_services["Worker"])):
+        for i in xrange(get_service_shards("Worker")):
             self.pool.add_worker(ServiceCoord("Worker", i))
 
         self.add_timeout(self.dispatch_jobs, None, 2,
