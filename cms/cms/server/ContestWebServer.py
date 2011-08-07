@@ -41,7 +41,7 @@ import time
 import tornado.web
 
 from cms.async.AsyncLibrary import logger
-from cms.async.WebAsyncLibrary import WebService
+from cms.async.WebAsyncLibrary import WebService, rpc_callback
 from cms.async import ServiceCoord
 
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question
@@ -163,6 +163,7 @@ class ContestWebServer(WebService):
             handlers,
             parameters,
             shard=shard)
+        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
 
 
 class MainHandler(BaseHandler):
@@ -247,6 +248,52 @@ class TaskViewHandler(BaseHandler):
 
         self.render("task.html", **r_params)
 
+class TaskStatementViewHandler(BaseHandler):
+    """Shows the statement file of a task in the contest.
+    """
+
+    @tornado.web.authenticated
+    @tornado.web.asynchronous
+    def get(self, task_name):
+
+        r_params = self.render_params()
+        if not self.valid_phase(r_params):
+            return
+        try:
+            self.task = [ x for x in self.contest.tasks if x.name == task_name ][0] 
+        except:
+            self.write("Task %s not found." % (task_name))
+
+
+        service = ServiceCoord("FileStorage", 0)
+        if service not in self.application.service.remote_services or \
+               not self.application.service.remote_services[service].connected:
+            # TODO: Signal the user
+
+            self.finish()
+            return
+
+        self.application.service.remote_services[service].get_file(\
+            callback=self._statement_callback,
+            plus=0,
+            digest = self.task.statement)
+
+    @rpc_callback
+    def _statement_callback(self, caller, data, plus, error=None):
+        """This is the callback for the RPC method called from a web
+        page, that just collect the response.
+
+        """
+
+        if data == None:
+            self.finish()
+            return
+
+        self.set_header("Content-Type", "application/pdf")
+        self.set_header("Content-Disposition",
+                        "attachment; filename=\"%s.pdf\"" % (self.task.name))
+        self.write(data)
+        self.finish()
 
 class UserHandler(BaseHandler):
     """Displays information about the current user, in particular
@@ -316,8 +363,8 @@ handlers = [
 #                 SubmissionFileHandler),
             (r"/tasks/([a-zA-Z0-9_-]+)", \
                  TaskViewHandler),
-#            (r"/tasks/([a-zA-Z0-9_-]+)/statement", \
-#                 TaskStatementViewHandler),
+            (r"/tasks/([a-zA-Z0-9_-]+)/statement", \
+                 TaskStatementViewHandler),
 #            (r"/usetoken/", \
 #                 UseTokenHandler),
 #            (r"/submit/([a-zA-Z0-9_.-]+)", \

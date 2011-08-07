@@ -125,7 +125,7 @@ class AdminWebServer(WebService):
             handlers,
             parameters,
             shard=shard)
-
+        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
 
 class MainHandler(BaseHandler):
     """Home page handler.
