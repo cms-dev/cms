@@ -163,17 +163,28 @@ class Service:
     def __init__(self, shard=0):
         logger.debug("Service.__init__")
         self.shard = shard
+        # Stores the function to call periodically. Format: function
+        # -> [plus_obj, interval_in_seconds, time of last call]
         self._timeouts = {}
-        self._seconds = 0
-        self._connections = set([])
+        # If we want to exit the main loop
         self._exit = False
+        # The return values of the rpc calls executed in a different
+        # thread. With the corresponding lock to aquire before
+        # interfering with _threaded_responses. Format: list of
+        # parameters for send_reply.
         self._threaded_responses = []
         self._threaded_responses_lock = threading.Lock()
+        # Dictionaries of (to be) connected RemoteService
         self.remote_services = {}
 
         self._my_coord = ServiceCoord(self.__class__.__name__, self.shard)
 
+        # Every ten seconds, we try to connect to all the services (in
+        # case someone went down.
         self.add_timeout(self._reconnect, None, 10, immediately=True)
+
+        # We setup the listening address for services which want to
+        # connect with us.
         try:
             address = get_service_address(self._my_coord)
         except KeyError:
@@ -189,7 +200,6 @@ class Service:
         service (ServiceCoord): the service to connect to.
         return (RemoteService): the connected RemoteService istance.
         """
-        self._connections.add(service)
         self.remote_services[service] = RemoteService(self, service, sync=sync)
         try:
             self.remote_services[service].connect_remote_service()
@@ -242,7 +252,7 @@ class Service:
 
         """
         logger.debug("Service._reconnect")
-        for service in self._connections:
+        for service in self.remote_services:
             remote_service = self.remote_services[service]
             if not remote_service.connected:
                 try:
@@ -290,8 +300,9 @@ class Service:
 
     def handle_rpc_response(self, message):
         """To be called when the channel finishes to collect a message
-        that is a response. It ask the RPCRequest do complete the
-        conversation.
+        that is a response to a rpc call we did. It ask the RPCRequest
+        to complete the conversation (i.e., not waiting anymore and
+        calling the callback).
 
         message (object): the decoded message.
         """
@@ -396,6 +407,7 @@ class ThreadedRPC(threading.Thread):
         (remote_service, parameters_of_the_send_reply_method).
 
         """
+        # We execute the method.
         try:
             method_response = self.service.handle_message(self.message)
         except Exception, exception:
@@ -404,6 +416,9 @@ class ThreadedRPC(threading.Thread):
                 " ".join([str(x) for x in exception.args]))
             self.binary_response = False
             method_response = None
+
+        # And we put the response in the bucket, waiting for the main
+        # thread to deliver it.
         self.service._threaded_responses_lock.acquire()
         self.service._threaded_responses.append((self.remote_service,
             (self.response,
@@ -411,8 +426,10 @@ class ThreadedRPC(threading.Thread):
              self.binary_response)))
         self.service._threaded_responses_lock.release()
 
+
 class SyncRPCError(Exception):
     pass
+
 
 class RemoteService(asynchat.async_chat):
     """This class mimick the local presence of a remote service. A
@@ -440,9 +457,15 @@ class RemoteService(asynchat.async_chat):
         # logger.debug("RemoteService.__init__")
         if address == None and remote_service_coord == None:
             raise
+
+        # service is the local service connecting to the remote
+        # service
         self.service = service
+        # sync is True if we want that every rpc call in this channel
+        # is synchronous.
         self.sync = sync
         self.sync_responses = {}
+
         if address == None:
             self.remote_service_coord = remote_service_coord
             self.address = get_service_address(remote_service_coord)
@@ -485,6 +508,7 @@ class RemoteService(asynchat.async_chat):
         data = "".join(self.data)
         self.data = []
 
+        # We decode the arriving data
         try:
             json_length = decode_length(data[:4])
             message = decode_json(data[4:json_length + 4])
@@ -499,12 +523,16 @@ class RemoteService(asynchat.async_chat):
             logger.error("Cannot understand incoming message, discarding.")
             return
 
-        response = {"__data": None,
-                    "__error": None}
-        if "__id" in message:
-            response["__id"] = message["__id"]
+        # If __method is present, someone is calling an rpc of the
+        # local service
         if "__method" in message:
-            # We first find the properties of the called rpc method.
+            # We initialize the data we are going to send back
+            response = {"__data": None,
+                        "__error": None}
+            if "__id" in message:
+                response["__id"] = message["__id"]
+
+            # We find the properties of the called rpc method.
             try:
                 method_info = self.service.method_info(message["__method"])
                 binary_response = method_info["binary_response"]
@@ -522,6 +550,7 @@ class RemoteService(asynchat.async_chat):
                 t = ThreadedRPC(self, message, response, binary_response)
                 t.start()
                 return
+
             # Otherwise, we compute the method here and send the reply
             # right away.
             try:
@@ -533,6 +562,8 @@ class RemoteService(asynchat.async_chat):
                 binary_response = False
                 method_response = None
             self.send_reply(response, method_response, binary_response)
+
+        # Otherwise, is a response to our rpc call.
         else:
             self.service.handle_rpc_response(message)
 
@@ -594,6 +625,8 @@ class RemoteService(asynchat.async_chat):
                     return False
         if bind_obj == None:
             bind_obj = self.service
+
+        # We start building the request message
         message = {}
         message["__method"] = method
         message["__data"] = data
@@ -601,8 +634,11 @@ class RemoteService(asynchat.async_chat):
             bind_obj = None
             plus = random_string(16)
             callback = self.execute_rpc_callback
+        # And we remember that we need to wait for a reply
         request = RPCRequest(message, bind_obj, callback, plus)
         message = request.pre_execute()
+
+        # We encode the request and send it
         if "binary_data" not in data:
             try:
                 json_message = encode_json(message)
@@ -626,6 +662,10 @@ class RemoteService(asynchat.async_chat):
                 request.complete(None)
                 return
         self._push_right(json_length + json_message + binary_message)
+
+        # For synchronous channels, we return when the response
+        # arrive.  TODO: does this need RPCRequest? Or RPCRequest keep
+        # thinking that we are waiting for the response?
         if self.sync:
             while not plus in self.sync_responses:
                 asyncore.loop(0.02, True, None, 1)
@@ -634,6 +674,8 @@ class RemoteService(asynchat.async_chat):
             if error is not None:
                 raise SyncRPCError(error)
             return response
+
+        # Otherwise, we return immediately.
         return True
 
     @rpc_callback
