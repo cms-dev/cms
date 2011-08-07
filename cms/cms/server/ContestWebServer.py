@@ -19,7 +19,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Simple web service example.
+"""ContestWebServer serves the webpage that contestants are using to:
+
+- view information about the contest (times, ...);
+- view tasks;
+- view documentation (STL, ...);
+- submit questions;
+- view announcements and answer to questions;
+- submit solutions;
+- view the state and maybe the score of their submissions;
+- release submissions to see their full score;
+- query the test interface (to be implemented?).
 
 """
 
@@ -34,36 +44,42 @@ from cms.async.AsyncLibrary import logger
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 
-from cms.db.SQLAlchemyAll import Session, metadata, Contest, User, Announcement, Question
+from cms.db.SQLAlchemyAll import Session, Contest, User, Question
 
 import cms.util.WebConfig as WebConfig
 import cms.util.Utils as Utils
 import cms.server.BusinessLayer as BusinessLayer
 
-def contestRequired(f):
-    @wraps(f)
+
+def contest_required(func):
+    """Decorator to ensure that in the parameter list there is one
+    named "contest". If not present, the browser shows a 404.
+
+    """
+    @wraps(func)
     def wrapper(*args, **kwds):
         if args[0].contest != None:
-          return f(*args, **kwds)
+            return func(*args, **kwds)
         else:
-          raise tornado.web.HTTPError(404)
+            raise tornado.web.HTTPError(404)
     return wrapper
+
 
 class BaseHandler(tornado.web.RequestHandler):
     """Base RequestHandler for this application.
 
     All the RequestHandler classes in this application should be a
     child of this class.
-    """
 
+    """
     def prepare(self):
         """This method is executed at the beginning of each request.
         """
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
         self.sql_session = Session()
-        self.contest = self.sql_session.query(Contest).filter_by(id=\
-        self.application.service.contest).first()
+        self.contest = self.sql_session.query(Contest).\
+                       filter_by(id=self.application.service.contest).first()
 
     def get_current_user(self):
         """Gets the current user logged in from the cookies
@@ -85,23 +101,35 @@ class BaseHandler(tornado.web.RequestHandler):
         #if cookie_time == None or cookie_time < upsince:
         #    return None
 
-        current_user = self.sql_session.query(User).filter_by(id=user_id).first()
+        current_user = self.sql_session.query(User).\
+                       filter_by(id=user_id).first()
         if current_user == None:
             self.clear_cookie("login")
             return None
         return current_user
 
     def render_params(self):
-        r = {}
-        r["timestamp"] = time.time()
-        r["contest"] = self.contest
+        """Return the default render params used by almost all handlers.
+
+        return (dict): default render params
+
+        """
+        ret = {}
+        ret["timestamp"] = time.time()
+        ret["contest"] = self.contest
         if(self.contest != None):
-          r["phase"] = BusinessLayer.contest_phase(**r)
-        r["contest_list"] = self.sql_session.query(Contest).all()
-        r["cookie"] = str(self.cookies)
-        return r
+            ret["phase"] = BusinessLayer.contest_phase(**ret)
+        ret["contest_list"] = self.sql_session.query(Contest).all()
+        ret["cookie"] = str(self.cookies)
+        return ret
 
     def valid_phase(self, r_param):
+        """Return True if the contest is running.
+
+        r_param (dict): the default render_params of the handler
+        returns (bool): True if contest is running
+
+        """
         if r_param["phase"] != 0:
             self.redirect("/")
             return False
@@ -116,11 +144,11 @@ class BaseHandler(tornado.web.RequestHandler):
         self.sql_session.close()
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
+
 class ContestWebServer(WebService):
     """Simple web service example.
 
     """
-
     def __init__(self, shard, contest):
         logger.initialize(ServiceCoord("ContestWebServer", shard))
         logger.debug("ContestWebServer.__init__")
@@ -136,31 +164,36 @@ class ContestWebServer(WebService):
             parameters,
             shard=shard)
 
+
 class MainHandler(BaseHandler):
     """Home page handler.
-    """
 
+    """
     def get(self):
         r_params = self.render_params()
         self.render("welcome.html", **r_params)
 
 
 class InstructionHandler(BaseHandler):
+    """Displays the instruction (compilation lines, documentation,
+    ...) of the contest.
 
+    """
     def get(self):
         r_params = self.render_params()
         self.render("instructions.html", **r_params)
 
+
 class LoginHandler(BaseHandler):
     """Login handler.
-    """
 
+    """
     def post(self):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
-        next = self.get_argument("next", "/")
-        user = self.sql_session.query(User).filter_by(contest = self.contest)\
-          .filter_by(username=username).first()
+        next_page = self.get_argument("next", "/")
+        user = self.sql_session.query(User).filter_by(contest=self.contest).\
+               filter_by(username=username).first()
 
         if user == None or user.password != password:
             logger.info("Login error: user=%s pass=%s remote_ip=%s." %
@@ -182,20 +215,22 @@ class LoginHandler(BaseHandler):
 
         self.set_secure_cookie("login",
                                pickle.dumps((user.id, time.time())))
-        self.redirect(next)
+        self.redirect(next_page)
+
 
 class LogoutHandler(BaseHandler):
     """Logout handler.
-    """
 
+    """
     def get(self):
         self.clear_cookie("login")
         self.redirect("/")
 
+
 class TaskViewHandler(BaseHandler):
     """Shows the data of a task in the contest.
-    """
 
+    """
     @tornado.web.authenticated
     def get(self, task_name):
 
@@ -203,22 +238,31 @@ class TaskViewHandler(BaseHandler):
         if not self.valid_phase(r_params):
             return
         try:
-            r_params["task"] = [ x for x in self.contest.tasks if x.name == task_name][0]
+            r_params["task"] = [x for x in self.contest.tasks
+                                if x.name == task_name][0]
         except:
             raise tornado.web.HTTPError(404)
-        r_params["submissions"] = [ x for x in self.get_current_user().tokens if x.task == r_params["task"]]
+        r_params["submissions"] = [x for x in self.get_current_user().tokens
+                                   if x.task == r_params["task"]]
 
         self.render("task.html", **r_params)
 
-class UserHandler(BaseHandler):
 
+class UserHandler(BaseHandler):
+    """Displays information about the current user, in particular
+    messages and announcements.
+
+    """
     @tornado.web.authenticated
     def get(self):
         r_params = self.render_params()
         self.render("user.html", **r_params)
 
-class NotificationsHandler(BaseHandler):
 
+class NotificationsHandler(BaseHandler):
+    """Displays notifications.
+
+    """
     def post(self):
         timestamp = time.time()
         last_request = self.get_argument("lastrequest", timestamp)
@@ -233,24 +277,27 @@ class NotificationsHandler(BaseHandler):
                             if x.timestamp > float(last_request) \
                                 and x.timestamp < timestamp]
         self.set_header("Content-Type", "text/xml")
-        self.render("notifications.xml", announcements = announcements, \
-                    messages = messages, timestamp = timestamp)
+        self.render("notifications.xml", announcements=announcements, \
+                    messages=messages, timestamp=timestamp)
+
 
 class QuestionHandler(BaseHandler):
+    """Called when the user submit a question.
 
+    """
     @tornado.web.authenticated
     def post(self):
         r_params = self.render_params()
 
-        q = Question(time.time(), \
-                self.get_argument("question_subject",""), \
-                self.get_argument("question_text",""),
-                user = self.get_current_user())
-        self.sql_session.add(q)
+        question = Question(time.time(),
+                            self.get_argument("question_subject", ""),
+                            self.get_argument("question_text", ""),
+                            user=self.get_current_user())
+        self.sql_session.add(question)
         self.sql_session.commit()
 
         logger.warning("Question submitted by user %s."
-                  % self.current_user.username)
+                       % self.current_user.username)
         self.render("successfulQuestion.html", **r_params)
 
 
@@ -293,7 +340,5 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print sys.argv[0], "shard [contest]"
         exit(1)
-    shard = int(sys.argv[1])
-    c = Utils.ask_for_contest(1)
-    ContestWebServer(shard, c).run()
-
+    ContestWebServer(int(sys.argv[1]),
+                     Utils.ask_for_contest(1)).run()
