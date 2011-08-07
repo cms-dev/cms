@@ -27,19 +27,15 @@ current ranking.
 
 """
 
-import os
 import time
 
-import codecs
-import base64
+import heapq
 
-from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback, \
-     logger, async_lock
+from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback, logger
 from cms.async import ServiceCoord, get_service_shards
 import cms.util.Utils as Utils
 
-from cms.db.SQLAlchemyAll import Session, metadata, \
-     Contest, User, Announcement, Question
+from cms.db.SQLAlchemyAll import Session, Contest, Submission
 from cms.db.SQLAlchemyUtils import SessionGen
 
 
@@ -119,7 +115,7 @@ class JobQueue:
 
         """
         pos = self.search(job)
-        self.queue[pos][0] == priority
+        self.queue[pos][0] = priority
         heapq.heapify(self.queue)
 
     def length(self):
@@ -146,10 +142,10 @@ class JobQueue:
         myqueue = self.queue[:]
         ret = []
         while myqueue != []:
-            el = heapq.heappop(myqueue)
-            ret.append({'job': represent_job(el[2]),
-                        'priority': el[0],
-                        'timestamp': el[1]})
+            ext_job = heapq.heappop(myqueue)
+            ret.append({'job': repr(ext_job[2]),
+                        'priority': ext_job[0],
+                        'timestamp': ext_job[1]})
         return ret
 
 
@@ -189,16 +185,16 @@ class WorkerPool:
         worker_coord (ServiceCoord): the coordinates of the worker
 
         """
-        n = worker_coord.shard
+        shard = worker_coord.shard
         # Instruct AsyncLibrary to connect ES to the Worker
-        self.worker[n] = self.service.connect_to(worker_coord)
+        self.worker[shard] = self.service.connect_to(worker_coord)
         # And we fill all data.
-        self.job[n] = self.WORKER_INACTIVE
-        self.start_time[n] = None
-        self.error_count[n] = 0
-        self.schedule_disabling[n] = False
-        self.side_data[n] = None
-        logger.debug("Worker %d added " % n)
+        self.job[shard] = self.WORKER_INACTIVE
+        self.start_time[shard] = None
+        self.error_count[shard] = 0
+        self.schedule_disabling[shard] = False
+        self.side_data[shard] = None
+        logger.debug("Worker %d added " % shard)
 
     def acquire_worker(self, job, side_data=None):
         """Tries to assign a job to an available worker. If no workers
@@ -214,7 +210,7 @@ class WorkerPool:
         """
         # We look for an available worker
         try:
-            shard = self.find_shard(self.WORKER_INACTIVE)
+            shard = self.find_worker(self.WORKER_INACTIVE)
         except LookupError:
             return None
 
@@ -222,16 +218,17 @@ class WorkerPool:
         self.job[shard] = job
         self.start_time[shard] = time.time()
         self.side_data[shard] = side_data
-        logger.debug("Worker %d acquired" % worker)
+        logger.debug("Worker %d acquired" % shard)
 
         # And finally we ask the worker to do the job
         action, submission = job
-        priority, timestamp = side_data
-        queue_time = self.start_time[worker] - timestamp
+        timestamp = side_data[1]
+        queue_time = self.start_time[shard] - timestamp
         logger.info("Asking worker %d to %s submission %s "
                     " (after around %.2f seconds of queue)" %
                     (shard, action, submission.id, queue_time))
-        logger.debug("Still %d jobs in the queue" % self.queue.length())
+        logger.debug("Still %d jobs in the queue" %
+                     self.service.queue.length())
         if action == EvaluationServer.JOB_TYPE_COMPILATION:
             self.worker[shard].compile(submission_id=submission.id,
                                        callback=self.service.action_finished,
@@ -283,7 +280,7 @@ class WorkerPool:
                        LookupError if nothing has been found.
 
         """
-        for shard, worker_job in self.jobs.iteritems():
+        for shard, worker_job in self.job.iteritems():
             if worker_job == job:
                 return shard
         raise LookupError("No such job")
@@ -295,7 +292,7 @@ class WorkerPool:
         returns (int): that number
 
         """
-        return len([x for x in self.jobs.values()
+        return len([x for x in self.job.values()
                     if x != self.WORKER_INACTIVE and \
                     x != self.WORKER_DISABLED])
 
@@ -309,7 +306,7 @@ class WorkerPool:
 
         """
         return dict([(str(shard), {
-            'job': represent_job(self.job[shard]),
+            'job': repr(self.job[shard]),
             'address': self.worker[shard].remote_service_coord,
             'start_time': self.start_time[shard],
             'error_count': self.error_count[shard],
@@ -327,7 +324,7 @@ class WorkerPool:
         for shard in self.worker:
             if self.start_time[shard] != None:
                 active_for = now - self.start_time[shard]
-                if active_for > Configuration.worker_timeout:
+                if active_for > EvaluationServer.WORKER_TIMEOUT:
                     # Here shard is a working workers with no sign of
                     # intelligent life for too much time
                     logger.error("Disabling and shutting down "
@@ -371,6 +368,14 @@ class EvaluationServer(Service):
     MAX_COMPILATION_TENTATIVES = 3
     MAX_EVALUATION_TENTATIVES = 3
 
+    # Time after which we declare a worker stale
+    WORKER_TIMEOUT = 600.0
+    # How often we check for stale workers
+    WORKER_TIMEOUT_CHECK_TIME = 300.0
+
+    # How often we check if we can assign a job to a worker
+    CHECK_DISPATCH_TIME = 2.0
+
     def __init__(self, shard, contest):
         logger.initialize(ServiceCoord("EvaluationService", shard))
         Service.__init__(self, shard)
@@ -388,9 +393,11 @@ class EvaluationServer(Service):
         for i in xrange(get_service_shards("Worker")):
             self.pool.add_worker(ServiceCoord("Worker", i))
 
-        self.add_timeout(self.dispatch_jobs, None, 2,
+        self.add_timeout(self.dispatch_jobs, None,
+                         EvaluationServer.CHECK_DISPATCH_TIME,
                          immediately=False)
-        self.add_timeout(self.check_workers, None, 10,
+        self.add_timeout(self.check_workers, None,
+                         EvaluationServer.WORKER_TIMEOUT_CHECK_TIME,
                          immediately=False)
 
     def dispatch_jobs(self):
@@ -417,7 +424,7 @@ class EvaluationServer(Service):
         except LookupError:
             return False
 
-        res = self.pool.acquire_worker(job, side_data = (priority, timestamp))
+        res = self.pool.acquire_worker(job, side_data=(priority, timestamp))
         if res != None:
             self.queue.pop()
             return True
@@ -523,14 +530,10 @@ class EvaluationServer(Service):
             logger.error("Invalid job type %s" % repr(job_type))
 
 
-
-
-
 if __name__ == "__main__":
     import sys
     if len(sys.argv) < 2:
         print sys.argv[0], "shard [contest]"
     else:
-        shard = int(sys.argv[1])
-        c = Utils.ask_for_contest(1)
-        EvaluationServer(int(sys.argv[1]), c).run()
+        EvaluationServer(int(sys.argv[1]),
+                         Utils.ask_for_contest(1)).run()
