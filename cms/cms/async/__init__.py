@@ -81,7 +81,9 @@ def get_service_shards(service):
     i = 0
     while True:
         try:
+            print i
             get_service_address(ServiceCoord(service, i))
         except KeyError:
             return i
+        i += 1
 
