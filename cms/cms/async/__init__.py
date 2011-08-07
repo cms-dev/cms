@@ -48,7 +48,7 @@ class Config:
     Core services are the ones that are supposed to run whenever the
     system is up.
 
-    Test services are not supposed to run when the system is up, or
+    Other services are not supposed to run when the system is up, or
     anyway not constantly.
 
     """
@@ -70,4 +70,18 @@ def get_service_address(key):
     else:
         raise KeyError
 
+
+def get_service_shards(service):
+    """Returns the number of shards that a service has.
+
+    service (string): the name of the service.
+    returns (int): the number of shards defined in the configuration.
+
+    """
+    i = 0
+    while True:
+        try:
+            get_service_address(ServiceCoord(service, i))
+        except KeyError:
+            return i
 
