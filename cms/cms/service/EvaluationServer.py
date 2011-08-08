@@ -44,7 +44,7 @@ class JobQueue:
     queue of jobs (compilations, evaluations, ...) that the ES needs
     to process next.
 
-    A job is a couple (job_type, submission), where job_type is a
+    A job is a couple (job_type, submission_id), where job_type is a
     constant defined in EvaluationServer.
 
     Elements of the queue are of the form (priority, timestamp, job),
@@ -57,19 +57,15 @@ class JobQueue:
 
     def push(self, job, priority, timestamp=None):
         """Push a job in the queue. If timestamp is not specified,
-        tries to extract the timestamp from the submission's timestamp
-        in the job, or uses the current time.
+        uses the current time.
 
-        job (job): a couple (job_type, submission)
+        job (job): a couple (job_type, submission_id)
         priority (int): the priority of the job
         timestamp (float): the time of the submission
 
         """
         if timestamp == None:
-            try:
-                timestamp = job[1].timestamp
-            except:
-                timestamp = time.time()
+            timestamp = time.time()
         heapq.heappush(self.queue, (priority, timestamp, job))
 
     def top(self):
@@ -221,20 +217,20 @@ class WorkerPool:
         logger.debug("Worker %d acquired" % shard)
 
         # And finally we ask the worker to do the job
-        action, submission = job
+        action, submission_id = job
         timestamp = side_data[1]
         queue_time = self.start_time[shard] - timestamp
         logger.info("Asking worker %d to %s submission %s "
                     " (after around %.2f seconds of queue)" %
-                    (shard, action, submission.id, queue_time))
+                    (shard, action, submission_id, queue_time))
         logger.debug("Still %d jobs in the queue" %
                      self.service.queue.length())
         if action == EvaluationServer.JOB_TYPE_COMPILATION:
-            self.worker[shard].compile(submission_id=submission.id,
+            self.worker[shard].compile(submission_id=submission_id,
                                        callback=self.service.action_finished,
                                        plus=(job, side_data, shard))
         elif action == EvaluationServer.JOB_TYPE_EVALUATION:
-            self.worker[shard].evaluate(submission_id=submission.id,
+            self.worker[shard].evaluate(submission_id=submission_id,
                                         callback=self.service.action_finished,
                                         plus=(job, side_data, shard))
 
@@ -380,15 +376,13 @@ class EvaluationServer(Service):
         logger.initialize(ServiceCoord("EvaluationService", shard))
         Service.__init__(self, shard)
 
-        self.sql_session = Session()
-        self.contest = self.sql_session.query(Contest).\
-            filter_by(id=contest).first()
-        logger.info("Loaded contest %s" % self.contest.name)
+        with SessionGen() as session:
+            contest = session.query(Contest).\
+                      filter_by(id=contest).first()
+            logger.info("Loaded contest %s" % contest.name)
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
-
-        self.session = None
 
         for i in xrange(get_service_shards("Worker")):
             self.pool.add_worker(ServiceCoord("Worker", i))
@@ -446,7 +440,9 @@ class EvaluationServer(Service):
         action (compilation or evaluation).
 
         data (bool): report success of the action
-        plus (tuple): the tuple ((job_type, submission_id), shard_of_worker)
+        plus (tuple): the tuple (job=(job_type, submission_id),
+                                 side_data=(priority, timestamp),
+                                 shard_of_worker)
 
         """
         if error != None:
@@ -528,6 +524,22 @@ class EvaluationServer(Service):
 
         else:
             logger.error("Invalid job type %s" % repr(job_type))
+
+    @rpc_method
+    def new_submission(self, submission_id):
+        """This RPC prompts ES of the existence of a new
+        submission. ES takes the right countermeasures, i.e., it
+        schedules it for compilation.
+
+        submission_id (string): the id of the new submission
+        returns (bool): True if everything went well
+
+        """
+        with SessionGen() as session:
+            submission = Submission.get_from_id(submission_id)
+        self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION, submission_id),
+                        EvaluationServer.JOB_PRIORITY_HIGH,
+                        submission.timestamp)
 
 
 if __name__ == "__main__":
