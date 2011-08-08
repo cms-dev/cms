@@ -89,6 +89,45 @@ class RPCAnswerHandler(tornado.web.RequestHandler):
             self.write({'status': 'fail'})
 
 
+class SyncRPCRequestHandler(tornado.web.RequestHandler):
+    """Using the decorator tornado.web.asynchronous, the request stays
+    alive until we decide to end it (with self.finish). We use this to
+    let the browser wait until we have the response for the rpc/
+
+    """
+    @tornado.web.asynchronous
+    def get(self, service, shard, method):
+        arguments = self.request.arguments
+        # Tornado gives for every key a list of arguments, we need
+        # only one
+        arguments = dict((k, decode_json(arguments[k][0])) for k in arguments)
+
+        service = ServiceCoord(service, int(shard))
+        if service not in self.application.service.remote_services or \
+            not self.application.service.remote_services[service].connected:
+            self.write({'status': 'unconnected'})
+            self.finish()
+            return
+
+        self.application.service.remote_services[service].__getattr__(method)(
+            callback=self._request_callback,
+            plus = 0,
+            **arguments)
+
+
+    @rpc_callback
+    def _request_callback(self, caller, data, plus, error=None):
+        try:
+            self.write({'status': 'ok',
+                        'data': data,
+                        'error': error})
+        except UnicodeDecodeError:
+            self.write({'status': 'ok',
+                        'data': '',
+                        'error': 'Cannot call binary RPC methods.'})
+        self.finish()
+
+
 class WebService(Service):
     """Example of a RPC service that is also a tornado webserver.
 
@@ -105,7 +144,10 @@ class WebService(Service):
         handlers += [(r"/rpc_request/([a-zA-Z0-9_-]+)/" + \
                       "([0-9]+)/([a-zA-Z0-9_-]+)",
                       RPCRequestHandler),
-                     (r"/rpc_answer", RPCAnswerHandler)]
+                     (r"/rpc_answer", RPCAnswerHandler),
+                     (r"/sync_rpc_request/([a-zA-Z0-9_-]+)/" + \
+                      "([0-9]+)/([a-zA-Z0-9_-]+)",
+                      SyncRPCRequestHandler),]
         self.application = tornado.web.Application(handlers, **parameters)
 
         self.application.service = self
