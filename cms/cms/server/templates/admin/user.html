@@ -25,19 +25,22 @@
             </tr>
             {% for s in sorted(submissions, key=lambda s: s.timestamp , reverse = True) %}
                 <tr>
-                    <td><a href="/submissions/details/{{escape(s.id)}}">{{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</a></td>
+                    <td><a href="/submissions/details/{{s.id}}">{{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</a></td>
                     <td>{{ s.task.name }}</td>
                     <td>{{ s.compilation_outcome }}</td>
                     <td>
-                        {% if s.evaluation_outcome != None %}
+                    Not yet implemented!
+                    <!---
+                        {% comment if s.evaluation_outcome != None %}
                             Evaluated
-                        {% else %}
+                        {% comment else %}
                             Not evaluated
-                        {% end %}
+                        {% comment end %}
+                    -->
                     </td>
                     <td>
                     {% for key,value in s.files.items() %}
-                        <a href="/submission_file/{{ escape(s.id) }}/{{ escape(key) }}">{{ escape(key) }}<br/>
+                        <a href="/submission_file/{{ s.id }}/{{ escape(key) }}">{{ escape(key) }}<br/>
                     {% end %}
                     </td>
                     <td>
@@ -48,7 +51,7 @@
                     {% end %}
                     </td>
                     <td>
-                        <a href="/reevaluate/submission/{{escape(s.id)}}">Go ahead!</a>
+                        <a href="/reevaluate/submission/{{s.id}}">Go ahead!</a>
                     </td>
                 </tr>
             {% end %}

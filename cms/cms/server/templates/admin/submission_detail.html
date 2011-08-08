@@ -22,6 +22,8 @@
           Evaluation Outcome
           </th>
           <td>
+          <!--
+          {% if False %}
               {% if submission.evaluation_outcome != None %}
                   <table class="sub_score">
                   <tr><th>Nm</th><th>Score</th><th>Details</th></tr>
@@ -32,13 +34,15 @@
               {% else %}
                   Not evaluated
               {% end %}
+          {% end %}
+          -->
           </td>
       </tr>
       <tr>
           <th>Files</th>
           <td>
           {% for key,value in submission.files.items() %}
-              <a href="/submission_file/{{ escape(submission.couch_id) }}/{{ escape(key) }}">{{ escape(key) }}<br/>
+              <a href="/submission_file/{{ submission.id }}/{{ escape(key) }}">{{ escape(key) }}<br/>
           {% end %}
           </td>
       </tr>

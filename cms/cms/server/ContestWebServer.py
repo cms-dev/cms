@@ -300,6 +300,28 @@ class TaskStatementViewHandler(BaseHandler):
         self.write(data)
         self.finish()
 
+class SubmissionDetailHandler(BaseHandler):
+    """Shows additional details for the specified submission.
+    """
+
+    @tornado.web.authenticated
+    def get(self, submission_id):
+
+        r_params = self.render_params()
+        if not self.valid_phase(r_params):
+            return
+        # search the submission in the contest
+
+        submission = self.sql_session.query(Submission).join(Task)\
+                          .filter(Submission.id == submission_id)\
+                          .filter(Submission.user_id == self.get_current_user().id)\
+                          .filter(Task.contest_id == self.contest.id).first()
+        if submission == None:
+            raise tornado.web.HTTPError(404)
+        r_params["submission"] = submission
+        r_params["task"] = submission.task
+        self.render("submission_detail.html", **r_params)
+
 class UserHandler(BaseHandler):
     """Displays information about the current user, in particular
     messages and announcements.
@@ -462,8 +484,8 @@ handlers = [
                  LoginHandler),
             (r"/logout", \
                  LogoutHandler),
-#            (r"/submissions/details/([a-zA-Z0-9_-]+)", \
-#                 SubmissionDetailHandler),
+            (r"/submissions/details/([a-zA-Z0-9_-]+)", \
+                 SubmissionDetailHandler),
 #            (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", \
 #                 SubmissionFileHandler),
             (r"/tasks/([a-zA-Z0-9_-]+)", \

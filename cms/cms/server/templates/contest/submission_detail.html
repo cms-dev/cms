@@ -30,6 +30,8 @@
           {% end %}
           </th>
           <td>
+          <!--
+          {% if False %}
               {% if submission.evaluation_outcome != None %}
                   {% if submission.token_timestamp != None or task.public_testcases != [] %}
                       <table class="sub_score">
@@ -46,13 +48,16 @@
               {% else %}
                   Not evaluated
               {% end %}
+          {% end %}
+          -->
+          
           </td>
       </tr>
       <tr>
           <th>Files</th>
           <td>
           {% for key,value in submission.files.items() %}
-              <a href="/submission_file/{{ escape(submission.couch_id) }}/{{ escape(key) }}">{{ escape(key) }}<br/>
+              <a href="/submission_file/{{ submission.id }}/{{ escape(key) }}">{{ escape(key) }}<br/>
           {% end %}
           </td>
       </tr>
@@ -62,7 +67,7 @@
           {% if submission.token_timestamp==None %}
               <form class="submit_form" action="/usetoken/" method="POST">
               No
-              <input type="hidden" name="id" value="{{ escape(submission.couch_id) }}">
+              <input type="hidden" name="id" value="{{ submission.id }}">
               <input type="submit" value="Use Token">
               </form>
           {% else %}

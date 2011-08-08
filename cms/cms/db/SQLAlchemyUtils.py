@@ -22,6 +22,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 import cms.util.Configuration as Configuration
 
@@ -69,11 +70,11 @@ class SessionGen:
         self.session.commit()
         self.session.close()
 
-def get_from_id(self, id, session):
-    res = session.query(self.__class__).filter(self.__class__.id == id)
+def get_from_id(cls, id, session):
     try:
-        [tmp] = res
-        return tmp
-    except ValueError:
+        return session.query(cls).filter(cls.id == id).one()
+    except NoResultFound:
         return None
-Base.get_from_id = get_from_id
+    except MultipleResultsFound:
+        return None
+Base.get_from_id = classmethod(get_from_id)
