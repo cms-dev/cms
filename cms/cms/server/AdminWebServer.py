@@ -33,7 +33,7 @@ from cms.async.AsyncLibrary import logger
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 
-from cms.db.SQLAlchemyAll import Session, metadata, Contest, User, Announcement, Question
+from cms.db.SQLAlchemyAll import Base, Session, metadata, Contest, User, Announcement, Question, Submission
 
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
@@ -245,6 +245,23 @@ class UserViewHandler(BaseHandler):
         r_params["submissions"] = user.tokens
         self.render("user.html", **r_params)
 
+class SubmissionDetailHandler(BaseHandler):
+    """Shows additional details for the specified submission.
+    """
+    @contestRequired
+    def get(self, submission_id):
+
+        r_params = self.render_params()
+
+        # search the submission in the contest
+        submission = Submission.get_from_id(submission_id, self.sql_session)
+
+        if submission == None:
+            raise tornado.web.HTTPError(404)
+        r_params["submission"] = submission
+        r_params["task"] = submission.task
+        self.render("submission_detail.html", **r_params)
+
 class QuestionReplyHandler(BaseHandler):
     @contestRequired
     def post(self, question_id):
@@ -282,8 +299,8 @@ handlers = [
                  ContestViewHandler),
             (r"/contest/edit", \
                  EditContestHandler),
-#            (r"/submissions/details/([a-zA-Z0-9_-]+)", \
-#                 SubmissionDetailHandler),
+            (r"/submissions/details/([a-zA-Z0-9_-]+)", \
+                 SubmissionDetailHandler),
 #            (r"/reevaluate/submission/([a-zA-Z0-9_-]+)", \
 #                 SubmissionReevaluateHandler),
 #            (r"/reevaluate/user/([a-zA-Z0-9_-]+)", \
