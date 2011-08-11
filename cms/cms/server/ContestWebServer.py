@@ -146,6 +146,43 @@ class BaseHandler(tornado.web.RequestHandler):
         self.sql_session.close()
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
+class FileHandler(BaseHandler):
+    def fetch(self, digest, content_type, file_name):
+        """Sends the RPC to the FS.
+
+        """
+        service = ServiceCoord("FileStorage", 0)
+        if service not in self.application.service.remote_services or \
+               not self.application.service.remote_services[service].connected:
+            # TODO: Signal the user
+
+            self.finish()
+            return
+
+        self.application.service.remote_services[service].get_file(\
+            callback=self._fetch_callback,
+            plus=[content_type, file_name],
+            digest = digest)
+
+    @rpc_callback
+    def _fetch_callback(self, caller, data, plus, error=None):
+        """This is the callback for the RPC method called from a web
+        page, that just collects the response.
+
+        """
+
+        if data == None:
+            self.finish()
+            return
+
+        (content_type, file_name) = plus
+
+        self.set_header("Content-Type", content_type)
+        self.set_header("Content-Disposition",
+                        "attachment; filename=\"%s\"" % (file_name) )
+        self.write(data)
+        self.finish()
+
 
 class ContestWebServer(WebService):
     """Simple web service example.
@@ -253,7 +290,7 @@ class TaskViewHandler(BaseHandler):
 
         self.render("task.html", **r_params)
 
-class TaskStatementViewHandler(BaseHandler):
+class TaskStatementViewHandler(FileHandler):
     """Shows the statement file of a task in the contest.
     """
 
@@ -269,36 +306,8 @@ class TaskStatementViewHandler(BaseHandler):
         except:
             self.write("Task %s not found." % (task_name))
 
+        self.fetch(self.task.statement, "application/pdf", self.task.name+".pdf")
 
-        service = ServiceCoord("FileStorage", 0)
-        if service not in self.application.service.remote_services or \
-               not self.application.service.remote_services[service].connected:
-            # TODO: Signal the user
-
-            self.finish()
-            return
-
-        self.application.service.remote_services[service].get_file(\
-            callback=self._statement_callback,
-            plus=0,
-            digest = self.task.statement)
-
-    @rpc_callback
-    def _statement_callback(self, caller, data, plus, error=None):
-        """This is the callback for the RPC method called from a web
-        page, that just collect the response.
-
-        """
-
-        if data == None:
-            self.finish()
-            return
-
-        self.set_header("Content-Type", "application/pdf")
-        self.set_header("Content-Disposition",
-                        "attachment; filename=\"%s.pdf\"" % (self.task.name))
-        self.write(data)
-        self.finish()
 
 class SubmissionDetailHandler(BaseHandler):
     """Shows additional details for the specified submission.
@@ -321,6 +330,29 @@ class SubmissionDetailHandler(BaseHandler):
         r_params["submission"] = submission
         r_params["task"] = submission.task
         self.render("submission_detail.html", **r_params)
+
+class SubmissionFileHandler(FileHandler):
+    """Shows a submission file.
+    """
+
+    @tornado.web.authenticated
+    @tornado.web.asynchronous
+    def get(self, file_id):
+
+        r_params = self.render_params()
+        if not self.valid_phase(r_params):
+            return
+
+        sub_file = self.sql_session.query(File).join(Submission).join(Task)\
+                       .filter(File.id == file_id)\
+                       .filter(Submission.user_id == self.get_current_user().id)\
+                       .filter(Task.contest_id == self.contest.id)\
+                       .first()
+
+        if sub_file == None:
+            raise tornado.web.HTTPError(404)
+
+        self.fetch(sub_file.digest, "text/plain", sub_file.filename)
 
 class UserHandler(BaseHandler):
     """Displays information about the current user, in particular
@@ -486,8 +518,8 @@ handlers = [
                  LogoutHandler),
             (r"/submissions/details/([a-zA-Z0-9_-]+)", \
                  SubmissionDetailHandler),
-#            (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", \
-#                 SubmissionFileHandler),
+            (r"/submission_file/([a-zA-Z0-9_.-]+)", \
+                 SubmissionFileHandler),
             (r"/tasks/([a-zA-Z0-9_-]+)", \
                  TaskViewHandler),
             (r"/tasks/([a-zA-Z0-9_-]+)/statement", \
