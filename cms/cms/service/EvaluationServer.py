@@ -165,7 +165,7 @@ class WorkerPool:
         # by their shard number). Side data is anything one want to
         # attach to the worker. Schedule disabling to True means that
         # we are going to disable the worker as soon as possible (when
-        # it finishis the current job). The current job is also
+        # it finishes the current job). The current job is also
         # discarded because we already re-assigned it.
         self.job = {}
         self.start_time = {}
@@ -321,7 +321,7 @@ class WorkerPool:
             if self.start_time[shard] != None:
                 active_for = now - self.start_time[shard]
                 if active_for > EvaluationServer.WORKER_TIMEOUT:
-                    # Here shard is a working workers with no sign of
+                    # Here shard is a working worker with no sign of
                     # intelligent life for too much time
                     logger.error("Disabling and shutting down "
                                  "worker %d because of no reponse "
