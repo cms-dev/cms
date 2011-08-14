@@ -31,7 +31,7 @@ class Task(Base):
     __tablename__ = 'tasks'
 
     id = Column(Integer, primary_key=True)
-    contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
+    contest_id = Column(Integer, ForeignKey(Contest.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     num = Column(Integer, nullable=False)
     name = Column(String, nullable=False)
     title = Column(String, nullable=False)
@@ -104,7 +104,7 @@ class Testcase(Base):
     num = Column(Integer, nullable=False)
     input = Column(String, nullable=False)
     output = Column(String, nullable=False)
-    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    task_id = Column(Integer, ForeignKey(Task.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
     task = relationship(Task,
                         backref=backref('testcases', collection_class=ordering_list('num'), order_by=[num]))
@@ -119,7 +119,7 @@ class Attachment(Base):
     __tablename__ = 'attachments'
 
     id = Column(Integer, primary_key=True)
-    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    task_id = Column(Integer, ForeignKey(Task.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     filename = Column(String, nullable=False)
     digest = Column(String, nullable=False)
 
@@ -135,7 +135,7 @@ class Manager(Base):
     __tablename__ = 'managers'
 
     id = Column(Integer, primary_key=True)
-    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    task_id = Column(Integer, ForeignKey(Task.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     filename = Column(String, nullable=False)
     digest = Column(String, nullable=False)
 
@@ -151,7 +151,7 @@ class PublicTestcase(Base):
     __tablename__ = 'public_testcases'
 
     id = Column(Integer, primary_key=True)
-    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    task_id = Column(Integer, ForeignKey(Task.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     testcase = Column(Integer, nullable=False)
 
     task = relationship(Task,
@@ -165,7 +165,7 @@ class SubmissionFormatElement(Base):
     __tablename__ = 'submission_format_elements'
 
     id = Column(Integer, primary_key=True)
-    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    task_id = Column(Integer, ForeignKey(Task.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     filename = Column(String)
 
     task = relationship(Task,

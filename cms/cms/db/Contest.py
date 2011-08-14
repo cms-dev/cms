@@ -98,7 +98,7 @@ class Announcement(Base):
     __tablename__ = 'announcements'
 
     id = Column(Integer, primary_key=True)
-    contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
+    contest_id = Column(Integer, ForeignKey(Contest.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     timestamp = Column(Integer, nullable=False)
     subject = Column(String, nullable=False)
     text = Column(String, nullable=False)

@@ -32,7 +32,7 @@ class RankingView(Base):
     __tablename__ = 'rankingviews'
 
     id = Column(Integer, primary_key=True)
-    contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
+    contest_id = Column(Integer, ForeignKey(Contest.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     timestamp = Column(Float, nullable=False)
 
     #scores (backref)
@@ -51,9 +51,9 @@ class Score(Base):
     __tablename__ = 'scores'
 
     id = Column(Integer, primary_key=True)
-    rankingview_id = Column(Integer, ForeignKey(RankingView.id), nullable=False)
-    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    rankingview_id = Column(Integer, ForeignKey(RankingView.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    task_id = Column(Integer, ForeignKey(Task.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     score = Column(Float, nullable=False)
 
     rankingview = relationship(RankingView,
