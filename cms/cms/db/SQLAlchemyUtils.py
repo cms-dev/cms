@@ -33,6 +33,9 @@ metadata = Base.metadata
 
 Session = sessionmaker(db)
 
+# For two-phases transactions:
+#Session = sessionmaker(db, twophase=True)
+
 # TODO: decide which one of the following is better.
 
 # from contextlib import contextmanager
