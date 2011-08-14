@@ -35,8 +35,7 @@ from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback, logger
 from cms.async import ServiceCoord, get_service_shards
 import cms.util.Utils as Utils
 
-from cms.db.SQLAlchemyAll import Session, Contest, Submission
-from cms.db.SQLAlchemyUtils import SessionGen
+from cms.db.SQLAlchemyAll import Session, Contest, Submission, SessionGen
 
 
 class JobQueue:
