@@ -119,63 +119,11 @@ def filter_ansi_escape(s):
             ansi_mode = False
     return res
 
-# FIXME - Bad hack
 def maybe_mkdir(d):
     try:
         os.mkdir(d)
     except:
         pass
-
-def format_log(msg, service, operation, severity, timestamp):
-    d = datetime.datetime.fromtimestamp(timestamp)
-    service_full = service
-    if operation != "":
-        service_full += "/%s" % (operation)
-    return "%s - %s [%s] %s" % ('{0:%Y/%m/%d %H:%M:%S}'.format(d), severity, service_full, msg)
-
-class Logger:
-    SEVERITY_CRITICAL, SEVERITY_IMPORTANT, SEVERITY_NORMAL, SEVERITY_DEBUG = ["CRITICAL", "IMPORTANT", "NORMAL", "DEBUG"]
-
-    def __init__(self, service = "unknown", log_address = None, log_port = None, local_log = True):
-        if log_address == None:
-            log_address = Configuration.log_server[0]
-        if log_port == None:
-            log_port = Configuration.log_server[1]
-        self.service = service
-        self.operation = ""
-        self.log_proxy = xmlrpclib.ServerProxy('http://%s:%d' % (log_address, log_port))
-        self.local_log = local_log
-
-        maybe_mkdir("logs")
-        import random
-        self.local_log_file = codecs.open(\
-            os.path.join("logs","%d-%d.local-log" %
-                         (time.time(), random.randint(1, 65535))),
-            "w", "utf-8")
-
-    def log(self, msg, severity = SEVERITY_NORMAL, timestamp = None):
-        if timestamp == None:
-            timestamp = time.time()
-        try:
-            self.log_proxy.log(msg, self.service, self.operation, severity, timestamp)
-        except IOError:
-            print "Couldn't send log to remote server"
-        if self.local_log:
-            line = format_log(msg, self.service, self.operation, severity, timestamp)
-            print line
-            print >> self.local_log_file, line
-
-logger = Logger()
-
-def log(s, severity = Logger.SEVERITY_NORMAL):
-    logger.log(s, severity)
-
-def set_service(service):
-    logger.service = service
-
-def set_operation(operation):
-    logger.operation = operation
-
 
 def get_compilation_command(language, source_filename, executable_filename):
     # For compiling in 32-bit mode under 64-bit OS: add "-march=i686",
