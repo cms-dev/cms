@@ -28,27 +28,66 @@ import sys
 import codecs
 
 import Configuration
-from cms.db.SQLAlchemyAll import Session, metadata, Contest
+from cms.db.SQLAlchemyAll import Session, metadata, Contest, SessionGen
 
-get_contests='''function(doc) {
-    if (doc.document_type=='contest')
-        emit(doc,null)
-}'''
+def analyze_table(tablename, session=None):
+    """Analyze the specified table (issuing the corresponding ANALYZE
+    command to the SQL backend).
 
-def get_contest_list():
-    db = get_couchdb_database()
-    contests = list(db.query(get_contests, include_docs = True))
-    contest_list = [CouchObject.from_couch(x.id) for x in contests]
-    return contest_list
+    session (Session object): if specified, use such session for
+                              connecting to the database; otherwise,
+                              create a temporary one and discard it
+                              after the operation.
 
-def ask_for_contest(skip = 0):
+    """
+    if session == None:
+        with SessionGen() as session:
+            return analyze_table(tablename, session)
+
+    session.execute("ANALYZE %s;" % (tablename))
+
+def analyze_all_tables(session=None):
+    """Analyze all tables tracked by SQLAlchemy.
+
+    session (Session object): if specified, use such session for
+                              connecting to the database; otherwise,
+                              create a temporary one and discard it
+                              after the operation.
+
+    """
+    if session == None:
+        with SessionGen() as session:
+            return analyze_all_tables(session)
+
+    for table in metadata.sorted_tables:
+        analyze_table(table.name, session)
+
+def get_contest_list(session=None):
+    """Return all the contest objects available on the database.
+
+    session (Session object): if specified, use such session for
+                              connecting to the database; otherwise,
+                              create a temporary one and discard it
+                              after the operation (this means that no
+                              further expansion of lazy properties of
+                              the returned Contest objects will be
+                              possible).
+
+    """
+    if session == None:
+        with SessionGen() as session:
+            return get_contest_list(session)
+
+    return session.query(Contest).all()
+
+def ask_for_contest(skip=0):
     if isinstance(skip, int) and len(sys.argv) > skip + 1:
         contest_id = sys.argv[skip + 1]
     elif isinstance(skip, str):
         contest_id = skip
     else:
         session = Session()
-        contests = session.query(Contest).all()
+        contests = get_contest_list(session)
         print "Contests available:"
         for i, row in enumerate(contests):
             print "%3d  -  ID: %s  -  Name: %s" % (i + 1, row.id, row.name),
