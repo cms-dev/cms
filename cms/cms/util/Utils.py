@@ -86,25 +86,27 @@ def ask_for_contest(skip=0):
     elif isinstance(skip, str):
         contest_id = skip
     else:
-        session = Session()
-        contests = get_contest_list(session)
-        print "Contests available:"
-        for i, row in enumerate(contests):
-            print "%3d  -  ID: %s  -  Name: %s" % (i + 1, row.id, row.name),
-            if i == 0:
-                print " (default)"
-            else:
-                print
+        with SessionGen() as session:
+            contests = get_contest_list(session)
+            print "Contests available:"
+            # The ids of the contests are cached, so the session can
+            # be closed as soon as possible
+            matches = {}
+            for i, row in enumerate(contests):
+                print "%3d  -  ID: %s  -  Name: %s  -  Description: %s" % (i + 1, row.id, row.name, row.description),
+                matches[i+1] = row.id
+                if i == 0:
+                    print " (default)"
+                else:
+                    print
+        contest_number = raw_input("Insert the number next to the contest you want to load: ")
+        if contest_number == "":
+            contest_number = 1
         try:
-            contest_number = raw_input("Insert the number next to the contest you want to load: ")
-            if contest_number == "":
-                contest_number = 1
-            contest_number = int(contest_number) - 1
-            contest_id = contests[contest_number].id
-        except:
+            contest_id = matches[int(contest_number)]
+        except ValueError:
             print "Insert a correct number."
             sys.exit(1)
-        session.close()
     return contest_id
 
 def filter_ansi_escape(s):
