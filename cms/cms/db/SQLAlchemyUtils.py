@@ -54,10 +54,11 @@ Session = sessionmaker(db)
 #         session.commit()
 #         session.close()
 
+# FIXME How does one rollback a session created with SessionGen?
 class SessionGen:
     """This allows us to create handy local sessions simply with:
 
-    with SessionGen as session:
+    with SessionGen() as session:
         session.do_something()
 
     and at the end, commit & close are automatically called.
