@@ -54,12 +54,10 @@ class FileStorage(Service):
         self.obj_dir = os.path.join(self.base_dir, "objects")
         self.desc_dir = os.path.join(self.base_dir, "descriptions")
 
-        ret = True
-        ret = ret and mkdir(self.base_dir)
-        ret = ret and mkdir(self.tmp_dir)
-        ret = ret and mkdir(self.obj_dir)
-        ret = ret and mkdir(self.desc_dir)
-        if not ret:
+        if not mkdir(self.base_dir) or \
+           not mkdir(self.tmp_dir) or \
+           not mkdir(self.obj_dir) or \
+           not mkdir(self.desc_dir):
             logger.critical("Cannot create necessary directories.")
             self.exit()
 
@@ -124,6 +122,7 @@ class FileStorage(Service):
     @rpc_method
     def delete(self, digest):
         logger.debug("FileStorage.delete")
+        logger.info("Deleting file %s." % digest)
         try:
             os.remove(os.path.join(self.desc_dir, digest))
             os.remove(os.path.join(self.obj_dir, digest))
