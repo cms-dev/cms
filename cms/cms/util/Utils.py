@@ -28,47 +28,96 @@ import sys
 import codecs
 
 import Configuration
-from cms.db.SQLAlchemyAll import Session, metadata, Contest
+from cms.db.SQLAlchemyAll import Session, metadata, Contest, SessionGen
 
-get_contests='''function(doc) {
-    if (doc.document_type=='contest')
-        emit(doc,null)
-}'''
+def analyze_table(tablename, session=None):
+    """Analyze the specified table (issuing the corresponding ANALYZE
+    command to the SQL backend).
 
-def get_contest_list():
-    db = get_couchdb_database()
-    contests = list(db.query(get_contests, include_docs = True))
-    contest_list = [CouchObject.from_couch(x.id) for x in contests]
-    return contest_list
+    session (Session object): if specified, use such session for
+                              connecting to the database; otherwise,
+                              create a temporary one and discard it
+                              after the operation.
 
-def ask_for_contest(skip = 0):
+    """
+    if session == None:
+        with SessionGen() as session:
+            return analyze_table(tablename, session)
+
+    session.execute("ANALYZE %s;" % (tablename))
+
+def analyze_all_tables(session=None):
+    """Analyze all tables tracked by SQLAlchemy.
+
+    session (Session object): if specified, use such session for
+                              connecting to the database; otherwise,
+                              create a temporary one and discard it
+                              after the operation.
+
+    """
+    if session == None:
+        with SessionGen() as session:
+            return analyze_all_tables(session)
+
+    for table in metadata.sorted_tables:
+        analyze_table(table.name, session)
+
+def get_contest_list(session=None):
+    """Return all the contest objects available on the database.
+
+    session (Session object): if specified, use such session for
+                              connecting to the database; otherwise,
+                              create a temporary one and discard it
+                              after the operation (this means that no
+                              further expansion of lazy properties of
+                              the returned Contest objects will be
+                              possible).
+
+    """
+    if session == None:
+        with SessionGen() as session:
+            return get_contest_list(session)
+
+    return session.query(Contest).all()
+
+def ask_for_contest(skip=0):
     if isinstance(skip, int) and len(sys.argv) > skip + 1:
         contest_id = sys.argv[skip + 1]
+
     elif isinstance(skip, str):
         contest_id = skip
+
     else:
-        session = Session()
-        contests = session.query(Contest).all()
-        print "Contests available:"
-        for i, row in enumerate(contests):
-            print "%3d  -  ID: %s  -  Name: %s" % (i + 1, row.id, row.name),
-            if i == 0:
-                print " (default)"
-            else:
-                print
+
+        with SessionGen() as session:
+            contests = get_contest_list(session)
+            # The ids of the contests are cached, so the session can
+            # be closed as soon as possible
+            matches = {}
+            print "Contests available:"
+            for i, row in enumerate(contests):
+                print "%3d  -  ID: %s  -  Name: %s  -  Description: %s" % (i + 1, row.id, row.name, row.description),
+                matches[i+1] = row.id
+                if i == 0:
+                    print " (default)"
+                else:
+                    print
+
+        contest_number = raw_input("Insert the number next to the contest you want to load: ")
+        if contest_number == "":
+            contest_number = 1
         try:
-            contest_number = raw_input("Insert the number next to the contest you want to load: ")
-            if contest_number == "":
-                contest_number = 1
-            contest_number = int(contest_number) - 1
-            contest_id = contests[contest_number].id
-        except:
+            contest_id = matches[int(contest_number)]
+        except (ValueError, KeyError):
             print "Insert a correct number."
             sys.exit(1)
-        session.close()
+
     return contest_id
 
 def filter_ansi_escape(s):
+    """Filter out ANSI commands from the given string.
+
+    """
     ansi_mode = False
     res = ''
     for c in s:
@@ -80,65 +129,26 @@ def filter_ansi_escape(s):
             ansi_mode = False
     return res
 
-# FIXME - Bad hack
 def maybe_mkdir(d):
+    """Make a directory without throwing an exception if it already
+    exists. Warning: this method fails silently also if the directory
+    could not be created because there is a non-directory file with
+    the same name. In oter words, there is no guarantee that after the
+    execution, the file d exists and is a directory.
+
+    """
     try:
         os.mkdir(d)
-    except:
+    except OSError:
         pass
 
-def format_log(msg, service, operation, severity, timestamp):
-    d = datetime.datetime.fromtimestamp(timestamp)
-    service_full = service
-    if operation != "":
-        service_full += "/%s" % (operation)
-    return "%s - %s [%s] %s" % ('{0:%Y/%m/%d %H:%M:%S}'.format(d), severity, service_full, msg)
-
-class Logger:
-    SEVERITY_CRITICAL, SEVERITY_IMPORTANT, SEVERITY_NORMAL, SEVERITY_DEBUG = ["CRITICAL", "IMPORTANT", "NORMAL", "DEBUG"]
-
-    def __init__(self, service = "unknown", log_address = None, log_port = None, local_log = True):
-        if log_address == None:
-            log_address = Configuration.log_server[0]
-        if log_port == None:
-            log_port = Configuration.log_server[1]
-        self.service = service
-        self.operation = ""
-        self.log_proxy = xmlrpclib.ServerProxy('http://%s:%d' % (log_address, log_port))
-        self.local_log = local_log
-
-        maybe_mkdir("logs")
-        import random
-        self.local_log_file = codecs.open(\
-            os.path.join("logs","%d-%d.local-log" %
-                         (time.time(), random.randint(1, 65535))),
-            "w", "utf-8")
-
-    def log(self, msg, severity = SEVERITY_NORMAL, timestamp = None):
-        if timestamp == None:
-            timestamp = time.time()
-        try:
-            self.log_proxy.log(msg, self.service, self.operation, severity, timestamp)
-        except IOError:
-            print "Couldn't send log to remote server"
-        if self.local_log:
-            line = format_log(msg, self.service, self.operation, severity, timestamp)
-            print line
-            print >> self.local_log_file, line
-
-logger = Logger()
-
-def log(s, severity = Logger.SEVERITY_NORMAL):
-    logger.log(s, severity)
-
-def set_service(service):
-    logger.service = service
-
-def set_operation(operation):
-    logger.operation = operation
-
-
 def get_compilation_command(language, source_filename, executable_filename):
+    """Returns the compilation command for the specified language,
+    source filename and executable filename. The command is a list of
+    strings, suitable to be passed to the methods in subprocess
+    package.
+
+    """
     # For compiling in 32-bit mode under 64-bit OS: add "-march=i686",
     # "-m32" for gcc/g++. Don't know about Pascal. Anyway, this will
     # require some better support from the evaluation environment

@@ -39,8 +39,8 @@
                     -->
                     </td>
                     <td>
-                    {% for key,value in s.files.items() %}
-                        <a href="/submission_file/{{ s.id }}/{{ escape(key) }}">{{ escape(key) }}<br/>
+                    {% for filename, sub_file in s.files.items() %}
+                        <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}<br/>
                     {% end %}
                     </td>
                     <td>

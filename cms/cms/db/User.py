@@ -35,7 +35,7 @@ class User(Base):
     ip = Column(String, nullable=True)
     time_zone = Column(Float, nullable=False)
     hidden = Column(Boolean, nullable=False)
-    contest_id = Column(Integer, ForeignKey(Contest.id), nullable=False)
+    contest_id = Column(Integer, ForeignKey(Contest.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
     #messages (backref)
     #questions (backref)
@@ -60,7 +60,7 @@ class Message(Base):
     __tablename__ = 'messages'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     timestamp = Column(Integer, nullable=False)
     subject = Column(String, nullable=False)
     text = Column(String, nullable=False)
@@ -77,7 +77,7 @@ class Question(Base):
     __tablename__ = 'questions'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     question_timestamp = Column(Integer, nullable=False)
     subject = Column(String, nullable=False)
     text = Column(String, nullable=False)

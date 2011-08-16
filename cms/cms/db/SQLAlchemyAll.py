@@ -23,7 +23,7 @@ import sys
 
 from sqlalchemy.orm import relationship, backref
 
-from cms.db.SQLAlchemyUtils import db, Base, metadata, Session
+from cms.db.SQLAlchemyUtils import db, Base, metadata, Session, SessionGen
 
 from cms.db.Contest import Contest, Announcement
 from cms.db.View import RankingView

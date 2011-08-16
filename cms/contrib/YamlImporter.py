@@ -29,6 +29,7 @@ from cms.async import ServiceCoord
 from cms.db.SQLAlchemyAll import metadata, Session, Task, Manager, Testcase, User, Contest, PublicTestcase, SubmissionFormatElement
 from cms.service.ScoreType import ScoreTypes
 from cms.async.AsyncLibrary import rpc_callback, Service, logger
+from cms.util.Utils import analyze_all_tables
 
 class YamlImporter(Service):
 
@@ -165,6 +166,8 @@ class YamlImporter(Service):
         c = self.import_contest(dir, zero_time=zero_time)
         session = Session()
         session.add(c)
+        session.flush()
+        analyze_all_tables(session)
         session.commit()
         session.close()
 

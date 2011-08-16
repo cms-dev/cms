@@ -29,11 +29,11 @@ import time
 
 import tornado.web
 
-from cms.async.AsyncLibrary import logger
+from cms.async.AsyncLibrary import logger, rpc_callback
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 
-from cms.db.SQLAlchemyAll import Base, Session, metadata, Contest, User, Announcement, Question, Submission
+from cms.db.SQLAlchemyAll import Base, Session, metadata, Contest, User, Announcement, Question, Submission, File
 
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
@@ -106,6 +106,42 @@ class BaseHandler(tornado.web.RequestHandler):
         self.sql_session.close()
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
+class FileHandler(BaseHandler):
+    def fetch(self, digest, content_type, file_name):
+        """Sends the RPC to the FS.
+
+        """
+        service = ServiceCoord("FileStorage", 0)
+        if service not in self.application.service.remote_services or \
+               not self.application.service.remote_services[service].connected:
+            # TODO: Signal the user
+
+            self.finish()
+            return
+
+        self.application.service.remote_services[service].get_file(\
+            callback=self._fetch_callback,
+            plus=[content_type, file_name],
+            digest = digest)
+
+    @rpc_callback
+    def _fetch_callback(self, caller, data, plus, error=None):
+        """This is the callback for the RPC method called from a web
+        page, that just collects the response.
+
+        """
+
+        if data == None:
+            self.finish()
+            return
+
+        (content_type, file_name) = plus
+
+        self.set_header("Content-Type", content_type)
+        self.set_header("Content-Disposition",
+                        "attachment; filename=\"%s\"" % (file_name) )
+        self.write(data)
+        self.finish()
 
 class AdminWebServer(WebService):
     """Simple web service example.
@@ -145,8 +181,12 @@ class ContestViewHandler(BaseHandler):
         self.render("contest.html", **r_params)
 
 class EditContestHandler(BaseHandler):
-    def post(self):
+    def post(self, contest_id):
 
+        # FIXME: Behave properly in the future...
+        if self.contest == None or self.contest.id != contest.id:
+          self.write("You changed the selected contest before editing this contest. To avoid unwanted changes, the request has been ignored.")
+          return
         if self.get_arguments("name") == []:
           self.write("No contest name specified")
           return
@@ -262,6 +302,22 @@ class SubmissionDetailHandler(BaseHandler):
         r_params["task"] = submission.task
         self.render("submission_detail.html", **r_params)
 
+class SubmissionFileHandler(FileHandler):
+    """Shows a submission file.
+    """
+
+    @tornado.web.asynchronous
+    def get(self, file_id):
+
+        sub_file = self.sql_session.query(File)\
+                       .filter(File.id == file_id)\
+                       .first()
+
+        if sub_file == None:
+            raise tornado.web.HTTPError(404)
+
+        self.fetch(sub_file.digest, "text/plain", sub_file.filename)
+
 class QuestionReplyHandler(BaseHandler):
     @contestRequired
     def post(self, question_id):
@@ -297,7 +353,7 @@ handlers = [
 #                 AddContestHandler),
             (r"/contest", \
                  ContestViewHandler),
-            (r"/contest/edit", \
+            (r"/contest/edit/([0-9]+)", \
                  EditContestHandler),
             (r"/submissions/details/([a-zA-Z0-9_-]+)", \
                  SubmissionDetailHandler),
@@ -309,8 +365,8 @@ handlers = [
                  AddAnnouncementHandler),
             (r"/remove_announcement", \
                  RemoveAnnouncementHandler),
-#            (r"/submission_file/([a-zA-Z0-9_.-]+)/([a-zA-Z0-9_.-]+)", \
-#                 SubmissionFileHandler),
+            (r"/submission_file/([a-zA-Z0-9_.-]+)", \
+                 SubmissionFileHandler),
             (r"/user/([a-zA-Z0-9_-]+)", \
                  UserViewHandler),
             (r"/user", \

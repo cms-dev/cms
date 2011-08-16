@@ -34,8 +34,8 @@ class Submission(Base):
     __tablename__ = 'submissions'
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey(User.id), nullable=False)
-    task_id = Column(Integer, ForeignKey(Task.id), nullable=False)
+    user_id = Column(Integer, ForeignKey(User.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
+    task_id = Column(Integer, ForeignKey(Task.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     timestamp = Column(Integer, nullable=False)
     compilation_outcome = Column(String, nullable=True)
     compilation_text = Column(String, nullable=True)
@@ -146,7 +146,7 @@ class Token(Base):
     __tablename__ = 'tokens'
 
     id = Column(Integer, primary_key=True)
-    submission_id = Column(Integer, ForeignKey(Submission.id), nullable=False)
+    submission_id = Column(Integer, ForeignKey(Submission.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     timestamp = Column(Integer, nullable=False)
 
     submission = relationship(Submission, backref=backref("token_timestamp", uselist=False))
@@ -161,7 +161,7 @@ class File(Base):
     __tablename__ = 'files'
 
     id = Column(Integer, primary_key=True)
-    submission_id = Column(Integer, ForeignKey(Submission.id), nullable=False)
+    submission_id = Column(Integer, ForeignKey(Submission.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     filename = Column(String, nullable=False)
     digest = Column(String, nullable=False)
 
@@ -177,7 +177,7 @@ class Executable(Base):
     __tablename__ = 'executables'
 
     id = Column(Integer, primary_key=True)
-    submission_id = Column(Integer, ForeignKey(Submission.id), nullable=False)
+    submission_id = Column(Integer, ForeignKey(Submission.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     filename = Column(String, nullable=False)
     digest = Column(String, nullable=False)
 
@@ -194,7 +194,7 @@ class Evaluation(Base):
 
     id = Column(Integer, primary_key=True)
     num = Column(Integer, nullable=False)
-    submission_id = Column(Integer, ForeignKey(Submission.id), nullable=False)
+    submission_id = Column(Integer, ForeignKey(Submission.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     text = Column(String, nullable=True)
     evaluation = Column(String, nullable=True)
     tries = Column(Integer, nullable=False)

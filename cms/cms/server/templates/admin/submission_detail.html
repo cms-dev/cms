@@ -41,8 +41,8 @@
       <tr>
           <th>Files</th>
           <td>
-          {% for key,value in submission.files.items() %}
-              <a href="/submission_file/{{ submission.id }}/{{ escape(key) }}">{{ escape(key) }}<br/>
+          {% for filename, sub_file in submission.files.items() %}
+              <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}<br/>
           {% end %}
           </td>
       </tr>
