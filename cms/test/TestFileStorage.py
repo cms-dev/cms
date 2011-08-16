@@ -28,7 +28,6 @@ import random
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import rpc_callback, logger
 from cms.async.TestService import TestService
-from cms.async.Utils import random_string
 
 
 class TestFileStorage(TestService):
@@ -41,25 +40,27 @@ class TestFileStorage(TestService):
         logger.initialize(ServiceCoord("TestFileStorage", shard))
         logger.debug("TestFileStorage.__init__")
         TestService.__init__(self, shard)
+
+        self.content = None
+        self.digest = None
+
         self.FS = self.connect_to(
             ServiceCoord("FileStorage", 0))
         if not self.FS.connected:
             logger.error("Please run the FileStorage service.")
             self.exit()
 
-
 ### TEST 000 ###
 
     def test_000(self):
-        """Send a short random binary file to FileStorage.
+        """Send a ~100B random binary file to FileStorage.
 
         """
-        path = random_string(16)
         self.content = ""
         for i in xrange(100):
             self.content += chr(random.randint(0, 255))
 
-        logger.info("  I am sending the short binary file to FileStorage")
+        logger.info("  I am sending the ~100B binary file to FileStorage")
         self.FS.put_file(binary_data=self.content,
                          description="Test #000",
                          callback=TestFileStorage.test_000_callback,
@@ -67,6 +68,9 @@ class TestFileStorage(TestService):
 
     @rpc_callback
     def test_000_callback(self, data, plus, error=None):
+        """Called with the digest of the ~100B file.
+
+        """
         if error != None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 0):
@@ -76,20 +80,22 @@ class TestFileStorage(TestService):
             self.test_end(True, "Data sent without error " +
                           "and plus object received.")
 
-
 ### TEST 001 ###
 
     def test_001(self):
         """Retrieve the file.
 
         """
-        logger.info("  I am retrieving the short binary file from FileStorage")
+        logger.info("  I am retrieving the ~100B binary file from FileStorage")
         self.FS.get_file(digest=self.digest,
                          callback=TestFileStorage.test_001_callback,
                          plus=("Test #", 1))
 
     @rpc_callback
     def test_001_callback(self, data, plus, error=None):
+        """Called with the content of the file.
+
+        """
         if error != None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 1):
@@ -99,7 +105,6 @@ class TestFileStorage(TestService):
         else:
             self.test_end(True, "Data and plus object " +
                           "received correctly.")
-
 
 ### TEST 002 ###
 
@@ -114,6 +119,9 @@ class TestFileStorage(TestService):
 
     @rpc_callback
     def test_002_callback(self, data, plus, error=None):
+        """Called with the description of the file.
+
+        """
         if error != None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 2):
@@ -123,7 +131,6 @@ class TestFileStorage(TestService):
         else:
             self.test_end(True, "Description and plus object " +
                           "received correctly.")
-
 
 ### TEST 003 ###
 
@@ -138,6 +145,9 @@ class TestFileStorage(TestService):
 
     @rpc_callback
     def test_003_callback(self, data, plus, error=None):
+        """Should be called with data == True confirming the deletion.
+
+        """
         if error != None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 3):
@@ -152,6 +162,9 @@ class TestFileStorage(TestService):
 
     @rpc_callback
     def test_003_callback_2(self, data, plus, error=None):
+        """Should be called with an error.
+
+        """
         if error == None:
             self.test_end(False, "No error received.")
         elif plus != ("Test #", 3):
@@ -161,7 +174,6 @@ class TestFileStorage(TestService):
         else:
             self.test_end(True,
                           "Correctly received an error: %s." % error)
-
 
 ### TEST 004 ###
 
@@ -176,6 +188,9 @@ class TestFileStorage(TestService):
 
     @rpc_callback
     def test_004_callback(self, data, plus, error=None):
+        """Should be called with an error.
+
+        """
         if error == None:
             self.test_end(False, "No error received.")
         elif plus != ("Test #", 4):
@@ -185,7 +200,6 @@ class TestFileStorage(TestService):
         else:
             self.test_end(True,
                           "Correctly received an error: %s." % error)
-
 
 ### TEST 005 ###
 
@@ -200,6 +214,9 @@ class TestFileStorage(TestService):
 
     @rpc_callback
     def test_005_callback(self, data, plus, error=None):
+        """Should be called with error != None.
+
+        """
         if error == None:
             self.test_end(False, "No error received.")
         elif plus != ("Test #", 5):
@@ -210,19 +227,22 @@ class TestFileStorage(TestService):
             self.test_end(True,
                           "Correctly received an error: %s." % error)
 
-
 ### TEST 006 ###
 
     def test_006(self):
-        """Send a long random binary file to FileStorage.
+        """Send a ~1MB random binary file to FileStorage.
 
         """
-        path = random_string(16)
+        # Just use some random bytes, or it slows down for nothing
         self.content = ""
-        for i in xrange(100000):
-            self.content += chr(random.randint(0, 255))
+        random_begin = ""
+        random_end = ""
+        for i in xrange(100):
+            random_begin += chr(random.randint(0, 255))
+            random_end += chr(random.randint(0, 255))
+        self.content = random_begin + ("." * 1000000) + random_end
 
-        logger.info("  I am sending the long binary file to FileStorage")
+        logger.info("  I am sending the ~1MB binary file to FileStorage")
         self.FS.put_file(binary_data=self.content,
                          description="Test #006",
                          callback=TestFileStorage.test_006_callback,
@@ -230,6 +250,9 @@ class TestFileStorage(TestService):
 
     @rpc_callback
     def test_006_callback(self, data, plus, error=None):
+        """Called with the digest of the ~1MB file.
+
+        """
         if error != None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 6):
@@ -239,20 +262,22 @@ class TestFileStorage(TestService):
             self.test_end(True, "Data sent without error " +
                           "and plus object received.")
 
-
 ### TEST 007 ###
 
     def test_007(self):
         """Retrieve the file.
 
         """
-        logger.info("  I am retrieving the long binary file from FileStorage")
+        logger.info("  I am retrieving the ~1MB binary file from FileStorage")
         self.FS.get_file(digest=self.digest,
                          callback=TestFileStorage.test_007_callback,
                          plus=("Test #", 7))
 
     @rpc_callback
     def test_007_callback(self, data, plus, error=None):
+        """Called with the actual file.
+
+        """
         if error != None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 7):
