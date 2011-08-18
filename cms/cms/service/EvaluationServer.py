@@ -535,10 +535,12 @@ class EvaluationServer(Service):
 
         """
         with SessionGen() as session:
-            submission = Submission.get_from_id(submission_id)
-        self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION, submission_id),
+            submission = Submission.get_from_id(submission_id, session)
+            timestamp = submission.timestamp
+        self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION,
+                         submission_id),
                         EvaluationServer.JOB_PRIORITY_HIGH,
-                        submission.timestamp)
+                        timestamp)
 
 
 if __name__ == "__main__":

@@ -203,6 +203,7 @@ class ContestWebServer(WebService):
             parameters,
             shard=shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+        self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
 
 
 class MainHandler(BaseHandler):
@@ -302,7 +303,7 @@ class TaskStatementViewHandler(FileHandler):
         if not self.valid_phase(r_params):
             return
         try:
-            self.task = [ x for x in self.contest.tasks if x.name == task_name ][0] 
+            self.task = [ x for x in self.contest.tasks if x.name == task_name ][0]
         except:
             self.write("Task %s not found." % (task_name))
 
@@ -484,7 +485,7 @@ class SubmitHandler(BaseHandler):
 
     @rpc_callback
     def storage_callback(self, data, plus, error = None):
-        logger.info("Storage callback")
+        logger.debug("Storage callback")
         if error == None:
             self.file_digests[plus] = data
             if len(self.file_digests) == len(self.files):
@@ -503,11 +504,21 @@ class SubmitHandler(BaseHandler):
                 self.sql_session.commit()
                 self.r_params["submission"] = s
                 self.r_params["warned"] = False
-                self.render("successfulSub.html", **self.r_params)
+                self.application.service.ES.new_submission(
+                    submission_id=s.id,
+                    callback=self.es_notify_callback)
         else:
-            logger.warning("Storage failed! " + error)
+            logger.error("Storage failed! " + error)
             self.finish()
 
+    @rpc_callback
+    def es_notify_callback(self, data, plus, error=None):
+        logger.debug("ES notify_callback")
+        if error == None:
+            self.render("successfulSub.html", **self.r_params)
+        else:
+            logger.error("Notification to ES failed! " + error)
+            self.finish()
 
 handlers = [
             (r"/", \
