@@ -22,7 +22,8 @@
 import threading
 
 from cms.async import ServiceCoord
-from cms.async.AsyncLibrary import logger, Service, rpc_method, rpc_threaded
+from cms.async.AsyncLibrary import logger, async_lock, Service, \
+     rpc_method, rpc_threaded
 from cms.service.TaskType import get_task_type_class
 from cms.db.SQLAlchemyAll import Session, Submission, SessionGen
 from cms.service import JobException
@@ -58,8 +59,9 @@ class Worker(Service):
         if self.work_lock.acquire(False):
 
             try:
-                logger.operation = "compiling submission %s" % (submission_id)
-                logger.info("Request received")
+                with async_lock:
+                    logger.operation = "compiling submission %s" % (submission_id)
+                    logger.info("Request received")
 
                 with SessionGen(commit=False) as self.session:
 
@@ -71,20 +73,24 @@ class Worker(Service):
                         success = task_type.compile()
                     except Exception as e:
                         err_msg = "Compilation failed with not caught exception `%s'" % (repr(e))
-                        logger.critical(err_msg)
+                        with async_lock:
+                            logger.critical(err_msg)
                         raise JobException(err_msg)
 
                     session.commit()
-                    logger.info("Request finished")
+                    with async_lock:
+                        logger.info("Request finished")
                     return success
 
             finally:
                 self.session = None
-                logger.operation = ""
+                with async_lock:
+                    logger.operation = ""
                 self.work_lock.release()
 
         else:
-            logger.info("Request to compile submission %d received, but declined because of acquired lock" % (submission_id))
+            with async_lock:
+                logger.info("Request to compile submission %d received, but declined because of acquired lock" % (submission_id))
             return False
 
     @rpc_method
@@ -93,8 +99,9 @@ class Worker(Service):
         if self.work_lock.acquire(False):
 
             try:
-                logger.operation = "evaluating submission %s" % (submission_id)
-                logger.info("Request received")
+                with async_lock:
+                    logger.operation = "evaluating submission %s" % (submission_id)
+                    logger.info("Request received")
 
                 with SessionGen(commit=False) as self.session:
 
@@ -106,20 +113,24 @@ class Worker(Service):
                         success = self.task_type.execute()
                     except Exception as e:
                         err_msg = "Evaluation failed with not caught exception `%s'" % (repr(e))
-                        logger.critical(err_msg)
+                        with async_lock:
+                            logger.critical(err_msg)
                         raise JobException(err_msg)
 
                     session.commit()
-                    logger.info("Request finished")
+                    with async_lock:
+                        logger.info("Request finished")
                     return success
 
             finally:
                 self.session = None
-                logger.operation = ""
+                with async_lock:
+                    logger.operation = ""
                 self.work_lock.release()
 
         else:
-            logger.info("Request to evaluate submission %d received, but declined because of acquired lock" % (submission_id))
+            with async_lock:
+                logger.info("Request to evaluate submission %d received, but declined because of acquired lock" % (submission_id))
             return False
 
 
