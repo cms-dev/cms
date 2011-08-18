@@ -76,7 +76,7 @@ class Worker(Service):
                     except Exception as e:
                         err_msg = "Compilation failed with not caught exception `%s' and traceback `%s'" % (repr(e), traceback.format_exc())
                         with async_lock:
-                            logger.critical(err_msg)
+                            logger.error(err_msg)
                         raise JobException(err_msg)
 
                     session.commit()
@@ -116,7 +116,7 @@ class Worker(Service):
                     except Exception as e:
                         err_msg = "Evaluation failed with not caught exception `%s'" % (repr(e))
                         with async_lock:
-                            logger.critical(err_msg)
+                            logger.error(err_msg)
                         raise JobException(err_msg)
 
                     session.commit()
