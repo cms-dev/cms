@@ -379,7 +379,7 @@ class EvaluationServer(Service):
             contest = session.query(Contest).\
                       filter_by(id=contest).first()
             logger.info("Loaded contest %s" % contest.name)
-            submission_ids = map(lambda x: x.id, contest.get_submissions())
+            submission_ids = map(lambda x: x.id, contest.get_submissions(session))
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)

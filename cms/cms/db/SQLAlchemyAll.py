@@ -33,7 +33,7 @@ from cms.db.Submission import Submission, Token, Evaluation, File
 
 # Last relationship configurations
 def get_submissions(self, session):
-    return session.query(Submission.Submission).join(Task.Task).filter(Task.Task.contest == self).all()
+    return session.query(Submission).join(Task).filter(Task.contest == self).all()
 Contest.get_submissions = get_submissions
 
 if __name__ == "__main__" and "redrop" in sys.argv[1:]:
