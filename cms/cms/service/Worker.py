@@ -24,7 +24,7 @@ import threading
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import logger, Service, rpc_method, rpc_threaded
 from cms.service.TaskType import get_task_type_class
-from cms.db.SQLAlchemyAll import Session, Submission
+from cms.db.SQLAlchemyAll import Session, Submission, SessionGen
 from cms.service import JobException
 
 class Worker(Service):
@@ -43,7 +43,7 @@ class Worker(Service):
             logger.critical(msg_err)
             raise JobException(msg_err)
 
-        task_type = get_task_type_class(submission, session)
+        task_type = get_task_type_class(submission, self.session)
         if task_type is None:
             err_msg = "Task type `%s' not known for submission %d" \
                 % (self.submission.task.task_type, submission_id)
@@ -55,32 +55,30 @@ class Worker(Service):
     @rpc_method
     @rpc_threaded
     def compile(self, submission_id):
-        if self.work_lock.acquire(blocking=False):
+        if self.work_lock.acquire(False):
 
             try:
                 logger.operation = "compiling submission %s" % (submission_id)
                 logger.info("Request received")
 
-                # Initialize the database session
-                self.session = Session()
+                with SessionGen(commit=False) as self.session:
 
-                # Retrieve submission and task_type
-                (submission, task_type) = self.get_submission_data(submission_id)
+                    # Retrieve submission and task_type
+                    (submission, task_type) = self.get_submission_data(submission_id)
 
-                # Do the actual work
-                try:
-                    success = self.task_type.compile()
-                except Exception as e:
-                    err_msg = "Compilation failed with not caught exception `%s'" % (repr(e))
-                    logger.critical(err_msg)
-                    raise JobException(err_msg)
+                    # Do the actual work
+                    try:
+                        success = task_type.compile()
+                    except Exception as e:
+                        err_msg = "Compilation failed with not caught exception `%s'" % (repr(e))
+                        logger.critical(err_msg)
+                        raise JobException(err_msg)
 
-                logger.info("Request finished")
-                return success
+                    session.commit()
+                    logger.info("Request finished")
+                    return success
 
             finally:
-                self.session.commit()
-                self.session.close()
                 self.session = None
                 logger.operation = ""
                 self.work_lock.release()
@@ -92,32 +90,30 @@ class Worker(Service):
     @rpc_method
     @rpc_threaded
     def evaluate(self, submission_id):
-        if self.work_lock.acquire(blocking=False):
+        if self.work_lock.acquire(False):
 
             try:
                 logger.operation = "evaluating submission %s" % (submission_id)
                 logger.info("Request received")
 
-                # Initialize the database session
-                self.session = Session()
+                with SessionGen(commit=False) as self.session:
 
-                # Retrieve submission and task_type
-                (submission, task_type) = self.get_submission_data(submission_id)
+                    # Retrieve submission and task_type
+                    (submission, task_type) = self.get_submission_data(submission_id)
 
-                # Do the actual work
-                try:
-                    success = self.task_type.execute()
-                except Exception as e:
-                    err_msg = "Evaluation failed with not caught exception `%s'" % (repr(e))
-                    logger.critical(err_msg)
-                    raise JobException(err_msg)
+                    # Do the actual work
+                    try:
+                        success = self.task_type.execute()
+                    except Exception as e:
+                        err_msg = "Evaluation failed with not caught exception `%s'" % (repr(e))
+                        logger.critical(err_msg)
+                        raise JobException(err_msg)
 
-                logger.info("Request finished")
-                return success
+                    session.commit()
+                    logger.info("Request finished")
+                    return success
 
             finally:
-                self.session.commit()
-                self.session.close()
                 self.session = None
                 logger.operation = ""
                 self.work_lock.release()
