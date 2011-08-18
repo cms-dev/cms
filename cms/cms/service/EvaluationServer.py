@@ -226,11 +226,11 @@ class WorkerPool:
                      self.service.queue.length())
         if action == EvaluationServer.JOB_TYPE_COMPILATION:
             self.worker[shard].compile(submission_id=submission_id,
-                                       callback=self.service.action_finished,
+                                       callback=self.service.action_finished.im_func,
                                        plus=(job, side_data, shard))
         elif action == EvaluationServer.JOB_TYPE_EVALUATION:
             self.worker[shard].evaluate(submission_id=submission_id,
-                                        callback=self.service.action_finished,
+                                        callback=self.service.action_finished.im_func,
                                         plus=(job, side_data, shard))
 
         return shard
