@@ -399,6 +399,8 @@ class EvaluationServer(Service):
         for sid in submission_ids:
             self.new_submission(sid)
 
+        self.dispatch_jobs()
+
     def dispatch_jobs(self):
         """Check if there are pending jobs, and tries to distribute as
         many of them to the available workers.
