@@ -20,6 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import threading
+import sys
+import traceback
 
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import logger, async_lock, Service, \
@@ -44,7 +46,7 @@ class Worker(Service):
             logger.critical(msg_err)
             raise JobException(msg_err)
 
-        task_type = get_task_type_class(submission, self.session)
+        task_type = get_task_type_class(submission, self.session, self)
         if task_type is None:
             err_msg = "Task type `%s' not known for submission %d" \
                 % (self.submission.task.task_type, submission_id)
@@ -72,7 +74,7 @@ class Worker(Service):
                     try:
                         success = task_type.compile()
                     except Exception as e:
-                        err_msg = "Compilation failed with not caught exception `%s'" % (repr(e))
+                        err_msg = "Compilation failed with not caught exception `%s' and traceback `%s'" % (repr(e), traceback.format_exc())
                         with async_lock:
                             logger.critical(err_msg)
                         raise JobException(err_msg)
