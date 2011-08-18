@@ -105,36 +105,39 @@ class Submission(Base):
         language = None
         test_file = None
 
+        submission_format = map(lambda x: x.filename, self.task.submission_format)
+        files = self.files
+
         # Try to understand if the task type is language dependent
-        for name in self.task.submission_format:
+        for name in submission_format:
             if name.find("%l") != -1:
                 test_file = name
 
         # Try to detect the language used in the submission
         for test_lang in Submission.LANGUAGES:
-            if test_file.replace("%l", test_lang) in self.files:
+            if test_file.replace("%l", test_lang) in files:
                 language = test_lang
         if test_file != None and language == None:
             # If the task requires only one source file, be more
             # relaxed on the verification
-            if len(self.task.submission_format) == 1:
-                submitted_file = self.files.keys()[0]
+            if len(submission_format) == 1:
+                submitted_file = files.keys()[0]
                 submitted_file_part = submitted_file.split(".")
                 if len(submitted_file_part) > 1 and \
                         submitted_file_part[-1] in Submission.LANGUAGES:
                     language = submitted_file_part[-1]
-                    correct_file = self.task.submission_format[0].replace("%l", language)
+                    correct_file = submission_format[0].replace("%l", language)
                     Utils.log("Adapted submission %s to %s" % (submitted_file, correct_file), Utils.Logger.SEVERITY_DEBUG)
-                    self.files[correct_file] = self.files[submitted_file]
-                    del self.files[submitted_file]
+                    files[correct_file] = files[submitted_file]
+                    del files[submitted_file]
                 else:
                     return (False, "Could not detect submission language")
             else:
                 return (False, "Could not detect submission language")
 
         # Check the mapping between the submission format and the actual submission
-        for name in self.task.submission_format:
-            if name.replace("%l", language) not in self.files:
+        for name in task.submission_format:
+            if name.replace("%l", language) not in files:
                 return (False, "Files not corresponding to submission format")
 
         return (True, language)
