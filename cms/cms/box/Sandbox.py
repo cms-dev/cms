@@ -281,12 +281,12 @@ class Sandbox:
         del self.log
 
     def execute(self, command):
-        args = ["./mo-box"] + self.build_box_options() + ["--"] + command
+        args = ["mo-box"] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: %s" % (" ".join(args)))
         return subprocess.call(args)
 
     def popen(self, command, stdin = None, stdout = None, stderr = None, close_fds = False):
-        args = ["./mo-box"] + self.build_box_options() + ["--"] + command
+        args = ["mo-box"] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: %s" % (" ".join(args)))
         return subprocess.Popen(args, stdin = stdin, stdout = stdout, stderr = stderr, close_fds = close_fds)
 
