@@ -379,6 +379,7 @@ class EvaluationServer(Service):
             contest = session.query(Contest).\
                       filter_by(id=contest).first()
             logger.info("Loaded contest %s" % contest.name)
+            submission_ids = map(lambda x: x.id, contest.get_submissions())
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
@@ -392,6 +393,11 @@ class EvaluationServer(Service):
         self.add_timeout(self.check_workers, None,
                          EvaluationServer.WORKER_TIMEOUT_CHECK_TIME,
                          immediately=False)
+
+        # Submit to compilation all the submissions already in DB
+        # TODO - Make this configurable
+        for sid in submission_ids:
+            self.new_submission(sid)
 
     def dispatch_jobs(self):
         """Check if there are pending jobs, and tries to distribute as
