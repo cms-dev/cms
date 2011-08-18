@@ -30,7 +30,6 @@ from cms.db.SQLAlchemyUtils import Base
 from cms.db.Task import Task
 from cms.db.User import User
 
-from cms.async.AsyncLibrary import logger
 
 class Submission(Base):
     __tablename__ = 'submissions'
@@ -128,8 +127,8 @@ class Submission(Base):
                 if len(submitted_file_part) > 1 and \
                         submitted_file_part[-1] in Submission.LANGUAGES:
                     language = submitted_file_part[-1]
+                    # Wa adapt submission
                     correct_file = submission_format[0].replace("%l", language)
-                    logger.info("Adapted submission %s to %s" % (submitted_file, correct_file))
                     files[correct_file] = files[submitted_file]
                     del files[submitted_file]
                 else:
