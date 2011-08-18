@@ -453,7 +453,7 @@ class EvaluationServer(Service):
 
         """
         if error != None:
-            logger.error(error)
+            logger.error("Received error from Worker: %s" % (error))
             return
         job, side_data, shard = plus
         # We notify the pool that the worker is free, but if the pool
