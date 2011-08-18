@@ -64,14 +64,27 @@ class SessionGen:
     with SessionGen() as session:
         session.do_something()
 
-    and at the end, commit & close are automatically called.
+    and at the end the session is automatically closed.
+
+    commit (bool): whether to commit or to rollback the session
+                   by default, when no other instruction has
+                   been specified. To do the commit or the rollback
+                   idependently of this setting, just call the
+                   relevant function from the session.
+                   ATTENTION: by default, the session is
+                   committed, but this behaviour may change
+                   in the future.
 
     """
-    def __enter__(self):
+    def __enter__(self, commit=True):
         self.session = Session()
+        self.commit = commit
         return self.session
     def __exit__(self, a, b, c):
-        self.session.commit()
+        if self.commit:
+            self.session.commit()
+        else:
+            self.session.rollback()
         self.session.close()
 
 def get_from_id(cls, id, session):
