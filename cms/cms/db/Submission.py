@@ -30,6 +30,8 @@ from cms.db.SQLAlchemyUtils import Base
 from cms.db.Task import Task
 from cms.db.User import User
 
+from cms.async.AsyncLibrary import logger
+
 class Submission(Base):
     __tablename__ = 'submissions'
 
@@ -127,7 +129,7 @@ class Submission(Base):
                         submitted_file_part[-1] in Submission.LANGUAGES:
                     language = submitted_file_part[-1]
                     correct_file = submission_format[0].replace("%l", language)
-                    Utils.log("Adapted submission %s to %s" % (submitted_file, correct_file), Utils.Logger.SEVERITY_DEBUG)
+                    logger.info("Adapted submission %s to %s" % (submitted_file, correct_file))
                     files[correct_file] = files[submitted_file]
                     del files[submitted_file]
                 else:
@@ -136,7 +138,7 @@ class Submission(Base):
                 return (False, "Could not detect submission language")
 
         # Check the mapping between the submission format and the actual submission
-        for name in task.submission_format:
+        for name in self.task.submission_format:
             if name.replace("%l", language) not in files:
                 return (False, "Files not corresponding to submission format")
 
