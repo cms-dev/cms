@@ -30,9 +30,9 @@ from cms.db.SQLAlchemyAll import Task
 from cms.service import JobException
 from cms.service.Utils import get_compilation_command, filter_ansi_escape
 
-def get_task_type_class(submission, session):
+def get_task_type_class(submission, session, service):
     if submission.task.task_type == Task.TASK_TYPE_BATCH:
-        return BatchTaskType(submission, session)
+        return BatchTaskType(submission, session, service)
     else:
         return None
 
@@ -89,9 +89,10 @@ def white_diff(output, res):
                 return False
 
 class BatchTaskType:
-    def __init__(self, submission, session):
+    def __init__(self, submission, session, service):
         self.submission = submission
         self.session = session
+        self.service = service
 
     KEEP_SANDBOX = False
 
@@ -131,7 +132,7 @@ class BatchTaskType:
 
     def safe_create_sandbox(self):
         try:
-            self.sandbox = Sandbox()
+            self.sandbox = Sandbox(self.service)
         except (OSError, IOError), e:
             logger.error("Couldn't create sandbox (error: %s)" % repr(e))
             self.safe_delete_sandbox()
