@@ -61,8 +61,8 @@ class Worker(Service):
         if self.work_lock.acquire(False):
 
             try:
+                logger.operation = "compiling submission %s" % (submission_id)
                 with async_lock:
-                    logger.operation = "compiling submission %s" % (submission_id)
                     logger.info("Request received")
 
                 with SessionGen(commit=False) as self.session:
@@ -79,15 +79,19 @@ class Worker(Service):
                             logger.error(err_msg)
                         raise JobException(err_msg)
 
-                    session.commit()
+                    self.session.commit()
                     with async_lock:
                         logger.info("Request finished")
                     return success
+            except Exception as e:
+                err_msg = "Worker failed to compilation with exception `%s' and traceback `%s'" % (repr(e), traceback.format_exc())
+                with async_lock:
+                    logger.error(err_msg)
+                raise JobException(err_msg)
 
             finally:
                 self.session = None
-                with async_lock:
-                    logger.operation = ""
+                logger.operation = ""
                 self.work_lock.release()
 
         else:
