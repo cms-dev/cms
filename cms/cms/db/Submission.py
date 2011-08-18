@@ -138,7 +138,7 @@ class Submission(Base):
                 return (False, "Could not detect submission language")
 
         # Check the mapping between the submission format and the actual submission
-        for name in self.task.submission_format:
+        for name in submission_format:
             if name.replace("%l", language) not in files:
                 return (False, "Files not corresponding to submission format")
 
