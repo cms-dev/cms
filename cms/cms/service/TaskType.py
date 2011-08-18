@@ -24,7 +24,7 @@ import subprocess
 import couchdb
 import codecs
 
-from cms.async.AsyncLibrary import logger
+from cms.async.AsyncLibrary import logger, async_lock
 from cms.box.Sandbox import Sandbox
 from cms.db.SQLAlchemyAll import Task
 from cms.service import JobException
@@ -108,7 +108,8 @@ class BatchTaskType:
             self.submission.compilation_text = text.decode("utf-8")
         except UnicodeDecodeError:
             self.submission.compilation_text("Cannot decode compilation text.")
-            logger.error("Unable to decode UTF-8 for string %s." % (text))
+            with async_lock:
+                logger.error("Unable to decode UTF-8 for string %s." % (text))
 
     def finish_single_execution(self, test_number, success, outcome = 0, text = ""):
         self.safe_delete_sandbox()
@@ -128,13 +129,15 @@ class BatchTaskType:
             try:
                 self.sandbox.delete()
             except (IOError, OSError):
-                logger.warning("Couldn't delete sandbox")
+                with async_lock:
+                    logger.warning("Couldn't delete sandbox")
 
     def safe_create_sandbox(self):
         try:
             self.sandbox = Sandbox(self.service)
         except (OSError, IOError), e:
-            logger.error("Couldn't create sandbox (error: %s)" % repr(e))
+            with async_lock:
+                logger.error("Couldn't create sandbox (error: %s)" % repr(e))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -142,7 +145,8 @@ class BatchTaskType:
         try:
             self.sandbox.create_file_from_storage(name, digest, executable)
         except (OSError, IOError):
-            logger.error("Couldn't copy file `%s' in sandbox" % (name))
+            with async_lock:
+                logger.error("Couldn't copy file `%s' in sandbox" % (name))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -150,7 +154,8 @@ class BatchTaskType:
         try:
             return self.sandbox.get_file_to_storage(name, msg)
         except (IOError, OSError) as e:
-            logger.error("Coudln't retrieve file `%s' from storage" % (name))
+            with async_lock:
+                logger.error("Coudln't retrieve file `%s' from storage" % (name))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -158,7 +163,8 @@ class BatchTaskType:
         try:
             return self.sandbox.get_file_to_string(name, maxlen=1024)
         except (IOError, OSError):
-            logger.error("Couldn't retrieve file `%s' from storage" % (name))
+            with async_lock:
+                logger.error("Couldn't retrieve file `%s' from storage" % (name))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -166,7 +172,8 @@ class BatchTaskType:
         try:
             return self.sandbox.get_file(name)
         except (IOError, OSError):
-            logger.error("Couldn't retrieve file `%s' from storage" % (name))
+            with async_lock:
+                logger.error("Couldn't retrieve file `%s' from storage" % (name))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -174,7 +181,8 @@ class BatchTaskType:
         try:
             self.sandbox.execute(command)
         except (OSError, IOError) as e:
-            logger.error("Couldn't spawn `%s' (exception %s)" % (command[0], repr(e)))
+            with async_lock:
+                logger.error("Couldn't spawn `%s' (exception %s)" % (command[0], repr(e)))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -192,10 +200,12 @@ class BatchTaskType:
         # exactly one source file
         valid, language = self.submission.verify_source()
         if not valid or language == None:
-            logger.info("Invalid submission or couldn't detect language")
+            with async_lock:
+                logger.info("Invalid submission or couldn't detect language")
             return self.finish_compilation(True, False, "Invalid files in submission")
         if len(self.submission.files) != 1:
-            logger.info("Submission cointains %d files, expecting 1" % (len(self.submission.files)))
+            with async_lock:
+                logger.info("Submission cointains %d files, expecting 1" % (len(self.submission.files)))
             return self.finish_compilation(True, False, "Invalid files in submission")
 
         source_filename = self.submission.files.keys()[0]
@@ -203,9 +213,13 @@ class BatchTaskType:
 
         # Setup the compilation environment
         self.safe_create_sandbox()
-        self.safe_create_file_from_storage(source_filename, self.submission.files[source_filename])
+        self.safe_create_file_from_storage(
+            source_filename,
+            self.submission.files[source_filename].digest)
 
-        command = get_compilation_command(language, source_filename, executable_filename)
+        command = get_compilation_command(language,
+                                          source_filename,
+                                          executable_filename)
 
         # Execute the compilation inside the sandbox
         self.sandbox.chdir = self.sandbox.path
@@ -222,7 +236,8 @@ class BatchTaskType:
         self.sandbox.address_space = 256 * 1024
         self.sandbox.stdout_file = self.sandbox.relative_path("compiler_stdout.txt")
         self.sandbox.stderr_file = self.sandbox.relative_path("compiler_stderr.txt")
-        logger.info("Starting compilation")
+        with async_lock:
+            logger.info("Starting compilation")
         self.safe_sandbox_execute(command)
 
         # Detect the outcome of the compilation
@@ -239,47 +254,55 @@ class BatchTaskType:
         # correctly compiled
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
             self.submission.executables = {executable_filename: self.safe_get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, self.submission.couch_id))}
-            logger.info("Compilation successfully finished")
+            with async_lock:
+                logger.info("Compilation successfully finished")
             return self.finish_compilation(True, True, "OK %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
 
         # Error in compilation: returning the error to the user
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
-            logger.info("Compilation failed")
+            with async_lock:
+                logger.info("Compilation failed")
             return self.finish_compilation(True, False, "Failed %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
 
         # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
-            logger.info("Compilation timed out")
+            with async_lock:
+                logger.info("Compilation timed out")
             return self.finish_compilation(True, False, "Time out %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
 
         # Suicide with signal (probably memory limit): returning the
         # error to the user
         if exit_status == Sandbox.EXIT_SIGNAL:
             signal = self.sandbox.get_killing_signal()
-            logger.info("Compilation killed with signal %d" % (signal))
+            with async_lock:
+                logger.info("Compilation killed with signal %d" % (signal))
             return self.finish_compilation(True, False, "Killed with signal %d %s\nThis could be triggered by violating memory limits\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (signal, self.sandbox.get_stats(), stdout, stderr))
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-            logger.error("Compilation aborted because of sandbox error")
+            with async_lock:
+                logger.error("Compilation aborted because of sandbox error")
             return self.finish_compilation(False)
 
         # Forbidden syscall: this shouldn't happen, probably the
         # administrator should relax the syscall constraints
         if exit_status == Sandbox.EXIT_SYSCALL:
-            logger.error("Compilation aborted because of forbidden syscall")
+            with async_lock:
+                logger.error("Compilation aborted because of forbidden syscall")
             return self.finish_compilation(False)
 
         # Forbidden file access: this could be triggered by the user
         # including a forbidden file or too strict sandbox contraints;
         # the administrator should have a look at it
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            logger.error("Compilation aborted because of forbidden file access")
+            with async_lock:
+                logger.error("Compilation aborted because of forbidden file access")
             return self.finish_compilation(False)
 
         # Why the exit status hasn't been captured before?
-        logger.error("Shouldn't arrive here, failing")
+        with async_lock:
+            logger.error("Shouldn't arrive here, failing")
         return self.finish_compilation(False)
 
     def execute_single(self, test_number):
@@ -313,39 +336,45 @@ class BatchTaskType:
 
         # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
-            logger.info("Execution timed out")
+            with async_lock:
+                logger.info("Execution timed out")
             return self.finish_single_execution(test_number, True, 0.0, "Execution timed out\n")
 
         # Suicide with signal (memory limit, segfault, abort):
         # returning the error to the user
         if exit_status == Sandbox.EXIT_SIGNAL:
             signal = self.sandbox.get_killing_signal()
-            logger.info("Execution killed with signal %d" % (signal))
+            with async_lock:
+                logger.info("Execution killed with signal %d" % (signal))
             return self.finish_single_execution(test_number, True, 0.0, "Execution killed with signal %d\n" % (signal))
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-            logger.error("Evaluation aborted because of sandbox error")
+            with async_lock:
+                logger.error("Evaluation aborted because of sandbox error")
             return self.finish_single_execution(test_number, False)
 
         # Forbidden syscall: returning the error to the user
         # FIXME - Tell which syscall raised this error
         if exit_status == Sandbox.EXIT_SYSCALL:
-            logger.info("Execution killed because of forbidden syscall")
+            with async_lock:
+                logger.info("Execution killed because of forbidden syscall")
             return self.finish_single_execution(test_number, True, 0.0, "Execution killed because of forbidden syscall")
 
         # Forbidden file access: returning the error to the user
         # FIXME - Tell which file raised this error
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            logger.info("Execution killed because of forbidden file access")
+            with async_lock:
+                logger.info("Execution killed because of forbidden file access")
             return self.finish_single_execution(test_number, True, 0.0, "Execution killed because of forbidden file access")
 
         # Last check before assuming that execution finished
         # successfully; we accept the execution even if the exit code
         # isn't 0
         if exit_status != Sandbox.EXIT_OK:
-            logger.error("Shouldn't arrive here, failing")
+            with async_lock:
+                logger.error("Shouldn't arrive here, failing")
             return self.finish_single_execution(test_number, False)
 
         if not self.sandbox.file_exists("output.txt"):
@@ -385,19 +414,22 @@ class BatchTaskType:
                     try:
                         outcome = stdout_file.readline().strip()
                     except UnicodeDecodeError as e:
-                        logger.error("Unable to interpret manager stdout " +
-                                     "(outcome) as unicode. %s" % repr(e))
+                        with async_lock:
+                            logger.error("Unable to interpret manager stdout " +
+                                         "(outcome) as unicode. %s" % repr(e))
                         return self.finish_single_execution(test_number, False)
                     try:
                         text = filter_ansi_escape(stderr_file.readline())
                     except UnicodeDecodeError as e:
-                        logger.error("Unable to interpret manager stderr " +
-                                     "(text) as unicode. %s" % repr(e))
+                        with async_lock:
+                            logger.error("Unable to interpret manager stderr " +
+                                         "(text) as unicode. %s" % repr(e))
                         return self.finish_single_execution(test_number, False)
             try:
                 outcome = float(outcome)
             except ValueError:
-                logger.error("Wrong outcome `%s' from manager" % (outcome))
+                with async_lock:
+                    logger.error("Wrong outcome `%s' from manager" % (outcome))
                 return self.finish_single_execution(test_number, False)
 
         # Finally returns the result
@@ -405,7 +437,8 @@ class BatchTaskType:
 
     def execute(self):
         if len(self.submission.executables) != 1:
-            logger.info("Submission contains %d executables, expecting 1" % (len(self.submission.executables)))
+            with async_lock:
+                logger.info("Submission contains %d executables, expecting 1" % (len(self.submission.executables)))
             return self.finish_evaluation(False)
 
         self.executable_filename = self.submission.executables.keys()[0]
