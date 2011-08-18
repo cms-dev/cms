@@ -76,10 +76,13 @@ class SessionGen:
                    in the future.
 
     """
-    def __enter__(self, commit=True):
-        self.session = Session()
+    def __init__(self, commit=True):
         self.commit = commit
+
+    def __enter__(self):
+        self.session = Session()
         return self.session
+
     def __exit__(self, a, b, c):
         if self.commit:
             self.session.commit()
