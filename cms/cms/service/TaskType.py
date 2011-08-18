@@ -21,12 +21,11 @@
 
 import os
 import subprocess
-import couchdb
 import codecs
 
 from cms.async.AsyncLibrary import logger, async_lock
 from cms.box.Sandbox import Sandbox
-from cms.db.SQLAlchemyAll import Task
+from cms.db.SQLAlchemyAll import Task, Executable
 from cms.service import JobException
 from cms.service.Utils import get_compilation_command, filter_ansi_escape
 
@@ -96,7 +95,7 @@ class BatchTaskType:
 
     KEEP_SANDBOX = False
 
-    def finish_compilation(self, success, compilation_success = False, text = ""):
+    def finish_compilation(self, success, compilation_success=False, text=""):
         self.safe_delete_sandbox()
         if not success:
             return False
@@ -109,9 +108,10 @@ class BatchTaskType:
         except UnicodeDecodeError:
             self.submission.compilation_text("Cannot decode compilation text.")
             with async_lock:
-                logger.error("Unable to decode UTF-8 for string %s." % (text))
+                logger.error("Unable to decode UTF-8 for string %s." % text)
+        return True
 
-    def finish_single_execution(self, test_number, success, outcome = 0, text = ""):
+    def finish_single_execution(self, test_number, success, outcome=0, text=""):
         self.safe_delete_sandbox()
         if not success:
             return False
@@ -155,7 +155,7 @@ class BatchTaskType:
             return self.sandbox.get_file_to_storage(name, msg)
         except (IOError, OSError) as e:
             with async_lock:
-                logger.error("Coudln't retrieve file `%s' from storage" % (name))
+                logger.error("Coudln't send file `%s' to storage" % (name))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -198,11 +198,12 @@ class BatchTaskType:
 
         # Detect the submission's language and check that it contains
         # exactly one source file
-        valid, language = self.submission.verify_source()
+        valid, language = self.submission.verify_source(self.session)
         if not valid or language == None:
             with async_lock:
                 logger.info("Invalid submission or couldn't detect language")
             return self.finish_compilation(True, False, "Invalid files in submission")
+
         if len(self.submission.files) != 1:
             with async_lock:
                 logger.info("Submission cointains %d files, expecting 1" % (len(self.submission.files)))
@@ -253,7 +254,15 @@ class BatchTaskType:
         # Execution finished successfully: the submission was
         # correctly compiled
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
-            self.submission.executables = {executable_filename: self.safe_get_file_to_storage(executable_filename, "Executable %s for submission %s" % (executable_filename, self.submission.couch_id))}
+            digest = self.safe_get_file_to_storage(
+                executable_filename,
+                "Executable %s for submission %s" % \
+                (executable_filename, self.submission.id))
+
+            self.session.add(Executable(digest,
+                                        executable_filename,
+                                        self.submission))
+
             with async_lock:
                 logger.info("Compilation successfully finished")
             return self.finish_compilation(True, True, "OK %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))

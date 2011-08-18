@@ -360,8 +360,8 @@ class EvaluationServer(Service):
     JOB_TYPE_EVALUATION = "evaluate"
     JOB_TYPE_BOMB = "bomb"
 
-    MAX_COMPILATION_TENTATIVES = 3
-    MAX_EVALUATION_TENTATIVES = 3
+    MAX_COMPILATION_TRIES = 3
+    MAX_EVALUATION_TRIES = 3
 
     # Time after which we declare a worker stale
     WORKER_TIMEOUT = 600.0
@@ -469,6 +469,13 @@ class EvaluationServer(Service):
         # We get the submission from db.
         with SessionGen() as session:
             submission = Submission.get_from_id(submission_id, session)
+            submission_id = submission.id
+            compilation_tries = submission.compilation_tries
+            compilation_outcome = submission.compilation_outcome
+            # These need to be implemented
+            evaluation_tries = submission.evaluation_tries
+            tokened = submission.tokened()
+
         if submission is None:
             logger.critical("[action_finished] Couldn't find submission %d "
                             "in the database" % submission_id)
@@ -480,17 +487,17 @@ class EvaluationServer(Service):
             logger.info("Action %s for submission %s completed "
                         "unsuccessfully" % (job_type, submission_id))
             if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
-                if submission.compilation_tentatives > \
-                   EvaluationServer.MAX_COMPILATION_TENTATIVES:
-                    logger.error("Maximum tentatives reached for the "
+                if compilation_tries > \
+                   EvaluationServer.MAX_COMPILATION_TRIES:
+                    logger.error("Maximum tries reached for the "
                                  "compilation of submission %s. I will not "
                                  "try again" % submission_id)
                 else:
                     self.queue.push(job, priority, timestamp)
             elif job_type == EvaluationServer.JOB_TYPE_EVALUATION:
-                if submission.evaluation_tentatives > \
-                   EvaluationServer.MAX_EVALUATION_TENTATIVES:
-                    logger.error("Maximum tentatives reached for the "
+                if evaluation_tries > \
+                   EvaluationServer.MAX_EVALUATION_TRIES:
+                    logger.error("Maximum tries reached for the "
                                  "evaluation of submission %s. I will not "
                                  "try again" % submission_id)
                 else:
@@ -504,21 +511,21 @@ class EvaluationServer(Service):
                     "successfully" % (job_type, submission_id))
 
         if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
-            if submission.compilation_outcome == "ok":
+            if compilation_outcome == "ok":
                 # Compilation was ok, so we evaluate.
                 priority = EvaluationServer.JOB_PRIORITY_LOW
-                if submission.tokened():
+                if tokened:
                     priority = EvaluationServer.JOB_PRIORITY_MEDIUM
                 self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
                                 submission_id), priority, timestamp)
-            elif submission.compilation_outcome == "fail":
+            elif compilation_outcome == "fail":
                 # If instead submission failed compilation, we don't
                 # evaluate.
                 logger.info("Submission %s did not compile. Not going "
                             "to evaluate." % submission_id)
             else:
                 logger.error("Compilation outcome %s not recognized." %
-                             repr(submission.compilation_outcome))
+                             repr(compilation_outcome))
 
         elif job_type == EvaluationServer.JOB_TYPE_EVALUATION:
             # Evaluation successful, we update the score

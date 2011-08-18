@@ -29,7 +29,7 @@ from cms.db.Contest import Contest, Announcement
 from cms.db.View import RankingView
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task, Manager, Testcase, Attachment, PublicTestcase, SubmissionFormatElement
-from cms.db.Submission import Submission, Token, Evaluation, File
+from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 
 # Last relationship configurations
 def get_submissions(self, session):

@@ -100,14 +100,13 @@ class Submission(Base):
     #            self.refresh()
     #            retry = True
 
-    def verify_source(self):
+    def verify_source(self, session):
         if len(self.files) != len(self.task.submission_format):
             return (False, "Wrong number of files")
         language = None
         test_file = None
 
         submission_format = map(lambda x: x.filename, self.task.submission_format)
-        files = self.files
 
         # Try to understand if the task type is language dependent
         for name in submission_format:
@@ -116,21 +115,23 @@ class Submission(Base):
 
         # Try to detect the language used in the submission
         for test_lang in Submission.LANGUAGES:
-            if test_file.replace("%l", test_lang) in files:
+            if test_file.replace("%l", test_lang) in self.files:
                 language = test_lang
         if test_file != None and language == None:
             # If the task requires only one source file, be more
             # relaxed on the verification
             if len(submission_format) == 1:
-                submitted_file = files.keys()[0]
+                submitted_file = self.files.keys()[0]
                 submitted_file_part = submitted_file.split(".")
                 if len(submitted_file_part) > 1 and \
                         submitted_file_part[-1] in Submission.LANGUAGES:
                     language = submitted_file_part[-1]
                     # Wa adapt submission
                     correct_file = submission_format[0].replace("%l", language)
-                    files[correct_file] = files[submitted_file]
-                    del files[submitted_file]
+                    session.add(File(self.files[submitted_file].digest,
+                                     correct_file,
+                                     self))
+                    session.delete(self.files[submitted_file])
                 else:
                     return (False, "Could not detect submission language")
             else:
@@ -138,7 +139,7 @@ class Submission(Base):
 
         # Check the mapping between the submission format and the actual submission
         for name in submission_format:
-            if name.replace("%l", language) not in files:
+            if name.replace("%l", language) not in self.files:
                 return (False, "Files not corresponding to submission format")
 
         return (True, language)
