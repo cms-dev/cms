@@ -38,6 +38,7 @@ import codecs
 from Utils import random_string, mkdir, \
      encode_binary, encode_length, encode_json, \
      decode_binary, decode_length, decode_json
+from cms.util.Utils import ANSI_FG_COLORS
 from cms.async import ServiceCoord, Address, get_service_address
 
 
@@ -821,15 +822,6 @@ class Logger:
     INFO     = "INFO    "
     DEBUG    = "DEBUG   "
 
-    ANSI_FG_COLORS = {'black': 30,
-                      'red': 31,
-                      'green': 32,
-                      'yellow': 33,
-                      'blue': 34,
-                      'magenta': 35,
-                      'cyan': 36,
-                      'white': 37}
-
     SEVERITY_COLORS = {CRITICAL: 'red',
                        ERROR:    'red',
                        WARNING:  'yellow',
@@ -954,7 +946,7 @@ class Logger:
             service_full += "/%s" % (operation)
         if colors:
             format_string = "\033[1;%dm%%s - %%s\033[0m [%%s] %%s" % \
-                (Logger.ANSI_FG_COLORS[Logger.SEVERITY_COLORS[severity]])
+                (ANSI_FG_COLORS[Logger.SEVERITY_COLORS[severity]])
         else:
             format_string = "%s - %s [%s] %s"
         return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(d),

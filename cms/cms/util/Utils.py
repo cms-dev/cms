@@ -114,6 +114,18 @@ def ask_for_contest(skip=0):
 
     return contest_id
 
+## ANSI utilities ##
+# see for reference: http://pueblo.sourceforge.net/doc/manual/ansi_color_codes.html
+
+ANSI_FG_COLORS = {'black': 30,
+                  'red': 31,
+                  'green': 32,
+                  'yellow': 33,
+                  'blue': 34,
+                  'magenta': 35,
+                  'cyan': 36,
+                  'white': 37}
+
 def filter_ansi_escape(s):
     """Filter out ANSI commands from the given string.
 
@@ -121,7 +133,7 @@ def filter_ansi_escape(s):
     ansi_mode = False
     res = ''
     for c in s:
-        if c == u'\x1b':
+        if c == u'\033':
             ansi_mode = True
         if not ansi_mode:
             res += c

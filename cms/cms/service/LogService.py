@@ -52,8 +52,14 @@ class LogService(Service):
         """Log a message.
 
         """
-        print msg
+
         print >> self._log_file, msg
+
+        # FIXME - Bad hack to color the log
+        msg = msg.split('[', 1)
+        msg = '\033[1;31m' + msg[0] + '\033[0m' + '[' + msg[1]
+        print msg
+
         return True
 
 
