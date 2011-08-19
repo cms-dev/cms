@@ -473,15 +473,15 @@ class SubmitHandler(BaseHandler):
         self.file_digests = {}
 
         for filename, content in self.files.items():
-            self.application.service.FS.put_file(\
-              callback = SubmitHandler.storage_callback, \
-              plus = filename, \
-              binary_data = content, \
-              description = "submission file " + filename \
-                            + " sent by " + self.get_current_user().username \
-                            + " at " + str(self.timestamp),
-              bind_obj = self
-              )
+            self.application.service.FS.put_file(
+                callback=SubmitHandler.storage_callback,
+                plus=filename,
+                binary_data=content,
+                description="Submission file %s sent by %s at %d." % (
+                    filename,
+                    self.get_current_user().username,
+                    int(self.timestamp)),
+                bind_obj = self)
 
     @rpc_callback
     def storage_callback(self, data, plus, error = None):
@@ -489,14 +489,12 @@ class SubmitHandler(BaseHandler):
         if error == None:
             self.file_digests[plus] = data
             if len(self.file_digests) == len(self.files):
-                # TODO: All the files are stored, ready to submit!
+                # All the files are stored, ready to submit!
                 logger.info("I saved all the files")
-                s = Submission(\
-                 user = self.get_current_user(), \
-                 task = self.task, \
-                 timestamp = self.timestamp, \
-                 files = {}, \
-                 )
+                s = Submission(user=self.get_current_user(),
+                               task=self.task,
+                               timestamp=self.timestamp,
+                               files={})
 
                 for filename, digest in self.file_digests.items():
                     self.sql_session.add(File(digest, filename, s))

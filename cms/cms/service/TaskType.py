@@ -206,7 +206,7 @@ class BatchTaskType:
 
         if len(self.submission.files) != 1:
             with async_lock:
-                logger.info("Submission cointains %d files, expecting 1" % (len(self.submission.files)))
+                logger.info("Submission contains %d files, expecting 1" % (len(self.submission.files)))
             return self.finish_compilation(True, False, "Invalid files in submission")
 
         source_filename = self.submission.files.keys()[0]
