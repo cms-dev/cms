@@ -19,8 +19,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import Utils
-
+from cms.async.AsyncLibrary import logger
 
 class ScoreTypes:
     """Contains constants for all defined score types.
@@ -44,7 +43,7 @@ class ScoreTypes:
     SCORE_TYPE_RELATIVE = "ScoreTypeRelative"
 
     @staticmethod
-    def get_score_type_class(score_type, score_parameters):
+    def get_score_type(score_type, score_parameters):
         """Returns the right score type class for a given string.
         """
         if score_type == ScoreTypes.SCORE_TYPE_SUM:
@@ -161,8 +160,7 @@ class ScoreTypeSum(ScoreTypeAlone):
         returns (float): the score
         """
         if submission.evaluation_outcome == None:
-            Utils.log("Evaluated submission without outcome!",
-                      Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Evaluated submission without outcome!")
         else:
             return sum(submission.evaluation_outcome)
 
@@ -184,8 +182,7 @@ class ScoreTypeGroupMin(ScoreTypeAlone):
         returns (float): the score
         """
         if submission.evaluation_outcome == None:
-            Utils.log("Evaluated submission without outcome!",
-                      Utils.Logger.SEVERITY_IMPORTANT)
+            logger.error("Evaluated submission without outcome!")
         else:
             current = 0
             score = 0.0
@@ -210,8 +207,7 @@ class ScoreTypeGroupMul(ScoreTypeAlone):
         returns (float): the score
         """
         if submission.evaluation_outcome == None:
-            Utils.log("Evaluated submission without outcome!",
-                      Utils.Logger.SEVERITY_IMPORTANT)
+            logger("Evaluated submission without outcome!")
         else:
             current = 0
             score = 0.0
