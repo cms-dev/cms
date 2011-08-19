@@ -397,7 +397,6 @@ class EvaluationServer(Service):
         # Submit to compilation all the submissions already in DB
         # TODO - Make this configurable
         for submission_id in submission_ids:
-            print submission_id
             self.new_submission(submission_id)
 
         self.dispatch_jobs()
@@ -453,17 +452,19 @@ class EvaluationServer(Service):
                                  shard_of_worker)
 
         """
-        if error != None:
-            logger.error("Received error from Worker: %s" % (error))
-            return
+        # We notify the pool that the worker is free (even if it
+        # replied with ane error), but if the pool wants to disable the
+        # worker, it's because it already assigned its job to someone
+        # else, so we discard the data from the worker.
         job, side_data, shard = plus
-        # We notify the pool that the worker is free, but if the pool
-        # wants to disable the worker, it's because it already
-        # assigned its job to someone else, so we discard the data
-        # from the worker.
         disabled = self.pool.release_worker(shard)
         if disabled:
             return
+
+        if error != None:
+            logger.error("Received error from Worker: %s" % (error))
+            return
+
         job_type, submission_id = job
         priority, timestamp = side_data
 
