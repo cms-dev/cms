@@ -3,7 +3,6 @@
 fs
 fs-cache
 logs
-*.txt
 mo-box
 Configuration.py
 WebConfig.py
