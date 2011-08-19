@@ -380,6 +380,7 @@ class EvaluationServer(Service):
                       filter_by(id=contest).first()
             logger.info("Loaded contest %s" % contest.name)
             submission_ids = [x.id for x in contest.get_submissions(session)]
+            contest.create_empty_ranking_view(timestamp=contest.start)
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
@@ -535,8 +536,7 @@ class EvaluationServer(Service):
                             submission_id)
                 scorer = submission.task.get_scorer()
                 scorer.add_submission(submission)
-                # TODO: uncomment when implemented
-                # self.contest.update_ranking_view()
+                submission.task.contest.update_ranking_view()
 
             else:
                 logger.error("Invalid job type %s" % repr(job_type))

@@ -26,7 +26,7 @@ from sqlalchemy.orm import relationship, backref
 from cms.db.SQLAlchemyUtils import db, Base, metadata, Session, SessionGen
 
 from cms.db.Contest import Contest, Announcement
-from cms.db.View import RankingView
+from cms.db.View import RankingView, Score
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task, Manager, Testcase, Attachment, PublicTestcase, SubmissionFormatElement
 from cms.db.Submission import Submission, Token, Evaluation, File, Executable
@@ -35,6 +35,20 @@ from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 def get_submissions(self, session):
     return session.query(Submission).join(Task).filter(Task.contest == self).all()
 Contest.get_submissions = get_submissions
+
+def create_empty_ranking_view(self, timestamp=0.0):
+    self.ranking_view = RankingView(self, timestamp=timestamp)
+    for user in self.users:
+        for task in self.tasks:
+            self.ranking_view.set_score(Score(0.0, user=user, task=task))
+Contest.create_empty_ranking_view = create_empty_ranking_view
+
+def update_ranking_view(self):
+    for user in self.users:
+        for task in self.tasks:
+            score = task.get_scorer().scores.get(user.username, 0.0)
+            self.ranking_view.scores[(user.username, task.num)].score = score
+Contest.update_ranking_view = update_ranking_view
 
 if __name__ == "__main__" and "redrop" in sys.argv[1:]:
     metadata.drop_all()
