@@ -31,7 +31,7 @@ import base64
 
 from cms.async.AsyncLibrary import Service, rpc_method, logger
 from cms.async import ServiceCoord
-
+from cms.util.Utils import ANSI_FG_COLORS
 
 class LogService(Service):
     """Logger service.
@@ -46,10 +46,12 @@ class LogService(Service):
                                                   time.time()),
                                      "w", "utf-8")
 
-
     @rpc_method
     def Log(self, msg):
         """Log a message.
+
+        msg (string): the message.
+        returns (bool): True
 
         """
 
@@ -57,10 +59,24 @@ class LogService(Service):
 
         # FIXME - Bad hack to color the log
         msg = msg.split('[', 1)
-        msg = '\033[1;31m' + msg[0] + '\033[0m' + '[' + msg[1]
+        msg[1] = msg[1].split(']', 1)
+        msg = '\033[1;31m' + msg[0] + '\033[0m' + \
+              '[' + self.color_hash(msg[1][0]) + ']' + msg[1][1]
         print msg
 
         return True
+
+    def color_hash(self, s):
+        """Enclose a string in a ANSI code giving it a color that
+        depends on its content.
+
+        s (string): the string to color
+        return (string): s enclosed in an ANSI code
+
+        """
+        ansi_codes = ANSI_FG_COLORS.values()
+        hash_number = sum([ord(x) for x in s]) % len(ansi_codes)
+        return '\033[1;%dm%s\033[0m' % (ansi_codes[hash_number], s)
 
 
 if __name__ == "__main__":
