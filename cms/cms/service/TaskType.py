@@ -316,8 +316,8 @@ class BatchTaskType:
 
     def execute_single(self, test_number):
         self.safe_create_sandbox()
-        self.safe_create_file_from_storage(self.executable_filename, self.submission.executables[self.executable_filename], executable = True)
-        self.safe_create_file_from_storage("input.txt", self.submission.task.testcases[test_number][0])
+        self.safe_create_file_from_storage(self.executable_filename, self.submission.executables[self.executable_filename].digest, executable = True)
+        self.safe_create_file_from_storage("input.txt", self.submission.task.testcases[test_number].input)
 
         self.sandbox.chdir = self.sandbox.path
         self.sandbox.filter_syscalls = 2
@@ -391,7 +391,7 @@ class BatchTaskType:
             text = "Execution didn't produce file output.txt"
             return self.finish_single_execution(test_number, True, outcome, text)
 
-        self.safe_create_file_from_storage("res.txt", self.submission.task.testcases[test_number][1])
+        self.safe_create_file_from_storage("res.txt", self.submission.task.testcases[test_number].output)
         self.sandbox.filter_syscalls = 2
         self.sandbox.timeout = 0
         self.sandbox.address_space = None
@@ -416,7 +416,7 @@ class BatchTaskType:
         # Manager present: wonderful, he'll do all the job
         else:
             manager_filename = self.submission.task.managers.keys()[0]
-            self.safe_create_file_from_storage(manager_filename, self.submission.task.managers[manager_filename], executable = True)
+            self.safe_create_file_from_storage(manager_filename, self.submission.task.managers[manager_filename].digest, executable = True)
             manager_popen = self.safe_sandbox_execute(["./%s" % (manager_filename), "input.txt", "res.txt", "output.txt"])
             with codecs.open(stdout_filename, "r", "utf-8") as stdout_file:
                 with codecs.open(stderr_filename, "r", "utf-8") as stderr_file:

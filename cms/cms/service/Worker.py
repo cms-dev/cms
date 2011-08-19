@@ -119,14 +119,14 @@ class Worker(Service):
 
                     # Do the actual work
                     try:
-                        success = self.task_type.execute()
+                        success = task_type.execute()
                     except Exception as e:
-                        err_msg = "Evaluation failed with not caught exception `%s'" % (repr(e))
+                        err_msg = "Compilation failed with not caught exception `%s' and traceback `%s'" % (repr(e), traceback.format_exc())
                         with async_lock:
                             logger.error(err_msg)
                         raise JobException(err_msg)
 
-                    session.commit()
+                    self.session.commit()
                     with async_lock:
                         logger.info("Request finished")
                     return success
