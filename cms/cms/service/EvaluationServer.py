@@ -478,68 +478,68 @@ class EvaluationServer(Service):
             evaluation_tries = submission.evaluation_tries
             tokened = submission.tokened()
 
-        if submission is None:
-            logger.critical("[action_finished] Couldn't find submission %d "
-                            "in the database" % submission_id)
-            return
+            if submission is None:
+                logger.critical("[action_finished] Couldn't find submission %d "
+                                "in the database" % submission_id)
+                return
 
-        if data == False:
-            # Action was not successful, we requeue if we did not
-            # already tried too many times.
+            if data == False:
+                # Action was not successful, we requeue if we did not
+                # already tried too many times.
+                logger.info("Action %s for submission %s completed "
+                            "unsuccessfully" % (job_type, submission_id))
+                if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
+                    if compilation_tries > \
+                            EvaluationServer.MAX_COMPILATION_TRIES:
+                        logger.error("Maximum tries reached for the "
+                                     "compilation of submission %s. I will not "
+                                     "try again" % submission_id)
+                    else:
+                        self.queue.push(job, priority, timestamp)
+                elif job_type == EvaluationServer.JOB_TYPE_EVALUATION:
+                    if evaluation_tries > \
+                            EvaluationServer.MAX_EVALUATION_TRIES:
+                        logger.error("Maximum tries reached for the "
+                                     "evaluation of submission %s. I will not "
+                                     "try again" % submission_id)
+                    else:
+                        self.queue.push(job, priority, timestamp)
+                else:
+                    logger.error("Invalid job type %s" % repr(job_type))
+                    return
+
+            # The action was successful.
             logger.info("Action %s for submission %s completed "
-                        "unsuccessfully" % (job_type, submission_id))
+                        "successfully" % (job_type, submission_id))
+
             if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
-                if compilation_tries > \
-                   EvaluationServer.MAX_COMPILATION_TRIES:
-                    logger.error("Maximum tries reached for the "
-                                 "compilation of submission %s. I will not "
-                                 "try again" % submission_id)
+                if compilation_outcome == "ok":
+                    # Compilation was ok, so we evaluate.
+                    priority = EvaluationServer.JOB_PRIORITY_LOW
+                    if tokened:
+                        priority = EvaluationServer.JOB_PRIORITY_MEDIUM
+                    self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
+                                     submission_id), priority, timestamp)
+                elif compilation_outcome == "fail":
+                    # If instead submission failed compilation, we don't
+                    # evaluate.
+                    logger.info("Submission %s did not compile. Not going "
+                                "to evaluate." % submission_id)
                 else:
-                    self.queue.push(job, priority, timestamp)
+                    logger.error("Compilation outcome %s not recognized." %
+                                 repr(compilation_outcome))
+
             elif job_type == EvaluationServer.JOB_TYPE_EVALUATION:
-                if evaluation_tries > \
-                   EvaluationServer.MAX_EVALUATION_TRIES:
-                    logger.error("Maximum tries reached for the "
-                                 "evaluation of submission %s. I will not "
-                                 "try again" % submission_id)
-                else:
-                    self.queue.push(job, priority, timestamp)
+                # Evaluation successful, we update the score
+                logger.info("Evaluation succeeded for submission %s" %
+                            submission_id)
+                scorer = submission.task.get_scorer()
+                scorer.add_submission(submission)
+                # TODO: uncomment when implemented
+                # self.contest.update_ranking_view()
+
             else:
                 logger.error("Invalid job type %s" % repr(job_type))
-            return
-
-        # The action was successful.
-        logger.info("Action %s for submission %s completed "
-                    "successfully" % (job_type, submission_id))
-
-        if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
-            if compilation_outcome == "ok":
-                # Compilation was ok, so we evaluate.
-                priority = EvaluationServer.JOB_PRIORITY_LOW
-                if tokened:
-                    priority = EvaluationServer.JOB_PRIORITY_MEDIUM
-                self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
-                                submission_id), priority, timestamp)
-            elif compilation_outcome == "fail":
-                # If instead submission failed compilation, we don't
-                # evaluate.
-                logger.info("Submission %s did not compile. Not going "
-                            "to evaluate." % submission_id)
-            else:
-                logger.error("Compilation outcome %s not recognized." %
-                             repr(compilation_outcome))
-
-        elif job_type == EvaluationServer.JOB_TYPE_EVALUATION:
-            # Evaluation successful, we update the score
-            logger.info("Evaluation succeeded for submission %s" %
-                        submission_id)
-            scorer = submission.task.scorer
-            scorer.add_submission(submission)
-            # TODO: uncomment when implemented
-            # self.contest.update_ranking_view()
-
-        else:
-            logger.error("Invalid job type %s" % repr(job_type))
 
     @rpc_method
     def new_submission(self, submission_id):
