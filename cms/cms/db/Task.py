@@ -26,6 +26,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Contest import Contest
+from cms.service.ScoreType import ScoreTypes
 
 class Task(Base):
     __tablename__ = 'tasks'
@@ -47,13 +48,15 @@ class Task(Base):
     token_min_interval = Column(Float, nullable=False)
     token_gen_time = Column(Float, nullable=False)
 
-    #submission_format (backref) FIXME Backref is to the object, not the format
-    #public_testcases (backref) FIXME Backref is to the object, not the number
+    #submission_format (backref)
+    #public_testcases (backref)
     #testcases (backref)
     #attachments (backref)
     #managers (backref)
     contest = relationship(Contest,
                            backref=backref('tasks', collection_class=ordering_list('num'), order_by=[num]))
+
+    scorer = None
 
     TASK_TYPE_BATCH = "TaskTypeBatch"
     TASK_TYPE_PROGRAMMING = "TaskTypeProgramming"
@@ -83,8 +86,6 @@ class Task(Base):
         self.managers = managers
         self.score_type = score_type
         self.score_parameters = score_parameters
-        #self.scorer = ScoreTypes.get_score_type_class(score_type,
-        #                                              score_parameters)
         self.testcases = testcases
         self.public_testcases = public_testcases
         self.token_initial = token_initial
@@ -96,6 +97,11 @@ class Task(Base):
 
     #def valid_submission(self, files):
     #    return True
+
+    def get_scorer(self):
+        if self.scorer is None:
+            self.scorer = ScoreTypes.get_score_type(self.score_type, self.score_parameters)
+        return self.scorer
 
 class Testcase(Base):
     __tablename__ = 'task_testcases'
