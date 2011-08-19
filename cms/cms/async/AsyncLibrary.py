@@ -941,8 +941,9 @@ class Logger:
 
 logger = Logger()
 
-
-async_lock = threading.Lock()
+# Use a reentrant lock, so the same thread can obtain more than one
+# lock
+async_lock = threading.RLock()
 
 
 def sync_call(function, args,

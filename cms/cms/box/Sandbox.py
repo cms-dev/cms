@@ -27,7 +27,7 @@ import tempfile
 import stat
 import select
 
-from cms.async.AsyncLibrary import logger
+from cms.async.AsyncLibrary import logger, async_lock
 from cms.async import ServiceCoord
 from cms.service.FileStorage import FileCacher
 
@@ -235,7 +235,8 @@ class Sandbox:
 
     def create_file_from_storage(self, path, digest, executable = False):
         fd = self.create_file(path, executable)
-        self.FC.get_file_to_write_file(digest, fd, sync=True)
+        with async_lock:
+            self.FC.get_file_to_write_file(digest, fd, sync=True)
         fd.close()
 
     def create_file_from_string(self, path, content, executable = False):
@@ -264,7 +265,8 @@ class Sandbox:
 
     def get_file_to_storage(self, path, description = ""):
         fd = self.get_file(path)
-        digest = self.FC.put_file_from_file(fd, description, sync=True)
+        with async_lock:
+            digest = self.FC.put_file_from_file(fd, description, sync=True)
         fd.close()
         return digest
 
