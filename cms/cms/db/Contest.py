@@ -93,9 +93,9 @@ class Contest(Base):
         self.token_gen_number = token_gen_number
         self.start = start
         self.stop = stop
+        if announcements == None:
+            announcements = []
         self.announcements = announcements
-        if self.announcements == None:
-            self.announcement = []
         self.ranking_view = ranking_view
 
     #def update_ranking_view(self):

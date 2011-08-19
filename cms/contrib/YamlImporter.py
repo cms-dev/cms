@@ -70,6 +70,7 @@ class YamlImporter(Service):
         params["token_total"] = conf.get("token_total", 0)
         params["token_min_interval"] = conf.get("token_min_interval", 0)
         params["token_gen_time"] = conf.get("token_gen_time", 1)
+        params["token_gen_number"] = conf.get("token_gen_number", 1)
         if self.modif == 'zero_time':
             params["start"] = 0
             params["stop"] = 0
