@@ -47,9 +47,10 @@ from cms.async import ServiceCoord
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
                                  Submission, Task, File
 
+from cms.db.Utils import ask_for_contest
+
 import cms.util.Configuration as Configuration
 import cms.util.WebConfig as WebConfig
-import cms.util.Utils as Utils
 import cms.server.BusinessLayer as BusinessLayer
 
 
@@ -556,4 +557,4 @@ if __name__ == "__main__":
         print sys.argv[0], "shard [contest]"
         exit(1)
     ContestWebServer(int(sys.argv[1]),
-                     Utils.ask_for_contest(1)).run()
+                     ask_for_contest(1)).run()

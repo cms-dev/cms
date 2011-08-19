@@ -33,7 +33,7 @@ import heapq
 
 from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback, logger
 from cms.async import ServiceCoord, get_service_shards
-import cms.util.Utils as Utils
+from cms.db.Utils import ask_for_contest
 
 from cms.db.SQLAlchemyAll import Session, Contest, Submission, SessionGen
 
@@ -589,4 +589,4 @@ if __name__ == "__main__":
         print sys.argv[0], "shard [contest]"
     else:
         EvaluationServer(int(sys.argv[1]),
-                         Utils.ask_for_contest(1)).run()
+                         ask_for_contest(1)).run()
