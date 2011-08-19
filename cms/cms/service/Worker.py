@@ -55,6 +55,9 @@ class Worker(Service):
 
         return (submission, task_type)
 
+    # FIXME - There is far too common code among compile() and
+    # evaluate() that should be deduplicated
+
     @rpc_method
     @rpc_threaded
     def compile(self, submission_id):

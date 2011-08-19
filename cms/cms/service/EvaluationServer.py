@@ -557,6 +557,9 @@ class EvaluationServer(Service):
             tokened = submission.tokened()
             timestamp = submission.timestamp
 
+        # TODO - Probably some code duplication here can be solved
+        # calling action_finished on a submission already compiled (or
+        # already evaluated)
         if compilation_outcome == None:
             # If not compiled, I compile
             self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION,
