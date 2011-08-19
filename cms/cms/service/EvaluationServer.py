@@ -261,7 +261,7 @@ class WorkerPool:
             logger.info("Worker %d released and disabled" % shard)
             return True
         else:
-            self.worker[shard] = self.WORKER_INACTIVE
+            self.job[shard] = self.WORKER_INACTIVE
             logger.debug("Worker %d released" % shard)
             return False
 
@@ -379,7 +379,7 @@ class EvaluationServer(Service):
             contest = session.query(Contest).\
                       filter_by(id=contest).first()
             logger.info("Loaded contest %s" % contest.name)
-            submission_ids = map(lambda x: x.id, contest.get_submissions(session))
+            submission_ids = [x.id for x in contest.get_submissions(session)]
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
@@ -396,8 +396,9 @@ class EvaluationServer(Service):
 
         # Submit to compilation all the submissions already in DB
         # TODO - Make this configurable
-        for sid in submission_ids:
-            self.new_submission(sid)
+        for submission_id in submission_ids:
+            print submission_id
+            self.new_submission(submission_id)
 
         self.dispatch_jobs()
 
@@ -551,11 +552,31 @@ class EvaluationServer(Service):
         """
         with SessionGen() as session:
             submission = Submission.get_from_id(submission_id, session)
+            compilation_outcome = submission.compilation_outcome
+            tokened = submission.tokened()
             timestamp = submission.timestamp
-        self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION,
-                         submission_id),
-                        EvaluationServer.JOB_PRIORITY_HIGH,
-                        timestamp)
+
+        if compilation_outcome == None:
+            # If not compiled, I compile
+            self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION,
+                             submission_id),
+                            EvaluationServer.JOB_PRIORITY_HIGH,
+                            timestamp)
+        elif compilation_outcome == "ok":
+            # If compiled correctly, I evaluate
+            priority = EvaluationServer.JOB_PRIORITY_LOW
+            if tokened:
+                priority = EvaluationServer.JOB_PRIORITY_MEDIUM
+            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
+                             submission_id),
+                            priority,
+                            timestamp)
+        elif compilation_outcome == "fail":
+            # If compilation was unsuccessful, I do nothing
+            pass
+        else:
+            logger.error("Compilation outcome for submission %s is %s." %
+                         (submission_id, str(compilation_outcome)))
 
 
 if __name__ == "__main__":
