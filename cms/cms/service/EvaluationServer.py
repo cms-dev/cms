@@ -372,7 +372,7 @@ class EvaluationServer(Service):
     CHECK_DISPATCH_TIME = 2.0
 
     def __init__(self, shard, contest):
-        logger.initialize(ServiceCoord("EvaluationService", shard))
+        logger.initialize(ServiceCoord("EvaluationServer", shard))
         Service.__init__(self, shard)
 
         with SessionGen() as session:
