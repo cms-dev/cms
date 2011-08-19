@@ -556,7 +556,7 @@ class EvaluationServer(Service):
             tokened = submission.tokened()
             timestamp = submission.timestamp
 
-        if compilation_outcome == "":
+        if compilation_outcome == None:
             # If not compiled, I compile
             self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION,
                              submission_id),
