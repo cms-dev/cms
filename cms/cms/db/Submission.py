@@ -115,6 +115,8 @@ class Submission(Base):
                                      correct_file,
                                      self))
                     session.delete(self.files[submitted_file])
+                    del self.files[submitted_file]
+                    # TODO: was there a better way than add-delete-del?
                 else:
                     return (False, "Could not detect submission language")
             else:
