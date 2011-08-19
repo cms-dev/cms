@@ -261,7 +261,7 @@ class WorkerPool:
             logger.info("Worker %d released and disabled" % shard)
             return True
         else:
-            self.worker[shard] = self.WORKER_INACTIVE
+            self.job[shard] = self.WORKER_INACTIVE
             logger.debug("Worker %d released" % shard)
             return False
 
