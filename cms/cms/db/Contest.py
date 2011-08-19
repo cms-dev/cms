@@ -136,7 +136,10 @@ class Announcement(Base):
                                    onupdate="CASCADE",
                                    ondelete="CASCADE"),
                         nullable=False)
-    contest = relationship(Contest, backref=backref('announcements'))
+    contest = relationship(Contest,
+                           backref=backref('announcements',
+                                           single_parent=True,
+                                           cascade="all, delete, delete-orphan"))
 
     # Time, subject and text of the announcements.
     timestamp = Column(Integer, nullable=False)

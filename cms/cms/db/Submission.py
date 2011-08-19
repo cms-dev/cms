@@ -51,7 +51,10 @@ class Submission(Base):
                      ForeignKey(User.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
                      nullable=False)
-    user = relationship(User, backref=backref("tokens"))
+    user = relationship(User,
+                        backref=backref("tokens",
+                                        single_parent=True,
+                                        cascade="all, delete, delete-orphan"))
 
     # Task (id and object) of the submission.
     task_id = Column(Integer,
@@ -216,8 +219,12 @@ class Token(Base):
                            ForeignKey(Submission.id,
                                       onupdate="CASCADE", ondelete="CASCADE"),
                            nullable=False)
-    submission = relationship(Submission, backref=backref("token_timestamp",
-                                                          uselist=False))
+    submission = relationship(Submission,
+                              backref=backref("token_timestamp",
+                                              uselist=False,
+                                              single_parent=True,
+                                              cascade="all, delete, delete-orphan"),
+                              single_parent=True)
 
     # Time the token was played.
     timestamp = Column(Integer, nullable=False)
@@ -252,7 +259,9 @@ class File(Base):
     submission = relationship(
         Submission,
         backref=backref('files',
-                        collection_class=column_mapped_collection(filename)))
+                        collection_class=column_mapped_collection(filename),
+                        single_parent=True,
+                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, digest, filename=None, submission=None):
         self.filename = filename
@@ -283,7 +292,9 @@ class Executable(Base):
     submission = relationship(
         Submission,
         backref=backref('executables',
-                        collection_class=column_mapped_collection(filename)))
+                        collection_class=column_mapped_collection(filename),
+                        single_parent=True,
+                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, digest, filename=None, submission=None):
         self.filename = filename
@@ -313,7 +324,10 @@ class Evaluation(Base):
     submission = relationship(
         Submission,
         backref=backref('evaluations',
-                        collection_class=ordering_list('num'), order_by=[num]))
+                        collection_class=ordering_list('num'),
+                        order_by=[num],
+                        single_parent=True,
+                        cascade="all, delete, delete-orphan"))
 
     # String containing output from the grader (usually "Correct",
     # "Time limit", ...).

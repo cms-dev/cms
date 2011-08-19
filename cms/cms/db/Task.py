@@ -54,7 +54,11 @@ class Task(Base):
     #attachments (backref)
     #managers (backref)
     contest = relationship(Contest,
-                           backref=backref('tasks', collection_class=ordering_list('num'), order_by=[num]))
+                           backref=backref('tasks',
+                                           collection_class=ordering_list('num'),
+                                           order_by=[num],
+                                           single_parent=True,
+                                           cascade="all, delete, delete-orphan"))
 
     scorer = None
 
@@ -113,7 +117,11 @@ class Testcase(Base):
     task_id = Column(Integer, ForeignKey(Task.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
 
     task = relationship(Task,
-                        backref=backref('testcases', collection_class=ordering_list('num'), order_by=[num]))
+                        backref=backref('testcases',
+                                        collection_class=ordering_list('num'),
+                                        order_by=[num],
+                                        single_parent=True,
+                                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, input, output, num=None, task=None):
         self.input = input
@@ -130,7 +138,10 @@ class Attachment(Base):
     digest = Column(String, nullable=False)
 
     task = relationship(Task,
-                        backref=backref('attachments', collection_class=column_mapped_collection(filename)))
+                        backref=backref('attachments',
+                                        collection_class=column_mapped_collection(filename),
+                                        single_parent=True,
+                                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, digest, filename=None, task=None):
         self.filename = filename
@@ -146,7 +157,10 @@ class Manager(Base):
     digest = Column(String, nullable=False)
 
     task = relationship(Task,
-                        backref=backref('managers', collection_class=column_mapped_collection(filename)))
+                        backref=backref('managers',
+                                        collection_class=column_mapped_collection(filename),
+                                        single_parent=True,
+                                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, digest, filename=None, task=None):
         self.filename = filename
@@ -161,7 +175,9 @@ class PublicTestcase(Base):
     testcase = Column(Integer, nullable=False)
 
     task = relationship(Task,
-                        backref=backref('public_testcases'))
+                        backref=backref('public_testcases',
+                                        single_parent=True,
+                                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, testcase, task=None):
         self.testcase = testcase
@@ -175,7 +191,9 @@ class SubmissionFormatElement(Base):
     filename = Column(String)
 
     task = relationship(Task,
-                        backref=backref('submission_format'))
+                        backref=backref('submission_format',
+                                        single_parent=True,
+                                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, filename, task=None):
         self.filename = filename
