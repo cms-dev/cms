@@ -815,14 +815,28 @@ class Logger:
 
     """
 
+    CRITICAL = "CRITICAL"
+    ERROR    = "ERROR   "
+    WARNING  = "WARNING "
+    INFO     = "INFO    "
+    DEBUG    = "DEBUG   "
+
+    ANSI_FG_COLORS = {'black': 30,
+                      'red': 31,
+                      'green': 32,
+                      'yellow': 33,
+                      'blue': 34,
+                      'magenta': 35,
+                      'cyan': 36,
+                      'white': 37}
+
+    SEVERITY_COLORS = {CRITICAL: 'red',
+                       ERROR:    'red',
+                       WARNING:  'yellow',
+                       INFO:     'green',
+                       DEBUG:    'cyan'}
 
     def __init__(self):
-        Logger.CRITICAL = "CRITICAL"
-        Logger.ERROR    = "ERROR   "
-        Logger.WARNING  = "WARNING "
-        Logger.INFO     = "INFO    "
-        Logger.DEBUG    = "DEBUG   "
-
         Logger.TO_STORE = [
             Logger.CRITICAL,
             Logger.ERROR,
@@ -881,9 +895,10 @@ class Logger:
             operation = self.operation
 
         log = self.format_log(msg, operation, severity, timestamp)
+        color_log = self.format_log(msg, operation, severity, timestamp, colors=True)
 
         if severity in Logger.TO_DISPLAY:
-            print log
+            print color_log
         if severity in Logger.TO_STORE:
             print >> self._log_file, log
         if severity in Logger.TO_SEND:
@@ -919,7 +934,7 @@ class Logger:
         """
         return self.log(msg, operation, Logger.CRITICAL, timestamp)
 
-    def format_log(self, msg, operation, severity, timestamp):
+    def format_log(self, msg, operation, severity, timestamp, colors=False):
         """Format a log message in a common way (for local and remote
         logging).
 
@@ -929,20 +944,28 @@ class Logger:
         severity (string): a constant defined in Logger
         timestamp (float): seconds from epoch
         returns (string): the formatted log
+        colors (bool): whether to use ANSI color commands (for the logs
+                       directed to a shell)
 
         """
         d = datetime.datetime.fromtimestamp(timestamp)
         service_full = repr(self._my_coord)
         if operation != "":
             service_full += "/%s" % (operation)
-        return "%s - %s [%s] %s" % ('{0:%Y/%m/%d %H:%M:%S}'.format(d),
-                                    severity, service_full, msg)
+        if colors:
+            format_string = "\033[1;%dm%%s - %%s\033[0m [%%s] %%s" % \
+                (Logger.ANSI_FG_COLORS[Logger.SEVERITY_COLORS[severity]])
+        else:
+            format_string = "%s - %s [%s] %s"
+        return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(d),
+                                severity, service_full, msg)
 
 
 logger = Logger()
 
-
-async_lock = threading.Lock()
+# Use a reentrant lock, so the same thread can obtain more than one
+# lock
+async_lock = threading.RLock()
 
 
 def sync_call(function, args,
