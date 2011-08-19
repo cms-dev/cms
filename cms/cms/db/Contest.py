@@ -72,7 +72,7 @@ class Contest(Base):
     # ranking_view (RankingView object)
     # users (list of User objects)
 
-    # Moreover, we have the following method.
+    # Moreover, we have the following methods.
     # get_submissions (defined in SQLAlchemyAll)
     # create_empty_ranking_view (defined in SQLAlchemyAll)
     # update_ranking_view (defined in SQLAlchemyAll)

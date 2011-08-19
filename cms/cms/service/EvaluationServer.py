@@ -553,9 +553,10 @@ class EvaluationServer(Service):
         """
         with SessionGen() as session:
             submission = Submission.get_from_id(submission_id, session)
+            timestamp = submission.timestamp
             compilation_outcome = submission.compilation_outcome
             tokened = submission.tokened()
-            timestamp = submission.timestamp
+            evaluated = submission.evaluated()
 
         # TODO - Probably some code duplication here can be solved
         # calling action_finished on a submission already compiled (or
@@ -567,14 +568,15 @@ class EvaluationServer(Service):
                             EvaluationServer.JOB_PRIORITY_HIGH,
                             timestamp)
         elif compilation_outcome == "ok":
-            # If compiled correctly, I evaluate
-            priority = EvaluationServer.JOB_PRIORITY_LOW
-            if tokened:
-                priority = EvaluationServer.JOB_PRIORITY_MEDIUM
-            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
-                             submission_id),
-                            priority,
-                            timestamp)
+            # If compiled correctly and it is not evaluated, do it
+            if not evaluated:
+                priority = EvaluationServer.JOB_PRIORITY_LOW
+                if tokened:
+                    priority = EvaluationServer.JOB_PRIORITY_MEDIUM
+                    self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
+                                     submission_id),
+                                    priority,
+                                    timestamp)
         elif compilation_outcome == "fail":
             # If compilation was unsuccessful, I do nothing
             pass

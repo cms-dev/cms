@@ -120,6 +120,14 @@ class Submission(Base):
         """
         return self.token_timestamp != None
 
+    def evaluated(self):
+        """Return if the submission has been evaluated.
+
+        returns (bool): True if evaluated, False otherwise.
+
+        """
+        return self.evaluations != []
+
     def invalid(self):
         """Blanks all compilation and evaluation outcomes, so that ES
         will reschedule the submission for compilation.
@@ -179,8 +187,8 @@ class Submission(Base):
                     session.add(File(self.files[submitted_file].digest,
                                      correct_file,
                                      self))
-                    session.delete(self.files[submitted_file])
                     del self.files[submitted_file]
+
                     # TODO: was there a better way than add-delete-del?
                 else:
                     return (False, "Could not detect submission language")
