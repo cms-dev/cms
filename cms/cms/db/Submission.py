@@ -41,6 +41,7 @@ class Submission(Base):
     compilation_outcome = Column(String, nullable=True)
     compilation_text = Column(String, nullable=True)
     compilation_tries = Column(Integer, nullable=False)
+    evaluation_tries = Column(Integer, nullable=False)
 
     #evaluations (backref)
     #files (backref)
@@ -53,52 +54,34 @@ class Submission(Base):
 
     def __init__(self, user, task, timestamp, files,
                  compilation_outcome = None, evaluation_outcome = None,
-                 executables = None,
+                 executables = {},
                  compilation_text = None, evaluation_text = None,
                  compilation_tries = 0, evaluation_tries = 0,
                  token_timestamp = None):
         self.user = user
         self.task = task
         self.timestamp = timestamp
-#        self.files = files
+        self.files = files
         self.compilation_outcome = compilation_outcome
         self.evaluation_outcome = evaluation_outcome
-#        self.executables = executables
+        self.executables = executables
         self.compilation_text = compilation_text
         self.evaluation_text = evaluation_text
         self.compilation_tries = compilation_tries
         self.evaluation_tries = evaluation_tries
-#        self.token_timestamp = token_timestamp
+        self.token_timestamp = token_timestamp
 
-    #def tokened(self):
-    #    return self.token_timestamp != None
+    def tokened(self):
+        return self.token_timestamp != None
 
-    #def invalid(self):
-    #    retry = True
-    #    while retry:
-    #        retry = False
-    #        self.compilation_outcome = None
-    #        self.evaluation_outcome = None
-    #        self.compilation_text = None
-    #        self.evaluation_text = None
-    #        self.executables = None
-    #        try:
-    #            self.to_couch()
-    #        except ResourceConflict:
-    #            self.refresh()
-    #            retry = True
+    def invalid(self):
+        self.compilation_outcome = None
+        self.compilation_text = None
+        self.evaluations = []
+        self.executables = {}
 
-    #def invalid_evaluation(self):
-    #    retry = True
-    #    while retry:
-    #        retry = False
-    #        self.evaluation_outcome = None
-    #        self.evaluation_text = None
-    #        try:
-    #            self.to_couch()
-    #        except ResourceConflict:
-    #            self.refresh()
-    #            retry = True
+    def invalid_evaluation(self):
+        self.evaluations = []
 
     def verify_source(self, session):
         if len(self.files) != len(self.task.submission_format):
