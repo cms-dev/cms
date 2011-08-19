@@ -40,7 +40,8 @@ class RankingView(Base):
                            backref=backref("ranking_view",
                                            uselist=False,
                                            single_parent=True,
-                                           cascade="all, delete, delete-orphan"))
+                                           cascade="all, delete, delete-orphan"),
+                           single_parent=True)
 
     def __init__(self, contest, timestamp=0.0):
         self.contest = contest

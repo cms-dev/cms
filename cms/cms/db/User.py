@@ -40,7 +40,10 @@ class User(Base):
     #messages (backref)
     #questions (backref)
     #tokens (backref)
-    contest = relationship(Contest, backref=backref("users"))
+    contest = relationship(Contest,
+                           backref=backref("users",
+                                           single_parent=True,
+                                           cascade="all, delete, delete-orphan"))
 
     def __init__(self, username, password,
                  real_name, ip, time_zone = 0.0, contest=None, tokens = [], 
@@ -65,7 +68,10 @@ class Message(Base):
     subject = Column(String, nullable=False)
     text = Column(String, nullable=False)
 
-    user = relationship(User, backref=backref('messages'))
+    user = relationship(User,
+                        backref=backref('messages',
+                                        single_parent=True,
+                                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, timestamp, subject, text, user=None):
         self.timestamp = timestamp
@@ -85,7 +91,10 @@ class Question(Base):
     short_reply = Column(String, nullable=True)
     long_reply = Column(String, nullable=True)
 
-    user = relationship(User, backref=backref('questions'))
+    user = relationship(User,
+                        backref=backref('questions',
+                                        single_parent=True,
+                                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, question_timestamp, subject, text,
                  reply_timestamp=None, short_reply=None, long_reply=None,

@@ -74,6 +74,8 @@ class Contest(Base):
 
     # Moreover, we have the following method.
     # get_submissions (defined in SQLAlchemyAll)
+    # create_empty_ranking_view (defined in SQLAlchemyAll)
+    # update_ranking_view (defined in SQLAlchemyAll)
 
     def __init__(self, name, description, tasks, users,
                  token_initial, token_max, token_total,
@@ -98,35 +100,24 @@ class Contest(Base):
         self.announcements = announcements
         self.ranking_view = ranking_view
 
-    #def update_ranking_view(self):
-    #    self.ranking_view.scores = {}
-    #    for user in self.users:
-    #        self.ranking_view.scores[user.username] = []
-    #        for task in self.tasks:
-    #            score = task.scorer.scores.get(user.username, 0.0)
-    #            self.ranking_view.scores[user.username].append(score)
-    #    # This to_couch() call should never fail, because only
-    #    # Evaluation Server modifies the ranking view
-    #    self.ranking_view.to_couch()
+    def get_task(self, task_name):
+        """
+        Returns the first task in the contest with the given name.
+        """
+        for t in self.tasks:
+            if t.name == task_name:
+                return t
+        raise KeyError("Task not found")
 
-    #def get_task(self, task_name):
-    #    """
-    #    Returns the first task in the contest with the given name.
-    #    """
-    #    for t in self.tasks:
-    #        if t.name == task_name:
-    #            return t
-    #    raise KeyError("Task not found")
-
-    #def get_task_index(self, task_name):
-    #    """
-    #    Returns the index of the first task in the contest with the
-    #    given name.
-    #    """
-    #    for i, t in enumerate(self.tasks):
-    #        if t.name == task_name:
-    #            return i
-    #    raise KeyError("Task not found")
+    def get_task_index(self, task_name):
+        """
+        Returns the index of the first task in the contest with the
+        given name.
+        """
+        for i, t in enumerate(self.tasks):
+            if t.name == task_name:
+                return i
+        raise KeyError("Task not found")
 
 
 class Announcement(Base):
@@ -145,7 +136,10 @@ class Announcement(Base):
                                    onupdate="CASCADE",
                                    ondelete="CASCADE"),
                         nullable=False)
-    contest = relationship(Contest, backref=backref('announcements'))
+    contest = relationship(Contest,
+                           backref=backref('announcements',
+                                           single_parent=True,
+                                           cascade="all, delete, delete-orphan"))
 
     # Time, subject and text of the announcements.
     timestamp = Column(Integer, nullable=False)

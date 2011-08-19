@@ -55,7 +55,9 @@ class Task(Base):
     contest = relationship(
         Contest,
         backref=backref('tasks',
-                        collection_class=ordering_list('num'), order_by=[num]))
+                        collection_class=ordering_list('num'), order_by=[num],
+                        single_parent=True,
+                        cascade="all, delete, delete-orphan"))
 
     # Short name and long human readable title of the task.
     name = Column(String, nullable=False)
@@ -178,7 +180,9 @@ class Testcase(Base):
     task = relationship(
         Task,
         backref=backref('testcases',
-                        collection_class=ordering_list('num'), order_by=[num]))
+                        collection_class=ordering_list('num'), order_by=[num],
+                        single_parent=True,
+                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, input, output, num=None, task=None):
         self.input = input
@@ -210,7 +214,9 @@ class Attachment(Base):
     task = relationship(
         Task,
         backref=backref('attachments',
-                        collection_class=column_mapped_collection(filename)))
+                        collection_class=column_mapped_collection(filename),
+                        single_parent=True,
+                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, digest, filename=None, task=None):
         self.filename = filename
@@ -241,7 +247,9 @@ class Manager(Base):
     task = relationship(
         Task,
         backref=backref('managers',
-                        collection_class=column_mapped_collection(filename)))
+                        collection_class=column_mapped_collection(filename),
+                        single_parent=True,
+                        cascade="all, delete, delete-orphan"))
 
     def __init__(self, digest, filename=None, task=None):
         self.filename = filename
@@ -266,7 +274,9 @@ class PublicTestcase(Base):
                                 onupdate="CASCADE", ondelete="CASCADE"),
                      nullable=False)
     task = relationship(Task,
-                        backref=backref('public_testcases'))
+                        backref=backref('public_testcases',
+                                        single_parent=True,
+                                        cascade="all, delete, delete-orphan"))
 
     # Number of the testcase to be made public.
     testcase = Column(Integer, nullable=False)
@@ -294,7 +304,9 @@ class SubmissionFormatElement(Base):
                                 onupdate="CASCADE", ondelete="CASCADE"),
                      nullable=False)
     task = relationship(Task,
-                        backref=backref('submission_format'))
+                        backref=backref('submission_format',
+                                        single_parent=True,
+                                        cascade="all, delete, delete-orphan"))
 
     # Format of the given submission file.
     filename = Column(String)
