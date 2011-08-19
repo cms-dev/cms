@@ -2,3 +2,5 @@
  * Investigate why pressing keys on Worker seems to impact
    the result of an ongoing mo-box.
 
+ * Define appropriate UNIQUE indexes in the database.
+
