@@ -28,6 +28,7 @@ import socket
 import time
 import sys
 import os
+import signal
 import threading
 
 import asyncore
@@ -163,6 +164,7 @@ class Service:
     """
     def __init__(self, shard=0):
         logger.debug("Service.__init__")
+        signal.signal(signal.SIGINT, lambda x, y: self.exit())
         self.shard = shard
         # Stores the function to call periodically. Format: function
         # -> [plus_obj, interval_in_seconds, time of last call]
@@ -229,6 +231,7 @@ class Service:
 
         """
         self._exit = True
+        logger.warning("%s %d dying in 3, 2, 1..." % self._my_coord)
 
     def run(self):
         """Starts the main loop of the service.
@@ -866,6 +869,7 @@ class Logger:
             os.path.join("logs", "%d-%s-%d.local-log" %
                          (time.time(), service.name, service.shard)),
             "w", "utf-8")
+        self.info("%s %d up and running!" % service)
 
 
     def log(self, msg, operation=None, severity=None, timestamp=None):

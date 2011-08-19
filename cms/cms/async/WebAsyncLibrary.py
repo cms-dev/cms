@@ -155,6 +155,14 @@ class WebService(Service):
         http_server.listen(listen_port)
         self.instance = tornado.ioloop.IOLoop.instance()
 
+    def exit(self):
+        """Terminate the service at the next step.
+
+        """
+        self.instance.stop()
+        self._exit = True
+        logger.warning("%s %d dying in 3, 2, 1..." % self._my_coord)
+
     def run(self):
         """Starts the tornado server (hence the tornado and asyncore
         loops).
