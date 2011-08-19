@@ -100,7 +100,7 @@ class Task(Base):
 
     def get_scorer(self):
         if self.scorer is None:
-            self.scorer = ScoreTypes.get_score_type(self.score_type, self.score_parameters)
+            self.scorer = ScoreTypes.get_score_type(self.score_type, self.score_parameters, len(self.testcases))
         return self.scorer
 
 class Testcase(Base):

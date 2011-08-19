@@ -74,6 +74,7 @@ class Worker(Service):
                     (submission, task_type) = self.get_submission_data(submission_id)
 
                     # Do the actual work
+                    success = False
                     try:
                         success = task_type.compile()
                     except Exception as e:
@@ -82,7 +83,8 @@ class Worker(Service):
                             logger.error(err_msg)
                         raise JobException(err_msg)
 
-                    self.session.commit()
+                    if success:
+                        self.session.commit()
                     with async_lock:
                         logger.info("Request finished")
                     return success
@@ -118,6 +120,7 @@ class Worker(Service):
                     (submission, task_type) = self.get_submission_data(submission_id)
 
                     # Do the actual work
+                    success = False
                     try:
                         success = task_type.execute()
                     except Exception as e:
@@ -126,7 +129,8 @@ class Worker(Service):
                             logger.error(err_msg)
                         raise JobException(err_msg)
 
-                    self.session.commit()
+                    if success:
+                        self.session.commit()
                     with async_lock:
                         logger.info("Request finished")
                     return success

@@ -43,17 +43,17 @@ class ScoreTypes:
     SCORE_TYPE_RELATIVE = "ScoreTypeRelative"
 
     @staticmethod
-    def get_score_type(score_type, score_parameters):
+    def get_score_type(score_type, score_parameters, eval_num):
         """Returns the right score type class for a given string.
         """
         if score_type == ScoreTypes.SCORE_TYPE_SUM:
-            return ScoreTypeSum(score_parameters)
+            return ScoreTypeSum(score_parameters, eval_num)
         elif score_type == ScoreTypes.SCORE_TYPE_GROUP_MIN:
-            return ScoreTypeGroupMin(score_parameters)
+            return ScoreTypeGroupMin(score_parameters, eval_num)
         elif score_type == ScoreTypes.SCORE_TYPE_GROUP_MUL:
-            return ScoreTypeGroupMul(score_parameters)
+            return ScoreTypeGroupMul(score_parameters, eval_num)
         elif score_type == ScoreTypes.SCORE_TYPE_RELATIVE:
-            return ScoreTypeRelative(score_parameters)
+            return ScoreTypeRelative(score_parameters, eval_num)
         else:
             raise KeyError
 
@@ -63,11 +63,12 @@ class ScoreTypeAlone:
     depends only on the submission.
     """
 
-    def __init__(self, parameters):
+    def __init__(self, parameters, eval_num):
         self.scores = {}
         self.submission_scores = {}
         self.parameters = parameters
         self.submissions = {}
+        self.eval_num = eval_num
 
     def add_submission(self, submission):
         """To call in order to add a submission to the computation of
@@ -109,9 +110,8 @@ class ScoreTypeAlone:
         username = submission.user.username
         if username not in self.submission_scores or \
                 self.submission_scores[username] == None:
-            self.submission_scores[username] = {submission.couch_id: score}
-        else:
-            self.submission_scores[username][submission.couch_id] = score
+            self.submission_scores[username] = {}
+        self.submission_scores[username][submission.id] = score
 
     def _sort_submissions(self, username):
         """Utility internal method to sort submissions of a user by
@@ -130,11 +130,11 @@ class ScoreTypeAlone:
         for s in submissions:
             if s.token_timestamp != None:
                 score = max(score,
-                            self.submission_scores[username][s.couch_id])
+                            self.submission_scores[username][s.id])
         if submissions != []:
             score = \
                 max(score,
-                    self.submission_scores[username][submissions[-1].couch_id])
+                    self.submission_scores[username][submissions[-1].id])
         self.scores[username] = score
 
     def compute_score(self, submission):
@@ -159,10 +159,10 @@ class ScoreTypeSum(ScoreTypeAlone):
 
         returns (float): the score
         """
-        if submission.evaluation_outcome == None:
-            logger.error("Evaluated submission without outcome!")
+        if len(submission.evaluations) != self.eval_num:
+            logger.error("Some evaluations missing in submission `%d' to score!" % (submission.id))
         else:
-            return sum(submission.evaluation_outcome)
+            return sum(map(lambda x: float(x.outcome), submission.evaluations))
 
 
 class ScoreTypeGroupMin(ScoreTypeAlone):
@@ -231,7 +231,7 @@ class ScoreTypeRelative:
     compared with a "basic" outcome given as a parameter.
     """
 
-    def __init__(self, parameters):
+    def __init__(self, parameters, eval_num):
         """Parameters are a list with the best outcomes found by the
         contest managers.
         """
@@ -241,6 +241,7 @@ class ScoreTypeRelative:
         for p in self.parameters:
             self.best_tokenized_outcomes.append(p)
         self.submissions = {}
+        self.eval_num = eval_num
 
     def add_submission(self, submission):
         """To call in order to add a submission to the computation of

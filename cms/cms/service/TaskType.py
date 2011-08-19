@@ -25,7 +25,7 @@ import codecs
 
 from cms.async.AsyncLibrary import logger, async_lock
 from cms.box.Sandbox import Sandbox
-from cms.db.SQLAlchemyAll import Task, Executable
+from cms.db.SQLAlchemyAll import Task, Executable, Evaluation
 from cms.service import JobException
 from cms.service.Utils import get_compilation_command, filter_ansi_escape
 
@@ -115,8 +115,8 @@ class BatchTaskType:
         self.safe_delete_sandbox()
         if not success:
             return False
-        self.submission.evaluation_outcome[test_number] = outcome
-        self.submission.evaluation_text[test_number] = text
+        self.submission.evaluations[test_number].text = text
+        self.submission.evaluations[test_number].outcome = outcome
         return True
 
     def finish_evaluation(self, success):
@@ -451,10 +451,11 @@ class BatchTaskType:
             return self.finish_evaluation(False)
 
         self.executable_filename = self.submission.executables.keys()[0]
-        self.submission.evaluation_outcome = [None] * len(self.submission.task.testcases)
-        self.submission.evaluation_text = [None] * len(self.submission.task.testcases)
 
-        for test_number in range(len(self.submission.task.testcases)):
+        for test_number in xrange(len(self.submission.evaluations), len(self.submission.task.testcases)):
+                self.session.add(Evaluation(text=None, outcome=None, num=test_number, submission=self.submission))
+
+        for test_number in xrange(len(self.submission.task.testcases)):
             success = self.execute_single(test_number)
             if not success:
                 return self.finish_evaluation(False)

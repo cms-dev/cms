@@ -53,9 +53,9 @@ class Submission(Base):
     LANGUAGES = ["c", "cpp", "pas"]
 
     def __init__(self, user, task, timestamp, files,
-                 compilation_outcome = None, evaluation_outcome = None,
+                 compilation_outcome = None,
                  executables = {},
-                 compilation_text = None, evaluation_text = None,
+                 compilation_text = None, evaluations = [],
                  compilation_tries = 0, evaluation_tries = 0,
                  token_timestamp = None):
         self.user = user
@@ -63,10 +63,9 @@ class Submission(Base):
         self.timestamp = timestamp
         self.files = files
         self.compilation_outcome = compilation_outcome
-        self.evaluation_outcome = evaluation_outcome
         self.executables = executables
         self.compilation_text = compilation_text
-        self.evaluation_text = evaluation_text
+        self.evaluations = evaluations
         self.compilation_tries = compilation_tries
         self.evaluation_tries = evaluation_tries
         self.token_timestamp = token_timestamp
@@ -186,15 +185,15 @@ class Evaluation(Base):
     num = Column(Integer, nullable=False)
     submission_id = Column(Integer, ForeignKey(Submission.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     text = Column(String, nullable=True)
-    evaluation = Column(String, nullable=True)
+    outcome = Column(String, nullable=True)
     tries = Column(Integer, nullable=False)
 
     submission = relationship(Submission,
                               backref=backref('evaluations', collection_class=ordering_list('num'), order_by=[num]))
 
-    def __init__(self, text, evaluation, num=None, submission=None, tries=0):
+    def __init__(self, text, outcome, num=None, submission=None, tries=0):
         self.text = text
-        self.evaluation = evaluation
+        self.outcome = outcome
         self.num = num
         self.submission = submission
         self.tries = tries
