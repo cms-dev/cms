@@ -33,7 +33,10 @@ from cms.util.Utils import analyze_all_tables
 
 class YamlImporter(Service):
 
-    def __init__(self, shard):
+    def __init__(self, shard, drop, modif):
+        self.drop = drop
+        self.modif = modif
+
         logger.initialize(ServiceCoord("YamlImporter", shard))
         logger.debug("YamlImporter.__init__")
         Service.__init__(self, shard)
@@ -45,7 +48,7 @@ class YamlImporter(Service):
             self.exit()
 
 
-    def get_params_for_contest(self, path, zero_time=False):
+    def get_params_for_contest(self, path):
         """Given the path of a contest, extract the data from its
         contest.yaml file, and create a dictionary with the parameter to
         give to the Contest class. Since tasks and users need to be
@@ -67,9 +70,12 @@ class YamlImporter(Service):
         params["token_total"] = conf.get("token_total", 0)
         params["token_min_interval"] = conf.get("token_min_interval", 0)
         params["token_gen_time"] = conf.get("token_gen_time", 1)
-        if zero_time:
+        if self.modif == 'zero_time':
             params["start"] = 0
             params["stop"] = 0
+        elif self.modif == 'test':
+            params["start"] = 0
+            params["stop"] = 2000000000
         else:
             params["start"] = conf.get("inizio", 0)
             params["stop"] = conf.get("fine", 0)
@@ -83,11 +89,15 @@ class YamlImporter(Service):
         """
         params = {}
         params["username"] = user_dict["username"]
-        params["password"] = user_dict["password"]
+        if self.modif == 'test':
+            params["password"] = 'a'
+            params["ip"] = '0.0.0.0'
+        else:
+            params["password"] = user_dict["password"]
+            params["ip"] = user_dict.get("ip", "0.0.0.0")
         name = user_dict.get("nome", "")
         surname = user_dict.get("cognome", user_dict["username"])
         params["real_name"] = " ".join([name, surname])
-        params["ip"] = user_dict.get("ip", "0.0.0.0")
         params["hidden"] = "True" == user_dict.get("fake", "False")
         params["tokens"] = []
         return params
@@ -144,10 +154,10 @@ class YamlImporter(Service):
         return params
 
 
-    def import_contest(self, path, zero_time=False):
+    def import_contest(self, path):
         """Import a contest into the system.
         """
-        params, tasks, users = self.get_params_for_contest(path, zero_time=zero_time)
+        params, tasks, users = self.get_params_for_contest(path)
         params["tasks"] = []
         for task in tasks:
             task_params = self.get_params_for_task(os.path.join(path, task))
@@ -159,11 +169,11 @@ class YamlImporter(Service):
         return Contest(**params)
 
 
-    def do_import(self, dir, drop, zero_time):
-        if drop:
+    def do_import(self, dir):
+        if self.drop:
             metadata.drop_all()
         metadata.create_all()
-        c = self.import_contest(dir, zero_time=zero_time)
+        c = self.import_contest(dir)
         session = Session()
         session.add(c)
         session.flush()
@@ -176,6 +186,9 @@ if __name__ == "__main__":
     parser.add_option("-z", "--zero-time",
                       dest="zero_time", help="set to zero contest start and stop time",
                       default=False, action="store_true")
+    parser.add_option("-t", "--test",
+                      dest="test", help="setup a contest for testing (times: 0, 2*10^9; ips: 0.0.0.0, passwords: a)",
+                      default=False, action="store_true")
     parser.add_option("-d", "--drop",
                       dest="drop", help="drop everything from the database before importing",
                       default=False, action="store_true")
@@ -186,6 +199,14 @@ if __name__ == "__main__":
         parser.error("I need exactly one parameter, the contest directory")
     if options.shard is None:
         parser.error("The `-s' option is mandatory!")
+    if options.test and options.zero_time:
+        parser.error("At most one between `-z' and `-t' can be specified")
 
-    yaml_importer = YamlImporter(shard=options.shard)
-    yaml_importer.do_import(dir=args[0], drop=options.drop, zero_time=options.zero_time)
+    modif = None
+    if options.test:
+        modif = 'test'
+    elif options.zero_time:
+        modif = 'zero_time'
+
+    yaml_importer = YamlImporter(shard=options.shard, drop=options.drop, modif=modif)
+    yaml_importer.do_import(dir=args[0])
