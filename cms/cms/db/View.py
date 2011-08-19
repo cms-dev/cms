@@ -36,9 +36,13 @@ class RankingView(Base):
     timestamp = Column(Float, nullable=False)
 
     #scores (backref)
-    contest = relationship(Contest, backref=backref("ranking_view", uselist=False))
+    contest = relationship(Contest,
+                           backref=backref("ranking_view",
+                                           uselist=False,
+                                           single_parent=True,
+                                           cascade="all, delete, delete-orphan"))
 
-    def __init__(self, contest, timestamp = 0.0):
+    def __init__(self, contest, timestamp=0.0):
         self.contest = contest
         self.timestamp = timestamp
 
@@ -57,7 +61,10 @@ class Score(Base):
     score = Column(Float, nullable=False)
 
     rankingview = relationship(RankingView,
-                               backref=backref("scores", collection_class=mapped_collection(lambda s: (s.user.username, s.task.num))))
+                               backref=backref("scores",
+                                               collection_class=mapped_collection(lambda s: (s.user.username, s.task.num)),
+                                               single_parent=True,
+                                               cascade="all, delete, delete-orphan"))
     task = relationship(Task)
     user = relationship(User)
 
