@@ -184,7 +184,7 @@ class EditContestHandler(BaseHandler):
     def post(self, contest_id):
 
         # FIXME: Behave properly in the future...
-        if self.contest == None or self.contest.id != contest.id:
+        if self.contest == None or self.contest.id != int(contest_id):
           self.write("You changed the selected contest before editing this contest. To avoid unwanted changes, the request has been ignored.")
           return
         if self.get_arguments("name") == []:
