@@ -9,6 +9,8 @@
 *** EvaluationServer
 * Check that there are no concurrence issues, particularly in scoring
   routines.
+* BUG: Scoring doesn't work correctly, because the Task objects get
+  rebuild each time.
 
 *** ContestWebServer
 * It _MUST_ be able to work correctly (storing submitted data) even if
