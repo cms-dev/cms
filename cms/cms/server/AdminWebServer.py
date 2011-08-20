@@ -28,7 +28,7 @@ import time
 
 import tornado.web
 
-from cms.async.AsyncLibrary import logger
+from cms.async.AsyncLibrary import logger, rpc_callback
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 
@@ -133,6 +133,7 @@ class AdminWebServer(WebService):
                             parameters,
                             shard=shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+        self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
 
 
 class MainHandler(BaseHandler):
@@ -353,6 +354,39 @@ class QuestionReplyHandler(BaseHandler):
         self.render("successful_message.html", **r_params)
 
 
+class SubmissionReevaluateHandler(BaseHandler):
+    """Ask ES to reevaluate the specific submission.
+
+    """
+    @contest_required
+    @tornado.web.asynchronous
+    def get(self, submission_id):
+        self.submission_id = submission_id
+        submission = Submission.get_from_id(submission_id, self.sql_session)
+        if submission == None:
+            raise tornado.web.HTTPError(404)
+
+        submission.invalid()
+        self.sql_session.commit()
+        print "A"
+        self.application.service.ES.new_submission(
+            submission_id=submission.id,
+            callback=self.es_notify_callback)
+        print "B"
+
+    @rpc_callback
+    def es_notify_callback(self, data, plus, error=None):
+        print "C"
+        if error == None:
+            r_params = self.render_params()
+            r_params["previous_page"] = "/submissions/details/%s" % \
+                self.submission_id
+            self.render("successful_reevaluation.html", **r_params)
+        else:
+            logger.error("Notification to ES failed: %s." % repr(error))
+            self.finish()
+
+
 handlers = [(r"/",
              MainHandler),
             (r"/announcements",
@@ -365,8 +399,8 @@ handlers = [(r"/",
              EditContestHandler),
             (r"/submissions/details/([a-zA-Z0-9_-]+)",
              SubmissionDetailHandler),
-            # (r"/reevaluate/submission/([a-zA-Z0-9_-]+)",
-            #  SubmissionReevaluateHandler),
+            (r"/reevaluate/submission/([a-zA-Z0-9_-]+)",
+             SubmissionReevaluateHandler),
             # (r"/reevaluate/user/([a-zA-Z0-9_-]+)",
             #  UserReevaluateHandler),
             (r"/add_announcement",

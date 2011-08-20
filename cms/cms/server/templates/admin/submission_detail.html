@@ -30,7 +30,9 @@
   <tr>
     <th>Evaluation<br/>outcome</th>
     <td>
-      {% if submission.evaluations != [] %}
+      {% if submission.compilation_outcome == "fail" %}
+      Ignored
+      {% elif submission.evaluations != [] %}
       <table class="sub_score">
         <tr><th>Nm</th><th>Score</th><th>Details</th></tr>
         {% for i, ev in enumerate(submission.evaluations) %}
@@ -61,6 +63,12 @@
       {% else %}
       Yes
       {% end %}
+    </td>
+  </tr>
+  <tr>
+    <th>Evaluate<br/>again?</th>
+    <td>
+      <a href="/reevaluate/submission/{{submission.id}}">Go ahead!</a>
     </td>
   </tr>
 </table>
