@@ -25,8 +25,6 @@ import os
 import sys
 import codecs
 
-import Configuration
-
 ## ANSI utilities ##
 # see for reference: http://pueblo.sourceforge.net/doc/manual/ansi_color_codes.html
 

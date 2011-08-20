@@ -53,7 +53,7 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
 
 from cms.db.Utils import ask_for_contest
 
-import cms.util.Configuration as Configuration
+from cms import Config
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
 
@@ -475,9 +475,9 @@ class SubmitHandler(BaseHandler):
         # a failure.
         # TODO: Determine when the submission is to be considered accepted
         # and pre-emptively stored.
-        if Configuration.submit_local_copy:
+        if Config.submit_local_copy:
             try:
-                path = os.path.join(Configuration.submit_local_copy_path,
+                path = os.path.join(Config.submit_local_copy_path,
                                     self.current_user.username)
                 if not os.path.exists(path):
                     os.mkdir(path)

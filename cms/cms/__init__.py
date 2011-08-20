@@ -24,7 +24,7 @@
 """
 
 import os
-import simplejson
+import simplejson as json
 
 from cms.async import ServiceCoord, Address, Config
 
@@ -38,7 +38,7 @@ def load_config_file(cmsconf):
 
     """
     # Load config file
-    d = simplejson.load(open(cmsconf))
+    d = json.load(open(cmsconf))
 
     # Put core and test services in Config
     for service in d["core_services"]:
@@ -61,6 +61,7 @@ def load_config_file(cmsconf):
         setattr(Config, key, d[key])
 
 CONFIGURATION_FILES = [os.path.join(".", "examples", "cms.conf"),
+                       os.path.join("/", "etc", "cms.conf"),
                        os.path.join("/", "usr", "local", "etc", "cms.conf")]
 
 for conffile in CONFIGURATION_FILES:

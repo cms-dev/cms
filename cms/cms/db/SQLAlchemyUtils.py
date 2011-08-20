@@ -24,9 +24,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
-import cms.util.Configuration as Configuration
+from cms import Config
 
-db = create_engine(Configuration.sqlalchemy_database, echo=True)
+db = create_engine(Config.database, echo=True)
 
 Base = declarative_base(db)
 metadata = Base.metadata

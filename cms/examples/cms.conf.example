@@ -1,5 +1,7 @@
 {
 
+ "_comment": "There is no way to put comments in a JSON file; the fields starting with _ are meant to be comments",
+
  "core_services":
   {
    "LogService":        [["localhost", 29000]],
@@ -22,6 +24,14 @@
    "WebServiceA":       [["localhost", 37000]]
   },
 
- "process_cmdline": ["/usr/bin/python", "./%s.py", "%d"]
+ "process_cmdline": ["/usr/bin/python", "./%s.py", "%d"],
+
+ "database":         "postgresql://oiisys:ciaociao@localhost/oiisys2",
+ "_database_sqlite": "sqlite:///test.sqlite",
+
+ "maximum_conflict_attempts": 50,
+ "submit_local_copy":	      true,
+ "submit_local_copy_path":    "submissions/"
+
 
 }
