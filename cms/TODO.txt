@@ -1,4 +1,3 @@
-
 *** Database
 * Define appropriate UNIQUE indexes in the database.
 
@@ -13,9 +12,10 @@
 
 *** ContestWebServer
 * It _MUST_ be able to work correctly (storing submitted data) even if
-  no services other than CouchDB and File Storage are available; if
-  CouchDB or File Storage are missing it _MUST_ behave nicely anyway,
-  informing the user to seek assistance and without crashing.
+  no services other than the database and FileStorage are available;
+  if CouchDB or File Storage are missing it _MUST_ behave nicely
+  anyway, informing the user to seek assistance and without crashing.
+* Localization (task statements, but also interface).
 
 *** Task types
 * Check that white_diff() really does what we want it to do
