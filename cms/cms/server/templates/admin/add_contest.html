@@ -1,12 +1,12 @@
 {% extends base.html %}
 
 {% block core %}
-    <div class="core_title">
-    <h1>Add contest</h1>
-    </div>
-    
-    <form name="add_contest" action="/add_contest" method="POST">
-    <table class="sub_table">
+<div class="core_title">
+  <h1>Add contest</h1>
+</div>
+
+<form name="add_contest" action="/add_contest" method="POST">
+  <table class="sub_table">
     <tr>
       <td>Name</td>
       <td><input type="text" name="name"></td>
@@ -30,31 +30,31 @@
     <tr>
       <td>Interval between tokens</td>
       <td>
-      <select name="min_interval_hour">
-      {% for hour in range(0,24) %}
-        <option>{{ hour }}</option>
-      {% end %}
-      </select> hours</br>
-      <select name="min_interval_minute">
-      {% for minute in range(0,60) %}
-        <option>{{ minute }}</option>
-      {% end %}
-      </select> minutes</br>
+        <select name="min_interval_hour">
+          {% for hour in range(0,24) %}
+          <option>{{ hour }}</option>
+          {% end %}
+        </select> hours</br>
+        <select name="min_interval_minute">
+          {% for minute in range(0,60) %}
+          <option>{{ minute }}</option>
+          {% end %}
+        </select> minutes</br>
       </td>
     </tr>
     <tr>
       <td>Token generation period</td>
       <td>
-      <select name="token_gen_hour">
-      {% for hour in range(0,24) %}
-        <option>{{ hour }}</option> 
-      {% end %}
-      </select> hours</br>
-      <select name="token_gen_minute">
-      {% for minute in range(0,60) %}
-        <option>{{ minute }}</option>
-      {% end %}
-      </select> minutes</br>
+        <select name="token_gen_hour">
+          {% for hour in range(0,24) %}
+          <option>{{ hour }}</option>
+          {% end %}
+        </select> hours</br>
+        <select name="token_gen_minute">
+          {% for minute in range(0,60) %}
+          <option>{{ minute }}</option>
+          {% end %}
+        </select> minutes</br>
       </td>
     </tr>
     <tr>
@@ -65,7 +65,8 @@
       <td>End</td>
       <td><input type="text" name="end" value="{{ datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")}}"></td>
     </tr>
-    </table>
-    <input type="submit">
-    </form>
+  </table>
+  <input type="submit">
+</form>
 {% end %}
+

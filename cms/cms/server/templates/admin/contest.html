@@ -1,61 +1,43 @@
 {% extends base.html %}
 
 {% block core %}
-    <div class="core_title">
-    <h1>Contest information</h1>
-    </div>
-    
-    <form name="addcontest" action="/contest/edit/{{contest.id}}" method="POST">
-    <table class="sub_table">
+<div class="core_title">
+  <h1>Contest information</h1>
+</div>
+
+<form name="addcontest" action="/contest/edit/{{contest.id}}" method="POST">
+  <table class="sub_table">
     <tr>
       <td>Name</td>
-      <td><input type="text" name="name" value={{contest.name}}></td>
+      <td><input type="text" name="name" value="{{ contest.name }}" /></td>
     </tr>
     <tr>
       <td>Description</td>
-      <td><textarea name="description">{{contest.description}}</textarea></td>
+      <td><textarea name="description">{{ contest.description }}</textarea></td>
     </tr>
     <tr>
       <td>Initial number of tokens</td>
-      <td><input type="text" name="token_initial" value={{contest.token_initial}} size=3></td>
+      <td><input type="text" name="token_initial" value="{{ contest.token_initial }}" size="3" /></td>
     </tr>
     <tr>
       <td>Maximum accumulated tokens</td>
-      <td><input type="text" name="token_max" value={{contest.token_max}} size=3></td>
+      <td><input type="text" name="token_max" value="{{ contest.token_max }}" size="3" /></td>
     </tr>
     <tr>
       <td>Total number of tokens</td>
-      <td><input type="text" name="token_total" value={{contest.token_total}} size=3></td>
+      <td><input type="text" name="token_total" value="{{ contest.token_total }}" size="3" /></td>
     </tr>
     <tr>
-      <td>Interval between tokens</td>
-      <td>
-      <select name="min_interval_hour">
-      {% for hour in range(0,24) %}
-        <option {% if contest.token_min_interval / 60 == hour %}selected{% end %}>{{ hour }}</option>
-      {% end %}
-      </select> hours<br/>
-      <select name="min_interval_minute">
-      {% for minute in range(0,60) %}
-        <option {% if contest.token_min_interval % 60 == minute %}selected{% end %} >{{ minute }}</option>
-      {% end %}
-      </select> minutes<br/>
-      </td>
+      <td>Minimum interval between tokens</td>
+      <td><input type="text" name="token_min_interval" value="{{ contest.token_min_interval }}" size="3" /></td>
     </tr>
     <tr>
       <td>Token generation period</td>
-      <td>
-      <select name="token_gen_hour">
-      {% for hour in range(0,24) %}
-        <option {% if contest.token_gen_time / 60 == hour %}selected{% end %} >{{ hour }}</option>
-      {% end %}
-      </select> hours<br/>
-      <select name="token_gen_minute">
-      {% for minute in range(0,60) %}
-        <option {% if contest.token_gen_time % 60 == minute %}selected{% end %} >{{ minute }}</option>
-      {% end %}
-      </select>  minutes<br/>
-      </td>
+      <td><input type="text" name="token_gen_time" value="{{ contest.token_gen_time }}" size="3" /></td>
+    </tr>
+    <tr>
+      <td>Token generation number</td>
+      <td><input type="text" name="token_gen_number" value="{{ contest.token_gen_number }}" size="3" /></td>
     </tr>
     <tr>
       <td>Start</td>
@@ -65,14 +47,14 @@
       <td>End</td>
       <td><input type="text" name="end" value="{{ datetime.datetime.fromtimestamp(contest.stop).strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
     </tr>
-    </table>
-    <input type="submit" value="Edit"><input type="reset" value="Reset">
-    </form>
-    
-    <h2>Tasks</h2>
-    <ul>
-    {% for task in contest.tasks %}
-      <li><a href="/tasks/{{task.name}}">{{task.name}}</a></li>
-    {% end %}
-    </ul>
+  </table>
+  <input type="submit" value="Edit"><input type="reset" value="Reset">
+</form>
+
+<h2>Tasks</h2>
+<ul>
+  {% for task in contest.tasks %}
+  <li><a href="/tasks/{{task.name}}">{{ task.name }}</a></li>
+  {% end %}
+</ul>
 {% end %}

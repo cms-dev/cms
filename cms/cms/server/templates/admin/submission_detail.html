@@ -1,67 +1,67 @@
 {% extends base.html %}
 {% block core %}
-    <div class="core_title">
-      <h1>{{ task.title }} ({{ task.name }}) &mdash; Submission details</h1>
-    </div>
+<div class="core_title">
+  <h1>Submission ({{ submission.user.username }} &mdash; {{ task.name }})</h1>
+</div>
 
-    <table class="sub_details">
-      <tr>
-        <th>Timestamp</th>
-        <td>{{ datetime.datetime.fromtimestamp(submission.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</td>
-      </tr>
-      <tr>
-        <th>Compilation<br/>outcome</th>
-        <td>
-          {% if submission.compilation_outcome == "ok" %}
-          Successful
-          {% elif submission.compilation_outcome == "fail" %}
-          Unsuccessful
-          {% else %}
-          Please wait
+<table class="sub_details">
+  <tr>
+    <th>Timestamp</th>
+    <td>{{ datetime.datetime.fromtimestamp(submission.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</td>
+  </tr>
+  <tr>
+    <th>Compilation<br/>outcome</th>
+    <td>
+      {% if submission.compilation_outcome == "ok" %}
+      Successful
+      {% elif submission.compilation_outcome == "fail" %}
+      Unsuccessful
+      {% else %}
+      Please wait
+      {% end %}
+    </td>
+  </tr>
+  <tr>
+    <th>Compilation<br/>details</th>
+    <td>
+      <pre>{% if submission.compilation_text != None %}{{ escape(submission.compilation_text) }}{% end %}</pre>
+    </td>
+  </tr>
+  <tr>
+    <th>Evaluation<br/>outcome</th>
+    <td>
+      {% if submission.evaluations != [] %}
+      <table class="sub_score">
+        <tr><th>Nm</th><th>Score</th><th>Details</th></tr>
+        {% for i, ev in enumerate(submission.evaluations) %}
+        <tr>
+          <td>{{ i }}</td>
+          <td>{{ escape(ev.outcome) }}</td>
+          <td>{{ escape(ev.text) }}</td><tr/>
           {% end %}
-        </td>
-      </tr>
-      <tr>
-        <th>Compilation<br/>details</th>
-        <td>
-          <pre>{% if submission.compilation_text != None %}{{ escape(submission.compilation_text) }}{% end %}</pre>
-        </td>
-      </tr>
-      <tr>
-        <th>Evaluation<br/>outcome</th>
-        <td>
-          {% if submission.evaluations != [] %}
-          <table class="sub_score">
-            <tr><th>Nm</th><th>Score</th><th>Details</th></tr>
-            {% for i, ev in enumerate(submission.evaluations) %}
-            <tr>
-              <td>{{ i }}</td>
-              <td>{{ escape(ev.outcome) }}</td>
-              <td>{{ escape(ev.text) }}</td><tr/>
-            {% end %}
-          </table>
-          {% else %}
-          Please wait
-          {% end %}
-        </td>
-      </tr>
-      <tr>
-        <th>Files</th>
-        <td>
-          {% for filename, sub_file in submission.files.items() %}
-          <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}<br/>
-          {% end %}
-        </td>
-      </tr>
-      <tr>
-        <th>Detailed<br/>feedback<br/>requested</th>
-        <td>
-          {% if submission.token_timestamp==None %}
-          No
-          {% else %}
-          Yes
-          {% end %}
-        </td>
-      </tr>
-    </table>
+      </table>
+      {% else %}
+      Please wait
+      {% end %}
+    </td>
+  </tr>
+  <tr>
+    <th>Files</th>
+    <td>
+      {% for filename, sub_file in submission.files.items() %}
+      <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}<br/>
+        {% end %}
+    </td>
+  </tr>
+  <tr>
+    <th>Detailed<br/>feedback<br/>requested</th>
+    <td>
+      {% if submission.token_timestamp==None %}
+      No
+      {% else %}
+      Yes
+      {% end %}
+    </td>
+  </tr>
+</table>
 {% end %}
