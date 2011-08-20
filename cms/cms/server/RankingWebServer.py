@@ -41,7 +41,7 @@ import zipfile
 import time
 from StringIO import StringIO
 
-import cms.util.Configuration as Configuration
+from cms import Config
 import cms.util.WebConfig as WebConfig
 import cms.util.Utils as Utils
 from cms.db.SQLAlchemyAll import Submission

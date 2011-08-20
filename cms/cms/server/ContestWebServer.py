@@ -52,7 +52,7 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
 
 from cms.db.Utils import ask_for_contest
 
-import cms.util.Configuration as Configuration
+from cms import Config
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
 from cms.server.Utils import contest_required, file_handler_gen
@@ -240,7 +240,7 @@ class TaskViewHandler(BaseHandler):
         except:
             raise tornado.web.HTTPError(404)
         r_params["submissions"] = self.sql_session.query(Submission)\
-            .filter_by(user=self.get_current_user())\
+            .filter_by(user=self.current_user)\
             .filter_by(task=r_params["task"]).all()
 
         self.render("task.html", **r_params)
@@ -278,7 +278,7 @@ class SubmissionDetailHandler(BaseHandler):
 
         submission = self.sql_session.query(Submission).join(Task)\
             .filter(Submission.id == submission_id)\
-            .filter(Submission.user_id == self.get_current_user().id)\
+            .filter(Submission.user_id == self.current_user.id)\
             .filter(Task.contest_id == self.contest.id).first()
         if submission == None:
             raise tornado.web.HTTPError(404)
@@ -301,7 +301,7 @@ class SubmissionFileHandler(FileHandler):
 
         sub_file = self.sql_session.query(File).join(Submission).join(Task)\
             .filter(File.id == file_id)\
-            .filter(Submission.user_id == self.get_current_user().id)\
+            .filter(Submission.user_id == self.current_user.id)\
             .filter(Task.contest_id == self.contest.id)\
             .first()
 
@@ -357,7 +357,7 @@ class QuestionHandler(BaseHandler):
         question = Question(time.time(),
                             self.get_argument("question_subject", ""),
                             self.get_argument("question_text", ""),
-                            user=self.get_current_user())
+                            user=self.current_user)
         self.sql_session.add(question)
         self.sql_session.commit()
 
@@ -415,16 +415,16 @@ class SubmitHandler(BaseHandler):
         # a failure.
         # TODO: Determine when the submission is to be considered accepted
         # and pre-emptively stored.
-        if Configuration.submit_local_copy:
+        if Config.submit_local_copy:
             try:
-                path = os.path.join(Configuration.submit_local_copy_path,
+                path = os.path.join(Config.submit_local_copy_path,
                                     self.current_user.username)
                 if not os.path.exists(path):
                     os.mkdir(path)
                 with codecs.open(os.path.join(path, str(int(self.timestamp))),
                                  "w", "utf-8") as fd:
                     pickle.dump((self.contest.id,
-                                 self.get_current_user().id,
+                                 self.current_user.id,
                                  self.task,
                                  self.files), fd)
             except Exception as e:
@@ -435,15 +435,17 @@ class SubmitHandler(BaseHandler):
         self.file_digests = {}
 
         for filename, content in self.files.items():
-            self.application.service.FS.put_file(
+            if self.application.service.FS.put_file(
                 callback=SubmitHandler.storage_callback,
                 plus=filename,
                 binary_data=content,
                 description="Submission file %s sent by %s at %d." % (
                     filename,
-                    self.get_current_user().username,
+                    self.current_user.username,
                     int(self.timestamp)),
-                bind_obj=self)
+                bind_obj=self) == False:
+                self.storage_callback(None,None,error = "Connection failed.")
+                break
 
     @rpc_callback
     def storage_callback(self, data, plus, error=None):
@@ -453,7 +455,7 @@ class SubmitHandler(BaseHandler):
             if len(self.file_digests) == len(self.files):
                 # All the files are stored, ready to submit!
                 logger.info("I saved all the files")
-                s = Submission(user=self.get_current_user(),
+                s = Submission(user=self.current_user,
                                task=self.task,
                                timestamp=self.timestamp,
                                files={})
@@ -464,9 +466,10 @@ class SubmitHandler(BaseHandler):
                 self.sql_session.commit()
                 self.r_params["submission"] = s
                 self.r_params["warned"] = False
-                self.application.service.ES.new_submission(
+                if self.application.service.ES.new_submission(
                     submission_id=s.id,
-                    callback=self.es_notify_callback)
+                    callback=self.es_notify_callback)== False:
+                    self.es_notify_callback(None, None, error="Connection failed.")
         else:
             logger.error("Storage failed! " + error)
             self.finish()

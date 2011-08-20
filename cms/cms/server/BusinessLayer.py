@@ -27,18 +27,13 @@ import codecs
 import xmlrpclib
 from StringIO import StringIO
 from threading import Lock
-import couchdb
 
-import cms.util.Configuration as Configuration
+from cms import Config
 import cms.util.Utils as Utils
 from cms.db.SQLAlchemyAll import Contest, Submission
 
-#from FileStorageLib import FileStorageLib
 from cms.async.AsyncLibrary import Service, rpc_method, rpc_binary_response, logger
 #from Utils import ServiceCoord
-
-#FSL = FileStorageLib()
-ES = xmlrpclib.ServerProxy("http://%s:%d" % Configuration.evaluation_server)
 
 # Some exceptions that can be raised by these functions.
 
@@ -306,7 +301,7 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
             # Inconsistency flag
             inconsistent = False
 
-            for tentatives in xrange(Configuration.maximum_conflict_attempts):
+            for tentatives in xrange(Config.maximum_conflict_attempts):
                 try:
                     # Update the user's tokenized submissions.
                     # Skip this step if the submission is already in the list.
@@ -396,10 +391,10 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
 #    # a failure.
 #    # TODO: Determine when the submission is to be considered accepted
 #    # and pre-emptively stored.
-#    if Configuration.submit_local_copy:
+#    if Config.submit_local_copy:
 #        import pickle
 #        try:
-#            path = os.path.join(Configuration.submit_local_copy_path, user.username)
+#            path = os.path.join(Config.submit_local_copy_path, user.username)
 #            if not os.path.exists(path):
 #                os.mkdir(path)
 #            with codecs.open(os.path.join(path, str(int(timestamp))), "w", "utf-8") as fd:
@@ -431,7 +426,7 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
 
 #        # Save the submission.
 #        # A new document shouldn't have resource conflicts...
-#        for tentatives in xrange(Configuration.maximum_conflict_attempts):
+#        for tentatives in xrange(Config.maximum_conflict_attempts):
 #            try:
 #                s = Submission(user, task, timestamp, files)
 #                break
@@ -465,7 +460,7 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
 #          pass
 
 #        # Append the submission to the contest.
-#        for tentatives in xrange(Configuration.maximum_conflict_attempts):
+#        for tentatives in xrange(Config.maximum_conflict_attempts):
 #            contest.submissions.append(s)
 #            try:
 #                contest.to_couch()
