@@ -72,6 +72,7 @@ class SpoolExporter(Service):
                 else:
                     hidden_users.append(user.username)
 
+            # FIXME - The enumeration of submission should be time-increasing
             for submission in c.get_submissions(session):
                 if submission.user.hidden:
                     continue
@@ -115,7 +116,6 @@ class SpoolExporter(Service):
             ranking_file = codecs.open(os.path.join(self.spool_dir, "classifica.txt"), 'w', encoding='utf-8')
             ranking_csv = codecs.open(os.path.join(self.spool_dir, "classifica.csv"), 'w', encoding='utf-8')
             print >> ranking_file, "Classifica finale del contest `%s'" % (c.description)
-            #users = [(sum(c.ranking_view.scores[u]), u, c.ranking_view.scores[u]) for u in c.ranking_view.scores.keys() if u not in hidden_users]
             users = {}
             for u in c.users:
                 if u.username not in hidden_users:
