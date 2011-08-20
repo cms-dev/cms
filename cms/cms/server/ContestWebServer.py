@@ -37,6 +37,10 @@ from functools import wraps
 import os
 import pickle
 import time
+import codecs
+
+import tempfile
+import zipfile
 
 import tornado.web
 
@@ -45,7 +49,7 @@ from cms.async.WebAsyncLibrary import WebService, rpc_callback
 from cms.async import ServiceCoord
 
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
-                                 Submission, Task, File
+     Submission, Task, File
 
 from cms.db.Utils import ask_for_contest
 
@@ -56,11 +60,20 @@ import cms.server.BusinessLayer as BusinessLayer
 
 def contest_required(func):
     """Decorator to ensure that in the parameter list there is one
-    named "contest". If not present, the browser shows a 404.
+    named 'contest'. If not present, the browser shows a 404.
 
     """
     @wraps(func)
     def wrapper(*args, **kwds):
+        """Wrap the function in something that check if in the
+        parameter list there is a 'contest' argument and if it does
+        not find it, raises a 404.
+
+        args (list): positional arguments for func
+        kwds (dict): named arguments for func
+        returns (object): return value of func, or raises 404
+
+        """
         if args[0].contest != None:
             return func(*args, **kwds)
         else:
@@ -81,8 +94,8 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
         self.sql_session = Session()
-        self.contest = self.sql_session.query(Contest).\
-                       filter_by(id=self.application.service.contest).first()
+        self.contest = self.sql_session.query(Contest)\
+            .filter_by(id=self.application.service.contest).first()
 
     def get_current_user(self):
         """Gets the current user logged in from the cookies
@@ -99,13 +112,12 @@ class BaseHandler(tornado.web.RequestHandler):
             self.clear_cookie("login")
             return None
 
-        ##### Uncomment to ignore old cookies
+        # Uncomment to ignore old cookies
+        # if cookie_time == None or cookie_time < upsince:
+        #     return None
 
-        #if cookie_time == None or cookie_time < upsince:
-        #    return None
-
-        current_user = self.sql_session.query(User).\
-                       filter_by(id=user_id).first()
+        current_user = self.sql_session.query(User)\
+            .filter_by(id=user_id).first()
         if current_user == None:
             self.clear_cookie("login")
             return None
@@ -147,8 +159,13 @@ class BaseHandler(tornado.web.RequestHandler):
         self.sql_session.close()
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
+
 class FileHandler(BaseHandler):
-    def fetch(self, digest, content_type, file_name):
+    """Base class for handlers that need to serve a file to the user.
+
+    """
+
+    def fetch(self, digest, content_type, filename):
         """Sends the RPC to the FS.
 
         """
@@ -160,10 +177,10 @@ class FileHandler(BaseHandler):
             self.finish()
             return
 
-        self.application.service.remote_services[service].get_file(\
+        self.application.service.remote_services[service].get_file(
             callback=self._fetch_callback,
-            plus=[content_type, file_name],
-            digest = digest)
+            plus=[content_type, filename],
+            digest=digest)
 
     @rpc_callback
     def _fetch_callback(self, caller, data, plus, error=None):
@@ -176,11 +193,11 @@ class FileHandler(BaseHandler):
             self.finish()
             return
 
-        (content_type, file_name) = plus
+        (content_type, filename) = plus
 
         self.set_header("Content-Type", content_type)
         self.set_header("Content-Disposition",
-                        "attachment; filename=\"%s\"" % (file_name) )
+                        "attachment; filename=\"%s\"" % filename)
         self.write(data)
         self.finish()
 
@@ -284,35 +301,35 @@ class TaskViewHandler(BaseHandler):
                                 if x.name == task_name][0]
         except:
             raise tornado.web.HTTPError(404)
-            [x for x in self.get_current_user().tokens
-                                   if x.task == r_params["task"]]
         r_params["submissions"] = self.sql_session.query(Submission)\
-                          .filter_by(user = self.get_current_user())\
-                          .filter_by(task = r_params["task"]).all()
+            .filter_by(user=self.get_current_user())\
+            .filter_by(task=r_params["task"]).all()
 
         self.render("task.html", **r_params)
 
+
 class TaskStatementViewHandler(FileHandler):
     """Shows the statement file of a task in the contest.
+
     """
 
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self, task_name):
-
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
         try:
-            self.task = [ x for x in self.contest.tasks if x.name == task_name ][0]
+            task = [x for x in self.contest.tasks if x.name == task_name][0]
         except:
             self.write("Task %s not found." % (task_name))
 
-        self.fetch(self.task.statement, "application/pdf", self.task.name+".pdf")
+        self.fetch(task.statement, "application/pdf", task.name + ".pdf")
 
 
 class SubmissionDetailHandler(BaseHandler):
     """Shows additional details for the specified submission.
+
     """
 
     @tornado.web.authenticated
@@ -324,19 +341,20 @@ class SubmissionDetailHandler(BaseHandler):
         # search the submission in the contest
 
         submission = self.sql_session.query(Submission).join(Task)\
-                          .filter(Submission.id == submission_id)\
-                          .filter(Submission.user_id == self.get_current_user().id)\
-                          .filter(Task.contest_id == self.contest.id).first()
+            .filter(Submission.id == submission_id)\
+            .filter(Submission.user_id == self.get_current_user().id)\
+            .filter(Task.contest_id == self.contest.id).first()
         if submission == None:
             raise tornado.web.HTTPError(404)
         r_params["submission"] = submission
         r_params["task"] = submission.task
         self.render("submission_detail.html", **r_params)
 
+
 class SubmissionFileHandler(FileHandler):
     """Shows a submission file.
-    """
 
+    """
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self, file_id):
@@ -346,15 +364,16 @@ class SubmissionFileHandler(FileHandler):
             return
 
         sub_file = self.sql_session.query(File).join(Submission).join(Task)\
-                       .filter(File.id == file_id)\
-                       .filter(Submission.user_id == self.get_current_user().id)\
-                       .filter(Task.contest_id == self.contest.id)\
-                       .first()
+            .filter(File.id == file_id)\
+            .filter(Submission.user_id == self.get_current_user().id)\
+            .filter(Task.contest_id == self.contest.id)\
+            .first()
 
         if sub_file == None:
             raise tornado.web.HTTPError(404)
 
         self.fetch(sub_file.digest, "text/plain", sub_file.filename)
+
 
 class UserHandler(BaseHandler):
     """Displays information about the current user, in particular
@@ -378,15 +397,17 @@ class NotificationsHandler(BaseHandler):
         announcements = []
         if last_request != "":
             announcements = [x for x in self.contest.announcements
-                             if x.timestamp > float(last_request) \
-                                 and x.timestamp < timestamp]
+                             if x.timestamp > float(last_request)
+                             and x.timestamp < timestamp]
             if self.current_user != None:
                 messages = [x for x in self.current_user.messages
-                            if x.timestamp > float(last_request) \
-                                and x.timestamp < timestamp]
+                            if x.timestamp > float(last_request)
+                            and x.timestamp < timestamp]
         self.set_header("Content-Type", "text/xml")
-        self.render("notifications.xml", announcements=announcements, \
-                    messages=messages, timestamp=timestamp)
+        self.render("notifications.xml",
+                    announcements=announcements,
+                    messages=messages,
+                    timestamp=timestamp)
 
 
 class QuestionHandler(BaseHandler):
@@ -408,8 +429,10 @@ class QuestionHandler(BaseHandler):
                        % self.current_user.username)
         self.render("successfulQuestion.html", **r_params)
 
+
 class SubmitHandler(BaseHandler):
     """Handles the received submissions.
+
     """
 
     @tornado.web.authenticated
@@ -421,10 +444,10 @@ class SubmitHandler(BaseHandler):
             return
         self.timestamp = self.r_params["timestamp"]
 
-        self.task = self.sql_session.query(Task).filter_by(name = task_id)\
-              .filter_by(contest = self.contest).first()
+        self.task = self.sql_session.query(Task).filter_by(name=task_id)\
+            .filter_by(contest=self.contest).first()
 
-        if self.task == None:
+        if self.current_user == None or self.task == None:
             self.send_error(404)
             self.finish()
             return
@@ -451,21 +474,24 @@ class SubmitHandler(BaseHandler):
         else:
             self.files[uploaded["filename"]] = uploaded["body"]
 
-        # submit the files.
+        # Submit the files.
 
         # Attempt to store the submission locally to be able to recover
         # a failure.
         # TODO: Determine when the submission is to be considered accepted
         # and pre-emptively stored.
         if Configuration.submit_local_copy:
-            import pickle
-            import codecs
             try:
-                path = os.path.join(Configuration.submit_local_copy_path, user.username)
+                path = os.path.join(Configuration.submit_local_copy_path,
+                                    self.current_user.username)
                 if not os.path.exists(path):
                     os.mkdir(path)
-                with codecs.open(os.path.join(path, str(int(timestamp))), "w", "utf-8") as fd:
-                    pickle.dump((self.contest.id, self.get_current_user().id, self.task, self.files), fd)
+                with codecs.open(os.path.join(path, str(int(self.timestamp))),
+                                 "w", "utf-8") as fd:
+                    pickle.dump((self.contest.id,
+                                 self.get_current_user().id,
+                                 self.task,
+                                 self.files), fd)
             except Exception as e:
                 logger.warning("submit: local copy failed - " + repr(e))
 
@@ -482,10 +508,10 @@ class SubmitHandler(BaseHandler):
                     filename,
                     self.get_current_user().username,
                     int(self.timestamp)),
-                bind_obj = self)
+                bind_obj=self)
 
     @rpc_callback
-    def storage_callback(self, data, plus, error = None):
+    def storage_callback(self, data, plus, error=None):
         logger.debug("Storage callback")
         if error == None:
             self.file_digests[plus] = data
@@ -519,39 +545,37 @@ class SubmitHandler(BaseHandler):
             logger.error("Notification to ES failed! " + error)
             self.finish()
 
-handlers = [
-            (r"/", \
-                 MainHandler),
-            (r"/login", \
-                 LoginHandler),
-            (r"/logout", \
-                 LogoutHandler),
-            (r"/submissions/details/([a-zA-Z0-9_-]+)", \
-                 SubmissionDetailHandler),
-            (r"/submission_file/([a-zA-Z0-9_.-]+)", \
-                 SubmissionFileHandler),
-            (r"/tasks/([a-zA-Z0-9_-]+)", \
-                 TaskViewHandler),
-            (r"/tasks/([a-zA-Z0-9_-]+)/statement", \
-                 TaskStatementViewHandler),
-#            (r"/usetoken/", \
-#                 UseTokenHandler),
-            (r"/submit/([a-zA-Z0-9_.-]+)", \
-                 SubmitHandler),
-            (r"/user", \
-                 UserHandler),
-            (r"/instructions", \
-                 InstructionHandler),
-            (r"/notifications", \
-                 NotificationsHandler),
-            (r"/question", \
-                 QuestionHandler),
-            (r"/stl/(.*)", \
-                 tornado.web.StaticFileHandler, {"path": WebConfig.stl_path}),
-           ]
+handlers = [(r"/",
+             MainHandler),
+            (r"/login",
+             LoginHandler),
+            (r"/logout",
+             LogoutHandler),
+            (r"/submissions/details/([a-zA-Z0-9_-]+)",
+             SubmissionDetailHandler),
+            (r"/submission_file/([a-zA-Z0-9_.-]+)",
+             SubmissionFileHandler),
+            (r"/tasks/([a-zA-Z0-9_-]+)",
+             TaskViewHandler),
+            (r"/tasks/([a-zA-Z0-9_-]+)/statement",
+             TaskStatementViewHandler),
+            # (r"/usetoken/",
+            #  UseTokenHandler),
+            (r"/submit/([a-zA-Z0-9_.-]+)",
+             SubmitHandler),
+            (r"/user",
+             UserHandler),
+            (r"/instructions",
+             InstructionHandler),
+            (r"/notifications",
+             NotificationsHandler),
+            (r"/question",
+             QuestionHandler),
+            (r"/stl/(.*)",
+             tornado.web.StaticFileHandler, {"path": WebConfig.stl_path}),
+            ]
 
 if __name__ == "__main__":
-
     import sys
     if len(sys.argv) < 2:
         print sys.argv[0], "shard [contest]"
