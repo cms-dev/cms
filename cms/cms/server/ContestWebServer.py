@@ -67,6 +67,7 @@ class BaseHandler(tornado.web.RequestHandler):
     """
     def prepare(self):
         """This method is executed at the beginning of each request.
+
         """
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
@@ -79,6 +80,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
         If a valid cookie is retrieved, returns a User object with the
         username specified in the cookie. Otherwise, returns None.
+
         """
         if self.get_secure_cookie("login") == None:
             return None
@@ -131,6 +133,7 @@ class BaseHandler(tornado.web.RequestHandler):
         """ Finishes this response, ending the HTTP request.
 
         We override this method in order to properly close the database.
+
         """
         logger.debug("Closing SQL connection.")
         self.sql_session.close()
@@ -444,7 +447,7 @@ class SubmitHandler(BaseHandler):
                     self.current_user.username,
                     int(self.timestamp)),
                 bind_obj=self) == False:
-                self.storage_callback(None,None,error = "Connection failed.")
+                self.storage_callback(None, None, error="Connection failed.")
                 break
 
     @rpc_callback
@@ -466,10 +469,12 @@ class SubmitHandler(BaseHandler):
                 self.sql_session.commit()
                 self.r_params["submission"] = s
                 self.r_params["warned"] = False
-                if self.application.service.ES.new_submission(
+                if False == self.application.service.ES.new_submission(
                     submission_id=s.id,
-                    callback=self.es_notify_callback)== False:
-                    self.es_notify_callback(None, None, error="Connection failed.")
+                    callback=self.es_notify_callback):
+                    self.es_notify_callback(None,
+                                            None,
+                                            error="Connection failed.")
         else:
             logger.error("Storage failed! " + error)
             self.finish()
@@ -482,6 +487,7 @@ class SubmitHandler(BaseHandler):
         else:
             logger.error("Notification to ES failed! " + error)
             self.finish()
+
 
 handlers = [(r"/",
              MainHandler),

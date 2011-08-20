@@ -1,88 +1,87 @@
 {% extends base.html %}
 {% block core %}
     <div class="core_title">
-    <h1>{{ task.title }} ({{ task.name }}) - Submission details </h1>
+      <h1>{{ task.title }} ({{ task.name }}) &mdash; Submission details</h1>
     </div>
 
     {% if handler.get_argument("notokens","") == "true" %}
     <span class="error">No tokens available.</span>
     {% end %}
 
-      <table class="sub_details">
+    <table class="sub_details">
       <tr>
-          <th>Timestamp</th>
-          <td>{{ datetime.datetime.fromtimestamp(submission.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</td>
+        <th>Timestamp</th>
+        <td>{{ datetime.datetime.fromtimestamp(submission.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</td>
       </tr>
       <tr>
-          <th>Compilation<br/>outcome</th>
-          <td>
-            {% if submission.compilation_outcome == "ok" %}
-              Successfull
-            {% elif submission.compilation_outcome == "fail" %}
-              Unsuccessful
-            {% else %}
-              Please wait
-            {% end %}
-          </td>
+        <th>Compilation<br/>outcome</th>
+        <td>
+          {% if submission.compilation_outcome == "ok" %}
+          Successfull
+          {% elif submission.compilation_outcome == "fail" %}
+          Unsuccessful
+          {% else %}
+          Please wait
+          {% end %}
+        </td>
       </tr>
       <tr>
-          <th>Compilation<br/>detail</th>
-          <td>
-            <pre>{% if submission.compilation_text != None %}{{ escape(submission.compilation_text) }}{% end %}</pre>
-          </td>
+        <th>Compilation<br/>details</th>
+        <td>
+          <pre>{% if submission.compilation_text != None %}{{ escape(submission.compilation_text) }}{% end %}</pre>
+        </td>
       </tr>
       <tr>
-          <th>
+        <th>
           {% if submission.token_timestamp == None %}
-            Partial<br/>evaluation<br/>outcome
+          Partial<br/>evaluation<br/>outcome
           {% else %}
-            Detailed<br/>evaluation<br/>outcome
+          Detailed<br/>evaluation<br/>outcome
           {% end %}
-          </th>
-          <td>
-            {% if submission.evaluations != [] %}
-              <table class="sub_score">
-                  <tr><th>Score</th><th>Details</th></tr>
-                    {% if submission.token_timestamp != None %}
-                      {% for ev in submission.evaluations %}
-                  <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td><tr/>
-                      {% end %}
-                    {% else %}
-                      {% for public in task.public_testcases %}
-                  <tr><td>{{ escape(submission.evaluations[public.testcase].outcome) }}</td><td>{{ escape(submission.evaluations[public.testcase].text) }}</td><tr/>
-                      {% end %}
-                      {% if task.public_testcases == [] %}
-                  <tr><td colspan="2">No specified testcases<br/> for partial feedback for this task.</td></tr>
-                      {% end %}
-                    {% end %}
-              </table>
+        </th>
+        <td>
+          {% if submission.evaluations != [] %}
+          <table class="sub_score">
+            <tr><th>Score</th><th>Details</th></tr>
+            {% if submission.token_timestamp != None %}
+              {% for ev in submission.evaluations %}
+            <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td><tr/>
+              {% end %}
             {% else %}
-              Please wait
+              {% for public in task.public_testcases %}
+            <tr><td>{{ escape(submission.evaluations[public.testcase].outcome) }}</td><td>{{ escape(submission.evaluations[public.testcase].text) }}</td><tr/>
+              {% end %}
+              {% if task.public_testcases == [] %}
+            <tr><td colspan="2">No specified testcases<br/> for partial feedback for this task.</td></tr>
+              {% end %}
             {% end %}
-
-          </td>
-      </tr>
-      <tr>
-          <th>Files</th>
-          <td>
-          {% for filename, sub_file in submission.files.items() %}
-              <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}<br/>
-          {% end %}
-          </td>
-      </tr>
-      <tr>
-          <th>Detailed<br/>Feedback<br/>Requested</th>
-          <td>
-          {% if submission.token_timestamp==None %}
-              <form class="submit_form" action="/usetoken/" method="POST">
-              No
-              <input type="hidden" name="id" value="{{ submission.id }}">
-              <input type="submit" value="Use Token">
-              </form>
+          </table>
           {% else %}
-              Yes
+          Please wait
           {% end %}
-          </td>
+        </td>
       </tr>
-      </table>
+      <tr>
+        <th>Files</th>
+        <td>
+          {% for filename, sub_file in submission.files.items() %}
+          <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}<br/>
+          {% end %}
+        </td>
+      </tr>
+      <tr>
+        <th>Detailed<br/>feedback<br/>requested</th>
+        <td>
+          {% if submission.token_timestamp==None %}
+          <form class="submit_form" action="/usetoken/" method="POST">
+            No
+            <input type="hidden" name="id" value="{{ submission.id }}">
+            <input type="submit" value="Use Token">
+          </form>
+          {% else %}
+          Yes
+          {% end %}
+        </td>
+      </tr>
+    </table>
 {% end %}

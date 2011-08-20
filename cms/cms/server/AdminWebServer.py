@@ -28,16 +28,16 @@ import time
 
 import tornado.web
 
-from cms.async.AsyncLibrary import logger, rpc_callback
+from cms.async.AsyncLibrary import logger
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 
-from cms.db.SQLAlchemyAll import Base, Session, metadata, \
+from cms.db.SQLAlchemyAll import Session, \
      Contest, User, Announcement, Question, Submission, File
 
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
-from cms.server.Utils import contest_required
+from cms.server.Utils import contest_required, file_handler_gen
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -45,10 +45,12 @@ class BaseHandler(tornado.web.RequestHandler):
 
     All the RequestHandler classes in this application should be a
     child of this class.
+
     """
 
     def prepare(self):
         """This method is executed at the beginning of each request.
+
         """
         # Attempt to update the contest and all its references
         # If this fails, the request terminates.
@@ -84,11 +86,16 @@ class BaseHandler(tornado.web.RequestHandler):
                     self.clear_cookie("selected_contest")
 
     def render_params(self):
+        """Return the default render params used by almost all handlers.
+
+        return (dict): default render params
+
+        """
         r = {}
         r["timestamp"] = time.time()
         r["contest"] = self.contest
         if(self.contest != None):
-          r["phase"] = BusinessLayer.contest_phase(**r)
+            r["phase"] = BusinessLayer.contest_phase(**r)
         r["contest_list"] = self.sql_session.query(Contest).all()
         r["cookie"] = str(self.cookies)
         return r
@@ -108,7 +115,7 @@ FileHandler = file_handler_gen(BaseHandler)
 
 
 class AdminWebServer(WebService):
-    """Simple web service example.
+    """Service that runs the web server serving the managers.
 
     """
 
@@ -117,15 +124,16 @@ class AdminWebServer(WebService):
         logger.debug("AdminWebServer.__init__")
         parameters = WebConfig.admin_parameters
         parameters["template_path"] = os.path.join(os.path.dirname(__file__),
-                                  "templates", "admin")
+                                                   "templates", "admin")
         parameters["static_path"] = os.path.join(os.path.dirname(__file__),
-                                  "static", "admin")
+                                                 "static", "admin")
         WebService.__init__(self,
-            WebConfig.admin_listen_port,
-            handlers,
-            parameters,
-            shard=shard)
+                            WebConfig.admin_listen_port,
+                            handlers,
+                            parameters,
+                            shard=shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+
 
 class MainHandler(BaseHandler):
     """Home page handler.
@@ -138,54 +146,60 @@ class MainHandler(BaseHandler):
         r_params["queue_status"] = None
         self.render("welcome.html", **r_params)
 
+
 class ContestViewHandler(BaseHandler):
-    @contestRequired
+    """Shows information about a specific contest.
+
+    """
+    @contest_required
     def get(self):
         r_params = self.render_params()
         self.render("contest.html", **r_params)
 
-class EditContestHandler(BaseHandler):
-    def post(self, contest_id):
 
+class EditContestHandler(BaseHandler):
+    """Called when managers edit the information of a contest.
+
+    """
+    def post(self, contest_id):
         # FIXME: Behave properly in the future...
         if self.contest == None or self.contest.id != int(contest_id):
-          self.write("You changed the selected contest before editing this contest. To avoid unwanted changes, the request has been ignored.")
-          return
+            self.write("You changed the selected contest before "
+                       "editing this contest. To avoid unwanted changes, "
+                       "the request has been ignored.")
+            return
         if self.get_arguments("name") == []:
-          self.write("No contest name specified")
-          return
+            self.write("No contest name specified")
+            return
         name = self.get_argument("name")
-        description = self.get_argument("description","")
+        description = self.get_argument("description", "")
 
         try:
-          token_initial = int(self.get_argument("token_initial","0"))
-          token_max = int(self.get_argument("token_max","0"))
-          token_total = int(self.get_argument("token_total","0"))
+            token_initial = int(self.get_argument("token_initial", "0"))
+            token_max = int(self.get_argument("token_max", "0"))
+            token_total = int(self.get_argument("token_total", "0"))
         except:
-          self.write("Invalid token number field(s).")
-          return
-        timearguments = ["_hour","_minute"]
+            self.write("Invalid token number field(s).")
+            return
 
         token_min_interval = \
-            int(self.get_argument("min_interval_hour","0")) * 60 + \
-            int(self.get_argument("min_interval_minute","0"))
-        token_gen_time = int(self.get_argument("token_gen_hour","0")) * 60 + \
-                             int(self.get_argument("token_gen_minute","0"))
+            int(self.get_argument("min_interval_hour", "0")) * 60 + \
+            int(self.get_argument("min_interval_minute", "0"))
+        token_gen_time = \
+            int(self.get_argument("token_gen_hour", "0")) * 60 + \
+            int(self.get_argument("token_gen_minute", "0"))
 
-        datetimearguments = ["_year","_month","_day","_hour","_minute"]
         try:
-          start = time.mktime(time.strptime(
-                  self.get_argument("start",""),
-                  "%d/%m/%Y %H:%M:%S" ))
-          stop = time.mktime(time.strptime(
-                  self.get_argument("end",""),
-                  "%d/%m/%Y %H:%M:%S" ))
+            start = time.mktime(time.strptime(self.get_argument("start", ""),
+                                              "%d/%m/%Y %H:%M:%S"))
+            stop = time.mktime(time.strptime(self.get_argument("end", ""),
+                                             "%d/%m/%Y %H:%M:%S"))
         except Exception as e:
-          self.write("Invalid date(s)." + repr(e))
-          return
-        if start > stop :
-          self.write("Contest ends before it starts")
-          return
+            self.write("Invalid date(s)." + repr(e))
+            return
+        if start > stop:
+            self.write("Contest ends before it starts")
+            return
         self.contest.name = name
         self.contest.description = description
         self.contest.token_initial = token_initial
@@ -200,14 +214,22 @@ class EditContestHandler(BaseHandler):
         self.redirect("/contest")
         return
 
+
 class AnnouncementsHandler(BaseHandler):
-    @contestRequired
+    """Page to see and send messages to all the contestants.
+
+    """
+    @contest_required
     def get(self):
         r_params = self.render_params()
         self.render("announcements.html", **r_params)
 
+
 class AddAnnouncementHandler(BaseHandler):
-    @contestRequired
+    """Called to actually add an announcement
+
+    """
+    @contest_required
     def post(self):
         subject = self.get_argument("subject", "")
         text = self.get_argument("text", "")
@@ -218,8 +240,12 @@ class AddAnnouncementHandler(BaseHandler):
             #BusinessLayer.add_announcement(self.c, subject, text)
         self.redirect("/announcements")
 
+
 class RemoveAnnouncementHandler(BaseHandler):
-    @contestRequired
+    """Called to remove an announcement.
+
+    """
+    @contest_required
     def post(self):
         ann_id = self.get_argument("id", "-1")
         ann = self.sql_session.query(Announcement).filter_by(id=ann_id).first()
@@ -229,19 +255,29 @@ class RemoveAnnouncementHandler(BaseHandler):
         self.sql_session.commit()
         self.redirect("/announcements")
 
+
 class UserListHandler(BaseHandler):
-    @contestRequired
+    """Shows the list of users participating in a contest.
+
+    """
+    @contest_required
     def get(self):
         r_params = self.render_params()
         self.render("userlist.html", **r_params)
 
+
 class UserViewHandler(BaseHandler):
-    @contestRequired
+    """Shows the details of a single user (submissions, questions,
+    messages, and allows to send the latters).
+
+    """
+    @contest_required
     def get(self, user_id):
         r_params = self.render_params()
         user = self.sql_session.query(User).filter_by(id=user_id).first()
-        #user = BusinessLayer.get_user_by_username(self.c, user_id)
-        #submissions = BusinessLayer.get_submissions_by_username(self.c, user_id)
+        # user = BusinessLayer.get_user_by_username(self.c, user_id)
+        # submissions = BusinessLayer.get_submissions_by_username(self.c,
+        #                                                         user_id)
         if user == None:
             raise tornado.web.HTTPError(404)
         r_params["selected_user"] = user
@@ -249,10 +285,12 @@ class UserViewHandler(BaseHandler):
         r_params["submissions"] = user.tokens
         self.render("user.html", **r_params)
 
+
 class SubmissionDetailHandler(BaseHandler):
     """Shows additional details for the specified submission.
+
     """
-    @contestRequired
+    @contest_required
     def get(self, submission_id):
 
         r_params = self.render_params()
@@ -266,10 +304,11 @@ class SubmissionDetailHandler(BaseHandler):
         r_params["task"] = submission.task
         self.render("submission_detail.html", **r_params)
 
+
 class SubmissionFileHandler(FileHandler):
     """Shows a submission file.
-    """
 
+    """
     @tornado.web.asynchronous
     def get(self, file_id):
 
@@ -282,31 +321,37 @@ class SubmissionFileHandler(FileHandler):
 
         self.fetch(sub_file.digest, "text/plain", sub_file.filename)
 
-class QuestionReplyHandler(BaseHandler):
-    @contestRequired
-    def post(self, question_id):
 
+class QuestionReplyHandler(BaseHandler):
+    """Called when the manager replies to a question made by a user.
+
+    """
+    @contest_required
+    def post(self, question_id):
         r_params = self.render_params()
 
-        q = self.sql_session.query(Question).filter_by(id=question_id).first()
-        if q == None :
-          raise tornado.web.HTTPError(404)
+        question = self.sql_session.query(Question)\
+                   .filter_by(id=question_id).first()
+        if question == None:
+            raise tornado.web.HTTPError(404)
 
-        q.short_reply = self.get_argument("reply_question_quick_answer","")
-        q.long_reply = self.get_argument("reply_question_text", "")
+        question.short_reply = self.get_argument("reply_question_quick_answer",
+                                                 "")
+        question.long_reply = self.get_argument("reply_question_text", "")
 
         # Ignore invalid answers
-        if q.short_reply not in WebConfig.quick_answers:
-            q.short_reply = None
+        if question.short_reply not in WebConfig.quick_answers:
+            question.short_reply = None
 
-        q.reply_timestamp = time.time()
+        question.reply_timestamp = time.time()
 
         self.sql_session.commit()
 
-        logger.warning("Reply sent to user %s for question '%s'."
-                  % (q.user.username, q.subject))
-        r_params["selected_user"] = q.user
+        logger.warning("Reply sent to user %s for question '%s'." %
+                       (question.user.username, question.subject))
+        r_params["selected_user"] = question.user
         self.render("successfulMessage.html", **r_params)
+
 
 handlers = [(r"/",
              MainHandler),
@@ -346,4 +391,3 @@ if __name__ == "__main__":
         print sys.argv[0], "shard"
     else:
         AdminWebServer(int(sys.argv[1])).run()
-
