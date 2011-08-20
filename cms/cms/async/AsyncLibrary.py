@@ -900,31 +900,31 @@ class Logger:
         if severity in Logger.TO_SEND:
             self._log_service.Log(msg=log)
 
-    def debug(self, msg, operation="", timestamp=None):
+    def debug(self, msg, operation=None, timestamp=None):
         """Syntactic sugar.
 
         """
         return self.log(msg, operation, Logger.DEBUG, timestamp)
 
-    def info(self, msg, operation="", timestamp=None):
+    def info(self, msg, operation=None, timestamp=None):
         """Syntactic sugar.
 
         """
         return self.log(msg, operation, Logger.INFO, timestamp)
 
-    def warning(self, msg, operation="", timestamp=None):
+    def warning(self, msg, operation=None, timestamp=None):
         """Syntactic sugar.
 
         """
         return self.log(msg, operation, Logger.WARNING, timestamp)
 
-    def error(self, msg, operation="", timestamp=None):
+    def error(self, msg, operation=None, timestamp=None):
         """Syntactic sugar.
 
         """
         return self.log(msg, operation, Logger.ERROR, timestamp)
 
-    def critical(self, msg, operation="", timestamp=None):
+    def critical(self, msg, operation=None, timestamp=None):
         """Syntactic sugar.
 
         """
