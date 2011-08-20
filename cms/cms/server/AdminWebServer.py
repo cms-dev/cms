@@ -19,11 +19,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Simple web service example.
+"""Web server for administration of contests.
 
 """
 
-from functools import wraps
 import os
 import time
 
@@ -33,19 +32,13 @@ from cms.async.AsyncLibrary import logger, rpc_callback
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 
-from cms.db.SQLAlchemyAll import Base, Session, metadata, Contest, User, Announcement, Question, Submission, File
+from cms.db.SQLAlchemyAll import Base, Session, metadata, \
+     Contest, User, Announcement, Question, Submission, File
 
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
+from cms.server.Utils import contest_required
 
-def contestRequired(f):
-    @wraps(f)
-    def wrapper(*args, **kwds):
-        if args[0].contest != None:
-          return f(*args, **kwds)
-        else:
-          raise tornado.web.HTTPError(404)
-    return wrapper
 
 class BaseHandler(tornado.web.RequestHandler):
     """Base RequestHandler for this application.
@@ -63,29 +56,32 @@ class BaseHandler(tornado.web.RequestHandler):
 
         self.sql_session = Session()
         self.contest = None
+
         # Retrieve the selected contest.
-        selected_contest = self.get_argument("selected_contest",None)
+        selected_contest = self.get_argument("selected_contest", None)
 
         if selected_contest == "null":
-          self.clear_cookie("selected_contest")
-          self.redirect("/")
-          return
+            self.clear_cookie("selected_contest")
+            self.redirect("/")
+            return
 
         if selected_contest != None:
-          self.contest = self.sql_session.query(Contest).filter_by(id=selected_contest).first()
-          if self.contest != None:
-            # If we're here, the selected contest exists. Set the cookie.
-            self.set_secure_cookie("selected_contest", selected_contest)
-            self.redirect("/contest")
+            self.contest = self.sql_session.query(Contest)\
+                .filter_by(id=selected_contest).first()
+            if self.contest != None:
+                # If we're here, the selected contest exists. Set the cookie.
+                self.set_secure_cookie("selected_contest", selected_contest)
+                self.redirect("/contest")
 
         if self.contest == None:
-          # No (valid) contest specified: either it was never specified,
-          # or it was already specified in the cookies.
-          cookie_contest = self.get_secure_cookie("selected_contest")
-          if cookie_contest != None:
-            self.contest = self.sql_session.query(Contest).filter_by(id=cookie_contest).first()
-            if self.contest == None:
-              self.clear_cookie("selected_contest")
+            # No (valid) contest specified: either it was never specified,
+            # or it was already specified in the cookies.
+            cookie_contest = self.get_secure_cookie("selected_contest")
+            if cookie_contest != None:
+                self.contest = self.sql_session.query(Contest)\
+                    .filter_by(id=cookie_contest).first()
+                if self.contest == None:
+                    self.clear_cookie("selected_contest")
 
     def render_params(self):
         r = {}
@@ -101,47 +97,15 @@ class BaseHandler(tornado.web.RequestHandler):
         """ Finishes this response, ending the HTTP request.
 
         We override this method in order to properly close the database.
+
         """
         logger.debug("Closing SQL connection.")
         self.sql_session.close()
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
-class FileHandler(BaseHandler):
-    def fetch(self, digest, content_type, file_name):
-        """Sends the RPC to the FS.
 
-        """
-        service = ServiceCoord("FileStorage", 0)
-        if service not in self.application.service.remote_services or \
-               not self.application.service.remote_services[service].connected:
-            # TODO: Signal the user
+FileHandler = file_handler_gen(BaseHandler)
 
-            self.finish()
-            return
-
-        self.application.service.remote_services[service].get_file(\
-            callback=self._fetch_callback,
-            plus=[content_type, file_name],
-            digest = digest)
-
-    @rpc_callback
-    def _fetch_callback(self, caller, data, plus, error=None):
-        """This is the callback for the RPC method called from a web
-        page, that just collects the response.
-
-        """
-
-        if data == None:
-            self.finish()
-            return
-
-        (content_type, file_name) = plus
-
-        self.set_header("Content-Type", content_type)
-        self.set_header("Content-Disposition",
-                        "attachment; filename=\"%s\"" % (file_name) )
-        self.write(data)
-        self.finish()
 
 class AdminWebServer(WebService):
     """Simple web service example.
@@ -344,37 +308,36 @@ class QuestionReplyHandler(BaseHandler):
         r_params["selected_user"] = q.user
         self.render("successfulMessage.html", **r_params)
 
-handlers = [
-            (r"/", \
-                 MainHandler),
-            (r"/announcements", \
-                 AnnouncementsHandler),
-#            (r"/addcontest", \
-#                 AddContestHandler),
-            (r"/contest", \
-                 ContestViewHandler),
-            (r"/contest/edit/([0-9]+)", \
-                 EditContestHandler),
-            (r"/submissions/details/([a-zA-Z0-9_-]+)", \
-                 SubmissionDetailHandler),
-#            (r"/reevaluate/submission/([a-zA-Z0-9_-]+)", \
-#                 SubmissionReevaluateHandler),
-#            (r"/reevaluate/user/([a-zA-Z0-9_-]+)", \
-#                 UserReevaluateHandler),
-            (r"/add_announcement", \
-                 AddAnnouncementHandler),
-            (r"/remove_announcement", \
-                 RemoveAnnouncementHandler),
-            (r"/submission_file/([a-zA-Z0-9_.-]+)", \
-                 SubmissionFileHandler),
-            (r"/user/([a-zA-Z0-9_-]+)", \
-                 UserViewHandler),
-            (r"/user", \
-                 UserListHandler),
-#            (r"/message/([a-zA-Z0-9_-]+)", \
-#                 MessageHandler),
-            (r"/question/([a-zA-Z0-9_-]+)", \
-                 QuestionReplyHandler),
+handlers = [(r"/",
+             MainHandler),
+            (r"/announcements",
+             AnnouncementsHandler),
+            # (r"/addcontest",
+            #  AddContestHandler),
+            (r"/contest",
+             ContestViewHandler),
+            (r"/contest/edit/([0-9]+)",
+             EditContestHandler),
+            (r"/submissions/details/([a-zA-Z0-9_-]+)",
+             SubmissionDetailHandler),
+            # (r"/reevaluate/submission/([a-zA-Z0-9_-]+)",
+            #  SubmissionReevaluateHandler),
+            # (r"/reevaluate/user/([a-zA-Z0-9_-]+)",
+            #  UserReevaluateHandler),
+            (r"/add_announcement",
+             AddAnnouncementHandler),
+            (r"/remove_announcement",
+             RemoveAnnouncementHandler),
+            (r"/submission_file/([a-zA-Z0-9_.-]+)",
+             SubmissionFileHandler),
+            (r"/user/([a-zA-Z0-9_-]+)",
+             UserViewHandler),
+            (r"/user",
+             UserListHandler),
+            # (r"/message/([a-zA-Z0-9_-]+)",
+            #  MessageHandler),
+            (r"/question/([a-zA-Z0-9_-]+)",
+             QuestionReplyHandler),
            ]
 
 if __name__ == "__main__":
