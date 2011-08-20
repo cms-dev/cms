@@ -132,13 +132,16 @@ function update_additional_answer(element, invoker)
           <span class="question_date">{{ datetime.datetime.fromtimestamp(question.question_timestamp).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
           <span class="question_subject">{{escape(question.subject)}}</span>
           <span class="question_text">{{escape(question.text)}}</span>
-          {% if question.reply_timestamp != None %}
           <hr/>
-          <div class="reply_question_quick_answer">Replied with short answer: {{ WebConfig.quick_answers.get(question.short_reply, "No short reply.") }}</div>
-            {% if question.long_reply %}
-          <div class="reply_question_additional">Additional message: {{ escape(question.long_reply) }}</div>
+          <div class="reply_question_quick_answer">
+            {% if WebConfig.quick_answers.get(question.short_reply, None) != None %}
+            Reply (precompiled): &ldquo;{{ WebConfig.quick_answers.get(msg.short_reply, "") }}&rdquo;.
+            {% elif question.long_reply != None %}
+            Reply: &ldquo;{{ escape(question.long_reply) }}&rdquo;.
+            {% else %}
+            Not yet replied.
             {% end %}
-          {% end %}
+          </div>
           <div class="reply_question_toggle">
             <a href="#" onclick="return question_reply_toggle({{ i }}, this);">Reply</a>
           </div>
