@@ -73,7 +73,7 @@ def get_contest_list(session=None):
 
     return session.query(Contest).all()
 
-def ask_for_contest(skip=0):
+def ask_for_contest(skip=None):
     if isinstance(skip, int) and len(sys.argv) > skip + 1:
         contest_id = sys.argv[skip + 1]
 
