@@ -49,7 +49,7 @@
                     <td><a href="/submissions/details/{{ s.id }}">{{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</a></td>
                     <td>
                         {% if s.compilation_outcome == "ok" %}
-                            Successfull
+                            Successful
                         {% elif s.compilation_outcome == "fail" %}
                             Unsuccessful
                         {% else %}

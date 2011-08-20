@@ -67,8 +67,8 @@ class Submission(Base):
     timestamp = Column(Integer, nullable=False)
 
     # Compilation outcome (can be None = yet to compile, "ok" =
-    # compilation successfull and we can evaluate, "fail" =
-    # compilation unsuccessfull, thorow it away).
+    # compilation successful and we can evaluate, "fail" =
+    # compilation unsuccessful, thorow it away).
     compilation_outcome = Column(String, nullable=True)
 
     # String containing output from the sandbox, and the compiler
