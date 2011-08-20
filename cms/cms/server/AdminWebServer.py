@@ -350,7 +350,7 @@ class QuestionReplyHandler(BaseHandler):
         logger.warning("Reply sent to user %s for question '%s'." %
                        (question.user.username, question.subject))
         r_params["selected_user"] = question.user
-        self.render("successfulMessage.html", **r_params)
+        self.render("successful_message.html", **r_params)
 
 
 handlers = [(r"/",

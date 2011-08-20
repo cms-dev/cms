@@ -144,7 +144,7 @@ FileHandler = file_handler_gen(BaseHandler)
 
 
 class ContestWebServer(WebService):
-    """Simple web service example.
+    """Service that runs the web server serving the contestants.
 
     """
     def __init__(self, shard, contest):
@@ -366,7 +366,7 @@ class QuestionHandler(BaseHandler):
 
         logger.warning("Question submitted by user %s."
                        % self.current_user.username)
-        self.render("successfulQuestion.html", **r_params)
+        self.render("successful_question.html", **r_params)
 
 
 class SubmitHandler(BaseHandler):
@@ -483,7 +483,7 @@ class SubmitHandler(BaseHandler):
     def es_notify_callback(self, data, plus, error=None):
         logger.debug("ES notify_callback")
         if error == None:
-            self.render("successfulSub.html", **self.r_params)
+            self.render("successful_submission.html", **self.r_params)
         else:
             logger.error("Notification to ES failed! " + error)
             self.finish()
