@@ -42,7 +42,8 @@ class Worker(Service):
     def get_submission_data(self, submission_id):
         submission = Submission.get_from_id(submission_id, self.session)
         if submission is None:
-            err_msg = "Couldn't find submission %d in the database" % (submission_id)
+            err_msg = "Couldn't find submission %d " + \
+                "in the database" % submission_id
             logger.critical(msg_err)
             raise JobException(msg_err)
 
@@ -64,21 +65,25 @@ class Worker(Service):
         if self.work_lock.acquire(False):
 
             try:
-                logger.operation = "compiling submission %s" % (submission_id)
+                logger.operation = "compiling submission %s" % submission_id
                 with async_lock:
-                    logger.info("Request received")
+                    logger.info("Request received: compile submission %s." %
+                                submission_id)
 
                 with SessionGen(commit=False) as self.session:
 
                     # Retrieve submission and task_type
-                    (submission, task_type) = self.get_submission_data(submission_id)
+                    submission, task_type = \
+                        self.get_submission_data(submission_id)
 
                     # Do the actual work
                     success = False
                     try:
                         success = task_type.compile()
                     except Exception as e:
-                        err_msg = "Compilation failed with not caught exception `%s' and traceback `%s'" % (repr(e), traceback.format_exc())
+                        err_msg = "Compilation failed with not caught " + \
+                            "exception `%s' and traceback `%s'" % \
+                            (repr(e), traceback.format_exc())
                         with async_lock:
                             logger.error(err_msg)
                         raise JobException(err_msg)
@@ -89,7 +94,9 @@ class Worker(Service):
                         logger.info("Request finished")
                     return success
             except Exception as e:
-                err_msg = "Worker failed to compilation with exception `%s' and traceback `%s'" % (repr(e), traceback.format_exc())
+                err_msg = "Worker failed to compilation with exception " + \
+                    "`%s' and traceback `%s'" % \
+                    (repr(e), traceback.format_exc())
                 with async_lock:
                     logger.error(err_msg)
                 raise JobException(err_msg)
@@ -101,7 +108,9 @@ class Worker(Service):
 
         else:
             with async_lock:
-                logger.info("Request to compile submission %d received, but declined because of acquired lock" % (submission_id))
+                logger.info("Request to compile submission %d received, "
+                            "but declined because of acquired lock" %
+                            submission_id)
             return False
 
     @rpc_method
@@ -110,21 +119,25 @@ class Worker(Service):
         if self.work_lock.acquire(False):
 
             try:
+                logger.operation = "evaluating submission %s" % submission_id
                 with async_lock:
-                    logger.operation = "evaluating submission %s" % (submission_id)
-                    logger.info("Request received")
+                    logger.info("Request received: evaluate submission %s." %
+                                submission_id)
 
                 with SessionGen(commit=False) as self.session:
 
                     # Retrieve submission and task_type
-                    (submission, task_type) = self.get_submission_data(submission_id)
+                    submission, task_type = \
+                        self.get_submission_data(submission_id)
 
                     # Do the actual work
                     success = False
                     try:
                         success = task_type.execute()
                     except Exception as e:
-                        err_msg = "Compilation failed with not caught exception `%s' and traceback `%s'" % (repr(e), traceback.format_exc())
+                        err_msg = "Compilation failed with not caught " + \
+                            "exception `%s' and traceback `%s'" % \
+                            (repr(e), traceback.format_exc())
                         with async_lock:
                             logger.error(err_msg)
                         raise JobException(err_msg)
@@ -143,7 +156,9 @@ class Worker(Service):
 
         else:
             with async_lock:
-                logger.info("Request to evaluate submission %d received, but declined because of acquired lock" % (submission_id))
+                logger.info("Request to evaluate submission %d received, "
+                            "but declined because of acquired lock" %
+                            submission_id)
             return False
 
 
