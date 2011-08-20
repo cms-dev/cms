@@ -26,7 +26,7 @@ from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 
 from cms import Config
 
-db = create_engine(Config.database, echo=True)
+db = create_engine(Config.database, echo=Config.database_debug)
 
 Base = declarative_base(db)
 metadata = Base.metadata

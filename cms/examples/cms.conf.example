@@ -28,6 +28,7 @@
 
  "database":         "postgresql://oiisys:ciaociao@localhost/oiisys2",
  "_database_sqlite": "sqlite:///test.sqlite",
+ "database_debug":   true,
 
  "maximum_conflict_attempts": 50,
  "submit_local_copy":	      true,
