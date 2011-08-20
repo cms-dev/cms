@@ -36,6 +36,7 @@ Session = sessionmaker(db)
 # For two-phases transactions:
 #Session = sessionmaker(db, twophase=True)
 
+
 # TODO: decide which one of the following is better.
 
 # from contextlib import contextmanager
@@ -90,7 +91,17 @@ class SessionGen:
             self.session.rollback()
         self.session.close()
 
+
 def get_from_id(cls, id, session):
+    """Given a session and an id, this class method returns the object
+    corresponding to the class and id, if existing.
+
+    cls (class): the class to which the method is attached
+    id (string): the id of the object we want
+    session (SQLAlchemy session): the session to query
+    returns (object): the wanted object, or None
+
+    """
     try:
         return session.query(cls).filter(cls.id == id).one()
     except NoResultFound:

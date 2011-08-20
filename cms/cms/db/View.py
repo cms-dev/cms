@@ -19,7 +19,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlalchemy import Column, Integer, String, Boolean, Unicode, Float, ForeignKey
+"""Views-related database interface for SQLAlchemy. Not to be used
+directly (import from SQLAlchemyAll).
+
+"""
+
+from sqlalchemy import Column, ForeignKey, Integer, Float
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import mapped_collection
 
@@ -28,46 +33,91 @@ from cms.db.Contest import Contest
 from cms.db.User import User
 from cms.db.Task import Task
 
+
 class RankingView(Base):
+    """Class to store the current ranking of a contest. Not to be used
+    directly (import it from SQLAlchemyAll).
+
+    """
     __tablename__ = 'rankingviews'
 
+    # Auto increment primary key.
     id = Column(Integer, primary_key=True)
-    contest_id = Column(Integer, ForeignKey(Contest.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-    timestamp = Column(Float, nullable=False)
 
-    #scores (backref)
-    contest = relationship(Contest,
-                           backref=backref("ranking_view",
-                                           uselist=False,
-                                           single_parent=True,
-                                           cascade="all, delete, delete-orphan"),
-                           single_parent=True)
+    # Contest (id and object) the ranking refers to.
+    contest_id = Column(Integer,
+                        ForeignKey(Contest.id,
+                                   onupdate="CASCADE", ondelete="CASCADE"),
+                        nullable=False)
+    contest = relationship(
+        Contest,
+        backref=backref("ranking_view",
+                        uselist=False,
+                        single_parent=True,
+                        cascade="all, delete, delete-orphan"),
+        single_parent=True)
+
+    # Time the ranking was made.
+    timestamp = Column(Integer, nullable=False)
+
+    # Follows the description of the fields automatically added by
+    # SQLAlchemy.
+    # scores (list of Score objects)
 
     def __init__(self, contest, timestamp=0.0):
         self.contest = contest
         self.timestamp = timestamp
 
     def set_score(self, score):
+        """Assigns the score to this ranking view. Used to create an
+        empty ranking.
+
+        score (object): the Score instance to assign
+
+        """
         score.rankingview = self
         self.scores[(score.user.username, score.task.num)] = score
 
 
 class Score(Base):
+    """Class to store the score a user got in a task. Not to be used
+    directly (import it from SQLAlchemyAll).
+
+    """
     __tablename__ = 'scores'
 
+    # Auto increment primary key.
     id = Column(Integer, primary_key=True)
-    rankingview_id = Column(Integer, ForeignKey(RankingView.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-    task_id = Column(Integer, ForeignKey(Task.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-    user_id = Column(Integer, ForeignKey(User.id, onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
-    score = Column(Float, nullable=False)
 
-    rankingview = relationship(RankingView,
-                               backref=backref("scores",
-                                               collection_class=mapped_collection(lambda s: (s.user.username, s.task.num)),
-                                               single_parent=True,
-                                               cascade="all, delete, delete-orphan"))
+    # RankingView (id and object) owning the score.
+    rankingview_id = Column(Integer,
+                            ForeignKey(RankingView.id,
+                                       onupdate="CASCADE", ondelete="CASCADE"),
+                            nullable=False)
+    rankingview = relationship(
+        RankingView,
+        backref=backref("scores",
+                        collection_class=mapped_collection(
+                            lambda s: (s.user.username, s.task.num)),
+                        single_parent=True,
+                        cascade="all, delete, delete-orphan"))
+
+    # Task (id and object) the score refers to.
+    task_id = Column(Integer,
+                     ForeignKey(Task.id,
+                                onupdate="CASCADE", ondelete="CASCADE"),
+                     nullable=False)
     task = relationship(Task)
+
+    # User (id and object) owning the score.
+    user_id = Column(Integer,
+                     ForeignKey(User.id,
+                                onupdate="CASCADE", ondelete="CASCADE"),
+                     nullable=False)
     user = relationship(User)
+
+    # The actual score.
+    score = Column(Float, nullable=False)
 
     def __init__(self, score, task=None, user=None, rankingview=None):
         self.score = score

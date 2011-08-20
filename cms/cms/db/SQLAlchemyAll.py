@@ -19,6 +19,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""This is the main inteface to the db objects. In particular, every
+db objects must be imported from this module.
+
+"""
+
 import sys
 
 from sqlalchemy.orm import relationship, backref
@@ -28,24 +33,45 @@ from cms.db.SQLAlchemyUtils import db, Base, metadata, Session, SessionGen
 from cms.db.Contest import Contest, Announcement
 from cms.db.View import RankingView, Score
 from cms.db.User import User, Message, Question
-from cms.db.Task import Task, Manager, Testcase, Attachment, PublicTestcase, SubmissionFormatElement
+from cms.db.Task import Task, Manager, Testcase, Attachment, \
+     PublicTestcase, SubmissionFormatElement
 from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 
 
-# Last relationship configurations
+# The following are methods of Contest that cannot be put in the right
+# file because of circular dependencies.
+
 def get_submissions(self, session):
-    return session.query(Submission).join(Task).filter(Task.contest == self).all()
+    """Returns a list of submissions (with the information about the
+    corresponding task) referring to the contest.
+
+    session (SQLAlchemy session): the session to query.
+    returns (list): list of submissions.
+
+    """
+    return session.query(Submission).join(Task).\
+           filter(Task.contest == self).all()
 Contest.get_submissions = get_submissions
 
 
-def create_empty_ranking_view(self, timestamp=0.0):
+def create_empty_ranking_view(self, timestamp=0):
+    """Resets all scores to 0 at the given timestamp.
+
+    timestamp (int): the time to assign to the 0 score.
+
+    """
     self.ranking_view = RankingView(self, timestamp=timestamp)
     for user in self.users:
         for task in self.tasks:
             self.ranking_view.set_score(Score(0.0, user=user, task=task))
 Contest.create_empty_ranking_view = create_empty_ranking_view
 
+
 def update_ranking_view(self):
+    """Updates the ranking view with the scores coming from the
+    ScoreType instance of every task in the contest.
+
+    """
     for user in self.users:
         for task in self.tasks:
             score = task.get_scorer().scores.get(user.username, 0.0)
@@ -53,13 +79,8 @@ def update_ranking_view(self):
 Contest.update_ranking_view = update_ranking_view
 
 
-if __name__ == "__main__" and "redrop" in sys.argv[1:]:
-    metadata.drop_all()
-
-
-def main():
-    metadata.create_all()
-
-
 if __name__ == "__main__":
-    main()
+    if "redrop" in sys.argv[1:]:
+        metadata.drop_all()
+    else:
+        metadata.create_all()
