@@ -33,7 +33,6 @@
 
 """
 
-from functools import wraps
 import os
 import pickle
 import time
@@ -56,29 +55,7 @@ from cms.db.Utils import ask_for_contest
 import cms.util.Configuration as Configuration
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
-
-
-def contest_required(func):
-    """Decorator to ensure that in the parameter list there is one
-    named 'contest'. If not present, the browser shows a 404.
-
-    """
-    @wraps(func)
-    def wrapper(*args, **kwds):
-        """Wrap the function in something that check if in the
-        parameter list there is a 'contest' argument and if it does
-        not find it, raises a 404.
-
-        args (list): positional arguments for func
-        kwds (dict): named arguments for func
-        returns (object): return value of func, or raises 404
-
-        """
-        if args[0].contest != None:
-            return func(*args, **kwds)
-        else:
-            raise tornado.web.HTTPError(404)
-    return wrapper
+from cms.server.Utils import contest_required, file_handler_gen
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -160,44 +137,7 @@ class BaseHandler(tornado.web.RequestHandler):
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
 
-class FileHandler(BaseHandler):
-    """Base class for handlers that need to serve a file to the user.
-
-    """
-    def fetch(self, digest, content_type, filename):
-        """Sends the RPC to the FS.
-
-        """
-        service = ServiceCoord("FileStorage", 0)
-        if service not in self.application.service.remote_services or \
-               not self.application.service.remote_services[service].connected:
-            # TODO: Signal the user
-
-            self.finish()
-            return
-
-        self.application.service.remote_services[service].get_file(
-            callback=self._fetch_callback,
-            plus=[content_type, filename],
-            digest=digest)
-
-    @rpc_callback
-    def _fetch_callback(self, caller, data, plus, error=None):
-        """This is the callback for the RPC method called from a web
-        page, that just collects the response.
-
-        """
-        if data == None:
-            self.finish()
-            return
-
-        (content_type, filename) = plus
-
-        self.set_header("Content-Type", content_type)
-        self.set_header("Content-Disposition",
-                        "attachment; filename=\"%s\"" % filename)
-        self.write(data)
-        self.finish()
+FileHandler = file_handler_gen(BaseHandler)
 
 
 class ContestWebServer(WebService):
