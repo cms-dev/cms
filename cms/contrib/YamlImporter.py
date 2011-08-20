@@ -194,7 +194,7 @@ if __name__ == "__main__":
     parser.add_option("-d", "--drop",
                       dest="drop", help="drop everything from the database before importing",
                       default=False, action="store_true")
-    parser.add_option("-s", "--shard",
+    parser.add_option("-s", "--shard", help="service shard number",
                       dest="shard", action="store", type="int", default=None)
     options, args = parser.parse_args()
     if len(args) != 1:
