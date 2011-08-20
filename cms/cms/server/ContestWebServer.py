@@ -164,7 +164,6 @@ class FileHandler(BaseHandler):
     """Base class for handlers that need to serve a file to the user.
 
     """
-
     def fetch(self, digest, content_type, filename):
         """Sends the RPC to the FS.
 
@@ -188,7 +187,6 @@ class FileHandler(BaseHandler):
         page, that just collects the response.
 
         """
-
         if data == None:
             self.finish()
             return
@@ -312,7 +310,6 @@ class TaskStatementViewHandler(FileHandler):
     """Shows the statement file of a task in the contest.
 
     """
-
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self, task_name):
@@ -331,7 +328,6 @@ class SubmissionDetailHandler(BaseHandler):
     """Shows additional details for the specified submission.
 
     """
-
     @tornado.web.authenticated
     def get(self, submission_id):
 
@@ -434,7 +430,6 @@ class SubmitHandler(BaseHandler):
     """Handles the received submissions.
 
     """
-
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def post(self, task_id):

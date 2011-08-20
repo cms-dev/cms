@@ -1,7 +1,7 @@
 {% extends base.html %}
 {% block core %}
     <div class="core_title">
-    <h1>{{ task.title }} ({{ task.name }}) - Submission Detail </h1>
+    <h1>{{ task.title }} ({{ task.name }}) - Submission details </h1>
     </div>
 
     {% if handler.get_argument("notokens","") == "true" %}
@@ -15,11 +15,21 @@
       </tr>
       <tr>
           <th>Compilation<br/>outcome</th>
-          <td>{{ submission.compilation_outcome }}</td>
+          <td>
+            {% if submission.compilation_outcome == "ok" %}
+              Successfull
+            {% elif submission.compilation_outcome == "fail" %}
+              Unsuccessful
+            {% else %}
+              Please wait
+            {% end %}
+          </td>
       </tr>
       <tr>
           <th>Compilation<br/>detail</th>
-          <td>{% if submission.compilation_text %}{{ escape(submission.compilation_text).replace("\n", "<br/>") }}{% end %}</td>
+          <td>
+            <pre>{% if submission.compilation_text != None %}{{ escape(submission.compilation_text) }}{% end %}</pre>
+          </td>
       </tr>
       <tr>
           <th>
@@ -30,27 +40,26 @@
           {% end %}
           </th>
           <td>
-          <!--
-          {% if False %}
-              {% if submission.evaluation_outcome != None %}
-                  {% if submission.token_timestamp != None or task.public_testcases != [] %}
-                      <table class="sub_score">
-                      <tr><th>Score</th><th>Details</th></tr>
-                      {% for i, (ev_o, ev_t) in enumerate(zip(submission.evaluation_outcome, submission.evaluation_text)) %}
-                        {% if submission.token_timestamp!= None or i in task.public_testcases %}
-                          <tr><td>{{ ev_o }}</td><td>{{ escape(ev_t) }}</td><tr/>
-                        {% end %}
+            {% if submission.evaluations != [] %}
+              <table class="sub_score">
+                  <tr><th>Score</th><th>Details</th></tr>
+                    {% if submission.token_timestamp != None %}
+                      {% for ev in submission.evaluations %}
+                  <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td><tr/>
                       {% end %}
-                      </table>
-                  {% else %}
-                        No specified testcases<br/> for partial feedback for this task.
-                  {% end%}
-              {% else %}
-                  Not evaluated
-              {% end %}
-          {% end %}
-          -->
-          
+                    {% else %}
+                      {% for public in task.public_testcases %}
+                  <tr><td>{{ escape(submission.evaluations[public.testcase].outcome) }}</td><td>{{ escape(submission.evaluations[public.testcase].text) }}</td><tr/>
+                      {% end %}
+                      {% if task.public_testcases == [] %}
+                  <tr><td colspan="2">No specified testcases<br/> for partial feedback for this task.</td></tr>
+                      {% end %}
+                    {% end %}
+              </table>
+            {% else %}
+              Please wait
+            {% end %}
+
           </td>
       </tr>
       <tr>

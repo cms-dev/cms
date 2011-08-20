@@ -4,10 +4,6 @@
     <h1>{{ task.title }} ({{ task.name }})</h1>
     </div>
 
-    {% if handler.get_argument("repeated","") == "true" %}
-    <span class="error">Your last submission is the same.</span>
-    {% end %}
-
     <h2 onclick="util.toggleVisibility(&quot;task_information&quot;);">
     <span class="toggle" id="task_information_toggle" >-</span>Task Information</h2>
     <div id="task_information">
@@ -16,7 +12,6 @@
         Time limit: {{ task.time_limit }} second(s)</br>
         Memory limit: {{ task.memory_limit }} MB
     </div>
-
 
     <h2 onclick="util.toggleVisibility(&quot;submit_solution&quot;);">
     <span class="toggle" id="submit_solution_toggle" >-</span>Submit a solution</h2>
@@ -52,18 +47,23 @@
             {% for s in sorted(submissions, key=lambda s: s.timestamp , reverse = True) %}
                 <tr>
                     <td><a href="/submissions/details/{{ s.id }}">{{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</a></td>
-                    <td>{{ s.compilation_outcome }}</td>
                     <td>
-                    Not yet implemented!
-                    <!--
-                        {% comment if s.evaluation_outcome != None %}
-                            Evaluated
-                        {% comment elif s.compilation_outcome == "fail" %}
+                        {% if s.compilation_outcome == "ok" %}
+                            Successfull
+                        {% elif s.compilation_outcome == "fail" %}
+                            Unsuccessful
+                        {% else %}
+                            Please wait
+                        {% end %}
+                    </td>
+                    <td>
+                        {% if s.compilation_outcome == "fail" %}
                             Ignored
-                        {% comment else %}
-                            Queued, please wait
-                        {% comment end %}
-                    -->
+                        {% elif s.evaluations != [] %}
+                            Evaluated
+                        {% else %}
+                            Please wait
+                        {% end %}
                     </td>
                     <td>
                     {% for filename,sub_file in s.files.items() %}
