@@ -58,10 +58,15 @@ class LogService(Service):
         print >> self._log_file, msg
 
         # FIXME - Bad hack to color the log
-        msg = msg.split('[', 1)
-        msg[1] = msg[1].split(']', 1)
-        msg = '\033[1;31m' + msg[0] + '\033[0m' + \
-              '[' + self.color_hash(msg[1][0]) + ']' + msg[1][1]
+        time_severity, other = msg.split('[', 1)
+        service, text = other.split(']', 1)
+        operation = ""
+        if service.find('/') != -1:
+            service, operation = service.split('/', 1)
+            operation = '/' + operation
+        msg = '\033[1;31m' + time_severity + '\033[0m' + \
+              '[' + self.color_hash(service) + \
+              self.color_hash(operation) + ']' + text
         print msg
 
         return True
