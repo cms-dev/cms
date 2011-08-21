@@ -138,7 +138,7 @@ class JobQueue:
         ret = []
         while myqueue != []:
             ext_job = heapq.heappop(myqueue)
-            ret.append({'job': repr(ext_job[2]),
+            ret.append({'job': ext_job[2],
                         'priority': ext_job[0],
                         'timestamp': ext_job[1]})
         return ret
@@ -432,6 +432,16 @@ class EvaluationServer(Service):
             return True
         else:
             return False
+
+    @rpc_method
+    def queue_status(self):
+        """Returns a list whose elements are the jobs currently in the
+        queue (see Queue.get_status).
+
+        returns (list): the list with the queued elements.
+
+        """
+        return self.queue.get_status()
 
     def check_workers(self):
         """We ask WorkerPool for the unresponsive workers, and we put

@@ -137,15 +137,11 @@ class AdminWebServer(WebService):
 
 
 class MainHandler(BaseHandler):
-    """Home page handler.
+    """Home page handler, with queue and workers statuses.
 
     """
     def get(self):
-        r_params = self.render_params()
-        # TODO Worker status
-        r_params["workers_status"] = None
-        r_params["queue_status"] = None
-        self.render("welcome.html", **r_params)
+        self.render("welcome.html", **self.render_params())
 
 
 class ContestViewHandler(BaseHandler):
