@@ -139,15 +139,29 @@ def format_log(msg, coord, operation, severity, timestamp, colors=False):
 
     if colors:
         severity_color = ANSI_FG_COLORS[SEVERITY_COLORS[severity]]
-        service_color = ansi_color_hash(service_full)
-        format_string = "%s %s %%s" % \
-            (ansi_color_string("%s - %s", severity_color),
-             ansi_color_string("[%s]", service_color))
+        coord_color = ansi_color_hash(coord)
+        if operation == "":
+            format_string = "%s [%s] %%s" % \
+                (ansi_color_string("%s - %s", severity_color),
+                 ansi_color_string("%s", coord_color))
+        else:
+            operation_color = ansi_color_hash(operation)
+            format_string = "%s [%s/%s] %%s" % \
+                (ansi_color_string("%s - %s", severity_color),
+                 ansi_color_string("%s", coord_color),
+                 ansi_color_string("%s", operation_color))
     else:
-        format_string = "%s - %s [%s] %s"
+        if operation == "":
+            format_string = "%s - %s [%s] %s"
+        else:
+            format_string = "%s - %s [%s/%s] %s"
 
-    return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(d),
-                            severity, service_full, msg)
+    if operation == "":
+        return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(d),
+                                severity, coord, msg)
+    else:
+        return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(d),
+                                severity, coord, operation, msg)
 
 
 ## Other utilities ##
