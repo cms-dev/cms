@@ -26,8 +26,8 @@
 
  "process_cmdline": ["/usr/bin/python", "./%s.py", "%d"],
 
- "database":         "postgresql://oiisys:ciaociao@localhost/oiisys2",
- "_database_sqlite": "sqlite:///test.sqlite",
+ "database":         "postgresql://username:password@localhost/database",
+ "_database_sqlite": "sqlite:///database.sqlite",
  "database_debug":   true,
 
  "keep_sandbox":     true,
