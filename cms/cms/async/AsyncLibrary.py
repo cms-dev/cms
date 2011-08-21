@@ -541,12 +541,13 @@ class RemoteService(asynchat.async_chat):
                 method_info = self.service.method_info(message["__method"])
                 binary_response = method_info["binary_response"]
                 threaded = method_info["threaded"]
-            except KeyError:
+            except KeyError as exception:
                 response["__error"] = "%s: %s" % (
                     exception.__class__.__name__,
                     " ".join([str(x) for x in exception.args]))
                 binary_response = False
                 method_response = None
+                threaded = False
 
             # If the rpc method is threaded, then we start the thread
             # and return immediately.
