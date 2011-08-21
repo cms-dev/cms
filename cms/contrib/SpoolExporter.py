@@ -50,6 +50,8 @@ class SpoolExporter(Service):
 
     def do_export(self):
         logger.operation = "exporting contest %d" % (self.contest_id)
+        logger.info("Starting export")
+
         logger.info("Creating dir structure")
         try:
             os.mkdir(self.spool_dir)
@@ -133,6 +135,9 @@ class SpoolExporter(Service):
                 print >> ranking_csv, ("%s,%.6f" + ",%.6f" * len(c.tasks)) % ((user, total) + tuple(problems))
             ranking_file.close()
             ranking_csv.close()
+
+            logger.info("Export finished")
+            logger.operation = ""
 
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
