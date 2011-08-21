@@ -224,7 +224,7 @@ class BatchTaskType:
         # Execute the compilation inside the sandbox
         self.sandbox.chdir = self.sandbox.path
         self.sandbox.preserve_env = True
-        self.sandbox.filter_syscalls = 0
+        self.sandbox.filter_syscalls = 1
         self.sandbox.allow_fork = True
         self.sandbox.file_check = 2
         # FIXME - File access limits are not enforced on children
