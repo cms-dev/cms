@@ -30,6 +30,8 @@
  "_database_sqlite": "sqlite:///test.sqlite",
  "database_debug":   true,
 
+ "keep_sandbox":     true,
+
  "maximum_conflict_attempts": 50,
  "submit_local_copy":	      true,
  "submit_local_copy_path":    "submissions/"

@@ -28,6 +28,7 @@ from cms.box.Sandbox import Sandbox
 from cms.db.SQLAlchemyAll import Task, Executable, Evaluation
 from cms.service import JobException
 from cms.service.Utils import get_compilation_command, filter_ansi_escape
+from cms import Config
 
 def get_task_type_class(submission, session, service):
     if submission.task.task_type == Task.TASK_TYPE_BATCH:
@@ -93,8 +94,6 @@ class BatchTaskType:
         self.session = session
         self.service = service
 
-    KEEP_SANDBOX = False
-
     def finish_compilation(self, success, compilation_success=False, text=""):
         self.safe_delete_sandbox()
         if not success:
@@ -125,7 +124,7 @@ class BatchTaskType:
         return True
 
     def safe_delete_sandbox(self):
-        if "sandbox" in self.__dict__ and not self.KEEP_SANDBOX:
+        if "sandbox" in self.__dict__ and not Config.keep_sandbox:
             try:
                 self.sandbox.delete()
             except (IOError, OSError):
