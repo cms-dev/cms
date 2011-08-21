@@ -26,15 +26,19 @@
 
  "process_cmdline": ["/usr/bin/python", "./%s.py", "%d"],
 
- "database":         "postgresql://oiisys:ciaociao@localhost/oiisys2",
- "_database_sqlite": "sqlite:///test.sqlite",
+ "database":         "postgresql://username:password@localhost/database",
+ "_database_sqlite": "sqlite:///database.sqlite",
  "database_debug":   true,
 
  "keep_sandbox":     true,
 
  "maximum_conflict_attempts": 50,
  "submit_local_copy":	      true,
- "submit_local_copy_path":    "submissions/"
+ "submit_local_copy_path":    "submissions/",
 
+ "color_shell_log":        true,
+ "color_file_log": 	   false,
+ "color_remote_shell_log": true,
+ "color_remote_file_log":  false
 
 }

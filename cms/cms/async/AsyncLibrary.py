@@ -39,9 +39,10 @@ import codecs
 from Utils import random_string, mkdir, \
      encode_binary, encode_length, encode_json, \
      decode_binary, decode_length, decode_json
-from cms.util.Utils import ANSI_FG_COLORS
+from cms.util.Utils import ANSI_FG_COLORS, format_log, \
+    SEV_CRITICAL, SEV_ERROR, SEV_WARNING, SEV_INFO, SEV_DEBUG
 from cms.async import ServiceCoord, Address, get_service_address
-
+from cms import Config
 
 def rpc_callback(func):
     """Tentative decorator for a RPC callback function. Up to now it
@@ -819,40 +820,29 @@ class Logger:
     store/display locally and remotely log messages.
 
     """
-
-    CRITICAL = "CRITICAL"
-    ERROR    = "ERROR   "
-    WARNING  = "WARNING "
-    INFO     = "INFO    "
-    DEBUG    = "DEBUG   "
-
-    SEVERITY_COLORS = {CRITICAL: 'red',
-                       ERROR:    'red',
-                       WARNING:  'yellow',
-                       INFO:     'green',
-                       DEBUG:    'cyan'}
+    TO_STORE = [
+        SEV_CRITICAL,
+        SEV_ERROR,
+        SEV_WARNING,
+        SEV_INFO,
+        SEV_DEBUG,
+        ]
+    TO_DISPLAY = [
+        SEV_CRITICAL,
+        SEV_ERROR,
+        SEV_WARNING,
+        SEV_INFO
+        ]
+    # FIXME - SEV_DEBUG cannot be added to TO_SEND, otherwise we enter
+    # an infinite loop
+    TO_SEND = [
+        SEV_CRITICAL,
+        SEV_ERROR,
+        SEV_WARNING,
+        SEV_INFO
+        ]
 
     def __init__(self):
-        Logger.TO_STORE = [
-            Logger.CRITICAL,
-            Logger.ERROR,
-            Logger.WARNING,
-            Logger.INFO,
-            Logger.DEBUG,
-            ]
-        Logger.TO_DISPLAY = [
-            Logger.CRITICAL,
-            Logger.ERROR,
-            Logger.WARNING,
-            Logger.INFO,
-#            Logger.DEBUG
-            ]
-        Logger.TO_SEND = [
-            Logger.CRITICAL,
-            Logger.ERROR,
-            Logger.WARNING,
-            Logger.INFO,
-            ]
 
         self._log_service = RemoteService(None,
                                           ServiceCoord("LogService", 0))
@@ -885,77 +875,49 @@ class Logger:
 
         """
         if severity is None:
-            severity = Logger.INFO
+            severity = SEV_INFO
         if timestamp is None:
             timestamp = time.time()
         if operation is None:
             operation = self.operation
-
-        log = self.format_log(msg, operation, severity, timestamp)
-        color_log = self.format_log(msg, operation, severity, timestamp, colors=True)
+        coord = repr(self._my_coord)
 
         if severity in Logger.TO_DISPLAY:
-            print color_log
+            print format_log(msg, coord, operation, severity, timestamp, colors=Config.color_shell_log)
         if severity in Logger.TO_STORE:
-            print >> self._log_file, log
+            print >> self._log_file, format_log(msg, coord, operation, severity, timestamp, colors=Config.color_file_log)
         if severity in Logger.TO_SEND:
-            self._log_service.Log(msg=log)
+            self._log_service.Log(msg=msg, coord=coord, operation=operation, severity=severity, timestamp=timestamp)
 
     def debug(self, msg, operation=None, timestamp=None):
         """Syntactic sugar.
 
         """
-        return self.log(msg, operation, Logger.DEBUG, timestamp)
+        return self.log(msg, operation, SEV_DEBUG, timestamp)
 
     def info(self, msg, operation=None, timestamp=None):
         """Syntactic sugar.
 
         """
-        return self.log(msg, operation, Logger.INFO, timestamp)
+        return self.log(msg, operation, SEV_INFO, timestamp)
 
     def warning(self, msg, operation=None, timestamp=None):
         """Syntactic sugar.
 
         """
-        return self.log(msg, operation, Logger.WARNING, timestamp)
+        return self.log(msg, operation, SEV_WARNING, timestamp)
 
     def error(self, msg, operation=None, timestamp=None):
         """Syntactic sugar.
 
         """
-        return self.log(msg, operation, Logger.ERROR, timestamp)
+        return self.log(msg, operation, SEV_ERROR, timestamp)
 
     def critical(self, msg, operation=None, timestamp=None):
         """Syntactic sugar.
 
         """
-        return self.log(msg, operation, Logger.CRITICAL, timestamp)
-
-    def format_log(self, msg, operation, severity, timestamp, colors=False):
-        """Format a log message in a common way (for local and remote
-        logging).
-
-        msg (string): the message to log
-        operation (string): a high-level description of the long-term
-                            operation that is going on in the service
-        severity (string): a constant defined in Logger
-        timestamp (float): seconds from epoch
-        returns (string): the formatted log
-        colors (bool): whether to use ANSI color commands (for the logs
-                       directed to a shell)
-
-        """
-        d = datetime.datetime.fromtimestamp(timestamp)
-        service_full = repr(self._my_coord)
-        if operation != "":
-            service_full += "/%s" % (operation)
-        if colors:
-            format_string = "\033[1;%dm%%s - %%s\033[0m [%%s] %%s" % \
-                (ANSI_FG_COLORS[Logger.SEVERITY_COLORS[severity]])
-        else:
-            format_string = "%s - %s [%s] %s"
-        return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(d),
-                                severity, service_full, msg)
+        return self.log(msg, operation, SEV_CRITICAL, timestamp)
 
 
 logger = Logger()

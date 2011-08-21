@@ -31,7 +31,8 @@ import base64
 
 from cms.async.AsyncLibrary import Service, rpc_method, logger
 from cms.async import ServiceCoord
-from cms.util.Utils import ANSI_FG_COLORS
+from cms.util.Utils import format_log
+from cms import Config
 
 class LogService(Service):
     """Logger service.
@@ -47,41 +48,22 @@ class LogService(Service):
                                      "w", "utf-8")
 
     @rpc_method
-    def Log(self, msg):
+    def Log(self, msg, coord, operation, severity, timestamp):
         """Log a message.
 
-        msg (string): the message.
+        msg (string): the message to log
+        operation (string): a high-level description of the long-term
+                            operation that is going on in the service
+        severity (string): a constant defined in Logger
+        timestamp (float): seconds from epoch
         returns (bool): True
 
         """
 
-        print >> self._log_file, msg
-
-        # FIXME - Bad hack to color the log
-        time_severity, other = msg.split('[', 1)
-        service, text = other.split(']', 1)
-        operation = ""
-        if service.find('/') != -1:
-            service, operation = service.split('/', 1)
-            operation = '/' + operation
-        msg = '\033[1;31m' + time_severity + '\033[0m' + \
-              '[' + self.color_hash(service) + \
-              self.color_hash(operation) + ']' + text
-        print msg
+        print >> self._log_file, format_log(msg, coord, operation, severity, timestamp, colors=Config.color_remote_file_log)
+        print format_log(msg, coord, operation, severity, timestamp, colors=Config.color_remote_shell_log)
 
         return True
-
-    def color_hash(self, s):
-        """Enclose a string in a ANSI code giving it a color that
-        depends on its content.
-
-        s (string): the string to color
-        return (string): s enclosed in an ANSI code
-
-        """
-        ansi_codes = ANSI_FG_COLORS.values()
-        hash_number = sum([ord(x) for x in s]) % len(ansi_codes)
-        return '\033[1;%dm%s\033[0m' % (ansi_codes[hash_number], s)
 
 
 if __name__ == "__main__":
