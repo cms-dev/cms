@@ -34,7 +34,11 @@
 
  "maximum_conflict_attempts": 50,
  "submit_local_copy":	      true,
- "submit_local_copy_path":    "submissions/"
+ "submit_local_copy_path":    "submissions/",
 
+ "color_shell_log":        true,
+ "color_file_log": 	   false,
+ "color_remote_shell_log": true,
+ "color_remote_file_log":  false
 
 }

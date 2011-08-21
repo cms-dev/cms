@@ -1,4 +1,4 @@
 #!/bin/bash
 
-less "`ls logs/*.log | sort -n | tail -n 1`"
+less -r "`ls logs/*.log | sort -n | tail -n 1`"
 

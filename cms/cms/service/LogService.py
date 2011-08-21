@@ -32,6 +32,7 @@ import base64
 from cms.async.AsyncLibrary import Service, rpc_method, logger
 from cms.async import ServiceCoord
 from cms.util.Utils import format_log
+from cms import Config
 
 class LogService(Service):
     """Logger service.
@@ -59,8 +60,8 @@ class LogService(Service):
 
         """
 
-        print >> self._log_file, format_log(msg, coord, operation, severity, timestamp, colors=False)
-        print format_log(msg, coord, operation, severity, timestamp, colors=True)
+        print >> self._log_file, format_log(msg, coord, operation, severity, timestamp, colors=Config.color_remote_file_log)
+        print format_log(msg, coord, operation, severity, timestamp, colors=Config.color_remote_shell_log)
 
         return True
 

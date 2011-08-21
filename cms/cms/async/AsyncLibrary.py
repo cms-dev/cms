@@ -42,7 +42,7 @@ from Utils import random_string, mkdir, \
 from cms.util.Utils import ANSI_FG_COLORS, format_log, \
     SEV_CRITICAL, SEV_ERROR, SEV_WARNING, SEV_INFO, SEV_DEBUG
 from cms.async import ServiceCoord, Address, get_service_address
-
+from cms import Config
 
 def rpc_callback(func):
     """Tentative decorator for a RPC callback function. Up to now it
@@ -881,13 +881,10 @@ class Logger:
             operation = self.operation
         coord = repr(self._my_coord)
 
-        log = format_log(msg, coord, operation, severity, timestamp, colors=False)
-        color_log = format_log(msg, coord, operation, severity, timestamp, colors=True)
-
         if severity in Logger.TO_DISPLAY:
-            print color_log
+            print format_log(msg, coord, operation, severity, timestamp, colors=Config.color_shell_log)
         if severity in Logger.TO_STORE:
-            print >> self._log_file, log
+            print >> self._log_file, format_log(msg, coord, operation, severity, timestamp, colors=Config.color_file_log)
         if severity in Logger.TO_SEND:
             self._log_service.Log(msg=msg, coord=coord, operation=operation, severity=severity, timestamp=timestamp)
 
