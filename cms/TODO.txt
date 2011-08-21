@@ -30,3 +30,7 @@
 * Provide facilities to translate the task's statement.
 * Provide an environment to build tasks better than make_Makefile and friends.
 
+*** ContestExporter
+* Exporting the whole database means more than a single contest.
+* Provide an importer.
+

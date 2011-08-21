@@ -24,6 +24,7 @@ import datetime
 import os
 import sys
 import codecs
+import hashlib
 
 ## ANSI utilities ##
 # see for reference: http://pueblo.sourceforge.net/doc/manual/ansi_color_codes.html
@@ -178,6 +179,19 @@ def maybe_mkdir(d):
         os.mkdir(d)
     except OSError:
         pass
+
+def sha1sum(path):
+    """Calculates the SHA1 sum of a file, given by its path.
+
+    """
+    BUFLEN = 8192
+    with open(path, 'rb') as fin:
+        hasher = hashlib.sha1()
+        buf = fin.read(BUFLEN)
+        while buf != '':
+            hasher.update(buf)
+            buf = fin.read(BUFLEN)
+        return hasher.hexdigest()
 
 def get_compilation_command(language, source_filename, executable_filename):
     """Returns the compilation command for the specified language,
