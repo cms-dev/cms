@@ -186,8 +186,7 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
     {
         if (time == null)
             return "N/A";
-        var diff = datetime = new Date() - new Date(parseInt(time) * 1000);
-        diff /= 1000;
+        var diff = datetime = parseInt(this.timestamp - time);
         var res = "";
 
         var s = diff % 60;
