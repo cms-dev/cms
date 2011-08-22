@@ -5,6 +5,7 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="shortcut icon" href="" />
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <title>{{ contest.description }}</title>
 
@@ -13,7 +14,7 @@
     var util
     function init()
     {
-        util = new Utilities({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }}); 
+        util = new Utilities({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }});
 
         firstDate = new Date();
         util.getTime();
@@ -28,7 +29,7 @@
 </head>
 <body>
     <div id="notification">
-        <div id="notification_close" 
+        <div id="notification_close"
         onclick="util.hideNotification(this)">
         <a href="#">X</a>
         </div>
