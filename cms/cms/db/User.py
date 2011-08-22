@@ -75,6 +75,7 @@ class User(Base):
     # SQLAlchemy.
     # messages (list of Message objects)
     # questions (list of Question objects)
+    # submissions (list of Submission objects)
 
     # Moreover, we have the following methods.
     # get_tokens (defined in SQLAlchemyAll)

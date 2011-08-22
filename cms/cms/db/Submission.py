@@ -52,7 +52,7 @@ class Submission(Base):
                                 onupdate="CASCADE", ondelete="CASCADE"),
                      nullable=False)
     user = relationship(User,
-                        backref=backref("tokens",
+                        backref=backref("submissions",
                                         single_parent=True,
                                         cascade="all, delete, delete-orphan"))
 
