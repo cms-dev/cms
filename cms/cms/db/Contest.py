@@ -52,7 +52,7 @@ class Contest(Base):
     # any given time (or -1 to ignore), T_total is the maximum number
     # that can be used in the whole contest (or -1), T_min_interval
     # the minimum interval in seconds between to uses of a token,
-    # Every T_gen_time from the beginning of the contest we generate
+    # Every T_gen_time minutes from the beginning of the contest we generate
     # T_gen_number tokens.
     token_initial = Column(Integer, nullable=False)
     token_max = Column(Integer, nullable=False)
@@ -78,9 +78,9 @@ class Contest(Base):
     # update_ranking_view (defined in SQLAlchemyAll)
 
     def __init__(self, name, description, tasks, users,
-                 token_initial, token_max, token_total,
-                 token_min_interval,
-                 token_gen_time, token_gen_number,
+                 token_initial=0, token_max=0, token_total=0,
+                 token_min_interval=0,
+                 token_gen_time=60, token_gen_number=1,
                  start=None, stop=None, announcements=None,
                  ranking_view=None):
         self.name = name

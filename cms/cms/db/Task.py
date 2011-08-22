@@ -81,7 +81,7 @@ class Task(Base):
 
     # Parameter to define the token behaviour. See Contest.py for
     # details. The only change is that these parameters influence the
-    # contest in a task-per-task behavious. To play a token on a given
+    # contest in a task-per-task behaviour. To play a token on a given
     # task, a user must satisfy the condition of the contest and the
     # one of the task.
     token_initial = Column(Integer, nullable=False)
@@ -113,8 +113,8 @@ class Task(Base):
                  task_type, submission_format, managers,
                  score_type, score_parameters,
                  testcases, public_testcases,
-                 token_initial, token_max, token_total,
-                 token_min_interval, token_gen_time, token_gen_number,
+                 token_initial=0, token_max=0, token_total=0,
+                 token_min_interval=0, token_gen_time=60, token_gen_number=1,
                  contest=None):
         for filename, attachment in attachments.iteritems():
             attachment.filename = filename
