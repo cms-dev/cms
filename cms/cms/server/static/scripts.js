@@ -186,7 +186,7 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
     {
         if (time == null)
             return "N/A";
-        var diff = datetime = parseInt(this.timestamp - time);
+        var diff = datetime = parseInt((new Date()).getTime()/1000 - time);
         var res = "";
 
         var s = diff % 60;
@@ -194,14 +194,16 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
         res = s + " second(s)";
         if (diff == 0)
             return res;
+        diff /= 60;
 
-        var m = (diff / 60) % 3600;
-        diff -= m * 60;
+        var m = diff % 60;
+        diff -= m;
         res = m + " minute(s), " + res;
         if (diff == 0)
             return res;
+        diff /= 60;
 
-        var h = (diff / 3600);
+        var h = diff;
         res = h + " hour(s), " + res;
         return res;
     }
