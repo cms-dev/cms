@@ -239,8 +239,11 @@ class Service:
 
         """
         logger.debug("Service.run")
-        while not self._exit:
-            self._step()
+        try:
+            while not self._exit:
+                self._step()
+        except Exception as e:
+            logger.critical("Exception not managed, quitting: %s" % repr(e))
 
     def _step(self):
         """One step of the main loop.
