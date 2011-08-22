@@ -363,15 +363,12 @@ class SubmissionReevaluateHandler(BaseHandler):
 
         submission.invalid()
         self.sql_session.commit()
-        print "A"
         self.application.service.ES.new_submission(
             submission_id=submission.id,
             callback=self.es_notify_callback)
-        print "B"
 
     @rpc_callback
     def es_notify_callback(self, data, plus, error=None):
-        print "C"
         if error == None:
             r_params = self.render_params()
             r_params["previous_page"] = "/submissions/details/%s" % \
