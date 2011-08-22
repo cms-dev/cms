@@ -112,9 +112,6 @@ def token_available(contest, user, task, timestamp):
     """
     Returns True if the given user can use a token for the given task.
     """
-    # TODO: since db changed, we have to fix this.
-    return False
-
     tokens_timestamp = [s.token_timestamp
                         for s in user.get_tokens()]
     task_tokens_timestamp = [s.token_timestamp
