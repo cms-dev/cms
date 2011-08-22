@@ -82,14 +82,18 @@ class User(Base):
 
     def __init__(self, real_name, username, password, ip,
                  timezone=0.0, contest=None,
-                 hidden=False, messages=[], questions=[]):
+                 hidden=False, messages=None, questions=None):
         self.real_name = real_name
         self.username = username
         self.password = password
         self.timezone = timezone
         self.ip = ip
         self.hidden = hidden
+        if messages == None:
+            messages = []
         self.messages = messages
+        if questions == None:
+            questions = []
         self.questions = questions
         self.contest = contest
 
