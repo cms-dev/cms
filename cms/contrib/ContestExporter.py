@@ -24,6 +24,7 @@ import os
 import codecs
 import optparse
 import re
+import json
 
 from cms.async.AsyncLibrary import Service, logger, SyncRPCError
 from cms.async import ServiceCoord
@@ -95,6 +96,11 @@ class ContestExporter(Service):
                 for f in submission.executables.values():
                     self.safe_get_file(f.digest, os.path.join(files_dir, f.digest))
 
+            # Export the contest in JSON format
+            logger.info("Exporting the contest in JSON format")
+            with open(os.path.join(self.export_dir, "contest.json"), 'w') as fout:
+                json.dump(c.export_to_dict(), fout, indent=4)
+
             # Warning: this part depends on the specific database used
             logger.info("Dumping SQL database")
             (engine, connection) = Config.database.split(':', 1)
@@ -117,7 +123,7 @@ class ContestExporter(Service):
                     sys.exit(1)
 
             # Export procedure for SQLite
-            if engine == 'sqlite':
+            elif engine == 'sqlite':
                 db_regex = re.compile('///(.*)')
                 db_match = db_regex.match(connection)
                 if db_match is not None:

@@ -142,6 +142,30 @@ class Task(Base):
         self.token_gen_number = token_gen_number
         self.contest = contest
 
+    def export_to_dict(self):
+        """Export object data to a dictionary.
+
+        """
+        return {'name':               self.name,
+                'title':              self.title,
+                'attachments':        [attachment.export_to_dict() for attachment in self.attachments.itervalues()],
+                'statement':          self.statement,
+                'time_limit':         self.time_limit,
+                'memory_limit':       self.memory_limit,
+                'task_type':          self.task_type,
+                'submission_format':  [element.export_to_dict() for element in self.submission_format],
+                'managers':           [manager.export_to_dict() for manager in self.managers.itervalues()],
+                'score_type':         self.score_type,
+                'score_parameters':   self.score_parameters,
+                'testcases':          [testcase.export_to_dict() for testcase in self.testcases],
+                'public_testcases':   [testcase.export_to_dict() for testcase in self.public_testcases],
+                'token_initial':      self.token_initial,
+                'token_max':          self.token_max,
+                'token_total':        self.token_total,
+                'token_min_interval': self.token_min_interval,
+                'token_gen_time':     self.token_gen_time,
+                'token_gen_number':   self.token_gen_number}
+
     def get_scorer(self):
         """Returns an appropriare ScoreType instance with the right parameters.
 
@@ -190,6 +214,12 @@ class Testcase(Base):
         self.num = num
         self.task = task
 
+    def export_to_dict(self):
+        """Export object data to a dictionary.
+
+        """
+        return {'input':  self.input,
+                'output': self.output}
 
 class Attachment(Base):
     """Class to store additional files to give to the user together
@@ -223,6 +253,12 @@ class Attachment(Base):
         self.digest = digest
         self.task = task
 
+    def export_to_dict(self):
+        """Export object data to a dictionary.
+
+        """
+        return {'filename': self.filename,
+                'digest':   self.digest}
 
 class Manager(Base):
     """Class to store additional files needed to compile or evaluate a
@@ -256,6 +292,12 @@ class Manager(Base):
         self.digest = digest
         self.task = task
 
+    def export_to_dict(self):
+        """Export object data to a dictionary.
+
+        """
+        return {'filename': self.filename,
+                'digest':   self.digest}
 
 class PublicTestcase(Base):
     """Class to store which testcase outcomes are going to be showed
@@ -285,6 +327,11 @@ class PublicTestcase(Base):
         self.testcase = testcase
         self.task = task
 
+    def export_to_dict(self):
+        """Export object data to a dictionary.
+
+        """
+        return {'testcase': self.testcase}
 
 class SubmissionFormatElement(Base):
     """Class to store the requested files that a submission must
@@ -314,3 +361,9 @@ class SubmissionFormatElement(Base):
     def __init__(self, filename, task=None):
         self.filename = filename
         self.task = task
+
+    def export_to_dict(self):
+        """Export object data to a dictionary.
+
+        """
+        return {'filename': self.filename}

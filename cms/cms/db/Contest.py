@@ -100,6 +100,24 @@ class Contest(Base):
         self.announcements = announcements
         self.ranking_view = ranking_view
 
+    def export_to_dict(self):
+        """Export object data to a dictionary.
+
+        """
+        return {'name':               self.name,
+                'description':        self.description,
+                'tasks':              [task.export_to_dict() for task in self.tasks],
+                'users':              [user.export_to_dict() for user in self.users],
+                'token_initial':      self.token_initial,
+                'token_max':          self.token_max,
+                'token_min_interval': self.token_min_interval,
+                'token_gen_time':     self.token_gen_time,
+                'token_gen_number':   self.token_gen_number,
+                'start':              self.start,
+                'stop':               self.stop,
+                'announcements':      [announcement.export_to_dict() for announcement in self.announcements],
+                'ranking_view':       self.ranking_view.export_to_dict()}
+
     def get_task(self, task_name):
         """
         Returns the first task in the contest with the given name.
@@ -151,3 +169,11 @@ class Announcement(Base):
         self.subject = subject
         self.text = text
         self.contest = contest
+
+    def export_to_dict(self):
+        """Export object data to a dictionary.
+
+        """
+        return {'timestamp': self.timestamp,
+                'subject':   self.subject,
+                'text':      self.text}

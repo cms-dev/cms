@@ -97,6 +97,19 @@ class User(Base):
         self.questions = questions
         self.contest = contest
 
+    def export_to_dict(self):
+        """Export object data to a dictionary.
+
+        """
+        return {'real_name':   self.real_name,
+                'username':    self.username,
+                'password':    self.password,
+                'timezone':    self.timezone,
+                'ip':          self.ip,
+                'hidden':      self.hidden,
+                'messages':    [message.export_to_dict() for message in self.messages],
+                'questions':   [question.export_to_dict() for question in self.questions],
+                'submissions': [submission.export_to_dict() for submission in self.submissions]}
 
 class Message(Base):
     """Class to store a private message from the managers to the
@@ -131,6 +144,14 @@ class Message(Base):
         self.subject = subject
         self.text = text
         self.user = user
+
+    def export_to_dict(self):
+        """Export object data to a dictionary.
+
+        """
+        return {'timestamp': self.timestamp,
+                'subject':   self.subject,
+                'text':      self.text}
 
 
 class Question(Base):
@@ -180,3 +201,14 @@ class Question(Base):
         self.short_reply = short_reply
         self.long_reply = long_reply
         self.user = user
+
+    def export_to_dict(self):
+        """Export object data to a dictionary.
+
+        """
+        return {'question_timestamp': self.question_timestamp,
+                'subject':            self.subject,
+                'text':               self.text,
+                'reply_timestamp':    self.reply_timestamp,
+                'short_reply':        self.short_reply,
+                'long_reply':         self.long_reply}
