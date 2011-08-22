@@ -72,7 +72,7 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
                     var messages = root.getElementsByTagName("message");
                     caller.last_notification = parseFloat(root.getElementsByTagName("requestdate")[0].firstChild.nodeValue);
                     notification = "";
-                    
+
                     if( announcements.length != 0)
                     {
                         var announcement_subject = announcements[0].firstChild.nodeValue;
@@ -116,7 +116,7 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
 
     this.getTime = function()
     {
-      if (this.contest_stop != null) 
+      if (this.contest_stop != null)
         var sec_to_end = this.contest_stop - this.timestamp ;
       else
         var sec_to_end = Infinity;
@@ -149,8 +149,62 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
       else m = minutesR;
       if (secondsR < 10) s = "0" + secondsR;
       else s = secondsR;
-      
+
       if (document.getElementById("remaining"))
         document.getElementById("remaining").innerHTML = hoursR+":"+m+":"+s;;
     }
+
+    /**
+     * Represent in a nice looking way a couple (job_type,
+     * submission_id) coming from the backend.
+     *
+     * job (array): a couple (job_type, submission_id)
+     * returns (string): nice representation of job
+     */
+    this.repr_job = function(job)
+    {
+        var job_type = "???";
+        if (job == null)
+            return "N/A";
+        else if (job == "disabled")
+            return "Worker disabled";
+        else if (job[0] == 'compile')
+            job_type = 'Compiling';
+        else if (job[0] == 'evaluate')
+            job_type = 'Evaluating';
+        var submission_link = '<a href="/submissions/details/' + job[1] + '">';
+        return job_type + ' submission ' + submission_link + job[1] + '</a>';
+    }
+
+    /**
+     * Format time as hours, minutes and seconds ago.
+     *
+     * time (int): a unix time.
+     * returns (string): nice representation of time as "x time ago"
+     */
+    this.repr_time_ago = function(time)
+    {
+        if (time == null)
+            return "N/A";
+        var diff = datetime = new Date() - new Date(parseInt(time) * 1000);
+        diff /= 1000;
+        var res = "";
+
+        var s = diff % 60;
+        diff = diff - s;
+        res = s + " second(s)";
+        if (diff == 0)
+            return res;
+
+        var m = (diff / 60) % 3600;
+        diff -= m * 60;
+        res = m + " minute(s), " + res;
+        if (diff == 0)
+            return res;
+
+        var h = (diff / 3600);
+        res = h + " hour(s), " + res;
+        return res;
+    }
+
 }

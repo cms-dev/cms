@@ -15,6 +15,7 @@
   routines.
 * BUG: Scoring doesn't work correctly, because the Task objects get
   rebuild each time.
+* When starting, ask the workers to preload the contest's files.
 
 *** ContestWebServer
 * It _MUST_ be able to work correctly (storing submitted data) even if

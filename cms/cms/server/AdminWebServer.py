@@ -278,8 +278,7 @@ class UserViewHandler(BaseHandler):
         if user == None:
             raise tornado.web.HTTPError(404)
         r_params["selected_user"] = user
-        # FIXME: Is tokens the list of submissions?
-        r_params["submissions"] = user.tokens
+        r_params["submissions"] = user.submissions
         self.render("user.html", **r_params)
 
 
