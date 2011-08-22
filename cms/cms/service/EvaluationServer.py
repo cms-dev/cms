@@ -518,6 +518,7 @@ class EvaluationServer(Service):
             evaluation_tries = submission.evaluation_tries
             tokened = submission.tokened()
             evaluated = submission.evaluated()
+            task_id = submission.task.id
 
         # Compilation
         if job_type == EvaluationServer.JOB_TYPE_COMPILATION:

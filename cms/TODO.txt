@@ -13,8 +13,6 @@
 *** EvaluationServer
 * Check that there are no concurrence issues, particularly in scoring
   routines.
-* BUG: Scoring doesn't work correctly, because the Task objects get
-  rebuild each time.
 * When starting, ask the workers to preload the contest's files.
 
 *** ContestWebServer

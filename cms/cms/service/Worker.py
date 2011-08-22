@@ -42,14 +42,14 @@ class Worker(Service):
     def get_submission_data(self, submission_id):
         submission = Submission.get_from_id(submission_id, self.session)
         if submission is None:
-            err_msg = "Couldn't find submission %d " + \
+            err_msg = "Couldn't find submission %s " + \
                 "in the database" % submission_id
             logger.critical(msg_err)
             raise JobException(msg_err)
 
         task_type = get_task_type_class(submission, self.session, self)
         if task_type is None:
-            err_msg = "Task type `%s' not known for submission %d" \
+            err_msg = "Task type `%s' not known for submission %s" \
                 % (self.submission.task.task_type, submission_id)
             logger.critical(err_msg)
             raise JobException(msg_err)
@@ -62,13 +62,40 @@ class Worker(Service):
     @rpc_method
     @rpc_threaded
     def compile(self, submission_id):
+        """RPC to ask the worker to compile the submission.
+
+        submission_id (string): the id of the submission to compile.
+
+        """
+        return self.action(submission_id, "compilation")
+
+    @rpc_method
+    @rpc_threaded
+    def evaluate(self, submission_id):
+        """RPC to ask the worker to evaluate the submission.
+
+        submission_id (string): the id of the submission to evaluate.
+
+        """
+        return self.action(submission_id, "evaluation")
+
+    def action(self, submission_id, job_type):
+        """The actual work - that can be compilation or evaluation
+        (the code is pretty much the same, the differencies are in
+        what we ask TaskType to do).
+
+        submission_id (string): the submission to which act on.
+        job_type (string): "compilation" or "evaluation".
+
+        """
         if self.work_lock.acquire(False):
 
             try:
-                logger.operation = "compiling submission %s" % submission_id
+                logger.operation = "%s of submission %s" % (job_type,
+                                                            submission_id)
                 with async_lock:
-                    logger.info("Request received: compile submission %s." %
-                                submission_id)
+                    logger.info("Request received: %s of submission %s." %
+                                (job_type, submission_id))
 
                 with SessionGen(commit=False) as self.session:
 
@@ -78,25 +105,27 @@ class Worker(Service):
 
                     # Do the actual work
                     success = False
+                    task_type_action = task_type.execute
+                    if job_type == "compilation":
+                        task_type_action = task_type.compile
                     try:
-                        success = task_type.compile()
+                        success = task_type_action()
                     except Exception as e:
-                        err_msg = "Compilation failed with not caught " + \
+                        err_msg = "%s failed with not caught " \
                             "exception `%s' and traceback `%s'" % \
-                            (repr(e), traceback.format_exc())
+                            (job_type, repr(e), traceback.format_exc())
                         with async_lock:
                             logger.error(err_msg)
                         raise JobException(err_msg)
-
                     if success:
                         self.session.commit()
                     with async_lock:
                         logger.info("Request finished")
                     return success
             except Exception as e:
-                err_msg = "Worker failed to compilation with exception " + \
+                err_msg = "Worker failed the %s with exception " + \
                     "`%s' and traceback `%s'" % \
-                    (repr(e), traceback.format_exc())
+                    (job_type, repr(e), traceback.format_exc())
                 with async_lock:
                     logger.error(err_msg)
                 raise JobException(err_msg)
@@ -108,59 +137,10 @@ class Worker(Service):
 
         else:
             with async_lock:
-                logger.info("Request to compile submission %d received, "
+                logger.info("Request of %s of submission %s received, "
                             "but declined because of acquired lock" %
-                            submission_id)
+                            (job_type, submission_id))
             return False
-
-    @rpc_method
-    @rpc_threaded
-    def evaluate(self, submission_id):
-        if self.work_lock.acquire(False):
-
-            try:
-                logger.operation = "evaluating submission %s" % submission_id
-                with async_lock:
-                    logger.info("Request received: evaluate submission %s." %
-                                submission_id)
-
-                with SessionGen(commit=False) as self.session:
-
-                    # Retrieve submission and task_type
-                    submission, task_type = \
-                        self.get_submission_data(submission_id)
-
-                    # Do the actual work
-                    success = False
-                    try:
-                        success = task_type.execute()
-                    except Exception as e:
-                        err_msg = "Compilation failed with not caught " + \
-                            "exception `%s' and traceback `%s'" % \
-                            (repr(e), traceback.format_exc())
-                        with async_lock:
-                            logger.error(err_msg)
-                        raise JobException(err_msg)
-
-                    if success:
-                        self.session.commit()
-                    with async_lock:
-                        logger.info("Request finished")
-                    return success
-
-            finally:
-                self.session = None
-                with async_lock:
-                    logger.operation = ""
-                self.work_lock.release()
-
-        else:
-            with async_lock:
-                logger.info("Request to evaluate submission %d received, "
-                            "but declined because of acquired lock" %
-                            submission_id)
-            return False
-
 
     @rpc_method
     def shut_down(self, reason):

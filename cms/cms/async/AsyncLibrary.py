@@ -30,6 +30,7 @@ import sys
 import os
 import signal
 import threading
+import traceback
 
 import asyncore
 import asynchat
@@ -243,7 +244,10 @@ class Service:
             while not self._exit:
                 self._step()
         except Exception as e:
-            logger.critical("Exception not managed, quitting: %s" % repr(e))
+            err_msg = "Exception not managed, quitting. " \
+                      "Exception `%s' and traceback `%s'" % \
+                      (repr(e), traceback.format_exc())
+            logger.critical(err_msg)
 
     def _step(self):
         """One step of the main loop.
