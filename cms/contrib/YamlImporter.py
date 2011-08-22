@@ -100,7 +100,6 @@ class YamlImporter(Service):
         surname = user_dict.get("cognome", user_dict["username"])
         params["real_name"] = " ".join([name, surname])
         params["hidden"] = "True" == user_dict.get("fake", "False")
-        params["tokens"] = []
         return params
 
 
@@ -178,6 +177,7 @@ class YamlImporter(Service):
         c = self.import_contest(dir)
         session = Session()
         session.add(c)
+        c.create_empty_ranking_view()
         session.flush()
         analyze_all_tables(session)
         session.commit()
