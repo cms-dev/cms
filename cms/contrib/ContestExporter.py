@@ -37,9 +37,10 @@ from cms import Config
 
 class ContestExporter(Service):
 
-    def __init__(self, shard, contest_id, export_dir):
+    def __init__(self, shard, contest_id, dump, export_dir):
         self.contest_id = contest_id
         self.export_dir = export_dir
+        self.dump = dump
 
         logger.initialize(ServiceCoord("ContestExporter", shard))
         logger.debug("ContestExporter.__init__")
@@ -101,6 +102,8 @@ class ContestExporter(Service):
             with open(os.path.join(self.export_dir, "contest.json"), 'w') as fout:
                 json.dump(c.export_to_dict(), fout, indent=4)
 
+        if self.dump:
+
             # Warning: this part depends on the specific database used
             logger.info("Dumping SQL database")
             (engine, connection) = Config.database.split(':', 1)
@@ -113,7 +116,7 @@ class ContestExporter(Service):
                 if db_match is not None:
                     username, password, host, database = db_match.groups()
                     os.environ['PGPASSWORD'] = password
-                    export_res = os.system('pg_dump -h %s -U %s -w %s -x --inserts | grep "^INSERT" > %s' % (host, username, database, db_exportfile))
+                    export_res = os.system('pg_dump -h %s -U %s -w %s -x --attribute-inserts > %s' % (host, username, database, db_exportfile))
                     del os.environ['PGPASSWORD']
                     if export_res != 0:
                         logger.critical("Database export failed")
@@ -128,7 +131,7 @@ class ContestExporter(Service):
                 db_match = db_regex.match(connection)
                 if db_match is not None:
                     dbfile, = db_match.groups()
-                    export_res = os.system('sqlite3 %s .dump | grep "^INSERT" > %s' % (dbfile, db_exportfile))
+                    export_res = os.system('sqlite3 %s .dump > %s' % (dbfile, db_exportfile))
                     if export_res != 0:
                         logger.critical("Database export failed")
                         sys.exit(1)
@@ -163,6 +166,8 @@ def main():
                       dest="contest_id", action="store", type="int", default=None)
     parser.add_option("-s", "--shard", help="service shard number",
                       dest="shard", action="store", type="int", default=None)
+    parser.add_option("-d", "--dump-database", help="include a SQL dump of the database (this will disclose data about other contests stored in the same database)",
+                      dest="dump", action="store_true", default=False)
     options, args = parser.parse_args()
     if len(args) != 1:
         parser.error("I need exactly one parameter, the directory where to export the contest")
@@ -172,7 +177,10 @@ def main():
     if options.contest_id is None:
         options.contest_id = ask_for_contest()
 
-    contest_exporter = ContestExporter(shard=options.shard, contest_id=options.contest_id, export_dir=args[0])
+    contest_exporter = ContestExporter(shard=options.shard,
+                                       contest_id=options.contest_id,
+                                       dump=options.dump,
+                                       export_dir=args[0])
     contest_exporter.do_export()
 
 if __name__ == "__main__":
