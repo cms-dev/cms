@@ -378,7 +378,7 @@ class EvaluationServer(Service):
             contest = session.query(Contest).\
                       filter_by(id=contest).first()
             logger.info("Loaded contest %s" % contest.name)
-            submission_ids = [x.id for x in contest.get_submissions(session)]
+            submission_ids = [x.id for x in contest.get_submissions()]
             contest.create_empty_ranking_view(timestamp=contest.start)
 
         self.queue = JobQueue()

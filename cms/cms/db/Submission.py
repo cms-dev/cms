@@ -162,15 +162,10 @@ class Submission(Base):
         """
         self.evaluations = []
 
-    def verify_source(self, session):
+    def verify_source(self):
         """Ensure that the submitted files agree with the format
         requested by the task.
 
-        session (SQLAlchemy session): needed because we want to change
-                                      the name of the files to map
-                                      correctly with the submission
-                                      format; be aware that this
-                                      method DOES NOT COMMIT.
         returns (bool): True if the format is correct, False otherwise
 
         """
@@ -201,9 +196,9 @@ class Submission(Base):
                     language = submitted_file_part[-1]
                     # Wa adapt submission
                     correct_file = submission_format[0].replace("%l", language)
-                    session.add(File(self.files[submitted_file].digest,
-                                     correct_file,
-                                     self))
+                    self.get_session().add(File(self.files[submitted_file].digest,
+                                                correct_file,
+                                                self))
                     del self.files[submitted_file]
 
                     # TODO: was there a better way than add-delete-del?
