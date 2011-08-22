@@ -76,6 +76,9 @@ class User(Base):
     # messages (list of Message objects)
     # questions (list of Question objects)
 
+    # Moreover, we have the following methods.
+    # get_tokens (defined in SQLAlchemyAll)
+
     def __init__(self, real_name, username, password, ip,
                  timezone=0.0, contest=None,
                  hidden=False, messages=[], questions=[]):

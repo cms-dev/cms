@@ -79,6 +79,21 @@ def update_ranking_view(self):
 Contest.update_ranking_view = update_ranking_view
 
 
+# The following is a method of User that cannot be put in the right
+# file because of circular dependencies.
+
+def get_tokens(self, session):
+    """Returns a list of tokens used by a user.
+
+    session (SQLAlchemy session): the session to query.
+    returns (list): list of tokens.
+
+    """
+    return session.query(Token).join(Submission).\
+           filter(Submission.user == self).all()
+Contest.get_tokens = get_tokens
+
+
 if __name__ == "__main__":
     if "redrop" in sys.argv[1:]:
         metadata.drop_all()
