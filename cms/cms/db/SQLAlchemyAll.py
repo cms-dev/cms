@@ -41,15 +41,14 @@ from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 # The following are methods of Contest that cannot be put in the right
 # file because of circular dependencies.
 
-def get_submissions(self, session):
+def get_submissions(self):
     """Returns a list of submissions (with the information about the
     corresponding task) referring to the contest.
 
-    session (SQLAlchemy session): the session to query.
     returns (list): list of submissions.
 
     """
-    return session.query(Submission).join(Task).\
+    return self.get_session().query(Submission).join(Task).\
            filter(Task.contest == self).all()
 Contest.get_submissions = get_submissions
 
@@ -82,16 +81,15 @@ Contest.update_ranking_view = update_ranking_view
 # The following is a method of User that cannot be put in the right
 # file because of circular dependencies.
 
-def get_tokens(self, session):
+def get_tokens(self):
     """Returns a list of tokens used by a user.
 
-    session (SQLAlchemy session): the session to query.
     returns (list): list of tokens.
 
     """
-    return session.query(Token).join(Submission).\
+    return self.get_session().query(Token).join(Submission).\
            filter(Submission.user == self).all()
-Contest.get_tokens = get_tokens
+User.get_tokens = get_tokens
 
 
 if __name__ == "__main__":

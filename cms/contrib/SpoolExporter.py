@@ -75,7 +75,7 @@ class SpoolExporter(Service):
                     hidden_users.append(user.username)
 
             # FIXME - The enumeration of submission should be time-increasing
-            for submission in c.get_submissions(session):
+            for submission in c.get_submissions():
                 if submission.user.hidden:
                     continue
                 logger.info("Exporting submission %s" % (submission.id))

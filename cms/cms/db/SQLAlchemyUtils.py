@@ -23,6 +23,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.orm import session as sessionlib
 
 from cms import Config
 
@@ -109,3 +110,14 @@ def get_from_id(cls, id, session):
     except MultipleResultsFound:
         return None
 Base.get_from_id = classmethod(get_from_id)
+
+def get_session(self):
+    """Get the session to which this object is bound, possibly None.
+
+    WARNING: this method is probably dependent on the internal
+    implementation of SQLAlchemy. I couldn't find any better way to do
+    it. If you know some, please update this method.
+
+    """
+    return sessionlib._state_session(self._sa_instance_state)
+Base.get_session = get_session

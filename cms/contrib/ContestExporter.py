@@ -86,7 +86,7 @@ class ContestExporter(Service):
                     self.safe_get_file(testcase.input, os.path.join(files_dir, testcase.input))
                     self.safe_get_file(testcase.output, os.path.join(files_dir, testcase.output))
 
-            for submission in c.get_submissions(session):
+            for submission in c.get_submissions():
                 logger.info("Exporting files for submission %d" % submission.id)
 
                 # Export files
