@@ -205,7 +205,8 @@ class WorkerPool:
         """
         # We look for an available worker
         try:
-            shard = self.find_worker(self.WORKER_INACTIVE)
+            shard = self.find_worker(self.WORKER_INACTIVE,
+                                     require_connection=True)
         except LookupError:
             return None
 
@@ -265,19 +266,23 @@ class WorkerPool:
             logger.debug("Worker %d released" % shard)
             return False
 
-    def find_worker(self, job):
+    def find_worker(self, job, require_connection=False):
         """Return the (a) worker whose assigned job is job. Remember
         that there is a placeholder job to signal that the worker is
         not doing anything (or disabled).
 
         job (job): the job we are looking for, or self.WORKER_*
+        require_connection (bool): True if we want to find a worker
+                                   doing the job and that is actually
+                                   connected to us (i.e., did not die)
         returns (int): the shard of the worker working on job, or
                        LookupError if nothing has been found.
 
         """
         for shard, worker_job in self.job.iteritems():
             if worker_job == job:
-                return shard
+                if not require_connection or self.worker[shard].connected:
+                    return shard
         raise LookupError("No such job")
 
     def working_workers(self):
@@ -301,6 +306,7 @@ class WorkerPool:
 
         """
         return dict([(str(shard), {
+            'connected': self.worker[shard].connected,
             'job': self.job[shard],
             'start_time': self.start_time[shard],
             'error_count': self.error_count[shard],
@@ -318,17 +324,18 @@ class WorkerPool:
         for shard in self.worker:
             if self.start_time[shard] != None:
                 active_for = now - self.start_time[shard]
+
                 if active_for > EvaluationServer.WORKER_TIMEOUT:
                     # Here shard is a working worker with no sign of
-                    # intelligent life for too much time
+                    # intelligent life for too much time.
                     logger.error("Disabling and shutting down "
                                  "worker %d because of no reponse "
                                  "in %.2f seconds" %
                                  (shard, active_for))
-                    assert self.worker[shard] != self.WORKER_INACTIVE \
-                        and self.worker[shard] != self.WORKER_DISABLED
+                    assert self.job[shard] != self.WORKER_INACTIVE \
+                        and self.job[shard] != self.WORKER_DISABLED
 
-                    # So we put again its current job in the queue
+                    # So we put again its current job in the queue.
                     job = self.job[shard]
                     priority, timestamp = self.side_data[shard]
                     lost_jobs.append((priority, timestamp, job))
