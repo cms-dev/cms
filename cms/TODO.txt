@@ -1,5 +1,9 @@
 *** Database
 * Define appropriate UNIQUE indexes in the database.
+* Task and Testcase are sometimes referenced by num, instead of
+  properly using IDs.
+* Decide where and how to keep tries number for evaluations.
+* Rename token_timestamp -> token.
 
 *** Worker
 * Should be able to work with 32-bit programs even when running in 64-bit mode.
