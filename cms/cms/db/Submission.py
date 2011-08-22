@@ -83,10 +83,10 @@ class Submission(Base):
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
-    # files (dict of File objects indexes by filename)
-    # executables (dict of Executable objects indexes by filename)
+    # files (dict of File objects indexed by filename)
+    # executables (dict of Executable objects indexed by filename)
     # evaluations (list of Evaluation objects, one for testcase)
-    # token_timestamp (Token object)
+    # token_timestamp (Token object or None)
     # FIXME the backref is to the token, not to the timestamp
 
     LANGUAGES = ["c", "cpp", "pas"]
