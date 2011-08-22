@@ -101,11 +101,11 @@ class Submission(Base):
         self.timestamp = timestamp
         self.files = files
         self.compilation_outcome = compilation_outcome
-        if executables == None:
+        if executables is None:
             executables = {}
         self.executables = executables
         self.compilation_text = compilation_text
-        if evaluations == None:
+        if evaluations is None:
             evaluations = []
         self.evaluations = evaluations
         self.compilation_tries = compilation_tries

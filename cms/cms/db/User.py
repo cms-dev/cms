@@ -80,19 +80,21 @@ class User(Base):
     # Moreover, we have the following methods.
     # get_tokens (defined in SQLAlchemyAll)
 
-    def __init__(self, real_name, username, password, ip,
+    def __init__(self, real_name, username, password, ip=None,
                  timezone=0.0, contest=None,
                  hidden=False, messages=None, questions=None):
         self.real_name = real_name
         self.username = username
         self.password = password
         self.timezone = timezone
+        if ip is None:
+            ip = '0.0.0.0'
         self.ip = ip
         self.hidden = hidden
-        if messages == None:
+        if messages is None:
             messages = []
         self.messages = messages
-        if questions == None:
+        if questions is None:
             questions = []
         self.questions = questions
         self.contest = contest

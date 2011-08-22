@@ -95,7 +95,7 @@ class Contest(Base):
         self.token_gen_number = token_gen_number
         self.start = start
         self.stop = stop
-        if announcements == None:
+        if announcements is None:
             announcements = []
         self.announcements = announcements
         self.ranking_view = ranking_view
