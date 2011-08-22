@@ -8,22 +8,31 @@
     <link rel="stylesheet" type="text/css" href="/static/style_admin.css">
     <script type="text/javascript" src="./static/utils.js"></script>
     <script type="text/javascript" src="./static/web_async_library.js"></script>
+    <script type="text/javascript" src="/static/scripts.js"></script>
     {% if contest == None %}
     <title>Admin</title>
-    <script language="javascript">
+    <script type="text/javascript">
 <!--
 var util;
 function init()
 {
   rpc = new CMSAjaxRPC();
+  util = new Utilities({{ timestamp }},
+                       0,
+                       0,
+                       -1);
+
+  {% block js_init %}{% end %}
 }
+
+{% block js %}{% end %}
 //-->
     </script>
 
     {% else %}
     <title>Admin: {{ contest.description }}</title>
 
-    <script language="javascript">
+    <script type="text/javascript">
 <!--
 var util;
 function init()
@@ -39,13 +48,16 @@ function init()
   setInterval("util.getTime()", 1000);
   //util.notifications();
   //setInterval("util.notifications()", 15000);
+  {% block js_init %}{% end %}
 }
+
+{% block js %}{% end %}
+
+window.onload = init();
 //-->
     </script>
     {% end %}
 
-    <script language="javascript" src="/static/scripts.js" onload="init()">
-    </script>
   </head>
   <body>
     <div id="notification">

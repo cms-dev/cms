@@ -291,18 +291,17 @@ class WorkerPool:
                     if x != self.WORKER_INACTIVE and \
                     x != self.WORKER_DISABLED])
 
-    def get_workers_status(self):
+    def get_status(self):
         """Returns a dict with info about the current status of all
         workers.
 
-        return (dict): dict of info: current job, address, starting
-                       time, number of errors, and additional data
-                       specified in the job.
+        return (dict): dict of info: current job, starting time,
+                       number of errors, and additional data specified
+                       in the job.
 
         """
         return dict([(str(shard), {
-            'job': repr(self.job[shard]),
-            'address': self.worker[shard].remote_service_coord,
+            'job': self.job[shard],
             'start_time': self.start_time[shard],
             'error_count': self.error_count[shard],
             'side_data': self.side_data[shard]})
@@ -442,6 +441,17 @@ class EvaluationServer(Service):
 
         """
         return self.queue.get_status()
+
+    @rpc_method
+    def workers_status(self):
+        """Returns a dictionary (indexed by shard number) whose values
+        are the information about the corresponding worker. See
+        WorkerPool.get_status for more details.
+
+        returns (dict): the dict with the workers information.
+
+        """
+        return self.pool.get_status()
 
     def check_workers(self):
         """We ask WorkerPool for the unresponsive workers, and we put

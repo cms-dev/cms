@@ -1,70 +1,114 @@
 {% extends base.html %}
 
-{% block core %}
-<script type="text/javascript" language="javascript">
-  <!--
-rpc.request("EvaluationServer", 0,
-            "queue_status",
-            {},
-            function(response)
-            {
-              var table = document.getElementById("queue_status_table");
-              if (response['status'] == 'unconnected')
-                table.insertRow(-1).innerHTML = "<td colspan='5'>EvaluationServer not connected.</td>";
-              else if (response['status'] == 'fail')
-                table.insertRow(-1).innerHTML = "<td colspan='5'>Call to EvaluationServer failed.</td>";
-              else if (response['status'] == 'ok')
-                {
-                  if (response['data'].length == 0)
-                    table.insertRow(-1).innerHTML = "<td colspan='5'>Queue empty.</td>";
-                  else
-                    {
-                      for (var i = 0; i < response['data'].length; i++)
-                        {
-                          var row = table.insertRow(-1);
-                          var job_type = "???";
-                          if (response['data'][i]['job'][0] == 'compile')
-                            job_type = 'Compilation';
-                          else if (response['data'][i]['job'][0] == 'evaluate')
-                            job_type = 'Evaluation';
-                          var submission = '/submissions/details/' + response['data'][i]['job'][1];
-                          var date = new Date(parseInt(response['data'][i]['timestamp']) * 1000);
-                          row.innerHTML = '<td>' + (i + 1) + '</td>' +
-                                          '<td>' + job_type + '</td>' +
-                                          '<td><a href="' + submission + '">' + response['data'][i]['job'][1] + '</a></td>' +
-                                          '<td>' + response['data'][i]['priority'] + '</td>' +
-                                          '<td>' + date + '</td>';
-                        }
-                    }
-                }
-              else
-                table.insertRow(-1).innerHTML = "<td colspan='5'>Unexpected reply. This should not happen.</td>";
-            });
-  -->
-</script>
+{% block js %}
 
+function update_queue_status(response)
+{
+    var table = document.getElementById("queue_status_table");
+    while (table.rows.length > 1)
+        table.deleteRow(1);
+    if (response['status'] == 'unconnected')
+        table.insertRow(-1).innerHTML = "<td colspan='5'>EvaluationServer not connected.</td>";
+    else if (response['status'] == 'fail')
+        table.insertRow(-1).innerHTML = "<td colspan='5'>Call to EvaluationServer failed.</td>";
+    else if (response['status'] == 'ok')
+    {
+        if (response['data'].length == 0)
+            table.insertRow(-1).innerHTML = "<td colspan='5'>Queue empty.</td>";
+        else
+        {
+            for (var i = 0; i < response['data'].length; i++)
+            {
+                var row = table.insertRow(-1);
+                var job = util.repr_job(response['data'][i]['job']);
+                var date = util.repr_time_ago(response['data'][i]['timestamp']);
+                row.innerHTML = '<td>' + (i + 1) + '</td>' +
+                    '<td>' + job + '</td>' +
+                    '<td>' + response['data'][i]['priority'] + '</td>' +
+                    '<td>' + date + '</td>';
+            }
+        }
+    }
+    else
+        table.insertRow(-1).innerHTML = "<td colspan='5'>Unexpected reply. This should not happen.</td>";
+};
+
+function update_workers_status(response)
+{
+    var table = document.getElementById("workers_status_table");
+    while (table.rows.length > 1)
+        table.deleteRow(1);
+    if (response['status'] == 'unconnected')
+        table.insertRow(-1).innerHTML = "<td colspan='5'>EvaluationServer not connected.</td>";
+    else if (response['status'] == 'fail')
+        table.insertRow(-1).innerHTML = "<td colspan='5'>Call to EvaluationServer failed.</td>";
+    else if (response['status'] == 'ok')
+    {
+        if (response['data'].length == 0)
+            table.insertRow(-1).innerHTML = "<td colspan='5'>No workers empty.</td>";
+        else
+        {
+            for (i in response['data'])
+            {
+                var row = table.insertRow(-1);
+                var job = util.repr_job(response['data'][i]['job']);
+                var start_time = util.repr_time_ago(response['data'][i]['start_time']);
+                row.innerHTML = '<td>' + i + '</td>' +
+                    '<td>' + response['data'][i]['error_count'] + '</td>' +
+                    '<td>' + job + '</td>' +
+                    '<td>' + start_time + '</a></td>';
+            }
+        }
+    }
+    else
+        table.insertRow(-1).innerHTML = "<td colspan='5'>Unexpected reply. This should not happen.</td>";
+};
+
+function update_statuses()
+{
+
+    rpc.request("EvaluationServer", 0,
+                "queue_status",
+                {},
+                update_queue_status);
+    rpc.request("EvaluationServer", 0,
+                "workers_status",
+                {},
+                update_workers_status);
+}
+
+{% end %}
+
+{% block js_init %}
+
+setInterval(update_statuses, 5000);
+update_statuses();
+
+{% end %}
+
+{% block core %}
 <div class="core_title">
   <h1>Overview</h1>
+  <span id="update_time"></span>
 </div>
 
 <h2>Queue status</h2>
 <table id="queue_status_table" class="sub_table">
   <tr>
     <th>Id</th>
-    <th>Job type</th>
-    <th>Submission</th>
+    <th>Job</th>
     <th>Priority</th>
     <th>Since</th>
   </tr>
 </table>
 
 <h2>Workers status</h2>
-<table class="sub_table">
+<table id="workers_status_table" class="sub_table">
   <tr>
-    <th>Id</th>
-    <th>Address</th>
+    <th>Shard</th>
     <th>Errors</th>
     <th>Current job</th>
+    <th>Since</th>
   </tr>
 </table>
 {% end %}
