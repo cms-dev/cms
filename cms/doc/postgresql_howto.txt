@@ -1,0 +1,139 @@
+
+-------------------------------------
+     QUICK PostgreSQL SETUP HOWTO
+(all your databases are belong to us)
+-------------------------------------
+
+by Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+
+  While SQLAlchemy enables you to use many different database
+engines, at some point you may be interested to setup a real
+PostgreSQL database. The code we're using is, at the time of
+writing, perfectly compatible with other engines, but
+PostgreSQL has definitely many advantages over the other
+solutions:
+
+ * SQLite doesn't support network access, so it can be used
+   for testing only as long as every service runs on the
+   same computer. Its support for transactions is quite
+   rough (there is only database-wide locking, so each
+   writing transactions must gain an exclusive lock on
+   the database, meaning that no other transactions can
+   even _read_ the database before the writing one has
+   finished). Moreover, it does not enforce database
+   constraints, such as foreign keys, so it doesn't offer
+   a real testing environment.
+
+ * MySQL has two types of tables: MyISAM and InnoDB. One
+   of them doesn't support transactions, the other one doens't
+   support foreign keys. You call it a database?
+
+ * Oracle Server is just good, assuming that you or your
+   parents have a really strong bank account.
+
+ * Microsoft SQL Server... Yeah, Microsoft...
+
+  That said, PostgreSQL has, of course, that disadvantage over
+SQLite that it requires a few configuration. Nothing really
+difficult: I hope that this HOWTO will help you to have it
+satisfactorily working. :-)
+
+  I will assume that you use a reasonably recent version of
+Debian or Ubuntu. I'm using PostgreSQL 8.4, but this tutorial
+should apply to any reasonably recent version of PostgreSQL.
+I also recommeng you to install phppgadmin, which is a nice
+Web front-end to PostgreSQL, useful to understand what's going
+on in your favourite database.
+
+  Begin by installing the packages (this command will
+automatically pull in the more recent supported version on
+your operating system):
+
+# apt-get install postgresql postgresql-client phppgadmin
+
+  To start or stop the engine, use the following commands
+(or any equivalent command that may be available on your
+operating system):
+
+# /etc/init.d/postgresql start
+# /etc/init.d/postgresql stop
+
+  Now you may be interested in actually logging in and
+do some queries. You first have to create a PostgreSQL
+user (also called "role") and a database on which such user
+has writing rights. To do administrative work on the
+database, a user named "postgres" gets created on your system
+when installing the packages. When authenticated with such
+user, you have full rights in every database stored in
+your system.
+
+  Let's suppose you want to create a PostgreSQL user named
+"cms_user" without administrative powers, owner of the database
+"cms". So you give:
+
+# sudo -s -u postgres
+$ createuser cms_user -P
+Enter password for new role: 
+Enter it again: 
+Shall the new role be a superuser? (y/n) n
+Shall the new role be allowed to create databases? (y/n) n
+Shall the new role be allowed to create more new roles? (y/n) n
+$ createdb -O cms_user cms
+
+  Wonderful, you're now the proud owner of a brand new database.
+Take out the goblets and pop the champagne! :-) And, of course,
+change the settings for your CMS instance, in order to use it.
+The format you should use for the new database is already
+documented in example/cms.conf.sample.
+
+  Remember also that having a username and a password may not
+be enough to log into the PostgreSQL server: the file
+/etc/postgresql/8.4/main/pg_hba.conf controls how the
+authorization process works. There are many ways PostgreSQL
+can use to authenticate a user. I list here only the two
+more important ones:
+
+ * ident: available only when the clients logs via the
+   UNIX socket connection; the system user performing the
+   request is detected and, if there is a PostgreSQL user
+   with the same name, the request is accepted with that
+   name. You don't need any password, since the systems
+   assume that, if you're logged in as a system user, you
+   already have the needed authorizations;
+
+ * md5: the password you give is mathed to the one stored
+   in PostgreSQL and is accepted if they have the same MD5
+   sum.
+
+This is my pg_hba.conf table, which should be a sane default
+also for you:
+
+---
+# Database administrative login by UNIX sockets
+local   all         postgres                          ident
+
+# TYPE  DATABASE    USER        CIDR-ADDRESS          METHOD
+
+# "local" is for Unix domain socket connections only
+local   all         all                               ident
+# IPv4 local connections:
+host    all         all         127.0.0.1/32          md5
+# IPv6 local connections:
+host    all         all         ::1/128               md5
+---
+
+  The first row allows the user postgres to log in with method
+ident for any database. That row mustn't be deleted, of course.
+The second one allows ident log in for other local users and
+the last two allow remote log in. You may be interested into
+changing the allowed address masks once deploying your CMS
+instance in a real multi-computer environment.
+
+  I hope this is enough at least for starting. Of course nothing
+is said here about how to tweak the database to have optimum
+performances, or how to have redundant  or high-reliability
+systems. Also because I don't know anything about such things!
+
+  There is a non-null probability that this small guide contain
+errors. Please, let me know if you find one of them! :-)
+
