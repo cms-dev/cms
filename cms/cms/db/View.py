@@ -62,7 +62,7 @@ class RankingView(Base):
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
-    # scores (list of Score objects)
+    # scores (dict of (user.username, task.num) to Score objects)
 
     def __init__(self, contest, timestamp=0.0):
         self.contest = contest
