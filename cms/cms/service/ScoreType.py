@@ -207,7 +207,7 @@ class ScoreTypeGroupMul(ScoreTypeAlone):
         returns (float): the score
         """
         if submission.evaluation_outcome == None:
-            logger("Evaluated submission without outcome!")
+            logger.error("Evaluated submission without outcome!")
         else:
             current = 0
             score = 0.0

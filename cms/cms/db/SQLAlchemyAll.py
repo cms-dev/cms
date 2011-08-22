@@ -66,14 +66,15 @@ def create_empty_ranking_view(self, timestamp=0):
 Contest.create_empty_ranking_view = create_empty_ranking_view
 
 
-def update_ranking_view(self):
+def update_ranking_view(self, scorers):
     """Updates the ranking view with the scores coming from the
     ScoreType instance of every task in the contest.
 
     """
-    for user in self.users:
-        for task in self.tasks:
-            score = task.get_scorer().scores.get(user.username, 0.0)
+    for task in self.tasks:
+        scorer = scorers[task.id]
+        for user in self.users:
+            score = scorer.scores.get(user.username, 0.0)
             self.ranking_view.scores[(user.username, task.num)].score = score
 Contest.update_ranking_view = update_ranking_view
 

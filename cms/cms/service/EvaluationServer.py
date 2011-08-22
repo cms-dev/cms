@@ -377,16 +377,20 @@ class EvaluationServer(Service):
     # How often we check if we can assign a job to a worker
     CHECK_DISPATCH_TIME = 2.0
 
-    def __init__(self, shard, contest):
+    def __init__(self, shard, contest_id):
         logger.initialize(ServiceCoord("EvaluationServer", shard))
         Service.__init__(self, shard)
 
+        self.contest_id = contest_id
+        self.scorers = {}
         with SessionGen() as session:
             contest = session.query(Contest).\
-                      filter_by(id=contest).first()
+                      filter_by(id=contest_id).first()
             logger.info("Loaded contest %s" % contest.name)
             submission_ids = [x.id for x in contest.get_submissions()]
             contest.create_empty_ranking_view(timestamp=contest.start)
+            for task in contest.tasks:
+                self.scorers[task.id] = task.get_scorer()
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
@@ -396,7 +400,7 @@ class EvaluationServer(Service):
 
         self.add_timeout(self.dispatch_jobs, None,
                          EvaluationServer.CHECK_DISPATCH_TIME,
-                         immediately=False)
+                         immediately=True)
         self.add_timeout(self.check_workers, None,
                          EvaluationServer.WORKER_TIMEOUT_CHECK_TIME,
                          immediately=False)
@@ -406,8 +410,6 @@ class EvaluationServer(Service):
         for submission_id in submission_ids:
             self.new_submission(submission_id)
 
-        self.dispatch_jobs()
-
     def dispatch_jobs(self):
         """Check if there are pending jobs, and tries to distribute as
         many of them to the available workers.
@@ -416,7 +418,7 @@ class EvaluationServer(Service):
         while self.dispatch_one_job():
             pass
 
-        # We want this to run forever:
+        # We want this to run forever.
         return True
 
     def dispatch_one_job(self):
@@ -496,10 +498,17 @@ class EvaluationServer(Service):
         job_type, submission_id = job
         priority, timestamp = side_data
 
+        logger.info("Action %s for submission %s completed. "
+                    "Success: %s" % (job_type, submission_id, data))
+
         # We get the submission from db.
         with SessionGen() as session:
             submission = Submission.get_from_id(submission_id, session)
-            submission_id = submission.id
+            if submission is None:
+                logger.critical("[action_finished] Couldn't find submission %d "
+                                "in the database" % submission_id)
+                return
+
             if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
                 submission.compilation_tries += 1
             if job_type == EvaluationServer.JOB_TYPE_EVALUATION:
@@ -508,69 +517,115 @@ class EvaluationServer(Service):
             compilation_outcome = submission.compilation_outcome
             evaluation_tries = submission.evaluation_tries
             tokened = submission.tokened()
+            evaluated = submission.evaluated()
 
-            if submission is None:
-                logger.critical("[action_finished] Couldn't find submission %d "
-                                "in the database" % submission_id)
-                return
+        # Compilation
+        if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
+            self.compilation_ended(submission_id,
+                                   timestamp,
+                                   compilation_tries,
+                                   compilation_outcome,
+                                   tokened)
 
-            if data == False:
-                # Action was not successful, we requeue if we did not
-                # already tried too many times.
-                logger.info("Action %s for submission %s completed "
-                            "unsuccessfully" % (job_type, submission_id))
-                if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
-                    if compilation_tries > \
-                            EvaluationServer.MAX_COMPILATION_TRIES:
-                        logger.error("Maximum tries reached for the "
-                                     "compilation of submission %s. I will not "
-                                     "try again" % submission_id)
-                    else:
-                        self.queue.push(job, priority, timestamp)
-                elif job_type == EvaluationServer.JOB_TYPE_EVALUATION:
-                    if evaluation_tries > \
-                            EvaluationServer.MAX_EVALUATION_TRIES:
-                        logger.error("Maximum tries reached for the "
-                                     "evaluation of submission %s. I will not "
-                                     "try again" % submission_id)
-                    else:
-                        self.queue.push(job, priority, timestamp)
-                else:
-                    logger.error("Invalid job type %s" % repr(job_type))
-                    return
+        # Evaluation
+        elif job_type == EvaluationServer.JOB_TYPE_EVALUATION:
+            self.evaluation_ended(submission_id,
+                                  timestamp,
+                                  evaluation_tries,
+                                  evaluated,
+                                  tokened,
+                                  task_id)
 
+        # Other (i.e. error)
+        else:
+            logger.error("Invalid job type %s" % repr(job_type))
+            return
+
+    def compilation_ended(self, submission_id,
+                          timestamp, compilation_tries,
+                          compilation_outcome, tokened):
+        """Actions to be performed when we have a submission that has
+        ended compilation . In particular: we queue evaluation if
+        compilation was ok; we requeue compilation if we fail.
+
+        submission_id (string): db id of the submission.
+        timestamp (int): time of submission.
+        compilation_tries (int): # of tentative compilations.
+        compilation_outcome (string): if submission compiled ok.
+        tokened (bool): if the user played a token on submission.
+
+        """
+        # Compilation was ok, so we evaluate.
+        if compilation_outcome == "ok":
+            priority = EvaluationServer.JOB_PRIORITY_LOW
+            if tokened:
+                priority = EvaluationServer.JOB_PRIORITY_MEDIUM
+            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
+                             submission_id), priority, timestamp)
+        # If instead submission failed compilation, we don't evaluate.
+        elif compilation_outcome == "fail":
+            logger.info("Submission %s did not compile. Not going "
+                        "to evaluate." % submission_id)
+        # If compilation failed for our fault, we requeue or not.
+        elif compilation_outcome == None:
+            if compilation_tries > EvaluationServer.MAX_COMPILATION_TRIES:
+                logger.error("Maximum tries reached for the "
+                             "compilation of submission %s. I will "
+                             "not try again" % submission_id)
             else:
-                # The action was successful.
-                logger.info("Action %s for submission %s completed "
-                            "successfully" % (job_type, submission_id))
+                self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION,
+                                 submission_id),
+                                EvaluationServer.JOB_PRIORITY_HIGH,
+                                timestamp)
+        # Otherwise, error.
+        else:
+            logger.error("Compilation outcome %s not recognized." %
+                         repr(compilation_outcome))
 
-                if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
-                    if compilation_outcome == "ok":
-                        # Compilation was ok, so we evaluate.
-                        priority = EvaluationServer.JOB_PRIORITY_LOW
-                        if tokened:
-                            priority = EvaluationServer.JOB_PRIORITY_MEDIUM
-                        self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
-                                         submission_id), priority, timestamp)
-                    elif compilation_outcome == "fail":
-                        # If instead submission failed compilation, we don't
-                        # evaluate.
-                        logger.info("Submission %s did not compile. Not going "
-                                    "to evaluate." % submission_id)
-                    else:
-                        logger.error("Compilation outcome %s not recognized." %
-                                     repr(compilation_outcome))
+    def evaluation_ended(self, submission_id,
+                         timestamp, evaluation_tries,
+                         evaluated, tokened, task_id):
+        """Actions to be performed when we have a submission that has
+        been evalutated. In particular: we update scores on success,
+        we requeue on failure.
 
-                elif job_type == EvaluationServer.JOB_TYPE_EVALUATION:
-                    # Evaluation successful, we update the score
-                    logger.info("Evaluation succeeded for submission %s" %
-                                submission_id)
-                    scorer = submission.task.get_scorer()
-                    scorer.add_submission(submission)
-                    submission.task.contest.update_ranking_view()
+        submission_id (string): db id of the submission.
+        timestamp (int): time of submission.
+        compilation_tries (int): # of tentative evaluations.
+        evaluated (bool): if the submission has been evaluated
+                          successfully.
+        tokened (bool): if the user played a token on submission.
+        task_id (string): the task of the submission.
 
-                else:
-                    logger.error("Invalid job type %s" % repr(job_type))
+        """
+        # Evaluation successful, we update the score.
+        if evaluated:
+            scorer = self.scorers[task_id]
+            # We need a session to change the ranking view.
+            with SessionGen() as session:
+                submission = Submission.get_from_id(submission_id, session)
+                if submission is None:
+                    logger.critical("[action_finished] Couldn't find "
+                                    " submission %d in the database" %
+                                    submission_id)
+                    return
+                scorer.add_submission(submission)
+                contest = session.query(Contest).\
+                          filter_by(id=self.contest_id).first()
+                contest.update_ranking_view(self.scorers)
+        # Evaluation unsuccessful, we requeue (or not).
+        else:
+            if evaluation_tries > \
+                   EvaluationServer.MAX_EVALUATION_TRIES:
+                logger.error("Maximum tries reached for the "
+                             "evaluation of submission %s. I will "
+                             "not try again" % submission_id)
+            else:
+                priority = EvaluationServer.JOB_PRIORITY_LOW
+                if tokened:
+                    priority = EvaluationServer.JOB_PRIORITY_MEDIUM
+                self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
+                                 submission_id), priority, timestamp)
 
     @rpc_method
     def new_submission(self, submission_id):
@@ -585,35 +640,36 @@ class EvaluationServer(Service):
         with SessionGen() as session:
             submission = Submission.get_from_id(submission_id, session)
             timestamp = submission.timestamp
+            compilation_tries = submission.compilation_tries
             compilation_outcome = submission.compilation_outcome
-            tokened = submission.tokened()
+            evaluation_tries = submission.evaluation_tries
             evaluated = submission.evaluated()
+            tokened = submission.tokened()
+            task_id = submission.task.id
 
-        # TODO - Probably some code duplication here can be solved
-        # calling action_finished on a submission already compiled (or
-        # already evaluated)
         if compilation_outcome == None:
-            # If not compiled, I compile
+            # If not compiled, I compile. Note that we give here a
+            # chance for submissions that already have too many
+            # compilation tries.
             self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION,
                              submission_id),
                             EvaluationServer.JOB_PRIORITY_HIGH,
                             timestamp)
-        elif compilation_outcome == "ok":
-            # If compiled correctly and it is not evaluated, do it
-            if not evaluated:
-                priority = EvaluationServer.JOB_PRIORITY_LOW
-                if tokened:
-                    priority = EvaluationServer.JOB_PRIORITY_MEDIUM
-                    self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
-                                     submission_id),
-                                    priority,
-                                    timestamp)
-        elif compilation_outcome == "fail":
-            # If compilation was unsuccessful, I do nothing
-            pass
         else:
-            logger.error("Compilation outcome for submission %s is %s." %
-                         (submission_id, str(compilation_outcome)))
+            if not evaluated:
+                self.compilation_ended(submission_id,
+                                       timestamp,
+                                       compilation_tries,
+                                       compilation_outcome,
+                                       tokened)
+
+            else:
+                self.evaluation_ended(submission_id,
+                                      timestamp,
+                                      evaluation_tries,
+                                      evaluated,
+                                      tokened,
+                                      task_id)
 
 
 if __name__ == "__main__":
