@@ -19,6 +19,9 @@
    "TestFileStorage":   [["localhost", 27500]],
    "TestFileCacher":    [["localhost", 27501]],
    "YamlImporter":      [["localhost", 23000]],
+   "SpoolExporter":     [["localhost", 23100]],
+   "ContestExporter":   [["localhost", 23200]],
+   "ContestImporter":   [["localhost", 23300]],
    "ServiceA":          [["localhost", 35000]],
    "ServiceB":          [["localhost", 36000], ["localhost", 36001]],
    "WebServiceA":       [["localhost", 37000]]
