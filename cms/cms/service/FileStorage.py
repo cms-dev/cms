@@ -276,7 +276,11 @@ class FileCacher:
             if plus["path"] != None:
                 try:
                     with open(plus["path"], "wb") as f:
-                        f.write(plus["data"].read())
+                        # FIXME: temporary workaround, must understand why.
+                        if plus["data"].__class__ == str:
+                            f.write(plus["data"])
+                        else:
+                            f.write(plus["data"].read())
                 except IOError as e:
                     if callback != None:
                         callback(bind_obj, None, plus["plus"], repr(e))
