@@ -4,6 +4,8 @@
   properly using IDs.
 * Decide where and how to keep tries number for evaluations.
 * Rename token_timestamp -> token.
+* Why do we have testcases and public_testcases? This is totally
+  nonsense, we should add a public bit in testcases.
 
 *** Worker
 * Should be able to work with 32-bit programs even when running in 64-bit mode.
