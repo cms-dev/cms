@@ -93,6 +93,8 @@ class Score(Base):
     """
     __tablename__ = 'scores'
 
+    rankingview_keyfunc = lambda s: (s.user.username, s.task.num)
+
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)
 
@@ -105,7 +107,7 @@ class Score(Base):
         RankingView,
         backref=backref("scores",
                         collection_class=mapped_collection(
-                            lambda s: (s.user.username, s.task.num)),
+                            rankingview_keyfunc),
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
