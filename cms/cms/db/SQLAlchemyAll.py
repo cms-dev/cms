@@ -34,7 +34,7 @@ from cms.db.Contest import Contest, Announcement
 from cms.db.View import RankingView, Score
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task, Manager, Testcase, Attachment, \
-     PublicTestcase, SubmissionFormatElement
+     SubmissionFormatElement
 from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 
 # Load all import_from_dict() class methods

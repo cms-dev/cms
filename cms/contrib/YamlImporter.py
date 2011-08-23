@@ -26,7 +26,8 @@ import codecs
 import optparse
 
 from cms.async import ServiceCoord
-from cms.db.SQLAlchemyAll import metadata, Session, Task, Manager, Testcase, User, Contest, PublicTestcase, SubmissionFormatElement
+from cms.db.SQLAlchemyAll import metadata, Session, Task, Manager, \
+     Testcase, User, Contest, SubmissionFormatElement
 from cms.service.ScoreType import ScoreTypes
 from cms.async.AsyncLibrary import rpc_callback, Service, logger
 from cms.db.Utils import analyze_all_tables
@@ -133,6 +134,9 @@ class YamlImporter(Service):
             params["managers"] = {}
         params["score_type"] = conf.get("score_type", ScoreTypes.SCORE_TYPE_SUM)
         params["score_parameters"] = conf.get("score_parameters", "5.0")
+        public_testcases = conf.get("risultati", [])
+        if public_testcases != []:
+            public_testcases = [int(x) for x in public_testcases]
         params["testcases"] = []
         for i in xrange(int(conf["n_input"])):
             with open(os.path.join(path, "input", "input%d.txt" % (i))) as fi:
@@ -140,12 +144,8 @@ class YamlImporter(Service):
                     params["testcases"].append(Testcase(self.FS.put_file(binary_data=fi.read(),
                                                                          description="Input %d for task %s" % (i, name)),
                                                         self.FS.put_file(binary_data=fo.read(),
-                                                                         description="Output %d for task %s" % (i, name))))
-        public_testcases = conf.get("risultati", "").split(",")
-        if public_testcases == [""]:
-            params["public_testcases"] = []
-        else:
-            params["public_testcases"] = map(lambda x: PublicTestcase(int(x)), public_testcases)
+                                                                         description="Output %d for task %s" % (i, name)),
+                                                        public=(i in public_testcases)))
         params["token_initial"] = conf.get("token_initial", 0)
         params["token_max"] = conf.get("token_max", 0)
         params["token_total"] = conf.get("token_total", 0)

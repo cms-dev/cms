@@ -26,7 +26,7 @@ directly (import it from SQLAlchemyAll).
 
 import simplejson
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Float
+from sqlalchemy import Column, ForeignKey, Boolean, Integer, String, Float
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -96,7 +96,6 @@ class Task(Base):
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # submission_format (list of SubmissionFormatElement objects)
-    # public_testcases (list of PublicTestcase objects)
     # testcases (list of Testcase objects)
     # attachments (dict of Attachment objects indexed by filename)
     # managers (dict of Manager objects indexed by filename)
@@ -113,8 +112,7 @@ class Task(Base):
     def __init__(self, name, title, attachments, statement,
                  time_limit, memory_limit,
                  task_type, submission_format, managers,
-                 score_type, score_parameters,
-                 testcases, public_testcases,
+                 score_type, score_parameters, testcases,
                  token_initial=0, token_max=0, token_total=0,
                  token_min_interval=0, token_gen_time=60, token_gen_number=1,
                  contest=None):
@@ -135,7 +133,6 @@ class Task(Base):
         self.score_type = score_type
         self.score_parameters = score_parameters
         self.testcases = testcases
-        self.public_testcases = public_testcases
         self.token_initial = token_initial
         self.token_max = token_max
         self.token_total = token_total
@@ -160,7 +157,6 @@ class Task(Base):
                 'score_type':         self.score_type,
                 'score_parameters':   self.score_parameters,
                 'testcases':          [testcase.export_to_dict() for testcase in self.testcases],
-                'public_testcases':   [testcase.export_to_dict() for testcase in self.public_testcases],
                 'token_initial':      self.token_initial,
                 'token_max':          self.token_max,
                 'token_total':        self.token_total,
@@ -194,6 +190,10 @@ class Testcase(Base):
     # Number of the task for sorting.
     num = Column(Integer, nullable=False)
 
+    # If the testcase outcome is going to be showed to the user (even
+    # without playing a token.
+    public = Column(Boolean, nullable=False)
+
     # Digests of the input and output files.
     input = Column(String, nullable=False)
     output = Column(String, nullable=False)
@@ -210,10 +210,11 @@ class Testcase(Base):
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
-    def __init__(self, input, output, num=None, task=None):
+    def __init__(self, input, output, num=None, public=False, task=None):
         self.input = input
         self.output = output
         self.num = num
+        self.public = public
         self.task = task
 
     def export_to_dict(self):
@@ -221,7 +222,9 @@ class Testcase(Base):
 
         """
         return {'input':  self.input,
-                'output': self.output}
+                'output': self.output,
+                'public': self.public}
+
 
 class Attachment(Base):
     """Class to store additional files to give to the user together
@@ -262,6 +265,7 @@ class Attachment(Base):
         return {'filename': self.filename,
                 'digest':   self.digest}
 
+
 class Manager(Base):
     """Class to store additional files needed to compile or evaluate a
     submission (e.g., graders). Not to be used directly (import it from
@@ -301,39 +305,6 @@ class Manager(Base):
         return {'filename': self.filename,
                 'digest':   self.digest}
 
-class PublicTestcase(Base):
-    """Class to store which testcase outcomes are going to be showed
-    to the user (even without playing a token). Not to be used directly
-    (import it from SQLAlchemyAll).
-
-    """
-    __tablename__ = 'public_testcases'
-
-    # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
-
-    # Task (id and object) owning the public testcase.
-    task_id = Column(Integer,
-                     ForeignKey(Task.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False)
-    task = relationship(Task,
-                        backref=backref('public_testcases',
-                                        single_parent=True,
-                                        cascade="all, delete, delete-orphan"))
-
-    # Number of the testcase to be made public.
-    testcase = Column(Integer, nullable=False)
-
-    def __init__(self, testcase, task=None):
-        self.testcase = testcase
-        self.task = task
-
-    def export_to_dict(self):
-        """Export object data to a dictionary.
-
-        """
-        return {'testcase': self.testcase}
 
 class SubmissionFormatElement(Base):
     """Class to store the requested files that a submission must

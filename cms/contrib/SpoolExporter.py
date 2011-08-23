@@ -82,7 +82,7 @@ class SpoolExporter(Service):
                 username = submission.user.username
                 task = submission.task.name
                 timestamp = int(submission.timestamp)
-                checked, language = submission.verify_source(session)
+                checked, language = submission.verify_source()
                 if not checked:
                     logger.warning("Could not verify language for submission %s, dropping it" % (submission.id))
                     continue

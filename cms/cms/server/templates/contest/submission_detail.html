@@ -43,17 +43,13 @@
           {% if submission.evaluations != [] %}
           <table class="sub_score">
             <tr><th>Score</th><th>Details</th></tr>
-            {% if submission.token_timestamp != None %}
-              {% for ev in submission.evaluations %}
+            {% for ev in submission.evaluations %}
+              {% if submission.token_timestamp != None or submission.task.testcases[int(ev.num)].public %}
             <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td><tr/>
               {% end %}
-            {% else %}
-              {% for public in task.public_testcases %}
-            <tr><td>{{ escape(submission.evaluations[public.testcase].outcome) }}</td><td>{{ escape(submission.evaluations[public.testcase].text) }}</td><tr/>
-              {% end %}
-              {% if task.public_testcases == [] %}
-            <tr><td colspan="2">No specified testcases<br/> for partial feedback for this task.</td></tr>
-              {% end %}
+            {% end %}
+            {% if submission.token_timestamp is None and not any([testcase.public for testcase in submission.task.testcases]) %}
+            <tr><td colspan="2">No specified testcases for partial feedback for this task.</td></tr>
             {% end %}
           </table>
           {% else %}

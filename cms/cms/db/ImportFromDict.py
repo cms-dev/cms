@@ -29,7 +29,7 @@ from cms.db.Contest import Contest, Announcement
 from cms.db.View import RankingView, Score
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task, Manager, Testcase, Attachment, \
-     PublicTestcase, SubmissionFormatElement
+     SubmissionFormatElement
 from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 
 
@@ -40,7 +40,7 @@ def basic_import_from_dict(cls, data):
     """
     return cls(**data)
 for cls in [Announcement, Question, Message, SubmissionFormatElement,
-            PublicTestcase, Manager, Attachment, Testcase, Evaluation,
+            Manager, Attachment, Testcase, Evaluation,
             File, Executable, Token]:
     cls.import_from_dict = basic_import_from_dict
 
@@ -71,7 +71,7 @@ def score_import_from_dict(cls, data, tasks, users):
     """Build the object using data from a dictionary.
 
     """
-    
+
     def get_user(users, username):
         """Return a user given its username. This is mostly a hack.
         We can't use Contest.get_user() because we don't have the
@@ -113,7 +113,6 @@ def task_import_from_dict(cls, data):
     data['managers'] = [Manager.import_from_dict(manager_data) for manager_data in data['managers']]
     data['managers'] = dict([(manager.filename, manager) for manager in data['managers']])
     data['testcases'] = [Testcase.import_from_dict(testcase_data) for testcase_data in data['testcases']]
-    data['public_testcases'] = [PublicTestcase.import_from_dict(testcase_data) for testcase_data in data['public_testcases']]
     return cls(**data)
 Task.import_from_dict = task_import_from_dict
 
