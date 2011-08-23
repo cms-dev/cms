@@ -610,7 +610,11 @@ class EvaluationServer(Service):
                                     " submission %d in the database" %
                                     submission_id)
                     return
-                scorer.add_submission(submission)
+                scorer.add_submission(submission_id, submission.timestamp,
+                                      submission.user.username,
+                                      [float(ev.outcome)
+                                       for ev in submission.evaluations],
+                                      submission.tokened())
                 contest = session.query(Contest).\
                           filter_by(id=self.contest_id).first()
                 contest.update_ranking_view(self.scorers)

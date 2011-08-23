@@ -23,6 +23,7 @@ from cms.async.AsyncLibrary import logger
 
 class ScoreTypes:
     """Contains constants for all defined score types.
+
     """
     # TODO: if we really want to do plugins, this class should look up
     # score types in some given path.
@@ -45,6 +46,7 @@ class ScoreTypes:
     @staticmethod
     def get_score_type(score_type, score_parameters, eval_num):
         """Returns the right score type class for a given string.
+
         """
         if score_type == ScoreTypes.SCORE_TYPE_SUM:
             return ScoreTypeSum(score_parameters, eval_num)
@@ -61,108 +63,154 @@ class ScoreTypes:
 class ScoreTypeAlone:
     """Base class for scoring systems where the score of a submission
     depends only on the submission.
+
     """
 
     def __init__(self, parameters, eval_num):
-        self.scores = {}
-        self.submission_scores = {}
+        """Initializer.
+
+        parameters (object): format is specified in the subclasses.
+        eval_num (int): number of testcases.
+
+        """
+        print parameters
         self.parameters = parameters
-        self.submissions = {}
         self.eval_num = eval_num
 
-    def add_submission(self, submission):
+        # Dict that associate to a username the list of its
+        # submission_ids - sorted by timestamp.
+        self.submissions = {}
+
+        # Dict that associate to every submission_id its data:
+        # timestamp, username, evaluations, score
+        self.pool = {}
+
+        # Dict that associate to a username the maximum score amongst
+        # its tokened submissions and the last one.
+        self.scores = {}
+
+    def add_submission(self, submission_id, timestamp, username,
+                       evaluations, tokened):
         """To call in order to add a submission to the computation of
         all scores.
-        """
-        self._insert_submission(submission)
-        self._sort_submissions(submission.user.username)
-        self._insert_submission_score(submission,
-                                      self.compute_score(submission))
-        self.update_scores(submission)
 
-    def add_token(self, submission):
-        """To call when a token is played, so that the scores updates.
+        submission_id (int): id of the new submission.
+        timestamp (int): time of submission.
+        username (string): username of the owner of the submission.
+        evaluations (list): list of floats representing the evaluations.
+        tokened (bool): if the user played a token on submission.
+
         """
-        self.update_scores(submission)
+        print "Add submission"
+        self.pool[submission_id] = {
+            "timestamp": timestamp,
+            "username": username,
+            "evaluations": evaluations,
+            "tokened": tokened,
+            "score": None
+            }
+        self.pool[submission_id]["score"] = self.compute_score(submission_id)
+        if username not in self.submissions or \
+            self.submissions[username] == None:
+            self.submissions[username] = [submission_id]
+        else:
+            self.submissions[username].append(submission_id)
+
+        # We expect submissions to arrive more or less in the right
+        # order, so we insert-sort the new one.
+        i = len(self.submissions[username])-1
+        while i > 0 and \
+            self.pool[self.submissions[username][i-1]]["timestamp"] > \
+            self.pool[self.submissions[username][i]]["timestamp"]:
+            self.submissions[username][i-1], self.submissions[username][i] = \
+                self.submissions[username][i], self.submissions[username][i-1]
+            i -= 1
+
+        self.update_scores(submission_id)
+        print self.submissions
+        print self.pool
+        print self.scores
+
+    def add_token(self, submission_id):
+        """To call when a token is played, so that the scores updates.
+
+        submission_id (int): id of the tokened submission.
+
+        """
+        try:
+            self.pool[submission_id]["tokened"] = True
+        except KeyError:
+            logger.error("Submission %d not found in ScoreType's pool." %
+                         submission_id)
+
+        self.update_scores(submission_id)
 
     def compute_all_scores(self):
         """Recompute all scores, usually needed only in case of
         problems.
+
         """
         for submissions in self.submissions.itervalues():
-            for submission in submissions:
-                self.compute_score(submission)
+            # We recompute score for all submissions of user...
+            for submission_id in submissions:
+                self.compute_score(submission_id)
+            # and update the score of the user (only once).
+            if submissions != []:
+                self.update_scores(submissions[-1])
 
-    def _insert_submission(self, submission):
-        """Utility internal method to add a submission to the
-        dictionary.
-        """
-        username = submission.user.username
-        if username not in self.submissions or \
-                self.submissions[username] == None:
-            self.submissions[username] = [submission]
-        else:
-            self.submissions[username].append(submission)
-
-    def _insert_submission_score(self, submission, score):
-        """Utility internal method to add a score to a submission.
-        """
-        username = submission.user.username
-        if username not in self.submission_scores or \
-                self.submission_scores[username] == None:
-            self.submission_scores[username] = {}
-        self.submission_scores[username][submission.id] = score
-
-    def _sort_submissions(self, username):
-        """Utility internal method to sort submissions of a user by
-        time.
-        """
-        self.submissions[username].sort(
-            lambda x, y: int(x.timestamp) - int(y.timestamp))
-
-    def update_scores(self, submission):
-        """Update the scores of the contest assuming that only this
+    def update_scores(self, new_submission_id):
+        """Update the scores of the users assuming that only this
         submission appeared.
+
+        new_submission_id (int): id of the newly added submission.
+
         """
+        username = self.pool[new_submission_id]["username"]
+        submission_ids = self.submissions[username]
         score = 0.0
-        username = submission.user.username
-        submissions = self.submissions[username]
-        for s in submissions:
-            if s.token_timestamp != None:
-                score = max(score,
-                            self.submission_scores[username][s.id])
-        if submissions != []:
-            score = \
-                max(score,
-                    self.submission_scores[username][submissions[-1].id])
+
+        # We find the best amongst all tokened submissions...
+        for submission_id in submission_ids:
+            if self.pool[submission_id]["tokened"]:
+                score = max(score, self.pool[submission_id]["score"])
+        # and the last one.
+        if submission_ids != []:
+            score = max(score, self.pool[submission_ids[-1]]["score"])
+
+        # Finally we update the score table.
         self.scores[username] = score
 
-    def compute_score(self, submission):
+    def compute_score(self, submission_id):
         """We don't know here how to compute a score, but our
         subclasses will.
 
-        submission (Submission): the submission to evaluate
-
+        submission_id (int): the submission to evaluate.
         returns (float): the score
+
         """
         return 0.0
 
 
 class ScoreTypeSum(ScoreTypeAlone):
-    """The score of a submission is the sum of the outcomes.
+    """The score of a submission is the sum of the outcomes,
+    multiplied by the integer parameter.
+
     """
 
-    def compute_score(self, submission):
+    def compute_score(self, submission_id):
         """Compute the score of a submission.
 
-        submission (Submission): the submission to evaluate
-
+        submission_id (int): the submission to evaluate.
         returns (float): the score
+
         """
-        if len(submission.evaluations) != self.eval_num:
-            logger.error("Some evaluations missing in submission `%d' to score!" % (submission.id))
+        evaluations = self.pool[submission_id]["evaluations"]
+        if len(evaluations) != self.eval_num:
+            logger.error("Some evaluations missing in submission "
+                         "`%d' to score!" % submission_id)
+            return 0.0
         else:
-            return sum(map(lambda x: float(x.outcome), submission.evaluations))
+            return sum(evaluations) * self.parameters
 
 
 class ScoreTypeGroupMin(ScoreTypeAlone):
@@ -172,24 +220,27 @@ class ScoreTypeGroupMin(ScoreTypeAlone):
     Parameters are [{'multiplier': m, 'testcases': t}, ... ] and this
     means that the first group consists of the first t testcases and
     the min will be multiplied by m.
+
     """
 
-    def compute_score(self, submission):
+    def compute_score(self, submission_id):
         """Compute the score of a submission.
 
-        submission (Submission): the submission to evaluate
-
+        submission_id (int): the submission to evaluate.
         returns (float): the score
+
         """
-        if submission.evaluation_outcome == None:
-            logger.error("Evaluated submission without outcome!")
+        evaluations = self.pool[submission_id]["evaluations"]
+        if len(evaluations) != self.eval_num:
+            logger.error("Some evaluations missing in submission "
+                         "`%d' to score!" % submission_id)
+            return 0.0
         else:
             current = 0
             score = 0.0
-            for parameter in submission.task.score_parameters:
+            for parameter in self.parameters:
                 next_ = current + parameter[1]
-                score += min(submission.evaluation_outcome[current:next_]) * \
-                    parameter[0]
+                score += min(evaluations[current:next_]) * parameter[0]
                 current = next_
             return score
 
@@ -197,26 +248,28 @@ class ScoreTypeGroupMin(ScoreTypeAlone):
 class ScoreTypeGroupMul(ScoreTypeAlone):
     """Similar to ScoreTypeGroupMin, but with the product instead of
     the minimum.
+
     """
 
-    def compute_score(self, submission):
+    def compute_score(self, submission_id):
         """Compute the score of a submission.
 
-        submission (Submission): the submission to evaluate
-
+        submission_id (int): the submission to evaluate.
         returns (float): the score
+
         """
-        if submission.evaluation_outcome == None:
-            logger.error("Evaluated submission without outcome!")
+        evaluations = self.pool[submission_id]["evaluations"]
+        if len(evaluations) != self.eval_num:
+            logger.error("Some evaluations missing in submission "
+                         "`%d' to score!" % submission_id)
+            return 0.0
         else:
             current = 0
             score = 0.0
-            for parameter in submission.task.score_parameters:
+            for parameter in self.parameters:
                 next_ = current + parameter[1]
-                score += \
-                    reduce(lambda x, y: x * y,
-                           submission.evaluation_outcome[current:next_]) * \
-                           parameter[0]
+                score += reduce(lambda x, y: x * y,
+                                evaluations[current:next_]) * parameter[0]
                 current = next_
             return score
 
@@ -229,11 +282,13 @@ class ScoreTypeRelative:
     contribute to the final score (i.e., the last submission for all
     users, and the submissions where the user used a token). Also
     compared with a "basic" outcome given as a parameter.
+
     """
 
     def __init__(self, parameters, eval_num):
         """Parameters are a list with the best outcomes found by the
         contest managers.
+
         """
         self.scores = {}
         self.parameters = parameters
@@ -246,6 +301,7 @@ class ScoreTypeRelative:
     def add_submission(self, submission):
         """To call in order to add a submission to the computation of
         all scores.
+
         """
         self._insert_submission(submission)
         self._sort_submissions(submission.user.username)
@@ -253,18 +309,21 @@ class ScoreTypeRelative:
 
     def add_token(self, submission):
         """To call when a token is played, so that the scores updates.
+
         """
         self.update_scores(submission)
 
     def compute_all_scores(self):
         """Recompute all scores, usually needed only in case of
         problems.
+
         """
         pass
 
     def _insert_submission(self, submission):
         """Utility internal method to add a submission to the
         dictionary.
+
         """
         username = submission.user.username
         if self.submissions[username] == None:
@@ -275,13 +334,15 @@ class ScoreTypeRelative:
     def _sort_submissions(self, username):
         """Utility internal method to sort submissions of a user by
         time.
+
         """
         self.submissions[username].sort(lambda x, y:
-                                            x.timestamp - y.timestamp)
+                                        x.timestamp - y.timestamp)
 
     def update_scores(self, submission):
         """Update the scores of the contest assuming that only this
         submission appeared.
+
         """
         # We find the best outcome for each testcase: first looking
         # the tokenized submission, that are already stored

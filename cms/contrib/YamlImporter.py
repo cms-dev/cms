@@ -132,7 +132,7 @@ class YamlImporter(Service):
         except IOError:
             params["managers"] = {}
         params["score_type"] = conf.get("score_type", ScoreTypes.SCORE_TYPE_SUM)
-        params["score_parameters"] = conf.get("score_parameters", "")
+        params["score_parameters"] = conf.get("score_parameters", "5.0")
         params["testcases"] = []
         for i in xrange(int(conf["n_input"])):
             with open(os.path.join(path, "input", "input%d.txt" % (i))) as fi:

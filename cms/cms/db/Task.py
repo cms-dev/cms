@@ -24,6 +24,8 @@ directly (import it from SQLAlchemyAll).
 
 """
 
+import simplejson
+
 from sqlalchemy import Column, ForeignKey, Integer, String, Float
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
@@ -76,7 +78,7 @@ class Task(Base):
     # Name of the ScoreType child class suited for the task.
     score_type = Column(String, nullable=False)
 
-    # Parameters for the scorer class.
+    # Parameters for the scorer class, JSON encoded.
     score_parameters = Column(String, nullable=False)
 
     # Parameter to define the token behaviour. See Contest.py for
@@ -173,9 +175,10 @@ class Task(Base):
 
         """
         if self.scorer is None:
-            self.scorer = ScoreTypes.get_score_type(self.score_type,
-                                                    self.score_parameters,
-                                                    len(self.testcases))
+            self.scorer = ScoreTypes.get_score_type(
+                self.score_type,
+                simplejson.loads(self.score_parameters),
+                len(self.testcases))
         return self.scorer
 
 

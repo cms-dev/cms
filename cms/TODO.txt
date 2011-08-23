@@ -4,6 +4,8 @@
   properly using IDs.
 * Decide where and how to keep tries number for evaluations.
 * Rename token_timestamp -> token.
+* Auto incremented ids are exposed to the user, who may have clues of
+  what the others are doing.
 
 *** Worker
 * Should be able to work with 32-bit programs even when running in 64-bit mode.
