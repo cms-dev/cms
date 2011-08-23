@@ -8,6 +8,9 @@
   what the others are doing.
 * Why do we have testcases and public_testcases? This is totally
   nonsense, we should add a public bit in testcases.
+* It may be interesting to keep in the Contest not only the last
+  scoring snapshot, but a snapshot for each moments in which the
+  scorings change.
 
 *** Worker
 * Should be able to work with 32-bit programs even when running in 64-bit mode.
