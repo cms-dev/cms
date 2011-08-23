@@ -37,6 +37,8 @@ from cms.db.Task import Task, Manager, Testcase, Attachment, \
      PublicTestcase, SubmissionFormatElement
 from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 
+# Load all import_from_dict() class methods
+import cms.db.ImportFromDict
 
 # The following are methods of Contest that cannot be put in the right
 # file because of circular dependencies.

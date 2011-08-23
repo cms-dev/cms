@@ -64,9 +64,12 @@ class RankingView(Base):
     # SQLAlchemy.
     # scores (dict of (user.username, task.num) to Score objects)
 
-    def __init__(self, contest, timestamp=0.0):
+    def __init__(self, contest=None, timestamp=0.0, scores=None):
         self.contest = contest
         self.timestamp = timestamp
+        if scores is None:
+            scores = {}
+        self.scores = scores
 
     def export_to_dict(self):
         """Export object data to a dictionary.
@@ -93,6 +96,8 @@ class Score(Base):
     """
     __tablename__ = 'scores'
 
+    rankingview_keyfunc = lambda s: (s.user.username, s.task.num)
+
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)
 
@@ -105,7 +110,7 @@ class Score(Base):
         RankingView,
         backref=backref("scores",
                         collection_class=mapped_collection(
-                            lambda s: (s.user.username, s.task.num)),
+                            rankingview_keyfunc),
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
@@ -137,5 +142,5 @@ class Score(Base):
 
         """
         return {'user':  self.user.username,
-                'task':  self.task.name,
+                'task':  self.task.num,
                 'score': self.score}

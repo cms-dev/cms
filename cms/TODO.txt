@@ -6,6 +6,8 @@
 * Rename token_timestamp -> token.
 * Auto incremented ids are exposed to the user, who may have clues of
   what the others are doing.
+* Why do we have testcases and public_testcases? This is totally
+  nonsense, we should add a public bit in testcases.
 
 *** Worker
 * Should be able to work with 32-bit programs even when running in 64-bit mode.
@@ -31,11 +33,20 @@
 * Fix ScoreTypeRelative, which at the moment still use the deprecated
   Submission.score field.
 
-*** Importer
+*** YamlImporter
 * Provide facilities to translate the task's statement.
 * Provide an environment to build tasks better than make_Makefile and friends.
 
-*** ContestExporter
-* Exporting the whole database means more than a single contest.
-* Provide an importer.
+*** Contest{Exporter,Importer}
+* Use consistenly names to export Tasks, as in the cases of Users.
+* After importing, check that all needed files are actually present.
+
+*** File{Storage,Cacher}
+* Don't load the whole files when transferring them, you uselessly eat
+  a huge lot of memory.
+* The current implementation is very confused and probably quite
+  prone to errors; try to make it a bit simpler.
+* Add support to optionally check file digests when trasferring them, both
+  on client and on server side. Moreover, add an API call to ask the
+  server to verify some file's digest.
 

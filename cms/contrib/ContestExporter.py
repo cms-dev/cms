@@ -143,21 +143,21 @@ class ContestExporter(Service):
                 logger.critical("Database engine not supported :-(")
                 sys.exit(1)
 
-            logger.info("Export finished")
-            logger.operation = ""
+        logger.info("Export finished")
+        logger.operation = ""
 
     def safe_get_file(self, digest, path):
         # First get the file
         try:
             self.FC.get_file_to_path(digest, path, sync=True)
         except SyncRPCError:
-            logger.critical("File %s could not retrieved from file server, aborting..." % digest)
+            logger.error("File %s could not retrieved from file server, aborting..." % digest)
             sys.exit(1)
 
         # Then check the digest
         calc_digest = sha1sum(path)
         if digest != calc_digest:
-            logger.critical("File %s has wrong hash %s, aborting..." % (digest, calc_digest))
+            logger.error("File %s has wrong hash %s, aborting..." % (digest, calc_digest))
             sys.exit(1)
 
 def main():
