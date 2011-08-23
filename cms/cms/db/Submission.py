@@ -116,11 +116,12 @@ class Submission(Base):
         """Export object data to a dictionary.
 
         """
-        res = {'timestamp':           self.timestamp,
+        res = {'task':                self.task.num,
+               'timestamp':           self.timestamp,
                'files':               [file.export_to_dict() for file in self.files.itervalues()],
                'compilation_outcome': self.compilation_outcome,
                'compilation_tries':   self.compilation_tries,
-               'compilation_test':    self.compilation_text,
+               'compilation_text':    self.compilation_text,
                'executables':         [executable.export_to_dict() for executable in self.executables.itervalues()],
                'evaluations':         [evaluation.export_to_dict() for evaluation in self.evaluations],
                'evaluation_tries':    self.evaluation_tries,

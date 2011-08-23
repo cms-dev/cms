@@ -64,9 +64,12 @@ class RankingView(Base):
     # SQLAlchemy.
     # scores (dict of (user.username, task.num) to Score objects)
 
-    def __init__(self, contest, timestamp=0.0):
+    def __init__(self, contest=None, timestamp=0.0, scores=None):
         self.contest = contest
         self.timestamp = timestamp
+        if scores is None:
+            scores = {}
+        self.scores = scores
 
     def export_to_dict(self):
         """Export object data to a dictionary.
@@ -139,5 +142,5 @@ class Score(Base):
 
         """
         return {'user':  self.user.username,
-                'task':  self.task.name,
+                'task':  self.task.num,
                 'score': self.score}

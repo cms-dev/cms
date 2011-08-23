@@ -23,6 +23,8 @@
 
 """
 
+import sys
+
 from cms.db.Contest import Contest, Announcement
 from cms.db.View import RankingView, Score
 from cms.db.User import User, Message, Question
@@ -37,7 +39,7 @@ def basic_import_from_dict(cls, data):
 
     """
     return cls(**data)
-for cls in [Announcement, Score, Question, Message, SubmissionFormatElement,
+for cls in [Announcement, Question, Message, SubmissionFormatElement,
             PublicTestcase, Manager, Attachment, Testcase, Evaluation,
             File, Executable, Token]:
     cls.import_from_dict = basic_import_from_dict
@@ -48,29 +50,63 @@ def contest_import_from_dict(cls, data):
 
     """
     data['tasks'] = [Task.import_from_dict(task_data) for task_data in data['tasks']]
-    data['users'] = [User.import_from_dict(user_data) for user_data in data['users']]
+    data['users'] = [User.import_from_dict(user_data, tasks=data['tasks']) for user_data in data['users']]
     data['announcements'] = [Announcement.import_from_dict(ann_data) for ann_data in data['announcements']]
-    data['ranking_view'] = RankingView.import_from_dict(data['ranking_view'])
+    data['ranking_view'] = RankingView.import_from_dict(data['ranking_view'], tasks=data['tasks'], users=data['users'])
     return cls(**data)
 Contest.import_from_dict = contest_import_from_dict
 
 @classmethod
-def rankingview_import_from_dict(cls, data):
-    data['scores'] = [Score.import_from_dict(score_data) for score_data in data['scores']]
+def rankingview_import_from_dict(cls, data, tasks, users):
+    """Build the object using data from a dictionary.
+
+    """
+    data['scores'] = [Score.import_from_dict(score_data, tasks=tasks, users=users) for score_data in data['scores']]
     data['scores'] = dict([(Score.rankingview_keyfunc(score), score) for score in data['scores']])
     return cls(**data)
 RankingView.import_from_dict = rankingview_import_from_dict
 
 @classmethod
-def user_import_from_dict(cls, data):
+def score_import_from_dict(cls, data, tasks, users):
+    """Build the object using data from a dictionary.
+
+    """
+    
+    def get_user(users, username):
+        """Return a user given its username. This is mostly a hack.
+        We can't use Contest.get_user() because we don't have the
+        full Contest itself, and have it would require even worse hacks.
+
+        """
+        for u in users:
+            if u.username == username:
+                return u
+        raise KeyError("User not found")
+
+    data['task'] = tasks[data['task']]
+    data['user'] = get_user(users, data['user'])
+    return cls(**data)
+Score.import_from_dict = score_import_from_dict
+
+@classmethod
+def user_import_from_dict(cls, data, tasks):
+    """Build the object using data from a dictionary.
+
+    """
     data['messages'] = [Message.import_from_dict(message_data) for message_data in data['messages']]
     data['questions'] = [Question.import_from_dict(question_data) for question_data in data['questions']]
-    data['submissions'] = [Submission.import_from_dict(submission_data) for submission_data in data['submissions']]
-    return cls(**data)
+    data['submissions'] = [Submission.import_from_dict(submission_data, tasks=tasks) for submission_data in data['submissions']]
+    obj = cls(**data)
+    for submission in obj.submissions:
+        submission.user = obj
+    return obj
 User.import_from_dict = user_import_from_dict
 
 @classmethod
 def task_import_from_dict(cls, data):
+    """Build the object using data from a dictionary.
+
+    """
     data['attachments'] = [Attachment.import_from_dict(attch_data) for attch_data in data['attachments']]
     data['attachments'] = dict([(attachment.filename, attachment) for attachment in data['attachments']])
     data['submission_format'] = [SubmissionFormatElement.import_from_dict(sfe_data) for sfe_data in data['submission_format']]
@@ -82,7 +118,10 @@ def task_import_from_dict(cls, data):
 Task.import_from_dict = task_import_from_dict
 
 @classmethod
-def submission_import_from_dict(cls, data):
+def submission_import_from_dict(cls, data, tasks):
+    """Build the object using data from a dictionary.
+
+    """
     data['files'] = [File.import_from_dict(file_data) for file_data in data['files']]
     data['files'] = dict([(file.filename, file) for file in data['files']])
     data['executables'] = [Executable.import_from_dict(executable_data) for executable_data in data['executables']]
@@ -90,5 +129,7 @@ def submission_import_from_dict(cls, data):
     data['evaluations'] = [Evaluation.import_from_dict(eval_data) for eval_data in data['evaluations']]
     if data['token_timestamp'] is not None:
         data['token_timestamp'] = Token.import_from_dict(data['token_timestamp'])
+    data['task'] = tasks[data['task']]
+    data['user'] = None
     return cls(**data)
 Submission.import_from_dict = submission_import_from_dict

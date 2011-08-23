@@ -36,6 +36,5 @@
 * Provide an environment to build tasks better than make_Makefile and friends.
 
 *** ContestExporter
-* Exporting the whole database means more than a single contest.
-* Provide an importer.
+* Use consistenly names to export Tasks, as in the cases of Users.
 

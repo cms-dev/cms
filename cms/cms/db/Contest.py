@@ -137,6 +137,15 @@ class Contest(Base):
                 return i
         raise KeyError("Task not found")
 
+    def get_user(self, username):
+        """
+        Returns the first user in the contest with the given name.
+        """
+        for u in self.users:
+            if u.username == username:
+                return u
+        raise KeyError("User not found")
+
 
 class Announcement(Base):
     """Class to store a messages sent by the contest managers to all

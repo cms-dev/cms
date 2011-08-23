@@ -82,7 +82,8 @@ class User(Base):
 
     def __init__(self, real_name, username, password, ip=None,
                  timezone=0.0, contest=None,
-                 hidden=False, messages=None, questions=None):
+                 hidden=False, messages=None, questions=None,
+                 submissions=None):
         self.real_name = real_name
         self.username = username
         self.password = password
@@ -98,6 +99,9 @@ class User(Base):
             questions = []
         self.questions = questions
         self.contest = contest
+        if submissions is None:
+            submissions = []
+        self.submissions = submissions
 
     def export_to_dict(self):
         """Export object data to a dictionary.
