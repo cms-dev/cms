@@ -177,8 +177,7 @@ class Task(Base):
         if self.scorer is None:
             self.scorer = ScoreTypes.get_score_type(
                 self.score_type,
-                simplejson.loads(self.score_parameters),
-                len(self.testcases))
+                simplejson.loads(self.score_parameters))
         return self.scorer
 
 
