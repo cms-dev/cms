@@ -302,7 +302,6 @@ class Sandbox:
         to_consume = [popen.stdout, popen.stderr]
         while len(to_consume) > 0:
             read, tmp1, tmp2 = select.select(to_consume, [], [])
-            finished = list()
             for f in read:
                 if f.read(8192) == '':
                     to_consume.remove(f)

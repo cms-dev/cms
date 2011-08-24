@@ -178,7 +178,7 @@ class BatchTaskType:
 
     def safe_sandbox_execute(self, command):
         try:
-            self.sandbox.execute(command)
+            self.sandbox.execute_without_std(command)
         except (OSError, IOError) as e:
             with async_lock:
                 logger.error("Couldn't spawn `%s' (exception %s)" % (command[0], repr(e)))
