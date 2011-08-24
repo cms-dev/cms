@@ -134,9 +134,9 @@ class YamlImporter(Service):
             params["managers"] = {}
         params["score_type"] = conf.get("score_type", ScoreTypes.SCORE_TYPE_SUM)
         params["score_parameters"] = conf.get("score_parameters", "5.0")
-        public_testcases = conf.get("risultati", "")
+        public_testcases = conf.get("risultati", "").strip()
         if public_testcases != "":
-            public_testcases = [int(x) for x in public_testcases.split(",")]
+            public_testcases = [int(x.strip()) for x in public_testcases.split(",")]
         else:
             public_testcases = []
         params["testcases"] = []
