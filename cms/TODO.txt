@@ -3,7 +3,6 @@
 * Task and Testcase are sometimes referenced by num, instead of
   properly using IDs.
 * Decide where and how to keep tries number for evaluations.
-* Rename token_timestamp -> token.
 * Auto incremented ids are exposed to the user, who may have clues of
   what the others are doing.
 * It may be interesting to keep in the Contest not only the last

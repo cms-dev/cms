@@ -73,9 +73,9 @@ def available_tokens(contest, user, task, timestamp):
     Returns the number of available tokens the given user can use
     for the given task.
     """
-    tokens_timestamp = [s.token_timestamp
+    tokens_timestamp = [s.token.timestamp
                         for s in user.tokens]
-    task_tokens_timestamp = [s.token_timestamp
+    task_tokens_timestamp = [s.token.timestamp
                              for s in user.tokens
                              if s.task == task]
     # These should not be needed, but let's be safe
@@ -112,9 +112,9 @@ def token_available(contest, user, task, timestamp):
     """
     Returns True if the given user can use a token for the given task.
     """
-    tokens_timestamp = [s.token_timestamp
+    tokens_timestamp = [s.token.timestamp
                         for s in user.get_tokens()]
-    task_tokens_timestamp = [s.token_timestamp
+    task_tokens_timestamp = [s.token.timestamp
                              for s in user.get_tokens()
                              if s.task == task]
 
@@ -315,7 +315,7 @@ def enable_detailed_feedback(contest, submission, timestamp, user):
                     # Update the token timestamp if this is not already marked
                     # by someone else when we attempt again.
                     if not submission.tokened():
-                        submission.token_timestamp = timestamp
+                        submission.token.timestamp = timestamp
                         submission.to_couch()
                         inconsistent = False
                     break

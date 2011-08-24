@@ -33,7 +33,7 @@
       </tr>
       <tr>
         <th>
-          {% if submission.token_timestamp == None %}
+          {% if submission.token == None %}
           Partial<br/>evaluation<br/>outcome
           {% else %}
           Detailed<br/>evaluation<br/>outcome
@@ -44,11 +44,11 @@
           <table class="sub_score">
             <tr><th>Score</th><th>Details</th></tr>
             {% for ev in submission.evaluations %}
-              {% if submission.token_timestamp != None or submission.task.testcases[int(ev.num)].public %}
+              {% if submission.token != None or submission.task.testcases[int(ev.num)].public %}
             <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td><tr/>
               {% end %}
             {% end %}
-            {% if submission.token_timestamp is None and not any([testcase.public for testcase in submission.task.testcases]) %}
+            {% if submission.token is None and not any([testcase.public for testcase in submission.task.testcases]) %}
             <tr><td colspan="2">No specified testcases for partial feedback for this task.</td></tr>
             {% end %}
           </table>
@@ -68,7 +68,7 @@
       <tr>
         <th>Detailed<br/>feedback<br/>requested</th>
         <td>
-          {% if submission.token_timestamp==None %}
+          {% if submission.token==None %}
           <form class="submit_form" action="/usetoken/" method="POST">
             No
             <input type="hidden" name="id" value="{{ submission.id }}">

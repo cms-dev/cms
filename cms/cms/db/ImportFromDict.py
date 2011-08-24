@@ -126,8 +126,8 @@ def submission_import_from_dict(cls, data, tasks):
     data['executables'] = [Executable.import_from_dict(executable_data) for executable_data in data['executables']]
     data['executables'] = dict([(executable.filename, executable) for executable in data['executables']])
     data['evaluations'] = [Evaluation.import_from_dict(eval_data) for eval_data in data['evaluations']]
-    if data['token_timestamp'] is not None:
-        data['token_timestamp'] = Token.import_from_dict(data['token_timestamp'])
+    if data['token'] is not None:
+        data['token'] = Token.import_from_dict(data['token'])
     data['task'] = tasks[data['task']]
     data['user'] = None
     return cls(**data)

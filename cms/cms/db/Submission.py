@@ -86,7 +86,7 @@ class Submission(Base):
     # files (dict of File objects indexed by filename)
     # executables (dict of Executable objects indexed by filename)
     # evaluations (list of Evaluation objects, one for testcase)
-    # token_timestamp (Token object or None)
+    # token (Token object or None)
     # FIXME the backref is to the token, not to the timestamp
 
     LANGUAGES = ["c", "cpp", "pas"]
@@ -95,7 +95,7 @@ class Submission(Base):
                  compilation_outcome=None, compilation_text=None,
                  compilation_tries=0, executables=None,
                  evaluation_tries=0, evaluations=None,
-                 token_timestamp=None):
+                 token=None):
         self.user = user
         self.task = task
         self.timestamp = timestamp
@@ -110,7 +110,7 @@ class Submission(Base):
         self.evaluations = evaluations
         self.compilation_tries = compilation_tries
         self.evaluation_tries = evaluation_tries
-        self.token_timestamp = token_timestamp
+        self.token = token
 
     def export_to_dict(self):
         """Export object data to a dictionary.
@@ -125,9 +125,9 @@ class Submission(Base):
                'executables':         [executable.export_to_dict() for executable in self.executables.itervalues()],
                'evaluations':         [evaluation.export_to_dict() for evaluation in self.evaluations],
                'evaluation_tries':    self.evaluation_tries,
-               'token_timestamp':     self.token_timestamp}
-        if self.token_timestamp is not None:
-            res['token_timestamp'] = self.token_timestamp.export_to_dict()
+               'token':               self.token}
+        if self.token is not None:
+            res['token'] = self.token.export_to_dict()
         return res
 
     def tokened(self):
@@ -136,7 +136,7 @@ class Submission(Base):
         returns (bool): True if tokened, False otherwise.
 
         """
-        return self.token_timestamp != None
+        return self.token != None
 
     def evaluated(self):
         """Return if the submission has been evaluated.
@@ -220,7 +220,7 @@ class Submission(Base):
         timestamp (int): the time the token has been played.
 
         """
-        Token(timestamp=timestamp, submission=self)
+        self.token = Token(timestamp=timestamp)
 
 
 class Token(Base):
@@ -239,7 +239,7 @@ class Token(Base):
                                       onupdate="CASCADE", ondelete="CASCADE"),
                            nullable=False)
     submission = relationship(Submission,
-                              backref=backref("token_timestamp",
+                              backref=backref("token",
                                               uselist=False,
                                               single_parent=True,
                                               cascade="all, delete, delete-orphan"),
