@@ -57,7 +57,7 @@ class ContestImporter(Service):
 
         logger.info("Importing files")
         files_dir = os.path.join(self.import_dir, "files")
-        files = os.listdir(files_dir)
+        files = set(os.listdir(files_dir))
         for file in files:
             self.safe_put_file(os.path.join(files_dir, file))
 
@@ -68,6 +68,12 @@ class ContestImporter(Service):
             with open(os.path.join(self.import_dir, "contest.json")) as fin:
                 c = Contest.import_from_dict(json.load(fin))
                 session.add(c)
+
+            # Check that no files were missing
+            contest_files = c.enumerate_files()
+            missing_files = contest_files.difference(files)
+            if len(missing_files) > 0:
+                logger.warning("Some files needed to the contest are missing in the import directory")
 
         logger.info("Import finished")
         logger.operation = ""

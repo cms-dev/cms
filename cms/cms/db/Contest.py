@@ -146,6 +146,39 @@ class Contest(Base):
                 return u
         raise KeyError("User not found")
 
+    def enumerate_files(contest):
+        """Enumerate all the files (by digest) referenced by the
+        contest.
+
+        """
+        files = set()
+        for task in contest.tasks:
+
+            # Enumerate attachments
+            for f in task.attachments.values():
+                files.add(f.digest)
+
+            # Enumerate managers
+            for f in task.managers.values():
+                files.add(f.digest)
+
+            # Enumerate testcases
+            for testcase in task.testcases:
+                files.add(testcase.input)
+                files.add(testcase.output)
+
+        for submission in contest.get_submissions():
+
+            # Enumerate files
+            for f in submission.files.values():
+                files.add(f.digest)
+
+            # Enumerate executables
+            for f in submission.executables.values():
+                files.add(f.digest)
+
+        return files
+
 
 class Announcement(Base):
     """Class to store a messages sent by the contest managers to all

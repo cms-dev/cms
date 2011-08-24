@@ -70,32 +70,11 @@ class ContestExporter(Service):
 
             c = Contest.get_from_id(self.contest_id, session)
 
-            for task in c.tasks:
-                logger.info("Exporting files for task %d" % task.id)
-
-                # Export attachments
-                for f in task.attachments.values():
-                    self.safe_get_file(f.digest, os.path.join(files_dir, f.digest))
-
-                # Export managers
-                for f in task.managers.values():
-                    self.safe_get_file(f.digest, os.path.join(files_dir, f.digest))
-
-                # Export testcases
-                for testcase in task.testcases:
-                    self.safe_get_file(testcase.input, os.path.join(files_dir, testcase.input))
-                    self.safe_get_file(testcase.output, os.path.join(files_dir, testcase.output))
-
-            for submission in c.get_submissions():
-                logger.info("Exporting files for submission %d" % submission.id)
-
-                # Export files
-                for f in submission.files.values():
-                    self.safe_get_file(f.digest, os.path.join(files_dir, f.digest))
-
-                # Export executables
-                for f in submission.executables.values():
-                    self.safe_get_file(f.digest, os.path.join(files_dir, f.digest))
+            # Export files
+            logger.info("Exporting files")
+            files = c.enumerate_files()
+            for f in files:
+                self.safe_get_file(f, os.path.join(files_dir, f))
 
             # Export the contest in JSON format
             logger.info("Exporting the contest in JSON format")
