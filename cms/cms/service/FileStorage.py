@@ -58,7 +58,7 @@ class FileStorage(Service):
            not mkdir(self.tmp_dir) or \
            not mkdir(self.obj_dir) or \
            not mkdir(self.desc_dir):
-            logger.critical("Cannot create necessary directories.")
+            logger.error("Cannot create necessary directories.")
             self.exit()
 
     @rpc_method
@@ -172,7 +172,7 @@ class FileCacher:
         ret = ret and mkdir(self.tmp_dir)
         ret = ret and mkdir(self.obj_dir)
         if not ret:
-            logger.critical("Cannot create necessary directories.")
+            logger.error("Cannot create necessary directories.")
 
     ## GET ##
 
@@ -180,13 +180,12 @@ class FileCacher:
         """Check if a file is present in the local cache.
 
         digest (string): the sha1 sum of the file
-        returns (file): the cached open file, or None; the caller is responsible
-        for closing it
+        returns (file): the contest of the cached file, or None
 
         """
         try:
-            cached_file = open(os.path.join(self.obj_dir, digest), "rb")
-            return cached_file
+            with open(os.path.join(self.obj_dir, digest), "rb") as cached_file:
+                return cached_file.read()
         except IOError:
             return None
 
@@ -216,7 +215,6 @@ class FileCacher:
         if from_cache != None:
             # If there is the file in the cache, maybe it has been
             # deleted remotely. We need to ask.
-            new_plus["error"] = None
             new_plus["data"] = from_cache
             self.file_storage.is_file_present(digest=digest,
                 bind_obj=self,
@@ -241,7 +239,7 @@ class FileCacher:
 
         """
         plus["data"] = data
-        if error == None:
+        if error is None:
             try:
                 path = os.path.join(self.obj_dir, plus["digest"])
                 with open(path, "wb") as f:
@@ -257,7 +255,7 @@ class FileCacher:
 
         data (bool): if the file is really present in the storage
         plus (dict): a dictionary with the fields: path, digest,
-                     callback, plus, data, error
+                     callback, plus, data (data is a string)
 
         """
         callback = plus["callback"]
@@ -278,11 +276,7 @@ class FileCacher:
             if plus["path"] != None:
                 try:
                     with open(plus["path"], "wb") as f:
-                        # FIXME: temporary workaround, must understand why.
-                        if plus["data"].__class__ == str:
-                            f.write(plus["data"])
-                        else:
-                            f.write(plus["data"].read())
+                        f.write(plus["data"])
                 except IOError as e:
                     if callback != None:
                         callback(bind_obj, None, plus["plus"], repr(e))
