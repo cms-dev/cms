@@ -30,15 +30,16 @@ from cms.async.AsyncLibrary import Service, logger, SyncRPCError
 from cms.async import ServiceCoord
 from cms.service.FileStorage import FileCacher
 
-from cms.db.SQLAlchemyAll import SessionGen, Contest
+from cms.db.SQLAlchemyAll import SessionGen, Contest, metadata
 from cms.db.Utils import ask_for_contest
 from cms.util.Utils import sha1sum
 from cms import Config
 
 class ContestImporter(Service):
 
-    def __init__(self, shard, import_dir):
+    def __init__(self, shard, drop, import_dir):
         self.import_dir = import_dir
+        self.drop = drop
 
         logger.initialize(ServiceCoord("ContestImporter", shard))
         logger.debug("ContestImporter.__init__")
@@ -54,6 +55,11 @@ class ContestImporter(Service):
     def do_import(self):
         logger.operation = "importing contest from %s" % (self.import_dir)
         logger.info("Starting import")
+
+        if self.drop:
+            logger.info("Dropping and recreating the database")
+            metadata.drop_all()
+        metadata.create_all()
 
         logger.info("Importing files")
         files_dir = os.path.join(self.import_dir, "files")
@@ -96,6 +102,9 @@ def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
     parser.add_option("-s", "--shard", help="service shard number",
                       dest="shard", action="store", type="int", default=None)
+    parser.add_option("-d", "--drop",
+                      dest="drop", help="drop everything from the database before importing",
+                      default=False, action="store_true")
     options, args = parser.parse_args()
     if len(args) != 1:
         parser.error("I need exactly one parameter, the directory from where to import the contest")
@@ -103,6 +112,7 @@ def main():
         parser.error("The `-s' option is mandatory!")
 
     contest_importer = ContestImporter(shard=options.shard,
+                                       drop=options.drop,
                                        import_dir=args[0])
     contest_importer.do_import()
 
