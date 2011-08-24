@@ -123,12 +123,16 @@ class FileStorage(Service):
     def delete(self, digest):
         logger.debug("FileStorage.delete")
         logger.info("Deleting file %s." % digest)
+        res = True
         try:
             os.remove(os.path.join(self.desc_dir, digest))
+        except IOError:
+            res = False
+        try:
             os.remove(os.path.join(self.obj_dir, digest))
         except IOError:
-            return False
-        return True
+            res = False
+        return res
 
     @rpc_method
     def is_file_present(self, digest):
@@ -139,10 +143,8 @@ class FileStorage(Service):
     def describe(self, digest):
         logger.debug("FileStorage.describe")
         try:
-            fd = open(os.path.join(self.desc_dir, digest))
-            desc = fd.read()
-            fd.close()
-            return desc.strip()
+            with open(os.path.join(self.desc_dir, digest)) as fd:
+                return fd.read().strip()
         except IOError:
             return None
 
