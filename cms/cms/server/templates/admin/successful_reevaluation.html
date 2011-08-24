@@ -1,0 +1,13 @@
+{% extends base.html %}
+
+{% block core %}
+<script>
+  setTimeout("window.location=\"{{ previous_page }}\"", 5000);
+</script>
+<div class="core_title">
+  <h1>Reevaluation ongoing</h1>
+</div>
+Your request of reevaluation was successfully sent. You should be redirected to the previous page shortly.<br/>
+<a href="{{ previous_page }}">Go to the previous page now</a>
+{% end %}
+

@@ -16,29 +16,21 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
         return xmlhttp;
     }
 
-    this.setVisibility = function(item_id)
-    {
-        var item = document.getElementById(item_id);
-        var toggler = document.getElementById(item_id+"_toggle")
-
-        item.style.display = "block"
-        toggler.innerHTML = "-"
-
-    }
-
     this.toggleVisibility = function(item_id)
     {
         var item = document.getElementById(item_id);
-        var toggler = document.getElementById(item_id+"_toggle")
+        var title = document.getElementById("title_" + item_id);
         if (item.style.display != "none")
         {
+            title.className = item.className.replace(/\btriangle_down\b/, '');
+            title.className += ' triangle_right';
             item.style.display = "none"
-            toggler.innerHTML = "+"
         }
         else
         {
+            title.className = item.className.replace(/\btriangle_right\b/, '');
+            title.className += ' triangle_down';
             item.style.display = "block"
-            toggler.innerHTML = "-"
         }
     }
 

@@ -1,39 +1,50 @@
 {% extends base.html %}
-
 {% block core %}
-    {% if current_user != None %}
 
-        <div class="core_title">
-        <h1>Contest Overview</h1>
-        </div>
-        <h2>Announcements</h2>
-        <div id="announcements">
-        {% if contest.announcements != [] %}
+{% if current_user != None %}
 
+<h1>Contest overview</h1>
 
-            {% for msg_i, msg in enumerate(reversed(contest.announcements)) %}
-            <div class="announcement_item displayed">
-                <span class="announcement_date">{{ datetime.datetime.fromtimestamp(msg.timestamp).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
-                <span class="announcement_subject">{{msg.subject}}</span>
-                <span class="announcement_text">{{msg.text}}</span>
-            </div>
-            {% end %}
-
-        {% else %}
-        No announcements.
-        {% end %}
-        </div>
-        <h2>General information</h2>
-
-        {% if phase == 0 %}
-            The contest started at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.start)) }};<br/>it will end at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.stop)) }}.</p>
-        {% elif phase == -1 %}
-            The contest starts at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.start)) }} and will end at {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.stop)) }}.
-        {% elif phase == 1 %}
-            The contest has ended.
-        {% end %}
-
-    {% else %}
-        Authentication required.
+<h2 id="title_announcements" onclick="util.toggleVisibility('announcements');">Announcements</h2>
+<div id="announcements">
+  {% if contest.announcements != [] %}
+    {% for msg_i, msg in enumerate(reversed(contest.announcements)) %}
+  <div class="announcement_item displayed">
+    <span class="announcement_date">{{ datetime.datetime.fromtimestamp(msg.timestamp).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
+    <span class="announcement_subject">{{msg.subject}}</span>
+    <span class="announcement_text">{{msg.text}}</span>
+  </div>
     {% end %}
+
+  {% else %}
+  No announcements.
+
+  {% end %}
+</div>
+
+<div class="hr"></div>
+
+<h2 id="title_general_information" onclick="util.toggleVisibility('general_information');">General information</h2>
+<div id="general_information">
+  {% if phase == 0 %}
+
+  <p>The contest started {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.start)) }}.</p>
+  <p>It will end {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.stop)) }}.</p>
+
+  {% elif phase == -1 %}
+
+  <p>The contest will start {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.start)) }} and will end {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.stop)) }}.</p>
+
+  {% elif phase == 1 %}
+  <p>The contest has ended.</p>
+  {% end %}
+</div>
+
+{% else %}
+
+<h1>Authentication required</h1>
+Please login to continue.
+
+{% end %}
+
 {% end %}

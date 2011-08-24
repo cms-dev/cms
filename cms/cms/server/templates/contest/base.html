@@ -3,13 +3,14 @@
 {% import time %}
 {% import cms.util.Utils as Utils%}
 <html>
-<head>
+  <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="shortcut icon" href="/static/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="/static/reset.css">
     <link rel="stylesheet" type="text/css" href="/static/style.css">
     <title>{{ contest.description }}</title>
 
-<script language="Javascript">
+    <script language="Javascript">
 <!--
     var util
     function init()
@@ -23,11 +24,10 @@
         setInterval("util.notifications()", 15000);
     }
 //-->
-  </script>
-  <script language="Javascript" src="/static/scripts.js" onload="init()">
-  </script>
-</head>
-<body>
+    </script>
+    <script language="Javascript" src="/static/scripts.js" onload="init()"></script>
+  </head>
+  <body>
     <div id="notification">
         <div id="notification_close"
         onclick="util.hideNotification(this)">
@@ -37,16 +37,15 @@
     </div>
 
     <div id="global">
-    <div id="popup_question_background">
-    </div>
-    <div id="popup_question_container">
+      <div id="popup_question_background"></div>
+      <div id="popup_question_container">
         <div id="popup_question">
           <div id="popup_question_header">
             <div id="popup_question_close">
-            <a href="#" onclick="util.closePopupQuestion()">X</a>
+              <a href="#" onclick="util.closePopupQuestion()">X</a>
             </div>
             Ask a question
-            </div>
+          </div>
           <div id="popup_question_body">
             <form name="question" action="/question" method="POST">
               <label for="subject">Subject: </label>
@@ -55,18 +54,59 @@
               <textarea name="question_text"></textarea><br/>
               <input type="submit" value="Send"/>
               <input type="reset"/>
-              </form>
+            </form>
           </div>
         </div>
-    </div>
-        {% include header.html %}
+      </div>
 
-        {% comment include loginbar.html %}
-            {% include sidebar.html %}
-            <div class="core">
-            {% block core %}{% end %}
-            </div>
-        {% include footer.html %}
+      <div id="sidebar">
+        <h1>{{ contest.description }}</h1>
+        <ul class="menu">
+          <li class="menu_entry"><a class="menu_link" href="/">Overview</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/instructions">Instructions</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/questions">Questions &amp; messages</a></li>
+        </ul>
+        <div class="hr"></div>
+        {% if current_user != None and phase == 0 %}
+        <div class="sidebar_left">Tasks:</div>
+        <div class="sidebar_right">
+          <ul class="menu">
+            {% for t_iter in contest.tasks %}
+            <li class="menu_entry"><a class="menu_link" href="/tasks/{{t_iter.name}}">{{t_iter.name}}</a></li>
+            {% end %}
+          </ul>
+        </div>
+        <div class="hr"></div>
+        {% end %}
+        {% if current_user is None %}
+          {% if handler.get_argument("login_error", "") != "" %}
+        <div class="footer login_error">Failed to log in.</div>
+          {% end %}
+        <form action="/login" method="POST">
+          <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
+          <div class="footer">
+            <div class="sidebar_left">Username:</div>
+            <div class="sidebar_right"><input type="text" name="username" size="12"></div>
+          </div>
+          <div class="footer">
+            <div class="sidebar_left">Password:</div>
+            <div class="sidebar_right"><input type="password" name="password" size="12"></div>
+          </div>
+          <div class="footer sidebar_right"><input type="submit" value="Sign in"></div>
+        </form>
+        {% else %}
+          {% if phase != 1 %}
+        <div class="footer">Time left: <span id="remaining"></span></div>
+          {% end %}
+        <div class="footer">{{ current_user.real_name }} [<a href="/logout">logout</a>]</div>
+        {% end %}
+      </div>
+      <div id="border"></div>
+
+      <div id="core">
+        {% block core %}{% end %}
+      </div>
+      {% include footer.html %}
     </div>
-</body>
+  </body>
 </html>
