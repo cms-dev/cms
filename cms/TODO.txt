@@ -5,6 +5,10 @@
 * Decide where and how to keep tries number for evaluations.
 * Auto incremented ids are exposed to the user, who may have clues of
   what the others are doing.
+  - One way to solve this without having to redesign the database
+    if just encrypting GET parameters with some secret contest key
+    and then encode them with base64. More or less like what Tornado
+    does with cookies.
 * It may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
   scorings change.
