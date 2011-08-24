@@ -26,13 +26,12 @@
 
 <h2 id="title_general_information" onclick="util.toggleVisibility('general_information');">General information</h2>
 <div id="general_information">
-  {% if phase == 0 %}
 
+  {% if phase == 0 %}
   <p>The contest started {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.start)) }}.</p>
   <p>It will end {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.stop)) }}.</p>
 
   {% elif phase == -1 %}
-
   <p>The contest will start {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.start)) }} and will end {{ time.strftime("%a, %d %b %Y %H:%M:%S (%Z)", time.localtime(contest.stop)) }}.</p>
 
   {% elif phase == 1 %}
@@ -41,7 +40,6 @@
 </div>
 
 {% else %}
-
 <h1>Authentication required</h1>
 Please login to continue.
 

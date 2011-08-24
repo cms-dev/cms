@@ -22,14 +22,14 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
         var title = document.getElementById("title_" + item_id);
         if (item.style.display != "none")
         {
-            title.className = item.className.replace(/\btriangle_down\b/, '');
-            title.className += ' triangle_right';
+            title.className = item.className.replace(/\btoggling_on\b/, '');
+            title.className += ' toggling_off';
             item.style.display = "none"
         }
         else
         {
-            title.className = item.className.replace(/\btriangle_right\b/, '');
-            title.className += ' triangle_down';
+            title.className = item.className.replace(/\btoggling_off\b/, '');
+            title.className += ' toggling_on';
             item.style.display = "block"
         }
     }

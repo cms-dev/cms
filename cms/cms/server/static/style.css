@@ -1,21 +1,41 @@
 body {
     font-size: 100%;
-    line-height: 1.5;
+    line-height: 1.5em;
     font-family: "Lucida Grande", "Arial", sans-serif;
     height: 100%;
     min-width: 960px;
 }
 
 h1 {
-    font-family: "Fontin", sans-serif;
-    font-size: 2.5em;
-    padding: 0.15em 0;
+    font-family: "Garamond", sans-serif;
+    color: #53637D;
+    text-align: left;
+    font-weight: bold;
 }
 
 h2 {
-    font-family: "Fontin", serif;
+    font-family: "Garamond", serif;
     font-size: 1.5em;
-    padding: 0.25em 0;
+    line-height: 2em;
+    font-weight: bold;
+}
+
+h3 {
+    font-weight: bold;
+}
+p {
+    padding: 0.75em 0;
+}
+
+code {
+    font-family: monospace;
+}
+
+pre {
+    border-left: 2px solid #53637D;
+    padding-left: 0.25em;
+    font-family: monospace;
+    min-height: 1.5em;
 }
 
 .login_error {
@@ -35,7 +55,7 @@ a, a:visited {
     text-align: center;
     color: #53637D;
     text-shadow: white 0 1px 1px;
-    padding: 0.625em 0;
+    padding: 0.75em 0;
     clear: both;
 }
 
@@ -58,6 +78,14 @@ input:focus {
     border: 1px solid #FFD69C;
 }
 
+ul.normal_list {
+    list-style: disc;
+    list-style-position: inside;
+    padding-left: 0.5em;
+}
+
+
+
 
 
 /* LEFT */
@@ -74,8 +102,8 @@ input:focus {
 }
 
 #sidebar h1 {
-    color: #53637D;
-    text-align: center;
+    font-size: 1.5em;
+    line-height: 2em;
 }
 
 #sidebar .sidebar_left {
@@ -96,16 +124,18 @@ input:focus {
 
 .menu_link {
     border-radius: 10px 0 0 10px;
-    padding: 0 0.5em;
-    margin-right: -0.5em;
+    padding: 0 1em;
+    margin-right: -1em;
 }
 
-#sidebar a:hover {
-    background-color:#FFFFFF;
+#sidebar a:hover, #sidebar a:focus {
+    background-color: white;
+    outline: 0;
 }
 
 .footer {
     font-size: 0.875em;
+    line-height: 1.71428571em;
     text-align: left;
     clear: both;
 }
@@ -133,102 +163,97 @@ input:focus {
 
 #core {
     margin-left: 270px;
+    margin-bottom: 1em;
     padding: 0 1em;
     width: 660px;
 }
 
 #core h1 {
-    color: #53637D;
-    text-align: left;
-    padding-left: 2em;
+    font-size: 2.5em;
+    line-height: 1.8em;
     margin-bottom: 0.6em;
 }
+
+/* TOGGLING */
 
 #core h2 {
     color: #53637D;
     text-align: left;
     font-size: 1.5em;
-    padding: 0.25em 0 0.25em 1em;
+    padding-left: 1em;
+}
+
+.toggling_on, .toggling_off {
     cursor: pointer;
 }
 
-#core h2:before {
-    content: "\25BE\0000a0"
+.toggling_on:before {
+    content: "\25BE\0000a0";
 }
 
-#core h2.triangle_down:before {
-    content: "\25BE\0000a0"
+.toggling_off:before {
+    content: "\25B8\0000a0";
 }
 
-#core h2.triangle_right:before {
-    content: "\25B8\0000a0"
-}
-
-.toggle {
-    padding: 0 0.5em 0 1em;
-    font-size: 0.666em;
-    vertical-align: 0.166em;
+.toggled_div {
+    display: hidden;
 }
 
 
+
+
+
+
+/* TABLE */
+
+table {
+    width: 100%;
+    margin-top: -0.0625em;
+}
+
+table th {
+    font-weight: bold;
+    vertical-align: bottom;
+    text-align: center;
+    padding: 0 0.25em;
+    font-size: 0.875em;
+    line-height: 1.71428571em;
+    border-bottom: 0.0625em solid #53637D;
+}
+
+table td {
+    padding: 0.875em 0.25em;
+    font-size: 0.875em;
+    line-height: 1.71428571em;
+}
+
+table.bordered {
+    border-radius: 0.5em 0.5em 0 0;
+}
+
+table.bordered td, table.bordered th {
+    border-right: 1px solid #53637D;
+}
+
+table.bordered td:last-child, table.bordered th:last-child {
+    border-right: 0;
+}
+
+table.bordered thead th {
+    background-color: white;
+}
+
+table.bordered tbody tr:nth-child(even) {
+    background-color: white;
+}
+
+table.bordered tbody tr:nth-child(odd) {
+    background-color: #EAEEF3;
+}
 
 
 
 /* TODO */
-
-.sub_table, .sub_details {
-  border-collapse: collapse;
-  margin: 0 auto;
-  margin-top:10px;
-  width: 90%;
-
-}
-
-.sub_table td, .sub_table th{
-    border: 1px solid gray;
-    padding: 5px;
-}
-
-.sub_details td, .sub_details th {
-    border: 1px solid gray;
-    padding: 5px;
-}
-
-.sub_score td, .sub_score th {
-    border: 0;
-    padding: 5px;
-}
-
-.submit_form {
-    display: inline;
-}
-
-#compilazione
-{
-    padding: 10px 40px;
-}
-
-#compilazione td
-{
-    padding: 5px 10px;
-}
-
-pre
-{
-    border-left: 3px solid #36393D;
-    padding: 5px;
-    margin-left: 10px;
-    font-family: monospace;
-    min-height: 1ex;
-}
-
-code
-{
-    font-family: monospace;
-    border: 1px solid #36393D;
-    padding: 2px;
-    margin: 2px;
-}
 
 .error {
     display: block;

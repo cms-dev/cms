@@ -8,9 +8,10 @@
     <link rel="shortcut icon" href="/static/favicon.ico" />
     <link rel="stylesheet" type="text/css" href="/static/reset.css">
     <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <script type="text/javascript" src="/static/scripts.js"></script>
     <title>{{ contest.description }}</title>
 
-    <script language="Javascript">
+    <script type="text/javascript">
 <!--
     var util
     function init()
@@ -22,10 +23,14 @@
         setInterval("util.getTime()", 1000);
         util.notifications();
         setInterval("util.notifications()", 15000);
+        {% block js_init %}{% end %}
     }
+
+{% block js %}{% end %}
+
+window.onload = init;
 //-->
     </script>
-    <script language="Javascript" src="/static/scripts.js" onload="init()"></script>
   </head>
   <body>
     <div id="notification">
@@ -98,7 +103,7 @@
           {% if phase != 1 %}
         <div class="footer">Time left: <span id="remaining"></span></div>
           {% end %}
-        <div class="footer">{{ current_user.real_name }} [<a href="/logout">logout</a>]</div>
+        <div class="footer">{{ current_user.real_name }} (<a href="/logout">logout</a>)</div>
         {% end %}
       </div>
       <div id="border"></div>
@@ -106,7 +111,6 @@
       <div id="core">
         {% block core %}{% end %}
       </div>
-      {% include footer.html %}
     </div>
   </body>
 </html>

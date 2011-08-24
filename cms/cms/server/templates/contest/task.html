@@ -1,87 +1,128 @@
 {% extends base.html %}
 {% block core %}
-    <div class="core_title">
-    <h1>{{ task.title }} ({{ task.name }})</h1>
-    </div>
 
-    <h2 onclick="util.toggleVisibility(&quot;task_information&quot;);">
-    <span class="toggle" id="task_information_toggle" >-</span>Task Information</h2>
-    <div id="task_information">
-        <div><a href="/tasks/{{ task.name }}/statement">Download task statement</a></div>
+<h1>{{ task.title }} ({{ task.name }})</h1>
 
-        Time limit: {{ task.time_limit }} second(s)</br>
-        Memory limit: {{ task.memory_limit }} MB
-    </div>
+<h2 id="title_task_information" class="toggling_on" onclick="util.toggleVisibility('task_information');">Task Information</h2>
+<div id="task_information">
+  <div><a href="/tasks/{{ task.name }}/statement">Download task statement</a></div>
 
-    <h2 onclick="util.toggleVisibility(&quot;submit_solution&quot;);">
-    <span class="toggle" id="submit_solution_toggle" >-</span>Submit a solution</h2>
-    <div id="submit_solution">
-        <form enctype="multipart/form-data" action="/submit/{{ task.name }}" method="post">
-            <input type="file" name="{{ task.name }}"></input>
-            <input type="submit" value="Submit"></input>
-        </form>
-    </div>
+  Time limit: {{ task.time_limit }} second(s)</br>
+  Memory limit: {{ task.memory_limit }} MB
+</div>
 
-    <h2 onclick="util.toggleVisibility(&quot;previous_submissions&quot;);">
-    <span class="toggle" id="previous_submissions_toggle" >-</span>Previous submissions</h2>
-    <div id="previous_submissions">
-        <div class="task_tokens">
-        {% if BusinessLayer.token_available(contest, current_user, task, time.time() ) %}
-            <i>You can use up to <b>{{ BusinessLayer.available_tokens(contest, current_user, task, time.time()) }}</b> tokens for this task.</i>
-        {% else %}
-            <i>You can't use tokens for this task at this time.</i>
-        {% end %}
-        </div>
+<div class="hr"></div>
 
-        {% if submissions == [] %}
-        No submissions found.
-        {% else %}
-            <table class="sub_table">
-            <tr>
-                <th>Date</th>
-                <th>Compilation<br/>status</th>
-                <th>Evaluation<br/>status</th>
-                <th>Files</th>
-                <th>Detailed<br/>Feedback<br/>Requested</th>
-            </tr>
-            {% for s in sorted(submissions, key=lambda s: s.timestamp , reverse = True) %}
-                <tr>
-                    <td><a href="/submissions/details/{{ s.id }}">{{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</a></td>
-                    <td>
-                        {% if s.compilation_outcome == "ok" %}
-                            Successful
-                        {% elif s.compilation_outcome == "fail" %}
-                            Unsuccessful
-                        {% else %}
-                            Please wait
-                        {% end %}
-                    </td>
-                    <td>
-                        {% if s.compilation_outcome == "fail" %}
-                            Ignored
-                        {% elif s.evaluations != [] %}
-                            Evaluated
-                        {% else %}
-                            Please wait
-                        {% end %}
-                    </td>
-                    <td>
-                    {% for filename,sub_file in s.files.items() %}
-                        <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}<br/>
-                    {% end %}
-                    <td>
-                    {% if s.token==None %}
-                        <form class="submit_form" action="/usetoken/" method="POST">
-                        No
-                        <input type="hidden" name="id" value="{{ s.id }}"/>
-                        <input type="submit" value="Use Token"/>
-                        </form>
-                    {% else %}
-                        Yes
-                    {% end %}
-                </tr>
+<h2 id="title_submit_solution" class="toggling_on" onclick="util.toggleVisibility('submit_solution');">Submit a solution</h2>
+<div id="submit_solution">
+  <form enctype="multipart/form-data" action="/submit/{{ task.name }}" method="post">
+    <input type="file" name="{{ task.name }}"></input>
+    <input type="submit" value="Submit"></input>
+  </form>
+</div>
+
+<div class="hr"></div>
+
+<h2 id="title_previous_submissions" class="toggling_on" onclick="util.toggleVisibility('previous_submissions');">Previous submissions</h2>
+<div id="previous_submissions">
+  <div class="task_tokens">
+    {% if BusinessLayer.token_available(contest, current_user, task, time.time() ) %}
+    <p>You can use up to <b>{{ BusinessLayer.available_tokens(contest, current_user, task, time.time()) }}</b> tokens for this task.</p>
+    {% else %}
+    <p>You can't use tokens for this task at this time.</p>
+    {% end %}
+  </div>
+
+  {% if submissions == [] %}
+  <p>No submissions found.</p>
+
+  {% else %}
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th style="width: 13%">Date</th>
+        <th style="width: 60%">Evaluation</th>
+        <th style="width: 15%">Files</th>
+        <th style="width: 12%">Released</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
+      <tr>
+        <td>
+          {% if datetime.datetime.fromtimestamp(s.timestamp).date() == datetime.date.today() %}
+            {{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%H:%M:%S") }}
+          {% else %}
+            {{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}
+          {% end %}
+        </td>
+        <td>
+          {% if s.compilation_outcome is None %}
+          Compiling
+
+          {% else %}
+          <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="util.toggleVisibility('evaluation_{{ s.id }}');">
+            {% if s.compilation_outcome == "fail" %}
+            Compilation failed
+            {% elif s.evaluations == [] %}
+            Evaluating
+            {% else %}
+            Evaluated
             {% end %}
+          </div>
+          <div id="evaluation_{{ s.id }}" style="display: none;">
+            {% if s.evaluations != [] %}
+              {% if s.token is None %}
+            <h3>Public testcases</h3>
+              {% else %}
+            <h3>Detailed feedback</h3>
+              {% end %}
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 20%">Outcome</th>
+                  <th style="width: 80%">Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ev in s.evaluations %}
+                  {% if s.token != None or s.task.testcases[int(ev.num)].public %}
+                  <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td></tr>
+                  {% end %}
+                {% end %}
+                {% if s.token is None and not any([testcase.public for testcase in s.task.testcases]) %}
+                <tr><td colspan="2">No specified testcases for partial feedback for this task.</td></tr>
+                {% end %}
+              </tbody>
             </table>
-        {% end %}
-    </div>
+            {% end %}
+            <h3>Compilation output</h3>
+            <pre>{% if s.compilation_text != None %}{{ escape(s.compilation_text) }}{% end %}</pre>
+          </div>
+
+          {% end %}
+        </td>
+        <td>
+          {% for filename,sub_file in s.files.items() %}
+          <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}<br/>
+            {% end %}
+            <td>
+              {% if s.token is None %}
+              No
+              {% if BusinessLayer.token_available(contest, current_user, task, time.time() ) %}
+              <form class="submit_form" action="/usetoken/" method="POST">
+                <input type="hidden" name="id" value="{{ s.id }}"/>
+                <input type="submit" value="Use token"/>
+              </form>
+              {% end %}
+              {% else %}
+              Yes
+              {% end %}
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
+  {% end %}
+</div>
+
 {% end %}
