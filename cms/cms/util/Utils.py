@@ -207,9 +207,9 @@ def get_compilation_command(language, source_filename, executable_filename):
     # different way depending on whether it will execute 32- or 64-bit
     # programs).
     if language == "c":
-        command = ["/usr/bin/gcc", "-DEVAL", "-static", "-O2", "-lm", "-o", executable_filename, source_filename]
+        command = ["/usr/bin/gcc-", "-DEVAL", "-static", "-O2", "-lm", "-o", executable_filename, source_filename]
     elif language == "cpp":
-        command = ["/usr/bin/g++", "-DEVAL", "-static", "-O2", "-o", executable_filename, source_filename]
+        command = ["/usr/bin/g++-", "-DEVAL", "-static", "-O2", "-o", executable_filename, source_filename]
     elif language == "pas":
         command = ["/usr/bin/fpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename), source_filename]
     return command

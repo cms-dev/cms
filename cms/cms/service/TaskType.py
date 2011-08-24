@@ -27,7 +27,7 @@ from cms.async.AsyncLibrary import logger, async_lock
 from cms.box.Sandbox import Sandbox
 from cms.db.SQLAlchemyAll import Task, Executable, Evaluation
 from cms.service import JobException
-from cms.service.Utils import get_compilation_command, filter_ansi_escape
+from cms.util.Utils import get_compilation_command, filter_ansi_escape
 from cms import Config
 
 def get_task_type_class(submission, session, service):
