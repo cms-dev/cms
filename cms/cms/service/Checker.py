@@ -73,7 +73,7 @@ class Checker(Service):
 
         """
         logger.debug("Checker.echo_callback")
-        if error != None:
+        if error is not None:
             return
         current = time.time()
         try:

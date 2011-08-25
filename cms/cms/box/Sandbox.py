@@ -81,9 +81,9 @@ class Sandbox:
 
     def build_box_options(self):
         res = list()
-        if self.file_check != None:
+        if self.file_check is not None:
             res += ["-a", str(self.file_check)]
-        if self.chdir != None:
+        if self.chdir is not None:
             res += ["-c", self.chdir]
         if self.preserve_env:
             res += ["-e"]
@@ -91,23 +91,23 @@ class Sandbox:
             res += ["-E", var]
         for var, value in self.set_env.items():
             res += ["-E", "%s=%s" % (var, value)]
-        if self.filter_syscalls != None and self.filter_syscalls > 0:
+        if self.filter_syscalls is not None and self.filter_syscalls > 0:
             res += ["-%s" % ("f" * self.filter_syscalls)]
         if self.allow_fork:
             res += ["-F"]
-        if self.stdin_file != None:
+        if self.stdin_file is not None:
             res += ["-i", self.stdin_file]
-        if self.stack_space != None:
+        if self.stack_space is not None:
             res += ["-k", str(self.stack_space)]
-        if self.address_space != None:
+        if self.address_space is not None:
             res += ["-m", str(self.address_space)]
-        if self.stdout_file != None:
+        if self.stdout_file is not None:
             res += ["-o", self.stdout_file]
         for path in self.allow_path:
             res += ["-p", path]
         for path, action in self.set_path.items():
             res += ["-p", "%s=%s" % (path, action)]
-        if self.stderr_file != None:
+        if self.stderr_file is not None:
             res += ["-r", self.stderr_file]
         for syscall in self.allow_syscall:
             res += ["-s", syscall]
@@ -115,12 +115,12 @@ class Sandbox:
             res += ["-s", "%s=%s" % (syscall, action)]
         if self.deny_timing:
             res += ["-S"]
-        if self.timeout != None:
+        if self.timeout is not None:
             res += ["-t", str(self.timeout)]
         res += ["-v"] * self.verbosity
-        if self.wallclock_timeout != None:
+        if self.wallclock_timeout is not None:
             res += ["-w", str(self.wallclock_timeout)]
-        if self.extra_timeout != None:
+        if self.extra_timeout is not None:
             res += ["-x", str(self.extra_timeout)]
         res += ["-M", self.relative_path(self.info_file)]
         return res
@@ -253,7 +253,7 @@ class Sandbox:
     def get_file_to_string(self, path, maxlen=None):
         fd = self.get_file(path)
         try:
-            if maxlen == None:
+            if maxlen is None:
                 contest = fd.read()
             else:
                 content = fd.read(maxlen)

@@ -62,9 +62,9 @@ def contest_phase(contest, timestamp):
               0 if the contest is active
               1 if the contest has ended.
     """
-    if contest.start != None and contest.start > timestamp:
+    if contest.start is not None and contest.start > timestamp:
         return -1
-    if contest.stop == None or contest.stop > timestamp:
+    if contest.stop is None or contest.stop > timestamp:
         return 0
     return 1
 
@@ -198,7 +198,7 @@ def get_user_by_username(contest, username):
 def get_submission(contest, sub_id, owner=None):
     for s in contest.submissions:
         if s.couch_id == sub_id and\
-            (owner == None or s.user.username == owner):
+            (owner is None or s.user.username == owner):
             return s
     else:
         return None
@@ -206,10 +206,10 @@ def get_submission(contest, sub_id, owner=None):
 def get_submissions_by_username(contest, owner, taskname=None):
     return [s for s in contest.submissions \
             if s.user.username == owner and \
-            (taskname == None or s.task.name == taskname)]
+            (taskname is None or s.task.name == taskname)]
 
 #def get_file_from_submission(submission, filename):
-#    if submission == None or filename == None:
+#    if submission is None or filename is None:
 #        return None
 #    for key, value in submission.files.items():
 #        if key == filename:
@@ -563,7 +563,7 @@ def add_contest(*args, **kwargs):
         except Exception as e:
           Utils.log(repr(e))
           return None
-        if c == None:
+        if c is None:
           return None
         # FIXME - Shouldn't just fail if to_couch() fails; instead, it
         # should update the document and try again

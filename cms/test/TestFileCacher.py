@@ -50,7 +50,7 @@ class TestFileCacher(TestService):
         self.fake_content = None
         self.digest = None
         self.file_obj = None
-        
+
         self.FS = self.connect_to(
             ServiceCoord("FileStorage", 0))
         if not self.FS.connected:
@@ -84,7 +84,7 @@ class TestFileCacher(TestService):
         """Called with the digest of the sent file.
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 0):
             self.test_end(False, "Plus object not received correctly.")
@@ -120,7 +120,7 @@ class TestFileCacher(TestService):
         """Called with the content of the file (from FC).
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 1):
             self.test_end(False, "Plus object not received correctly.")
@@ -154,7 +154,7 @@ class TestFileCacher(TestService):
         """Called with the content of the file (from FS).
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 2):
             self.test_end(False, "Plus object not received correctly.")
@@ -188,7 +188,7 @@ class TestFileCacher(TestService):
         """Called with an error.
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 3):
             self.test_end(False, "Plus object not received correctly.")
@@ -206,11 +206,11 @@ class TestFileCacher(TestService):
         """Called with an error.
 
         """
-        if error == None:
+        if error is None:
             self.test_end(False, "No error received.")
         elif plus != ("Test #", 3):
             self.test_end(False, "Plus object not received correctly.")
-        elif data != None:
+        elif data is not None:
             self.test_end(False, "Some data received.")
         else:
             self.test_end(True, "Correctly received an error: %s." % error)
@@ -231,11 +231,11 @@ class TestFileCacher(TestService):
         """Called with an error.
 
         """
-        if error == None:
+        if error is None:
             self.test_end(False, "No error received.")
         elif plus != ("Test #", 4):
             self.test_end(False, "Plus object not received correctly.")
-        elif data != None:
+        elif data is not None:
             self.test_end(False, "Some data received.")
         else:
             self.test_end(True, "Correctly received an error: %s." % error)
@@ -262,7 +262,7 @@ class TestFileCacher(TestService):
         """Called with the digest of the sent file.
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 5):
             self.test_end(False, "Plus object not received correctly.")
@@ -299,7 +299,7 @@ class TestFileCacher(TestService):
         """Called with the content of the file (from FC).
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 6):
             self.test_end(False, "Plus object not received correctly.")
@@ -391,7 +391,7 @@ class TestFileCacher(TestService):
         of the file in the file-like object (from FC).
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 9):
             self.test_end(False, "Plus object not received correctly.")

@@ -136,7 +136,7 @@ class Submission(Base):
         returns (bool): True if tokened, False otherwise.
 
         """
-        return self.token != None
+        return self.token is not None
 
     def evaluated(self):
         """Return if the submission has been evaluated.
@@ -186,7 +186,7 @@ class Submission(Base):
         for test_lang in Submission.LANGUAGES:
             if test_file.replace("%l", test_lang) in self.files:
                 language = test_lang
-        if test_file != None and language == None:
+        if test_file is not None and language is None:
             # If the task requires only one source file, be more
             # relaxed on the verification
             if len(submission_format) == 1:
@@ -249,7 +249,7 @@ class Token(Base):
     timestamp = Column(Integer, nullable=False)
 
     def __init__(self, timestamp=None, submission=None):
-        if timestamp == None:
+        if timestamp is None:
             timestamp = time.time()
         self.timestamp = timestamp
         self.submission = submission

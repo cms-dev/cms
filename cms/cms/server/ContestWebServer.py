@@ -83,7 +83,7 @@ class BaseHandler(tornado.web.RequestHandler):
         username specified in the cookie. Otherwise, returns None.
 
         """
-        if self.get_secure_cookie("login") == None:
+        if self.get_secure_cookie("login") is None:
             return None
         try:
             user_id, cookie_time = \
@@ -93,12 +93,12 @@ class BaseHandler(tornado.web.RequestHandler):
             return None
 
         # Uncomment to ignore old cookies
-        # if cookie_time == None or cookie_time < upsince:
+        # if cookie_time is None or cookie_time < upsince:
         #     return None
 
         current_user = self.sql_session.query(User)\
             .filter_by(id=user_id).first()
-        if current_user == None:
+        if current_user is None:
             self.clear_cookie("login")
             return None
         return current_user
@@ -112,7 +112,7 @@ class BaseHandler(tornado.web.RequestHandler):
         ret = {}
         ret["timestamp"] = time.time()
         ret["contest"] = self.contest
-        if(self.contest != None):
+        if(self.contest is not None):
             ret["phase"] = BusinessLayer.contest_phase(**ret)
         ret["contest_list"] = self.sql_session.query(Contest).all()
         ret["cookie"] = str(self.cookies)
@@ -204,7 +204,7 @@ class LoginHandler(BaseHandler):
         user = self.sql_session.query(User).filter_by(contest=self.contest).\
                filter_by(username=username).first()
 
-        if user == None or user.password != password:
+        if user is None or user.password != password:
             logger.info("Login error: user=%s pass=%s remote_ip=%s." %
                       (username, password, self.request.remote_ip))
             self.redirect("/?login_error=true")
@@ -294,7 +294,7 @@ class SubmissionFileHandler(FileHandler):
             .filter(Task.contest_id == self.contest.id)\
             .first()
 
-        if sub_file == None:
+        if sub_file is None:
             raise tornado.web.HTTPError(404)
 
         self.fetch(sub_file.digest, "text/plain", sub_file.filename)
@@ -330,7 +330,7 @@ class NotificationsHandler(BaseHandler):
                             "subject": announcement.subject,
                             "text": announcement.text})
 
-        if self.current_user != None:
+        if self.current_user is not None:
             # Private messages
             for message in self.current_user.messages:
                 if message.timestamp > last_notification \
@@ -418,7 +418,7 @@ class SubmitHandler(BaseHandler):
         self.task = self.sql_session.query(Task).filter_by(name=task_id)\
             .filter_by(contest=self.contest).first()
 
-        if self.current_user == None or self.task == None:
+        if self.current_user is None or self.task is None:
             self.send_error(404)
             self.finish()
             return
@@ -486,7 +486,7 @@ class SubmitHandler(BaseHandler):
     @rpc_callback
     def storage_callback(self, data, plus, error=None):
         logger.debug("Storage callback")
-        if error == None:
+        if error is None:
             self.file_digests[plus] = data
             if len(self.file_digests) == len(self.files):
                 # All the files are stored, ready to submit!
@@ -516,7 +516,7 @@ class SubmitHandler(BaseHandler):
     @rpc_callback
     def es_notify_callback(self, data, plus, error=None):
         logger.debug("ES notify_callback")
-        if error != None:
+        if error is not None:
             logger.error("Notification to ES failed! " + error)
 
         # Add "All ok" notification

@@ -196,7 +196,7 @@ class ResourceService(Service):
 
     def _isnone(self, proc):
         """Returns if a process is None or not. Used because psutil
-        handles badly (proc == None).
+        handles badly (proc is None).
 
         TODO: this won't be necessary when we have psutil > 0.2.0.
 
@@ -217,7 +217,7 @@ class ResourceService(Service):
 
         """
         logger.debug("ResourceService._locate")
-        if end == None:
+        if end is None:
             end = len(self._local_store) - 1
         if self._local_store[start][0] >= time:
             return start

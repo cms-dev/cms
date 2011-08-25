@@ -57,7 +57,7 @@ def rpc_callback(func):
 
         """
         if "__error" in kwargs:
-            if kwargs["__error"] != None:
+            if kwargs["__error"] is not None:
                 kwargs["error"] = kwargs["__error"]
 # We want to be able to manage the exception, so no raise.
 #                raise Exception(kwargs["__error"])
@@ -142,18 +142,18 @@ class RPCRequest:
         """
         logger.debug("RPCRequest.complete")
         del RPCRequest.pending_requests[self.message["__id"]]
-        if self.callback != None:
+        if self.callback is not None:
             params = []
-            if self.bind_obj != None:
+            if self.bind_obj is not None:
                 params.append(self.bind_obj)
             params.append(response["__data"])
-            if self.plus != None:
+            if self.plus is not None:
                 params.append(self.plus)
             self.callback(*params,
                           __error=response.get("__error", None))
         else:
             error = response.get("__error", None)
-            if error != None:
+            if error is not None:
                 logger.error("Error in a call without callback: %s" % error)
 
 
@@ -194,7 +194,7 @@ class Service:
             address = get_service_address(self._my_coord)
         except KeyError:
             address = None
-        if address != None:
+        if address is not None:
             self.server = ListeningSocket(self, address)
 
     def connect_to(self, service, sync=False):
@@ -292,7 +292,7 @@ class Service:
             plus, seconds, timestamp = self._timeouts[func]
             if current - timestamp > seconds:
                 self._timeouts[func][2] = current
-                if plus == None:
+                if plus is None:
                     ret = func()
                 else:
                     ret = func(plus)
@@ -467,7 +467,7 @@ class RemoteService(asynchat.async_chat):
         """
         # Can't log using logger here, since it is not yet defined.
         # logger.debug("RemoteService.__init__")
-        if address == None and remote_service_coord == None:
+        if address is None and remote_service_coord is None:
             raise
 
         # service is the local service connecting to the remote
@@ -478,7 +478,7 @@ class RemoteService(asynchat.async_chat):
         self.sync = sync
         self.sync_responses = {}
 
-        if address == None:
+        if address is None:
             self.remote_service_coord = remote_service_coord
             self.address = get_service_address(remote_service_coord)
         else:
@@ -503,7 +503,7 @@ class RemoteService(asynchat.async_chat):
         data (string): arrived data.
         """
         logger.debug("RemoteService.collect_incoming_data")
-        if self.service == None:
+        if self.service is None:
             return
         self.data.append(data)
 
@@ -515,7 +515,7 @@ class RemoteService(asynchat.async_chat):
 
         """
         logger.debug("RemoteService.found_terminator")
-        if self.service == None:
+        if self.service is None:
             return
         data = "".join(self.data)
         self.data = []
@@ -525,7 +525,7 @@ class RemoteService(asynchat.async_chat):
             json_length = decode_length(data[:4])
             message = decode_json(data[4:json_length + 4])
             if len(data) > json_length + 4:
-                if message["__data"] == None:
+                if message["__data"] is None:
                     message["__data"] = \
                         decode_binary(data[json_length + 4:])
                 else:
@@ -636,7 +636,7 @@ class RemoteService(asynchat.async_chat):
                     raise SyncRPCError("Couldn't connect to remote service")
                 else:
                     return False
-        if bind_obj == None:
+        if bind_obj is None:
             bind_obj = self.service
 
         # We start building the request message

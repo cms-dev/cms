@@ -71,7 +71,7 @@ class TestFileStorage(TestService):
         """Called with the digest of the ~100B file.
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 0):
             self.test_end(False, "Plus object not received correctly.")
@@ -96,7 +96,7 @@ class TestFileStorage(TestService):
         """Called with the content of the file.
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 1):
             self.test_end(False, "Plus object not received correctly.")
@@ -122,7 +122,7 @@ class TestFileStorage(TestService):
         """Called with the description of the file.
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 2):
             self.test_end(False, "Plus object not received correctly.")
@@ -148,7 +148,7 @@ class TestFileStorage(TestService):
         """Should be called with data == True confirming the deletion.
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 3):
             self.test_end(False, "Plus object not received correctly.")
@@ -165,11 +165,11 @@ class TestFileStorage(TestService):
         """Should be called with an error.
 
         """
-        if error == None:
+        if error is None:
             self.test_end(False, "No error received.")
         elif plus != ("Test #", 3):
             self.test_end(False, "Plus object not received correctly.")
-        elif data != None:
+        elif data is not None:
             self.test_end(False, "Some data received.")
         else:
             self.test_end(True,
@@ -191,11 +191,11 @@ class TestFileStorage(TestService):
         """Should be called with an error.
 
         """
-        if error == None:
+        if error is None:
             self.test_end(False, "No error received.")
         elif plus != ("Test #", 4):
             self.test_end(False, "Plus object not received correctly.")
-        elif data != None:
+        elif data is not None:
             self.test_end(False, "Some data received.")
         else:
             self.test_end(True,
@@ -214,14 +214,14 @@ class TestFileStorage(TestService):
 
     @rpc_callback
     def test_005_callback(self, data, plus, error=None):
-        """Should be called with error != None.
+        """Should be called with error is not None.
 
         """
-        if error == None:
+        if error is None:
             self.test_end(False, "No error received.")
         elif plus != ("Test #", 5):
             self.test_end(False, "Plus object not received correctly.")
-        elif data != None:
+        elif data is not None:
             self.test_end(False, "Some data received.")
         else:
             self.test_end(True,
@@ -253,7 +253,7 @@ class TestFileStorage(TestService):
         """Called with the digest of the ~1MB file.
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 6):
             self.test_end(False, "Plus object not received correctly.")
@@ -278,7 +278,7 @@ class TestFileStorage(TestService):
         """Called with the actual file.
 
         """
-        if error != None:
+        if error is not None:
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 7):
             self.test_end(False, "Plus object not received correctly.")

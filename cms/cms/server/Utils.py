@@ -47,7 +47,7 @@ def contest_required(func):
         returns (object): return value of func, or raises 404
 
         """
-        if args[0].contest != None:
+        if args[0].contest is not None:
             return func(*args, **kwds)
         else:
             raise tornado.web.HTTPError(404)
@@ -91,7 +91,7 @@ def file_handler_gen(BaseClass):
             page, that just collects the response.
 
             """
-            if data == None:
+            if data is None:
                 self.finish()
                 return
 

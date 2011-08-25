@@ -82,7 +82,7 @@ def reimport_user(old_user, user_dict):
     params = get_params_for_user(user_dict)
     for i in xrange(Configuration.maximum_conflict_attempts):
         try:
-            if old_user == None:
+            if old_user is None:
                 renewed_user = User(**params)
             else:
                 old_user.__dict__.update(params)
@@ -101,7 +101,7 @@ def reimport_task(old_task, path):
     params = get_params_for_task(path)
     for i in xrange(Configuration.maximum_conflict_attempts):
         try:
-            if old_task == None:
+            if old_task is None:
                 renewed_task = Task(**params)
             else:
                 old_task.__dict__.update(params)

@@ -212,7 +212,7 @@ class FileCacher:
                     "plus": plus,
                     "bind_obj": bind_obj}
 
-        if from_cache != None:
+        if from_cache is not None:
             # If there is the file in the cache, maybe it has been
             # deleted remotely. We need to ask.
             new_plus["data"] = from_cache
@@ -260,28 +260,28 @@ class FileCacher:
         """
         callback = plus["callback"]
         bind_obj = plus["bind_obj"]
-        if error != None:
+        if error is not None:
             logger.error(error)
-            if callback != None:
+            if callback is not None:
                 callback(bind_obj, None, plus["plus"], error)
         elif not data:
             try:
                 os.unlink(os.path.join(self.obj_dir, plus["digest"]))
             except OSError:
                 pass
-            if callback != None:
+            if callback is not None:
                 callback(bind_obj, None, plus["plus"],
                          "IOError: 2 No such file or directory.")
         else:
-            if plus["path"] != None:
+            if plus["path"] is not None:
                 try:
                     with open(plus["path"], "wb") as f:
                         f.write(plus["data"])
                 except IOError as e:
-                    if callback != None:
+                    if callback is not None:
                         callback(bind_obj, None, plus["plus"], repr(e))
                     return
-            if callback != None:
+            if callback is not None:
                 cached_file = open(os.path.join(self.obj_dir, plus["digest"]), "rb")
                 callback(bind_obj, cached_file, plus["plus"], error)
 
@@ -298,8 +298,8 @@ class FileCacher:
 
         """
         orig_callback, orig_plus, bind_obj = plus['callback'], plus['plus'], plus['bind_obj']
-        if orig_callback != None:
-            if error != None:
+        if orig_callback is not None:
+            if error is not None:
                 orig_callback(bind_obj, None, orig_plus, error)
             else:
                 file_content = data.read()
@@ -318,8 +318,8 @@ class FileCacher:
         """
         orig_callback, orig_plus, bind_obj, file_obj = \
             plus['callback'], plus['plus'], plus['bind_obj'], plus['file_obj']
-        if orig_callback != None:
-            if error != None:
+        if orig_callback is not None:
+            if error is not None:
                 orig_callback(bind_obj, None, orig_plus, error)
             else:
                 file_content = data.read()
@@ -534,9 +534,9 @@ class FileCacher:
 
         """
         callback, bind_obj = plus["callback"], plus["bind_obj"]
-        if plus["error"] != None:
+        if plus["error"] is not None:
             logger.error(plus["error"])
-            if callback != None:
+            if callback is not None:
                 callback(bind_obj, None, plus["plus"], plus["error"])
         else:
             shutil.move(plus["temp_path"],

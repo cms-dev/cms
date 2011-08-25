@@ -1,5 +1,5 @@
 <div class="footer">
-{% if current_user == None %}
+{% if current_user is None %}
     {% if handler.get_argument("login_error","") != "" %}
         <span class="login_error">Failed to log in.</span>
     {% end %}

@@ -33,7 +33,7 @@ def analyze_table(tablename, session=None):
                               after the operation.
 
     """
-    if session == None:
+    if session is None:
         with SessionGen() as session:
             return analyze_table(tablename, session)
 
@@ -48,7 +48,7 @@ def analyze_all_tables(session=None):
                               after the operation.
 
     """
-    if session == None:
+    if session is None:
         with SessionGen() as session:
             return analyze_all_tables(session)
 
@@ -67,7 +67,7 @@ def get_contest_list(session=None):
                               possible).
 
     """
-    if session == None:
+    if session is None:
         with SessionGen() as session:
             return get_contest_list(session)
 

@@ -46,7 +46,7 @@ window.onload = init;
           <li class="menu_entry"><a class="menu_link" href="/communication">Communication</a></li>
         </ul>
         <div class="hr"></div>
-        {% if current_user != None and phase == 0 %}
+        {% if current_user is not None and phase == 0 %}
         <div class="sidebar_left">Tasks:</div>
         <div class="sidebar_right">
           <ul class="menu">

@@ -81,7 +81,7 @@ class ServiceA(Service):
 
         """
         logger.debug("ServiceA.echo_callback")
-        if error != None:
+        if error is not None:
             return
         logger.info("ServiceB,%d answered %s" % (plus, data))
 
@@ -105,7 +105,7 @@ class ServiceA(Service):
 
         """
         logger.debug("ServiceA.file_callback")
-        if error != None:
+        if error is not None:
             logger.error(error)
             return
         seconds = time.time() - plus

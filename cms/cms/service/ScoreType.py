@@ -106,7 +106,7 @@ class ScoreType:
             }
         self.pool[submission_id]["score"] = self.compute_score(submission_id)
         if username not in self.submissions or \
-            self.submissions[username] == None:
+            self.submissions[username] is None:
             self.submissions[username] = [submission_id]
         else:
             self.submissions[username].append(submission_id)
@@ -351,7 +351,7 @@ class ScoreTypeRelative(ScoreType):
                     sum([float(x) / y for x, y
                          in zip(self.pool[submission_id]["evaluations"],
                                 best_outcomes)]) * self.parameters[0]
-                if self.pool[submission_id]["tokened"] != None:
+                if self.pool[submission_id]["tokened"] is not None:
                     score = max(score, self.pool[submission_id]["score"])
             if submissions != []:
                 score = max(score, self.pool[submissions[-1]]["score"])

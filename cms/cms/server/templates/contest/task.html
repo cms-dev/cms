@@ -82,7 +82,7 @@
               </thead>
               <tbody>
                 {% for ev in s.evaluations %}
-                  {% if s.token != None or s.task.testcases[int(ev.num)].public %}
+                  {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
                   <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td></tr>
                   {% end %}
                 {% end %}
@@ -93,7 +93,7 @@
             </table>
             {% end %}
             <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
-            <pre>{% if s.compilation_text != None %}{{ escape(s.compilation_text) }}{% end %}</pre>
+            <pre>{% if s.compilation_text is not None %}{{ escape(s.compilation_text) }}{% end %}</pre>
           </div>
 
           {% end %}

@@ -92,7 +92,7 @@ class TestService(Service):
         success (bool): True if the test was successful
 
         """
-        if message != None:
+        if message is not None:
             if success:
                 logger.info("  " + message)
             else:

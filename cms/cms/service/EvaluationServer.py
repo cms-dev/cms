@@ -63,7 +63,7 @@ class JobQueue:
         timestamp (float): the time of the submission
 
         """
-        if timestamp == None:
+        if timestamp is None:
             timestamp = time.time()
         heapq.heappush(self.queue, (priority, timestamp, job))
 
@@ -322,7 +322,7 @@ class WorkerPool:
         now = time.time()
         lost_jobs = []
         for shard in self.worker:
-            if self.start_time[shard] != None:
+            if self.start_time[shard] is not None:
                 active_for = now - self.start_time[shard]
 
                 if active_for > EvaluationServer.WORKER_TIMEOUT:
@@ -435,7 +435,7 @@ class EvaluationServer(Service):
             return False
 
         res = self.pool.acquire_worker(job, side_data=(priority, timestamp))
-        if res != None:
+        if res is not None:
             self.queue.pop()
             return True
         else:
@@ -491,7 +491,7 @@ class EvaluationServer(Service):
         if disabled:
             return
 
-        if error != None:
+        if error is not None:
             logger.error("Received error from Worker: %s" % (error))
             return
 
@@ -568,7 +568,7 @@ class EvaluationServer(Service):
             logger.info("Submission %s did not compile. Not going "
                         "to evaluate." % submission_id)
         # If compilation failed for our fault, we requeue or not.
-        elif compilation_outcome == None:
+        elif compilation_outcome is None:
             if compilation_tries > EvaluationServer.MAX_COMPILATION_TRIES:
                 logger.error("Maximum tries reached for the "
                              "compilation of submission %s. I will "
@@ -652,7 +652,7 @@ class EvaluationServer(Service):
             tokened = submission.tokened()
             task_id = submission.task.id
 
-        if compilation_outcome == None:
+        if compilation_outcome is None:
             # If not compiled, I compile. Note that we give here a
             # chance for submissions that already have too many
             # compilation tries.

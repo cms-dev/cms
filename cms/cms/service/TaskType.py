@@ -198,7 +198,7 @@ class BatchTaskType:
         # Detect the submission's language and check that it contains
         # exactly one source file
         valid, language = self.submission.verify_source()
-        if not valid or language == None:
+        if not valid or language is None:
             with async_lock:
                 logger.info("Invalid submission or couldn't detect language")
             return self.finish_compilation(True, False, "Invalid files in submission")
