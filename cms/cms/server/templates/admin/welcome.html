@@ -71,11 +71,11 @@ function update_workers_status(response)
 function update_statuses()
 {
 
-    rpc.request("EvaluationServer", 0,
+    cmsrpc.request("EvaluationServer", 0,
                 "queue_status",
                 {},
                 update_queue_status);
-    rpc.request("EvaluationServer", 0,
+    cmsrpc.request("EvaluationServer", 0,
                 "workers_status",
                 {},
                 update_workers_status);
@@ -91,12 +91,13 @@ update_statuses();
 {% end %}
 
 {% block core %}
-<div class="core_title">
-  <h1>Overview</h1>
-  <span id="update_time"></span>
-</div>
 
-<h2>Queue status</h2>
+<h1>Overview</h1>
+<span id="update_time"></span>
+
+<h2 id="title_queue_status" class="toggling_on" onclick="utils.toggle_visibility('queue_status');">Queue status</h2>
+<div id="queue_status">
+
 <table id="queue_status_table" class="sub_table">
   <tr>
     <th>Id</th>
@@ -105,8 +106,11 @@ update_statuses();
     <th>Since</th>
   </tr>
 </table>
+</div>
 
-<h2>Workers status</h2>
+<h2 id="title_workers_status" class="toggling_on" onclick="utils.toggle_visibility('workers_status');">Workers status</h2>
+<div id="workers_status">
+
 <table id="workers_status_table" class="sub_table">
   <tr>
     <th>Shard</th>
@@ -116,4 +120,5 @@ update_statuses();
     <th>Since</th>
   </tr>
 </table>
+</div>
 {% end %}

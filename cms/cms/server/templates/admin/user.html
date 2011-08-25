@@ -1,98 +1,128 @@
 {% extends base.html %}
 
 {% block core %}
-    <div class="core_title">
-      <h1>{{ selected_user.real_name }} ({{ selected_user.username }})</h1>
-    </div>
 
-    <h2 onclick="util.toggle_visibility(&quot;user_submissions&quot;);">
-      <span class="toggle" id="user_submissions_toggle">-</span>Submissions
-    </h2>
-    <div id="user_submissions">
-      {% if submissions != [] %}
-      <table class="sub_table">
-        <tr>
-          <th>Time</th>
-          <th>Task</th>
-          <th>Compilation<br/>status</th>
-          <th>Evaluation<br/>status</th>
-          <th>Files</th>
-          <th>Detailed<br/>feedback<br/>requested</th>
-          <th>Evaluate<br/>again?</th>
-        </tr>
-        {% for s in sorted(submissions, key=lambda s: s.timestamp , reverse = True) %}
-        <tr>
-          <td><a href="/submissions/details/{{s.id}}">{{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}</a></td>
-          <td>{{ s.task.name }}</td>
-          <td>
-            {% if s.compilation_outcome == "ok" %}
-            Successful
-            {% elif s.compilation_outcome == "fail" %}
-            Unsuccessful
-            {% else %}
-            Please wait
-            {% end %}
-          </td>
-          <td>
+<h1>{{ selected_user.real_name }} ({{ selected_user.username }})</h1>
+<h2 id="title_submissions" class="toggling_on" onclick="utils.toggle_visibility('submissions');">Submissions</h2>
+<div id="submissions">
+
+  {% if submissions == [] %}
+  <p>No submissions found.</p>
+
+  {% else %}
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th style="width: 13%">Date</th>
+        <th style="width: 13%">Task</th>
+        <th style="width: 35%">Evaluation</th>
+        <th style="width: 15%">Files</th>
+        <th style="width: 12%">Released</th>
+        <th style="width: 12%">Reevaluate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
+      <tr>
+        <td>
+          {{ Utils.format_time_or_date(s.timestamp) }}
+        </td>
+        <td>
+          {{ s.task.name }}
+        </td>
+        <td>
+          {% if s.compilation_outcome is None %}
+          Compiling
+
+          {% else %}
+          <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ s.id }}');">
             {% if s.compilation_outcome == "fail" %}
-            Ignored
-            {% elif s.evaluations != [] %}
+            Compilation failed
+            {% elif s.evaluations == [] %}
+            Evaluating
+            {% else %}
             Evaluated
-            {% else %}
-            Please wait
             {% end %}
-          </td>
-          <td>
-            {% for filename, sub_file in s.files.items() %}
-            <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}</a><br/>
+          </div>
+          <div id="evaluation_{{ s.id }}" style="display: none;">
+            {% if s.evaluations != [] %}
+              {% if s.token is None %}
+            <h3>Public testcases</h3>
+              {% else %}
+            <h3>Detailed feedback</h3>
+              {% end %}
+            <table class="nested bordered">
+              <thead>
+                <tr>
+                  <th style="width: 20%">Outcome</th>
+                  <th style="width: 80%">Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ev in s.evaluations %}
+                  <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td></tr>
+                {% end %}
+              </tbody>
+            </table>
             {% end %}
-          </td>
-          <td>
-            {% if s.token==None %}
-            No
-            {% else %}
-            Yes
-            {% end %}
-          </td>
-          <td>
-            <a href="/reevaluate/submission/{{s.id}}">Go ahead!</a>
-          </td>
-        </tr>
-        {% end %}
-      </table>
-      {% else %}
-      No submissions.
-      {% end %}
-    </div>
+            <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
+            <pre>{% if s.compilation_text != None %}{{ escape(s.compilation_text) }}{% end %}</pre>
+          </div>
 
-    <h2 onclick="util.toggle_visibility(&quot;user_messages&quot;);">
-      <span class="toggle" id="user_messages_toggle">-</span>Messages
-    </h2>
-    <div id="user_messages">
-      {% if selected_user.messages != [] %}
-        {% for i, msg in enumerate(reversed(selected_user.messages)) %}
-      <div class="message_item displayed">
-        <span class="message_date">{{ datetime.datetime.fromtimestamp(msg.timestamp).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
-        <span class="message_subject">{{msg.subject}}</span>
-        <span class="message_text">{{msg.text}}</span>
-      </div>
-        {% end %}
-      {% else %}
-      No messages.
+          {% end %}
+        </td>
+        <td>
+          {% for filename,sub_file in s.files.items() %}
+          <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}<br/>
+          {% end %}
+        </td>
+        <td>
+          {% if s.token is None %}
+          No
+          {% else %}
+          Yes
+          {% end %}
+        </td>
+        <td>
+          <a href="/reevaluate/submission/{{s.id}}">Go ahead!</a>
+        </td>
+      </tr>
       {% end %}
+    </tbody>
+  </table>
+  {% end %}
+  <div class="hr"></div>
+</div>
 
-      <h3 onclick="util.toggle_visibility(&quot;send_message&quot;);">
-        <a name="send_message"></a>
-        <span class="toggle" id="send_message_toggle">-</span>Send a message
-      </h3>
-      <div id="send_message">
-        <form id="send_message_form" action="/message/{{selected_user.id}}" method="POST">
-          Subject: <input id="send_message_subject" type="text" name="send_message_subject"></br>
-          Text: <textarea name="send_message_text"></textarea><br/>
-          <input type="submit" value="Send"/>
-        </form>
+<h2 id="title_messages" class="toggling_on" onclick="utils.toggle_visibility('messages');">Messages</h2>
+<div id="messages">
+  {% if selected_user.messages != [] %}
+  <div class="notifications">
+    {% for msg_i, msg in enumerate(selected_user.messages) %}
+    <div class="notification communication">
+      <div class="notification_msg">
+        <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.timestamp) }}</div>
+        <div class="notification_subject">{{ msg.subject }}</div>
+        <div class="notification_text">{{ msg.text }}</div>
       </div>
     </div>
+    {% end %}
+  </div>
+
+  {% else %}
+  No messages.
+
+  {% end %}
+  <h2>Send message</h2>
+
+
+  <form id="send_message_form" action="/message/{{selected_user.id}}" method="POST">
+    Subject: <input id="send_message_subject" type="text" name="send_message_subject"></br>
+    Text: <textarea name="send_message_text"></textarea><br/>
+    <input type="submit" value="Send"/>
+  </form>
+  <div class="hr"></div>
+</div>
 
     <script>
 function question_reply_toggle(element, invoker)

@@ -72,14 +72,12 @@ a, a:visited {
     display: block;
 }
 
-input {
+input, textarea {
     border: 1px solid #53637D;
     border-radius: 4px;
-    padding: 0;
-    margin: 0;
 }
 
-input:focus {
+input:focus, textarea:focus {
     border: 1px solid #FFD69C;
 }
 
