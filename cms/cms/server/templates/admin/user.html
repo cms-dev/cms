@@ -5,7 +5,7 @@
       <h1>{{ selected_user.real_name }} ({{ selected_user.username }})</h1>
     </div>
 
-    <h2 onclick="util.toggleVisibility(&quot;user_submissions&quot;);">
+    <h2 onclick="util.toggle_visibility(&quot;user_submissions&quot;);">
       <span class="toggle" id="user_submissions_toggle">-</span>Submissions
     </h2>
     <div id="user_submissions">
@@ -65,7 +65,7 @@
       {% end %}
     </div>
 
-    <h2 onclick="util.toggleVisibility(&quot;user_messages&quot;);">
+    <h2 onclick="util.toggle_visibility(&quot;user_messages&quot;);">
       <span class="toggle" id="user_messages_toggle">-</span>Messages
     </h2>
     <div id="user_messages">
@@ -81,7 +81,7 @@
       No messages.
       {% end %}
 
-      <h3 onclick="util.toggleVisibility(&quot;send_message&quot;);">
+      <h3 onclick="util.toggle_visibility(&quot;send_message&quot;);">
         <a name="send_message"></a>
         <span class="toggle" id="send_message_toggle">-</span>Send a message
       </h3>
@@ -121,7 +121,7 @@ function update_additional_answer(element, invoker)
 }
     </script>
 
-    <h2 onclick="util.toggleVisibility(&quot;user_questions&quot;);">
+    <h2 onclick="util.toggle_visibility(&quot;user_questions&quot;);">
       <span class="toggle" id="user_questions_toggle">-</span>Submitted questions
     </h2>
     <div id="user_questions">

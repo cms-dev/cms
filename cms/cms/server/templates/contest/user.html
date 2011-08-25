@@ -5,7 +5,7 @@
       <h1>{{ current_user.username}}</h1>
     </div>
 
-    <h2 onclick="util.toggleVisibility(&quot;user_messages&quot;);">
+    <h2 onclick="util.toggle_visibility(&quot;user_messages&quot;);">
       <span class="toggle" id="user_messages_toggle">-</span>Messages
     </h2>
     <div id="user_messages">
@@ -22,7 +22,7 @@
       {% end %}
     </div>
 
-    <h2 onclick="util.toggleVisibility(&quot;user_questions&quot;);">
+    <h2 onclick="util.toggle_visibility(&quot;user_questions&quot;);">
       <span class="toggle" id="user_questions_toggle">-</span>Submitted questions
     </h2>
     <div id="user_questions">

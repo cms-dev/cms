@@ -1,21 +1,15 @@
-
 function Utilities(timestamp, contest_start, contest_stop, phase)
 {
-
     this.last_notification = timestamp;
     this.timestamp = timestamp;
     this.contest_start = contest_start;
     this.contest_stop = contest_stop;
     this.phase = phase
 
-    this.getXMLHTTP = function()
-    {
-        var xmlhttp;
-        if (window.XMLHttpRequest) { xmlhttp=new XMLHttpRequest(); }
-        else if (window.ActiveXObject) { xmlhttp=new ActiveXObject("Microsoft.XMLHTTP"); }
-        return xmlhttp;
-    };
-
+    /* To be added to the onclick of an element named
+     * title_XXX. Hide/show an element named XXX, and change the class
+     * of title_XXX between toggling_on and toggling_off
+     */
     this.toggle_visibility = function(item_id)
     {
         var item = document.getElementById(item_id);
@@ -34,6 +28,14 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
         }
     };
 
+    /* Display the notification to the user.
+     *
+     * type (string): can be "notification", "message", "question",
+     *                "announcement".
+     * timestamp (int): time of the notification.
+     * subject (string): subject.
+     * text (string): body of notification.
+     */
     this.display_notification = function(type, timestamp, subject, text)
     {
         if (this.last_notification < timestamp)
@@ -55,6 +57,9 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
         div.innerHTML += s;
     };
 
+    /* Ask CWS (via ajax, not rpc) to send to the user the new
+     * notifications.
+     */
     this.update_notifications = function()
     {
         display_notification = cmsutil.bind_func(this,
@@ -73,11 +78,15 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
                              });
     };
 
+    /* For the close button of a notification.
+     */
     this.close_notification = function(item)
     {
-        item.parentNode.style.display = "none";
+        item.parentNode.parentNode.removeChild(item.parentNode);
     };
 
+    /* Update the remaining time showed in the "remaining" div.
+     */
     this.get_time = function()
     {
       if (this.contest_stop != null)

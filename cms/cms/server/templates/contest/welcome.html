@@ -5,7 +5,7 @@
 
 <h1>Contest overview</h1>
 
-<h2 id="title_announcements" class="toggling_on" onclick="util.toggleVisibility('announcements');">Announcements</h2>
+<h2 id="title_announcements" class="toggling_on" onclick="util.toggle_visibility('announcements');">Announcements</h2>
 <div id="announcements">
   {% if contest.announcements != [] %}
     {% for msg_i, msg in enumerate(reversed(contest.announcements)) %}
@@ -24,7 +24,7 @@
 </div>
 
 
-<h2 id="title_general_information" class="toggling_on" onclick="util.toggleVisibility('general_information');">General information</h2>
+<h2 id="title_general_information" class="toggling_on" onclick="util.toggle_visibility('general_information');">General information</h2>
 <div id="general_information">
 
   {% if phase == 0 %}
