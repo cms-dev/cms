@@ -152,6 +152,14 @@ class ContestWebServer(WebService):
         logger.initialize(ServiceCoord("ContestWebServer", shard))
         logger.debug("ContestWebServer.__init__")
         self.contest = contest
+
+        # This is a dictionary (indexed by username) of pending
+        # notification. Things like "Yay, you're submission went
+        # through.", not things like "Your question has been replied",
+        # that are handled by the db. Each username points to a list
+        # of tuples (timestamp, subject, text).
+        self.notifications = {}
+
         parameters = WebConfig.contest_parameters
         parameters["template_path"] = os.path.join(os.path.dirname(__file__),
                                   "templates", "contest")
@@ -270,7 +278,7 @@ class TaskStatementViewHandler(FileHandler):
 
 
 class SubmissionFileHandler(FileHandler):
-    """Shows a submission file.
+    """Send back a submission file.
 
     """
     @tornado.web.authenticated
@@ -309,10 +317,11 @@ class NotificationsHandler(BaseHandler):
 
     """
     def get(self):
-#        self.write('[{"type": "notification", "timestamp": 1234567890, "subject": "Oggetto", "text": "Testo puo anche essere lungo  puo anche essere lungo  puo anche essere lungo o anche essere lungo."}]')
         timestamp = time.time()
         res = []
         last_notification = float(self.get_argument("last_notification", "0"))
+
+        # Announcements
         for announcement in self.contest.announcements:
             if announcement.timestamp > last_notification \
                    and announcement.timestamp < timestamp:
@@ -322,6 +331,7 @@ class NotificationsHandler(BaseHandler):
                             "text": announcement.text})
 
         if self.current_user != None:
+            # Private messages
             for message in self.current_user.messages:
                 if message.timestamp > last_notification \
                        and message.timestamp < timestamp:
@@ -329,6 +339,8 @@ class NotificationsHandler(BaseHandler):
                                 "timestamp": int(message.timestamp),
                                 "subject": message.subject,
                                 "text": message.text})
+
+            # Answers to questions
             for question in self.current_user.questions:
                 if question.reply_timestamp > last_notification \
                        and question.reply_timestamp < timestamp:
@@ -344,8 +356,18 @@ class NotificationsHandler(BaseHandler):
                                 "subject": subject,
                                 "text": text})
 
-        self.write(simplejson.dumps(res))
+        # Simple notifications
+        notifications = self.application.service.notifications
+        username = self.current_user.username
+        if username in notifications:
+            for notification in notifications[username]:
+                res.append({"type": "notification",
+                            "timestamp": int(notification[0]),
+                            "subject": notification[1],
+                            "text": notification[2]})
+            del notifications[username]
 
+        self.write(simplejson.dumps(res))
 
 
 class QuestionHandler(BaseHandler):
@@ -461,12 +483,12 @@ class SubmitHandler(BaseHandler):
                                task=self.task,
                                timestamp=self.timestamp,
                                files={})
-                self.submission_id = s.id
 
                 for filename, digest in self.file_digests.items():
                     self.sql_session.add(File(digest, filename, s))
                 self.sql_session.add(s)
                 self.sql_session.commit()
+                self.submission_id = s.id
                 self.r_params["submission"] = s
                 self.r_params["warned"] = False
                 if False == self.application.service.ES.new_submission(
@@ -484,9 +506,20 @@ class SubmitHandler(BaseHandler):
         logger.debug("ES notify_callback")
         if error != None:
             logger.error("Notification to ES failed! " + error)
+
+        # Add "All ok" notification
+        notifications = self.application.service.notifications
+        username = self.current_user.username
+        if username not in notifications:
+            notifications[username] = []
+        notifications[username].append((
+            int(time.time()),
+            "Submission received",
+            "Your submission has been received "
+            "and is currently being evaluated."))
+
         self.redirect("/tasks/%s?last_submission=%d" % (self.task.name,
                                                         self.submission_id))
-#        self.render(".html", **self.r_params)
 
 
 handlers = [(r"/",
