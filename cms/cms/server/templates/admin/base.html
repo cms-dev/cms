@@ -1,12 +1,13 @@
 {% import cms.server.BusinessLayer as BusinessLayer %}
 {% import cms.util.WebConfig as WebConfig %}
 {% import time %}
+{% import cms.util.Utils as Utils %}
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <link rel="shortcut icon" href="/static/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="/static/reset.css">
     <link rel="stylesheet" type="text/css" href="/static/style.css">
-    <link rel="stylesheet" type="text/css" href="/static/style_admin.css">
     <script type="text/javascript" src="/static/utils.js"></script>
     <script type="text/javascript" src="/static/web_async_library.js"></script>
     <script type="text/javascript" src="/static/scripts.js"></script>
@@ -17,11 +18,9 @@
 var util;
 function init()
 {
-  rpc = new CMSAjaxRPC();
-  util = new Utilities({{ timestamp }},
-                       0,
-                       0,
-                       -1);
+  cmsrpc = new CMSAjaxRPC();
+  cmsutils = new CMSUtils();
+  utils = new Utils({{ timestamp }}, 0, 0, -1);
 
   {% block js_init %}{% end %}
 }
@@ -40,15 +39,13 @@ window.onload = init;
 var util;
 function init()
 {
-  rpc = new CMSAjaxRPC();
-  util = new Utilities({{ timestamp }},
-                       {{ json_encode(contest.start) }},
-                       {{ json_encode(contest.stop) }},
-                       {{ phase }});
+  cmsrpc = new CMSAjaxRPC();
+  cmsutils = new CMSUtils();
+  utils = new Utils({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }});
 
   firstDate = new Date();
-  util.getTime();
-  setInterval("util.getTime()", 1000);
+  utils.get_time();
+  setInterval(cmsutils.bind_func(utils, utils.get_time), 1000);
   //util.notifications();
   //setInterval("util.notifications()", 15000);
   {% block js_init %}{% end %}
@@ -63,43 +60,50 @@ window.onload = init();
 
   </head>
   <body>
-    <div id="notification">
-      <div id="notification_close"
-           onclick="util.hideNotification(this)">
-        <a href="#">X</a>
-      </div>
-      <div id="notification_content"></div>
-    </div>
-    <div id="popup_question_background">
-    </div>
-    <div id="popup_question_container">
-      <div id="popup_question">
-        <div id="popup_question_header">
-          <div id="popup_question_close">
-            <a href="#" onclick="document.getElementById(&quot;popup_question&quot;).style.display=&quot;none&quot;">X</a>
-          </div>
-          Ask a question
-        </div>
-        <form name="question" action="/question" method="POST">
-          <label for="question_text">Type your question:</label></br>
-          <textarea name="question_text"></textarea><br/>
-          <input type="submit" value="Send"/>
-          <input type="reset"/>
-        </form>
-      </div>
-    </div>
     <div id="global">
 
-      {% include header.html %}
-
       {% comment include loginbar.html %}
-      {% include sidebar.html %}
+      <div id="sidebar">
+        <h1>Administration</h1>
+        <ul class="menu">
+          <li class="menu_entry"><a class="menu_link" href="/">Overview</a></li>
+        </ul>
+        <div class="hr"></div>
 
-      <div class="core">
-        {% block core %}{% end %}
+        <form name="contest_selection" id="contest_selection" method="GET">
+          <select name="selected_contest" onchange="document.getElementById('contest_selection').submit();">
+            <option value=null {% if contest == None %} selected {% end %}>Select a contest</option>
+            {% for i in contest_list %}
+            {% if contest != None and contest.id == i.id %} selected
+            <option value="{{i.id}}" selected>
+              {% else %}
+            <option value="{{i.id}}">
+              {% end %}
+              {{ i.name }}
+            </option>
+            {% end %}
+          </select>
+          <a href="/addcontest" alt="New contest" style="text-decoration: none;">+</a>
+        </form>
+
+          {% if contest != None %}
+          <div class="sidebar_left">Contest:</div>
+          <ul class="menu">
+            <li class="menu_entry"><a class="menu_link" href="/contest">General</a></li>
+            <li class="menu_entry"><a class="menu_link" href="/announcements">Announcements</a></li>
+            <li class="menu_entry"><a class="menu_link" href="/user">Users</a></li>
+          </ul>
+          <div class="hr"></div>
+          <div class="footer">Time left: <span id="remaining"></span></div>
+          {% end %}
+
       </div>
 
-      {% include footer.html %}
+      <div id="border"></div>
+      <div id="core">
+        <div id="notifications" class="notifications"></div>
+        {% block core %}{% end %}
+      </div>
 
     </div>
   </body>
