@@ -15,20 +15,19 @@
 
     <script type="text/javascript">
 <!--
-    var util;
-    function init()
-    {
-        rpc = new CMSAjaxRPC();
-        cmsutil = new CMSUtils();
-        util = new Utilities({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }});
+function init()
+{
+    cmsrpc = new CMSAjaxRPC();
+    cmsutils = new CMSUtils();
+    utils = new Utils({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }});
 
-        firstDate = new Date();
-        util.get_time();
-        setInterval(cmsutil.bind_func(util, util.get_time), 1000);
-        util.update_notifications();
-        setInterval(cmsuutil(util, util.update_notifications), 15000);
-        {% block js_init %}{% end %}
-    }
+    firstDate = new Date();
+    utils.get_time();
+    setInterval(cmsutils.bind_func(utils, utils.get_time), 1000);
+    utils.update_notifications();
+    setInterval(cmsutils.bind_func(utils, utils.update_notifications), 15000);
+    {% block js_init %}{% end %}
+}
 
 {% block js %}{% end %}
 

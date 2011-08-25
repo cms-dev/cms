@@ -241,10 +241,9 @@ class TaskViewHandler(BaseHandler):
 
     """
     @tornado.web.authenticated
-    def get(self, task_name, last_submission=None):
+    def get(self, task_name):
 
         r_params = self.render_params()
-        r_params["last_submission"] = last_submission
         if not self.valid_phase(r_params):
             return
         try:
@@ -518,8 +517,7 @@ class SubmitHandler(BaseHandler):
             "Your submission has been received "
             "and is currently being evaluated."))
 
-        self.redirect("/tasks/%s?last_submission=%d" % (self.task.name,
-                                                        self.submission_id))
+        self.redirect("/tasks/%s" % self.task.name)
 
 
 handlers = [(r"/",

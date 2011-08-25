@@ -3,7 +3,7 @@
 
 <h1>{{ task.title }} ({{ task.name }})</h1>
 
-<h2 id="title_task_information" class="toggling_on" onclick="util.toggle_visibility('task_information');">Task Information</h2>
+<h2 id="title_task_information" class="toggling_on" onclick="utils.toggle_visibility('task_information');">Task Information</h2>
 <div id="task_information">
   <div><a href="/tasks/{{ task.name }}/statement">Download task statement</a></div>
 
@@ -13,7 +13,7 @@
 </div>
 
 
-<h2 id="title_submit_solution" class="toggling_on" onclick="util.toggle_visibility('submit_solution');">Submit a solution</h2>
+<h2 id="title_submit_solution" class="toggling_on" onclick="utils.toggle_visibility('submit_solution');">Submit a solution</h2>
 <div id="submit_solution">
   <form enctype="multipart/form-data" action="/submit/{{ task.name }}" method="post">
     <input type="file" name="{{ task.name }}"></input>
@@ -23,7 +23,7 @@
 </div>
 
 
-<h2 id="title_previous_submissions" class="toggling_on" onclick="util.toggle_visibility('previous_submissions');">Previous submissions</h2>
+<h2 id="title_previous_submissions" class="toggling_on" onclick="utils.toggle_visibility('previous_submissions');">Previous submissions</h2>
 <div id="previous_submissions">
   <div class="task_tokens">
     {% if BusinessLayer.token_available(contest, current_user, task, time.time() ) %}
@@ -61,7 +61,7 @@
           Compiling
 
           {% else %}
-          <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="util.toggle_visibility('evaluation_{{ s.id }}');">
+          <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ s.id }}');">
             {% if s.compilation_outcome == "fail" %}
             Compilation failed
             {% elif s.evaluations == [] %}
