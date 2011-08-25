@@ -50,6 +50,8 @@ def encrypt_string(s, key=None):
     This function pads the string s with NULL bytes, so any NULL byte
     at the end of the string will be discarded by decryption function.
 
+    If key is not specified, it is obtained from the configuration.
+
     """
     if key is None:
         key = secret_key_unhex
@@ -62,6 +64,8 @@ def encrypt_string(s, key=None):
 def decrypt_string(enc, key=None):
     """Decrypt a string encrypted with encrypt_string.
 
+    If key is not specified, it is obtained from the configuration.
+
     """
     if key is None:
         key = secret_key_unhex
@@ -71,12 +75,16 @@ def decrypt_string(enc, key=None):
 def encrypt_number(num, key=None):
     """Encrypt an integer number, with the same properties as encrypt_string().
 
+    If key is not specified, it is obtained from the configuration.
+
     """
     hexnum = hex(num).replace('0x', '')
     return encrypt_string(hexnum, key)
 
 def decrypt_number(enc, key=None):
     """Decrypt an integer number encrypted with encrypt_number().
+
+    If key is not specified, it is obtained from the configuration.
 
     """
     return int(decrypt_string(enc, key), 16)
