@@ -93,7 +93,7 @@ class ScoreType:
         submission_id (int): id of the new submission.
         timestamp (int): time of submission.
         username (string): username of the owner of the submission.
-        evaluations (list): list of floats representing the evaluations.
+        evaluations (list): list of objects representing the evaluations.
         tokened (bool): if the user played a token on submission.
 
         """
@@ -152,8 +152,9 @@ class ScoreType:
 
     def update_scores(self, new_submission_id):
         """Update the scores of the users assuming that only this
-        submission appeared. The way to do this depends on the
-        subclass, so we leave this unimplemented.
+        submission appeared or was modified (i.e., tokened). The way
+        to do this depends on the subclass, so we leave this
+        unimplemented.
 
         new_submission_id (int): id of the newly added submission.
 
