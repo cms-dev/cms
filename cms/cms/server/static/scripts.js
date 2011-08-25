@@ -53,7 +53,13 @@
             if (this.last_notification < timestamp)
                 this.last_notification = timestamp;
             var div = document.getElementById("notifications");
-            var s = '<div class="notification"><div class="notification_close" onclick="utils.close_notification(this);">&times;</div><div class="notification_msg">';
+            var s = '<div class="notification">' +
+                '<div class="notification_close" ' +
+                'onclick="utils.close_notification(this);">&times;' +
+                '</div><div class="notification_msg">' +
+                '<div class="notification_timestamp">' +
+                this.format_time_or_date(timestamp) +
+                '</div>';
 
             s += '<div class="notification_subject">'
             if (type == "message")
@@ -168,7 +174,8 @@
          * Format time as hours, minutes and seconds ago.
          *
          * time (int): a unix time.
-         * returns (string): nice representation of time as "x time ago"
+         * returns (string): nice representation of time as "x time
+         *                   ago"
          */
         repr_time_ago: function(time)
         {
@@ -194,6 +201,46 @@
             var h = diff;
             res = h + " hour(s), " + res;
             return res;
+        },
+
+        /**
+         * Return timestamp formatted as HH:MM:SS.
+         *
+         * timestamp (int): unix time.
+         * return (string): timestamp formatted as above.
+         */
+        format_time: function(timestamp)
+        {
+            var date = new Date(timestamp * 1000);
+            var hours = date.getHours();
+            if (hours < 10)
+                hours = "0" + hours;
+            var minutes = date.getMinutes();
+            if (minutes < 10)
+                minutes = "0" + minutes;
+            var seconds = date.getSeconds();
+            if (seconds < 10)
+                seconds = "0" + seconds;
+            return hours + ":" + minutes + ":" + seconds;
+
+        },
+
+        /**
+         * Return timestamp formatted as HH:MM:SS if the date is the
+         * same date as today, as a complete date + time if the date
+         * is different.
+         *
+         * timestamp (int): unix time.
+         * return (string): timestamp formatted as above.
+         */
+        format_time_or_date: function(timestamp)
+        {
+            var today = (new Date()).toDateString();
+            var date = new Date(timestamp * 1000);
+            if (today == date.toDateString())
+                return this.format_time(timestamp);
+            else
+                return this.format_time(timestamp);
         },
 
     };

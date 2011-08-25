@@ -3,7 +3,7 @@
 
 <h1>{{ task.title }} ({{ task.name }})</h1>
 
-<h2 id="title_task_information" class="toggling_on" onclick="utils.toggle_visibility('task_information');">Task Information</h2>
+<h2 id="title_task_information" class="toggling_on" onclick="utils.toggle_visibility('task_information');">Task information</h2>
 <div id="task_information">
   <div><a href="/tasks/{{ task.name }}/statement">Download task statement</a></div>
 
@@ -50,11 +50,7 @@
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
         <td>
-          {% if datetime.datetime.fromtimestamp(s.timestamp).date() == datetime.date.today() %}
-            {{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%H:%M:%S") }}
-          {% else %}
-            {{ datetime.datetime.fromtimestamp(s.timestamp).strftime("%d/%m/%Y %H:%M:%S") }}
-          {% end %}
+          {{ Utils.format_time_or_date(s.timestamp) }}
         </td>
         <td>
           {% if s.compilation_outcome is None %}

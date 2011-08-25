@@ -8,13 +8,17 @@
 <h2 id="title_announcements" class="toggling_on" onclick="utils.toggle_visibility('announcements');">Announcements</h2>
 <div id="announcements">
   {% if contest.announcements != [] %}
-    {% for msg_i, msg in enumerate(reversed(contest.announcements)) %}
-  <div class="announcement_item displayed">
-    <span class="announcement_date">{{ datetime.datetime.fromtimestamp(msg.timestamp).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
-    <span class="announcement_subject">{{msg.subject}}</span>
-    <span class="announcement_text">{{msg.text}}</span>
-  </div>
+  <div class="notifications">
+    {% for msg_i, msg in enumerate(contest.announcements) %}
+    <div class="notification communication">
+      <div class="notification_msg">
+        <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.timestamp) }}</div>
+        <div class="notification_subject">{{ msg.subject }}</div>
+        <div class="notification_text">{{ msg.text }}</div>
+      </div>
+    </div>
     {% end %}
+  </div>
 
   {% else %}
   No announcements.

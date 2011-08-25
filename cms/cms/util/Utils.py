@@ -26,6 +26,7 @@ import sys
 import codecs
 import hashlib
 
+
 ## ANSI utilities ##
 # see for reference: http://pueblo.sourceforge.net/doc/manual/ansi_color_codes.html
 
@@ -60,6 +61,7 @@ ANSI_STRIKETHROUGH_ON_CMD = 9
 ANSI_STRIKETHROUGH_OFF_CMD = 29
 ANSI_INVERT_CMD = 7
 
+
 def filter_ansi_escape(s):
     """Filter out ANSI commands from the given string.
 
@@ -75,12 +77,14 @@ def filter_ansi_escape(s):
             ansi_mode = False
     return res
 
+
 def ansi_command(*args):
     """Produce the escape string that corresponds to the given ANSI
     command.
 
     """
     return '\033[%sm' % (";".join(map(lambda x: str(x), args)))
+
 
 def ansi_color_hash(s):
     """Enclose a string in a ANSI code giving it a color that
@@ -93,6 +97,7 @@ def ansi_color_hash(s):
     # Magic number: 30 is the lowest of ANSI_FG_COLORS
     return 30 + (sum([ord(x) for x in s]) % len(ANSI_FG_COLORS))
 
+
 def ansi_color_string(s, col):
     """Enclose a string in a ANSI code giving it the specified color.
 
@@ -103,6 +108,7 @@ def ansi_color_string(s, col):
     """
     return ansi_command(col, ANSI_BOLD_ON_CMD) + \
         s + ansi_command(ANSI_RESET_CMD)
+
 
 ## Logging utilities ##
 
@@ -180,6 +186,7 @@ def maybe_mkdir(d):
     except OSError:
         pass
 
+
 def sha1sum(path):
     """Calculates the SHA1 sum of a file, given by its path.
 
@@ -192,6 +199,7 @@ def sha1sum(path):
             hasher.update(buf)
             buf = fin.read(BUFLEN)
         return hasher.hexdigest()
+
 
 def get_compilation_command(language, source_filename, executable_filename):
     """Returns the compilation command for the specified language,
@@ -213,6 +221,22 @@ def get_compilation_command(language, source_filename, executable_filename):
     elif language == "pas":
         command = ["/usr/bin/fpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename), source_filename]
     return command
+
+
+def format_time_or_date(timestamp):
+    """Return timestamp formatted as HH:MM:SS if the date is
+    the same date as today, as a complete date + time if the
+    date is different.
+
+    timestamp (int): unix time.
+    return (string): timestamp formatted as above.
+
+    """
+    dt_ts = datetime.datetime.fromtimestamp(timestamp)
+    if dt_ts.date() == datetime.date.today():
+        return dt_ts.strftime("%H:%M:%S")
+    else:
+        return dt_ts.strftime("%d/%m/%Y %H:%M:%S")
 
 
 class FileExplorer:
@@ -238,6 +262,7 @@ class FileExplorer:
             self.list_files()
             print "Display file number: ",
             self.get_file(int(raw_input())-1)
+
 
 if __name__ == "__main__":
     if len(sys.argv) == 2 and sys.argv[1] == "fs_explorer":

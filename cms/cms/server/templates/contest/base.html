@@ -1,7 +1,7 @@
 {% import cms.server.BusinessLayer as BusinessLayer %}
 {% import cms.util.WebConfig as WebConfig %}
 {% import time %}
-{% import cms.util.Utils as Utils%}
+{% import cms.util.Utils as Utils %}
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -83,7 +83,7 @@ window.onload = init;
       <div id="border"></div>
 
       <div id="core">
-        <div id="notifications"></div>
+        <div id="notifications" class="notifications"></div>
         {% block core %}{% end %}
       </div>
     </div>

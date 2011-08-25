@@ -315,6 +315,7 @@ class NotificationsHandler(BaseHandler):
     """Displays notifications.
 
     """
+    @tornado.web.authenticated
     def get(self):
         timestamp = time.time()
         res = []

@@ -178,6 +178,8 @@ ul.normal_list {
     margin-bottom: 0.6em;
 }
 
+
+
 /* TOGGLING */
 
 #core h2 {
@@ -202,7 +204,6 @@ ul.normal_list {
 .toggled_div {
     display: hidden;
 }
-
 
 
 
@@ -260,6 +261,8 @@ table.bordered tbody tr:nth-child(odd) {
 
 
 
+
+
 /* TODO */
 
 .error {
@@ -311,7 +314,7 @@ table.bordered tbody tr:nth-child(odd) {
 
 #notifications .notification {
     text-align: left;
-    margin-bottom: 0.572em; /* 0.5 - 2 * 0.072 (border) */
+    margin-bottom: 0.572em;
     font-size: 0.875em;
     border-radius: 0.5em;
     background-color: #FEF7CB;
@@ -345,3 +348,54 @@ table.bordered tbody tr:nth-child(odd) {
     font-weight: bold;
 }
 
+
+
+
+
+/* COMMUNICATIONS */
+
+.notifications .notification {
+    text-align: left;
+    margin-bottom: 0.572em;
+    font-size: 0.875em;
+    border-radius: 0.5em;
+    background-color: #FEF7CB;
+    border: 0.143em solid #FFE475;
+    box-shadow: black 0.072em 0.072em 0.144em;
+}
+
+.notifications .communication {
+    background-color: #EAEEF3;
+    border: 0.143em solid #53637D;
+}
+
+.notifications .notification_msg {
+    padding: 0.429em;
+}
+
+.notifications .notification_close {
+    float: right;
+    cursor: pointer;
+    background-color: #FFE475;
+    border-radius: 0 0 0 0.5em;
+    border-left: 0.143em solid #FFE475;
+    border-bottom: 0.143em solid #FFE475;
+    margin-bottom: -0.143em;
+    width: 2em;
+    text-align: center;
+    padding: 0;
+    font-weight: bold;
+}
+
+.notifications .notification_close:hover {
+    background-color: #FEF7CB;
+}
+
+.notifications .notification_subject {
+    font-weight: bold;
+}
+
+.notifications .notification_timestamp {
+    float: right;
+    padding-right: 0.5em;
+}
