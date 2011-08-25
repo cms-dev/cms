@@ -190,6 +190,11 @@ class Announcement(Base):
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)
 
+    # Time, subject and text of the announcements.
+    timestamp = Column(Integer, nullable=False)
+    subject = Column(String, nullable=False)
+    text = Column(String, nullable=False)
+
     # Contest for which the announcements are.
     contest_id = Column(Integer,
                         ForeignKey(Contest.id,
@@ -201,11 +206,6 @@ class Announcement(Base):
                                            single_parent=True,
                                            order_by=[timestamp],
                                            cascade="all, delete, delete-orphan"))
-
-    # Time, subject and text of the announcements.
-    timestamp = Column(Integer, nullable=False)
-    subject = Column(String, nullable=False)
-    text = Column(String, nullable=False)
 
     def __init__(self, timestamp, subject, text, contest=None):
         self.timestamp = timestamp

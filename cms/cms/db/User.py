@@ -196,7 +196,7 @@ class Question(Base):
         User,
         backref=backref('questions',
                         single_parent=True,
-                        order_by=[timestamp],
+                        order_by=[question_timestamp, reply_timestamp],
                         cascade="all, delete, delete-orphan"))
 
     def __init__(self, question_timestamp, subject, text,
