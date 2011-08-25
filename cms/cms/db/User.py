@@ -143,6 +143,7 @@ class Message(Base):
         User,
         backref=backref('messages',
                         single_parent=True,
+                        order_by=[timestamp],
                         cascade="all, delete, delete-orphan"))
 
     def __init__(self, timestamp, subject, text, user=None):
@@ -195,6 +196,7 @@ class Question(Base):
         User,
         backref=backref('questions',
                         single_parent=True,
+                        order_by=[timestamp],
                         cascade="all, delete, delete-orphan"))
 
     def __init__(self, question_timestamp, subject, text,

@@ -199,6 +199,7 @@ class Announcement(Base):
     contest = relationship(Contest,
                            backref=backref('announcements',
                                            single_parent=True,
+                                           order_by=[timestamp],
                                            cascade="all, delete, delete-orphan"))
 
     # Time, subject and text of the announcements.

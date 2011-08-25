@@ -57,7 +57,8 @@ class Task(Base):
     contest = relationship(
         Contest,
         backref=backref('tasks',
-                        collection_class=ordering_list('num'), order_by=[num],
+                        collection_class=ordering_list('num'),
+                        order_by=[num],
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
