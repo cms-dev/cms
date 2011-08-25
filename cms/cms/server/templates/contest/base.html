@@ -43,7 +43,7 @@ window.onload = init;
         <ul class="menu">
           <li class="menu_entry"><a class="menu_link" href="/">Overview</a></li>
           <li class="menu_entry"><a class="menu_link" href="/instructions">Instructions</a></li>
-          <li class="menu_entry"><a class="menu_link" href="/questions">Communication</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/communication">Communication</a></li>
         </ul>
         <div class="hr"></div>
         {% if current_user != None and phase == 0 %}
@@ -65,13 +65,13 @@ window.onload = init;
           <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
           <div class="footer">
             <div class="sidebar_left">Username:</div>
-            <div class="sidebar_right"><input type="text" name="username" size="12"></div>
+            <div class="sidebar_right"><input type="text" name="username" size="12" /></div>
           </div>
           <div class="footer">
             <div class="sidebar_left">Password:</div>
-            <div class="sidebar_right"><input type="password" name="password" size="12"></div>
+            <div class="sidebar_right"><input type="password" name="password" size="12" /></div>
           </div>
-          <div class="footer sidebar_right"><input type="submit" value="Sign in"></div>
+          <div class="footer sidebar_right"><input type="submit" value="Sign in" /></div>
         </form>
         {% else %}
           {% if phase != 1 %}

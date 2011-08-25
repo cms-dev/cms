@@ -1,0 +1,66 @@
+{% extends base.html %}
+{% block core %}
+<h1>Communication</h1>
+
+<h2 id="title_submit_questions" class="toggling_on" onclick="utils.toggle_visibility('submit_questions');">Questions</h2>
+<div id="submit_questions">
+  <form action="/question" method="POST">
+    <div class="footer">Subject:</div>
+    <input type="text" name="question_subject" size="35" />
+    <div class="footer">Text:</div>
+    <textarea name="question_text" cols="40" rows="5"></textarea>
+    <p><input type="submit" value="Ask question" /></p>
+  </form>
+  <div class="hr"></div>
+</div>
+
+<h2 id="title_questions" class="toggling_on" onclick="utils.toggle_visibility('questions');">Questions</h2>
+<div id="questions">
+  {% if current_user.questions != [] %}
+  <div class="notifications">
+    {% for msg in current_user.questions %}
+    <div class="notification communication">
+      <div class="notification_msg">
+        <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.question_timestamp) }}</div>
+        <div class="notification_subject">{{ msg.subject }}</div>
+        <div class="notification_text">{{ msg.text }}</div>
+        {% if msg.reply_timestamp is not None %}
+        <div class="notification_subject">Reply. {{ msg.short_reply }}</div>
+        <div class="notification_text">{{ msg.long_reply }}</div>
+        {% else %}
+        <div class="notification_subject">Please wait for reply.</div>
+        {% end %}
+      </div>
+    </div>
+    {% end %}
+  </div>
+
+  {% else %}
+  No questions.
+
+  {% end %}
+  <div class="hr"></div>
+</div>
+
+<h2 id="title_messages" class="toggling_on" onclick="utils.toggle_visibility('messages');">Messages</h2>
+<div id="messages">
+  {% if current_user.messages != [] %}
+  <div class="notifications">
+    {% for msg in current_user.messages %}
+    <div class="notification communication">
+      <div class="notification_msg">
+        <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.timestamp) }}</div>
+        <div class="notification_subject">{{ msg.subject }}</div>
+        <div class="notification_text">{{ msg.text }}</div>
+      </div>
+    </div>
+    {% end %}
+  </div>
+
+  {% else %}
+  No messages.
+
+  {% end %}
+</div>
+
+{% end %}

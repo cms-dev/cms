@@ -180,7 +180,7 @@ class MainHandler(BaseHandler):
     """
     def get(self):
         r_params = self.render_params()
-        self.render("welcome.html", **r_params)
+        self.render("overview.html", **r_params)
 
 
 class InstructionHandler(BaseHandler):
@@ -300,15 +300,15 @@ class SubmissionFileHandler(FileHandler):
         self.fetch(sub_file.digest, "text/plain", sub_file.filename)
 
 
-class UserHandler(BaseHandler):
-    """Displays information about the current user, in particular
-    messages and announcements.
+class CommunicationHandler(BaseHandler):
+    """Displays the private conversations between the logged in user
+    and the contest managers..
 
     """
     @tornado.web.authenticated
     def get(self):
         r_params = self.render_params()
-        self.render("user.html", **r_params)
+        self.render("communication.html", **r_params)
 
 
 class NotificationsHandler(BaseHandler):
@@ -387,7 +387,19 @@ class QuestionHandler(BaseHandler):
 
         logger.warning("Question submitted by user %s."
                        % self.current_user.username)
-        self.render("successful_question.html", **r_params)
+
+        # Add "All ok" notification
+        notifications = self.application.service.notifications
+        username = self.current_user.username
+        if username not in notifications:
+            notifications[username] = []
+        notifications[username].append((
+            int(time.time()),
+            "Question received",
+            "Your question has been received, you will be "
+            "notified when the it will be answered."))
+
+        self.redirect("/communication")
 
 
 class SubmitHandler(BaseHandler):
@@ -537,8 +549,8 @@ handlers = [(r"/",
             #  UseTokenHandler),
             (r"/submit/([a-zA-Z0-9_.-]+)",
              SubmitHandler),
-            (r"/user",
-             UserHandler),
+            (r"/communication",
+             CommunicationHandler),
             (r"/instructions",
              InstructionHandler),
             (r"/notifications",
