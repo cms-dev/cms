@@ -41,11 +41,12 @@ def get_hex_random_key():
     return binascii.hexlify(get_random_key())
 
 def encrypt_string(s, key=None):
-    """Encrypt the string s num with the 16-bytes key, generating a
-    cryptogram safe to be used in URLs. Moreover, it encrypts it using
-    a random salt, so that encrypting repeatedly the same string gives
-    different outputs. This way no analisys can made when the same
-    number is used in different contexts.
+    """Encrypt the string s num with the 16-bytes key. Moreover, it
+    encrypts it using a random salt, so that encrypting repeatedly the
+    same string gives different outputs. This way no analisys can made
+    when the same number is used in different contexts.  The generated
+    string uses the alphabet { 'a', ..., 'z', 'A', ..., 'Z', '0', ...,
+    '9', '.', '-', '_' }, so it is safe to use in URLs.
 
     This function pads the string s with NULL bytes, so any NULL byte
     at the end of the string will be discarded by decryption function.
