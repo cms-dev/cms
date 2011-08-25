@@ -31,6 +31,15 @@
   if database or File Storage are missing it _MUST_ behave nicely
   anyway, informing the user to seek assistance and without crashing.
 * Localization (task statements, but also interface).
+* Some idea to improve the Web interface:
+  - Ability to show submitted files from the Web interface without
+    having to download them, possibly coloring the syntax.
+  - Ability to backup files.
+  - Ability to talk with Emacs psychologist, in case of a particularly
+    difficult contest.
+  - Put an Italian flag somewhere.
+  - I think that the AGPL license also asks us to put appropriate
+    copyright notices in the Web interface.
 
 *** Task types
 * Check that white_diff() really does what we want it to do
