@@ -9,7 +9,7 @@
 <div id="announcements">
   {% if contest.announcements != [] %}
   <div class="notifications">
-    {% for msg_i, msg in enumerate(contest.announcements) %}
+    {% for msg in contest.announcements %}
     <div class="notification communication">
       <div class="notification_msg">
         <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.timestamp) }}</div>
@@ -26,7 +26,6 @@
   {% end %}
   <div class="hr"></div>
 </div>
-
 
 <h2 id="title_general_information" class="toggling_on" onclick="utils.toggle_visibility('general_information');">General information</h2>
 <div id="general_information">

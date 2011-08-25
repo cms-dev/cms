@@ -226,6 +226,27 @@
         },
 
         /**
+         * Return timestamp formatted as dd/mm/yyyy HH:MM:SS.
+         *
+         * timestamp (int): unix time.
+         * return (string): timestamp formatted as above.
+         */
+        format_datetime: function(timestamp)
+        {
+            var time = this.format_time(timestamp);
+            var date = new Date(timestamp * 1000);
+            var days = date.getDate();
+            if (days < 10)
+                days = "0" + days;
+            var months = date.getMonth() + 1; // months are 0-11
+            if (months < 10)
+                months = "0" + months;
+            var years = date.getFullYear();
+            return days + "/" + months + "/" + years + " " + time;
+
+        },
+
+        /**
          * Return timestamp formatted as HH:MM:SS if the date is the
          * same date as today, as a complete date + time if the date
          * is different.
@@ -240,7 +261,7 @@
             if (today == date.toDateString())
                 return this.format_time(timestamp);
             else
-                return this.format_time(timestamp);
+                return this.format_datetime(timestamp);
         },
 
     };
