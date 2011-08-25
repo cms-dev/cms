@@ -1,5 +1,9 @@
-body {
+html {
     font-size: 100%;
+}
+
+body {
+    font-size: 1em;
     line-height: 1.5em;
     font-family: "Lucida Grande", "Arial", sans-serif;
     height: 100%;
@@ -22,6 +26,7 @@ h2 {
 
 h3 {
     font-weight: bold;
+    margin-left: 1em;
 }
 p {
     padding: 0.75em 0;
@@ -96,7 +101,7 @@ ul.normal_list {
     padding: 0 1em;
     width: 234px;
     background-color: #EAEEF3;
-    text-shadow: white 0 1px 1px;
+    text-shadow: white 0.0625em 0.0625em 0.0625em;
     height: 100%;
     border-right: 2px solid #E4E5E8;
 }
@@ -135,7 +140,6 @@ ul.normal_list {
 
 .footer {
     font-size: 0.875em;
-    line-height: 1.71428571em;
     text-align: left;
     clear: both;
 }
@@ -207,24 +211,27 @@ ul.normal_list {
 /* TABLE */
 
 table {
+    font-size: 0.875em;
     width: 100%;
-    margin-top: -0.0625em;
+    margin-top: -0.072em;
 }
 
 table th {
     font-weight: bold;
     vertical-align: bottom;
     text-align: center;
-    padding: 0 0.25em;
-    font-size: 0.875em;
-    line-height: 1.71428571em;
-    border-bottom: 0.0625em solid #53637D;
+    padding: 0.858em 0.25em;
+    border-bottom: 0.072em solid #53637D;
 }
 
 table td {
-    padding: 0.875em 0.25em;
     font-size: 0.875em;
-    line-height: 1.71428571em;
+    padding: 0.858em 0.25em;
+}
+
+table.nested th, table.nested td {
+    font-size: 0.858em;
+    padding: 0 0.25em;
 }
 
 table.bordered {
@@ -297,124 +304,44 @@ table.bordered tbody tr:nth-child(odd) {
 
 /* NOTIFICATIONS */
 
-#notification {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    height: 40px;
-    background-color: #FFFF88;
-    display: none;
-    z-index: 10;
-    line-height: 40px;
-    border: 1px solid gray;
-}
-
-#notification_content {
-    margin-left: 70px;
-}
-
-#notification_close {
-    float: left;
-    font-family: sans-serif;
-    font-weight: bold;
-    font-size: 20px;
-    margin-left: 10px;
-    line-height: 40px;
-}
-
-#notification_close a, #popup_question_close a {
-    text-decoration: none;
-    color: black;
-}
-
-#popup_question_background {
-    position: fixed;
-    display: none;
-    top: 0;
-    left: 0;
-    right:0;
-    bottom: 0;
-    z-index: 9;
-    background-color: gray;
-    opacity: 0.4;
-}
-
-#popup_question_container {
-    position: absolute;
-    display: none;
-    top: 0;
-    left: 0;
-    right:0;
-    bottom:0;
-    z-index: 10;
-}
-
-#popup_question {
-    width: 600px;
-    height: 450px;
-    margin-top: 50px;
-    margin-left: auto;
-    margin-right: auto;
-    background-color: #FFFFDD;
-    visibility: show;
-    border: 1px solid gray;
-    padding: 0px;
-    text-align: center;
-    overflow: auto;
-    visibility: visible;
-}
-
-#popup_question_header {
-    width: 100%;
-    height: 20px;
-    line-height:20px;
-    border-bottom: 1px solid gray;
-    text-align: center;
-    font-weight:bold;
-}
-
-#popup_question_body {
-    width: 550px;
+#notifications {
     margin: 0 auto;
+    padding: 1em 0 0.5em;
+}
+
+#notifications .notification {
     text-align: left;
-    padding: 10px 0;
+    margin-bottom: 0.572em; /* 0.5 - 2 * 0.072 (border) */
+    font-size: 0.875em;
+    border-radius: 0.5em;
+    background-color: #FEF7CB;
+    border: 0.143em solid #FFE475;
+    box-shadow: black 0.072em 0.072em 0.144em;
 }
 
-#popup_question_close {
-    font-family: sans-serif;
-    float:left;
+#notifications .notification_msg {
+    padding: 0.429em;
 }
 
-#popup_question_subject {
-    width:550px;
+#notifications .notification_close {
+    float: right;
+    cursor: pointer;
+    background-color: #FFE475;
+    border-radius: 0 0 0 0.5em;
+    border-left: 0.143em solid #FFE475;
+    border-bottom: 0.143em solid #FFE475;
+    margin-bottom: -0.143em;
+    width: 2em;
+    text-align: center;
+    padding: 0;
+    font-weight: bold;
 }
 
-#popup_question textarea {
-    resize: none;
-    width:550px;
-    height:300px;
+#notifications .notification_close:hover {
+    background-color: #FEF7CB;
 }
 
-.announcement_item, .message_item, .question_item {
-    border: 1px solid gray;
-    background-color: #EEEEFF;
-    margin: 2px;
-    padding: 4px;
-    display:none;
+#notifications .notification_subject {
+    font-weight: bold;
 }
-
-.announcement_date, .message_date, .question_date{
-  display: block;
-}
-
-.announcement_subject, .message_subject, .question_subject {
-  display: block;
-  margin-left: 10px;
-  font-weight: bold;
-}
-
-.announcement_text, .message_text, .question_text {
-  margin-left: 15px;
-}
-
 

@@ -38,6 +38,7 @@ import pickle
 import time
 import codecs
 
+import simplejson
 import tempfile
 import zipfile
 
@@ -232,9 +233,10 @@ class TaskViewHandler(BaseHandler):
 
     """
     @tornado.web.authenticated
-    def get(self, task_name):
+    def get(self, task_name, last_submission=None):
 
         r_params = self.render_params()
+        r_params["last_submission"] = last_submission
         if not self.valid_phase(r_params):
             return
         try:
@@ -265,29 +267,6 @@ class TaskStatementViewHandler(FileHandler):
             self.write("Task %s not found." % (task_name))
 
         self.fetch(task.statement, "application/pdf", task.name + ".pdf")
-
-
-class SubmissionDetailHandler(BaseHandler):
-    """Shows additional details for the specified submission.
-
-    """
-    @tornado.web.authenticated
-    def get(self, submission_id):
-
-        r_params = self.render_params()
-        if not self.valid_phase(r_params):
-            return
-        # search the submission in the contest
-
-        submission = self.sql_session.query(Submission).join(Task)\
-            .filter(Submission.id == submission_id)\
-            .filter(Submission.user_id == self.current_user.id)\
-            .filter(Task.contest_id == self.contest.id).first()
-        if submission == None:
-            raise tornado.web.HTTPError(404)
-        r_params["submission"] = submission
-        r_params["task"] = submission.task
-        self.render("submission_detail.html", **r_params)
 
 
 class SubmissionFileHandler(FileHandler):
@@ -329,24 +308,44 @@ class NotificationsHandler(BaseHandler):
     """Displays notifications.
 
     """
-    def post(self):
+    def get(self):
+#        self.write('[{"type": "notification", "timestamp": 1234567890, "subject": "Oggetto", "text": "Testo puo anche essere lungo  puo anche essere lungo  puo anche essere lungo o anche essere lungo."}]')
         timestamp = time.time()
-        last_request = self.get_argument("lastrequest", timestamp)
-        messages = []
-        announcements = []
-        if last_request != "":
-            announcements = [x for x in self.contest.announcements
-                             if x.timestamp > float(last_request)
-                             and x.timestamp < timestamp]
-            if self.current_user != None:
-                messages = [x for x in self.current_user.messages
-                            if x.timestamp > float(last_request)
-                            and x.timestamp < timestamp]
-        self.set_header("Content-Type", "text/xml")
-        self.render("notifications.xml",
-                    announcements=announcements,
-                    messages=messages,
-                    timestamp=timestamp)
+        res = []
+        last_notification = float(self.get_argument("last_notification", "0"))
+        for announcement in self.contest.announcements:
+            if announcement.timestamp > last_notification \
+                   and announcement.timestamp < timestamp:
+                res.append({"type": "announcement",
+                            "timestamp": int(announcement.timestamp),
+                            "subject": announcement.subject,
+                            "text": announcement.text})
+
+        if self.current_user != None:
+            for message in self.current_user.messages:
+                if message.timestamp > last_notification \
+                       and message.timestamp < timestamp:
+                    res.append({"type": "message",
+                                "timestamp": int(message.timestamp),
+                                "subject": message.subject,
+                                "text": message.text})
+            for question in self.current_user.questions:
+                if question.reply_timestamp > last_notification \
+                       and question.reply_timestamp < timestamp:
+                    subject = question.short_answer
+                    text = question.long_answer
+                    if question.short_answer is None:
+                        subject = question.long_answer
+                        text = ""
+                    elif question.long_answer is None:
+                        text = ""
+                    res.append({"type": "question",
+                                "timestamp": int(question.reply_timestamp),
+                                "subject": subject,
+                                "text": text})
+
+        self.write(simplejson.dumps(res))
+
 
 
 class QuestionHandler(BaseHandler):
@@ -462,6 +461,7 @@ class SubmitHandler(BaseHandler):
                                task=self.task,
                                timestamp=self.timestamp,
                                files={})
+                self.submission_id = s.id
 
                 for filename, digest in self.file_digests.items():
                     self.sql_session.add(File(digest, filename, s))
@@ -482,11 +482,11 @@ class SubmitHandler(BaseHandler):
     @rpc_callback
     def es_notify_callback(self, data, plus, error=None):
         logger.debug("ES notify_callback")
-        if error == None:
-            self.render("successful_submission.html", **self.r_params)
-        else:
+        if error != None:
             logger.error("Notification to ES failed! " + error)
-            self.finish()
+        self.redirect("/tasks/%s?last_submission=%d" % (self.task.name,
+                                                        self.submission_id))
+#        self.render(".html", **self.r_params)
 
 
 handlers = [(r"/",
@@ -495,8 +495,6 @@ handlers = [(r"/",
              LoginHandler),
             (r"/logout",
              LogoutHandler),
-            (r"/submissions/details/([a-zA-Z0-9_-]+)",
-             SubmissionDetailHandler),
             (r"/submission_file/([a-zA-Z0-9_.-]+)",
              SubmissionFileHandler),
             (r"/tasks/([a-zA-Z0-9_-]+)",

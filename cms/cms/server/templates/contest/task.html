@@ -9,9 +9,9 @@
 
   Time limit: {{ task.time_limit }} second(s)</br>
   Memory limit: {{ task.memory_limit }} MB
+  <div class="hr"></div>
 </div>
 
-<div class="hr"></div>
 
 <h2 id="title_submit_solution" class="toggling_on" onclick="util.toggleVisibility('submit_solution');">Submit a solution</h2>
 <div id="submit_solution">
@@ -19,9 +19,9 @@
     <input type="file" name="{{ task.name }}"></input>
     <input type="submit" value="Submit"></input>
   </form>
+  <div class="hr"></div>
 </div>
 
-<div class="hr"></div>
 
 <h2 id="title_previous_submissions" class="toggling_on" onclick="util.toggleVisibility('previous_submissions');">Previous submissions</h2>
 <div id="previous_submissions">
@@ -77,7 +77,7 @@
               {% else %}
             <h3>Detailed feedback</h3>
               {% end %}
-            <table>
+            <table class="nested bordered">
               <thead>
                 <tr>
                   <th style="width: 20%">Outcome</th>
@@ -96,7 +96,7 @@
               </tbody>
             </table>
             {% end %}
-            <h3>Compilation output</h3>
+            <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
             <pre>{% if s.compilation_text != None %}{{ escape(s.compilation_text) }}{% end %}</pre>
           </div>
 

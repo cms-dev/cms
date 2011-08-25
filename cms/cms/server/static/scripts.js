@@ -14,9 +14,9 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
         if (window.XMLHttpRequest) { xmlhttp=new XMLHttpRequest(); }
         else if (window.ActiveXObject) { xmlhttp=new ActiveXObject("Microsoft.XMLHTTP"); }
         return xmlhttp;
-    }
+    };
 
-    this.toggleVisibility = function(item_id)
+    this.toggle_visibility = function(item_id)
     {
         var item = document.getElementById(item_id);
         var title = document.getElementById("title_" + item_id);
@@ -32,81 +32,53 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
             title.className += ' toggling_on';
             item.style.display = "block"
         }
-    }
+    };
 
-    this.popupQuestion = function()
+    this.display_notification = function(type, timestamp, subject, text)
     {
-        document.getElementById("popup_question_background").style.display="block";
-        document.getElementById("popup_question_container").style.display="block";
-        return false;
-    }
+        if (this.last_notification < timestamp)
+            this.last_notification = timestamp;
+        var div = document.getElementById("notifications");
+        var s = '<div class="notification"><div class="notification_close" onclick="util.close_notification(this);">&times;</div><div class="notification_msg">';
 
-    this.closePopupQuestion = function()
+        s += '<div class="notification_subject">'
+        if (type == "message")
+            s += 'Private message. ';
+        else if (type == "announcement")
+            s += 'Announcement. ';
+        else if (type == "question")
+            s += 'Reply to your question. ';
+
+        s += subject + '</div>';
+        s += '<div class="notification_text">' + text + '</div>';
+        s += '</div></div>'
+        div.innerHTML += s;
+    };
+
+    this.update_notifications = function()
     {
-        document.getElementById("popup_question_container").style.display="none";
-        document.getElementById("popup_question_background").style.display="none";
-        return false;
-    }
-    var caller = this;
-    this.notifications = function()
+        display_notification = cmsutil.bind_func(this,
+                                                 this.display_notification);
+        cmsutil.ajax_request("/notifications",
+                             "last_notification=" + this.last_notification,
+                             function(response)
+                             {
+                                 response = JSON.parse(response);
+                                 for (var i = 0; i < response.length; i++)
+                                     display_notification(
+                                         response[i].type,
+                                         parseInt(response[i].timestamp),
+                                         response[i].subject,
+                                         response[i].text);
+                             });
+    };
+
+    this.close_notification = function(item)
     {
-        xmlhttp = this.getXMLHTTP();
-        xmlhttp.onreadystatechange = function()
-        {
-          if(xmlhttp.readyState==4)
-            if(xmlhttp.status==200)
-            {
+        item.parentNode.style.display = "none";
+    };
 
-                if(xmlhttp.responseXML)
-                {
-                    var root = xmlhttp.responseXML;
-                    var announcements = root.getElementsByTagName("announcement");
-                    var messages = root.getElementsByTagName("message");
-                    caller.last_notification = parseFloat(root.getElementsByTagName("requestdate")[0].firstChild.nodeValue);
-                    notification = "";
-
-                    if( announcements.length != 0)
-                    {
-                        var announcement_subject = announcements[0].firstChild.nodeValue;
-                        notification += "Announcement: " + announcement_subject ;
-                    }
-                    else if( messages.length != 0)
-                    {
-                        var message_subject = messages[0].firstChild.nodeValue;
-                        notification += "Message: " + message_subject;
-                    }
-                    if(notification != "")
-                    {
-                        document.getElementById("notification_content").innerHTML = notification;
-                        document.getElementById("notification").style.display="block";
-                        document.getElementById("global").style.marginTop="40px";
-                    }
-
-                }
-                else
-                {
-                    //alert(xmlhttp.responseText);
-                }
-            }
-            else
-            {
-                //alert(xmlhttp.status);
-            }
-        }
-      var params = "lastrequest="+caller.last_notification;
-      xmlhttp.open("POST", "/notifications", true);
-      xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-      xmlhttp.send(params);
-      return xmlhttp;
-    }
-
-    this.hideNotification = function(item)
-    {
-        item.parentNode.style.display="none";
-        document.getElementById("global").style.marginTop="0";
-    }
-
-    this.getTime = function()
+    this.get_time = function()
     {
       if (this.contest_stop != null)
         var sec_to_end = this.contest_stop - this.timestamp ;
@@ -144,7 +116,7 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
 
       if (document.getElementById("remaining"))
         document.getElementById("remaining").innerHTML = hoursR+":"+m+":"+s;;
-    }
+    };
 
     /**
      * Represent in a nice looking way a couple (job_type,
@@ -166,7 +138,7 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
             job_type = 'Evaluating';
         var submission_link = '<a href="/submissions/details/' + job[1] + '">';
         return job_type + ' submission ' + submission_link + job[1] + '</a>';
-    }
+    };
 
     /**
      * Format time as hours, minutes and seconds ago.
@@ -198,6 +170,6 @@ function Utilities(timestamp, contest_start, contest_stop, phase)
         var h = diff;
         res = h + " hour(s), " + res;
         return res;
-    }
+    };
 
 }

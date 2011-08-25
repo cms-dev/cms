@@ -8,21 +8,25 @@
     <link rel="shortcut icon" href="/static/favicon.ico" />
     <link rel="stylesheet" type="text/css" href="/static/reset.css">
     <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <script type="text/javascript" src="/static/utils.js"></script>
+    <script type="text/javascript" src="/static/web_async_library.js"></script>
     <script type="text/javascript" src="/static/scripts.js"></script>
     <title>{{ contest.description }}</title>
 
     <script type="text/javascript">
 <!--
-    var util
+    var util;
     function init()
     {
+        rpc = new CMSAjaxRPC();
+        cmsutil = new CMSUtils();
         util = new Utilities({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }});
 
         firstDate = new Date();
-        util.getTime();
-        setInterval("util.getTime()", 1000);
-        util.notifications();
-        setInterval("util.notifications()", 15000);
+        util.get_time();
+        setInterval(cmsutil.bind_func(util, util.get_time), 1000);
+        util.update_notifications();
+        setInterval(cmsuutil(util, util.update_notifications), 15000);
         {% block js_init %}{% end %}
     }
 
@@ -33,43 +37,14 @@ window.onload = init;
     </script>
   </head>
   <body>
-    <div id="notification">
-        <div id="notification_close"
-        onclick="util.hideNotification(this)">
-        <a href="#">X</a>
-        </div>
-        <div id="notification_content"></div>
-    </div>
 
     <div id="global">
-      <div id="popup_question_background"></div>
-      <div id="popup_question_container">
-        <div id="popup_question">
-          <div id="popup_question_header">
-            <div id="popup_question_close">
-              <a href="#" onclick="util.closePopupQuestion()">X</a>
-            </div>
-            Ask a question
-          </div>
-          <div id="popup_question_body">
-            <form name="question" action="/question" method="POST">
-              <label for="subject">Subject: </label>
-              <input id="popup_question_subject" name="question_subject"></br>
-              <label for="question_text">Type your question:</label></br>
-              <textarea name="question_text"></textarea><br/>
-              <input type="submit" value="Send"/>
-              <input type="reset"/>
-            </form>
-          </div>
-        </div>
-      </div>
-
       <div id="sidebar">
         <h1>{{ contest.description }}</h1>
         <ul class="menu">
           <li class="menu_entry"><a class="menu_link" href="/">Overview</a></li>
           <li class="menu_entry"><a class="menu_link" href="/instructions">Instructions</a></li>
-          <li class="menu_entry"><a class="menu_link" href="/questions">Questions &amp; messages</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/questions">Communication</a></li>
         </ul>
         <div class="hr"></div>
         {% if current_user != None and phase == 0 %}
@@ -109,6 +84,7 @@ window.onload = init;
       <div id="border"></div>
 
       <div id="core">
+        <div id="notifications"></div>
         {% block core %}{% end %}
       </div>
     </div>
