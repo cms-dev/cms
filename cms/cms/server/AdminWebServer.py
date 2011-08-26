@@ -33,7 +33,7 @@ from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 
 from cms.db.SQLAlchemyAll import Session, \
-     Contest, User, Announcement, Question, Message, Submission, File
+     Contest, User, Announcement, Question, Message, Submission, File, Task
 
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
@@ -153,6 +153,14 @@ class ContestViewHandler(BaseHandler):
         r_params = self.render_params()
         self.render("contest.html", **r_params)
 
+class TaskViewHandler(BaseHandler):
+    
+    
+    @contest_required
+    def get(self, task_id):
+        r_params = self.render_params()
+        r_params["task"] = Task.get_from_id(task_id, self.sql_session)
+        self.render("task.html", **r_params)
 
 class EditContestHandler(BaseHandler):
     """Called when managers edit the information of a contest.
@@ -179,12 +187,12 @@ class EditContestHandler(BaseHandler):
             self.write("Invalid token number field(s).")
             return
 
-        token_min_interval = \
-            int(self.get_argument("min_interval_hour", "0")) * 60 + \
-            int(self.get_argument("min_interval_minute", "0"))
-        token_gen_time = \
-            int(self.get_argument("token_gen_hour", "0")) * 60 + \
-            int(self.get_argument("token_gen_minute", "0"))
+        try:
+            token_min_interval = int(self.get_argument("token_min_interval", "0"))
+            token_gen_time = int(self.get_argument("token_gen_time", "0"))
+        except:
+            self.write("Invalid token interval field(s).")
+            return
 
         try:
             start = time.mktime(time.strptime(self.get_argument("start", ""),
@@ -423,13 +431,22 @@ class UserReevaluateHandler(BaseHandler):
         for s in user.submissions:
             s.invalid()
             self.sql_session.commit()
-            self.application.service.ES.new_submission(
+            if not self.application.service.ES.new_submission(
                 submission_id=s.id,
-                callback=self.es_notify_callback)
-        self.redirect("/user/" + self.user_id)
-            
+                callback=self.es_notify_callback):
+                self.es_notify_callback(None, None, error="Not connected")
+
+    @rpc_callback
     def es_notify_callback(self, data, plus, error=None):
-        pass
+        self.pending_requests -= 1
+        if self.pending_requests <= 0:
+            self.redirect("/user/" + self.user_id)
+
+class FileFromDigestHandler(FileHandler):
+
+    @tornado.web.asynchronous
+    def get(self, digest, filename):
+        self.fetch(digest, "text/plain", filename)
 
 handlers = [(r"/",
              MainHandler),
@@ -441,6 +458,10 @@ handlers = [(r"/",
              ContestViewHandler),
             (r"/contest/edit/([0-9]+)",
              EditContestHandler),
+            (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)",
+             FileFromDigestHandler),
+            (r"/task/([0-9]+)",
+             TaskViewHandler),
             (r"/submissions/details/([a-zA-Z0-9_-]+)",
              SubmissionDetailHandler),
             (r"/reevaluate/submission/([a-zA-Z0-9_-]+)",
