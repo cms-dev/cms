@@ -179,6 +179,20 @@ class Contest(Base):
 
         return files
 
+    def phase(self, timestamp):
+        """Return: -1 if contest isn't started yet at time timestamp,
+                    0 if the contest is active at time timestamp,
+                    1 if the contest has ended.
+
+        timestamp (int): the time we are iterested in.
+        return (int): contest phase as above.
+        """
+        if self.start is not None and self.start > timestamp:
+            return -1
+        if self.stop is None or self.stop > timestamp:
+            return 0
+        return 1
+
 
 class Announcement(Base):
     """Class to store a messages sent by the contest managers to all
