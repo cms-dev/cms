@@ -123,7 +123,7 @@ class Worker(Service):
                         logger.info("Request finished")
                     return success
             except Exception as e:
-                err_msg = "Worker failed the %s with exception " + \
+                err_msg = "Worker failed the %s with exception " \
                     "`%s' and traceback `%s'" % \
                     (job_type, repr(e), traceback.format_exc())
                 with async_lock:
