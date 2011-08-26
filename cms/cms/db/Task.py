@@ -143,7 +143,7 @@ class Task(Base):
         self.contest = contest
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'name':               self.name,
@@ -219,7 +219,7 @@ class Testcase(Base):
         self.task = task
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'input':  self.input,
@@ -260,7 +260,7 @@ class Attachment(Base):
         self.task = task
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'filename': self.filename,
@@ -300,7 +300,7 @@ class Manager(Base):
         self.task = task
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'filename': self.filename,
@@ -337,7 +337,7 @@ class SubmissionFormatElement(Base):
         self.task = task
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'filename': self.filename}

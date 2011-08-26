@@ -72,14 +72,14 @@ class RankingView(Base):
         self.scores = scores
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'timestamp': self.timestamp,
                 'scores':    [score.export_to_dict() for score in self.scores.itervalues()]}
 
     def set_score(self, score):
-        """Assigns the score to this ranking view. Used to create an
+        """Assign the score to this ranking view. Used to create an
         empty ranking.
 
         score (object): the Score instance to assign
@@ -138,7 +138,7 @@ class Score(Base):
         self.rankingview = rankingview
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'user':  self.user.username,
