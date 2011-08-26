@@ -104,7 +104,7 @@ class User(Base):
         self.submissions = submissions
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'real_name':   self.real_name,
@@ -153,7 +153,7 @@ class Message(Base):
         self.user = user
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'timestamp': self.timestamp,
@@ -211,7 +211,7 @@ class Question(Base):
         self.user = user
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'question_timestamp': self.question_timestamp,

@@ -101,7 +101,7 @@ class Contest(Base):
         self.ranking_view = ranking_view
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'name':               self.name,
@@ -119,8 +119,11 @@ class Contest(Base):
                 'ranking_view':       self.ranking_view.export_to_dict()}
 
     def get_task(self, task_name):
-        """
-        Returns the first task in the contest with the given name.
+        """Return the first task in the contest with the given name.
+
+        task_name (string): the name of the task we are interested in.
+        return (Task): the corresponding task object, or KeyError.
+
         """
         for t in self.tasks:
             if t.name == task_name:
@@ -128,9 +131,13 @@ class Contest(Base):
         raise KeyError("Task not found")
 
     def get_task_index(self, task_name):
-        """
-        Returns the index of the first task in the contest with the
+        """Return the index of the first task in the contest with the
         given name.
+
+        task_name (string): the name of the task we are interested in.
+        return (int): the index of the corresponding task, or
+                      KeyError.
+
         """
         for i, t in enumerate(self.tasks):
             if t.name == task_name:
@@ -138,21 +145,27 @@ class Contest(Base):
         raise KeyError("Task not found")
 
     def get_user(self, username):
-        """
-        Returns the first user in the contest with the given name.
+        """Return the first user in the contest with the given name.
+
+        username (string): the name of the user we are interested in.
+        return (User): the corresponding user object, or KeyError.
+
         """
         for u in self.users:
             if u.username == username:
                 return u
         raise KeyError("User not found")
 
-    def enumerate_files(contest):
+    def enumerate_files(self):
         """Enumerate all the files (by digest) referenced by the
         contest.
 
+        return (set): a set of strings, the digests of the file
+                      referenced in the contest.
+
         """
         files = set()
-        for task in contest.tasks:
+        for task in self.tasks:
 
             # Enumerate attachments
             for f in task.attachments.values():
@@ -167,7 +180,7 @@ class Contest(Base):
                 files.add(testcase.input)
                 files.add(testcase.output)
 
-        for submission in contest.get_submissions():
+        for submission in self.get_submissions():
 
             # Enumerate files
             for f in submission.files.values():
@@ -186,6 +199,7 @@ class Contest(Base):
 
         timestamp (int): the time we are iterested in.
         return (int): contest phase as above.
+
         """
         if self.start is not None and self.start > timestamp:
             return -1
@@ -228,7 +242,7 @@ class Announcement(Base):
         self.contest = contest
 
     def export_to_dict(self):
-        """Export object data to a dictionary.
+        """Return object data as a dictionary.
 
         """
         return {'timestamp': self.timestamp,
