@@ -33,7 +33,7 @@ from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 
 from cms.db.SQLAlchemyAll import Session, \
-     Contest, User, Announcement, Question, Submission, File
+     Contest, User, Announcement, Question, Message, Submission, File
 
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
@@ -347,6 +347,40 @@ class QuestionReplyHandler(BaseHandler):
         r_params["selected_user"] = question.user
         self.render("successful_message.html", **r_params)
 
+class MessageHandler(BaseHandler):
+    """Called when a message is sent to a specific user.
+
+    """
+
+    def post(self, user_id):
+        r_params = self.render_params()
+
+        user = User.get_from_id(user_id, self.sql_session)
+        if user is None:
+            raise tornado.web.HTTPError(404)
+
+        message = Message(time.time(),
+                            self.get_argument("message_subject", ""),
+                            self.get_argument("message_text", ""),
+                            user=user)
+        self.sql_session.add(message)
+        self.sql_session.commit()
+
+        logger.warning("Message submitted to user %s."
+                       % user)
+
+        # TODO: Add "All ok" notification
+#        notifications = self.application.service.notifications
+#        username = self.current_user.username
+#        if username not in notifications:
+#            notifications[username] = []
+#        notifications[username].append((
+#            int(time.time()),
+#            "Question received",
+#            "Your question has been received, you will be "
+#            "notified when the it will be answered."))
+
+        self.redirect("/user/" + user_id)
 
 class SubmissionReevaluateHandler(BaseHandler):
     """Ask ES to reevaluate the specific submission.
@@ -377,6 +411,25 @@ class SubmissionReevaluateHandler(BaseHandler):
             logger.error("Notification to ES failed: %s." % repr(error))
             self.finish()
 
+class UserReevaluateHandler(BaseHandler):
+    @contest_required
+    @tornado.web.asynchronous
+    def get(self, user_id):
+        self.user_id = user_id
+        user = User.get_from_id(user_id, self.sql_session)
+        if user == None:
+            raise tornado.web.HTTPError(404)
+        self.pending_requests = len(user.submissions)
+        for s in user.submissions:
+            s.invalid()
+            self.sql_session.commit()
+            self.application.service.ES.new_submission(
+                submission_id=s.id,
+                callback=self.es_notify_callback)
+        self.redirect("/user/" + self.user_id)
+            
+    def es_notify_callback(self, data, plus, error=None):
+        pass
 
 handlers = [(r"/",
              MainHandler),
@@ -392,8 +445,8 @@ handlers = [(r"/",
              SubmissionDetailHandler),
             (r"/reevaluate/submission/([a-zA-Z0-9_-]+)",
              SubmissionReevaluateHandler),
-            # (r"/reevaluate/user/([a-zA-Z0-9_-]+)",
-            #  UserReevaluateHandler),
+            (r"/reevaluate/user/([0-9]+)",
+             UserReevaluateHandler),
             (r"/add_announcement",
              AddAnnouncementHandler),
             (r"/remove_announcement/([0-9]+)",
@@ -404,8 +457,8 @@ handlers = [(r"/",
              UserViewHandler),
             (r"/user",
              UserListHandler),
-            # (r"/message/([a-zA-Z0-9_-]+)",
-            #  MessageHandler),
+            (r"/message/([a-zA-Z0-9_-]+)",
+             MessageHandler),
             (r"/question/([a-zA-Z0-9_-]+)",
              QuestionReplyHandler),
            ]

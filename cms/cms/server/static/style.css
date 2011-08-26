@@ -279,9 +279,6 @@ table.bordered tbody tr:nth-child(odd) {
 }
 
 .reply_question_toggle {
-    position: absolute;
-    bottom:0;
-    right:0;
 }
 
 .reply_question {

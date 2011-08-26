@@ -20,8 +20,8 @@ function update_queue_status(response)
             for (var i = 0; i < response['data'].length; i++)
             {
                 var row = table.insertRow(-1);
-                var job = util.repr_job(response['data'][i]['job']);
-                var date = util.repr_time_ago(response['data'][i]['timestamp']);
+                var job = utils.repr_job(response['data'][i]['job']);
+                var date = utils.repr_time_ago(response['data'][i]['timestamp']);
                 row.innerHTML = '<td>' + (i + 1) + '</td>' +
                     '<td>' + job + '</td>' +
                     '<td>' + response['data'][i]['priority'] + '</td>' +

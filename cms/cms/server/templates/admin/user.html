@@ -1,5 +1,32 @@
 {% extends base.html %}
 
+{% block js %}
+function question_reply_toggle(element, invoker)
+{
+  var obj = document.getElementsByClassName("reply_question")[element];
+  if (obj.style.display != "block")
+    {
+      obj.style.display = "block";
+      invoker.innerHTML = "Hide reply";
+    }
+  else
+    {
+      obj.style.display = "none";
+      invoker.innerHTML = "Reply";
+    }
+  return false;
+}
+
+function update_additional_answer(element, invoker)
+{
+  var obj = document.getElementsByClassName("alternative_answer")[element];
+  if (invoker.selectedIndex == 5)
+    obj.style.display = "block";
+  else
+    obj.style.display = "none";
+}
+{% end %}
+
 {% block core %}
 
 <h1>{{ selected_user.real_name }} ({{ selected_user.username }})</h1>
@@ -94,93 +121,32 @@
   <div class="hr"></div>
 </div>
 
-<h2 id="title_messages" class="toggling_on" onclick="utils.toggle_visibility('messages');">Messages</h2>
-<div id="messages">
-  {% if selected_user.messages != [] %}
+
+
+<h2 id="title_questions" class="toggling_on" onclick="utils.toggle_visibility('questions');">Questions</h2>
+<div id="questions">
+  {% if selected_user.questions != [] %}
   <div class="notifications">
-    {% for msg_i, msg in enumerate(selected_user.messages) %}
+    {% for msg_i, msg in enumerate(selected_user.questions) %}
     <div class="notification communication">
       <div class="notification_msg">
-        <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.timestamp) }}</div>
+        <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.question_timestamp) }}</div>
         <div class="notification_subject">{{ msg.subject }}</div>
         <div class="notification_text">{{ msg.text }}</div>
-      </div>
-    </div>
-    {% end %}
-  </div>
-
-  {% else %}
-  No messages.
-
-  {% end %}
-  <h2>Send message</h2>
-
-
-  <form id="send_message_form" action="/message/{{selected_user.id}}" method="POST">
-    Subject: <input id="send_message_subject" type="text" name="send_message_subject"></br>
-    Text: <textarea name="send_message_text"></textarea><br/>
-    <input type="submit" value="Send"/>
-  </form>
-  <div class="hr"></div>
-</div>
-
-    <script>
-function question_reply_toggle(element, invoker)
-{
-  var obj = document.getElementsByClassName("reply_question")[element];
-  if (obj.style.display != "block")
-    {
-      obj.style.display = "block";
-      invoker.innerHTML = "Hide reply";
-    }
-  else
-    {
-      obj.style.display = "none";
-      invoker.innerHTML = "Reply";
-    }
-  return false;
-}
-
-function update_additional_answer(element, invoker)
-{
-  var obj = document.getElementsByClassName("alternative_answer")[element];
-  if (invoker.selectedIndex == 5)
-    obj.style.display = "block";
-  else
-    obj.style.display = "none";
-}
-    </script>
-
-    <h2 onclick="util.toggle_visibility(&quot;user_questions&quot;);">
-      <span class="toggle" id="user_questions_toggle">-</span>Submitted questions
-    </h2>
-    <div id="user_questions">
-      {% if selected_user.questions != [] %}
-        {% for i, question in enumerate(reversed(selected_user.questions)) %}
-      <div class="question_item displayed">
-        <div class="question_content">
-          <span class="question_date">{{ datetime.datetime.fromtimestamp(question.question_timestamp).strftime("%d/%m/%Y %H:%M:%S")  }}</span>
-          <span class="question_subject">{{escape(question.subject)}}</span>
-          <span class="question_text">{{escape(question.text)}}</span>
-          <hr/>
-          <div class="reply_question_quick_answer">
-            {% if WebConfig.quick_answers.get(question.short_reply, None) != None %}
-            Reply (precompiled): &ldquo;{{ WebConfig.quick_answers.get(msg.short_reply, "") }}&rdquo;.
-            {% elif question.long_reply != None %}
-            Reply: &ldquo;{{ escape(question.long_reply) }}&rdquo;.
-            {% else %}
-            Not yet replied.
-            {% end %}
-          </div>
-          <div class="reply_question_toggle">
-            <a href="#" onclick="return question_reply_toggle({{ i }}, this);">Reply</a>
-          </div>
+        {% if msg.reply_timestamp is not None %}
+        <div class="notification_subject">Reply. {{ msg.short_reply }}</div>
+        <div class="notification_text">{{ msg.long_reply }}</div>
+        {% else %}
+        <div class="notification_subject">Not yet replied.</div>
+        {% end %}
+        <div class="reply_question_toggle">
+          <a href="#" onclick="return question_reply_toggle({{ msg_i }}, this);">Reply</a>
         </div>
         <div class="reply_question" >
           <hr/>
-          <form class="reply_question_form" action="/question/{{question.id}}" method="POST">
+          <form class="reply_question_form" action="/question/{{msg.id}}" method="POST">
             Precompiled answer:
-            <select name="reply_question_quick_answer" onchange="update_additional_answer({{ i }}, this);">
+            <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
               <option value="yes">Yes</option>
               <option value="no">No</option>
               <option value="answered">Answered in task description</option>
@@ -197,10 +163,50 @@ function update_additional_answer(element, invoker)
           </form>
         </div>
       </div>
-        {% end %}
-      {% else %}
-      No submitted questions.
-      {% end %}
     </div>
+    {% end %}
+  </div>
+
+  {% else %}
+  No questions.
+
+  {% end %}
+  <div class="hr"></div>
+</div>
+
+
+<h2 id="title_messages" class="toggling_on" onclick="utils.toggle_visibility('messages');">Messages</h2>
+<div id="messages">
+
+  <div class="notifications">
+      <div class="notification communication">
+        <form id="send_message_form" action="/message/{{selected_user.id}}" method="POST">
+          <div class="notification_msg">
+            <div class="notification_subject">Subject: <input id="send_message_subject" type="text" name="message_subject"></div>
+            <div class="notification_text">Text: <textarea name="message_text"></textarea></div>
+          <input type="submit" value="Send"/>
+          </div>
+        </form>
+      </div>
+  
+    {% if selected_user.messages != [] %}
+    
+      {% for msg_i, msg in enumerate(reversed(selected_user.messages)) %}
+      <div class="notification communication">
+        <div class="notification_msg">
+          <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.timestamp) }}</div>
+          <div class="notification_subject">{{ msg.subject }}</div>
+          <div class="notification_text">{{ msg.text }}</div>
+        </div>
+      </div>
+      {% end %}
+    
+    {% else %}
+      No messages.
+    {% end %}
+  </div>
+  <div class="hr"></div>
+</div>
+
 
 {% end %}
