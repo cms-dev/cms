@@ -87,7 +87,6 @@ class Submission(Base):
     # executables (dict of Executable objects indexed by filename)
     # evaluations (list of Evaluation objects, one for testcase)
     # token (Token object or None)
-    # FIXME the backref is to the token, not to the timestamp
 
     LANGUAGES = ["c", "cpp", "pas"]
 

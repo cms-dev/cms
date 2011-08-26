@@ -79,8 +79,8 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         """Gets the current user logged in from the cookies
 
-        If a valid cookie is retrieved, returns a User object with the
-        username specified in the cookie. Otherwise, returns None.
+        If a valid cookie is retrieved, return a User object with the
+        username specified in the cookie. Otherwise, return None.
 
         """
         if self.get_secure_cookie("login") is None:
@@ -113,16 +113,17 @@ class BaseHandler(tornado.web.RequestHandler):
         ret["timestamp"] = time.time()
         ret["contest"] = self.contest
         if(self.contest is not None):
-            ret["phase"] = BusinessLayer.contest_phase(**ret)
+            ret["phase"] = self.contest.phase(ret["timestamp"])
         ret["contest_list"] = self.sql_session.query(Contest).all()
         ret["cookie"] = str(self.cookies)
         return ret
 
     def valid_phase(self, r_param):
-        """Return True if the contest is running.
+        """Return True if the contest is running and redirect to home
+        if not running.
 
         r_param (dict): the default render_params of the handler
-        returns (bool): True if contest is running
+        return (bool): True if contest is running
 
         """
         if r_param["phase"] != 0:
@@ -344,12 +345,12 @@ class NotificationsHandler(BaseHandler):
             for question in self.current_user.questions:
                 if question.reply_timestamp > last_notification \
                        and question.reply_timestamp < timestamp:
-                    subject = question.short_answer
-                    text = question.long_answer
-                    if question.short_answer is None:
-                        subject = question.long_answer
+                    subject = question.short_reply
+                    text = question.long_reply
+                    if question.short_reply is None:
+                        subject = question.long_reply
                         text = ""
-                    elif question.long_answer is None:
+                    elif question.long_reply is None:
                         text = ""
                     res.append({"type": "question",
                                 "timestamp": int(question.reply_timestamp),

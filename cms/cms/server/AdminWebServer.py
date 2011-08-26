@@ -94,8 +94,8 @@ class BaseHandler(tornado.web.RequestHandler):
         r = {}
         r["timestamp"] = time.time()
         r["contest"] = self.contest
-        if(self.contest != None):
-            r["phase"] = BusinessLayer.contest_phase(**r)
+        if self.contest is not None:
+            r["phase"] = self.contest.phase(r["timestamp"])
         r["contest_list"] = self.sql_session.query(Contest).all()
         r["cookie"] = str(self.cookies)
         return r
