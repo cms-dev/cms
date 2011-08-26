@@ -94,6 +94,15 @@ window.onload = init();
             <li class="menu_entry"><a class="menu_link" href="/user">Users</a></li>
           </ul>
           <div class="hr"></div>
+          <div class="sidebar_left">Tasks:</div>
+          <div class="sidebar_right">
+            <ul class="menu">
+              {% for t_iter in contest.tasks %}
+              <li class="menu_entry"><a class="menu_link" href="/task/{{t_iter.id}}">{{t_iter.name}}</a></li>
+              {% end %}
+            </ul>
+          </div>
+          <div class="hr"></div>
           <div class="footer">Time left: <span id="remaining"></span></div>
           {% end %}
 

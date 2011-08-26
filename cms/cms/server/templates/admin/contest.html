@@ -54,7 +54,7 @@
 <h2>Tasks</h2>
 <ul>
   {% for task in contest.tasks %}
-  <li><a href="/tasks/{{task.name}}">{{ task.name }}</a></li>
+  <li><a href="/task/{{task.id}}">{{ task.name }}</a></li>
   {% end %}
 </ul>
 {% end %}

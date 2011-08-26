@@ -5,11 +5,9 @@
   <h1>{{ task.title }} ({{ task.name }})</h1>
 </div>
 
-<h2 onclick="util.toggle_visibility(&quot;task_information&quot;);">
-  <span class="toggle" id="task_information_toggle" >-</span>Task information
-</h2>
-<div id="task_information">
-  <form enctype="multipart/form-data" action="/task/{{task.name}}" method="POST">
+<form enctype="multipart/form-data" action="/task/{{task.id}}" method="POST">
+  <h2 id="title_task_information" class="toggling_on" onclick="utils.toggle_visibility('task_information');">Task information</h2>
+  <div id="task_information">
     <table>
       <tr>
         <td>Name</td>
@@ -20,12 +18,23 @@
         <td><input type="text" name="title" value="{{task.title}}"/></td>
       </tr>
       <tr>
-        <td><a href="/task/{{task.name}}/statement">Statement</a></td>
+        <td>Position</td>
+        <td><input type="text" name="num" value="{{task.num}}"/></td>
+      </tr>
+      <tr>
+        <td><a href="/task/{{task.id}}/statement">Statement</a></td>
         <td><input type="file" name="statement"></input></td>
       </tr>
       <tr>
         <td>Attachments</td>
-        <td><input type="file" name="attachments"></input></td>
+        <td>
+          {% for attachment in task.attachments %}
+            <div class="attachment">
+              <a href="/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
+            </div>
+          {% end %}
+          <input type="file" name="attachment"/>
+        </td>
       </tr>
       <tr>
         <td>Time limit</td>
@@ -54,16 +63,16 @@
       <tr>
         <td>Submission format</td>
         <td>
-          {% for i in task.submission_format %}
-          <input type="text" name="submission_format" value="{{ i }}"/></br>
+          {% for format in task.submission_format %}
+          <input type="text" name="submission_format" value="{{ format.filename }}"/></br>
           {% end %}
         </td>
       </tr>
       <tr>
         <td>Managers</td>
         <td>
-          {% for k, v in task.managers.iteritems() %}
-          <a href="/file/{{v}}">{{ k }}</a>
+          {% for filename, manager in task.managers.iteritems() %}
+          <a href="/file/{{ manager.digest }}/{{ filename }}">{{ filename }}</a>
           {% end %}
         </td>
       </tr>
@@ -91,36 +100,41 @@
         <td>Score Parameters</td>
         <td><textarea name="score_parameters">{{ task.score_parameters }}</textarea></td>
       </tr>
+    </table>
+  </div>
+  <h2 id="title_testcases" class="toggling_on" onclick="utils.toggle_visibility('testcases');">Testcases</h2>
+  <div id="testcases">
+
+    <table class="bordered" style="text-align:center">
       <tr>
-        <td>Testcases</td>
-        <td>
-          <div style="overflow: auto; height: 400px; width: 400px;">
-            <table style="width: 100%">
-              <tr>
-                <th>Position</th>
-                <th>Public</th>
-                <th>Test cases</th>
-              </tr>
-              {% for position, test_set in enumerate(task.testcases) %}
-              <tr>
-                <th>{{ position }}</th>
-                <td>
-                  {% if position in task.public_testcases %}
-                  Yes
-                  {% else %}
-                  No
-                  {% end %}
-                </td>
-                <td>
-                  {% for set_position, testcase in enumerate(test_set) %}
-                  <a href="/file/{{testcase}}">Test {{ position }}.{{ set_position }}</a></br>
-                  {% end %}
-                </td>
-                {% end %}
-            </table>
-          </div>
-        </td>
+        <th>Position</th>
+        <th>Public</th>
+        <th>Input</th>
+        <th>Output</th>
       </tr>
+      {% for testcase in task.testcases %}
+      <tr>
+        <td style="font-weight:bold;">{{ testcase.num }}</td>
+        <td style="font-weight:bold;">
+          <input type="checkbox" name="testcase_{{ testcase.id }}_public"
+          {% if testcase.public %}
+              checked
+          {% end %}
+          >
+        </td>
+        <td>
+          <a href="/file/{{ testcase.input }}/input{{ testcase.num }}">Get Input</a>
+        </td>
+        <td>
+          <a href="/file/{{ testcase.output }}/output{{ testcase.num }}">Get Output</a>
+        </td>
+        {% end %}
+    </table>
+  </div>
+  
+  <h2 id="title_token_options" class="toggling_on" onclick="utils.toggle_visibility('token_options');">Token Options</h2>
+  <div id="token_options">
+    <table>
       <tr>
         <td>Initial number of tokens</td>
         <td><input type="text" name="token_initial" value="{{ task.token_initial }}" /></td>
@@ -146,8 +160,8 @@
         <td><input type="text" name="token_gen_number" value="{{ task.token_gen_number }}" /></td>
       </tr>
     </table>
-    <input type="submit" value="Edit">
-    <input type="reset" value="Reset">
-  </form>
-</div>
+  </div>
+  <input type="submit" value="Edit">
+  <input type="reset" value="Reset">
+</form>
 {% end %}
