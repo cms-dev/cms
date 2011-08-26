@@ -243,8 +243,7 @@ class RemoveAnnouncementHandler(BaseHandler):
 
     """
     @contest_required
-    def post(self):
-        ann_id = self.get_argument("id", "-1")
+    def get(self, ann_id):
         ann = self.sql_session.query(Announcement).filter_by(id=ann_id).first()
         if ann == None:
             raise tornado.web.HTTPError(404)
@@ -397,7 +396,7 @@ handlers = [(r"/",
             #  UserReevaluateHandler),
             (r"/add_announcement",
              AddAnnouncementHandler),
-            (r"/remove_announcement",
+            (r"/remove_announcement/([0-9]+)",
              RemoveAnnouncementHandler),
             (r"/submission_file/([a-zA-Z0-9_.-]+)",
              SubmissionFileHandler),

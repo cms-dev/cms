@@ -397,3 +397,12 @@ table.bordered tbody tr:nth-child(odd) {
     float: right;
     padding-right: 0.5em;
 }
+
+.notifications .announcement_remove {
+    float: right;
+    margin-bottom: -0.143em;
+    width: 6em;
+    text-align: center;
+    padding: 0;
+    font-weight: bold;
+}

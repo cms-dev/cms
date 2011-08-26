@@ -36,7 +36,8 @@ setup(name="cms",
                 "cms.server",
                 "cms.service",
                 "cms.util",
-                "cms.async"],
+                "cms.async",
+                "cms.box"],
       package_data={"cms.async":
                     [os.path.join("static", "*")],
                     "cms.server":
