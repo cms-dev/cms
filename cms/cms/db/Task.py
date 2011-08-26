@@ -88,11 +88,11 @@ class Task(Base):
     # task, a user must satisfy the condition of the contest and the
     # one of the task.
     token_initial = Column(Integer, nullable=False)
-    token_max = Column(Integer, nullable=False)
-    token_total = Column(Integer, nullable=False)
-    token_min_interval = Column(Integer, nullable=False)
-    token_gen_time = Column(Integer, nullable=False)
-    token_gen_number = Column(Integer, nullable=False)
+    token_max = Column(Integer, nullable=True)
+    token_total = Column(Integer, nullable=True)
+    token_min_interval = Column(Integer, nullable=True)
+    token_gen_time = Column(Integer, nullable=True)
+    token_gen_number = Column(Integer, nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.

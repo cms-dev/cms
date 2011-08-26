@@ -67,11 +67,11 @@ class YamlImporter(Service):
         assert name == conf["nome_breve"]
         params["description"] = conf["nome"]
         params["token_initial"] = conf.get("token_initial", 0)
-        params["token_max"] = conf.get("token_max", 0)
-        params["token_total"] = conf.get("token_total", 0)
-        params["token_min_interval"] = conf.get("token_min_interval", 0)
-        params["token_gen_time"] = conf.get("token_gen_time", 60)
-        params["token_gen_number"] = conf.get("token_gen_number", 1)
+        params["token_max"] = conf.get("token_max", None)
+        params["token_total"] = conf.get("token_total", None)
+        params["token_min_interval"] = conf.get("token_min_interval", None)
+        params["token_gen_time"] = conf.get("token_gen_time", None)
+        params["token_gen_number"] = conf.get("token_gen_number", None)
         if self.modif == 'zero_time':
             params["start"] = 0
             params["stop"] = 0
@@ -149,11 +149,11 @@ class YamlImporter(Service):
                                                                          description="Output %d for task %s" % (i, name)),
                                                         public=(i in public_testcases)))
         params["token_initial"] = conf.get("token_initial", 0)
-        params["token_max"] = conf.get("token_max", 0)
-        params["token_total"] = conf.get("token_total", 0)
-        params["token_min_interval"] = conf.get("token_min_interval", 0)
-        params["token_gen_time"] = conf.get("token_gen_time", 60)
-        params["token_gen_number"] = conf.get("token_gen_number", 1)
+        params["token_max"] = conf.get("token_max", None)
+        params["token_total"] = conf.get("token_total", None)
+        params["token_min_interval"] = conf.get("token_min_interval", None)
+        params["token_gen_time"] = conf.get("token_gen_time", None)
+        params["token_gen_number"] = conf.get("token_gen_number", None)
         return params
 
 
