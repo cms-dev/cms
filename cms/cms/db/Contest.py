@@ -397,7 +397,7 @@ class Contest(Base):
         token_timestamps_contest = [token.timestamp for token in tokens]
         token_timestamps_task = [
             token.timestamp for token in tokens
-            if token.submission.task.task_name == task_name]
+            if token.submission.task.name == task_name]
 
         # Compute separately for contest-wise and task-wise.
         res_contest = Contest._tokens_available(

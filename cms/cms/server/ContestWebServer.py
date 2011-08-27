@@ -49,7 +49,7 @@ from cms.async.WebAsyncLibrary import WebService, rpc_callback
 from cms.async import ServiceCoord
 
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
-     Submission, Task, File
+     Submission, Token, Task, File
 
 from cms.db.Utils import ask_for_contest
 
@@ -58,7 +58,9 @@ import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
 
 from cms.server.Utils import file_handler_gen
-from cms.util.Cryptographics import encrypt_number, decrypt_number, get_encryption_alphabet
+from cms.util.Cryptographics import encrypt_number, decrypt_number, \
+     get_encryption_alphabet
+
 
 class BaseHandler(tornado.web.RequestHandler):
     """Base RequestHandler for this application.
@@ -87,8 +89,7 @@ class BaseHandler(tornado.web.RequestHandler):
         if self.get_secure_cookie("login") is None:
             return None
         try:
-            user_id, cookie_time = \
-                pickle.loads(self.get_secure_cookie("login"))
+            user_id = pickle.loads(self.get_secure_cookie("login"))[0]
         except:
             self.clear_cookie("login")
             return None
@@ -174,6 +175,20 @@ class ContestWebServer(WebService):
             shard=shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
         self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
+
+    def add_notification(self, username, timestamp, subject, text):
+        """Store a new notification to send to a user at the first
+        opportunity (i.e., at the first request fot db notifications).
+
+        username (string): the user to notify.
+        timestamp (int): the time of the notification.
+        subject (string): subject of the notification.
+        text (string): body of the notification.
+
+        """
+        if username not in self.notifications:
+            self.notifications[username] = []
+        self.notifications[username].append((int(timestamp), subject, text))
 
 
 class MainHandler(BaseHandler):
@@ -272,8 +287,8 @@ class TaskStatementViewHandler(FileHandler):
             return
         try:
             task = [x for x in self.contest.tasks if x.name == task_name][0]
-        except:
-            self.write("Task %s not found." % (task_name))
+        except IndexError:
+            self.write("Task %s not found." % task_name)
 
         self.fetch(task.statement, "application/pdf", task.name + ".pdf")
 
@@ -286,11 +301,12 @@ class SubmissionFileHandler(FileHandler):
     @tornado.web.asynchronous
     def get(self, file_id):
 
-        # Decrypt file_id
+        # Decrypt file_id.
         try:
             file_id = decrypt_number(file_id)
         except ValueError:
-            # We reply with Forbidden if the given ID cannot be decrypted
+            # We reply with Forbidden if the given ID cannot be
+            # decrypted.
             raise tornado.web.HTTPError(403)
 
         r_params = self.render_params()
@@ -385,9 +401,9 @@ class QuestionHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def post(self):
-        r_params = self.render_params()
 
-        question = Question(time.time(),
+        timestamp = int(time.time())
+        question = Question(timestamp,
                             self.get_argument("question_subject", ""),
                             self.get_argument("question_text", ""),
                             user=self.current_user)
@@ -398,15 +414,12 @@ class QuestionHandler(BaseHandler):
                        % self.current_user.username)
 
         # Add "All ok" notification
-        notifications = self.application.service.notifications
-        username = self.current_user.username
-        if username not in notifications:
-            notifications[username] = []
-        notifications[username].append((
-            int(time.time()),
+        self.application.service.add_notification(
+            self.current_user.username,
+            timestamp,
             "Question received",
             "Your question has been received, you will be "
-            "notified when the it will be answered."))
+            "notified when the it will be answered.")
 
         self.redirect("/communication")
 
@@ -529,17 +542,80 @@ class SubmitHandler(BaseHandler):
             logger.error("Notification to ES failed! " + error)
 
         # Add "All ok" notification
-        notifications = self.application.service.notifications
-        username = self.current_user.username
-        if username not in notifications:
-            notifications[username] = []
-        notifications[username].append((
+        self.application.service.add_notification(
+            self.current_user.username,
             int(time.time()),
             "Submission received",
             "Your submission has been received "
-            "and is currently being evaluated."))
+            "and is currently being evaluated.")
 
         self.redirect("/tasks/%s" % self.task.name)
+
+
+class UseTokenHandler(BaseHandler):
+    """Called when the user try to use a token on a submission.
+
+    """
+    @tornado.web.authenticated
+    def post(self):
+
+        submission_id = self.get_argument("submission_id", "")
+
+        # Decrypt submission_id.
+        try:
+            submission_id = decrypt_number(submission_id)
+        except ValueError:
+            # We reply with Forbidden if the given ID cannot be
+            # decrypted.
+            logger.warning("User %s tried to play a token "
+                           "on an undecryptable submission_id."
+                           % self.current_user.username)
+            raise tornado.web.HTTPError(403)
+
+        # Find submission and check it is of the current user.
+        submission = Submission.get_from_id(submission_id,
+                                            self.sql_session)
+        if submission is None or \
+               submission.user != self.current_user:
+            logger.warning("User %s tried to play a token "
+                           "on an unexisting submission_id."
+                           % self.current_user.username)
+            raise tornado.web.HTTPError(404)
+
+        # Don't trust the user, check again if (s)he can really play
+        # the token.
+        timestamp = int(time.time())
+        if self.contest.tokens_available(self.current_user.username,
+                                         submission.task.name,
+                                         timestamp)[0] <= 0:
+            logger.warning("User %s tried to play a token "
+                           "when it shouldn't."
+                           % self.current_user.username)
+            # Add "no luck" notification
+            self.application.service.add_notification(
+                self.current_user.username,
+                timestamp,
+                "Token request discarded",
+                "Your request has been discarded because you have no "
+                "tokens available.")
+            self.redirect("/tasks/%s" % submission.task.name)
+            return
+
+        token = Token(timestamp, submission)
+        self.sql_session.add(token)
+        self.sql_session.commit()
+
+        logger.info("Token played by user %s on task %s."
+                    % (self.current_user.username, submission.task.name))
+
+        # Add "All ok" notification
+        self.application.service.add_notification(
+            self.current_user.username,
+            timestamp,
+            "Token request received",
+            "Your request has been received and applied to the submission.")
+
+        self.redirect("/tasks/%s" % submission.task.name)
 
 
 handlers = [(r"/",
@@ -554,8 +630,8 @@ handlers = [(r"/",
              TaskViewHandler),
             (r"/tasks/([a-zA-Z0-9_-]+)/statement",
              TaskStatementViewHandler),
-            # (r"/usetoken/",
-            #  UseTokenHandler),
+            (r"/usetoken",
+             UseTokenHandler),
             (r"/submit/([a-zA-Z0-9_.-]+)",
              SubmitHandler),
             (r"/communication",
@@ -569,6 +645,7 @@ handlers = [(r"/",
             (r"/stl/(.*)",
              tornado.web.StaticFileHandler, {"path": WebConfig.stl_path}),
             ]
+
 
 if __name__ == "__main__":
     import sys

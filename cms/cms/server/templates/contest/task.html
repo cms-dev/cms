@@ -65,7 +65,7 @@
         <th style="width: 13%">Date</th>
         <th style="width: 60%">Evaluation</th>
         <th style="width: 15%">Files</th>
-        <th style="width: 12%">Released</th>
+        <th style="width: 12%">Token used?</th>
       </tr>
     </thead>
     <tbody>
@@ -128,9 +128,9 @@
               {% if s.token is None %}
               No
                 {% if can_play_token %}
-              <form class="submit_form" action="/usetoken/" method="POST">
-                <input type="hidden" name="id" value="{{ s.id }}" />
-                <input type="submit" value="Use token" />
+              <form style="display: inline;" class="submit_form" action="/usetoken" method="POST">
+                <input type="hidden" name="submission_id" value="{{ encrypt_number(s.id) }}" />
+                <input type="submit" value="Use!" />
               </form>
                 {% end %}
               {% else %}
