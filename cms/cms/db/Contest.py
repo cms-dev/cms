@@ -233,8 +233,9 @@ class Contest(Base):
 
         """
         # If we already played the total number allowed, we don't have
-        # anything left. token_total can be ignored after this.
-        if token_total is not None and len(token_timestamps) >= token_total:
+        # anything left.
+        played_tokens = len(token_timestamps)
+        if token_total is not None and played_tokens >= token_total:
             return (0, None, None)
 
         # Now that we already considered the number of tokens already
@@ -252,11 +253,6 @@ class Contest(Base):
         if token_max is not None:
             avail = min(avail, token_max)
 
-        # This is the first not-yet-considered generation times.
-        next_gen_time = END_OF_THE_WORLD
-        if token_gen_time is not None:
-            next_gen_time = start + token_gen_time * 60
-
         # If token_gen_number == None, we may as well consider it 0.
         if token_gen_number == None:
             token_gen_number = 0
@@ -271,42 +267,70 @@ class Contest(Base):
         # at this time (and not a second before).
         expiration = 0
 
+        # Previous time we considered
+        prev_critical_time = start
+
+        def generate_tokens(prev_time, next_time):
+            """Compute how many tokens have been generated between the
+            two timestamps.
+
+            prev_time (int): timestamp of begin of interval.
+            next_time (int): timestamp of end of interval.
+            return (int): number of tokens generated.
+
+            """
+            if token_gen_time is not None:
+                # How many generation times we passed from start to
+                # the previous considered time?
+                before_prev = int((prev_time - start) / (token_gen_time * 60))
+                # And from start to the current considered time?
+                before_next = int((next_time - start) / (token_gen_time * 60))
+                # So...
+                return token_gen_number * (before_next - before_prev)
+            else:
+                return 0
+
         # Simulating!
         while True:
-            next_critical_time = min(
-                next_gen_time,
-                token_timestamps[tokens_index],
-                timestamp)
+            next_critical_time = min(token_timestamps[tokens_index],
+                                     timestamp)
 
-            # Generations happen *exactly* at round second, hence
-            # before any other event happening in that second.
-            if next_critical_time == next_gen_time:
-                # We add the tokens, capped at *_max; also we
-                # increment next_gen_time.
-                avail += token_gen_number
-                if token_max is not None:
-                    avail = min(avail, token_max)
-                if token_gen_time is not None:
-                    next_gen_time += token_gen_time * 60
+            # Increment the number of tokens 'cause of generation.
+            avail += generate_tokens(prev_critical_time, next_critical_time)
+            if token_max is not None:
+                avail = min(avail, token_max)
 
+            # If the user played a token, we decrease the available
+            # tokens, and set that all min_intervals will expire at
+            # expiration. Also we pass to the next token.
             if next_critical_time == token_timestamps[tokens_index]:
-                # If the user played a token, we decrease the
-                # available tokens, and set that all min_intervals
-                # will expire at expiration. Also we pass to the next
-                # token.
                 avail -= 1
                 if token_min_interval is not None:
                     expiration = next_critical_time + token_min_interval
                 tokens_index += 1
 
+            # Yay, simulation concluded.
             if next_critical_time == timestamp:
-                # Yay, simulation concluded.
                 break
 
-        # Now, min(avail, avail_task) is exactly the tokens available.
+            prev_critical_time = next_critical_time
+
+        # Compute the time in which the next token will be generated.
+        next_gen_time = None
+        if token_gen_time is not None and token_gen_number > 0 and \
+                (token_max is None or avail < token_max):
+            next_gen_time = start + token_gen_time * 60 * \
+                            int((timestamp - start) / (token_gen_time * 60) + 1)
+
+        # If we have more tokens than how many we are allowed to play,
+        # cap it, and note that no more will be generated.
+        if token_total is not None:
+            if avail >= token_total - played_tokens:
+                avail = token_total - played_tokens
+                next_gen_time = None
+
         return (avail,
-                mext_gen_time if next_gen_time != END_OF_THE_WORLD
-                else None,
+                next_gen_time,
                 expiration if expiration > timestamp
                 else None)
 
@@ -319,7 +343,9 @@ class Contest(Base):
             expiration);
 
         [1] the next time in which a token will be generated (or
-            None);
+            None); from the user perspective, i.e.: if the user will
+            do nothing, [1] is the first time in which his number of
+            available tokens will be greater than [0];
 
         [2] the time when the min_interval will expire, or None
 
@@ -331,13 +357,13 @@ class Contest(Base):
             if r[1] is not None:
                 next one will be generated at r[1]
             else:
-                no other tokens will be generated
+                no other tokens will be generated (max/total reached ?)
         elif r[0] > 0:
             we must wait till r[2] to play the token
             if r[1] is not None:
                 next one will be generated at r[1]
             else:
-                no other tokens will be generated
+                no other tokens will be generated (max/total reached ?)
         else:
             we don't have tokens right now
             if r[1] is not None:
@@ -345,7 +371,7 @@ class Contest(Base):
                 if r[2] is not None and r[2] > r[1]:
                     but we must wait also till r[2] to play it
             else:
-                no other tokens will be generated
+                no other tokens will be generated (max/total reached ?)
 
         Note also that this method assumes that all played tokens were
         regularly played, and that there are no tokens played in the
@@ -380,7 +406,7 @@ class Contest(Base):
             self.token_gen_time, self.token_gen_number,
             self.start, timestamp)
         res_task = Contest._tokens_available(
-            token_timestamps_contest, task.token_initial,
+            token_timestamps_task, task.token_initial,
             task.token_max, task.token_total, task.token_min_interval,
             task.token_gen_time, task.token_gen_number,
             self.start, timestamp)
@@ -391,10 +417,7 @@ class Contest(Base):
         # The available tokens are the minimum.
         res.append(min(res_contest[0], res_task[0]))
 
-        # For the next generation time things are a bit more
-        # complex. No one is ever going to use together contest-wise
-        # and task-wise tokens, notwithstanding we implement it
-        # correctly.
+        # Next token generation time
         if res_contest[0] < res_task[0]:
             # In this case, we just need a contest-wise token to be
             # generated.
