@@ -57,7 +57,7 @@ from cms import Config
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
 from cms.server.Utils import contest_required, file_handler_gen
-
+from cms.util.Cryptographics import encrypt_number, decrypt_number, get_encryption_alphabet
 
 class BaseHandler(tornado.web.RequestHandler):
     """Base RequestHandler for this application.
@@ -284,6 +284,13 @@ class SubmissionFileHandler(FileHandler):
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self, file_id):
+
+        # Decrypt file_id
+        try:
+            file_id = decrypt_number(file_id)
+        except ValueError:
+            # We reply with Forbidden if the given ID cannot be decrypted
+            raise tornado.web.HTTPError(403)
 
         r_params = self.render_params()
         if not self.valid_phase(r_params):
@@ -540,7 +547,7 @@ handlers = [(r"/",
              LoginHandler),
             (r"/logout",
              LogoutHandler),
-            (r"/submission_file/([a-zA-Z0-9_.-]+)",
+            (r"/submission_file/([%s]+)" % (get_encryption_alphabet()),
              SubmissionFileHandler),
             (r"/tasks/([a-zA-Z0-9_-]+)",
              TaskViewHandler),
