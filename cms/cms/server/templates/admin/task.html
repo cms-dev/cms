@@ -19,7 +19,7 @@
       </tr>
       <tr>
         <td>Position</td>
-        <td><input type="text" name="num" value="{{task.num}}"/></td>
+        <td>{{task.num}}</td>
       </tr>
       <tr>
         <td><a href="/task/{{task.id}}/statement">Statement</a></td>
@@ -28,12 +28,16 @@
       <tr>
         <td>Attachments</td>
         <td>
-          {% for attachment in task.attachments %}
-            <div class="attachment">
-              <a href="/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
-            </div>
+          {% if len(task.attachments) == 0 %}
+            No attachments.
+          {% else %}
+            {% for attachment in task.attachments %}
+              <div class="attachment">
+                <a href="/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
+              </div>
+            {% end %}
           {% end %}
-          <input type="file" name="attachment"/>
+          <!--<input type="file" name="attachment"/>-->
         </td>
       </tr>
       <tr>
@@ -47,7 +51,10 @@
       <tr>
         <td>Task type</td>
         <td>
-          <select name="task_type">
+          <!--
+          TODO: re-enable
+          -->
+          <select name="task_type" disabled>
             <option value="TaskTypeBatch"{% if task.task_type == "TaskTypeBatch" %} selected{% end %}>
               Batch
             </option>
@@ -64,7 +71,7 @@
         <td>Submission format</td>
         <td>
           {% for format in task.submission_format %}
-          <input type="text" name="submission_format" value="{{ format.filename }}"/></br>
+          {{ format.filename }}</br>
           {% end %}
         </td>
       </tr>
@@ -79,8 +86,10 @@
       <tr>
         <td>Score Type</td>
         <td>
-          {% comment TODO: Fetch the score types from ScoreType. %}
-          <select name="score_type">
+          <!--
+            TODO: Fetch the score types from ScoreType.
+          -->
+          <select name="score_type" disabled>
             <option value="ScoreTypeSum"{% if task.score_type == "ScoreTypeSum" %} selected{% end %}>
               Sum
             </option>
@@ -98,7 +107,7 @@
       </tr>
       <tr>
         <td>Score Parameters</td>
-        <td><textarea name="score_parameters">{{ task.score_parameters }}</textarea></td>
+        <td>{{ task.score_parameters }}</td>
       </tr>
     </table>
   </div>
@@ -116,7 +125,7 @@
       <tr>
         <td style="font-weight:bold;">{{ testcase.num }}</td>
         <td style="font-weight:bold;">
-          <input type="checkbox" name="testcase_{{ testcase.id }}_public"
+          <input type="checkbox" name="testcase_{{ testcase.num }}_public"
           {% if testcase.public %}
               checked
           {% end %}
