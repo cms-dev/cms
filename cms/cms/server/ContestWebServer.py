@@ -56,7 +56,7 @@ from cms.db.Utils import ask_for_contest
 from cms import Config
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
-from cms.server.Utils import contest_required, file_handler_gen
+from cms.server.Utils import file_handler_gen
 
 
 class BaseHandler(tornado.web.RequestHandler):
