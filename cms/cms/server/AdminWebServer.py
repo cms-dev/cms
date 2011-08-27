@@ -36,7 +36,6 @@ from cms.db.SQLAlchemyAll import Session, \
      Contest, User, Announcement, Question, Message, Submission, File, Task
 
 import cms.util.WebConfig as WebConfig
-import cms.server.BusinessLayer as BusinessLayer
 from cms.server.Utils import file_handler_gen
 
 
@@ -50,9 +49,9 @@ class BaseHandler(tornado.web.RequestHandler):
 
     def retrieve_contest(self, contest_id):
         """Retrieve the contest with the specified id.
-        
+
         Raise tornado.web.HTTPError(404) if the contest doesn't exist.
-        
+
         """
         self.contest = Contest.get_from_id(contest_id, self.sql_session)
         if self.contest is None:
@@ -97,10 +96,10 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_non_negative_int(self,argument_name, default):
         """ Get a non-negative integer from the arguments, or use the default if
         the argument is missing.
-        
+
         Raise TypeError if the argument can't be converted into a non-negative
         integer.
-        
+
         """
         argument = self.get_argument(argument_name, repr(default))
         argument = int(argument)
@@ -205,7 +204,7 @@ class TaskViewHandler(BaseHandler):
             self.write("Invalid public testcase field." + repr(e))
             self.finish()
             return
-        
+
         self.sql_session.commit()
         self.redirect("/task/" + str(self.task.id))
 

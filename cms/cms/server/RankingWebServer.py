@@ -88,7 +88,7 @@ class TaskStatementViewHandler(BaseHandler):
             self.write("Task %s not found." % (task_name))
         task.refresh()
 
-        statement = BusinessLayer.get_task_statement(task)
+        statement = get_task_statement(task)
 
         if statement == None:
             raise tornado.web.HTTPError(404)
