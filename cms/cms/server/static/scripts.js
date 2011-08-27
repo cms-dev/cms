@@ -264,5 +264,15 @@
                 return this.format_datetime(timestamp);
         },
 
+        switch_contest: function()
+        {
+            var select = document.getElementById("contest_selection_select")
+            var value = select.options[select.selectedIndex].value
+            if (value == "null")
+                window.location = "/";
+            else
+                window.location = "/contest/" + value;
+        }
+
     };
 }());

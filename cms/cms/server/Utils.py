@@ -28,32 +28,6 @@ from functools import wraps
 from cms.async.WebAsyncLibrary import rpc_callback
 from cms.async import ServiceCoord
 
-
-def contest_required(func):
-    """Decorator to ensure that in the parameter list there is one
-    named 'contest'. If not present, the browser shows a 404.
-
-    func (function): the function to check
-
-    """
-    @wraps(func)
-    def wrapper(*args, **kwds):
-        """Wrap the function in something that check if in the
-        parameter list there is a 'contest' argument and if it does
-        not find it, raises a 404.
-
-        args (list): positional arguments for func
-        kwds (dict): named arguments for func
-        returns (object): return value of func, or raises 404
-
-        """
-        if args[0].contest is not None:
-            return func(*args, **kwds)
-        else:
-            raise tornado.web.HTTPError(404)
-    return wrapper
-
-
 def file_handler_gen(BaseClass):
     """This generates an extension of the BaseHandler that allows us
     to send files to the user. This *Gen is needed because the code in

@@ -69,29 +69,28 @@ window.onload = init();
           <li class="menu_entry"><a class="menu_link" href="/">Overview</a></li>
         </ul>
         <div class="hr"></div>
+        <select id="contest_selection_select" onchange="utils.switch_contest()">
+          <option value=null {% if contest == None %} selected {% end %}>Select a contest</option>
+          {% for i in contest_list %}
 
-        <form name="contest_selection" id="contest_selection" method="GET">
-          <select name="selected_contest" onchange="document.getElementById('contest_selection').submit();">
-            <option value=null {% if contest == None %} selected {% end %}>Select a contest</option>
-            {% for i in contest_list %}
-            {% if contest != None and contest.id == i.id %} selected
-            <option value="{{i.id}}" selected>
-              {% else %}
-            <option value="{{i.id}}">
-              {% end %}
-              {{ i.name }}
-            </option>
+          <option 
+            value="{{ i.id }}" 
+            {% if contest != None and contest.id == i.id %} 
+              selected
             {% end %}
-          </select>
-          <a href="/addcontest" alt="New contest" style="text-decoration: none;">+</a>
-        </form>
+          >
+            {{ i.name }}
+          </option>
+          {% end %}
+        </select>
+        <a href="/addcontest" alt="New contest" style="text-decoration: none;">+</a>
 
           {% if contest != None %}
           <div class="sidebar_left">Contest:</div>
           <ul class="menu">
-            <li class="menu_entry"><a class="menu_link" href="/contest">General</a></li>
-            <li class="menu_entry"><a class="menu_link" href="/announcements">Announcements</a></li>
-            <li class="menu_entry"><a class="menu_link" href="/user">Users</a></li>
+            <li class="menu_entry"><a class="menu_link" href="/contest/{{ contest.id }}">General</a></li>
+            <li class="menu_entry"><a class="menu_link" href="/announcements/{{ contest.id }}">Announcements</a></li>
+            <li class="menu_entry"><a class="menu_link" href="/userlist/{{ contest.id }}">Users</a></li>
           </ul>
           <div class="hr"></div>
           <div class="sidebar_left">Tasks:</div>

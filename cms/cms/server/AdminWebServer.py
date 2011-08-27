@@ -37,7 +37,7 @@ from cms.db.SQLAlchemyAll import Session, \
 
 import cms.util.WebConfig as WebConfig
 import cms.server.BusinessLayer as BusinessLayer
-from cms.server.Utils import contest_required, file_handler_gen
+from cms.server.Utils import file_handler_gen
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -47,6 +47,16 @@ class BaseHandler(tornado.web.RequestHandler):
     child of this class.
 
     """
+
+    def retrieve_contest(self, contest_id):
+        """Retrieve the contest with the specified id.
+        
+        Raise tornado.web.HTTPError(404) if the contest doesn't exist.
+        
+        """
+        self.contest = Contest.get_from_id(contest_id, self.sql_session)
+        if self.contest is None:
+            raise tornado.web.HTTPError(404)
 
     def prepare(self):
         """This method is executed at the beginning of each request.
@@ -58,32 +68,6 @@ class BaseHandler(tornado.web.RequestHandler):
 
         self.sql_session = Session()
         self.contest = None
-
-        # Retrieve the selected contest.
-        selected_contest = self.get_argument("selected_contest", None)
-
-        if selected_contest == "null":
-            self.clear_cookie("selected_contest")
-            self.redirect("/")
-            return
-
-        if selected_contest != None:
-            self.contest = self.sql_session.query(Contest)\
-                .filter_by(id=selected_contest).first()
-            if self.contest != None:
-                # If we're here, the selected contest exists. Set the cookie.
-                self.set_secure_cookie("selected_contest", selected_contest)
-                self.redirect("/contest")
-
-        if self.contest == None:
-            # No (valid) contest specified: either it was never specified,
-            # or it was already specified in the cookies.
-            cookie_contest = self.get_secure_cookie("selected_contest")
-            if cookie_contest != None:
-                self.contest = self.sql_session.query(Contest)\
-                    .filter_by(id=cookie_contest).first()
-                if self.contest == None:
-                    self.clear_cookie("selected_contest")
 
     def render_params(self):
         """Return the default render params used by almost all handlers.
@@ -153,30 +137,33 @@ class MainHandler(BaseHandler):
     """Home page handler, with queue and workers statuses.
 
     """
-    def get(self):
-        self.render("welcome.html", **self.render_params())
 
+    def get(self, contest_id = None):
+        if contest_id:
+            self.retrieve_contest(contest_id)
+        self.render("welcome.html", **self.render_params())
 
 class ContestViewHandler(BaseHandler):
     """Shows information about a specific contest.
 
     """
-    @contest_required
-    def get(self):
+    def get(self, contest_id):
+        self.retrieve_contest(contest_id)
         r_params = self.render_params()
         self.render("contest.html", **r_params)
 
 class TaskViewHandler(BaseHandler):
 
-    @contest_required
+
     def get(self, task_id):
-        r_params = self.render_params()
-        r_params["task"] = Task.get_from_id(task_id, self.sql_session)
-        if r_params["task"] is None:
+        task = Task.get_from_id(task_id, self.sql_session)
+        if task is None:
             raise tornado.web.HTTPError(404)
+        self.contest = task.contest
+        r_params = self.render_params()
+        r_params["task"] = task
         self.render("task.html", **r_params)
-    
-    @contest_required
+
     @tornado.web.asynchronous
     def post(self, task_id):
         self.task = Task.get_from_id(task_id, self.sql_session)
@@ -227,32 +214,25 @@ class EditContestHandler(BaseHandler):
 
     """
     def post(self, contest_id):
-        # FIXME: Behave properly in the future...
-        if self.contest == None or self.contest.id != int(contest_id):
-            self.write("You changed the selected contest before "
-                       "editing this contest. To avoid unwanted changes, "
-                       "the request has been ignored.")
-            return
-        if self.get_arguments("name") == []:
+        self.retrieve_contest(contest_id)
+
+        name = self.get_argument("name", "")
+        if name == "":
             self.write("No contest name specified")
             return
-        name = self.get_argument("name")
+
         description = self.get_argument("description", "")
 
         try:
-            token_initial = int(self.get_argument("token_initial", "0"))
-            token_max = int(self.get_argument("token_max", "0"))
-            token_total = int(self.get_argument("token_total", "0"))
+            token_initial = self.get_non_negative_int("token_initial", self.contest.token_initial)
+            token_max = self.get_non_negative_int("token_max", self.contest.token_max)
+            token_total = self.get_non_negative_int("token_total", self.contest.token_total)
+            token_min_interval = self.get_non_negative_int("token_min_interval", self.contest.token_min_interval)
+            token_gen_time = self.get_non_negative_int("token_gen_time", self.contest.token_gen_time)
         except:
-            self.write("Invalid token number field(s).")
+            self.write("Invalid token field(s): "+ repr(e))
             return
 
-        try:
-            token_min_interval = int(self.get_argument("token_min_interval", "0"))
-            token_gen_time = int(self.get_argument("token_gen_time", "0"))
-        except:
-            self.write("Invalid token interval field(s).")
-            return
 
         try:
             start = time.mktime(time.strptime(self.get_argument("start", ""),
@@ -262,9 +242,11 @@ class EditContestHandler(BaseHandler):
         except Exception as e:
             self.write("Invalid date(s)." + repr(e))
             return
+
         if start > stop:
             self.write("Contest ends before it starts")
             return
+
         self.contest.name = name
         self.contest.description = description
         self.contest.token_initial = token_initial
@@ -276,15 +258,15 @@ class EditContestHandler(BaseHandler):
         self.contest.stop = stop
 
         self.sql_session.commit()
-        self.redirect("/contest")
+        self.redirect("/contest/"+contest_id)
 
 
 class AnnouncementsHandler(BaseHandler):
     """Page to see and send messages to all the contestants.
 
     """
-    @contest_required
-    def get(self):
+    def get(self, contest_id):
+        self.retrieve_contest(contest_id)
         r_params = self.render_params()
         self.render("announcements.html", **r_params)
 
@@ -293,38 +275,37 @@ class AddAnnouncementHandler(BaseHandler):
     """Called to actually add an announcement
 
     """
-    @contest_required
-    def post(self):
+    def post(self, contest_id):
+        self.retrieve_contest(contest_id)
         subject = self.get_argument("subject", "")
         text = self.get_argument("text", "")
         if subject != "":
             ann = Announcement(time.time(), subject, text, self.contest)
             self.sql_session.add(ann)
             self.sql_session.commit()
-            #BusinessLayer.add_announcement(self.c, subject, text)
-        self.redirect("/announcements")
+        self.redirect("/announcements/"+contest_id)
 
 
 class RemoveAnnouncementHandler(BaseHandler):
     """Called to remove an announcement.
 
     """
-    @contest_required
     def get(self, ann_id):
-        ann = self.sql_session.query(Announcement).filter_by(id=ann_id).first()
+        ann = Announcement.get_from_id(ann_id,self.sql_session)
         if ann == None:
             raise tornado.web.HTTPError(404)
+        contest_id = str(ann.contest.id)
         self.sql_session.delete(ann)
         self.sql_session.commit()
-        self.redirect("/announcements")
+        self.redirect("/announcements/" + contest_id)
 
 
 class UserListHandler(BaseHandler):
     """Shows the list of users participating in a contest.
 
     """
-    @contest_required
-    def get(self):
+    def get(self, contest_id):
+        self.retrieve_contest(contest_id)
         r_params = self.render_params()
         self.render("userlist.html", **r_params)
 
@@ -334,15 +315,13 @@ class UserViewHandler(BaseHandler):
     messages, and allows to send the latters).
 
     """
-    @contest_required
     def get(self, user_id):
-        r_params = self.render_params()
-        user = self.sql_session.query(User).filter_by(id=user_id).first()
-        # user = BusinessLayer.get_user_by_username(self.c, user_id)
-        # submissions = BusinessLayer.get_submissions_by_username(self.c,
-        #                                                         user_id)
+
+        user = User.get_from_id(user_id, self.sql_session)
         if user == None:
             raise tornado.web.HTTPError(404)
+        self.contest = user.contest
+        r_params = self.render_params()
         r_params["selected_user"] = user
         r_params["submissions"] = user.submissions
         self.render("user.html", **r_params)
@@ -352,16 +331,19 @@ class SubmissionDetailHandler(BaseHandler):
     """Shows additional details for the specified submission.
 
     """
-    @contest_required
     def get(self, submission_id):
-
-        r_params = self.render_params()
 
         # search the submission in the contest
         submission = Submission.get_from_id(submission_id, self.sql_session)
 
         if submission == None:
             raise tornado.web.HTTPError(404)
+
+        # Submissions are associated to the user and to the task. We use the
+        # task to get the contest.
+        self.contest = submission.task.contest
+
+        r_params = self.render_params()
         r_params["submission"] = submission
         r_params["task"] = submission.task
         self.render("submission_detail.html", **r_params)
@@ -371,12 +353,13 @@ class SubmissionFileHandler(FileHandler):
     """Shows a submission file.
 
     """
+
+    # FIXME: Replace with FileFromDigestHandler?
+
     @tornado.web.asynchronous
     def get(self, file_id):
 
-        sub_file = self.sql_session.query(File)\
-                       .filter(File.id == file_id)\
-                       .first()
+        sub_file = File.get_from_id(file_id, sql_session)
 
         if sub_file == None:
             raise tornado.web.HTTPError(404)
@@ -388,12 +371,10 @@ class QuestionReplyHandler(BaseHandler):
     """Called when the manager replies to a question made by a user.
 
     """
-    @contest_required
     def post(self, question_id):
-        r_params = self.render_params()
 
-        question = self.sql_session.query(Question)\
-                   .filter_by(id=question_id).first()
+
+        question = Question.get_from_id(question_id,self.sql_session)
         if question == None:
             raise tornado.web.HTTPError(404)
 
@@ -411,8 +392,9 @@ class QuestionReplyHandler(BaseHandler):
 
         logger.warning("Reply sent to user %s for question '%s'." %
                        (question.user.username, question.subject))
-        r_params["selected_user"] = question.user
-        self.render("successful_message.html", **r_params)
+
+        self.redirect("/user/"+str(question.user.id))
+
 
 class MessageHandler(BaseHandler):
     """Called when a message is sent to a specific user.
@@ -436,30 +418,22 @@ class MessageHandler(BaseHandler):
         logger.warning("Message submitted to user %s."
                        % user)
 
-        # TODO: Add "All ok" notification
-#        notifications = self.application.service.notifications
-#        username = self.current_user.username
-#        if username not in notifications:
-#            notifications[username] = []
-#        notifications[username].append((
-#            int(time.time()),
-#            "Question received",
-#            "Your question has been received, you will be "
-#            "notified when the it will be answered."))
-
         self.redirect("/user/" + user_id)
 
 class SubmissionReevaluateHandler(BaseHandler):
     """Ask ES to reevaluate the specific submission.
 
     """
-    @contest_required
+
     @tornado.web.asynchronous
     def get(self, submission_id):
-        self.submission_id = submission_id
+
         submission = Submission.get_from_id(submission_id, self.sql_session)
         if submission == None:
             raise tornado.web.HTTPError(404)
+
+        self.submission = submission
+        self.contest = submission.task.contest
 
         submission.invalid()
         self.sql_session.commit()
@@ -470,22 +444,22 @@ class SubmissionReevaluateHandler(BaseHandler):
     @rpc_callback
     def es_notify_callback(self, data, plus, error=None):
         if error == None:
-            r_params = self.render_params()
-            r_params["previous_page"] = "/submissions/details/%s" % \
-                self.submission_id
-            self.render("successful_reevaluation.html", **r_params)
+            self.redirect("/user/"+str(self.submission.user.id))
         else:
             logger.error("Notification to ES failed: %s." % repr(error))
             self.finish()
 
 class UserReevaluateHandler(BaseHandler):
-    @contest_required
+
     @tornado.web.asynchronous
     def get(self, user_id):
         self.user_id = user_id
         user = User.get_from_id(user_id, self.sql_session)
         if user == None:
             raise tornado.web.HTTPError(404)
+
+        self.contest = user.contest
+
         self.pending_requests = len(user.submissions)
         for s in user.submissions:
             s.invalid()
@@ -510,11 +484,13 @@ class FileFromDigestHandler(FileHandler):
 
 handlers = [(r"/",
              MainHandler),
-            (r"/announcements",
+            (r"/([0-9]+)",
+             MainHandler),
+            (r"/announcements/([0-9]+)",
              AnnouncementsHandler),
             # (r"/addcontest",
             #  AddContestHandler),
-            (r"/contest",
+            (r"/contest/([0-9]+)",
              ContestViewHandler),
             (r"/contest/edit/([0-9]+)",
              EditContestHandler),
@@ -528,7 +504,7 @@ handlers = [(r"/",
              SubmissionReevaluateHandler),
             (r"/reevaluate/user/([0-9]+)",
              UserReevaluateHandler),
-            (r"/add_announcement",
+            (r"/add_announcement/([0-9]+)",
              AddAnnouncementHandler),
             (r"/remove_announcement/([0-9]+)",
              RemoveAnnouncementHandler),
@@ -536,7 +512,7 @@ handlers = [(r"/",
              SubmissionFileHandler),
             (r"/user/([a-zA-Z0-9_-]+)",
              UserViewHandler),
-            (r"/user",
+            (r"/userlist/([0-9]+)",
              UserListHandler),
             (r"/message/([a-zA-Z0-9_-]+)",
              MessageHandler),
