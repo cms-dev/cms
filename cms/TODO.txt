@@ -43,16 +43,14 @@
 *** Task types
 * Check that white_diff() really does what we want it to do
 
-*** Score types
-* Fix ScoreTypeRelative, which at the moment still use the deprecated
-  Submission.score field.
-
 *** YamlImporter
 * Provide facilities to translate the task's statement.
-* Provide an environment to build tasks better than make_Makefile and friends.
+* Provide an environment to build tasks better than make_Makefile and
+  friends.
 
 *** Contest{Exporter,Importer}
 * Use consistenly names to export Tasks, as in the cases of Users.
+* Export and import files' descriptions.
 
 *** File{Storage,Cacher}
 * Don't load the whole files when transferring them, you uselessly eat
