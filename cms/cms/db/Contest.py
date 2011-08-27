@@ -213,7 +213,104 @@ class Contest(Base):
             return 0
         return 1
 
-    def tokens_available(self, username, task_name):
+    @staticmethod
+    def _tokens_available(token_timestamps, token_initial,
+                          token_max, token_total, token_min_interval,
+                          token_gen_time, token_gen_number,
+                          start, timestamp):
+        """Do exactly the same computation stated in tokens_available,
+        but ensuring only a single set of token_*
+        directive. Basically, tokens_available call this twice for
+        contest-wise and task-wise parameters and then assemble the
+        result.
+
+        token_timestamps (list): list of timestamps of used tokens.
+        token_* (int): the parameters we want to enforce.
+        start (int): the time the contest start.
+        timestamp (int): the time relative to which make the
+                         calculation.
+        return (tuple): same as tokens_available.
+
+        """
+        # If we already played the total number allowed, we don't have
+        # anything left. token_total can be ignored after this.
+        if token_total is not None and len(token_timestamps) >= token_total:
+            return (0, None, None)
+
+        # Now that we already considered the number of tokens already
+        # played, we can put a semaphore at the end of the list.
+        END_OF_THE_WORLD = 2000000000
+        token_timestamps.append(END_OF_THE_WORLD)
+
+        # avail is the current number of available tokens. We are
+        # going to rebuild all the history to know how many of them we
+        # have now.
+
+        # We start with the initial number, capped to max. *_initial
+        # can be ignored after this.
+        avail = token_initial
+        if token_max is not None:
+            avail = min(avail, token_max)
+
+        # This is the first not-yet-considered generation times.
+        next_gen_time = END_OF_THE_WORLD
+        if token_gen_time is not None:
+            next_gen_time = start + token_gen_time * 60
+
+        # If token_gen_number == None, we may as well consider it 0.
+        if token_gen_number == None:
+            token_gen_number = 0
+
+        # This is the index of the first non-yet-considered token.
+        tokens_index = 0
+
+        # This is the next expiring time for *_min_intervals. Note
+        # that since we assume token were played by the rule, we need
+        # not to think of these as critical times. At the end of the
+        # simulation, we know that all min_intervals will be expired
+        # at this time (and not a second before).
+        expiration = 0
+
+        # Simulating!
+        while True:
+            next_critical_time = min(
+                next_gen_time,
+                token_timestamps[tokens_index],
+                timestamp)
+
+            # Generations happen *exactly* at round second, hence
+            # before any other event happening in that second.
+            if next_critical_time == next_gen_time:
+                # We add the tokens, capped at *_max; also we
+                # increment next_gen_time.
+                avail += token_gen_number
+                if token_max is not None:
+                    avail = min(avail, token_max)
+                if token_gen_time is not None:
+                    next_gen_time += token_gen_time * 60
+
+            if next_critical_time == token_timestamps[tokens_index]:
+                # If the user played a token, we decrease the
+                # available tokens, and set that all min_intervals
+                # will expire at expiration. Also we pass to the next
+                # token.
+                avail -= 1
+                if token_min_interval is not None:
+                    expiration = next_critical_time + token_min_interval
+                tokens_index += 1
+
+            if next_critical_time == timestamp:
+                # Yay, simulation concluded.
+                break
+
+        # Now, min(avail, avail_task) is exactly the tokens available.
+        return (avail,
+                mext_gen_time if next_gen_time != END_OF_THE_WORLD
+                else None,
+                expiration if expiration > timestamp
+                else None)
+
+    def tokens_available(self, username, task_name, timestamp=None):
         """Return three pieces of data:
 
         [0] the number of available tokens for the user to play on the
@@ -245,7 +342,7 @@ class Contest(Base):
             we don't have tokens right now
             if r[1] is not None:
                 next one will be generated at r[1]
-                if r[2] is not None:
+                if r[2] is not None and r[2] > r[1]:
                     but we must wait also till r[2] to play it
             else:
                 no other tokens will be generated
@@ -257,154 +354,66 @@ class Contest(Base):
 
         username (string): the username of the user.
         task_name (string): the name of the task.
+        timestamp (int): the time relative to which making the
+                         calculation
         return ((int, int, int)): see description above the latter two
                                   are timestamps, or None.
 
         """
-        timestamp = int(time.time())
+        if timestamp == None:
+            timestamp = int(time.time())
 
         user = self.get_user(username)
-        task = self.get_user(task_name)
+        task = self.get_task(task_name)
+
+        # Take the list of the tokens already played.
+        tokens = user.get_tokens()
+        token_timestamps_contest = [token.timestamp for token in tokens]
+        token_timestamps_task = [
+            token.timestamp for token in tokens
+            if token.submission.task.task_name == task_name]
+
+        # Compute separately for contest-wise and task-wise.
+        res_contest = Contest._tokens_available(
+            token_timestamps_contest, self.token_initial,
+            self.token_max, self.token_total, self.token_min_interval,
+            self.token_gen_time, self.token_gen_number,
+            self.start, timestamp)
+        res_task = Contest._tokens_available(
+            token_timestamps_contest, task.token_initial,
+            task.token_max, task.token_total, task.token_min_interval,
+            task.token_gen_time, task.token_gen_number,
+            self.start, timestamp)
+
+        # Merge the results.
         res = []
 
-        # In this function, no suffix means relative to the contest,
-        # *_task means relative to the task. We are going to compute
-        # with them in parallel.
-
-        # We take the list of the tokens already played.
-        tokens = user.get_tokens()
-        tokens_task = [token for token in tokens
-                       if tokens.submission.task.task_name == task_name]
-
-        # If we already played the total number allowed, we don't have
-        # anything left. token_total can be ignored after this.
-        if self.token_total is not None and \
-               len(tokens) >= self.token_total:
-            return (0, None, None)
-        if task.token_total is not None and \
-               len(tokens_task) >= task.token_total:
-            return (0, None, None)
-
-        # Now that we already considered the number of tokens already
-        # played, we can put a semaphore at the end of both lists.
-        class FakeToken:
-            timestamp = 2000000000
-        tokens.append(FakeToken())
-        tokens_task.append(FakeToken())
-
-        # avail* is the current number of available tokens. We are
-        # going to rebuild all the history to know how many of them we
-        # have now.
-
-        # We start with the initial number, capped to max. *_initial
-        # can be ignored after this.
-        avail = self.token_initial
-        if self.token_max is not None:
-            avail = min(avail, self.token_max)
-        avail_task = task.token_initial
-        if task.token_max is not None:
-            avail_task = min(avail_task, task.token_max)
-
-        # These are the first not-yet-considered generation times.
-        next_gen_time = 2000000000
-        if self.token_gen_time is not None and \
-               self.token_gen_number is not None:
-            next_gen_time = self.start + self.token_gen_time * 60
-        next_gen_time_task = 2000000000
-        if task.token_gen_time is not None and \
-               task.token_gen_number is not None:
-            next_gen_time = self.start + task.token_gen_time * 60
-
-        # These are the index of the first non-yet-considered token.
-        tokens_index = 0
-        tokens_task_index = 0
-
-        # These are the next expiring time for *_min_intervals. Note
-        # that since we assume token were played by the rule, we need
-        # not to think of these as critical times. At the end of the
-        # simulation, we know that all min_intervals will be expired
-        # at these times (and not a second before).
-        expiration = 0
-        expiration_task = 0
-
-        # Simulating!
-        while True:
-            next_critical_time = min(
-                next_gen_time,
-                next_gen_time_task,
-                tokens[tokens_index].timestamp,
-                tokens_task[tokens_task_index].timestamp,
-                timestamp)
-
-            # Generations happen *exactly* at round second, hence
-            # before any other event happening in that second.
-            if next_critical_time == next_gen_time:
-                # If it is contest generation time, we add the tokens,
-                # capped at *_max; also we increment next_gen_time.
-                avail += self.token_gen_number
-                if self.token_max is not None:
-                    avail = min(avail, self.token_max)
-                if self.token_gen_time is not None:
-                    next_gen_time += self.token_gen_time * 60
-
-            if next_critical_time == next_gen_time_task:
-                # Same for task.
-                avail_task += task.token_gen_number
-                if task.token_max is not None:
-                    avail_task = min(avail_task, task.token_max)
-                if task.token_gen_time is not None:
-                    next_gen_time_task += task.token_gen_time * 60
-
-            if next_critical_time == tokens[tokens_index].timestamp:
-                # If the user played a token, we decrease the
-                # available tokens, and set that all min_intervals
-                # will expire at expiration. Also we pass to the next
-                # token.
-                avail -= 1
-                if self.token_min_interval is not None:
-                    expiration = next_critical_time + \
-                                 self.token_min_interval
-                tokens_index += 1
-
-            if next_critical_time == tokens_task[tokens_task_index].timestamp:
-                # Same for task.
-                avail_task -= 1
-                if task.token_min_interval is not None:
-                    expiration_task = next_critical_time + \
-                                      task.token_min_interval
-                tokens_task_index += 1
-
-            if next_critical_time == timestamp:
-                # Yay, simulation concluded.
-                break
-
-        # Now, min(avail, avail_task) is exactly the tokens available.
-        res.append(min(avail, avail_task))
+        # The available tokens are the minimum.
+        res.append(min(res_contest[0], res_task[0]))
 
         # For the next generation time things are a bit more
         # complex. No one is ever going to use together contest-wise
         # and task-wise tokens, notwithstanding we implement it
         # correctly.
-        if avail < avail_task:
+        if res_contest[0] < res_task[0]:
             # In this case, we just need a contest-wise token to be
             # generated.
-            res.append(next_gen_time if next_gen_time != 2000000000
-                       else None)
-        elif avail_task < avail:
+            res.append(res_contest[1])
+        if res_task[0] < res_contest[0]:
             # Specular case.
-            res.append(next_gen_time_task if next_gen_time_task != 2000000000
-                       else None)
+            res.append(res_task[1])
         else:
-            # We need both!
-            next_gen_time_both = max(next_gen_time, next_gen_time_task)
-            res.append(next_gen_time_both if next_gen_time_both != 2000000000
-                       else None)
+            # Darn, we need both!
+            if res_contest[1] is None or res_task[1] is None:
+                res.append(None)
+            else:
+                res.append(max(res_contest[1], res_task[1]))
 
         # Finally, both min_intervals must expire.
-        expiration_time_both = max(expiration, expiration_task)
-        res.append(expiration_time_both
-                   if expiration_time_both >= timestamp
-                   else None)
+        if res_contest[2] is None or res_task[2] is None:
+            res.append(None)
+        else:
+            res.append(max(res_contest[2], res_task[2]))
 
         return tuple(res)
 
