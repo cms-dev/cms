@@ -34,7 +34,7 @@ def analyze_table(tablename, session=None):
 
     """
     if session is None:
-        with SessionGen() as session:
+        with SessionGen(commit=True) as session:
             return analyze_table(tablename, session)
 
     session.execute("ANALYZE %s;" % (tablename))
@@ -49,7 +49,7 @@ def analyze_all_tables(session=None):
 
     """
     if session is None:
-        with SessionGen() as session:
+        with SessionGen(commit=False) as session:
             return analyze_all_tables(session)
 
     for table in metadata.sorted_tables:
@@ -68,7 +68,7 @@ def get_contest_list(session=None):
 
     """
     if session is None:
-        with SessionGen() as session:
+        with SessionGen(commit=True) as session:
             return get_contest_list(session)
 
     return session.query(Contest).all()
@@ -82,7 +82,7 @@ def ask_for_contest(skip=None):
 
     else:
 
-        with SessionGen() as session:
+        with SessionGen(commit=False) as session:
             contests = get_contest_list(session)
             # The ids of the contests are cached, so the session can
             # be closed as soon as possible

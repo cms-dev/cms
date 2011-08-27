@@ -66,7 +66,7 @@ class ContestExporter(Service):
         files_dir = os.path.join(self.export_dir, "files")
         os.mkdir(files_dir)
 
-        with SessionGen() as session:
+        with SessionGen(commit=False) as session:
 
             c = Contest.get_from_id(self.contest_id, session)
 

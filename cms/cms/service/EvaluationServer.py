@@ -383,7 +383,7 @@ class EvaluationServer(Service):
 
         self.contest_id = contest_id
         self.scorers = {}
-        with SessionGen() as session:
+        with SessionGen(commit=False) as session:
             contest = session.query(Contest).\
                       filter_by(id=contest_id).first()
             logger.info("Loaded contest %s" % contest.name)
@@ -391,6 +391,7 @@ class EvaluationServer(Service):
             contest.create_empty_ranking_view(timestamp=contest.start)
             for task in contest.tasks:
                 self.scorers[task.id] = task.get_scorer()
+            session.commit()
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
@@ -502,7 +503,7 @@ class EvaluationServer(Service):
                     "Success: %s" % (job_type, submission_id, data))
 
         # We get the submission from db.
-        with SessionGen() as session:
+        with SessionGen(commit=False) as session:
             submission = Submission.get_from_id(submission_id, session)
             if submission is None:
                 logger.critical("[action_finished] Couldn't find submission %d "
@@ -519,6 +520,7 @@ class EvaluationServer(Service):
             tokened = submission.tokened()
             evaluated = submission.evaluated()
             task_id = submission.task.id
+            session.commit()
 
         # Compilation
         if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
@@ -603,7 +605,7 @@ class EvaluationServer(Service):
         if evaluated:
             scorer = self.scorers[task_id]
             # We need a session to change the ranking view.
-            with SessionGen() as session:
+            with SessionGen(commit=False) as session:
                 submission = Submission.get_from_id(submission_id, session)
                 if submission is None:
                     logger.critical("[action_finished] Couldn't find "
@@ -618,6 +620,7 @@ class EvaluationServer(Service):
                 contest = session.query(Contest).\
                           filter_by(id=self.contest_id).first()
                 contest.update_ranking_view(self.scorers)
+                session.commit()
         # Evaluation unsuccessful, we requeue (or not).
         else:
             if evaluation_tries > \
@@ -642,7 +645,7 @@ class EvaluationServer(Service):
         returns (bool): True if everything went well
 
         """
-        with SessionGen() as session:
+        with SessionGen(commit=False) as session:
             submission = Submission.get_from_id(submission_id, session)
             timestamp = submission.timestamp
             compilation_tries = submission.compilation_tries
@@ -651,6 +654,7 @@ class EvaluationServer(Service):
             evaluated = submission.evaluated()
             tokened = submission.tokened()
             task_id = submission.task.id
+            session.commit()
 
         if compilation_outcome is None:
             # If not compiled, I compile. Note that we give here a

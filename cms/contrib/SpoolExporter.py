@@ -62,7 +62,7 @@ class SpoolExporter(Service):
         upload_dir = os.path.join(self.spool_dir, "upload")
         os.mkdir(upload_dir)
 
-        with SessionGen() as session:
+        with SessionGen(commit=False) as session:
 
             c = Contest.get_from_id(self.contest_id, session)
 
