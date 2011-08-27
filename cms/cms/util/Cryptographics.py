@@ -80,7 +80,8 @@ def decrypt_string(enc, key=None):
         key = secret_key_unhex
     aes = AES.new(key, mode=AES.MODE_CBC)
     try:
-        return aes.decrypt(base64.urlsafe_b64decode(enc.replace('.', '=')))[16:].rstrip('\x00')
+        return aes.decrypt(base64.urlsafe_b64decode(
+            str(enc).replace('.', '=')))[16:].rstrip('\x00')
     except TypeError:
         raise ValueError('Could not decode from base64')
     except ValueError:
