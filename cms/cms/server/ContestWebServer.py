@@ -75,8 +75,8 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
         self.sql_session = Session()
-        self.contest = self.sql_session.query(Contest)\
-            .filter_by(id=self.application.service.contest).first()
+        self.contest = Contest.get_from_id(self.application.service.contest,
+                                           self.sql_session)
 
     def get_current_user(self):
         """Gets the current user logged in from the cookies
@@ -97,8 +97,7 @@ class BaseHandler(tornado.web.RequestHandler):
         # if cookie_time is None or cookie_time < upsince:
         #     return None
 
-        current_user = self.sql_session.query(User)\
-            .filter_by(id=user_id).first()
+        current_user = User.get_from_id(user_id, self.sql_session)
         if current_user is None:
             self.clear_cookie("login")
             return None
