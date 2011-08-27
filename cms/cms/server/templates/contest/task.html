@@ -100,7 +100,7 @@
         </td>
         <td>
           {% for filename,sub_file in s.files.items() %}
-          <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}<br/>
+          <a href="/submission_file/{{ encrypt_number(sub_file.id) }}">{{ escape(filename) }}<br/>
             {% end %}
             <td>
               {% if s.token is None %}
