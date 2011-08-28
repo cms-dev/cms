@@ -236,7 +236,7 @@ def format_time_or_date(timestamp):
     if dt_ts.date() == datetime.date.today():
         return dt_ts.strftime("%H:%M:%S")
     else:
-        return dt_ts.strftime("%d/%m/%Y %H:%M:%S")
+        return dt_ts.strftime("%H:%M:%S, %d/%m/%Y")
 
 
 class FileExplorer:

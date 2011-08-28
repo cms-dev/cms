@@ -242,7 +242,7 @@
             if (months < 10)
                 months = "0" + months;
             var years = date.getFullYear();
-            return days + "/" + months + "/" + years + " " + time;
+            return time + ", " + days + "/" + months + "/" + years;
 
         },
 

@@ -41,13 +41,13 @@ window.onload = init;
       <div id="sidebar">
         <h1>{{ contest.description }}</h1>
         <ul class="menu">
-          <li class="menu_entry"><a class="menu_link" href="/">Overview</a></li>
-          <li class="menu_entry"><a class="menu_link" href="/instructions">Instructions</a></li>
-          <li class="menu_entry"><a class="menu_link" href="/communication">Communication</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/">{{ _("Overview") }}</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/instructions">{{ _("Instructions") }}</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/communication">{{ _("Communication") }}</a></li>
         </ul>
         <div class="hr"></div>
         {% if current_user is not None and phase == 0 %}
-        <div class="sidebar_left">Tasks:</div>
+        <div class="sidebar_left">{{ _("Tasks:") }}</div>
         <div class="sidebar_right">
           <ul class="menu">
             {% for t_iter in contest.tasks %}
@@ -59,25 +59,25 @@ window.onload = init;
         {% end %}
         {% if current_user is None %}
           {% if handler.get_argument("login_error", "") != "" %}
-        <div class="footer login_error">Failed to log in.</div>
+        <div class="footer login_error">{{ _("Failed to log in.") }}</div>
           {% end %}
         <form action="/login" method="POST">
           <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
           <div class="footer">
-            <div class="sidebar_left">Username:</div>
+            <div class="sidebar_left">{{ _("Username:") }}</div>
             <div class="sidebar_right"><input type="text" name="username" size="12" /></div>
           </div>
           <div class="footer">
-            <div class="sidebar_left">Password:</div>
+            <div class="sidebar_left">{{ _("Password:") }}</div>
             <div class="sidebar_right"><input type="password" name="password" size="12" /></div>
           </div>
-          <div class="footer sidebar_right"><input type="submit" value="Sign in" /></div>
+          <div class="footer sidebar_right"><input type="submit" value="{{ _("Sign in") }}" /></div>
         </form>
         {% else %}
           {% if phase != 1 %}
-        <div class="footer">Time left: <span id="remaining"></span></div>
+        <div class="footer">{{ _("Time left:") }} <span id="remaining"></span></div>
           {% end %}
-        <div class="footer">{{ current_user.real_name }} (<a href="/logout">logout</a>)</div>
+        <div class="footer">{{ current_user.real_name }} (<a href="/logout">{{ _("logout") }}</a>)</div>
         {% end %}
       </div>
       <div id="border"></div>

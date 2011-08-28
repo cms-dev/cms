@@ -43,6 +43,7 @@ import tempfile
 import zipfile
 
 import tornado.web
+import tornado.locale
 
 from cms.async.AsyncLibrary import logger
 from cms.async.WebAsyncLibrary import WebService, rpc_callback
@@ -77,6 +78,8 @@ class BaseHandler(tornado.web.RequestHandler):
         self.sql_session = Session()
         self.contest = self.sql_session.query(Contest)\
             .filter_by(id=self.application.service.contest).first()
+
+        tornado.locale.load_gettext_translations("cms/server/mo/", "messages")
 
     def get_current_user(self):
         """Gets the current user logged in from the cookies

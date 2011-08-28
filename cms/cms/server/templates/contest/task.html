@@ -3,69 +3,76 @@
 
 <h1>{{ task.title }} ({{ task.name }})</h1>
 
-<h2 id="title_task_information" class="toggling_on" onclick="utils.toggle_visibility('task_information');">Task information</h2>
+<h2 id="title_task_information" class="toggling_on" onclick="utils.toggle_visibility('task_information');">{{ _("Task information") }}</h2>
 <div id="task_information">
-  <div><a href="/tasks/{{ task.name }}/statement">Download task statement</a></div>
+  <div><a href="/tasks/{{ task.name }}/statement">{{ _("Download task statement") }}</a></div>
 
-  Time limit: {{ task.time_limit }} second(s)</br>
-  Memory limit: {{ task.memory_limit }} MB
+  {{ _("Time limit: %(seconds)s second(s).") % {"seconds": task.time_limit} }}</br>
+  {{ _("Memory limit: %(mb)s MB.") % {"mb": task.memory_limit} }}</br>
   <div class="hr"></div>
 </div>
 
 
-<h2 id="title_submit_solution" class="toggling_on" onclick="utils.toggle_visibility('submit_solution');">Submit a solution</h2>
+<h2 id="title_submit_solution" class="toggling_on" onclick="utils.toggle_visibility('submit_solution');">{{ _("Submit a solution") }}</h2>
 <div id="submit_solution">
   <form enctype="multipart/form-data" action="/submit/{{ task.name }}" method="post">
     <input type="file" name="{{ task.name }}"></input>
-    <input type="submit" value="Submit"></input>
+    <input type="submit" value="{{ _("Submit") }}"></input>
   </form>
   <div class="hr"></div>
 </div>
 
 
-<h2 id="title_previous_submissions" class="toggling_on" onclick="utils.toggle_visibility('previous_submissions');">Previous submissions</h2>
+<h2 id="title_previous_submissions" class="toggling_on" onclick="utils.toggle_visibility('previous_submissions');">{{ _("Previous submissions") }}</h2>
 <div id="previous_submissions">
   <div class="task_tokens">
     {% set tokens_info = contest.tokens_available(current_user.username, task.name, timestamp) %}
     {% set can_play_token = (tokens_info[0] > 0 and tokens_info[2] is None) %}
     {% if tokens_info[0] > 0 and tokens_info[2] is None %}
-    <p>Right now, you have {{ tokens_info[0] }} token(s) available on this task.</p>
+    <p>
+      {{ _("Right now, you have %(tokens)s token(s) available on this task.") { "tokens": tokens_info[0]} }}
       {% if tokens_info[1] is not None %}
-    <p>You will receive a new token at {{ Utils.format_time_or_date(tokens_info[1]) }}.</p>
+      {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": Utils.format_time_or_date(tokens_info[1])} }}
       {% else %}
-    <p>In the current situation, no more tokens will be generated.</p>
+      {{ _("In the current situation, no more tokens will be generated.") }}
       {% end %}
+    </p>
     {% elif tokens_info[0] > 0 %}
-    <p>Right now, you have {{ tokens_info[0] }} token(s) available on this task, but you have to wait until {{ Utils.format_time_or_date(tokens_info[2]) }} to use them.</p>
+    <p>
+      {{ _("Right now, you have %(tokens)s token(s) available on this task.") { "tokens": tokens_info[0]} }}
+      {{ _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": Utils.format_time_or_date(tokens_info[2])} }}
       {% if tokens_info[1] is not None %}
-    <p>You will receive a new token at {{ Utils.format_time_or_date(tokens_info[1]) }}.</p>
+      {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": Utils.format_time_or_date(tokens_info[1])} }}
       {% else %}
-    <p>In the current situation, no more tokens will be generated.</p>
+      {{ _("In the current situation, no more tokens will be generated.") }}
       {% end %}
+    </p>
     {% else %}
-    <p>Right now, you do not have tokens available for this task.</p>
+    <p>
+      {{ _("Right now, you do not have tokens available for this task.") }}>
       {% if tokens_info[1] is not None %}
-    <p>You will receive a new token at {{ Utils.format_time_or_date(tokens_info[1]) }}.</p>
+      {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": Utils.format_time_or_date(tokens_info[1])} }}
         {% if tokens_info[2] is not None and tokens_info[2] > tokens_info[1] %}
-    <p>But you will have to wait until {{ Utils.format_time_or_date(tokens_info[2]) }} to use it.</[>
+      {{ _("But you will have to wait until %(expiration_time)s to use it.") % {"expiration_time": Utils.format_time_or_date(tokens_info[2])} }}
         {% end %}
       {% else %}
-    <p>In the current situation, no more tokens will be generated.</p>
+      {{ _("In the current situation, no more tokens will be generated.") }}
       {% end %}
+    </p>
     {% end %}
   </div>
 
   {% if submissions == [] %}
-  <p>No submissions found.</p>
+  <p>{{ _("No submissions found.") }}</p>
 
   {% else %}
   <table class="bordered">
     <thead>
       <tr>
-        <th style="width: 13%">Date</th>
-        <th style="width: 60%">Evaluation</th>
-        <th style="width: 15%">Files</th>
-        <th style="width: 12%">Token used?</th>
+        <th style="width: 13%">{{ _("Date") }}</th>
+        <th style="width: 60%">{{ _("Evaluation") }}</th>
+        <th style="width: 15%">{{ _("Files") }}</th>
+        <th style="width: 12%">{{ _("Token used?") }}</th>
       </tr>
     </thead>
     <tbody>
@@ -76,30 +83,30 @@
         </td>
         <td>
           {% if s.compilation_outcome is None %}
-          Compiling
+          {{ _("Compiling...") }}
 
           {% else %}
           <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ s.id }}');">
             {% if s.compilation_outcome == "fail" %}
-            Compilation failed
+            {{ _("Compilation failed") }}
             {% elif s.evaluations == [] %}
-            Evaluating
+            {{ _("Evaluating...") }}
             {% else %}
-            Evaluated
+            {{ _("Evaluated") }}
             {% end %}
           </div>
           <div id="evaluation_{{ s.id }}" style="display: none;">
             {% if s.evaluations != [] %}
               {% if s.token is None %}
-            <h3>Public testcases</h3>
+            <h3>{{ _("Public testcases") }}</h3>
               {% else %}
-            <h3>Detailed feedback</h3>
+            <h3>{{ _("Detailed feedback") }}</h3>
               {% end %}
             <table class="nested bordered">
               <thead>
                 <tr>
-                  <th style="width: 20%">Outcome</th>
-                  <th style="width: 80%">Details</th>
+                  <th style="width: 20%">{{ _("Outcome") }}</th>
+                  <th style="width: 80%">{{ _("Details") }}</th>
                 </tr>
               </thead>
               <tbody>
@@ -109,12 +116,12 @@
                   {% end %}
                 {% end %}
                 {% if s.token is None and not any([testcase.public for testcase in s.task.testcases]) %}
-                <tr><td colspan="2">No specified testcases for partial feedback for this task.</td></tr>
+                <tr><td colspan="2">{{ _("No specified testcases for partial feedback for this task.") }}</td></tr>
                 {% end %}
               </tbody>
             </table>
             {% end %}
-            <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
+            <h3>{{ _("Compilation output") }}</h3><!-- TODO: trim long outputs and add facility to see raw -->
             <pre>{% if s.compilation_text is not None %}{{ escape(s.compilation_text) }}{% end %}</pre>
           </div>
 
@@ -126,15 +133,15 @@
             {% end %}
             <td>
               {% if s.token is None %}
-              No
+              {{ _("No") }}
                 {% if can_play_token %}
               <form style="display: inline;" class="submit_form" action="/usetoken" method="POST">
                 <input type="hidden" name="submission_id" value="{{ encrypt_number(s.id) }}" />
-                <input type="submit" value="Use!" />
+                <input type="submit" value="{{ _("Use!") }}" />
               </form>
                 {% end %}
               {% else %}
-              Yes
+              {{ _("Yes") }}
               {% end %}
       </tr>
       {% end %}
