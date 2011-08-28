@@ -55,3 +55,8 @@
   on client and on server side. Moreover, add an API call to ask the
   server to verify some file's digest.
 
+*** AsyncLibrary
+* Merge the two synchronous call supports available (one is built-in in
+  AsyncLibrary, one is the sync_call function); the sync_call functions
+  seems to have a better callback approach.
+

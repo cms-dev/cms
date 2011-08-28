@@ -933,7 +933,7 @@ logger = Logger()
 # lock
 async_lock = threading.RLock()
 
-
+# FIXME Should be merged with sync support in the main AsyncLibrary
 def sync_call(function, args,
               callback=None, plus=None, bind_obj=None,
               sync=False):
