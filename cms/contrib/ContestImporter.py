@@ -63,11 +63,12 @@ class ContestImporter(Service):
 
         logger.info("Importing files")
         files_dir = os.path.join(self.import_dir, "files")
+        descr_dir = os.path.join(self.import_dir, "descriptions")
         files = set(os.listdir(files_dir))
         for file in files:
-            self.safe_put_file(os.path.join(files_dir, file))
+            self.safe_put_file(os.path.join(files_dir, file), os.path.join(descr_dir, file))
 
-        with SessionGen() as session:
+        with SessionGen(commit=False) as session:
 
             # Import the contest in JSON format
             logger.info("Importing the contest from JSON file")
@@ -81,13 +82,22 @@ class ContestImporter(Service):
             if len(missing_files) > 0:
                 logger.warning("Some files needed to the contest are missing in the import directory")
 
+            session.commit()
+
         logger.info("Import finished")
         logger.operation = ""
 
-    def safe_put_file(self, path):
-        # First put the file
+    def safe_put_file(self, path, descr_path):
+        # First read the description
         try:
-            digest = self.FC.put_file_from_path(path, sync=True)
+            with open(descr_path) as fin:
+                description = fin.read()
+        except IOError:
+            description = ''
+
+        # Put the file
+        try:
+            digest = self.FC.put_file_from_path(path, description=description, sync=True)
         except SyncRPCError:
             logger.error("File %s could not be put to file server, aborting..." % path)
             sys.exit(1)

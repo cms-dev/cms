@@ -78,7 +78,7 @@ class SessionGen:
                    in the future.
 
     """
-    def __init__(self, commit=True):
+    def __init__(self, commit=False):
         self.commit = commit
 
     def __enter__(self):

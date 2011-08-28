@@ -339,6 +339,7 @@ class FileCacher:
         plus (object): additional data for the callback
         bind_obj (object): context for the callback (None means
                            the service that created the FileCacher)
+        sync (bool): whether to do a synchronized request
 
         """
         args = {'digest': digest}
@@ -361,6 +362,7 @@ class FileCacher:
         plus (object): additional data for the callback
         bind_obj (object): context for the callback (None means
                            the service that created the FileCacher)
+        sync (bool): whether to do a synchronized request
 
         """
         if bind_obj is None:
@@ -398,6 +400,7 @@ class FileCacher:
         plus (object): additional data for the callback
         bind_obj (object): context for the callback (None means
                            the service that created the FileCacher)
+        sync (bool): whether to do a synchronized request
 
         """
         args = {'digest': digest,
@@ -408,6 +411,22 @@ class FileCacher:
                          plus=plus,
                          bind_obj=bind_obj,
                          sync=sync)
+
+    def get_file_to_cache(self, digest,
+                          callback=None, plus=None, bind_obj=None, sync=False):
+        """Get a file from storage, but do not return it. Just keep it
+        in the cache. Return True if file was successfully cached,
+        False otherwise.
+
+        digest (string): the sha1 sum of the file
+        callback (function): to be called with True or False
+        plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCacher)
+        sync (bool): whether to do a synchronized request
+
+        """
+        return self.get_file_to_string(digest, callback, plus, bind_obj, sync) is not None
 
     def get_file_to_string(self, digest,
                            callback=None, plus=None, bind_obj=None, sync=False):
@@ -420,6 +439,7 @@ class FileCacher:
         plus (object): additional data for the callback
         bind_obj (object): context for the callback (None means
                            the service that created the FileCacher)
+        sync (bool): whether to do a synchronized request
 
         """
         if bind_obj is None:
@@ -560,7 +580,8 @@ class FileCacher:
         callback (function): to be called with the digest of the file
         plus (object): additional data for the callback
         bind_obj (object): context for the callback (None means
-                           the service that created the FileCached)
+                           the service that created the FileCacher)
+        sync (bool): whether to do a synchronized request
 
         """
         args = {'binary_data': content,
@@ -584,7 +605,8 @@ class FileCacher:
         callback (function): to be called with the digest of the file
         plus (object): additional data for the callback
         bind_obj (object): context for the callback (None means
-                           the service that created the FileCached)
+                           the service that created the FileCacher)
+        sync (bool): whether to do a synchronized request
 
         """
         args = {'file_obj': file_obj,
@@ -608,12 +630,37 @@ class FileCacher:
         callback (function): to be called with the digest of the file
         plus (object): additional data for the callback
         bind_obj (object): context for the callback (None means
-                           the service that created the FileCached)
+                           the service that created the FileCacher)
+        sync (bool): whether to do a synchronized request
 
         """
         args = {'path': path,
                 'description': description}
         return sync_call(function=self.put_file,
+                         args=args,
+                         callback=callback,
+                         plus=plus,
+                         bind_obj=bind_obj,
+                         sync=sync)
+
+    ## OTHER ROUTINES ##
+
+    def describe(self, digest,
+                 callback=None, plus=None, bind_obj=None, sync=False):
+        """Return the description of a file given its digest. This request is not
+        actually cached, since is mostly meant for debugging purposes and it isn't
+        used by the contest system itself.
+
+        digest (string): the digest to describe
+        callback (function): to be called with the file's description
+        plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCacher)
+        sync (bool): whether to do a synchronized request
+
+        """
+        args = {'digest': digest}
+        return sync_call(function=self.file_storage.describe,
                          args=args,
                          callback=callback,
                          plus=plus,

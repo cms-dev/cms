@@ -30,6 +30,9 @@ it again when the program is restared.
 
 """
 
+import json
+import os
+
 
 class InvalidKey(Exception):
     """Exception raised in case of invalid key."""
@@ -99,7 +102,7 @@ class _Contest(_Entity):
         # validate
         try:
             assert type(data) is dict
-            assert type(data['name']) is str or type(data['name']) is unicode
+            assert type(data['name']) is unicode
         except (KeyError, AssertionError):
             raise InvalidData
         # load
@@ -135,13 +138,12 @@ class _Task(_Entity):
         # validate
         try:
             assert type(data) is dict
-            assert type(data['name']) is str or type(data['name']) is unicode
-            assert (type(data['contest']) is str or
-                   type(data['contest']) is unicode)
+            assert type(data['name']) is unicode
+            assert type(data['contest']) is unicode
             assert type(data['score']) is float
             assert type(data['data_headers']) is list
             for i in data['data_headers']:
-                assert type(i) is str or type(i) is unicode
+                assert type(i) is unicode
         except (KeyError, AssertionError):
             raise InvalidData
         # load
@@ -176,7 +178,7 @@ class _Team(_Entity):
         # validate
         try:
             assert type(data) is dict
-            assert type(data['name']) is str or type(data['name']) is unicode
+            assert type(data['name']) is unicode
         except (KeyError, AssertionError):
             raise InvalidData
         # load
@@ -210,11 +212,9 @@ class _User(_Entity):
         # validate
         try:
             assert type(data) is dict
-            assert (type(data['f_name']) is str or
-                   type(data['f_name']) is unicode)
-            assert (type(data['l_name']) is str or
-                   type(data['l_name']) is unicode)
-            assert type(data['team']) is str or type(data['team']) is unicode
+            assert type(data['f_name']) is unicode
+            assert type(data['l_name']) is unicode
+            assert type(data['team']) is unicode
         except (KeyError, AssertionError):
             raise InvalidData
         # load
@@ -242,7 +242,7 @@ class EntityStore(object):
     when something changes by providing appropriate callbacks.
 
     """
-    def __init__(self, entity):
+    def __init__(self, entity, path):
         """Initialize an empty EntityStore.
 
         The entity definition given as argument will define what kind of
@@ -254,7 +254,61 @@ class EntityStore(object):
         """
         assert issubclass(entity, _Entity)
         self._entity = entity
+        self._path = path
         self._store = dict()
+        self._create_callbacks = list()
+        self._update_callbacks = list()
+        self._delete_callbacks = list()
+
+        try:
+            os.mkdir(path)
+        except OSError:
+            # it's ok: it means the directory already exists
+            pass
+
+        try:
+            for ent in os.listdir(path):
+                if ent[-5:] == '.json' and ent[:-5] != '':
+                    with open(path + ent, 'r') as f:
+                        data = json.loads(f.read())
+                        self._store[ent[:-5]] = entity(data)
+        except OSError:
+            # the directory doesn't exist or is inaccessible
+            # TODO tell it to some human operator
+            pass
+        except IOError:
+            # TODO tell it to some human operator
+            pass
+        except InvalidData:
+            # someone edited the data incorrectly
+            pass
+
+    def add_create_callback(self, callback):
+        """Add a callback to be called when entities are created.
+
+        Callbacks can be any kind of callable objects. They must accept
+        a single argument: the key of the entity.
+
+        """
+        self._create_callbacks.append(callback)
+
+    def add_update_callback(self, callback):
+        """Add a callback to be called when entities are updated.
+
+        Callbacks can be any kind of callable objects. They must accept
+        a single argument: the key of the entity.
+
+        """
+        self._update_callbacks.append(callback)
+
+    def add_delete_callback(self, callback):
+        """Add a callback to be called when entities are deleted.
+
+        Callbacks can be any kind of callable objects. They must accept
+        a single argument: the key of the entity.
+
+        """
+        self._delete_callbacks.append(callback)
 
     def create(self, key, data):
         """Create a new entity.
@@ -270,9 +324,21 @@ class EntityStore(object):
         properties or if properties are of the wrong type.
 
         """
-        if not isinstance(key, str) or key in self._store:
+        # verify key
+        if not isinstance(key, unicode) or key in self._store:
             raise InvalidKey
+        # create entity
         self._store[key] = self._entity(data)
+        # notify callbacks
+        for callback in self._create_callbacks:
+            callback(key)
+        # reflect changes on the persistent storage
+        try:
+            with open(self._path + key + '.json', 'w') as f:
+                f.write(json.dumps(self._store[key].dump()))
+        except IOError:
+            # TODO tell it to some human operator
+            pass
 
     def update(self, key, data):
         """Update an entity.
@@ -288,9 +354,21 @@ class EntityStore(object):
         properties or if properties are of the wrong type.
 
         """
-        if not isinstance(key, str) or not key in self._store:
+        # verify key
+        if not isinstance(key, unicode) or not key in self._store:
             raise InvalidKey
+        # update entity
         self._store[key] = self._entity(data)
+        # notify callbacks
+        for callback in self._update_callbacks:
+            callback(key)
+        # reflect changes on the persistent storage
+        try:
+            with open(self._path + key + '.json', 'w') as f:
+                f.write(json.dumps(self._store[key].dump()))
+        except IOError:
+            # TODO tell it to some human operator
+            pass
 
     def delete(self, key):
         """Delete an entity.
@@ -303,9 +381,20 @@ class EntityStore(object):
         is present in the store.
 
         """
-        if not isinstance(key, str) or not key in self._store:
+        # verify key
+        if not isinstance(key, unicode) or not key in self._store:
             raise InvalidKey
+        # delete entity
         del self._store[key]
+        # notify callbacks
+        for callback in self._delete_callbacks:
+            callback(key)
+        # reflect changes on the persistent storage
+        try:
+            os.remove(self._path + key + '.json')
+        except OSError:
+            # TODO tell it to some human operator
+            pass
 
     def retrieve(self, key):
         """Retrieve an entity.
@@ -318,11 +407,13 @@ class EntityStore(object):
         is present in the store.
 
         """
-        if not isinstance(key, str) or not key in self._store:
+        # verify key
+        if not isinstance(key, unicode) or not key in self._store:
             raise InvalidKey
+        # retrieve entity
         return self._store[key]
 
-contest_store = EntityStore(_Contest)
-task_store = EntityStore(_Task)
-team_store = EntityStore(_Team)
-user_store = EntityStore(_User)
+contest_store = EntityStore(_Contest, 'contests/')
+task_store = EntityStore(_Task, 'tasks/')
+team_store = EntityStore(_Team, 'teams/')
+user_store = EntityStore(_User, 'users/')

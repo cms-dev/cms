@@ -45,7 +45,6 @@ from cms import Config
 import cms.util.WebConfig as WebConfig
 import cms.util.Utils as Utils
 from cms.db.SQLAlchemyAll import Submission
-#from FileStorageLib import FileStorageLib
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -113,7 +112,7 @@ def update_ranking():
 if __name__ == "__main__":
     Utils.set_service("ranking web server")
     http_server = tornado.httpserver.HTTPServer(application)
-    http_server.listen(WebConfig.ranking_listen_port);
+    http_server.listen(Config.ranking_listen_port);
     c = Utils.ask_for_contest()
     Utils.log("Ranking Web Server for contest %s started..." % (c.couch_id))
     upsince = time.time()

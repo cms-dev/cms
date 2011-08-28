@@ -76,8 +76,8 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
         self.sql_session = Session()
-        self.contest = self.sql_session.query(Contest)\
-            .filter_by(id=self.application.service.contest).first()
+        self.contest = Contest.get_from_id(self.application.service.contest,
+                                           self.sql_session)
 
         tornado.locale.load_gettext_translations("cms/server/mo/", "messages")
 
@@ -100,8 +100,7 @@ class BaseHandler(tornado.web.RequestHandler):
         # if cookie_time is None or cookie_time < upsince:
         #     return None
 
-        current_user = self.sql_session.query(User)\
-            .filter_by(id=user_id).first()
+        current_user = User.get_from_id(user_id, self.sql_session)
         if current_user is None:
             self.clear_cookie("login")
             return None
@@ -171,7 +170,7 @@ class ContestWebServer(WebService):
         parameters["static_path"] = os.path.join(os.path.dirname(__file__),
                                   "static", "contest")
         WebService.__init__(self,
-            WebConfig.contest_listen_port,
+            Config.contest_listen_port,
             handlers,
             parameters,
             shard=shard)
@@ -228,13 +227,13 @@ class LoginHandler(BaseHandler):
                       (username, password, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
-        if WebConfig.ip_lock and user.ip != "0.0.0.0" \
+        if Config.ip_lock and user.ip != "0.0.0.0" \
                 and user.ip != self.request.remote_ip:
             logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s." %
                       (username, password, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
-        if user.hidden and WebConfig.block_hidden_users:
+        if user.hidden and Config.block_hidden_users:
             logger.info("Hidden user login attempt: " +
                       "user=%s pass=%s remote_ip=%s." %
                       (username, password, self.request.remote_ip))
@@ -371,12 +370,12 @@ class NotificationsHandler(BaseHandler):
             for question in self.current_user.questions:
                 if question.reply_timestamp > last_notification \
                        and question.reply_timestamp < timestamp:
-                    subject = question.short_reply
-                    text = question.long_reply
-                    if question.short_reply is None:
-                        subject = question.long_reply
+                    subject = question.reply_subject
+                    text = question.reply_text
+                    if question.reply_subject is None:
+                        subject = question.reply_text
                         text = ""
-                    elif question.long_reply is None:
+                    elif question.reply_text is None:
                         text = ""
                     res.append({"type": "question",
                                 "timestamp": int(question.reply_timestamp),
@@ -645,7 +644,7 @@ handlers = [(r"/",
             (r"/question",
              QuestionHandler),
             (r"/stl/(.*)",
-             tornado.web.StaticFileHandler, {"path": WebConfig.stl_path}),
+             tornado.web.StaticFileHandler, {"path": Config.stl_path}),
             ]
 
 

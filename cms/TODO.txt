@@ -2,25 +2,22 @@
 * Define appropriate UNIQUE indexes in the database.
 * Task and Testcase are sometimes referenced by num, instead of
   properly using IDs.
-* Decide where and how to keep tries number for evaluations.
 * It may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
   scorings change.
-* Please someone fix the confusion arising from having questions
-  answered with "long" and "short" replies, instead of subject and
-  text as everything else. "Short" reply (i.e., an answer with
-  predetermined text) may be encoded as an answer with only subject
-  and no text.
 
 *** Worker
-* Should be able to work with 32-bit programs even when running in 64-bit mode.
-* Investigate why pressing keys on Worker seems to impact
-  the result of an ongoing mo-box.
+* Should be able to work with 32 bits programs even when running in
+  64 bits mode.
+  - This actually appears to be quite complicated: it is probably
+    easier and more secure to just ask that everything must be made
+    with the same number of bits; at the moment it is assumed that
+    everything works at 32 bits. I have a 64 bits system and keep
+    the Worker inside a 32 bits chroot.
 
 *** EvaluationServer
 * Check that there are no concurrence issues, particularly in scoring
   routines.
-* When starting, ask the workers to preload the contest's files.
 * When starting, check that the workers are not doing anything and
   possibly stop them / wait for them to be finished.
 
@@ -39,6 +36,9 @@
   - Put an Italian flag somewhere.
   - I think that the AGPL license also asks us to put appropriate
     copyright notices in the Web interface.
+  - Add some indicator on the left side bar when there are new messages,
+    replies or annoncements. The yellow notification is useful, but
+    could go unnoticed.
 
 *** Task types
 * Check that white_diff() really does what we want it to do
@@ -50,7 +50,6 @@
 
 *** Contest{Exporter,Importer}
 * Use consistenly names to export Tasks, as in the cases of Users.
-* Export and import files' descriptions.
 
 *** File{Storage,Cacher}
 * Don't load the whole files when transferring them, you uselessly eat
@@ -60,4 +59,9 @@
 * Add support to optionally check file digests when trasferring them, both
   on client and on server side. Moreover, add an API call to ask the
   server to verify some file's digest.
+
+*** AsyncLibrary
+* Merge the two synchronous call supports available (one is built-in in
+  AsyncLibrary, one is the sync_call function); the sync_call functions
+  seems to have a better callback approach.
 
