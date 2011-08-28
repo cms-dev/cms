@@ -41,9 +41,9 @@ window.onload = init;
       <div id="sidebar">
         <h1>{{ contest.description }}</h1>
         <ul class="menu">
-          <li class="menu_entry"><a class="menu_link" href="/">{{ _("Overview") }}</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/">{{ _("Overview") }}</a> <span id="unread_public" class="unread" style="display: none;">0</span></li>
           <li class="menu_entry"><a class="menu_link" href="/instructions">{{ _("Instructions") }}</a></li>
-          <li class="menu_entry"><a class="menu_link" href="/communication">{{ _("Communication") }}</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/communication">{{ _("Communication") }}</a> <span id="unread_private" class="unread" style="display: none;">0</span></li>
         </ul>
         <div class="hr"></div>
         {% if current_user is not None and phase == 0 %}

@@ -53,7 +53,7 @@
             if (this.last_notification < timestamp)
                 this.last_notification = timestamp;
             var div = document.getElementById("notifications");
-            var s = '<div class="notification">' +
+            var s = '<div class="notification notification_type_' + type + '">' +
                 '<div class="notification_close" ' +
                 'onclick="utils.close_notification(this);">&times;' +
                 '</div><div class="notification_msg">' +
@@ -76,6 +76,34 @@
         },
 
         /**
+         * Update the number of unread private and public messages in
+         * the span next to the title of the sections "overview" and
+         * "communication"
+         *
+         * delta_public (int): how many public unreads to add.
+         * delta_private (int): how many public unreads to add.
+         */
+        update_unread_counts: function(delta_public, delta_private)
+        {
+            var unread_public = document.getElementById("unread_public")
+            var unread_private = document.getElementById("unread_private")
+            var msgs_public = parseInt(unread_public.innerHTML);
+            var msgs_private = parseInt(unread_private.innerHTML);
+            msgs_public += delta_public;
+            msgs_private += delta_private;
+            unread_public.innerHTML = msgs_public;
+            unread_private.innerHTML = msgs_private;
+            if (msgs_public > 0)
+                unread_public.style.display = "inline-block"
+            else
+                unread_public.style.display = "none"
+            if (msgs_private > 0)
+                unread_private.style.display = "inline-block"
+            else
+                unread_private.style.display = "none"
+        },
+
+        /**
          * Ask CWS (via ajax, not rpc) to send to the user the new
          * notifications.
          */
@@ -83,17 +111,28 @@
         {
             display_notification = cmsutils.bind_func(this,
                                                       this.display_notification);
+            update_unread_counts = cmsutils.bind_func(this,
+                                                      this.update_unread_counts);
             cmsutils.ajax_request("/notifications",
                                   "last_notification=" + this.last_notification,
                                   function(response)
                                   {
                                       response = JSON.parse(response);
+                                      var msgs_public = 0;
+                                      var msgs_private = 0;
                                       for (var i = 0; i < response.length; i++)
+                                      {
                                           display_notification(
                                               response[i].type,
                                               parseInt(response[i].timestamp),
                                               response[i].subject,
                                               response[i].text);
+                                          if (response[i].type == "announcement")
+                                              msgs_public++;
+                                          else if (response[i].type == "question" || response[i].type == "message")
+                                              msgs_private++;
+                                      }
+                                      update_unread_counts(msgs_public, msgs_private);
                                   });
         },
 
@@ -102,7 +141,12 @@
          */
         close_notification: function(item)
         {
-            item.parentNode.parentNode.removeChild(item.parentNode);
+            var bubble = item.parentNode;
+            if (bubble.className.indexOf("notification_type_announcement") != -1)
+                this.update_unread_counts(-1, 0);
+            else if (bubble.className.indexOf("notification_type_question") != -1 || bubble.className.indexOf("notification_type_message") != -1)
+                this.update_unread_counts(0, -1);
+            bubble.parentNode.removeChild(item.parentNode);
         },
 
         /**

@@ -142,6 +142,16 @@ ul.normal_list {
     clear: both;
 }
 
+.unread {
+    display: inline-block;
+    font-size: 0.75em;
+    text-align: center;
+    border-radius: 1em;
+    width: 2em;
+    background-color: #F31313;
+    text-shadow: none;
+}
+
 
 
 
