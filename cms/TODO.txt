@@ -12,7 +12,6 @@
 *** EvaluationServer
 * Check that there are no concurrence issues, particularly in scoring
   routines.
-* When starting, ask the workers to preload the contest's files.
 * When starting, check that the workers are not doing anything and
   possibly stop them / wait for them to be finished.
 

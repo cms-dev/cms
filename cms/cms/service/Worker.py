@@ -27,7 +27,7 @@ from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import logger, async_lock, Service, \
      rpc_method, rpc_threaded
 from cms.service.TaskType import get_task_type_class
-from cms.db.SQLAlchemyAll import Session, Submission, SessionGen
+from cms.db.SQLAlchemyAll import Session, Submission, SessionGen, Contest
 from cms.service import JobException
 from cms.service.FileStorage import FileCacher
 
@@ -82,6 +82,24 @@ class Worker(Service):
 
         """
         return self.action(submission_id, "evaluation")
+
+    # FIXME - rpc_threaded is distable becuase it makes the call fail:
+    # we should investigate on this
+    @rpc_method
+    #@rpc_threaded
+    def precache_files(self, contest_id):
+        """RPC to ask the worker to precache of files in the contest.
+
+        contest_id (int): the id of the contest
+
+        """
+        # TODO - Check for lock
+        logger.info("Precaching files for contest %d" % contest_id)
+        with SessionGen(commit=False) as session:
+            contest = Contest.get_from_id(contest_id, session)
+            for digest in contest.enumerate_files():
+                self.FC.get_file_to_cache(digest)
+        logger.info("Precaching finished")
 
     def action(self, submission_id, job_type):
         """The actual work - that can be compilation or evaluation

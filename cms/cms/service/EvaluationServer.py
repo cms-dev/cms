@@ -397,7 +397,10 @@ class EvaluationServer(Service):
         self.pool = WorkerPool(self)
 
         for i in xrange(get_service_shards("Worker")):
-            self.pool.add_worker(ServiceCoord("Worker", i))
+            worker = ServiceCoord("Worker", i)
+            self.pool.add_worker(worker)
+            worker_conn = self.connect_to(worker, sync=True)
+            worker_conn.precache_files(contest_id=self.contest_id)
 
         self.add_timeout(self.dispatch_jobs, None,
                          EvaluationServer.CHECK_DISPATCH_TIME,
