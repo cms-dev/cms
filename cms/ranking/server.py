@@ -52,7 +52,7 @@ def create_handler(entity_store):
             try:
                 entity_store.create(entity_id, json.loads(self.request.body))
             except store.InvalidKey:
-                self.set_status(403)  # FIXME maybe 404 or 405?
+                self.set_status(405)
             except (ValueError, store.InvalidData):
                 self.set_status(400)
             else:
@@ -64,7 +64,7 @@ def create_handler(entity_store):
             try:
                 entity_store.update(entity_id, json.loads(self.request.body))
             except store.InvalidKey:
-                self.set_status(403)  # FIXME maybe 404 or 405?
+                self.set_status(404)
             except (ValueError, store.InvalidData):
                 self.set_status(400)
             else:
@@ -76,7 +76,7 @@ def create_handler(entity_store):
             try:
                 entity_store.delete(entity_id)
             except store.InvalidKey:
-                self.set_status(403)  # FIXME maybe 404 or 405?
+                self.set_status(404)
             else:
                 self.set_status(200)
 
