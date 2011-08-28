@@ -64,7 +64,9 @@ class ContestExporter(Service):
             logger.error("The specified directory already exists, I won't overwrite it")
             sys.exit(1)
         files_dir = os.path.join(self.export_dir, "files")
+        descr_dir = os.path.join(self.export_dir, "descriptions")
         os.mkdir(files_dir)
+        os.mkdir(descr_dir)
 
         with SessionGen(commit=False) as session:
 
@@ -74,13 +76,15 @@ class ContestExporter(Service):
             logger.info("Exporting files")
             files = c.enumerate_files()
             for f in files:
-                self.safe_get_file(f, os.path.join(files_dir, f))
+                self.safe_get_file(f, os.path.join(files_dir, f), os.path.join(descr_dir, f))
 
             # Export the contest in JSON format
             logger.info("Exporting the contest in JSON format")
             with open(os.path.join(self.export_dir, "contest.json"), 'w') as fout:
                 json.dump(c.export_to_dict(), fout, indent=4)
 
+        # The database dump is never used; however, this part is
+        # retained for historical reasons
         if self.dump:
 
             # Warning: this part depends on the specific database used
@@ -125,7 +129,7 @@ class ContestExporter(Service):
         logger.info("Export finished")
         logger.operation = ""
 
-    def safe_get_file(self, digest, path):
+    def safe_get_file(self, digest, path, descr_path=None):
         # First get the file
         try:
             self.FC.get_file_to_path(digest, path, sync=True)
@@ -138,6 +142,11 @@ class ContestExporter(Service):
         if digest != calc_digest:
             logger.error("File %s has wrong hash %s, aborting..." % (digest, calc_digest))
             sys.exit(1)
+
+        # If applicable, retrieve also the description
+        if descr_path is not None:
+            with open(descr_path, 'w') as fout:
+                fout.write(self.FC.describe(digest, sync=True))
 
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
