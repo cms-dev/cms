@@ -22,6 +22,7 @@ import tornado.web
 
 import store
 import json
+import functools
 
 
 def create_handler(entity_store):
@@ -92,12 +93,55 @@ def create_handler(entity_store):
 
     return RestHandler
 
+
+class NotificationHandler(tornado.web.RequestHandler):
+    """Provide notification of the changes in the data store."""
+    @tornado.web.asynchronous
+    def get(self):
+        """Send asynchronous updates."""
+        self.set_status(200)
+        self.flush()
+
+        store.contest_store.add_create_callback(
+            functools.partial(self.callback, "contest", "created"))
+        store.contest_store.add_update_callback(
+            functools.partial(self.callback, "contest", "updated"))
+        store.contest_store.add_delete_callback(
+            functools.partial(self.callback, "contest", "deleted"))
+
+        store.task_store.add_create_callback(
+            functools.partial(self.callback, "task", "created"))
+        store.task_store.add_update_callback(
+            functools.partial(self.callback, "task", "updated"))
+        store.task_store.add_delete_callback(
+            functools.partial(self.callback, "task", "deleted"))
+
+        store.team_store.add_create_callback(
+            functools.partial(self.callback, "team", "created"))
+        store.team_store.add_update_callback(
+            functools.partial(self.callback, "team", "updated"))
+        store.team_store.add_delete_callback(
+            functools.partial(self.callback, "team", "deleted"))
+
+        store.user_store.add_create_callback(
+            functools.partial(self.callback, "user", "created"))
+        store.user_store.add_update_callback(
+            functools.partial(self.callback, "user", "updated"))
+        store.user_store.add_delete_callback(
+            functools.partial(self.callback, "user", "deleted"))
+
+    def callback(self, entity, event, key):
+        self.write(entity + " " + event + " " + key + "\n")
+        self.flush()
+
+
 if __name__ == "__main__":
     application = tornado.web.Application([
         (r"/contests/([A-Za-z0-9_]+)", create_handler(store.contest_store)),
         (r"/tasks/([A-Za-z0-9_]+)", create_handler(store.task_store)),
         (r"/teams/([A-Za-z0-9_]+)", create_handler(store.team_store)),
         (r"/users/([A-Za-z0-9_]+)", create_handler(store.user_store)),
+        (r"/notifications", NotificationHandler),
     ])
     # application.add_transform (tornado.web.ChunkedTransferEncoding)
     application.listen(8888)

@@ -256,6 +256,9 @@ class EntityStore(object):
         self._entity = entity
         self._path = path
         self._store = dict()
+        self._create_callbacks = list()
+        self._update_callbacks = list()
+        self._delete_callbacks = list()
 
         try:
             os.mkdir(path)
@@ -280,6 +283,33 @@ class EntityStore(object):
             # someone edited the data incorrectly
             pass
 
+    def add_create_callback(self, callback):
+        """Add a callback to be called when entities are created.
+
+        Callbacks can be any kind of callable objects. They must accept
+        a single argument: the key of the entity.
+
+        """
+        self._create_callbacks.append(callback)
+
+    def add_update_callback(self, callback):
+        """Add a callback to be called when entities are updated.
+
+        Callbacks can be any kind of callable objects. They must accept
+        a single argument: the key of the entity.
+
+        """
+        self._update_callbacks.append(callback)
+
+    def add_delete_callback(self, callback):
+        """Add a callback to be called when entities are deleted.
+
+        Callbacks can be any kind of callable objects. They must accept
+        a single argument: the key of the entity.
+
+        """
+        self._delete_callbacks.append(callback)
+
     def create(self, key, data):
         """Create a new entity.
 
@@ -294,9 +324,15 @@ class EntityStore(object):
         properties or if properties are of the wrong type.
 
         """
+        # verify key
         if not isinstance(key, unicode) or key in self._store:
             raise InvalidKey
+        # create entity
         self._store[key] = self._entity(data)
+        # notify callbacks
+        for callback in self._create_callbacks:
+            callback(key)
+        # reflect changes on the persistent storage
         try:
             with open(self._path + key + '.json', 'w') as f:
                 f.write(json.dumps(self._store[key].dump()))
@@ -318,9 +354,15 @@ class EntityStore(object):
         properties or if properties are of the wrong type.
 
         """
+        # verify key
         if not isinstance(key, unicode) or not key in self._store:
             raise InvalidKey
+        # update entity
         self._store[key] = self._entity(data)
+        # notify callbacks
+        for callback in self._update_callbacks:
+            callback(key)
+        # reflect changes on the persistent storage
         try:
             with open(self._path + key + '.json', 'w') as f:
                 f.write(json.dumps(self._store[key].dump()))
@@ -339,9 +381,15 @@ class EntityStore(object):
         is present in the store.
 
         """
+        # verify key
         if not isinstance(key, unicode) or not key in self._store:
             raise InvalidKey
+        # delete entity
         del self._store[key]
+        # notify callbacks
+        for callback in self._delete_callbacks:
+            callback(key)
+        # reflect changes on the persistent storage
         try:
             os.remove(self._path + key + '.json')
         except OSError:
@@ -359,8 +407,10 @@ class EntityStore(object):
         is present in the store.
 
         """
+        # verify key
         if not isinstance(key, unicode) or not key in self._store:
             raise InvalidKey
+        # retrieve entity
         return self._store[key]
 
 contest_store = EntityStore(_Contest, 'contests/')
