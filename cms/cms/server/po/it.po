@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
-"Report-Msgid-Bugs-To: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
-"POT-Creation-Date: 2011-08-28 22:32+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-08-28 23:45+0200\n"
 "PO-Revision-Date: 2011-08-28 22:50+0200\n"
 "Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
 "Language-Team: Italian\n"
@@ -54,9 +54,8 @@ msgid "logout"
 msgstr "esci"
 
 #: templates/contest/communication.html:5
-#: templates/contest/communication.html:17
-msgid "Questions"
-msgstr "Domande"
+msgid "Submit a question"
+msgstr "Sottoponi una domanda"
 
 #: templates/contest/communication.html:8
 msgid "Subject:"
@@ -65,6 +64,10 @@ msgstr "Oggetto:"
 #: templates/contest/communication.html:10
 msgid "Text:"
 msgstr "Testo:"
+
+#: templates/contest/communication.html:17
+msgid "Questions"
+msgstr "Domande"
 
 #: templates/contest/communication.html:28
 msgid "Reply."
@@ -185,14 +188,14 @@ msgstr "Sottoposizioni precedenti"
 #: templates/contest/task.html:33 templates/contest/task.html:42
 #, python-format
 msgid "Right now, you have %(tokens)s token(s) available on this task."
-msgstr "In questo momento, hai %(tokens)s gettoni disponibili per questo problema."
+msgstr ""
+"In questo momento, hai %(tokens)s gettoni disponibili per questo problema."
 
 #: templates/contest/task.html:35 templates/contest/task.html:45
 #: templates/contest/task.html:54
 #, python-format
 msgid "You will receive a new token at %(gen_time)s."
 msgstr "Riceverai un nuovo gettone alle %(gen_time)s."
-
 
 #: templates/contest/task.html:37 templates/contest/task.html:47
 #: templates/contest/task.html:59
@@ -267,7 +270,9 @@ msgstr "Dettagli"
 
 #: templates/contest/task.html:119
 msgid "No specified testcases for partial feedback for this task."
-msgstr "Nessun caso di prova specificato per le informazioni parziali per questo problema."
+msgstr ""
+"Nessun caso di prova specificato per le informazioni parziali per questo "
+"problema."
 
 #: templates/contest/task.html:124
 msgid "Compilation output"
