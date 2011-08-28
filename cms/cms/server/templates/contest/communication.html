@@ -25,8 +25,8 @@
         <div class="notification_subject">{{ msg.subject }}</div>
         <div class="notification_text">{{ msg.text }}</div>
         {% if msg.reply_timestamp is not None %}
-        <div class="notification_subject">Reply. {{ msg.short_reply }}</div>
-        <div class="notification_text">{{ msg.long_reply }}</div>
+        <div class="notification_subject">Reply. {{ msg.reply_subject }}</div>
+        <div class="notification_text">{{ msg.reply_text }}</div>
         {% else %}
         <div class="notification_subject">Please wait for reply.</div>
         {% end %}

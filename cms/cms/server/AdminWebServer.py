@@ -378,13 +378,13 @@ class QuestionReplyHandler(BaseHandler):
         if question == None:
             raise tornado.web.HTTPError(404)
 
-        question.short_reply = self.get_argument("reply_question_quick_answer",
+        question.reply_subject = self.get_argument("reply_question_quick_answer",
                                                  "")
-        question.long_reply = self.get_argument("reply_question_text", "")
+        question.reply_text = self.get_argument("reply_question_text", "")
 
         # Ignore invalid answers
-        if question.short_reply not in WebConfig.quick_answers:
-            question.short_reply = None
+        if question.reply_subject not in WebConfig.quick_answers:
+            question.reply_subject = None
 
         question.reply_timestamp = time.time()
 

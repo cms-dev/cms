@@ -367,12 +367,12 @@ class NotificationsHandler(BaseHandler):
             for question in self.current_user.questions:
                 if question.reply_timestamp > last_notification \
                        and question.reply_timestamp < timestamp:
-                    subject = question.short_reply
-                    text = question.long_reply
-                    if question.short_reply is None:
-                        subject = question.long_reply
+                    subject = question.reply_subject
+                    text = question.reply_text
+                    if question.reply_subject is None:
+                        subject = question.reply_text
                         text = ""
-                    elif question.long_reply is None:
+                    elif question.reply_text is None:
                         text = ""
                     res.append({"type": "question",
                                 "timestamp": int(question.reply_timestamp),

@@ -184,8 +184,8 @@ class Question(Base):
 
     # Short (as in 'chosen amongst some predetermined choices') and
     # long answer.
-    short_reply = Column(String, nullable=True)
-    long_reply = Column(String, nullable=True)
+    reply_subject = Column(String, nullable=True)
+    reply_text = Column(String, nullable=True)
 
     # User (id and object) owning the question.
     user_id = Column(Integer,
@@ -200,14 +200,14 @@ class Question(Base):
                         cascade="all, delete, delete-orphan"))
 
     def __init__(self, question_timestamp, subject, text,
-                 reply_timestamp=None, short_reply=None, long_reply=None,
+                 reply_timestamp=None, reply_subject=None, reply_text=None,
                  user=None):
         self.question_timestamp = question_timestamp
         self.subject = subject
         self.text = text
         self.reply_timestamp = reply_timestamp
-        self.short_reply = short_reply
-        self.long_reply = long_reply
+        self.reply_subject = reply_subject
+        self.reply_text = reply_text
         self.user = user
 
     def export_to_dict(self):
@@ -218,5 +218,5 @@ class Question(Base):
                 'subject':            self.subject,
                 'text':               self.text,
                 'reply_timestamp':    self.reply_timestamp,
-                'short_reply':        self.short_reply,
-                'long_reply':         self.long_reply}
+                'reply_subject':      self.reply_subject,
+                'reply_text':         self.reply_text}
