@@ -1,0 +1,281 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2011-08-28 22:32+0200\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: templates/contest/base.html:44
+msgid "Overview"
+msgstr ""
+
+#: templates/contest/base.html:45 templates/contest/instructions.html:4
+msgid "Instructions"
+msgstr ""
+
+#: templates/contest/base.html:46 templates/contest/communication.html:3
+msgid "Communication"
+msgstr ""
+
+#: templates/contest/base.html:50
+msgid "Tasks:"
+msgstr ""
+
+#: templates/contest/base.html:62
+msgid "Failed to log in."
+msgstr ""
+
+#: templates/contest/base.html:67
+msgid "Username:"
+msgstr ""
+
+#: templates/contest/base.html:71
+msgid "Password:"
+msgstr ""
+
+#: templates/contest/base.html:78
+msgid "Time left:"
+msgstr ""
+
+#: templates/contest/base.html:80
+msgid "logout"
+msgstr ""
+
+#: templates/contest/communication.html:5
+#: templates/contest/communication.html:17
+msgid "Questions"
+msgstr ""
+
+#: templates/contest/communication.html:8
+msgid "Subject:"
+msgstr ""
+
+#: templates/contest/communication.html:10
+msgid "Text:"
+msgstr ""
+
+#: templates/contest/communication.html:28
+msgid "Reply."
+msgstr ""
+
+#: templates/contest/communication.html:31
+msgid "Please wait for reply."
+msgstr ""
+
+#: templates/contest/communication.html:39
+msgid "No questions."
+msgstr ""
+
+#: templates/contest/communication.html:45
+msgid "Messages"
+msgstr ""
+
+#: templates/contest/communication.html:61
+msgid "No messages."
+msgstr ""
+
+#: templates/contest/instructions.html:5
+msgid "General"
+msgstr ""
+
+#: templates/contest/instructions.html:7
+msgid "A lot of instructions about the contest."
+msgstr ""
+
+#: templates/contest/instructions.html:12
+msgid "Compilation"
+msgstr ""
+
+#: templates/contest/instructions.html:15
+msgid "C:"
+msgstr ""
+
+#: templates/contest/instructions.html:16
+msgid "C++:"
+msgstr ""
+
+#: templates/contest/instructions.html:17
+msgid "Pascal:"
+msgstr ""
+
+#: templates/contest/instructions.html:23
+msgid "Documentation"
+msgstr ""
+
+#: templates/contest/instructions.html:26
+msgid "Standard Template Library"
+msgstr ""
+
+#: templates/contest/overview.html:6
+msgid "Contest overview"
+msgstr ""
+
+#: templates/contest/overview.html:8
+msgid "Announcements"
+msgstr ""
+
+#: templates/contest/overview.html:24
+msgid "No announcements."
+msgstr ""
+
+#: templates/contest/overview.html:30
+msgid "General information"
+msgstr ""
+
+#: templates/contest/overview.html:34
+#, python-format
+msgid "The contest started at %(start_time)s and will end at %(stop_time)s."
+msgstr ""
+
+#: templates/contest/overview.html:37
+#, python-format
+msgid "The contest will start at %(start_time)s and will end at %(stop_time)s."
+msgstr ""
+
+#: templates/contest/overview.html:40
+msgid "The contest has ended."
+msgstr ""
+
+#: templates/contest/overview.html:45
+msgid "Authentication required"
+msgstr ""
+
+#: templates/contest/overview.html:46
+msgid "Please login to continue."
+msgstr ""
+
+#: templates/contest/task.html:6
+msgid "Task information"
+msgstr ""
+
+#: templates/contest/task.html:8
+msgid "Download task statement"
+msgstr ""
+
+#: templates/contest/task.html:10
+#, python-format
+msgid "Time limit: %(seconds)s second(s)."
+msgstr ""
+
+#: templates/contest/task.html:11
+#, python-format
+msgid "Memory limit: %(mb)s MB."
+msgstr ""
+
+#: templates/contest/task.html:16
+msgid "Submit a solution"
+msgstr ""
+
+#: templates/contest/task.html:26
+msgid "Previous submissions"
+msgstr ""
+
+#: templates/contest/task.html:33 templates/contest/task.html:42
+#, python-format
+msgid "Right now, you have %(tokens)s token(s) available on this task."
+msgstr ""
+
+#: templates/contest/task.html:35 templates/contest/task.html:45
+#: templates/contest/task.html:54
+#, python-format
+msgid "You will receive a new token at %(gen_time)s."
+msgstr ""
+
+#: templates/contest/task.html:37 templates/contest/task.html:47
+#: templates/contest/task.html:59
+msgid "In the current situation, no more tokens will be generated."
+msgstr ""
+
+#: templates/contest/task.html:43
+#, python-format
+msgid "But you have to wait until %(expiration_time)s to use them."
+msgstr ""
+
+#: templates/contest/task.html:52
+msgid "Right now, you do not have tokens available for this task."
+msgstr ""
+
+#: templates/contest/task.html:56
+#, python-format
+msgid "But you will have to wait until %(expiration_time)s to use it."
+msgstr ""
+
+#: templates/contest/task.html:66
+msgid "No submissions found."
+msgstr ""
+
+#: templates/contest/task.html:72
+msgid "Date"
+msgstr ""
+
+#: templates/contest/task.html:73
+msgid "Evaluation"
+msgstr ""
+
+#: templates/contest/task.html:74
+msgid "Files"
+msgstr ""
+
+#: templates/contest/task.html:75
+msgid "Token used?"
+msgstr ""
+
+#: templates/contest/task.html:86
+msgid "Compiling..."
+msgstr ""
+
+#: templates/contest/task.html:91
+msgid "Compilation failed"
+msgstr ""
+
+#: templates/contest/task.html:93
+msgid "Evaluating..."
+msgstr ""
+
+#: templates/contest/task.html:95
+msgid "Evaluated"
+msgstr ""
+
+#: templates/contest/task.html:101
+msgid "Public testcases"
+msgstr ""
+
+#: templates/contest/task.html:103
+msgid "Detailed feedback"
+msgstr ""
+
+#: templates/contest/task.html:108
+msgid "Outcome"
+msgstr ""
+
+#: templates/contest/task.html:109
+msgid "Details"
+msgstr ""
+
+#: templates/contest/task.html:119
+msgid "No specified testcases for partial feedback for this task."
+msgstr ""
+
+#: templates/contest/task.html:124
+msgid "Compilation output"
+msgstr ""
+
+#: templates/contest/task.html:136
+msgid "No"
+msgstr ""
+
+#: templates/contest/task.html:144
+msgid "Yes"
+msgstr ""

@@ -30,7 +30,7 @@
     {% set can_play_token = (tokens_info[0] > 0 and tokens_info[2] is None) %}
     {% if tokens_info[0] > 0 and tokens_info[2] is None %}
     <p>
-      {{ _("Right now, you have %(tokens)s token(s) available on this task.") { "tokens": tokens_info[0]} }}
+      {{ _("Right now, you have %(tokens)s token(s) available on this task.") % { "tokens": tokens_info[0]} }}
       {% if tokens_info[1] is not None %}
       {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": Utils.format_time_or_date(tokens_info[1])} }}
       {% else %}
@@ -39,7 +39,7 @@
     </p>
     {% elif tokens_info[0] > 0 %}
     <p>
-      {{ _("Right now, you have %(tokens)s token(s) available on this task.") { "tokens": tokens_info[0]} }}
+      {{ _("Right now, you have %(tokens)s token(s) available on this task.") % { "tokens": tokens_info[0]} }}
       {{ _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": Utils.format_time_or_date(tokens_info[2])} }}
       {% if tokens_info[1] is not None %}
       {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": Utils.format_time_or_date(tokens_info[1])} }}
@@ -49,7 +49,7 @@
     </p>
     {% else %}
     <p>
-      {{ _("Right now, you do not have tokens available for this task.") }}>
+      {{ _("Right now, you do not have tokens available for this task.") }}
       {% if tokens_info[1] is not None %}
       {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": Utils.format_time_or_date(tokens_info[1])} }}
         {% if tokens_info[2] is not None and tokens_info[2] > tokens_info[1] %}

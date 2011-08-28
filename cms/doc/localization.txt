@@ -1,0 +1,65 @@
+     *** Localizing cms
+
+This document describe how to interact with the tornado localization
+module (and in particular with its gettext backend).
+
+
+
+     ** For developers
+
+
+     * To update the .pot with the translation strings
+
+When you change a string in a template or in a web server, you have to
+generate again the file cms/server/po/messages.pot. To do so, use this
+command, from cms/server/.
+
+$ xgettext -o po/messages.pot --language=Python --keyword=_:1,2 \
+  *.py \
+  templates/admin/*.html \
+  templates/contest/*.html \
+  templates/ranking/*.html
+
+
+     * To update the .mo when .po changes
+
+When you have a new translation, or an update of an old translation,
+you need to update the .mo files (the compiled versions of the
+.po). In the future we will have a beautiful setup script to handle
+this. In the meantime, run the following from cms/server/.
+
+$ msgfmt po/<code>.po -o mo/<code>/LC_MESSAGES/messages.mo
+
+If needed, create the tree. Note that to have the new strings, you
+need to restart the web server.
+
+
+     ** For translators
+
+
+     * To begin a new translation
+
+To begin translating to a new language, run this command, from
+cms/server/po/.
+
+$ msginit -d <two_letter_code_of_language>
+
+Right after that, open <code>.po and fill the information in the
+header.
+
+
+     * To translate
+
+Simply fill all msgstr with the translations.
+
+
+     * To update a translation after .pot changes
+
+If the developers updated the .pot file, you do not need to start from
+scratch. Instead, you can create a new .po that merges the old
+translated string with the new, to-be-translated ones. The command is the following, run from cms/server/po/.
+
+$ msgmerge <code>.po messages.pot > <code>.po.new
+
+You can now inspect <code>.po.new and, if satisfyied, move it to
+<code>.po and finish the translation.
