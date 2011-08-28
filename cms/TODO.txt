@@ -14,8 +14,6 @@
 
 *** Worker
 * Should be able to work with 32-bit programs even when running in 64-bit mode.
-* Investigate why pressing keys on Worker seems to impact
-  the result of an ongoing mo-box.
 
 *** EvaluationServer
 * Check that there are no concurrence issues, particularly in scoring
