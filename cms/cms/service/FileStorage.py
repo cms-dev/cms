@@ -412,6 +412,22 @@ class FileCacher:
                          bind_obj=bind_obj,
                          sync=sync)
 
+    def get_file_to_cache(self, digest,
+                          callback=None, plus=None, bind_obj=None, sync=False):
+        """Get a file from storage, but do not return it. Just keep it
+        in the cache. Return True if file was successfully cached,
+        False otherwise.
+
+        digest (string): the sha1 sum of the file
+        callback (function): to be called with True or False
+        plus (object): additional data for the callback
+        bind_obj (object): context for the callback (None means
+                           the service that created the FileCacher)
+        sync (bool): whether to do a synchronized request
+
+        """
+        return self.get_file_to_string(digest, callback, plus, bind_obj, sync) is not None
+
     def get_file_to_string(self, digest,
                            callback=None, plus=None, bind_obj=None, sync=False):
         """Get a file from the cache or from the service if not
