@@ -75,10 +75,7 @@ def get_contest_list(session=None):
 
 def ask_for_contest(skip=None):
     if isinstance(skip, int) and len(sys.argv) > skip + 1:
-        contest_id = sys.argv[skip + 1]
-
-    elif isinstance(skip, str):
-        contest_id = skip
+        contest_id = int(sys.argv[skip + 1])
 
     else:
 
@@ -89,7 +86,7 @@ def ask_for_contest(skip=None):
             matches = {}
             print "Contests available:"
             for i, row in enumerate(contests):
-                print "%3d  -  ID: %s  -  Name: %s  -  Description: %s" % (i + 1, row.id, row.name, row.description),
+                print "%3d  -  ID: %d  -  Name: %s  -  Description: %s" % (i + 1, row.id, row.name, row.description),
                 matches[i+1] = row.id
                 if i == 0:
                     print " (default)"
