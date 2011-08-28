@@ -376,15 +376,11 @@ class Evaluation(Base):
     # the scorer.
     outcome = Column(String, nullable=True)
 
-    # Number of times this evaluation was repeated.
-    tries = Column(Integer, nullable=False)
-
-    def __init__(self, text, outcome, num=None, submission=None, tries=0):
+    def __init__(self, text, outcome, num=None, submission=None):
         self.text = text
         self.outcome = outcome
         self.num = num
         self.submission = submission
-        self.tries = tries
 
     def export_to_dict(self):
         """Return object data as a dictionary.
@@ -392,5 +388,4 @@ class Evaluation(Base):
         """
         return {'text':    self.text,
                 'outcome': self.outcome,
-                'num':     self.num,
-                'tries':   self.tries}
+                'num':     self.num}

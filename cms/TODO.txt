@@ -2,7 +2,6 @@
 * Define appropriate UNIQUE indexes in the database.
 * Task and Testcase are sometimes referenced by num, instead of
   properly using IDs.
-* Decide where and how to keep tries number for evaluations.
 * It may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
   scorings change.
