@@ -31,6 +31,9 @@
   - Put an Italian flag somewhere.
   - I think that the AGPL license also asks us to put appropriate
     copyright notices in the Web interface.
+  - Add some indicator on the left side bar when there are new messages,
+    replies or annoncements. The yellow notification is useful, but
+    could go unnoticed.
 
 *** Task types
 * Check that white_diff() really does what we want it to do
