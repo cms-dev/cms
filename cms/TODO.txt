@@ -5,6 +5,12 @@
 * It may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
   scorings change.
+* Ensure that CWS in particular, but also everything else, does not
+  rely on the particular value of the id of the database
+  objects. E.g., we may assume that everything work as expected even
+  if we scramble all ids int he db (keeping the relations correct, of
+  course). This actually happens when we call ContestExporter and
+  ContestImporter.
 
 *** Worker
 * Should be able to work with 32 bits programs even when running in
@@ -37,6 +43,8 @@
   - I think that the AGPL license also asks us to put appropriate
     copyright notices in the Web interface.
 * Check why sometimes the same notification arrives at every check.
+* Use username instead of userid for login cookie (see DB's todo about
+  DB ids).
 
 *** AdminWebServer
 * Set correctly the precompiled answers.
