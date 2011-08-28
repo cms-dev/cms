@@ -68,7 +68,7 @@ class Worker(Service):
     def compile(self, submission_id):
         """RPC to ask the worker to compile the submission.
 
-        submission_id (string): the id of the submission to compile.
+        submission_id (int): the id of the submission to compile.
 
         """
         return self.action(submission_id, "compilation")
@@ -78,7 +78,7 @@ class Worker(Service):
     def evaluate(self, submission_id):
         """RPC to ask the worker to evaluate the submission.
 
-        submission_id (string): the id of the submission to evaluate.
+        submission_id (int): the id of the submission to evaluate.
 
         """
         return self.action(submission_id, "evaluation")
