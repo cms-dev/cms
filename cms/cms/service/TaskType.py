@@ -30,9 +30,9 @@ from cms.service import JobException
 from cms.util.Utils import get_compilation_command, filter_ansi_escape
 from cms import Config
 
-def get_task_type_class(submission, session, service):
+def get_task_type_class(submission, session, file_cacher):
     if submission.task.task_type == Task.TASK_TYPE_BATCH:
-        return BatchTaskType(submission, session, service)
+        return BatchTaskType(submission, session, file_cacher)
     else:
         return None
 
@@ -89,10 +89,10 @@ def white_diff(output, res):
                 return False
 
 class BatchTaskType:
-    def __init__(self, submission, session, service):
+    def __init__(self, submission, session, file_cacher):
         self.submission = submission
         self.session = session
-        self.service = service
+        self.FC = file_cacher
 
     def finish_compilation(self, success, compilation_success=False, text=""):
         self.safe_delete_sandbox()
@@ -133,7 +133,7 @@ class BatchTaskType:
 
     def safe_create_sandbox(self):
         try:
-            self.sandbox = Sandbox(self.service)
+            self.sandbox = Sandbox(self.FC)
         except (OSError, IOError), e:
             with async_lock:
                 logger.error("Couldn't create sandbox (error: %s)" % repr(e))

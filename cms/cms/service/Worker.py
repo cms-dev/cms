@@ -29,6 +29,7 @@ from cms.async.AsyncLibrary import logger, async_lock, Service, \
 from cms.service.TaskType import get_task_type_class
 from cms.db.SQLAlchemyAll import Session, Submission, SessionGen
 from cms.service import JobException
+from cms.service.FileStorage import FileCacher
 
 class Worker(Service):
 
@@ -36,6 +37,9 @@ class Worker(Service):
         logger.initialize(ServiceCoord("Worker", shard))
         logger.debug("Worker.__init__")
         Service.__init__(self, shard)
+        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+        self.FC = FileCacher(self, self.FS)
+
         self.work_lock = threading.Lock()
         self.session = None
 
@@ -47,7 +51,7 @@ class Worker(Service):
             logger.critical(msg_err)
             raise JobException(msg_err)
 
-        task_type = get_task_type_class(submission, self.session, self)
+        task_type = get_task_type_class(submission, self.session, self.FC)
         if task_type is None:
             err_msg = "Task type `%s' not known for submission %s" \
                 % (self.submission.task.task_type, submission_id)

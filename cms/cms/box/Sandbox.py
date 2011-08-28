@@ -32,13 +32,10 @@ from cms.async import ServiceCoord
 from cms.service.FileStorage import FileCacher
 
 class Sandbox:
-    def __init__(self, service):
-        self.service = service
-        file_storage = service.connect_to(
-            ServiceCoord("FileStorage", 0))
+    def __init__(self, file_cacher):
+        self.FC = file_cacher
 
         self.path = tempfile.mkdtemp()
-        self.FC = FileCacher(service, file_storage)
         self.exec_name = 'mo-box'
         self.box_exec = self.detect_box_executable()
         self.info_file = "run.log"    # -M
