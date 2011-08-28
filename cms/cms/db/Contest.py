@@ -170,6 +170,8 @@ class Contest(Base):
                       referenced in the contest.
 
         """
+        # Here we cannot use yield, because we want to detect
+        # duplicates
         files = set()
         for task in self.tasks:
 
