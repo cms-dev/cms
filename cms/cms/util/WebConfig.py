@@ -20,22 +20,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-
-import cms
-
-contest_listen_port = 8888
-ranking_listen_port = 9999
-admin_listen_port = 8889
+from cms import Config
 
 # ssl_options are the same options for ssl.wrap_socket.
 # server side is already included.
 # ssl_options = {"certfile" : "cert.pem"}
 ssl_options = None
-
-stl_path = "/usr/share/doc/stl-manual/html/"
-
-ip_lock = True
-block_hidden_users = False
 
 
 quick_answers = {
@@ -46,33 +36,36 @@ quick_answers = {
     "nocomment" : "No comment",
     }
 
+# FIXME - Implement some smarter search function
+tornado_files_basepath = os.path.dirname(__file__)
+
 contest_parameters = {
     "login_url": "/" ,
-#    "template_path": os.path.join(os.path.dirname(__file__),
-#                                  "templates", "contest"),
-#    "static_path": os.path.join(os.path.dirname(__file__),
-#                                "static", "contest"),
-    "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
-    "debug" : "True",
+    "template_path": os.path.join(tornado_files_basepath,
+                                  "templates", "contest"),
+    "static_path": os.path.join(tornado_files_basepath,
+                                "static", "contest"),
+    "cookie_secret": Config.tornado_secret_key,
+    "debug" : Config.tornado_debug,
     }
 
 ranking_parameters = {
     "login_url": "/" ,
-#    "template_path": os.path.join(os.path.dirname(__file__),
-#                                  "templates", "ranking"),
-#    "static_path": os.path.join(os.path.dirname(__file__),
-#                                "static", "ranking"),
-    "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
-    "debug" : "True",
+    "template_path": os.path.join(tornado_files_basepath,
+                                  "templates", "ranking"),
+    "static_path": os.path.join(tornado_files_basepath,
+                                "static", "ranking"),
+    "cookie_secret": Config.tornado_secret_key,
+    "debug" : Config.tornado_debug,
    }
 
 admin_parameters = {
     "login_url": "/",
-#    "template_path": os.path.join(os.path.dirname(__file__),
-#                                  "templates", "admin"),
-#    "static_path": os.path.join(os.path.dirname(__file__),
-#                                "static", "admin"),
-    "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
-    "debug": True,
+    "template_path": os.path.join(tornado_files_basepath,
+                                  "templates", "admin"),
+    "static_path": os.path.join(tornado_files_basepath,
+                                "static", "admin"),
+    "cookie_secret": Config.tornado_secret_key,
+    "debug": Config.tornado_debug,
     }
 

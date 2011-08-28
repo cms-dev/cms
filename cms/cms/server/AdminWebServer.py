@@ -37,6 +37,7 @@ from cms.db.SQLAlchemyAll import Session, \
 
 import cms.util.WebConfig as WebConfig
 from cms.server.Utils import file_handler_gen
+from cms import Config
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -124,7 +125,7 @@ class AdminWebServer(WebService):
         parameters["static_path"] = os.path.join(os.path.dirname(__file__),
                                                  "static", "admin")
         WebService.__init__(self,
-                            WebConfig.admin_listen_port,
+                            Config.admin_listen_port,
                             handlers,
                             parameters,
                             shard=shard)

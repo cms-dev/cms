@@ -167,7 +167,7 @@ class ContestWebServer(WebService):
         parameters["static_path"] = os.path.join(os.path.dirname(__file__),
                                   "static", "contest")
         WebService.__init__(self,
-            WebConfig.contest_listen_port,
+            Config.contest_listen_port,
             handlers,
             parameters,
             shard=shard)
@@ -224,13 +224,13 @@ class LoginHandler(BaseHandler):
                       (username, password, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
-        if WebConfig.ip_lock and user.ip != "0.0.0.0" \
+        if Config.ip_lock and user.ip != "0.0.0.0" \
                 and user.ip != self.request.remote_ip:
             logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s." %
                       (username, password, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
-        if user.hidden and WebConfig.block_hidden_users:
+        if user.hidden and Config.block_hidden_users:
             logger.info("Hidden user login attempt: " +
                       "user=%s pass=%s remote_ip=%s." %
                       (username, password, self.request.remote_ip))
@@ -641,7 +641,7 @@ handlers = [(r"/",
             (r"/question",
              QuestionHandler),
             (r"/stl/(.*)",
-             tornado.web.StaticFileHandler, {"path": WebConfig.stl_path}),
+             tornado.web.StaticFileHandler, {"path": Config.stl_path}),
             ]
 
 
