@@ -91,20 +91,17 @@ class BaseHandler(tornado.web.RequestHandler):
         if self.get_secure_cookie("login") is None:
             return None
         try:
-            user_id = pickle.loads(self.get_secure_cookie("login"))[0]
+            username = pickle.loads(self.get_secure_cookie("login"))[0]
         except:
             self.clear_cookie("login")
             return None
 
-        # Uncomment to ignore old cookies
-        # if cookie_time is None or cookie_time < upsince:
-        #     return None
-
-        current_user = User.get_from_id(user_id, self.sql_session)
-        if current_user is None:
+        user = self.sql_session.query(User).filter_by(contest=self.contest).\
+               filter_by(username=username).first()
+        if user is None:
             self.clear_cookie("login")
             return None
-        return current_user
+        return user
 
     def render_params(self):
         """Return the default render params used by almost all handlers.
@@ -241,7 +238,7 @@ class LoginHandler(BaseHandler):
             return
 
         self.set_secure_cookie("login",
-                               pickle.dumps((user.id, int(time.time()))))
+                               pickle.dumps((user.username, int(time.time()))))
         self.redirect(next_page)
 
 

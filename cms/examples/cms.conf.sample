@@ -54,7 +54,7 @@
  "stl_path":               "/usr/share/doc/stl-manual/html/",
 
  "ip_lock":                true,
- "block_hidden_user":      false,
+ "block_hidden_users":     false,
 
  "tornado_secret_key":     "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
  "tornado_debug":          true

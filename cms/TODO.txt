@@ -32,7 +32,6 @@
   no services other than the database and FileStorage are available;
   if database or File Storage are missing it _MUST_ behave nicely
   anyway, informing the user to seek assistance and without crashing.
-* Localization (task statements, but also interface).
 * Some idea to improve the Web interface:
   - Ability to show submitted files from the Web interface without
     having to download them, possibly coloring the syntax.
@@ -42,9 +41,6 @@
   - Put an Italian flag somewhere.
   - I think that the AGPL license also asks us to put appropriate
     copyright notices in the Web interface.
-* Check why sometimes the same notification arrives at every check.
-* Use username instead of userid for login cookie (see DB's todo about
-  DB ids).
 
 *** AdminWebServer
 * Set correctly the precompiled answers.
