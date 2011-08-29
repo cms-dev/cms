@@ -177,12 +177,15 @@ class WorkerPool:
         non-foreseen worker that has no line in the configuration
         file, hence we need to specify manually the address.
 
-        worker_coord (ServiceCoord): the coordinates of the worker
+        worker_coord (ServiceCoord): the coordinates of the worker.
 
         """
         shard = worker_coord.shard
         # Instruct AsyncLibrary to connect ES to the Worker
-        self.worker[shard] = self.service.connect_to(worker_coord)
+        self.worker[shard] = self.service.connect_to(
+            worker_coord,
+            on_connect=self.on_worker_connected)
+
         # And we fill all data.
         self.job[shard] = self.WORKER_INACTIVE
         self.start_time[shard] = None
@@ -190,6 +193,19 @@ class WorkerPool:
         self.schedule_disabling[shard] = False
         self.side_data[shard] = None
         logger.debug("Worker %d added " % shard)
+
+    def on_worker_connected(self, worker_coord):
+        """To be called when a worker comes alive after being
+        offline. We use this callback to instruct the worker to
+        precache all files concerning the contest.
+
+        worker_coord (ServiceCoord): the coordinates of the worker
+                                     that came online.
+
+        """
+        shard = worker_coord.shard
+        logger.info("Worker %d online again." % shard)
+        self.worker[shard].precache_files(contest_id=self.service.contest_id)
 
     def acquire_worker(self, job, side_data=None):
         """Tries to assign a job to an available worker. If no workers
@@ -399,8 +415,6 @@ class EvaluationServer(Service):
         for i in xrange(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
             self.pool.add_worker(worker)
-            worker_conn = self.connect_to(worker, sync=True)
-            worker_conn.precache_files(contest_id=self.contest_id)
 
         self.add_timeout(self.dispatch_jobs, None,
                          EvaluationServer.CHECK_DISPATCH_TIME,

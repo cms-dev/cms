@@ -26,6 +26,10 @@
   routines.
 * When starting, check that the workers are not doing anything and
   possibly stop them / wait for them to be finished.
+* Really, really slow to add the already evaluated submissions at
+  start. The problem seems to be at ScoreType level (i.e., rebuilding
+  the scores each time something new arrive, even if scoretype is not
+  relative).
 
 *** ContestWebServer
 * It _MUST_ be able to work correctly (storing submitted data) even if
@@ -41,9 +45,6 @@
   - Put an Italian flag somewhere.
   - I think that the AGPL license also asks us to put appropriate
     copyright notices in the Web interface.
-
-*** AdminWebServer
-* Set correctly the precompiled answers.
 
 *** Task types
 * Check that white_diff() really does what we want it to do
