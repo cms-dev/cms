@@ -42,9 +42,6 @@
   - I think that the AGPL license also asks us to put appropriate
     copyright notices in the Web interface.
 
-*** AdminWebServer
-* Set correctly the precompiled answers.
-
 *** Task types
 * Check that white_diff() really does what we want it to do
 
