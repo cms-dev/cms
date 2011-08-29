@@ -445,6 +445,53 @@ class SyncRPCError(Exception):
 class SyncRPCConnectError(SyncRPCError):
     pass
 
+def make_sync(default_sync=False):
+
+    def decorator(func):
+
+        def newfunc(*args, **kwargs):
+
+            if 'sync' not in kwargs:
+                sync = default_sync
+            else:
+                sync = kwargs['sync']
+                del kwargs['sync']
+
+            if sync:
+                plus = {'finished': False,
+                        'data':     None,
+                        'error':    None}
+
+                @rpc_callback
+                def sync_callback(context, data, plus, error=None):
+                    logger.debug("sync_callback: callback for sync function received")
+                    plus['data'] = data
+                    plus['error'] = error
+                    plus['finished'] = True
+
+                func(callback=sync_callback,
+                     plus=plus,
+                     bind_obj=None,
+                     *args, **kwargs)
+                while not plus['finished']:
+                    asyncore.loop(0.02, True, None, 1)
+
+                error = plus['error']
+                data = plus['data']
+                if error is not None:
+                    raise SyncRPCError(error)
+                else:
+                    return data
+
+            else:
+                if 'sync' in kwargs:
+                    del kwargs['sync']
+                return func(*args, **kwargs)
+
+        return newfunc
+
+    return decorator
+
 class RemoteService(asynchat.async_chat):
     """This class mimick the local presence of a remote service. A
     local service can define many RemoteService object and call
@@ -604,8 +651,9 @@ class RemoteService(asynchat.async_chat):
             return
         self._push_right(json_length + json_message + binary_message)
 
+    @make_sync(default_sync=False)
     def execute_rpc(self, method, data,
-                    callback=None, plus=None, bind_obj=None, sync=None):
+                    callback=None, plus=None, bind_obj=None):
         """Method to send an RPC request to the remote service.
 
         The message sent to the remote service is of this kind:
@@ -631,22 +679,10 @@ class RemoteService(asynchat.async_chat):
         """
         logger.debug("RemoteService.execute_rpc")
 
-        # If the call is synchronous, filter it using sync_call
-        if sync is None:
-            sync = self.sync
-        if sync:
-            return sync_call(function=self.execute_rpc,
-                             method=method,
-                             data=data,
-                             sync=True)
-
         if not self.connected:
             self.connect_remote_service()
             if not self.connected:
-                if sync:
-                    raise SyncRPCError("Couldn't connect to remote service")
-                else:
-                    return False
+                return False
         if bind_obj is None:
             bind_obj = self.service
 
@@ -684,7 +720,6 @@ class RemoteService(asynchat.async_chat):
                 return
         self._push_right(json_length + json_message + binary_message)
 
-        # Otherwise, we return immediately.
         return True
 
     def __getattr__(self, method):
@@ -705,8 +740,9 @@ class RemoteService(asynchat.async_chat):
             """Call execute_rpc with the given method name.
 
             """
-            return self.execute_rpc(method, data,
-                                    callback, plus, bind_obj, sync)
+            return self.execute_rpc(method=method, data=data,
+                                    callback=callback, plus=plus, bind_obj=bind_obj,
+                                    sync=sync)
         return remote_method
 
     def _push_right(self, data):
@@ -914,41 +950,3 @@ logger = Logger()
 # Use a reentrant lock, so the same thread can obtain more than one
 # lock
 async_lock = threading.RLock()
-
-def sync_call(function,
-              callback=None, plus=None, bind_obj=None,
-              sync=False,
-              **kwargs):
-    if sync:
-        plus = {'finished': False,
-                'data':     None,
-                'error':    None}
-
-        @rpc_callback
-        def sync_callback(context, data, plus, error=None):
-            logger.debug("sync_callback: callback for sync function received")
-            plus['data'] = data
-            plus['error'] = error
-            plus['finished'] = True
-
-        function(callback=sync_callback,
-                 plus=plus,
-                 bind_obj=None,
-                 sync=False,
-                 **kwargs)
-        while not plus['finished']:
-            asyncore.loop(0.02, True, None, 1)
-
-        error = plus['error']
-        data = plus['data']
-        if error is not None:
-            raise SyncRPCError(error)
-        else:
-            return data
-
-    else:
-        return function(callback=callback,
-                        plus=plus,
-                        bind_obj=bind_obj,
-                        sync=False,
-                        **kwargs)
