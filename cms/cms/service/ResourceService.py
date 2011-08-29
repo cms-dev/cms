@@ -107,6 +107,7 @@ class ResourceService(Service):
 
         """
         logger.debug("ResourceService._store_resources")
+        # We use the precise time to compute the delta
         now = time.time()
         delta = now - self._last_saved_time
         self._last_saved_time = now
@@ -233,7 +234,11 @@ class ResourceService(Service):
 
     @rpc_method
     def get_resources(self, last_time=0):
-        """Returns the current resources usage.
+        """Returns the resurce usage information from last_time to
+        now.
+
+        last_time (int): timestamp of the last time the caller called
+                         this method.
 
         """
         logger.debug("ResourceService._get_resources")

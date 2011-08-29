@@ -60,11 +60,11 @@ class JobQueue:
 
         job (job): a couple (job_type, submission_id)
         priority (int): the priority of the job
-        timestamp (float): the time of the submission
+        timestamp (int): the time of the submission
 
         """
         if timestamp is None:
-            timestamp = time.time()
+            timestamp = int(time.time())
         heapq.heappush(self.queue, (priority, timestamp, job))
 
     def top(self):
@@ -90,8 +90,8 @@ class JobQueue:
         """Returns a specific job in the queue, if present. If not,
         raises an exception.
 
-        returns (int, float, job): the data corresponding to job
-                                   (priority, timestamp, job)
+        returns (int, int, job): the data corresponding to job
+                                 (priority, timestamp, job)
         """
         for i in self.queue:
             if self.queue[i][2] == job:
@@ -212,7 +212,7 @@ class WorkerPool:
 
         # Then we fill the info for future memory
         self.job[shard] = job
-        self.start_time[shard] = time.time()
+        self.start_time[shard] = int(time.time())
         self.side_data[shard] = side_data
         logger.debug("Worker %d acquired" % shard)
 
@@ -221,7 +221,7 @@ class WorkerPool:
         timestamp = side_data[1]
         queue_time = self.start_time[shard] - timestamp
         logger.info("Asking worker %d to %s submission %s "
-                    " (after around %.2f seconds of queue)" %
+                    " (%d seconds after submission)" %
                     (shard, action, submission_id, queue_time))
         logger.debug("Still %d jobs in the queue" %
                      self.service.queue.length())
@@ -319,7 +319,7 @@ class WorkerPool:
         we send him a message trying to shut it down.
 
         """
-        now = time.time()
+        now = int(time.time())
         lost_jobs = []
         for shard in self.worker:
             if self.start_time[shard] is not None:
@@ -369,7 +369,7 @@ class EvaluationServer(Service):
     MAX_COMPILATION_TRIES = 3
     MAX_EVALUATION_TRIES = 3
 
-    # Time after which we declare a worker stale
+    # Seconds after which we declare a worker stale
     WORKER_TIMEOUT = 600.0
     # How often we check for stale workers
     WORKER_TIMEOUT_CHECK_TIME = 300.0

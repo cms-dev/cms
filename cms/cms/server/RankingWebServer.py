@@ -107,7 +107,7 @@ application = tornado.web.Application(handlers, **WebConfig.ranking_parameters)
 
 def update_ranking():
     c.ranking_view.refresh()
-    instance.add_timeout(time.time() + 5, update_ranking)
+    instance.add_timeout(int(time.time()) + 5, update_ranking)
 
 if __name__ == "__main__":
     Utils.set_service("ranking web server")
@@ -115,10 +115,10 @@ if __name__ == "__main__":
     http_server.listen(Config.ranking_listen_port);
     c = Utils.ask_for_contest()
     Utils.log("Ranking Web Server for contest %s started..." % (c.couch_id))
-    upsince = time.time()
+    upsince = int(time.time())
     try:
         instance = tornado.ioloop.IOLoop.instance()
-        instance.add_timeout(time.time() + 5, update_ranking)
+        instance.add_timeout(int(time.time()) + 5, update_ranking)
         instance.start()
     except KeyboardInterrupt:
         Utils.log("Ranking Web Server for contest %s stopped." % (c.couch_id))

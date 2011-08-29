@@ -113,7 +113,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
         """
         ret = {}
-        ret["timestamp"] = time.time()
+        ret["timestamp"] = int(time.time())
         ret["contest"] = self.contest
         if(self.contest is not None):
             ret["phase"] = self.contest.phase(ret["timestamp"])
@@ -189,7 +189,7 @@ class ContestWebServer(WebService):
         """
         if username not in self.notifications:
             self.notifications[username] = []
-        self.notifications[username].append((int(timestamp), subject, text))
+        self.notifications[username].append((timestamp, subject, text))
 
 
 class MainHandler(BaseHandler):
@@ -241,7 +241,7 @@ class LoginHandler(BaseHandler):
             return
 
         self.set_secure_cookie("login",
-                               pickle.dumps((user.id, time.time())))
+                               pickle.dumps((user.id, int(time.time()))))
         self.redirect(next_page)
 
 
@@ -343,7 +343,7 @@ class NotificationsHandler(BaseHandler):
     """
     @tornado.web.authenticated
     def get(self):
-        timestamp = time.time()
+        timestamp = int(time.time())
         res = []
         last_notification = float(self.get_argument("last_notification", "0"))
 
@@ -352,7 +352,7 @@ class NotificationsHandler(BaseHandler):
             if announcement.timestamp > last_notification \
                    and announcement.timestamp < timestamp:
                 res.append({"type": "announcement",
-                            "timestamp": int(announcement.timestamp),
+                            "timestamp": announcement.timestamp,
                             "subject": announcement.subject,
                             "text": announcement.text})
 
@@ -362,7 +362,7 @@ class NotificationsHandler(BaseHandler):
                 if message.timestamp > last_notification \
                        and message.timestamp < timestamp:
                     res.append({"type": "message",
-                                "timestamp": int(message.timestamp),
+                                "timestamp": message.timestamp,
                                 "subject": message.subject,
                                 "text": message.text})
 
@@ -378,7 +378,7 @@ class NotificationsHandler(BaseHandler):
                     elif question.reply_text is None:
                         text = ""
                     res.append({"type": "question",
-                                "timestamp": int(question.reply_timestamp),
+                                "timestamp": question.reply_timestamp,
                                 "subject": subject,
                                 "text": text})
 
@@ -388,7 +388,7 @@ class NotificationsHandler(BaseHandler):
         if username in notifications:
             for notification in notifications[username]:
                 res.append({"type": "notification",
-                            "timestamp": int(notification[0]),
+                            "timestamp": notification[0],
                             "subject": notification[1],
                             "text": notification[2]})
             del notifications[username]
@@ -480,7 +480,7 @@ class SubmitHandler(BaseHandler):
                                     self.current_user.username)
                 if not os.path.exists(path):
                     os.mkdir(path)
-                with codecs.open(os.path.join(path, str(int(self.timestamp))),
+                with codecs.open(os.path.join(path, str(self.timestamp)),
                                  "w", "utf-8") as fd:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
@@ -501,7 +501,7 @@ class SubmitHandler(BaseHandler):
                 description="Submission file %s sent by %s at %d." % (
                     filename,
                     self.current_user.username,
-                    int(self.timestamp)),
+                    self.timestamp),
                 bind_obj=self) == False:
                 self.storage_callback(None, None, error="Connection failed.")
                 break

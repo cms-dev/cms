@@ -44,7 +44,7 @@ class LogService(Service):
         Service.__init__(self, shard)
 
         self._log_file = codecs.open(os.path.join("logs", "%d.log" %
-                                                  time.time()),
+                                                  int(time.time())),
                                      "w", "utf-8")
 
     @rpc_method

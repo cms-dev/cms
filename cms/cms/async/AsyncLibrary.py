@@ -865,7 +865,7 @@ class Logger:
         mkdir("logs")
         self._log_file = codecs.open(\
             os.path.join("logs", "%d-%s-%d.local-log" %
-                         (time.time(), service.name, service.shard)),
+                         (int(time.time()), service.name, service.shard)),
             "w", "utf-8")
         self.info("%s %d up and running!" % service)
 

@@ -249,7 +249,7 @@ class Token(Base):
 
     def __init__(self, timestamp=None, submission=None):
         if timestamp is None:
-            timestamp = time.time()
+            timestamp = int(time.time())
         self.timestamp = timestamp
         self.submission = submission
 

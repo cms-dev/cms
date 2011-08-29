@@ -79,7 +79,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
         """
         r = {}
-        r["timestamp"] = time.time()
+        r["timestamp"] = int(time.time())
         r["contest"] = self.contest
         if self.contest is not None:
             r["phase"] = self.contest.phase(r["timestamp"])
@@ -175,7 +175,8 @@ class TaskViewHandler(BaseHandler):
         self.task.name = self.get_argument("name", self.task.name)
         self.task.title = self.get_argument("title", self.task.title)
 
-        time_limit = self.get_argument("time_limit", repr(self.task.time_limit))
+        time_limit = self.get_argument("time_limit",
+                                       repr(self.task.time_limit))
         try:
             time_limit = float(time_limit)
             if time_limit < 0 or time_limit > "+inf":
@@ -283,7 +284,7 @@ class AddAnnouncementHandler(BaseHandler):
         subject = self.get_argument("subject", "")
         text = self.get_argument("text", "")
         if subject != "":
-            ann = Announcement(time.time(), subject, text, self.contest)
+            ann = Announcement(int(time.time()), subject, text, self.contest)
             self.sql_session.add(ann)
             self.sql_session.commit()
         self.redirect("/announcements/"+contest_id)
@@ -389,7 +390,7 @@ class QuestionReplyHandler(BaseHandler):
         if question.reply_subject not in WebConfig.quick_answers:
             question.reply_subject = None
 
-        question.reply_timestamp = time.time()
+        question.reply_timestamp = int(time.time())
 
         self.sql_session.commit()
 
@@ -411,10 +412,10 @@ class MessageHandler(BaseHandler):
         if user is None:
             raise tornado.web.HTTPError(404)
 
-        message = Message(time.time(),
-                            self.get_argument("message_subject", ""),
-                            self.get_argument("message_text", ""),
-                            user=user)
+        message = Message(int(time.time()),
+                          self.get_argument("message_subject", ""),
+                          self.get_argument("message_text", ""),
+                          user=user)
         self.sql_session.add(message)
         self.sql_session.commit()
 

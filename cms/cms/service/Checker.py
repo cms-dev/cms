@@ -50,7 +50,7 @@ class Checker(Service):
 
         """
         logger.debug("Checker.check")
-        now = time.time()
+        now = int(time.time())
         for coordinates, service in self.remote_services.iteritems():
             if coordinates in self.waiting_for:
                 logger.info("Service %s timeout, retrying."
