@@ -124,6 +124,7 @@ class Contest(Base):
                                        for announcement in self.announcements],
                 'ranking_view':       self.ranking_view.export_to_dict()}
 
+    # FIXME - Use SQL syntax
     def get_task(self, task_name):
         """Return the first task in the contest with the given name.
 
@@ -136,6 +137,7 @@ class Contest(Base):
                 return t
         raise KeyError("Task not found")
 
+    # FIXME - Use SQL syntax
     def get_task_index(self, task_name):
         """Return the index of the first task in the contest with the
         given name.
@@ -150,6 +152,7 @@ class Contest(Base):
                 return i
         raise KeyError("Task not found")
 
+    # FIXME - Use SQL syntax
     def get_user(self, username):
         """Return the first user in the contest with the given name.
 

@@ -91,13 +91,13 @@ class BaseHandler(tornado.web.RequestHandler):
         if self.get_secure_cookie("login") is None:
             return None
         try:
-            username = pickle.loads(self.get_secure_cookie("login"))[0]
+            username = str(pickle.loads(self.get_secure_cookie("login"))[0])
         except:
             self.clear_cookie("login")
             return None
 
         user = self.sql_session.query(User).filter_by(contest=self.contest).\
-               filter_by(username=username).first()
+            filter_by(username=username).first()
         if user is None:
             self.clear_cookie("login")
             return None
