@@ -179,8 +179,11 @@ class Service:
         # parameters for send_reply.
         self._threaded_responses = []
         self._threaded_responses_lock = threading.Lock()
-        # Dictionaries of (to be) connected RemoteService
+        # Dictionaries of (to be) connected RemoteService, and
+        # dictionaries of callback functions that are going to be
+        # called when the remote service becomes online.
         self.remote_services = {}
+        self.on_remote_service_connected = {}
 
         self._my_coord = ServiceCoord(self.__class__.__name__, self.shard)
 
@@ -197,19 +200,33 @@ class Service:
         if address is not None:
             self.server = ListeningSocket(self, address)
 
-    def connect_to(self, service, sync=False):
+    def connect_to(self, service, sync=False, on_connect=None):
         """Ask the service to connect to another service. A channel is
         established and connected. The connection will be reopened if
         closed.
 
         service (ServiceCoord): the service to connect to.
+        sync (bool): if True all rpc calls are synchronous.
+        on_connect (function): to be called when the service connects.
         return (RemoteService): the connected RemoteService istance.
+
         """
+        self.on_remote_service_connected[service] = on_connect
         self.remote_services[service] = RemoteService(self, service, sync=sync)
-        try:
-            self.remote_services[service].connect_remote_service()
-        except:
-            pass
+
+        # These commented lines are commented because I thought that
+        # connect to remote services *before* our service was given
+        # the run() command was a bit strange. In particular, we
+        # communicated to the service the connection of the remote
+        # service *before* the call to connect_to ended.
+
+        # try:
+        #     self.remote_services[service].connect_remote_service()
+        #     if self.remote_services[service].connected and \
+        #             self.on_remote_service_connected[service] is not None:
+        #         self.on_remote_service_connected[service](service)
+        # except:
+        #     pass
         return self.remote_services[service]
 
     def add_timeout(self, func, plus, seconds, immediately=False):
@@ -271,6 +288,10 @@ class Service:
                     remote_service.connect_remote_service()
                 except:
                     pass
+                if remote_service.connected and \
+                       self.on_remote_service_connected[service] \
+                       is not None:
+                    self.on_remote_service_connected[service](service)
         return True
 
     def _trigger(self):
@@ -278,7 +299,6 @@ class Service:
 
         """
         current = time.time()
-
         # Check if some threaded RPC call ended
         self._threaded_responses_lock.acquire()
         local_threaded_responses = self._threaded_responses[:]

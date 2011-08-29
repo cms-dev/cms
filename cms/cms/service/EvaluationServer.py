@@ -172,23 +172,19 @@ class WorkerPool:
         self.side_data = {}
         self.schedule_disabling = {}
 
-    def add_worker(self, worker_coord, precache_contest_id=None):
+    def add_worker(self, worker_coord):
         """Add a new worker to the worker pool. This is for
         non-foreseen worker that has no line in the configuration
         file, hence we need to specify manually the address.
 
         worker_coord (ServiceCoord): the coordinates of the worker.
-        precache_contest_id (int): the id of the contest whose data we
-                                   want to precache in the worker.
 
         """
         shard = worker_coord.shard
         # Instruct AsyncLibrary to connect ES to the Worker
-        self.worker[shard] = self.service.connect_to(worker_coord)
-        # If we managed to connect right now, we ask worker to load
-        # all contest files.
-        if self.worker[shard].connected and precache_contest_id:
-            self.worker[shard].precache_files(contest_id=precache_contest_id)
+        self.worker[shard] = self.service.connect_to(
+            worker_coord,
+            on_connect=self.on_worker_connected)
 
         # And we fill all data.
         self.job[shard] = self.WORKER_INACTIVE
@@ -197,6 +193,19 @@ class WorkerPool:
         self.schedule_disabling[shard] = False
         self.side_data[shard] = None
         logger.debug("Worker %d added " % shard)
+
+    def on_worker_connected(self, worker_coord):
+        """To be called when a worker comes alive after being
+        offline. We use this callback to instruct the worker to
+        precache all files concerning the contest.
+
+        worker_coord (ServiceCoord): the coordinates of the worker
+                                     that came online.
+
+        """
+        shard = worker_coord.shard
+        logger.info("Worker %d online again." % shard)
+        self.worker[shard].precache_files(contest_id=self.service.contest_id)
 
     def acquire_worker(self, job, side_data=None):
         """Tries to assign a job to an available worker. If no workers
@@ -405,7 +414,7 @@ class EvaluationServer(Service):
 
         for i in xrange(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
-            self.pool.add_worker(worker, precache_contest_id=self.contest_id)
+            self.pool.add_worker(worker)
 
         self.add_timeout(self.dispatch_jobs, None,
                          EvaluationServer.CHECK_DISPATCH_TIME,
