@@ -34,9 +34,10 @@ from cms.db.Utils import analyze_all_tables
 
 class YamlImporter(Service):
 
-    def __init__(self, shard, drop, modif):
+    def __init__(self, shard, drop, modif, path):
         self.drop = drop
         self.modif = modif
+        self.path = path
 
         logger.initialize(ServiceCoord("YamlImporter", shard))
         logger.debug("YamlImporter.__init__")
@@ -151,13 +152,13 @@ class YamlImporter(Service):
         params["token_gen_number"] = conf.get("token_gen_number", None)
         return params
 
-    def import_contest(self, path):
+    def import_contest(self):
         """Import a contest into the system.
         """
-        params, tasks, users = self.get_params_for_contest(path)
+        params, tasks, users = self.get_params_for_contest(self.path)
         params["tasks"] = []
         for task in tasks:
-            task_params = self.get_params_for_task(os.path.join(path, task))
+            task_params = self.get_params_for_task(os.path.join(self.path, task))
             params["tasks"].append(Task(**task_params))
         params["users"] = []
         for user in users:
@@ -165,7 +166,7 @@ class YamlImporter(Service):
             params["users"].append(User(**user_params))
         return Contest(**params)
 
-    def do_import(self, dir):
+    def do_import(self):
         if not self.FS.connected:
             logger.warning("Please run FileStorage.")
             return True
@@ -173,7 +174,7 @@ class YamlImporter(Service):
         if self.drop:
             metadata.drop_all()
         metadata.create_all()
-        c = self.import_contest(dir)
+        c = self.import_contest()
         session = Session()
         session.add(c)
         c.create_empty_ranking_view()
@@ -211,6 +212,9 @@ if __name__ == "__main__":
     elif options.zero_time:
         modif = 'zero_time'
 
+    path = args[0]
+
     yaml_importer = YamlImporter(shard=options.shard,
                                  drop=options.drop,
-                                 modif=modif).run()
+                                 modif=modif,
+                                 path=path).run()
