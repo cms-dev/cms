@@ -1,4 +1,37 @@
 {% extends base.html %}
+{% block js %}
+
+function __received_file(response, file_name)
+{
+
+    var escaped_response = response.replace("<","&lt;").replace(">","&gt;");
+    var pre_class="";
+    if(file_name.match(/.c(|pp)$/i))
+    {
+      pre_class = "brush: cpp";
+    }
+    else if (file_name.match(/.pas$/i))
+    {
+      pre_class = "brush: delphi";
+    }
+    var page = "<h1>" + file_name + "</h1>" + 
+                "<pre id=\"source_container\" class=\"" + pre_class + "\">" +
+                escaped_response + "</pre>";
+
+    utils.display_subpage(page);
+    SyntaxHighlighter.highlight()
+}
+
+function show_file(file_name, url)
+{
+    cmsutils.ajax_request(url, null, 
+      function(response){
+        __received_file(response, file_name);
+      }
+    );
+}
+
+{% end %}
 {% block core %}
 
 <h1>{{ task.title }} ({{ task.name }})</h1>
@@ -129,8 +162,12 @@
         </td>
         <td>
           {% for filename,sub_file in s.files.items() %}
-          <a href="/submission_file/{{ encrypt_number(sub_file.id) }}">{{ escape(filename) }}<br/>
-            {% end %}
+          <a href="#" 
+             onclick="show_file('{{ filename }}', '/submission_file/{{ encrypt_number(sub_file.id) }}');">
+              {{ escape(filename) }}
+          </a>
+          <br/>
+          {% end %}
             <td>
               {% if s.token is None %}
               {{ _("No") }}
