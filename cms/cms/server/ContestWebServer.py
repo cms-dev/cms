@@ -340,8 +340,9 @@ class NotificationsHandler(BaseHandler):
     """Displays notifications.
 
     """
-    @tornado.web.authenticated
     def get(self):
+        if not self.current_user:
+            raise tornado.web.HTTPError(403)
         timestamp = int(time.time())
         res = []
         last_notification = float(self.get_argument("last_notification", "0"))
