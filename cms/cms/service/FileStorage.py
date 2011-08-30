@@ -460,6 +460,41 @@ class FileCacher:
                            the service that created the FileCacher)
 
         """
+
+        def _put_file_callback(self, plus):
+            """Callback for put_file, move the temporary file to the right
+            place in the cache and call the real callback with the digest.
+
+            plus (dict): a dictionary with the fields: digest,
+                         callback, plus, error, temp_path
+
+            """
+            callback, bind_obj = plus["callback"], plus["bind_obj"]
+            if plus["error"] is not None:
+                logger.error(plus["error"])
+                if callback is not None:
+                    callback(bind_obj, None, plus["plus"], plus["error"])
+            else:
+                shutil.move(plus["temp_path"],
+                            os.path.join(self.obj_dir, plus["digest"]))
+                callback(bind_obj, plus["digest"], plus["plus"], None)
+
+            # Do not call me again:
+            return False
+
+        @rpc_callback
+        def _put_file_remote_callback(self, data, plus, error=None):
+            """Callback for put_file, obtains the digest and call the
+            local callback.
+
+            plus (dict): a dictionary with the fields: callback, plus,
+                         temp_path
+
+            """
+            plus["digest"] = data
+            plus["error"] = error
+            _put_file_callback(self, plus)
+
         if sum(map(lambda x: {True: 1, False: 0}[x is not None],
                    [binary_data, file_obj, path])) != 1:
             logger.error("No content (or too many) specified in put_file.")
@@ -487,7 +522,7 @@ class FileCacher:
             except IOError as e:
                 new_plus["error"] = repr(e)
                 new_plus["digest"] = None
-                self.service.add_timeout(self._put_file_callback, new_plus,
+                self.service.add_timeout(_put_file_callback, new_plus,
                                          100, immediately=True)
 
         elif binary_data is not None:
@@ -506,43 +541,9 @@ class FileCacher:
 
         self.file_storage.put_file(binary_data=binary_data,
                                    description=description,
-                                   callback=FileCacher._put_file_remote_callback,
+                                   callback=_put_file_remote_callback,
                                    bind_obj=self,
                                    plus=new_plus)
-
-    @rpc_callback
-    def _put_file_remote_callback(self, data, plus, error=None):
-        """Callback for put_file, obtains the digest and call the
-        local callback.
-
-        plus (dict): a dictionary with the fields: callback, plus,
-                     temp_path
-
-        """
-        plus["digest"] = data
-        plus["error"] = error
-        self._put_file_callback(plus)
-
-    def _put_file_callback(self, plus):
-        """Callback for put_file, move the temporary file to the right
-        place in the cache and call the real callback with the digest.
-
-        plus (dict): a dictionary with the fields: digest,
-                     callback, plus, error, temp_path
-
-        """
-        callback, bind_obj = plus["callback"], plus["bind_obj"]
-        if plus["error"] is not None:
-            logger.error(plus["error"])
-            if callback is not None:
-                callback(bind_obj, None, plus["plus"], plus["error"])
-        else:
-            shutil.move(plus["temp_path"],
-                        os.path.join(self.obj_dir, plus["digest"]))
-            callback(bind_obj, plus["digest"], plus["plus"], None)
-
-        # Do not call me again:
-        return False
 
     ## PUT SYNTACTIC SUGARS ##
 
