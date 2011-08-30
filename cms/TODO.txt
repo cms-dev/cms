@@ -65,7 +65,14 @@
 * Add support to optionally check file digests when trasferring them, both
   on client and on server side. Moreover, add an API call to ask the
   server to verify some file's digest.
+* Duly document callbacks in FileCacher.
 
 *** AsyncLibrary
 * Duly document the make_sync decorator.
+* Understand which call we need when a long running function has time
+  to spare (_step? asyncore.loop?), for example as in make_sync
+  implementation.
+* Decide on bind_obj=None behaviour and about keeping bind_obj.
+* Add a method to do a one-time deferred call (like add_timeout(),
+  but just one time).
 
