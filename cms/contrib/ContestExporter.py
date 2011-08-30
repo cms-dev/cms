@@ -47,21 +47,23 @@ class ContestExporter(Service):
         Service.__init__(self, shard)
         self.FS = self.connect_to(
             ServiceCoord("FileStorage", 0))
-        if not self.FS.connected:
-            logger.error("Please run the FileStorage service.")
-            self.exit()
         self.FC = FileCacher(self, self.FS)
-
+        self.add_timeout(self.do_export, None, 10, immediately=True)
 
     def do_export(self):
-        logger.operation = "exporting contest %d" % (self.contest_id)
+        if not self.FS.connected:
+            logger.warning("Please run FileStorage.")
+            return True
+
+        logger.operation = "exporting contest %d" % self.contest_id
         logger.info("Starting export")
 
         logger.info("Creating dir structure")
         try:
             os.mkdir(self.export_dir)
         except OSError:
-            logger.error("The specified directory already exists, I won't overwrite it")
+            logger.error("The specified directory already exists, "
+                         "I won't overwrite it")
             sys.exit(1)
         files_dir = os.path.join(self.export_dir, "files")
         descr_dir = os.path.join(self.export_dir, "descriptions")
@@ -128,6 +130,8 @@ class ContestExporter(Service):
 
         logger.info("Export finished")
         logger.operation = ""
+        self.exit()
+        return False
 
     def safe_get_file(self, digest, path, descr_path=None):
         # First get the file
@@ -168,8 +172,7 @@ def main():
     contest_exporter = ContestExporter(shard=options.shard,
                                        contest_id=options.contest_id,
                                        dump=options.dump,
-                                       export_dir=args[0])
-    contest_exporter.do_export()
+                                       export_dir=args[0]).run()
 
 if __name__ == "__main__":
     main()

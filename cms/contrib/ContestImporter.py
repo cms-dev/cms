@@ -46,13 +46,14 @@ class ContestImporter(Service):
         Service.__init__(self, shard)
         self.FS = self.connect_to(
             ServiceCoord("FileStorage", 0))
-        if not self.FS.connected:
-            logger.error("Please run the FileStorage service.")
-            self.exit()
         self.FC = FileCacher(self, self.FS)
-
+        self.add_timeout(self.do_import, None, 10, immediately=True)
 
     def do_import(self):
+        if not self.FS.connected:
+            logger.warning("Please run FileStorage.")
+            return True
+
         logger.operation = "importing contest from %s" % (self.import_dir)
         logger.info("Starting import")
 
@@ -86,6 +87,8 @@ class ContestImporter(Service):
 
         logger.info("Import finished")
         logger.operation = ""
+        self.exit()
+        return False
 
     def safe_put_file(self, path, descr_path):
         # First read the description
@@ -123,8 +126,7 @@ def main():
 
     contest_importer = ContestImporter(shard=options.shard,
                                        drop=options.drop,
-                                       import_dir=args[0])
-    contest_importer.do_import()
+                                       import_dir=args[0]).run()
 
 if __name__ == "__main__":
     main()

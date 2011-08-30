@@ -81,6 +81,8 @@ class BaseHandler(tornado.web.RequestHandler):
 
         tornado.locale.load_gettext_translations(os.path.join(os.path.dirname(__file__),"mo"), "messages")
 
+        self._ = self.get_browser_locale().translate
+
     def get_current_user(self):
         """Gets the current user logged in from the cookies
 
@@ -415,9 +417,9 @@ class QuestionHandler(BaseHandler):
         self.application.service.add_notification(
             self.current_user.username,
             timestamp,
-            "Question received",
-            "Your question has been received, you will be "
-            "notified when the it will be answered.")
+            self._("Question received"),
+            self._("Your question has been received, you will be "
+                   "notified when the it will be answered."))
 
         self.redirect("/communication")
 
@@ -543,9 +545,9 @@ class SubmitHandler(BaseHandler):
         self.application.service.add_notification(
             self.current_user.username,
             int(time.time()),
-            "Submission received",
-            "Your submission has been received "
-            "and is currently being evaluated.")
+            self._("Submission received"),
+            self._("Your submission has been received "
+                   "and is currently being evaluated."))
 
         self.redirect("/tasks/%s" % self.task.name)
 
@@ -593,9 +595,9 @@ class UseTokenHandler(BaseHandler):
             self.application.service.add_notification(
                 self.current_user.username,
                 timestamp,
-                "Token request discarded",
-                "Your request has been discarded because you have no "
-                "tokens available.")
+                self._("Token request discarded"),
+                self._("Your request has been discarded because you have no "
+                       "tokens available."))
             self.redirect("/tasks/%s" % submission.task.name)
             return
 
@@ -610,8 +612,9 @@ class UseTokenHandler(BaseHandler):
         self.application.service.add_notification(
             self.current_user.username,
             timestamp,
-            "Token request received",
-            "Your request has been received and applied to the submission.")
+            self._("Token request received"),
+            self._("Your request has been received "
+                   "and applied to the submission."))
 
         self.redirect("/tasks/%s" % submission.task.name)
 

@@ -46,9 +46,6 @@ class TestFileStorage(TestService):
 
         self.FS = self.connect_to(
             ServiceCoord("FileStorage", 0))
-        if not self.FS.connected:
-            logger.error("Please run the FileStorage service.")
-            self.exit()
 
 ### TEST 000 ###
 
