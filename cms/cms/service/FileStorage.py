@@ -318,34 +318,27 @@ class FileCacher:
         """
 
         @rpc_callback
-        def _got_file_to_write_file(self, data, plus, error=None):
+        def _got_file_to_write_file(self, data, plus2, error=None):
             """Callback for get_file_to_write_file that copies the content
             of the received file to the specified file-like object.
 
             data(file): the file got from get_file()
-            plus(dict): a dictionary with the fields: callback, plus, bind_obj,
-                        file_obj
+            plus2(dict): ignored
 
             """
-            orig_callback, orig_plus, bind_obj, file_obj = \
-                plus['callback'], plus['plus'], plus['bind_obj'], plus['file_obj']
-            if orig_callback is not None:
+            if callback is not None:
                 if error is not None:
-                    orig_callback(bind_obj, None, orig_plus, error)
+                    callback(bind_obj, None, plus, error)
                 else:
-                    file_content = data.read()
-                    file_obj.write(file_content)
-                    orig_callback(bind_obj, file_content, orig_plus)
+                    shutil.copyfileobj(data, file_obj)
+                    data.close()
+                    callback(bind_obj, None, plus)
 
         if bind_obj is None:
             bind_obj = self.service
-        new_plus = {'callback': callback,
-                    'plus': plus,
-                    'bind_obj': bind_obj,
-                    'file_obj': file_obj}
         return self.get_file(digest=digest,
                              callback=_got_file_to_write_file,
-                             plus=new_plus,
+                             plus=None,
                              bind_obj=self)
 
     @make_sync()
@@ -403,7 +396,7 @@ class FileCacher:
         """
 
         @rpc_callback
-        def _got_file_to_string(self, data, plus, error=None):
+        def _got_file_to_string(self, data, plus2, error=None):
             """Callback for get_file_to_string that unpacks the file-like object
             to a string representing its content.
 
@@ -411,24 +404,20 @@ class FileCacher:
             plus(dict): a dictionary with the fields: callback, plus, bind_obj
 
             """
-            orig_callback, orig_plus, bind_obj = plus['callback'], plus['plus'], plus['bind_obj']
-            if orig_callback is not None:
+            if callback is not None:
                 if error is not None:
-                    orig_callback(bind_obj, None, orig_plus, error)
+                    callback(bind_obj, None, plus, error)
                 else:
                     file_content = data.read()
                     data.close()
-                    orig_callback(bind_obj, file_content, orig_plus)
+                    callback(bind_obj, file_content, plus)
 
         if bind_obj is None:
             bind_obj = self.service
-        new_plus = {'callback': callback,
-                    'plus': plus,
-                    'bind_obj': bind_obj}
 
         return self.get_file(digest=digest,
                              callback=_got_file_to_string,
-                             plus=new_plus,
+                             plus=None,
                              bind_obj=self)
 
 
