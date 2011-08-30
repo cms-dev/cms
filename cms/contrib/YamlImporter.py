@@ -61,6 +61,8 @@ class YamlImporter(Service):
                 os.path.join(path, "contest.yaml"),
                 "r", "utf-8"))
 
+        logger.info("Loading parameters for contest %s" % (name))
+
         params = {"name": name}
         assert name == conf["nome_breve"]
         params["description"] = conf["nome"]
@@ -79,6 +81,9 @@ class YamlImporter(Service):
         else:
             params["start"] = conf.get("inizio", 0)
             params["stop"] = conf.get("fine", 0)
+
+        logger.info("Contest parameters loaded")
+
         return params, conf["problemi"], conf["utenti"]
 
     def get_params_for_user(self, user_dict):
@@ -88,6 +93,9 @@ class YamlImporter(Service):
         """
         params = {}
         params["username"] = user_dict["username"]
+
+        logger.info("Loading parameters for user %s" % (params['username']))
+
         if self.modif == 'test':
             params["password"] = 'a'
             params["ip"] = '0.0.0.0'
@@ -98,6 +106,9 @@ class YamlImporter(Service):
         surname = user_dict.get("cognome", user_dict["username"])
         params["real_name"] = " ".join([name, surname])
         params["hidden"] = "True" == user_dict.get("fake", "False")
+
+        logger.info("User parameters loaded")
+
         return params
 
     def get_params_for_task(self, path):
@@ -110,6 +121,8 @@ class YamlImporter(Service):
         conf = yaml.load(codecs.open(\
                 os.path.join(super_path, name + ".yaml"),
                 "r", "utf-8"))
+
+        logger.info("Loading parameters for task %s" % (name))
 
         params = {"name": name}
         assert name == conf["nome_breve"]
@@ -150,6 +163,9 @@ class YamlImporter(Service):
         params["token_min_interval"] = conf.get("token_min_interval", None)
         params["token_gen_time"] = conf.get("token_gen_time", None)
         params["token_gen_number"] = conf.get("token_gen_number", None)
+
+        logger.info("Task parameters loaded")
+
         return params
 
     def import_contest(self):
@@ -171,17 +187,26 @@ class YamlImporter(Service):
             logger.warning("Please run FileStorage.")
             return True
 
+        logger.info("Creating database structure")
         if self.drop:
             metadata.drop_all()
         metadata.create_all()
+
         c = self.import_contest()
+
+        logger.info("Creating contest on the database")
         session = Session()
         session.add(c)
         c.create_empty_ranking_view()
         session.flush()
+
+        logger.info("Analyzing database")
         analyze_all_tables(session)
         session.commit()
         session.close()
+
+        logger.info("Import finished")
+
         self.exit()
         return False
 
