@@ -440,23 +440,21 @@ class FileCacher:
 
         """
 
-        def _put_file_callback(self, plus):
+        temp_path = os.path.join(self.tmp_dir, random_string(16))
+
+        def _put_file_callback(data, error):
             """Callback for put_file, move the temporary file to the right
             place in the cache and call the real callback with the digest.
 
-            plus (dict): a dictionary with the fields: digest,
-                         callback, plus, error, temp_path
-
             """
-            callback, bind_obj = plus["callback"], plus["bind_obj"]
-            if plus["error"] is not None:
-                logger.error(plus["error"])
+            if error is not None:
+                logger.error(error)
                 if callback is not None:
-                    callback(bind_obj, None, plus["plus"], plus["error"])
+                    callback(bind_obj, None, plus, error)
             else:
-                shutil.move(plus["temp_path"],
-                            os.path.join(self.obj_dir, plus["digest"]))
-                callback(bind_obj, plus["digest"], plus["plus"], None)
+                shutil.move(temp_path,
+                            os.path.join(self.obj_dir, data))
+                callback(bind_obj, data, plus, None)
 
             # Do not call me again:
             return False
@@ -470,9 +468,7 @@ class FileCacher:
                          temp_path
 
             """
-            plus["digest"] = data
-            plus["error"] = error
-            _put_file_callback(self, plus)
+            _put_file_callback(data, error)
 
         if sum(map(lambda x: {True: 1, False: 0}[x is not None],
                    [binary_data, file_obj, path])) != 1:
@@ -481,12 +477,7 @@ class FileCacher:
 
         if bind_obj is None:
             bind_obj = self.service
-        temp_path = os.path.join(self.tmp_dir, random_string(16))
-        new_plus = {"callback": callback,
-                    "plus": plus,
-                    "temp_path": temp_path,
-                    "bind_obj": bind_obj
-                    }
+
         if path is not None:
             # If we cannot store locally the file, we do not report
             # errors
@@ -499,10 +490,9 @@ class FileCacher:
             try:
                 binary_data = open(path, "rb").read()
             except IOError as e:
-                new_plus["error"] = repr(e)
-                new_plus["digest"] = None
-                self.service.add_timeout(_put_file_callback, new_plus,
-                                         100, immediately=True)
+                error = repr(e)
+                callback(bind_obj, None, plus, error)
+                return
 
         elif binary_data is not None:
             # Again, no error for inability of caching locally
@@ -521,8 +511,8 @@ class FileCacher:
         self.file_storage.put_file(binary_data=binary_data,
                                    description=description,
                                    callback=_put_file_remote_callback,
-                                   bind_obj=self,
-                                   plus=new_plus)
+                                   plus=[],
+                                   bind_obj=self)
 
     ## PUT SYNTACTIC SUGARS ##
 
