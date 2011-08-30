@@ -51,6 +51,7 @@ class TestFileCacher(TestService):
         self.digest = None
         self.file_obj = None
 
+    def prepare(self):
         self.FS = self.connect_to(
             ServiceCoord("FileStorage", 0))
         if not self.FS.connected:
