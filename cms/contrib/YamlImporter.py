@@ -44,10 +44,7 @@ class YamlImporter(Service):
         self.FS = self.connect_to(
             ServiceCoord("FileStorage", 0),
             sync=True)
-        if not self.FS.connected:
-            logger.error("Please run the FileStorage service.")
-            self.exit()
-
+        self.add_timeout(self.do_import, None, 10, immediately=True)
 
     def get_params_for_contest(self, path):
         """Given the path of a contest, extract the data from its
@@ -83,7 +80,6 @@ class YamlImporter(Service):
             params["stop"] = conf.get("fine", 0)
         return params, conf["problemi"], conf["utenti"]
 
-
     def get_params_for_user(self, user_dict):
         """Given the dictionary of information of a user (extracted from
         contest.yaml), it fills another dictionary with the parameters to
@@ -102,7 +98,6 @@ class YamlImporter(Service):
         params["real_name"] = " ".join([name, surname])
         params["hidden"] = "True" == user_dict.get("fake", "False")
         return params
-
 
     def get_params_for_task(self, path):
         """Given the path of a task, this function put all needed data
@@ -156,7 +151,6 @@ class YamlImporter(Service):
         params["token_gen_number"] = conf.get("token_gen_number", None)
         return params
 
-
     def import_contest(self, path):
         """Import a contest into the system.
         """
@@ -171,8 +165,11 @@ class YamlImporter(Service):
             params["users"].append(User(**user_params))
         return Contest(**params)
 
-
     def do_import(self, dir):
+        if not self.FS.connected:
+            logger.warning("Please run FileStorage.")
+            return True
+
         if self.drop:
             metadata.drop_all()
         metadata.create_all()
@@ -184,6 +181,8 @@ class YamlImporter(Service):
         analyze_all_tables(session)
         session.commit()
         session.close()
+        self.exit()
+        return False
 
 if __name__ == "__main__":
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
@@ -212,5 +211,6 @@ if __name__ == "__main__":
     elif options.zero_time:
         modif = 'zero_time'
 
-    yaml_importer = YamlImporter(shard=options.shard, drop=options.drop, modif=modif)
-    yaml_importer.do_import(dir=args[0])
+    yaml_importer = YamlImporter(shard=options.shard,
+                                 drop=options.drop,
+                                 modif=modif).run()

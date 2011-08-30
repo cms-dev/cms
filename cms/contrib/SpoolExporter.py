@@ -42,13 +42,14 @@ class SpoolExporter(Service):
         Service.__init__(self, shard)
         self.FS = self.connect_to(
             ServiceCoord("FileStorage", 0))
-        if not self.FS.connected:
-            logger.error("Please run the FileStorage service.")
-            self.exit()
         self.FC = FileCacher(self, self.FS)
-
+        self.add_timeout(self.do_export, None, 10, immediately=True)
 
     def do_export(self):
+        if not self.FS.connected:
+            logger.warning("Please run FileStorage.")
+            return True
+
         logger.operation = "exporting contest %d" % (self.contest_id)
         logger.info("Starting export")
 
@@ -138,6 +139,9 @@ class SpoolExporter(Service):
 
             logger.info("Export finished")
             logger.operation = ""
+        self.exit()
+        return False
+
 
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
@@ -154,8 +158,9 @@ def main():
     if options.contest_id is None:
         options.contest_id = ask_for_contest()
 
-    spool_exporter = SpoolExporter(shard=options.shard, contest_id=options.contest_id, spool_dir=args[0])
-    spool_exporter.do_export()
+    spool_exporter = SpoolExporter(shard=options.shard,
+                                   contest_id=options.contest_id,
+                                   spool_dir=args[0]).run()
 
 if __name__ == "__main__":
     main()
