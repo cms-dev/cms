@@ -508,6 +508,7 @@ class FileCacher:
             except IOError:
                 pass
 
+        # FIXME - Why isn't plus=None working?
         self.file_storage.put_file(binary_data=binary_data,
                                    description=description,
                                    callback=_put_file_remote_callback,
