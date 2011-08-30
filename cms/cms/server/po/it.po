@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-08-28 23:45+0200\n"
-"PO-Revision-Date: 2011-08-28 22:50+0200\n"
+"POT-Creation-Date: 2011-08-30 19:07+0200\n"
+"PO-Revision-Date: 2011-08-30 19:11+0100\n"
 "Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -17,39 +17,77 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: templates/contest/base.html:44
+#: ContestWebServer.py:418
+msgid "Question received"
+msgstr "Domanda ricevuta"
+
+#: ContestWebServer.py:419
+msgid "Your question has been received, you will be notified when the it will be answered."
+msgstr "La tua domanda è stata inviata, riceverai una notifica quando sarà risposta. "
+
+#: ContestWebServer.py:546
+msgid "Submission received"
+msgstr "Sottoposizione ricevuta"
+
+#: ContestWebServer.py:547
+msgid "Your submission has been received and is currently being evaluated."
+msgstr "La tua sottoposizione è stata ricevuta e in questo momento sta per essere valutata."
+
+#: ContestWebServer.py:596
+msgid "Token request discarded"
+msgstr "Uso del gettone rifiutato "
+
+#: ContestWebServer.py:597
+msgid "Your request has been discarded because you have no tokens available."
+msgstr "La tua richiesta è stata rifiutata perché non hai gettoni disponibili."
+
+#: ContestWebServer.py:613
+msgid "Token request received"
+msgstr "Richiesta di uso del gettone ricevuta"
+
+#: ContestWebServer.py:614
+msgid "Your request has been received and applied to the submission."
+msgstr "La tua richiesta è stata ricevuta e applicata alla sottoposizione."
+
+#: templates/contest/base.html:46
 msgid "Overview"
 msgstr "Panoramica"
 
-#: templates/contest/base.html:45 templates/contest/instructions.html:4
+#: templates/contest/base.html:49
+#: templates/contest/instructions.html:4
 msgid "Instructions"
 msgstr "Istruzioni"
 
-#: templates/contest/base.html:46 templates/contest/communication.html:3
+#: templates/contest/base.html:53
+#: templates/contest/communication.html:3
 msgid "Communication"
 msgstr "Comunicazioni"
 
-#: templates/contest/base.html:50
+#: templates/contest/base.html:58
 msgid "Tasks:"
 msgstr "Problemi:"
 
-#: templates/contest/base.html:62
+#: templates/contest/base.html:70
 msgid "Failed to log in."
 msgstr "Accesso fallito."
 
-#: templates/contest/base.html:67
+#: templates/contest/base.html:75
 msgid "Username:"
 msgstr "Username:"
 
-#: templates/contest/base.html:71
+#: templates/contest/base.html:79
 msgid "Password:"
 msgstr "Password:"
 
-#: templates/contest/base.html:78
+#: templates/contest/base.html:82
+msgid "Sign in"
+msgstr "Accedi"
+
+#: templates/contest/base.html:86
 msgid "Time left:"
 msgstr "Tempo rimanente:"
 
-#: templates/contest/base.html:80
+#: templates/contest/base.html:88
 msgid "logout"
 msgstr "esci"
 
@@ -64,6 +102,10 @@ msgstr "Oggetto:"
 #: templates/contest/communication.html:10
 msgid "Text:"
 msgstr "Testo:"
+
+#: templates/contest/communication.html:12
+msgid "Ask question"
+msgstr "Poni la domanda"
 
 #: templates/contest/communication.html:17
 msgid "Questions"
@@ -181,23 +223,29 @@ msgstr "Limite di memoria: %(mb)s MB."
 msgid "Submit a solution"
 msgstr "Sottoponi una soluzione"
 
+#: templates/contest/task.html:20
+msgid "Submit"
+msgstr "Sottoponi"
+
 #: templates/contest/task.html:26
 msgid "Previous submissions"
 msgstr "Sottoposizioni precedenti"
 
-#: templates/contest/task.html:33 templates/contest/task.html:42
+#: templates/contest/task.html:33
+#: templates/contest/task.html:42
 #, python-format
 msgid "Right now, you have %(tokens)s token(s) available on this task."
-msgstr ""
-"In questo momento, hai %(tokens)s gettoni disponibili per questo problema."
+msgstr "In questo momento, hai %(tokens)s gettoni disponibili per questo problema."
 
-#: templates/contest/task.html:35 templates/contest/task.html:45
+#: templates/contest/task.html:35
+#: templates/contest/task.html:45
 #: templates/contest/task.html:54
 #, python-format
 msgid "You will receive a new token at %(gen_time)s."
 msgstr "Riceverai un nuovo gettone alle %(gen_time)s."
 
-#: templates/contest/task.html:37 templates/contest/task.html:47
+#: templates/contest/task.html:37
+#: templates/contest/task.html:47
 #: templates/contest/task.html:59
 msgid "In the current situation, no more tokens will be generated."
 msgstr "Nella situazione attuale, nessun nuovo gettone verrà generato."
@@ -270,9 +318,7 @@ msgstr "Dettagli"
 
 #: templates/contest/task.html:119
 msgid "No specified testcases for partial feedback for this task."
-msgstr ""
-"Nessun caso di prova specificato per le informazioni parziali per questo "
-"problema."
+msgstr "Nessun caso di prova specificato per le informazioni parziali per questo problema."
 
 #: templates/contest/task.html:124
 msgid "Compilation output"
@@ -282,6 +328,11 @@ msgstr "Output della compilazione"
 msgid "No"
 msgstr "No"
 
+#: templates/contest/task.html:140
+msgid "Use!"
+msgstr "Usa!"
+
 #: templates/contest/task.html:144
 msgid "Yes"
 msgstr "Sì"
+

@@ -17,7 +17,7 @@
 <div id="submit_solution">
   <form enctype="multipart/form-data" action="/submit/{{ task.name }}" method="post">
     <input type="file" name="{{ task.name }}"></input>
-    <input type="submit" value="{{ _("Submit") }}"></input>
+    <input type="submit" value="{{ _("Submit") }}"></input>{% comment _("Submit") %}
   </form>
   <div class="hr"></div>
 </div>
@@ -137,7 +137,7 @@
                 {% if can_play_token %}
               <form style="display: inline;" class="submit_form" action="/usetoken" method="POST">
                 <input type="hidden" name="submission_id" value="{{ encrypt_number(s.id) }}" />
-                <input type="submit" value="{{ _("Use!") }}" />
+                <input type="submit" value="{{ _("Use!") }}" />{% comment _("Use!") %}
               </form>
                 {% end %}
               {% else %}

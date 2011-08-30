@@ -79,7 +79,7 @@ window.onload = init;
             <div class="sidebar_left">{{ _("Password:") }}</div>
             <div class="sidebar_right"><input type="password" name="password" size="12" /></div>
           </div>
-          <div class="footer sidebar_right"><input type="submit" value="{{ _("Sign in") }}" /></div>
+          <div class="footer sidebar_right"><input type="submit" value="{{ _("Sign in") }}" /></div>{% comment _("Sign in") %}
         </form>
         {% else %}
           {% if phase != 1 %}
