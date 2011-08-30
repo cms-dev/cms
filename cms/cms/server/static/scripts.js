@@ -16,6 +16,20 @@
     Utils.prototype =
     {
 
+        display_subpage: function(content)
+        {
+            var subpage = document.getElementById("subcore");
+            var subcontent = document.getElementById("subcontent");
+            subpage.style.display = "block";
+            subcontent.innerHTML = content;
+        },
+
+        hide_subpage: function()
+        {
+            var subpage = document.getElementById("subcore");
+            subpage.style.display="none";
+        },
+
         /**
          * To be added to the onclick of an element named
          * title_XXX. Hide/show an element named XXX, and change the class

@@ -363,7 +363,7 @@ class SubmissionFileHandler(FileHandler):
     @tornado.web.asynchronous
     def get(self, file_id):
 
-        sub_file = File.get_from_id(file_id, sql_session)
+        sub_file = File.get_from_id(file_id, self.sql_session)
 
         if sub_file == None:
             raise tornado.web.HTTPError(404)
