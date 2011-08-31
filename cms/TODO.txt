@@ -83,4 +83,5 @@
   but just one time).
   - Already done, but it has many shortcomings and completely breaks
     synchronous interfaces.
+* MED: Fix sync default.
 
