@@ -8,7 +8,7 @@
 * Ensure that CWS in particular, but also everything else, does not
   rely on the particular value of the id of the database
   objects. E.g., we may assume that everything work as expected even
-  if we scramble all ids int he db (keeping the relations correct, of
+  if we scramble all ids in the db (keeping the relations correct, of
   course). This actually happens when we call ContestExporter and
   ContestImporter.
 
@@ -27,9 +27,9 @@
 * When starting, check that the workers are not doing anything and
   possibly stop them / wait for them to be finished.
 * Really, really slow to add the already evaluated submissions at
-  start. The problem seems to be at ScoreType level (i.e., rebuilding
-  the scores each time something new arrive, even if scoretype is not
-  relative).
+  start. The problem is *not* related to unnecessary updates. Indeed,
+  most of the time is spent when we first mention
+  contest.rankingview.scores. Is this a sqlite issue?
 
 *** ContestWebServer
 * It _MUST_ be able to work correctly (storing submitted data) even if
