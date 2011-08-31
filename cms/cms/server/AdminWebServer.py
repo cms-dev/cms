@@ -70,7 +70,7 @@ class BaseHandler(tornado.web.RequestHandler):
         self.sql_session = Session()
         self.contest = None
 
-        tornado.locale.load_gettext_translations("cms/server/mo/", "messages")
+        tornado.locale.load_gettext_translations(os.path.join(os.path.dirname(__file__),"mo"), "messages")
 
     def render_params(self):
         """Return the default render params used by almost all handlers.
