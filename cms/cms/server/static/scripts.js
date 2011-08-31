@@ -15,21 +15,55 @@
 
     Utils.prototype =
     {
-
+        /**
+         * Displays a subpage over the current page with the
+         * specified content.
+         */
         display_subpage: function(content)
         {
-            var subpage = document.getElementById("subcore");
-            var subcontent = document.getElementById("subcontent");
+            var subpage = document.getElementById("subpage");
+            var subcontent = document.getElementById("subpage_content");
             subpage.style.display = "block";
             subcontent.innerHTML = content;
         },
 
+        /**
+         * Hides a subpage previously displayed.
+         */
         hide_subpage: function()
         {
-            var subpage = document.getElementById("subcore");
+            var subpage = document.getElementById("subpage");
             subpage.style.display="none";
         },
 
+        /**
+        * Displays a subpage with the content of the file at the
+        * specified url.
+        */
+        show_file: function(file_name, url)
+        {
+            cmsutils.ajax_request(url, null, 
+                function(response){
+                    var escaped_response = response.replace("<","&lt;").replace(">","&gt;");
+                    var pre_class="";
+                    if(file_name.match(/.c(|pp)$/i))
+                    {
+                      pre_class = "brush: cpp";
+                    }
+                    else if (file_name.match(/.pas$/i))
+                    {
+                      pre_class = "brush: delphi";
+                    }
+                    var page = "<h1>" + file_name + "</h1>" + 
+                                "<pre id=\"source_container\" class=\"" + pre_class + "\">" +
+                                escaped_response + "</pre>";
+
+                    utils.display_subpage(page);
+                    SyntaxHighlighter.highlight()
+                }
+            );
+        },
+        
         /**
          * To be added to the onclick of an element named
          * title_XXX. Hide/show an element named XXX, and change the class

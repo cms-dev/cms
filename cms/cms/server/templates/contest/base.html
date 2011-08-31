@@ -101,9 +101,10 @@ window.onload = init;
       
       <div id="core">
         <div id="notifications" class="notifications"></div>
-        <div id="subcore" onclick="var event = arguments[0] || window.event; event.stopPropagation()">
-          <div id="subborder"></div>
-          <div id="subcontent"></div>
+        <div id="subpage" onclick="var event = arguments[0] || window.event; event.stopPropagation()">
+          <div id="subpage_border"></div>
+          <div id="subpage_background"></div>
+          <div id="subpage_content"></div>
         </div>
         {% block core %}{% end %}
       </div>

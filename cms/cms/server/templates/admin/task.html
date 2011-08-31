@@ -132,10 +132,10 @@
           >
         </td>
         <td>
-          <a href="/file/{{ testcase.input }}/input{{ testcase.num }}">Get Input</a>
+          <a href="#" onclick="utils.show_file('input{{ testcase.num }}','/file/{{ testcase.input }}/input{{ testcase.num }}')">Show Input</a>
         </td>
         <td>
-          <a href="/file/{{ testcase.output }}/output{{ testcase.num }}">Get Output</a>
+          <a href="#" onclick="utils.show_file('output{{ testcase.num }}','/file/{{ testcase.output }}/output{{ testcase.num }}')">Show Output</a>
         </td>
         {% end %}
     </table>
