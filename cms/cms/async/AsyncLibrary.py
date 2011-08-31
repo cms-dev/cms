@@ -499,12 +499,14 @@ def make_sync(default_sync=False):
                     plus['error'] = error
                     plus['finished'] = True
 
+                # Remove duplicate parameters
+                for key in ['plus', 'bind_obj', 'callback']:
+                    try:
+                        del kwargs[key]
+                    except KeyError:
+                        pass
+
                 # Do the call...
-                
-                # FIXME: Why do I have to remove them?
-                del kwargs["plus"]
-                del kwargs["bind_obj"]
-                del kwargs["callback"]
                 func(callback=sync_callback,
                      plus=plus,
                      bind_obj=None,
