@@ -97,18 +97,21 @@ class BaseHandler(tornado.web.RequestHandler):
         self.sql_session.close()
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
-    def get_non_negative_int(self,argument_name, default):
+    def get_non_negative_int(self, argument_name, default):
         """ Get a non-negative integer from the arguments, or use the default if
         the argument is missing.
 
-        Raise TypeError if the argument can't be converted into a non-negative
+        Raise ValueError if the argument can't be converted into a non-negative
         integer.
 
         """
         argument = self.get_argument(argument_name, repr(default))
-        argument = int(argument)
+        try:
+            argument = int(argument)
+        except:
+            raise ValueError, "Can't cast " + str(argument) + " to int."
         if argument < 0:
-            raise TypeError, argument_name + " is negative."
+            raise ValueError, argument_name + " is negative."
         return argument
 
 FileHandler = file_handler_gen(BaseHandler)
@@ -190,28 +193,39 @@ class TaskViewHandler(BaseHandler):
         try:
             self.task.memory_limit = self.get_non_negative_int("memory_limit", self.task.memory_limit)
             if self.task.memory_limit == 0:
-                raise TypeError, "Memory limit is 0."
+                raise ValueError, "Memory limit is 0."
             self.task.token_initial = self.get_non_negative_int("token_initial", self.task.token_initial)
             self.task.token_max = self.get_non_negative_int("token_max", self.task.token_max)
             self.task.token_total = self.get_non_negative_int("token_total", self.task.token_total)
             self.task.token_min_interval = self.get_non_negative_int("token_min_interval", self.task.token_min_interval)
             self.task.token_gen_time = self.get_non_negative_int("token_gen_time", self.task.token_gen_time)
             self.task.token_gen_number = self.get_non_negative_int("token_gen_number", self.task.token_gen_number)
-        except TypeError as e:
+        except ValueError as e:
             self.write("Invalid fields: " + repr(e))
             self.finish()
             return
 
-        try:
-            for testcase in self.task.testcases:
-                testcase.public = self.get_argument("testcase_" + str(testcase.num) + "_public", False) != False
-        except TypeError as e:
-            self.write("Invalid public testcase field." + repr(e))
-            self.finish()
-            return
+
+        for testcase in self.task.testcases:
+            testcase.public = self.get_argument("testcase_" + str(testcase.num) + "_public", False) != False
+
 
         self.sql_session.commit()
         self.redirect("/task/" + str(self.task.id))
+
+class TaskStatementViewHandler(FileHandler):
+    """Shows the statement file of a task in the contest.
+
+    """
+    @tornado.web.asynchronous
+    def get(self, task_id):
+        r_params = self.render_params()
+        try:
+            task = Task.get_from_id(task_id, self.sql_session)
+        except IndexError:
+            self.write("Task %s not found." % task_id)
+
+        self.fetch(task.statement, "application/pdf", task.name + ".pdf")
 
 class EditContestHandler(BaseHandler):
     """Called when managers edit the information of a contest.
@@ -504,6 +518,8 @@ handlers = [(r"/",
              FileFromDigestHandler),
             (r"/task/([0-9]+)",
              TaskViewHandler),
+            (r"/task/([0-9]+)/statement",
+             TaskStatementViewHandler),
             (r"/submissions/details/([a-zA-Z0-9_-]+)",
              SubmissionDetailHandler),
             (r"/reevaluate/submission/([a-zA-Z0-9_-]+)",

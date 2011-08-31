@@ -23,6 +23,7 @@ import tornado.web
 import store
 import json
 import functools
+import submissions
 
 
 def create_handler(entity_store):
@@ -40,7 +41,7 @@ def create_handler(entity_store):
 
         def prepare(self):
             # uncomment the next line to be automatically authenticated
-            # self._current_user = "something"
+            self._current_user = "something"
             pass
 
         def get_current_user(self):
@@ -130,9 +131,67 @@ class NotificationHandler(tornado.web.RequestHandler):
         store.user_store.add_delete_callback(
             functools.partial(self.callback, "user", "deleted"))
 
+        submissions.submission_store.add_callback(self.score_callback)
+
     def callback(self, entity, event, key):
         self.write(entity + " " + event + " " + key + "\n")
         self.flush()
+
+    def score_callback(self, user, task, score):
+        self.write("score of " + user + " for " + task + " is now " + str(score) + "\n")
+        self.flush()
+
+
+class SubmissionHandler(tornado.web.RequestHandler):
+    def prepare(self):
+        # uncomment the next line to be automatically authenticated
+        self._current_user = "something"
+        pass
+
+    @tornado.web.authenticated
+    def post(self, entity_id):
+        # create
+        try:
+            submissions.submission_store.create(entity_id, json.loads(self.request.body))
+        except submissions.InvalidKey:
+            self.set_status(405)
+        except (ValueError, submissions.InvalidTime, submissions.InvalidData):
+            self.set_status(400)
+        else:
+            self.set_status(201)
+
+    @tornado.web.authenticated
+    def put(self, entity_id):
+        # update
+        try:
+            submissions.submission_store.update(entity_id, json.loads(self.request.body))
+        except submissions.InvalidKey:
+            self.set_status(404)
+        except (ValueError, submissions.InvalidTime, submissions.InvalidData):
+            self.set_status(400)
+        else:
+            self.set_status(200)
+
+    @tornado.web.authenticated
+    def delete(self, entity_id):
+        # delete
+        try:
+            submissions.submission_store.delete(entity_id)
+        except submissions.InvalidKey:
+            self.set_status(404)
+        else:
+            self.set_status(200)
+
+    def get(self, entity_id):
+        # retrieve
+        try:
+            entity = submissions.submission_store.retrieve(entity_id)
+        except submissions.InvalidKey:
+            self.set_status(404)
+        else:
+            self.set_status(200)
+            self.write(json.dumps(entity.dump()))
+
 
 
 if __name__ == "__main__":
@@ -141,6 +200,7 @@ if __name__ == "__main__":
         (r"/tasks/([A-Za-z0-9_]+)", create_handler(store.task_store)),
         (r"/teams/([A-Za-z0-9_]+)", create_handler(store.team_store)),
         (r"/users/([A-Za-z0-9_]+)", create_handler(store.user_store)),
+        (r"/subs/([A-Za-z0-9_]+)", SubmissionHandler),
         (r"/notifications", NotificationHandler),
     ])
     # application.add_transform (tornado.web.ChunkedTransferEncoding)

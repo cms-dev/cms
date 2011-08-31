@@ -100,7 +100,7 @@ function update_additional_answer(element, invoker)
         </td>
         <td>
           {% for filename,sub_file in s.files.items() %}
-          <a href="/submission_file/{{ sub_file.id }}">{{ escape(filename) }}<br/>
+          <a href="#" onclick="utils.show_file('{{ filename }}','/submission_file/{{ sub_file.id }}')">{{ filename }}<br/>
           {% end %}
         </td>
         <td>

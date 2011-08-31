@@ -21,6 +21,8 @@ function init()
   cmsutils = new CMSUtils();
   utils = new Utils({{ timestamp }}, 0, 0, -1);
 
+  document.onclick = utils.hide_subpage
+
   {% block js_init %}{% end %}
 }
 
@@ -41,6 +43,8 @@ function init()
   cmsrpc = new CMSAjaxRPC();
   cmsutils = new CMSUtils();
   utils = new Utils({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }});
+
+  document.onclick = utils.hide_subpage
 
   firstDate = new Date();
   utils.get_time();
@@ -109,6 +113,11 @@ window.onload = init();
       <div id="border"></div>
       <div id="core">
         <div id="notifications" class="notifications"></div>
+        <div id="subpage" onclick="var event = arguments[0] || window.event; event.stopPropagation()">
+          <div id="subpage_border"></div>
+          <div id="subpage_background"></div>
+          <div id="subpage_content"></div>
+        </div>
         {% block core %}{% end %}
       </div>
 
