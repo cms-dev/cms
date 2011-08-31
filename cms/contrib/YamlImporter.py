@@ -140,7 +140,7 @@ class YamlImporter(Service):
             with open(os.path.join(path, "cor", "correttore")) as f:
                 params["managers"] = {"checker": Manager(self.FS.put_file(binary_data=f.read(),
                                                                           description="Manager for task %s" % (name),
-                                                                          sync = True))}
+                                                                          sync=True))}
         except IOError:
             params["managers"] = {}
         params["score_type"] = conf.get("score_type", ScoreTypes.SCORE_TYPE_SUM)
@@ -156,10 +156,10 @@ class YamlImporter(Service):
                 with open(os.path.join(path, "output", "output%d.txt" % (i))) as fo:
                     params["testcases"].append(Testcase(self.FS.put_file(binary_data=fi.read(),
                                                                          description="Input %d for task %s" % (i, name),
-                                                                         sync = True),
+                                                                         sync=True),
                                                         self.FS.put_file(binary_data=fo.read(),
                                                                          description="Output %d for task %s" % (i, name),
-                                                                         sync = True),
+                                                                         sync=True),
                                                         public=(i in public_testcases)))
         params["token_initial"] = conf.get("token_initial", 0)
         params["token_max"] = conf.get("token_max", None)
