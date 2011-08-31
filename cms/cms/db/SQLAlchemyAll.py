@@ -40,6 +40,7 @@ from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 # Load all import_from_dict() class methods
 import cms.db.ImportFromDict
 
+
 # The following are methods of Contest that cannot be put in the right
 # file because of circular dependencies.
 
@@ -68,14 +69,26 @@ def create_empty_ranking_view(self, timestamp=0):
 Contest.create_empty_ranking_view = create_empty_ranking_view
 
 
-def update_ranking_view(self, scorers):
+def update_ranking_view(self, scorers, task=None, user=None):
     """Updates the ranking view with the scores coming from the
     ScoreType instance of every task in the contest.
 
+    scoresrs (dict): a dictionary indexed by task.id
+    task (Task): if not None, update only scores of given task
+    user (User): if not None, update only scores of given user
+
     """
-    for task in self.tasks:
+    tasks = [task]
+    if task is None:
+        tasks = self.tasks
+
+    users = [user]
+    if user is None:
+        users = self.users
+
+    for task in tasks:
         scorer = scorers[task.id]
-        for user in self.users:
+        for user in users:
             score = scorer.scores.get(user.username, 0.0)
             self.ranking_view.scores[(user.username, task.num)].score = score
 Contest.update_ranking_view = update_ranking_view

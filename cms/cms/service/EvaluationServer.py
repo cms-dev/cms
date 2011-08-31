@@ -636,7 +636,8 @@ class EvaluationServer(Service):
                                       submission.tokened())
                 contest = session.query(Contest).\
                           filter_by(id=self.contest_id).first()
-                contest.update_ranking_view(self.scorers)
+                contest.update_ranking_view(self.scorers,
+                                            task=submission.task)
                 session.commit()
         # Evaluation unsuccessful, we requeue (or not).
         else:

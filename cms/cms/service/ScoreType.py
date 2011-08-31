@@ -21,6 +21,7 @@
 
 from cms.async.AsyncLibrary import logger
 
+
 class ScoreTypes:
     """Contains constants for all defined score types.
 
