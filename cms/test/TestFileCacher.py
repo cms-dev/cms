@@ -66,6 +66,10 @@ class TestFileCacher(TestService):
         locally.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         self.content = ""
         for i in xrange(100):
             self.content += chr(random.randint(0, 255))
@@ -104,6 +108,10 @@ class TestFileCacher(TestService):
         """Retrieve the file.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am retrieving the ~100B binary file from FileCacher")
         self.fake_content = "Fake content.\n"
         with open(self.cache_path, "wb") as cached_file:
@@ -139,6 +147,10 @@ class TestFileCacher(TestService):
         """Get file from FileCacher.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am retrieving the file from FileCacher " +
                     "after deleting the cache.")
         os.unlink(self.cache_path)
@@ -175,6 +187,10 @@ class TestFileCacher(TestService):
         """Delete the file through FS and tries to get it again through FC.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am deleting the file from FileStorage.")
         self.FS.delete(digest=self.digest,
                        callback=TestFileCacher.test_003_callback,
@@ -218,6 +234,10 @@ class TestFileCacher(TestService):
         """Get unexisting file from FileCacher.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am retrieving an unexisting file from FileCacher.")
         self.FC.get_file_to_file(digest=self.digest,
                                  callback=TestFileCacher.test_004_callback,
@@ -244,6 +264,10 @@ class TestFileCacher(TestService):
         FileCacher as a string. FC should cache the content locally.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         self.content = ""
         for i in xrange(100):
             self.content += chr(random.randint(0, 255))
@@ -282,6 +306,10 @@ class TestFileCacher(TestService):
         """Retrieve the file as a string.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am retrieving the ~100B binary file from FileCacher "
                     "using get_file_to_string()")
         self.fake_content = "Fake content.\n"
@@ -317,6 +345,10 @@ class TestFileCacher(TestService):
         Use the synchronous interface.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         self.content = ""
         for i in xrange(100):
             self.content += chr(random.randint(0, 255))
@@ -346,6 +378,10 @@ class TestFileCacher(TestService):
         """Retrieve the file as a string. Use the synchronous interface.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am retrieving the ~100B binary file from FileCacher "
                     "using get_file_to_string() "
                     "and the synchronous interface")
@@ -370,6 +406,10 @@ class TestFileCacher(TestService):
         """Retrieve the file writing it on a file-like object.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am retrieving the ~100B binary file from FileCacher "
                     "using get_file_to_write_file()")
         self.fake_content = "Fake content.\n"
@@ -412,6 +452,10 @@ class TestFileCacher(TestService):
         synchronous interface.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am retrieving the ~100B binary file from FileCacher "
                     "using get_file_to_write_file() "
                     "and the synchronous interface")

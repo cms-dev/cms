@@ -44,7 +44,7 @@ class TestService(Service):
         self.current = -1
         self.ongoing = False
         self.failed = False
-        self.warned = False
+        self.retry = False
         self.add_timeout(self.test, None, 0.2, immediately=True)
 
     def test(self):
@@ -53,12 +53,15 @@ class TestService(Service):
         """
         if self.ongoing:
             return True
-        elif self.current >= 0 and not self.failed:
+        elif self.current >= 0 and not self.failed and not self.retry:
             self.total_time += self.delta
             logger.info("Test #%03d performed in %.2lf seconds." %
                         (self.current, self.delta))
 
-        self.current += 1
+        if not self.retry:
+            self.current += 1
+        else:
+            self.retry = False
         if self.ok != self.current:
             self.failed = True
 
@@ -86,10 +89,13 @@ class TestService(Service):
             logger.info("Not performing Test #%03d." % self.current)
         return True
 
-    def test_end(self, success, message=None):
+    def test_end(self, success, message=None, retry=False):
         """This method is to be called when finishing a test.
 
-        success (bool): True if the test was successful
+        success (bool): True if the test was successful.
+        message (string): optional message to log.
+        retry (bool): if success is False, and retry is True, we try
+                      again the same test.
 
         """
         if message is not None:
@@ -100,6 +106,8 @@ class TestService(Service):
         self.ongoing = False
         if success:
             self.ok += 1
+        else:
+            self.retry = retry
         self.delta = time.time() - self.start
 
 

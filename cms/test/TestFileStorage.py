@@ -53,6 +53,10 @@ class TestFileStorage(TestService):
         """Send a ~100B random binary file to FileStorage.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         self.content = ""
         for i in xrange(100):
             self.content += chr(random.randint(0, 255))
@@ -83,6 +87,10 @@ class TestFileStorage(TestService):
         """Retrieve the file.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am retrieving the ~100B binary file from FileStorage")
         self.FS.get_file(digest=self.digest,
                          callback=TestFileStorage.test_001_callback,
@@ -109,6 +117,10 @@ class TestFileStorage(TestService):
         """Retrieve the description.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am retrieving the description from FileStorage")
         self.FS.describe(digest=self.digest,
                          callback=TestFileStorage.test_002_callback,
@@ -135,6 +147,10 @@ class TestFileStorage(TestService):
         """Delete the file and tries to get it again.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am deleting the file from FileStorage")
         self.FS.delete(digest=self.digest,
                        callback=TestFileStorage.test_003_callback,
@@ -178,6 +194,10 @@ class TestFileStorage(TestService):
         """Delete the unexisting file.
 
         """
+        if not self.FS.connected:
+            self.test_end(False, "Please start FileStorage.", True)
+            return
+
         logger.info("  I am deleting the unexisting file from FileStorage")
         self.FS.delete(digest=self.digest,
                        callback=TestFileStorage.test_004_callback,
