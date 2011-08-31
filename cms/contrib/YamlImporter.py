@@ -132,13 +132,15 @@ class YamlImporter(Service):
         params["attachments"] = {} # FIXME - Use auxiliary
         with open(os.path.join(path, "testo", "testo.pdf")) as f:
             params["statement"] = self.FS.put_file(binary_data=f.read(),
-                                                   description="PDF statement for task %s" % (name))
+                                                   description="PDF statement for task %s" % (name),
+                                                   sync = True)
         params["task_type"] = Task.TASK_TYPE_BATCH
         params["submission_format"] = [SubmissionFormatElement("%s.%%l" % (name))]
         try:
             with open(os.path.join(path, "cor", "correttore")) as f:
                 params["managers"] = {"checker": Manager(self.FS.put_file(binary_data=f.read(),
-                                                                          description="Manager for task %s" % (name)))}
+                                                                          description="Manager for task %s" % (name),
+                                                                          sync = True))}
         except IOError:
             params["managers"] = {}
         params["score_type"] = conf.get("score_type", ScoreTypes.SCORE_TYPE_SUM)
@@ -153,9 +155,11 @@ class YamlImporter(Service):
             with open(os.path.join(path, "input", "input%d.txt" % (i))) as fi:
                 with open(os.path.join(path, "output", "output%d.txt" % (i))) as fo:
                     params["testcases"].append(Testcase(self.FS.put_file(binary_data=fi.read(),
-                                                                         description="Input %d for task %s" % (i, name)),
+                                                                         description="Input %d for task %s" % (i, name),
+                                                                         sync = True),
                                                         self.FS.put_file(binary_data=fo.read(),
-                                                                         description="Output %d for task %s" % (i, name)),
+                                                                         description="Output %d for task %s" % (i, name),
+                                                                         sync = True),
                                                         public=(i in public_testcases)))
         params["token_initial"] = conf.get("token_initial", 0)
         params["token_max"] = conf.get("token_max", None)

@@ -500,6 +500,11 @@ def make_sync(default_sync=False):
                     plus['finished'] = True
 
                 # Do the call...
+                
+                # FIXME: Why do I have to remove them?
+                del kwargs["plus"]
+                del kwargs["bind_obj"]
+                del kwargs["callback"]
                 func(callback=sync_callback,
                      plus=plus,
                      bind_obj=None,
