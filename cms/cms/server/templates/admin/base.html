@@ -69,7 +69,7 @@ window.onload = init();
       <div id="sidebar">
         <h1>Administration</h1>
         <ul class="menu">
-          <li class="menu_entry"><a class="menu_link" href="/">Overview</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/{% if contest != None %}{{ contest.id }}{% end %}">Overview</a></li>
         </ul>
         <div class="hr"></div>
         <select id="contest_selection_select" onchange="utils.switch_contest()">
