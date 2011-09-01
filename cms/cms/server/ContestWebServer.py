@@ -70,7 +70,7 @@ class BaseHandler(tornado.web.RequestHandler):
     child of this class.
 
     """
-    
+
     @catch_exceptions
     def prepare(self):
         """This method is executed at the beginning of each request.
@@ -82,7 +82,9 @@ class BaseHandler(tornado.web.RequestHandler):
         self.contest = Contest.get_from_id(self.application.service.contest,
                                            self.sql_session)
 
-        tornado.locale.load_gettext_translations(os.path.join(os.path.dirname(__file__),"mo"), "messages")
+        tornado.locale.load_gettext_translations(
+            os.path.join(os.path.dirname(__file__), "mo"),
+            "messages")
 
         self._ = self.get_browser_locale().translate
 
@@ -143,11 +145,11 @@ class BaseHandler(tornado.web.RequestHandler):
 
         """
         if hasattr(self, "sql_session"):
-              logger.debug("Closing SQL connection.")
-              try:
-                  self.sql_session.close()
-              except Exception as e:
-                  logger.warning("Couldn't close SQL connection: " + repr(e))
+            logger.debug("Closing SQL connection.")
+            try:
+                self.sql_session.close()
+            except Exception as e:
+                logger.warning("Couldn't close SQL connection: " + repr(e))
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
 
@@ -507,11 +509,10 @@ class SubmitHandler(BaseHandler):
                                  self.files), fd)
                 self.local_copy_saved = True
             except Exception as e:
-                logger.warning("submit: local copy failed - " + traceback.format_exc())
-                
+                logger.warning("submit: local copy failed - " + \
+                    traceback.format_exc())
 
         # We now have to send all the files to the destination...
-
         self.file_digests = {}
 
         for filename, content in self.files.items():
@@ -578,7 +579,8 @@ class SubmitHandler(BaseHandler):
                 int(time.time()),
                 self._("Submission received, but..."),
                 self._("Your submission has been received "
-                       "but an error has occured and is NOT currently being evaluated."))
+                       "but an error has occured and is NOT "
+                       "currently being evaluated."))
         else:
             # Add "All ok" notification
             self.application.service.add_notification(
