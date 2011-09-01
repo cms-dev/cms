@@ -80,12 +80,16 @@ class User(Base):
     # Moreover, we have the following methods.
     # get_tokens (defined in SQLAlchemyAll)
 
-    def __init__(self, real_name, username, password, ip=None,
+    def __init__(self, real_name, username, password=None, ip=None,
                  timezone=0.0, contest=None,
                  hidden=False, messages=None, questions=None,
                  submissions=None):
         self.real_name = real_name
         self.username = username
+        if password is None:
+            import random
+            chars = "abcdefghijklmnopqrstuvwxyz"
+            password = "".join([random.choice(chars) for i in xrange(6)])
         self.password = password
         self.timezone = timezone
         if ip is None:

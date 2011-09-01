@@ -34,10 +34,11 @@ from cms.db.Utils import analyze_all_tables
 
 class YamlImporter(Service):
 
-    def __init__(self, shard, drop, modif, path):
+    def __init__(self, shard, drop, modif, path, user_num):
         self.drop = drop
         self.modif = modif
         self.path = path
+        self.user_num = user_num
 
         logger.initialize(ServiceCoord("YamlImporter", shard))
         logger.debug("YamlImporter.__init__")
@@ -181,9 +182,14 @@ class YamlImporter(Service):
             task_params = self.get_params_for_task(os.path.join(self.path, task))
             params["tasks"].append(Task(**task_params))
         params["users"] = []
-        for user in users:
-            user_params = self.get_params_for_user(user)
-            params["users"].append(User(**user_params))
+        if self.user_num is None:
+            for user in users:
+                user_params = self.get_params_for_user(user)
+                params["users"].append(User(**user_params))
+        else:
+            logger.info("Generating %d random users" % (self.user_num))
+            for i in xrange(self.user_num):
+                params["users"].append(User("User %d" % (i), "user%03d" % (i)))
         return Contest(**params)
 
     def do_import(self):
@@ -204,12 +210,14 @@ class YamlImporter(Service):
         c.create_empty_ranking_view()
         session.flush()
 
+        contest_id = c.id
+
         logger.info("Analyzing database")
         analyze_all_tables(session)
         session.commit()
         session.close()
 
-        logger.info("Import finished")
+        logger.info("Import finished (new contest ID: %d)" % (contest_id))
 
         self.exit()
         return False
@@ -227,6 +235,8 @@ if __name__ == "__main__":
                       default=False, action="store_true")
     parser.add_option("-s", "--shard", help="service shard number",
                       dest="shard", action="store", type="int", default=None)
+    parser.add_option("-n", "--user-number", help="put N random users instead of importing them",
+                      dest="user_num", action="store", type="int", default=None)
     options, args = parser.parse_args()
     if len(args) != 1:
         parser.error("I need exactly one parameter, the contest directory")
@@ -246,4 +256,5 @@ if __name__ == "__main__":
     yaml_importer = YamlImporter(shard=options.shard,
                                  drop=options.drop,
                                  modif=modif,
-                                 path=path).run()
+                                 path=path,
+                                 user_num=options.user_num).run()
