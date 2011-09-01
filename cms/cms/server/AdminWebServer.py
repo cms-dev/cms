@@ -97,7 +97,7 @@ class BaseHandler(tornado.web.RequestHandler):
         self.sql_session.close()
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
-    def get_non_negative_int(self, argument_name, default):
+    def get_non_negative_int(self, argument_name, default, allow_empty = True):
         """ Get a non-negative integer from the arguments, or use the default if
         the argument is missing.
 
@@ -106,6 +106,8 @@ class BaseHandler(tornado.web.RequestHandler):
 
         """
         argument = self.get_argument(argument_name, repr(default))
+        if allow_empty and (argument is None or argument == ""):
+            return None
         try:
             argument = int(argument)
         except:
@@ -194,7 +196,7 @@ class TaskViewHandler(BaseHandler):
             self.task.memory_limit = self.get_non_negative_int("memory_limit", self.task.memory_limit)
             if self.task.memory_limit == 0:
                 raise ValueError, "Memory limit is 0."
-            self.task.token_initial = self.get_non_negative_int("token_initial", self.task.token_initial)
+            self.task.token_initial = self.get_non_negative_int("token_initial", self.task.token_initial, allow_empty=False)
             self.task.token_max = self.get_non_negative_int("token_max", self.task.token_max)
             self.task.token_total = self.get_non_negative_int("token_total", self.task.token_total)
             self.task.token_min_interval = self.get_non_negative_int("token_min_interval", self.task.token_min_interval)
@@ -239,10 +241,10 @@ class EditContestHandler(BaseHandler):
             self.write("No contest name specified")
             return
 
-        description = self.get_argument("description", "")
+        description = self.get_argument("description", None)
 
         try:
-            token_initial = self.get_non_negative_int("token_initial", self.contest.token_initial)
+            token_initial = self.get_non_negative_int("token_initial", self.contest.token_initial, allow_empty=False)
             token_max = self.get_non_negative_int("token_max", self.contest.token_max)
             token_total = self.get_non_negative_int("token_total", self.contest.token_total)
             token_min_interval = self.get_non_negative_int("token_min_interval", self.contest.token_min_interval)
