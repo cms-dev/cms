@@ -110,12 +110,13 @@ class BaseHandler(tornado.web.RequestHandler):
 
         """
         argument = self.get_argument(argument_name, repr(default))
-        if allow_empty and (argument is None or argument == ""):
+        if allow_empty and (argument == None or argument == "" or argument == "None"):
             return None
         try:
             argument = int(argument)
         except:
-            raise ValueError("Can't cast " + str(argument) + " to int.")
+            raise ValueError(argument_name + \
+                ": Can't cast " + str(argument) + " to int.")
         if argument < 0:
             raise ValueError(argument_name + " is negative.")
         return argument
@@ -202,7 +203,8 @@ class TaskViewHandler(BaseHandler):
         try:
             self.task.memory_limit = self.get_non_negative_int(
                 "memory_limit",
-                self.task.memory_limit)
+                self.task.memory_limit,
+                allow_empty=False)
             if self.task.memory_limit == 0:
                 raise ValueError("Memory limit is 0.")
             self.task.token_initial = self.get_non_negative_int(
@@ -274,7 +276,8 @@ class EditContestHandler(BaseHandler):
                 allow_empty=False)
             token_max = self.get_non_negative_int(
                 "token_max",
-                self.contest.token_max)
+                self.contest.token_max,
+                allow_empty=True)
             token_total = self.get_non_negative_int(
                 "token_total",
                 self.contest.token_total)
@@ -284,7 +287,7 @@ class EditContestHandler(BaseHandler):
             token_gen_time = self.get_non_negative_int(
                 "token_gen_time",
                 self.contest.token_gen_time)
-        except:
+        except Exception as e:
             self.write("Invalid token field(s): " + repr(e))
             return
 

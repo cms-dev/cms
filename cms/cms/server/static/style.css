@@ -206,7 +206,6 @@ ul.normal_list {
     padding: 1.5em 1em 0 1em;
     width: 660px;
     z-index: 10;
-
 }
 
 #subpage_background {
@@ -222,6 +221,10 @@ ul.normal_list {
 #subpage_content {
     background:white;
     z-index: 2;
+}
+
+#subpage_content pre {
+    overflow: auto;
 }
 
 #subpage h1 {

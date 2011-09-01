@@ -44,6 +44,14 @@
         {
             cmsutils.ajax_request(url, null, 
                 function(response){
+                    if(response.length > 100000)
+                    {
+                        var page = "<h1>" + file_name + "</h1>" + 
+                                    "<a href=\"" + url + "\">Download</a>";
+
+                        utils.display_subpage(page);
+                        return;
+                    }
                     var escaped_response = response.replace("<","&lt;").replace(">","&gt;");
                     var pre_class="";
                     if(file_name.match(/.c(|pp)$/i))
@@ -55,6 +63,7 @@
                       pre_class = "brush: delphi";
                     }
                     var page = "<h1>" + file_name + "</h1>" + 
+                                "<a href=\"" + url + "\">Download</a>" +
                                 "<pre id=\"source_container\" class=\"" + pre_class + "\">" +
                                 escaped_response + "</pre>";
 
