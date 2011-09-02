@@ -52,7 +52,7 @@
                         utils.display_subpage(page);
                         return;
                     }
-                    var escaped_response = response.replace("<","&lt;").replace(">","&gt;");
+                    var escaped_response = response.replace(/</g,"&lt;").replace(/>/g,"&gt;");
                     var pre_class="";
                     if(file_name.match(/.c(|pp)$/i))
                     {
