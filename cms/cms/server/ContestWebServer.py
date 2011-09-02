@@ -471,8 +471,6 @@ class SubmitHandler(BaseHandler):
 
         # Attempt to store the submission locally to be able to recover
         # a failure.
-        # TODO: Determine when the submission is to be considered accepted
-        # and pre-emptively stored.
         if Config.submit_local_copy:
             try:
                 path = os.path.join(Config.submit_local_copy_path,
@@ -486,7 +484,7 @@ class SubmitHandler(BaseHandler):
                                  self.task,
                                  self.files), fd)
             except Exception as e:
-                logger.warning("submit: local copy failed - " + repr(e))
+                logger.error("Submission local copy failed - %s" % repr(e))
 
         # We now have to send all the files to the destination...
 
