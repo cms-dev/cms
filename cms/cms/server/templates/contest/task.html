@@ -129,8 +129,12 @@
         </td>
         <td>
           {% for filename,sub_file in s.files.items() %}
-          <a href="/submission_file/{{ encrypt_number(sub_file.id) }}">{{ escape(filename) }}<br/>
-            {% end %}
+          <a href="#" 
+             onclick="utils.show_file('{{ filename }}', '/submission_file/{{ encrypt_number(sub_file.id) }}');">
+              {{ escape(filename) }}
+          </a>
+          <br/>
+          {% end %}
             <td>
               {% if s.token is None %}
               {{ _("No") }}

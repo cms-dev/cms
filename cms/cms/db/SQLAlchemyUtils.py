@@ -114,10 +114,9 @@ Base.get_from_id = classmethod(get_from_id)
 def get_session(self):
     """Get the session to which this object is bound, possibly None.
 
-    WARNING: this method is probably dependent on the internal
-    implementation of SQLAlchemy. I couldn't find any better way to do
-    it. If you know some, please update this method.
-
     """
-    return sessionlib._state_session(self._sa_instance_state)
+    try:
+        return sessionlib.object_session(self)
+    except:
+        return None
 Base.get_session = get_session

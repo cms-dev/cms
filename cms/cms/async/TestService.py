@@ -46,11 +46,22 @@ class TestService(Service):
         self.failed = False
         self.retry = False
         self.add_timeout(self.test, None, 0.2, immediately=True)
+        self.initialized = False
 
     def test(self):
         """Runs the test suite.
 
         """
+        # Call the prepare method, but just the first time
+        if not self.initialized:
+            self.initialized = True
+            try:
+                prepare_method = self.prepare
+            except AttributeError:
+                pass
+            else:
+                prepare_method()
+
         if self.ongoing:
             return True
         elif self.current >= 0 and not self.failed and not self.retry:

@@ -34,9 +34,11 @@ from cms.db.Utils import analyze_all_tables
 
 class YamlImporter(Service):
 
-    def __init__(self, shard, drop, modif):
+    def __init__(self, shard, drop, modif, path, user_num):
         self.drop = drop
         self.modif = modif
+        self.path = path
+        self.user_num = user_num
 
         logger.initialize(ServiceCoord("YamlImporter", shard))
         logger.debug("YamlImporter.__init__")
@@ -60,6 +62,8 @@ class YamlImporter(Service):
                 os.path.join(path, "contest.yaml"),
                 "r", "utf-8"))
 
+        logger.info("Loading parameters for contest %s" % (name))
+
         params = {"name": name}
         assert name == conf["nome_breve"]
         params["description"] = conf["nome"]
@@ -78,6 +82,9 @@ class YamlImporter(Service):
         else:
             params["start"] = conf.get("inizio", 0)
             params["stop"] = conf.get("fine", 0)
+
+        logger.info("Contest parameters loaded")
+
         return params, conf["problemi"], conf["utenti"]
 
     def get_params_for_user(self, user_dict):
@@ -87,6 +94,9 @@ class YamlImporter(Service):
         """
         params = {}
         params["username"] = user_dict["username"]
+
+        logger.info("Loading parameters for user %s" % (params['username']))
+
         if self.modif == 'test':
             params["password"] = 'a'
             params["ip"] = '0.0.0.0'
@@ -97,6 +107,9 @@ class YamlImporter(Service):
         surname = user_dict.get("cognome", user_dict["username"])
         params["real_name"] = " ".join([name, surname])
         params["hidden"] = "True" == user_dict.get("fake", "False")
+
+        logger.info("User parameters loaded")
+
         return params
 
     def get_params_for_task(self, path):
@@ -110,6 +123,8 @@ class YamlImporter(Service):
                 os.path.join(super_path, name + ".yaml"),
                 "r", "utf-8"))
 
+        logger.info("Loading parameters for task %s" % (name))
+
         params = {"name": name}
         assert name == conf["nome_breve"]
         params["title"] = conf["nome"]
@@ -118,13 +133,15 @@ class YamlImporter(Service):
         params["attachments"] = {} # FIXME - Use auxiliary
         with open(os.path.join(path, "testo", "testo.pdf")) as f:
             params["statement"] = self.FS.put_file(binary_data=f.read(),
-                                                   description="PDF statement for task %s" % (name))
+                                                   description="PDF statement for task %s" % (name),
+                                                   sync = True)
         params["task_type"] = Task.TASK_TYPE_BATCH
         params["submission_format"] = [SubmissionFormatElement("%s.%%l" % (name))]
         try:
             with open(os.path.join(path, "cor", "correttore")) as f:
                 params["managers"] = {"checker": Manager(self.FS.put_file(binary_data=f.read(),
-                                                                          description="Manager for task %s" % (name)))}
+                                                                          description="Manager for task %s" % (name),
+                                                                          sync=True))}
         except IOError:
             params["managers"] = {}
         params["score_type"] = conf.get("score_type", ScoreTypes.SCORE_TYPE_SUM)
@@ -139,9 +156,11 @@ class YamlImporter(Service):
             with open(os.path.join(path, "input", "input%d.txt" % (i))) as fi:
                 with open(os.path.join(path, "output", "output%d.txt" % (i))) as fo:
                     params["testcases"].append(Testcase(self.FS.put_file(binary_data=fi.read(),
-                                                                         description="Input %d for task %s" % (i, name)),
+                                                                         description="Input %d for task %s" % (i, name),
+                                                                         sync=True),
                                                         self.FS.put_file(binary_data=fo.read(),
-                                                                         description="Output %d for task %s" % (i, name)),
+                                                                         description="Output %d for task %s" % (i, name),
+                                                                         sync=True),
                                                         public=(i in public_testcases)))
         params["token_initial"] = conf.get("token_initial", 0)
         params["token_max"] = conf.get("token_max", None)
@@ -149,38 +168,57 @@ class YamlImporter(Service):
         params["token_min_interval"] = conf.get("token_min_interval", None)
         params["token_gen_time"] = conf.get("token_gen_time", None)
         params["token_gen_number"] = conf.get("token_gen_number", None)
+
+        logger.info("Task parameters loaded")
+
         return params
 
-    def import_contest(self, path):
+    def import_contest(self):
         """Import a contest into the system.
         """
-        params, tasks, users = self.get_params_for_contest(path)
+        params, tasks, users = self.get_params_for_contest(self.path)
         params["tasks"] = []
         for task in tasks:
-            task_params = self.get_params_for_task(os.path.join(path, task))
+            task_params = self.get_params_for_task(os.path.join(self.path, task))
             params["tasks"].append(Task(**task_params))
         params["users"] = []
-        for user in users:
-            user_params = self.get_params_for_user(user)
-            params["users"].append(User(**user_params))
+        if self.user_num is None:
+            for user in users:
+                user_params = self.get_params_for_user(user)
+                params["users"].append(User(**user_params))
+        else:
+            logger.info("Generating %d random users" % (self.user_num))
+            for i in xrange(self.user_num):
+                params["users"].append(User("User %d" % (i), "user%03d" % (i)))
         return Contest(**params)
 
-    def do_import(self, dir):
+    def do_import(self):
         if not self.FS.connected:
             logger.warning("Please run FileStorage.")
             return True
 
+        logger.info("Creating database structure")
         if self.drop:
             metadata.drop_all()
         metadata.create_all()
-        c = self.import_contest(dir)
+
+        c = self.import_contest()
+
+        logger.info("Creating contest on the database")
         session = Session()
         session.add(c)
         c.create_empty_ranking_view()
         session.flush()
+
+        contest_id = c.id
+
+        logger.info("Analyzing database")
         analyze_all_tables(session)
         session.commit()
         session.close()
+
+        logger.info("Import finished (new contest ID: %d)" % (contest_id))
+
         self.exit()
         return False
 
@@ -197,6 +235,8 @@ if __name__ == "__main__":
                       default=False, action="store_true")
     parser.add_option("-s", "--shard", help="service shard number",
                       dest="shard", action="store", type="int", default=None)
+    parser.add_option("-n", "--user-number", help="put N random users instead of importing them",
+                      dest="user_num", action="store", type="int", default=None)
     options, args = parser.parse_args()
     if len(args) != 1:
         parser.error("I need exactly one parameter, the contest directory")
@@ -211,6 +251,10 @@ if __name__ == "__main__":
     elif options.zero_time:
         modif = 'zero_time'
 
+    path = args[0]
+
     yaml_importer = YamlImporter(shard=options.shard,
                                  drop=options.drop,
-                                 modif=modif).run()
+                                 modif=modif,
+                                 path=path,
+                                 user_num=options.user_num).run()

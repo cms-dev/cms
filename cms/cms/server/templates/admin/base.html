@@ -10,6 +10,13 @@
     <script type="text/javascript" src="/static/utils.js"></script>
     <script type="text/javascript" src="/static/web_async_library.js"></script>
     <script type="text/javascript" src="/static/scripts.js"></script>
+
+    <script type="text/javascript" src="/static/sh/shCore.js"></script>
+    <script type="text/javascript" src="/static/sh/shBrushCpp.js"></script>
+    <script type="text/javascript" src="/static/sh/shBrushDelphi.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/sh/shCore.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/sh/shThemeDefault.css"/>
+
     {% if contest == None %}
     <title>Admin</title>
     <script type="text/javascript">
@@ -20,6 +27,8 @@ function init()
   cmsrpc = new CMSAjaxRPC();
   cmsutils = new CMSUtils();
   utils = new Utils({{ timestamp }}, 0, 0, -1);
+
+  document.onclick = utils.hide_subpage
 
   {% block js_init %}{% end %}
 }
@@ -41,6 +50,8 @@ function init()
   cmsrpc = new CMSAjaxRPC();
   cmsutils = new CMSUtils();
   utils = new Utils({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }});
+
+  document.onclick = utils.hide_subpage
 
   firstDate = new Date();
   utils.get_time();
@@ -65,7 +76,7 @@ window.onload = init();
       <div id="sidebar">
         <h1>Administration</h1>
         <ul class="menu">
-          <li class="menu_entry"><a class="menu_link" href="/">Overview</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/{% if contest != None %}{{ contest.id }}{% end %}">Overview</a></li>
         </ul>
         <div class="hr"></div>
         <select id="contest_selection_select" onchange="utils.switch_contest()">
@@ -109,6 +120,11 @@ window.onload = init();
       <div id="border"></div>
       <div id="core">
         <div id="notifications" class="notifications"></div>
+        <div id="subpage" onclick="var event = arguments[0] || window.event; event.stopPropagation()">
+          <div id="subpage_border"></div>
+          <div id="subpage_background"></div>
+          <div id="subpage_content"></div>
+        </div>
         {% block core %}{% end %}
       </div>
 

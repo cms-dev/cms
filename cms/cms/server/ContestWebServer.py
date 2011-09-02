@@ -40,6 +40,7 @@ import codecs
 
 import simplejson
 import tempfile
+import traceback
 import zipfile
 
 import tornado.web
@@ -57,7 +58,7 @@ from cms.db.Utils import ask_for_contest
 from cms import Config
 import cms.util.WebConfig as WebConfig
 
-from cms.server.Utils import file_handler_gen
+from cms.server.Utils import file_handler_gen, catch_exceptions
 from cms.util.Cryptographics import encrypt_number, decrypt_number, \
      get_encryption_alphabet
 
@@ -69,6 +70,8 @@ class BaseHandler(tornado.web.RequestHandler):
     child of this class.
 
     """
+
+    @catch_exceptions
     def prepare(self):
         """This method is executed at the beginning of each request.
 
@@ -79,7 +82,9 @@ class BaseHandler(tornado.web.RequestHandler):
         self.contest = Contest.get_from_id(self.application.service.contest,
                                            self.sql_session)
 
-        tornado.locale.load_gettext_translations("cms/server/mo/", "messages")
+        tornado.locale.load_gettext_translations(
+            os.path.join(os.path.dirname(__file__), "mo"),
+            "messages")
 
         self._ = self.get_browser_locale().translate
 
@@ -139,8 +144,12 @@ class BaseHandler(tornado.web.RequestHandler):
         We override this method in order to properly close the database.
 
         """
-        logger.debug("Closing SQL connection.")
-        self.sql_session.close()
+        if hasattr(self, "sql_session"):
+            logger.debug("Closing SQL connection.")
+            try:
+                self.sql_session.close()
+            except Exception as e:
+                logger.warning("Couldn't close SQL connection: " + repr(e))
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
 
@@ -195,6 +204,7 @@ class MainHandler(BaseHandler):
     """Home page handler.
 
     """
+    @catch_exceptions
     def get(self):
         r_params = self.render_params()
         self.render("overview.html", **r_params)
@@ -205,6 +215,7 @@ class InstructionHandler(BaseHandler):
     ...) of the contest.
 
     """
+    @catch_exceptions
     def get(self):
         r_params = self.render_params()
         self.render("instructions.html", **r_params)
@@ -214,6 +225,7 @@ class LoginHandler(BaseHandler):
     """Login handler.
 
     """
+    @catch_exceptions
     def post(self):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
@@ -248,6 +260,7 @@ class LogoutHandler(BaseHandler):
     """Logout handler.
 
     """
+    @catch_exceptions
     def get(self):
         self.clear_cookie("login")
         self.redirect("/")
@@ -257,6 +270,7 @@ class TaskViewHandler(BaseHandler):
     """Shows the data of a task in the contest.
 
     """
+    @catch_exceptions
     @tornado.web.authenticated
     def get(self, task_name):
 
@@ -279,6 +293,7 @@ class TaskStatementViewHandler(FileHandler):
     """Shows the statement file of a task in the contest.
 
     """
+    @catch_exceptions
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self, task_name):
@@ -297,6 +312,7 @@ class SubmissionFileHandler(FileHandler):
     """Send back a submission file.
 
     """
+    @catch_exceptions
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self, file_id):
@@ -330,6 +346,7 @@ class CommunicationHandler(BaseHandler):
     and the contest managers..
 
     """
+    @catch_exceptions
     @tornado.web.authenticated
     def get(self):
         r_params = self.render_params()
@@ -340,8 +357,10 @@ class NotificationsHandler(BaseHandler):
     """Displays notifications.
 
     """
-    @tornado.web.authenticated
+    @catch_exceptions
     def get(self):
+        if not self.current_user:
+            raise tornado.web.HTTPError(403)
         timestamp = int(time.time())
         res = []
         last_notification = float(self.get_argument("last_notification", "0"))
@@ -399,6 +418,7 @@ class QuestionHandler(BaseHandler):
     """Called when the user submit a question.
 
     """
+    @catch_exceptions
     @tornado.web.authenticated
     def post(self):
 
@@ -471,23 +491,26 @@ class SubmitHandler(BaseHandler):
 
         # Attempt to store the submission locally to be able to recover
         # a failure.
+        self.local_copy_saved = False
+
         if Config.submit_local_copy:
             try:
                 path = os.path.join(Config.submit_local_copy_path,
                                     self.current_user.username)
                 if not os.path.exists(path):
-                    os.mkdir(path)
+                    os.makedirs(path)
                 with codecs.open(os.path.join(path, str(self.timestamp)),
                                  "w", "utf-8") as fd:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
                                  self.task,
                                  self.files), fd)
+                self.local_copy_saved = True
             except Exception as e:
-                logger.error("Submission local copy failed - %s" % repr(e))
+                logger.error("Submission local copy failed - " +
+                             traceback.format_exc())
 
         # We now have to send all the files to the destination...
-
         self.file_digests = {}
 
         for filename, content in self.files.items():
@@ -503,6 +526,7 @@ class SubmitHandler(BaseHandler):
                 self.storage_callback(None, None, error="Connection failed.")
                 break
 
+    @catch_exceptions
     @rpc_callback
     def storage_callback(self, data, plus, error=None):
         logger.debug("Storage callback")
@@ -531,21 +555,38 @@ class SubmitHandler(BaseHandler):
                                             error="Connection failed.")
         else:
             logger.error("Storage failed! " + error)
-            self.finish()
+            if self.local_copy_saved:
+                message = "In case of emergency, this server has a local copy."
+            else:
+                message = "No local copy stored! Your submission was ignored."
+            self.application.service.add_notification(
+                self.current_user.username,
+                int(time.time()),
+                self._("Submission storage failed!"),
+                self._(message))
+            self.redirect("/tasks/%s" % self.task.name)
 
+    @catch_exceptions
     @rpc_callback
     def es_notify_callback(self, data, plus, error=None):
         logger.debug("ES notify_callback")
         if error is not None:
             logger.error("Notification to ES failed! " + error)
-
-        # Add "All ok" notification
-        self.application.service.add_notification(
-            self.current_user.username,
-            int(time.time()),
-            self._("Submission received"),
-            self._("Your submission has been received "
-                   "and is currently being evaluated."))
+            self.application.service.add_notification(
+                self.current_user.username,
+                int(time.time()),
+                self._("Submission received, but..."),
+                self._("Your submission has been received "
+                       "but an error has occured and is NOT "
+                       "currently being evaluated."))
+        else:
+            # Add "All ok" notification
+            self.application.service.add_notification(
+                self.current_user.username,
+                int(time.time()),
+                self._("Submission received"),
+                self._("Your submission has been received "
+                       "and is currently being evaluated."))
 
         self.redirect("/tasks/%s" % self.task.name)
 
@@ -554,6 +595,7 @@ class UseTokenHandler(BaseHandler):
     """Called when the user try to use a token on a submission.
 
     """
+    @catch_exceptions
     @tornado.web.authenticated
     def post(self):
 

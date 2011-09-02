@@ -471,13 +471,23 @@ def make_sync(default_sync=False):
 
         def newfunc(*args, **kwargs):
 
+            # Detects if the call is synchronous or not; deletes the
+            # sync key from the arguments (it must be a keyword
+            # argument)
             if 'sync' not in kwargs:
                 sync = default_sync
             else:
                 sync = kwargs['sync']
                 del kwargs['sync']
 
+            # If the call is synchronous...
             if sync:
+
+                # The plus object is used to get information back from
+                # the callback to the calling context; the callback
+                # just has to copy the received data to the plus;
+                # finished is the last thing, since it triggers the
+                # continuation of the calling context
                 plus = {'finished': False,
                         'data':     None,
                         'error':    None}
@@ -489,13 +499,26 @@ def make_sync(default_sync=False):
                     plus['error'] = error
                     plus['finished'] = True
 
+                # Remove duplicate parameters
+                for key in ['plus', 'bind_obj', 'callback']:
+                    try:
+                        del kwargs[key]
+                    except KeyError:
+                        pass
+
+                # Do the call...
                 func(callback=sync_callback,
                      plus=plus,
                      bind_obj=None,
                      *args, **kwargs)
+
+                # ...and wait for it to be finished, giving time to
+                # other operations
                 while not plus['finished']:
                     asyncore.loop(0.02, True, None, 1)
 
+                # Return the data if no errors were raised; cast an
+                # exception otherwise
                 error = plus['error']
                 data = plus['data']
                 if error is not None:
@@ -503,6 +526,8 @@ def make_sync(default_sync=False):
                 else:
                     return data
 
+            # If the call is asynchronous, just do it (after having
+            # deleted the sync keyword argument)
             else:
                 if 'sync' in kwargs:
                     del kwargs['sync']

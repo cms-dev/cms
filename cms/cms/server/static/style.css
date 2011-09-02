@@ -167,7 +167,16 @@ ul.normal_list {
     margin-left: 266px;
 }
 
-
+#subpage_border {
+    border-left: 2px solid #DADEE3;
+    border-right: 2px solid #CACED3;
+    width: 0px;
+    height: 100%;
+    position: fixed;
+    left:0;
+    top:0;
+    margin-left:341px;
+}
 
 
 
@@ -181,6 +190,44 @@ ul.normal_list {
 }
 
 #core h1 {
+    font-size: 2.5em;
+    line-height: 1.8em;
+    margin-bottom: 0.6em;
+}
+
+
+#subpage {
+    position: absolute;
+    left: 345px;
+    top: 0px;
+    bottom: 0px;
+    display: none;
+    margin-bottom: 1em;
+    padding: 1.5em 1em 0 1em;
+    width: 660px;
+    z-index: 10;
+}
+
+#subpage_background {
+    position: fixed;
+    left: 345px;
+    top:0px;
+    bottom: 0px;
+    right: 0px;
+    background: white; 
+    z-index: -1;
+}
+
+#subpage_content {
+    background:white;
+    z-index: 2;
+}
+
+#subpage_content pre {
+    overflow: auto;
+}
+
+#subpage h1 {
     font-size: 2.5em;
     line-height: 1.8em;
     margin-bottom: 0.6em;

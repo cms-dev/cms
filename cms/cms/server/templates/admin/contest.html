@@ -21,23 +21,23 @@
     </tr>
     <tr>
       <td>Maximum accumulated tokens</td>
-      <td><input type="text" name="token_max" value="{{ contest.token_max }}" size="3" /></td>
+      <td><input type="text" name="token_max" value="{{ contest.token_max if contest.token_max is not None else "" }}" size="3" /></td>
     </tr>
     <tr>
       <td>Total number of tokens</td>
-      <td><input type="text" name="token_total" value="{{ contest.token_total }}" size="3" /></td>
+      <td><input type="text" name="token_total" value="{{ contest.token_total if contest.token_total is not None else "" }}" size="3" /></td>
     </tr>
     <tr>
       <td>Minimum interval between tokens</td>
-      <td><input type="text" name="token_min_interval" value="{{ contest.token_min_interval }}" size="3" /></td>
+      <td><input type="text" name="token_min_interval" value="{{ contest.token_min_interval if contest.token_min_interval is not None else "" }}" size="3" /></td>
     </tr>
     <tr>
       <td>Token generation period</td>
-      <td><input type="text" name="token_gen_time" value="{{ contest.token_gen_time }}" size="3" /></td>
+      <td><input type="text" name="token_gen_time" value="{{ contest.token_gen_time if contest.token_gen_time is not None else ""}}" size="3" /></td>
     </tr>
     <tr>
       <td>Token generation number</td>
-      <td><input type="text" name="token_gen_number" value="{{ contest.token_gen_number }}" size="3" /></td>
+      <td><input type="text" name="token_gen_number" value="{{ contest.token_gen_number if contest.token_gen_number is not None else "" }}" size="3" /></td>
     </tr>
     <tr>
       <td>Start</td>

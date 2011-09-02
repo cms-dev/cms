@@ -51,6 +51,7 @@ class TestFileCacher(TestService):
         self.digest = None
         self.file_obj = None
 
+    def prepare(self):
         self.FS = self.connect_to(
             ServiceCoord("FileStorage", 0))
         if os.path.exists("fs-cache"):
@@ -432,8 +433,6 @@ class TestFileCacher(TestService):
             self.test_end(False, "Error received: %s." % error)
         elif plus != ("Test #", 9):
             self.test_end(False, "Plus object not received correctly.")
-        elif not data:
-            self.test_end(False, "File not retrieved correctly.")
         else:
             content = self.file_obj.getvalue()
             if content != self.fake_content:
@@ -467,9 +466,7 @@ class TestFileCacher(TestService):
                                               file_obj=self.file_obj,
                                               sync=True)
         content = self.file_obj.getvalue()
-        if not data:
-            self.test_end(False, "File not retrieved correctly.")
-        elif content != self.fake_content:
+        if content != self.fake_content:
             if content == self.content:
                 self.test_end(False,
                               "Did not use the cache even if it could.")
