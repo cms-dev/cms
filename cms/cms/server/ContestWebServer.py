@@ -82,9 +82,10 @@ class BaseHandler(tornado.web.RequestHandler):
         self.contest = Contest.get_from_id(self.application.service.contest,
                                            self.sql_session)
 
-        tornado.locale.load_gettext_translations(
-            os.path.join(os.path.dirname(__file__), "mo"),
-            "messages")
+        localization_dir = os.path.join(os.path.dirname(__file__), "mo")
+        if os.path.exists(localization_dir):
+            tornado.locale.load_gettext_translations(localization_dir,
+                                                     "messages")
 
         self._ = self.get_browser_locale().translate
 
