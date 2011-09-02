@@ -11,6 +11,7 @@
         this.contest_start = contest_start;
         this.contest_stop = contest_stop;
         this.phase = phase;
+        this.remainig_div = null;
     }
 
     Utils.prototype =
@@ -42,11 +43,11 @@
         */
         show_file: function(file_name, url)
         {
-            cmsutils.ajax_request(url, null, 
+            cmsutils.ajax_request(url, null,
                 function(response){
                     if(response.length > 100000)
                     {
-                        var page = "<h1>" + file_name + "</h1>" + 
+                        var page = "<h1>" + file_name + "</h1>" +
                                     "<a href=\"" + url + "\">Download</a>";
 
                         utils.display_subpage(page);
@@ -62,7 +63,7 @@
                     {
                       pre_class = "brush: delphi";
                     }
-                    var page = "<h1>" + file_name + "</h1>" + 
+                    var page = "<h1>" + file_name + "</h1>" +
                                 "<a href=\"" + url + "\">Download</a>" +
                                 "<pre id=\"source_container\" class=\"" + pre_class + "\">" +
                                 escaped_response + "</pre>";
@@ -72,7 +73,7 @@
                 }
             );
         },
-        
+
         /**
          * To be added to the onclick of an element named
          * title_XXX. Hide/show an element named XXX, and change the class
@@ -231,7 +232,7 @@
 
             countdown = nowsec_to_end;
 
-            if ( this.phase == -1 )
+            if (this.phase == -1)
                 countdown = nowsec_to_start;
 
             var hours = countdown / 60 / 60;
@@ -245,8 +246,10 @@
             if (secondsR < 10) s = "0" + secondsR;
             else s = secondsR;
 
-            if (document.getElementById("remaining"))
-                document.getElementById("remaining").innerHTML = hoursR+":"+m+":"+s;
+            if (this.remaining_div == null)
+                this.remaining_div = document.getElementById("remaining");
+            if (this.remaining_div != null)
+                this.remaining_div.innerHTML = hoursR + ":" + m + ":" + s;
         },
 
         /**

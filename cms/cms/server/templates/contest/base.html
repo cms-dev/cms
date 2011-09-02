@@ -33,7 +33,7 @@ function init()
     setInterval(cmsutils.bind_func(utils, utils.get_time), 1000);
     utils.update_notifications();
     setInterval(cmsutils.bind_func(utils, utils.update_notifications), 15000);
-    
+
     document.onclick = utils.hide_subpage
     {% block js_init %}{% end %}
 }
@@ -98,7 +98,7 @@ window.onload = init;
         {% end %}
       </div>
       <div id="border"></div>
-      
+
       <div id="core">
         <div id="notifications" class="notifications"></div>
         <div id="subpage" onclick="var event = arguments[0] || window.event; event.stopPropagation()">
