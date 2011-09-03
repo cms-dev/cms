@@ -424,6 +424,16 @@ class SubmissionFileHandler(FileHandler):
 
         self.fetch(sub_file.digest, "text/plain", sub_file.filename)
 
+class QuestionsHandler(BaseHandler):
+    """Page to see and send messages to all the contestants.
+
+    """
+    def get(self, contest_id):
+        self.retrieve_contest(contest_id)
+        r_params = self.render_params()
+        r_params["questions"] = self.sql_session.query(Question)\
+            .join(User).filter(User.contest_id == contest_id).all()
+        self.render("questions.html", **r_params)
 
 class QuestionReplyHandler(BaseHandler):
     """Called when the manager replies to a question made by a user.
@@ -584,6 +594,8 @@ handlers = [(r"/",
              MessageHandler),
             (r"/question/([a-zA-Z0-9_-]+)",
              QuestionReplyHandler),
+            (r"/questions/([0-9]+)",
+             QuestionsHandler),
            ]
 
 if __name__ == "__main__":

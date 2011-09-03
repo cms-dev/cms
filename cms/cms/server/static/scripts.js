@@ -11,7 +11,7 @@
         this.contest_start = contest_start;
         this.contest_stop = contest_stop;
         this.phase = phase;
-        this.remainig_div = null;
+        this.remaining_div = null;
     }
 
     Utils.prototype =
@@ -376,6 +376,35 @@
                 window.location = "/";
             else
                 window.location = "/contest/" + value;
+        },
+
+        show_page: function(item, page)
+        {
+            var elements_per_page = 5;
+            var container = document.getElementById("paged_content_" + item);
+            var npages = Math.ceil(container.children.length / elements_per_page);
+            var final_page = Math.min(page, npages) - 1;
+            for(var i = 0; i < container.children.length; i++)
+            {
+                if(i>= elements_per_page * final_page 
+                    && i < elements_per_page * (final_page + 1))
+                {
+                    container.children[i].style.display="block";
+                }
+                else
+                {
+                    container.children[i].style.display="none";
+                }
+            }
+
+            var selector = document.getElementById("page_selector_"+item);
+            selector.innerHTML = "Pages: ";
+            for( var i = 1; i <= npages; i++)
+            {
+                selector.innerHTML += "<a href=\"#\" onclick=\" " +
+                                      "utils.show_page('questions', "+ i + "); " +
+                                      "return false;\">" + i + "</a>&nbsp;";
+            }
         }
 
     };
