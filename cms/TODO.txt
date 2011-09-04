@@ -1,10 +1,57 @@
-*** Database
+*** BLOCKERS
+
+
+
+** High priority
+
+* Ease the work of contest managers, providing notification of events
+  and lists of last submissions (questions, ...).
+
+* Test that all languages (particularly Pascal) work correctly.
+
+
+
+** Medium priority
+
+* Remove all sync'ed RPC (e.g. there are some in Worker).
+
+* Accept more than one file in the submission form in CWS.
+
+* Implement IOI task types (and provide a way to implement a task type
+  in a simple, non-pythonic, non-CMSic way).
+
+* Write a beginner's guide to run CMS (complete with instruction for
+  64 bit systems)
+
+* Look at setup.py and see if everything's there.
+
+
+** Low priority
+
+* Always refer to tasks, testcases and such by id instead of num (as
+  it is for everything else).
+
+* Correct the commit by root, and move to github.
+
+
+
+
+
+*** OTHERS
+
+
+
+** Database
+
 * LOW: Define appropriate UNIQUE indexes in the database.
+
 * LOW: Task and Testcase are sometimes referenced by num, instead of
   properly using IDs.
+
 * LOW: It may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
   scorings change.
+
 * HIGH: Ensure that CWS in particular, but also everything else, does not
   rely on the particular value of the id of the database
   objects. E.g., we may assume that everything work as expected even
@@ -12,7 +59,10 @@
   course). This actually happens when we call ContestExporter and
   ContestImporter.
 
-*** Worker
+
+
+** Worker
+
 * LOW: Should be able to work with 32 bits programs even when running in
   64 bits mode.
   - This actually appears to be quite complicated: it is probably
@@ -21,24 +71,31 @@
     everything works at 32 bits. I have a 64 bits system and keep
     the Worker inside a 32 bits chroot.
 
-*** EvaluationServer
+
+
+** EvaluationServer
+
 * HIGH: Check that there are no concurrence issues, particularly in scoring
   routines.
+
 * MED: When starting, check that the workers are not doing anything and
   possibly stop them / wait for them to be finished.
+
 * HIGH: Really, really slow to add the already evaluated submissions
   at start. The problem is *not* related to unnecessary
   updates. Indeed, most of the time is spent when we first mention
   contest.rankingview.scores. Is this a sqlite issue?
 
-*** ContestWebServer
+
+
+** ContestWebServer
+
 * HIGH: It _MUST_ be able to work correctly (storing submitted data) even if
   no services other than the database and FileStorage are available;
   if database or File Storage are missing it _MUST_ behave nicely
   anyway, informing the user to seek assistance and without crashing.
+
 * LOW: Some idea to improve the Web interface:
-  - Ability to show submitted files from the Web interface without
-    having to download them, possibly coloring the syntax.
   - Ability to backup files.
   - Ability to talk with Emacs psychologist, in case of a particularly
     difficult contest.
@@ -46,48 +103,72 @@
   - I think that the AGPL license also asks us to put appropriate
     copyright notices in the Web interface.
 
-*** AdminWebServer
-* HIGH: ease the work of contest managers, providing notification of
-  events and lists of last submissions (questions, ...).
+
+
+** AdminWebServer
+
 * LOW: show last logs, or anyway alert when we get log >= warning.
+
 * LOW: show resource usage of all the boxes.
 
-*** Task types
+
+
+** Task types
+
 * MED: Check that white_diff() really does what we want it to do.
   - This requires someone different from the author (Giovanni) to
     audit it.
-* HIGH: Test that all languages (particularly Pascal) work correctly.
 
-*** YamlImporter
+
+
+** YamlImporter
+
 * LOW: Provide facilities to translate the task's statement.
+
 * LOW: Provide an environment to build tasks better than make_Makefile and
   friends.
 
-*** Contest{Exporter,Importer}
+
+
+** Contest{Exporter,Importer}
+
 * LOW: Use consistenly names to export Tasks, as in the cases of Users.
 
-*** File{Storage,Cacher}
+
+
+** File{Storage,Cacher}
+
 * MED: Don't load the whole files when transferring them, you uselessly eat
   a huge lot of memory.
+
 * MED: The current implementation is very confused and probably quite
   prone to errors; try to make it a bit simpler.
+
 * LOW: Add support to optionally check file digests when trasferring them, both
   on client and on server side. Moreover, add an API call to ask the
   server to verify some file's digest.
+
 * HIGH: Duly document callbacks in FileCacher.
 
-*** AsyncLibrary
+
+
+** AsyncLibrary
+
 * HIGH: Duly document the make_sync decorator.
+
 * HIGH: Understand which call we need when a long running function has time
   to spare (_step? asyncore.loop?), for example as in make_sync
   implementation.
   - Actually, synchronous interfaces are a pain anyway. We should just
     not use them in the main system (importers, exporters and other things
     are fine, since they're not critical and run human-assisted).
+
 * MED: Decide on bind_obj=None behaviour and about keeping bind_obj.
+
 * MED: Add a method to do a one-time deferred call (like add_timeout(),
   but just one time).
   - Already done, but it has many shortcomings and completely breaks
     synchronous interfaces.
+
 * MED: Fix sync default.
 
