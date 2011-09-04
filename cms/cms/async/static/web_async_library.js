@@ -23,14 +23,8 @@
          */
         __wait_for_answer: function(cb, rid)
         {
-            var f = this.utils.bind_func(this, this.__got_answer)
-            this.utils.ajax_request("rpc_answer",
-                                    "__rid=" + rid,
-                                    function(response)
-                                    {
-                                        f(response, cb, rid);
-                                    }
-                                   );
+            var got_answer = this.__got_answer.bind(this, cb, rid)
+            this.utils.ajax_request("rpc_answer", "__rid=" + rid, got_answer);
         },
 
         /**
@@ -38,18 +32,13 @@
          * request. If the answer is definitive, we call the callback
          * provided by the user.
          *
-         * response (dict): the (partial) answer from the server
          * cb (function): the callback provided by the user
          * rid (string): the id of the request
+         * response (string): the (partial) answer from the server, as
+         *                    a JSON string
          */
-        __got_answer: function(response, cb, rid)
+        __got_answer: function(cb, rid, response)
         {
-            // DEBUG
-            var span = document.getElementById("__raw");
-            if (span)
-                span.innerHTML += '<br/>&nbsp;&nbsp;' + rid +
-                    ' - ' + response;
-            // END DEBUG
             try
             {
                 response = JSON.parse(response);
@@ -88,9 +77,10 @@
             rid = this.utils.random_string(16);
             this.timeout_ids[rid] = setInterval(
                 this.__wait_for_answer.bind(this, cb, rid),
-                2000);
+                1000);
 
-            var f = this.utils.bind_func(this, this.__got_answer)
+            var got_answer = this.__got_answer.bind(this, cb, rid);
+
             var args = "";
             for (var i in arguments)
             {
@@ -103,10 +93,7 @@
                                     shard + "/" +
                                     method,
                                     "__rid=" + rid + args,
-                                    function(response)
-                                    {
-                                        f(response, cb, rid);
-                                    }
+                                    got_answer
                                    );
         },
 

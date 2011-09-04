@@ -186,6 +186,19 @@ class ContestWebServer(WebService):
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
         self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
 
+    def authorized_rpc(self, service, method, arguments):
+        """Used by WebService to check if the browser can call a
+        certain RPC method.
+
+        service (ServiceCoord): the service called by the browser.
+        method (string): the name of the method called.
+        arguments (dict): the arguments of the call.
+        return (bool): True if ok, False if not authorized.
+
+        """
+        # Default fallback: don't authorize.
+        return False
+
     def add_notification(self, username, timestamp, subject, text):
         """Store a new notification to send to a user at the first
         opportunity (i.e., at the first request fot db notifications).

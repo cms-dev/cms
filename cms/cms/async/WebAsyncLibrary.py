@@ -51,6 +51,14 @@ class RPCRequestHandler(tornado.web.RequestHandler):
         arguments = dict((k, decode_json(arguments[k][0])) for k in arguments)
 
         service = ServiceCoord(service, int(shard))
+
+        authorized = self.application.service.authorized_rpc(service,
+                                                             method,
+                                                             arguments)
+        if not authorized:
+            self.write({'status': 'not authorized'})
+            return
+
         if service not in self.application.service.remote_services or \
                not self.application.service.remote_services[service].connected:
             self.write({'status': 'unconnected'})

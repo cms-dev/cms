@@ -146,6 +146,25 @@ class AdminWebServer(WebService):
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
         self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
 
+    def authorized_rpc(self, service, method, arguments):
+        """Used by WebService to check if the browser can call a
+        certain RPC method.
+
+        service (ServiceCoord): the service called by the browser.
+        method (string): the name of the method called.
+        arguments (dict): the arguments of the call.
+        return (bool): True if ok, False if not authorized.
+
+        """
+        if service == ServiceCoord("EvaluationServer", 0):
+            if method == "queue_status":
+                return True
+            elif method == "workers_status":
+                return True
+
+        # Default fallback: don't authorize.
+        return False
+
 
 class MainHandler(BaseHandler):
     """Home page handler, with queue and workers statuses.
