@@ -1,0 +1,96 @@
+
+------------------------------------
+USING THE WORKER IN A 32 BITS CHROOT
+------------------------------------
+
+by Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+
+
+  If you're using a 64 bits environment you may experience some
+problems in running correctly the sanbox. Although the sandbox is
+perfectly capable of running in 64 bits mode, the way the Worker calls
+it at the moment could fail in 64 bits environment, because it
+requests to allow some syscalls that are not available in 64 bits
+mode. Moreover, the Worker is mostly tested in 32 bits environment, so
+you should use in 32 bits to achieve more consistent results (it is
+strongly advised to install 32 bits operating systems when doing a
+real contest).
+
+  To mitigate these problems you can make the Worker running in a 32
+bits chroot. This tutorial briefly explains how to do it. It is
+assumed that you're using a Debian or Ubuntu operating system.
+
+
+1. CREATION OF THE CHROOT
+
+  Start by installing the package deboostrap:
+
+# apt-get install debootstrap
+
+  Then make some directory where install chroots and fire debootstrap:
+
+# mkdir /srv/chroot
+# debootstrap --arch=i386 sid /srv/chroot/sid32
+
+  You can also add another argument that will be interpreted as the
+mirror to use. Otherwise some default one will be used. Of course you
+also have to substitute "sid" with the distribution you want to
+install: the most sensible ones are sid and squeeze for Debian, and
+lucid, maverick and natty for Ubuntu. You can also install an Ubuntu
+chroot on Debian and viceversa, but you have to specify the relevan
+mirror to use.
+
+  Debootstrap will have to download some hundreds of megabytes of data
+from the Internet, so be sure to have a sufficient Internet
+connection. Hopefully everything will work and you'll find a brand new
+minimal system in the directory you specified.
+
+
+2. USING THE CHROOT
+
+  In principle you could just use the chroot by executing:
+
+# chroot /srv/chroot/sid32
+
+  This has some disadvantages, though: you can do it only if you're
+root and you may have to manually do a lot of things (for example,
+mounting /dev, /proc/, ... filesystems, copy things from your home and
+other things). It's better to use the schroot program, that automates
+lots of these things.
+
+# apt-get install schroot
+
+  Then edit the file /etc/schroot/schroot.conf, adding a stanza like
+this:
+
+---
+[sid32]
+type=directory
+description=Debian sid 32 bits
+directory=/srv/chroot/sid32
+users=<your username>
+script-config=default/config
+---
+
+  Of course, as before, change description, directory and users as
+relevant on your system. Then the specified unprivileged user will
+have the power to enter the chroot with this command:
+
+$ schroot -c sid32
+
+  The /home directory (like many others) will be bind-mounted, so
+you'll see exactly the same files inside the chroot, without having to
+copy anything. To do administrative things (mostly installing
+packages: the standard chroot is really essential!) inside the chroot
+you can execute the same command as root, and you'll become root
+inside the chroot.
+
+
+3. CAVEATS WITH MO-BOX
+
+  Inside the 32 bits chroot you're using a 64 bits kernel anyway, so
+you cannot use a mo-box version compiled for 32 bits kernel (it would
+be unsafe, and the mo-box itself wouldn't start unless you manually
+change the code). When you compile the mo-box with the compile64.sh
+script, two executables get created: mo-box and mo-box32. Just use the
+second (overwriting the first with it).
