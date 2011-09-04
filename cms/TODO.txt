@@ -46,6 +46,12 @@
   - I think that the AGPL license also asks us to put appropriate
     copyright notices in the Web interface.
 
+*** AdminWebServer
+* HIGH: ease the work of contest managers, providing notification of
+  events and lists of last submissions (questions, ...).
+* LOW: show last logs, or anyway alert when we get log >= warning.
+* LOW: show resource usage of all the boxes.
+
 *** Task types
 * MED: Check that white_diff() really does what we want it to do.
   - This requires someone different from the author (Giovanni) to
