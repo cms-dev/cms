@@ -129,8 +129,8 @@
         </td>
         <td>
           {% for filename,sub_file in s.files.items() %}
-          <a href="#" 
-             onclick="utils.show_file('{{ filename }}', '/submission_file/{{ encrypt_number(sub_file.id) }}');">
+          <a href="#"
+             onclick="utils.show_file('{{ filename }}', '/submission_file/{{ Cryptographics.encrypt_number(sub_file.id) }}');">
               {{ escape(filename) }}
           </a>
           <br/>
@@ -140,7 +140,7 @@
               {{ _("No") }}
                 {% if can_play_token %}
               <form style="display: inline;" class="submit_form" action="/usetoken" method="POST">
-                <input type="hidden" name="submission_id" value="{{ encrypt_number(s.id) }}" />
+                <input type="hidden" name="submission_id" value="{{ Cryptographics.encrypt_number(s.id) }}" />
                 <input type="submit" value="{{ _("Use!") }}" />{% comment _("Use!") %}
               </form>
                 {% end %}
