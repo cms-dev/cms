@@ -24,13 +24,26 @@ import sys
 import urllib
 import urllib2
 import cookielib
+import mechanize
 import threading
 import optparse
 import random
 import time
+import re
+import email.mime.multipart
+import email.mime.nonmultipart
 
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
+
+def urlencode(data):
+    msg = email.mime.multipart.MIMEMultipart('form-data')
+    for key, value in data.iteritems():
+        elem = email.mime.nonmultipart.MIMENonMultipart('text', 'plain')
+        elem.add_header('Contest-Disposition', 'form-data; name="%s"' % (key))
+        elem.set_payload(value)
+        msg.attach(elem)
+    return msg
 
 class HTTPHelper:
     """A class to emulate a browser's behaviour: for example, cookies
@@ -66,8 +79,10 @@ class HTTPHelper:
 
 class TestRequest:
 
-    def __init__(self, http_helper, base_url='http://localhost:8888/'):
-        self.http_helper = http_helper
+    def __init__(self, browser, base_url=None):
+        if base_url is None:
+            base_url = 'http://localhost:8888/'
+        self.browser = browser
         self.base_url = base_url
 
     def execute(self):
@@ -78,17 +93,12 @@ class TestRequest:
         #print >> sys.stderr, "Cookies after execution:"
         #for cookie in self.http_helper.cookies:
         #    print >> sys.stderr, "  " + repr(cookie)
-        fail = self.test_fail()
         success = self.test_success()
         description = self.describe()
-        if fail and not success:
-            print >> sys.stderr, "Fail when requesting %s" % (description)
-        elif not fail and success:
+        if success:
             print >> sys.stderr, "Request %s successfully completed" % (description)
-        elif not fail and not success:
-            print >> sys.stderr, "Couldn't decide on request %s" % (description)
-        else:
-            print >> sys.stderr, "WHAT?! Request %s both failed and succeded!" % (description)
+        elif not success:
+            print >> sys.stderr, "Fail when requesting %s" % (description)
 
     def describe(self):
         raise NotImplemented("Please subclass this class and actually implement some request")
@@ -96,62 +106,77 @@ class TestRequest:
     def do_request(self):
         raise NotImplemented("Please subclass this class and actually implement some request")
 
-    def test_fail(self):
-        raise NotImplemented("Please subclass this class and actually implement some request")
-
     def test_success(self):
         raise NotImplemented("Please subclass this class and actually implement some request")
 
-class HomepageRequest(TestRequest):
+class GenericRequest(TestRequest):
 
-    def __init__(self, http_helper):
-        TestRequest.__init__(self, http_helper)
+    MINIMUM_LENGTH = 100
+
+    def __init__(self, browser, base_url=None):
+        TestRequest.__init__(self, browser, base_url)
+        self.url = None
+        self.data = None
+
+    def do_request(self):
+        if self.data is None:
+            self.response = self.browser.open(self.url)
+        else:
+            self.response = self.browser.open(self.url, urllib.urlencode(self.data))
+        self.res_data = self.response.read()
+
+    def test_success(self):
+        #if self.response.getcode() != 200:
+        #    return False
+        if len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
+            return False
+        return True
+
+class HomepageRequest(GenericRequest):
+
+    def __init__(self, http_helper, username, loggedin, base_url=None):
+        GenericRequest.__init__(self, http_helper, base_url)
+        self.url = self.base_url
+        self.username = username
+        self.loggedin = loggedin
 
     def describe(self):
         return "check the main page"
 
-    def do_request(self):
-        self.response = self.http_helper.do_request(self.base_url)
-        self.res_data = self.response.read()
-
     def test_success(self):
-        if self.response.getcode() == 200 and len(self.res_data) >= 10:
-            return True
-        return False
+        if not GenericRequest.test_success(self):
+            return False
+        username_re = re.compile(self.username)
+        if self.loggedin:
+            if username_re.search(self.res_data) is None:
+                return False
+        else:
+            if username_re.search(self.res_data) is not None:
+                return False
+        return True
 
-    def test_fail(self):
-        if self.response.getcode() != 200:
-            return True
-        if len(self.res_data) < 10:
-            return True
-        return False
+class LoginRequest(GenericRequest):
 
-class LoginRequest(TestRequest):
-
-    def __init__(self, http_helper, username, password):
-        TestRequest.__init__(self, http_helper)
+    def __init__(self, http_helper, username, password, base_url=None):
+        TestRequest.__init__(self, http_helper, base_url)
         self.username = username
         self.password = password
+        self.url = self.base_url + 'login'
+        self.data = {'username': self.username, 'password': self.password, 'next': '/'}
 
     def describe(self):
         return "try to login"
 
-    def do_request(self):
-        data = {'username': self.username, 'password': self.password, 'next': '/'}
-        self.response = self.http_helper.do_request('%s%s' % (self.base_url, "login"), data)
-        self.res_data = self.response.read()
-
     def test_success(self):
-        if self.response.getcode() == 200 and len(self.res_data) >= 10:
-            return True
-        return False
-
-    def test_fail(self):
-        if self.response.getcode() != 200:
-            return True
-        if len(self.res_data) < 10:
-            return True
-        return False
+        if not GenericRequest.test_success(self):
+            return False
+        fail_re = re.compile('Failed to log in.')
+        if fail_re.search(self.res_data) is not None:
+            return False
+        username_re = re.compile(self.username)
+        if username_re.search(self.res_data) is None:
+            return False
+        return True
 
 class ActorDying(Exception):
     pass
@@ -175,14 +200,15 @@ class Actor(threading.Thread):
 
         self.name = "Actor thread for user %s" % (self.username)
 
-        self.http_helper = HTTPHelper()
+        self.browser = mechanize.Browser()
         self.die = False
 
     def run(self):
         try:
             print >> sys.stderr, "Starting actor for user %s" % (self.username)
-            self.do_step(LoginRequest(self.http_helper, self.username, self.password))
-            self.do_step(HomepageRequest(self.http_helper))
+            self.do_step(HomepageRequest(self.browser, self.username, loggedin=False))
+            self.do_step(LoginRequest(self.browser, self.username, self.password))
+            self.do_step(HomepageRequest(self.browser, self.username, loggedin=True))
         except ActorDying:
             print >> sys.stderr, "Actor dying for user %s" % (self.username)
 
@@ -211,7 +237,7 @@ def harvest_user_data(contest_id):
     return users
 
 DEFAULT_METRICS = {'time_coeff':  1.0,
-                   'time_lambda': 0.5}
+                   'time_lambda': 2.0}
 
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options]")
