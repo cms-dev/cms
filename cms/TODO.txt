@@ -113,14 +113,6 @@
 
 
 
-** Task types
-
-* MED: Check that white_diff() really does what we want it to do.
-  - This requires someone different from the author (Giovanni) to
-    audit it.
-
-
-
 ** YamlImporter
 
 * LOW: Provide facilities to translate the task's statement.

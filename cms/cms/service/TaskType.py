@@ -20,7 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import subprocess
 import codecs
 
 from cms.async.AsyncLibrary import logger, async_lock
@@ -30,13 +29,24 @@ from cms.service import JobException
 from cms.util.Utils import get_compilation_command, filter_ansi_escape
 from cms import Config
 
+
 def get_task_type_class(submission, session, file_cacher):
+    """Given a submission, istanciate the corresponding TaskType
+    class.
+
+    submission (Submission): the submission that needs the task type.
+    session (SQLSession): the session the submission lives in.
+    file_cacher (FileCacher): a file cacher object.
+
+    """
     if submission.task.task_type == Task.TASK_TYPE_BATCH:
         return BatchTaskType(submission, session, file_cacher)
     else:
         return None
 
-WHITES = " \t\n"
+
+WHITES = " \t\n\r"
+
 
 def white_diff_canonicalize(s):
     """Convert the input string to a canonical form for the white diff
@@ -45,25 +55,45 @@ def white_diff_canonicalize(s):
     considered equivalent for the purposes of the white_diff
     algorithm.
 
-    More specificly, this function strips all the leading and trailing
-    whitespaces from s and collapse all the runs of consecutive
-    whitespaces into just one copy of one specific whitespace."""
+    More specifically, this function strips all the leading and
+    trailing whitespaces from s and collapse all the runs of
+    consecutive whitespaces into just one copy of one specific
+    whitespace.
 
-    # Replace all the whitespaces with copies of the first, making the
-    # rest of the algorithm simpler
+    s (string): the string to canonicalize.
+    return (string): the canonicalized string.
+
+    """
+    # Replace all the whitespaces with copies of " ", making the rest
+    # of the algorithm simpler
     for c in WHITES[1:]:
         s = s.replace(c, WHITES[0])
 
-    # Splits the string according to the first whitespace, filters out
-    # empty tokens and join again the string using just one copy of
-    # the first whitespace; this way, runs of more than one
-    # whitespaces are collapsed into just one copy.
-    s = WHITES[0].join(filter(lambda x: x != '', s.split(WHITES[0])))
+    # Split the string according to " ", filter out empty tokens and
+    # join again the string using just one copy of the first
+    # whitespace; this way, runs of more than one whitespaces are
+    # collapsed into just one copy.
+    s = WHITES[0].join([x for x in s.split(WHITES[0])
+                        if x != ''])
     return s
 
+
 def white_diff(output, res):
-    """Compare the two input files, ignoring in each line repeated,
-    heading or trailing whitespaces and empty traling lines."""
+    """Compare the two output files. Two files are equal if for every
+    integer i, line i of first file is equal to line i of second
+    file. Two lines are equal if they differ only by number or type of
+    whitespaces.
+
+    Note that trailing lines composed only of whitespaces don't change
+    the 'equality' of the two files. Note also that by line we mean
+    'sequence of characters ending with \n or EOF and beginning right
+    after BOF or \n'. In particular, every line has *at most* one
+
+    output (file): the first file to compare.
+    res (file): the second file to compare.
+    return (bool): True if the two file are equal as explained above.
+
+    """
 
     while True:
         lout = output.readline()
@@ -88,6 +118,7 @@ def white_diff(output, res):
             if lout != lres:
                 return False
 
+
 class BatchTaskType:
     def __init__(self, submission, session, file_cacher):
         self.submission = submission
@@ -110,7 +141,8 @@ class BatchTaskType:
                 logger.error("Unable to decode UTF-8 for string %s." % text)
         return True
 
-    def finish_single_execution(self, test_number, success, outcome=0, text=""):
+    def finish_single_execution(self, test_number, success,
+                                outcome=0, text=""):
         self.safe_delete_sandbox()
         if not success:
             return False
@@ -149,7 +181,7 @@ class BatchTaskType:
             self.safe_delete_sandbox()
             raise JobException()
 
-    def safe_get_file_to_storage(self, name, msg = ""):
+    def safe_get_file_to_storage(self, name, msg=""):
         try:
             return self.sandbox.get_file_to_storage(name, msg)
         except (IOError, OSError) as e:
@@ -163,7 +195,7 @@ class BatchTaskType:
             return self.sandbox.get_file_to_string(name, maxlen=1024)
         except (IOError, OSError):
             with async_lock:
-                logger.error("Couldn't retrieve file `%s' from storage" % (name))
+                logger.error("Couldn't retrieve file `%s' from storage" % name)
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -172,7 +204,7 @@ class BatchTaskType:
             return self.sandbox.get_file(name)
         except (IOError, OSError):
             with async_lock:
-                logger.error("Couldn't retrieve file `%s' from storage" % (name))
+                logger.error("Couldn't retrieve file `%s' from storage" % name)
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -181,7 +213,8 @@ class BatchTaskType:
             self.sandbox.execute_without_std(command)
         except (OSError, IOError) as e:
             with async_lock:
-                logger.error("Couldn't spawn `%s' (exception %s)" % (command[0], repr(e)))
+                logger.error("Couldn't spawn `%s' (exception %s)" %
+                             (command[0], repr(e)))
             self.safe_delete_sandbox()
             raise JobException()
 
@@ -201,12 +234,15 @@ class BatchTaskType:
         if not valid or language is None:
             with async_lock:
                 logger.info("Invalid submission or couldn't detect language")
-            return self.finish_compilation(True, False, "Invalid files in submission")
+            return self.finish_compilation(True, False,
+                                           "Invalid files in submission")
 
         if len(self.submission.files) != 1:
             with async_lock:
-                logger.info("Submission contains %d files, expecting 1" % (len(self.submission.files)))
-            return self.finish_compilation(True, False, "Invalid files in submission")
+                logger.info("Submission contains %d files, expecting 1" %
+                            len(self.submission.files))
+            return self.finish_compilation(True, False,
+                                           "Invalid files in submission")
 
         source_filename = self.submission.files.keys()[0]
         executable_filename = source_filename.replace(".%s" % (language), "")
@@ -231,12 +267,15 @@ class BatchTaskType:
         # FIXME - File access limits are not enforced on children
         # processes (like ld)
         self.sandbox.set_env['TMPDIR'] = self.sandbox.path
-        self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/', '%s/' % (self.sandbox.path)]
+        self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/',
+                                   '%s/' % (self.sandbox.path)]
         self.sandbox.timeout = 8
         self.sandbox.wallclock_timeout = 10
         self.sandbox.address_space = 256 * 1024
-        self.sandbox.stdout_file = self.sandbox.relative_path("compiler_stdout.txt")
-        self.sandbox.stderr_file = self.sandbox.relative_path("compiler_stderr.txt")
+        self.sandbox.stdout_file = \
+            self.sandbox.relative_path("compiler_stdout.txt")
+        self.sandbox.stderr_file = \
+            self.sandbox.relative_path("compiler_stderr.txt")
         with async_lock:
             logger.info("Starting compilation")
         self.safe_sandbox_execute(command)
@@ -265,19 +304,40 @@ class BatchTaskType:
 
             with async_lock:
                 logger.info("Compilation successfully finished")
-            return self.finish_compilation(True, True, "OK %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
+            return self.finish_compilation(
+                True,
+                True,
+                "OK %s\n"
+                "Compiler standard output:\n"
+                "%s\n"
+                "Compiler standard error:\n"
+                "%s" % (self.sandbox.get_stats(), stdout, stderr))
 
         # Error in compilation: returning the error to the user
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
             with async_lock:
                 logger.info("Compilation failed")
-            return self.finish_compilation(True, False, "Failed %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
+            return self.finish_compilation(
+                True,
+                False,
+                "Failed %s\n"
+                "Compiler standard output:\n"
+                "%s\n"
+                "Compiler standard error:\n"
+                "%s" % (self.sandbox.get_stats(), stdout, stderr))
 
         # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
             with async_lock:
                 logger.info("Compilation timed out")
-            return self.finish_compilation(True, False, "Time out %s\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (self.sandbox.get_stats(), stdout, stderr))
+            return self.finish_compilation(
+                True,
+                False,
+                "Time out %s\n"
+                "Compiler standard output:\n"
+                "%s\n"
+                "Compiler standard error:\n"
+                "%s" % (self.sandbox.get_stats(), stdout, stderr))
 
         # Suicide with signal (probably memory limit): returning the
         # error to the user
@@ -285,7 +345,15 @@ class BatchTaskType:
             signal = self.sandbox.get_killing_signal()
             with async_lock:
                 logger.info("Compilation killed with signal %d" % (signal))
-            return self.finish_compilation(True, False, "Killed with signal %d %s\nThis could be triggered by violating memory limits\nCompiler standard output:\n%s\nCompiler standard error:\n%s" % (signal, self.sandbox.get_stats(), stdout, stderr))
+            return self.finish_compilation(
+                True,
+                False,
+                "Killed with signal %d %s\n"
+                "This could be triggered by violating memory limits\n"
+                "Compiler standard output:\n"
+                "%s\n"
+                "Compiler standard error:\n"
+                "%s" % (signal, self.sandbox.get_stats(), stdout, stderr))
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment
@@ -298,7 +366,8 @@ class BatchTaskType:
         # administrator should relax the syscall constraints
         if exit_status == Sandbox.EXIT_SYSCALL:
             with async_lock:
-                logger.error("Compilation aborted because of forbidden syscall")
+                logger.error("Compilation aborted "
+                             "because of forbidden syscall")
             return self.finish_compilation(False)
 
         # Forbidden file access: this could be triggered by the user
@@ -306,7 +375,8 @@ class BatchTaskType:
         # the administrator should have a look at it
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
             with async_lock:
-                logger.error("Compilation aborted because of forbidden file access")
+                logger.error("Compilation aborted "
+                             "because of forbidden file access")
             return self.finish_compilation(False)
 
         # Why the exit status hasn't been captured before?
@@ -316,8 +386,13 @@ class BatchTaskType:
 
     def execute_single(self, test_number):
         self.safe_create_sandbox()
-        self.safe_create_file_from_storage(self.executable_filename, self.submission.executables[self.executable_filename].digest, executable = True)
-        self.safe_create_file_from_storage("input.txt", self.submission.task.testcases[test_number].input)
+        self.safe_create_file_from_storage(
+            self.executable_filename,
+            self.submission.executables[self.executable_filename].digest,
+            executable=True)
+        self.safe_create_file_from_storage(
+            "input.txt",
+            self.submission.task.testcases[test_number].input)
 
         self.sandbox.chdir = self.sandbox.path
         self.sandbox.filter_syscalls = 2
@@ -325,8 +400,10 @@ class BatchTaskType:
         self.sandbox.address_space = self.submission.task.memory_limit * 1024
         self.sandbox.file_check = 1
         self.sandbox.allow_path = ["input.txt", "output.txt"]
-        stdout_filename = os.path.join(self.sandbox.path, "submission_stdout.txt")
-        stderr_filename = os.path.join(self.sandbox.path, "submission_stderr.txt")
+        stdout_filename = os.path.join(self.sandbox.path,
+                                       "submission_stdout.txt")
+        stderr_filename = os.path.join(self.sandbox.path,
+                                       "submission_stderr.txt")
         self.sandbox.stdout_file = stdout_filename
         self.sandbox.stderr_file = stderr_filename
 
@@ -337,17 +414,20 @@ class BatchTaskType:
         # This one seems to be used for a C++ executable.
         self.sandbox.allow_path += ["/proc/meminfo"]
 
-        self.safe_sandbox_execute([self.sandbox.relative_path(self.executable_filename)])
+        self.safe_sandbox_execute(
+            [self.sandbox.relative_path(self.executable_filename)])
 
         # Detect the outcome of the execution
         exit_status = self.sandbox.get_exit_status()
-        exit_code = self.sandbox.get_exit_code()
+        # exit_code seems to be unused, so I'm commenting it.
+        # exit_code = self.sandbox.get_exit_code()
 
         # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
             with async_lock:
                 logger.info("Execution timed out")
-            return self.finish_single_execution(test_number, True, 0.0, "Execution timed out\n")
+            return self.finish_single_execution(test_number, True, 0.0,
+                                                "Execution timed out\n")
 
         # Suicide with signal (memory limit, segfault, abort):
         # returning the error to the user
@@ -355,7 +435,9 @@ class BatchTaskType:
             signal = self.sandbox.get_killing_signal()
             with async_lock:
                 logger.info("Execution killed with signal %d" % (signal))
-            return self.finish_single_execution(test_number, True, 0.0, "Execution killed with signal %d\n" % (signal))
+            return self.finish_single_execution(
+                test_number, True, 0.0,
+                "Execution killed with signal %d\n" % signal)
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment
@@ -369,14 +451,19 @@ class BatchTaskType:
         if exit_status == Sandbox.EXIT_SYSCALL:
             with async_lock:
                 logger.info("Execution killed because of forbidden syscall")
-            return self.finish_single_execution(test_number, True, 0.0, "Execution killed because of forbidden syscall")
+            return self.finish_single_execution(
+                test_number, True, 0.0,
+                "Execution killed because of forbidden syscall")
 
         # Forbidden file access: returning the error to the user
         # FIXME - Tell which file raised this error
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
             with async_lock:
-                logger.info("Execution killed because of forbidden file access")
-            return self.finish_single_execution(test_number, True, 0.0, "Execution killed because of forbidden file access")
+                logger.info("Execution killed "
+                            "because of forbidden file access")
+            return self.finish_single_execution(
+                test_number, True, 0.0,
+                "Execution killed because of forbidden file access")
 
         # Last check before assuming that execution finished
         # successfully; we accept the execution even if the exit code
@@ -389,9 +476,12 @@ class BatchTaskType:
         if not self.sandbox.file_exists("output.txt"):
             outcome = 0.0
             text = "Execution didn't produce file output.txt"
-            return self.finish_single_execution(test_number, True, outcome, text)
+            return self.finish_single_execution(test_number, True, outcome,
+                                                text)
 
-        self.safe_create_file_from_storage("res.txt", self.submission.task.testcases[test_number].output)
+        self.safe_create_file_from_storage(
+            "res.txt",
+            self.submission.task.testcases[test_number].output)
         self.sandbox.filter_syscalls = 2
         self.sandbox.timeout = 0
         self.sandbox.address_space = None
@@ -416,22 +506,27 @@ class BatchTaskType:
         # Manager present: wonderful, he'll do all the job
         else:
             manager_filename = self.submission.task.managers.keys()[0]
-            self.safe_create_file_from_storage(manager_filename, self.submission.task.managers[manager_filename].digest, executable = True)
-            manager_popen = self.safe_sandbox_execute(["./%s" % (manager_filename), "input.txt", "res.txt", "output.txt"])
+            self.safe_create_file_from_storage(
+                manager_filename,
+                self.submission.task.managers[manager_filename].digest,
+                executable=True)
+            self.safe_sandbox_execute(
+                ["./%s" % (manager_filename),
+                 "input.txt", "res.txt", "output.txt"])
             with codecs.open(stdout_filename, "r", "utf-8") as stdout_file:
                 with codecs.open(stderr_filename, "r", "utf-8") as stderr_file:
                     try:
                         outcome = stdout_file.readline().strip()
                     except UnicodeDecodeError as e:
                         with async_lock:
-                            logger.error("Unable to interpret manager stdout " +
+                            logger.error("Unable to interpret manager stdout "
                                          "(outcome) as unicode. %s" % repr(e))
                         return self.finish_single_execution(test_number, False)
                     try:
                         text = filter_ansi_escape(stderr_file.readline())
                     except UnicodeDecodeError as e:
                         with async_lock:
-                            logger.error("Unable to interpret manager stderr " +
+                            logger.error("Unable to interpret manager stderr "
                                          "(text) as unicode. %s" % repr(e))
                         return self.finish_single_execution(test_number, False)
             try:
@@ -447,13 +542,19 @@ class BatchTaskType:
     def execute(self):
         if len(self.submission.executables) != 1:
             with async_lock:
-                logger.info("Submission contains %d executables, expecting 1" % (len(self.submission.executables)))
+                logger.info("Submission contains %d executables, "
+                            "expecting 1" %
+                            len(self.submission.executables))
             return self.finish_evaluation(False)
 
         self.executable_filename = self.submission.executables.keys()[0]
 
-        for test_number in xrange(len(self.submission.evaluations), len(self.submission.task.testcases)):
-                self.session.add(Evaluation(text=None, outcome=None, num=test_number, submission=self.submission))
+        for test_number in xrange(len(self.submission.evaluations),
+                                  len(self.submission.task.testcases)):
+            self.session.add(Evaluation(text=None,
+                                        outcome=None,
+                                        num=test_number,
+                                        submission=self.submission))
 
         for test_number in xrange(len(self.submission.task.testcases)):
             success = self.execute_single(test_number)
