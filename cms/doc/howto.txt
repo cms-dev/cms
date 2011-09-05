@@ -29,7 +29,7 @@ Next, you need to compile the localization you are interested
 in. Create the directory $CMSPATH/cms/server/mo/<code>/LC_MESSAGES/ for
 every country code <code>, and run the command
 $ msgfmt $CMSPATH/cms/server/po/<code>.po \
-  -o $CMSPATH/cms/server/mo/<code>/LC_MESSAGES/messages.mo
+  -o $CMSPATH/cms/server/mo/<code>/LC_MESSAGES/cms.mo
 for every country code.
 
 * CONFIGURATION
