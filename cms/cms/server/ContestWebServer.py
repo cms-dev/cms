@@ -175,9 +175,9 @@ class ContestWebServer(WebService):
 
         parameters = WebConfig.contest_parameters
         parameters["template_path"] = os.path.join(os.path.dirname(__file__),
-                                  "templates", "contest")
+                                                   "templates", "contest")
         parameters["static_path"] = os.path.join(os.path.dirname(__file__),
-                                  "static", "contest")
+                                                 "static")
         WebService.__init__(self,
             Config.contest_listen_port,
             handlers,

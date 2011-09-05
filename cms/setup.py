@@ -25,7 +25,7 @@ import os
 
 setup(name="cms",
       version="0.1",
-      author="Giovanni Mascellani, Stefano Maggiolo, Matteo Boscariol",
+      author="Matteo Boscariol, Stefano Maggiolo, Giovanni Mascellani",
       author_email="s.maggiolo@gmail.com",
       url="",
       download_url="",

@@ -137,7 +137,7 @@ class AdminWebServer(WebService):
         parameters["template_path"] = os.path.join(os.path.dirname(__file__),
                                                    "templates", "admin")
         parameters["static_path"] = os.path.join(os.path.dirname(__file__),
-                                                 "static", "admin")
+                                                 "static")
         WebService.__init__(self,
                             Config.admin_listen_port,
                             handlers,
