@@ -23,10 +23,13 @@
 
 """
 
+import traceback
+
 from functools import wraps
 
 from cms.async.WebAsyncLibrary import rpc_callback
 from cms.async import ServiceCoord
+from cms.async.AsyncLibrary import logger
 
 from tornado.web import HTTPError
 
