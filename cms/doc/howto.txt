@@ -1,0 +1,75 @@
+*** HOW TO RUN CMS FOR THE FIRST TIME
+
+First of all, there are some choice you can do: run it on a 32 or 64
+bit system, and use PostgreSQL or SQLite for the database. In this
+guide we restrict to the simplest case (32 bit and SQLite). For
+different choice, look at the relative guide in the documentation
+(32bit_sandbox_howto.txt and postgresql_howto.txt).
+
+Said that, you can run CMS in two ways: from the repository, or
+install it in the system.
+
+
+** RUN IT FROM THE REPOSITORY
+
+We assume that you already cloned the repository, and that $CMSPATH is
+the path of the cms directory in the repository (i.e., the parent of
+doc/).
+
+* DEPENDENCIES
+
+You need some dependencies (the Ubuntu packages are in brackets):
+- SQLAlchemy packages for Python (python-sqlalchemy);
+- simplejson library for Python (python-simplejson);
+- Tornado (python-tornado).
+
+* LOCALIZATION
+
+Next, you need to compile the localization you are interested
+in. Create the directory $CMSPATH/cms/server/mo/<code>/LC_MESSAGES/ for
+every country code <code>, and run the command
+$ msgfmt $CMSPATH/cms/server/po/<code>.po \
+  -o $CMSPATH/cms/server/mo/<code>/LC_MESSAGES/messages.mo
+for every country code.
+
+* CONFIGURATION
+
+Then you need to configure CMS, copying
+$CMSPATH/example/cms.conf.sample onto $CMSPATH/example/cms.conf and
+changing the value as you prefer. In particular, since we are using
+SQLite, you need to remove the key "database" and change
+"_database_sqlite" in "database'.
+
+* PYTHONPATH
+
+The last thing to do is to instruct Python to search for modules also
+in $CMSPATH. You need to write on every terminal where you want to run
+some CMS service the following: $ export PYTHONPATH=$CMSPATH/
+
+* IMPORTING AND RUNNING
+
+Finally, you can run the services. We are going first to run the
+services for logging and file storage, then we are importing a sample
+contest, and finally we are going to run all the services for the
+given contest. In every terminal, enter in the directory $CMSPATH.
+
+These (one for each terminal) run the logging and file capabilities.
+$ ./cms/service/LogService.py 0
+$ ./cms/service/FileStorage.py 0
+
+This import the contest in the given directory:
+$ ./contrib/ContestImporter.py -s 0 /path/to/contest/
+
+After the importer ended, you can run the other services with:
+$ ./cms/service/Worker.py 0
+$ ./cms/service/EvaluationServer.py 0
+$ ./cms/service/ContestWebServer.py 0
+$ ./cms/service/AdminWebServer.py 0
+The middle two are contest-dependent, hence they are going to ask you
+which contest you want to load before starting.
+
+
+** INSTALL AND RUN IT FROM THE SYSTEM
+
+TODO
+
