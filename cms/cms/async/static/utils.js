@@ -54,8 +54,6 @@
                 {
                     if(xmlhttp.status == 200)
                         cb(xmlhttp.responseText);
-                    else
-                        cb('{"status":' + xmlhttp.status + '}');
                 }
             }
             xmlhttp.open("GET", url + "?" + par, true);

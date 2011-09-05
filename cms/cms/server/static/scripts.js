@@ -386,7 +386,7 @@
             var final_page = Math.min(page, npages) - 1;
             for(var i = 0; i < container.children.length; i++)
             {
-                if(i>= elements_per_page * final_page 
+                if(i>= elements_per_page * final_page
                     && i < elements_per_page * (final_page + 1))
                 {
                     container.children[i].style.display="block";
