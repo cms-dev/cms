@@ -53,6 +53,7 @@ class FileStorage(Service):
         self.tmp_dir = os.path.join(self.base_dir, "tmp")
         self.obj_dir = os.path.join(self.base_dir, "objects")
         self.desc_dir = os.path.join(self.base_dir, "descriptions")
+        logger.info("Using %s as base directory." % self.base_dir)
 
         if not mkdir(Config._data_dir) or \
                not mkdir(self.base_dir) or \
@@ -607,10 +608,14 @@ class FileCacher:
                                           plus=plus,
                                           bind_obj=bind_obj)
 
-if __name__ == "__main__":
+
+def main():
     import sys
     if len(sys.argv) != 2:
         print sys.argv[0], "shard"
     else:
         FileStorage(shard=int(sys.argv[1])).run()
 
+
+if __name__ == "__main__":
+    main()

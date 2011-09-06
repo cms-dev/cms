@@ -36,8 +36,7 @@ def load_config_file(cmsconf):
 
     Also, add a boolean field '_installed' that discerns if the
     program is run from the repository or from the installed
-    package. To do so, it does something quite different, which is
-    test if the current user is cmsuser.
+    package. To do so, it check if sys.argv[0] is in /usr/.
 
     Finally, add _*_dir for specific directories used by the services.
 
@@ -69,11 +68,8 @@ def load_config_file(cmsconf):
 
     # Put also the _installed data.
     import pwd
-    try:
-        cmsuser_uid = pwd.getpwnam("cmsuser")[0]
-    except KeyError:
-        cmsuser_uid = -1
-    Config._installed = (os.getuid() == cmsuser_uid)
+    import sys
+    Config._installed = sys.argv[0].startswith("/usr/")
 
     if Config._installed:
         Config._log_dir = os.path.join("/", "var", "local", "log", "cms")

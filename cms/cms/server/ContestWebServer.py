@@ -701,10 +701,14 @@ handlers = [(r"/",
             ]
 
 
-if __name__ == "__main__":
+def main():
     import sys
     if len(sys.argv) < 2:
         print sys.argv[0], "shard [contest]"
         exit(1)
     ContestWebServer(int(sys.argv[1]),
                      ask_for_contest(1)).run()
+
+
+if __name__ == "__main__":
+    main()

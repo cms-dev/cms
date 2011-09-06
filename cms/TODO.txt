@@ -179,3 +179,16 @@
 
 * MED: Fix sync default.
 
+
+
+** setup.py
+
+* LOW: Add contrib and test to the entry_points, and the latter also
+  to the packages. Probably helpful to change names to something like
+  cmscontrib and cmstest.
+
+* MED: Understand how to avoid the problem of files create in cmsuser
+  directories having uid of calling user instead of cmsuser. Good
+  solution should be of having cms* to be run as cmsuser, but suid
+  seems hard with scripts. Is there a +something option for
+  directories to enable this behaviour?

@@ -642,9 +642,13 @@ handlers = [(r"/",
              NotificationsHandler),
            ]
 
-if __name__ == "__main__":
+def main():
     import sys
     if len(sys.argv) != 2:
         print sys.argv[0], "shard"
     else:
         AdminWebServer(int(sys.argv[1])).run()
+
+
+if __name__ == "__main__":
+    main()

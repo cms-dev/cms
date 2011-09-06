@@ -22,7 +22,9 @@
 import sys
 import os
 
-from distutils.core import setup
+from setuptools import setup
+
+old_umask = os.umask(18) # 022
 
 setup(name="cms",
       version="0.1",
@@ -49,6 +51,19 @@ setup(name="cms",
                         os.path.join("templates","admin","*.*"),
                         os.path.join("templates","ranking","*.*"),
                         ]},
+      entry_points={
+          "console_scripts": [
+              "cmsLogService=cms.service.LogService:main",
+              "cmsFileStorage=cms.service.FileStorage:main",
+              "cmsEvaluationServer=cms.service.EvaluationServer:main",
+              "cmsWorker=cms.service.Worker:main",
+              "cmsResourceService=cms.service.ResourceService:main",
+              "cmsChecker=cms.service.Checker:main",
+              "cmsContestWebServer=cms.server.ContestWebServer:main",
+              "cmsAdminWebServer=cms.server.AdminWebServer:main",
+              # TODO: add contrib, and maybe test
+              ]
+          },
       keywords="ioi programming contest grader management system",
       license="Lesser Affero General Public License v3",
       classifiers=["Development Status :: 3 - Alpha",
@@ -85,22 +100,33 @@ if "install" in sys.argv:
     import pwd
     from glob import glob
 
-    # Setting umask 022 to install.
-    old_umask = os.umask(18)
+    # Two kind of files: owned by root with umask 022, or owned by
+    # cmsuser with umask 007. The latter because we do not want
+    # regular users to sniff around our contests' data.
+    os.umask(7) # 007
+
+    print "creating user and group cmsuser."
+    os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
+    cmsuser = pwd.getpwnam("cmsuser")
 
     print "copying mo-box to /usr/local/bin/."
+    os.umask(18) # 022
     shutil.copy(os.path.join(".", "box", "mo-box"),
                 os.path.join("/", "usr", "local", "bin"))
 
     print "copying configuration to /usr/local/etc/."
+    os.umask(7) # 007
+    conf_file = os.path.join("/", "usr", "local", "etc", "cms.conf")
     if os.path.exists(os.path.join(".", "examples", "cms.conf")):
-        shutil.copy(os.path.join(".", "examples", "cms.conf"),
-                    os.path.join("/", "usr", "local", "etc", "cms.conf"))
+        shutil.copy(os.path.join(".", "examples", "cms.conf"), conf_file)
+
     else:
         shutil.copy(os.path.join(".", "examples", "cms.conf.sample"),
                     os.path.join("/", "usr", "local", "etc", "cms.conf"))
+    os.chown(conf_file, cmsuser.pw_uid, cmsuser.pw_gid)
 
     print "copying localization files:"
+    os.umask(18) # 022
     for locale in glob(os.path.join("cms", "server", "po", "*.po")):
         country_code = re.search("/([^/]*)\.po", locale).groups()[0]
         print "  %s" % country_code
@@ -111,11 +137,8 @@ if "install" in sys.argv:
         shutil.copy(os.path.join(path, "cms.mo"),
                     os.path.join(dest_path, "cms.mo"))
 
-    print "creating user and group cmsuser."
-    os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
-
     print "creating directories."
-    cmsuser = pwd.getpwnam("cmsuser")
+    os.umask(7) # 007
     dirs = [os.path.join("/", "var", "local", "log", "cms"),
             os.path.join("/", "var", "local", "cache", "cms"),
             os.path.join("/", "var", "local", "lib", "cms")]
@@ -123,7 +146,7 @@ if "install" in sys.argv:
         os.system("mkdir -p %s" % d)
         os.chown(d, cmsuser.pw_uid, cmsuser.pw_gid)
 
-    # Go back to user's umask.
-    os.umask(old_umask)
-
     print "done."
+
+# Go back to user's umask.
+os.umask(old_umask)

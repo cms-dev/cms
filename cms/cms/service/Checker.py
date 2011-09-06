@@ -50,21 +50,18 @@ class Checker(Service):
 
         """
         logger.debug("Checker.check")
-        now = int(time.time())
         for coordinates, service in self.remote_services.iteritems():
             if coordinates in self.waiting_for:
-                logger.info("Service %s timeout, retrying."
-                            % str(coordinates))
+                logger.info("Service %s timeout, retrying." % str(coordinates))
                 del self.waiting_for[coordinates]
 
             if service.connected:
+                now = int(time.time())
                 self.waiting_for[coordinates] = now
-                service.echo(string="%s %5.3lf"
-                             % (str(coordinates), now),
+                service.echo(string="%s %5.3lf" % (coordinates, now),
                              callback=Checker.echo_callback)
             else:
-                logger.info("Service %s not connected."
-                            % str(coordinates))
+                logger.info("Service %s not connected." % str(coordinates))
         return True
 
     @rpc_callback
@@ -84,20 +81,24 @@ class Checker(Service):
             service = ServiceCoord(name, shard)
             if service not in self.waiting_for or current - time_ > 10:
                 logger.info("Got late reply (%5.3lf s) from %s"
-                            % (current - time_, str(service)))
+                            % (current - time_, service))
             else:
                 if time_ - self.waiting_for[service] > 0.001:
                     logger.error("Someone cheated on the timestamp?!")
                 logger.info("Got reply (%5.3lf s) from %s"
-                            % (current - time_, str(service)))
+                            % (current - time_, service))
                 del self.waiting_for[service]
         except KeyError:
             logger.error("Echo answer mis-shapen.")
 
 
-if __name__ == "__main__":
+def main():
     import sys
     if len(sys.argv) != 2:
         print sys.argv[0], "shard"
     else:
         Checker(int(sys.argv[1])).run()
+
+
+if __name__ == "__main__":
+    main()

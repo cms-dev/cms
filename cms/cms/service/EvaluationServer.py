@@ -699,10 +699,14 @@ class EvaluationServer(Service):
                                       task_id)
 
 
-if __name__ == "__main__":
+def main():
     import sys
     if len(sys.argv) < 2:
         print sys.argv[0], "shard [contest]"
     else:
         EvaluationServer(int(sys.argv[1]),
                          ask_for_contest(1)).run()
+
+
+if __name__ == "__main__":
+    main()
