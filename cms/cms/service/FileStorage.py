@@ -34,30 +34,31 @@ import hashlib
 from cms.async.AsyncLibrary import Service, \
      rpc_method, rpc_binary_response, rpc_callback, \
      logger, make_sync
-from cms.async import ServiceCoord, Address
+from cms.async import ServiceCoord, Address, Config
 from cms.service.Utils import mkdir, random_string
 
 
 class FileStorage(Service):
-    """Offer capibilities of storing and retrieving binary files.
+    """Offer capabilities of storing and retrieving binary files.
 
     """
 
-    def __init__(self, base_dir, shard):
+    def __init__(self, shard):
         logger.initialize(ServiceCoord("FileStorage", shard))
         logger.debug("FileStorage.__init__")
         Service.__init__(self, shard)
 
         # Create server directories
-        self.base_dir = base_dir
+        self.base_dir = os.path.join(Config._data_dir, "fs")
         self.tmp_dir = os.path.join(self.base_dir, "tmp")
         self.obj_dir = os.path.join(self.base_dir, "objects")
         self.desc_dir = os.path.join(self.base_dir, "descriptions")
 
-        if not mkdir(self.base_dir) or \
-           not mkdir(self.tmp_dir) or \
-           not mkdir(self.obj_dir) or \
-           not mkdir(self.desc_dir):
+        if not mkdir(Config._data_dir) or \
+               not mkdir(self.base_dir) or \
+               not mkdir(self.tmp_dir) or \
+               not mkdir(self.obj_dir) or \
+               not mkdir(self.desc_dir):
             logger.error("Cannot create necessary directories.")
             self.exit()
 
@@ -155,23 +156,25 @@ class FileCacher:
 
     """
 
-    def __init__(self, service, file_storage, base_dir="fs-cache"):
+    def __init__(self, service, file_storage):
         """
         service (Service): the service we are running in
         file_storage (RemoteService): the local instance of the
                                       FileStorage service.
-        base_dir (string): the directory where to store the cache.
+
         """
         self.service = service
         self.file_storage = file_storage
-        self.base_dir = base_dir
+        self.base_dir = os.path.join(
+            Config._cache_dir,
+            "fs-cache-%s-%d" % (service._my_coord.name,
+                                service._my_coord.shard))
         self.tmp_dir = os.path.join(self.base_dir, "tmp")
         self.obj_dir = os.path.join(self.base_dir, "objects")
-        ret = True
-        ret = ret and mkdir(self.base_dir)
-        ret = ret and mkdir(self.tmp_dir)
-        ret = ret and mkdir(self.obj_dir)
-        if not ret:
+        if not mkdir(Config._cache_dir) or \
+               not mkdir(self.base_dir) or \
+               not mkdir(self.tmp_dir) or \
+               not mkdir(self.obj_dir):
             logger.error("Cannot create necessary directories.")
 
     ## GET ##
@@ -609,5 +612,5 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print sys.argv[0], "shard"
     else:
-        FileStorage(shard=int(sys.argv[1]), base_dir="fs").run()
+        FileStorage(shard=int(sys.argv[1])).run()
 
