@@ -26,6 +26,7 @@
 import os
 import time
 
+import simplejson
 import tornado.web
 import tornado.locale
 
@@ -574,6 +575,29 @@ class FileFromDigestHandler(FileHandler):
         self.fetch(digest, "text/plain", filename)
 
 
+class NotificationsHandler(BaseHandler):
+    """Displays notifications.
+
+    """
+    def get(self):
+        timestamp = int(time.time())
+        res = []
+        last_notification = float(self.get_argument("last_notification", "0"))
+
+        questions = self.sql_session().query(Question)\
+                      .filter(reply_timestamp = None)\
+                      .filter(timestamp > last_notification)\
+                      .all()
+
+        for question in questions:
+            res.append({"type": "question",
+                        "timestamp": question.timestamp,
+                        "subject": subject,
+                        "text": text})
+
+        self.write(simplejson.dumps(res))
+
+
 handlers = [(r"/",
              MainHandler),
             (r"/([0-9]+)",
@@ -614,6 +638,8 @@ handlers = [(r"/",
              QuestionReplyHandler),
             (r"/questions/([0-9]+)",
              QuestionsHandler),
+            (r"/notifications/([0-9]+)",
+             NotificationsHandler),
            ]
 
 if __name__ == "__main__":

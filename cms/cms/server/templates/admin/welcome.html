@@ -10,7 +10,7 @@ function update_queue_status(response)
     if (response['status'] == 'unconnected')
         table.insertRow(-1).innerHTML = "<td colspan='5'>EvaluationServer not connected.</td>";
     else if (response['status'] == 'not authorized')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>You are not authorized to see the queue status..</td>";
+        table.insertRow(-1).innerHTML = "<td colspan='5'>You are not authorized to see the queue status.</td>";
     else if (response['status'] == 'fail')
         table.insertRow(-1).innerHTML = "<td colspan='5'>Call to EvaluationServer failed.</td>";
     else if (response['status'] == 'ok')
@@ -43,7 +43,7 @@ function update_workers_status(response)
     if (response['status'] == 'unconnected')
         table.insertRow(-1).innerHTML = "<td colspan='5'>EvaluationServer not connected.</td>";
     else if (response['status'] == 'not authorized')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>You are not authorized to see the workers status..</td>";
+        table.insertRow(-1).innerHTML = "<td colspan='5'>You are not authorized to see the workers status.</td>";
     else if (response['status'] == 'fail')
         table.insertRow(-1).innerHTML = "<td colspan='5'>Call to EvaluationServer failed.</td>";
     else if (response['status'] == 'ok')

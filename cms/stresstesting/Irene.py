@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
 import sys
 import urllib
 import mechanize
@@ -33,74 +34,100 @@ from cms.db.SQLAlchemyAll import Contest, SessionGen
 
 class RequestLog:
 
-    total = 0
-    successes = 0
-    failures = 0
-    errors = 0
-    undecided = 0
+    def __init__(self, log_dir=None):
+        self.total = 0
+        self.success = 0
+        self.failure = 0
+        self.error = 0
+        self.undecided = 0
 
-    def __init__(self):
-        self.tests = []
-
-    def add_test(self, data):
-        self.tests.append((time.time(), data))
+        self.log_dir = log_dir
+        if self.log_dir is not None:
+            try:
+                os.makedirs(self.log_dir)
+            except OSError:
+                pass
 
     def print_stats(self):
         print >> sys.stderr, "TOTAL:       %5d" % (self.total)
-        print >> sys.stderr, "SUCCESS:     %5d" % (self.successes)
-        print >> sys.stderr, "FAIL:        %5d" % (self.failures)
-        print >> sys.stderr, "ERROR:       %5d" % (self.errors)
+        print >> sys.stderr, "SUCCESS:     %5d" % (self.success)
+        print >> sys.stderr, "FAIL:        %5d" % (self.failure)
+        print >> sys.stderr, "ERROR:       %5d" % (self.error)
         print >> sys.stderr, "UNDECIDED:   %5d" % (self.undecided)
 
     def merge(self, log2):
         self.total += log2.total
-        self.successes += log2.successes
-        self.failures += log2.failures
-        self.errors += log2.errors
+        self.success += log2.success
+        self.failure += log2.failure
+        self.error += log2.error
         self.undecided += log2.undecided
-        self.tests += log2.tests
+
+    def store_to_file(self, request):
+        if self.log_dir is None:
+            return
+
+        filename = "%s_%s.log" % (request.time, request.__class__.__name__)
+        filepath = os.path.join(self.log_dir, filename)
+        linkpath = os.path.join(self.log_dir, request.__class__.__name__)
+        with open(filepath, 'w') as fd:
+            request.store_to_file(fd)
+        try:
+            os.remove(linkpath)
+        except OSError:
+            pass
+        os.symlink(filename, linkpath)
+
 
 class TestRequest:
     """Docstring TODO.
 
     """
+
+    OUTCOME_SUCCESS   = 'success'
+    OUTCOME_FAILURE   = 'failure'
+    OUTCOME_UNDECIDED = 'undecided'
+    OUTCOME_ERROR     = 'error'
+
     def __init__(self, browser, base_url=None):
         if base_url is None:
             base_url = 'http://localhost:8888/'
         self.browser = browser
         self.base_url = base_url
+        self.outcome = None
 
-    def execute(self, log=None):
-        if log is not None:
-            log.total += 1
+    def execute(self):
+
+        # Execute the test
         description = self.describe()
         try:
             self.do_request()
             success = self.test_success()
+
+        # Catch possible exceptions
         except Exception as exc:
             print >> sys.stderr, "Request '%s' terminated " \
                 "with an exception: %s" % (description, repr(exc))
-            if log is not None:
-                log.errors += 1
-                log.add_test(self.get_test_data())
+            self.outcome = TestRequest.OUTCOME_ERROR
+
+        # If no exceptions were casted, decode the test evaluation
         else:
+
+            # Could not decide on the evaluation
             if success is None:
                 print >> sys.stderr, "Could not determine " \
                     "status for request '%s'" % (description)
-                if log is not None:
-                    log.undecided += 1
-                    log.add_test(self.get_test_data())
+                self.outcome = TestRequest.OUTCOME_UNDECIDED
+
+            # Success
             elif success:
                 print >> sys.stderr, "Request '%s' successfully " \
                     "completed" % (description)
-                if log is not None:
-                    log.successes += 1
-                    log.add_test(self.get_test_data())
+                self.outcome = TestRequest.OUTCOME_SUCCESS
+
+            # Failure
             elif not success:
                 print >> sys.stderr, "Request '%s' failed" % (description)
-                if log is not None:
-                    log.failures += 1
-                    log.add_test(self.get_test_data())
+                self.outcome = TestRequest.OUTCOME_FAILURE
 
     def describe(self):
         raise NotImplementedError("Please subclass this class "
@@ -114,7 +141,7 @@ class TestRequest:
         raise NotImplementedError("Please subclass this class "
                                   "and actually implement some request")
 
-    def get_test_data(self):
+    def store_to_file(self, fd):
         raise NotImplementedError("Please subclass this class "
                                   "and actually implement some request")
 
@@ -129,8 +156,10 @@ class GenericRequest(TestRequest):
         TestRequest.__init__(self, browser, base_url)
         self.url = None
         self.data = None
+        self.time = None
 
     def do_request(self):
+        self.time = time.time()
         if self.data is None:
             self.response = self.browser.open(self.url)
         else:
@@ -145,8 +174,16 @@ class GenericRequest(TestRequest):
             return False
         return True
 
-    def get_test_data(self):
-        return (self.res_data, self.response.info())
+    def store_to_file(self, fd):
+        print >> fd, "Test type: %s" % (self.__class__.__name__)
+        print >> fd, "Execution time: %f" % (self.time)
+        print >> fd, "Outcome: %s" % (self.outcome)
+        fd.write(self.specific_info())
+        print >> fd
+        fd.write(self.res_data)
+
+    def specific_info(self):
+        return ''
 
 
 class HomepageRequest(GenericRequest):
@@ -202,6 +239,9 @@ class LoginRequest(GenericRequest):
             return False
         return True
 
+    def specific_info(self):
+        return 'Username: %s\nPassword: %s\n' % (self.username, self.password)
+
 
 class ActorDying(Exception):
     """Exception to be raised when an Actor is going to die soon. See
@@ -254,7 +294,10 @@ class Actor(threading.Thread):
         self.wait_next()
         if self.die:
             raise ActorDying()
-        request.execute(self.log)
+        self.log.total += 1
+        request.execute()
+        self.log.__dict__[request.outcome] += 1
+        self.log.store_to_file(request)
 
     def wait_next(self):
         """Wait some time. At the moment it waits c*X seconds, where c
@@ -300,15 +343,22 @@ def main():
     parser.add_option("-n", "--actor-num",
                       help="the number of actors to spawn", dest="actor_num",
                       action="store", type="int", default=None)
+    parser.add_option("-s", "--sort-actors",
+                      help="sort usernames alphabetically instead of randomizing before slicing them",
+                      action="store_true", default=False, dest="sort_actors")
     options = parser.parse_args()[0]
 
     users, tasks = harvest_contest_data(options.contest_id)
     if options.actor_num is not None:
         user_items = users.items()
-        random.shuffle(user_items)
+        if options.sort_actors:
+            user_items.sort()
+        else:
+            random.shuffle(user_items)
         users = dict(user_items[:options.actor_num])
 
-    actors = [Actor(username, data['password'], DEFAULT_METRICS, tasks, log=RequestLog())
+    actors = [Actor(username, data['password'], DEFAULT_METRICS, tasks,
+                    log=RequestLog(log_dir=os.path.join('./test_logs', username)))
               for username, data in users.iteritems()]
     for actor in actors:
         actor.start()

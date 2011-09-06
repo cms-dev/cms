@@ -38,40 +38,59 @@
         },
 
         /**
+         * This is called when we receive file content, or an error message.
+         *
+         * file_name (string): the name of the requested file
+         * url (string): the url of the file
+         * response (string): the file content
+         * error (string): The error message, or null if the request 
+                           is successful.
+         */
+        __file_received: function(file_name, url, response, error)
+        {
+            var page="";
+            if(error != null)
+            {
+                alert("File request failed.");
+            }
+            else
+            {
+                if(response.length > 100000)
+                {
+                    page = "<h1>" + file_name + "</h1>" +
+                                "<a href=\"" + url + "\">Download</a>";
+
+                    utils.display_subpage(page);
+                    return;
+                }
+                var escaped_response = response.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                var pre_class="";
+                if(file_name.match(/.c(|pp)$/i))
+                {
+                  pre_class = "brush: cpp";
+                }
+                else if (file_name.match(/.pas$/i))
+                {
+                  pre_class = "brush: delphi";
+                }
+                page = "<h1>" + file_name + "</h1>" +
+                            "<a href=\"" + url + "\">Download</a>" +
+                            "<pre id=\"source_container\" class=\"" + pre_class + "\">" +
+                            escaped_response + "</pre>";
+
+                utils.display_subpage(page);
+                SyntaxHighlighter.highlight()
+            }
+        },
+
+        /**
         * Displays a subpage with the content of the file at the
         * specified url.
         */
         show_file: function(file_name, url)
         {
-            cmsutils.ajax_request(url, null,
-                function(response){
-                    if(response.length > 100000)
-                    {
-                        var page = "<h1>" + file_name + "</h1>" +
-                                    "<a href=\"" + url + "\">Download</a>";
-
-                        utils.display_subpage(page);
-                        return;
-                    }
-                    var escaped_response = response.replace(/</g,"&lt;").replace(/>/g,"&gt;");
-                    var pre_class="";
-                    if(file_name.match(/.c(|pp)$/i))
-                    {
-                      pre_class = "brush: cpp";
-                    }
-                    else if (file_name.match(/.pas$/i))
-                    {
-                      pre_class = "brush: delphi";
-                    }
-                    var page = "<h1>" + file_name + "</h1>" +
-                                "<a href=\"" + url + "\">Download</a>" +
-                                "<pre id=\"source_container\" class=\"" + pre_class + "\">" +
-                                escaped_response + "</pre>";
-
-                    utils.display_subpage(page);
-                    SyntaxHighlighter.highlight()
-                }
-            );
+            var file_received = this.__file_received.bind(this, file_name, url);
+            cmsutils.ajax_request(url, null, file_received);
         },
 
         /**
@@ -173,24 +192,27 @@
                                                       this.update_unread_counts);
             cmsutils.ajax_request("/notifications",
                                   "last_notification=" + this.last_notification,
-                                  function(response)
+                                  function(response, error)
                                   {
-                                      response = JSON.parse(response);
-                                      var msgs_public = 0;
-                                      var msgs_private = 0;
-                                      for (var i = 0; i < response.length; i++)
+                                      if(error == null)
                                       {
-                                          display_notification(
-                                              response[i].type,
-                                              parseInt(response[i].timestamp),
-                                              response[i].subject,
-                                              response[i].text);
-                                          if (response[i].type == "announcement")
-                                              msgs_public++;
-                                          else if (response[i].type == "question" || response[i].type == "message")
-                                              msgs_private++;
+                                          response = JSON.parse(response);
+                                          var msgs_public = 0;
+                                          var msgs_private = 0;
+                                          for (var i = 0; i < response.length; i++)
+                                          {
+                                              display_notification(
+                                                  response[i].type,
+                                                  parseInt(response[i].timestamp),
+                                                  response[i].subject,
+                                                  response[i].text);
+                                              if (response[i].type == "announcement")
+                                                  msgs_public++;
+                                              else if (response[i].type == "question" || response[i].type == "message")
+                                                  msgs_private++;
+                                          }
+                                          update_unread_counts(msgs_public, msgs_private);
                                       }
-                                      update_unread_counts(msgs_public, msgs_private);
                                   });
         },
 
