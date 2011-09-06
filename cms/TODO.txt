@@ -27,8 +27,8 @@
 
 * Look at setup.py and see if everything's there.
   - This requires some more work to make cms work when installed.
-  - Understand why installed files' permissions are all wrong (only
-    for me?)
+  - distutils honours the user's umask (hence you need to umask 022
+    before installing) - remember to write it in the howto.
   - Set a flag when running installed.
   - Make all logging and fs-ing and fs-caching and configuration
     loading in appropriate directories when previous flag is on.
