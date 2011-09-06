@@ -39,10 +39,8 @@ class RequestLog:
     errors = 0
     undecided = 0
 
-    tests = []
-
     def __init__(self):
-        pass
+        self.tests = []
 
     def add_test(self, data):
         self.tests.append((time.time(), data))
@@ -53,6 +51,14 @@ class RequestLog:
         print >> sys.stderr, "FAIL:        %5d" % (self.failures)
         print >> sys.stderr, "ERROR:       %5d" % (self.errors)
         print >> sys.stderr, "UNDECIDED:   %5d" % (self.undecided)
+
+    def merge(self, log2):
+        self.total += log2.total
+        self.successes += log2.successes
+        self.failures += log2.failures
+        self.errors += log2.errors
+        self.undecided += log2.undecided
+        self.tests += log2.tests
 
 class TestRequest:
     """Docstring TODO.
@@ -108,10 +114,10 @@ class TestRequest:
         raise NotImplementedError("Please subclass this class "
                                   "and actually implement some request")
 
-
-    # TODO - Implement in subclasses
     def get_test_data(self):
-        return None
+        raise NotImplementedError("Please subclass this class "
+                                  "and actually implement some request")
+
 
 class GenericRequest(TestRequest):
     """Docstring TODO.
@@ -138,6 +144,9 @@ class GenericRequest(TestRequest):
         if len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
             return False
         return True
+
+    def get_test_data(self):
+        return (self.res_data, self.response.info())
 
 
 class HomepageRequest(GenericRequest):
@@ -299,8 +308,7 @@ def main():
         random.shuffle(user_items)
         users = dict(user_items[:options.actor_num])
 
-    log = RequestLog()
-    actors = [Actor(username, data['password'], DEFAULT_METRICS, tasks, log)
+    actors = [Actor(username, data['password'], DEFAULT_METRICS, tasks, log=RequestLog())
               for username, data in users.iteritems()]
     for actor in actors:
         actor.start()
@@ -319,7 +327,11 @@ def main():
 
     print >> sys.stderr, "Test finished"
 
-    log.print_stats()
+    great_log = RequestLog()
+    for actor in actors:
+        great_log.merge(actor.log)
+
+    great_log.print_stats()
 
 if __name__ == '__main__':
     main()
