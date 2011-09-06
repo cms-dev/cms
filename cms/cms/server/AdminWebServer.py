@@ -198,6 +198,9 @@ class TaskViewHandler(BaseHandler):
         self.contest = task.contest
         r_params = self.render_params()
         r_params["task"] = task
+        r_params["submissions"] = self.sql_session.query(Submission)\
+                                  .join(Task).filter(Task.id == task_id)\
+                                  .order_by(Submission.timestamp.desc())[:50]
         self.render("task.html", **r_params)
 
     @tornado.web.asynchronous
@@ -443,6 +446,7 @@ class SubmissionFileHandler(FileHandler):
 
         self.fetch(sub_file.digest, "text/plain", sub_file.filename)
 
+
 class QuestionsHandler(BaseHandler):
     """Page to see and send messages to all the contestants.
 
@@ -453,6 +457,7 @@ class QuestionsHandler(BaseHandler):
         r_params["questions"] = self.sql_session.query(Question)\
             .join(User).filter(User.contest_id == contest_id).all()
         self.render("questions.html", **r_params)
+
 
 class QuestionReplyHandler(BaseHandler):
     """Called when the manager replies to a question made by a user.
