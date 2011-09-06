@@ -37,8 +37,8 @@ for every country code.
 Then you need to configure CMS, copying
 $CMSPATH/example/cms.conf.sample onto $CMSPATH/example/cms.conf and
 changing the value as you prefer. In particular, since we are using
-SQLite, you need to remove the key "database" and change
-"_database_sqlite" in "database'.
+SQLite, you need to remove the key "database" and change "_database"
+in "database'.
 
 * PYTHONPATH
 
@@ -63,13 +63,56 @@ $ ./contrib/ContestImporter.py -s 0 /path/to/contest/
 After the importer ended, you can run the other services with:
 $ ./cms/service/Worker.py 0
 $ ./cms/service/EvaluationServer.py 0
-$ ./cms/service/ContestWebServer.py 0
-$ ./cms/service/AdminWebServer.py 0
+$ ./cms/server/ContestWebServer.py 0
+$ ./cms/server/AdminWebServer.py 0
 The middle two are contest-dependent, hence they are going to ask you
 which contest you want to load before starting.
 
 
 ** INSTALL AND RUN IT FROM THE SYSTEM
 
-TODO
+If you prefer installing CMS in the system, things are a little
+easier.
 
+* DEPENDENCIES
+
+You need some dependencies (the Ubuntu packages are in brackets):
+- SQLAlchemy packages for Python (python-sqlalchemy);
+- simplejson library for Python (python-simplejson);
+- Tornado (python-tornado);
+- setuptools (python-setuptools).
+
+* INSTALL
+
+Just move to /path/to/repo/cms/, and launch
+$ sudo setup.py install
+
+* CONFIGURATION
+
+To configure CMS edit /usr/local/etc/cms.cong. In particular, since we
+are using SQLite, you need to remove the key "database" and change
+"_database_sqlite" in "database'.
+
+* IMPORTING AND RUNNING
+
+First you need to add your user to the group "cmsuser":
+$ sudo usermod -a -G cmsuser
+After restarting your shell (or logging out from X), you can check
+that you actually are in the group cmsuser:
+$ groups
+
+If this is true, you can now run the services. These (one for each
+terminal) run the logging and file capabilities.
+$ cmsLogService 0
+$ cmsFileStorage 0
+
+This import the contest in the given directory:
+$ cmsContestImporter -s 0 /path/to/contest/
+
+After the importer ended, you can run the other services with:
+$ cmsWorker 0
+$ cmsEvaluationServer 0
+$ cmsContestWebServer 0
+$ cmsAdminWebServer 0
+The middle two are contest-dependent, hence they are going to ask you
+which contest you want to load before starting.
