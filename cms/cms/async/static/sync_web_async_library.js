@@ -24,24 +24,31 @@
          * cb (function): the callback provided by the user
          * rid (string): the id of the request
          */
-        __got_answer: function(response, cb)
+        __got_answer: function(response, cb, error)
         {
             // DEBUG
             var span = document.getElementById("__raw");
             if (span)
                 span.innerHTML += '<br/>&nbsp;&nbsp;'+ response;
             // END DEBUG
-            try
+            if(error != null)
             {
-                response = JSON.parse(response);
-                if (response['status'] == 'ok')
-                    cb(response, null);
-                else if (response['status'] != 'wait')
-                    cb(response, response['status']);
+                cb({'status': 'fail'}, 'fail');
             }
-            catch(e)
+            else
             {
-                cb(null, response);
+                try
+                {
+                    response = JSON.parse(response);
+                    if (response['status'] == 'ok')
+                        cb(response, null);
+                    else if (response['status'] != 'wait')
+                        cb(response, response['status']);
+                }
+                catch(e)
+                {
+                    cb(null, response);
+                }
             }
         },
 
@@ -71,9 +78,9 @@
                                     shard + "/" +
                                     method,
                                     args,
-                                    function(response)
+                                    function(response, error)
                                     {
-                                        f(response, cb);
+                                        f(response, cb, error);
                                     }
                                    );
         },
