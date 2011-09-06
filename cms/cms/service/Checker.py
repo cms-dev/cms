@@ -56,7 +56,7 @@ class Checker(Service):
                 del self.waiting_for[coordinates]
 
             if service.connected:
-                now = int(time.time())
+                now = time.time()
                 self.waiting_for[coordinates] = now
                 service.echo(string="%s %5.3lf" % (coordinates, now),
                              callback=Checker.echo_callback)
@@ -69,10 +69,10 @@ class Checker(Service):
         """Callback for check.
 
         """
+        current = time.time()
         logger.debug("Checker.echo_callback")
         if error is not None:
             return
-        current = time.time()
         try:
             service, time_ = data.split()
             time_ = float(time_)
