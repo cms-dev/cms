@@ -28,7 +28,7 @@ you need to update the .mo files (the compiled versions of the
 .po). In the future we will have a beautiful setup script to handle
 this. In the meantime, run the following from cms/server/.
 
-$ msgfmt po/<code>.po -o mo/<code>/LC_MESSAGES/messages.mo
+$ msgfmt po/<code>.po -o mo/<code>/LC_MESSAGES/cms.mo
 
 If needed, create the tree. Note that to have the new strings, you
 need to restart the web server.

@@ -72,8 +72,7 @@ class BaseHandler(tornado.web.RequestHandler):
 
         localization_dir = os.path.join(os.path.dirname(__file__), "mo")
         if os.path.exists(localization_dir):
-            tornado.locale.load_gettext_translations(localization_dir,
-                                                     "messages")
+            tornado.locale.load_gettext_translations(localization_dir, "cms")
 
     def render_params(self):
         """Return the default render params used by almost all handlers.

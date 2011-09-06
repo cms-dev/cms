@@ -19,9 +19,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from distutils.core import setup
 import sys
 import os
+
+from distutils.core import setup
 
 setup(name="cms",
       version="0.1",
@@ -37,24 +38,17 @@ setup(name="cms",
                 "cms.service",
                 "cms.util",
                 "cms.async",
-                "cms.box"],
+                "cms.box",
+                "contribcms"],
       package_data={"cms.async":
                     [os.path.join("static", "*")],
-                    "cms.server":
-                    [
-                     os.path.join("static", "contest", "sh", "*"),
-                     os.path.join("static", "admin", "sh", "*"),
-                     os.path.join("static", "ranking", "sh", "*"),
-                     os.path.join("static", "contest","*.*"),
-                     os.path.join("static", "admin","*.*"),
-                     os.path.join("static", "ranking","*.*"),
-                     os.path.join("templates","contest","errors","*.*"),
-                     os.path.join("templates","admin","errors","*.*"),
-                     os.path.join("templates","ranking","errors","*.*"),
-                     os.path.join("templates","contest","*.*"),
-                     os.path.join("templates","admin","*.*"),
-                     os.path.join("templates","ranking","*.*"),
-                     ]},
+                    "cms.server": [
+                        os.path.join("static", "sh", "*"),
+                        os.path.join("static", "*.*"),
+                        os.path.join("templates","contest","*.*"),
+                        os.path.join("templates","admin","*.*"),
+                        os.path.join("templates","ranking","*.*"),
+                        ]},
       keywords="ioi programming contest grader management system",
       license="Lesser Affero General Public License v3",
       classifiers=["Development Status :: 3 - Alpha",
@@ -67,19 +61,48 @@ setup(name="cms",
      )
 
 if "build" in sys.argv:
-    import os
+    import re
+    from glob import glob
+
     print "compiling mo-box..."
     os.chdir("box")
     os.system(os.path.join(".", "compile.sh"))
     os.chdir("..")
-    print "  done."
+
+    print "compiling localization files:"
+    for locale in glob(os.path.join("cms", "server", "po", "*.po")):
+        country_code = re.search("/([^/]*)\.po", locale).groups()[0]
+        print "  %s" % country_code
+        path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
+        os.system("mkdir -p %s" % path)
+        os.system("msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
+
+    print "done."
 
 if "install" in sys.argv:
     import shutil
-    import os
+    import re
+    from glob import glob
+
     print "copying mo-box to /usr/local/bin/."
     shutil.copy(os.path.join(".", "box", "mo-box"),
                 os.path.join("/", "usr", "local", "bin"))
+
+    print "copying configuration to /usr/local/etc/."
     shutil.copy(os.path.join(".", "examples", "cms.conf"),
                 os.path.join("/", "usr", "local", "etc", "cms.conf"))
+
+    print "copying localization files:"
+    for locale in glob(os.path.join("cms", "server", "po", "*.po")):
+        country_code = re.search("/([^/]*)\.po", locale).groups()[0]
+        print "  %s" % country_code
+        path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
+        dest_path = os.path.join("/", "usr", "local", "share", "locale",
+                                 country_code, "LC_MESSAGES")
+        os.system("mkdir -p %s" % dest_path)
+        shutil.copy(os.path.join(path, "cms.mo"),
+                    os.path.join(dest_path, "cms.mo"))
+
+    print "done."
+
 

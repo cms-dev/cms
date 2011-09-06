@@ -22,8 +22,16 @@
 
 * Write a beginner's guide to run CMS (complete with instruction for
   64 bit systems)
+  - Running in repo: done.
+  - Running in system: waiting for next item.
 
 * Look at setup.py and see if everything's there.
+  - This requires some more work to make cms work when installed.
+  - Understand why installed files' permissions are all wrong (only
+    for me?)
+  - Set a flag when running installed.
+  - Make all logging and fs-ing and fs-caching and configuration
+    loading in appropriate directories when previous flag is on.
 
 
 ** Low priority
