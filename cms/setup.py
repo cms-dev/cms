@@ -82,15 +82,23 @@ if "build" in sys.argv:
 if "install" in sys.argv:
     import shutil
     import re
+    import pwd
     from glob import glob
+
+    # Setting umask 022 to install.
+    old_umask = os.umask(18)
 
     print "copying mo-box to /usr/local/bin/."
     shutil.copy(os.path.join(".", "box", "mo-box"),
                 os.path.join("/", "usr", "local", "bin"))
 
     print "copying configuration to /usr/local/etc/."
-    shutil.copy(os.path.join(".", "examples", "cms.conf"),
-                os.path.join("/", "usr", "local", "etc", "cms.conf"))
+    if os.path.exists(os.path.join(".", "examples", "cms.conf")):
+        shutil.copy(os.path.join(".", "examples", "cms.conf"),
+                    os.path.join("/", "usr", "local", "etc", "cms.conf"))
+    else:
+        shutil.copy(os.path.join(".", "examples", "cms.conf.sample"),
+                    os.path.join("/", "usr", "local", "etc", "cms.conf"))
 
     print "copying localization files:"
     for locale in glob(os.path.join("cms", "server", "po", "*.po")):
@@ -103,6 +111,19 @@ if "install" in sys.argv:
         shutil.copy(os.path.join(path, "cms.mo"),
                     os.path.join(dest_path, "cms.mo"))
 
+    print "creating user and group cmsuser."
+    os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
+
+    print "creating directories."
+    cmsuser = pwd.getpwnam("cmsuser")
+    dirs = [os.path.join("/", "var", "local", "log", "cms"),
+            os.path.join("/", "var", "local", "cache", "cms"),
+            os.path.join("/", "var", "local", "lib", "cms")]
+    for d in dirs:
+        os.system("mkdir -p %s" % d)
+        os.chown(d, cmsuser.pw_uid, cmsuser.pw_gid)
+
+    # Go back to user's umask.
+    os.umask(old_umask)
+
     print "done."
-
-

@@ -31,6 +31,7 @@ import base64
 
 from cms.async.AsyncLibrary import Service, rpc_method, logger
 from cms.async import ServiceCoord
+from cms.async.Utils import mkdir
 from cms.util.Utils import format_log
 from cms import Config
 
@@ -43,7 +44,10 @@ class LogService(Service):
         logger.initialize(ServiceCoord("LogService", shard))
         Service.__init__(self, shard)
 
-        self._log_file = codecs.open(os.path.join("logs", "%d.log" %
+        log_dir = os.path.join(Config._log_dir, "cms")
+        mkdir(Config._log_dir)
+        mkdir(log_dir)
+        self._log_file = codecs.open(os.path.join(log_dir, "%d.log" %
                                                   int(time.time())),
                                      "w", "utf-8")
 

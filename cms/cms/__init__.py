@@ -34,6 +34,13 @@ def load_config_file(cmsconf):
     pieces of data treated differently are the elements of
     core_services and other_services.
 
+    Also, add a boolean field '_installed' that discerns if the
+    program is run from the repository or from the installed
+    package. To do so, it does something quite different, which is
+    test if the current user is cmsuser.
+
+    Finally, add _*_dir for specific directories used by the services.
+
     cmsconf (string): the path of the JSON config file
 
     """
@@ -59,6 +66,24 @@ def load_config_file(cmsconf):
     # read-only.
     for key in d:
         setattr(Config, key, d[key])
+
+    # Put also the _installed data.
+    import pwd
+    try:
+        cmsuser_uid = pwd.getpwnam("cmsuser")[0]
+    except KeyError:
+        cmsuser_uid = -1
+    Config._installed = (os.getuid() == cmsuser_uid)
+
+    if Config._installed:
+        Config._log_dir = os.path.join("/", "var", "local", "log", "cms")
+        Config._cache_dir = os.path.join("/", "var", "local", "cache", "cms")
+        Config._data_dir = os.path.join("/", "var", "local", "lib", "cms")
+    else:
+        Config._log_dir = "log"
+        Config._cache_dir = "cache"
+        Config._data_dir = "lib"
+
 
 CONFIGURATION_FILES = [os.path.join(".", "examples", "cms.conf"),
                        os.path.join("/", "etc", "cms.conf"),

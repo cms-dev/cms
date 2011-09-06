@@ -87,7 +87,7 @@ def white_diff(output, res):
     Note that trailing lines composed only of whitespaces don't change
     the 'equality' of the two files. Note also that by line we mean
     'sequence of characters ending with \n or EOF and beginning right
-    after BOF or \n'. In particular, every line has *at most* one
+    after BOF or \n'. In particular, every line has *at most* one \n.
 
     output (file): the first file to compare.
     res (file): the second file to compare.

@@ -925,10 +925,12 @@ class Logger:
 
         """
         self._my_coord = service
-        mkdir("logs")
-        self._log_file = codecs.open(\
-            os.path.join("logs", "%d-%s-%d.local-log" %
-                         (int(time.time()), service.name, service.shard)),
+        log_dir = os.path.join(Config._log_dir,
+                               "%s-%d" % (service.name, service.shard))
+        mkdir(Config._log_dir)
+        mkdir(log_dir)
+        self._log_file = codecs.open(
+            os.path.join(log_dir, "%d.log" % int(time.time())),
             "w", "utf-8")
         self.info("%s %d up and running!" % service)
 
@@ -953,11 +955,15 @@ class Logger:
         coord = repr(self._my_coord)
 
         if severity in Logger.TO_DISPLAY:
-            print format_log(msg, coord, operation, severity, timestamp, colors=Config.color_shell_log)
+            print format_log(msg, coord, operation, severity, timestamp,
+                             colors=Config.color_shell_log)
         if severity in Logger.TO_STORE:
-            print >> self._log_file, format_log(msg, coord, operation, severity, timestamp, colors=Config.color_file_log)
+            print >> self._log_file, format_log(msg, coord, operation,
+                                                severity, timestamp,
+                                                colors=Config.color_file_log)
         if severity in Logger.TO_SEND:
-            self._log_service.Log(msg=msg, coord=coord, operation=operation, severity=severity, timestamp=timestamp)
+            self._log_service.Log(msg=msg, coord=coord, operation=operation,
+                                  severity=severity, timestamp=timestamp)
 
     def debug(self, msg, operation=None, timestamp=None):
         """Syntactic sugar.
