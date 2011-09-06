@@ -53,7 +53,9 @@
                 if (xmlhttp.readyState == 4)
                 {
                     if(xmlhttp.status == 200)
-                        cb(xmlhttp.responseText);
+                        cb(xmlhttp.responseText, null);
+                    else
+                        cb(null, xmlhttp.status);
                 }
             }
             xmlhttp.open("GET", url + "?" + par, true);

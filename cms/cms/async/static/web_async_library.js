@@ -37,28 +37,38 @@
          * response (string): the (partial) answer from the server, as
          *                    a JSON string
          */
-        __got_answer: function(cb, rid, response)
+        __got_answer: function(cb, rid, response, error)
         {
-            try
-            {
-                response = JSON.parse(response);
-                if (response['status'] != 'wait')
-                {
-                    timeout_id = this.timeout_ids[rid];
-                    delete this.timeout_ids[rid];
-                    clearTimeout(timeout_id);
-                }
-                if (response['status'] == 'ok')
-                    cb(response, null);
-                else if (response['status'] != 'wait')
-                    cb(response, response['status']);
-            }
-            catch(e)
+            if(error != null)
             {
                 timeout_id = this.timeout_ids[rid];
                 delete this.timeout_ids[rid];
                 clearTimeout(timeout_id);
-                cb(null, response);
+                cb({'status': 'fail'}, 'fail');
+            }
+            else
+            {
+                try
+                {
+                    response = JSON.parse(response);
+                    if (response['status'] != 'wait')
+                    {
+                        timeout_id = this.timeout_ids[rid];
+                        delete this.timeout_ids[rid];
+                        clearTimeout(timeout_id);
+                    }
+                    if (response['status'] == 'ok')
+                        cb(response, null);
+                    else if (response['status'] != 'wait')
+                        cb(response, response['status']);
+                }
+                catch(e)
+                {
+                    timeout_id = this.timeout_ids[rid];
+                    delete this.timeout_ids[rid];
+                    clearTimeout(timeout_id);
+                    cb(null, response);
+                }
             }
         },
 
