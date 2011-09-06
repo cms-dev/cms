@@ -90,7 +90,7 @@
           {% end %}
         </td>
         <td>
-          <a href="/reevaluate/submission/{{s.id}}">Go ahead!</a>
+          <a href="/reevaluate/submission/{{s.id}}?ref={{ "/task/" + str(task.id) }}">Go ahead!</a>
         </td>
       </tr>
       {% end %}

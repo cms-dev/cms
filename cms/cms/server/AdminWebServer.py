@@ -465,6 +465,8 @@ class QuestionReplyHandler(BaseHandler):
     """
     def post(self, question_id):
 
+        ref = self.get_argument("ref","/")
+
         question = Question.get_from_id(question_id, self.sql_session)
         if question == None:
             raise tornado.web.HTTPError(404)
@@ -487,7 +489,7 @@ class QuestionReplyHandler(BaseHandler):
         logger.warning("Reply sent to user %s for question '%s'." %
                        (question.user.username, question.subject))
 
-        self.redirect("/user/" + str(question.user.id))
+        self.redirect(ref)
 
 
 class MessageHandler(BaseHandler):
@@ -523,6 +525,8 @@ class SubmissionReevaluateHandler(BaseHandler):
     @tornado.web.asynchronous
     def get(self, submission_id):
 
+        self.ref = self.get_argument("ref", "/")
+
         submission = Submission.get_from_id(submission_id, self.sql_session)
         if submission == None:
             raise tornado.web.HTTPError(404)
@@ -539,7 +543,7 @@ class SubmissionReevaluateHandler(BaseHandler):
     @rpc_callback
     def es_notify_callback(self, data, plus, error=None):
         if error == None:
-            self.redirect("/user/" + str(self.submission.user.id))
+            self.redirect(self.ref)
         else:
             logger.error("Notification to ES failed: %s." % repr(error))
             self.finish()
