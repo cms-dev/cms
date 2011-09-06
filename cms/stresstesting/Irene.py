@@ -21,68 +21,15 @@
 
 import sys
 import urllib
-import urllib2
-import cookielib
 import mechanize
 import threading
 import optparse
 import random
 import time
 import re
-import email.mime.multipart
-import email.mime.nonmultipart
 
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
-
-def urlencode(data):
-    """Encode a dictionary as its elements were the data of a HTML
-    form passed to the server.
-
-    data (dict): the dictionary to encode.
-    return (string): the encoded dictionary.
-
-    """
-    msg = email.mime.multipart.MIMEMultipart('form-data')
-    for key, value in data.iteritems():
-        elem = email.mime.nonmultipart.MIMENonMultipart('text', 'plain')
-        elem.add_header('Contest-Disposition', 'form-data; name="%s"' % (key))
-        elem.set_payload(value)
-        msg.attach(elem)
-    return msg
-
-
-class HTTPHelper:
-    """A class to emulate a browser's behaviour: for example, cookies
-    get automatically accepted, stored and sent with subsequent
-    requests.
-
-    """
-    def __init__(self):
-        self.cookies = cookielib.CookieJar()
-        self.opener = urllib2.build_opener(
-            urllib2.HTTPCookieProcessor(self.cookies))
-
-    def do_request(self, url, data=None):
-        """Request the specified URL.
-
-        url (string): the URL to request; the protocol is detected
-        from the URL.
-        data (dict): the data to sent with the URL; used when an
-                     HTTP(S) request is performed: if data is None, a
-                     plain GET request is performed. Otherwise a POST
-                     request is performed, with the attached data.
-        returns: the response; it is a file-like objects that the
-                 consumer can read; is also supports other methods,
-                 described in the documentation of urllib2.urlopen().
-
-        """
-        if data is None:
-            request = urllib2.Request(url)
-        else:
-            request = urllib2.Request(url, urllib.urlencode(data))
-        response = self.opener.open(request)
-        return response
 
 class RequestLog:
 
@@ -93,6 +40,9 @@ class RequestLog:
     undecided = 0
 
     tests = []
+
+    def __init__(self):
+        pass
 
     def add_test(self, data):
         self.tests.append((time.time(), data))
@@ -121,19 +71,22 @@ class TestRequest:
         try:
             self.do_request()
             success = self.test_success()
-        except Exception as e:
-            print >> sys.stderr, "Request '%s' terminated with an exception" % (description)
+        except Exception as exc:
+            print >> sys.stderr, "Request '%s' terminated " \
+                "with an exception: %s" % (description, repr(exc))
             if log is not None:
                 log.errors += 1
                 log.add_test(self.get_test_data())
         else:
             if success is None:
-                print >> sys.stderr, "Could not determine status for request '%s'" % (description)
+                print >> sys.stderr, "Could not determine " \
+                    "status for request '%s'" % (description)
                 if log is not None:
                     log.undecided += 1
                     log.add_test(self.get_test_data())
             elif success:
-                print >> sys.stderr, "Request '%s' successfully completed" % (description)
+                print >> sys.stderr, "Request '%s' successfully " \
+                    "completed" % (description)
                 if log is not None:
                     log.successes += 1
                     log.add_test(self.get_test_data())
@@ -318,11 +271,11 @@ def harvest_contest_data(contest_id):
     users = {}
     tasks = []
     with SessionGen() as session:
-        c = Contest.get_from_id(contest_id, session)
-        for u in c.users:
-            users[u.username] = {'password': u.password}
-        for t in c.tasks:
-            tasks.append(t.name)
+        contest = Contest.get_from_id(contest_id, session)
+        for user in contest.users:
+            users[user.username] = {'password': user.password}
+        for task in contest.tasks:
+            tasks.append(task.name)
     return users, tasks
 
 
@@ -349,20 +302,20 @@ def main():
     log = RequestLog()
     actors = [Actor(username, data['password'], DEFAULT_METRICS, tasks, log)
               for username, data in users.iteritems()]
-    for a in actors:
-        a.start()
+    for actor in actors:
+        actor.start()
 
     finished = False
     while not finished:
         try:
-            for a in actors:
-                a.join()
+            for actor in actors:
+                actor.join()
             else:
                 finished = True
         except KeyboardInterrupt:
             print >> sys.stderr, "Taking down actors"
-            for a in actors:
-                a.die = True
+            for actor in actors:
+                actor.die = True
 
     print >> sys.stderr, "Test finished"
 
