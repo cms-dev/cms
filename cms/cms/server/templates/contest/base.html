@@ -94,7 +94,7 @@ window.onload = init;
           {% if phase != 1 %}
         <div class="footer">{{ _("Time left:") }} <span id="remaining"></span></div>
           {% end %}
-        <div class="footer">{{ current_user.real_name }} (<a href="/logout">{{ _("logout") }}</a>)</div>
+        <div class="footer">{{ current_user.real_name }} - {{ current_user.username }} (<a href="/logout">{{ _("logout") }}</a>)</div>
         {% end %}
       </div>
       <div id="border"></div>
