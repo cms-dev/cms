@@ -77,6 +77,26 @@ class HTTPHelper:
         response = self.opener.open(request)
         return response
 
+class RequestLog:
+
+    total = 0
+    successes = 0
+    failures = 0
+    errors = 0
+    undecided = 0
+
+    tests = []
+
+    def add_test(self, data):
+        self.tests.append((time.time(), data))
+
+    def print_stats(self):
+        print >> sys.stderr, "TOTAL:       %5d" % (self.total)
+        print >> sys.stderr, "SUCCESS:     %5d" % (self.successes)
+        print >> sys.stderr, "FAIL:        %5d" % (self.failures)
+        print >> sys.stderr, "ERROR:       %5d" % (self.errors)
+        print >> sys.stderr, "UNDECIDED:   %5d" % (self.undecided)
+
 class TestRequest:
 
     def __init__(self, browser, base_url=None):
@@ -85,20 +105,34 @@ class TestRequest:
         self.browser = browser
         self.base_url = base_url
 
-    def execute(self):
-        #print >> sys.stderr, "Cookies before execution:"
-        #for cookie in self.http_helper.cookies:
-        #    print >> sys.stderr, "  " + repr(cookie)
-        self.do_request()
-        #print >> sys.stderr, "Cookies after execution:"
-        #for cookie in self.http_helper.cookies:
-        #    print >> sys.stderr, "  " + repr(cookie)
-        success = self.test_success()
+    def execute(self, log=None):
+        if log is not None:
+            log.total += 1
         description = self.describe()
-        if success:
-            print >> sys.stderr, "Request %s successfully completed" % (description)
-        elif not success:
-            print >> sys.stderr, "Fail when requesting %s" % (description)
+        try:
+            self.do_request()
+            success = self.test_success()
+        except Exception as e:
+            print >> sys.stderr, "Request '%s' terminated with an exception" % (description)
+            if log is not None:
+                log.errors += 1
+                log.add_test(self.get_test_data())
+        else:
+            if success is None:
+                print >> sys.stderr, "Could not determine status for request '%s'" % (description)
+                if log is not None:
+                    log.undecided += 1
+                    log.add_test(self.get_test_data())
+            elif success:
+                print >> sys.stderr, "Request '%s' successfully completed" % (description)
+                if log is not None:
+                    log.successes += 1
+                    log.add_test(self.get_test_data())
+            elif not success:
+                print >> sys.stderr, "Request '%s' failed" % (description)
+                if log is not None:
+                    log.failures += 1
+                    log.add_test(self.get_test_data())
 
     def describe(self):
         raise NotImplemented("Please subclass this class and actually implement some request")
@@ -108,6 +142,10 @@ class TestRequest:
 
     def test_success(self):
         raise NotImplemented("Please subclass this class and actually implement some request")
+
+    # TODO - Implement in subclasses
+    def get_test_data(self):
+        return None
 
 class GenericRequest(TestRequest):
 
@@ -191,12 +229,14 @@ class Actor(threading.Thread):
 
     """
 
-    def __init__(self, username, password, metrics):
+    def __init__(self, username, password, metrics, tasks, log=None):
         threading.Thread.__init__(self)
 
         self.username = username
         self.password = password
         self.metric = metrics
+        self.tasks = tasks
+        self.log = log
 
         self.name = "Actor thread for user %s" % (self.username)
 
@@ -216,7 +256,7 @@ class Actor(threading.Thread):
         self.wait_next()
         if self.die:
             raise ActorDying()
-        request.execute()
+        request.execute(self.log)
 
     def wait_next(self):
         """Wait some time. At the moment it waits c*X seconds, where c
@@ -228,13 +268,16 @@ class Actor(threading.Thread):
         time_to_wait = self.metric['time_coeff'] * random.expovariate(self.metric['time_lambda'])
         time.sleep(time_to_wait)
 
-def harvest_user_data(contest_id):
+def harvest_contest_data(contest_id):
     users = {}
+    tasks = []
     with SessionGen() as session:
         c = Contest.get_from_id(contest_id, session)
         for u in c.users:
             users[u.username] = {'password': u.password}
-    return users
+        for t in c.tasks:
+            tasks.append(t.name)
+    return users, tasks
 
 DEFAULT_METRICS = {'time_coeff':  1.0,
                    'time_lambda': 2.0}
@@ -247,16 +290,33 @@ def main():
                       dest="actor_num", action="store", type="int", default=None)
     options, args = parser.parse_args()
 
-    if options.actor_num is None:
-        users = harvest_user_data(options.contest_id)
-    else:
-        user_items = harvest_user_data(options.contest_id).items()
+    users, tasks = harvest_contest_data(options.contest_id)
+    if options.actor_num is not None:
+        user_items = users.items()
         random.shuffle(user_items)
         users = dict(user_items[:options.actor_num])
 
-    actors = [Actor(username, data['password'], DEFAULT_METRICS) for username, data in users.iteritems()]
+    log = RequestLog()
+    actors = [Actor(username, data['password'], DEFAULT_METRICS, tasks, log)
+              for username, data in users.iteritems()]
     for a in actors:
         a.start()
+
+    finished = False
+    while not finished:
+        try:
+            for a in actors:
+                a.join()
+            else:
+                finished = True
+        except KeyboardInterrupt:
+            print >> sys.stderr, "Taking down actors"
+            for a in actors:
+                a.die = True
+
+    print >> sys.stderr, "Test finished"
+
+    log.print_stats()
 
 if __name__ == '__main__':
     main()
