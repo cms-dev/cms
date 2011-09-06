@@ -19,7 +19,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import sys
 import urllib
 import urllib2
@@ -37,6 +36,13 @@ from cms.db.SQLAlchemyAll import Contest, SessionGen
 
 
 def urlencode(data):
+    """Encode a dictionary as its elements were the data of a HTML
+    form passed to the server.
+
+    data (dict): the dictionary to encode.
+    return (string): the encoded dictionary.
+
+    """
     msg = email.mime.multipart.MIMEMultipart('form-data')
     for key, value in data.iteritems():
         elem = email.mime.nonmultipart.MIMENonMultipart('text', 'plain')
@@ -45,16 +51,17 @@ def urlencode(data):
         msg.attach(elem)
     return msg
 
+
 class HTTPHelper:
     """A class to emulate a browser's behaviour: for example, cookies
     get automatically accepted, stored and sent with subsequent
     requests.
 
     """
-
     def __init__(self):
         self.cookies = cookielib.CookieJar()
-        self.opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookies))
+        self.opener = urllib2.build_opener(
+            urllib2.HTTPCookieProcessor(self.cookies))
 
     def do_request(self, url, data=None):
         """Request the specified URL.
@@ -77,8 +84,11 @@ class HTTPHelper:
         response = self.opener.open(request)
         return response
 
-class TestRequest:
 
+class TestRequest:
+    """Docstring TODO.
+
+    """
     def __init__(self, browser, base_url=None):
         if base_url is None:
             base_url = 'http://localhost:8888/'
@@ -96,21 +106,28 @@ class TestRequest:
         success = self.test_success()
         description = self.describe()
         if success:
-            print >> sys.stderr, "Request %s successfully completed" % (description)
+            print >> sys.stderr, "Request %s " \
+                  "successfully completed" % description
         elif not success:
-            print >> sys.stderr, "Fail when requesting %s" % (description)
+            print >> sys.stderr, "Fail when requesting %s" % description
 
     def describe(self):
-        raise NotImplemented("Please subclass this class and actually implement some request")
+        raise NotImplementedError("Please subclass this class "
+                                  "and actually implement some request")
 
     def do_request(self):
-        raise NotImplemented("Please subclass this class and actually implement some request")
+        raise NotImplementedError("Please subclass this class "
+                                  "and actually implement some request")
 
     def test_success(self):
-        raise NotImplemented("Please subclass this class and actually implement some request")
+        raise NotImplementedError("Please subclass this class "
+                                  "and actually implement some request")
+
 
 class GenericRequest(TestRequest):
+    """Docstring TODO.
 
+    """
     MINIMUM_LENGTH = 100
 
     def __init__(self, browser, base_url=None):
@@ -122,7 +139,8 @@ class GenericRequest(TestRequest):
         if self.data is None:
             self.response = self.browser.open(self.url)
         else:
-            self.response = self.browser.open(self.url, urllib.urlencode(self.data))
+            self.response = self.browser.open(self.url,
+                                              urllib.urlencode(self.data))
         self.res_data = self.response.read()
 
     def test_success(self):
@@ -132,8 +150,11 @@ class GenericRequest(TestRequest):
             return False
         return True
 
-class HomepageRequest(GenericRequest):
 
+class HomepageRequest(GenericRequest):
+    """Load the main page of CWS.
+
+    """
     def __init__(self, http_helper, username, loggedin, base_url=None):
         GenericRequest.__init__(self, http_helper, base_url)
         self.url = self.base_url
@@ -155,14 +176,19 @@ class HomepageRequest(GenericRequest):
                 return False
         return True
 
-class LoginRequest(GenericRequest):
 
+class LoginRequest(GenericRequest):
+    """Try to login to CWS with given credentials.
+
+    """
     def __init__(self, http_helper, username, password, base_url=None):
         TestRequest.__init__(self, http_helper, base_url)
         self.username = username
         self.password = password
         self.url = self.base_url + 'login'
-        self.data = {'username': self.username, 'password': self.password, 'next': '/'}
+        self.data = {'username': self.username,
+                     'password': self.password,
+                     'next': '/'}
 
     def describe(self):
         return "try to login"
@@ -178,8 +204,14 @@ class LoginRequest(GenericRequest):
             return False
         return True
 
+
 class ActorDying(Exception):
+    """Exception to be raised when an Actor is going to die soon. See
+    Actor class.
+
+    """
     pass
+
 
 class Actor(threading.Thread):
     """Class that simulates the behaviour of a user of the system. It
@@ -206,9 +238,15 @@ class Actor(threading.Thread):
     def run(self):
         try:
             print >> sys.stderr, "Starting actor for user %s" % (self.username)
-            self.do_step(HomepageRequest(self.browser, self.username, loggedin=False))
-            self.do_step(LoginRequest(self.browser, self.username, self.password))
-            self.do_step(HomepageRequest(self.browser, self.username, loggedin=True))
+            self.do_step(HomepageRequest(self.browser,
+                                         self.username,
+                                         loggedin=False))
+            self.do_step(LoginRequest(self.browser,
+                                      self.username,
+                                      self.password))
+            self.do_step(HomepageRequest(self.browser,
+                                         self.username,
+                                         loggedin=True))
         except ActorDying:
             print >> sys.stderr, "Actor dying for user %s" % (self.username)
 
@@ -225,10 +263,18 @@ class Actor(threading.Thread):
         time_lambda in metrics.
 
         """
-        time_to_wait = self.metric['time_coeff'] * random.expovariate(self.metric['time_lambda'])
+        time_to_wait = self.metric['time_coeff'] * \
+                       random.expovariate(self.metric['time_lambda'])
         time.sleep(time_to_wait)
 
+
 def harvest_user_data(contest_id):
+    """Retrieve the couples username, password for a given contest.
+
+    contest_id (int): the id of the contest we want.
+    return (dict): a dictionary mapping usernames to passwords.
+
+    """
     users = {}
     with SessionGen() as session:
         c = Contest.get_from_id(contest_id, session)
@@ -236,16 +282,20 @@ def harvest_user_data(contest_id):
             users[u.username] = {'password': u.password}
     return users
 
+
 DEFAULT_METRICS = {'time_coeff':  1.0,
                    'time_lambda': 2.0}
 
+
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options]")
-    parser.add_option("-c", "--contest", help="contest ID to export",
-                      dest="contest_id", action="store", type="int", default=None)
-    parser.add_option("-n", "--actor-num", help="the number of actors to spawn",
-                      dest="actor_num", action="store", type="int", default=None)
-    options, args = parser.parse_args()
+    parser.add_option("-c", "--contest",
+                      help="contest ID to export", dest="contest_id",
+                      action="store", type="int", default=None)
+    parser.add_option("-n", "--actor-num",
+                      help="the number of actors to spawn", dest="actor_num",
+                      action="store", type="int", default=None)
+    options = parser.parse_args()[0]
 
     if options.actor_num is None:
         users = harvest_user_data(options.contest_id)
@@ -254,7 +304,8 @@ def main():
         random.shuffle(user_items)
         users = dict(user_items[:options.actor_num])
 
-    actors = [Actor(username, data['password'], DEFAULT_METRICS) for username, data in users.iteritems()]
+    actors = [Actor(username, data['password'], DEFAULT_METRICS)
+              for username, data in users.iteritems()]
     for a in actors:
         a.start()
 
