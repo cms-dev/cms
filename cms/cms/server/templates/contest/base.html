@@ -68,7 +68,7 @@ window.onload = init;
         <div class="sidebar_right">
           <ul class="menu">
             {% for t_iter in contest.tasks %}
-            <li class="menu_entry"><a class="menu_link" href="/tasks/{{t_iter.name}}">{{t_iter.name}}</a></li>
+            <li class="menu_entry"><a class="menu_link" href="/tasks/{{ Cryptographics.encrypt_number(t_iter.id) }}">{{t_iter.name}}</a></li>
             {% end %}
           </ul>
         </div>

@@ -5,7 +5,7 @@
 
 <h2 id="title_task_information" class="toggling_on" onclick="utils.toggle_visibility('task_information');">{{ _("Task information") }}</h2>
 <div id="task_information">
-  <div><a href="/tasks/{{ task.name }}/statement">{{ _("Download task statement") }}</a></div>
+  <div><a href="/tasks/{{ Cryptographics.encrypt_number(task.id) }}/statement">{{ _("Download task statement") }}</a></div>
 
   {{ _("Time limit: %(seconds)s second(s).") % {"seconds": task.time_limit} }}</br>
   {{ _("Memory limit: %(mb)s MB.") % {"mb": task.memory_limit} }}</br>

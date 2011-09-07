@@ -285,16 +285,25 @@ class TaskViewHandler(BaseHandler):
     """
     @catch_exceptions
     @tornado.web.authenticated
-    def get(self, task_name):
+    def get(self, task_id):
 
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
+
+        # Decrypt task_id.
         try:
-            r_params["task"] = [x for x in self.contest.tasks
-                                if x.name == task_name][0]
-        except:
+            task_id = decrypt_number(task_id)
+        except ValueError:
+            # We reply with Forbidden if the given ID cannot be
+            # decrypted.
+            raise tornado.web.HTTPError(403)
+
+        r_params["task"] = Task.get_from_id(task_id, self.sql_session)
+        if r_params["task"] == None or \
+            r_params["task"].contest != self.contest:
             raise tornado.web.HTTPError(404)
+
         r_params["submissions"] = self.sql_session.query(Submission)\
             .filter_by(user=self.current_user)\
             .filter_by(task=r_params["task"]).all()
@@ -309,14 +318,23 @@ class TaskStatementViewHandler(FileHandler):
     @catch_exceptions
     @tornado.web.authenticated
     @tornado.web.asynchronous
-    def get(self, task_name):
+    def get(self, task_id):
+
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
+
+        # Decrypt task_id.
         try:
-            task = [x for x in self.contest.tasks if x.name == task_name][0]
-        except IndexError:
-            self.write("Task %s not found." % task_name)
+            task_id = decrypt_number(task_id)
+        except ValueError:
+            # We reply with Forbidden if the given ID cannot be
+            # decrypted.
+            raise tornado.web.HTTPError(403)
+
+        task = Task.get_from_id(task_id, self.sql_session)
+        if task == None or task.contest != self.contest:
+            raise tornado.web.HTTPError(404)
 
         self.fetch(task.statement, "application/pdf", task.name + ".pdf")
 
@@ -330,6 +348,10 @@ class SubmissionFileHandler(FileHandler):
     @tornado.web.asynchronous
     def get(self, file_id):
 
+        r_params = self.render_params()
+        if not self.valid_phase(r_params):
+            return
+
         # Decrypt file_id.
         try:
             file_id = decrypt_number(file_id)
@@ -337,10 +359,6 @@ class SubmissionFileHandler(FileHandler):
             # We reply with Forbidden if the given ID cannot be
             # decrypted.
             raise tornado.web.HTTPError(403)
-
-        r_params = self.render_params()
-        if not self.valid_phase(r_params):
-            return
 
         sub_file = self.sql_session.query(File).join(Submission).join(Task)\
             .filter(File.id == file_id)\
@@ -428,7 +446,7 @@ class NotificationsHandler(BaseHandler):
 
 
 class QuestionHandler(BaseHandler):
-    """Called when the user submit a question.
+    """Called when the user submits a question.
 
     """
     @catch_exceptions
@@ -468,21 +486,33 @@ class SubmitHandler(BaseHandler):
         self.r_params = self.render_params()
         if not self.valid_phase(self.r_params):
             return
+
         self.timestamp = self.r_params["timestamp"]
 
-        self.task = self.sql_session.query(Task).filter_by(name=task_id)\
-            .filter_by(contest=self.contest).first()
+        # Decrypt task_id.
+        try:
+            task_id = decrypt_number(task_id)
+        except ValueError:
+            # We reply with Forbidden if the given ID cannot be
+            # decrypted.
+            raise tornado.web.HTTPError(403)
 
-        if self.current_user is None or self.task is None:
-            self.send_error(404)
-            self.finish()
-            return
+        self.task = Task.get_from_id(task_id, self.sql_session)
+
+        if self.current_user is None or \
+            self.task is None or \
+            self.task.contest != self.contest:
+            raise tornado.web.HTTPError(404)
 
         try:
             uploaded = self.request.files[self.task.name][0]
         except KeyError:
-            self.write("No file chosen.")
-            self.finish()
+            self.application.service.add_notification(
+                self.current_user.username,
+                int(time.time()),
+                self._("No file selected"),
+                self._("Select a file to send your submission.")
+            )
             return
 
         self.files = {}
@@ -588,7 +618,7 @@ class SubmitHandler(BaseHandler):
                 int(time.time()),
                 self._("Submission storage failed!"),
                 self._(message))
-            self.redirect("/tasks/%s" % self.task.name)
+            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
 
     @catch_exceptions
     @rpc_callback
@@ -612,7 +642,7 @@ class SubmitHandler(BaseHandler):
                 self._("Your submission has been received "
                        "and is currently being evaluated."))
 
-        self.redirect("/tasks/%s" % self.task.name)
+        self.redirect("/tasks/%s" % encrypt_number(self.task.id))
 
 
 class UseTokenHandler(BaseHandler):
@@ -662,7 +692,7 @@ class UseTokenHandler(BaseHandler):
                 self._("Token request discarded"),
                 self._("Your request has been discarded because you have no "
                        "tokens available."))
-            self.redirect("/tasks/%s" % submission.task.name)
+            self.redirect("/tasks/%s" % encrypt_number(submission.task.id))
             return
 
         token = Token(timestamp, submission)
@@ -680,7 +710,7 @@ class UseTokenHandler(BaseHandler):
             self._("Your request has been received "
                    "and applied to the submission."))
 
-        self.redirect("/tasks/%s" % submission.task.name)
+        self.redirect("/tasks/%s" % encrypt_number(submission.task.id))
 
 
 handlers = [(r"/",
@@ -691,13 +721,13 @@ handlers = [(r"/",
              LogoutHandler),
             (r"/submission_file/([%s]+)" % (get_encryption_alphabet()),
              SubmissionFileHandler),
-            (r"/tasks/([a-zA-Z0-9_-]+)",
+            (r"/tasks/([%s]+)" % (get_encryption_alphabet()),
              TaskViewHandler),
-            (r"/tasks/([a-zA-Z0-9_-]+)/statement",
+            (r"/tasks/([%s]+)/statement" % (get_encryption_alphabet()),
              TaskStatementViewHandler),
             (r"/usetoken",
              UseTokenHandler),
-            (r"/submit/([a-zA-Z0-9_.-]+)",
+            (r"/submit/([%s]+)" %  (get_encryption_alphabet()),
              SubmitHandler),
             (r"/communication",
              CommunicationHandler),
