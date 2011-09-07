@@ -93,6 +93,8 @@
   if database or File Storage are missing it _MUST_ behave nicely
   anyway, informing the user to seek assistance and without crashing.
 
+* HIGH: do not accept at all submission with the wrong files.
+
 * MED: We correctly use encrypt(submission.id) for urls regarding
   submissions, but we should do the same for all the other urls. E.g.,
   tasks still are reached by urls with task.name, instead of

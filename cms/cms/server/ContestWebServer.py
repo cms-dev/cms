@@ -488,7 +488,7 @@ class SubmitHandler(BaseHandler):
         self.files = {}
 
         if uploaded["content_type"] == "application/zip":
-            #Extract the files from the archive
+            # Extract the files from the archive.
             temp_zip_file, temp_zip_filename = tempfile.mkstemp()
             # Note: this is just a binary copy, so no utf-8 wtf-ery here.
             with os.fdopen(temp_zip_file, "w") as temp_zip_file:
@@ -499,6 +499,17 @@ class SubmitHandler(BaseHandler):
                 self.files[item.filename] = zip_object.read(item)
         else:
             self.files[uploaded["filename"]] = uploaded["body"]
+
+        # Check if submitted files are small enough.
+        if any([len(content) > Config.max_submission_length
+                for content in self.files.values()]):
+            self.application.service.add_notification(
+                self.current_user.username,
+                int(time.time()),
+                self._("Submission too big!"),
+                self._("Each files must be at most %d bytes long.") %
+                    Config.max_submission_length)
+            return
 
         # Submit the files.
 
