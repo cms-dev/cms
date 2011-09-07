@@ -247,11 +247,11 @@ class Sandbox:
         fd = open(real_path, "rb")
         return fd
 
-    def get_file_to_string(self, path, maxlen=None):
+    def get_file_to_string(self, path, maxlen=1024):
         fd = self.get_file(path)
         try:
             if maxlen is None:
-                contest = fd.read()
+                content = fd.read()
             else:
                 content = fd.read(maxlen)
         except UnicodeDecodeError as e:
