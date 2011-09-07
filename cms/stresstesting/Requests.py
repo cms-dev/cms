@@ -24,6 +24,7 @@ import time
 import re
 import urllib
 import datetime
+import traceback
 
 class TestRequest:
     """Docstring TODO.
@@ -44,6 +45,7 @@ class TestRequest:
 
         self.start_time = None
         self.stop_time = None
+        self.exception_data = None
 
     def execute(self):
 
@@ -59,6 +61,7 @@ class TestRequest:
         except Exception as exc:
             if self.stop_time is None:
                 self.stop_time = time.time()
+            self.exception_data = traceback.format_exc()
             print >> sys.stderr, "Request '%s' terminated " \
                 "with an exception: %s" % (description, repr(exc))
             self.outcome = TestRequest.OUTCOME_ERROR
@@ -101,9 +104,11 @@ class TestRequest:
         print >> fd, "Execution stop time: %s" % (datetime.datetime.fromtimestamp(self.stop_time).strftime("%d/%m/%Y %H:%M:%S.%f"))
         print >> fd, "Duration: %f seconds" % (self.stop_time - self.start_time)
         print >> fd, "Outcome: %s" % (self.outcome)
+        if self.exception_data is not None:
+            print >> fd
+            print >> fd, "EXCEPTION CASTED"
+            fd.write(self.exception_data)
         fd.write(self.specific_info())
-        print >> fd
-        fd.write(self.res_data)
 
     def specific_info(self):
         return ''
@@ -120,6 +125,9 @@ class GenericRequest(TestRequest):
         self.url = None
         self.data = None
 
+        self.response = None
+        self.res_data = None
+
     def do_request(self):
         if self.data is None:
             self.response = self.browser.open(self.url)
@@ -135,13 +143,19 @@ class GenericRequest(TestRequest):
             return False
         return True
 
+    def specific_info(self):
+        if self.res_data is not None:
+            return "\nRESPONSE DATA\n" + self.res_data
+        else:
+            return ''
+
 
 class HomepageRequest(GenericRequest):
     """Load the main page of CWS.
 
     """
-    def __init__(self, http_helper, username, loggedin, base_url=None):
-        GenericRequest.__init__(self, http_helper, base_url)
+    def __init__(self, browser, username, loggedin, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
         self.url = self.base_url
         self.username = username
         self.loggedin = loggedin
@@ -166,8 +180,8 @@ class LoginRequest(GenericRequest):
     """Try to login to CWS with given credentials.
 
     """
-    def __init__(self, http_helper, username, password, base_url=None):
-        TestRequest.__init__(self, http_helper, base_url)
+    def __init__(self, browser, username, password, base_url=None):
+        TestRequest.__init__(self, browser, base_url)
         self.username = username
         self.password = password
         self.url = self.base_url + 'login'
@@ -190,4 +204,31 @@ class LoginRequest(GenericRequest):
         return True
 
     def specific_info(self):
-        return 'Username: %s\nPassword: %s\n' % (self.username, self.password)
+        return 'Username: %s\nPassword: %s\n' % (self.username, self.password) + \
+            GenericRequest.specific_info(self)
+
+
+class TaskRequest(GenericRequest):
+    """Load a task page in CWS.
+
+    """
+    def __init__(self, browser, task_name, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
+        self.url = self.base_url + "tasks/" + task_name
+        self.task_name = task_name
+
+    def describe(self):
+        return "load page for task %s" % (self.task_name)
+
+
+class TaskStatementRequest(GenericRequest):
+    """Load a task statement in CWS.
+
+    """
+    def __init__(self, browser, task_name, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
+        self.url = self.base_url + "tasks/" + task_name + "/statement"
+        self.task_name = task_name
+
+    def describe(self):
+        return "load statement for task %s" % (self.task_name)
