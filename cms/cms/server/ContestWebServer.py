@@ -463,14 +463,14 @@ class SubmitHandler(BaseHandler):
     """
     @tornado.web.authenticated
     @tornado.web.asynchronous
-    def post(self, task_id):
+    def post(self, task_name):
 
         self.r_params = self.render_params()
         if not self.valid_phase(self.r_params):
             return
         self.timestamp = self.r_params["timestamp"]
 
-        self.task = self.sql_session.query(Task).filter_by(name=task_id)\
+        self.task = self.sql_session.query(Task).filter_by(name=task_name)\
             .filter_by(contest=self.contest).first()
 
         if self.current_user is None or self.task is None:
@@ -478,11 +478,33 @@ class SubmitHandler(BaseHandler):
             self.finish()
             return
 
+        # Enforce minimum time between submissions for the same task.
+        last_submission = self.sql_session.query(Submission)\
+            .filter_by(task_id=self.task.id)\
+            .filter_by(user_id=self.current_user.id)\
+            .order_by(Submission.timestamp.desc()).first()
+        if last_submission != None and \
+               self.timestamp - last_submission.timestamp < \
+               Config.min_submission_interval:
+            self.application.service.add_notification(
+                self.current_user.username,
+                int(time.time()),
+                self._("Submissions too frequent!"),
+                self._("For each task, you can submit "
+                       "again after %s seconds from last submission.") %
+                Config.min_submission_interval)
+            self.redirect("/tasks/%s" % self.task.name)
+            return
+
         try:
             uploaded = self.request.files[self.task.name][0]
         except KeyError:
-            self.write("No file chosen.")
-            self.finish()
+            self.application.service.add_notification(
+                self.current_user.username,
+                int(time.time()),
+                self._("No file chosen!"),
+                self._("Please select the correct files."))
+            self.redirect("/tasks/%s" % self.task.name)
             return
 
         self.files = {}
@@ -509,6 +531,7 @@ class SubmitHandler(BaseHandler):
                 self._("Submission too big!"),
                 self._("Each files must be at most %d bytes long.") %
                     Config.max_submission_length)
+            self.redirect("/tasks/%s" % self.task.name)
             return
 
         # Submit the files.
