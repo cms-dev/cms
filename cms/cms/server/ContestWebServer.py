@@ -504,15 +504,33 @@ class SubmitHandler(BaseHandler):
             self.task.contest != self.contest:
             raise tornado.web.HTTPError(404)
 
+        # Enforce minimum time between submissions for the same task.
+        last_submission = self.sql_session.query(Submission)\
+            .filter_by(task_id=self.task.id)\
+            .filter_by(user_id=self.current_user.id)\
+            .order_by(Submission.timestamp.desc()).first()
+        if last_submission != None and \
+               self.timestamp - last_submission.timestamp < \
+               Config.min_submission_interval:
+            self.application.service.add_notification(
+                self.current_user.username,
+                int(time.time()),
+                self._("Submissions too frequent!"),
+                self._("For each task, you can submit "
+                       "again after %s seconds from last submission.") %
+                Config.min_submission_interval)
+            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            return
+
         try:
             uploaded = self.request.files[self.task.name][0]
         except KeyError:
             self.application.service.add_notification(
                 self.current_user.username,
                 int(time.time()),
-                self._("No file selected"),
-                self._("Select a file to send your submission.")
-            )
+                self._("No file chosen!"),
+                self._("Please select the correct files."))
+            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
         self.files = {}
@@ -539,6 +557,7 @@ class SubmitHandler(BaseHandler):
                 self._("Submission too big!"),
                 self._("Each files must be at most %d bytes long.") %
                     Config.max_submission_length)
+            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
         # Submit the files.

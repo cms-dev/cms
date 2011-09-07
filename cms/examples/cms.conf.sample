@@ -40,6 +40,7 @@
  "submit_local_copy":	        true,
  "submit_local_copy_path":    "submissions/",
  "max_submission_length":     100000,
+ "min_submission_interval":   60,
 
  "color_shell_log":        true,
  "color_file_log": 	   false,
