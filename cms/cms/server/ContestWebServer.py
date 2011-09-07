@@ -166,7 +166,7 @@ class ContestWebServer(WebService):
         self.contest = contest
 
         # This is a dictionary (indexed by username) of pending
-        # notification. Things like "Yay, you're submission went
+        # notification. Things like "Yay, your submission went
         # through.", not things like "Your question has been replied",
         # that are handled by the db. Each username points to a list
         # of tuples (timestamp, subject, text).

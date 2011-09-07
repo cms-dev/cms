@@ -133,6 +133,10 @@ class AdminWebServer(WebService):
     def __init__(self, shard):
         logger.initialize(ServiceCoord("AdminWebServer", shard))
         logger.debug("AdminWebServer.__init__")
+
+        # A list of pending notifications.
+        self.notifications = []
+
         parameters = WebConfig.admin_parameters
         parameters["template_path"] = os.path.join(os.path.dirname(__file__),
                                                    "templates", "admin")
@@ -593,16 +597,25 @@ class NotificationsHandler(BaseHandler):
         res = []
         last_notification = float(self.get_argument("last_notification", "0"))
 
-        questions = self.sql_session().query(Question)\
-                      .filter(reply_timestamp = None)\
-                      .filter(timestamp > last_notification)\
+        questions = self.sql_session.query(Question)\
+                      .filter(Question.reply_timestamp == None)\
+                      .filter(Question.question_timestamp > last_notification)\
                       .all()
 
         for question in questions:
-            res.append({"type": "question",
-                        "timestamp": question.timestamp,
-                        "subject": subject,
-                        "text": text})
+            res.append({"type": "new_question",
+                        "timestamp": question.question_timestamp,
+                        "subject": question.subject,
+                        "text": question.text})
+
+        # Simple notifications
+        notifications = self.application.service.notifications
+        for notification in notifications:
+            res.append({"type": "notification",
+                        "timestamp": notification[0],
+                        "subject": "New question: " + notification[1],
+                        "text": notification[2]})
+        notifications = []
 
         self.write(simplejson.dumps(res))
 
@@ -647,7 +660,7 @@ handlers = [(r"/",
              QuestionReplyHandler),
             (r"/questions/([0-9]+)",
              QuestionsHandler),
-            (r"/notifications/([0-9]+)",
+            (r"/notifications",
              NotificationsHandler),
            ]
 

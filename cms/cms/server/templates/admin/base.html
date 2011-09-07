@@ -56,8 +56,8 @@ function init()
   firstDate = new Date();
   utils.get_time();
   setInterval(cmsutils.bind_func(utils, utils.get_time), 1000);
-  //util.notifications();
-  //setInterval("util.notifications()", 15000);
+  utils.update_notifications();
+  setInterval(cmsutils.bind_func(utils, utils.update_notifications), 15000);
   {% block js_init %}{% end %}
 }
 
