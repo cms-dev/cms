@@ -5,6 +5,102 @@
   <h1>{{ task.title }} ({{ task.name }})</h1>
 </div>
 
+<h2 id="title_submissions" class="toggling_on" onclick="utils.toggle_visibility('submissions');">Recent submissions</h2>
+<div id="submissions">
+
+  {% if submissions == [] %}
+  <p>No submissions found.</p>
+
+  {% else %}
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th style="width: 10%">User</th>
+        <th style="width: 10%">Date</th>
+        <th style="width: 10%">Task</th>
+        <th style="width: 35%">Evaluation</th>
+        <th style="width: 15%">Files</th>
+        <th style="width: 10%">Released</th>
+        <th style="width: 10%">Reevaluate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True)[:50] %}
+      <tr>
+        <td>
+          <a href="/user/{{ s.user.id }}">{{s.user.username}}</a>
+        </td>
+        <td>
+          {{ Utils.format_time_or_date(s.timestamp) }}
+        </td>
+        <td>
+          {{ s.task.name }}
+        </td>
+        <td>
+          {% if s.compilation_outcome is None %}
+          Compiling
+
+          {% else %}
+          <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ s.id }}');">
+            {% if s.compilation_outcome == "fail" %}
+            Compilation failed
+            {% elif s.evaluations == [] %}
+            Evaluating
+            {% else %}
+            Evaluated
+            {% end %}
+          </div>
+          <div id="evaluation_{{ s.id }}" style="display: none;">
+            {% if s.evaluations != [] %}
+              {% if s.token is None %}
+            <h3>Public testcases</h3>
+              {% else %}
+            <h3>Detailed feedback</h3>
+              {% end %}
+            <table class="nested bordered">
+              <thead>
+                <tr>
+                  <th style="width: 20%">Outcome</th>
+                  <th style="width: 80%">Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for ev in s.evaluations %}
+                  <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td></tr>
+                {% end %}
+              </tbody>
+            </table>
+            {% end %}
+            <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
+            <pre>{% if s.compilation_text != None %}{{ escape(s.compilation_text) }}{% end %}</pre>
+          </div>
+
+          {% end %}
+        </td>
+        <td>
+          {% for filename,sub_file in s.files.items() %}
+          <a href="#" onclick="utils.show_file('{{ filename }}','/submission_file/{{ sub_file.id }}')">{{ filename }}<br/>
+          {% end %}
+        </td>
+        <td>
+          {% if s.token is None %}
+          No
+          {% else %}
+          Yes
+          {% end %}
+        </td>
+        <td>
+          <a href="/reevaluate/submission/{{s.id}}?ref={{ "/task/" + str(task.id) }}">Go ahead!</a>
+        </td>
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
+  {% end %}
+</div>
+
+<div class="hr"></div>
+
 <form enctype="multipart/form-data" action="/task/{{ task.id }}" method="POST">
   <h2 id="title_task_information" class="toggling_on" onclick="utils.toggle_visibility('task_information');">Task information</h2>
   <div id="task_information">

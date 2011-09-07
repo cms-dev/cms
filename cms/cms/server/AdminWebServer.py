@@ -198,6 +198,9 @@ class TaskViewHandler(BaseHandler):
         self.contest = task.contest
         r_params = self.render_params()
         r_params["task"] = task
+        r_params["submissions"] = self.sql_session.query(Submission)\
+                                  .join(Task).filter(Task.id == task_id)\
+                                  .order_by(Submission.timestamp.desc())[:50]
         self.render("task.html", **r_params)
 
     @tornado.web.asynchronous
@@ -443,6 +446,7 @@ class SubmissionFileHandler(FileHandler):
 
         self.fetch(sub_file.digest, "text/plain", sub_file.filename)
 
+
 class QuestionsHandler(BaseHandler):
     """Page to see and send messages to all the contestants.
 
@@ -454,11 +458,14 @@ class QuestionsHandler(BaseHandler):
             .join(User).filter(User.contest_id == contest_id).all()
         self.render("questions.html", **r_params)
 
+
 class QuestionReplyHandler(BaseHandler):
     """Called when the manager replies to a question made by a user.
 
     """
     def post(self, question_id):
+
+        ref = self.get_argument("ref","/")
 
         question = Question.get_from_id(question_id, self.sql_session)
         if question == None:
@@ -482,7 +489,7 @@ class QuestionReplyHandler(BaseHandler):
         logger.warning("Reply sent to user %s for question '%s'." %
                        (question.user.username, question.subject))
 
-        self.redirect("/user/" + str(question.user.id))
+        self.redirect(ref)
 
 
 class MessageHandler(BaseHandler):
@@ -518,6 +525,8 @@ class SubmissionReevaluateHandler(BaseHandler):
     @tornado.web.asynchronous
     def get(self, submission_id):
 
+        self.ref = self.get_argument("ref", "/")
+
         submission = Submission.get_from_id(submission_id, self.sql_session)
         if submission == None:
             raise tornado.web.HTTPError(404)
@@ -534,7 +543,7 @@ class SubmissionReevaluateHandler(BaseHandler):
     @rpc_callback
     def es_notify_callback(self, data, plus, error=None):
         if error == None:
-            self.redirect("/user/" + str(self.submission.user.id))
+            self.redirect(self.ref)
         else:
             logger.error("Notification to ES failed: %s." % repr(error))
             self.finish()

@@ -421,6 +421,11 @@ table.bordered tbody tr:nth-child(odd) {
     border: 0.143em solid #53637D;
 }
 
+.notifications .answered {
+    background-color: #EAF3EE;
+    border: 0.143em solid #537D63;
+}
+
 .notifications .notification_msg {
     padding: 0.429em;
 }
