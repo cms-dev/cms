@@ -15,7 +15,7 @@
 
 <h2 id="title_submit_solution" class="toggling_on" onclick="utils.toggle_visibility('submit_solution');">{{ _("Submit a solution") }}</h2>
 <div id="submit_solution">
-  <form enctype="multipart/form-data" action="/submit/{{ task.name }}" method="post">
+  <form enctype="multipart/form-data" action="/submit/{{ Cryptographics.encrypt_number(task.id) }}" method="post">
     <input type="file" name="{{ task.name }}"></input>
     <input type="submit" value="{{ _("Submit") }}"></input>{% comment _("Submit") %}
   </form>
