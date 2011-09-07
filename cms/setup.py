@@ -41,7 +41,8 @@ setup(name="cms",
                 "cms.util",
                 "cms.async",
                 "cms.box",
-                "contribcms"],
+                "cmscontrib",
+                "cmstest"],
       package_data={"cms.async":
                     [os.path.join("static", "*")],
                     "cms.server": [
@@ -61,7 +62,14 @@ setup(name="cms",
               "cmsChecker=cms.service.Checker:main",
               "cmsContestWebServer=cms.server.ContestWebServer:main",
               "cmsAdminWebServer=cms.server.AdminWebServer:main",
-              # TODO: add contrib, and maybe test
+
+              "cmsTestFileStorage=cmstest.TestFileStorage:main",
+              "cmsTestFileCacher=cmstest.TestFileCacher:main",
+
+              "cmsYamlImporter=cmscontrib.YamlImporter:main",
+              "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
+              "cmsContestExporter=cmscontrib.ContestExporter:main",
+              "cmsContestImporter=cmscontrib.ContestImporter:main",
               ]
           },
       keywords="ioi programming contest grader management system",

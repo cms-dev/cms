@@ -476,9 +476,13 @@ class TestFileCacher(TestService):
             self.test_end(True, "Data and plus object received correctly.")
 
 
-if __name__ == "__main__":
+def main():
     import sys
     if len(sys.argv) != 2:
         print sys.argv[0], "shard"
     else:
         TestFileCacher(int(sys.argv[1])).run()
+
+
+if __name__ == "__main__":
+    main()

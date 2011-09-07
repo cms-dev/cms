@@ -20,8 +20,6 @@
 * Implement IOI task types (and provide a way to implement a task type
   in a simple, non-pythonic, non-CMSic way).
 
-* Add contrib to the entry_points of setup.py.
-
 
 
 ** Low priority
