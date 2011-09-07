@@ -31,6 +31,7 @@ import re
 
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
+from stresstesting.Requests import TestRequest, HomepageRequest, LoginRequest
 
 class RequestLog:
 
@@ -66,7 +67,7 @@ class RequestLog:
         if self.log_dir is None:
             return
 
-        filename = "%s_%s.log" % (request.time, request.__class__.__name__)
+        filename = "%s_%s.log" % (request.start_time, request.__class__.__name__)
         filepath = os.path.join(self.log_dir, filename)
         linkpath = os.path.join(self.log_dir, request.__class__.__name__)
         with open(filepath, 'w') as fd:
@@ -76,171 +77,6 @@ class RequestLog:
         except OSError:
             pass
         os.symlink(filename, linkpath)
-
-
-class TestRequest:
-    """Docstring TODO.
-
-    """
-
-    OUTCOME_SUCCESS   = 'success'
-    OUTCOME_FAILURE   = 'failure'
-    OUTCOME_UNDECIDED = 'undecided'
-    OUTCOME_ERROR     = 'error'
-
-    def __init__(self, browser, base_url=None):
-        if base_url is None:
-            base_url = 'http://localhost:8888/'
-        self.browser = browser
-        self.base_url = base_url
-        self.outcome = None
-
-    def execute(self):
-
-        # Execute the test
-        description = self.describe()
-        try:
-            self.do_request()
-            success = self.test_success()
-
-        # Catch possible exceptions
-        except Exception as exc:
-            print >> sys.stderr, "Request '%s' terminated " \
-                "with an exception: %s" % (description, repr(exc))
-            self.outcome = TestRequest.OUTCOME_ERROR
-
-        # If no exceptions were casted, decode the test evaluation
-        else:
-
-            # Could not decide on the evaluation
-            if success is None:
-                print >> sys.stderr, "Could not determine " \
-                    "status for request '%s'" % (description)
-                self.outcome = TestRequest.OUTCOME_UNDECIDED
-
-            # Success
-            elif success:
-                print >> sys.stderr, "Request '%s' successfully " \
-                    "completed" % (description)
-                self.outcome = TestRequest.OUTCOME_SUCCESS
-
-            # Failure
-            elif not success:
-                print >> sys.stderr, "Request '%s' failed" % (description)
-                self.outcome = TestRequest.OUTCOME_FAILURE
-
-    def describe(self):
-        raise NotImplementedError("Please subclass this class "
-                                  "and actually implement some request")
-
-    def do_request(self):
-        raise NotImplementedError("Please subclass this class "
-                                  "and actually implement some request")
-
-    def test_success(self):
-        raise NotImplementedError("Please subclass this class "
-                                  "and actually implement some request")
-
-    def store_to_file(self, fd):
-        raise NotImplementedError("Please subclass this class "
-                                  "and actually implement some request")
-
-
-class GenericRequest(TestRequest):
-    """Docstring TODO.
-
-    """
-    MINIMUM_LENGTH = 100
-
-    def __init__(self, browser, base_url=None):
-        TestRequest.__init__(self, browser, base_url)
-        self.url = None
-        self.data = None
-        self.time = None
-
-    def do_request(self):
-        self.time = time.time()
-        if self.data is None:
-            self.response = self.browser.open(self.url)
-        else:
-            self.response = self.browser.open(self.url,
-                                              urllib.urlencode(self.data))
-        self.res_data = self.response.read()
-
-    def test_success(self):
-        #if self.response.getcode() != 200:
-        #    return False
-        if len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
-            return False
-        return True
-
-    def store_to_file(self, fd):
-        print >> fd, "Test type: %s" % (self.__class__.__name__)
-        print >> fd, "Execution time: %f" % (self.time)
-        print >> fd, "Outcome: %s" % (self.outcome)
-        fd.write(self.specific_info())
-        print >> fd
-        fd.write(self.res_data)
-
-    def specific_info(self):
-        return ''
-
-
-class HomepageRequest(GenericRequest):
-    """Load the main page of CWS.
-
-    """
-    def __init__(self, http_helper, username, loggedin, base_url=None):
-        GenericRequest.__init__(self, http_helper, base_url)
-        self.url = self.base_url
-        self.username = username
-        self.loggedin = loggedin
-
-    def describe(self):
-        return "check the main page"
-
-    def test_success(self):
-        if not GenericRequest.test_success(self):
-            return False
-        username_re = re.compile(self.username)
-        if self.loggedin:
-            if username_re.search(self.res_data) is None:
-                return False
-        else:
-            if username_re.search(self.res_data) is not None:
-                return False
-        return True
-
-
-class LoginRequest(GenericRequest):
-    """Try to login to CWS with given credentials.
-
-    """
-    def __init__(self, http_helper, username, password, base_url=None):
-        TestRequest.__init__(self, http_helper, base_url)
-        self.username = username
-        self.password = password
-        self.url = self.base_url + 'login'
-        self.data = {'username': self.username,
-                     'password': self.password,
-                     'next': '/'}
-
-    def describe(self):
-        return "try to login"
-
-    def test_success(self):
-        if not GenericRequest.test_success(self):
-            return False
-        fail_re = re.compile('Failed to log in.')
-        if fail_re.search(self.res_data) is not None:
-            return False
-        username_re = re.compile(self.username)
-        if username_re.search(self.res_data) is None:
-            return False
-        return True
-
-    def specific_info(self):
-        return 'Username: %s\nPassword: %s\n' % (self.username, self.password)
 
 
 class ActorDying(Exception):
