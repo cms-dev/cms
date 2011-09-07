@@ -121,12 +121,36 @@ def white_diff(output, res):
 
 class BatchTaskType:
     def __init__(self, submission, session, file_cacher):
+        """
+        submission (Submission): the submission to grade.
+        session (SQLSession): the SQLAlchemy session the submission
+                              lives in.
+        file_cacher (FileCacher): a FileCacher object to retrieve
+                                  files from FS.
+
+        """
         self.submission = submission
         self.session = session
         self.FC = file_cacher
 
     def finish_compilation(self, success, compilation_success=False, text=""):
-        self.safe_delete_sandbox()
+        """Finalize the operation of compilation, deleting the
+        sandbox, and writing back in the submission object the
+        information (if success is True).
+
+        success (bool): if the operation was successful (i.e., if cms
+                        did everything in the right way).
+        compilation_success (bool): if success = True, this is whether
+                                    the compilation was successful
+                                    (i.e., if the submission managed
+                                    to compile).
+        text (string): if success is True, stdout and stder of the
+                       compiler, or a message explaining why it
+                       compilation_success is False.
+        return (bool): same as success
+
+        """
+        self.delete_sandbox()
         if not success:
             return False
         if compilation_success:
@@ -143,7 +167,7 @@ class BatchTaskType:
 
     def finish_single_execution(self, test_number, success,
                                 outcome=0, text=""):
-        self.safe_delete_sandbox()
+        self.delete_sandbox()
         if not success:
             return False
         self.submission.evaluations[test_number].text = text
@@ -155,7 +179,11 @@ class BatchTaskType:
             return False
         return True
 
-    def safe_delete_sandbox(self):
+    def delete_sandbox(self):
+        """Delete the sandbox created by this class, if the
+        configuration allows it to be deleted.
+
+        """
         if "sandbox" in self.__dict__ and not Config.keep_sandbox:
             try:
                 self.sandbox.delete()
@@ -163,73 +191,51 @@ class BatchTaskType:
                 with async_lock:
                     logger.warning("Couldn't delete sandbox")
 
-    def safe_create_sandbox(self):
+    def create_sandbox(self):
+        """Create a sandbox.
+
+        """
         try:
             self.sandbox = Sandbox(self.FC)
         except (OSError, IOError), e:
             with async_lock:
                 logger.error("Couldn't create sandbox (error: %s)" % repr(e))
-            self.safe_delete_sandbox()
+            self.delete_sandbox()
             raise JobException()
 
-    def safe_create_file_from_storage(self, name, digest, executable=False):
+    def sandbox_operation(self, operation, *args, **kwargs):
         try:
-            self.sandbox.create_file_from_storage(name, digest, executable)
-        except (OSError, IOError):
-            with async_lock:
-                logger.error("Couldn't copy file `%s' in sandbox" % (name))
-            self.safe_delete_sandbox()
-            raise JobException()
-
-    def safe_get_file_to_storage(self, name, msg=""):
-        try:
-            return self.sandbox.get_file_to_storage(name, msg)
-        except (IOError, OSError) as e:
-            with async_lock:
-                logger.error("Coudln't send file `%s' to storage" % (name))
-            self.safe_delete_sandbox()
-            raise JobException()
-
-    def safe_get_file_to_string(self, name):
-        try:
-            return self.sandbox.get_file_to_string(name, maxlen=1024)
-        except (IOError, OSError):
-            with async_lock:
-                logger.error("Couldn't retrieve file `%s' from storage" % name)
-            self.safe_delete_sandbox()
-            raise JobException()
-
-    def safe_get_file(self, name):
-        try:
-            return self.sandbox.get_file(name)
-        except (IOError, OSError):
-            with async_lock:
-                logger.error("Couldn't retrieve file `%s' from storage" % name)
-            self.safe_delete_sandbox()
-            raise JobException()
-
-    def safe_sandbox_execute(self, command):
-        try:
-            self.sandbox.execute_without_std(command)
+            return getattr(self.sandbox, operation)(*args, **kwargs)
         except (OSError, IOError) as e:
             with async_lock:
-                logger.error("Couldn't spawn `%s' (exception %s)" %
-                             (command[0], repr(e)))
-            self.safe_delete_sandbox()
+                logger.error("Error in safe sandbox operation %s, "
+                             "with arguments %s, %s. Exception: %s" %
+                             (operation, str(args), str(kwargs), repr(e)))
+            self.delete_sandbox()
+            raise JobException()
+        except AttributeError:
+            with async.lock:
+                logger.error("Invalid sandbox operation %s." % operation)
+            self.delete_sandbox()
             raise JobException()
 
     def compile(self):
         """Tries to compile the specified submission.
 
-        It returns True when the compilation is successful or when the
-        submission cannot be compiled successfully, and False when the
-        compilation fails because of environment problems (trying
-        again to compile the same submission in a sane environment
-        should lead to returning True).
-        """
+        It returns True when *our infrastracture* is successful (i.e.,
+        the actual compilation may success or fail), and False when
+        the compilation fails because of environmental problems
+        (trying again to compile the same submission in a sane
+        environment should lead to returning True).
 
-        # Detect the submission's language and check that it contains
-        # exactly one source file
+        return (bool): success of operation.
+
+        """
+        # Detect the submission's language and check that it satisfies
+        # the formal requirement for a submission (exact number of
+        # files, correct extensions, ...)
+        # TODO: this should be done before, no need to arrive to a
+        # worker to check.
         valid, language = self.submission.verify_source()
         if not valid or language is None:
             with async_lock:
@@ -237,6 +243,7 @@ class BatchTaskType:
             return self.finish_compilation(True, False,
                                            "Invalid files in submission")
 
+        # TODO: up to now we are able to have only one source file.
         if len(self.submission.files) != 1:
             with async_lock:
                 logger.info("Submission contains %d files, expecting 1" %
@@ -248,10 +255,10 @@ class BatchTaskType:
         executable_filename = source_filename.replace(".%s" % (language), "")
 
         # Setup the compilation environment
-        self.safe_create_sandbox()
-        self.safe_create_file_from_storage(
-            source_filename,
-            self.submission.files[source_filename].digest)
+        self.create_sandbox()
+        self.sandbox_operation("create_file_from_storage",
+                               source_filename,
+                               self.submission.files[source_filename].digest)
 
         command = get_compilation_command(language,
                                           source_filename,
@@ -278,22 +285,25 @@ class BatchTaskType:
             self.sandbox.relative_path("compiler_stderr.txt")
         with async_lock:
             logger.info("Starting compilation")
-        self.safe_sandbox_execute(command)
+        self.sandbox_operation("execute_without_std", command)
 
         # Detect the outcome of the compilation
         exit_status = self.sandbox.get_exit_status()
         exit_code = self.sandbox.get_exit_code()
-        stdout = self.safe_get_file_to_string("compiler_stdout.txt")
+        stdout = self.sandbox_operation("get_file_to_string",
+                                        "compiler_stdout.txt")
         if stdout.strip() == "":
             stdout = "(empty)\n"
-        stderr = self.safe_get_file_to_string("compiler_stderr.txt")
+        stderr = self.sandbox_operation("get_file_to_string",
+                                        "compiler_stderr.txt")
         if stderr.strip() == "":
             stderr = "(empty)\n"
 
         # Execution finished successfully: the submission was
         # correctly compiled
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
-            digest = self.safe_get_file_to_storage(
+            digest = self.sandbox_operation(
+                "get_file_to_storage",
                 executable_filename,
                 "Executable %s for submission %s" % \
                 (executable_filename, self.submission.id))
@@ -385,12 +395,14 @@ class BatchTaskType:
         return self.finish_compilation(False)
 
     def execute_single(self, test_number):
-        self.safe_create_sandbox()
-        self.safe_create_file_from_storage(
+        self.create_sandbox()
+        self.sandbox_operation(
+            "create_file_from_storage",
             self.executable_filename,
             self.submission.executables[self.executable_filename].digest,
             executable=True)
-        self.safe_create_file_from_storage(
+        self.sandbox_operation(
+            "create_file_from_storage",
             "input.txt",
             self.submission.task.testcases[test_number].input)
 
@@ -414,7 +426,8 @@ class BatchTaskType:
         # This one seems to be used for a C++ executable.
         self.sandbox.allow_path += ["/proc/meminfo"]
 
-        self.safe_sandbox_execute(
+        self.sandbox_operation(
+            "execute_without_std",
             [self.sandbox.relative_path(self.executable_filename)])
 
         # Detect the outcome of the execution
@@ -479,7 +492,8 @@ class BatchTaskType:
             return self.finish_single_execution(test_number, True, outcome,
                                                 text)
 
-        self.safe_create_file_from_storage(
+        self.sandbox_operation(
+            "create_file_from_storage",
             "res.txt",
             self.submission.task.testcases[test_number].output)
         self.sandbox.filter_syscalls = 2
@@ -494,8 +508,8 @@ class BatchTaskType:
 
         # No manager: I'll do a white_diff between output.txt and res.txt
         if len(self.submission.task.managers) == 0:
-            out_file = self.safe_get_file("output.txt")
-            res_file = self.safe_get_file("res.txt")
+            out_file = self.sandbox_operation("get_file", "output.txt")
+            res_file = self.sandbox_operation("get_file", "res.txt")
             if white_diff(out_file, res_file):
                 outcome = 1.0
                 text = "Output file is correct"
@@ -506,13 +520,14 @@ class BatchTaskType:
         # Manager present: wonderful, he'll do all the job
         else:
             manager_filename = self.submission.task.managers.keys()[0]
-            self.safe_create_file_from_storage(
+            self.sandbox_operation(
+                "create_file_from_storage",
                 manager_filename,
                 self.submission.task.managers[manager_filename].digest,
                 executable=True)
-            self.safe_sandbox_execute(
-                ["./%s" % (manager_filename),
-                 "input.txt", "res.txt", "output.txt"])
+            self.sandbox_operation("execute_without_std",
+                                   ["./%s" % (manager_filename),
+                                    "input.txt", "res.txt", "output.txt"])
             with codecs.open(stdout_filename, "r", "utf-8") as stdout_file:
                 with codecs.open(stderr_filename, "r", "utf-8") as stderr_file:
                     try:
@@ -540,6 +555,17 @@ class BatchTaskType:
         return self.finish_single_execution(test_number, True, outcome, text)
 
     def execute(self):
+        """Tries to evaluate the specified submission.
+
+        It returns True when *our infrastracture* is successful (i.e.,
+        the actual program may score or not), and False when the
+        evaluation fails because of environmental problems (trying
+        again to compile the same submission in a sane environment
+        should lead to returning True).
+
+        return (bool): success of operation.
+
+        """
         if len(self.submission.executables) != 1:
             with async_lock:
                 logger.info("Submission contains %d executables, "
