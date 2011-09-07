@@ -214,7 +214,7 @@ ul.normal_list {
     top:0px;
     bottom: 0px;
     right: 0px;
-    background: white; 
+    background: white;
     z-index: -1;
 }
 
@@ -319,24 +319,6 @@ table.bordered tbody tr:nth-child(odd) {
 
 
 /* TODO */
-
-.error {
-    display: block;
-    text-align: center;
-    margin: auto;
-    width: 90%;
-    padding: 4px;
-    background-color: #EEEEEE;
-    color: red;
-    font-weight: bold;
-}
-
-.question_content {
-    position: relative;
-}
-
-.reply_question_toggle {
-}
 
 .reply_question {
     display: none;
@@ -464,4 +446,99 @@ table.bordered tbody tr:nth-child(odd) {
     text-align: center;
     padding: 0;
     font-weight: bold;
+}
+
+
+/* DIFFERENT COLORS... */
+
+body.admin h1,
+body.admin .hr,
+body.admin #core h2 {
+    color: #637D53;
+}
+
+body.admin pre {
+    border-left: 2px solid #637D53;
+}
+
+body.admin a,
+body.admin a:visited {
+    color: #6DC942;
+}
+
+body.admin input,
+body.admin textarea {
+    border: 1px solid #637D53;
+}
+
+body.admin input:focus,
+body.admin textarea:focus {
+    border: 1px solid #FFD69C   ;
+}
+
+body.admin #sidebar {
+    background-color: #EEF3EA;
+    border-right: 2px solid #E5E8E4;
+}
+
+body.admin #border {
+    border-left: 2px solid #DEE3DA;
+    border-right: 2px solid #CED3CA;
+}
+
+body.admin #subpage_border {
+    border-left: 2px solid #DEE3DA;
+    border-right: 2px solid #CED3CA;
+}
+
+body.admin table th {
+    border-bottom: 0.072em solid #637D53;
+}
+
+body.admin table.bordered td,
+body.admin table.bordered th {
+    border-right: 1px solid #637D53;
+}
+
+body.admin table.bordered tbody tr:nth-child(even) {
+    background-color: white;
+}
+
+body.admin table.bordered tbody tr:nth-child(odd) {
+    background-color: #EEF3EA;
+}
+
+body.admin #notifications .notification {
+    background-color: #F7CBFE;
+    border: 0.143em solid #E475FF;
+}
+
+body.admin #notifications .notification_close {
+    background-color: #E475FF;
+    border-left: 0.143em solid #E475FF;
+    border-bottom: 0.143em solid #E475FF;
+}
+
+body.admin #notifications .notification_close:hover {
+    background-color: #F7CBFE;
+}
+
+body.admin .notifications .notification {
+    background-color: #F7CBFE;
+    border: 0.143em solid #E475FF;
+}
+
+body.admin .notifications .communication {
+    background-color: #EEF3EA;
+    border: 0.143em solid #637D53;
+}
+
+body.admin .notifications .notification_close {
+    background-color: #E475FF;
+    border-left: 0.143em solid #E475FF;
+    border-bottom: 0.143em solid #E475FF;
+}
+
+body.admin .notifications .notification_close:hover {
+    background-color: #F7CBFE;
 }
