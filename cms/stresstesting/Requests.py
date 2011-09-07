@@ -23,6 +23,7 @@ import sys
 import time
 import re
 import urllib
+import datetime
 
 class TestRequest:
     """Docstring TODO.
@@ -95,8 +96,17 @@ class TestRequest:
                                   "and actually implement some request")
 
     def store_to_file(self, fd):
-        raise NotImplementedError("Please subclass this class "
-                                  "and actually implement some request")
+        print >> fd, "Test type: %s" % (self.__class__.__name__)
+        print >> fd, "Execution start time: %s" % (datetime.datetime.fromtimestamp(self.start_time).strftime("%d/%m/%Y %H:%M:%S.%f"))
+        print >> fd, "Execution stop time: %s" % (datetime.datetime.fromtimestamp(self.stop_time).strftime("%d/%m/%Y %H:%M:%S.%f"))
+        print >> fd, "Duration: %f seconds" % (self.stop_time - self.start_time)
+        print >> fd, "Outcome: %s" % (self.outcome)
+        fd.write(self.specific_info())
+        print >> fd
+        fd.write(self.res_data)
+
+    def specific_info(self):
+        return ''
 
 
 class GenericRequest(TestRequest):
@@ -124,19 +134,6 @@ class GenericRequest(TestRequest):
         if len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
             return False
         return True
-
-    def store_to_file(self, fd):
-        print >> fd, "Test type: %s" % (self.__class__.__name__)
-        print >> fd, "Execution start time: %f" % (self.start_time)
-        print >> fd, "Execution stop time: %f" % (self.stop_time)
-        print >> fd, "Duration: %f seconds" % (self.stop_time - self.start_time)
-        print >> fd, "Outcome: %s" % (self.outcome)
-        fd.write(self.specific_info())
-        print >> fd
-        fd.write(self.res_data)
-
-    def specific_info(self):
-        return ''
 
 
 class HomepageRequest(GenericRequest):
