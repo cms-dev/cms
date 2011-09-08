@@ -52,21 +52,26 @@
           </div>
           <div id="evaluation_{{ s.id }}" style="display: none;">
             {% if s.evaluations != [] %}
-              {% if s.token is None %}
-            <h3>Public testcases</h3>
-              {% else %}
-            <h3>Detailed feedback</h3>
-              {% end %}
+            <h3>Testcases</h3>
             <table class="nested bordered">
               <thead>
                 <tr>
                   <th style="width: 20%">Outcome</th>
-                  <th style="width: 80%">Details</th>
+                  <th style="width: 5%"></th>
+                  <th style="width: 75%">Details</th>
                 </tr>
               </thead>
               <tbody>
                 {% for ev in s.evaluations %}
-                  <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td></tr>
+                  <tr>
+                    <td>{{ escape(ev.outcome) }}</td>
+                    {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
+                    <td style="align: center;">&bullet;</td>
+                    {% else %}
+                    <td></td>
+                    {% end %}
+                    <td>{{ escape(ev.text) }}</td>
+                  </tr>
                 {% end %}
               </tbody>
             </table>
