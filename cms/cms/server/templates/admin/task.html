@@ -17,8 +17,7 @@
       <tr>
         <th style="width: 10%">User</th>
         <th style="width: 10%">Date</th>
-        <th style="width: 10%">Task</th>
-        <th style="width: 35%">Evaluation</th>
+        <th style="width: 45%">Evaluation</th>
         <th style="width: 15%">Files</th>
         <th style="width: 10%">Released</th>
         <th style="width: 10%">Reevaluate</th>
@@ -32,9 +31,6 @@
         </td>
         <td>
           {{ Utils.format_time_or_date(s.timestamp) }}
-        </td>
-        <td>
-          {{ s.task.name }}
         </td>
         <td>
           {% if s.compilation_outcome is None %}
