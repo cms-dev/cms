@@ -100,12 +100,12 @@ class TaskType:
         text (string): if success is True, stdout and stder of the
                        compiler, or a message explaining why it
                        compilation_success is False.
-        return (bool): same as success
+        return ((bool, bool)): (success, compilation_success).
 
         """
         self.delete_sandbox()
         if not success:
-            return False
+            return False, False
         if compilation_success:
             self.submission.compilation_outcome = "ok"
         else:
@@ -116,7 +116,7 @@ class TaskType:
             self.submission.compilation_text("Cannot decode compilation text.")
             with async_lock:
                 logger.error("Unable to decode UTF-8 for string %s." % text)
-        return True
+        return True, compilation_success
 
     def finish_evaluation_testcase(self, test_number, success,
                                    outcome=0, text=""):
@@ -209,6 +209,161 @@ class TaskType:
             self.delete_sandbox()
             raise JobException()
 
+    def do_compile(self, command, files_to_get, executables_to_store):
+        """Execute a compilation command in the sandbox. Note that in
+        some task types, there may be more than one compilation
+        commands (in others there can be none, of course). If there
+        are more than one, the output of all compilations but the last
+        is lost. This should cause no problems, because:
+        1. contestants should know the actual compilation commands run
+           on the server;
+        2. the operation of compilation of a submission should stop as
+           soon as one of its compilations fails.
+
+        command (string): the actual compilation line.
+        files_to_get (dict): digests of file to get from FS, indexed
+                             by the filenames they should be put in.
+        executables_to_store (dict): same filename -> digest format,
+                                     indicate which files must be sent
+                                     to FS and added to the Executable
+                                     table in the db after a
+                                     *successful* compilation (i.e.,
+                                     one where the files_to_get
+                                     compiled correctly).
+        return (bool): True if compilation can continue, or False.
+
+        """
+        # Create sandbox and copy all necessary files.
+        self.create_sandbox()
+        for filename, digest in files_to_get.iteritems():
+            self.sandbox_operation("create_file_from_storage",
+                                   filename, digest)
+
+        # Set sandbox parameters suitable for compilation.
+        self.sandbox.chdir = self.sandbox.path
+        self.sandbox.preserve_env = True
+        self.sandbox.filter_syscalls = 1
+        self.sandbox.allow_syscall = ["waitpid", "prlimit64"]
+        self.sandbox.allow_fork = True
+        self.sandbox.file_check = 2
+        # FIXME - File access limits are not enforced on children
+        # processes (like ld).
+        self.sandbox.set_env['TMPDIR'] = self.sandbox.path
+        self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/',
+                                   '%s/' % (self.sandbox.path)]
+        self.sandbox.timeout = 8
+        self.sandbox.wallclock_timeout = 10
+        self.sandbox.address_space = 256 * 1024
+        self.sandbox.stdout_file = \
+            self.sandbox.relative_path("compiler_stdout.txt")
+        self.sandbox.stderr_file = \
+            self.sandbox.relative_path("compiler_stderr.txt")
+
+        # Actually run the compilation command
+        with async_lock:
+            logger.info("Starting compilation")
+        self.sandbox_operation("execute_without_std", command)
+
+        # Detect the outcome of the compilation.
+        exit_status = self.sandbox.get_exit_status()
+        exit_code = self.sandbox.get_exit_code()
+        stdout = self.sandbox_operation("get_file_to_string",
+                                        "compiler_stdout.txt")
+        if stdout.strip() == "":
+            stdout = "(empty)\n"
+        stderr = self.sandbox_operation("get_file_to_string",
+                                        "compiler_stderr.txt")
+        if stderr.strip() == "":
+            stderr = "(empty)\n"
+        compiler_output = "Compiler standard output:\n" \
+                          "%s\n" \
+                          "Compiler standard error:\n" \
+                          "%s" % (stdout, stderr)
+
+
+        # From now on, we test for the various possible outcomes and
+        # act appropriately.
+
+        # Execution finished successfully and the submission was
+        # correctly compiled.
+        if exit_status == Sandbox.EXIT_OK and exit_code == 0:
+            for filename, digest in executables_to_store.iteritems():
+                digest = self.sandbox_operation("get_file_to_storage",
+                                                filename, digest)
+
+                self.session.add(
+                    Executable(digest, filename, self.submission))
+
+            with async_lock:
+                logger.info("Compilation successfully finished.")
+
+            return self.finish_compilation(
+                True,
+                True,
+                "OK %s\n%s" % (self.sandbox.get_stats(), compiler_output))
+
+        # Error in compilation: returning the error to the user.
+        if exit_status == Sandbox.EXIT_OK and exit_code != 0:
+            with async_lock:
+                logger.info("Compilation failed")
+            return self.finish_compilation(
+                True,
+                False,
+                "Failed %s\n%s" % (self.sandbox.get_stats(), compiler_output))
+
+        # Timeout: returning the error to the user
+        if exit_status == Sandbox.EXIT_TIMEOUT:
+            with async_lock:
+                logger.info("Compilation timed out")
+            return self.finish_compilation(
+                True,
+                False,
+                "Time out %s\n%s" % (self.sandbox.get_stats(),
+                                     compiler_output))
+
+        # Suicide with signal (probably memory limit): returning the
+        # error to the user
+        if exit_status == Sandbox.EXIT_SIGNAL:
+            signal = self.sandbox.get_killing_signal()
+            with async_lock:
+                logger.info("Compilation killed with signal %d" % (signal))
+            return self.finish_compilation(
+                True,
+                False,
+                "Killed with signal %d %s\n"
+                "This could be triggered by violating memory limits\n%s" %
+                (signal, self.sandbox.get_stats(), compiler_output))
+
+        # Sandbox error: this isn't a user error, the administrator
+        # needs to check the environment
+        if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
+            with async_lock:
+                logger.error("Compilation aborted because of sandbox error")
+            return self.finish_compilation(False)
+
+        # Forbidden syscall: this shouldn't happen, probably the
+        # administrator should relax the syscall constraints
+        if exit_status == Sandbox.EXIT_SYSCALL:
+            with async_lock:
+                logger.error("Compilation aborted "
+                             "because of forbidden syscall")
+            return self.finish_compilation(False)
+
+        # Forbidden file access: this could be triggered by the user
+        # including a forbidden file or too strict sandbox contraints;
+        # the administrator should have a look at it
+        if exit_status == Sandbox.EXIT_FILE_ACCESS:
+            with async_lock:
+                logger.error("Compilation aborted "
+                             "because of forbidden file access")
+            return self.finish_compilation(False)
+
+        # Why the exit status hasn't been captured before?
+        with async_lock:
+            logger.error("Shouldn't arrive here, failing")
+        return self.finish_compilation(False)
+
+
     def compile(self):
         """Tries to compile the specified submission.
 
@@ -272,145 +427,16 @@ class BatchTaskType(TaskType):
         source_filename = self.submission.files.keys()[0]
         executable_filename = source_filename.replace(".%s" % (language), "")
 
-        # Setup the compilation environment
-        self.create_sandbox()
-        self.sandbox_operation("create_file_from_storage",
-                               source_filename,
-                               self.submission.files[source_filename].digest)
-
         command = get_compilation_command(language,
                                           source_filename,
                                           executable_filename)
+        operation_success, compilation_success = self.do_compile(
+            command,
+            {source_filename: self.submission.files[source_filename].digest},
+            {executable_filename: "Executable %s for submission %s" %
+             (executable_filename, self.submission.id)})
+        return operation_success
 
-        # Execute the compilation inside the sandbox
-        self.sandbox.chdir = self.sandbox.path
-        self.sandbox.preserve_env = True
-        self.sandbox.filter_syscalls = 1
-        self.sandbox.allow_syscall = ["waitpid", "prlimit64"]
-        self.sandbox.allow_fork = True
-        self.sandbox.file_check = 2
-        # FIXME - File access limits are not enforced on children
-        # processes (like ld)
-        self.sandbox.set_env['TMPDIR'] = self.sandbox.path
-        self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/',
-                                   '%s/' % (self.sandbox.path)]
-        self.sandbox.timeout = 8
-        self.sandbox.wallclock_timeout = 10
-        self.sandbox.address_space = 256 * 1024
-        self.sandbox.stdout_file = \
-            self.sandbox.relative_path("compiler_stdout.txt")
-        self.sandbox.stderr_file = \
-            self.sandbox.relative_path("compiler_stderr.txt")
-        with async_lock:
-            logger.info("Starting compilation")
-        self.sandbox_operation("execute_without_std", command)
-
-        # Detect the outcome of the compilation
-        exit_status = self.sandbox.get_exit_status()
-        exit_code = self.sandbox.get_exit_code()
-        stdout = self.sandbox_operation("get_file_to_string",
-                                        "compiler_stdout.txt")
-        if stdout.strip() == "":
-            stdout = "(empty)\n"
-        stderr = self.sandbox_operation("get_file_to_string",
-                                        "compiler_stderr.txt")
-        if stderr.strip() == "":
-            stderr = "(empty)\n"
-
-        # Execution finished successfully: the submission was
-        # correctly compiled
-        if exit_status == Sandbox.EXIT_OK and exit_code == 0:
-            digest = self.sandbox_operation(
-                "get_file_to_storage",
-                executable_filename,
-                "Executable %s for submission %s" % \
-                (executable_filename, self.submission.id))
-
-            self.session.add(Executable(digest,
-                                        executable_filename,
-                                        self.submission))
-
-            with async_lock:
-                logger.info("Compilation successfully finished")
-            return self.finish_compilation(
-                True,
-                True,
-                "OK %s\n"
-                "Compiler standard output:\n"
-                "%s\n"
-                "Compiler standard error:\n"
-                "%s" % (self.sandbox.get_stats(), stdout, stderr))
-
-        # Error in compilation: returning the error to the user
-        if exit_status == Sandbox.EXIT_OK and exit_code != 0:
-            with async_lock:
-                logger.info("Compilation failed")
-            return self.finish_compilation(
-                True,
-                False,
-                "Failed %s\n"
-                "Compiler standard output:\n"
-                "%s\n"
-                "Compiler standard error:\n"
-                "%s" % (self.sandbox.get_stats(), stdout, stderr))
-
-        # Timeout: returning the error to the user
-        if exit_status == Sandbox.EXIT_TIMEOUT:
-            with async_lock:
-                logger.info("Compilation timed out")
-            return self.finish_compilation(
-                True,
-                False,
-                "Time out %s\n"
-                "Compiler standard output:\n"
-                "%s\n"
-                "Compiler standard error:\n"
-                "%s" % (self.sandbox.get_stats(), stdout, stderr))
-
-        # Suicide with signal (probably memory limit): returning the
-        # error to the user
-        if exit_status == Sandbox.EXIT_SIGNAL:
-            signal = self.sandbox.get_killing_signal()
-            with async_lock:
-                logger.info("Compilation killed with signal %d" % (signal))
-            return self.finish_compilation(
-                True,
-                False,
-                "Killed with signal %d %s\n"
-                "This could be triggered by violating memory limits\n"
-                "Compiler standard output:\n"
-                "%s\n"
-                "Compiler standard error:\n"
-                "%s" % (signal, self.sandbox.get_stats(), stdout, stderr))
-
-        # Sandbox error: this isn't a user error, the administrator
-        # needs to check the environment
-        if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-            with async_lock:
-                logger.error("Compilation aborted because of sandbox error")
-            return self.finish_compilation(False)
-
-        # Forbidden syscall: this shouldn't happen, probably the
-        # administrator should relax the syscall constraints
-        if exit_status == Sandbox.EXIT_SYSCALL:
-            with async_lock:
-                logger.error("Compilation aborted "
-                             "because of forbidden syscall")
-            return self.finish_compilation(False)
-
-        # Forbidden file access: this could be triggered by the user
-        # including a forbidden file or too strict sandbox contraints;
-        # the administrator should have a look at it
-        if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            with async_lock:
-                logger.error("Compilation aborted "
-                             "because of forbidden file access")
-            return self.finish_compilation(False)
-
-        # Why the exit status hasn't been captured before?
-        with async_lock:
-            logger.error("Shouldn't arrive here, failing")
-        return self.finish_compilation(False)
 
     def evaluate_testcase(self, test_number):
         self.create_sandbox()
