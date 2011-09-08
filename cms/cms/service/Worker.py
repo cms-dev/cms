@@ -127,7 +127,7 @@ class Worker(Service):
 
                     # Do the actual work
                     success = False
-                    task_type_action = task_type.execute
+                    task_type_action = task_type.evaluate
                     if job_type == "compilation":
                         task_type_action = task_type.compile
                     try:
