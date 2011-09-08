@@ -19,6 +19,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""In this file there are two things:
+- the basic infrastructure from which we can build a task type;
+- the implementations of the most common task types.
+
+Basically, a task type is a class that receives a submission and knows
+how to compile and evaluate it. A worker creates a task type to work
+on a submission, and all low-level details on how to implement the
+compilation and the evaluation are contained in the task type class.
+
+"""
+
 import os
 import codecs
 
@@ -46,21 +57,9 @@ def get_task_type_class(submission, session, file_cacher):
         return None
 
 
-class BatchTaskType:
-    """This class defines how to compile, and evaluate submissions for
-    tasks of 'batch' type. In particular, we have several kind of
-    methods:
-
-    - finish_(compilation, single_evaluation, evaluation): these
-      finalize the given operation, writing back to the submission the
-      new information, and deleting the sandbox if needed;
-
-    - *_sandbox_*: these are utility to create and delete the sandbox,
-       and to ask it to do some operation. If the operation fails, the
-       sandbox is deleted.
-
-    - compile, evaluate_single, evaluate: these actually do the
-      operations.
+class TaskType:
+    """Base class with common operation that (more or less) all task
+    types must do sometimes.
 
     """
     def __init__(self, submission, session, file_cacher):
@@ -110,7 +109,7 @@ class BatchTaskType:
 
     def finish_evaluation_testcase(self, test_number, success,
                                    outcome=0, text=""):
-        """Finalize the operation of evaluate the submission on a
+        """Finalize the operation of evaluating the submission on a
         testcase. Fill the information in the submission and delete
         the sandbox.
 
@@ -131,7 +130,7 @@ class BatchTaskType:
         return True
 
     def finish_evaluation(self, success):
-        """Finalize the operation of evaluation. Currently there is
+        """Finalize the operation of evaluating. Currently there is
         nothing to do.
 
         success (bool): if the evaluation was successfull.
@@ -207,6 +206,46 @@ class BatchTaskType:
         the compilation fails because of environmental problems
         (trying again to compile the same submission in a sane
         environment should lead to returning True).
+
+        return (bool): success of operation.
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
+    def evaluate(self):
+        """Tries to evaluate the specified submission.
+
+        It returns True when *our infrastracture* is successful (i.e.,
+        the actual program may score or not), and False when the
+        evaluation fails because of environmental problems (trying
+        again to compile the same submission in a sane environment
+        should lead to returning True).
+
+        return (bool): success of operation.
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
+
+class BatchTaskType(TaskType):
+    """This class defines how to compile, and evaluate submissions for
+    tasks of 'batch' type. In particular, we have several kind of
+    methods:
+
+    - finish_(compilation, evaluation_testcase, evaluation): these
+      finalize the given operation, writing back to the submission the
+      new information, and deleting the sandbox if needed;
+
+    - *_sandbox_*: these are utility to create and delete the sandbox,
+       and to ask it to do some operation. If the operation fails, the
+       sandbox is deleted.
+
+    - compile, evaluate_testcase, evaluate: these actually do the
+      operations.
+
+    """
+    def compile(self):
+        """See TaskType.compile.
 
         return (bool): success of operation.
 
@@ -537,13 +576,7 @@ class BatchTaskType:
                                                outcome, text)
 
     def evaluate(self):
-        """Tries to evaluate the specified submission.
-
-        It returns True when *our infrastracture* is successful (i.e.,
-        the actual program may score or not), and False when the
-        evaluation fails because of environmental problems (trying
-        again to compile the same submission in a sane environment
-        should lead to returning True).
+        """See TaskType.evaluate.
 
         return (bool): success of operation.
 
