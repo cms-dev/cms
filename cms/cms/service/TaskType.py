@@ -167,6 +167,19 @@ class BatchTaskType:
 
     def finish_single_execution(self, test_number, success,
                                 outcome=0, text=""):
+        """Finalize the operation of executing the submission on a
+        testcase. Fill the information in the submission and delete
+        the sandbox.
+
+        test_number (int): number of testcase.
+        success (bool): if the operation was successful.
+        outcome (float): the outcome obtained by the submission on the
+                         testcase.
+        text (string): the reason of failure of the submission (if
+                       any).
+        return (bool): success.
+
+        """
         self.delete_sandbox()
         if not success:
             return False
@@ -175,6 +188,13 @@ class BatchTaskType:
         return True
 
     def finish_evaluation(self, success):
+        """Finalize the operation of evaluation. Currently there is
+        nothing to do.
+
+        success (bool): if the evaluation was successfull.
+        return (bool): success.
+
+        """
         if not success:
             return False
         return True
@@ -192,7 +212,9 @@ class BatchTaskType:
                     logger.warning("Couldn't delete sandbox")
 
     def create_sandbox(self):
-        """Create a sandbox.
+        """Create a sandbox, and put it in self.sandbox. At any given
+        time, we have at most one sandbox in an instance of TaskType,
+        stored there.
 
         """
         try:
@@ -204,6 +226,21 @@ class BatchTaskType:
             raise JobException()
 
     def sandbox_operation(self, operation, *args, **kwargs):
+        """Execute a method of the sandbox.
+
+        operation (string): the method to call in the sandbox.
+        args (list): arguments to pass to the sandbox method.
+        kwargs (dict): also arguments.
+        return (object): the return value of the method, or
+                         JobException.
+
+        """
+        if self.sandbox == None:
+            with async.lock:
+                logger.error("Sandbox not present while doing "
+                             "sandbox operation %s." % operation)
+            raise JobException()
+
         try:
             return getattr(self.sandbox, operation)(*args, **kwargs)
         except (OSError, IOError) as e:
