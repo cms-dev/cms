@@ -500,6 +500,11 @@ body.admin table.bordered th {
     border-right: 1px solid #637D53;
 }
 
+body.admin table.bordered td:last-child,
+body.admin table.bordered th:last-child {
+    border-right: 0;
+}
+
 body.admin table.bordered tbody tr:nth-child(even) {
     background-color: white;
 }
