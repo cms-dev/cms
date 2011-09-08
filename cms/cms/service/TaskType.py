@@ -61,6 +61,17 @@ class TaskType:
     """Base class with common operation that (more or less) all task
     types must do sometimes.
 
+    - finish_(compilation, evaluation_testcase, evaluation): these
+      finalize the given operation, writing back to the submission the
+      new information, and deleting the sandbox if needed;
+
+    - *_sandbox_*: these are utility to create and delete the sandbox,
+       and to ask it to do some operation. If the operation fails, the
+       sandbox is deleted.
+
+    - compile, evaluate_testcase, evaluate: these actually do the
+      operations; must be overloaded.
+
     """
     def __init__(self, submission, session, file_cacher):
         """
@@ -228,20 +239,8 @@ class TaskType:
 
 
 class BatchTaskType(TaskType):
-    """This class defines how to compile, and evaluate submissions for
-    tasks of 'batch' type. In particular, we have several kind of
-    methods:
-
-    - finish_(compilation, evaluation_testcase, evaluation): these
-      finalize the given operation, writing back to the submission the
-      new information, and deleting the sandbox if needed;
-
-    - *_sandbox_*: these are utility to create and delete the sandbox,
-       and to ask it to do some operation. If the operation fails, the
-       sandbox is deleted.
-
-    - compile, evaluate_testcase, evaluate: these actually do the
-      operations.
+    """Task type class for a unique standalone submission source, with
+    comparator (or not).
 
     """
     def compile(self):
