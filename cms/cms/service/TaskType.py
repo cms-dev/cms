@@ -100,12 +100,11 @@ class TaskType:
         text (string): if success is True, stdout and stder of the
                        compiler, or a message explaining why it
                        compilation_success is False.
-        return ((bool, bool)): (success, compilation_success).
+        return (bool): success.
 
         """
-        self.delete_sandbox()
         if not success:
-            return False, False
+            return False
         if compilation_success:
             self.submission.compilation_outcome = "ok"
         else:
@@ -116,7 +115,7 @@ class TaskType:
             self.submission.compilation_text("Cannot decode compilation text.")
             with async_lock:
                 logger.error("Unable to decode UTF-8 for string %s." % text)
-        return True, compilation_success
+        return True
 
     def finish_evaluation_testcase(self, test_number, success,
                                    outcome=0, text=""):
@@ -133,7 +132,6 @@ class TaskType:
         return (bool): success.
 
         """
-        self.delete_sandbox()
         if not success:
             return False
         self.submission.evaluations[test_number].text = text
@@ -209,7 +207,7 @@ class TaskType:
             self.delete_sandbox()
             raise JobException()
 
-    def do_compile(self, command, files_to_get, executables_to_store):
+    def compilation_step(self, command, files_to_get, executables_to_store):
         """Execute a compilation command in the sandbox. Note that in
         some task types, there may be more than one compilation
         commands (in others there can be none, of course). If there
@@ -259,9 +257,9 @@ class TaskType:
         self.sandbox.stderr_file = \
             self.sandbox.relative_path("compiler_stderr.txt")
 
-        # Actually run the compilation command
+        # Actually run the compilation command.
         with async_lock:
-            logger.info("Starting compilation")
+            logger.info("Starting compilation step")
         self.sandbox_operation("execute_without_std", command)
 
         # Detect the outcome of the compilation.
@@ -297,29 +295,25 @@ class TaskType:
             with async_lock:
                 logger.info("Compilation successfully finished.")
 
-            return self.finish_compilation(
-                True,
-                True,
-                "OK %s\n%s" % (self.sandbox.get_stats(), compiler_output))
+            self.delete_sandbox()
+            return True, True, "OK %s\n%s" % (self.sandbox.get_stats(),
+                                              compiler_output)
 
         # Error in compilation: returning the error to the user.
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
             with async_lock:
                 logger.info("Compilation failed")
-            return self.finish_compilation(
-                True,
-                False,
-                "Failed %s\n%s" % (self.sandbox.get_stats(), compiler_output))
+            self.delete_sandbox()
+            return True, False, "Failed %s\n%s" % (self.sandbox.get_stats(),
+                                                   compiler_output)
 
         # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
             with async_lock:
                 logger.info("Compilation timed out")
-            return self.finish_compilation(
-                True,
-                False,
-                "Time out %s\n%s" % (self.sandbox.get_stats(),
-                                     compiler_output))
+            self.delete_sandbox()
+            return True, False, "Time out %s\n%s" % (self.sandbox.get_stats(),
+                                                     compiler_output)
 
         # Suicide with signal (probably memory limit): returning the
         # error to the user
@@ -327,19 +321,20 @@ class TaskType:
             signal = self.sandbox.get_killing_signal()
             with async_lock:
                 logger.info("Compilation killed with signal %d" % (signal))
-            return self.finish_compilation(
-                True,
-                False,
-                "Killed with signal %d %s\n"
-                "This could be triggered by violating memory limits\n%s" %
-                (signal, self.sandbox.get_stats(), compiler_output))
+            self.delete_sandbox()
+            return True, False, \
+                   "Killed with signal %d %s\n" \
+                   "This could be triggered by " \
+                   "violating memory limits\n%s" % \
+                   (signal, self.sandbox.get_stats(), compiler_output)
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
             with async_lock:
                 logger.error("Compilation aborted because of sandbox error")
-            return self.finish_compilation(False)
+            self.delete_sandbox()
+            return False, None, None
 
         # Forbidden syscall: this shouldn't happen, probably the
         # administrator should relax the syscall constraints
@@ -347,7 +342,8 @@ class TaskType:
             with async_lock:
                 logger.error("Compilation aborted "
                              "because of forbidden syscall")
-            return self.finish_compilation(False)
+            self.delete_sandbox()
+            return False, None, None
 
         # Forbidden file access: this could be triggered by the user
         # including a forbidden file or too strict sandbox contraints;
@@ -356,13 +352,164 @@ class TaskType:
             with async_lock:
                 logger.error("Compilation aborted "
                              "because of forbidden file access")
-            return self.finish_compilation(False)
+            self.delete_sandbox()
+            return False, None, None
 
         # Why the exit status hasn't been captured before?
         with async_lock:
             logger.error("Shouldn't arrive here, failing")
-        return self.finish_compilation(False)
+        self.delete_sandbox()
+        return False, None, None
 
+    def evaluation_step(self, command, executables_to_get,
+                        files_to_get, time_limit=0, memory_limit=None,
+                        allow_paths=[], final=False):
+        """Execute an evaluation command in the sandbox. Note that in
+        some task types, there may be more than one evaluation
+        commands (per testcase) (in others there can be none, of
+        course).
+
+        command (string): the actual execution line.
+        executables_to_get (dict): digests of executables file to get
+                                   from FS, indexed by the filenames
+                                   they should be put in.
+        files_to_get (dict): digests of file to get from FS, indexed
+                             by the filenames they should be put in.
+        time_limit (float): time limit in seconds.
+        memory_limit (int): memory limit in MB.
+        allow_paths (list): list of relative paths accessible in the
+                            sandbox.
+        return (bool): True if the evaluation can continue, or False.
+
+        """
+        # Copy all necessary files.
+        for filename, digest in executables_to_get.iteritems():
+            self.sandbox_operation("create_file_from_storage",
+                                   filename, digest, executable=True)
+        for filename, digest in files_to_get.iteritems():
+            self.sandbox_operation("create_file_from_storage",
+                                   filename, digest)
+
+        # Set sandbox parameters suitable for evaluation.
+        self.sandbox.chdir = self.sandbox.path
+        self.sandbox.filter_syscalls = 2
+        self.sandbox.timeout = self.submission.task.time_limit
+        self.sandbox.address_space = self.submission.task.memory_limit * 1024
+        self.sandbox.file_check = 1
+        self.sandbox.allow_path = ["input.txt", "output.txt"]
+        stdout_filename = os.path.join(self.sandbox.path,
+                                       "stdout.txt")
+        stderr_filename = os.path.join(self.sandbox.path,
+                                       "stderr.txt")
+        self.sandbox.stdout_file = stdout_filename
+        self.sandbox.stderr_file = stderr_filename
+        # These syscalls and paths are used by executables generated
+        # by fpc.
+        self.sandbox.allow_path += ["/proc/self/exe"]
+        self.sandbox.allow_syscall += ["getrlimit", "rt_sigaction"]
+        # This one seems to be used for a C++ executable.
+        self.sandbox.allow_path += ["/proc/meminfo"]
+
+        # Actually run the evaluation command.
+        with async_lock:
+            logger.info("Starting evaluation step.")
+        self.sandbox_operation("execute_without_std", command)
+
+        # Detect the outcome of the execution.
+        exit_status = self.sandbox.get_exit_status()
+
+        # Timeout: returning the error to the user.
+        if exit_status == Sandbox.EXIT_TIMEOUT:
+            with async_lock:
+                logger.info("Execution timed out.")
+            return True, 0.0, "Execution timed out."
+
+        # Suicide with signal (memory limit, segfault, abort):
+        # returning the error to the user.
+        if exit_status == Sandbox.EXIT_SIGNAL:
+            signal = self.sandbox.get_killing_signal()
+            with async_lock:
+                logger.info("Execution killed with signal %d." % signal)
+            return True, 0.0, "Execution killed with signal %d." % signal
+
+        # Sandbox error: this isn't a user error, the administrator
+        # needs to check the environment.
+        if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
+            with async_lock:
+                logger.error("Evaluation aborted because of sandbox error.")
+            return False, None, None
+
+        # Forbidden syscall: returning the error to the user.
+        # FIXME - Tell which syscall raised this error.
+        if exit_status == Sandbox.EXIT_SYSCALL:
+            with async_lock:
+                logger.info("Execution killed because of forbidden syscall.")
+            return True, 0.0, "Execution killed because of forbidden syscall."
+
+        # Forbidden file access: returning the error to the user.
+        # FIXME - Tell which file raised this error.
+        if exit_status == Sandbox.EXIT_FILE_ACCESS:
+            with async_lock:
+                logger.info("Execution killed "
+                            "because of forbidden file access.")
+            return True, 0.0, \
+                   "Execution killed because of forbidden file access."
+
+        # Last check before assuming that evaluation finished
+        # successfully; we accept the evaluation even if the exit code
+        # isn't 0.
+        if exit_status != Sandbox.EXIT_OK:
+            with async_lock:
+                logger.error("Shouldn't arrive here, failing")
+            return False, None, None
+
+        # If this isn't the last step of the evaluation, return that
+        # the operation was successful, but neither an outcome nor an
+        # explainatory text.
+        if not final:
+            return True, None, None
+        # Otherwise, the outcome is stdout and text is stderr.
+        with codecs.open(stdout_filename, "r", "utf-8") as stdout_file:
+            with codecs.open(stderr_filename, "r", "utf-8") as stderr_file:
+                try:
+                    outcome = stdout_file.readline().strip()
+                except UnicodeDecodeError as e:
+                    with async_lock:
+                        logger.error("Unable to interpret manager stdout "
+                                     "(outcome) as unicode. %s" % repr(e))
+                    return False, None, None
+                try:
+                    text = filter_ansi_escape(stderr_file.readline())
+                except UnicodeDecodeError as e:
+                    with async_lock:
+                        logger.error("Unable to interpret manager stderr "
+                                     "(text) as unicode. %s" % repr(e))
+                    return False, None, None
+        try:
+            outcome = float(outcome)
+        except ValueError:
+            with async_lock:
+                logger.error("Wrong outcome `%s' from manager" % outcome)
+            return False, None, None
+
+        return True, outcome, text
+
+    def white_diff_step(self, output_filename, correct_output_filename,
+                        files_to_get):
+        """
+        """
+        for filename, digest in files_to_get.iteritems():
+            self.sandbox_operation("create_file_from_storage",
+                                   filename, digest)
+        out_file = self.sandbox_operation("get_file", "output.txt")
+        res_file = self.sandbox_operation("get_file", "res.txt")
+        if white_diff(out_file, res_file):
+            outcome = 1.0
+            text = "Output file is correct"
+        else:
+            outcome = 0.0
+            text = "Output file isn't correct"
+        return True, outcome, text
 
     def compile(self):
         """Tries to compile the specified submission.
@@ -424,181 +571,67 @@ class BatchTaskType(TaskType):
             return self.finish_compilation(True, False,
                                            "Invalid files in submission")
 
+        # First and only one compilation.
         source_filename = self.submission.files.keys()[0]
         executable_filename = source_filename.replace(".%s" % (language), "")
-
         command = get_compilation_command(language,
                                           source_filename,
                                           executable_filename)
-        operation_success, compilation_success = self.do_compile(
+        operation_success, compilation_success, text = self.compilation_step(
             command,
             {source_filename: self.submission.files[source_filename].digest},
             {executable_filename: "Executable %s for submission %s" %
              (executable_filename, self.submission.id)})
-        return operation_success
 
+        # We had only one compilation, hence we pipe directly its
+        # result to the finalization.
+        return self.finish_compilation(operation_success, compilation_success,
+                                       text)
 
     def evaluate_testcase(self, test_number):
         self.create_sandbox()
-        self.sandbox_operation(
-            "create_file_from_storage",
-            self.executable_filename,
-            self.submission.executables[self.executable_filename].digest,
-            executable=True)
-        self.sandbox_operation(
-            "create_file_from_storage",
-            "input.txt",
-            self.submission.task.testcases[test_number].input)
 
-        self.sandbox.chdir = self.sandbox.path
-        self.sandbox.filter_syscalls = 2
-        self.sandbox.timeout = self.submission.task.time_limit
-        self.sandbox.address_space = self.submission.task.memory_limit * 1024
-        self.sandbox.file_check = 1
-        self.sandbox.allow_path = ["input.txt", "output.txt"]
-        stdout_filename = os.path.join(self.sandbox.path,
-                                       "submission_stdout.txt")
-        stderr_filename = os.path.join(self.sandbox.path,
-                                       "submission_stderr.txt")
-        self.sandbox.stdout_file = stdout_filename
-        self.sandbox.stderr_file = stderr_filename
+        # First step: execute the contestant program.
+        success, outcome, text = self.evaluation_step(
+            ["./%s" % self.executable_filename],
+            {self.executable_filename:
+             self.submission.executables[self.executable_filename].digest},
+            {"input.txt": self.submission.task.testcases[test_number].input},
+            self.submission.task.time_limit,
+            self.submission.task.memory_limit,
+            ["input.txt", "output.txt"])
+        # If an error occur (our or contestant's), return immediately.
+        if not success or outcome is not None:
+            self.delete_sandbox()
+            return self.finish_evaluation_testcase(test_number,
+                                                   success, outcome, text)
 
-        # These syscalls and paths are used by executables generated
-        # by fpc.
-        self.sandbox.allow_path += ["/proc/self/exe"]
-        self.sandbox.allow_syscall += ["getrlimit", "rt_sigaction"]
-
-        # This one seems to be used for a C++ executable.
-        self.sandbox.allow_path += ["/proc/meminfo"]
-
-        self.sandbox_operation(
-            "execute_without_std",
-            [self.sandbox.relative_path(self.executable_filename)])
-
-        # Detect the outcome of the execution.
-        exit_status = self.sandbox.get_exit_status()
-
-        # Timeout: returning the error to the user
-        if exit_status == Sandbox.EXIT_TIMEOUT:
-            with async_lock:
-                logger.info("Execution timed out")
-            return self.finish_evaluation_testcase(test_number, True, 0.0,
-                                                   "Execution timed out\n")
-
-        # Suicide with signal (memory limit, segfault, abort):
-        # returning the error to the user
-        if exit_status == Sandbox.EXIT_SIGNAL:
-            signal = self.sandbox.get_killing_signal()
-            with async_lock:
-                logger.info("Execution killed with signal %d" % (signal))
-            return self.finish_evaluation_testcase(
-                test_number, True, 0.0,
-                "Execution killed with signal %d\n" % signal)
-
-        # Sandbox error: this isn't a user error, the administrator
-        # needs to check the environment
-        if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-            with async_lock:
-                logger.error("Evaluation aborted because of sandbox error")
-            return self.finish_evaluation_testcase(test_number, False)
-
-        # Forbidden syscall: returning the error to the user
-        # FIXME - Tell which syscall raised this error
-        if exit_status == Sandbox.EXIT_SYSCALL:
-            with async_lock:
-                logger.info("Execution killed because of forbidden syscall")
-            return self.finish_evaluation_testcase(
-                test_number, True, 0.0,
-                "Execution killed because of forbidden syscall")
-
-        # Forbidden file access: returning the error to the user
-        # FIXME - Tell which file raised this error
-        if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            with async_lock:
-                logger.info("Execution killed "
-                            "because of forbidden file access")
-            return self.finish_evaluation_testcase(
-                test_number, True, 0.0,
-                "Execution killed because of forbidden file access")
-
-        # Last check before assuming that evaluation finished
-        # successfully; we accept the evaluation even if the exit code
-        # isn't 0
-        if exit_status != Sandbox.EXIT_OK:
-            with async_lock:
-                logger.error("Shouldn't arrive here, failing")
-            return self.finish_evaluation_testcase(test_number, False)
-
-        if not self.sandbox.file_exists("output.txt"):
-            outcome = 0.0
-            text = "Evaluation didn't produce file output.txt"
-            return self.finish_evaluation_testcase(test_number, True, outcome,
-                                                   text)
-
-        self.sandbox_operation(
-            "create_file_from_storage",
-            "res.txt",
-            self.submission.task.testcases[test_number].output)
-        self.sandbox.filter_syscalls = 2
-        self.sandbox.timeout = 0
-        self.sandbox.address_space = None
-        self.sandbox.file_check = 1
-        self.sandbox.allow_path = ["input.txt", "output.txt", "res.txt"]
-        stdout_filename = os.path.join(self.sandbox.path, "manager_stdout.txt")
-        stderr_filename = os.path.join(self.sandbox.path, "manager_stderr.txt")
-        self.sandbox.stdout_file = stdout_filename
-        self.sandbox.stderr_file = stderr_filename
-
-        # No manager: I'll do a white_diff between output.txt and res.txt
+        # Second step: diffing (manual or with manager).
         if len(self.submission.task.managers) == 0:
-            out_file = self.sandbox_operation("get_file", "output.txt")
-            res_file = self.sandbox_operation("get_file", "res.txt")
-            if white_diff(out_file, res_file):
-                outcome = 1.0
-                text = "Output file is correct"
-            else:
-                outcome = 0.0
-                text = "Output file isn't correct"
-
-        # Manager present: wonderful, he'll do all the job
+            # No manager: I'll do a white_diff between output.txt and
+            # res.txt.
+            success, outcome, text = self.white_diff_step(
+                "output.txt", "res.txt",
+                {"res.txt":
+                 self.submission.task.testcases[test_number].output})
         else:
+            # Manager present: wonderful, he'll do all the job.
             manager_filename = self.submission.task.managers.keys()[0]
-            self.sandbox_operation(
-                "create_file_from_storage",
-                manager_filename,
-                self.submission.task.managers[manager_filename].digest,
-                executable=True)
-            self.sandbox_operation("execute_without_std",
-                                   ["./%s" % (manager_filename),
-                                    "input.txt", "res.txt", "output.txt"])
-            with codecs.open(stdout_filename, "r", "utf-8") as stdout_file:
-                with codecs.open(stderr_filename, "r", "utf-8") as stderr_file:
-                    try:
-                        outcome = stdout_file.readline().strip()
-                    except UnicodeDecodeError as e:
-                        with async_lock:
-                            logger.error("Unable to interpret manager stdout "
-                                         "(outcome) as unicode. %s" % repr(e))
-                        return self.finish_evaluation_testcase(test_number,
-                                                               False)
-                    try:
-                        text = filter_ansi_escape(stderr_file.readline())
-                    except UnicodeDecodeError as e:
-                        with async_lock:
-                            logger.error("Unable to interpret manager stderr "
-                                         "(text) as unicode. %s" % repr(e))
-                        return self.finish_evaluation_testcase(test_number,
-                                                               False)
-            try:
-                outcome = float(outcome)
-            except ValueError:
-                with async_lock:
-                    logger.error("Wrong outcome `%s' from manager" % (outcome))
-                return self.finish_evaluation_testcase(test_number, False)
+            success, outcome, text = self.evaluation_step(
+                ["./%s" % manager_filename,
+                 "input.txt", "res.txt", "output.txt"],
+                {manager_filename:
+                 self.submission.task.managers[manager_filename].digest},
+                {"res.txt":
+                 self.submission.task.testcases[test_number].output},
+                allow_paths=["input.txt", "output.txt", "res.txt"],
+                final=True)
 
-        # Finally returns the result
-        return self.finish_evaluation_testcase(test_number, True,
-                                               outcome, text)
+        # Whatever happened, we conclude.
+        self.delete_sandbox()
+        return self.finish_evaluation_testcase(test_number,
+                                               success, outcome, text)
+
 
     def evaluate(self):
         """See TaskType.evaluate.
