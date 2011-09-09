@@ -69,6 +69,9 @@ class TaskType:
        and to ask it to do some operation. If the operation fails, the
        sandbox is deleted.
 
+    - compilation_, evaluation_step: these execute one compilation
+      command, or one evaluation command in the sandbox.
+
     - compile, evaluate_testcase, evaluate: these actually do the
       operations; must be overloaded.
 
@@ -210,13 +213,9 @@ class TaskType:
     def compilation_step(self, command, files_to_get, executables_to_store):
         """Execute a compilation command in the sandbox. Note that in
         some task types, there may be more than one compilation
-        commands (in others there can be none, of course). If there
-        are more than one, the output of all compilations but the last
-        is lost. This should cause no problems, because:
-        1. contestants should know the actual compilation commands run
-           on the server;
-        2. the operation of compilation of a submission should stop as
-           soon as one of its compilations fails.
+        commands (in others there can be none, of course).
+
+        Note: this needs a sandbox already created.
 
         command (string): the actual compilation line.
         files_to_get (dict): digests of file to get from FS, indexed
@@ -228,11 +227,13 @@ class TaskType:
                                      *successful* compilation (i.e.,
                                      one where the files_to_get
                                      compiled correctly).
-        return (bool): True if compilation can continue, or False.
+        return (bool, bool, string): True if compilation was
+                                     successful; True if files
+                                     compiled correctly; explainatory
+                                     string.
 
         """
-        # Create sandbox and copy all necessary files.
-        self.create_sandbox()
+        # Copy all necessary files.
         for filename, digest in files_to_get.iteritems():
             self.sandbox_operation("create_file_from_storage",
                                    filename, digest)
@@ -295,7 +296,6 @@ class TaskType:
             with async_lock:
                 logger.info("Compilation successfully finished.")
 
-            self.delete_sandbox()
             return True, True, "OK %s\n%s" % (self.sandbox.get_stats(),
                                               compiler_output)
 
@@ -303,7 +303,6 @@ class TaskType:
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
             with async_lock:
                 logger.info("Compilation failed")
-            self.delete_sandbox()
             return True, False, "Failed %s\n%s" % (self.sandbox.get_stats(),
                                                    compiler_output)
 
@@ -311,7 +310,6 @@ class TaskType:
         if exit_status == Sandbox.EXIT_TIMEOUT:
             with async_lock:
                 logger.info("Compilation timed out")
-            self.delete_sandbox()
             return True, False, "Time out %s\n%s" % (self.sandbox.get_stats(),
                                                      compiler_output)
 
@@ -321,7 +319,6 @@ class TaskType:
             signal = self.sandbox.get_killing_signal()
             with async_lock:
                 logger.info("Compilation killed with signal %d" % (signal))
-            self.delete_sandbox()
             return True, False, \
                    "Killed with signal %d %s\n" \
                    "This could be triggered by " \
@@ -333,7 +330,6 @@ class TaskType:
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
             with async_lock:
                 logger.error("Compilation aborted because of sandbox error")
-            self.delete_sandbox()
             return False, None, None
 
         # Forbidden syscall: this shouldn't happen, probably the
@@ -342,7 +338,6 @@ class TaskType:
             with async_lock:
                 logger.error("Compilation aborted "
                              "because of forbidden syscall")
-            self.delete_sandbox()
             return False, None, None
 
         # Forbidden file access: this could be triggered by the user
@@ -352,13 +347,11 @@ class TaskType:
             with async_lock:
                 logger.error("Compilation aborted "
                              "because of forbidden file access")
-            self.delete_sandbox()
             return False, None, None
 
         # Why the exit status hasn't been captured before?
         with async_lock:
             logger.error("Shouldn't arrive here, failing")
-        self.delete_sandbox()
         return False, None, None
 
     def evaluation_step(self, command, executables_to_get,
@@ -368,6 +361,8 @@ class TaskType:
         some task types, there may be more than one evaluation
         commands (per testcase) (in others there can be none, of
         course).
+
+        Note: this needs a sandbox already created.
 
         command (string): the actual execution line.
         executables_to_get (dict): digests of executables file to get
@@ -379,7 +374,14 @@ class TaskType:
         memory_limit (int): memory limit in MB.
         allow_paths (list): list of relative paths accessible in the
                             sandbox.
-        return (bool): True if the evaluation can continue, or False.
+        final (bool): if True, return last stdout and stderr as
+                      outcome and text, respectively.
+        return (bool, float, string): True if the evaluation was
+                                      succesfull, or False (in this
+                                      case we may stop the evaluation
+                                      process); then there is outcome
+                                      (or None) and explainatory text
+                                      (or None).
 
         """
         # Copy all necessary files.
@@ -572,6 +574,7 @@ class BatchTaskType(TaskType):
                                            "Invalid files in submission")
 
         # First and only one compilation.
+        self.create_sandbox()
         source_filename = self.submission.files.keys()[0]
         executable_filename = source_filename.replace(".%s" % (language), "")
         command = get_compilation_command(language,
@@ -582,6 +585,7 @@ class BatchTaskType(TaskType):
             {source_filename: self.submission.files[source_filename].digest},
             {executable_filename: "Executable %s for submission %s" %
              (executable_filename, self.submission.id)})
+        self.delete_sandbox()
 
         # We had only one compilation, hence we pipe directly its
         # result to the finalization.
