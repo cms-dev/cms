@@ -42,19 +42,31 @@ from cms.util.Utils import get_compilation_command, white_diff, \
 from cms import Config
 
 
-def get_task_type_class(submission, session, file_cacher):
-    """Given a submission, istanciate the corresponding TaskType
-    class.
-
-    submission (Submission): the submission that needs the task type.
-    session (SQLSession): the session the submission lives in.
-    file_cacher (FileCacher): a file cacher object.
+class TaskTypes:
+    """Contain constants for all defined task types.
 
     """
-    if submission.task.task_type == Task.TASK_TYPE_BATCH:
-        return BatchTaskType(submission, session, file_cacher)
-    else:
-        return None
+    # TODO: if we really want to do plugins, this class should look up
+    # score types in some given path.
+
+    TASK_TYPE_BATCH = "TaskTypeBatch"
+
+    @staticmethod
+    def get_task_type(submission, session, file_cacher):
+        """Given a submission, istantiate the corresponding TaskType
+        class.
+
+        submission (Submission): the submission that needs the task type.
+        session (SQLSession): the session the submission lives in.
+        file_cacher (FileCacher): a file cacher object.
+
+        """
+        if submission.task.task_type == TaskTypes.TASK_TYPE_BATCH:
+            return TaskTypeBatch(submission,
+                                 submission.task.task_type_parameters,
+                                 session, file_cacher)
+        else:
+            raise KeyError
 
 
 class TaskType:
@@ -76,9 +88,11 @@ class TaskType:
       operations; must be overloaded.
 
     """
-    def __init__(self, submission, session, file_cacher):
+    def __init__(self, submission, parameters, session, file_cacher):
         """
         submission (Submission): the submission to grade.
+        parameters (dict): parameters coming from the task; their
+                           meaning depends on the specific TaskType.
         session (SQLSession): the SQLAlchemy session the submission
                               lives in.
         file_cacher (FileCacher): a FileCacher object to retrieve
@@ -86,6 +100,7 @@ class TaskType:
 
         """
         self.submission = submission
+        self.parameters = parameters
         self.session = session
         self.FC = file_cacher
 
@@ -542,7 +557,7 @@ class TaskType:
         raise NotImplementedError("Please subclass this class.")
 
 
-class BatchTaskType(TaskType):
+class TaskTypeBatch(TaskType):
     """Task type class for a unique standalone submission source, with
     comparator (or not).
 

@@ -23,7 +23,7 @@ from cms.async.AsyncLibrary import logger
 
 
 class ScoreTypes:
-    """Contains constants for all defined score types.
+    """Contain constants for all defined score types.
 
     """
     # TODO: if we really want to do plugins, this class should look up
@@ -47,6 +47,9 @@ class ScoreTypes:
     @staticmethod
     def get_score_type(score_type, score_parameters):
         """Returns the right score type class for a given string.
+
+        score_type (string): the name of the score type class.
+        score_parameters (dict): the parameters for the new object.
 
         """
         if score_type == ScoreTypes.SCORE_TYPE_SUM:

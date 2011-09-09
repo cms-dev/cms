@@ -26,7 +26,7 @@ import traceback
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import logger, async_lock, Service, \
      rpc_method, rpc_threaded
-from cms.service.TaskType import get_task_type_class
+from cms.service.TaskType import TaskTypes
 from cms.db.SQLAlchemyAll import Session, Submission, SessionGen, Contest
 from cms.service import JobException
 from cms.service.FileStorage import FileCacher
@@ -51,8 +51,10 @@ class Worker(Service):
             logger.critical(msg_err)
             raise JobException(msg_err)
 
-        task_type = get_task_type_class(submission, self.session, self.FC)
-        if task_type is None:
+        try:
+            task_type = TaskTypes.get_task_type(submission, self.session,
+                                                self.FC)
+        except KeyError:
             err_msg = "Task type `%s' not known for submission %s" \
                 % (self.submission.task.task_type, submission_id)
             logger.critical(err_msg)
