@@ -27,6 +27,7 @@ solutions:
  * MySQL has two types of tables: MyISAM and InnoDB. One
    of them doesn't support transactions, the other one doens't
    support foreign keys. You call it a database?
+   (see also: http://grep.be/blog/en/computer/cluebat/mysql_toy_argument)
 
  * Oracle Server is just good, assuming that you or your
    parents have a really strong bank account.
