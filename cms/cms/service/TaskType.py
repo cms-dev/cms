@@ -19,6 +19,17 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""In this file there are two things:
+- the basic infrastructure from which we can build a task type;
+- the implementations of the most common task types.
+
+Basically, a task type is a class that receives a submission and knows
+how to compile and evaluate it. A worker creates a task type to work
+on a submission, and all low-level details on how to implement the
+compilation and the evaluation are contained in the task type class.
+
+"""
+
 import os
 import codecs
 
@@ -26,7 +37,8 @@ from cms.async.AsyncLibrary import logger, async_lock
 from cms.box.Sandbox import Sandbox
 from cms.db.SQLAlchemyAll import Task, Executable, Evaluation
 from cms.service import JobException
-from cms.util.Utils import get_compilation_command, filter_ansi_escape
+from cms.util.Utils import get_compilation_command, white_diff, \
+     filter_ansi_escape
 from cms import Config
 
 
@@ -45,81 +57,22 @@ def get_task_type_class(submission, session, file_cacher):
         return None
 
 
-WHITES = " \t\n\r"
+class TaskType:
+    """Base class with common operation that (more or less) all task
+    types must do sometimes.
 
+    - finish_(compilation, evaluation_testcase, evaluation): these
+      finalize the given operation, writing back to the submission the
+      new information, and deleting the sandbox if needed;
 
-def white_diff_canonicalize(s):
-    """Convert the input string to a canonical form for the white diff
-    algorithm; that is, the strings a and b are mapped to the same
-    string by white_diff_canonicalize() if and only if they have to be
-    considered equivalent for the purposes of the white_diff
-    algorithm.
+    - *_sandbox_*: these are utility to create and delete the sandbox,
+       and to ask it to do some operation. If the operation fails, the
+       sandbox is deleted.
 
-    More specifically, this function strips all the leading and
-    trailing whitespaces from s and collapse all the runs of
-    consecutive whitespaces into just one copy of one specific
-    whitespace.
-
-    s (string): the string to canonicalize.
-    return (string): the canonicalized string.
+    - compile, evaluate_testcase, evaluate: these actually do the
+      operations; must be overloaded.
 
     """
-    # Replace all the whitespaces with copies of " ", making the rest
-    # of the algorithm simpler
-    for c in WHITES[1:]:
-        s = s.replace(c, WHITES[0])
-
-    # Split the string according to " ", filter out empty tokens and
-    # join again the string using just one copy of the first
-    # whitespace; this way, runs of more than one whitespaces are
-    # collapsed into just one copy.
-    s = WHITES[0].join([x for x in s.split(WHITES[0])
-                        if x != ''])
-    return s
-
-
-def white_diff(output, res):
-    """Compare the two output files. Two files are equal if for every
-    integer i, line i of first file is equal to line i of second
-    file. Two lines are equal if they differ only by number or type of
-    whitespaces.
-
-    Note that trailing lines composed only of whitespaces don't change
-    the 'equality' of the two files. Note also that by line we mean
-    'sequence of characters ending with \n or EOF and beginning right
-    after BOF or \n'. In particular, every line has *at most* one \n.
-
-    output (file): the first file to compare.
-    res (file): the second file to compare.
-    return (bool): True if the two file are equal as explained above.
-
-    """
-
-    while True:
-        lout = output.readline()
-        lres = res.readline()
-
-        # Both files finished: comparison succeded
-        if lres == '' and lout == '':
-            return True
-
-        # Only one file finished: ok if the other contains only blanks
-        elif lres == '' or lout == '':
-            lout = lout.strip(WHITES)
-            lres = lres.strip(WHITES)
-            if lout != '' or lres != '':
-                return False
-
-        # Both file still have lines to go: ok if they agree except
-        # for the number of whitespaces
-        else:
-            lout = white_diff_canonicalize(lout)
-            lres = white_diff_canonicalize(lres)
-            if lout != lres:
-                return False
-
-
-class BatchTaskType:
     def __init__(self, submission, session, file_cacher):
         """
         submission (Submission): the submission to grade.
@@ -165,9 +118,9 @@ class BatchTaskType:
                 logger.error("Unable to decode UTF-8 for string %s." % text)
         return True
 
-    def finish_single_execution(self, test_number, success,
-                                outcome=0, text=""):
-        """Finalize the operation of executing the submission on a
+    def finish_evaluation_testcase(self, test_number, success,
+                                   outcome=0, text=""):
+        """Finalize the operation of evaluating the submission on a
         testcase. Fill the information in the submission and delete
         the sandbox.
 
@@ -188,7 +141,7 @@ class BatchTaskType:
         return True
 
     def finish_evaluation(self, success):
-        """Finalize the operation of evaluation. Currently there is
+        """Finalize the operation of evaluating. Currently there is
         nothing to do.
 
         success (bool): if the evaluation was successfull.
@@ -264,6 +217,34 @@ class BatchTaskType:
         the compilation fails because of environmental problems
         (trying again to compile the same submission in a sane
         environment should lead to returning True).
+
+        return (bool): success of operation.
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
+    def evaluate(self):
+        """Tries to evaluate the specified submission.
+
+        It returns True when *our infrastracture* is successful (i.e.,
+        the actual program may score or not), and False when the
+        evaluation fails because of environmental problems (trying
+        again to compile the same submission in a sane environment
+        should lead to returning True).
+
+        return (bool): success of operation.
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
+
+class BatchTaskType(TaskType):
+    """Task type class for a unique standalone submission source, with
+    comparator (or not).
+
+    """
+    def compile(self):
+        """See TaskType.compile.
 
         return (bool): success of operation.
 
@@ -431,7 +412,7 @@ class BatchTaskType:
             logger.error("Shouldn't arrive here, failing")
         return self.finish_compilation(False)
 
-    def execute_single(self, test_number):
+    def evaluate_testcase(self, test_number):
         self.create_sandbox()
         self.sandbox_operation(
             "create_file_from_storage",
@@ -456,7 +437,8 @@ class BatchTaskType:
         self.sandbox.stdout_file = stdout_filename
         self.sandbox.stderr_file = stderr_filename
 
-        # These syscalls and path are used by executables generated by fpc
+        # These syscalls and paths are used by executables generated
+        # by fpc.
         self.sandbox.allow_path += ["/proc/self/exe"]
         self.sandbox.allow_syscall += ["getrlimit", "rt_sigaction"]
 
@@ -467,17 +449,15 @@ class BatchTaskType:
             "execute_without_std",
             [self.sandbox.relative_path(self.executable_filename)])
 
-        # Detect the outcome of the execution
+        # Detect the outcome of the execution.
         exit_status = self.sandbox.get_exit_status()
-        # exit_code seems to be unused, so I'm commenting it.
-        # exit_code = self.sandbox.get_exit_code()
 
         # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
             with async_lock:
                 logger.info("Execution timed out")
-            return self.finish_single_execution(test_number, True, 0.0,
-                                                "Execution timed out\n")
+            return self.finish_evaluation_testcase(test_number, True, 0.0,
+                                                   "Execution timed out\n")
 
         # Suicide with signal (memory limit, segfault, abort):
         # returning the error to the user
@@ -485,7 +465,7 @@ class BatchTaskType:
             signal = self.sandbox.get_killing_signal()
             with async_lock:
                 logger.info("Execution killed with signal %d" % (signal))
-            return self.finish_single_execution(
+            return self.finish_evaluation_testcase(
                 test_number, True, 0.0,
                 "Execution killed with signal %d\n" % signal)
 
@@ -494,14 +474,14 @@ class BatchTaskType:
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
             with async_lock:
                 logger.error("Evaluation aborted because of sandbox error")
-            return self.finish_single_execution(test_number, False)
+            return self.finish_evaluation_testcase(test_number, False)
 
         # Forbidden syscall: returning the error to the user
         # FIXME - Tell which syscall raised this error
         if exit_status == Sandbox.EXIT_SYSCALL:
             with async_lock:
                 logger.info("Execution killed because of forbidden syscall")
-            return self.finish_single_execution(
+            return self.finish_evaluation_testcase(
                 test_number, True, 0.0,
                 "Execution killed because of forbidden syscall")
 
@@ -511,23 +491,23 @@ class BatchTaskType:
             with async_lock:
                 logger.info("Execution killed "
                             "because of forbidden file access")
-            return self.finish_single_execution(
+            return self.finish_evaluation_testcase(
                 test_number, True, 0.0,
                 "Execution killed because of forbidden file access")
 
-        # Last check before assuming that execution finished
-        # successfully; we accept the execution even if the exit code
+        # Last check before assuming that evaluation finished
+        # successfully; we accept the evaluation even if the exit code
         # isn't 0
         if exit_status != Sandbox.EXIT_OK:
             with async_lock:
                 logger.error("Shouldn't arrive here, failing")
-            return self.finish_single_execution(test_number, False)
+            return self.finish_evaluation_testcase(test_number, False)
 
         if not self.sandbox.file_exists("output.txt"):
             outcome = 0.0
-            text = "Execution didn't produce file output.txt"
-            return self.finish_single_execution(test_number, True, outcome,
-                                                text)
+            text = "Evaluation didn't produce file output.txt"
+            return self.finish_evaluation_testcase(test_number, True, outcome,
+                                                   text)
 
         self.sandbox_operation(
             "create_file_from_storage",
@@ -573,32 +553,29 @@ class BatchTaskType:
                         with async_lock:
                             logger.error("Unable to interpret manager stdout "
                                          "(outcome) as unicode. %s" % repr(e))
-                        return self.finish_single_execution(test_number, False)
+                        return self.finish_evaluation_testcase(test_number,
+                                                               False)
                     try:
                         text = filter_ansi_escape(stderr_file.readline())
                     except UnicodeDecodeError as e:
                         with async_lock:
                             logger.error("Unable to interpret manager stderr "
                                          "(text) as unicode. %s" % repr(e))
-                        return self.finish_single_execution(test_number, False)
+                        return self.finish_evaluation_testcase(test_number,
+                                                               False)
             try:
                 outcome = float(outcome)
             except ValueError:
                 with async_lock:
                     logger.error("Wrong outcome `%s' from manager" % (outcome))
-                return self.finish_single_execution(test_number, False)
+                return self.finish_evaluation_testcase(test_number, False)
 
         # Finally returns the result
-        return self.finish_single_execution(test_number, True, outcome, text)
+        return self.finish_evaluation_testcase(test_number, True,
+                                               outcome, text)
 
-    def execute(self):
-        """Tries to evaluate the specified submission.
-
-        It returns True when *our infrastracture* is successful (i.e.,
-        the actual program may score or not), and False when the
-        evaluation fails because of environmental problems (trying
-        again to compile the same submission in a sane environment
-        should lead to returning True).
+    def evaluate(self):
+        """See TaskType.evaluate.
 
         return (bool): success of operation.
 
@@ -620,7 +597,7 @@ class BatchTaskType:
                                         submission=self.submission))
 
         for test_number in xrange(len(self.submission.task.testcases)):
-            success = self.execute_single(test_number)
+            success = self.evaluate_testcase(test_number)
             if not success:
                 return self.finish_evaluation(False)
         return self.finish_evaluation(True)
