@@ -513,7 +513,17 @@ class TaskType:
 
     def white_diff_step(self, output_filename, correct_output_filename,
                         files_to_get):
-        """
+        """This is like an evaluation_step with final = True (i.e.,
+        returns an outcome and a text). The outcome is 1.0 if and only
+        if the two output files corresponds up to white_diff, 0.0
+        otherwise.
+
+        output_filename (string): the filename of user's output in the
+                                  sandbox.
+        correct_output_filename (string): the same with admin output.
+        files_to_get (dict): files to get from storage.
+        return (bool, float, string): see evaluation_step.
+
         """
         for filename, digest in files_to_get.iteritems():
             self.sandbox_operation("create_file_from_storage",
@@ -573,7 +583,10 @@ class TaskTypeBatch(TaskType):
         # before accepting it.
         language = self.submission.language
 
-        # TODO: up to now we are able to have only one source file.
+        # TODO: here we are sure that submission.files are the same as
+        # task.submission_format. This check shouldn't be here, but in
+        # the definition of the task, since this actually checks that
+        # task's task type and submission format agree.
         if len(self.submission.files) != 1:
             with async_lock:
                 logger.info("Submission contains %d files, expecting 1" %
@@ -673,3 +686,83 @@ class TaskTypeBatch(TaskType):
             if not success:
                 return self.finish_evaluation(False)
         return self.finish_evaluation(True)
+
+
+class TaskTypeOutputOnly(TaskType):
+    """Task type class for output only tasks, with submission composed
+    of testcase_number text files, to be evaluated diffing or using a
+    comparator.
+
+    """
+    def compile(self):
+        """See TaskType.compile.
+
+        return (bool): success of operation.
+
+        """
+        # No compilation needed.
+        return self.finish_compilation(True, True, "No compilation needed.")
+
+    def evaluate_testcase(self, test_number):
+        self.create_sandbox()
+
+        # First and only one step: diffing (manual or with manager).
+        output_digest = [x.digest for x in self.submission.files
+                         if x.filename == "output_%03d.txt"][0]
+        if len(self.submission.task.managers) == 0:
+            # No manager: I'll do a white_diff between the submission
+            # file and the correct output res.txt.
+            success, outcome, text = self.white_diff_step(
+                "output.txt", "res.txt",
+                {"res.txt":
+                 self.submission.task.testcases[test_number].output,
+                 "output.txt": output_digest})
+        else:
+            # Manager present: wonderful, he'll do all the job.
+            manager_filename = self.submission.task.managers.keys()[0]
+            success, outcome, text = self.evaluation_step(
+                ["./%s" % manager_filename,
+                 "input.txt", "res.txt", "output.txt"],
+                {manager_filename:
+                 self.submission.task.managers[manager_filename].digest},
+                {"output.txt": output_digest,
+                 "res.txt": self.submission.task.testcases[test_number].output,
+                 "input.txt":
+                 self.submission.task.testcases[test_number].input},
+                allow_paths=["input.txt", "output.txt", "res.txt"],
+                final=True)
+
+        # Whatever happened, we conclude.
+        self.delete_sandbox()
+        return self.finish_evaluation_testcase(test_number,
+                                               success, outcome, text)
+
+
+    def evaluate(self):
+        """See TaskType.evaluate.
+
+        return (bool): success of operation.
+
+        """
+        if len(self.submission.executables) != 1:
+            with async_lock:
+                logger.info("Submission contains %d executables, "
+                            "expecting 1" %
+                            len(self.submission.executables))
+            return self.finish_evaluation(False)
+
+        self.executable_filename = self.submission.executables.keys()[0]
+
+        for test_number in xrange(len(self.submission.evaluations),
+                                  len(self.submission.task.testcases)):
+            self.session.add(Evaluation(text=None,
+                                        outcome=None,
+                                        num=test_number,
+                                        submission=self.submission))
+
+        for test_number in xrange(len(self.submission.task.testcases)):
+            success = self.evaluate_testcase(test_number)
+            if not success:
+                return self.finish_evaluation(False)
+        return self.finish_evaluation(True)
+
