@@ -14,6 +14,14 @@
     CMSAjaxRPC.prototype =
     {
 
+        __delete_request: function(rid) {
+            if(rid != null) {
+                timeout_id = this.timeout_ids[rid];
+                delete this.timeout_ids[rid];
+                clearTimeout(timeout_id);
+            }
+        },
+
         /**
          * This is called every x millisecs and ask the server if the
          * answer to a request has arrived.
@@ -41,9 +49,7 @@
         {
             if(error != null)
             {
-                timeout_id = this.timeout_ids[rid];
-                delete this.timeout_ids[rid];
-                clearTimeout(timeout_id);
+                this.__delete_request(rid);
                 cb({'status': 'fail'}, 'fail');
             }
             else
@@ -53,9 +59,7 @@
                     response = JSON.parse(response);
                     if (response['status'] != 'wait')
                     {
-                        timeout_id = this.timeout_ids[rid];
-                        delete this.timeout_ids[rid];
-                        clearTimeout(timeout_id);
+                        this.__delete_request(rid);
                     }
                     if (response['status'] == 'ok')
                         cb(response, null);
@@ -64,9 +68,7 @@
                 }
                 catch(e)
                 {
-                    timeout_id = this.timeout_ids[rid];
-                    delete this.timeout_ids[rid];
-                    clearTimeout(timeout_id);
+                    this.__delete_request(rid);
                     cb(null, response);
                 }
             }
@@ -82,27 +84,50 @@
          * cb (function): a function that is going to be called with
          *                the result of the request
          */
-        request: function(service, shard, method, arguments, cb)
+        request: function(service, shard, method, arguments, cb, sync)
         {
-            rid = this.utils.random_string(16);
-            this.timeout_ids[rid] = setInterval(
-                this.__wait_for_answer.bind(this, cb, rid),
-                1000);
+            var got_answer;
+            var rid;
+            if(sync == true)
+            {
+                got_answer = this.__got_sync_answer.bind(this, cb, null)
+            }
+            else
+            {
+                rid = this.utils.random_string(16);
+                this.timeout_ids[rid] = setInterval(
+                    this.__wait_for_answer.bind(this, cb, rid),
+                    1000);
 
-            var got_answer = this.__got_answer.bind(this, cb, rid);
+                var got_answer = this.__got_answer.bind(this, cb, rid);
+            }
 
-            var args = "";
+            var args;
+            var base_url;
+            if(sync == true)
+            {
+                base_url = "sync_rpc_request/";
+                args = "";
+            }
+            else
+            {
+                base_url = "rpc_request/";
+                args = "__rid=" + rid;
+            }
+
             for (var i in arguments)
             {
                 var a = JSON.stringify(arguments[i]).replace("%", "%25");
                 a = a.replace("&", "%26");
                 args += "&" + i + "=" + a;
             }
-            this.utils.ajax_request("rpc_request/" +
+            
+
+            this.utils.ajax_request(base_url +
                                     service + "/" +
                                     shard + "/" +
                                     method,
-                                    "__rid=" + rid + args,
+                                    args,
                                     got_answer
                                    );
         },

@@ -149,6 +149,7 @@ class AdminWebServer(WebService):
                             shard=shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
         self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
+        self.logservice = self.connect_to(ServiceCoord("LogService", 0))
 
     def authorized_rpc(self, service, method, arguments):
         """Used by WebService to check if the browser can call a
@@ -166,6 +167,9 @@ class AdminWebServer(WebService):
             elif method == "workers_status":
                 return True
 
+        if service == ServiceCoord("LogService", 0):
+            if method == "last_messages":
+                return True
         # Default fallback: don't authorize.
         return False
 
