@@ -79,8 +79,8 @@
           {% end %}
         </td>
         <td>
-          {% for filename,sub_file in s.files.items() %}
-          <a href="#" onclick="utils.show_file('{{ filename }}','/submission_file/{{ sub_file.id }}')">{{ filename }}<br/>
+          {% for filename, sub_file in s.files.items() %}
+          <a href="#" onclick="utils.show_file('{{ filename.replace("%l", s.language) }}','/submission_file/{{ sub_file.id }}')">{{ filename.replace("%l", s.language) }}<br/>
           {% end %}
         </td>
         <td>

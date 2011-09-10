@@ -16,7 +16,9 @@
 <h2 id="title_submit_solution" class="toggling_on" onclick="utils.toggle_visibility('submit_solution');">{{ _("Submit a solution") }}</h2>
 <div id="submit_solution">
   <form enctype="multipart/form-data" action="/submit/{{ Cryptographics.encrypt_number(task.id) }}" method="post">
-    <input type="file" name="{{ task.name }}"></input>
+    {% for filename in [x.filename for x in task.submission_format] %}
+    <p>{{ filename.replace(".%l", "") }}:<br/><input type="file" name="{{ filename }}"></input></p>
+    {% end %}
     <input type="submit" value="{{ _("Submit") }}"></input>{% comment _("Submit") %}
   </form>
   <div class="hr"></div>
@@ -128,10 +130,9 @@
           {% end %}
         </td>
         <td>
-          {% for filename,sub_file in s.files.items() %}
-          <a href="#"
-             onclick="utils.show_file('{{ filename }}', '/submission_file/{{ Cryptographics.encrypt_number(sub_file.id) }}');">
-              {{ escape(filename) }}
+          {% for filename, sub_file in s.files.items() %}
+          <a href="#" onclick="utils.show_file('{{ filename.replace("%l", s.language) }}', '/submission_file/{{ Cryptographics.encrypt_number(sub_file.id) }}');">
+             {{ filename.replace("%l", s.language) }}
           </a>
           <br/>
           {% end %}

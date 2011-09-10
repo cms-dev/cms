@@ -568,17 +568,10 @@ class TaskTypeBatch(TaskType):
         return (bool): success of operation.
 
         """
-        # Detect the submission's language and check that it satisfies
-        # the formal requirement for a submission (exact number of
-        # files, correct extensions, ...)
-        # TODO: this should be done before, no need to arrive to a
-        # worker to check.
-        valid, language = self.submission.verify_source()
-        if not valid or language is None:
-            with async_lock:
-                logger.info("Invalid submission or couldn't detect language")
-            return self.finish_compilation(True, False,
-                                           "Invalid files in submission")
+        # Detect the submission's language. The checks about the
+        # formal correctedness of the submission are done in CWS,
+        # before accepting it.
+        language = self.submission.language
 
         # TODO: up to now we are able to have only one source file.
         if len(self.submission.files) != 1:
@@ -590,14 +583,15 @@ class TaskTypeBatch(TaskType):
 
         # First and only one compilation.
         self.create_sandbox()
-        source_filename = self.submission.files.keys()[0]
-        executable_filename = source_filename.replace(".%s" % (language), "")
+        format_filename = self.submission.files.keys()[0]
+        source_filename = format_filename.replace("%l", language)
+        executable_filename = format_filename.replace(".%l", "")
         command = get_compilation_command(language,
                                           source_filename,
                                           executable_filename)
         operation_success, compilation_success, text = self.compilation_step(
             command,
-            {source_filename: self.submission.files[source_filename].digest},
+            {source_filename: self.submission.files[format_filename].digest},
             {executable_filename: "Executable %s for submission %s" %
              (executable_filename, self.submission.id)})
         self.delete_sandbox()
