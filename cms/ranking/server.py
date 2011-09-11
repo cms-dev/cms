@@ -25,6 +25,7 @@ import json
 import functools
 import submissions
 import time
+import os
 from operator import attrgetter
 
 def create_handler(entity_store):
