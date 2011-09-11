@@ -31,7 +31,7 @@
 
  "_DB choice": "Please uncomment exactly one of the following; the first is the PostgreSQL server, the second is the name of the SQLite file (SQLite can be used only when everything runs on the same machine, and the path is decided by us). If a %s is present in the value, we will replace it with data_dir.",
  "database":         "postgresql://username:password@localhost/database",
- "_database":        "sqlite://%sdatabase.sqlite",
+ "_database":        "sqlite:///%s/database.sqlite",
  "database_debug":   true,
 
  "keep_sandbox":     true,
@@ -43,7 +43,7 @@
  "min_submission_interval":   60,
 
  "color_shell_log":        true,
- "color_file_log": 	   false,
+ "color_file_log":         false,
  "color_remote_shell_log": true,
  "color_remote_file_log":  true,
 
