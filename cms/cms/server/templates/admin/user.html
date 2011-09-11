@@ -30,6 +30,39 @@ function update_additional_answer(element, invoker)
 {% block core %}
 
 <h1>{{ selected_user.real_name }} ({{ selected_user.username }})</h1>
+
+<h2 id="title_general_info" class="toggling_on" onclick="utils.toggle_visibility('general_info');">General Information</h2>
+<div id="general_info">
+  <form action="/user/{{ selected_user.id }}" method="POST">
+    <table>
+      <tr>
+        <td>Real name</td>
+        <td><input type="text" name="real_name" value="{{ selected_user.real_name }}"/></td>
+      </tr>
+      <tr>
+        <td>Username</td>
+        <td><input type="text" name="username" value="{{ selected_user.username }}"/></td>
+      </tr>
+      <tr>
+        <td>Password</td>
+        <!-- FIXME: Plain text? -->
+        <td><input type="text" name="password" value="{{ selected_user.password }}"/></td>
+      </tr>
+      <tr>
+        <td>IP</td>
+        <td><input type="text" name="ip" value="{{ selected_user.ip }}"/></td>
+      </tr>
+      <tr>
+        <td>Hidden?</td>
+        <td><input type="checkbox" name="hidden" {% if selected_user.hidden %} checked {% end %}/></td>
+      </tr>
+    </table>
+    <input type="submit" value="{{ _("Edit") }}"/>
+    <input type="reset"/>
+  </form>
+</div>
+
+
 <h2 id="title_submissions" class="toggling_on" onclick="utils.toggle_visibility('submissions');">Submissions</h2>
 <div id="submissions">
 
@@ -183,8 +216,14 @@ function update_additional_answer(element, invoker)
       <div class="notification communication">
         <form id="send_message_form" action="/message/{{selected_user.id}}" method="POST">
           <div class="notification_msg">
-            <div class="notification_subject">Subject: <input id="send_message_subject" type="text" name="message_subject"></div>
-            <div class="notification_text">Text: <textarea name="message_text"></textarea></div>
+            <div class="notification_subject">
+              Subject: 
+              <input id="send_message_subject" type="text" name="message_subject" style="width: 100%" />
+            </div>
+            <div class="notification_text">
+              Text: 
+              <textarea name="message_text" style="width: 100%" ></textarea>
+            </div>
           <input type="submit" value="Send"/>
           </div>
         </form>

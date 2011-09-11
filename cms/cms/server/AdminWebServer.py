@@ -179,6 +179,16 @@ class AdminWebServer(WebService):
         # Default fallback: don't authorize.
         return False
 
+    def add_notification(self, timestamp, subject, text):
+        """Store a new notification to send at the first
+        opportunity (i.e., at the first request for db notifications).
+
+        timestamp (int): the time of the notification.
+        subject (string): subject of the notification.
+        text (string): body of the notification.
+
+        """
+        self.notifications.append((timestamp, subject, text))
 
 class MainHandler(BaseHandler):
     """Home page handler, with queue and workers statuses.
@@ -420,6 +430,36 @@ class UserViewHandler(BaseHandler):
         r_params["submissions"] = user.submissions
         self.render("user.html", **r_params)
 
+    def post(self, user_id):
+        user = User.get_from_id(user_id, self.sql_session)
+        if user == None:
+            raise tornado.web.HTTPError(404)
+        self.contest = user.contest
+        user.real_name = self.get_argument("real_name", user.real_name)
+        username = self.get_argument("username", user.username)
+
+        # Prevent duplicate usernames in the contest.
+        for u in self.contest.users:
+            if u.username != user.username and u.username == username:
+                self.application.service.add_notification(int(time.time()),
+                    "Duplicate username",
+                    "The requested username already exists in the contest.")
+                self.redirect("/user/"+str(user.id))
+                return
+        user.username = username
+
+        user.password = self.get_argument("password", user.password)
+
+        # FIXME: Check IP validity
+        user.ip = self.get_argument("ip", user.ip)
+
+        user.hidden = self.get_argument("hidden", False) != False
+
+        self.sql_session.commit()
+        self.application.service.add_notification(int(time.time()),
+            "User updated successfully.",
+            "")
+        self.redirect("/user/"+str(user.id))
 
 class SubmissionDetailHandler(BaseHandler):
     """Shows additional details for the specified submission.
@@ -619,13 +659,12 @@ class NotificationsHandler(BaseHandler):
                         "text": question.text})
 
         # Simple notifications
-        notifications = self.application.service.notifications
-        for notification in notifications:
+        for notification in self.application.service.notifications:
             res.append({"type": "notification",
                         "timestamp": notification[0],
-                        "subject": "New question: " + notification[1],
+                        "subject": notification[1],
                         "text": notification[2]})
-        notifications = []
+        self.application.service.notifications = []
 
         self.write(simplejson.dumps(res))
 

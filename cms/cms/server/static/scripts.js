@@ -145,6 +145,8 @@
                 s += 'Announcement. ';
             else if (type == "question")
                 s += 'Reply to your question. ';
+            else if (type == "new_question")
+                s += 'New question: ';
 
             s += subject + '</div>';
             s += '<div class="notification_text">' + text + '</div>';
