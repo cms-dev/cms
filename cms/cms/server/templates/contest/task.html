@@ -114,7 +114,7 @@
               <tbody>
                 {% for ev in s.evaluations %}
                   {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
-                  <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td></tr>
+                  <tr><td>{{ ev.outcome }}</td><td>{{ ev.text }}</td></tr>
                   {% end %}
                 {% end %}
                 {% if s.token is None and not any([testcase.public for testcase in s.task.testcases]) %}
@@ -124,7 +124,7 @@
             </table>
             {% end %}
             <h3>{{ _("Compilation output") }}</h3><!-- TODO: trim long outputs and add facility to see raw -->
-            <pre>{% if s.compilation_text is not None %}{{ escape(s.compilation_text) }}{% end %}</pre>
+            <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
           </div>
 
           {% end %}
