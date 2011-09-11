@@ -72,6 +72,46 @@ function update_workers_status(response)
         table.insertRow(-1).innerHTML = "<td colspan='5'>Unexpected reply. This should not happen.</td>";
 };
 
+function update_logs(response)
+{
+    var table = document.getElementById("logs_table");
+    while(table.rows.length > 1)
+        table.deleteRow(1);
+
+    if (response['status'] == 'unconnected')
+        table.insertRow(-1).innerHTML = "<td colspan='5'>LogService not connected.</td>";
+    else if (response['status'] == 'not authorized')
+        table.insertRow(-1).innerHTML = "<td colspan='5'>You are not authorized to see the logs.</td>";
+    else if (response['status'] == 'fail')
+        table.insertRow(-1).innerHTML = "<td colspan='5'>Call to LogService failed.</td>";
+    else if (response['status'] == 'ok')
+    {
+        if (response['data'].length == 0)
+            table.insertRow(-1).innerHTML = "<td colspan='5'>No log entries.</td>";
+        else
+        {
+            response['data'] = response['data'].reverse()
+            for (i in response['data'])
+            {
+                var row = table.insertRow(-1);
+                var message = response['data'][i]['message'];
+                var coord = response['data'][i]['coord'];
+                var operation = response['data'][i]['operation'];
+                var severity = response['data'][i]['severity'];
+                var timestamp = utils.format_time_or_date(response['data'][i]['timestamp']);
+
+                row.innerHTML = '<td>' + timestamp + '</td>' +
+                    '<td>' + severity + '</td>' +
+                    '<td>' + coord + '</td>' +
+                    '<td>' + operation + '</td>' +
+                    '<td>' + message + '</td>';
+            }
+        }
+    }
+    else
+        table.insertRow(-1).innerHTML = "<td colspan='5'>Unexpected reply. This should not happen.</td>";
+}
+
 function update_statuses()
 {
 
@@ -83,6 +123,10 @@ function update_statuses()
                    "workers_status",
                    {},
                    update_workers_status);
+    cmsrpc.request("LogService", 0,
+                   "last_messages",
+                   {},
+                   update_logs);
 }
 
 {% end %}
@@ -124,5 +168,21 @@ update_statuses();
     <th>Since</th>
   </tr>
 </table>
+
+</div>
+
+<h2 id="title_logs" class="toggling_on" onclick="utils.toggle_visibility('logs');">Logs</h2>
+<div id="logs">
+
+<table id="logs_table" class="sub_table">
+  <tr>
+    <th>Timestamp</th>
+    <th>Severity</th>
+    <th>Service</th>
+    <th>Operation</th>
+    <th>Message</th>
+  </tr>
+</table>
+
 </div>
 {% end %}

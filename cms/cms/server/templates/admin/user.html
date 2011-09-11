@@ -145,7 +145,7 @@ function update_additional_answer(element, invoker)
         <div class="reply_question" >
           <hr/>
           <form class="reply_question_form" action="/question/{{msg.id}}" method="POST">
-            <input type="hidden" name="ref" value="/user/{{user.id}}"/>
+            <input type="hidden" name="ref" value="/user/{{selected_user.id}}"/>
             Precompiled answer:
             <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
               <option value="yes">Yes</option>
