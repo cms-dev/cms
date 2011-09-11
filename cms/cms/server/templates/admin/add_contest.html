@@ -1,15 +1,64 @@
 {% extends base.html %}
 
+{% block js %}
+
+function contest_response(response, error)
+{
+    if( error == null && response != null  && !isNaN(response))
+        window.location = "/contest/" + response;
+    else
+    {
+        utils.display_notification("error", new Date().getTime() / 1000, error, response);
+    }
+}
+
+function validate_contest()
+{
+    var name = document.add_contest.name.value;
+    var description = document.add_contest.description.value;
+    var token_initial = document.add_contest.token_initial.value;
+    var token_max = document.add_contest.token_max.value;
+    var token_total = document.add_contest.token_total.value;
+    var token_min_interval = document.add_contest.token_min_interval.value;
+    var token_gen_time = document.add_contest.token_gen_time.value;
+    var token_gen_number = document.add_contest.token_gen_number.value;
+    var start = document.add_contest.start.value;
+    var end = document.add_contest.end.value;
+
+    if( name === undefined || name == '')
+    {
+        alert('No contest name specified');
+        document.add_contest.name.focus();
+        return false;
+    }
+
+    par = "";
+    par += "&name="+encodeURIComponent(name);
+    par += "&description="+encodeURIComponent(description);
+    par += "&token_initial="+encodeURIComponent(token_initial);
+    par += "&token_max="+encodeURIComponent(token_max);
+    par += "&token_total="+encodeURIComponent(token_total);
+    par += "&token_min_interval="+encodeURIComponent(token_min_interval);
+    par += "&token_gen_time="+encodeURIComponent(token_gen_time);
+    par += "&token_gen_number="+encodeURIComponent(token_gen_number);
+    par += "&start="+encodeURIComponent(start);
+    par += "&end="+encodeURIComponent(end);
+
+    cmsutils.ajax_request('/contest/add', par, contest_response, "POST");
+    return false;
+}
+{% end %}
+
 {% block core %}
 <div class="core_title">
-  <h1>Add contest</h1>
+  <h1>New contest</h1>
 </div>
 
-<form name="add_contest" action="/add_contest" method="POST">
+<form name="add_contest" action="/contest/add" method="POST" onsubmit="return validate_contest();">
   <table class="sub_table">
     <tr>
       <td>Name</td>
-      <td><input type="text" name="name"></td>
+      <td><input type="text" name="name" /></td>
     </tr>
     <tr>
       <td>Description</td>
@@ -17,56 +66,38 @@
     </tr>
     <tr>
       <td>Initial number of tokens</td>
-      <td><input type="text" name="token_initial" size=3></td>
+      <td><input type="text" name="token_initial" size="3" value="0"/></td>
     </tr>
     <tr>
       <td>Maximum accumulated tokens</td>
-      <td><input type="text" name="token_max" size=3></td>
+      <td><input type="text" name="token_max" size="3" /></td>
     </tr>
     <tr>
       <td>Total number of tokens</td>
-      <td><input type="text" name="token_total" size=3></td>
+      <td><input type="text" name="token_total" size="3" /></td>
     </tr>
     <tr>
-      <td>Interval between tokens</td>
-      <td>
-        <select name="min_interval_hour">
-          {% for hour in range(0,24) %}
-          <option>{{ hour }}</option>
-          {% end %}
-        </select> hours</br>
-        <select name="min_interval_minute">
-          {% for minute in range(0,60) %}
-          <option>{{ minute }}</option>
-          {% end %}
-        </select> minutes</br>
-      </td>
+      <td>Minimum interval between tokens</td>
+      <td><input type="text" name="token_min_interval" size="3" /></td>
     </tr>
     <tr>
       <td>Token generation period</td>
-      <td>
-        <select name="token_gen_hour">
-          {% for hour in range(0,24) %}
-          <option>{{ hour }}</option>
-          {% end %}
-        </select> hours</br>
-        <select name="token_gen_minute">
-          {% for minute in range(0,60) %}
-          <option>{{ minute }}</option>
-          {% end %}
-        </select> minutes</br>
-      </td>
+      <td><input type="text" name="token_gen_time" size="3" /></td>
+    </tr>
+    <tr>
+      <td>Token generation number</td>
+      <td><input type="text" name="token_gen_number" size="3" /></td>
     </tr>
     <tr>
       <td>Start</td>
-      <td><input type="text" name="start" value="{{ datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")}}"></td>
+      <td><input type="text" name="start" value="{{ datetime.datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
     </tr>
     <tr>
       <td>End</td>
-      <td><input type="text" name="end" value="{{ datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")}}"></td>
+      <td><input type="text" name="end" value="{{ datetime.datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
     </tr>
   </table>
-  <input type="submit">
+  <input type="submit"><input type="reset" value="Reset">
 </form>
 {% end %}
 

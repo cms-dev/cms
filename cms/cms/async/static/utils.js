@@ -36,10 +36,11 @@
          * Perform an AJAX request.
          *
          * url (string): the url of the resource
-         * par (string): the GET arguments already encoded
+         * par (string): the arguments already encoded
          * cb (function): the function to call with the response
+         * method (string) : the HTTP method (default GET)
          */
-        ajax_request: function(url, par, cb)
+        ajax_request: function(url, par, cb, method)
         {
             var xmlhttp;
             if (window.XMLHttpRequest)
@@ -58,8 +59,17 @@
                         cb(null, xmlhttp.status);
                 }
             }
-            xmlhttp.open("GET", url + "?" + par, true);
-            xmlhttp.send();
+            if( method == "POST" )
+            {
+                xmlhttp.open("POST", url, true);
+                xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+                xmlhttp.send(par);
+            }
+            else
+            {
+                xmlhttp.open("GET", url + "?" + par, true);
+                xmlhttp.send();
+            }
         },
 
         /**

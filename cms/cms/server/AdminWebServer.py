@@ -210,6 +210,68 @@ class ContestViewHandler(BaseHandler):
         r_params = self.render_params()
         self.render("contest.html", **r_params)
 
+class AddContestHandler(BaseHandler):
+    """Adds a new contest.
+    
+    """
+    def get(self):
+        r_params = self.render_params()
+        self.render("add_contest.html", **r_params)
+
+    def post(self):
+
+        name = self.get_argument("name", "")
+        if name == "":
+            self.write("No contest name specified");
+            return
+
+        description = self.get_argument("description", None)
+
+        try:
+            token_initial = self.get_non_negative_int(
+                "token_initial",
+                0,
+                allow_empty=False)
+            token_max = self.get_non_negative_int(
+                "token_max",
+                None)
+            token_total = self.get_non_negative_int(
+                "token_total",
+                None)
+            token_min_interval = self.get_non_negative_int(
+                "token_min_interval",
+                None)
+            token_gen_time = self.get_non_negative_int(
+                "token_gen_time",
+                None)
+            token_gen_number = self.get_non_negative_int(
+                "token_gen_number",
+                None)
+        except Exception as e:
+            self.write("Invalid token field(s): " + repr(e))
+            return
+
+        try:
+            start = time.mktime(time.strptime(self.get_argument("start", ""),
+                                              "%d/%m/%Y %H:%M:%S"))
+            stop = time.mktime(time.strptime(self.get_argument("end", ""),
+                                             "%d/%m/%Y %H:%M:%S"))
+        except Exception as e:
+            self.write("Invalid date(s)." + repr(e))
+            return
+
+        if start > stop:
+            self.write("Contest ends before it starts")
+            return
+
+        c = Contest(name, description, [], [], token_initial,
+            token_max, token_total, token_min_interval,
+            token_gen_time, token_gen_number, start, stop)
+
+        self.sql_session.add(c)
+        self.sql_session.commit()
+        self.write(str(c.id))
+
 
 class TaskViewHandler(BaseHandler):
     """Task handler, with a POST method to edit the task.
@@ -311,7 +373,9 @@ class EditContestHandler(BaseHandler):
 
         name = self.get_argument("name", "")
         if name == "":
-            self.write("No contest name specified")
+            self.application.service.add_notification(int(time.time()),
+                "No contest name specified", "")
+            self.redirect("/contest/" + contest_id)
             return
 
         description = self.get_argument("description", None)
@@ -334,8 +398,13 @@ class EditContestHandler(BaseHandler):
             token_gen_time = self.get_non_negative_int(
                 "token_gen_time",
                 self.contest.token_gen_time)
+            token_gen_number = self.get_non_negative_int(
+                "token_gen_number",
+                self.contest.token_gen_number)
         except Exception as e:
-            self.write("Invalid token field(s): " + repr(e))
+            self.application.service.add_notification(int(time.time()),
+                "Invalid token field(s)", repr(e))
+            self.redirect("/contest/" + contest_id)
             return
 
         try:
@@ -344,11 +413,15 @@ class EditContestHandler(BaseHandler):
             stop = time.mktime(time.strptime(self.get_argument("end", ""),
                                              "%d/%m/%Y %H:%M:%S"))
         except Exception as e:
-            self.write("Invalid date(s)." + repr(e))
+            self.application.service.add_notification(int(time.time()),
+                "Invalid date(s)", repr(e))
+            self.redirect("/contest/" + contest_id)
             return
 
         if start > stop:
-            self.write("Contest ends before it starts")
+            self.application.service.add_notification(int(time.time()),
+                "Contest ends before it starts", repr(e))
+            self.redirect("/contest/" + contest_id)
             return
 
         self.contest.name = name
@@ -358,6 +431,7 @@ class EditContestHandler(BaseHandler):
         self.contest.token_total = token_total
         self.contest.token_min_interval = token_min_interval
         self.contest.token_gen_time = token_gen_time
+        self.contest.token_gen_number = token_gen_number
         self.contest.start = start
         self.contest.stop = stop
 
@@ -675,8 +749,8 @@ handlers = [(r"/",
              MainHandler),
             (r"/announcements/([0-9]+)",
              AnnouncementsHandler),
-            # (r"/addcontest",
-            #  AddContestHandler),
+            (r"/contest/add",
+             AddContestHandler),
             (r"/contest/([0-9]+)",
              ContestViewHandler),
             (r"/contest/edit/([0-9]+)",
