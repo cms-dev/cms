@@ -101,7 +101,13 @@ window.onload = init;
             <li class="menu_entry"><a class="menu_link" href="/contest/{{ contest.id }}">General</a></li>
             <li class="menu_entry"><a class="menu_link" href="/announcements/{{ contest.id }}">Announcements</a></li>
             <li class="menu_entry"><a class="menu_link" href="/userlist/{{ contest.id }}">Users</a></li>
-            <li class="menu_entry"><a class="menu_link" href="/questions/{{ contest.id }}">Questions</a></li>
+            <li class="menu_entry">
+              <span id="unanswered_questions" class="unread" 
+                {% if unanswered == 0 %} style="display: none;" {% end %}>
+                {{ unanswered }}
+              </span>
+              <a class="menu_link" href="/questions/{{ contest.id }}">Questions</a>
+            </li>
           </ul>
           <div class="hr"></div>
           <div class="sidebar_left">Tasks:</div>

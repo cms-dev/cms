@@ -107,8 +107,8 @@
 
 ** AdminWebServer
 
-* LOW: show last logs, or anyway alert when we get log >= warning.
-
+* LOW: alert when we get log >= warning 
+  
 * LOW: show resource usage of all the boxes.
 
 

@@ -403,11 +403,6 @@ table.bordered tbody tr:nth-child(odd) {
     border: 0.143em solid #53637D;
 }
 
-.notifications .answered {
-    background-color: #EAF3EE;
-    border: 0.143em solid #537D63;
-}
-
 .notifications .notification_msg {
     padding: 0.429em;
 }
@@ -537,6 +532,12 @@ body.admin .notifications .communication {
     background-color: #EEF3EA;
     border: 0.143em solid #637D53;
 }
+
+body.admin .notifications .answered {
+    background-color: #DDDDDD;
+    border: 0.143em solid #555555;
+}
+
 
 body.admin .notifications .notification_close {
     background-color: #E475FF;

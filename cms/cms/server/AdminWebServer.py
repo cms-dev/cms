@@ -86,6 +86,12 @@ class BaseHandler(tornado.web.RequestHandler):
         params["contest"] = self.contest
         if self.contest is not None:
             params["phase"] = self.contest.phase(params["timestamp"])
+            params["unanswered"] = self.sql_session.query(Question)\
+                                    .join(User)\
+                                    .filter(User.contest_id == \
+                                    self.contest.id)\
+                                    .filter(Question.reply_timestamp == None)\
+                                    .count()
         params["contest_list"] = self.sql_session.query(Contest).all()
         params["cookie"] = str(self.cookies)
         return params
