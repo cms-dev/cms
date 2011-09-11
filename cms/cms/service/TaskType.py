@@ -32,6 +32,7 @@ compilation and the evaluation are contained in the task type class.
 
 import os
 import codecs
+import simplejson
 
 from cms.async.AsyncLibrary import logger, async_lock
 from cms.box.Sandbox import Sandbox
@@ -62,9 +63,10 @@ class TaskTypes:
 
         """
         if submission.task.task_type == TaskTypes.TASK_TYPE_BATCH:
-            return TaskTypeBatch(submission,
-                                 submission.task.task_type_parameters,
-                                 session, file_cacher)
+            return TaskTypeBatch(
+            submission,
+            simplejson.loads(submission.task.task_type_parameters),
+            session, file_cacher)
         else:
             raise KeyError
 
@@ -371,7 +373,9 @@ class TaskType:
 
     def evaluation_step(self, command, executables_to_get,
                         files_to_get, time_limit=0, memory_limit=None,
-                        allow_paths=[], final=False):
+                        allow_path=[],
+                        stdin_redirect=None, stdout_redirect=None,
+                        final=False):
         """Execute an evaluation command in the sandbox. Note that in
         some task types, there may be more than one evaluation
         commands (per testcase) (in others there can be none, of
@@ -387,8 +391,8 @@ class TaskType:
                              by the filenames they should be put in.
         time_limit (float): time limit in seconds.
         memory_limit (int): memory limit in MB.
-        allow_paths (list): list of relative paths accessible in the
-                            sandbox.
+        allow_path (list): list of relative paths accessible in the
+                           sandbox.
         final (bool): if True, return last stdout and stderr as
                       outcome and text, respectively.
         return (bool, float, string): True if the evaluation was
@@ -413,12 +417,15 @@ class TaskType:
         self.sandbox.timeout = self.submission.task.time_limit
         self.sandbox.address_space = self.submission.task.memory_limit * 1024
         self.sandbox.file_check = 1
-        self.sandbox.allow_path = ["input.txt", "output.txt"]
+        self.sandbox.allow_path = allow_path
+        self.sandbox.stdin_file = stdin_redirect
+        self.sandbox.stdout_file = stdout_redirect
         stdout_filename = os.path.join(self.sandbox.path,
                                        "stdout.txt")
         stderr_filename = os.path.join(self.sandbox.path,
                                        "stderr.txt")
-        self.sandbox.stdout_file = stdout_filename
+        if self.sandbox.stdout_file is None:
+            self.sandbox.stdout_file = stdout_filename
         self.sandbox.stderr_file = stderr_filename
         # These syscalls and paths are used by executables generated
         # by fpc.
@@ -456,7 +463,9 @@ class TaskType:
                 logger.error("Evaluation aborted because of sandbox error.")
             return False, None, None
 
-        # Forbidden syscall: returning the error to the user.
+        # Forbidden syscall: returning the error to the user. Note:
+        # this can be triggered also while allocating too much memory
+        # dynamically (offensive syscall is mprotect).
         # FIXME - Tell which syscall raised this error.
         if exit_status == Sandbox.EXIT_SYSCALL:
             with async_lock:
@@ -571,6 +580,18 @@ class TaskTypeBatch(TaskType):
     """Task type class for a unique standalone submission source, with
     comparator (or not).
 
+    Parameters needs to be a list, whose first element is 'diff',
+    'comp' or 'grad', meaning that:
+    - the user source is compiled alone and the output is checked with
+      white diff if par[0] == 'diff';
+    - the same with check done with a comparator if par[0] == 'comp';
+    - the user source is compiled with the grader that also takes care
+      of assigning the outcome if par[0] == 'grad'.
+
+    In the first two cases, there is a second element which can be
+    'file' or 'nofile', meaning that the io of the user program is
+    done with 'input.txt' and 'output.txt' or with stdin and stdout.
+
     """
     def compile(self):
         """See TaskType.compile.
@@ -584,9 +605,9 @@ class TaskTypeBatch(TaskType):
         language = self.submission.language
 
         # TODO: here we are sure that submission.files are the same as
-        # task.submission_format. This check shouldn't be here, but in
-        # the definition of the task, since this actually checks that
-        # task's task type and submission format agree.
+        # task.submission_format. The following check shouldn't be
+        # here, but in the definition of the task, since this actually
+        # checks that task's task type and submission format agree.
         if len(self.submission.files) != 1:
             with async_lock:
                 logger.info("Submission contains %d files, expecting 1" %
@@ -596,15 +617,24 @@ class TaskTypeBatch(TaskType):
 
         # First and only one compilation.
         self.create_sandbox()
+        files_to_get = {}
         format_filename = self.submission.files.keys()[0]
-        source_filename = format_filename.replace("%l", language)
+        source_filenames = [format_filename.replace("%l", language)]
+        files_to_get[source_filenames[0]] = \
+            self.submission.files[format_filename].digest
+        # If a grader is specified, we add to the command line the
+        # corresponding manager.
+        if self.parameters[0] == "grad":
+            source_filenames.append("grader.%s" % language)
+            files_to_get[source_filenames[1]] = \
+                self.submission.manager["grader.%s" % language].digest
         executable_filename = format_filename.replace(".%l", "")
         command = get_compilation_command(language,
-                                          source_filename,
+                                          source_filenames,
                                           executable_filename)
         operation_success, compilation_success, text = self.compilation_step(
             command,
-            {source_filename: self.submission.files[format_filename].digest},
+            files_to_get,
             {executable_filename: "Executable %s for submission %s" %
              (executable_filename, self.submission.id)})
         self.delete_sandbox()
@@ -617,31 +647,51 @@ class TaskTypeBatch(TaskType):
     def evaluate_testcase(self, test_number):
         self.create_sandbox()
 
-        # First step: execute the contestant program.
+        # First step: execute the contestant program. This is also the
+        # final step if w have a grader, otherwise we need to run also
+        # a white_diff or a comparator.
+        command = ["./%s" % self.executable_filename]
+        executables_to_get = {
+            self.executable_filename:
+            self.submission.executables[self.executable_filename].digest
+            }
+        files_to_get = {
+            "input.txt": self.submission.task.testcases[test_number].input
+            }
+        if self.parameters[0] == "grad" or self.parameters[1] == "nofile":
+            stdin_redirect = "input.txt"
+            stdout_redirect = "output.txt"
+            allow_path = []
+        else:
+            stdin_redirect = None
+            stdout_redirect = None
+            allow_path = ["input.txt", "output.txt"]
         success, outcome, text = self.evaluation_step(
-            ["./%s" % self.executable_filename],
-            {self.executable_filename:
-             self.submission.executables[self.executable_filename].digest},
-            {"input.txt": self.submission.task.testcases[test_number].input},
+            command,
+            executables_to_get,
+            files_to_get,
             self.submission.task.time_limit,
             self.submission.task.memory_limit,
-            ["input.txt", "output.txt"])
-        # If an error occur (our or contestant's), return immediately.
-        if not success or outcome is not None:
+            allow_path,
+            stdin_redirect=stdin_redirect,
+            stdout_redirect=stdout_redirect,
+            final=(self.parameters[0] == "grad"))
+        # If an error occur (our or contestant's), or we have a
+        # grader, return immediately.
+        if not success or outcome is not None or self.parameters[0] == "grad":
             self.delete_sandbox()
             return self.finish_evaluation_testcase(test_number,
                                                    success, outcome, text)
 
         # Second step: diffing (manual or with manager).
-        if len(self.submission.task.managers) == 0:
-            # No manager: I'll do a white_diff between output.txt and
-            # res.txt.
+        if self.parameters[0] == "diff":
+            # We white_diff output.txt and res.txt.
             success, outcome, text = self.white_diff_step(
                 "output.txt", "res.txt",
                 {"res.txt":
                  self.submission.task.testcases[test_number].output})
-        else:
-            # Manager present: wonderful, he'll do all the job.
+        elif self.parameters[0] == "comp":
+            # Manager present: wonderful, it'll do all the job.
             manager_filename = self.submission.task.managers.keys()[0]
             success, outcome, text = self.evaluation_step(
                 ["./%s" % manager_filename,
@@ -650,7 +700,7 @@ class TaskTypeBatch(TaskType):
                  self.submission.task.managers[manager_filename].digest},
                 {"res.txt":
                  self.submission.task.testcases[test_number].output},
-                allow_paths=["input.txt", "output.txt", "res.txt"],
+                allow_path=["input.txt", "output.txt", "res.txt"],
                 final=True)
 
         # Whatever happened, we conclude.
@@ -729,7 +779,7 @@ class TaskTypeOutputOnly(TaskType):
                  "res.txt": self.submission.task.testcases[test_number].output,
                  "input.txt":
                  self.submission.task.testcases[test_number].input},
-                allow_paths=["input.txt", "output.txt", "res.txt"],
+                allow_path=["input.txt", "output.txt", "res.txt"],
                 final=True)
 
         # Whatever happened, we conclude.
