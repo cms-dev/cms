@@ -103,10 +103,14 @@ class _Contest(_Entity):
         try:
             assert type(data) is dict
             assert type(data['name']) is unicode
+            assert type(data['begin']) is int
+            assert type(data['end']) is int
         except (KeyError, AssertionError):
             raise InvalidData
         # load
         self.name = data['name']
+        self.begin = data['begin']
+        self.end = data['end']
 
     def dump(self):
         """Return a dict with all properties of the entity.
@@ -141,16 +145,18 @@ class _Task(_Entity):
             assert type(data['name']) is unicode
             assert type(data['contest']) is unicode
             assert type(data['score']) is float
-            assert type(data['data_headers']) is list
-            for i in data['data_headers']:
+            assert type(data['extra_headers']) is list
+            for i in data['extra_headers']:
                 assert type(i) is unicode
+            assert type(data['order']) is int
         except (KeyError, AssertionError):
             raise InvalidData
         # load
         self.name = data['name']
         self.contest = data['contest']
         self.score = data['score']
-        self.data_headers = data['data_headers']
+        self.extra_headers = data['extra_headers']
+        self.order = data['order']
 
     def dump(self):
         """Return a dict with all properties of the entity.
@@ -328,7 +334,7 @@ class EntityStore(object):
         if not isinstance(key, unicode) or key in self._store:
             raise InvalidKey
         # create entity
-        self._store[key] = self._entity(data)
+        self._store[key] = self._entity(json.loads(data))
         # notify callbacks
         for callback in self._create_callbacks:
             callback(key)
@@ -358,7 +364,7 @@ class EntityStore(object):
         if not isinstance(key, unicode) or not key in self._store:
             raise InvalidKey
         # update entity
-        self._store[key] = self._entity(data)
+        self._store[key] = self._entity(json.loads(data))
         # notify callbacks
         for callback in self._update_callbacks:
             callback(key)
@@ -411,7 +417,14 @@ class EntityStore(object):
         if not isinstance(key, unicode) or not key in self._store:
             raise InvalidKey
         # retrieve entity
-        return self._store[key]
+        return json.dumps(self._store[key].dump())
+
+    def list(self):
+        """List all entities."""
+        result = dict()
+        for key, data in self._store.iteritems():
+            result[key] = data.dump()
+        return json.dumps(result)
 
 contest_store = EntityStore(_Contest, 'contests/')
 task_store = EntityStore(_Task, 'tasks/')
