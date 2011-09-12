@@ -1,6 +1,7 @@
 body
 {
-    font: 0.75em/1.5em sans-serif;
+    /* FIXME: I'd suggest putting a 0.75em font-size */
+    font: 1em/1.5em sans-serif;
 
     background-color: #F6F6F6;
     background-image: -webkit-linear-gradient(#FFFFFF, #EDEDED);
@@ -14,7 +15,8 @@ body
     overflow-y: scroll;
 }
 
-body.user_panel
+body.user_panel,
+body.team_search
 {
     overflow: hidden;
 }
@@ -60,7 +62,7 @@ a
     top: -2px;
     left: 248px;
     right: -2px;
-    height: 36px;
+    height: 3em;
     border: 2px solid #FAFAFA;
     border-radius: 0 0 0 10px;
     background-color: #EAEAEC;
@@ -79,12 +81,119 @@ a
     border-radius: 0 10px 10px 0;
     background-color: #EAEAEC;
     box-shadow: 0 0 2px 0 gray;
-    z-index: 9;
+    z-index: 8;
 }
 
 .inner_frame
 {
-    margin: 74px 36px 60px 260px;
+    margin: 6em 36px 60px 260px;
+    padding: 2px 0 0;
+}
+
+
+/******************************************************************************\
+|                                                                              |
+|                                   Team search                                |
+|                                   -----------                                |
+\******************************************************************************/
+
+
+div.team_search input.search_field
+{
+    position: relative;
+    font-size: 1em;
+    line-height: 1.5em;
+    height: 1.5em;
+    padding: 0.25em;
+    margin: 0.5em;
+    border: 0;
+    border-radius: 0.5em;
+    box-sizing: content-box;
+    z-index: 11;
+    background-color: #FFFFFF;
+    outline: 0;
+}
+
+div.team_search div.search_results
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255,255,255,0.9);
+    z-index: 10;
+    display: none;
+}
+
+body.team_search div.team_search input.search_field
+{
+    border: 1px solid gray;
+    top: -1px;
+    left: -1px;
+}
+
+body.team_search div.team_search div.search_results
+{
+    display: block;
+}
+
+div.team_search div.search_results div.body
+{
+    margin: 6em auto 0;
+    padding: 0;
+    width: 960px;
+}
+
+div.team_search div.search_results div.body div.item
+{
+    float: left;
+    width: 162px;
+    height: 1.5em;
+    margin: 0.5em 10px;
+    padding: 0.25em 5px;
+    background-color: lightgray;
+    position: relative;
+}
+
+div.team_search div.search_results div.body div.item.hidden
+{
+    display: none;
+}
+
+div.team_search div.search_results div.body div.item input
+{
+    position: absolute;
+    top: 0.25em;
+    left: 0.25em;
+    width: 1.5em;
+    height: 1.5em;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    box-sizing: content-box;
+}
+
+div.team_search div.search_results div.body div.item label
+{
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 2em;
+    right: 0;
+    bottom: 0;
+    overflow: hidden;
+    padding: 0.25em 0.25em 0.25em 4em;
+    white-space: nowrap;
+}
+
+div.team_search div.search_results div.body div.item label img
+{
+    position: absolute;
+    left: 0.5em;
+    top: 0.25em;
+    max-width: 3em;
+    max-height: 1.5em;
 }
 
 

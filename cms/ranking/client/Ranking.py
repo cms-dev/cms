@@ -20,6 +20,7 @@ from DataStore import DataStore
 from HistoryStore import HistoryStore
 from UserPanel import UserPanel
 from Scoreboard import Scoreboard
+from TeamSearch import TeamSearch
 
 import pyjd
 
@@ -35,6 +36,7 @@ class Ranking:
         self.up = UserPanel(self.ds, self.hs)
         self.sb = Scoreboard(self.ds, self.up)
 
+        self.ts = TeamSearch(self.ds)
 
 if __name__ == '__main__':
     pyjd.setup("./public/Ranking.html")
