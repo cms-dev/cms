@@ -28,6 +28,7 @@ import pyjd
 class Ranking:
     def data_loaded(self):
         self.sb.update()
+        self.ts = TeamSearch(self.ds)
 
     def onModuleLoad(self):
         self.ds = DataStore(self.data_loaded)
@@ -35,8 +36,6 @@ class Ranking:
 
         self.up = UserPanel(self.ds, self.hs)
         self.sb = Scoreboard(self.ds, self.up)
-
-        self.ts = TeamSearch(self.ds)
 
 if __name__ == '__main__':
     pyjd.setup("./public/Ranking.html")

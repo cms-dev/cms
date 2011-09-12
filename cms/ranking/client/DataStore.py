@@ -74,6 +74,9 @@ class DataStore:
 
         self.scores = dict()
 
+        self.selected = set()
+        self.select_handlers = list()
+
         # Event listeners
         self.es = EventSrc(event_url)
         self.es.add_event_listener("contest", self.contest_listener)
@@ -256,3 +259,24 @@ class DataStore:
     def iter_tasks(self):
         return sorted(self.tasks.iteritems(),
             key=lambda a: (a[1]['order'], a[1]['name'], a[0]))
+
+    ### Selection
+
+    def set_selected(self, u_id, flag):
+        if flag:
+            if u_id not in self.selected:
+                self.selected.add(u_id)
+                for h in self.select_handlers:
+                    h(u_id, flag)
+        else:
+            if u_id in self.selected:
+                self.selected.remove(u_id)
+                for h in self.select_handlers:
+                    h(u_id, flag)
+
+
+    def get_selected(self, u_id):
+        return u_id in self.selected
+
+    def add_select_handler(self, handler):
+        self.select_handlers.append(handler)

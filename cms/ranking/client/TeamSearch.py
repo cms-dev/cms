@@ -53,21 +53,59 @@ class TeamSearch(object):
         self.body = UIObject(Element=DOM.getElementById('body'))
         self.open = False
 
+        self.generate()
+        self.ds.add_select_handler(self.select_handler)
+
+    def generate(self):
+        self.sel = dict()
+        self.cnt = dict()
+
+        for t_id in self.ds.teams.iterkeys():
+            self.sel[t_id] = 0
+            self.cnt[t_id] = 0
+
+        for u_id, user in self.ds.users.iteritems():
+            self.cnt[user['team']] += 1
+
+        inner_html = ''
+        for t_id, team in sorted(self.ds.teams.iteritems(), key=lambda a:a[1]['name']):
+            # FIXME hardcoded flag path
+            inner_html += '''
+<div class="item" id="''' + t_id + '''">
+    <input type="checkbox" id="''' + t_id + '''_check" />
+    <label for="''' + t_id + '''_check">
+        <img class="flag" src="/flags/''' + t_id + '''.png" />
+        ''' + team['name'] + '''
+    </label>
+</div>'''
+        DOM.setInnerHTML(self.t_body, inner_html)
+
+        for t_id, team in self.ds.teams.iteritems():
+            elem = DOM.getElementById(t_id + '_check')
+            JS('''
+            elem.addEventListener('change', self.callback_factory(t_id, elem))
+            ''')
+
+    def select_handler(self, u_id, flag):
+        user = self.ds.users[u_id]
+        if flag:
+            self.sel[user['team']] += 1
+        else:
+            self.sel[user['team']] -= 1
+
+        elem = DOM.getElementById(user['team'] + '_check')
+        if self.sel[user['team']] == self.cnt[user['team']]:
+            JS('elem.checked = true;')
+            JS('elem.indeterminate = false;')
+        elif self.sel[user['team']] > 0:
+            JS('elem.checked = false;')
+            JS('elem.indeterminate = true;')
+        else:
+            JS('elem.checked = false;')
+            JS('elem.indeterminate = false;')
+
     def show(self):
         if not self.open:
-            inner_html = ''
-            for t_id, team in sorted(self.ds.teams.iteritems(), key=lambda a:a[1]['name']):
-                # FIXME hardcoded flag path
-                inner_html += '''
-    <div class="item" id="''' + t_id + '''">
-        <input type="checkbox" id="''' + t_id + '''_check" />
-        <label for="''' + t_id + '''_check">
-            <img class="flag" src="/flags/''' + t_id + '''.png" />
-            ''' + team['name'] + '''
-        </label>
-    </div>'''
-            DOM.setInnerHTML(self.t_body, inner_html)
-
             self.body.addStyleName('team_search')
             self.open = True
 
@@ -92,4 +130,12 @@ class TeamSearch(object):
                 else:
                     el = UIObject(Element=DOM.getElementById(t_id))
                     el.addStyleName('hidden')
+
+    def callback_factory(self, t_id, elem):
+        def result():
+            status = DOM.getBooleanAttribute(elem, 'checked')
+            for u_id, user in self.ds.users.iteritems():
+                if user['team'] == t_id:
+                    self.ds.set_selected(u_id, status)
+        return result
 

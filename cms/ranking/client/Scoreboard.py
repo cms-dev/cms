@@ -35,10 +35,12 @@ class Scoreboard(object):
         self.thead_el = DOM.getElementById('Scoreboard_head')
         self.tbody_el = DOM.getElementById('Scoreboard_body')
 
+        self.ds.add_select_handler(self.select_handler)
 
     def make_head(self):
         result = '''
 <tr>
+    <th class="sel"></th>
     <th class="rank">Rank</th>
     <th class="f_name">First Name</th>
     <th class="l_name">Last Name</th>
@@ -74,6 +76,9 @@ class Scoreboard(object):
     def make_row(self, u_id, user, rank, t_key=None, c_key=None):
         result = '''
 <tr id="''' + u_id + '''">
+    <td class="sel">
+        <input type="checkbox"''' + ('checked' if self.ds.get_selected(u_id) else '') + ''' />
+    </td>
     <td class="rank">''' + str(rank) + '''</td>
     <td class="f_name">''' + user['f_name'] + '''</td>
     <td class="l_name">''' + user['l_name'] + '''</td>
@@ -164,17 +169,26 @@ class Scoreboard(object):
         DOM.setInnerHTML(self.thead_el, head_html)
         DOM.setInnerHTML(self.tbody_el, body_html)
 
+        # create callbacks for selection
+        for (u_id, user) in self.ds.users.iteritems():
+            row = DOM.getElementById(u_id)
+            cell = DOM.getChild(row, 0)
+            check = DOM.getChild(cell, 0)
+            JS('''
+            check.addEventListener('change', self.select_factory(u_id));
+            ''')
+
         # create callbacks for UserPanel
         for (u_id, user) in self.ds.users.iteritems():
             row = DOM.getElementById(u_id)
-            for idx in [1, 2]:
+            for idx in [2, 3]:
                 elem = DOM.getChild(row, idx)
                 widget = FocusWidget(elem)
                 widget.addClickListener(self.user_callback_factory(u_id))
                 DOM.setEventListener(elem, widget)
 
         # create callbacks for sorting
-        idx = 4
+        idx = 5
         row_el = DOM.getChild(self.thead_el, 0)
         for (c_id, contest) in self.ds.iter_contests():
             if c_id in self.expanded:
@@ -195,6 +209,27 @@ class Scoreboard(object):
         widget.addClickListener(self.sort_global_factory())
         DOM.setEventListener(elem, widget)
 
+    def select_handler(self, u_id, flag):
+        row = DOM.getElementById(u_id)
+        cell = DOM.getChild(row, 0)
+        check = DOM.getChild(cell, 0)
+        # FIXME classList is not supported by all browsers
+        JS('''
+        if (flag) {
+            row.classList.add("selected")
+        } else {
+            row.classList.remove("selected")
+        }
+        check.checked = flag
+        ''')
+
+    def select_factory(self, u_id):
+        def result():
+            row = DOM.getElementById(u_id)
+            cell = DOM.getChild(row, 0)
+            check = DOM.getChild(cell, 0)
+            self.ds.set_selected(u_id, DOM.getBooleanAttribute(check, 'checked'))
+        return result
 
     def user_callback_factory(self, u_id):
         def result():
