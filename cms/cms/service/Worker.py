@@ -56,7 +56,7 @@ class Worker(Service):
                                                 self.FC)
         except KeyError:
             err_msg = "Task type `%s' not known for submission %s" \
-                % (self.submission.task.task_type, submission_id)
+                % (submission.task.task_type, submission_id)
             logger.critical(err_msg)
             raise JobException(msg_err)
 

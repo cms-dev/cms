@@ -51,6 +51,7 @@ class TaskTypes:
     # score types in some given path.
 
     TASK_TYPE_BATCH = "TaskTypeBatch"
+    TASK_TYPE_OUTPUT_ONLY = "TaskTypeOutputOnly"
 
     @staticmethod
     def get_task_type(submission, session, file_cacher):
@@ -64,9 +65,14 @@ class TaskTypes:
         """
         if submission.task.task_type == TaskTypes.TASK_TYPE_BATCH:
             return TaskTypeBatch(
-            submission,
-            simplejson.loads(submission.task.task_type_parameters),
-            session, file_cacher)
+                submission,
+                simplejson.loads(submission.task.task_type_parameters),
+                session, file_cacher)
+        elif submission.task.task_type == TaskTypes.TASK_TYPE_OUTPUT_ONLY:
+            return TaskTypeOutputOnly(
+                submission,
+                simplejson.loads(submission.task.task_type_parameters),
+                session, file_cacher)
         else:
             raise KeyError
 
@@ -754,6 +760,10 @@ class TaskTypeOutputOnly(TaskType):
     of testcase_number text files, to be evaluated diffing or using a
     comparator.
 
+    Parameters are a list of string with one element (for future
+    possible expansions), which maybe 'diff' or 'comp', meaning that
+    the evaluation is done via white diff or via a comparator.
+
     """
     def compile(self):
         """See TaskType.compile.
@@ -768,8 +778,8 @@ class TaskTypeOutputOnly(TaskType):
         self.create_sandbox()
 
         # First and only one step: diffing (manual or with manager).
-        output_digest = [x.digest for x in self.submission.files
-                         if x.filename == "output_%03d.txt"][0]
+        output_digest = self.submission.files["output_%03d.txt" %
+                                              test_number].digest
         if len(self.submission.task.managers) == 0:
             # No manager: I'll do a white_diff between the submission
             # file and the correct output res.txt.
@@ -805,15 +815,6 @@ class TaskTypeOutputOnly(TaskType):
         return (bool): success of operation.
 
         """
-        if len(self.submission.executables) != 1:
-            with async_lock:
-                logger.info("Submission contains %d executables, "
-                            "expecting 1" %
-                            len(self.submission.executables))
-            return self.finish_evaluation(False)
-
-        self.executable_filename = self.submission.executables.keys()[0]
-
         for test_number in xrange(len(self.submission.evaluations),
                                   len(self.submission.task.testcases)):
             self.session.add(Evaluation(text=None,

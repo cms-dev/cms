@@ -80,7 +80,11 @@
         </td>
         <td>
           {% for filename, sub_file in s.files.items() %}
-          <a href="#" onclick="utils.show_file('{{ filename.replace("%l", s.language) }}','/submission_file/{{ sub_file.id }}')">{{ filename.replace("%l", s.language) }}<br/>
+            {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
+          <a href="#" onclick="utils.show_file('{{ real_filename }}','/submission_file/{{ sub_file.id }}')">
+            {{ real_filename }}
+          </a>
+          <br/>
           {% end %}
         </td>
         <td>
