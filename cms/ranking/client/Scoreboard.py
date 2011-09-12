@@ -106,13 +106,19 @@ class Scoreboard(object):
 
     def make_body(self, t_key=None, c_key=None):
         if t_key:
-            users = sorted([(-1 * self.ds.get_score_t(u_id, t_key), user['l_name'], user['f_name'], u_id)
+            users = sorted([(-1 * self.ds.get_score_t(u_id, t_key),
+                             -1 * self.ds.get_score(u_id),
+                             user['l_name'], user['f_name'], u_id)
                             for (u_id, user) in self.ds.users.iteritems()])
         elif c_key:
-            users = sorted([(-1 * self.ds.get_score_c(u_id, c_key), user['l_name'], user['f_name'], u_id)
+            users = sorted([(-1 * self.ds.get_score_c(u_id, c_key),
+                             -1 * self.ds.get_score(u_id),
+                             user['l_name'], user['f_name'], u_id)
                             for (u_id, user) in self.ds.users.iteritems()])
         else:
-            users = sorted([(-1 * self.ds.get_score(u_id), user['l_name'], user['f_name'], u_id)
+            users = sorted([(-1 * self.ds.get_score(u_id),
+                             -1 * self.ds.get_score(u_id),
+                             user['l_name'], user['f_name'], u_id)
                             for (u_id, user) in self.ds.users.iteritems()])
 
         col_count = len(self.ds.contests) + len([t_id for t_id, task in self.ds.tasks.iteritems() if task['contest'] in self.expanded])
@@ -137,7 +143,7 @@ class Scoreboard(object):
                 rank += equal
                 equal = 1
 
-            result += self.make_row(item[3], self.ds.users[item[3]], rank, t_key, c_key)
+            result += self.make_row(item[4], self.ds.users[item[4]], rank, t_key, c_key)
 
         return result
 
