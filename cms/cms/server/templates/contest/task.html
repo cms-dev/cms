@@ -130,9 +130,9 @@
           {% end %}
         </td>
         <td>
-          {% for filename, sub_file in s.files.items() %}
+          {% for filename in [x.filename for x in task.submission_format] %}
             {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
-          <a href="#" onclick="utils.show_file('{{ real_filename }}', '/submission_file/{{ Cryptographics.encrypt_number(sub_file.id) }}');">
+          <a href="#" onclick="utils.show_file('{{ real_filename }}', '/submission_file/{{ Cryptographics.encrypt_number(s.files[filename].id) }}');">
              {{ real_filename }}
           </a>
           <br/>

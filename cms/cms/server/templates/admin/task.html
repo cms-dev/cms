@@ -79,7 +79,7 @@
           {% end %}
         </td>
         <td>
-          {% for filename, sub_file in s.files.items() %}
+          {% for filename, sub_file in sorted(s.files.items()) %}
             {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
           <a href="#" onclick="utils.show_file('{{ real_filename }}','/submission_file/{{ sub_file.id }}')">
             {{ real_filename }}
