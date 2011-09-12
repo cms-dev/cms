@@ -76,6 +76,9 @@ class Task(Base):
     # Name of the TaskType child class suited for the task.
     task_type = Column(String, nullable=False)
 
+    # Parameters for the task type class, JSON encoded.
+    task_type_parameters = Column(String, nullable=False)
+
     # Name of the ScoreType child class suited for the task.
     score_type = Column(String, nullable=False)
 
@@ -112,7 +115,7 @@ class Task(Base):
 
     def __init__(self, name, title, attachments, statement,
                  time_limit, memory_limit,
-                 task_type, submission_format, managers,
+                 task_type, task_type_parameters, submission_format, managers,
                  score_type, score_parameters, testcases,
                  token_initial=0, token_max=0, token_total=0,
                  token_min_interval=0, token_gen_time=60, token_gen_number=1,
@@ -129,6 +132,7 @@ class Task(Base):
         self.time_limit = time_limit
         self.memory_limit = memory_limit
         self.task_type = task_type
+        self.task_type_parameters = task_type_parameters
         self.submission_format = submission_format
         self.managers = managers
         self.score_type = score_type
@@ -146,24 +150,25 @@ class Task(Base):
         """Return object data as a dictionary.
 
         """
-        return {'name':               self.name,
-                'title':              self.title,
-                'attachments':        [attachment.export_to_dict() for attachment in self.attachments.itervalues()],
-                'statement':          self.statement,
-                'time_limit':         self.time_limit,
-                'memory_limit':       self.memory_limit,
-                'task_type':          self.task_type,
-                'submission_format':  [element.export_to_dict() for element in self.submission_format],
-                'managers':           [manager.export_to_dict() for manager in self.managers.itervalues()],
-                'score_type':         self.score_type,
-                'score_parameters':   self.score_parameters,
-                'testcases':          [testcase.export_to_dict() for testcase in self.testcases],
-                'token_initial':      self.token_initial,
-                'token_max':          self.token_max,
-                'token_total':        self.token_total,
-                'token_min_interval': self.token_min_interval,
-                'token_gen_time':     self.token_gen_time,
-                'token_gen_number':   self.token_gen_number}
+        return {'name':                 self.name,
+                'title':                self.title,
+                'attachments':          [attachment.export_to_dict() for attachment in self.attachments.itervalues()],
+                'statement':            self.statement,
+                'time_limit':           self.time_limit,
+                'memory_limit':         self.memory_limit,
+                'task_type':            self.task_type,
+                'task_type_parameters': self.task_type_parameters,
+                'submission_format':    [element.export_to_dict() for element in self.submission_format],
+                'managers':             [manager.export_to_dict() for manager in self.managers.itervalues()],
+                'score_type':           self.score_type,
+                'score_parameters':     self.score_parameters,
+                'testcases':            [testcase.export_to_dict() for testcase in self.testcases],
+                'token_initial':        self.token_initial,
+                'token_max':            self.token_max,
+                'token_total':          self.token_total,
+                'token_min_interval':   self.token_min_interval,
+                'token_gen_time':       self.token_gen_time,
+                'token_gen_number':     self.token_gen_number}
 
     def get_scorer(self):
         """Returns an appropriare ScoreType instance with the right parameters.

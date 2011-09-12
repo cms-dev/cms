@@ -522,35 +522,85 @@ class SubmitHandler(BaseHandler):
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
-        try:
-            uploaded = self.request.files[self.task.name][0]
-        except KeyError:
+        # This ensure that the user sent one file for every name in
+        # submission format and no more.
+        if sorted(self.request.files.keys()) != \
+               sorted([x.filename for x in self.task.submission_format]):
             self.application.service.add_notification(
                 self.current_user.username,
                 int(time.time()),
-                self._("No file chosen!"),
+                self._("File names do not match!"),
                 self._("Please select the correct files."))
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
         self.files = {}
 
-        if uploaded["content_type"] == "application/zip":
-            # Extract the files from the archive.
-            temp_zip_file, temp_zip_filename = tempfile.mkstemp()
-            # Note: this is just a binary copy, so no utf-8 wtf-ery here.
-            with os.fdopen(temp_zip_file, "w") as temp_zip_file:
-                temp_zip_file.write(uploaded["body"])
+        # TODO: Up to now we don't support zipfiles, so I'm commenting
+        # this, but in the future please provide the possibilities to
+        # submit zipfiles (at least for output-only tasks).
+        # if uploaded["content_type"] == "application/zip":
+        #     # Extract the files from the archive.
+        #     temp_zip_file, temp_zip_filename = tempfile.mkstemp()
+        #     # Note: this is just a binary copy, so no utf-8 wtf-ery here.
+        #     with os.fdopen(temp_zip_file, "w") as temp_zip_file:
+        #         temp_zip_file.write(uploaded["body"])
 
-            zip_object = zipfile.ZipFile(temp_zip_filename, "r")
-            for item in zip_object.infolist():
-                self.files[item.filename] = zip_object.read(item)
-        else:
-            self.files[uploaded["filename"]] = uploaded["body"]
+        #     zip_object = zipfile.ZipFile(temp_zip_filename, "r")
+        #     for item in zip_object.infolist():
+        #         self.files[item.filename] = zip_object.read(item)
+        for uploaded, data in self.request.files.iteritems():
+            self.files[uploaded] = (data[0]["filename"], data[0]["body"])
+
+        # Up to now self.files is a dictionary indexed by *our*
+        # filenames (something like "output01.txt" or "taskname.%;",
+        # and whose value is a couple (user_assigned_filename,
+        # content). We need to ensure that everytime we have a .%l in
+        # our filenames, the user has one amongst ".cpp", ".c", or
+        # ".pas, and that all these are the same (i.e., no
+        # mixed-language submissions).
+        def which_language(user_filename):
+            """Determine the language of user_filename from its
+            extension.
+
+            user_filename (string): the file to test.
+            return (string): the extension of user_filename, or None
+                             if it is not a recognized language.
+
+            """
+            got_language = False
+            for lang in Submission.LANGUAGES:
+                if user_filename.endswith(".%s" % lang):
+                    return lang
+            return None
+
+        self.submission_lang = None
+        error = None
+        for our_filename in self.files:
+            user_filename = self.files[our_filename][0]
+            if our_filename.find(".%l") != -1:
+                lang = which_language(user_filename)
+                if lang == None:
+                    error = self._("Cannot recognize submission's language.")
+                    break
+                elif self.submission_lang is not None and \
+                        self.submission_lang != lang:
+                    error = self._("All sources must be in the same language.")
+                    break
+                else:
+                    self.submission_lang = lang
+        if error != None:
+            self.application.service.add_notification(
+                self.current_user.username,
+                int(time.time()),
+                self._("Invalid submission!"),
+                error)
+            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            return
 
         # Check if submitted files are small enough.
-        if any([len(content) > Config.max_submission_length
-                for content in self.files.values()]):
+        if any([len(f[1]) > Config.max_submission_length
+                for f in self.files.values()]):
             self.application.service.add_notification(
                 self.current_user.username,
                 int(time.time()),
@@ -560,10 +610,10 @@ class SubmitHandler(BaseHandler):
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
-        # Submit the files.
+        # All checks done, submission accepted.
 
-        # Attempt to store the submission locally to be able to recover
-        # a failure.
+        # Attempt to store the submission locally to be able to
+        # recover a failure.
         self.local_copy_saved = False
 
         if Config.submit_local_copy:
@@ -586,11 +636,11 @@ class SubmitHandler(BaseHandler):
         # We now have to send all the files to the destination...
         self.file_digests = {}
 
-        for filename, content in self.files.items():
+        for filename in self.files:
             if self.application.service.FS.put_file(
                 callback=SubmitHandler.storage_callback,
                 plus=filename,
-                binary_data=content,
+                binary_data=self.files[filename][1],
                 description="Submission file %s sent by %s at %d." % (
                     filename,
                     self.current_user.username,
@@ -611,7 +661,8 @@ class SubmitHandler(BaseHandler):
                 s = Submission(user=self.current_user,
                                task=self.task,
                                timestamp=self.timestamp,
-                               files={})
+                               files={},
+                               language=self.submission_lang)
 
                 for filename, digest in self.file_digests.items():
                     self.sql_session.add(File(digest, filename, s))

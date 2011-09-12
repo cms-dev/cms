@@ -16,7 +16,9 @@
 <h2 id="title_submit_solution" class="toggling_on" onclick="utils.toggle_visibility('submit_solution');">{{ _("Submit a solution") }}</h2>
 <div id="submit_solution">
   <form enctype="multipart/form-data" action="/submit/{{ Cryptographics.encrypt_number(task.id) }}" method="post">
-    <input type="file" name="{{ task.name }}"></input>
+    {% for filename in [x.filename for x in task.submission_format] %}
+    <p>{{ filename.replace(".%l", "") }}:<br/><input type="file" name="{{ filename }}"></input></p>
+    {% end %}
     <input type="submit" value="{{ _("Submit") }}"></input>{% comment _("Submit") %}
   </form>
   <div class="hr"></div>
@@ -112,7 +114,7 @@
               <tbody>
                 {% for ev in s.evaluations %}
                   {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
-                  <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td></tr>
+                  <tr><td>{{ ev.outcome }}</td><td>{{ ev.text }}</td></tr>
                   {% end %}
                 {% end %}
                 {% if s.token is None and not any([testcase.public for testcase in s.task.testcases]) %}
@@ -122,31 +124,33 @@
             </table>
             {% end %}
             <h3>{{ _("Compilation output") }}</h3><!-- TODO: trim long outputs and add facility to see raw -->
-            <pre>{% if s.compilation_text is not None %}{{ escape(s.compilation_text) }}{% end %}</pre>
+            <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
           </div>
 
           {% end %}
         </td>
         <td>
-          {% for filename,sub_file in s.files.items() %}
-          <a href="#"
-             onclick="utils.show_file('{{ filename }}', '/submission_file/{{ Cryptographics.encrypt_number(sub_file.id) }}');">
-              {{ escape(filename) }}
+          {% for filename in [x.filename for x in task.submission_format] %}
+            {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
+          <a href="#" onclick="utils.show_file('{{ real_filename }}', '/submission_file/{{ Cryptographics.encrypt_number(s.files[filename].id) }}');">
+             {{ real_filename }}
           </a>
           <br/>
           {% end %}
-            <td>
-              {% if s.token is None %}
-              {{ _("No") }}
-                {% if can_play_token %}
-              <form style="display: inline;" class="submit_form" action="/usetoken" method="POST">
-                <input type="hidden" name="submission_id" value="{{ Cryptographics.encrypt_number(s.id) }}" />
-                <input type="submit" value="{{ _("Use!") }}" />{% comment _("Use!") %}
-              </form>
-                {% end %}
-              {% else %}
-              {{ _("Yes") }}
-              {% end %}
+        </td>
+        <td>
+          {% if s.token is None %}
+          {{ _("No") }}
+            {% if can_play_token %}
+          <form style="display: inline;" class="submit_form" action="/usetoken" method="POST">
+            <input type="hidden" name="submission_id" value="{{ Cryptographics.encrypt_number(s.id) }}" />
+            <input type="submit" value="{{ _("Use!") }}" />{% comment _("Use!") %}
+          </form>
+            {% end %}
+          {% else %}
+          {{ _("Yes") }}
+          {% end %}
+        </td>
       </tr>
       {% end %}
     </tbody>

@@ -74,6 +74,11 @@ def get_contest_list(session=None):
     return session.query(Contest).all()
 
 def ask_for_contest(skip=None):
+    # We are here because a service that needs a contest just
+    # started. It seems nice to create the tables first if they do not
+    # exists.
+    metadata.create_all()
+
     if isinstance(skip, int) and len(sys.argv) > skip + 1:
         contest_id = int(sys.argv[skip + 1])
 
@@ -84,18 +89,24 @@ def ask_for_contest(skip=None):
             # The ids of the contests are cached, so the session can
             # be closed as soon as possible
             matches = {}
+            n_contests = len(contests)
+            if n_contests == 0:
+                print "No contests in the database."
+                print "You may want to use some of the facilities in " \
+                      "cmscontrib to import a contest."
+                sys.exit(0)
             print "Contests available:"
             for i, row in enumerate(contests):
                 print "%3d  -  ID: %d  -  Name: %s  -  Description: %s" % (i + 1, row.id, row.name, row.description),
                 matches[i+1] = row.id
-                if i == 0:
+                if i == n_contests - 1:
                     print " (default)"
                 else:
                     print
 
         contest_number = raw_input("Insert the number next to the contest you want to load: ")
         if contest_number == "":
-            contest_number = 1
+            contest_number = n_contests - 1
         try:
             contest_id = matches[int(contest_number)]
         except (ValueError, KeyError):

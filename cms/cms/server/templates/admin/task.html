@@ -60,27 +60,31 @@
               <tbody>
                 {% for ev in s.evaluations %}
                   <tr>
-                    <td>{{ escape(ev.outcome) }}</td>
+                    <td>{{ ev.outcome }}</td>
                     {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
                     <td style="align: center;">&bullet;</td>
                     {% else %}
                     <td></td>
                     {% end %}
-                    <td>{{ escape(ev.text) }}</td>
+                    <td>{{ ev.text }}</td>
                   </tr>
                 {% end %}
               </tbody>
             </table>
             {% end %}
             <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
-            <pre>{% if s.compilation_text != None %}{{ escape(s.compilation_text) }}{% end %}</pre>
+            <pre>{% if s.compilation_text != None %}{{ s.compilation_text }}{% end %}</pre>
           </div>
 
           {% end %}
         </td>
         <td>
-          {% for filename,sub_file in s.files.items() %}
-          <a href="#" onclick="utils.show_file('{{ filename }}','/submission_file/{{ sub_file.id }}')">{{ filename }}<br/>
+          {% for filename in [x.filename for x in task.submission_format] %}
+            {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
+          <a href="#" onclick="utils.show_file('{{ real_filename }}','/submission_file/{{ s.files[filename].id }}')">
+            {{ real_filename }}
+          </a>
+          <br/>
           {% end %}
         </td>
         <td>

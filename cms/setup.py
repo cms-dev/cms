@@ -24,7 +24,7 @@ import os
 
 from setuptools import setup
 
-old_umask = os.umask(18) # 022
+old_umask = os.umask(022)
 
 setup(name="cms",
       version="0.1",
@@ -110,31 +110,34 @@ if "install" in sys.argv:
 
     # Two kind of files: owned by root with umask 022, or owned by
     # cmsuser with umask 007. The latter because we do not want
-    # regular users to sniff around our contests' data.
-    os.umask(7) # 007
+    # regular users to sniff around our contests' data. Note that
+    # umask is not enough if we copy files (permissions could be less
+    # open in repository), so sometimes we do also a chmod.
+    os.umask(007)
 
     print "creating user and group cmsuser."
     os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
     cmsuser = pwd.getpwnam("cmsuser")
 
     print "copying mo-box to /usr/local/bin/."
-    os.umask(18) # 022
+    os.umask(022)
     shutil.copy(os.path.join(".", "box", "mo-box"),
                 os.path.join("/", "usr", "local", "bin"))
+    os.chmod(os.path.join("/", "usr", "local", "bin"), 0755)
 
     print "copying configuration to /usr/local/etc/."
-    os.umask(7) # 007
+    os.umask(007)
     conf_file = os.path.join("/", "usr", "local", "etc", "cms.conf")
     if os.path.exists(os.path.join(".", "examples", "cms.conf")):
         shutil.copy(os.path.join(".", "examples", "cms.conf"), conf_file)
-
     else:
         shutil.copy(os.path.join(".", "examples", "cms.conf.sample"),
                     os.path.join("/", "usr", "local", "etc", "cms.conf"))
     os.chown(conf_file, cmsuser.pw_uid, cmsuser.pw_gid)
+    os.chmod(conf_file, 0660)
 
     print "copying localization files:"
-    os.umask(18) # 022
+    os.umask(022)
     for locale in glob(os.path.join("cms", "server", "po", "*.po")):
         country_code = re.search("/([^/]*)\.po", locale).groups()[0]
         print "  %s" % country_code
@@ -144,13 +147,17 @@ if "install" in sys.argv:
         os.system("mkdir -p %s" % dest_path)
         shutil.copy(os.path.join(path, "cms.mo"),
                     os.path.join(dest_path, "cms.mo"))
+        os.chmod(os.path.join(dest_path, "cms.mo"), 0644)
 
     print "creating directories."
-    os.umask(7) # 007
-    dirs = [os.path.join("/", "var", "local", "log", "cms"),
-            os.path.join("/", "var", "local", "cache", "cms"),
-            os.path.join("/", "var", "local", "lib", "cms")]
+    dirs = [os.path.join("/", "var", "local", "log"),
+            os.path.join("/", "var", "local", "cache"),
+            os.path.join("/", "var", "local", "lib")]
     for d in dirs:
+        os.umask(002)
+        os.system("mkdir -p %s" % d)
+        d = os.path.join(d, "cms")
+        os.umask(007)
         os.system("mkdir -p %s" % d)
         os.chown(d, cmsuser.pw_uid, cmsuser.pw_gid)
 

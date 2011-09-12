@@ -31,6 +31,7 @@ from cms.async.AsyncLibrary import logger, async_lock
 from cms.async import ServiceCoord
 from cms.service.FileStorage import FileCacher
 
+
 class Sandbox:
     def __init__(self, file_cacher):
         self.FC = file_cacher
@@ -39,7 +40,8 @@ class Sandbox:
         self.exec_name = 'mo-box'
         self.box_exec = self.detect_box_executable()
         self.info_file = "run.log"    # -M
-        logger.debug("Sandbox in `%s' created, using box `%s'" % (self.path, self.box_exec))
+        logger.debug("Sandbox in `%s' created, using box `%s'" %
+                     (self.path, self.box_exec))
 
         # Default parameters for mo-box
         self.file_check = None        # -a
@@ -152,7 +154,7 @@ class Sandbox:
         return None
 
     def get_status_list(self):
-        if "status_list" not in self.__dict__:   # No better way to do this?
+        if "status_list" not in self.__dict__: # No better way to do this?
             self.status_list = list()
             for k, v in self.get_log():
                 if k == 'status':
@@ -199,7 +201,8 @@ class Sandbox:
     def get_human_exit_description(self):
         status = self.get_exit_status()
         if status == self.EXIT_OK:
-            return "Execution successfully finished (with exit code %d)" % (self.get_exit_code())
+            return "Execution successfully finished (with exit code %d)" % \
+                   self.get_exit_code()
         elif status == self.EXIT_SANDBOX_ERROR:
             return "Execution failed because of sandbox error"
         elif status == self.EXIT_SYSCALL:
@@ -209,19 +212,22 @@ class Sandbox:
         elif status == self.EXIT_TIMEOUT:
             return "Execution timed out"
         elif status == self.EXIT_SIGNAL:
-            return "Execution killed with signal %d" % (self.get_killing_signal())
+            return "Execution killed with signal %d" % \
+                   self.get_killing_signal()
 
     def get_stats(self):
-        return "[%.3f sec - %.2f MB]" % (self.get_execution_time(), float(self.get_memory_used()) / (1024 * 1024))
+        return "[%.3f sec - %.2f MB]" % \
+               (self.get_execution_time(),
+                float(self.get_memory_used()) / (1024 * 1024))
 
     def relative_path(self, path):
         return os.path.join(self.path, path)
 
-    def create_file(self, path, executable = False):
+    def create_file(self, path, executable=False):
         if executable:
-            logger.debug("Creating executable file %s in sandbox" % (path))
+            logger.debug("Creating executable file %s in sandbox" % path)
         else:
-            logger.debug("Creating plain file %s in sandbox" % (path))
+            logger.debug("Creating plain file %s in sandbox" % path)
         real_path = self.relative_path(path)
         fd = open(real_path, "wb")
         mod = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR
@@ -230,13 +236,13 @@ class Sandbox:
         os.chmod(real_path, mod)
         return fd
 
-    def create_file_from_storage(self, path, digest, executable = False):
+    def create_file_from_storage(self, path, digest, executable=False):
         fd = self.create_file(path, executable)
         with async_lock:
             self.FC.get_file_to_write_file(digest, fd, sync=True)
         fd.close()
 
-    def create_file_from_string(self, path, content, executable = False):
+    def create_file_from_string(self, path, content, executable=False):
         fd = self.create_file(path, executable)
         fd.write(content)
         fd.close()
@@ -260,7 +266,7 @@ class Sandbox:
         fd.close()
         return content
 
-    def get_file_to_storage(self, path, description = ""):
+    def get_file_to_storage(self, path, description=""):
         fd = self.get_file(path)
         with async_lock:
             digest = self.FC.put_file_from_file(fd, description, sync=True)
@@ -281,20 +287,29 @@ class Sandbox:
 
     def execute(self, command):
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
-        logger.debug("Executing program in sandbox with command: %s" % (" ".join(args)))
+        logger.debug("Executing program in sandbox with command: %s" %
+                     " ".join(args))
         return subprocess.call(args)
 
-    def popen(self, command, stdin = None, stdout = None, stderr = None, close_fds = False):
+    def popen(self, command,
+              stdin=None, stdout=None, stderr=None,
+              close_fds=False):
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
-        logger.debug("Executing program in sandbox with command: %s" % (" ".join(args)))
-        return subprocess.Popen(args, stdin = stdin, stdout = stdout, stderr = stderr, close_fds = close_fds)
+        logger.debug("Executing program in sandbox with command: %s" %
+                     " ".join(args))
+        return subprocess.Popen(args,
+                                stdin=stdin, stdout=stdout, stderr=stderr,
+                                close_fds=close_fds)
 
     def execute_without_std(self, command):
-        popen = self.popen(command, stdin = subprocess.PIPE, stdout = subprocess.PIPE, stderr = subprocess.PIPE, close_fds = True)
+        popen = self.popen(command, stdin=subprocess.PIPE,
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                           close_fds=True)
         popen.stdin.close()
 
-        # Read stdout and stderr to the end without having to block because of insufficient buffering
-        # (and without allocating too much memory)
+        # Read stdout and stderr to the end without having to block
+        # because of insufficient buffering (and without allocating
+        # too much memory)
         # FIXME - Probably UNIX-specific (shouldn't work on Windows)
         to_consume = [popen.stdout, popen.stderr]
         while len(to_consume) > 0:
@@ -308,16 +323,3 @@ class Sandbox:
     def delete(self):
         logger.debug("Deleting sandbox in %s" % (self.path))
         shutil.rmtree(self.path)
-
-def main():
-    from cms.async.AsyncLibrary import Service
-    from cms.async import ServiceCoord
-    logger.initialize(ServiceCoord('ServiceA', 0))
-    class ServiceA(Service):
-        def __init__(self, shard):
-            Service.__init__(self, shard)
-    s = ServiceA(0)
-    sb = Sandbox(s, s.connect_to(ServiceCoord('FileStorage', 0)))
-
-if __name__ == '__main__':
-    main()
