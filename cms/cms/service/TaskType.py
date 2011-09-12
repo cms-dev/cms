@@ -592,6 +592,15 @@ class TaskTypeBatch(TaskType):
     'file' or 'nofile', meaning that the io of the user program is
     done with 'input.txt' and 'output.txt' or with stdin and stdout.
 
+    Note: a grader can read input.txt and res.txt (input and correct
+    output) and should write to stdout the outcome and to stderr the
+    explaination. It can also write to output.txt the output of the
+    user function, but up to now is not needed.
+
+    A comparator can read argv[1], argv[2], argv[3] (respectively,
+    input, user output and correct output) and again should write the
+    outcome to stdout and the text to stderr.
+
     """
     def compile(self):
         """See TaskType.compile.
@@ -622,12 +631,12 @@ class TaskTypeBatch(TaskType):
         source_filenames = [format_filename.replace("%l", language)]
         files_to_get[source_filenames[0]] = \
             self.submission.files[format_filename].digest
-        # If a grader is specified, we add to the command line the
-        # corresponding manager.
+        # If a grader is specified, we add to the command line (and to
+        # the files to get) the corresponding manager.
         if self.parameters[0] == "grad":
             source_filenames.append("grader.%s" % language)
             files_to_get[source_filenames[1]] = \
-                self.submission.manager["grader.%s" % language].digest
+                self.submission.task.managers["grader.%s" % language].digest
         executable_filename = format_filename.replace(".%l", "")
         command = get_compilation_command(language,
                                           source_filenames,
@@ -658,14 +667,16 @@ class TaskTypeBatch(TaskType):
         files_to_get = {
             "input.txt": self.submission.task.testcases[test_number].input
             }
-        if self.parameters[0] == "grad" or self.parameters[1] == "nofile":
+        allow_path = ["input.txt", "output.txt"]
+        stdin_redirect = None
+        stdout_redirect = None
+        if self.parameters[0] == "grad":
+            allow_path.append("res.txt")
+            files_to_get["res.txt"] = \
+                self.submission.task.testcases[test_number].output
+        elif self.parameters[1] == "nofile":
             stdin_redirect = "input.txt"
             stdout_redirect = "output.txt"
-            allow_path = []
-        else:
-            stdin_redirect = None
-            stdout_redirect = None
-            allow_path = ["input.txt", "output.txt"]
         success, outcome, text = self.evaluation_step(
             command,
             executables_to_get,
