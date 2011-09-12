@@ -31,6 +31,8 @@ from pyjamas.ui.Image import Image
 from pyjamas import Window
 from pyjamas import DOM
 
+from __pyjamas__ import JS
+
 import math
 import time
 
@@ -41,6 +43,16 @@ class UserPanel(object):
         self.hs = hs
 
         self.body = UIObject(Element=DOM.getElementById('body'))
+
+        background = DOM.getElementById('UserPanel_top')
+
+        JS('''
+        background.addEventListener("click", function(evt){
+            if (evt.target == background){
+                self.hide();
+            }
+        });
+        ''')
 
         # this is how it should be done
         self.close_button = FocusWidget(DOM.getElementById('UserPanel_close'))
