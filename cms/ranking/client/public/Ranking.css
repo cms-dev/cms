@@ -172,6 +172,7 @@ div.team_search div.search_results div.body div.item input
     padding: 0;
     border: 0;
     box-sizing: content-box;
+    font-size: 1em;
 }
 
 div.team_search div.search_results div.body div.item label
@@ -208,6 +209,11 @@ table.scoreboard
 {
     width: 100%;
     table-layout: fixed;
+}
+
+table.scoreboard colgroup col.sel
+{
+    width: 2em;
 }
 
 table.scoreboard colgroup col.rank
@@ -303,6 +309,11 @@ table.scoreboard tbody tr:hover td:not(.score)
     background-color: rgba(200,200,200,0.35);
 }
 
+table.scoreboard tbody tr.selected td:not(.score)
+{
+    background-color: lightblue;
+}
+
 table.scoreboard tbody tr td.score
 {
     opacity: 0.75;
@@ -316,7 +327,8 @@ table.scoreboard tbody tr td.sort_key
     box-shadow: 0 0 1px white inset;
 }
 
-table.scoreboard tbody tr:hover td.score
+table.scoreboard tbody tr:hover td.score,
+table.scoreboard tbody tr.selected td.score
 {
     opacity: 1;
 }
