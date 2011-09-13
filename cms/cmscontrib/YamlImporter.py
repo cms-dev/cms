@@ -136,14 +136,20 @@ class YamlImporter(Service):
                                                    description="PDF statement for task %s" % (name),
                                                    sync = True)
         params["task_type"] = Task.TASK_TYPE_BATCH
+
         params["submission_format"] = [SubmissionFormatElement("%s.%%l" % (name))]
+
+        # FIXME: some managers accept a different argument order for input,
+        #        output and correct output.
         try:
             with open(os.path.join(path, "cor", "correttore")) as f:
                 params["managers"] = {"checker": Manager(self.FS.put_file(binary_data=f.read(),
                                                                           description="Manager for task %s" % (name),
                                                                           sync=True))}
+                params["task_type_parameters"] = "[\"comp\", \"file\"]"
         except IOError:
             params["managers"] = {}
+            params["task_type_parameters"] = "[\"diff\", \"file\"]"
         params["score_type"] = conf.get("score_type", ScoreTypes.SCORE_TYPE_SUM)
         params["score_parameters"] = conf.get("score_parameters", "5.0")
         public_testcases = conf.get("risultati", "").strip()

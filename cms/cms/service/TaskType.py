@@ -543,14 +543,18 @@ class TaskType:
         for filename, digest in files_to_get.iteritems():
             self.sandbox_operation("create_file_from_storage",
                                    filename, digest)
-        out_file = self.sandbox_operation("get_file", "output.txt")
-        res_file = self.sandbox_operation("get_file", "res.txt")
-        if white_diff(out_file, res_file):
-            outcome = 1.0
-            text = "Output file is correct"
+        if self.sandbox_operation("file_exists", "output.txt"):
+            out_file = self.sandbox_operation("get_file", "output.txt")
+            res_file = self.sandbox_operation("get_file", "res.txt")
+            if white_diff(out_file, res_file):
+                outcome = 1.0
+                text = "Output file is correct"
+            else:
+                outcome = 0.0
+                text = "Output file isn't correct"
         else:
             outcome = 0.0
-            text = "Output file isn't correct"
+            text = "Evaluation didn't produce file output.txt"
         return True, outcome, text
 
     def compile(self):
