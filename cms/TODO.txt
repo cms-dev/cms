@@ -16,8 +16,6 @@
 
 ** Low priority
 
-* Make sure that the first operation triggered in async is reconnect.
-
 * Always refer to tasks, testcases and such by id instead of num (as
   it is for everything else).
 

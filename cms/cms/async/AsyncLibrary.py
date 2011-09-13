@@ -187,10 +187,6 @@ class Service:
 
         self._my_coord = ServiceCoord(self.__class__.__name__, self.shard)
 
-        # Every ten seconds, we try to connect to all the services (in
-        # case someone went down.
-        self.add_timeout(self._reconnect, None, 10, immediately=True)
-
         # We setup the listening address for services which want to
         # connect with us.
         try:
@@ -230,7 +226,7 @@ class Service:
         return self.remote_services[service]
 
     def add_timeout(self, func, plus, seconds, immediately=False):
-        """Registers a function to be called every tot seconds.
+        """Registers a function to be called every x seconds.
 
         func (function): the function to call.
         plus (object): additional data to pass to the function.
@@ -299,6 +295,10 @@ class Service:
 
         """
         current = time.time()
+
+        # Try to connect to disconnected services
+        self._reconnect()
+
         # Check if some threaded RPC call ended
         self._threaded_responses_lock.acquire()
         local_threaded_responses = self._threaded_responses[:]

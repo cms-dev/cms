@@ -39,7 +39,7 @@ from cms.box.Sandbox import Sandbox
 from cms.db.SQLAlchemyAll import Task, Executable, Evaluation
 from cms.service import JobException
 from cms.util.Utils import get_compilation_command, white_diff, \
-     filter_ansi_escape
+    filter_ansi_escape
 from cms import Config
 
 
@@ -54,24 +54,33 @@ class TaskTypes:
     TASK_TYPE_OUTPUT_ONLY = "TaskTypeOutputOnly"
 
     @staticmethod
-    def get_task_type(submission, session, file_cacher):
+    def get_task_type(submission=None, session=None, file_cacher=None,
+                      task=None):
         """Given a submission, istantiate the corresponding TaskType
         class.
 
         submission (Submission): the submission that needs the task type.
         session (SQLSession): the session the submission lives in.
         file_cacher (FileCacher): a file cacher object.
+        task (Task): if we don't want to grade, but just to get
+                     information, we can provide only the
+                     task and not the submission.
 
         """
-        if submission.task.task_type == TaskTypes.TASK_TYPE_BATCH:
+        # If we have info from submission, use those.
+        if submission is not None:
+            task = submission.task
+        elif task is None:
+            raise ArgumentError("Can't have both submission and Task None.")
+        if task.task_type == TaskTypes.TASK_TYPE_BATCH:
             return TaskTypeBatch(
                 submission,
-                simplejson.loads(submission.task.task_type_parameters),
+                simplejson.loads(task.task_type_parameters),
                 session, file_cacher)
-        elif submission.task.task_type == TaskTypes.TASK_TYPE_OUTPUT_ONLY:
+        elif task.task_type == TaskTypes.TASK_TYPE_OUTPUT_ONLY:
             return TaskTypeOutputOnly(
                 submission,
-                simplejson.loads(submission.task.task_type_parameters),
+                simplejson.loads(task.task_type_parameters),
                 session, file_cacher)
         else:
             raise KeyError
@@ -96,6 +105,8 @@ class TaskType:
       operations; must be overloaded.
 
     """
+    ALLOW_PARTIAL_SUBMISSION = False
+
     def __init__(self, submission, parameters, session, file_cacher):
         """
         submission (Submission): the submission to grade.
@@ -612,6 +623,8 @@ class TaskTypeBatch(TaskType):
     outcome to stdout and the text to stderr.
 
     """
+    ALLOW_PARTIAL_SUBMISSION = False
+
     def compile(self):
         """See TaskType.compile.
 
@@ -769,6 +782,8 @@ class TaskTypeOutputOnly(TaskType):
     the evaluation is done via white diff or via a comparator.
 
     """
+    ALLOW_PARTIAL_SUBMISSION = True
+
     def compile(self):
         """See TaskType.compile.
 
@@ -781,6 +796,12 @@ class TaskTypeOutputOnly(TaskType):
     def evaluate_testcase(self, test_number):
         self.create_sandbox()
 
+        # Since we allow partial submission, if the file is not
+        # present we report that the outcome is 0.
+        if "output_%03d.txt" % test_number not in self.submission.files:
+            return self.finish_evaluation_testcase(
+                test_number,
+                True, 0.0, "File not submitted.")
         # First and only one step: diffing (manual or with manager).
         output_digest = self.submission.files["output_%03d.txt" %
                                               test_number].digest
