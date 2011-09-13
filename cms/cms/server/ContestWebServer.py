@@ -52,6 +52,7 @@ from cms.async import ServiceCoord
 
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, Task, File
+from cms.service.TaskType import TaskTypes
 
 from cms.db.Utils import ask_for_contest
 
@@ -496,9 +497,13 @@ class SubmitHandler(BaseHandler):
             return
 
         # This ensure that the user sent one file for every name in
-        # submission format and no more.
-        if sorted(self.request.files.keys()) != \
-               sorted([x.filename for x in self.task.submission_format]):
+        # submission format and no more. Less is acceptable if task
+        # type says so.
+        task_type = TaskTypes.get_task_type(task=self.task)
+        required = set([x.filename for x in self.task.submission_format])
+        provided = set(self.request.files.keys())
+        if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
+                                         and required.issuperset(provided))):
             self.application.service.add_notification(
                 self.current_user.username,
                 int(time.time()),
