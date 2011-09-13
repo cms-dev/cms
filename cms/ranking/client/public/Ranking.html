@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="pygwt:module" content="Ranking">
+        <link rel='stylesheet' href='Ranking.css'>
+        <title>Ranking</title>
+    </head>
+    <body id="body">
+        <script language="javascript" src="bootstrap.js"></script>
+        <div class="outer_frame">
+            <div class="logo_panel">
+                <img src="logo.png" />
+            </div>
+            <div class="upper_panel">
+                <div class="team_search">
+                    <input id="team_search_input" placeholder="Search Team"
+                     class="search_field" type="search" />
+                    <div id="team_search_bg" class="search_results">
+                        <div class="body" id="team_search_body"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="right_panel">
+                right panel
+            </div>
+            <div class="inner_frame">
+                <table class="scoreboard">
+                    <colgroup>
+                        <col class="sel" />
+                        <col class="rank" />
+                        <col class="f_name" />
+                        <col class="l_name" />
+                        <col class="team" />
+                    </colgroup>
+                    <colgroup id="Scoreboard_cols">
+                    </colgroup>
+                    <colgroup>
+                        <col class="score global" />
+                    </colgroup>
+                    <thead id="Scoreboard_head"></thead>
+                    <tbody id="Scoreboard_body"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="UserPanel_bg" id="UserPanel_top">
+            <div class="UserPanel" id="UserPanel_main">
+                <img src="close.png" class="close" id="UserPanel_close" />
+                <div class="header">
+                    <div class="summary">
+                        <img id="UserPanel_face" class="face" src=""/>
+                        <div class="f_name" id="UserPanel_f_name"></div>
+                        <div class="l_name" id="UserPanel_l_name"></div>
+                        <div class="team "id="UserPanel_team"></div>
+                        <img id="UserPanel_flag" class="flag" src=""/>
+                    </div>
+                    <div class="scores">
+                        <table class="score_table">
+                            <col class="name"/>
+                            <col class="score"/>
+                            <col class="rank"/>
+                            <col class="show"/>
+                            <thead>
+                                <tr>
+                                    <td></td>
+                                    <td>Score</td>
+                                    <td>Rank</td>
+                                    <td></td>
+                                </tr>
+                            </thead>
+                            <tbody id="UserPanel_summary">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="UserPanel_title" class="title"></div>
+                <div id="UserPanel_charts" class="charts"></div>
+                <div class="submits">
+                    <table id="UserPanel_submits"></table>
+                </div>
+            </div>
+        </div>
+    </body>
+</html> 

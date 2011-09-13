@@ -4,9 +4,6 @@
 
 ** High priority
 
-* Ease the work of contest managers, providing notification of events
-  and lists of last submissions (questions, ...).
-
 * Test that all languages (particularly Pascal) work correctly.
 
 
@@ -14,11 +11,6 @@
 ** Medium priority
 
 * Remove all sync'ed RPC (e.g. there are some in Worker).
-
-* Accept more than one file in the submission form in CWS.
-
-* Implement IOI task types (and provide a way to implement a task type
-  in a simple, non-pythonic, non-CMSic way).
 
 
 
@@ -76,24 +68,38 @@
 * HIGH: Check that there are no concurrence issues, particularly in scoring
   routines.
 
-* MED: When starting, check that the workers are not doing anything and
-  possibly stop them / wait for them to be finished.
-
 * HIGH: Really, really slow to add the already evaluated submissions
   at start. The problem is *not* related to unnecessary
   updates. Indeed, most of the time is spent when we first mention
   contest.rankingview.scores. Is this a sqlite issue?
 
+* MED: When starting, check that the workers are not doing anything and
+  possibly stop them / wait for them to be finished.
+
+
+
+** Task types
+
+* HIGH: implement communication task types.
+
+* MED: output only tasks should accept partial submissions.
+
+* LOW: ease the creation of new task types.
+
 
 
 ** ContestWebServer
 
-* HIGH: It _MUST_ be able to work correctly (storing submitted data) even if
-  no services other than the database and FileStorage are available;
-  if database or File Storage are missing it _MUST_ behave nicely
-  anyway, informing the user to seek assistance and without crashing.
+* HIGH: It _MUST_ be able to work correctly (storing submitted data)
+  even if no services other than the database and FileStorage are
+  available; if database or File Storage are missing it _MUST_ behave
+  nicely anyway, informing the user to seek assistance and without
+  crashing.
 
-* HIGH: do not accept at all submission with the wrong files.
+* MED: auto update the "compiling" message after a submission - really
+  tedious and traffic-generating to let the user refresh.
+
+* LOW: ability to switch to submission form to send tarred submissions?
 
 * LOW: Some idea to improve the Web interface:
   - Ability to backup files.
@@ -107,8 +113,8 @@
 
 ** AdminWebServer
 
-* LOW: alert when we get log >= warning 
-  
+* MED: see CWS for auto updating submissions' statuses.
+
 * LOW: show resource usage of all the boxes.
 
 
@@ -130,6 +136,8 @@
 
 ** File{Storage,Cacher}
 
+* HIGH: Duly document callbacks in FileCacher.
+
 * MED: Don't load the whole files when transferring them, you uselessly eat
   a huge lot of memory.
 
@@ -140,7 +148,6 @@
   on client and on server side. Moreover, add an API call to ask the
   server to verify some file's digest.
 
-* HIGH: Duly document callbacks in FileCacher.
 
 
 
@@ -168,12 +175,9 @@
 
 ** setup.py
 
-* LOW: Add contrib and test to the entry_points, and the latter also
-  to the packages. Probably helpful to change names to something like
-  cmscontrib and cmstest.
-
 * MED: Understand how to avoid the problem of files create in cmsuser
   directories having uid of calling user instead of cmsuser. Good
   solution should be of having cms* to be run as cmsuser, but suid
   seems hard with scripts. Is there a +something option for
   directories to enable this behaviour?
+

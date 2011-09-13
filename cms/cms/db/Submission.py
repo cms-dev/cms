@@ -66,6 +66,9 @@ class Submission(Base):
     # Time of the submission.
     timestamp = Column(Integer, nullable=False)
 
+    # Language of submission, or None if not applicable.
+    language = Column(String, nullable=True)
+
     # Compilation outcome (can be None = yet to compile, "ok" =
     # compilation successful and we can evaluate, "fail" =
     # compilation unsuccessful, thorow it away).
@@ -90,7 +93,7 @@ class Submission(Base):
 
     LANGUAGES = ["c", "cpp", "pas"]
 
-    def __init__(self, user, task, timestamp, files,
+    def __init__(self, user, task, timestamp, files, language=None,
                  compilation_outcome=None, compilation_text=None,
                  compilation_tries=0, executables=None,
                  evaluation_tries=0, evaluations=None,
@@ -99,6 +102,7 @@ class Submission(Base):
         self.task = task
         self.timestamp = timestamp
         self.files = files
+        self.language = language
         self.compilation_outcome = compilation_outcome
         if executables is None:
             executables = {}
@@ -118,6 +122,7 @@ class Submission(Base):
         res = {'task':                self.task.num,
                'timestamp':           self.timestamp,
                'files':               [file.export_to_dict() for file in self.files.itervalues()],
+               'language':            self.language,
                'compilation_outcome': self.compilation_outcome,
                'compilation_tries':   self.compilation_tries,
                'compilation_text':    self.compilation_text,
@@ -161,57 +166,6 @@ class Submission(Base):
 
         """
         self.evaluations = []
-
-    def verify_source(self):
-        """Ensure that the submitted files agree with the format
-        requested by the task.
-
-        return (bool): True if the format is correct, False otherwise.
-
-        """
-        if len(self.files) != len(self.task.submission_format):
-            return (False, "Wrong number of files")
-        language = None
-        test_file = None
-
-        submission_format = [x.filename for x in self.task.submission_format]
-
-        # Try to understand if the task type is language dependent
-        for name in submission_format:
-            if name.find("%l") != -1:
-                test_file = name
-
-        # Try to detect the language used in the submission
-        for test_lang in Submission.LANGUAGES:
-            if test_file.replace("%l", test_lang) in self.files:
-                language = test_lang
-        if test_file is not None and language is None:
-            # If the task requires only one source file, be more
-            # relaxed on the verification
-            if len(submission_format) == 1:
-                submitted_file = self.files.keys()[0]
-                submitted_file_part = submitted_file.split(".")
-                if len(submitted_file_part) > 1 and \
-                        submitted_file_part[-1] in Submission.LANGUAGES:
-                    language = submitted_file_part[-1]
-                    # Wa adapt submission
-                    correct_file = submission_format[0].replace("%l", language)
-                    self.get_session().add(File(self.files[submitted_file].digest,
-                                                correct_file,
-                                                self))
-                    del self.files[submitted_file]
-                else:
-                    return (False, "Could not detect submission language")
-            else:
-                return (False, "Could not detect submission language")
-
-        # Check the mapping between the submission format and the
-        # actual submission
-        for name in submission_format:
-            if name.replace("%l", language) not in self.files:
-                return (False, "Files not corresponding to submission format")
-
-        return (True, language)
 
     def play_token(self, timestamp=None):
         """Tell the submission that a token has been used.

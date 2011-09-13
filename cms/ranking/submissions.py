@@ -20,6 +20,7 @@
 import os
 import json
 import functools
+import heapq
 
 class InvalidKey(Exception):
     """Exception raised in case of invalid key."""
@@ -624,3 +625,25 @@ class SubmissionStore(object):
 
 submission_store = SubmissionStore("subs/")
 
+def get_global_history():
+    """Merge all individual histories into a global one.
+
+    Take all per-user/per-task histories and merge them, providing a global
+    history of all schore changes and return it using a generator.
+    Returned data is in the form (user_id, task_id, time, score).
+
+    """
+    # Use a priority queue, containing only one entry per-user/per-task
+    queue = list()
+    for user in submission_store._scores.itervalues():
+        for subl in user.itervalues():
+            if subl._history:
+                heapq.heappush(queue, (subl._history[0], subl, 0))
+
+    # When an entry is popped, push the next entry for that user/task (if any)
+    while len(queue) != 0:
+        (time, score), subl, index = heapq.heappop(queue)
+        index += 1
+        yield (subl.user, subl.task, time, score)
+        if len(subl._history) > index:
+            heapq.heappush(queue, (subl._history[index], subl, index))
