@@ -139,8 +139,6 @@ class YamlImporter(Service):
 
         params["submission_format"] = [SubmissionFormatElement("%s.%%l" % (name))]
 
-        # FIXME: some managers accept a different argument order for input,
-        #        output and correct output.
         try:
             with open(os.path.join(path, "cor", "correttore")) as f:
                 params["managers"] = {"checker": Manager(self.FS.put_file(binary_data=f.read(),

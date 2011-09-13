@@ -619,7 +619,7 @@ class TaskTypeBatch(TaskType):
     user function, but up to now is not needed.
 
     A comparator can read argv[1], argv[2], argv[3] (respectively,
-    input, user output and correct output) and again should write the
+    input, correct output and user output) and again should write the
     outcome to stdout and the text to stderr.
 
     """
@@ -734,7 +734,7 @@ class TaskTypeBatch(TaskType):
                  self.submission.task.managers[manager_filename].digest},
                 {"res.txt":
                  self.submission.task.testcases[test_number].output},
-                allow_path=["input.txt", "output.txt", "res.txt"],
+                allow_path=["input.txt", "res.txt", "output.txt"],
                 final=True)
 
         # Whatever happened, we conclude.
