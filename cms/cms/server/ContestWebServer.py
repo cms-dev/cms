@@ -58,7 +58,8 @@ from cms.db.Utils import ask_for_contest
 from cms import Config
 import cms.util.WebConfig as WebConfig
 
-from cms.server.Utils import file_handler_gen, catch_exceptions
+from cms.server.Utils import file_handler_gen, \
+     catch_exceptions, decrypt_arguments
 from cms.util.Cryptographics import encrypt_number, decrypt_number, \
      get_encryption_alphabet
 
@@ -284,20 +285,13 @@ class TaskViewHandler(BaseHandler):
 
     """
     @catch_exceptions
+    @decrypt_arguments
     @tornado.web.authenticated
     def get(self, task_id):
 
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
-
-        # Decrypt task_id.
-        try:
-            task_id = decrypt_number(task_id)
-        except ValueError:
-            # We reply with Forbidden if the given ID cannot be
-            # decrypted.
-            raise tornado.web.HTTPError(403)
 
         r_params["task"] = Task.get_from_id(task_id, self.sql_session)
         if r_params["task"] == None or \
@@ -316,6 +310,7 @@ class TaskStatementViewHandler(FileHandler):
 
     """
     @catch_exceptions
+    @decrypt_arguments
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self, task_id):
@@ -323,14 +318,6 @@ class TaskStatementViewHandler(FileHandler):
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
-
-        # Decrypt task_id.
-        try:
-            task_id = decrypt_number(task_id)
-        except ValueError:
-            # We reply with Forbidden if the given ID cannot be
-            # decrypted.
-            raise tornado.web.HTTPError(403)
 
         task = Task.get_from_id(task_id, self.sql_session)
         if task == None or task.contest != self.contest:
@@ -344,6 +331,7 @@ class SubmissionFileHandler(FileHandler):
 
     """
     @catch_exceptions
+    @decrypt_arguments
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self, file_id):
@@ -351,14 +339,6 @@ class SubmissionFileHandler(FileHandler):
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
-
-        # Decrypt file_id.
-        try:
-            file_id = decrypt_number(file_id)
-        except ValueError:
-            # We reply with Forbidden if the given ID cannot be
-            # decrypted.
-            raise tornado.web.HTTPError(403)
 
         sub_file = self.sql_session.query(File).join(Submission).join(Task)\
             .filter(File.id == file_id)\
@@ -479,6 +459,7 @@ class SubmitHandler(BaseHandler):
     """Handles the received submissions.
 
     """
+    @decrypt_arguments
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def post(self, task_id):
@@ -488,14 +469,6 @@ class SubmitHandler(BaseHandler):
             return
 
         self.timestamp = self.r_params["timestamp"]
-
-        # Decrypt task_id.
-        try:
-            task_id = decrypt_number(task_id)
-        except ValueError:
-            # We reply with Forbidden if the given ID cannot be
-            # decrypted.
-            raise tornado.web.HTTPError(403)
 
         self.task = Task.get_from_id(task_id, self.sql_session)
 
