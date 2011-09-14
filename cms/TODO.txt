@@ -19,9 +19,11 @@
 * Always refer to tasks, testcases and such by id instead of num (as
   it is for everything else).
 
+* In the submissions list (both *WS), provide some fast way to see the
+  result without open the fold. This should work with subtasks, but
+  first we need to understand what are subtasks for us.
+
 * Correct the commit by root, and move to github.
-
-
 
 
 
@@ -102,7 +104,8 @@
 * MED: auto update the "compiling" message after a submission - really
   tedious and traffic-generating to let the user refresh.
 
-* LOW: ability to switch to submission form to send tarred submissions?
+* LOW: ability to switch to submission form to send tarred
+  submissions.
 
 * LOW: Some idea to improve the Web interface:
   - Ability to backup files.
