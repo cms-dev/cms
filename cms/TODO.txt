@@ -94,6 +94,11 @@
   nicely anyway, informing the user to seek assistance and without
   crashing.
 
+* MED: concurrency: if there are more than 1 CWS, there is a (very
+  slightly) chance that feature such as - but not limited to -
+  "partial submission filler" and "avoid frequent submissions" will
+  not work.
+
 * MED: auto update the "compiling" message after a submission - really
   tedious and traffic-generating to let the user refresh.
 

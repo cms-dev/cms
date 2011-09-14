@@ -105,6 +105,9 @@ class TaskType:
       operations; must be overloaded.
 
     """
+    # If ALLOW_PARTIAL_SUBMISSION is True, then we allow the user to
+    # submit only some of the required files; moreover, we try to fill
+    # the non-provided files with the one in the previous submission.
     ALLOW_PARTIAL_SUBMISSION = False
 
     def __init__(self, submission, parameters, session, file_cacher):

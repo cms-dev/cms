@@ -512,7 +512,32 @@ class SubmitHandler(BaseHandler):
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
+        # Add submitted files. After this, self.files is a dictionary
+        # indexed by *our* filenames (something like "output01.txt" or
+        # "taskname.%;", and whose value is a couple
+        # (user_assigned_filename, content, digest). digest is None
+        # for user submitted files, while content is None for files
+        # retrieved from the previous submission.
         self.files = {}
+        for uploaded, data in self.request.files.iteritems():
+            self.files[uploaded] = (data[0]["filename"], data[0]["body"])
+
+        # If we allow partial submissions, implicitly we recover the
+        # non-submitted files from the previous submission.
+        self.submission_lang = None
+        self.file_digests = {}
+        self.retrieved = 0
+        if task_type.ALLOW_PARTIAL_SUBMISSION and last_submission is not None:
+            for filename in required.difference(provided):
+                if filename in last_submission.files:
+                    # If we retrieve a language-dependent file from
+                    # last submission, we take not that language must
+                    # be the same.
+                    if "%l" in filename:
+                        self.submission_lang = last_submission.language
+                    self.file_digests[filename] = \
+                        last_submission.files[filename].digest
+                    self.retrieved += 1
 
         # TODO: Up to now we don't support zipfiles, so I'm commenting
         # this, but in the future please provide the possibilities to
@@ -527,16 +552,11 @@ class SubmitHandler(BaseHandler):
         #     zip_object = zipfile.ZipFile(temp_zip_filename, "r")
         #     for item in zip_object.infolist():
         #         self.files[item.filename] = zip_object.read(item)
-        for uploaded, data in self.request.files.iteritems():
-            self.files[uploaded] = (data[0]["filename"], data[0]["body"])
 
-        # Up to now self.files is a dictionary indexed by *our*
-        # filenames (something like "output01.txt" or "taskname.%;",
-        # and whose value is a couple (user_assigned_filename,
-        # content). We need to ensure that everytime we have a .%l in
-        # our filenames, the user has one amongst ".cpp", ".c", or
-        # ".pas, and that all these are the same (i.e., no
-        # mixed-language submissions).
+        # We need to ensure that everytime we have a .%l in our
+        # filenames, the user has one amongst ".cpp", ".c", or ".pas,
+        # and that all these are the same (i.e., no mixed-language
+        # submissions).
         def which_language(user_filename):
             """Determine the language of user_filename from its
             extension.
@@ -552,7 +572,6 @@ class SubmitHandler(BaseHandler):
                     return lang
             return None
 
-        self.submission_lang = None
         error = None
         for our_filename in self.files:
             user_filename = self.files[our_filename][0]
@@ -612,8 +631,6 @@ class SubmitHandler(BaseHandler):
                              traceback.format_exc())
 
         # We now have to send all the files to the destination...
-        self.file_digests = {}
-
         for filename in self.files:
             if self.application.service.FS.put_file(
                 callback=SubmitHandler.storage_callback,
@@ -633,7 +650,7 @@ class SubmitHandler(BaseHandler):
         logger.debug("Storage callback")
         if error is None:
             self.file_digests[plus] = data
-            if len(self.file_digests) == len(self.files):
+            if len(self.file_digests) == len(self.files) + self.retrieved:
                 # All the files are stored, ready to submit!
                 logger.info("I saved all the files")
                 s = Submission(user=self.current_user,

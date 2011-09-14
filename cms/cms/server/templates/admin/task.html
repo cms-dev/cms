@@ -80,11 +80,13 @@
         </td>
         <td>
           {% for filename in [x.filename for x in task.submission_format] %}
-            {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
+            {% if filename in s.files %}
+              {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
           <a href="#" onclick="utils.show_file('{{ real_filename }}','/submission_file/{{ s.files[filename].id }}')">
             {{ real_filename }}
           </a>
           <br/>
+            {% end %}
           {% end %}
         </td>
         <td>
