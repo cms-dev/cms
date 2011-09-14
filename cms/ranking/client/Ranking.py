@@ -21,6 +21,7 @@ from HistoryStore import HistoryStore
 from UserPanel import UserPanel
 from Scoreboard import Scoreboard
 from TeamSearch import TeamSearch
+from Overview import Overview
 
 import pyjd
 
@@ -29,6 +30,7 @@ class Ranking:
     def data_loaded(self):
         self.sb.update()
         self.ts = TeamSearch(self.ds)
+        self.ov = Overview(self.ds)
 
     def onModuleLoad(self):
         self.ds = DataStore(self.data_loaded)
