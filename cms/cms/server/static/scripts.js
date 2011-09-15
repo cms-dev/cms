@@ -43,7 +43,7 @@
          * file_name (string): the name of the requested file
          * url (string): the url of the file
          * response (string): the file content
-         * error (string): The error message, or null if the request 
+         * error (string): The error message, or null if the request
                            is successful.
          */
         __file_received: function(file_name, url, response, error)
@@ -294,8 +294,7 @@
                 job_type = 'Compiling';
             else if (job[0] == 'evaluate')
                 job_type = 'Evaluating';
-            var submission_link = '<a href="/submissions/details/' + job[1] + '">';
-            return job_type + ' submission ' + submission_link + job[1] + '</a>';
+            return job_type + ' submission ' + job[1];
         },
 
         /**

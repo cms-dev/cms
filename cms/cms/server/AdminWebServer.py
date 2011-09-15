@@ -212,7 +212,7 @@ class ContestViewHandler(BaseHandler):
 
 class AddContestHandler(BaseHandler):
     """Adds a new contest.
-    
+
     """
     def get(self):
         r_params = self.render_params()
@@ -535,27 +535,6 @@ class UserViewHandler(BaseHandler):
             "")
         self.redirect("/user/"+str(user.id))
 
-class SubmissionDetailHandler(BaseHandler):
-    """Shows additional details for the specified submission.
-
-    """
-    def get(self, submission_id):
-
-        # search the submission in the contest
-        submission = Submission.get_from_id(submission_id, self.sql_session)
-
-        if submission == None:
-            raise tornado.web.HTTPError(404)
-
-        # Submissions are associated to the user and to the task. We use the
-        # task to get the contest.
-        self.contest = submission.task.contest
-
-        r_params = self.render_params()
-        r_params["submission"] = submission
-        r_params["task"] = submission.task
-        self.render("submission_detail.html", **r_params)
-
 
 class SubmissionFileHandler(FileHandler):
     """Shows a submission file.
@@ -761,8 +740,6 @@ handlers = [(r"/",
              TaskViewHandler),
             (r"/task/([0-9]+)/statement",
              TaskStatementViewHandler),
-            (r"/submissions/details/([a-zA-Z0-9_-]+)",
-             SubmissionDetailHandler),
             (r"/reevaluate/submission/([a-zA-Z0-9_-]+)",
              SubmissionReevaluateHandler),
             (r"/reevaluate/user/([0-9]+)",
