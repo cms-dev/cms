@@ -615,8 +615,10 @@ class SubmitHandler(BaseHandler):
 
         if Config.submit_local_copy:
             try:
-                path = os.path.join(Config.submit_local_copy_path,
-                                    self.current_user.username)
+                path = os.path.join(
+                    Config.submit_local_copy_path.replace("%s",
+                                                          Config._data_dir),
+                    self.current_user.username)
                 if not os.path.exists(path):
                     os.makedirs(path)
                 with codecs.open(os.path.join(path, str(self.timestamp)),
