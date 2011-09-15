@@ -693,21 +693,13 @@ class SubmitHandler(BaseHandler):
         logger.debug("ES notify_callback")
         if error is not None:
             logger.error("Notification to ES failed! " + error)
-            self.application.service.add_notification(
-                self.current_user.username,
-                int(time.time()),
-                self._("Submission received, but..."),
-                self._("Your submission has been received "
-                       "but an error has occured and is NOT "
-                       "currently being evaluated."))
-        else:
-            # Add "All ok" notification
-            self.application.service.add_notification(
-                self.current_user.username,
-                int(time.time()),
-                self._("Submission received"),
-                self._("Your submission has been received "
-                       "and is currently being evaluated."))
+        # Add "All ok" notification
+        self.application.service.add_notification(
+            self.current_user.username,
+            int(time.time()),
+            self._("Submission received"),
+            self._("Your submission has been received "
+                   "and is currently being evaluated."))
 
         self.redirect("/tasks/%s" % encrypt_number(self.task.id))
 
