@@ -21,6 +21,8 @@
 
 from __pyjamas__ import JS
 
+import EventSource.js
+
 
 class EventSrc:
     def __init__(self, url):
