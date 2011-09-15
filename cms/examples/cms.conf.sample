@@ -38,7 +38,7 @@
 
  "maximum_conflict_attempts": 50,
  "submit_local_copy":	        true,
- "submit_local_copy_path":    "submissions/",
+ "submit_local_copy_path":    "%s/submissions/",
  "max_submission_length":     100000,
  "min_submission_interval":   60,
 

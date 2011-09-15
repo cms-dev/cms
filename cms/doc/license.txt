@@ -1,0 +1,43 @@
+Format: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?view=co&rev=174
+Upstream-Name: cms
+Upstream-Contact: Stefano Maggiolo <s.maggiolo@gmail.com>
+Source: ssh://gitosis@poisson.phc.unipi.it/cms.git
+Copyright: 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+           2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
+           2010-2011 Matteo Boscariol <boscarim@hotmail.com>
+           2011 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+License: AGPL-3+
+
+License: AGPL-3+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as
+ published by the Free Software Foundation, either version 3 of the
+ License, or (at your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+ .
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Files: *
+Copyright: 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+           2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
+           2010-2011 Matteo Boscariol <boscarim@hotmail.com>
+License: AGPL-3+
+
+Files: cms/ranking/*
+Copyright: 2011 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+License: AGPL-3+
+
+Files: cms/ranking/client/images/* cms/ranking/client/public/*.png
+Copyright: 2011 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+License: CC-BY-SA-3.0
+Comment: Files logo.svg and logo.png have been derived from the following work:
+ http://www.openclipart.org/detail/27888 (released under CC0-1.0)
+
+Files: cms/ranking/client/EventSource.js
+Copyright: 2010 Remy Sharp, http://remysharp.com
+License: Expat

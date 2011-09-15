@@ -615,8 +615,10 @@ class SubmitHandler(BaseHandler):
 
         if Config.submit_local_copy:
             try:
-                path = os.path.join(Config.submit_local_copy_path,
-                                    self.current_user.username)
+                path = os.path.join(
+                    Config.submit_local_copy_path.replace("%s",
+                                                          Config._data_dir),
+                    self.current_user.username)
                 if not os.path.exists(path):
                     os.makedirs(path)
                 with codecs.open(os.path.join(path, str(self.timestamp)),
@@ -691,21 +693,13 @@ class SubmitHandler(BaseHandler):
         logger.debug("ES notify_callback")
         if error is not None:
             logger.error("Notification to ES failed! " + error)
-            self.application.service.add_notification(
-                self.current_user.username,
-                int(time.time()),
-                self._("Submission received, but..."),
-                self._("Your submission has been received "
-                       "but an error has occured and is NOT "
-                       "currently being evaluated."))
-        else:
-            # Add "All ok" notification
-            self.application.service.add_notification(
-                self.current_user.username,
-                int(time.time()),
-                self._("Submission received"),
-                self._("Your submission has been received "
-                       "and is currently being evaluated."))
+        # Add "All ok" notification
+        self.application.service.add_notification(
+            self.current_user.username,
+            int(time.time()),
+            self._("Submission received"),
+            self._("Your submission has been received "
+                   "and is currently being evaluated."))
 
         self.redirect("/tasks/%s" % encrypt_number(self.task.id))
 
