@@ -82,8 +82,6 @@
 
 * HIGH: implement communication task types.
 
-* MED: output only tasks should accept partial submissions.
-
 * LOW: ease the creation of new task types.
 
 
@@ -97,9 +95,9 @@
   crashing.
 
 * MED: concurrency: if there are more than 1 CWS, there is a (very
-  slightly) chance that feature such as - but not limited to -
-  "partial submission filler" and "avoid frequent submissions" will
-  not work.
+  slight) chance that feature such as - but not limited to - "partial
+  submission filler" and "avoid frequent submissions" will not work as
+  expected.
 
 * MED: auto update the "compiling" message after a submission - really
   tedious and traffic-generating to let the user refresh.
