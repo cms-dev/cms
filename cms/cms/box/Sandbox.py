@@ -21,15 +21,12 @@
 
 import os
 import shutil
-import sys
 import subprocess
 import tempfile
 import stat
 import select
 
 from cms.async.AsyncLibrary import logger, async_lock
-from cms.async import ServiceCoord
-from cms.service.FileStorage import FileCacher
 
 
 class Sandbox:
@@ -49,6 +46,7 @@ class Sandbox:
         self.exec_name = 'mo-box'
         self.box_exec = self.detect_box_executable()
         self.info_file = "run.log"    # -M
+        self.log = None
         logger.debug("Sandbox in `%s' created, using box `%s'" %
                      (self.path, self.box_exec))
 
@@ -146,58 +144,89 @@ class Sandbox:
         return res
 
     def get_log(self):
-        """Return the content of the log file of the sandbox (usually
+        """Read the content of the log file of the sandbox (usually
         run.log), and set self.log as a dict containing the info in
         the log file (time, memory, status, ...).
 
-        return (string): the content of the sandbox log file.
-
         """
-        if "log" not in self.__dict__:
-            self.log = list()
-            try:
-                with self.get_file(self.info_file) as log_file:
-                    for line in log_file:
-                        self.log.append(line.strip().split(":", 1))
-            except IOError:
-                raise IOError("Error while reading execution log")
-        return self.log
+        # self.log is a dictionary of lists (usually lists of length
+        # one).
+        self.log = {}
+        try:
+            with self.get_file(self.info_file) as log_file:
+                for line in log_file:
+                    k, v = line.strip().split(":", 1)
+                    if k in self.log:
+                        self.log[k].append(v)
+                    else:
+                        self.log[k] = [v]
+        except IOError:
+            raise IOError("Error while reading execution log")
 
     def get_execution_time(self):
-        """After reading the sandbox log file, return the time spent
-        in the sandbox.
+        """Return the time spent in the sandbox, reading the logs if
+        necessary.
 
         return (float): time spent in the sandbox.
 
         """
-        for k, v in self.log:
-            if k == 'time':
-                return float(v)
+        if self.log is None:
+            self.get_log()
+        if 'time' in self.log:
+            return float(self.log['time'][0])
         return None
 
     def get_execution_wall_clock_time(self):
-        """After reading the sandbox log file, return the total time
-        from the start of the sandbox to the conclusion of the task.
+        """Return the total time from the start of the sandbox to the
+        conclusion of the task, reading the logs if necessary.
 
         return (float): total time the sandbox was alive.
 
         """
-        for k, v in self.log:
-            if k == 'wall-time':
-                return float(v)
+        if self.log is None:
+            self.get_log()
+        if 'wall-time' in self.log:
+            return float(self.log['wall-time'][0])
         return None
 
     def get_memory_used(self):
-        """After reading the sandbox log file, return the memory used
-        by the sandbox.
+        """Return the memory used by the sandbox, reading the logs if
+        necessary.
 
         return (float): memory used by the sandbox.
 
         """
-        for k, v in self.log:
-            if k == 'mem':
-                return float(v)
+        if self.log is None:
+            self.get_log()
+        if 'mem' in self.log:
+            return float(self.log['mem'][0])
         return None
+
+    def get_killing_signal(self):
+        """Return the signal that killed the sandboxed process,
+        reading the logs if necessary.
+
+        return (int): offending signal, or 0.
+
+        """
+        if self.log is None:
+            self.get_log()
+        if 'exitsig' in self.log:
+            return int(self.log['exitsig'][0])
+        return 0
+
+    def get_exit_code(self):
+        """Return the exit code of the sandboxed process, reading the
+        logs if necessary.
+
+        return (float): exitcode, or 0.
+
+        """
+        if self.log is None:
+            self.get_log()
+        if 'exitcode' in self.log:
+            return int(self.log['exitcode'][0])
+        return 0
 
     def get_status_list(self):
         """Reads the sandbox log file, and set and return the status
@@ -206,13 +235,11 @@ class Sandbox:
         return (list): list of statuses of the sandbox.
 
         """
-        if "status_list" not in self.__dict__:
-            self.status_list = list()
-            for k, v in self.get_log():
-                if k == 'status':
-                    self.status_list.append(v)
-
-        return self.status_list
+        if self.log is None:
+            self.get_log()
+        if 'status' in self.log:
+            return self.log['status']
+        return []
 
     EXIT_SANDBOX_ERROR = 'sandbox error'
     EXIT_OK = 'ok'
@@ -222,35 +249,36 @@ class Sandbox:
     EXIT_SYSCALL = 'syscall'
 
     def get_exit_status(self):
-        self.get_status_list()
-        if 'XX' in self.status_list:
+        """Get the list of statuses of the sandbox and return the most
+        important one.
+
+        return (string): the main reason why the sandbox terminated.
+
+        """
+        status_list = self.get_status_list()
+        if 'XX' in status_list:
             return self.EXIT_SANDBOX_ERROR
         # New version seems not to report OK
-        #elif 'OK' in self.status_list:
+        #elif 'OK' in status_list:
         #    return self.EXIT_OK
-        elif 'FO' in self.status_list:
+        elif 'FO' in status_list:
             return self.EXIT_SYSCALL
-        elif 'FA' in self.status_list:
+        elif 'FA' in status_list:
             return self.EXIT_FILE_ACCESS
-        elif 'TO' in self.status_list:
+        elif 'TO' in status_list:
             return self.EXIT_TIMEOUT
-        elif 'SG' in self.status_list:
+        elif 'SG' in status_list:
             return self.EXIT_SIGNAL
         return self.EXIT_OK
 
-    def get_killing_signal(self):
-        for k, v in self.get_log():
-            if k == 'exitsig':
-                return int(v)
-        return None
-
-    def get_exit_code(self):
-        for k, v in self.get_log():
-            if k == 'exitcode':
-                return int(v)
-        return 0
-
     def get_human_exit_description(self):
+        """Get the status of the sandbox and return a human-readable
+        string describing it.
+
+        return (string): human-readable explaination of why the
+                         sandbox terminated.
+
+        """
         status = self.get_exit_status()
         if status == self.EXIT_OK:
             return "Execution successfully finished (with exit code %d)" % \
@@ -268,6 +296,12 @@ class Sandbox:
                    self.get_killing_signal()
 
     def get_stats(self):
+        """Return a human-readable string representing execution time
+        and memory usage.
+
+        return (string): human-readable stats.
+
+        """
         return "[%.3f sec - %.2f MB]" % \
                (self.get_execution_time(),
                 float(self.get_memory_used()) / (1024 * 1024))
@@ -402,10 +436,15 @@ class Sandbox:
         """
         os.remove(self.relative_path(path))
 
-    def clean(self):
-        del self.log
-
     def execute(self, command):
+        """Execute the given command in the sandbox using
+        subprocess.call.
+
+        command (list): executable filename and arguments of the
+                        command.
+        return (int): the exitcode.
+
+        """
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: %s" %
                      " ".join(args))
@@ -413,7 +452,20 @@ class Sandbox:
 
     def popen(self, command,
               stdin=None, stdout=None, stderr=None,
-              close_fds=False):
+              close_fds=True):
+        """Execute the given command in the sandbox using
+        subprocess.Popen, assigning the corresponding standard file
+        descriptors.
+
+        command (list): executable filename and arguments of the
+                        command.
+        stdin (file): a file descriptor/object or None.
+        stdout (file): a file descriptor/object or None.
+        stderr (file): a file descriptor/object or None.
+        close_fds (bool): close all file descriptor before executing.
+        return (object): popen object.
+
+        """
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: %s" %
                      " ".join(args))
@@ -422,6 +474,14 @@ class Sandbox:
                                 close_fds=close_fds)
 
     def execute_without_std(self, command):
+        """Execute the given command in the sandbox using
+        subprocess.Popen, and reading its standard output and error.
+
+        command (list): executable filename and arguments of the
+                        command.
+        return (int): the exitcode.
+
+        """
         popen = self.popen(command, stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                            close_fds=True)
@@ -429,8 +489,7 @@ class Sandbox:
 
         # Read stdout and stderr to the end without having to block
         # because of insufficient buffering (and without allocating
-        # too much memory)
-        # FIXME - Probably UNIX-specific (shouldn't work on Windows)
+        # too much memory). Unix specific.
         to_consume = [popen.stdout, popen.stderr]
         while len(to_consume) > 0:
             read, tmp1, tmp2 = select.select(to_consume, [], [])
@@ -441,5 +500,8 @@ class Sandbox:
         return popen.wait()
 
     def delete(self):
+        """Delete the directory where the sendbox operated.
+
+        """
         logger.debug("Deleting sandbox in %s" % self.path)
         shutil.rmtree(self.path)
