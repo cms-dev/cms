@@ -54,6 +54,7 @@ class TeamSearch(object):
         self.open = False
 
         self.generate()
+        self.update()
         self.ds.add_select_handler(self.select_handler)
 
     def generate(self):
