@@ -73,7 +73,7 @@ setup(name="cms",
               ]
           },
       keywords="ioi programming contest grader management system",
-      license="Lesser Affero General Public License v3",
+      license="Affero General Public License v3",
       classifiers=["Development Status :: 3 - Alpha",
                    "Natural Language :: English",
                    "Operating System :: POSIX :: Linux",

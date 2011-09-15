@@ -12,9 +12,9 @@
 <h2 id="title_instruction_comp" class="toggling_on" onclick="utils.toggle_visibility('instruction_comp');">{{ _("Compilation") }}</h2>
 <div id="instruction_comp">
   <table class="nobordered">
-    <tr><td><strong>{{ _("C:") }}</strong></td><td><code>{{ " ".join(Utils.get_compilation_command("c", "task.c", "task")) }}</code></td></tr>
-    <tr><td><strong>{{ _("C++:") }}</strong></td><td><code>{{ " ".join(Utils.get_compilation_command("cpp", "task.cpp", "task")) }}</code></td></tr>
-    <tr><td><strong>{{ _("Pascal:") }}</strong></td><td><code>{{ " ".join(Utils.get_compilation_command("pas", "task.pas", "task")) }}</code></td></tr>
+    <tr><td><strong>{{ _("C:") }}</strong></td><td><code>{{ " ".join(Utils.get_compilation_command("c", ["task.c"], "task")) }}</code></td></tr>
+    <tr><td><strong>{{ _("C++:") }}</strong></td><td><code>{{ " ".join(Utils.get_compilation_command("cpp", ["task.cpp"], "task")) }}</code></td></tr>
+    <tr><td><strong>{{ _("Pascal:") }}</strong></td><td><code>{{ " ".join(Utils.get_compilation_command("pas", ["task.pas"], "task")) }}</code></td></tr>
   </table>
   <div class="hr"></div>
 </div>
