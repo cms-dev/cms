@@ -50,17 +50,22 @@ class Contest(Base):
 
     # Follows the enforcement of token for any person, for all the
     # task. This enforcements add up to the ones defined task-wise.
-    # T_initial is the initial number, T_max is the maximum number in
-    # any given time (or None to ignore), T_total is the maximum
-    # number that can be used in the whole contest (or None),
-    # T_min_interval the minimum interval in seconds between to uses
-    # of a token (or None), Every T_gen_time minutes from the
-    # beginning of the contest we generate T_gen_number tokens, or we
-    # don't if either is None.
+
+    # token_initial is the initial number of tokens available, or None
+    # to disable completely the tokens.
     token_initial = Column(Integer, nullable=False)
+    # token_max is the maximum number in any given time, or None not
+    # to enforce this limitation.
     token_max = Column(Integer, nullable=True)
+    # token_total is the maximum number that can be used in the whole
+    # contest, or None not to enforce this limitation.
     token_total = Column(Integer, nullable=True)
+    # token_min_interval is the minimum interval in seconds between
+    # two uses of a token, or None not to enforce this limitation.
     token_min_interval = Column(Integer, nullable=True)
+    # Every token_gen_time minutes from the beginning of the contest
+    # we generate token_gen_number tokens, or we don't if either is
+    # None.
     token_gen_time = Column(Integer, nullable=True)
     token_gen_number = Column(Integer, nullable=True)
 
@@ -241,6 +246,11 @@ class Contest(Base):
         # anything left.
         played_tokens = len(token_timestamps)
         if token_total is not None and played_tokens >= token_total:
+            return (0, None, None)
+
+        # If token_initial is None, it means that the admin disabled
+        # tokens usage, hence no tokens.
+        if token_initial is None:
             return (0, None, None)
 
         # Now that we already considered the number of tokens already
