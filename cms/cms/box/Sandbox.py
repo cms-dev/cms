@@ -475,7 +475,11 @@ class Sandbox:
 
     def execute_without_std(self, command):
         """Execute the given command in the sandbox using
-        subprocess.Popen, and reading its standard output and error.
+        subprocess.Popen and discardind standard input, output and
+        error. More specifically, the standard input gets closed just
+        after the execution has started; standard output and error are
+        read until the end, in a way that prevents the execution from
+        being blocked because of insufficient buffering.
 
         command (list): executable filename and arguments of the
                         command.
@@ -485,6 +489,10 @@ class Sandbox:
         popen = self.popen(command, stdin=subprocess.PIPE,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                            close_fds=True)
+
+        # Close stdin; just saying stdin=None isn't ok, because the
+        # standard input would be obtained from the application stdin,
+        # that could interfere with the child process behaviour
         popen.stdin.close()
 
         # Read stdout and stderr to the end without having to block
