@@ -73,7 +73,7 @@
             </table>
             {% end %}
             <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
-            <pre>{% if s.compilation_text != None %}{{ s.compilation_text }}{% end %}</pre>
+            <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
           </div>
 
           {% end %}

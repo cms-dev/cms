@@ -88,9 +88,9 @@ class BaseHandler(tornado.web.RequestHandler):
             params["phase"] = self.contest.phase(params["timestamp"])
             params["unanswered"] = self.sql_session.query(Question)\
                                     .join(User)\
-                                    .filter(User.contest_id == \
-                                    self.contest.id)\
-                                    .filter(Question.reply_timestamp == None)\
+                                    .filter(User.contest_id ==
+                                            self.contest.id)\
+                                    .filter(Question.reply_timestamp is None)\
                                     .count()
         params["contest_list"] = self.sql_session.query(Contest).all()
         params["cookie"] = str(self.cookies)
@@ -117,7 +117,8 @@ class BaseHandler(tornado.web.RequestHandler):
 
         """
         argument = self.get_argument(argument_name, repr(default))
-        if allow_empty and (argument == None or argument == "" or argument == "None"):
+        if allow_empty and \
+               (argument is None or argument == "" or argument == "None"):
             return None
         try:
             argument = int(argument)
@@ -496,7 +497,7 @@ class UserViewHandler(BaseHandler):
     def get(self, user_id):
 
         user = User.get_from_id(user_id, self.sql_session)
-        if user == None:
+        if user is None:
             raise tornado.web.HTTPError(404)
         self.contest = user.contest
         r_params = self.render_params()
@@ -506,7 +507,7 @@ class UserViewHandler(BaseHandler):
 
     def post(self, user_id):
         user = User.get_from_id(user_id, self.sql_session)
-        if user == None:
+        if user is None:
             raise tornado.web.HTTPError(404)
         self.contest = user.contest
         user.real_name = self.get_argument("real_name", user.real_name)
@@ -548,7 +549,7 @@ class SubmissionFileHandler(FileHandler):
 
         sub_file = File.get_from_id(file_id, self.sql_session)
 
-        if sub_file == None:
+        if sub_file is None:
             raise tornado.web.HTTPError(404)
 
         self.fetch(sub_file.digest, "text/plain", sub_file.filename)
@@ -575,7 +576,7 @@ class QuestionReplyHandler(BaseHandler):
         ref = self.get_argument("ref","/")
 
         question = Question.get_from_id(question_id, self.sql_session)
-        if question == None:
+        if question is None:
             raise tornado.web.HTTPError(404)
 
         reply_subject_code = self.get_argument("reply_question_quick_answer",
@@ -635,7 +636,7 @@ class SubmissionReevaluateHandler(BaseHandler):
         self.ref = self.get_argument("ref", "/")
 
         submission = Submission.get_from_id(submission_id, self.sql_session)
-        if submission == None:
+        if submission is None:
             raise tornado.web.HTTPError(404)
 
         self.submission = submission
@@ -649,7 +650,7 @@ class SubmissionReevaluateHandler(BaseHandler):
 
     @rpc_callback
     def es_notify_callback(self, data, plus, error=None):
-        if error == None:
+        if error is None:
             self.redirect(self.ref)
         else:
             logger.error("Notification to ES failed: %s." % repr(error))
@@ -662,7 +663,7 @@ class UserReevaluateHandler(BaseHandler):
     def get(self, user_id):
         self.user_id = user_id
         user = User.get_from_id(user_id, self.sql_session)
-        if user == None:
+        if user is None:
             raise tornado.web.HTTPError(404)
 
         self.contest = user.contest
@@ -701,7 +702,7 @@ class NotificationsHandler(BaseHandler):
         last_notification = float(self.get_argument("last_notification", "0"))
 
         questions = self.sql_session.query(Question)\
-                      .filter(Question.reply_timestamp == None)\
+                      .filter(Question.reply_timestamp is None)\
                       .filter(Question.question_timestamp > last_notification)\
                       .all()
 

@@ -89,7 +89,7 @@ class TaskStatementViewHandler(BaseHandler):
 
         statement = get_task_statement(task)
 
-        if statement == None:
+        if statement is None:
             raise tornado.web.HTTPError(404)
 
         self.set_header("Content-Type", "application/pdf")

@@ -295,7 +295,7 @@ class TaskViewHandler(BaseHandler):
             return
 
         r_params["task"] = Task.get_from_id(task_id, self.sql_session)
-        if r_params["task"] == None or \
+        if r_params["task"] is None or \
             r_params["task"].contest != self.contest:
             raise tornado.web.HTTPError(404)
 
@@ -321,7 +321,7 @@ class TaskStatementViewHandler(FileHandler):
             return
 
         task = Task.get_from_id(task_id, self.sql_session)
-        if task == None or task.contest != self.contest:
+        if task is None or task.contest != self.contest:
             raise tornado.web.HTTPError(404)
 
         self.fetch(task.statement, "application/pdf", task.name + ".pdf")
@@ -483,7 +483,7 @@ class SubmitHandler(BaseHandler):
             .filter_by(task_id=self.task.id)\
             .filter_by(user_id=self.current_user.id)\
             .order_by(Submission.timestamp.desc()).first()
-        if last_submission != None and \
+        if last_submission is not None and \
                self.timestamp - last_submission.timestamp < \
                Config.min_submission_interval:
             self.application.service.add_notification(
@@ -577,7 +577,7 @@ class SubmitHandler(BaseHandler):
             user_filename = self.files[our_filename][0]
             if our_filename.find(".%l") != -1:
                 lang = which_language(user_filename)
-                if lang == None:
+                if lang is None:
                     error = self._("Cannot recognize submission's language.")
                     break
                 elif self.submission_lang is not None and \
@@ -586,7 +586,7 @@ class SubmitHandler(BaseHandler):
                     break
                 else:
                     self.submission_lang = lang
-        if error != None:
+        if error is not None:
             self.application.service.add_notification(
                 self.current_user.username,
                 int(time.time()),

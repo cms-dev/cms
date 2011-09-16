@@ -268,8 +268,8 @@ class Contest(Base):
         if token_max is not None:
             avail = min(avail, token_max)
 
-        # If token_gen_number == None, we may as well consider it 0.
-        if token_gen_number == None:
+        # If token_gen_number is None, we may as well consider it 0.
+        if token_gen_number is None:
             token_gen_number = 0
 
         # This is the index of the first non-yet-considered token.
@@ -390,7 +390,7 @@ class Contest(Base):
 
         Note also that this method assumes that all played tokens were
         regularly played, and that there are no tokens played in the
-        future. Also, if r[0] == 0 and r[1] == None, then r[2] should
+        future. Also, if r[0] == 0 and r[1] is None, then r[2] should
         be ignored.
 
         username (string): the username of the user.
@@ -401,7 +401,7 @@ class Contest(Base):
                                   are timestamps, or None.
 
         """
-        if timestamp == None:
+        if timestamp is None:
             timestamp = int(time.time())
 
         user = self.get_user(username)

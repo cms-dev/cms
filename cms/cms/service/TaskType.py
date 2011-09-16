@@ -226,7 +226,7 @@ class TaskType:
                          JobException.
 
         """
-        if self.sandbox == None:
+        if self.sandbox is None:
             with async.lock:
                 logger.error("Sandbox not present while doing "
                              "sandbox operation %s." % operation)

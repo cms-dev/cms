@@ -127,7 +127,7 @@ function update_additional_answer(element, invoker)
             </table>
             {% end %}
             <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
-            <pre>{% if s.compilation_text != None %}{{ escape(s.compilation_text) }}{% end %}</pre>
+            <pre>{% if s.compilation_text is not None %}{{ escape(s.compilation_text) }}{% end %}</pre>
           </div>
 
           {% end %}
@@ -218,11 +218,11 @@ function update_additional_answer(element, invoker)
         <form id="send_message_form" action="/message/{{selected_user.id}}" method="POST">
           <div class="notification_msg">
             <div class="notification_subject">
-              Subject: 
+              Subject:
               <input id="send_message_subject" type="text" name="message_subject" style="width: 100%" />
             </div>
             <div class="notification_text">
-              Text: 
+              Text:
               <textarea name="message_text" style="width: 100%" ></textarea>
             </div>
           <input type="submit" value="Send"/>

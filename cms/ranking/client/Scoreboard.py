@@ -100,7 +100,7 @@ class Scoreboard(object):
     <td class="score contest ''' + score_class + '''">''' + str(self.ds.get_score_c(u_id, c_id)) + '''</td>'''
 
         score_class = self.get_score_class(self.ds.get_score(u_id), sum([task['score'] for task in self.ds.tasks.itervalues()]))
-        if t_key == None and c_key == None:
+        if t_key is None and c_key is None:
             score_class += ' sort_key'
         result += '''
     <td class="score global ''' + score_class + '''">''' + str(self.ds.get_score(u_id)) + '''</td>

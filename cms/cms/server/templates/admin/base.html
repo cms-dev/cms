@@ -17,7 +17,7 @@
     <link rel="stylesheet" type="text/css" href="/static/sh/shCore.css"/>
     <link rel="stylesheet" type="text/css" href="/static/sh/shThemeDefault.css"/>
 
-    {% if contest == None %}
+    {% if contest is None %}
     <title>Admin</title>
     <script type="text/javascript">
 <!--
@@ -76,16 +76,16 @@ window.onload = init;
       <div id="sidebar">
         <h1>Administration</h1>
         <ul class="menu">
-          <li class="menu_entry"><a class="menu_link" href="/{% if contest != None %}{{ contest.id }}{% end %}">Overview</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/{% if contest is not None %}{{ contest.id }}{% end %}">Overview</a></li>
         </ul>
         <div class="hr"></div>
         <select id="contest_selection_select" onchange="utils.switch_contest()">
-          <option value=null {% if contest == None %} selected {% end %}>Select a contest</option>
+          <option value=null {% if contest is None %} selected {% end %}>Select a contest</option>
           {% for i in contest_list %}
 
           <option
             value="{{ i.id }}"
-            {% if contest != None and contest.id == i.id %}
+            {% if contest is not None and contest.id == i.id %}
               selected
             {% end %}
           >
@@ -95,14 +95,14 @@ window.onload = init;
         </select>
         <a href="/contest/add" alt="New contest" style="text-decoration: none;">+</a>
 
-          {% if contest != None %}
+          {% if contest is not None %}
           <div class="sidebar_left">Contest:</div>
           <ul class="menu">
             <li class="menu_entry"><a class="menu_link" href="/contest/{{ contest.id }}">General</a></li>
             <li class="menu_entry"><a class="menu_link" href="/announcements/{{ contest.id }}">Announcements</a></li>
             <li class="menu_entry"><a class="menu_link" href="/userlist/{{ contest.id }}">Users</a></li>
             <li class="menu_entry">
-              <span id="unanswered_questions" class="unread" 
+              <span id="unanswered_questions" class="unread"
                 {% if unanswered == 0 %} style="display: none;" {% end %}>
                 {{ unanswered }}
               </span>
