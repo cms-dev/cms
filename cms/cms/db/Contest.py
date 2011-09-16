@@ -115,6 +115,7 @@ class Contest(Base):
                                        for user in self.users],
                 'token_initial':      self.token_initial,
                 'token_max':          self.token_max,
+                'token_total':        self.token_total,
                 'token_min_interval': self.token_min_interval,
                 'token_gen_time':     self.token_gen_time,
                 'token_gen_number':   self.token_gen_number,
@@ -224,10 +225,9 @@ class Contest(Base):
                           token_gen_time, token_gen_number,
                           start, timestamp):
         """Do exactly the same computation stated in tokens_available,
-        but ensuring only a single set of token_*
-        directive. Basically, tokens_available call this twice for
-        contest-wise and task-wise parameters and then assemble the
-        result.
+        but ensuring only a single set of token_* directive.
+        Basically, tokens_available call this twice for contest-wise
+        and task-wise parameters and then assemble the result.
 
         token_timestamps (list): list of timestamps of used tokens.
         token_* (int): the parameters we want to enforce.
