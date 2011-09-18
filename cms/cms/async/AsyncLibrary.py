@@ -276,7 +276,6 @@ class Service:
         """Reconnect to all remote services that have been disconnected.
 
         """
-        logger.debug("Service._reconnect")
         for service in self.remote_services:
             remote_service = self.remote_services[service]
             if not remote_service.connected:
