@@ -540,7 +540,7 @@ class SubmitHandler(BaseHandler):
                 self.current_user.username,
                 int(time.time()),
                 self._("Invalid submission format!"),
-                self._("Please select the correct files.")
+                self._("Please select the correct files."))
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
