@@ -498,7 +498,7 @@ class SubmitHandler(BaseHandler):
 
         # Ensure that the user did not submit multiple files with the
         # same name.
-        if any(len(x) != 1 for x in self.request.files.values):
+        if any(len(x) != 1 for x in self.request.files.values()):
             self.application.service.add_notification(
                 self.current_user.username,
                 int(time.time()),
