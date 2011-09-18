@@ -15,12 +15,26 @@
 
 <h2 id="title_submit_solution" class="toggling_on" onclick="utils.toggle_visibility('submit_solution');">{{ _("Submit a solution") }}</h2>
 <div id="submit_solution">
-  <form enctype="multipart/form-data" action="/submit/{{ Cryptographics.encrypt_number(task.id) }}" method="post">
-    {% for filename in [x.filename for x in task.submission_format] %}
-    <p>{{ filename.replace(".%l", "") }}:<br/><input type="file" name="{{ filename }}"></input></p>
-    {% end %}
-    <input type="submit" value="{{ _("Submit") }}"></input>{% comment _("Submit") %}
-  </form>
+  <table>
+    <tr>
+      <td width="50%">
+        <form enctype="multipart/form-data" action="/submit/{{ Cryptographics.encrypt_number(task.id) }}" method="post">
+          {% for filename in [x.filename for x in task.submission_format] %}
+          <p>{{ filename.replace(".%l", "") }}:<br/><input type="file" name="{{ filename }}"></input></p>
+          {% end %}
+          <input type="submit" value="{{ _("Submit") }}"></input>{% comment _("Submit") %}
+        </form>
+      </td>
+      {% if len(task.submission_format) > 1 %}
+      <td width="50%">
+        <form enctype="multipart/form-data" action="/submit/{{ Cryptographics.encrypt_number(task.id) }}" method="post">
+          <p>submission.zip<br/><input type="file" name="submission"></input></p>
+          <input type="submit" value="{{ _("Submit") }}"></input>{% comment _("Submit") %}
+        </form>
+      </td>
+      {% end %}
+    </tr>
+  </table>
   <div class="hr"></div>
 </div>
 

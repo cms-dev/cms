@@ -496,6 +496,38 @@ class SubmitHandler(BaseHandler):
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
+        # Ensure that the user did not submit multiple files with the
+        # same name.
+        if any(len(x) != 1 for x in self.request.files.values):
+            self.application.service.add_notification(
+                self.current_user.username,
+                int(time.time()),
+                self._("Invalid submission format!"),
+                self._("Please select the correct files.")
+            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            return
+
+
+        # TODO: implement also tar, tar/gz, tar/bz2
+        # If the user submitted an archive, extract it and use content
+        # as request.files.
+        if len(self.request.files) == 1 and \
+               self.request.files.keys()[0] == "submission":
+            zip_file = self.request.files["submission"][0]
+            del self.request.files["submission"]
+            # Extract the files from the archive.
+
+            temp_zip_file, temp_zip_filename = tempfile.mkstemp()
+            with os.fdopen(temp_zip_file, "w") as temp_zip_file:
+                temp_zip_file.write(zip_file["body"])
+
+            zip_object = zipfile.ZipFile(temp_zip_filename, "r")
+            for item in zip_object.infolist():
+                self.request.files[item.filename] = [{
+                    "filename": item.filename,
+                    "body": zip_object.read(item)
+                    }]
+
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
         # type says so.
@@ -507,23 +539,23 @@ class SubmitHandler(BaseHandler):
             self.application.service.add_notification(
                 self.current_user.username,
                 int(time.time()),
-                self._("File names do not match!"),
-                self._("Please select the correct files."))
+                self._("Invalid submission format!"),
+                self._("Please select the correct files.")
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
         # Add submitted files. After this, self.files is a dictionary
         # indexed by *our* filenames (something like "output01.txt" or
         # "taskname.%;", and whose value is a couple
-        # (user_assigned_filename, content, digest). digest is None
-        # for user submitted files, while content is None for files
-        # retrieved from the previous submission.
+        # (user_assigned_filename, content).
         self.files = {}
         for uploaded, data in self.request.files.iteritems():
             self.files[uploaded] = (data[0]["filename"], data[0]["body"])
 
         # If we allow partial submissions, implicitly we recover the
-        # non-submitted files from the previous submission.
+        # non-submitted files from the previous submission. And put
+        # them in self.file_digests (i.e., like they have already been
+        # sent to FS).
         self.submission_lang = None
         self.file_digests = {}
         self.retrieved = 0
@@ -538,20 +570,6 @@ class SubmitHandler(BaseHandler):
                     self.file_digests[filename] = \
                         last_submission.files[filename].digest
                     self.retrieved += 1
-
-        # TODO: Up to now we don't support zipfiles, so I'm commenting
-        # this, but in the future please provide the possibilities to
-        # submit zipfiles (at least for output-only tasks).
-        # if uploaded["content_type"] == "application/zip":
-        #     # Extract the files from the archive.
-        #     temp_zip_file, temp_zip_filename = tempfile.mkstemp()
-        #     # Note: this is just a binary copy, so no utf-8 wtf-ery here.
-        #     with os.fdopen(temp_zip_file, "w") as temp_zip_file:
-        #         temp_zip_file.write(uploaded["body"])
-
-        #     zip_object = zipfile.ZipFile(temp_zip_filename, "r")
-        #     for item in zip_object.infolist():
-        #         self.files[item.filename] = zip_object.read(item)
 
         # We need to ensure that everytime we have a .%l in our
         # filenames, the user has one amongst ".cpp", ".c", or ".pas,
