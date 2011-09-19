@@ -151,7 +151,7 @@ class BaseHandler(tornado.web.RequestHandler):
             try:
                 self.sql_session.close()
             except Exception as e:
-                logger.warning("Couldn't close SQL connection: " + repr(e))
+                logger.warning("Couldn't close SQL connection: %r" % e)
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
 
@@ -260,9 +260,9 @@ class LoginHandler(BaseHandler):
             self.redirect("/?login_error=true")
             return
         if user.hidden and Config.block_hidden_users:
-            logger.info("Hidden user login attempt: " +
-                      "user=%s pass=%s remote_ip=%s." %
-                      (username, password, self.request.remote_ip))
+            logger.info("Hidden user login attempt: "
+                        "user=%s pass=%s remote_ip=%s." %
+                        (username, password, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
 
@@ -324,7 +324,7 @@ class TaskStatementViewHandler(FileHandler):
         if task is None or task.contest != self.contest:
             raise tornado.web.HTTPError(404)
 
-        self.fetch(task.statement, "application/pdf", task.name + ".pdf")
+        self.fetch(task.statement, "application/pdf", "%s.pdf" % task.name)
 
 
 class SubmissionFileHandler(FileHandler):
@@ -507,7 +507,6 @@ class SubmitHandler(BaseHandler):
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
-
         # TODO: implement also tar, tar/gz, tar/bz2
         # If the user submitted an archive, extract it and use content
         # as request.files.
@@ -647,7 +646,7 @@ class SubmitHandler(BaseHandler):
                                  self.files), fd)
                 self.local_copy_saved = True
             except Exception as e:
-                logger.error("Submission local copy failed - " +
+                logger.error("Submission local copy failed - %s" %
                              traceback.format_exc())
 
         # We now have to send all the files to the destination...
@@ -693,7 +692,7 @@ class SubmitHandler(BaseHandler):
                                             None,
                                             error="Connection failed.")
         else:
-            logger.error("Storage failed! " + error)
+            logger.error("Storage failed! %s" % error)
             if self.local_copy_saved:
                 message = "In case of emergency, this server has a local copy."
             else:
@@ -710,7 +709,7 @@ class SubmitHandler(BaseHandler):
     def es_notify_callback(self, data, plus, error=None):
         logger.debug("ES notify_callback")
         if error is not None:
-            logger.error("Notification to ES failed! " + error)
+            logger.error("Notification to ES failed! %s" % error)
         # Add "All ok" notification
         self.application.service.add_notification(
             self.current_user.username,
@@ -796,15 +795,15 @@ handlers = [(r"/",
              LoginHandler),
             (r"/logout",
              LogoutHandler),
-            (r"/submission_file/([%s]+)" % (get_encryption_alphabet()),
+            (r"/submission_file/([%s]+)" % get_encryption_alphabet(),
              SubmissionFileHandler),
-            (r"/tasks/([%s]+)" % (get_encryption_alphabet()),
+            (r"/tasks/([%s]+)" % get_encryption_alphabet(),
              TaskViewHandler),
-            (r"/tasks/([%s]+)/statement" % (get_encryption_alphabet()),
+            (r"/tasks/([%s]+)/statement" % get_encryption_alphabet(),
              TaskStatementViewHandler),
             (r"/usetoken",
              UseTokenHandler),
-            (r"/submit/([%s]+)" %  (get_encryption_alphabet()),
+            (r"/submit/([%s]+)" % get_encryption_alphabet(),
              SubmitHandler),
             (r"/communication",
              CommunicationHandler),

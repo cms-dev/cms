@@ -124,10 +124,10 @@ class BaseHandler(tornado.web.RequestHandler):
         try:
             argument = int(argument)
         except:
-            raise ValueError(argument_name + \
-                ": Can't cast " + str(argument) + " to int.")
+            raise ValueError("%s: can't cast %s to int." %
+                             (argument_name, argument))
         if argument < 0:
-            raise ValueError(argument_name + " is negative.")
+            raise ValueError("%s is negative." % argument_name)
         return argument
 
 FileHandler = file_handler_gen(BaseHandler)
@@ -192,6 +192,7 @@ class AdminWebServer(WebService):
         """
         self.notifications.append((timestamp, subject, text))
 
+
 class MainHandler(BaseHandler):
     """Home page handler, with queue and workers statuses.
 
@@ -212,6 +213,7 @@ class ContestViewHandler(BaseHandler):
         r_params = self.render_params()
         self.render("contest.html", **r_params)
 
+
 class AddContestHandler(BaseHandler):
     """Adds a new contest.
 
@@ -224,7 +226,7 @@ class AddContestHandler(BaseHandler):
 
         name = self.get_argument("name", "")
         if name == "":
-            self.write("No contest name specified");
+            self.write("No contest name specified")
             return
 
         description = self.get_argument("description", None)
@@ -250,7 +252,7 @@ class AddContestHandler(BaseHandler):
                 "token_gen_number",
                 None)
         except Exception as e:
-            self.write("Invalid token field(s): " + repr(e))
+            self.write("Invalid token field(s). %r" % e)
             return
 
         try:
@@ -259,7 +261,7 @@ class AddContestHandler(BaseHandler):
             stop = time.mktime(time.strptime(self.get_argument("end", ""),
                                              "%d/%m/%Y %H:%M:%S"))
         except Exception as e:
-            self.write("Invalid date(s)." + repr(e))
+            self.write("Invalid date(s). %r" % e)
             return
 
         if start > stop:
@@ -338,17 +340,17 @@ class TaskViewHandler(BaseHandler):
                 "token_gen_number",
                 self.task.token_gen_number)
         except ValueError as e:
-            self.write("Invalid fields: " + repr(e))
+            self.write("Invalid fields. %r" % e)
             self.finish()
             return
 
         for testcase in self.task.testcases:
             testcase.public = self.get_argument(
-                "testcase_" + str(testcase.num) + "_public",
+                "testcase_%d_public" % testcase.num,
                 False) != False
 
         self.sql_session.commit()
-        self.redirect("/task/" + str(self.task.id))
+        self.redirect("/task/%d" % self.task.id)
 
 
 class TaskStatementViewHandler(FileHandler):
@@ -363,7 +365,7 @@ class TaskStatementViewHandler(FileHandler):
         except IndexError:
             self.write("Task %s not found." % task_id)
 
-        self.fetch(task.statement, "application/pdf", task.name + ".pdf")
+        self.fetch(task.statement, "application/pdf", "%s.pdf" % task.name)
 
 
 class EditContestHandler(BaseHandler):
@@ -377,7 +379,7 @@ class EditContestHandler(BaseHandler):
         if name == "":
             self.application.service.add_notification(int(time.time()),
                 "No contest name specified", "")
-            self.redirect("/contest/" + contest_id)
+            self.redirect("/contest/%d" % contest_id)
             return
 
         description = self.get_argument("description", None)
@@ -405,8 +407,8 @@ class EditContestHandler(BaseHandler):
                 self.contest.token_gen_number)
         except Exception as e:
             self.application.service.add_notification(int(time.time()),
-                "Invalid token field(s)", repr(e))
-            self.redirect("/contest/" + contest_id)
+                "Invalid token field(s).", repr(e))
+            self.redirect("/contest/%d" % contest_id)
             return
 
         try:
@@ -416,14 +418,14 @@ class EditContestHandler(BaseHandler):
                                              "%d/%m/%Y %H:%M:%S"))
         except Exception as e:
             self.application.service.add_notification(int(time.time()),
-                "Invalid date(s)", repr(e))
-            self.redirect("/contest/" + contest_id)
+                "Invalid date(s).", repr(e))
+            self.redirect("/contest/%d" % contest_id)
             return
 
         if start > stop:
             self.application.service.add_notification(int(time.time()),
                 "Contest ends before it starts", repr(e))
-            self.redirect("/contest/" + contest_id)
+            self.redirect("/contest/%d" % contest_id)
             return
 
         self.contest.name = name
@@ -438,7 +440,7 @@ class EditContestHandler(BaseHandler):
         self.contest.stop = stop
 
         self.sql_session.commit()
-        self.redirect("/contest/" + contest_id)
+        self.redirect("/contest/%d" % contest_id)
 
 
 class AnnouncementsHandler(BaseHandler):
@@ -463,7 +465,7 @@ class AddAnnouncementHandler(BaseHandler):
             ann = Announcement(int(time.time()), subject, text, self.contest)
             self.sql_session.add(ann)
             self.sql_session.commit()
-        self.redirect("/announcements/" + contest_id)
+        self.redirect("/announcements/%d" % contest_id)
 
 
 class RemoveAnnouncementHandler(BaseHandler):
@@ -477,7 +479,7 @@ class RemoveAnnouncementHandler(BaseHandler):
         contest_id = str(ann.contest.id)
         self.sql_session.delete(ann)
         self.sql_session.commit()
-        self.redirect("/announcements/" + contest_id)
+        self.redirect("/announcements/%d" % contest_id)
 
 
 class UserListHandler(BaseHandler):
@@ -520,7 +522,7 @@ class UserViewHandler(BaseHandler):
                 self.application.service.add_notification(int(time.time()),
                     "Duplicate username",
                     "The requested username already exists in the contest.")
-                self.redirect("/user/"+str(user.id))
+                self.redirect("/user/%s" % user.id)
                 return
         user.username = username
 
@@ -535,7 +537,7 @@ class UserViewHandler(BaseHandler):
         self.application.service.add_notification(int(time.time()),
             "User updated successfully.",
             "")
-        self.redirect("/user/"+str(user.id))
+        self.redirect("/user/%s" % user.id)
 
 
 class SubmissionFileHandler(FileHandler):
@@ -573,8 +575,7 @@ class QuestionReplyHandler(BaseHandler):
 
     """
     def post(self, question_id):
-
-        ref = self.get_argument("ref","/")
+        ref = self.get_argument("ref", "/")
 
         question = Question.get_from_id(question_id, self.sql_session)
         if question is None:
@@ -623,7 +624,7 @@ class MessageHandler(BaseHandler):
         logger.warning("Message submitted to user %s."
                        % user)
 
-        self.redirect("/user/" + user_id)
+        self.redirect("/user/%d" % user_id)
 
 
 class SubmissionReevaluateHandler(BaseHandler):
@@ -654,7 +655,7 @@ class SubmissionReevaluateHandler(BaseHandler):
         if error is None:
             self.redirect(self.ref)
         else:
-            logger.error("Notification to ES failed: %s." % repr(error))
+            logger.error("Notification to ES failed: %s." % error)
             self.finish()
 
 
@@ -682,7 +683,7 @@ class UserReevaluateHandler(BaseHandler):
     def es_notify_callback(self, data, plus, error=None):
         self.pending_requests -= 1
         if self.pending_requests <= 0:
-            self.redirect("/user/" + self.user_id)
+            self.redirect("/user/%d" % self.user_id)
 
 
 class FileFromDigestHandler(FileHandler):
@@ -766,6 +767,7 @@ handlers = [(r"/",
             (r"/notifications",
              NotificationsHandler),
            ]
+
 
 def main():
     import sys
