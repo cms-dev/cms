@@ -109,7 +109,7 @@ def encode_json(obj):
     try:
         return simplejson.dumps(obj)
     except:
-        print >> sys.stderr, "Can't encode JSON: %s" % repr(obj)
+        print >> sys.stderr, "Can't encode JSON: %r" % obj
         raise ValueError
 
 

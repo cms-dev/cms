@@ -237,8 +237,8 @@ class TaskType:
         except (OSError, IOError) as e:
             with async_lock:
                 logger.error("Error in safe sandbox operation %s, "
-                             "with arguments %s, %s. Exception: %s" %
-                             (operation, str(args), str(kwargs), repr(e)))
+                             "with arguments %s, %s. %r" %
+                             (operation, args, kwargs, e))
             self.delete_sandbox()
             raise JobException()
         except AttributeError:

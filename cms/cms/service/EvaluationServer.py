@@ -558,7 +558,7 @@ class EvaluationServer(Service):
 
         # Other (i.e. error)
         else:
-            logger.error("Invalid job type %s" % repr(job_type))
+            logger.error("Invalid job type %r" % job_type)
             return
 
     def compilation_ended(self, submission_id,
@@ -599,8 +599,8 @@ class EvaluationServer(Service):
                                 timestamp)
         # Otherwise, error.
         else:
-            logger.error("Compilation outcome %s not recognized." %
-                         repr(compilation_outcome))
+            logger.error("Compilation outcome %r not recognized." %
+                         compilation_outcome)
 
     def evaluation_ended(self, submission_id,
                          timestamp, evaluation_tries,
