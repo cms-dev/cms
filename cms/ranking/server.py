@@ -26,7 +26,33 @@ import functools
 import submissions
 import time
 import os
+import re
+import base64
 from operator import attrgetter
+
+def authenticated(method):
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        try:
+            header = self.request.headers['Authorization']
+            # FIXME we're assuming there's no whitespace other than the
+            # space separating the two strings. Is that correct?
+            match = re.compile('^Basic ([A-Za-z0-9+/]+={0,2})$').match(header)
+            token = base64.b64decode(match.group(1))
+            username = token.split(':')[0]
+            password = ':'.join(token.split(':')[1:])
+            if username == self.settings['username'] and \
+               password == self.settings['password']:
+                return method(self, *args, **kwargs)
+            else:
+                self.set_header('WWW-Authenticate',
+                    'Basic realm="' + self.settings['pagename'] + '"')
+                self.set_status(401)
+        except:
+            self.set_header('WWW-Authenticate',
+                'Basic realm="' + self.settings['pagename'] + '"')
+            self.set_status(401)
+    return wrapper
 
 def create_handler(entity_store):
     """Return a handler for the given store.
@@ -40,17 +66,7 @@ def create_handler(entity_store):
     assert isinstance(entity_store, store.EntityStore)
 
     class RestHandler(tornado.web.RequestHandler):
-
-        def prepare(self):
-            # uncomment the next line to be automatically authenticated
-            # self._current_user = "something"
-            pass
-
-        def get_current_user(self):
-            # TODO implement some real authentication system
-            return None
-
-        @tornado.web.authenticated
+        @authenticated
         def post(self, entity_id):
             # create
             try:
@@ -62,7 +78,7 @@ def create_handler(entity_store):
             else:
                 self.set_status(201)
 
-        @tornado.web.authenticated
+        @authenticated
         def put(self, entity_id):
             # update
             try:
@@ -74,7 +90,7 @@ def create_handler(entity_store):
             else:
                 self.set_status(200)
 
-        @tornado.web.authenticated
+        @authenticated
         def delete(self, entity_id):
             # delete
             try:
@@ -166,7 +182,7 @@ class SubmissionHandler(tornado.web.RequestHandler):
         # self._current_user = "something"
         pass
 
-    @tornado.web.authenticated
+    @authenticated
     def post(self, entity_id):
         # create
         try:
@@ -178,7 +194,7 @@ class SubmissionHandler(tornado.web.RequestHandler):
         else:
             self.set_status(201)
 
-    @tornado.web.authenticated
+    @authenticated
     def put(self, entity_id):
         # update
         try:
@@ -190,7 +206,7 @@ class SubmissionHandler(tornado.web.RequestHandler):
         else:
             self.set_status(200)
 
-    @tornado.web.authenticated
+    @authenticated
     def delete(self, entity_id):
         # delete
         try:
@@ -251,19 +267,23 @@ class ScoreHandler(tornado.web.RequestHandler):
 
 
 if __name__ == "__main__":
-    application = tornado.web.Application([
-        (r"/contests/([A-Za-z0-9_]*)", create_handler(store.contest_store)),
-        (r"/tasks/([A-Za-z0-9_]*)", create_handler(store.task_store)),
-        (r"/teams/([A-Za-z0-9_]*)", create_handler(store.team_store)),
-        (r"/users/([A-Za-z0-9_]*)", create_handler(store.user_store)),
-        (r"/subs/([A-Za-z0-9_]*)", SubmissionHandler),
-        (r"/submissions/([A-Za-z0-9_]+)", SubListHandler),
-        (r"/history", HistoryHandler),
-        (r"/scores", ScoreHandler),
-        (r"/events", NotificationHandler),
-        (r"/(.*)", tornado.web.StaticFileHandler,
-            dict(path=os.path.join(os.path.dirname(__file__), 'static'))),
-    ])
+    application = tornado.web.Application(
+        [
+            (r"/contests/([A-Za-z0-9_]*)", create_handler(store.contest_store)),
+            (r"/tasks/([A-Za-z0-9_]*)", create_handler(store.task_store)),
+            (r"/teams/([A-Za-z0-9_]*)", create_handler(store.team_store)),
+            (r"/users/([A-Za-z0-9_]*)", create_handler(store.user_store)),
+            (r"/subs/([A-Za-z0-9_]*)", SubmissionHandler),
+            (r"/submissions/([A-Za-z0-9_]+)", SubListHandler),
+            (r"/history", HistoryHandler),
+            (r"/scores", ScoreHandler),
+            (r"/events", NotificationHandler),
+            (r"/(.*)", tornado.web.StaticFileHandler,
+                dict(path=os.path.join(os.path.dirname(__file__), 'static'))),
+        ],
+        pagename='Scoreboard',
+        username='usern4me',
+        password='passw0rd')
     # application.add_transform (tornado.web.ChunkedTransferEncoding)
     application.listen(8890)
     tornado.ioloop.IOLoop.instance().start()
