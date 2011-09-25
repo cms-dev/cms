@@ -41,18 +41,29 @@ def authenticated(method):
             token = base64.b64decode(match.group(1))
             username = token.split(':')[0]
             password = ':'.join(token.split(':')[1:])
-            if username == self.settings['username'] and \
-               password == self.settings['password']:
-                return method(self, *args, **kwargs)
-            else:
-                self.set_header('WWW-Authenticate',
-                    'Basic realm="' + self.settings['pagename'] + '"')
-                self.set_status(401)
+            assert username == self.settings['username']
+            assert password == self.settings['password']
+            return method(self, *args, **kwargs)
         except:
-            self.set_header('WWW-Authenticate',
-                'Basic realm="' + self.settings['pagename'] + '"')
-            self.set_status(401)
+            raise tornado.web.HTTPError(401)
     return wrapper
+
+class DataHandler(tornado.web.RequestHandler):
+    def initialize(self):
+        pass
+
+    def set_default_headers(self):
+        # FIXME maybe not the best place to put this
+        if self.request.method == 'POST':
+            self.set_status(201)
+        else:
+            self.set_status(200)
+        self.set_header('Content-Type', 'text/plain; charset=UTF-8')
+
+    def write_error(self, status_code, **kwargs):
+        if status_code == 401:
+            self.set_header('WWW-Authenticate',
+                            'Basic realm="' + self.settings['pagename'] + '"')
 
 def create_handler(entity_store):
     """Return a handler for the given store.
@@ -65,18 +76,16 @@ def create_handler(entity_store):
     """
     assert isinstance(entity_store, store.EntityStore)
 
-    class RestHandler(tornado.web.RequestHandler):
+    class RestHandler(DataHandler):
         @authenticated
         def post(self, entity_id):
             # create
             try:
                 entity_store.create(entity_id, self.request.body)
             except store.InvalidKey:
-                self.set_status(405)
+                raise tornado.web.HTTPError(405)
             except (ValueError, store.InvalidData):
-                self.set_status(400)
-            else:
-                self.set_status(201)
+                raise tornado.web.HTTPError(400)
 
         @authenticated
         def put(self, entity_id):
@@ -84,11 +93,9 @@ def create_handler(entity_store):
             try:
                 entity_store.update(entity_id, self.request.body)
             except store.InvalidKey:
-                self.set_status(404)
+                raise tornado.web.HTTPError(404)
             except (ValueError, store.InvalidData):
-                self.set_status(400)
-            else:
-                self.set_status(200)
+                raise tornado.web.HTTPError(400)
 
         @authenticated
         def delete(self, entity_id):
@@ -96,40 +103,27 @@ def create_handler(entity_store):
             try:
                 entity_store.delete(entity_id)
             except store.InvalidKey:
-                self.set_status(404)
-            else:
-                self.set_status(200)
+                raise tornado.web.HTTPError(404)
 
         def get(self, entity_id):
             if entity_id == '':
                 # list
-                self.set_status(200)
                 self.write(entity_store.list() + '\n')
             else:
                 # retrieve
                 try:
                     entity = entity_store.retrieve(entity_id)
-                except store.InvalidKey:
-                    self.set_status(404)
-                else:
-                    self.set_status(200)
                     self.write(entity + '\n')
+                except store.InvalidKey:
+                    raise tornado.web.HTTPError(404)
 
     return RestHandler
 
 
-class NotificationHandler(tornado.web.RequestHandler):
-    """Provide notification of the changes in the data store."""
-    @tornado.web.asynchronous
-    def get(self):
-        """Send asynchronous updates."""
-        self.set_status(200)
-        self.set_header('Content-Type', 'text/event-stream')
-        self.set_header('Cache-Control', 'no-cache')
-        self.flush()
-        self.write('retry: 0\n')
-        self.write('\n')
-        self.flush()
+class MessageProxy(object):
+    """Receive the messages from the entities store and redirect them."""
+    def __init__(self):
+        self.clients = list()
 
         store.contest_store.add_create_callback(
             functools.partial(self.callback, "contest", "create"))
@@ -162,21 +156,59 @@ class NotificationHandler(tornado.web.RequestHandler):
         submissions.submission_store.add_callback(self.score_callback)
 
     def callback(self, entity, event, key):
-        self.write("id: " + str(int(time.time())) + "\n")
-        self.write("event: " + entity + "\n")
-        self.write("data: " + event + " " + key + "\n")
-        self.write("\n")
-        self.flush()
+        msg = 'id: ' + str(int(time.time())) + '\n' + \
+              'event: ' + entity + '\n' + \
+              'data: ' + event + ' ' + key + '\n' + \
+              '\n'
+        self.send(msg)
 
     def score_callback(self, user, task, score):
-        self.write("id: " + str(int(time.time())) + "\n")
-        self.write("event: score\n")
-        self.write("data: " + user + " " + task + " " + str(score) + "\n")
-        self.write("\n")
+        msg = 'id: ' + str(int(time.time())) + '\n' + \
+              'event: score\n' + \
+              'data: ' + user + ' ' + task + ' ' + str(score) + '\n' + \
+              '\n'
+        self.send(msg)
+
+    def send(self, message):
+        for client in self.clients:
+            client(message)
+
+    def add_callback(self, callback):
+        self.clients.append(callback)
+
+    def remove_callback(self, callback):
+        self.clients.remove(callback)
+
+proxy = MessageProxy()
+
+
+class NotificationHandler(DataHandler):
+    """Provide notification of the changes in the data store."""
+    @tornado.web.asynchronous
+    def get(self):
+        """Send asynchronous updates."""
+        global proxy
+        self.set_status(200)
+        self.set_header('Content-Type', 'text/event-stream')
+        self.set_header('Cache-Control', 'no-cache')
+        self.flush()
+        self.write('retry: 0\n')
+        self.write('\n')
+        self.flush()
+
+        proxy.add_callback(self.send_event)
+
+        # TODO add automatic connection close after a certain timeout
+
+    def on_connection_close(self):
+        proxy.remove_callback(self.send_event)
+
+    def send_event(self, message):
+        self.write(message)
         self.flush()
 
 
-class SubmissionHandler(tornado.web.RequestHandler):
+class SubmissionHandler(DataHandler):
     def prepare(self):
         # uncomment the next line to be automatically authenticated
         # self._current_user = "something"
@@ -227,12 +259,11 @@ class SubmissionHandler(tornado.web.RequestHandler):
             self.write(json.dumps(entity.dump()) + '\n')
 
 
-class SubListHandler(tornado.web.RequestHandler):
+class SubListHandler(DataHandler):
     def get(self, user_id):
         if user_id not in store.user_store._store:
             self.set_status(404)
         elif user_id not in submissions.submission_store._scores:
-            self.set_status(200)
             self.write("[]\n")
         else:
             subs = []
@@ -246,20 +277,16 @@ class SubListHandler(tornado.web.RequestHandler):
                     s['extra'] = i.get_current_extra()
                     subs.append(s)
             subs.sort(key=lambda x: (x['task'], x['time']))
-            self.set_status(200)
             self.write(json.dumps(subs) + '\n')
 
 
-class HistoryHandler(tornado.web.RequestHandler):
+class HistoryHandler(DataHandler):
     def get(self):
-        self.set_status(200)
         self.write(json.dumps(list(submissions.get_global_history())) + '\n')
 
 
-class ScoreHandler(tornado.web.RequestHandler):
+class ScoreHandler(DataHandler):
     def get(self):
-        self.set_status(200)
-
         for u_id, user in submissions.submission_store._scores.iteritems():
             for t_id, task in user.iteritems():
                 if task._history:
