@@ -50,14 +50,12 @@ def authenticated(method):
 
 class DataHandler(tornado.web.RequestHandler):
     def initialize(self):
-        pass
-
-    def set_default_headers(self):
-        # FIXME maybe not the best place to put this
         if self.request.method == 'POST':
             self.set_status(201)
         else:
             self.set_status(200)
+
+    def set_default_headers(self):
         self.set_header('Content-Type', 'text/plain; charset=UTF-8')
 
     def write_error(self, status_code, **kwargs):
@@ -209,11 +207,6 @@ class NotificationHandler(DataHandler):
 
 
 class SubmissionHandler(DataHandler):
-    def prepare(self):
-        # uncomment the next line to be automatically authenticated
-        # self._current_user = "something"
-        pass
-
     @authenticated
     def post(self, entity_id):
         # create
