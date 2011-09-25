@@ -23,6 +23,7 @@
 an asynchronous RPC service.
 
 """
+import fcntl
 
 import tornado.httpserver
 import tornado.ioloop
@@ -144,6 +145,17 @@ class WebService(Service):
     def __init__(self, listen_port, handlers, parameters, shard=0):
         logger.debug("WebService.__init__")
         Service.__init__(self, shard)
+
+        # This ensures that when the server autoreloads because its source is
+        # modified, the socket is closed correctly.
+        # In the development branch of Tornado, you can add a hook before
+        # the server reloads.
+
+        try:
+            if parameters["debug"] == True:
+                fcntl.fcntl(self.server.socket, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
+        except KeyError:
+            pass
 
         self.__responses = {}
         # TODO: why are the following two lines needed?

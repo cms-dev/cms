@@ -23,6 +23,8 @@ from pyjamas import DOM
 
 from __pyjamas__ import JS
 
+import re
+
 
 class TeamSearch(object):
     def __init__(self, ds):
@@ -125,7 +127,7 @@ class TeamSearch(object):
                 el.removeStyleName('hidden')
         else:
             for t_id, team in self.ds.teams.iteritems():
-                if team['name'][0:len(search_text)] == search_text:
+                if re.search(search_text.lower(), team['name'].lower()):
                     el = UIObject(Element=DOM.getElementById(t_id))
                     el.removeStyleName('hidden')
                 else:
