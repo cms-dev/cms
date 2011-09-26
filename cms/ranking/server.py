@@ -43,9 +43,9 @@ def authenticated(method):
             password = ':'.join(token.split(':')[1:])
             assert username == self.settings['username']
             assert password == self.settings['password']
-            return method(self, *args, **kwargs)
         except:
             raise tornado.web.HTTPError(401)
+        return method(self, *args, **kwargs)
     return wrapper
 
 class DataHandler(tornado.web.RequestHandler):
