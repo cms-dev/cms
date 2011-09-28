@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from Crypto.Cipher import AES
-from Crypto import Random
+#from Crypto import Random
 import base64
 import binascii
 
@@ -31,7 +31,9 @@ def get_random_key():
     """Generate 16 random bytes, safe to be used as AES key.
 
     """
-    return Random.get_random_bytes(16)
+    # Bad hack: some older version of Crypto do not support Random
+    #return Random.get_random_bytes(16)
+    return binascii.unhexlify("%032x" % random.getrandbits(16*8))
 
 def get_hex_random_key():
     """Generate 16 random bytes, safe to be used as AES key.
