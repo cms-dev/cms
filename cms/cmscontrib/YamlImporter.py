@@ -226,7 +226,8 @@ class YamlImporter(Service):
         self.exit()
         return False
 
-if __name__ == "__main__":
+    
+def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
     parser.add_option("-z", "--zero-time",
                       dest="zero_time", help="set to zero contest start and stop time",
@@ -262,3 +263,7 @@ if __name__ == "__main__":
                                  modif=modif,
                                  path=path,
                                  user_num=options.user_num).run()
+
+
+if __name__ == "__main__":
+    main()
