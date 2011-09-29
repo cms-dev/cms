@@ -346,11 +346,11 @@ class TaskViewHandler(BaseHandler):
 
         for testcase in self.task.testcases:
             testcase.public = self.get_argument(
-                "testcase_%d_public" % testcase.num,
+                "testcase_%s_public" % testcase.num,
                 False) != False
 
         self.sql_session.commit()
-        self.redirect("/task/%d" % self.task.id)
+        self.redirect("/task/%s" % self.task.id)
 
 
 class TaskStatementViewHandler(FileHandler):
@@ -379,7 +379,7 @@ class EditContestHandler(BaseHandler):
         if name == "":
             self.application.service.add_notification(int(time.time()),
                 "No contest name specified", "")
-            self.redirect("/contest/%d" % contest_id)
+            self.redirect("/contest/%s" % contest_id)
             return
 
         description = self.get_argument("description", None)
@@ -408,7 +408,7 @@ class EditContestHandler(BaseHandler):
         except Exception as e:
             self.application.service.add_notification(int(time.time()),
                 "Invalid token field(s).", repr(e))
-            self.redirect("/contest/%d" % contest_id)
+            self.redirect("/contest/%s" % contest_id)
             return
 
         try:
@@ -419,13 +419,13 @@ class EditContestHandler(BaseHandler):
         except Exception as e:
             self.application.service.add_notification(int(time.time()),
                 "Invalid date(s).", repr(e))
-            self.redirect("/contest/%d" % contest_id)
+            self.redirect("/contest/%s" % contest_id)
             return
 
         if start > stop:
             self.application.service.add_notification(int(time.time()),
                 "Contest ends before it starts", repr(e))
-            self.redirect("/contest/%d" % contest_id)
+            self.redirect("/contest/%s" % contest_id)
             return
 
         self.contest.name = name
@@ -440,7 +440,7 @@ class EditContestHandler(BaseHandler):
         self.contest.stop = stop
 
         self.sql_session.commit()
-        self.redirect("/contest/%d" % contest_id)
+        self.redirect("/contest/%s" % contest_id)
 
 
 class AnnouncementsHandler(BaseHandler):
@@ -465,7 +465,7 @@ class AddAnnouncementHandler(BaseHandler):
             ann = Announcement(int(time.time()), subject, text, self.contest)
             self.sql_session.add(ann)
             self.sql_session.commit()
-        self.redirect("/announcements/%d" % contest_id)
+        self.redirect("/announcements/%s" % contest_id)
 
 
 class RemoveAnnouncementHandler(BaseHandler):
@@ -479,7 +479,7 @@ class RemoveAnnouncementHandler(BaseHandler):
         contest_id = str(ann.contest.id)
         self.sql_session.delete(ann)
         self.sql_session.commit()
-        self.redirect("/announcements/%d" % contest_id)
+        self.redirect("/announcements/%s" % contest_id)
 
 
 class UserListHandler(BaseHandler):
@@ -624,7 +624,7 @@ class MessageHandler(BaseHandler):
         logger.warning("Message submitted to user %s."
                        % user)
 
-        self.redirect("/user/%d" % user_id)
+        self.redirect("/user/%s" % user_id)
 
 
 class SubmissionReevaluateHandler(BaseHandler):
@@ -683,7 +683,7 @@ class UserReevaluateHandler(BaseHandler):
     def es_notify_callback(self, data, plus, error=None):
         self.pending_requests -= 1
         if self.pending_requests <= 0:
-            self.redirect("/user/%d" % self.user_id)
+            self.redirect("/user/%s" % self.user_id)
 
 
 class FileFromDigestHandler(FileHandler):
