@@ -351,7 +351,12 @@ class SubmissionFileHandler(FileHandler):
         if sub_file is None:
             raise tornado.web.HTTPError(404)
 
-        self.fetch(sub_file.digest, "text/plain", sub_file.filename)
+        submission = sub_file.submission
+        real_filename = sub_file.filename
+        if submission.language is not None:
+            real_filename = real_filename.replace("%l", submission.language)
+
+        self.fetch(sub_file.digest, "text/plain", real_filename)
 
 
 class CommunicationHandler(BaseHandler):
