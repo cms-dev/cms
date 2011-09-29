@@ -23,6 +23,7 @@ from Crypto.Cipher import AES
 #from Crypto import Random
 import base64
 import binascii
+import random
 
 from cms.async import Config
 secret_key_unhex = binascii.unhexlify(Config.secret_key)
