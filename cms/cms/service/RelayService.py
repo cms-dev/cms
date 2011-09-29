@@ -62,8 +62,8 @@ def post_data(connection, url, auth, data, method="POST"):
 
     """
     connection.request('POST',
-                       url
-                       simplejson.dumps(post_data),
+                       url,
+                       simplejson.dumps(data),
                        {'Authorization': auth})
     r = connection.getresponse()
     r.read()
@@ -71,7 +71,6 @@ def post_data(connection, url, auth, data, method="POST"):
 
 def put_data(connection, url, auth, data):
     post_data(connection, url, auth, data, "PUT")
-
 
 
 class RelayService(Service):
@@ -95,7 +94,7 @@ class RelayService(Service):
         return (bool): True
 
         """
-        connection = httplib.HTTPConnection("localhost:8890")
+        connection = httplib.HTTPConnection(Config.ranking_address)
         auth = get_authorization(Config.ranking_username,
                                  Config.ranking_password)
 
@@ -145,7 +144,9 @@ class RelayService(Service):
         returns (bool): True
 
         """
-        connection = httplib.HTTPConnection("localhost:8890")
+        logger.info("Posting new score %s for submission %s." %
+                    (score, submission_id))
+        connection = httplib.HTTPConnection(Config.ranking_address)
         auth = get_authorization(Config.ranking_username,
                                  Config.ranking_password)
         submission = Submission.get_from_id(submission_id, self.session)
@@ -174,7 +175,7 @@ class RelayService(Service):
                  "/subs/%s" % submission_id,
                  {"time": timestamp,
                   "score": score,
-                  "extra": extra}
+                  "extra": extra},
                  auth)
 
 
@@ -188,7 +189,8 @@ class RelayService(Service):
         returns (bool): True
 
         """
-        connection = httplib.HTTPConnection("localhost:8890")
+        logger.info("Posting token usage for submission %s." % submission_id)
+        connection = httplib.HTTPConnection(Config.ranking_address)
         auth = get_authorization(Config.ranking_username,
                                  Config.ranking_password)
         submission = Submission.get_from_id(submission_id, self.session)
@@ -222,8 +224,7 @@ def main():
     if len(sys.argv) < 2:
         print sys.argv[0], "shard [contest]"
     else:
-        RelayService(int(sys.argv[1]),
-                     ask_for_contest(1)).run()
+        RelayService(int(sys.argv[1])).run()
 
 
 if __name__ == "__main__":

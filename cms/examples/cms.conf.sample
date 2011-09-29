@@ -63,6 +63,7 @@
  "tornado_secret_key":     "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
  "tornado_debug":          true,
 
+ "ranking_address":        "localhost:8890",
  "ranking_username":       "usern4me",
  "ranking_password":       "passw0rd"
 
