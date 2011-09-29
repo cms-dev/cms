@@ -411,6 +411,7 @@ class EvaluationServer(Service):
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
+        self.RS = self.connect_to(ServiceCoord("RelayService", 0))
 
         for i in xrange(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
@@ -638,7 +639,14 @@ class EvaluationServer(Service):
                           filter_by(id=self.contest_id).first()
                 contest.update_ranking_view(self.scorers,
                                             task=submission.task)
+                # We send the new score to the RelayService and
+                # eventually to the public ranking.
+                score = scorer.scores.get(submission.user.username, 0.0)
+                self.RS.submission_new_score(submission_id=submission_id,
+                                             timestamp=submission.timestamp,
+                                             score=score)
                 session.commit()
+
         # Evaluation unsuccessful, we requeue (or not).
         else:
             if evaluation_tries > \

@@ -186,6 +186,7 @@ class ContestWebServer(WebService):
             shard=shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
         self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
+        self.RS = self.connect_to(ServiceCoord("RelayService", 0))
 
     def authorized_rpc(self, service, method, arguments):
         """Used by WebService to check if the browser can call a
@@ -773,6 +774,10 @@ class UseTokenHandler(BaseHandler):
 
         token = Token(timestamp, submission)
         self.sql_session.add(token)
+        # Inform RelayService and eventually the ranking that the
+        # token has been played.
+        self.application.service.RS.submission_tokened(submission_id,
+                                                       timestamp)
         self.sql_session.commit()
 
         logger.info("Token played by user %s on task %s."

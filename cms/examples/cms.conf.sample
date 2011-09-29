@@ -6,6 +6,7 @@
   {
    "LogService":        [["localhost", 29000]],
    "ResourceService":   [["localhost", 28000]],
+   "RelayService":      [["localhost", 28500]],
    "FileStorage":       [["localhost", 27000]],
    "Checker":           [["localhost", 22000]],
    "EvaluationServer":  [["localhost", 25000]],
@@ -60,6 +61,9 @@
  "block_hidden_users":     false,
 
  "tornado_secret_key":     "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
- "tornado_debug":          true
+ "tornado_debug":          true,
+
+ "ranking_username":       "usern4me",
+ "ranking_password":       "passw0rd"
 
 }

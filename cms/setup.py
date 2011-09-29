@@ -55,6 +55,7 @@ setup(name="cms",
       entry_points={
           "console_scripts": [
               "cmsLogService=cms.service.LogService:main",
+              "cmsRelayService=cms.service.RelayService:main",
               "cmsFileStorage=cms.service.FileStorage:main",
               "cmsEvaluationServer=cms.service.EvaluationServer:main",
               "cmsWorker=cms.service.Worker:main",
