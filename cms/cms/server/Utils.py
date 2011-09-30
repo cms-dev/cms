@@ -22,7 +22,6 @@
 """Random utilities for web servers.
 
 """
-
 import traceback
 
 from functools import wraps
@@ -94,15 +93,7 @@ def file_handler_gen(BaseClass):
             """Sends the RPC to the FS.
 
             """
-            service = ServiceCoord("FileStorage", 0)
-            if service not in self.application.service.remote_services or \
-                   not self.application.service.remote_services[service].connected:
-                # TODO: Signal the user
-
-                self.finish()
-                return
-
-            self.application.service.remote_services[service].get_file(
+            self.application.service.FC.get_file_to_string(
                 callback=self._fetch_callback,
                 plus=[content_type, filename],
                 digest=digest)
@@ -116,7 +107,6 @@ def file_handler_gen(BaseClass):
             if data is None:
                 self.finish()
                 return
-
             (content_type, filename) = plus
 
             self.set_header("Content-Type", content_type)
