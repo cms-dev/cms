@@ -53,6 +53,7 @@ from cms.async import ServiceCoord
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, Task, File
 from cms.service.TaskType import TaskTypes
+from cms.service.FileStorage import FileCacher
 
 from cms.db.Utils import ask_for_contest
 
@@ -185,6 +186,7 @@ class ContestWebServer(WebService):
             parameters,
             shard=shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+        self.FC = FileCacher(self, self.FS)
         self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
         self.RS = self.connect_to(ServiceCoord("RelayService", 0))
 
@@ -316,7 +318,6 @@ class TaskStatementViewHandler(FileHandler):
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self, task_id):
-
         r_params = self.render_params()
         if not self.valid_phase(r_params):
             return
@@ -324,8 +325,10 @@ class TaskStatementViewHandler(FileHandler):
         task = Task.get_from_id(task_id, self.sql_session)
         if task is None or task.contest != self.contest:
             raise tornado.web.HTTPError(404)
+        statement, name = task.statement, task.name
+        self.sql_session.close()
 
-        self.fetch(task.statement, "application/pdf", "%s.pdf" % task.name)
+        self.fetch(statement, "application/pdf", "%s.pdf" % name)
 
 
 class SubmissionFileHandler(FileHandler):
@@ -355,8 +358,10 @@ class SubmissionFileHandler(FileHandler):
         real_filename = sub_file.filename
         if submission.language is not None:
             real_filename = real_filename.replace("%l", submission.language)
+        digest = sub_file.digest
+        self.sql_session.close()
 
-        self.fetch(sub_file.digest, "text/plain", real_filename)
+        self.fetch(digest, "text/plain", real_filename)
 
 
 class CommunicationHandler(BaseHandler):
@@ -654,6 +659,9 @@ class SubmitHandler(BaseHandler):
             except Exception as e:
                 logger.error("Submission local copy failed - %s" %
                              traceback.format_exc())
+
+        # TODO [important] close session here and reopen later to
+        # avoid stressing sqlalchemy.
 
         # We now have to send all the files to the destination...
         for filename in self.files:

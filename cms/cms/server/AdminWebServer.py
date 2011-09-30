@@ -39,6 +39,7 @@ from cms.db.SQLAlchemyAll import Session, \
 
 import cms.util.WebConfig as WebConfig
 from cms.server.Utils import file_handler_gen
+from cms.service.FileStorage import FileCacher
 from cms import Config
 
 
@@ -156,6 +157,7 @@ class AdminWebServer(WebService):
                             parameters,
                             shard=shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+        self.FC = FileCacher(self, self.FS)
         self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
         self.logservice = self.connect_to(ServiceCoord("LogService", 0))
 
