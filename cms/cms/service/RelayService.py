@@ -51,7 +51,7 @@ def get_authorization(username, password):
     return "Basic %s" % base64.b64encode(username + ':' + password)
 
 
-def post_data(connection, url, auth, data, method="POST"):
+def post_data(connection, url, data, auth, method="POST"):
     """Send some data to url through the connection using username and
     password specified in auth.
 
@@ -61,7 +61,7 @@ def post_data(connection, url, auth, data, method="POST"):
     data (dict): the data to json-encode and send.
 
     """
-    connection.request('POST',
+    connection.request(method,
                        url,
                        simplejson.dumps(data),
                        {'Authorization': auth})
@@ -69,8 +69,8 @@ def post_data(connection, url, auth, data, method="POST"):
     r.read()
 
 
-def put_data(connection, url, auth, data):
-    post_data(connection, url, auth, data, "PUT")
+def put_data(connection, url, data, auth):
+    post_data(connection, url, data, auth, "PUT")
 
 
 class RelayService(Service):
@@ -154,6 +154,8 @@ class RelayService(Service):
             logger.error("Received request for unexistent submission id %s." %
                          submission_id)
             raise KeyError
+        if submission.user.hidden:
+            return
         if timestamp is None:
             timestamp = submission.timestamp
 
