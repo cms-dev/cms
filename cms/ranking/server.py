@@ -282,8 +282,8 @@ class ScoreHandler(DataHandler):
     def get(self):
         for u_id, user in submissions.submission_store._scores.iteritems():
             for t_id, task in user.iteritems():
-                if task._history:
-                    self.write('%s %s %f\n' % (u_id, t_id, task._history[-1][1]))
+                if task.get_score() > 0:
+                    self.write('%s %s %f\n' % (u_id, t_id, task.get_score()))
 
 
 if __name__ == "__main__":
