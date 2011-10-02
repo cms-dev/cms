@@ -83,22 +83,18 @@ class SpoolExporter(Service):
                 username = submission.user.username
                 task = submission.task.name
                 timestamp = submission.timestamp
-                checked, language = submission.verify_source()
-                if not checked:
-                    logger.warning("Could not verify language for submission %s, dropping it" % (submission.id))
-                    continue
                 user_dir = os.path.join(upload_dir, username)
 
-                file_digest = submission.files["%s.%s" % (task, language)].digest
-                upload_filename = os.path.join(user_dir, "%s.%d.%s" % (task, timestamp, language))
+                file_digest = submission.files["%s.%s" % (task, "%l")].digest
+                upload_filename = os.path.join(user_dir, "%s.%d.%s" % (task, timestamp, submission.language))
                 self.FC.get_file_to_path(file_digest, upload_filename, sync=True)
-                upload_filename = os.path.join(user_dir, "%s.%s" % (task, language))
+                upload_filename = os.path.join(user_dir, "%s.%s" % (task, submission.language))
                 self.FC.get_file_to_path(file_digest, upload_filename, sync=True)
-                print >> queue_file, "./upload/%s/%s.%d.%s" % (username, task, timestamp, language)
+                print >> queue_file, "./upload/%s/%s.%d.%s" % (username, task, timestamp, submission.language)
 
                 if submission.evaluations != []:
-                    res_file = codecs.open(os.path.join(self.spool_dir, "%d.%s.%s.%s.res" % (timestamp, username, task, language)), 'w', encoding='utf-8')
-                    res2_file = codecs.open(os.path.join(self.spool_dir, "%s.%s.%s.res" % (username, task, language)), 'w', encoding='utf-8')
+                    res_file = codecs.open(os.path.join(self.spool_dir, "%d.%s.%s.%s.res" % (timestamp, username, task, submission.language)), 'w', encoding='utf-8')
+                    res2_file = codecs.open(os.path.join(self.spool_dir, "%s.%s.%s.res" % (username, task, submission.language)), 'w', encoding='utf-8')
                     total = 0.0
                     for num, evaluation in enumerate(submission.evaluations):
                         outcome = float(evaluation.outcome)
