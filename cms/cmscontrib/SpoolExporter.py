@@ -31,8 +31,12 @@ from cms.service.FileStorage import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.db.Utils import ask_for_contest
 
-class SpoolExporter(Service):
 
+class SpoolExporter(Service):
+    """This service creates a tree structure "similar" to the one used
+    in Italian IOI repository for storing the results of a contest.
+
+    """
     def __init__(self, shard, contest_id, spool_dir):
         self.contest_id = contest_id
         self.spool_dir = spool_dir
@@ -57,9 +61,11 @@ class SpoolExporter(Service):
         try:
             os.mkdir(self.spool_dir)
         except OSError:
-            logger.error("The specified directory already exists, I won't overwrite it")
+            logger.error("The specified directory already exists, "
+                         "I won't overwrite it")
             sys.exit(1)
-        queue_file = codecs.open(os.path.join(self.spool_dir, "queue"), 'w', encoding='utf-8')
+        queue_file = codecs.open(os.path.join(self.spool_dir, "queue"), "w",
+                                 encoding="utf-8")
         upload_dir = os.path.join(self.spool_dir, "upload")
         os.mkdir(upload_dir)
 
@@ -86,20 +92,35 @@ class SpoolExporter(Service):
                 user_dir = os.path.join(upload_dir, username)
 
                 file_digest = submission.files["%s.%s" % (task, "%l")].digest
-                upload_filename = os.path.join(user_dir, "%s.%d.%s" % (task, timestamp, submission.language))
-                self.FC.get_file_to_path(file_digest, upload_filename, sync=True)
-                upload_filename = os.path.join(user_dir, "%s.%s" % (task, submission.language))
-                self.FC.get_file_to_path(file_digest, upload_filename, sync=True)
-                print >> queue_file, "./upload/%s/%s.%d.%s" % (username, task, timestamp, submission.language)
+                upload_filename = os.path.join(
+                    user_dir, "%s.%d.%s" %
+                    (task, timestamp, submission.language))
+                self.FC.get_file_to_path(file_digest, upload_filename,
+                                         sync=True)
+                upload_filename = os.path.join(user_dir, "%s.%s" %
+                                               (task, submission.language))
+                self.FC.get_file_to_path(file_digest, upload_filename,
+                                         sync=True)
+                print >> queue_file, "./upload/%s/%s.%d.%s" % \
+                    (username, task, timestamp, submission.language)
 
                 if submission.evaluations != []:
-                    res_file = codecs.open(os.path.join(self.spool_dir, "%d.%s.%s.%s.res" % (timestamp, username, task, submission.language)), 'w', encoding='utf-8')
-                    res2_file = codecs.open(os.path.join(self.spool_dir, "%s.%s.%s.res" % (username, task, submission.language)), 'w', encoding='utf-8')
+                    res_file = codecs.open(os.path.join(
+                        self.spool_dir,
+                        "%d.%s.%s.%s.res" % (timestamp, username,
+                                             task, submission.language)),
+                                           "w", encoding="utf-8")
+                    res2_file = codecs.open(os.path.join(
+                        self.spool_dir,
+                        "%s.%s.%s.res" % (username, task,
+                                          submission.language)),
+                                            "w", encoding="utf-8")
                     total = 0.0
                     for num, evaluation in enumerate(submission.evaluations):
                         outcome = float(evaluation.outcome)
                         total += outcome
-                        line = "Executing on file n. %2d %s (%.4f)" % (num, evaluation.text, outcome)
+                        line = "Executing on file n. %2d %s (%.4f)" % \
+                            (num, evaluation.text, outcome)
                         print >> res_file, line
                         print >> res2_file, line
                     line = "Score: %.6f" % (total)
@@ -112,24 +133,35 @@ class SpoolExporter(Service):
             queue_file.close()
 
             logger.info("Exporting ranking")
-            ranking_file = codecs.open(os.path.join(self.spool_dir, "classifica.txt"), 'w', encoding='utf-8')
-            ranking_csv = codecs.open(os.path.join(self.spool_dir, "classifica.csv"), 'w', encoding='utf-8')
-            print >> ranking_file, "Classifica finale del contest `%s'" % (c.description)
+            ranking_file = codecs.open(
+                os.path.join(self.spool_dir, "classifica.txt"),
+                "w", encoding="utf-8")
+            ranking_csv = codecs.open(
+                os.path.join(self.spool_dir, "classifica.csv"),
+                "w", encoding="utf-8")
+            print >> ranking_file, "Classifica finale del contest `%s'" % \
+                c.description
             users = {}
             for u in c.users:
                 if u.username not in hidden_users:
                     users[u.username] = [0, u.username, [None]*len(c.tasks)]
-            for (username, task_num), score in c.ranking_view.scores.iteritems():
+            for (username, task_num), score in \
+                    c.ranking_view.scores.iteritems():
                 if username not in hidden_users:
                     users[username][0] += score.score
                     users[username][2][task_num] = score.score
             users = users.values()
             users.sort(reverse=True)
-            print >> ranking_file, ("%20s %10s" + " %10s" * len(c.tasks)) % (("Utente", "Totale") + tuple([t.name for t in c.tasks]))
-            print >> ranking_csv, ("%s,%s" + ",%s" * len(c.tasks)) % (("utente", "totale") + tuple([t.name for t in c.tasks]))
+            print >> ranking_file, ("%20s %10s" + " %10s" * len(c.tasks)) % \
+                (("Utente", "Totale") + tuple([t.name for t in c.tasks]))
+            print >> ranking_csv, ("%s,%s" + ",%s" * len(c.tasks)) % \
+                (("utente", "totale") + tuple([t.name for t in c.tasks]))
             for total, user, problems in users:
-                print >> ranking_file, ("%20s %10.3f" + " %10.3f" * len(c.tasks)) % ((user, total) + tuple(problems))
-                print >> ranking_csv, ("%s,%.6f" + ",%.6f" * len(c.tasks)) % ((user, total) + tuple(problems))
+                print >> ranking_file, \
+                      ("%20s %10.3f" + " %10.3f" * len(c.tasks)) % \
+                    ((user, total) + tuple(problems))
+                print >> ranking_csv, ("%s,%.6f" + ",%.6f" * len(c.tasks)) % \
+                      ((user, total) + tuple(problems))
             ranking_file.close()
             ranking_csv.close()
 
@@ -142,12 +174,14 @@ class SpoolExporter(Service):
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
     parser.add_option("-c", "--contest", help="contest ID to export",
-                      dest="contest_id", action="store", type="int", default=None)
+                      dest="contest_id", action="store", type="int",
+                      default=None)
     parser.add_option("-s", "--shard", help="service shard number",
                       dest="shard", action="store", type="int", default=None)
     options, args = parser.parse_args()
     if len(args) != 1:
-        parser.error("I need exactly one parameter, the directory where to export the contest")
+        parser.error("I need exactly one parameter, the directory "
+                     "where to export the contest")
     if options.shard is None:
         parser.error("The `-s' option is mandatory!")
 
@@ -157,6 +191,7 @@ def main():
     spool_exporter = SpoolExporter(shard=options.shard,
                                    contest_id=options.contest_id,
                                    spool_dir=args[0]).run()
+
 
 if __name__ == "__main__":
     main()
