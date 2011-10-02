@@ -61,7 +61,7 @@ from cms import Config
 import cms.util.WebConfig as WebConfig
 
 from cms.server.Utils import file_handler_gen, \
-     catch_exceptions, decrypt_arguments
+     catch_exceptions, decrypt_arguments, valid_phase_required
 from cms.util.Cryptographics import encrypt_number, decrypt_number, \
      get_encryption_alphabet
 
@@ -82,6 +82,7 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
         self.sql_session = ScopedSession()
+        self.sql_session.expire_all()
         self.contest = Contest.get_from_id(self.application.service.contest,
                                            self.sql_session)
 
@@ -90,6 +91,7 @@ class BaseHandler(tornado.web.RequestHandler):
             tornado.locale.load_gettext_translations(localization_dir, "cms")
 
         self._ = self.get_browser_locale().translate
+        self.r_params = self.render_params()
 
     def get_current_user(self):
         """Gets the current user logged in from the cookies
@@ -127,19 +129,6 @@ class BaseHandler(tornado.web.RequestHandler):
         ret["contest_list"] = self.sql_session.query(Contest).all()
         ret["cookie"] = str(self.cookies)
         return ret
-
-    def valid_phase(self, r_param):
-        """Return True if the contest is running and redirect to home
-        if not running.
-
-        r_param (dict): the default render_params of the handler
-        return (bool): True if contest is running
-
-        """
-        if r_param["phase"] != 0:
-            self.redirect("/")
-            return False
-        return True
 
 #    def finish(self, *args, **kwds):
 #        """ Finishes this response, ending the HTTP request.
@@ -224,8 +213,7 @@ class MainHandler(BaseHandler):
     """
     @catch_exceptions
     def get(self):
-        r_params = self.render_params()
-        self.render("overview.html", **r_params)
+        self.render("overview.html", **self.r_params)
 
 
 class InstructionHandler(BaseHandler):
@@ -235,8 +223,7 @@ class InstructionHandler(BaseHandler):
     """
     @catch_exceptions
     def get(self):
-        r_params = self.render_params()
-        self.render("instructions.html", **r_params)
+        self.render("instructions.html", **self.r_params)
 
 
 class LoginHandler(BaseHandler):
@@ -290,23 +277,20 @@ class TaskViewHandler(BaseHandler):
     """
     @catch_exceptions
     @decrypt_arguments
+    @valid_phase_required
     @tornado.web.authenticated
     def get(self, task_id):
 
-        r_params = self.render_params()
-        if not self.valid_phase(r_params):
-            return
-
-        r_params["task"] = Task.get_from_id(task_id, self.sql_session)
-        if r_params["task"] is None or \
-            r_params["task"].contest != self.contest:
+        self.r_params["task"] = Task.get_from_id(task_id, self.sql_session)
+        if self.r_params["task"] is None or \
+            self.r_params["task"].contest != self.contest:
             raise tornado.web.HTTPError(404)
 
-        r_params["submissions"] = self.sql_session.query(Submission)\
+        self.r_params["submissions"] = self.sql_session.query(Submission)\
             .filter_by(user=self.current_user)\
-            .filter_by(task=r_params["task"]).all()
+            .filter_by(task=self.r_params["task"]).all()
 
-        self.render("task.html", **r_params)
+        self.render("task.html", **self.r_params)
 
 
 class TaskStatementViewHandler(FileHandler):
@@ -315,12 +299,10 @@ class TaskStatementViewHandler(FileHandler):
     """
     @catch_exceptions
     @decrypt_arguments
+    @valid_phase_required
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self, task_id):
-        r_params = self.render_params()
-        if not self.valid_phase(r_params):
-            return
 
         task = Task.get_from_id(task_id, self.sql_session)
         if task is None or task.contest != self.contest:
@@ -337,13 +319,10 @@ class SubmissionFileHandler(FileHandler):
     """
     @catch_exceptions
     @decrypt_arguments
+    @valid_phase_required
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def get(self, file_id):
-
-        r_params = self.render_params()
-        if not self.valid_phase(r_params):
-            return
 
         sub_file = self.sql_session.query(File).join(Submission).join(Task)\
             .filter(File.id == file_id)\
@@ -372,8 +351,7 @@ class CommunicationHandler(BaseHandler):
     @catch_exceptions
     @tornado.web.authenticated
     def get(self):
-        r_params = self.render_params()
-        self.render("communication.html", **r_params)
+        self.render("communication.html", **self.r_params)
 
 
 class NotificationsHandler(BaseHandler):
@@ -472,13 +450,10 @@ class SubmitHandler(BaseHandler):
 
     """
     @decrypt_arguments
+    @valid_phase_required
     @tornado.web.authenticated
     @tornado.web.asynchronous
     def post(self, task_id):
-
-        self.r_params = self.render_params()
-        if not self.valid_phase(self.r_params):
-            return
 
         self.timestamp = self.r_params["timestamp"]
 
@@ -660,10 +635,6 @@ class SubmitHandler(BaseHandler):
                 logger.error("Submission local copy failed - %s" %
                              traceback.format_exc())
 
-        # TODO [important] close session here and reopen later to
-        # avoid stressing sqlalchemy.
-        
-
         # We now have to send all the files to the destination...
         for filename in self.files:
             if self.application.service.FS.put_file(
@@ -741,6 +712,7 @@ class UseTokenHandler(BaseHandler):
 
     """
     @catch_exceptions
+    @valid_phase_required
     @tornado.web.authenticated
     def post(self):
 
@@ -807,6 +779,14 @@ class UseTokenHandler(BaseHandler):
 
         self.redirect("/tasks/%s" % encrypt_number(submission.task.id))
 
+class SubmissionStatusHandler(BaseHandler):
+    @catch_exceptions
+    @tornado.web.authenticated
+    @decrypt_arguments
+    def get(self, sub_id):
+        submission = Submission.get_from_id(sub_id, self.sql_session)
+        if submission.user.id != self.current_user.id or submission.task.contest.id != self.contest.id:
+            raise tornado.web.HTTPError(403)
 
 handlers = [(r"/",
              MainHandler),

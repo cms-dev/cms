@@ -70,6 +70,7 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
         self.sql_session = ScopedSession()
+        self.sql_session.expire_all()
         self.contest = None
 
         localization_dir = os.path.join(os.path.dirname(__file__), "mo")

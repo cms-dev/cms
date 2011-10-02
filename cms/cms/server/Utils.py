@@ -33,6 +33,18 @@ from cms.util.Cryptographics import decrypt_number
 
 from tornado.web import HTTPError
 
+def valid_phase_required(func):
+    """Decorator that rejects requests outside the contest phase.
+    
+    """
+    def newfunc(self, *args, **kwargs):
+        if self.r_params["phase"] != 0:
+            self.redirect("/")
+        else:
+            return func(self, *args, **kwargs)
+    return newfunc
+
+
 def catch_exceptions(func):
     def newfunc(self, *args, **kwargs):
         try:
