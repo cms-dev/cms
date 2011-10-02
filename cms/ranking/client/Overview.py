@@ -60,7 +60,7 @@ class Overview:
                 equal += 1
 
             elem1 = DOM.getElementById(u_id + '_lm')
-            DOM.setStyleAttribute(elem1, 'bottom', str(score / 600 * 100) + '%')
+            DOM.setStyleAttribute(elem1, 'bottom', str(score / sum([task['score'] for task in self.ds.tasks.itervalues()]) * 100) + '%')
 
             elem2 = DOM.getElementById(u_id + '_rm')
             DOM.setStyleAttribute(elem2, 'bottom', str(100 - (rank - 1) / (len(self.ds.users) - 1) * 100) + '%')

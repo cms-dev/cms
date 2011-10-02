@@ -35,8 +35,6 @@ License: AGPL-3+
 Files: cms/ranking/client/images/* cms/ranking/client/public/*.png
 Copyright: 2011 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: CC-BY-SA-3.0
-Comment: Files logo.svg and logo.png have been derived from the following work:
- http://www.openclipart.org/detail/27888 (released under CC0-1.0)
 
 Files: cms/ranking/client/EventSource.js
 Copyright: 2010 Remy Sharp, http://remysharp.com
