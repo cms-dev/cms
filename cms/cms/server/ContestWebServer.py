@@ -782,11 +782,13 @@ class UseTokenHandler(BaseHandler):
 class SubmissionStatusHandler(BaseHandler):
     @catch_exceptions
     @tornado.web.authenticated
+    @valid_phase_required
     @decrypt_arguments
     def get(self, sub_id):
         submission = Submission.get_from_id(sub_id, self.sql_session)
         if submission.user.id != self.current_user.id or submission.task.contest.id != self.contest.id:
             raise tornado.web.HTTPError(403)
+        self.render("submission_snippet.html", s = submission)
 
 handlers = [(r"/",
              MainHandler),
@@ -800,6 +802,8 @@ handlers = [(r"/",
              TaskViewHandler),
             (r"/tasks/([%s]+)/statement" % get_encryption_alphabet(),
              TaskStatementViewHandler),
+            (r"/submission_status/([%s]+)" % get_encryption_alphabet(),
+             SubmissionStatusHandler),
             (r"/usetoken",
              UseTokenHandler),
             (r"/submit/([%s]+)" % get_encryption_alphabet(),

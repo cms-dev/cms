@@ -1,4 +1,49 @@
 {% extends base.html %}
+{% block js_init %}
+function submission_status_received(response, error)
+{
+    var submission_id = this;
+    var evaluation = document.getElementById("evaluation_" + submission_id);
+    var visibility;
+    if(evaluation == null)
+        visibility = "none";
+    else
+        visibility = evaluation.style.display;
+    var div_id = "submission_status_" + submission_id;
+    var cell = document.getElementById(div_id).parentNode;
+    cell.innerHTML = response;
+    if(visibility != "none")
+    {
+        new_sub_id = cell.children[0].id.replace("submission_status_", "");
+        if(document.getElementById("evaluation_" + new_sub_id) != null)
+        {
+            utils.toggle_visibility("evaluation_"+new_sub_id);
+        }
+    }
+}
+
+function update_submission_status()
+{
+    var sub_list = document.getElementsByName("submission_status");
+    var submission_ids = new Array();
+    var i=0;
+    var j=0;
+    for(i=0; i < sub_list.length; i++ ) 
+    {
+        submission_ids[i] = new String(sub_list[i].id);
+        submission_ids[i] = submission_ids[i].replace("submission_status_", "");
+    }
+    for(j=0; j < submission_ids.length; j++)
+    {
+        func = cmsutils.bind_func(submission_ids[j], submission_status_received);
+        cmsutils.ajax_request("/submission_status/"+submission_ids[j], "", func);
+    }
+}
+
+setInterval(update_submission_status, 5000);
+
+{% end %}
+
 {% block core %}
 
 <h1>{{ task.title }} ({{ task.name }})</h1>
@@ -91,58 +136,13 @@
         <th style="width: 12%">{{ _("Token used?") }}</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody id="submission_list">
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
         <td>
           {{ Utils.format_time_or_date(s.timestamp) }}
         </td>
-        <td>
-          {% if s.compilation_outcome is None %}
-          {{ _("Compiling...") }}
-
-          {% else %}
-          <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ s.id }}');">
-            {% if s.compilation_outcome == "fail" %}
-            {{ _("Compilation failed") }}
-            {% elif s.evaluations == [] %}
-            {{ _("Evaluating...") }}
-            {% else %}
-            {{ _("Evaluated") }}
-            {% end %}
-          </div>
-          <div id="evaluation_{{ s.id }}" style="display: none;">
-            {% if s.evaluations != [] %}
-              {% if s.token is None %}
-            <h3>{{ _("Public testcases") }}</h3>
-              {% else %}
-            <h3>{{ _("Detailed feedback") }}</h3>
-              {% end %}
-            <table class="nested bordered">
-              <thead>
-                <tr>
-                  <th style="width: 20%">{{ _("Outcome") }}</th>
-                  <th style="width: 80%">{{ _("Details") }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for ev in s.evaluations %}
-                  {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
-                  <tr><td>{{ ev.outcome }}</td><td>{{ ev.text }}</td></tr>
-                  {% end %}
-                {% end %}
-                {% if s.token is None and not any([testcase.public for testcase in s.task.testcases]) %}
-                <tr><td colspan="2">{{ _("No specified testcases for partial feedback for this task.") }}</td></tr>
-                {% end %}
-              </tbody>
-            </table>
-            {% end %}
-            <h3>{{ _("Compilation output") }}</h3><!-- TODO: trim long outputs and add facility to see raw -->
-            <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
-          </div>
-
-          {% end %}
-        </td>
+        <td>{% include submission_snippet.html %}</td>
         <td>
           {% for filename in [x.filename for x in task.submission_format] %}
             {% if filename in s.files %}
