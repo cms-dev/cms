@@ -50,7 +50,7 @@ from cms.async.AsyncLibrary import logger
 from cms.async.WebAsyncLibrary import WebService, rpc_callback
 from cms.async import ServiceCoord
 
-from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
+from cms.db.SQLAlchemyAll import ScopedSession, Contest, User, Question, \
      Submission, Token, Task, File
 from cms.service.TaskType import TaskTypes
 from cms.service.FileStorage import FileCacher
@@ -81,7 +81,7 @@ class BaseHandler(tornado.web.RequestHandler):
         """
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
-        self.sql_session = Session()
+        self.sql_session = ScopedSession()
         self.contest = Contest.get_from_id(self.application.service.contest,
                                            self.sql_session)
 
@@ -141,19 +141,19 @@ class BaseHandler(tornado.web.RequestHandler):
             return False
         return True
 
-    def finish(self, *args, **kwds):
-        """ Finishes this response, ending the HTTP request.
+#    def finish(self, *args, **kwds):
+#        """ Finishes this response, ending the HTTP request.
 
-        We override this method in order to properly close the database.
+#        We override this method in order to properly close the database.
 
-        """
-        if hasattr(self, "sql_session"):
-            logger.debug("Closing SQL connection.")
-            try:
-                self.sql_session.close()
-            except Exception as e:
-                logger.warning("Couldn't close SQL connection: %r" % e)
-        tornado.web.RequestHandler.finish(self, *args, **kwds)
+#        """
+#        if hasattr(self, "sql_session"):
+#            logger.debug("Closing SQL connection.")
+#            try:
+#                self.sql_session.close()
+#            except Exception as e:
+#                logger.warning("Couldn't close SQL connection: %r" % e)
+#        tornado.web.RequestHandler.finish(self, *args, **kwds)
 
 
 FileHandler = file_handler_gen(BaseHandler)
@@ -326,7 +326,7 @@ class TaskStatementViewHandler(FileHandler):
         if task is None or task.contest != self.contest:
             raise tornado.web.HTTPError(404)
         statement, name = task.statement, task.name
-        self.sql_session.close()
+#        self.sql_session.close()
 
         self.fetch(statement, "application/pdf", "%s.pdf" % name)
 
@@ -359,7 +359,7 @@ class SubmissionFileHandler(FileHandler):
         if submission.language is not None:
             real_filename = real_filename.replace("%l", submission.language)
         digest = sub_file.digest
-        self.sql_session.close()
+#        self.sql_session.close()
 
         self.fetch(digest, "text/plain", real_filename)
 
@@ -662,6 +662,7 @@ class SubmitHandler(BaseHandler):
 
         # TODO [important] close session here and reopen later to
         # avoid stressing sqlalchemy.
+        
 
         # We now have to send all the files to the destination...
         for filename in self.files:

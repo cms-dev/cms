@@ -21,7 +21,7 @@
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.orm import session as sessionlib
 
@@ -34,6 +34,7 @@ Base = declarative_base(db)
 metadata = Base.metadata
 
 Session = sessionmaker(db)
+ScopedSession = scoped_session(Session)
 
 # For two-phases transactions:
 #Session = sessionmaker(db, twophase=True)

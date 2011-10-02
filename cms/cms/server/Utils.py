@@ -62,7 +62,7 @@ def decrypt_arguments(func):
             except ValueError:
                 logger.warning("User %s called with undecryptable argument." %
                                self.current_user.username)
-                raise tornado.web.HTTPError(403)
+                raise HTTPError(403)
         new_kwargs = {}
         for k in kwargs:
             try:
@@ -70,7 +70,7 @@ def decrypt_arguments(func):
             except ValueError:
                 logger.warning("User %s called with undecryptable argument." %
                                self.current_user.username)
-                raise tornado.web.HTTPError(403)
+                raise HTTPError(403)
         return func(self, *new_args, **new_kwargs)
     return newfunc
 

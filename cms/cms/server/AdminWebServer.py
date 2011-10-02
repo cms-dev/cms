@@ -34,7 +34,7 @@ from cms.async.AsyncLibrary import logger, rpc_callback
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 
-from cms.db.SQLAlchemyAll import Session, \
+from cms.db.SQLAlchemyAll import ScopedSession, \
      Contest, User, Announcement, Question, Message, Submission, File, Task
 
 import cms.util.WebConfig as WebConfig
@@ -69,7 +69,7 @@ class BaseHandler(tornado.web.RequestHandler):
         # If this fails, the request terminates.
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
-        self.sql_session = Session()
+        self.sql_session = ScopedSession()
         self.contest = None
 
         localization_dir = os.path.join(os.path.dirname(__file__), "mo")
@@ -98,15 +98,15 @@ class BaseHandler(tornado.web.RequestHandler):
         params["cookie"] = str(self.cookies)
         return params
 
-    def finish(self, *args, **kwds):
-        """ Finish this response, ending the HTTP request.
+#    def finish(self, *args, **kwds):
+#        """ Finish this response, ending the HTTP request.
 
-        We override this method in order to properly close the database.
+#        We override this method in order to properly close the database.
 
-        """
-        logger.debug("Closing SQL connection.")
-        self.sql_session.close()
-        tornado.web.RequestHandler.finish(self, *args, **kwds)
+#        """
+#        logger.debug("Closing SQL connection.")
+#        self.sql_session.close()
+#        tornado.web.RequestHandler.finish(self, *args, **kwds)
 
     def get_non_negative_int(self, argument_name, default, allow_empty=True):
         """ Get a non-negative integer from the arguments.
