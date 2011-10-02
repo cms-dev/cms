@@ -75,7 +75,7 @@ class Scoreboard(object):
 
     def make_row(self, u_id, user, rank, t_key=None, c_key=None):
         result = '''
-<tr id="''' + u_id + '''">
+<tr id="''' + u_id + '"' + (' class="selected"' if self.ds.get_selected(u_id) else '') + '''>
     <td class="sel">
         <input type="checkbox"''' + ('checked' if self.ds.get_selected(u_id) else '') + ''' />
     </td>
