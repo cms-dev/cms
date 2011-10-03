@@ -22,7 +22,6 @@
 """Random utilities for web servers.
 
 """
-
 import traceback
 
 from functools import wraps
@@ -33,6 +32,18 @@ from cms.async.AsyncLibrary import logger
 from cms.util.Cryptographics import decrypt_number
 
 from tornado.web import HTTPError
+
+def valid_phase_required(func):
+    """Decorator that rejects requests outside the contest phase.
+    
+    """
+    def newfunc(self, *args, **kwargs):
+        if self.r_params["phase"] != 0:
+            self.redirect("/")
+        else:
+            return func(self, *args, **kwargs)
+    return newfunc
+
 
 def catch_exceptions(func):
     def newfunc(self, *args, **kwargs):
@@ -63,7 +74,7 @@ def decrypt_arguments(func):
             except ValueError:
                 logger.warning("User %s called with undecryptable argument." %
                                self.current_user.username)
-                raise tornado.web.HTTPError(403)
+                raise HTTPError(403)
         new_kwargs = {}
         for k in kwargs:
             try:
@@ -71,7 +82,7 @@ def decrypt_arguments(func):
             except ValueError:
                 logger.warning("User %s called with undecryptable argument." %
                                self.current_user.username)
-                raise tornado.web.HTTPError(403)
+                raise HTTPError(403)
         return func(self, *new_args, **new_kwargs)
     return newfunc
 
@@ -94,15 +105,7 @@ def file_handler_gen(BaseClass):
             """Sends the RPC to the FS.
 
             """
-            service = ServiceCoord("FileStorage", 0)
-            if service not in self.application.service.remote_services or \
-                   not self.application.service.remote_services[service].connected:
-                # TODO: Signal the user
-
-                self.finish()
-                return
-
-            self.application.service.remote_services[service].get_file(
+            self.application.service.FC.get_file_to_string(
                 callback=self._fetch_callback,
                 plus=[content_type, filename],
                 digest=digest)
@@ -116,7 +119,6 @@ def file_handler_gen(BaseClass):
             if data is None:
                 self.finish()
                 return
-
             (content_type, filename) = plus
 
             self.set_header("Content-Type", content_type)

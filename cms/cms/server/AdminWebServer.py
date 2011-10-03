@@ -34,11 +34,12 @@ from cms.async.AsyncLibrary import logger, rpc_callback
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 
-from cms.db.SQLAlchemyAll import Session, \
+from cms.db.SQLAlchemyAll import ScopedSession, \
      Contest, User, Announcement, Question, Message, Submission, File, Task
 
 import cms.util.WebConfig as WebConfig
 from cms.server.Utils import file_handler_gen
+from cms.service.FileStorage import FileCacher
 from cms import Config
 
 
@@ -68,7 +69,8 @@ class BaseHandler(tornado.web.RequestHandler):
         # If this fails, the request terminates.
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
-        self.sql_session = Session()
+        self.sql_session = ScopedSession()
+        self.sql_session.expire_all()
         self.contest = None
 
         localization_dir = os.path.join(os.path.dirname(__file__), "mo")
@@ -97,15 +99,15 @@ class BaseHandler(tornado.web.RequestHandler):
         params["cookie"] = str(self.cookies)
         return params
 
-    def finish(self, *args, **kwds):
-        """ Finish this response, ending the HTTP request.
+#    def finish(self, *args, **kwds):
+#        """ Finish this response, ending the HTTP request.
 
-        We override this method in order to properly close the database.
+#        We override this method in order to properly close the database.
 
-        """
-        logger.debug("Closing SQL connection.")
-        self.sql_session.close()
-        tornado.web.RequestHandler.finish(self, *args, **kwds)
+#        """
+#        logger.debug("Closing SQL connection.")
+#        self.sql_session.close()
+#        tornado.web.RequestHandler.finish(self, *args, **kwds)
 
     def get_non_negative_int(self, argument_name, default, allow_empty=True):
         """ Get a non-negative integer from the arguments.
@@ -156,6 +158,7 @@ class AdminWebServer(WebService):
                             parameters,
                             shard=shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+        self.FC = FileCacher(self, self.FS)
         self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
         self.logservice = self.connect_to(ServiceCoord("LogService", 0))
 
@@ -346,11 +349,11 @@ class TaskViewHandler(BaseHandler):
 
         for testcase in self.task.testcases:
             testcase.public = self.get_argument(
-                "testcase_%d_public" % testcase.num,
+                "testcase_%s_public" % testcase.num,
                 False) != False
 
         self.sql_session.commit()
-        self.redirect("/task/%d" % self.task.id)
+        self.redirect("/task/%s" % self.task.id)
 
 
 class TaskStatementViewHandler(FileHandler):
@@ -379,7 +382,7 @@ class EditContestHandler(BaseHandler):
         if name == "":
             self.application.service.add_notification(int(time.time()),
                 "No contest name specified", "")
-            self.redirect("/contest/%d" % contest_id)
+            self.redirect("/contest/%s" % contest_id)
             return
 
         description = self.get_argument("description", None)
@@ -408,7 +411,7 @@ class EditContestHandler(BaseHandler):
         except Exception as e:
             self.application.service.add_notification(int(time.time()),
                 "Invalid token field(s).", repr(e))
-            self.redirect("/contest/%d" % contest_id)
+            self.redirect("/contest/%s" % contest_id)
             return
 
         try:
@@ -419,13 +422,13 @@ class EditContestHandler(BaseHandler):
         except Exception as e:
             self.application.service.add_notification(int(time.time()),
                 "Invalid date(s).", repr(e))
-            self.redirect("/contest/%d" % contest_id)
+            self.redirect("/contest/%s" % contest_id)
             return
 
         if start > stop:
             self.application.service.add_notification(int(time.time()),
                 "Contest ends before it starts", repr(e))
-            self.redirect("/contest/%d" % contest_id)
+            self.redirect("/contest/%s" % contest_id)
             return
 
         self.contest.name = name
@@ -440,7 +443,7 @@ class EditContestHandler(BaseHandler):
         self.contest.stop = stop
 
         self.sql_session.commit()
-        self.redirect("/contest/%d" % contest_id)
+        self.redirect("/contest/%s" % contest_id)
 
 
 class AnnouncementsHandler(BaseHandler):
@@ -465,7 +468,7 @@ class AddAnnouncementHandler(BaseHandler):
             ann = Announcement(int(time.time()), subject, text, self.contest)
             self.sql_session.add(ann)
             self.sql_session.commit()
-        self.redirect("/announcements/%d" % contest_id)
+        self.redirect("/announcements/%s" % contest_id)
 
 
 class RemoveAnnouncementHandler(BaseHandler):
@@ -479,7 +482,7 @@ class RemoveAnnouncementHandler(BaseHandler):
         contest_id = str(ann.contest.id)
         self.sql_session.delete(ann)
         self.sql_session.commit()
-        self.redirect("/announcements/%d" % contest_id)
+        self.redirect("/announcements/%s" % contest_id)
 
 
 class UserListHandler(BaseHandler):
@@ -624,7 +627,7 @@ class MessageHandler(BaseHandler):
         logger.warning("Message submitted to user %s."
                        % user)
 
-        self.redirect("/user/%d" % user_id)
+        self.redirect("/user/%s" % user_id)
 
 
 class SubmissionReevaluateHandler(BaseHandler):
@@ -683,7 +686,7 @@ class UserReevaluateHandler(BaseHandler):
     def es_notify_callback(self, data, plus, error=None):
         self.pending_requests -= 1
         if self.pending_requests <= 0:
-            self.redirect("/user/%d" % self.user_id)
+            self.redirect("/user/%s" % self.user_id)
 
 
 class FileFromDigestHandler(FileHandler):

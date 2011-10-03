@@ -177,7 +177,7 @@ def harvest_contest_data(contest_id):
         for user in contest.users:
             users[user.username] = {'password': user.password}
         for task in contest.tasks:
-            tasks.append(task.name)
+            tasks.append(task.id)
     return users, tasks
 
 
@@ -213,17 +213,20 @@ def main():
     for actor in actors:
         actor.start()
 
+    try:
+        while True:
+            pass
+    except KeyboardInterrupt:
+        print >> sys.stderr, "Taking down actors"
+        for actor in actors:
+            actor.die = True
+
     finished = False
     while not finished:
-        try:
-            for actor in actors:
-                actor.join()
-            else:
-                finished = True
-        except KeyboardInterrupt:
-            print >> sys.stderr, "Taking down actors"
-            for actor in actors:
-                actor.die = True
+        for actor in actors:
+            actor.join()
+        else:
+            finished = True
 
     print >> sys.stderr, "Test finished"
 

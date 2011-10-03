@@ -160,8 +160,8 @@ class Sandbox:
                         self.log[k].append(v)
                     else:
                         self.log[k] = [v]
-        except IOError:
-            raise IOError("Error while reading execution log")
+        except IOError as e:
+            raise IOError("Error while reading execution log. %r" % e)
 
     def get_execution_time(self):
         """Return the time spent in the sandbox, reading the logs if

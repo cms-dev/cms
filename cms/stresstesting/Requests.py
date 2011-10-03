@@ -26,6 +26,8 @@ import urllib
 import datetime
 import traceback
 
+from cms.util.Cryptographics import encrypt_number
+
 class TestRequest:
     """Docstring TODO.
 
@@ -212,23 +214,23 @@ class TaskRequest(GenericRequest):
     """Load a task page in CWS.
 
     """
-    def __init__(self, browser, task_name, base_url=None):
+    def __init__(self, browser, task_id, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
-        self.url = self.base_url + "tasks/" + task_name
-        self.task_name = task_name
+        self.url = self.base_url + "tasks/" + encrypt_number(task_id)
+        self.task_id = task_id
 
     def describe(self):
-        return "load page for task %s" % (self.task_name)
+        return "load page for task %s" % (self.task_id)
 
 
 class TaskStatementRequest(GenericRequest):
     """Load a task statement in CWS.
 
     """
-    def __init__(self, browser, task_name, base_url=None):
+    def __init__(self, browser, task_id, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
-        self.url = self.base_url + "tasks/" + task_name + "/statement"
-        self.task_name = task_name
+        self.url = self.base_url + "tasks/" + encrypt_number(task_id) + "/statement"
+        self.task_id = task_id
 
     def describe(self):
-        return "load statement for task %s" % (self.task_name)
+        return "load statement for task %s" % (self.task_id)

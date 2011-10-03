@@ -12,6 +12,8 @@
         this.contest_stop = contest_stop;
         this.phase = phase;
         this.remaining_div = null;
+        this.file_asked_name = "";
+        this.file_asked_url = "";
     }
 
     Utils.prototype =
@@ -46,8 +48,10 @@
          * error (string): The error message, or null if the request
                            is successful.
          */
-        __file_received: function(file_name, url, response, error)
+        __file_received: function(response, error)
         {
+            file_name = this.file_asked_name;
+            url = this.file_asked_url;
             var page="";
             if(error != null)
             {
@@ -89,7 +93,10 @@
         */
         show_file: function(file_name, url)
         {
-            var file_received = this.__file_received.bind(this, file_name, url);
+            this.file_asked_filename = file_name;
+            this.file_asked_url = url;
+            var file_received = cmsutils.bind_func(this,
+                                                   this.__file_received);
             cmsutils.ajax_request(url, null, file_received);
         },
 
