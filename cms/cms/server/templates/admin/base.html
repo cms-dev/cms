@@ -119,7 +119,9 @@ window.onload = init;
             </ul>
           </div>
           <div class="hr"></div>
+            {% if phase != 1 %}
           <div class="footer">Time left: <span id="remaining"></span></div>
+            {% end %}
           {% end %}
 
       </div>
