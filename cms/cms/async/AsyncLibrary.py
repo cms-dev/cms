@@ -152,7 +152,9 @@ class RPCRequest:
             self.callback(*params,
                           __error=response.get("__error", None))
         else:
-            error = response.get("__error", None)
+            error = None
+            if response is not None:
+                error = response.get("__error", None)
             if error is not None:
                 logger.error("Error in a call without callback: %s" % error)
 
@@ -746,9 +748,9 @@ class RemoteService(asynchat.async_chat):
                 json_length = encode_length(len(json_message))
                 binary_message = ""
             except ValueError:
-                logger.error(("Cannot send request of method %s because of " +
-                             "encoding error.") % method)
-                request.complete(None)
+                msg = "Cannot send request of method %s because of " \
+                      "encoding error." % method
+                request.complete({"__error": msg})
                 return
         else:
             try:
@@ -758,11 +760,15 @@ class RemoteService(asynchat.async_chat):
                 json_length = encode_length(len(json_message))
                 binary_message = encode_binary(binary_data)
             except ValueError:
-                logger.error(("Cannot send request of method %s because of " +
-                             "encoding error.") % method)
-                request.complete(None)
+                msg = "Cannot send request of method %s because of " \
+                      "encoding error." % method
+                request.complete({"__error": msg})
                 return
-        self._push_right(json_length + json_message + binary_message)
+        ret = self._push_right(json_length + json_message + binary_message)
+        if not ret:
+            msg = "Transfer interrupted"
+            request.complete({"__error": msg})
+            return
 
         return True
 
@@ -798,7 +804,12 @@ class RemoteService(asynchat.async_chat):
         """
         logger.debug("RemoteService._push_right")
         to_push = "".join(data) + "\r\n"
-        self.push(to_push)
+        try:
+            self.push(to_push)
+        except Exception as e:
+            logger.error("Push not ended correctly because of %r" % e)
+            return False
+        return True
 
     def handle_error(self):
         """Handle a generic error in the communication.
