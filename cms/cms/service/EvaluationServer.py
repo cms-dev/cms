@@ -28,6 +28,7 @@ current ranking.
 """
 
 import time
+import random
 
 import heapq
 
@@ -35,7 +36,7 @@ from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback, logger
 from cms.async import ServiceCoord, get_service_shards
 from cms.db.Utils import ask_for_contest
 
-from cms.db.SQLAlchemyAll import Session, Contest, Submission, SessionGen
+from cms.db.SQLAlchemyAll import Session, Contest, Submission, SessionGen, Score
 
 
 class JobQueue:
@@ -222,7 +223,8 @@ class WorkerPool:
         # We look for an available worker
         try:
             shard = self.find_worker(self.WORKER_INACTIVE,
-                                     require_connection=True)
+                                     require_connection=True,
+                                     random_worker=True)
         except LookupError:
             return None
 
@@ -282,24 +284,33 @@ class WorkerPool:
             logger.debug("Worker %d released" % shard)
             return False
 
-    def find_worker(self, job, require_connection=False):
-        """Return the (a) worker whose assigned job is job. Remember
-        that there is a placeholder job to signal that the worker is
-        not doing anything (or disabled).
+    def find_worker(self, job, require_connection=False, random_worker=False):
+        """Return a worker whose assigned job is job. Remember that
+        there is a placeholder job to signal that the worker is not
+        doing anything (or disabled).
 
-        job (job): the job we are looking for, or self.WORKER_*
+        job (job): the job we are looking for, or self.WORKER_*.
         require_connection (bool): True if we want to find a worker
                                    doing the job and that is actually
-                                   connected to us (i.e., did not die)
+                                   connected to us (i.e., did not
+                                   die).
+        random_worker (bool): if True, choose uniformly amongst all
+                       workers doing the job.
         returns (int): the shard of the worker working on job, or
                        LookupError if nothing has been found.
 
         """
+        pool = []
         for shard, worker_job in self.job.iteritems():
             if worker_job == job:
                 if not require_connection or self.worker[shard].connected:
-                    return shard
-        raise LookupError("No such job")
+                    pool.append(shard)
+                    if not random_worker:
+                        return shard
+        if pool == []:
+            raise LookupError("No such job")
+        else:
+            return random.choice(pool)
 
     def working_workers(self):
         """Returns the number of workers doing an actual work in this
@@ -428,6 +439,8 @@ class EvaluationServer(Service):
         # TODO - Make this configurable
         for submission_id in submission_ids:
             self.new_submission(submission_id)
+        logger.info("Finished loading %d old submissions." %
+                    len(submission_ids))
 
     def dispatch_jobs(self):
         """Check if there are pending jobs, and tries to distribute as
@@ -641,11 +654,15 @@ class EvaluationServer(Service):
                                             task=submission.task)
                 # We send the new score to the RelayService and
                 # eventually to the public ranking.
+                print "C", (time.time() - ttt)
                 score = scorer.scores.get(submission.user.username, 0.0)
                 self.RS.submission_new_score(submission_id=submission_id,
                                              timestamp=submission.timestamp,
                                              score=score)
+                ttt = time.time()
+                #~ 0.04
                 session.commit()
+                print "F", (time.time() - ttt)
 
         # Evaluation unsuccessful, we requeue (or not).
         else:
