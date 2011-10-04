@@ -20,15 +20,19 @@
 import tornado.ioloop
 import tornado.web
 
-import store
 import json
 import functools
-import submissions
 import time
 import os
 import re
 import base64
+import logger
+import logging
 from operator import attrgetter
+
+import store
+import submissions
+
 
 def authenticated(method):
     @functools.wraps(method)
@@ -82,7 +86,8 @@ def create_handler(entity_store):
                 entity_store.create(entity_id, self.request.body)
             except store.InvalidKey:
                 raise tornado.web.HTTPError(405)
-            except (ValueError, store.InvalidData):
+            except store.InvalidData, exc:
+                logging.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
                 raise tornado.web.HTTPError(400)
 
         @authenticated
@@ -92,7 +97,8 @@ def create_handler(entity_store):
                 entity_store.update(entity_id, self.request.body)
             except store.InvalidKey:
                 raise tornado.web.HTTPError(404)
-            except (ValueError, store.InvalidData):
+            except store.InvalidData, exc:
+                logging.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
                 raise tornado.web.HTTPError(400)
 
         @authenticated

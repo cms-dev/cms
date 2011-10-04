@@ -30,6 +30,7 @@ it again when the program is restared.
 
 """
 
+import logging
 import json
 import os
 
@@ -101,12 +102,14 @@ class _Contest(_Entity):
         """
         # validate
         try:
-            assert type(data) is dict
-            assert type(data['name']) is unicode
-            assert type(data['begin']) is int
-            assert type(data['end']) is int
-        except (KeyError, AssertionError):
-            raise InvalidData
+            assert type(data) is dict, "Not a dictionary"
+            assert type(data['name']) is unicode, "Field 'name' isn't a string"
+            assert type(data['begin']) is int, "Field 'begin' isn't an integer"
+            assert type(data['end']) is int, "Field 'end' isn't an integer"
+        except KeyError as field:
+            raise InvalidData('Field %s is missing' % field)
+        except AssertionError as message:
+            raise InvalidData(message)
         # load
         self.name = data['name']
         self.begin = data['begin']
@@ -141,16 +144,18 @@ class _Task(_Entity):
         """
         # validate
         try:
-            assert type(data) is dict
-            assert type(data['name']) is unicode
-            assert type(data['contest']) is unicode
-            assert type(data['score']) is float
-            assert type(data['extra_headers']) is list
+            assert type(data) is dict, "Not a dictionary"
+            assert type(data['name']) is unicode, "Field 'name' isn't a string"
+            assert type(data['contest']) is unicode, "Field 'contest' isn't a string"
+            assert type(data['score']) is float, "Field 'score' isn't a float"
+            assert type(data['extra_headers']) is list, "Field 'extra_headers' isn't a list of strings"
             for i in data['extra_headers']:
-                assert type(i) is unicode
-            assert type(data['order']) is int
-        except (KeyError, AssertionError):
-            raise InvalidData
+                assert type(i) is unicode, "Field 'extra_headers' isn't a list of strings"
+            assert type(data['order']) is int, "Field 'order' isn't an integer"
+        except KeyError as field:
+            raise InvalidData('Field %s is missing' % field)
+        except AssertionError as message:
+            raise InvalidData(message)
         # load
         self.name = data['name']
         self.contest = data['contest']
@@ -183,10 +188,12 @@ class _Team(_Entity):
         """
         # validate
         try:
-            assert type(data) is dict
-            assert type(data['name']) is unicode
-        except (KeyError, AssertionError):
-            raise InvalidData
+            assert type(data) is dict, "Not a dictionary"
+            assert type(data['name']) is unicode, "Field 'name' isn't a string"
+        except KeyError as field:
+            raise InvalidData('Field %s is missing' % field)
+        except AssertionError as message:
+            raise InvalidData(message)
         # load
         self.name = data['name']
 
@@ -217,12 +224,14 @@ class _User(_Entity):
         """
         # validate
         try:
-            assert type(data) is dict
-            assert type(data['f_name']) is unicode
-            assert type(data['l_name']) is unicode
-            assert type(data['team']) is unicode
-        except (KeyError, AssertionError):
-            raise InvalidData
+            assert type(data) is dict, "Not a dictionary"
+            assert type(data['f_name']) is unicode, "Field 'f_name' isn't a string"
+            assert type(data['l_name']) is unicode, "Field 'l_name' isn't a string"
+            assert type(data['team']) is unicode, "Field 'team' isn't a string"
+        except KeyError as field:
+            raise InvalidData('Field %s is missing' % field)
+        except AssertionError as message:
+            raise InvalidData(message)
         # load
         self.f_name = data['f_name']
         self.l_name = data['l_name']
@@ -276,18 +285,17 @@ class EntityStore(object):
             for ent in os.listdir(path):
                 if ent[-5:] == '.json' and ent[:-5] != '':
                     with open(path + ent, 'r') as f:
-                        data = json.loads(f.read())
-                        self._store[ent[:-5]] = entity(data)
+                        data = f.read()
+                        self._store[ent[:-5]] = entity(json.loads(data))
         except OSError:
             # the directory doesn't exist or is inaccessible
-            # TODO tell it to some human operator
-            pass
+            logging.error("OSError occured", exc_info=True)
         except IOError:
-            # TODO tell it to some human operator
-            pass
-        except InvalidData:
-            # someone edited the data incorrectly
-            pass
+            logging.error("IOError occured", exc_info=True)
+        except ValueError:
+            logging.error("Invalid JSON\n" + path + ent, extra={'request_body': data})
+        except InvalidData, exc:
+            logging.error(str(exc) + "\n" + path + ent, extra={'request_body': data})
 
     def add_create_callback(self, callback):
         """Add a callback to be called when entities are created.
@@ -334,7 +342,10 @@ class EntityStore(object):
         if not isinstance(key, unicode) or key in self._store:
             raise InvalidKey
         # create entity
-        self._store[key] = self._entity(json.loads(data))
+        try:
+            self._store[key] = self._entity(json.loads(data))
+        except ValueError:
+            raise InvalidData('Invalid JSON')
         # notify callbacks
         for callback in self._create_callbacks:
             callback(key)
@@ -343,8 +354,7 @@ class EntityStore(object):
             with open(self._path + key + '.json', 'w') as f:
                 f.write(json.dumps(self._store[key].dump()))
         except IOError:
-            # TODO tell it to some human operator
-            pass
+            logging.error("IOError occured", exc_info=True)
 
     def update(self, key, data):
         """Update an entity.
@@ -364,7 +374,10 @@ class EntityStore(object):
         if not isinstance(key, unicode) or not key in self._store:
             raise InvalidKey
         # update entity
-        self._store[key] = self._entity(json.loads(data))
+        try:
+            self._store[key] = self._entity(json.loads(data))
+        except ValueError:
+            raise InvalidData('Invalid JSON')
         # notify callbacks
         for callback in self._update_callbacks:
             callback(key)
@@ -373,8 +386,7 @@ class EntityStore(object):
             with open(self._path + key + '.json', 'w') as f:
                 f.write(json.dumps(self._store[key].dump()))
         except IOError:
-            # TODO tell it to some human operator
-            pass
+            logging.error("IOError occured", exc_info=True)
 
     def delete(self, key):
         """Delete an entity.
@@ -399,8 +411,7 @@ class EntityStore(object):
         try:
             os.remove(self._path + key + '.json')
         except OSError:
-            # TODO tell it to some human operator
-            pass
+            logging.error("OSError occured", exc_info=True)
 
     def retrieve(self, key):
         """Retrieve an entity.
