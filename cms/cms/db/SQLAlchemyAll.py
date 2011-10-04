@@ -73,9 +73,9 @@ def update_ranking_view(self, scorers, task=None, user=None):
     """Updates the ranking view with the scores coming from the
     ScoreType instance of every task in the contest.
 
-    scoresrs (dict): a dictionary indexed by task.id
-    task (Task): if not None, update only scores of given task
-    user (User): if not None, update only scores of given user
+    scorers (dict): a dictionary indexed by task.id.
+    task (Task): if not None, update only scores of given task.
+    user (User): if not None, update only scores of given user.
 
     """
     tasks = [task]
