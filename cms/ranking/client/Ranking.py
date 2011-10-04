@@ -22,6 +22,7 @@ from UserPanel import UserPanel
 from Scoreboard import Scoreboard
 from TeamSearch import TeamSearch
 from Overview import Overview
+from TimeView import TimeView
 
 import pyjd
 
@@ -31,6 +32,7 @@ class Ranking:
         self.sb.update()
         self.ts = TeamSearch(self.ds)
         self.ov = Overview(self.ds)
+        self.tv = TimeView(self.ds)
 
     def onModuleLoad(self):
         self.ds = DataStore(self.data_loaded)
