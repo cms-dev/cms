@@ -213,11 +213,9 @@ class SubmissionHandler(DataHandler):
         try:
             submissions.submission_store.create(entity_id, json.loads(self.request.body))
         except submissions.InvalidKey:
-            self.set_status(405)
+            raise tornado.web.HTTPError(405)
         except (ValueError, submissions.InvalidTime, submissions.InvalidData):
-            self.set_status(400)
-        else:
-            self.set_status(201)
+            raise tornado.web.HTTPError(400)
 
     @authenticated
     def put(self, entity_id):
@@ -225,11 +223,9 @@ class SubmissionHandler(DataHandler):
         try:
             submissions.submission_store.update(entity_id, json.loads(self.request.body))
         except submissions.InvalidKey:
-            self.set_status(404)
+            raise tornado.web.HTTPError(404)
         except (ValueError, submissions.InvalidTime, submissions.InvalidData):
-            self.set_status(400)
-        else:
-            self.set_status(200)
+            raise tornado.web.HTTPError(400)
 
     @authenticated
     def delete(self, entity_id):
@@ -237,19 +233,15 @@ class SubmissionHandler(DataHandler):
         try:
             submissions.submission_store.delete(entity_id)
         except submissions.InvalidKey:
-            self.set_status(404)
-        else:
-            self.set_status(200)
+            raise tornado.web.HTTPError(404)
 
     def get(self, entity_id):
         # retrieve
         try:
             entity = submissions.submission_store.retrieve(entity_id)
-        except submissions.InvalidKey:
-            self.set_status(404)
-        else:
-            self.set_status(200)
             self.write(json.dumps(entity.dump()) + '\n')
+        except submissions.InvalidKey:
+            raise tornado.web.HTTPError(404)
 
 
 class SubListHandler(DataHandler):
