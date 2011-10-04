@@ -607,6 +607,11 @@ body:not(.user_panel) .UserPanel_bg
 
 .UserPanel .scores tbody tr td:nth-child(4)
 {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
     text-align: center;
     border: 1px solid #999999;
     box-shadow: 0 0 1px 0 gray;
