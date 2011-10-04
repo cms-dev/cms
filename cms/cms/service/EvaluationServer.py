@@ -654,15 +654,11 @@ class EvaluationServer(Service):
                                             task=submission.task)
                 # We send the new score to the RelayService and
                 # eventually to the public ranking.
-                print "C", (time.time() - ttt)
                 score = scorer.scores.get(submission.user.username, 0.0)
                 self.RS.submission_new_score(submission_id=submission_id,
                                              timestamp=submission.timestamp,
                                              score=score)
-                ttt = time.time()
-                #~ 0.04
                 session.commit()
-                print "F", (time.time() - ttt)
 
         # Evaluation unsuccessful, we requeue (or not).
         else:
