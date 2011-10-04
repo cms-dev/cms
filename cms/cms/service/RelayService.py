@@ -163,11 +163,12 @@ class RelayService(Service):
 
             for user in users:
                 safe_post_data(connection, user[0], user[1], auth,
-                               "sending user %s" % user.username)
+                               "sending user %s" % (user[1]["l_name"] + " " +
+                                                    user[1]["f_name"]))
 
             for task in tasks:
                 safe_post_data(connection, task[0], task[1], auth,
-                               "sending task %s" % task.name)
+                               "sending task %s" % task[1]["name"])
 
     @rpc_method
     def submission_new_score(self, submission_id, timestamp=None,
