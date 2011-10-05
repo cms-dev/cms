@@ -671,12 +671,14 @@ class SubmitHandler(BaseHandler):
                 self.submission_id = s.id
                 self.r_params["submission"] = s
                 self.r_params["warned"] = False
-                if False == self.application.service.ES.new_submission(
-                    submission_id=s.id,
-                    callback=self.es_notify_callback):
-                    self.es_notify_callback(None,
-                                            None,
-                                            error="Connection failed.")
+                self.application.service.ES.new_submission(submission_id=s.id)
+                self.application.service.add_notification(
+                    self.current_user.username,
+                    int(time.time()),
+                    self._("Submission received"),
+                    self._("Your submission has been received "
+                           "and is currently being evaluated."))
+                self.redirect("/tasks/%s" % encrypt_number(self.task.id))
         else:
             logger.error("Storage failed! %s" % error)
             if self.local_copy_saved:
@@ -689,22 +691,6 @@ class SubmitHandler(BaseHandler):
                 self._("Submission storage failed!"),
                 self._(message))
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
-
-    @catch_exceptions
-    @rpc_callback
-    def es_notify_callback(self, data, plus, error=None):
-        logger.debug("ES notify_callback")
-        if error is not None:
-            logger.error("Notification to ES failed! %s" % error)
-        # Add "All ok" notification
-        self.application.service.add_notification(
-            self.current_user.username,
-            int(time.time()),
-            self._("Submission received"),
-            self._("Your submission has been received "
-                   "and is currently being evaluated."))
-
-        self.redirect("/tasks/%s" % encrypt_number(self.task.id))
 
 
 class UseTokenHandler(BaseHandler):
