@@ -85,8 +85,8 @@ def safe_post_data(connection, url, data, auth, operation):
     """
     status = post_data(connection, url, data, auth)
     if status not in [200, 201]:
-        logger.warning("Status %s while %s to ranking." %
-                       (status, operation))
+        logger.info("Status %s while %s to ranking." %
+                    (status, operation))
 
 
 def safe_put_data(connection, url, data, auth, operation):
@@ -96,8 +96,8 @@ def safe_put_data(connection, url, data, auth, operation):
     """
     status = put_data(connection, url, data, auth)
     if status not in [200, 201]:
-        logger.warning("Status %s while %s to ranking." %
-                       (status, operation))
+        logger.info("Status %s while %s to ranking." %
+                    (status, operation))
 
 class RelayService(Service):
     """Relay service.
