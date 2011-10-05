@@ -142,6 +142,14 @@ class Submission(Base):
         """
         return self.token is not None
 
+    def compiled(self):
+        """Return if the submission has been compiled.
+
+        return (bool): True if compiled, False otherwise.
+
+        """
+        return self.compilation_outcome is not None
+
     def evaluated(self):
         """Return if the submission has been evaluated.
 
