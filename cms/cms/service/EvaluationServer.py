@@ -414,7 +414,8 @@ class EvaluationServer(Service):
             contest = session.query(Contest).\
                       filter_by(id=contest_id).first()
             logger.info("Loaded contest %s" % contest.name)
-            submission_ids = [x.id for x in contest.get_submissions()]
+            self.submission_ids_to_check = \
+                [x.id for x in contest.get_submissions()]
             contest.create_empty_ranking_view(timestamp=contest.start)
             for task in contest.tasks:
                 self.scorers[task.id] = task.get_scorer()
@@ -437,10 +438,19 @@ class EvaluationServer(Service):
 
         # Submit to compilation all the submissions already in DB
         # TODO - Make this configurable
-        for submission_id in submission_ids:
-            self.new_submission(submission_id)
-        logger.info("Finished loading %d old submissions." %
-                    len(submission_ids))
+        logger.info("Starting loading %d old submissions." %
+                    len(self.submission_ids_to_check))
+        self.add_timeout(self.check_old_submissions, None,
+                         0.01, immediately=True)
+
+    def check_old_submissions(self):
+        self.new_submission(self.submission_ids_to_check[0])
+        if len(self.submission_ids_to_check) == 1:
+            logger.info("Finished loading old submissions.")
+            return False
+        else:
+            self.submission_ids_to_check = self.submission_ids_to_check[1:]
+            return True
 
     def dispatch_jobs(self):
         """Check if there are pending jobs, and tries to distribute as
