@@ -29,7 +29,7 @@ import simplejson
 import base64
 import errno
 
-from cms.db.SQLAlchemyAll import Session, Submission, Contest
+from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
 from cms.db.Utils import ask_for_contest
 
 from cms.async.AsyncLibrary import Service, rpc_method, logger
@@ -109,8 +109,6 @@ class RelayService(Service):
         logger.initialize(ServiceCoord("RelayService", shard))
         Service.__init__(self, shard)
 
-        self.session = Session()
-
         self.rankings = []
         for i in xrange(len(Config.rankings_address)):
             address = Config.rankings_address[i]
@@ -171,36 +169,35 @@ class RelayService(Service):
         connection = httplib.HTTPConnection(ranking[0])
         auth = ranking[1]
 
-        contest = Contest.get_from_id(contest_id, self.session)
-        if contest is None:
-            logger.error("Received request for unexistent contest id %s." %
+        with SessionGen(commit=False) as session:
+            contest = Contest.get_from_id(contest_id, session)
+            if contest is None:
+                logger.error("Received request for unexistent contest id %s." %
                              contest_id)
-            raise KeyError
-        contest_name = "/contests/%s" % contest.name
-        contest_data = {"name": contest.description,
-                        "begin": contest.start,
-                        "end": contest.stop}
+                raise KeyError
+            contest_name = contest.name
+            contest_url = "/contests/%s" % contest_name
+            contest_data = {"name": contest.description,
+                            "begin": contest.start,
+                            "end": contest.stop}
 
-        users = []
-        for user in contest.users:
-            if user.hidden:
-                continue
-            users.append(["/users/%s" % user.username,
-                          {"f_name": user.real_name.split()[0],
-                           "l_name": " ".join(user.real_name.split()[1:]),
-                           "team": "None"}])
+            users = [["/users/%s" % user.username,
+                      {"f_name": user.real_name.split()[0],
+                       "l_name": " ".join(user.real_name.split()[1:]),
+                       "team": "None"}]
+                     for user in contest.users
+                     if not user.hidden]
 
-        tasks = []
-        for task in contest.tasks:
-            tasks.append(["/tasks/%s" % task.name,
-                          {"name": task.title,
-                           "contest": contest.name,
-                           "score": 100.0,
-                           "extra_headers": [],
-                           "order": task.num}])
+            tasks = [["/tasks/%s" % task.name,
+                      {"name": task.title,
+                       "contest": contest.name,
+                       "score": 100.0,
+                       "extra_headers": [],
+                       "order": task.num}]
+                     for task in contest.tasks]
 
-        safe_post_data(connection, contest_name, contest_data, auth,
-                       "sending contest %s" % contest.name)
+        safe_post_data(connection, contest_url, contest_data, auth,
+                       "sending contest %s" % contest_name)
 
         for user in users:
             safe_post_data(connection, user[0], user[1], auth,
@@ -260,26 +257,27 @@ class RelayService(Service):
         connection = httplib.HTTPConnection(ranking[0])
         auth = ranking[1]
 
-        submission = Submission.get_from_id(submission_id, self.session)
-        if submission is None:
-            logger.error("Received request for unexistent submission id %s." %
-                         submission_id)
-            raise KeyError
-        if submission.user.hidden:
-            return
-        if timestamp is None:
-            timestamp = submission.timestamp
+        with SessionGen(commit=False) as session:
+            submission = Submission.get_from_id(submission_id, session)
+            if submission is None:
+                logger.error("Received request for "
+                             "unexistent submission id %s." % submission_id)
+                raise KeyError
+            if submission.user.hidden:
+                return
+            if timestamp is None:
+                timestamp = submission.timestamp
 
-        sub_name = "/subs/%s" % submission_id
-        sub_post_data = {"user": submission.user.username,
-                         "task": submission.task.name,
-                         "time": timestamp,
-                         "score": score,
-                         "token": submission.token is not None,
-                         "extra": extra}
-        sub_put_data = {"time": timestamp,
-                        "score": score,
-                        "extra": extra}
+            sub_name = "/subs/%s" % submission_id
+            sub_post_data = {"user": submission.user.username,
+                             "task": submission.task.name,
+                             "time": timestamp,
+                             "score": score,
+                             "token": submission.token is not None,
+                             "extra": extra}
+            sub_put_data = {"time": timestamp,
+                            "score": score,
+                            "extra": extra}
 
         # We try to use put, if something goes wrong, we try also to
         # post before.
@@ -319,23 +317,24 @@ class RelayService(Service):
         connection = httplib.HTTPConnection(ranking[0])
         auth = ranking[1]
 
-        submission = Submission.get_from_id(submission_id, self.session)
-        if submission is None:
-            logger.error("Received request for unexistent submission id %s." %
-                         submission_id)
-            raise KeyError
-        if submission.user.hidden:
-            return
+        with SessionGen(commit=False) as session:
+            submission = Submission.get_from_id(submission_id, session)
+            if submission is None:
+                logger.error("Received request for "
+                             "unexistent submission id %s." % submission_id)
+                raise KeyError
+            if submission.user.hidden:
+                return
 
-        sub_name = "/subs/%s" % submission_id
-        sub_post_data = {"user": submission.user.username,
-                         "task": submission.task.name,
-                         "time": timestamp,
-                         "score": 0.0,
-                         "token": submission.token is not None,
-                         "extra": []}
-        sub_put_data = {"time": timestamp,
-                        "token": True},
+            sub_name = "/subs/%s" % submission_id
+            sub_post_data = {"user": submission.user.username,
+                             "task": submission.task.name,
+                             "time": timestamp,
+                             "score": 0.0,
+                             "token": submission.token is not None,
+                             "extra": []}
+            sub_put_data = {"time": timestamp,
+                            "token": True},
 
         # We try to use put, if something goes wrong, we try also to
         # post before.
