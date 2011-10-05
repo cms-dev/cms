@@ -27,6 +27,7 @@ module, via http requests.
 import httplib
 import simplejson
 import base64
+import errno
 
 from cms.db.SQLAlchemyAll import Session, Submission, Contest
 from cms.db.Utils import ask_for_contest
@@ -131,6 +132,10 @@ class RelayService(Service):
         to dispatch them
 
         """
+        pending = len(self.operation_queue)
+        if pending > 0:
+            logger.info("%s operation still pending" % pending)
+
         failed_rankings = set([])
         new_queue = []
         for method, args in self.operation_queue:
@@ -140,8 +145,10 @@ class RelayService(Service):
             try:
                 method(*args)
             except Exception as e:
-                # Connection refused / reset by peer
-                if e.errno not in [111, 104]:
+                # Connection aborted / refused / reset by peer
+                if e.errno not in [errno.ECONNABORTED,
+                                   errno.ECONNREFUSED,
+                                   errno.ECONNRESET]:
                     raise e
                 logger.info("Ranking %s not connected." % args[0][0])
                 new_queue.append((method, args))
