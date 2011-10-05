@@ -109,19 +109,61 @@ class RelayService(Service):
         Service.__init__(self, shard)
 
         self.session = Session()
-        self.initialize(contest_id)
 
-    @rpc_method
-    def initialize(self, contest_id):
+        self.rankings = []
+        for i in xrange(len(Config.rankings_address)):
+            address = Config.rankings_address[i]
+            username = Config.rankings_username[i]
+            password = Config.rankings_password[i]
+            auth = get_authorization(username, password)
+            self.rankings.append(("%s:%d" % tuple(address), auth))
+        self.operation_queue = []
+
+        for ranking in self.rankings:
+            self.operation_queue.append((self.initialize,
+                                         [ranking, contest_id]))
+
+        self.add_timeout(self.dispatch_operations, None,
+                         5, immediately=True)
+
+    def dispatch_operations(self):
+        """Look at the operations still to do in the queue and tries
+        to dispatch them
+
+        """
+        failed_rankings = set([])
+        new_queue = []
+        for method, args in self.operation_queue:
+            if args[0] in failed_rankings:
+                new_queue.append((method, args))
+                continue
+            try:
+                method(*args)
+            except Exception as e:
+                # Connection refused / reset by peer
+                if e.errno not in [111, 104]:
+                    raise e
+                logger.info("Ranking %s not connected." % args[0][0])
+                new_queue.append((method, args))
+                failed_rankings.add(args[0])
+        self.operation_queue = new_queue
+        return True
+
+    def initialize(self, ranking, contest_id):
         """Send to the ranking all the data that are supposed to be
         sent before the contest: contest, users, tasks. No support for
         teams, flags and faces.
 
+        ranking ((string, string)): address and authorization string
+                                    of ranking server.
         contest_id (int): the contest to send.
-        return (bool): True
+        return (bool): success of operation
 
         """
         logger.info("Initializing rankings.")
+        connection = httplib.HTTPConnection(ranking[0])
+        auth = ranking[1]
+
         contest = Contest.get_from_id(contest_id, self.session)
         if contest is None:
             logger.error("Received request for unexistent contest id %s." %
@@ -150,33 +192,26 @@ class RelayService(Service):
                            "extra_headers": [],
                            "order": task.num}])
 
-        for i in xrange(len(Config.rankings_address)):
-            address = Config.rankings_address[i]
-            username = Config.rankings_username[i]
-            password = Config.rankings_password[i]
-            print address
-            connection = httplib.HTTPConnection("%s:%d" % tuple(address))
-            auth = get_authorization(username, password)
+        safe_post_data(connection, contest_name, contest_data, auth,
+                       "sending contest %s" % contest.name)
 
-            safe_post_data(connection, contest_name, contest_data, auth,
-                           "sending contest %s" % contest.name)
+        for user in users:
+            safe_post_data(connection, user[0], user[1], auth,
+                           "sending user %s" % (user[1]["l_name"] + " " +
+                                                user[1]["f_name"]))
 
-            for user in users:
-                safe_post_data(connection, user[0], user[1], auth,
-                               "sending user %s" % (user[1]["l_name"] + " " +
-                                                    user[1]["f_name"]))
+        for task in tasks:
+            safe_post_data(connection, task[0], task[1], auth,
+                           "sending task %s" % task[1]["name"])
 
-            for task in tasks:
-                safe_post_data(connection, task[0], task[1], auth,
-                               "sending task %s" % task[1]["name"])
+        return True
 
     @rpc_method
     def submission_new_score(self, submission_id, timestamp=None,
-                             score=0.0, extra=[],
-                             address=None, username=None, password=None):
-        """This RPC inform RelayService that ES has a new score for
-        the submission. We have roughly three possible ways that ES
-        calls this:
+                             score=0.0, extra=[]):
+        """This RPC inform RelayService that ES finished the
+        evaluation for a submission. We have roughly three possible
+        ways that ES calls this:
 
         1. the user submits and ES evaluate the submission; timestamp
            is the time of the submission;
@@ -193,11 +228,31 @@ class RelayService(Service):
         timestamp (int): the time where the changes has been done.
         score (float): the new score of the submission.
         extra (list): the extra data (i.e., partial scores).
-        returns (bool): True
+
+        """
+        for ranking in self.rankings:
+            self.operation_queue.append((self.send_score,
+                                         [ranking, submission_id, timestamp,
+                                          score, extra]))
+
+    def send_score(self, ranking, submission_id, timestamp=None,
+                   score=0.0, extra=[]):
+        """Send a score to the ranking.
+
+        ranking ((string, string)): address and authorization string
+                                    of ranking server.
+        submission_id (int): the id of the submission that changed.
+        timestamp (int): the time where the changes has been done.
+        score (float): the new score of the submission.
+        extra (list): the extra data (i.e., partial scores).
+        return (bool): success of operation.
 
         """
         logger.info("Posting new score %s for submission %s." %
                     (score, submission_id))
+        connection = httplib.HTTPConnection(ranking[0])
+        auth = ranking[1]
+
         submission = Submission.get_from_id(submission_id, self.session)
         if submission is None:
             logger.error("Received request for unexistent submission id %s." %
@@ -219,22 +274,15 @@ class RelayService(Service):
                         "score": score,
                         "extra": extra}
 
-        for i in xrange(len(Config.rankings_address)):
-            address = Config.rankings_address[i]
-            username = Config.rankings_username[i]
-            password = Config.rankings_password[i]
-            connection = httplib.HTTPConnection("%s:%d" % tuple(address))
-            auth = get_authorization(username, password)
+        # We try to use put, if something goes wrong, we try also to
+        # post before.
+        status = put_data(connection, sub_name, sub_put_data, auth)
 
-            # We try to use put, if something goes wrong, we try also
-            # to post before.
-            status = put_data(connection, sub_name, sub_put_data, auth)
-
-            if status not in [200, 201]:
-                safe_post_data(connection, sub_name, sub_post_data, auth,
-                               "sending submission %s" % submission_id)
-                safe_put_data(connection, sub_name, sub_put_data, auth,
-                               "sending submission %s" % submission_id)
+        if status not in [200, 201]:
+            safe_post_data(connection, sub_name, sub_post_data, auth,
+                           "sending submission %s" % submission_id)
+            safe_put_data(connection, sub_name, sub_put_data, auth,
+                          "sending submission %s" % submission_id)
 
     @rpc_method
     def submission_tokened(self, submission_id, timestamp):
@@ -243,10 +291,27 @@ class RelayService(Service):
 
         submission_id (int): the id of the submission that changed.
         timestamp (int): the time of the token.
-        returns (bool): True
+
+        """
+        for ranking in self.rankings:
+            self.operation_queue.append((self.send_token,
+                                         [ranking, submission_id, timestamp,
+                                          score, extra]))
+
+    def send_token(self, ranking, submission_id, timestamp):
+        """Send the data that a token has been played.
+
+        ranking ((string, string)): address and authorization string
+                                    of ranking server.
+        submission_id (int): the id of the submission that changed.
+        timestamp (int): the time of the token.
+        return (bool): success of operation.
 
         """
         logger.info("Posting token usage for submission %s." % submission_id)
+        connection = httplib.HTTPConnection(ranking[0])
+        auth = ranking[1]
+
         submission = Submission.get_from_id(submission_id, self.session)
         if submission is None:
             logger.error("Received request for unexistent submission id %s." %
@@ -265,23 +330,16 @@ class RelayService(Service):
         sub_put_data = {"time": timestamp,
                         "token": True},
 
-        for i in xrange(len(Config.rankings_address)):
-            address = Config.rankings_address[i]
-            username = Config.rankings_username[i]
-            password = Config.rankings_password[i]
-            connection = httplib.HTTPConnection("%s:%d" % tuple(address))
-            auth = get_authorization(username, password)
+        # We try to use put, if something goes wrong, we try also to
+        # post before.
+        status = put_data(connection, sub_name, sub_put_data, auth)
 
-            # We try to use put, if something goes wrong, we try also
-            # to post before.
-            status = put_data(connection, sub_name, sub_put_data, auth)
-
-            if status not in [200, 201]:
-                safe_post_data(connection, sub_name, sub_post_data, auth,
-                               "sending submission %s" % submission_id)
-                safe_put_data(connection, sub_name, sub_put_data, auth,
-                               "sending token for submission %s" %
-                               submission_id)
+        if status not in [200, 201]:
+            safe_post_data(connection, sub_name, sub_post_data, auth,
+                           "sending submission %s" % submission_id)
+            safe_put_data(connection, sub_name, sub_put_data, auth,
+                          "sending token for submission %s" %
+                          submission_id)
 
 
 def main():
