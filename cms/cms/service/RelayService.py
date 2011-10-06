@@ -100,14 +100,32 @@ def safe_put_data(connection, url, data, auth, operation):
         logger.info("Status %s while %s to ranking." %
                     (status, operation))
 
+
 class RelayService(Service):
     """Relay service.
 
     """
 
+    # How often we try to send data to remote rankings.
+    CHECK_DISPATCH_TIME = 5.0
+
     def __init__(self, shard, contest_id):
         logger.initialize(ServiceCoord("RelayService", shard))
         Service.__init__(self, shard)
+
+        self.contest_id = contest_id
+
+        self.scorers = {}
+        with SessionGen(commit=False) as session:
+            contest = session.query(Contest).\
+                      filter_by(id=contest_id).first()
+            logger.info("Loaded contest %s" % contest.name)
+            self.submission_ids_to_score = \
+                [x.id for x in contest.get_submissions() if x.evaluated()]
+            contest.create_empty_ranking_view(timestamp=contest.start)
+            for task in contest.tasks:
+                self.scorers[task.id] = task.get_scorer()
+            session.commit()
 
         self.rankings = []
         for i in xrange(len(Config.rankings_address)):
@@ -119,11 +137,32 @@ class RelayService(Service):
         self.operation_queue = []
 
         for ranking in self.rankings:
-            self.operation_queue.append((self.initialize,
-                                         [ranking, contest_id]))
+            self.operation_queue.append((self.initialize, [ranking]))
 
         self.add_timeout(self.dispatch_operations, None,
-                         5, immediately=True)
+                         RelayService.CHECK_DISPATCH_TIME, immediately=True)
+
+        self.add_timeout(self.score_old_submissions, None,
+                         0.01, immediately=True)
+
+    def score_old_submissions(self):
+        """The submissions in the submission_ids_to_score list are
+        evaluated submissions that we can assign a score to, and this
+        method scores one of these at a time. This method keeps
+        getting called while the list is non-empty.
+
+        Note: doing this way (instead of putting everything in the
+        __init__ (prevent freezing the service at the beginning in
+        case of many old submissions.
+
+        """
+        self.new_evaluation(self.submission_ids_to_score[0])
+        if len(self.submission_ids_to_score) == 1:
+            logger.info("Finished loading old submissions.")
+            return False
+        else:
+            self.submission_ids_to_score = self.submission_ids_to_score[1:]
+            return True
 
     def dispatch_operations(self):
         """Look at the operations still to do in the queue and tries
@@ -132,7 +171,7 @@ class RelayService(Service):
         """
         pending = len(self.operation_queue)
         if pending > 0:
-            logger.info("%s operation still pending" % pending)
+            logger.info("%s operations still pending." % pending)
 
         failed_rankings = set([])
         new_queue = []
@@ -142,26 +181,27 @@ class RelayService(Service):
                 continue
             try:
                 method(*args)
-            except Exception as e:
+            except Exception as err:
                 # Connection aborted / refused / reset by peer
-                if e.errno not in [errno.ECONNABORTED,
-                                   errno.ECONNREFUSED,
-                                   errno.ECONNRESET]:
-                    raise e
+                if err.errno not in [errno.ECONNABORTED,
+                                     errno.ECONNREFUSED,
+                                     errno.ECONNRESET]:
+                    raise err
                 logger.info("Ranking %s not connected." % args[0][0])
                 new_queue.append((method, args))
                 failed_rankings.add(args[0])
         self.operation_queue = new_queue
+
+        # We want this to run forever.
         return True
 
-    def initialize(self, ranking, contest_id):
+    def initialize(self, ranking):
         """Send to the ranking all the data that are supposed to be
         sent before the contest: contest, users, tasks. No support for
         teams, flags and faces.
 
         ranking ((string, string)): address and authorization string
                                     of ranking server.
-        contest_id (int): the contest to send.
         return (bool): success of operation
 
         """
@@ -170,10 +210,10 @@ class RelayService(Service):
         auth = ranking[1]
 
         with SessionGen(commit=False) as session:
-            contest = Contest.get_from_id(contest_id, session)
+            contest = Contest.get_from_id(self.contest_id, session)
             if contest is None:
                 logger.error("Received request for unexistent contest id %s." %
-                             contest_id)
+                             self.contest_id)
                 raise KeyError
             contest_name = contest.name
             contest_url = "/contests/%s" % contest_name
@@ -211,83 +251,87 @@ class RelayService(Service):
         return True
 
     @rpc_method
-    def submission_new_score(self, submission_id, timestamp=None,
-                             score=0.0, extra=[]):
+    def new_evaluation(self, submission_id):
         """This RPC inform RelayService that ES finished the
-        evaluation for a submission. We have roughly three possible
-        ways that ES calls this:
-
-        1. the user submits and ES evaluate the submission; timestamp
-           is the time of the submission;
-
-        2. another user submits a better solution in a task where the
-           score depends on the other solutions; timestamp is the time
-           of the submission of the other user;
-
-        3. for some reason, ES re-evaluate the submission, or another
-           one as in (2); in this case the timestamp is the original
-           one, as in (1) or (2), not the time of the re-evaluation.
+        evaluation for a submission.
 
         submission_id (int): the id of the submission that changed.
-        timestamp (int): the time where the changes has been done.
-        score (float): the new score of the submission.
-        extra (list): the extra data (i.e., partial scores).
 
         """
+        with SessionGen(commit=True) as session:
+            submission = Submission.get_from_id(submission_id, session)
+            if submission is None:
+                logger.critical("[action_finished] Couldn't find "
+                                " submission %d in the database" %
+                                submission_id)
+                return
+
+            # Assign score to the submission
+            scorer = self.scorers[submission.task_id]
+            scorer.add_submission(submission_id, submission.timestamp,
+                                  submission.user.username,
+                                  [float(ev.outcome)
+                                   for ev in submission.evaluations],
+                                  submission.tokened())
+
+            # Update the ranking view
+            contest = session.query(Contest).\
+                      filter_by(id=self.contest_id).first()
+            contest.update_ranking_view(self.scorers,
+                                        task=submission.task)
+
+            score = scorer.scores.get(submission.user.username, 0.0)
+            # TODO: implement extras in scoretype
+            extra = []
+
+            # Data to send to remote rankings
+            sub_url = "/subs/%s" % submission_id
+            sub_post_data = {"user": submission.user.username,
+                             "task": submission.task.name,
+                             "time": submission.timestamp,
+                             "score": score,
+                             "token": False,
+                             "extra": extra}
+            sub_put_data = {"time": submission.timestamp,
+                            "score": score,
+                            "extra": extra}
+
+        # TODO: ScoreRelative here does not work with remote
+        # rankings (it does in the ranking view) because we
+        # update only the user owning the submission.
         for ranking in self.rankings:
             self.operation_queue.append((self.send_score,
-                                         [ranking, submission_id, timestamp,
-                                          score, extra]))
+                                         [ranking, sub_url,
+                                          sub_post_data, sub_put_data]))
 
-    def send_score(self, ranking, submission_id, timestamp=None,
-                   score=0.0, extra=[]):
-        """Send a score to the ranking.
+    def send_score(self, ranking, sub_url, sub_post_data, sub_put_data):
+        """Send a score to the remote ranking.
 
         ranking ((string, string)): address and authorization string
                                     of ranking server.
-        submission_id (int): the id of the submission that changed.
-        timestamp (int): the time where the changes has been done.
-        score (float): the new score of the submission.
-        extra (list): the extra data (i.e., partial scores).
+        sub_url (string): relative url in the remote ranking.
+        sub_post_data (dict): dictionary to send to the ranking to
+                              create the submission.
+        sub_put_data (dict): dictionary to send to the ranking to
+                             update the submission.
         return (bool): success of operation.
 
         """
         logger.info("Posting new score %s for submission %s." %
-                    (score, submission_id))
+                    (sub_put_data["score"], sub_url))
         connection = httplib.HTTPConnection(ranking[0])
         auth = ranking[1]
 
-        with SessionGen(commit=False) as session:
-            submission = Submission.get_from_id(submission_id, session)
-            if submission is None:
-                logger.error("Received request for "
-                             "unexistent submission id %s." % submission_id)
-                raise KeyError
-            if submission.user.hidden:
-                return
-            if timestamp is None:
-                timestamp = submission.timestamp
-
-            sub_name = "/subs/%s" % submission_id
-            sub_post_data = {"user": submission.user.username,
-                             "task": submission.task.name,
-                             "time": timestamp,
-                             "score": score,
-                             "token": submission.token is not None,
-                             "extra": extra}
-            sub_put_data = {"time": timestamp,
-                            "score": score,
-                            "extra": extra}
-
-        # We try to use put, if something goes wrong, we try also to
+        # We try to use put, if something goes wrong (i.e., the
+        # submission does not exists in the server), we try also to
         # post before.
-        status = put_data(connection, sub_name, sub_put_data, auth)
+        status = put_data(connection, sub_url, sub_put_data, auth)
 
         if status not in [200, 201]:
-            safe_post_data(connection, sub_name, sub_post_data, auth,
-                           "sending submission %s" % submission_id)
-            safe_put_data(connection, sub_name, sub_put_data, auth,
-                          "sending submission %s" % submission_id)
+            safe_post_data(connection, sub_url, sub_post_data, auth,
+                           "sending submission %s" % sub_url)
+            safe_put_data(connection, sub_url, sub_put_data, auth,
+                          "sending submission %s" % sub_url)
 
     @rpc_method
     def submission_tokened(self, submission_id, timestamp):
@@ -298,25 +342,6 @@ class RelayService(Service):
         timestamp (int): the time of the token.
 
         """
-        for ranking in self.rankings:
-            self.operation_queue.append((self.send_token,
-                                         [ranking, submission_id, timestamp,
-                                          score, extra]))
-
-    def send_token(self, ranking, submission_id, timestamp):
-        """Send the data that a token has been played.
-
-        ranking ((string, string)): address and authorization string
-                                    of ranking server.
-        submission_id (int): the id of the submission that changed.
-        timestamp (int): the time of the token.
-        return (bool): success of operation.
-
-        """
-        logger.info("Posting token usage for submission %s." % submission_id)
-        connection = httplib.HTTPConnection(ranking[0])
-        auth = ranking[1]
-
         with SessionGen(commit=False) as session:
             submission = Submission.get_from_id(submission_id, session)
             if submission is None:
@@ -326,26 +351,48 @@ class RelayService(Service):
             if submission.user.hidden:
                 return
 
-            sub_name = "/subs/%s" % submission_id
+            sub_url = "/subs/%s" % submission_id
             sub_post_data = {"user": submission.user.username,
                              "task": submission.task.name,
-                             "time": timestamp,
+                             "time": submission.timestamp,
                              "score": 0.0,
-                             "token": submission.token is not None,
+                             "token": False,
                              "extra": []}
             sub_put_data = {"time": timestamp,
                             "token": True},
 
-        # We try to use put, if something goes wrong, we try also to
+        for ranking in self.rankings:
+            self.operation_queue.append((self.send_token,
+                                         [ranking, sub_url,
+                                          sub_post_data, sub_put_data]))
+
+    def send_token(self, ranking, sub_url, sub_post_data, sub_put_data):
+        """Send the data that a token has been played.
+
+        ranking ((string, string)): address and authorization string
+                                    of ranking server.
+        sub_url (string): relative url in the remote ranking.
+        sub_post_data (dict): dictionary to send to the ranking to
+                              create the submission.
+        sub_put_data (dict): dictionary to send to the ranking to
+                             update the submission.
+        return (bool): success of operation.
+
+        """
+        logger.info("Posting token usage for submission %s." % sub_url)
+        connection = httplib.HTTPConnection(ranking[0])
+        auth = ranking[1]
+
+        # We try to use put, if something goes wrong (i.e., the
+        # submission does not exists in the server), we try also to
         # post before.
-        status = put_data(connection, sub_name, sub_put_data, auth)
+        status = put_data(connection, sub_url, sub_put_data, auth)
 
         if status not in [200, 201]:
-            safe_post_data(connection, sub_name, sub_post_data, auth,
-                           "sending submission %s" % submission_id)
-            safe_put_data(connection, sub_name, sub_put_data, auth,
-                          "sending token for submission %s" %
-                          submission_id)
+            safe_post_data(connection, sub_url, sub_post_data, auth,
+                           "sending submission %s" % sub_url)
+            safe_put_data(connection, sub_url, sub_put_data, auth,
+                          "sending token for submission %s" % sub_url)
 
 
 def main():

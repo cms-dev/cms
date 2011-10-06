@@ -36,7 +36,8 @@ from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback, logger
 from cms.async import ServiceCoord, get_service_shards
 from cms.db.Utils import ask_for_contest
 
-from cms.db.SQLAlchemyAll import Session, Contest, Submission, SessionGen, Score
+from cms.db.SQLAlchemyAll import Session, Contest, Submission, \
+     SessionGen, Score
 
 
 class JobQueue:
@@ -103,11 +104,11 @@ class JobQueue:
         """Change the priority of a job inside the queue. Raises an
         exception if the job is not in the queue.
 
-        Used (only?) when the user use a token, to increase the
+        Used (only?) when the user uses a token, to increase the
         priority of the evaluation of its submission.
 
-        job (job): the job whose priority needs to change
-        priority (int): the new priority
+        job (job): the job whose priority needs to change.
+        priority (int): the new priority.
 
         """
         pos = self.search(job)
@@ -244,13 +245,15 @@ class WorkerPool:
         logger.debug("Still %d jobs in the queue" %
                      self.service.queue.length())
         if action == EvaluationServer.JOB_TYPE_COMPILATION:
-            self.worker[shard].compile(submission_id=submission_id,
-                                       callback=self.service.action_finished.im_func,
-                                       plus=(job, side_data, shard))
+            self.worker[shard].compile(
+                submission_id=submission_id,
+                callback=self.service.action_finished.im_func,
+                plus=(job, side_data, shard))
         elif action == EvaluationServer.JOB_TYPE_EVALUATION:
-            self.worker[shard].evaluate(submission_id=submission_id,
-                                        callback=self.service.action_finished.im_func,
-                                        plus=(job, side_data, shard))
+            self.worker[shard].evaluate(
+                submission_id=submission_id,
+                callback=self.service.action_finished.im_func,
+                plus=(job, side_data, shard))
 
         return shard
 
@@ -409,17 +412,13 @@ class EvaluationServer(Service):
         Service.__init__(self, shard)
 
         self.contest_id = contest_id
-        self.scorers = {}
         with SessionGen(commit=False) as session:
             contest = session.query(Contest).\
                       filter_by(id=contest_id).first()
             logger.info("Loaded contest %s" % contest.name)
             self.submission_ids_to_check = \
-                [x.id for x in contest.get_submissions()]
-            contest.create_empty_ranking_view(timestamp=contest.start)
-            for task in contest.tasks:
-                self.scorers[task.id] = task.get_scorer()
-            session.commit()
+                [x.id for x in contest.get_submissions()
+                 if not x.compiled() or not x.evaluated()]
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
@@ -444,6 +443,16 @@ class EvaluationServer(Service):
                          0.01, immediately=True)
 
     def check_old_submissions(self):
+        """The submissions in the submission_ids_to_check list are to
+        compile or evaluate, and this method starts one of this
+        operation at a time. This method keeps getting called while
+        the list is non-empty.
+
+        Note: doing this way (instead of putting everything in the
+        __init__ (prevent freezing the service at the beginning in
+        case of many old submissions.
+
+        """
         self.new_submission(self.submission_ids_to_check[0])
         if len(self.submission_ids_to_check) == 1:
             logger.info("Finished loading old submissions.")
@@ -457,6 +466,9 @@ class EvaluationServer(Service):
         many of them to the available workers.
 
         """
+        pending = self.queue.length()
+        if pending > 0:
+            logger.info("%s jobs still pending." % pending)
         while self.dispatch_one_job():
             pass
 
@@ -547,8 +559,8 @@ class EvaluationServer(Service):
         with SessionGen(commit=False) as session:
             submission = Submission.get_from_id(submission_id, session)
             if submission is None:
-                logger.critical("[action_finished] Couldn't find submission %d "
-                                "in the database" % submission_id)
+                logger.critical("[action_finished] Couldn't find submission "
+                                "%s in the database" % submission_id)
                 return
 
             if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
@@ -560,7 +572,6 @@ class EvaluationServer(Service):
             evaluation_tries = submission.evaluation_tries
             tokened = submission.tokened()
             evaluated = submission.evaluated()
-            task_id = submission.task.id
             session.commit()
 
         # Compilation
@@ -577,8 +588,7 @@ class EvaluationServer(Service):
                                   timestamp,
                                   evaluation_tries,
                                   evaluated,
-                                  tokened,
-                                  task_id)
+                                  tokened)
 
         # Other (i.e. error)
         else:
@@ -628,10 +638,10 @@ class EvaluationServer(Service):
 
     def evaluation_ended(self, submission_id,
                          timestamp, evaluation_tries,
-                         evaluated, tokened, task_id):
+                         evaluated, tokened):
         """Actions to be performed when we have a submission that has
-        been evalutated. In particular: we update scores on success,
-        we requeue on failure.
+        been evalutated. In particular: we inform RS on success, we
+        requeue on failure.
 
         submission_id (string): db id of the submission.
         timestamp (int): time of submission.
@@ -639,50 +649,23 @@ class EvaluationServer(Service):
         evaluated (bool): if the submission has been evaluated
                           successfully.
         tokened (bool): if the user played a token on submission.
-        task_id (string): the task of the submission.
 
         """
-        # Evaluation successful, we update the score.
+        # Evaluation successful, we inform RelayService so it can
+        # update the score.
         if evaluated:
-            scorer = self.scorers[task_id]
-            # We need a session to change the ranking view.
-            with SessionGen(commit=False) as session:
-                submission = Submission.get_from_id(submission_id, session)
-                if submission is None:
-                    logger.critical("[action_finished] Couldn't find "
-                                    " submission %d in the database" %
-                                    submission_id)
-                    return
-                scorer.add_submission(submission_id, submission.timestamp,
-                                      submission.user.username,
-                                      [float(ev.outcome)
-                                       for ev in submission.evaluations],
-                                      submission.tokened())
-                contest = session.query(Contest).\
-                          filter_by(id=self.contest_id).first()
-                contest.update_ranking_view(self.scorers,
-                                            task=submission.task)
-                # We send the new score to the RelayService and
-                # eventually to the public ranking.
-                score = scorer.scores.get(submission.user.username, 0.0)
-                self.RS.submission_new_score(submission_id=submission_id,
-                                             timestamp=submission.timestamp,
-                                             score=score)
-                session.commit()
-
+            self.RS.new_evaluation(submission_id=submission_id)
         # Evaluation unsuccessful, we requeue (or not).
+        elif evaluation_tries <= EvaluationServer.MAX_EVALUATION_TRIES:
+            priority = EvaluationServer.JOB_PRIORITY_LOW
+            if tokened:
+                priority = EvaluationServer.JOB_PRIORITY_MEDIUM
+            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
+                             submission_id), priority, timestamp)
         else:
-            if evaluation_tries > \
-                   EvaluationServer.MAX_EVALUATION_TRIES:
-                logger.error("Maximum tries reached for the "
-                             "evaluation of submission %s. I will "
-                             "not try again" % submission_id)
-            else:
-                priority = EvaluationServer.JOB_PRIORITY_LOW
-                if tokened:
-                    priority = EvaluationServer.JOB_PRIORITY_MEDIUM
-                self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
-                                 submission_id), priority, timestamp)
+            logger.error("Maximum tries reached for the "
+                         "evaluation of submission %s. I will "
+                         "not try again" % submission_id)
 
     @rpc_method
     def new_submission(self, submission_id):
@@ -700,12 +683,12 @@ class EvaluationServer(Service):
             compilation_tries = submission.compilation_tries
             compilation_outcome = submission.compilation_outcome
             evaluation_tries = submission.evaluation_tries
+            compiled = submission.compiled()
             evaluated = submission.evaluated()
             tokened = submission.tokened()
-            task_id = submission.task.id
             session.commit()
 
-        if compilation_outcome is None:
+        if not compiled:
             # If not compiled, I compile. Note that we give here a
             # chance for submissions that already have too many
             # compilation tries.
@@ -726,8 +709,7 @@ class EvaluationServer(Service):
                                       timestamp,
                                       evaluation_tries,
                                       evaluated,
-                                      tokened,
-                                      task_id)
+                                      tokened)
 
 
 def main():
