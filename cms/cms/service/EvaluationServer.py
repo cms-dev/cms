@@ -95,8 +95,8 @@ class JobQueue:
         returns (int, int, job): the data corresponding to job
                                  (priority, timestamp, job)
         """
-        for i in self.queue:
-            if self.queue[i][2] == job:
+        for i, element in enumerate(self.queue):
+            if element[2] == job:
                 return i
         raise LookupError("Job not present in queue")
 
@@ -112,7 +112,9 @@ class JobQueue:
 
         """
         pos = self.search(job)
-        self.queue[pos][0] = priority
+        self.queue[pos] = (priority,
+                           self.queue[pos][1],
+                           self.queue[pos][2])
         heapq.heapify(self.queue)
 
     def length(self):
@@ -627,9 +629,11 @@ class EvaluationServer(Service):
                              "compilation of submission %s. I will "
                              "not try again" % submission_id)
             else:
+                # Note: lower priority (MEDIUM instead of HIGH) for
+                # compilation that are probably failing again.
                 self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION,
                                  submission_id),
-                                EvaluationServer.JOB_PRIORITY_HIGH,
+                                EvaluationServer.JOB_PRIORITY_MEDIUM,
                                 timestamp)
         # Otherwise, error.
         else:
@@ -710,6 +714,25 @@ class EvaluationServer(Service):
                                       evaluation_tries,
                                       evaluated,
                                       tokened)
+
+    @rpc_method
+    def submission_tokened(self, submission_id, timestamp):
+        """This RPC inform EvaluationService that the user has played
+        the token on a submission.
+
+        submission_id (int): the id of the submission that changed.
+        timestamp (int): the time of the token.
+
+        """
+        try:
+            self.queue.set_priority((EvaluationServer.JOB_TYPE_EVALUATION,
+                                     submission_id),
+                                    EvaluationServer.JOB_PRIORITY_MEDIUM)
+            logger.info("Increased priority of evaluation of submission "
+                        "%s due to token." % submission_id)
+        except LookupError:
+            # The job is not in the queue, hence we already done it.
+            pass
 
 
 def main():

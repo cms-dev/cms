@@ -749,9 +749,12 @@ class UseTokenHandler(BaseHandler):
         self.sql_session.commit()
 
         # Inform RelayService and eventually the ranking that the
-        # token has been played.
-        self.application.service.RS.submission_tokened(submission_id,
-                                                       timestamp)
+        # token has been played. Also inform EvaluationService that
+        # can adjust priority if needed.
+        self.application.service.RS.submission_tokened(
+            submission_id=submission_id, timestamp=timestamp)
+        self.application.service.ES.submission_tokened(
+            submission_id=submission_id, timestamp=timestamp)
 
         logger.info("Token played by user %s on task %s."
                     % (self.current_user.username, submission.task.name))
