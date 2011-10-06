@@ -28,15 +28,22 @@ function update_submission_status()
     var submission_ids = new Array();
     var i=0;
     var j=0;
-    for(i=0; i < sub_list.length; i++ ) 
+    for(i = 0; i < sub_list.length; i++)
     {
-        submission_ids[i] = new String(sub_list[i].id);
-        submission_ids[i] = submission_ids[i].replace("submission_status_", "");
+        var status = sub_list[i].children[0].innerHTML;
+        var evaluated_status = '{{ _("Evaluated") }}';
+        status = status.replace(/^\s+|\s+$/g, "");
+        evaluated_status.replace(/^\s+|\s+$/g, "");
+        if (status != evaluated_status)
+        {
+            submission_ids[i] = new String(sub_list[i].id);
+            submission_ids[i] = submission_ids[i].replace("submission_status_", "");
+        }
     }
-    for(j=0; j < submission_ids.length; j++)
+    for(j = 0; j < submission_ids.length; j++)
     {
         func = cmsutils.bind_func(submission_ids[j], submission_status_received);
-        cmsutils.ajax_request("/submission_status/"+submission_ids[j], "", func);
+        cmsutils.ajax_request("/submission_status/" + submission_ids[j], "", func);
     }
 }
 

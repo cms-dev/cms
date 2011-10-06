@@ -510,8 +510,7 @@ class SubmitHandler(BaseHandler):
             for item in zip_object.infolist():
                 self.request.files[item.filename] = [{
                     "filename": item.filename,
-                    "body": zip_object.read(item)
-                    }]
+                    "body": zip_object.read(item)}]
 
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
@@ -569,7 +568,6 @@ class SubmitHandler(BaseHandler):
                              if it is not a recognized language.
 
             """
-            got_language = False
             for lang in Submission.LANGUAGES:
                 if user_filename.endswith(".%s" % lang):
                     return lang
@@ -769,6 +767,7 @@ class UseTokenHandler(BaseHandler):
 
         self.redirect("/tasks/%s" % encrypt_number(submission.task.id))
 
+
 class SubmissionStatusHandler(BaseHandler):
     @catch_exceptions
     @tornado.web.authenticated
@@ -776,9 +775,11 @@ class SubmissionStatusHandler(BaseHandler):
     @decrypt_arguments
     def get(self, sub_id):
         submission = Submission.get_from_id(sub_id, self.sql_session)
-        if submission.user.id != self.current_user.id or submission.task.contest.id != self.contest.id:
+        if submission.user.id != self.current_user.id or \
+               submission.task.contest.id != self.contest.id:
             raise tornado.web.HTTPError(403)
-        self.render("submission_snippet.html", s = submission)
+        self.render("submission_snippet.html", s=submission)
+
 
 handlers = [(r"/",
              MainHandler),
