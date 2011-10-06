@@ -424,7 +424,7 @@ class EvaluationServer(Service):
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
-        self.RS = self.connect_to(ServiceCoord("RelayService", 0))
+        self.SS = self.connect_to(ServiceCoord("ScoringService", 0))
 
         for i in xrange(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
@@ -644,7 +644,7 @@ class EvaluationServer(Service):
                          timestamp, evaluation_tries,
                          evaluated, tokened):
         """Actions to be performed when we have a submission that has
-        been evalutated. In particular: we inform RS on success, we
+        been evalutated. In particular: we inform SS on success, we
         requeue on failure.
 
         submission_id (string): db id of the submission.
@@ -655,10 +655,10 @@ class EvaluationServer(Service):
         tokened (bool): if the user played a token on submission.
 
         """
-        # Evaluation successful, we inform RelayService so it can
+        # Evaluation successful, we inform ScoringService so it can
         # update the score.
         if evaluated:
-            self.RS.new_evaluation(submission_id=submission_id)
+            self.SS.new_evaluation(submission_id=submission_id)
         # Evaluation unsuccessful, we requeue (or not).
         elif evaluation_tries <= EvaluationServer.MAX_EVALUATION_TRIES:
             priority = EvaluationServer.JOB_PRIORITY_LOW

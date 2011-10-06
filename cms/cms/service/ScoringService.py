@@ -19,8 +19,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Relay service. Its jobs is to communicate events to the Ranking
-module, via http requests.
+"""Scoring service. Its jobs is to handle everything is bout assigning
+scores and communicating them to the world.
+
+In particular, it takes care of handling the internal way of keeping
+the score (i.e., the ranking view) and send to the external ranking
+services the scores, via http requests.
 
 """
 
@@ -101,8 +105,8 @@ def safe_put_data(connection, url, data, auth, operation):
                     (status, operation))
 
 
-class RelayService(Service):
-    """Relay service.
+class ScoringService(Service):
+    """Scoring service.
 
     """
 
@@ -110,7 +114,7 @@ class RelayService(Service):
     CHECK_DISPATCH_TIME = 5.0
 
     def __init__(self, shard, contest_id):
-        logger.initialize(ServiceCoord("RelayService", shard))
+        logger.initialize(ServiceCoord("ScoringService", shard))
         Service.__init__(self, shard)
 
         self.contest_id = contest_id
@@ -140,7 +144,7 @@ class RelayService(Service):
             self.operation_queue.append((self.initialize, [ranking]))
 
         self.add_timeout(self.dispatch_operations, None,
-                         RelayService.CHECK_DISPATCH_TIME, immediately=True)
+                         ScoringService.CHECK_DISPATCH_TIME, immediately=True)
 
         self.add_timeout(self.score_old_submissions, None,
                          0.01, immediately=True)
@@ -252,7 +256,7 @@ class RelayService(Service):
 
     @rpc_method
     def new_evaluation(self, submission_id):
-        """This RPC inform RelayService that ES finished the
+        """This RPC inform ScoringService that ES finished the
         evaluation for a submission.
 
         submission_id (int): the id of the submission that changed.
@@ -335,7 +339,7 @@ class RelayService(Service):
 
     @rpc_method
     def submission_tokened(self, submission_id, timestamp):
-        """This RPC inform RelayService that the user has played the
+        """This RPC inform ScoringService that the user has played the
         token on a submission.
 
         submission_id (int): the id of the submission that changed.
@@ -400,7 +404,7 @@ def main():
     if len(sys.argv) < 2:
         print sys.argv[0], "shard [contest]"
     else:
-        RelayService(int(sys.argv[1]),
+        ScoringService(int(sys.argv[1]),
                      ask_for_contest(1)).run()
 
 

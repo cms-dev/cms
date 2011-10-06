@@ -6,7 +6,7 @@
   {
    "LogService":        [["localhost", 29000]],
    "ResourceService":   [["localhost", 28000]],
-   "RelayService":      [["localhost", 28500]],
+   "ScoringService":    [["localhost", 28500]],
    "FileStorage":       [["localhost", 27000]],
    "Checker":           [["localhost", 22000]],
    "EvaluationServer":  [["localhost", 25000]],

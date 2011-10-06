@@ -177,7 +177,7 @@ class ContestWebServer(WebService):
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
         self.FC = FileCacher(self, self.FS)
         self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
-        self.RS = self.connect_to(ServiceCoord("RelayService", 0))
+        self.SS = self.connect_to(ServiceCoord("ScoringService", 0))
 
     def authorized_rpc(self, service, method, arguments):
         """Used by WebService to check if the browser can call a
@@ -748,10 +748,10 @@ class UseTokenHandler(BaseHandler):
         self.sql_session.add(token)
         self.sql_session.commit()
 
-        # Inform RelayService and eventually the ranking that the
+        # Inform ScoringService and eventually the ranking that the
         # token has been played. Also inform EvaluationService that
         # can adjust priority if needed.
-        self.application.service.RS.submission_tokened(
+        self.application.service.SS.submission_tokened(
             submission_id=submission_id, timestamp=timestamp)
         self.application.service.ES.submission_tokened(
             submission_id=submission_id, timestamp=timestamp)
