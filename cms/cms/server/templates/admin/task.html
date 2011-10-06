@@ -34,14 +34,14 @@
         </td>
         <td>
           {% if s.compilation_outcome is None %}
-          Compiling
+          Compiling...
 
           {% else %}
           <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ s.id }}');">
             {% if s.compilation_outcome == "fail" %}
             Compilation failed
             {% elif s.evaluations == [] %}
-            Evaluating
+            Evaluating...
             {% else %}
             Evaluated
             {% end %}
