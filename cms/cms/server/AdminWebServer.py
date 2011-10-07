@@ -40,6 +40,7 @@ from cms.db.SQLAlchemyAll import ScopedSession, \
 import cms.util.WebConfig as WebConfig
 from cms.server.Utils import file_handler_gen
 from cms.service.FileStorage import FileCacher
+from cms.service.EvaluationServer import EvaluationServer
 from cms import Config
 
 
@@ -202,9 +203,55 @@ class MainHandler(BaseHandler):
     """
 
     def get(self, contest_id=None):
-        if contest_id:
+        if contest_id is not None:
             self.retrieve_contest(contest_id)
-        self.render("welcome.html", **self.render_params())
+
+        r_params = self.render_params()
+
+        if self.contest is not None:
+            r_params["stats"] = self.build_statistics()
+
+        self.render("welcome.html", **r_params)
+
+    def build_statistics(self):
+        """Build a dictionary indexed by the possible submission
+        statuses and with values the number of submissions with that
+        status.
+
+        return (dict): the statistics.
+
+        """
+        stats = {
+            "evaluated": 0,
+            "compilation_fail": 0,
+            "compiling": 0,
+            "evaluating": 0,
+            "max_compilations": 0,
+            "max_evaluations": 0,
+            "invalid": 0}
+        for user in self.contest.users:
+            for s in user.submissions:
+                if s.compilation_outcome == "fail":
+                    stats["compilation_fail"] += 1
+                elif s.compilation_outcome == None:
+                    if s.compilation_tries >= \
+                           EvaluationServer.MAX_COMPILATION_TRIES:
+                        stats["max_compilations"] += 1
+                    else:
+                        stats["compiling"] += 1
+                elif s.compilation_outcome == "ok":
+                    if s.evaluated():
+                        stats["evaluated"] += 1
+                    else:
+                        if s.evaluation_tries >= \
+                               EvaluationServer.MAX_EVALUATION_TRIES:
+                            stats["max_evaluations"] += 1
+                        else:
+                            stats["evaluating"] += 1
+                else:
+                    # Should not happen
+                    stats["invalid"] += 1
+        return stats
 
 
 class ContestViewHandler(BaseHandler):

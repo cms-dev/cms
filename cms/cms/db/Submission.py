@@ -81,6 +81,11 @@ class Submission(Base):
     # Number of tentatives of compilation.
     compilation_tries = Column(Integer, nullable=False)
 
+    # Evaluation outcome (can be None = yet to evaluate, "ok" =
+    # evaluation successful). At any time, this should be equal to
+    # evaluations != [].
+    evaluation_outcome = Column(String, nullable=True)
+
     # Number of tentatives of evaluation.
     evaluation_tries = Column(Integer, nullable=False)
 
@@ -96,8 +101,8 @@ class Submission(Base):
     def __init__(self, user, task, timestamp, files, language=None,
                  compilation_outcome=None, compilation_text=None,
                  compilation_tries=0, executables=None,
-                 evaluation_tries=0, evaluations=None,
-                 token=None):
+                 evaluation_outcome=None, evaluation_tries=0,
+                 evaluations=None, token=None):
         self.user = user
         self.task = task
         self.timestamp = timestamp
@@ -108,6 +113,7 @@ class Submission(Base):
             executables = {}
         self.executables = executables
         self.compilation_text = compilation_text
+        self.evaluation_outcome = evaluation_outcome
         if evaluations is None:
             evaluations = []
         self.evaluations = evaluations
@@ -127,6 +133,7 @@ class Submission(Base):
                'compilation_tries':   self.compilation_tries,
                'compilation_text':    self.compilation_text,
                'executables':         [executable.export_to_dict() for executable in self.executables.itervalues()],
+               'evaluation_outcome':  self.evaluation_outcome,
                'evaluations':         [evaluation.export_to_dict() for evaluation in self.evaluations],
                'evaluation_tries':    self.evaluation_tries,
                'token':               self.token}
@@ -156,7 +163,7 @@ class Submission(Base):
         return (bool): True if evaluated, False otherwise.
 
         """
-        return self.evaluations != []
+        return self.evaluation_outcome is not None
 
     def invalid(self):
         """Blank all compilation and evaluation outcomes, so that ES
@@ -165,6 +172,7 @@ class Submission(Base):
         """
         self.compilation_outcome = None
         self.compilation_text = None
+        self.evaluation_outcome = None
         self.evaluations = []
         self.executables = {}
 
@@ -173,6 +181,7 @@ class Submission(Base):
         the submission for evaluation.
 
         """
+        self.evaluation_outcome = None
         self.evaluations = []
 
     def play_token(self, timestamp=None):

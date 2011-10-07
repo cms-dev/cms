@@ -768,6 +768,7 @@ class TaskTypeBatch(TaskType):
                                         outcome=None,
                                         num=test_number,
                                         submission=self.submission))
+        self.submission.evaluation_outcome = "ok"
 
         for test_number in xrange(len(self.submission.task.testcases)):
             success = self.evaluate_testcase(test_number)
@@ -850,6 +851,7 @@ class TaskTypeOutputOnly(TaskType):
                                         outcome=None,
                                         num=test_number,
                                         submission=self.submission))
+        self.submission.evaluation_outcome = "ok"
 
         for test_number in xrange(len(self.submission.task.testcases)):
             success = self.evaluate_testcase(test_number)
