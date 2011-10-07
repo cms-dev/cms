@@ -210,6 +210,15 @@ class WorkerPool:
         shard = worker_coord.shard
         logger.info("Worker %d online again." % shard)
         self.worker[shard].precache_files(contest_id=self.service.contest_id)
+        # If we know that the worker was doing some job, we requeue
+        # the job.
+        if self.job[shard] not in [self.WORKER_DISABLED,
+                                   self.WORKER_INACTIVE]:
+            job = self.job[shard]
+            priority, timestamp = self.side_data[shard]
+            self.release_worker(shard)
+            self.service.queue.push(job, priority, timestamp)
+
 
     def acquire_worker(self, job, side_data=None):
         """Tries to assign a job to an available worker. If no workers
