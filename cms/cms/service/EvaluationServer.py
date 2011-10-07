@@ -215,6 +215,8 @@ class WorkerPool:
         if self.job[shard] not in [self.WORKER_DISABLED,
                                    self.WORKER_INACTIVE]:
             job = self.job[shard]
+            logger.info("Job %s for submission %s put again in the queue "
+                        "because of worker online again." % (job[0], job[1]))
             priority, timestamp = self.side_data[shard]
             self.release_worker(shard)
             self.service.queue.push(job, priority, timestamp)
@@ -359,6 +361,9 @@ class WorkerPool:
         this is the case, the worker is scheduled for disabling, and
         we send him a message trying to shut it down.
 
+        return (list): list of tuples (priority, timestamp, job) of
+                       jobs assigned to worker that timeout.
+
         """
         now = int(time.time())
         lost_jobs = []
@@ -391,6 +396,25 @@ class WorkerPool:
 
         return lost_jobs
 
+    def check_connections(self):
+        """Check if a worker we assigned a job to disconnects. In this
+        case, requeue the job.
+
+        return (list): list of tuples (priority, timestamp, job) of
+                       jobs assigned to worker that disconnected.
+
+        """
+        lost_jobs = []
+        for shard in self.worker:
+            if not self.worker[shard].connected and \
+                   self.job[shard] not in [self.WORKER_DISABLED,
+                                           self.WORKER_INACTIVE]:
+                job = self.job[shard]
+                priority, timestamp = self.side_data[shard]
+                lost_jobs.append((priority, timestamp, job))
+                self.release_worker(shard)
+
+        return lost_jobs
 
 class EvaluationServer(Service):
     """Evaluation server.
@@ -410,12 +434,15 @@ class EvaluationServer(Service):
     MAX_COMPILATION_TRIES = 3
     MAX_EVALUATION_TRIES = 3
 
-    # Seconds after which we declare a worker stale
+    # Seconds after which we declare a worker stale.
     WORKER_TIMEOUT = 600.0
-    # How often we check for stale workers
+    # How often we check for stale workers.
     WORKER_TIMEOUT_CHECK_TIME = 300.0
 
-    # How often we check if we can assign a job to a worker
+    # How often we check if a worker is connected.
+    WORKER_CONNECTION_CHECK_TIME = 10.0
+
+    # How often we check if we can assign a job to a worker.
     CHECK_DISPATCH_TIME = 2.0
 
     def __init__(self, shard, contest_id):
@@ -442,8 +469,11 @@ class EvaluationServer(Service):
         self.add_timeout(self.dispatch_jobs, None,
                          EvaluationServer.CHECK_DISPATCH_TIME,
                          immediately=True)
-        self.add_timeout(self.check_workers, None,
+        self.add_timeout(self.check_workers_timeout, None,
                          EvaluationServer.WORKER_TIMEOUT_CHECK_TIME,
+                         immediately=False)
+        self.add_timeout(self.check_workers_connection, None,
+                         EvaluationServer.WORKER_CONNECTION_CHECK_TIME,
                          immediately=False)
 
         # Submit to compilation all the submissions already in DB
@@ -527,13 +557,26 @@ class EvaluationServer(Service):
         """
         return self.pool.get_status()
 
-    def check_workers(self):
+    def check_workers_timeout(self):
         """We ask WorkerPool for the unresponsive workers, and we put
-        their job in the queue again.
+        again their jobs in the queue.
 
         """
         lost_jobs = self.pool.check_timeouts()
         for priority, timestamp, job in lost_jobs:
+            logger.info("Job %s for submission %s put again in the queue "
+                        "because of timeout worker." % (job[0], job[1]))
+            self.queue.push(job, priority, timestamp)
+
+    def check_workers_connection(self):
+        """We ask WorkerPool for the unconnected workers, and we put
+        again their jobs in the queue.
+
+        """
+        lost_jobs = self.pool.check_connections()
+        for priority, timestamp, job in lost_jobs:
+            logger.info("Job %s for submission %s put again in the queue "
+                        "because of disconnected worker." % (job[0], job[1]))
             self.queue.push(job, priority, timestamp)
 
     @rpc_callback
