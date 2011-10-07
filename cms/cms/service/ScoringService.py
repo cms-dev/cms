@@ -160,11 +160,11 @@ class ScoringService(Service):
         case of many old submissions.
 
         """
-        self.new_evaluation(self.submission_ids_to_score[0])
-        if len(self.submission_ids_to_score) == 1:
+        if len(self.submission_ids_to_score) == 0:
             logger.info("Finished loading old submissions.")
             return False
         else:
+            self.new_evaluation(self.submission_ids_to_score[0])
             self.submission_ids_to_score = self.submission_ids_to_score[1:]
             return True
 

@@ -455,11 +455,11 @@ class EvaluationServer(Service):
         case of many old submissions.
 
         """
-        self.new_submission(self.submission_ids_to_check[0])
-        if len(self.submission_ids_to_check) == 1:
+        if self.submission_ids_to_check == []:
             logger.info("Finished loading old submissions.")
             return False
         else:
+            self.new_submission(self.submission_ids_to_check[0])
             self.submission_ids_to_check = self.submission_ids_to_check[1:]
             return True
 
