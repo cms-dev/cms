@@ -537,6 +537,54 @@ class EvaluationServer(Service):
             return False
 
     @rpc_method
+    def submissions_status(self):
+        """Returns a dictionary of statistics about the number of
+        submissions on a specific status. There are seven statuses:
+        evaluated, compilation failed, evaluating, compiling, maximum
+        number of tentatives of compilations reached, the same for
+        evaluations, and finally 'I have no idea what's
+        happening'. The last three should not happen and require a
+        check from the admin.
+
+        return (dict): statistics on the submissions.
+
+        """
+        stats = {
+            "evaluated": 0,
+            "compilation_fail": 0,
+            "compiling": 0,
+            "evaluating": 0,
+            "max_compilations": 0,
+            "max_evaluations": 0,
+            "invalid": 0}
+        with SessionGen(commit=False) as session:
+            contest = session.query(Contest).\
+                      filter_by(id=self.contest_id).first()
+            for user in contest.users:
+                for s in user.submissions:
+                    if s.compilation_outcome == "fail":
+                        stats["compilation_fail"] += 1
+                    elif s.compilation_outcome == None:
+                        if s.compilation_tries >= \
+                               EvaluationServer.MAX_COMPILATION_TRIES:
+                            stats["max_compilations"] += 1
+                        else:
+                            stats["compiling"] += 1
+                    elif s.compilation_outcome == "ok":
+                        if s.evaluated():
+                            stats["evaluated"] += 1
+                        else:
+                            if s.evaluation_tries >= \
+                                   EvaluationServer.MAX_EVALUATION_TRIES:
+                                stats["max_evaluations"] += 1
+                            else:
+                                stats["evaluating"] += 1
+                    else:
+                        # Should not happen
+                        stats["invalid"] += 1
+        return stats
+
+    @rpc_method
     def queue_status(self):
         """Returns a list whose elements are the jobs currently in the
         queue (see Queue.get_status).
