@@ -143,7 +143,7 @@ class WebService(Service):
     """
 
     def __init__(self, listen_port, handlers, parameters, shard=0):
-        logger.debug("WebService.__init__")
+        # logger.debug("WebService.__init__")
         Service.__init__(self, shard)
 
         # This ensures that when the server autoreloads because its source is
@@ -188,7 +188,7 @@ class WebService(Service):
         loops).
 
         """
-        logger.debug("WebService.run")
+        # logger.debug("WebService.run")
         try:
             # TODO: to have a less hacky collaboration between tornado
             # and asyncore, we may use a solution similar to the one
@@ -204,7 +204,7 @@ class WebService(Service):
 
         """
         # Let's not spam the logs...
-        # logger.debug("WebService._webstep")
+        # # logger.debug("WebService._webstep")
         self._step()
         self.instance.add_callback(self._webstep)
 
@@ -214,5 +214,5 @@ class WebService(Service):
         page, that just collect the response.
 
         """
-        logger.debug("WebService._default_callback")
+        # logger.debug("WebService._default_callback")
         self.__responses[plus] = (data, error)

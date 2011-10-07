@@ -116,7 +116,7 @@ class RPCRequest:
         plus (object): additional argument for callback.
 
         """
-        logger.debug("RPCRequest.__init__")
+        # logger.debug("RPCRequest.__init__")
         self.message = message
         self.bind_obj = bind_obj
         self.callback = callback
@@ -128,7 +128,7 @@ class RPCRequest:
 
         return (object): the object to send.
         """
-        logger.debug("RPCRequest.pre_execute")
+        # logger.debug("RPCRequest.pre_execute")
         self.message["__id"] = random_string(16)
         RPCRequest.pending_requests[self.message["__id"]] = self
 
@@ -140,7 +140,7 @@ class RPCRequest:
 
         response (object): The response, already decoded from JSON.
         """
-        logger.debug("RPCRequest.complete")
+        # logger.debug("RPCRequest.complete")
         del RPCRequest.pending_requests[self.message["__id"]]
         if self.callback is not None:
             params = []
@@ -167,7 +167,7 @@ class Service:
 
     """
     def __init__(self, shard=0):
-        logger.debug("Service.__init__")
+        # logger.debug("Service.__init__")
         signal.signal(signal.SIGINT, lambda x, y: self.exit())
         self.shard = shard
         # Stores the function to call periodically. Format: function
@@ -254,7 +254,7 @@ class Service:
         """Starts the main loop of the service.
 
         """
-        logger.debug("Service.run")
+        # logger.debug("Service.run")
         try:
             while not self._exit:
                 self._step()
@@ -269,7 +269,7 @@ class Service:
 
         """
         # Let's not spam the logs...
-        # logger.debug("Service._step")
+        # # logger.debug("Service._step")
         with async_lock:
             asyncore.loop(0.02, True, None, 1)
         self._trigger()
@@ -339,7 +339,7 @@ class Service:
 
         message (object): the decoded message.
         """
-        logger.debug("Service.handle_rpc_response")
+        # logger.debug("Service.handle_rpc_response")
         if "__id" not in message:
             logger.error("Response without __id field detected, discarding.")
             return
@@ -358,7 +358,7 @@ class Service:
         return (dict): infos about the method
 
         """
-        logger.debug("Service.method_info")
+        # logger.debug("Service.method_info")
 
         try:
             method = getattr(self, method_name)
@@ -382,7 +382,7 @@ class Service:
                                is to be interpreted as a binary
                                string.
         """
-        logger.debug("Service.handle_message")
+        # logger.debug("Service.handle_message")
 
         method_name = message["__method"]
         try:
@@ -495,7 +495,7 @@ def make_sync(default_sync=False):
 
                 @rpc_callback
                 def sync_callback(context, data, plus, error=None):
-                    logger.debug("sync_callback: callback for sync function received")
+                    # logger.debug("sync_callback: callback for sync function received")
                     plus['data'] = data
                     plus['error'] = error
                     plus['finished'] = True
@@ -561,7 +561,7 @@ class RemoteService(asynchat.async_chat):
 
         """
         # Can't log using logger here, since it is not yet defined.
-        # logger.debug("RemoteService.__init__")
+        # # logger.debug("RemoteService.__init__")
         if address is None and remote_service_coord is None:
             raise
 
@@ -587,7 +587,7 @@ class RemoteService(asynchat.async_chat):
 
         sock (socket): the socket to use as a communication channel.
         """
-        logger.debug("RemoteService._initialize_channel")
+        # logger.debug("RemoteService._initialize_channel")
         asynchat.async_chat.__init__(self, sock)
         self.set_terminator("\r\n")
 
@@ -596,7 +596,7 @@ class RemoteService(asynchat.async_chat):
 
         data (string): arrived data.
         """
-        logger.debug("RemoteService.collect_incoming_data")
+        # logger.debug("RemoteService.collect_incoming_data")
         if self.service is None:
             return
         self.data.append(data)
@@ -608,7 +608,7 @@ class RemoteService(asynchat.async_chat):
         respond, it sends back the response.
 
         """
-        logger.debug("RemoteService.found_terminator")
+        # logger.debug("RemoteService.found_terminator")
         if self.service is None:
             return
         data = "".join(self.data)
@@ -723,7 +723,7 @@ class RemoteService(asynchat.async_chat):
                            local service).
 
         """
-        logger.debug("RemoteService.execute_rpc")
+        # logger.debug("RemoteService.execute_rpc")
 
         if not self.connected:
             self.connect_remote_service()
@@ -780,7 +780,7 @@ class RemoteService(asynchat.async_chat):
         method (string): the method to call.
 
         """
-        logger.debug("RemoteService.__getattr__(%s)" % method)
+        # logger.debug("RemoteService.__getattr__(%s)" % method)
 
         def remote_method(callback=None,
                           plus=None,
@@ -802,7 +802,7 @@ class RemoteService(asynchat.async_chat):
         data (string): the data to send.
 
         """
-        logger.debug("RemoteService._push_right")
+        # logger.debug("RemoteService._push_right")
         to_push = "".join(data) + "\r\n"
         try:
             self.push(to_push)
@@ -815,7 +815,7 @@ class RemoteService(asynchat.async_chat):
         """Handle a generic error in the communication.
 
         """
-        logger.debug("RemoteService.handle_error")
+        # logger.debug("RemoteService.handle_error")
         self.handle_close()
         raise
 
@@ -823,7 +823,7 @@ class RemoteService(asynchat.async_chat):
         """Handle the case when the connection fall.
 
         """
-        logger.debug("RemoteService.handle_close")
+        # logger.debug("RemoteService.handle_close")
         self.close()
         self.connected = False
 
@@ -831,7 +831,7 @@ class RemoteService(asynchat.async_chat):
         """Try to connect to the remote service.
 
         """
-        logger.debug("RemoteService.connect_remote_service")
+        # logger.debug("RemoteService.connect_remote_service")
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(self.address)
@@ -856,7 +856,7 @@ class ListeningSocket(asyncore.dispatcher):
         address (Address): the address to listen at.
 
         """
-        logger.debug("ListeningSocket.__init__")
+        # logger.debug("ListeningSocket.__init__")
         asyncore.dispatcher.__init__(self)
         self._service = service
         self._address = address
@@ -871,7 +871,7 @@ class ListeningSocket(asyncore.dispatcher):
         manage the connection.
 
         """
-        logger.debug("ListeningSocket.handle_accept")
+        # logger.debug("ListeningSocket.handle_accept")
         try:
             connection, address = self.accept()
         except socket.error:
@@ -892,7 +892,8 @@ class ListeningSocket(asyncore.dispatcher):
         """Handle when the connection falls.
 
         """
-        logger.debug("ListeningSocket.handle_close")
+        # logger.debug("ListeningSocket.handle_close")
+        pass
 
 
 class Logger:
