@@ -15,8 +15,8 @@ computers: for example, you have to set up firewalls so that users
 cannot communicate between them. Also consider that all communications
 between CMS services are not encrypted nor authenticated, so you also
 have to properly insulate them from the network used by contestants;
-the same applies to AdminWebServer and RankingWebServer, that do not
-require any sort of authentication.
+the same applies to AdminWebServer that do not require any sort of
+authentication.
 
 
 ** RUN IT FROM THE REPOSITORY
