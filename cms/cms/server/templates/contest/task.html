@@ -31,10 +31,8 @@ function update_submission_status()
     for(i = 0; i < sub_list.length; i++)
     {
         var status = sub_list[i].children[0].innerHTML;
-        var evaluated_status = '{{ _("Evaluated") }}';
-        status = status.replace(/^\s+|\s+$/g, "");
-        evaluated_status.replace(/^\s+|\s+$/g, "");
-        if (status != evaluated_status)
+        // Non-definitive statuses are distinguished with "...".
+        if (status.indexOf("...") != -1)
         {
             submission_ids[i] = new String(sub_list[i].id);
             submission_ids[i] = submission_ids[i].replace("submission_status_", "");
