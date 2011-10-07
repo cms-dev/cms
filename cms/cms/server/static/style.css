@@ -282,7 +282,7 @@ table th {
 
 table td {
     font-size: 0.875em;
-    padding: 0.858em 0.25em;
+    padding: 0 0.25em;
 }
 
 table.nested th, table.nested td {
