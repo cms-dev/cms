@@ -13,14 +13,14 @@
 <div id="title_evaluation_{{ encrypted_id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ encrypted_id }}');">
   {% if s.compilation_outcome == "fail" %}
   {{ _("Compilation failed") }}
-  {% elif s.evaluations == [] %}
+  {% elif not s.evaluated() %}
   {{ _("Evaluating...") }}
   {% else %}
   {{ _("Evaluated") }}
   {% end %}
 </div>
 <div id="evaluation_{{ encrypted_id }}" style="display: none;">
-  {% if s.evaluations != [] %}
+  {% if s.evaluated() %}
     {% if s.token is None %}
   <h3>{{ _("Public testcases") }}</h3>
     {% else %}

@@ -62,14 +62,14 @@ function update_additional_answer(element, invoker)
           <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ s.id }}');">
             {% if s.compilation_outcome == "fail" %}
             Compilation failed
-            {% elif s.evaluations == [] %}
+            {% elif not s.evaluated() %}
             Evaluating...
             {% else %}
             Evaluated
             {% end %}
           </div>
           <div id="evaluation_{{ s.id }}" style="display: none;">
-            {% if s.evaluations != [] %}
+            {% if s.evaluated() %}
               {% if s.token is None %}
             <h3>Public testcases</h3>
               {% else %}

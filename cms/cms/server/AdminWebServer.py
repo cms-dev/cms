@@ -298,7 +298,7 @@ class TaskViewHandler(BaseHandler):
         r_params["task"] = task
         r_params["submissions"] = self.sql_session.query(Submission)\
                                   .join(Task).filter(Task.id == task_id)\
-                                  .order_by(Submission.timestamp.desc())[:50]
+                                  .order_by(Submission.timestamp.desc())
         self.render("task.html", **r_params)
 
     @tornado.web.asynchronous

@@ -104,7 +104,7 @@ class SpoolExporter(Service):
                 print >> queue_file, "./upload/%s/%s.%d.%s" % \
                     (username, task, timestamp, submission.language)
 
-                if submission.evaluations != []:
+                if submission.evaluated():
                     res_file = codecs.open(os.path.join(
                         self.spool_dir,
                         "%d.%s.%s.%s.res" % (timestamp, username,

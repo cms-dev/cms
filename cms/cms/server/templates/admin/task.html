@@ -24,7 +24,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True)[:50] %}
+      {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
         <td>{{ Utils.format_time_or_date(s.timestamp) }}</td>
         <td><a href="/user/{{ s.user.id }}">{{s.user.username}}</a></td>
@@ -36,14 +36,14 @@
           <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ s.id }}');">
             {% if s.compilation_outcome == "fail" %}
             Compilation failed
-            {% elif s.evaluations == [] %}
+            {% elif not s.evaluated() %}
             Evaluating...
             {% else %}
             Evaluated
             {% end %}
           </div>
           <div id="evaluation_{{ s.id }}" style="display: none;">
-            {% if s.evaluations != [] %}
+            {% if s.evaluated() %}
             <h3>Testcases</h3>
             <table class="bordered">
               <thead>
