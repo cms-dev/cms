@@ -15,12 +15,12 @@
   <table class="bordered">
     <thead>
       <tr>
-        <th style="width: 10%">Date</th>
+        <th style="width: 10%">Time</th>
         <th style="width: 18%">User</th>
-        <th style="width: 35%">Evaluation</th>
+        <th style="width: 35%">Status</th>
         <th style="width: 15%">Files</th>
-        <th style="width: 10%">Released</th>
-        <th style="width: 12%">Operations</th>
+        <th style="width: 10%">Token</th>
+        <th style="width: 12%">Ops</th>
       </tr>
     </thead>
     <tbody>
@@ -45,7 +45,7 @@
           <div id="evaluation_{{ s.id }}" style="display: none;">
             {% if s.evaluated() %}
             <h3>Testcases</h3>
-            <table class="bordered">
+            <table class="nested bordered">
               <thead>
                 <tr>
                   <th style="width: 20%">Outcome</th>

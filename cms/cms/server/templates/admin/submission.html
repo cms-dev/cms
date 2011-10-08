@@ -1,0 +1,126 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1>Submission {{ s.id }}</h1>
+</div>
+
+<h2 id="title_details" class="toggling_on" onclick="utils.toggle_visibility('details');">Submission details</h2>
+<div id="details">
+
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th style="width: 20%">Property</th>
+        <th style="width: 80%">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Id</td>
+        <td>{{ s.id }}</td>
+      </tr>
+      <tr>
+        <td>Task</td>
+        <td><a href="/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
+      </tr>
+      <tr>
+        <td>User</td>
+        <td><a href="/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
+      </tr>
+      <tr>
+        <td>Files</td>
+        <td>
+          {% for filename in [x.filename for x in s.task.submission_format] %}
+            {% if filename in s.files %}
+              {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
+          <a href="#" onclick="utils.show_file('{{ real_filename }}','/submission_file/{{ s.files[filename].id }}')">
+            {{ real_filename }}
+          </a>
+          <br/>
+            {% end %}
+          {% end %}
+        </td>
+      </tr>
+      <tr>
+        <td>Token</td>
+        <td>
+          {% if s.token is None %}
+          No
+          {% else %}
+          Yes
+          {% end %}
+        </td>
+      </tr>
+      <tr>
+        <td>Status</td>
+        <td>
+          {% if s.compilation_outcome is None %}
+          Compiling...
+          {% elif s.compilation_outcome == "fail" %}
+          Compilation failed
+          {% elif s.evaluated() %}
+          Evaluated
+          {% else %}
+          Evaluating...
+          {% end %}
+        </td>
+      </tr>
+      <tr>
+        <td>Compilation tentatives</td>
+        <td>{{ s.compilation_tries }}</td>
+      </tr>
+      <tr>
+        <td>Evaluation tentatives</td>
+        <td>{{ s.evaluation_tries }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+
+  {% if s.evaluated() %}
+
+<h2 id="title_evaluation" class="toggling_on" onclick="utils.toggle_visibility('evaluation');">Evaluation</h2>
+<div id="evaluation">
+
+  <table class="bordered">
+    <thead>
+      <tr>
+        <th style="width: 13%">Outcome</th>
+        <th style="width: 2%"></th>
+        <th style="width: 85%">Details</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ev in s.evaluations %}
+      <tr>
+        <td>{{ ev.outcome }}</td>
+        {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
+        <td style="align: center;">&bullet;</td>
+        {% else %}
+        <td></td>
+        {% end %}
+        <td>{{ ev.text }}</td>
+      </tr>
+      {% end %}
+    </tbody>
+  </table>
+
+</div>
+
+
+  {% end %}
+
+  {% if s.compiled() %}
+
+<h2 id="title_compilation" class="toggling_on" onclick="utils.toggle_visibility('compilation');">Compilation</h2>
+<div id="compilation">
+
+  <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
+
+</div>
+
+  {% end %}
+
+{% end %}

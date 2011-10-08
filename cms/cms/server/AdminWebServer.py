@@ -558,6 +558,23 @@ class UserViewHandler(BaseHandler):
         self.redirect("/user/%s" % user.id)
 
 
+class SubmissionViewHandler(BaseHandler):
+    """Shows the details of a submission. All data is already present
+    in the list of the submissions of the task or of the user, but we
+    need a place where to link messages like 'Submission 42 failed to
+    compile please check'.
+
+    """
+    def get(self, submission_id):
+        submission = Submission.get_from_id(submission_id, self.sql_session)
+        if submission is None:
+            raise tornado.web.HTTPError(404)
+        self.contest = submission.user.contest
+        r_params = self.render_params()
+        r_params["s"] = submission
+        self.render("submission.html", **r_params)
+
+
 class SubmissionFileHandler(FileHandler):
     """Shows a submission file.
 
@@ -786,6 +803,8 @@ handlers = [(r"/",
              UserListHandler),
             (r"/tasklist/([0-9]+)",
              TaskListHandler),
+            (r"/submission/([0-9]+)",
+             SubmissionViewHandler),
             (r"/message/([a-zA-Z0-9_-]+)",
              MessageHandler),
             (r"/question/([a-zA-Z0-9_-]+)",

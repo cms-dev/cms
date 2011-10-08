@@ -15,8 +15,8 @@
   <tbody>
     {% for t in contest.tasks %}
     <tr>
-      <td><a href="/task/{{ t.id }}">{{ t.title }}</a></td>
-      <td>{{ t.name }}</td>
+      <td>{{ t.title }}</td>
+      <td><a href="/task/{{ t.id }}">{{ t.name }}</a></td>
       <td>[<a href="/reevaluate/task/{{ t.id }}">Reevaluate</a>]</td>
     </tr>
     {% end %}

@@ -301,7 +301,7 @@
                 job_type = 'Compiling';
             else if (job[0] == 'evaluate')
                 job_type = 'Evaluating';
-            return job_type + ' submission ' + job[1];
+            return job_type + ' submission <a href="/submission/' + job[1] + '">' + job[1] + '</a>';
         },
 
         /**

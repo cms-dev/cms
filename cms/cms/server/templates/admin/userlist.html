@@ -15,8 +15,8 @@
   <tbody>
     {% for u in sorted(contest.users, cmp = lambda x, y: cmp(x.username, y.username)) %}
     <tr>
-      <td><a href="/user/{{ u.id }}">{{ u.real_name }}</a></td>
-      <td>{{ u.username }}</td>
+      <td>{{ u.real_name }}</td>
+      <td><a href="/user/{{ u.id }}">{{ u.username }}</a></td>
       <td>[<a href="/reevaluate/user/{{ u.id }}">Reevaluate</a>]</td>
     </tr>
     {% end %}

@@ -103,6 +103,12 @@ function update_workers_status(response)
         table.insertRow(-1).innerHTML = "<td colspan='5'>Unexpected reply. This should not happen.</td>";
 };
 
+function link_submissions(s)
+{
+    return s.replace(/submission ([0-9]+)/g,
+                     'submission <a href="/submission/$1">\$1</a>');
+}
+
 function update_logs(response)
 {
     var table = document.getElementById("logs_table");
@@ -125,9 +131,9 @@ function update_logs(response)
             for (i in response['data'])
             {
                 var row = table.insertRow(-1);
-                var message = response['data'][i]['message'];
+                var message = link_submissions(response['data'][i]['message']);
                 var coord = response['data'][i]['coord'];
-                var operation = response['data'][i]['operation'];
+                var operation = link_submissions(response['data'][i]['operation']);
                 var severity = response['data'][i]['severity'];
                 var timestamp = utils.format_time_or_date(response['data'][i]['timestamp']);
 
@@ -183,10 +189,14 @@ update_statuses();
 <div id="submissions_status">
 
 <table id="submissions_status_table" class="sub_table">
-  <tr>
-    <th style="width:80%">Status</th>
-    <th>Number</th>
-  </tr>
+  <thead>
+    <tr>
+      <th style="width:80%">Status</th>
+      <th style="width:20%">Number</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
 </table>
 </div>
 {% end %}
@@ -195,12 +205,16 @@ update_statuses();
 <div id="queue_status">
 
 <table id="queue_status_table" class="sub_table">
-  <tr>
-    <th>Id</th>
-    <th>Job</th>
-    <th>Priority</th>
-    <th>Since</th>
-  </tr>
+  <thead>
+    <tr>
+      <th style="width:10%">Id</th>
+      <th style="width:65%">Job</th>
+      <th style="width:10%">Priority</th>
+      <th style="width:15%">Since</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
 </table>
 </div>
 
@@ -208,13 +222,17 @@ update_statuses();
 <div id="workers_status">
 
 <table id="workers_status_table" class="sub_table">
-  <tr>
-    <th>Shard</th>
-    <th>Connected</th>
-    <th>Errors</th>
-    <th>Current job</th>
-    <th>Since</th>
-  </tr>
+  <thead>
+    <tr>
+      <th style="width:15%">Shard</th>
+      <th style="width:15%">Connected</th>
+      <th style="width:15%">Errors</th>
+      <th style="width:40%">Current job</th>
+      <th style="width:15%">Since</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
 </table>
 
 </div>
@@ -223,13 +241,17 @@ update_statuses();
 <div id="logs">
 
 <table id="logs_table" class="sub_table">
-  <tr>
-    <th>Timestamp</th>
-    <th>Severity</th>
-    <th>Service</th>
-    <th>Operation</th>
-    <th>Message</th>
-  </tr>
+  <thead>
+    <tr>
+      <th style="width:12%">Time</th>
+      <th style="width:10%">Severity</th>
+      <th style="width:15%">Service</th>
+      <th style="width:25%">Operation</th>
+      <th style="width:38%">Message</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
 </table>
 
 </div>
