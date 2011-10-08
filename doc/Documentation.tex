@@ -7,12 +7,14 @@
 
 \newcommand{\CMS}{\textsc{cms}}
 
+\newcommand{\DB}{\textsc{db}}
+\newcommand{\LS}{\textsc{ls}}
 \newcommand{\FS}{\textsc{fs}}
-\newcommand{\CDBS}{\textsc{cdbs}}
-\newcommand{\CWS}{\textsc{cws}}
 \newcommand{\ES}{\textsc{es}}
-\newcommand{\WS}{\textsc{ws}}
-\newcommand{\LWS}{\textsc{lws}}
+\newcommand{\WS}{\textsc{w}}
+\renewcommand{\SS}{\textsc{ss}}
+\newcommand{\CWS}{\textsc{cws}}
+\newcommand{\AWS}{\textsc{aws}}
 \newcommand{\RWS}{\textsc{rws}}
 
 \newenvironment{squishlist}{%
@@ -46,10 +48,10 @@
   When organizing a programming contest, there are three main stages:
   \begin{squishlist}
   \item the first is to develop all the data that the assigned tasks
-    need (i.e., the statement, solutions, testcases, information on
-    how to grade submissions, etc.);
+    need (i.e., statements, solutions, testcases, information on how
+    to grade submissions, etc.);
   \item the second, that happens when the contest is onsite, is to
-    properly configure the computers that the contestants are going to
+    properly configure the machines that the contestants are going to
     use during the contest, in particular with respect to network
     security;
   \item the third is to manage the actual contest (accepting and
@@ -58,46 +60,58 @@
   \end{squishlist}
 
   The aim of this project is to give a good answer to the third
-  problem. We want to develop a contest management system that is
+  problem. We aim to develop a contest management system that is
   secure, extendable, adaptable to different situations, and easy to
   use.
 
   \section{General structure of the system}
 
   The system is organized in a modular way, with different services
-  running (potentially) on different computers, and providing
-  extendability via service replications on several computers.
+  running (potentially) on different machines, and providing
+  extendability via service replications on several machines.
 
-  The system is composed of the following functional pieces:
+  The system is composed of the following functional parts, listed
+  here with their main capabilities:
   \begin{squishlist}
-  \item File Storage (\FS{}), that stores files that can be accessed from
+  \item Database (\DB{}): stores and offers the configuration and
+    the state of the contest (this is not a ``service'' but the actual
+    database, usually PostgreSQL);
+  \item Log Service (\LS{}): collects all logs from the different
+    services and offers them for remote inspection;
+  \item File Storage (\FS{}): stores files that can be accessed from
     the rest of the system;
-  \item CouchDB Server (\CDBS{}), that stores the configuration and the
-    state of the contest;
-  \item Contest Web Server (\CWS{}), that interacts with the contestants;
-  \item Evaluation Server (\ES{}), that grades the submissions and keeps
-    track of the state of the contest;
-  \item Worker Server (\WS{}), that actually runs the submissions;
-  \item Ranking Web Server (\RWS{}), that expose in real time to the
-    world what we want the world to know about the contest;
-  \item Log Web Server (\LWS{}), that expose to the contest managers
+  \item Worker (\WS{}): can run compilation, evaluation and
+    grading processes on the submissions in a safe and fair
+    environment;
+  \item Evaluation Server (\ES{}): builds a queue of jobs to do on the
+    submissions and distribute them to the \WS{}'s;
+  \item Scoring Service (\SS{}): transforms the output of the grader
+    to an actual score of the submissions, and manages the ranking;
+  \item Contest Web Server (\CWS{}): interacts with the contestants,
+    allowing to submit, inspect previous submissions, look at
+    information about the contest, asking questions, etc.;
+  \item Admin Web Server (\AWS{}): exposes to the contest admins
     everything about the contest, and gives the possibility to change
-    on the run some configurations.
+    on the run configurations, and recover from some errors;
+  \item Ranking Web Server (\RWS{}), that expose in real time to the
+    world what we want the world to know about the contest.
   \end{squishlist}
 
   One is not forced to run everything; here are some examples.
   \begin{squishlist}
-  \item Bare: there are only a \FS{}, a \CDBS{}, and a \CWS{}; the
+  \item Bare: there are only a \FS{}, a \DB{}, and a \CWS{}; the
     system would accept submissions, but is unable to give feedback to
-    the users and to the world, lacking something that evaluate the
-    submissions.
+    the contestants and to the world, lacking something that evaluates
+    the submissions.
   \item Minimal: add an \ES{} and a \WS{}; now we can evaluate
-    submissions, so the users are informed of the state of the
-    submissions.
-  \item Complete: add a \RWS{} and a \LWS{}, in order to show the live
-    ranking and controls locally if anything strange is happening.
-  \item Redundant: add several other \WS{}'s to manage big contest
-    without having long evaluation queues.
+    submissions, so the contestants are informed of the state of the
+    submissions, but no ranking is built.
+  \item Private: add a \LS{}, a \SS{} and a \AWS{}; now a ranking is
+    built, and admins can interact with the system and make sure
+    everything is allright.
+  \item Public: add a \RWS{}, in order to show the live ranking.
+  \item Redundant: add several other \WS{}'s and some other \CWS{}'s
+    to manage big contest without having a long evaluation queue.
   \end{squishlist}
 
   \subsection{Interaction with the task development}
@@ -105,21 +119,34 @@
   The development of the tasks is completely detached from the
   system. One can use some directory structure, ease the development
   with the usage of makefiles, common libraries, or other
-  techniques. We believe that every contest manager has his own
+  techniques. We believe that every contest admin has his own
   preferred way on how to proceed in this stage, but we want him to
   use our \CMS{} anyway.
 
   Therefore, there is only one point of contact between our \CMS{} and
-  the actual structure on the contest manager's file system: anytime
+  the actual structure on the contest admin's file system: anytime
   after the finalization of the tasks and before the start of the
-  contest, the contest manager has to run an \emph{importer\/} that
-  configures \CMS{} and fills \FS{} with the needed files.
+  contest, the contest admin has to run an \emph{importer\/} that
+  configures \CMS{}, filling \DB{} with the configuration and \FS{}
+  with the needed files. With the same aim, the contest admin will run
+  an \emph{exporter\/} at the end of the contest that will select the
+  interesting data and write them in some format (e.g., suitable for
+  the inclusion in a revision control system).
 
-  We wrote an example of importer that works for the structure used by
-  the Italian IOI team. Converting this program to use other
-  structures should be tedious but easy.
+  We have currently two couples of importers/exporters (in the
+  directory \file{cmscontrib}). The first one simply export and import
+  everything (so the composition of the two is equivalent to the
+  identity) and are called \file{ContestImporter} and
+  \file{ContestExporter}. These are useful for having a quick way to
+  backup a contest and its state at a precise time.
 
-  A slightly more complicated issue is that different contest managers
+  The second couple works specifically with the structure used by the
+  Italian IOI team and by no means the exporter is useful to do
+  backups, because it exports only the results and the submissions.
+  Converting these program to use other structures should be tedious
+  but easy.
+
+  A slightly more complicated issue is that different contest admins
   can use different type of tasks.
 
   \subsubsection{An example}
@@ -150,52 +177,151 @@
 
   \section{Description of the services}
 
-  We give here a detailed description of the capabilities and the
-  current role of the services that compose \CMS{}.
+  We give here a detailed description of the capabilities and the role
+  of the services that compose \CMS{}.
 
   \subsection{Generalities}
 
-  We distinguish two kind of services in \CMS{}: external services and
-  local services. An external service is something that serves web
-  pages; there are three of them: \CWS{}, that serves the contestants,
-  \LWS{}, that serves the contest managers, and \RWS{}, that serves
-  everyone else. A local service instead is not accessible from
-  outside the system. Except \CDBS{}, which actually did not need any
-  line of code from us, all else are local services.
+  Amongst the functional parts listed earlier, there are two that are
+  in a class by themselves, namely \DB{} and \RWS{}. The other can be
+  sorted in two bins: services and web servers.
 
-  The services are written in Python; external services use Tornado to
-  serve dynamic web pages, and nginx to serve static files and do the
-  caching. All services communicate between each other using the
-  \id{SimpleXMLRPCServer} library.
+  Both services and web servers have the capabilities of communicating
+  with other services via a general RPC system designed by us on top
+  of the asyncore/asynchat protocol. In addition, web servers have
+  also the capabilities of serving web pages using the Tornado
+  framework.
+
+  \subsection{Database}
+
+  As we said earlier, \DB{} is not a service in the sense that it is
+  actually the database. We communicate with it via the SQLAlchemy
+  library, hence we support any DBMS that SQLAlchemy supports. Main
+  part of our testing is done with PostgreSQL, which we suggest.
+
+  The structure of the tables in the database is reflected (and
+  documented) in the files inside the \file{cms/db} tree.
+
+  \subsection{Log Service}
+
+  All logging done in the services and in the web servers eventually
+  is received by \LS{}, that shows and stores it in a single place.
+
+  Again, usually we do not call \LS{} directly but using the
+  convenient \id{logger} object.
+
+  \subsubsection{RPC interface}
+
+  \begin{squishlist}
+  \item \id{Log}: send a log to \LS{};
+  \item \id{last\_messages}: retrieve the last 100 messages of warning
+    or error.
+  \end{squishlist}
 
   \subsection{File Storage}
 
   File Storage is a simple service, but is essential to any
   contest. It is capable of accepting files, storing them and offering
-  them when asked to.
+  them when asked to. It is therefore the only convenient way to
+  transfer files from a service to another, and to make these files
+  permanent in the system.
 
-  In particular, these are its uses:
+  Internally, it stores files in the filesystem, assigning to them the
+  SHA1 sum of the file as a name. It also stores a description
+  associated to each file, useful only for logging and debugging
+  purpose.
+
+  Usually, \FS{} is not contacted directly but using a FileCacher
+  instance, that provides utility methods to send and retrieve files
+  in several ways, additionally storing the files in a local cache and
+  using this local cache whenever possible.
+
+  \subsubsection{RPC interface}
+
   \begin{squishlist}
-  \item before the contest, the importer ask \FS{} to store the tasks'
-    data: the statement in PDF (needed by \CWS{}), inputs, outputs,
-    source files that are going to be used during the evaluation of
-    submissions (needed by \WS{});
-  \item during the contest, after receiving a submission, \CWS{} ask
-    \FS{} to store its associated files (being them outputs or source
-    files); then, \WS{} needs these files to evaluate the submission.
+  \item \id{put\_file}: insert a new file into \FS{};
+  \item \id{get\_file}: retrieve a file from \FS{};
+  \item \id{delete}: delete a file from \FS{};
+  \item \id{is\_file\_present}: inform the caller if a specific file is
+    in \FS{};
+  \item \id{describe}: return to the caller the description associated
+    to a file.
   \end{squishlist}
 
-  \subsection{CouchDB Server}
+  \subsection{Worker}
 
-  CouchDB Server is not actually a service of \CMS{}, but no more that
-  an istance of CouchDB. Therefore, it can stores \emph{documents\/},
-  that for us are serializations of Python objects, where a reference
-  to another object is translated to the CouchDB id of the referenced
-  object.
+  Worker's aim is to do the low-level job of \ES{}. That is, it
+  has to take care of compiling the submissions and executing them
+  against the testcases, assigning to each of them their outcome.
 
-  Its main use in \CMS{} is to store the contest's data, that is the
-  specification of the contest, tasks, contestants, submissions. The
-  documents in \CDBS{} may have links to files contained in \FS{}.
+  The specific instructions on how to compile and evaluate a
+  submission are given in the TaskType class associated to the task.
+
+  Since we want the worker to be able to answer calls even when doing
+  a compilation or an evaluation, and these are potentially long jobs,
+  \WS{} performs these jobs in a different thread.
+
+  \subsubsection{RPC interface}
+
+  \begin{squishlist}
+  \item \id{compile}: compile a submission;
+  \item \id{evaluate}: evaluate a submission;
+  \item \id{precache\_files}: load from \FS{} to the local cache all
+    files needed to compile and evaluate submissions of a given
+    contest;
+  \item \id{shut\_down}: switch off the worker.
+  \end{squishlist}
+
+  \subsection{Evaluation Server}
+
+  Evaluation Server's goal is to transform submissions coming from the
+  contestants in evaluated submissions. It maintains a queue of jobs,
+  that can be compilations or evaluations of a submission, ranked by
+  priority (usually compilations have more priority, then evaluation
+  for which the contestant has played a token, then all the rest) and
+  timestamp. It also maintains a pool of workers, remembering the jobs
+  assigned to each of them.
+
+  When possible, it assigns a new job to a inactive worker, and when a
+  worker signals that it finished a job, it elaborate the
+  response. This usually means that it queues the evaluation if the
+  completed job was a compilation, or inform \SS{} if the completed
+  job was an evaluation.
+
+  \subsubsection{RPC interface}
+
+  \begin{squishlist}
+  \item \id{submissions\_status}: returns the number of submissions in
+    a given status;
+  \item \id{queue\_status}: returns the content of the job queue.
+  \item \id{worker\_status}: returns the information on what the
+    workers are doing;
+  \item \id{new\_submission}: this is called to inform \ES{} that a new
+    submission has been placed by a contestant;
+  \item \id{submission\_tokened}: this is called to inform \ES{} that
+    the contestant has played a token on a submission.
+  \end{squishlist}
+
+  \subsection{Scoring Service}
+
+  Scoring Service's goal is to transform evaluated submissions coming
+  from \ES{} to scores and rankings. The specific ways on how to
+  transform outcomes in scores is specified in the ScoreType class of
+  the task. \SS{} uses this class to get the ranking changes after a
+  submissions has been evaluated and to upgrade the ranking.
+
+  \SS{} has two ways to inform the world of the ranking. The first is
+  maintaining a ranking view in \DB{}, the second is sending out to
+  the \RWS{}'s the new ranking.
+
+  \subsubsection{RPC interface}
+
+  \begin{squishlist}
+  \item \id{new\_evaluation}: this is called to inform \SS{} that a
+    new submission has been evaluated by \ES{};
+  \item \id{submission\_tokened}: this is called to inform \ES{} that
+    the contestant has played a token on a submission.
+  \end{squishlist}
 
   \subsection{Contest Web Server}
 
@@ -206,302 +332,62 @@
   \item Viewing the tasks' statement and the attachments (that usually
     are example of implementations of the functions, or big example of
     test data).
-  \item Submitting a (partial) solution for a task. Since a task may
-    require more than one file, if \CWS{} receives an archive (zip,
-    tar, tar.gz, or tar.bz2), it unpacks the archive and assigns the
-    files to the submission. It is a duty of the plugin specifying the
-    task type to decide what happens when there are some files
-    missing. For a programming task, it makes sense to reject the
-    submission; for an output-only task, it makes sense to use the
-    previously sent outputs. When a submission is received, \CWS{}
-    informs \ES{} and ask it to evaluate the submission.
-  \item Viewing the state of submissions, in particular if they have been
-    compiled and executed against the inputs that ensure that the
-    submission is syntactically correct. If they are not, a message
-    should explain in as much details as possible what is wrong. The
-    users can download all submitted files.
+  \item Submitting a (partial) solution for a task. If a task requires
+    more than one file (e.g., output-only tasks), \CWS{} can receive
+    also a zip-archive. If some files are missing, they can be
+    retrieved from the previous submission of the contestant on the
+    same task.
+  \item Viewing the state of submissions, in particular if they have
+    been compiled and evaluated on the public testcases that ensure
+    that the submission is syntactically correct. If they are not, a
+    message should explain in as much details as possible what is
+    wrong. The contestants can download all submitted files.
   \item Giving the possibility to use a \emph{token\/} against a
     particular submission (see next).
   \item Viewing a detailed feedback of the evaluation of a submission
-    in two cases: for tasks that are configured to have detailed
-    feedback, and for submissions against which the user has used a
-    token.
-  \item Interacting with the contest managers, in particular asking
+    against which the contestant has played a token.
+  \item Interacting with the contest admins, in particular asking
     questions concerning tasks' statements.
   \end{squishlist}
 
-  \subsection{Evaluation Server}
-
-  Evaluation Server's goal is to transform submissions in evaluated
-  submissions, and to transform the set of evaluated submissions in a
-  ranking (the current ranking of the contest).
-
-  More precisely, these are its duties.
+  Another important job of \CWS{} is to decide when to accept or
+  reject a submission or a token. \CWS{} performs the following checks
+  before accepting a submission:
   \begin{squishlist}
-  \item \ES{} maintains a queue of jobs to be assigned to some
-    \WS{}. A job is of two types. The first is the
-    \emph{compilation\/} of a submission (and the evaluation on a
-    small set of testcases to let the user know that the submission is
-    syntactically correct). The second is the complete
-    \emph{evaluation\/} of a submission on the whole testcases set.
-  \item \ES{} decides the priority assigned to jobs: compilation have
-    top priority, followed by the evaluation of a submission for which
-    the contestant has used a token, followed by all other
-    evaluations.
-  \item A job is put in the queue when \CWS{} notifies that a
-    submission has been placed; at start, \ES{} look at already places
-    submissions to ensure that all of them are evaluated; also, the
-    contest managers can ask the \ES{} to reevaluate some submissions.
-  \item When a job is queued and when \WS{} finishes some job, \ES{}
-    update one or more \emph{views\/} of the contest. A view is a
-    snapshot of some parts of the state of the contest integrated with
-    some derived data, saved in \CDBS{}; it is used by other services
-    so that a view is not computed several times.
-  \item When a \WS{} finishes an evaluation, it computes the
-    \emph{outcome\/} of the submission.
-  \item Then the \ES{} computes the score of the submission, process
-    that may change also the scores of all others submissions (for
-    example when the score depends on the best submission so far).
+  \item that a minimum amount of time has passed since the last
+    submission on the same task from the same contestant;
+  \item that the submission format has been respected (maybe
+    retrieving some files from the previous submission if the task
+    allows it;
+  \item that when a file is required to be a source file, its language
+    can be recognized, and we have a single language for a submission;
+  \item that any file is no bigger than a certain amount of bytes.
   \end{squishlist}
 
-  \subsection{Worker Server}
+  \subsection{Admin Web Server}
 
-  Worker Server's aim is to do the low-level job of \ES{}. That is, it
-  has to take care of compiling the submissions and executing them
-  against the testcases, assigning to each of them their outcome.
+  Admin Web Server is the interface between the system and the
+  contest admins. It shows the complete state of the contest,
+  including the state of all services (load, memory usage, length of
+  the queues, etc.). It gives some control over the other services;
+  for example, contest admins can ask \ES{} to evaluate again some
+  submissions.
 
   \subsection{Ranking Web Server}
 
-  Ranking Web Server is the interface between the contest and the
-  world. Typically, it shows the live ranking of the contest, maybe
-  skipping some problems, or hiding the data after a certain amount of
-  time.
-
-  \subsection{Logging Web Server}
-
-  Logging Web Server is the interface between the system and the
-  contest managers. It shows the complete state of the contest,
-  including the state of all services (load, memory usage, length of
-  the queues, etc.). It gives some control over the other services;
-  for example, contest managers can ask \ES{} to evaluate again some
-  submissions.
-
-  \section{Data structures}
-
-  Here we describe the four main classes that describe the structure
-  and the inner working of a contest.
-
-  \subsection{The \id{Contest} class}
-
-  \begin{squishlist}
-
-  \item \id{name} (string): the name used to refer to the contest;
-
-  \item \id{description} (string): a textual description of the
-    contest;
-
-  \item \id{tasks} (list): the tasks composing this contest; each
-    element of the list is the CouchDB id of a \id{Task} object;
-
-  \item \id{users} (list): the contestants taking part to the
-    contest; each element of the list is the CouchDB id of a
-    \id{User} object;
-
-  \item \id{token\_total\_num} (integer): the total number of tokens
-    that a contestant can use during the whole contest; a value of
-    $-1$ means that the limit is not enforced;
-
-  \item \id{token\_num} (integer): the initial number of tokens
-    available to a contestant for all tasks;
-
-  \item \id{token\_max\_num} (integer): the maximum number of tokens
-    available to a contestant for all tasks at a given time; a value
-    of $-1$ means that the limit is not enforced;
-
-  \item \id{token\_min\_interval} (integer): the minimum interval (in
-    minutes) between using two tokens;
-
-  \item \id{token\_gen\_time} (integer): the time (in minutes) after
-    which a new token is made available to the contestant; more
-    precisely, each \id{token\_gen\_time} minutes a new token is
-    available if there are less than \id{token\_max\_num} tokens
-    available;
-
-  \item \id{start} (integer): the UNIX timestamp of the beginning
-    of the contest; it is not set when setting up the contest, but when
-    scheduling its timing;
-
-  \item \id{stop} (integer): the UNIX timestamp of the end of the
-    contest; like \id{start}, it is set when scheduling the contest's
-    timing;
-
-  \item \id{submissions} (list): the submissions issued during the
-    contest; it is empty at the beginning of the contest and gets
-    filled while the contest is running; each element of the list if
-    the CouchDB id of a \id{Submission} object.
-
-  \end{squishlist}
-
-  \subsection{The \id{User} class}
-
-  \begin{squishlist}
-
-  \item \id{username} (string): the identifier used to authenticate
-    the contestant to the contest system;
-
-  \item \id{password} (string): the password used to authenticate the
-    contestant to the contest system;
-
-  \item \id{real\_name} (string): the real name of the contestant;
-
-  \item \id{ip} (string): the IP address (in dotted quad notation) of
-    the machine used by the contestant; it is used to check that
-    requests for this contestant come from the correct machine and
-    avoid cheating; this check is not enforced when \id{ip} is set to
-    the null address (``\texttt{0.0.0.0}''); currently there is no
-    support for checking against IPv6 addresses;
-
-  \item \id{tokens} (list): the tokens used by this contestant; each
-    element of the list if the CouchDB id of a \id{Submission} object,
-    on which the contestant used a token;
-
-  \item \id{hidden} (boolean): when this flag is set the user is not
-    shown on public rankings; this flag in meant to be used for
-    testing accounts (for example, the managers of the contest could
-    add a test user to check if the system is correctly receiving and
-    validating submissions). A second use is when hosting a mixed
-    (onsite and public) competition, where non-onsite users are set
-    as hidden.
-
-  \end{squishlist}
-
-  \subsection{The \id{Task} class}
-
-  \begin{squishlist}
-
-  \item \id{name} (string): the name used to refer to the task;
-
-  \item \id{title} (string): a title for this task;
-
-  \item \id{attachments} (dictionary): the files attached to the
-    statement of the problem (example code snippets, files to
-    complement the problem description, \dots); in each entry the key
-    is the filename and each value is the \FS{} id of an attachment;
-
-  \item \id{statement} (string): the \FS{} id of the statement PDF,
-    that describes the task to the contestant;
-
-  \item \id{time\_limit} (float): the timeout for this task (in
-    seconds);
-
-  \item \id{memory\_limit} (float): the memory limit for this task (in
-    megabytes);
-
-  \item \id{task\_type} (string): the type of this task; it encode a
-    task type, that is a plugin that specifies how submissions for
-    this task gets compiled, executed and checked;
-
-  \item \id{submission\_format} (list): the description of the files
-    expected within a submission for this task; each element of the
-    list is the name of a file that must exist in the submission, with
-    the language extension replaced with ``\texttt{\%l}'';
-
-  \item \id{managers} (dictionary): the files provided by the contest
-    organizers used when compiling and evaluating contestants'
-    submissions; its use depends on the \id{task\_type}; in each entry
-    the key is the filename and each value is the \FS{} id of a
-    manager;
-
-  \item \id{score\_type} (integer): the type of scoring method for
-    this task; how the score for this task is assigned to the
-    contestants depends on this value via a plugin system;
-
-  \item \id{score\_parameters} (dictionary): the parameters passed to
-    the scoring system for this task; its meaning depends on the value
-    of \id{score\_type};
-
-  \item \id{testcases} (list): the description of the testcases for
-    this task; each element of the list describes a case, but its
-    meaning depends on the value of \id{task\_type};
-
-  \item \id{public\_testcases} (list): the testcases that contestants
-    are able to see even without using a token; each element is an
-    index in the \id{testcases} list;
-
-  \item \id{token\_total\_num} (integer), \id{token\_max\_num}
-    (integer), \id{token\_num} (integer), \id{token\_min\_interval}
-    (integer), \id{token\_gen\_time} (integer): these parameters have
-    the same meaning of those present in \id{Contest}, but are
-    specific for this task.
-
-  \end{squishlist}
-
-  \subsection{The \id{Submission} class}
-
-  \begin{squishlist}
-
-  \item \id{user} (string): the contestant that made this submission;
-    it is the CouchDB id of a \id{User} object;
-
-  \item \id{task} (string): the task for which this submission was
-    filed; it is the CouchDB id of a \id{Task} object;
-
-  \item \id{timestamp} (integer): the UNIX timestamp of the instant in
-    which this submission was issued;
-
-  \item \id{files} (dictionary): the files submitted by the
-    contestant; in each entry the key is the filename and each value
-    is the \FS{} id of a file;
-
-  \item \id{executables} (dictionary): the compiled files for this
-    submission; in each entry the key is the filename and each value
-    is the \FS{} id of an executable, but its meaning depends on the
-    task (some tasks could even have no executables at all, like
-    output-only tasks); this value is set when compiling the
-    submission;
-
-  \item \id{compilation\_outcome} (string): the description of the
-    compilation outcome, used by the \ES{} and \CWS{} to know whether
-    the submission has to be evaluated or not; its content should be
-    the string ``ok'' if the compilation was successful (and, thus,
-    the submission accepted), or ``fail'' if there were errors that
-    made the submission to be rejected; this value is set when
-    compiling the submission;
-
-  \item \id{evaluation\_outcome} (list): the description of the
-    outcome obtained by this submission on each testcase; each element
-    of the list describes the outcome on the corresponding testcase,
-    but its format and meaning depends on the specific task; this
-    value is used by the scoring function to compute the score for all
-    the contestants; this value is set when evaluating the submission;
-
-  \item \id{compilation\_text} (string): a textual and human-readable
-    description of the outcome of the compilation, shown to the
-    contestant; this value is set when compiling the submission;
-
-  \item \id{evaluation\_text} (list): a textual and human-readable
-    description of the outcome of the evaluation, shown to the
-    contestant if a token was used on this submission; each element of
-    the list refers to the corresponding testcase; this value is set
-    when evaluating the submission;
-
-  \item \id{token\_timestamp} (integer): the UNIX timestamp of the
-    instant when the token was used for this submission; not set if no
-    token was used;
-
-  \end{squishlist}
-
-  \section{Internals}
-
-  Here we describe the RPC method offered by the services, and some
-  implementation details.
+  \RWS{} is not a service nor a web server because it is designed to
+  be as detached as possible from the system. The system sends data to
+  it via http requests, and does not receive other data than the
+  replies to these requests. It also uses Tornado as a web framework,
+  and the web pages are build using Pyjamas. \RWS{} has been written
+  by Luca Wehrstedt.
 
   \section{Importing from YAML}
 
   Currently this is the only supported method to load a contest into
   the CouchDB database. It originates from the contest and tasks
   descriptions used by the Italian trainer team, so some strings are
-  in Italian. This, of course, is going to change.
+  in Italian.
 
   \subsection{Contest YAML description specifications}
 
@@ -586,8 +472,8 @@
     ``\id{0.0.0.0}'', meaning that no IP check is performed;
 
   \item \id{fake} (string): when set to ``\id{True}'' (at the moment
-    this is case-sensitive) set the \id{hidden} flag in the user;
-    defaults to false.
+    this is case-sensitive) set the \id{hidden} flag in the
+    user; defaults to false.
 
   \end{squishlist}
 
@@ -619,9 +505,9 @@
 
   \item \id{risultati} (``results'', string): a comma-separated list
     of test cases (identified by their numbers, running from $0$ to
-    $\text{\id{n\_input}}-1$) that are available for live evaluation to
-    users during the contest (the unpacked list is copied in the
-    \id{public\_testcases} field);
+    $\text{\id{n\_input}}-1$) that are available for live evaluation
+    to contestants during the contest (the unpacked list is copied in
+    the \id{public\_testcases} field);
 
   \item \id{token\_*}: token parameters; still not implemented. % FIXME
 
@@ -633,13 +519,16 @@
 
   \section{Terms}
 
-  Here we describe all terms that have a specific meaning inside
+  Here we describe some terms that have a specific meaning inside
   \CMS{}.
 
   \begin{squishlist}
   \item[Importer (program).] An importer is a program that fills the
     configuration of the contest and \FS{} with the data needed for
-    the contest. Contest managers may decide to do this step by hand.
+    the contest. Contest admins may decide to do this step by hand.
+  \item[Exporter (program).] An exporter is a program that exports
+    some of the data of a contest from \CMS{} to the outside world,
+    usually to save some information on a revision control system.
   \item[Compilation (process).] Compilation is done by \WS{}, and it
     consists of the compilation of the submission and the execution
     against a small number of testcases to ensure that it is
@@ -672,13 +561,13 @@
     configuration of the task.
   \item[Task type (class).] A task type is a class that specifies how
     to treat the files submitted by the contestant and the managers
-    provided by the contest managers; usually, this turns out to be
+    provided by the contest admins; usually, this turns out to be
     instructions for the compilation and linking of source code into
     one or more executable, and the instructions for the execution of
     these programs. A second duty of the task type is to decide how to
     merge a submission with the last one (sometimes it is useful to
     allow partial submissions, e.g. in output-only tasks).
-  \item[Token.] A contestant can use a token against one of his
+  \item[Token.] A contestant can play a token against one of his
     submissions, in order to have an overview of the goodness of the
     submission. The actual result that the contestant can see is
     specified by the configuration. At the beginning of the contest,
@@ -688,7 +577,7 @@
     contest-oriented
   \item[View (data).] A collection of derived data that is useful to
     more than one service and maybe heavy to compute. It is saved in
-    \CDBS{} and available for all other services. For example, the
+    \DB{} and available for all other services. For example, the
     outcome, and the rankings.
   \end{squishlist}
 \end{multicols}
