@@ -5,17 +5,21 @@
   <h1>Tasks list</h1>
 </div>
 <table class="bordered">
-  <tr>
-    <th>Title</th>
-    <th>Name</th>
-    <th>Operations</th>
-  </tr>
-  {% for t in contest.tasks %}
-  <tr>
-    <td><a href="/task/{{ t.id }}">{{ t.title }}</a></td>
-    <td>{{ t.name }}</td>
-    <td>[<a href="/reevaluate/task/{{ t.id }}">Re-evaluate</a>]</td>
-  </tr>
-  {% end %}
+  <thead>
+    <tr>
+      <th style="width: 50%">Title</th>
+      <th style="width: 30%">Name</th>
+      <th style="width: 20%">Operations</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in contest.tasks %}
+    <tr>
+      <td><a href="/task/{{ t.id }}">{{ t.title }}</a></td>
+      <td>{{ t.name }}</td>
+      <td>[<a href="/reevaluate/task/{{ t.id }}">Reevaluate</a>]</td>
+    </tr>
+    {% end %}
+  </tbody>
 </table>
 {% end %}

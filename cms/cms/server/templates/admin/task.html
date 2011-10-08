@@ -5,7 +5,7 @@
   <h1>{{ task.title }} ({{ task.name }})</h1>
 </div>
 
-<h2 id="title_submissions" class="toggling_on" onclick="utils.toggle_visibility('submissions');">Recent submissions</h2>
+<h2 id="title_submissions" class="toggling_on" onclick="utils.toggle_visibility('submissions');">Submissions</h2>
 <div id="submissions">
 
   {% if submissions == [] %}
@@ -15,23 +15,19 @@
   <table class="bordered">
     <thead>
       <tr>
-        <th style="width: 10%">User</th>
         <th style="width: 10%">Date</th>
-        <th style="width: 45%">Evaluation</th>
+        <th style="width: 18%">User</th>
+        <th style="width: 35%">Evaluation</th>
         <th style="width: 15%">Files</th>
         <th style="width: 10%">Released</th>
-        <th style="width: 10%">Reevaluate</th>
+        <th style="width: 12%">Operations</th>
       </tr>
     </thead>
     <tbody>
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True)[:50] %}
       <tr>
-        <td>
-          <a href="/user/{{ s.user.id }}">{{s.user.username}}</a>
-        </td>
-        <td>
-          {{ Utils.format_time_or_date(s.timestamp) }}
-        </td>
+        <td>{{ Utils.format_time_or_date(s.timestamp) }}</td>
+        <td><a href="/user/{{ s.user.id }}">{{s.user.username}}</a></td>
         <td>
           {% if s.compilation_outcome is None %}
           Compiling...
@@ -49,7 +45,7 @@
           <div id="evaluation_{{ s.id }}" style="display: none;">
             {% if s.evaluations != [] %}
             <h3>Testcases</h3>
-            <table class="nested bordered">
+            <table class="bordered">
               <thead>
                 <tr>
                   <th style="width: 20%">Outcome</th>
@@ -59,15 +55,15 @@
               </thead>
               <tbody>
                 {% for ev in s.evaluations %}
-                  <tr>
-                    <td>{{ ev.outcome }}</td>
-                    {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
-                    <td style="align: center;">&bullet;</td>
-                    {% else %}
-                    <td></td>
-                    {% end %}
-                    <td>{{ ev.text }}</td>
-                  </tr>
+                <tr>
+                  <td>{{ ev.outcome }}</td>
+                  {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
+                  <td style="align: center;">&bullet;</td>
+                  {% else %}
+                  <td></td>
+                  {% end %}
+                  <td>{{ ev.text }}</td>
+                </tr>
                 {% end %}
               </tbody>
             </table>
@@ -97,7 +93,7 @@
           {% end %}
         </td>
         <td>
-          <a href="/reevaluate/submission/{{s.id}}?ref={{ "/task/" + str(task.id) }}">Go ahead!</a>
+          [<a href="/reevaluate/submission/{{s.id}}?ref={{ "/task/" + str(task.id) }}">Reevaluate</a>]
         </td>
       </tr>
       {% end %}
@@ -219,29 +215,30 @@
   <div id="testcases">
 
     <table class="bordered" style="text-align:center">
-      <tr>
-        <th>Position</th>
-        <th>Public</th>
-        <th>Input</th>
-        <th>Output</th>
-      </tr>
-      {% for testcase in task.testcases %}
-      <tr>
-        <td style="font-weight:bold;">{{ testcase.num }}</td>
-        <td style="font-weight:bold;">
-          <input type="checkbox" name="testcase_{{ testcase.num }}_public"
-          {% if testcase.public %}
-              checked
-          {% end %}
-          >
-        </td>
-        <td>
-          <a href="#" onclick="utils.show_file('input{{ testcase.num }}','/file/{{ testcase.input }}/input{{ testcase.num }}')">Show Input</a>
-        </td>
-        <td>
-          <a href="#" onclick="utils.show_file('output{{ testcase.num }}','/file/{{ testcase.output }}/output{{ testcase.num }}')">Show Output</a>
-        </td>
+      <thead>
+        <tr>
+          <th>Position</th>
+          <th>Public</th>
+          <th>Input</th>
+          <th>Output</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for testcase in task.testcases %}
+        <tr>
+          <td style="font-weight:bold;">{{ testcase.num }}</td>
+          <td style="font-weight:bold;">
+            <input type="checkbox" name="testcase_{{ testcase.num }}_public" {% if testcase.public %}checked{% end %} />
+          </td>
+          <td>
+            <a href="#" onclick="utils.show_file('input{{ testcase.num }}','/file/{{ testcase.input }}/input{{ testcase.num }}')">Show input</a>
+          </td>
+          <td>
+            <a href="#" onclick="utils.show_file('output{{ testcase.num }}','/file/{{ testcase.output }}/output{{ testcase.num }}')">Show output</a>
+          </td>
+        </tr>
         {% end %}
+      </tbody>
     </table>
   </div>
   <div class="hr"></div>
@@ -274,7 +271,7 @@
       </tr>
     </table>
   </div>
-  <input type="submit" value="Edit">
-  <input type="reset" value="Reset">
+  <input type="submit" value="Update" />
+  <input type="reset" value="Reset" />
 </form>
 {% end %}

@@ -31,39 +31,6 @@ function update_additional_answer(element, invoker)
 
 <h1>{{ selected_user.real_name }} ({{ selected_user.username }})</h1>
 
-<h2 id="title_general_info" class="toggling_on" onclick="utils.toggle_visibility('general_info');">General Information</h2>
-<div id="general_info">
-  <form action="/user/{{ selected_user.id }}" method="POST">
-    <table>
-      <tr>
-        <td>Real name</td>
-        <td><input type="text" name="real_name" value="{{ selected_user.real_name }}"/></td>
-      </tr>
-      <tr>
-        <td>Username</td>
-        <td><input type="text" name="username" value="{{ selected_user.username }}"/></td>
-      </tr>
-      <tr>
-        <td>Password</td>
-        <!-- FIXME: Plain text? -->
-        <td><input type="text" name="password" value="{{ selected_user.password }}"/></td>
-      </tr>
-      <tr>
-        <td>IP</td>
-        <td><input type="text" name="ip" value="{{ selected_user.ip }}"/></td>
-      </tr>
-      <tr>
-        <td>Hidden?</td>
-        <td><input type="checkbox" name="hidden" {% if selected_user.hidden %} checked {% end %}/></td>
-      </tr>
-    </table>
-    <input type="submit" value="{{ _("Edit") }}"/>
-    <input type="reset"/>
-  </form>
-  <div class="hr"></div>
-</div>
-
-
 <h2 id="title_submissions" class="toggling_on" onclick="utils.toggle_visibility('submissions');">Submissions</h2>
 <div id="submissions">
 
@@ -74,23 +41,19 @@ function update_additional_answer(element, invoker)
   <table class="bordered">
     <thead>
       <tr>
-        <th style="width: 13%">Date</th>
-        <th style="width: 13%">Task</th>
+        <th style="width: 10%">Date</th>
+        <th style="width: 18%">Task</th>
         <th style="width: 35%">Evaluation</th>
         <th style="width: 15%">Files</th>
-        <th style="width: 12%">Released</th>
-        <th style="width: 12%">Reevaluate</th>
+        <th style="width: 10%">Released</th>
+        <th style="width: 12%">Operations</th>
       </tr>
     </thead>
     <tbody>
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
-        <td>
-          {{ Utils.format_time_or_date(s.timestamp) }}
-        </td>
-        <td>
-          {{ s.task.name }}
-        </td>
+        <td>{{ Utils.format_time_or_date(s.timestamp) }}</td>
+        <td>{{ s.task.name }}</td>
         <td>
           {% if s.compilation_outcome is None %}
           Compiling...
@@ -121,7 +84,7 @@ function update_additional_answer(element, invoker)
               </thead>
               <tbody>
                 {% for ev in s.evaluations %}
-                  <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td></tr>
+                <tr><td>{{ escape(ev.outcome) }}</td><td>{{ escape(ev.text) }}</td></tr>
                 {% end %}
               </tbody>
             </table>
@@ -145,7 +108,7 @@ function update_additional_answer(element, invoker)
           {% end %}
         </td>
         <td>
-          <a href="/reevaluate/submission/{{s.id}}?ref={{ "/user/" + str(selected_user.id) }}">Go ahead!</a>
+          [<a href="/reevaluate/submission/{{s.id}}?ref={{ "/user/" + str(selected_user.id) }}">Reevaluate</a>]
         </td>
       </tr>
       {% end %}
@@ -155,6 +118,38 @@ function update_additional_answer(element, invoker)
   <div class="hr"></div>
 </div>
 
+
+<h2 id="title_general_info" class="toggling_on" onclick="utils.toggle_visibility('general_info');">General Information</h2>
+<div id="general_info">
+  <form action="/user/{{ selected_user.id }}" method="POST">
+    <table>
+      <tr>
+        <td>Real name</td>
+        <td><input type="text" name="real_name" value="{{ selected_user.real_name }}"/></td>
+      </tr>
+      <tr>
+        <td>Username</td>
+        <td><input type="text" name="username" value="{{ selected_user.username }}"/></td>
+      </tr>
+      <tr>
+        <td>Password</td>
+        <!-- FIXME: Plain text? -->
+        <td><input type="text" name="password" value="{{ selected_user.password }}"/></td>
+      </tr>
+      <tr>
+        <td>IP</td>
+        <td><input type="text" name="ip" value="{{ selected_user.ip }}"/></td>
+      </tr>
+      <tr>
+        <td>Hidden?</td>
+        <td><input type="checkbox" name="hidden" {% if selected_user.hidden %} checked {% end %}/></td>
+      </tr>
+    </table>
+    <input type="submit" value="Update" />
+    <input type="reset" value="Reset" />
+  </form>
+  <div class="hr"></div>
+</div>
 
 
 <h2 id="title_questions" class="toggling_on" onclick="utils.toggle_visibility('questions');">Questions</h2>

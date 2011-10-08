@@ -99,9 +99,9 @@ window.onload = init;
           <div class="sidebar_left">Contest:</div>
           <ul class="menu">
             <li class="menu_entry"><a class="menu_link" href="/contest/{{ contest.id }}">General</a></li>
-            <li class="menu_entry"><a class="menu_link" href="/announcements/{{ contest.id }}">Announcements</a></li>
             <li class="menu_entry"><a class="menu_link" href="/userlist/{{ contest.id }}">Users</a></li>
             <li class="menu_entry"><a class="menu_link" href="/tasklist/{{ contest.id }}">Tasks</a></li>
+            <li class="menu_entry"><a class="menu_link" href="/announcements/{{ contest.id }}">Announcements</a></li>
             <li class="menu_entry">
               <span id="unanswered_questions" class="unread"
                 {% if unanswered == 0 %} style="display: none;" {% end %}>
