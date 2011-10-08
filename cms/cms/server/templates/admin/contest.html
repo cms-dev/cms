@@ -51,10 +51,4 @@
   <input type="submit" value="Edit"><input type="reset" value="Reset">
 </form>
 
-<h2>Tasks</h2>
-<ul>
-  {% for task in contest.tasks %}
-  <li><a href="/task/{{task.id}}">{{ task.name }}</a></li>
-  {% end %}
-</ul>
 {% end %}

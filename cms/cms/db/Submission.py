@@ -61,7 +61,10 @@ class Submission(Base):
                      ForeignKey(Task.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
                      nullable=False)
-    task = relationship(Task)
+    task = relationship(Task,
+                        backref=backref("submissions",
+                                        single_parent=True,
+                                        cascade="all, delete, delete-orphan"))
 
     # Time of the submission.
     timestamp = Column(Integer, nullable=False)

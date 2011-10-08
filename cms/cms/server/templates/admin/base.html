@@ -101,6 +101,7 @@ window.onload = init;
             <li class="menu_entry"><a class="menu_link" href="/contest/{{ contest.id }}">General</a></li>
             <li class="menu_entry"><a class="menu_link" href="/announcements/{{ contest.id }}">Announcements</a></li>
             <li class="menu_entry"><a class="menu_link" href="/userlist/{{ contest.id }}">Users</a></li>
+            <li class="menu_entry"><a class="menu_link" href="/tasklist/{{ contest.id }}">Tasks</a></li>
             <li class="menu_entry">
               <span id="unanswered_questions" class="unread"
                 {% if unanswered == 0 %} style="display: none;" {% end %}>
@@ -109,15 +110,6 @@ window.onload = init;
               <a class="menu_link" href="/questions/{{ contest.id }}">Questions</a>
             </li>
           </ul>
-          <div class="hr"></div>
-          <div class="sidebar_left">Tasks:</div>
-          <div class="sidebar_right">
-            <ul class="menu">
-              {% for t_iter in contest.tasks %}
-              <li class="menu_entry"><a class="menu_link" href="/task/{{t_iter.id}}">{{t_iter.name}}</a></li>
-              {% end %}
-            </ul>
-          </div>
           <div class="hr"></div>
             {% if phase != 1 %}
           <div class="footer">Time left: <span id="remaining"></span></div>

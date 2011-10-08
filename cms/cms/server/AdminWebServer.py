@@ -500,6 +500,16 @@ class UserListHandler(BaseHandler):
         self.render("userlist.html", **r_params)
 
 
+class TaskListHandler(BaseHandler):
+    """Shows the list of tasks of a contest.
+
+    """
+    def get(self, contest_id):
+        self.retrieve_contest(contest_id)
+        r_params = self.render_params()
+        self.render("tasklist.html", **r_params)
+
+
 class UserViewHandler(BaseHandler):
     """Shows the details of a single user (submissions, questions,
     messages, and allows to send the latters).
@@ -643,7 +653,7 @@ class SubmissionReevaluateHandler(BaseHandler):
     @tornado.web.asynchronous
     def get(self, submission_id):
 
-        self.ref = self.get_argument("ref", "/")
+        ref = self.get_argument("ref", "/")
 
         submission = Submission.get_from_id(submission_id, self.sql_session)
         if submission is None:
@@ -654,17 +664,10 @@ class SubmissionReevaluateHandler(BaseHandler):
 
         submission.invalid()
         self.sql_session.commit()
-        self.application.service.ES.new_submission(
-            submission_id=submission.id,
-            callback=self.es_notify_callback)
+        self.application.service.ES.new_submission(submission_id=submission.id)
 
-    @rpc_callback
-    def es_notify_callback(self, data, plus, error=None):
-        if error is None:
-            self.redirect(self.ref)
-        else:
-            logger.error("Notification to ES failed: %s." % error)
-            self.finish()
+        self.redirect(ref)
+
 
 
 class UserReevaluateHandler(BaseHandler):
@@ -682,16 +685,29 @@ class UserReevaluateHandler(BaseHandler):
         for s in user.submissions:
             s.invalid()
             self.sql_session.commit()
-            if not self.application.service.ES.new_submission(
-                submission_id=s.id,
-                callback=self.es_notify_callback):
-                self.es_notify_callback(None, None, error="Not connected")
+            self.application.service.ES.new_submission(submission_id=s.id)
 
-    @rpc_callback
-    def es_notify_callback(self, data, plus, error=None):
-        self.pending_requests -= 1
-        if self.pending_requests <= 0:
-            self.redirect("/user/%s" % self.user_id)
+        self.redirect("/user/%s" % self.user_id)
+
+
+class TaskReevaluateHandler(BaseHandler):
+
+    @tornado.web.asynchronous
+    def get(self, task_id):
+        self.task_id = task_id
+        task = Task.get_from_id(task_id, self.sql_session)
+        if task is None:
+            raise tornado.web.HTTPError(404)
+
+        self.contest = task.contest
+
+        self.pending_requests = len(task.submissions)
+        for s in task.submissions:
+            s.invalid()
+            self.sql_session.commit()
+            self.application.service.ES.new_submission(submission_id=s.id)
+
+        self.redirect("/task/%s" % self.task_id)
 
 
 class FileFromDigestHandler(FileHandler):
@@ -756,6 +772,8 @@ handlers = [(r"/",
              SubmissionReevaluateHandler),
             (r"/reevaluate/user/([0-9]+)",
              UserReevaluateHandler),
+            (r"/reevaluate/task/([0-9]+)",
+             TaskReevaluateHandler),
             (r"/add_announcement/([0-9]+)",
              AddAnnouncementHandler),
             (r"/remove_announcement/([0-9]+)",
@@ -766,6 +784,8 @@ handlers = [(r"/",
              UserViewHandler),
             (r"/userlist/([0-9]+)",
              UserListHandler),
+            (r"/tasklist/([0-9]+)",
+             TaskListHandler),
             (r"/message/([a-zA-Z0-9_-]+)",
              MessageHandler),
             (r"/question/([a-zA-Z0-9_-]+)",

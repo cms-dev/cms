@@ -1,0 +1,21 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1>Tasks list</h1>
+</div>
+<table class="bordered">
+  <tr>
+    <th>Title</th>
+    <th>Name</th>
+    <th>Operations</th>
+  </tr>
+  {% for t in contest.tasks %}
+  <tr>
+    <td><a href="/task/{{ t.id }}">{{ t.title }}</a></td>
+    <td>{{ t.name }}</td>
+    <td>[<a href="/reevaluate/task/{{ t.id }}">Re-evaluate</a>]</td>
+  </tr>
+  {% end %}
+</table>
+{% end %}
