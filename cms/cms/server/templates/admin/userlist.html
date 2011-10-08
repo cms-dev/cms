@@ -8,14 +8,12 @@
   <tr>
     <th>Name</th>
     <th>Username</th>
-    <th></th>
-    <th></th>
+    <th>Operations</th>
   </tr>
   {% for u in sorted(contest.users, cmp = lambda x, y: cmp(x.username, y.username)) %}
   <tr>
-    <td>{{ u.real_name }}</td>
+    <td><a href="/user/{{ u.id }}">{{ u.real_name }}</a></td>
     <td>{{ u.username }}</td>
-    <td>[<a href="/user/{{u.id}}">Details</a>]</td>
     <td>[<a href="/reevaluate/user/{{ u.id }}">Re-evaluate</a>]</td>
   </tr>
   {% end %}
