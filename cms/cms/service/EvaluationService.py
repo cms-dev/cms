@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Evaluation server. It takes care of receiving submissions from the
+"""Evaluation service. It takes care of receiving submissions from the
 contestants, transforming them in jobs (compilation, execution, ...),
 queuing them with the right priority, and dispatching them to the
 workers. Also, it collects the results from the workers and build the
@@ -46,10 +46,10 @@ class JobQueue:
     to process next.
 
     A job is a couple (job_type, submission_id), where job_type is a
-    constant defined in EvaluationServer.
+    constant defined in EvaluationService.
 
     Elements of the queue are of the form (priority, timestamp, job),
-    where priority is a constant defined in EvaluationServer.
+    where priority is a constant defined in EvaluationService.
 
     """
 
@@ -158,7 +158,7 @@ class WorkerPool:
     WORKER_DISABLED = "disabled"
 
     def __init__(self, service):
-        """service (Service): the EvaluationServer using this
+        """service (Service): the EvaluationService using this
         WorkerPool.
 
         """
@@ -257,12 +257,12 @@ class WorkerPool:
                     (shard, action, submission_id, queue_time))
         logger.debug("Still %d jobs in the queue" %
                      self.service.queue.length())
-        if action == EvaluationServer.JOB_TYPE_COMPILATION:
+        if action == EvaluationService.JOB_TYPE_COMPILATION:
             self.worker[shard].compile(
                 submission_id=submission_id,
                 callback=self.service.action_finished.im_func,
                 plus=(job, side_data, shard))
-        elif action == EvaluationServer.JOB_TYPE_EVALUATION:
+        elif action == EvaluationService.JOB_TYPE_EVALUATION:
             self.worker[shard].evaluate(
                 submission_id=submission_id,
                 callback=self.service.action_finished.im_func,
@@ -371,7 +371,7 @@ class WorkerPool:
             if self.start_time[shard] is not None:
                 active_for = now - self.start_time[shard]
 
-                if active_for > EvaluationServer.WORKER_TIMEOUT:
+                if active_for > EvaluationService.WORKER_TIMEOUT:
                     # Here shard is a working worker with no sign of
                     # intelligent life for too much time.
                     logger.error("Disabling and shutting down "
@@ -416,8 +416,8 @@ class WorkerPool:
 
         return lost_jobs
 
-class EvaluationServer(Service):
-    """Evaluation server.
+class EvaluationService(Service):
+    """Evaluation service.
 
     """
 
@@ -446,7 +446,7 @@ class EvaluationServer(Service):
     CHECK_DISPATCH_TIME = 2.0
 
     def __init__(self, shard, contest_id):
-        logger.initialize(ServiceCoord("EvaluationServer", shard))
+        logger.initialize(ServiceCoord("EvaluationService", shard))
         Service.__init__(self, shard)
 
         self.contest_id = contest_id
@@ -467,13 +467,13 @@ class EvaluationServer(Service):
             self.pool.add_worker(worker)
 
         self.add_timeout(self.dispatch_jobs, None,
-                         EvaluationServer.CHECK_DISPATCH_TIME,
+                         EvaluationService.CHECK_DISPATCH_TIME,
                          immediately=True)
         self.add_timeout(self.check_workers_timeout, None,
-                         EvaluationServer.WORKER_TIMEOUT_CHECK_TIME,
+                         EvaluationService.WORKER_TIMEOUT_CHECK_TIME,
                          immediately=False)
         self.add_timeout(self.check_workers_connection, None,
-                         EvaluationServer.WORKER_CONNECTION_CHECK_TIME,
+                         EvaluationService.WORKER_CONNECTION_CHECK_TIME,
                          immediately=False)
 
         # Submit to compilation all the submissions already in DB
@@ -566,7 +566,7 @@ class EvaluationServer(Service):
                         stats["compilation_fail"] += 1
                     elif s.compilation_outcome == None:
                         if s.compilation_tries >= \
-                               EvaluationServer.MAX_COMPILATION_TRIES:
+                               EvaluationService.MAX_COMPILATION_TRIES:
                             stats["max_compilations"] += 1
                         else:
                             stats["compiling"] += 1
@@ -575,7 +575,7 @@ class EvaluationServer(Service):
                             stats["evaluated"] += 1
                         else:
                             if s.evaluation_tries >= \
-                                   EvaluationServer.MAX_EVALUATION_TRIES:
+                                   EvaluationService.MAX_EVALUATION_TRIES:
                                 stats["max_evaluations"] += 1
                             else:
                                 stats["evaluating"] += 1
@@ -665,9 +665,9 @@ class EvaluationServer(Service):
                                 "%s in the database" % submission_id)
                 return
 
-            if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
+            if job_type == EvaluationService.JOB_TYPE_COMPILATION:
                 submission.compilation_tries += 1
-            if job_type == EvaluationServer.JOB_TYPE_EVALUATION:
+            if job_type == EvaluationService.JOB_TYPE_EVALUATION:
                 submission.evaluation_tries += 1
             compilation_tries = submission.compilation_tries
             compilation_outcome = submission.compilation_outcome
@@ -677,7 +677,7 @@ class EvaluationServer(Service):
             session.commit()
 
         # Compilation
-        if job_type == EvaluationServer.JOB_TYPE_COMPILATION:
+        if job_type == EvaluationService.JOB_TYPE_COMPILATION:
             self.compilation_ended(submission_id,
                                    timestamp,
                                    compilation_tries,
@@ -685,7 +685,7 @@ class EvaluationServer(Service):
                                    tokened)
 
         # Evaluation
-        elif job_type == EvaluationServer.JOB_TYPE_EVALUATION:
+        elif job_type == EvaluationService.JOB_TYPE_EVALUATION:
             self.evaluation_ended(submission_id,
                                   timestamp,
                                   evaluation_tries,
@@ -713,10 +713,10 @@ class EvaluationServer(Service):
         """
         # Compilation was ok, so we evaluate.
         if compilation_outcome == "ok":
-            priority = EvaluationServer.JOB_PRIORITY_LOW
+            priority = EvaluationService.JOB_PRIORITY_LOW
             if tokened:
-                priority = EvaluationServer.JOB_PRIORITY_MEDIUM
-            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
+                priority = EvaluationService.JOB_PRIORITY_MEDIUM
+            self.queue.push((EvaluationService.JOB_TYPE_EVALUATION,
                              submission_id), priority, timestamp)
         # If instead submission failed compilation, we don't evaluate.
         elif compilation_outcome == "fail":
@@ -724,16 +724,16 @@ class EvaluationServer(Service):
                         "to evaluate." % submission_id)
         # If compilation failed for our fault, we requeue or not.
         elif compilation_outcome is None:
-            if compilation_tries > EvaluationServer.MAX_COMPILATION_TRIES:
+            if compilation_tries > EvaluationService.MAX_COMPILATION_TRIES:
                 logger.error("Maximum tries reached for the "
                              "compilation of submission %s. I will "
                              "not try again" % submission_id)
             else:
                 # Note: lower priority (MEDIUM instead of HIGH) for
                 # compilation that are probably failing again.
-                self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION,
+                self.queue.push((EvaluationService.JOB_TYPE_COMPILATION,
                                  submission_id),
-                                EvaluationServer.JOB_PRIORITY_MEDIUM,
+                                EvaluationService.JOB_PRIORITY_MEDIUM,
                                 timestamp)
         # Otherwise, error.
         else:
@@ -760,11 +760,11 @@ class EvaluationServer(Service):
         if evaluated:
             self.SS.new_evaluation(submission_id=submission_id)
         # Evaluation unsuccessful, we requeue (or not).
-        elif evaluation_tries <= EvaluationServer.MAX_EVALUATION_TRIES:
-            priority = EvaluationServer.JOB_PRIORITY_LOW
+        elif evaluation_tries <= EvaluationService.MAX_EVALUATION_TRIES:
+            priority = EvaluationService.JOB_PRIORITY_LOW
             if tokened:
-                priority = EvaluationServer.JOB_PRIORITY_MEDIUM
-            self.queue.push((EvaluationServer.JOB_TYPE_EVALUATION,
+                priority = EvaluationService.JOB_PRIORITY_MEDIUM
+            self.queue.push((EvaluationService.JOB_TYPE_EVALUATION,
                              submission_id), priority, timestamp)
         else:
             logger.error("Maximum tries reached for the "
@@ -796,9 +796,9 @@ class EvaluationServer(Service):
             # If not compiled, I compile. Note that we give here a
             # chance for submissions that already have too many
             # compilation tries.
-            self.queue.push((EvaluationServer.JOB_TYPE_COMPILATION,
+            self.queue.push((EvaluationService.JOB_TYPE_COMPILATION,
                              submission_id),
-                            EvaluationServer.JOB_PRIORITY_HIGH,
+                            EvaluationService.JOB_PRIORITY_HIGH,
                             timestamp)
         else:
             if not evaluated:
@@ -825,9 +825,9 @@ class EvaluationServer(Service):
 
         """
         try:
-            self.queue.set_priority((EvaluationServer.JOB_TYPE_EVALUATION,
+            self.queue.set_priority((EvaluationService.JOB_TYPE_EVALUATION,
                                      submission_id),
-                                    EvaluationServer.JOB_PRIORITY_MEDIUM)
+                                    EvaluationService.JOB_PRIORITY_MEDIUM)
             logger.info("Increased priority of evaluation of submission "
                         "%s due to token." % submission_id)
         except LookupError:
@@ -840,8 +840,8 @@ def main():
     if len(sys.argv) < 2:
         print sys.argv[0], "shard [contest]"
     else:
-        EvaluationServer(int(sys.argv[1]),
-                         ask_for_contest(1)).run()
+        EvaluationService(int(sys.argv[1]),
+                          ask_for_contest(1)).run()
 
 
 if __name__ == "__main__":

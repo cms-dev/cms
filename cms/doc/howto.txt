@@ -71,7 +71,7 @@ $ ./contrib/ContestImporter.py -s 0 /path/to/contest/
 
 After the importer ended, you can run the other services with:
 $ ./cms/service/Worker.py 0
-$ ./cms/service/EvaluationServer.py 0
+$ ./cms/service/EvaluationService.py 0
 $ ./cms/server/ContestWebServer.py 0
 $ ./cms/server/AdminWebServer.py 0
 The middle two are contest-dependent, hence they are going to ask you
@@ -120,7 +120,7 @@ $ cmsContestImporter -s 0 /path/to/contest/
 
 After the importer ended, you can run the other services with:
 $ cmsWorker 0
-$ cmsEvaluationServer 0
+$ cmsEvaluationService 0
 $ cmsContestWebServer 0
 $ cmsAdminWebServer 0
 The middle two are contest-dependent, hence they are going to ask you

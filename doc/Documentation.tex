@@ -83,7 +83,7 @@
   \item Worker (\WS{}): can run compilation, evaluation and
     grading processes on the submissions in a safe and fair
     environment;
-  \item Evaluation Server (\ES{}): builds a queue of jobs to do on the
+  \item Evaluation Service (\ES{}): builds a queue of jobs to do on the
     submissions and distribute them to the \WS{}'s;
   \item Scoring Service (\SS{}): transforms the output of the grader
     to an actual score of the submissions, and manages the ranking;
@@ -272,9 +272,9 @@
   \item \id{shut\_down}: switch off the worker.
   \end{squishlist}
 
-  \subsection{Evaluation Server}
+  \subsection{Evaluation Service}
 
-  Evaluation Server's goal is to transform submissions coming from the
+  Evaluation Service's goal is to transform submissions coming from the
   contestants in evaluated submissions. It maintains a queue of jobs,
   that can be compilations or evaluations of a submission, ranked by
   priority (usually compilations have more priority, then evaluation

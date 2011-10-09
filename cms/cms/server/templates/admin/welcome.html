@@ -8,11 +8,11 @@ function update_submissions_status(response)
     while (table.rows.length > 1)
         table.deleteRow(1);
     if (response['status'] == 'unconnected')
-        table.insertRow(-1).innerHTML = "<td colspan='2'>EvaluationServer not connected.</td>";
+        table.insertRow(-1).innerHTML = "<td colspan='2'>EvaluationService not connected.</td>";
     else if (response['status'] == 'not authorized')
         table.insertRow(-1).innerHTML = "<td colspan='2'>You are not authorized to see the queue status.</td>";
     else if (response['status'] == 'fail')
-        table.insertRow(-1).innerHTML = "<td colspan='2'>Call to EvaluationServer failed.</td>";
+        table.insertRow(-1).innerHTML = "<td colspan='2'>Call to EvaluationService failed.</td>";
     else if (response['status'] == 'ok')
     {
         table.insertRow(-1).innerHTML = '<td>Evaluated</td><td>' + response['data']['evaluated'] + '</td>';
@@ -39,11 +39,11 @@ function update_queue_status(response)
     while (table.rows.length > 1)
         table.deleteRow(1);
     if (response['status'] == 'unconnected')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>EvaluationServer not connected.</td>";
+        table.insertRow(-1).innerHTML = "<td colspan='5'>EvaluationService not connected.</td>";
     else if (response['status'] == 'not authorized')
         table.insertRow(-1).innerHTML = "<td colspan='5'>You are not authorized to see the queue status.</td>";
     else if (response['status'] == 'fail')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>Call to EvaluationServer failed.</td>";
+        table.insertRow(-1).innerHTML = "<td colspan='5'>Call to EvaluationService failed.</td>";
     else if (response['status'] == 'ok')
     {
         if (response['data'].length == 0)
@@ -72,11 +72,11 @@ function update_workers_status(response)
     while (table.rows.length > 1)
         table.deleteRow(1);
     if (response['status'] == 'unconnected')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>EvaluationServer not connected.</td>";
+        table.insertRow(-1).innerHTML = "<td colspan='5'>EvaluationService not connected.</td>";
     else if (response['status'] == 'not authorized')
         table.insertRow(-1).innerHTML = "<td colspan='5'>You are not authorized to see the workers status.</td>";
     else if (response['status'] == 'fail')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>Call to EvaluationServer failed.</td>";
+        table.insertRow(-1).innerHTML = "<td colspan='5'>Call to EvaluationService failed.</td>";
     else if (response['status'] == 'ok')
     {
         if (response['data'].length == 0)
@@ -152,15 +152,15 @@ function update_logs(response)
 function update_statuses()
 {
 
-    cmsrpc.request("EvaluationServer", 0,
+    cmsrpc.request("EvaluationService", 0,
                    "submissions_status",
                    {},
                    update_submissions_status);
-    cmsrpc.request("EvaluationServer", 0,
+    cmsrpc.request("EvaluationService", 0,
                    "queue_status",
                    {},
                    update_queue_status);
-    cmsrpc.request("EvaluationServer", 0,
+    cmsrpc.request("EvaluationService", 0,
                    "workers_status",
                    {},
                    update_workers_status);

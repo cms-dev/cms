@@ -40,7 +40,6 @@ from cms.db.SQLAlchemyAll import ScopedSession, \
 import cms.util.WebConfig as WebConfig
 from cms.server.Utils import file_handler_gen
 from cms.service.FileStorage import FileCacher
-from cms.service.EvaluationServer import EvaluationServer
 from cms import Config
 
 
@@ -160,7 +159,7 @@ class AdminWebServer(WebService):
                             shard=shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
         self.FC = FileCacher(self, self.FS)
-        self.ES = self.connect_to(ServiceCoord("EvaluationServer", 0))
+        self.ES = self.connect_to(ServiceCoord("EvaluationService", 0))
         self.logservice = self.connect_to(ServiceCoord("LogService", 0))
 
     def authorized_rpc(self, service, method, arguments):
@@ -173,7 +172,7 @@ class AdminWebServer(WebService):
         return (bool): True if ok, False if not authorized.
 
         """
-        if service == ServiceCoord("EvaluationServer", 0):
+        if service == ServiceCoord("EvaluationService", 0):
             if method == "submissions_status":
                 return True
             elif method == "queue_status":

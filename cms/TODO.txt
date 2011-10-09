@@ -63,7 +63,7 @@
 
 
 
-** EvaluationServer
+** EvaluationService
 
 * HIGH: Check that there are no concurrence issues, particularly in scoring
   routines.
