@@ -781,35 +781,23 @@ class SubmissionStatusHandler(BaseHandler):
         self.render("submission_snippet.html", s=submission)
 
 
-handlers = [(r"/",
-             MainHandler),
-            (r"/login",
-             LoginHandler),
-            (r"/logout",
-             LogoutHandler),
-            (r"/submission_file/([%s]+)" % get_encryption_alphabet(),
-             SubmissionFileHandler),
-            (r"/tasks/([%s]+)" % get_encryption_alphabet(),
-             TaskViewHandler),
-            (r"/tasks/([%s]+)/statement" % get_encryption_alphabet(),
-             TaskStatementViewHandler),
-            (r"/submission_status/([%s]+)" % get_encryption_alphabet(),
-             SubmissionStatusHandler),
-            (r"/usetoken",
-             UseTokenHandler),
-            (r"/submit/([%s]+)" % get_encryption_alphabet(),
-             SubmitHandler),
-            (r"/communication",
-             CommunicationHandler),
-            (r"/instructions",
-             InstructionHandler),
-            (r"/notifications",
-             NotificationsHandler),
-            (r"/question",
-             QuestionHandler),
-            (r"/stl/(.*)",
-             tornado.web.StaticFileHandler, {"path": Config.stl_path}),
-            ]
+enc_alph = get_encryption_alphabet()
+handlers = [
+    (r"/",       MainHandler),
+    (r"/login",  LoginHandler),
+    (r"/logout", LogoutHandler),
+    (r"/tasks/([%s]+)"             % enc_alph, TaskViewHandler),
+    (r"/tasks/([%s]+)/statement"   % enc_alph, TaskStatementViewHandler),
+    (r"/submission_file/([%s]+)"   % enc_alph, SubmissionFileHandler),
+    (r"/submission_status/([%s]+)" % enc_alph, SubmissionStatusHandler),
+    (r"/submit/([%s]+)"            % enc_alph, SubmitHandler),
+    (r"/usetoken",                             UseTokenHandler),
+    (r"/communication", CommunicationHandler),
+    (r"/instructions",  InstructionHandler),
+    (r"/notifications", NotificationsHandler),
+    (r"/question",      QuestionHandler),
+    (r"/stl/(.*)", tornado.web.StaticFileHandler, {"path": Config.stl_path}),
+    ]
 
 
 def main():

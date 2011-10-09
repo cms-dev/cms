@@ -211,14 +211,13 @@ class MainHandler(BaseHandler):
         self.render("welcome.html", **r_params)
 
 
-class ContestViewHandler(BaseHandler):
-    """Shows information about a specific contest.
-
-    """
-    def get(self, contest_id):
-        self.retrieve_contest(contest_id)
-        r_params = self.render_params()
-        self.render("contest.html", **r_params)
+def SimpleContestHandler(page):
+    class Cls(BaseHandler):
+        def get(self, contest_id):
+            self.retrieve_contest(contest_id)
+            r_params = self.render_params()
+            self.render(page, **r_params)
+    return Cls
 
 
 class AddContestHandler(BaseHandler):
@@ -450,16 +449,6 @@ class EditContestHandler(BaseHandler):
         self.redirect("/contest/%s" % contest_id)
 
 
-class AnnouncementsHandler(BaseHandler):
-    """Page to see and send messages to all the contestants.
-
-    """
-    def get(self, contest_id):
-        self.retrieve_contest(contest_id)
-        r_params = self.render_params()
-        self.render("announcements.html", **r_params)
-
-
 class AddAnnouncementHandler(BaseHandler):
     """Called to actually add an announcement
 
@@ -487,26 +476,6 @@ class RemoveAnnouncementHandler(BaseHandler):
         self.sql_session.delete(ann)
         self.sql_session.commit()
         self.redirect("/announcements/%s" % contest_id)
-
-
-class UserListHandler(BaseHandler):
-    """Shows the list of users participating in a contest.
-
-    """
-    def get(self, contest_id):
-        self.retrieve_contest(contest_id)
-        r_params = self.render_params()
-        self.render("userlist.html", **r_params)
-
-
-class TaskListHandler(BaseHandler):
-    """Shows the list of tasks of a contest.
-
-    """
-    def get(self, contest_id):
-        self.retrieve_contest(contest_id)
-        r_params = self.render_params()
-        self.render("tasklist.html", **r_params)
 
 
 class UserViewHandler(BaseHandler):
@@ -762,53 +731,31 @@ class NotificationsHandler(BaseHandler):
         self.write(simplejson.dumps(res))
 
 
-handlers = [(r"/",
-             MainHandler),
-            (r"/([0-9]+)",
-             MainHandler),
-            (r"/announcements/([0-9]+)",
-             AnnouncementsHandler),
-            (r"/contest/add",
-             AddContestHandler),
-            (r"/contest/([0-9]+)",
-             ContestViewHandler),
-            (r"/contest/edit/([0-9]+)",
-             EditContestHandler),
-            (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)",
-             FileFromDigestHandler),
-            (r"/task/([0-9]+)",
-             TaskViewHandler),
-            (r"/task/([0-9]+)/statement",
-             TaskStatementViewHandler),
-            (r"/reevaluate/submission/([a-zA-Z0-9_-]+)",
-             SubmissionReevaluateHandler),
-            (r"/reevaluate/user/([0-9]+)",
-             UserReevaluateHandler),
-            (r"/reevaluate/task/([0-9]+)",
-             TaskReevaluateHandler),
-            (r"/add_announcement/([0-9]+)",
-             AddAnnouncementHandler),
-            (r"/remove_announcement/([0-9]+)",
-             RemoveAnnouncementHandler),
-            (r"/submission_file/([a-zA-Z0-9_.-]+)",
-             SubmissionFileHandler),
-            (r"/user/([a-zA-Z0-9_-]+)",
-             UserViewHandler),
-            (r"/userlist/([0-9]+)",
-             UserListHandler),
-            (r"/tasklist/([0-9]+)",
-             TaskListHandler),
-            (r"/submission/([0-9]+)",
-             SubmissionViewHandler),
-            (r"/message/([a-zA-Z0-9_-]+)",
-             MessageHandler),
-            (r"/question/([a-zA-Z0-9_-]+)",
-             QuestionReplyHandler),
-            (r"/questions/([0-9]+)",
-             QuestionsHandler),
-            (r"/notifications",
-             NotificationsHandler),
-           ]
+handlers = [
+    (r"/",         MainHandler),
+    (r"/([0-9]+)", MainHandler),
+    (r"/contest/([0-9]+)",       SimpleContestHandler("contest.html")),
+    (r"/announcements/([0-9]+)", SimpleContestHandler("announcements.html")),
+    (r"/userlist/([0-9]+)",      SimpleContestHandler("userlist.html")),
+    (r"/tasklist/([0-9]+)",      SimpleContestHandler("tasklist.html")),
+    (r"/contest/add",           AddContestHandler),
+    (r"/contest/edit/([0-9]+)", EditContestHandler),
+    (r"/task/([0-9]+)",           TaskViewHandler),
+    (r"/task/([0-9]+)/statement", TaskStatementViewHandler),
+    (r"/user/([a-zA-Z0-9_-]+)",   UserViewHandler),
+    (r"/reevaluate/task/([0-9]+)",               TaskReevaluateHandler),
+    (r"/reevaluate/user/([0-9]+)",               UserReevaluateHandler),
+    (r"/reevaluate/submission/([a-zA-Z0-9_-]+)", SubmissionReevaluateHandler),
+    (r"/add_announcement/([0-9]+)",    AddAnnouncementHandler),
+    (r"/remove_announcement/([0-9]+)", RemoveAnnouncementHandler),
+    (r"/submission/([0-9]+)",                SubmissionViewHandler),
+    (r"/submission_file/([a-zA-Z0-9_.-]+)",  SubmissionFileHandler),
+    (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
+    (r"/message/([a-zA-Z0-9_-]+)",  MessageHandler),
+    (r"/question/([a-zA-Z0-9_-]+)", QuestionReplyHandler),
+    (r"/questions/([0-9]+)",        QuestionsHandler),
+    (r"/notifications",             NotificationsHandler),
+    ]
 
 
 def main():
