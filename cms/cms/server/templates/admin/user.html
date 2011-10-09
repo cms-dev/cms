@@ -113,7 +113,7 @@ function update_additional_answer(element, invoker)
           {% end %}
         </td>
         <td>
-          [<a href="/reevaluate/submission/{{s.id}}?ref={{ "/user/" + str(selected_user.id) }}">Reevaluate</a>]
+          [<a href="/reevaluate/submission/{{s.id}}?ref={{ "/user/%s" % selected_user.id }}">Reevaluate</a>]
         </td>
       </tr>
       {% end %}

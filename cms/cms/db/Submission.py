@@ -175,9 +175,9 @@ class Submission(Base):
         """
         self.compilation_outcome = None
         self.compilation_text = None
-        self.evaluation_outcome = None
-        self.evaluations = []
+        self.compilation_tries = 0
         self.executables = {}
+        self.invalid_evaluation()
 
     def invalid_evaluation(self):
         """Blank only the evaluation outcomes, so ES will reschedule
@@ -186,6 +186,7 @@ class Submission(Base):
         """
         self.evaluation_outcome = None
         self.evaluations = []
+        self.evaluation_tries = 0
 
     def play_token(self, timestamp=None):
         """Tell the submission that a token has been used.

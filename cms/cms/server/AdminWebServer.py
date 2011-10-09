@@ -669,9 +669,6 @@ class SubmissionReevaluateHandler(BaseHandler):
 
     @tornado.web.asynchronous
     def get(self, submission_id):
-
-        ref = self.get_argument("ref", "/")
-
         submission = Submission.get_from_id(submission_id, self.sql_session)
         if submission is None:
             raise tornado.web.HTTPError(404)
@@ -682,8 +679,7 @@ class SubmissionReevaluateHandler(BaseHandler):
         submission.invalid()
         self.sql_session.commit()
         self.application.service.ES.new_submission(submission_id=submission.id)
-
-        self.redirect(ref)
+        self.redirect("/submission/%s" % submission.id)
 
 
 

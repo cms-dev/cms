@@ -93,7 +93,7 @@
           {% end %}
         </td>
         <td>
-          [<a href="/reevaluate/submission/{{s.id}}?ref={{ "/task/" + str(task.id) }}">Reevaluate</a>]
+          [<a href="/reevaluate/submission/{{s.id}}?ref={{ "/task/%s" % task.id }}">Reevaluate</a>]
         </td>
       </tr>
       {% end %}
