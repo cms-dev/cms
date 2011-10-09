@@ -278,6 +278,9 @@ class FileCacher:
             self.file_storage.is_file_present(digest=digest,
                                               bind_obj=self,
                                               callback=_got_file)
+            # TODO: since we never delete files, we could just give
+            # the file without checking... and even if we delete file,
+            # what's the problem?
         else:
             self.file_storage.get_file(digest=digest,
                                        bind_obj=self,
