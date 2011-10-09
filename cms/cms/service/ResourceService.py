@@ -86,13 +86,15 @@ class ResourceService(Service):
         """
         logger.debug("ResourceService._find_proc")
         cmdline = Config.process_cmdline[:]
-        for i in range(len(cmdline)):
+        l = len(cmdline)
+        for i in range(l):
             cmdline[i] = cmdline[i].replace("%s", service.name)
             cmdline[i] = cmdline[i].replace("%d", str(service.shard))
         for proc in psutil.get_process_list():
             try:
-                if proc.cmdline == cmdline:
-                    self._services_prev_cpu_times[service] = proc.get_cpu_times()
+                if proc.cmdline[:l] == cmdline:
+                    self._services_prev_cpu_times[service] = \
+                        proc.get_cpu_times()
                     return proc
             except psutil.error.NoSuchProcess:
                 continue
@@ -162,10 +164,10 @@ class ResourceService(Service):
             except psutil.error.NoSuchProcess:
                 # If so, let us find the new one
                 proc = self._find_proc(service)
-            # If there is no new one, continue
-            if self._isnone(proc):
-                data[service] = {"running": False}
-                continue
+                # If there is no new one, continue
+                if self._isnone(proc):
+                    data[service] = {"running": False}
+                    continue
 
             try:
                 data[service]["running"] = True
