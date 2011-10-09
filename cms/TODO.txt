@@ -2,12 +2,6 @@
 
 
 
-** High priority
-
-* Test that all languages (particularly Pascal) work correctly.
-
-
-
 ** Medium priority
 
 * Remove all sync'ed RPC (e.g. there are some in Worker).
@@ -23,7 +17,6 @@
   result without open the fold. This should work with subtasks, but
   first we need to understand what are subtasks for us.
 
-* Correct the commit by root, and move to github.
 
 
 
@@ -35,19 +28,9 @@
 
 * LOW: Define appropriate UNIQUE indexes in the database.
 
-* LOW: Task and Testcase are sometimes referenced by num, instead of
-  properly using IDs.
-
 * LOW: It may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
   scorings change.
-
-* HIGH: Ensure that CWS in particular, but also everything else, does not
-  rely on the particular value of the id of the database
-  objects. E.g., we may assume that everything work as expected even
-  if we scramble all ids in the db (keeping the relations correct, of
-  course). This actually happens when we call ContestExporter and
-  ContestImporter.
 
 
 
@@ -63,21 +46,6 @@
 
 
 
-** EvaluationService
-
-* HIGH: Check that there are no concurrence issues, particularly in scoring
-  routines.
-
-* HIGH: Really, really slow to add the already evaluated submissions
-  at start. The problem is *not* related to unnecessary
-  updates. Indeed, most of the time is spent when we first mention
-  contest.rankingview.scores. Is this a sqlite issue?
-
-* MED: When starting, check that the workers are not doing anything and
-  possibly stop them / wait for them to be finished.
-
-
-
 ** Task types
 
 * HIGH: implement communication task types.
@@ -88,22 +56,12 @@
 
 ** ContestWebServer
 
-* HIGH: It _MUST_ be able to work correctly (storing submitted data)
-  even if no services other than the database and FileStorage are
-  available; if database or File Storage are missing it _MUST_ behave
-  nicely anyway, informing the user to seek assistance and without
-  crashing.
-
 * MED: concurrency: if there are more than 1 CWS, there is a (very
   slight) chance that feature such as - but not limited to - "partial
   submission filler" and "avoid frequent submissions" will not work as
   expected.
 
-* MED: auto update the "compiling" message after a submission - really
-  tedious and traffic-generating to let the user refresh.
-
-* LOW: ability to switch to submission form to send tarred
-  submissions.
+* LOW: ability to send not only zipped but also tarred submissions.
 
 * LOW: Some idea to improve the Web interface:
   - Ability to backup files.
@@ -117,7 +75,7 @@
 
 ** AdminWebServer
 
-* MED: see CWS for auto updating submissions' statuses.
+* MED: auto updating submission statuses.
 
 * LOW: show resource usage of all the boxes.
 
@@ -179,9 +137,5 @@
 
 ** setup.py
 
-* MED: Understand how to avoid the problem of files create in cmsuser
-  directories having uid of calling user instead of cmsuser. Good
-  solution should be of having cms* to be run as cmsuser, but suid
-  seems hard with scripts. Is there a +something option for
-  directories to enable this behaviour?
+* LOW: Add pyjamas building of ranking and installing the scripts.
 
