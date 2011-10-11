@@ -2,12 +2,15 @@
 
 First of all, there are some choice you can do: run it on a 32 or 64
 bit system, and use PostgreSQL or SQLite for the database. In this
-guide we restrict to the simplest case (32 bit and SQLite). For
-different choice, look at the relative guide in the documentation
-(32bit_sandbox_howto.txt and postgresql_howto.txt).
+guide we restrict to the simplest case (32 bit and SQLite). Note that
+SQLite has many shortcomings and should be used just for testing, but
+you can change to PostgreSQL after reading this introduction. The more
+advanced topics are covered in 32bit_sandbox_howto.txt and
+postgresql_howto.txt.
 
 Said that, you can run CMS in two ways: from the repository, or
-install it in the system.
+install it in the system. We strongly suggest the second as it is
+faster.
 
 WARNING!! If you're going to organize a real contest with CMS, you'll
 have to take care of proper installing anti-cheating devices on your
@@ -30,7 +33,8 @@ doc/).
 You need some dependencies (the Ubuntu packages are in brackets):
 - SQLAlchemy packages for Python (python-sqlalchemy);
 - simplejson library for Python (python-simplejson);
-- Tornado (python-tornado).
+- Tornado (>= 0.2) (python-tornado in ppa:chris-lea/python-tornado);
+- psutil (>= 0.2) (python-psutil in ppa:therve/ppa).
 
 * LOCALIZATION
 
@@ -81,14 +85,18 @@ which contest you want to load before starting.
 ** INSTALL AND RUN IT FROM THE SYSTEM
 
 If you prefer installing CMS in the system, things are a little
-easier.
+easier. Note that the installation is going to copy some file to the
+/usr/local tree and add the group cmsuser to the system. We tested the
+installation script in a standard environment, but we do not take any
+responsibility for possible damages.
 
 * DEPENDENCIES
 
 You need some dependencies (the Ubuntu packages are in brackets):
 - SQLAlchemy packages for Python (python-sqlalchemy);
 - simplejson library for Python (python-simplejson);
-- Tornado (python-tornado);
+- Tornado (>= 0.2) (python-tornado in ppa:chris-lea/python-tornado);
+- psutil (>= 0.2) (python-psutil in ppa:therve/ppa);
 - setuptools (python-setuptools).
 
 * INSTALL
@@ -98,7 +106,7 @@ $ sudo setup.py install
 
 * CONFIGURATION
 
-To configure CMS edit /usr/local/etc/cms.cong. In particular, since we
+To configure CMS edit /usr/local/etc/cms.conf. In particular, since we
 are using SQLite, you need to remove the key "database" and change
 "_database_sqlite" in "database'.
 
@@ -115,7 +123,7 @@ terminal) run the logging and file capabilities.
 $ cmsLogService 0
 $ cmsFileStorage 0
 
-This import the contest in the given directory:
+These are enough to import the contest in the given directory:
 $ cmsContestImporter -s 0 /path/to/contest/
 
 After the importer ended, you can run the other services with:
