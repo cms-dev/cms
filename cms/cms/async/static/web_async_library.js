@@ -68,6 +68,7 @@
                 }
                 catch(e)
                 {
+                    console.log(e);
                     this.__delete_request(rid);
                     cb(null, response);
                 }
@@ -121,7 +122,7 @@
                 a = a.replace("&", "%26");
                 args += "&" + i + "=" + a;
             }
-            
+
 
             this.utils.ajax_request(base_url +
                                     service + "/" +
