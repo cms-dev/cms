@@ -35,7 +35,7 @@ from tornado.web import HTTPError
 
 def valid_phase_required(func):
     """Decorator that rejects requests outside the contest phase.
-    
+
     """
     def newfunc(self, *args, **kwargs):
         if self.r_params["phase"] != 0:
@@ -124,6 +124,7 @@ def file_handler_gen(BaseClass):
             self.set_header("Content-Type", content_type)
             self.set_header("Content-Disposition",
                             "attachment; filename=\"%s\"" % filename)
+            # TODO: split this sending smaller blocks.
             self.write(data)
             self.finish()
 
