@@ -152,10 +152,12 @@ function update_logs(response)
 function update_statuses()
 {
 
+    {% if contest is not None %}
     cmsrpc.request("EvaluationService", 0,
                    "submissions_status",
                    {},
                    update_submissions_status);
+    {% end %}
     cmsrpc.request("EvaluationService", 0,
                    "queue_status",
                    {},
