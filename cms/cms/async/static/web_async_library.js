@@ -32,7 +32,7 @@
         __wait_for_answer: function(cb, rid)
         {
             var got_answer = this.__got_answer.bind(this, cb, rid)
-            this.utils.ajax_request("rpc_answer", "__rid=" + rid, got_answer);
+            this.utils.ajax_request("/rpc_answer", "__rid=" + rid, got_answer);
         },
 
         /**
@@ -112,7 +112,7 @@
             }
             else
             {
-                base_url = "rpc_request/";
+                base_url = "/rpc_request/";
                 args = "__rid=" + rid;
             }
 
@@ -122,7 +122,6 @@
                 a = a.replace("&", "%26");
                 args += "&" + i + "=" + a;
             }
-
 
             this.utils.ajax_request(base_url +
                                     service + "/" +
