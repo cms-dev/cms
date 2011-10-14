@@ -338,6 +338,44 @@
         },
 
         /**
+         * Format time as hours, minutes and seconds ago.
+         *
+         * time (int): a unix time.
+         * returns (string): nice representation of time as "x time
+         *                   ago"
+         */
+        repr_time_ago_2: function(time)
+        {
+            if (time == null)
+                return "N/A";
+            var diff = datetime = parseInt((new Date()).getTime()/1000 - time);
+            var res = "";
+
+            var s = diff % 60;
+            diff = diff - s;
+            if (s < 10 && diff > 0)
+                res = "0" + s;
+            else
+                res = "" + s;
+            if (diff == 0)
+                return res;
+            diff /= 60;
+
+            var m = diff % 60;
+            diff -= m;
+            if (m < 10 && diff > 0)
+                res = "0" + m + ":" + res;
+            else
+                res = m + ":" + res;
+            if (diff == 0)
+                return res;
+            diff /= 60;
+
+            var h = diff;
+            res = h + ":" + res;
+            return res;
+        },
+        /**
          * Return timestamp formatted as HH:MM:SS.
          *
          * timestamp (int): unix time.
