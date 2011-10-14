@@ -375,6 +375,7 @@
             res = h + ":" + res;
             return res;
         },
+
         /**
          * Return timestamp formatted as HH:MM:SS.
          *
@@ -434,6 +435,29 @@
                 return this.format_time(timestamp);
             else
                 return this.format_datetime(timestamp);
+        },
+
+        /**
+         * If the response is for a standard error (unconnected, ...)
+         * then return an appropriate message, otherwise return "".
+         *
+         * response (object): an rpc response.
+         * return (string): appropriate message or "".
+         */
+        standard_response: function(response)
+        {
+            if (response['status'] != 'ok')
+            {
+                var msg = "Unexpected reply. This should not happen.";
+                if (response['status'] == 'unconnected')
+                    msg = 'Service not connected.'
+                else if (response['status'] == 'not authorized')
+                    msg = "You are not authorized to call this method.";
+                else if (response['status'] == 'fail')
+                    msg = "Call to service failed.";
+                return msg;
+            }
+            return "";
         },
 
         switch_contest: function()

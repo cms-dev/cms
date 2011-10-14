@@ -26,7 +26,7 @@
       {% for msg in reversed(contest.announcements) %}
       <div class="notification communication">
         <div class="notification_msg">
-        
+
           <div class="announcement_remove">
             <a href="/remove_announcement/{{ msg.id }}">Remove</a>
           </div>
@@ -34,15 +34,12 @@
           <div class="notification_subject">{{ msg.subject }}</div>
           <div class="notification_text">{{ msg.text }}</div>
 
-
         </div>
       </div>
       {% end %}
     {% else %}
       No announcements.
   </div>
-
-
 
   {% end %}
   <div class="hr"></div>

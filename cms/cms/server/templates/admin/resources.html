@@ -19,16 +19,11 @@ var getters = [];
         update_resources_cb: function(response)
         {
             var table = $("#services_" + this.shard + "_table > tbody");
-            if (response['status'] != 'ok')
+            var msg = utils.standard_response(response);
+            if (msg != "")
             {
-                var msg = "Unexpected reply. This should not happen.";
-                if (response['status'] == 'unconnected')
-                    msg = 'ResourceService not connected.'
-                else if (response['status'] == 'not authorized')
-                    msg = "You are not authorized to see the resource usage.";
-                else if (response['status'] == 'fail')
-                    msg = "Call to ResourceService failed.";
                 table.html('<tr><td style="text-align: center;" colspan="7">'+ msg + '</td></tr>');
+                return;
             }
 
             var l = response['data'].length;

@@ -4,103 +4,90 @@
 
 function update_submissions_status(response)
 {
-    var table = document.getElementById("submissions_status_table");
-    while (table.rows.length > 1)
-        table.deleteRow(1);
-    if (response['status'] == 'unconnected')
-        table.insertRow(-1).innerHTML = "<td colspan='2'>EvaluationService not connected.</td>";
-    else if (response['status'] == 'not authorized')
-        table.insertRow(-1).innerHTML = "<td colspan='2'>You are not authorized to see the queue status.</td>";
-    else if (response['status'] == 'fail')
-        table.insertRow(-1).innerHTML = "<td colspan='2'>Call to EvaluationService failed.</td>";
-    else if (response['status'] == 'ok')
+    var table = $("#submissions_status_table > tbody");
+    var msg = utils.standard_response(response);
+    if (msg != "")
     {
-        table.insertRow(-1).innerHTML = '<td>Evaluated</td><td>' + response['data']['evaluated'] + '</td>';
-        if (response['data']['compilation_fail'] != 0)
-          table.insertRow(-1).innerHTML = '<td>Compilation failed</td><td>' + response['data']['compilation_fail'] + '</td>';
-        if (response['data']['compiling'] != 0)
-          table.insertRow(-1).innerHTML = '<td>Compiling...</td><td>' + response['data']['compiling'] + '</td>';
-        if (response['data']['evaluating'] != 0)
-          table.insertRow(-1).innerHTML = '<td>Evaluating...</td><td>' + response['data']['evaluating'] + '</td>';
-        if (response['data']['max_compilations'] != 0)
-          table.insertRow(-1).innerHTML = '<td>Cannot compile (please check)</td><td>' + response['data']['max_compilations'] + '</td>';
-        if (response['data']['max_evaluations'] != 0)
-          table.insertRow(-1).innerHTML = '<td>Cannot evaluate (please check)</td><td>' + response['data']['max_evaluations'] + '</td>';
-        if (response['data']['invalid'] != 0)
-          table.insertRow(-1).innerHTML = '<td>Invalid (please check)</td><td>' + response['data']['invalid'] + '</td>';
+        table.html('<tr><td style="text-align: center;" colspan="5">'+ msg + '</td></tr>');
+        return;
     }
-    else
-        table.insertRow(-1).innerHTML = "<td colspan='5'>Unexpected reply. This should not happen.</td>";
+
+    var strings = []
+    strings.push('<tr><td>Evaluated</td><td>' + response['data']['evaluated'] + '</td></tr>');
+    if (response['data']['compilation_fail'] != 0)
+        strings.push('<tr><td>Compilation failed</td><td>' + response['data']['compilation_fail'] + '</td></tr>');
+    if (response['data']['compiling'] != 0)
+        strings.push('<tr><td>Compiling...</td><td>' + response['data']['compiling'] + '</td></tr>');
+    if (response['data']['evaluating'] != 0)
+        strings.push('<tr><td>Evaluating...</td><td>' + response['data']['evaluating'] + '</td></tr>');
+    if (response['data']['max_compilations'] != 0)
+        strings.push('<tr><td>Cannot compile (please check)</td><td>' + response['data']['max_compilations'] + '</td></tr>');
+    if (response['data']['max_evaluations'] != 0)
+        strings.push('<tr><td>Cannot evaluate (please check)</td><td>' + response['data']['max_evaluations'] + '</td></tr>');
+    if (response['data']['invalid'] != 0)
+        strings.push('<tr><td>Invalid (please check)</td><td>' + response['data']['invalid'] + '</td></tr>');
+
+    table.html(strings.join(""));
 };
 
 function update_queue_status(response)
 {
-    var table = document.getElementById("queue_status_table");
-    while (table.rows.length > 1)
-        table.deleteRow(1);
-    if (response['status'] == 'unconnected')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>EvaluationService not connected.</td>";
-    else if (response['status'] == 'not authorized')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>You are not authorized to see the queue status.</td>";
-    else if (response['status'] == 'fail')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>Call to EvaluationService failed.</td>";
-    else if (response['status'] == 'ok')
+    var table = $("#queue_status_table > tbody");
+    var msg = utils.standard_response(response);
+    if (msg != "")
     {
-        if (response['data'].length == 0)
-            table.insertRow(-1).innerHTML = "<td colspan='5'>Queue empty.</td>";
-        else
-        {
-            for (var i = 0; i < response['data'].length; i++)
-            {
-                var row = table.insertRow(-1);
-                var job = utils.repr_job(response['data'][i]['job']);
-                var date = utils.repr_time_ago(response['data'][i]['timestamp']);
-                row.innerHTML = '<td>' + (i + 1) + '</td>' +
-                    '<td>' + job + '</td>' +
-                    '<td>' + response['data'][i]['priority'] + '</td>' +
-                    '<td>' + date + '</td>';
-            }
-        }
+        table.html('<tr><td style="text-align: center;" colspan="5">'+ msg + '</td></tr>');
+        return;
     }
-    else
-        table.insertRow(-1).innerHTML = "<td colspan='5'>Unexpected reply. This should not happen.</td>";
+
+    var l = response['data'].length;
+    if (l == 0)
+        table.html('<tr><td colspan="5">Queue empty.</td></tr>');
+
+    var strings = [];
+    for (var i = 0; i < l; i++)
+    {
+        var job = utils.repr_job(response['data'][i]['job']);
+        var date = utils.repr_time_ago(response['data'][i]['timestamp']);
+        strings.push('<tr><td style="text-align: center;">' + (i + 1) + '</td>');
+        strings.push('<td>' + job + '</td>');
+        strings.push('<td style="text-align: center;">' + response['data'][i]['priority'] + '</td>');
+        strings.push('<td>' + date + '</td></tr>');
+    }
+
+    table.html(strings.join(""));
 };
 
 function update_workers_status(response)
 {
-    var table = document.getElementById("workers_status_table");
-    while (table.rows.length > 1)
-        table.deleteRow(1);
-    if (response['status'] == 'unconnected')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>EvaluationService not connected.</td>";
-    else if (response['status'] == 'not authorized')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>You are not authorized to see the workers status.</td>";
-    else if (response['status'] == 'fail')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>Call to EvaluationService failed.</td>";
-    else if (response['status'] == 'ok')
+    var table = $("#workers_status_table > tbody");
+    var msg = utils.standard_response(response);
+    if (msg != "")
     {
-        if (response['data'].length == 0)
-            table.insertRow(-1).innerHTML = "<td colspan='5'>No workers found.</td>";
-        else
-        {
-            for (var i in response['data'])
-            {
-                var row = table.insertRow(-1);
-                var job = utils.repr_job(response['data'][i]['job']);
-                var start_time = utils.repr_time_ago(response['data'][i]['start_time']);
-                var connected = "Yes";
-                if (response['data'][i]['connected'] == false)
-                    connected = "No";
-                row.innerHTML = '<td>' + i + '</td>' +
-                    '<td>' + connected + '</td>' +
-                    '<td>' + response['data'][i]['error_count'] + '</td>' +
-                    '<td>' + job + '</td>' +
-                    '<td>' + start_time + '</td>';
-            }
-        }
+        table.html('<tr><td style="text-align: center;" colspan="5">'+ msg + '</td></tr>');
+        return;
     }
-    else
-        table.insertRow(-1).innerHTML = "<td colspan='5'>Unexpected reply. This should not happen.</td>";
+
+    var l = response['data'].length;
+    if (l == 0)
+        table.html('<tr><td colspan="5">No workers found.</td>');
+
+    var strings = [];
+    for (var i in response['data'])
+    {
+        var job = utils.repr_job(response['data'][i]['job']);
+        var start_time = utils.repr_time_ago(response['data'][i]['start_time']);
+        var connected = "Yes";
+        if (response['data'][i]['connected'] == false)
+            connected = "No";
+        strings.push('<tr><td style="text-align: center;">' + i + '</td>');
+        strings.push('<td style="text-align: center;">' + connected + '</td>');
+        strings.push('<td style="text-align: center;">' + response['data'][i]['error_count'] + '</td>');
+        strings.push('<td>' + job + '</td>');
+        strings.push('<td>' + start_time + '</td></tr>');
+    }
+
+    table.html(strings.join(""));
 };
 
 function link_submissions(s)
@@ -111,42 +98,36 @@ function link_submissions(s)
 
 function update_logs(response)
 {
-    var table = document.getElementById("logs_table");
-    while(table.rows.length > 1)
-        table.deleteRow(1);
-
-    if (response['status'] == 'unconnected')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>LogService not connected.</td>";
-    else if (response['status'] == 'not authorized')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>You are not authorized to see the logs.</td>";
-    else if (response['status'] == 'fail')
-        table.insertRow(-1).innerHTML = "<td colspan='5'>Call to LogService failed.</td>";
-    else if (response['status'] == 'ok')
+    var table = $("#logs_table > tbody");
+    var msg = utils.standard_response(response);
+    if (msg != "")
     {
-        if (response['data'].length == 0)
-            table.insertRow(-1).innerHTML = "<td colspan='5'>No log entries.</td>";
-        else
-        {
-            response['data'] = response['data'].reverse()
-            for (i in response['data'])
-            {
-                var row = table.insertRow(-1);
-                var message = link_submissions(response['data'][i]['message']);
-                var coord = response['data'][i]['coord'];
-                var operation = link_submissions(response['data'][i]['operation']);
-                var severity = response['data'][i]['severity'];
-                var timestamp = utils.format_time_or_date(response['data'][i]['timestamp']);
-
-                row.innerHTML = '<td>' + timestamp + '</td>' +
-                    '<td>' + severity + '</td>' +
-                    '<td>' + coord + '</td>' +
-                    '<td>' + operation + '</td>' +
-                    '<td>' + message + '</td>';
-            }
-        }
+        table.html('<tr><td style="text-align: center;" colspan="5">'+ msg + '</td></tr>');
+        return;
     }
-    else
-        table.insertRow(-1).innerHTML = "<td colspan='5'>Unexpected reply. This should not happen.</td>";
+
+    var l = response['data'].length;
+    if (l == 0)
+        table.html('<tr><td colspan="5">No log entries.</td>');
+
+    var strings = [];
+    response['data'] = response['data'].reverse()
+    for (i in response['data'])
+    {
+        var message = link_submissions(response['data'][i]['message']);
+        var coord = response['data'][i]['coord'];
+        var operation = link_submissions(response['data'][i]['operation']);
+        var severity = response['data'][i]['severity'];
+        var timestamp = utils.format_time_or_date(response['data'][i]['timestamp']);
+
+        strings.push('<tr><td>' + timestamp + '</td>');
+        strings.push('<td>' + severity + '</td>');
+        strings.push('<td>' + coord + '</td>');
+        strings.push('<td>' + operation + '</td>');
+        strings.push('<td>' + message + '</td></tr>');
+    }
+
+    table.html(strings.join(""));
 }
 
 function update_statuses()
@@ -210,9 +191,9 @@ update_statuses();
   <thead>
     <tr>
       <th style="width:10%">Id</th>
-      <th style="width:65%">Job</th>
+      <th style="width:40%">Job</th>
       <th style="width:10%">Priority</th>
-      <th style="width:15%">Since</th>
+      <th style="width:40%">Since</th>
     </tr>
   </thead>
   <tbody>
