@@ -20,7 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Service to be run once for each machine the system is running on,
-that saves the resources usage in that machine.
+that saves the resources usage in that machine. We require psutil >=
+0.2.
 
 """
 
@@ -49,7 +50,7 @@ class ResourceService(Service):
         # Floating point epoch using for precise measurement of percents
         self._last_saved_time = time.time()
         # Starting point for cpu times
-        self._prev_cpu_times = psutil.get_system_cpu_times()
+        self._prev_cpu_times = psutil.get_system_cpu_times()._asdict()
         # Sorted list of ServiceCoord running in the same machine
         self._local_services = self._find_local_services()
         self._procs = dict((service, None)
@@ -58,7 +59,7 @@ class ResourceService(Service):
             for service in self._local_services)
         self._store_resources(store=False)
 
-        self.add_timeout(self._store_resources, None, 2)
+        self.add_timeout(self._store_resources, None, 5)
 
     def _find_local_services(self):
         """Returns the services that are running on the same machine
@@ -118,7 +119,7 @@ class ResourceService(Service):
         data = {}
 
         # CPU
-        cpu_times = psutil.get_system_cpu_times()
+        cpu_times = psutil.get_system_cpu_times()._asdict()
         data["cpu"] = dict((x, int(round((cpu_times[x] -
                                           self._prev_cpu_times[x])
                                    / delta * 100.0)))
@@ -127,13 +128,8 @@ class ResourceService(Service):
         self._prev_cpu_times = cpu_times
 
         # Memory
-        try:
-            ram_cached = psutil.cached_phymem()
-            ram_buffers = psutil.phymem_buffers()
-        except AttributeError:
-            # We are in version < 0.2 of psutil
-            ram_cached = 0
-            ram_buffers = 0
+        ram_cached = psutil.cached_phymem()
+        ram_buffers = psutil.phymem_buffers()
         data["memory"] = {
             "ram_total": psutil.TOTAL_PHYMEM / 1048576.0,
             "ram_available": psutil.avail_phymem() / 1048576.0,
@@ -146,17 +142,18 @@ class ResourceService(Service):
             "swap_used": psutil.used_virtmem() / 1048576.0,
             }
 
+        data["services"] = {}
         # Details of our services
         for service in self._local_services:
-            data[service] = {}
+            d = {}
             proc = self._procs[service]
             # If we don't have a previously found process for the
             # service, we find it
-            if self._isnone(proc):
+            if proc is None:
                 proc = self._find_proc(service)
             # If we still do not find it, there is no process
-            if self._isnone(proc):
-                data[service] = {"running": False}
+            if proc is None:
+                data["services"][str(service)] = {"running": False}
                 continue
             # We have a process, but maybe it has been shut down
             try:
@@ -165,51 +162,38 @@ class ResourceService(Service):
                 # If so, let us find the new one
                 proc = self._find_proc(service)
                 # If there is no new one, continue
-                if self._isnone(proc):
-                    data[service] = {"running": False}
+                if proc is None:
+                    data["services"][str(service)] = {"running": False}
                     continue
 
             try:
-                data[service]["running"] = True
-                data[service]["since"] = self._last_saved_time - \
+                d["running"] = True
+                d["since"] = self._last_saved_time - \
                                          proc.create_time
-                data[service]["resident"], data[service]["virtual"] = \
-                    (x / 1048576.0  for x in proc.get_memory_info())
+                d["resident"], d["virtual"] = \
+                    (x / 1048576  for x in proc.get_memory_info())
                 cpu_times = proc.get_cpu_times()
-                data[service]["user"] = int(round((cpu_times[0] -
+                d["user"] = int(round((cpu_times[0] -
                     self._services_prev_cpu_times[service][0])
-                    / delta * 100.0))
-                data[service]["sys"] = int(round((cpu_times[1] -
+                    / delta * 100))
+                d["sys"] = int(round((cpu_times[1] -
                     self._services_prev_cpu_times[service][1])
-                    / delta * 100.0))
+                    / delta * 100))
                 self._services_prev_cpu_times[service] = cpu_times
                 try:
-                    data[service]["threads"] = proc.get_num_threads()
+                    d["threads"] = proc.get_num_threads()
                 except AttributeError:
-                    data[service]["threads"] = 0 # 0 = Not implemented
+                    d["threads"] = 0 # 0 = Not implemented
 
                 self._procs[service] = proc
             except psutil.error.NoSuchProcess:
-                data[service] = {"running": False}
+                d = {"running": False}
+            data["services"][str(service)] = d
 
         if store:
             self._local_store.append((now, data))
 
         return True
-
-    def _isnone(self, proc):
-        """Returns if a process is None or not. Used because psutil
-        handles badly (proc is None).
-
-        TODO: this won't be necessary when we have psutil > 0.2.0.
-
-        """
-        logger.debug("ResourceService._isnone")
-        try:
-            proc.pid
-        except:
-            return True
-        return False
 
     def _locate(self, time, start=0, end=None):
         """Perform a binary search to find the index of the first

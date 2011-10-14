@@ -10,10 +10,14 @@
     <script type="text/javascript" src="/static/utils.js"></script>
     <script type="text/javascript" src="/static/web_async_library.js"></script>
     <script type="text/javascript" src="/static/scripts.js"></script>
-
+    <script type="text/javascript" src="/static/jq/jquery-1.6.4.min.js"></script>
+    <script type="text/javascript" src="/static/jq/jquery.jqplot.min.js"></script>
+    <script type="text/javascript" src="/static/jq/jqplot.dateAxisRenderer.min.js"></script>
+    <script type="text/javascript" src="/static/jq/jqplot.enhancedLegendRenderer.min.js"></script>
     <script type="text/javascript" src="/static/sh/shCore.js"></script>
     <script type="text/javascript" src="/static/sh/shBrushCpp.js"></script>
     <script type="text/javascript" src="/static/sh/shBrushDelphi.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/jq/jquery.jqplot.min.css"/>
     <link rel="stylesheet" type="text/css" href="/static/sh/shCore.css"/>
     <link rel="stylesheet" type="text/css" href="/static/sh/shThemeDefault.css"/>
 
@@ -77,6 +81,7 @@ window.onload = init;
         <h1>Administration</h1>
         <ul class="menu">
           <li class="menu_entry"><a class="menu_link" href="/{% if contest is not None %}{{ contest.id }}{% end %}">Overview</a></li>
+          <li class="menu_entry"><a class="menu_link" href="/resources{% if contest is not None %}/{{ contest.id }}{% end %}">Resource usage</a></li>
         </ul>
         <div class="hr"></div>
         <select id="contest_selection_select" onchange="utils.switch_contest()">

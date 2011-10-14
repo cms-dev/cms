@@ -46,6 +46,7 @@ setup(name="cms",
       package_data={"cms.async":
                     [os.path.join("static", "*")],
                     "cms.server": [
+                        os.path.join("static", "jq", "*"),
                         os.path.join("static", "sh", "*"),
                         os.path.join("static", "*.*"),
                         os.path.join("templates","contest","*.*"),

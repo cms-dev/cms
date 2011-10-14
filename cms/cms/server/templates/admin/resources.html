@@ -1,0 +1,281 @@
+{% extends base.html %}
+
+{% block js %}
+
+var getters = [];
+
+(function() {
+
+    RSgetter = function(shard, plotOptions)
+    {
+        this.shard = shard;
+        this.last_time = {{ timestamp }} - 60 * 11;
+        this.first = true;
+    }
+
+    RSgetter.prototype =
+    {
+
+        update_resources_cb: function(response)
+        {
+            var table = $("#services_" + this.shard + "_table > tbody");
+            if (response['status'] != 'ok')
+            {
+                var msg = "Unexpected reply. This should not happen.";
+                if (response['status'] == 'unconnected')
+                    msg = 'ResourceService not connected.'
+                else if (response['status'] == 'not authorized')
+                    msg = "You are not authorized to see the resource usage.";
+                else if (response['status'] == 'fail')
+                    msg = "Call to ResourceService failed.";
+                table.html('<tr><td style="text-align: center;" colspan="7">'+ msg + '</td></tr>');
+            }
+
+            var l = response['data'].length;
+            if (l == 0)
+                return;
+
+            this.last_time = response['data'][l-1][0];
+            if (this.first)
+            {
+                // CPU
+                this.cpu_graph = $.jqplot("cpu_" + this.shard, [[[-1, -1]], [[-1, -1]], [[-1, -1]]], plotOptions);
+                this.cpu_graph.series[0].label = "User";
+                this.cpu_graph.series[1].label = "System";
+                this.cpu_graph.series[2].label = "I/O";
+                for (var i = 0; i < this.cpu_graph.series.length; i++)
+                    this.cpu_graph.series[i].data.length = 0;
+                this.num_cpu = response['data'][0][1]['cpu']['num_cpu'];
+                this.cpu_graph.axes.yaxis.min = 0;
+                this.cpu_graph.axes.yaxis.max = this.num_cpu * 100;
+                this.cpu_graph.axes.yaxis.ticks = [];
+                var ytick = 0;
+                while (ytick <= this.num_cpu * 100)
+                {
+                    this.cpu_graph.axes.yaxis.ticks.push(ytick);
+                    ytick += 50;
+                }
+                // Memory
+                this.memory_graph = $.jqplot("memory_" + this.shard, [[[-1, -1]], [[-1, -1]], [[-1, -1]]], plotOptions);
+                this.memory_graph.series[0].label = "Used";
+                this.memory_graph.series[1].label = "Buffers";
+                this.memory_graph.series[2].label = "Cache";
+                for (var i = 0; i < this.memory_graph.series.length; i++)
+                    this.memory_graph.series[i].data.length = 0;
+                this.ram_total = response['data'][0][1]['memory']['ram_total'];
+                this.memory_graph.axes.yaxis.min = 0;
+                this.memory_graph.axes.yaxis.max = this.ram_total;
+                this.memory_graph.axes.yaxis.ticks = [];
+                ytick = 0;
+                while (ytick + 100 <= this.ram_total)
+                {
+                    this.memory_graph.axes.yaxis.ticks.push(ytick);
+                    ytick += 512;
+                }
+                this.memory_graph.axes.yaxis.ticks.push(this.ram_total);
+                // Swap
+                this.swap_graph = $.jqplot("swap_" + this.shard, [[[-1, -1]]], plotOptions);
+                this.swap_graph.series[0].label = "Used";
+                for (var i = 0; i < this.swap_graph.series.length; i++)
+                    this.swap_graph.series[i].data.length = 0;
+                this.swap_total = response['data'][0][1]['memory']['swap_total'];
+                this.swap_graph.axes.yaxis.min = 0;
+                this.swap_graph.axes.yaxis.max = this.ram_total;
+                this.swap_graph.axes.yaxis.ticks = [];
+                ytick = 0;
+                while (ytick + 100 <= this.swap_total)
+                {
+                    this.swap_graph.axes.yaxis.ticks.push(ytick);
+                    ytick += 512;
+                }
+                this.swap_graph.axes.yaxis.ticks.push(this.swap_total);
+
+                var tmp = [];
+                for (var s in response['data'][l-1][1]['services'])
+                    tmp.push([[-1, -1]]);
+            }
+            var xmin = 1000 * (this.last_time - 60*10);
+            var xmax = 1000 * this.last_time;
+            var xticks = [];
+            var xtick = this.last_time - 60*10;
+            while (xtick + 60 <= this.last_time)
+            {
+                xticks.push(1000 * xtick);
+                xtick = parseInt(xtick / 60) * 60 + 120;
+            }
+            xticks.push(1000 * this.last_time);
+
+            this.cpu_graph.axes.xaxis.ticks = xticks;
+            this.memory_graph.axes.xaxis.ticks = xticks;
+            this.swap_graph.axes.xaxis.ticks = xticks;
+            for (var i = 0; i < l; i++)
+            {
+                var t = 1000 * response['data'][i][0]
+                // CPU
+                this.cpu_graph.series[0].data.push(
+                    [t, response['data'][i][1]['cpu']['user']]);
+                this.cpu_graph.series[1].data.push(
+                    [t, response['data'][i][1]['cpu']['system']]);
+                this.cpu_graph.series[2].data.push(
+                    [t, response['data'][i][1]['cpu']['iowait']]);
+                // Memory
+                this.memory_graph.series[0].data.push(
+                    [t, response['data'][i][1]['memory']['ram_used']]);
+                this.memory_graph.series[1].data.push(
+                    [t, response['data'][i][1]['memory']['ram_buffers']]);
+                this.memory_graph.series[2].data.push(
+                    [t, response['data'][i][1]['memory']['ram_cached']]);
+                // Swap
+                this.swap_graph.series[0].data.push(
+                    [t, response['data'][i][1]['memory']['swap_used']]);
+            }
+            this.cpu_graph.replot();
+            this.memory_graph.replot();
+            this.swap_graph.replot();
+            this.first = false;
+
+            // Services
+            var strings = [];
+            var services = [];
+            for (var s in response['data'][l-1][1]['services'])
+                services.push(s);
+            services.sort();
+            for (var i = 0; i < services.length; i++)
+            {
+                var s = services[i];
+                strings.push('<tr><td>');
+                strings.push(s);
+                if (response['data'][l-1][1]['services'][s]['running'] == false)
+                    strings.push('</td><td colspan="6">Not running');
+                else
+                {
+                    strings.push('</td><td>');
+                    strings.push(utils.repr_time_ago_2((new Date()).getTime()/1000 - response['data'][l-1][1]['services'][s]['since']));
+                    strings.push('</td><td style="text-align: center;">');
+                    strings.push(response['data'][l-1][1]['services'][s]['threads']);
+                    strings.push('</td><td style="text-align: center;">');
+                    strings.push(response['data'][l-1][1]['services'][s]['resident']);
+                    strings.push('</td><td style="text-align: center;">');
+                    strings.push(response['data'][l-1][1]['services'][s]['virtual']);
+                    strings.push('</td><td style="text-align: center;">');
+                    strings.push(response['data'][l-1][1]['services'][s]['user']);
+                    strings.push('</td><td style="text-align: center;">');
+                    strings.push(response['data'][l-1][1]['services'][s]['sys']);
+                }
+                strings.push('</td></tr>');
+            }
+            table.html(strings.join(""));
+        },
+
+        update_resources: function()
+        {
+            var f = cmsutils.bind_func(this, this.update_resources_cb);
+            cmsrpc.request("ResourceService", this.shard,
+                           "get_resources",
+                           {"last_time": this.last_time},
+                           f);
+        }
+    }
+})();
+
+var plotOptions = {
+    gridPadding: {top: 1},
+    grid: {
+        shadow: false,
+        borderWidth:1.0
+    },
+    stackSeries: true,
+    axes: {
+        xaxis: {
+            renderer:$.jqplot.DateAxisRenderer,
+            tickOptions: {formatString: '%H:%M'},
+            min: 0,
+            max: 600000
+        },
+        yaxis: {
+            min: 0,
+            max: 100
+        }
+    },
+    seriesDefaults: {
+        showMarker: false,
+        fill: true,
+        shadow: false
+    },
+    legend: {
+        renderer: $.jqplot.EnhancedLegendRenderer,
+        show: true,
+        location: 'e',
+        rowSpacing: 0,
+        placement: 'outside',
+        rendererOptions: {
+            numberColumns:1
+        }
+		}
+};
+
+{% end %}
+
+{% block js_init %}
+
+for (var i = 0; i < {{ resource_shards }}; i++)
+{
+    getters[i] = new RSgetter(i, plotOptions);
+    var f = cmsutils.bind_func(getters[i], getters[i].update_resources);
+    setInterval(f, 10000);
+    getters[i].update_resources()
+
+}
+
+{% end %}
+
+{% block core %}
+
+<div class="core_title">
+  <h1>Resource usage</h1>
+</div>
+
+{% for i in xrange(resource_shards) %}
+
+<h2 id="title_machine_{{ i }}" class="toggling_on" onclick="utils.toggle_visibility('machine_{{ i }}');">Machine {{ i }} ({{ resource_addresses[i] }})</h2>
+<div id="machine_{{ i }}">
+
+<table id="services_{{ i }}_table" class="sub_table">
+  <thead>
+    <tr>
+      <th style="width: 19%">Service</th>
+      <th style="width: 13%">Uptime</th>
+      <th style="width: 10%">Threads</th>
+      <th style="width: 16%">Resident (MB)</th>
+      <th style="width: 16%">Virtual (MB)</th>
+      <th style="width: 13%">User (%)</th>
+      <th style="width: 13%">System (%)</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+
+<table>
+  <thead>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="vertical-align:top;">CPU</td>
+      <td style="padding: 1em 0.25em;"><div id="cpu_{{ i }}" style="width: 500px; height: 9.75em;"></div></td>
+    </tr>
+    <tr>
+      <td style="vertical-align:top;">Memory</td>
+      <td style="padding: 1em 0.25em;"><div id="memory_{{ i }}" style="width: 500px; height: 9.75em;"></div></td>
+    </tr>
+    <tr>
+      <td style="vertical-align:top;">Swap</td>
+      <td style="padding: 1em 0.25em;"><div id="swap_{{ i }}" style="width: 500px; height: 9.75em;"></div></td>
+    </tr>
+  </tbody>
+</table>
+
+</div>
+{% end %}
+
+{% end %}

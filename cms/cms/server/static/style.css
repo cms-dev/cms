@@ -548,3 +548,11 @@ body.admin .notifications .notification_close {
 body.admin .notifications .notification_close:hover {
     background-color: #F7CBFE;
 }
+
+
+
+
+/* HACKS */
+table.jqplot-table-legend {
+    width: auto;
+}

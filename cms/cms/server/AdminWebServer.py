@@ -32,7 +32,7 @@ import tornado.locale
 
 from cms.async.AsyncLibrary import logger, rpc_callback
 from cms.async.WebAsyncLibrary import WebService
-from cms.async import ServiceCoord
+from cms.async import ServiceCoord, get_service_shards, get_service_address
 
 from cms.db.SQLAlchemyAll import ScopedSession, \
      Contest, User, Announcement, Question, Message, Submission, File, Task
@@ -160,6 +160,9 @@ class AdminWebServer(WebService):
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
         self.FC = FileCacher(self, self.FS)
         self.ES = self.connect_to(ServiceCoord("EvaluationService", 0))
+        self.RS = []
+        for i in xrange(get_service_shards("ResourceService")):
+            self.RS.append(self.connect_to(ServiceCoord("ResourceService", i)))
         self.logservice = self.connect_to(ServiceCoord("LogService", 0))
 
     def authorized_rpc(self, service, method, arguments):
@@ -183,6 +186,11 @@ class AdminWebServer(WebService):
         if service == ServiceCoord("LogService", 0):
             if method == "last_messages":
                 return True
+
+        if service.name == "ResourceService":
+            if method == "get_resources":
+                return True
+
         # Default fallback: don't authorize.
         return False
 
@@ -218,6 +226,21 @@ def SimpleContestHandler(page):
             r_params = self.render_params()
             self.render(page, **r_params)
     return Cls
+
+
+class ResourcesHandler(BaseHandler):
+    def get(self, contest_id=None):
+        if contest_id is not None:
+            self.retrieve_contest(contest_id)
+
+        r_params = self.render_params()
+        r_params["resource_shards"] = get_service_shards("ResourceService")
+        r_params["resource_addresses"] = {}
+        for i in xrange(r_params["resource_shards"]):
+            r_params["resource_addresses"][i] = get_service_address(
+                ServiceCoord("ResourceService", i)).ip
+
+        self.render("resources.html", **r_params)
 
 
 class AddContestHandler(BaseHandler):
@@ -650,7 +673,6 @@ class SubmissionReevaluateHandler(BaseHandler):
         self.redirect("/submission/%s" % submission.id)
 
 
-
 class UserReevaluateHandler(BaseHandler):
 
     @tornado.web.asynchronous
@@ -754,6 +776,8 @@ handlers = [
     (r"/message/([a-zA-Z0-9_-]+)",  MessageHandler),
     (r"/question/([a-zA-Z0-9_-]+)", QuestionReplyHandler),
     (r"/questions/([0-9]+)",        QuestionsHandler),
+    (r"/resources",                 ResourcesHandler),
+    (r"/resources/([0-9]+)",        ResourcesHandler),
     (r"/notifications",             NotificationsHandler),
     ]
 
