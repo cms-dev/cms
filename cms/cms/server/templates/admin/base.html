@@ -29,7 +29,6 @@
 
     <script type="text/javascript">
 <!--
-var util;
 function init()
 {
     cmsrpc = new CMSAjaxRPC();
@@ -46,7 +45,7 @@ function init()
     setInterval(cmsutils.bind_func(utils, utils.update_notifications), 15000);
     {% end %}
 
-    document.onclick = utils.hide_subpage;
+    $(document).click(utils.hide_subpage);
     $('.toggling_on').click(utils.toggle_visibility);
     $('.toggling_off').click(utils.toggle_visibility);
 
@@ -57,12 +56,11 @@ function init()
 
 $(document).ready(init);
 
+//-->
     </script>
   </head>
   <body class="admin">
     <div id="global">
-
-      {% comment include loginbar.html %}
       <div id="sidebar">
         <h1>Administration</h1>
         <ul class="menu">

@@ -10,7 +10,7 @@
 {{ _("Compiling...") }}
 {% else %}
 
-<div id="title_evaluation_{{ encrypted_id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ encrypted_id }}');">
+<div id="title_evaluation_{{ encrypted_id }}" class="toggling_off">
   {% if s.compilation_outcome == "fail" %}
   {{ _("Compilation failed") }}
   {% elif not s.evaluated() %}

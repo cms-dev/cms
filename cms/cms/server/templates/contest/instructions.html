@@ -2,14 +2,14 @@
 {% block core %}
 
 <h1>{{ _("Instructions") }}</h1>
-<h2 id="title_instruction_general" class="toggling_on" onclick="utils.toggle_visibility('instruction_general');">{{ _("General") }}</h2>
+<h2 id="title_instruction_general" class="toggling_on">{{ _("General") }}</h2>
 <div id="instruction_general">
   <p>{{ _("A lot of instructions about the contest.") }}</p>
   <div class="hr"></div>
 </div>
 
 
-<h2 id="title_instruction_comp" class="toggling_on" onclick="utils.toggle_visibility('instruction_comp');">{{ _("Compilation") }}</h2>
+<h2 id="title_instruction_comp" class="toggling_on">{{ _("Compilation") }}</h2>
 <div id="instruction_comp">
   <table class="nobordered">
     <tr><td><strong>{{ _("C:") }}</strong></td><td><code>{{ " ".join(Utils.get_compilation_command("c", ["task.c"], "task")) }}</code></td></tr>
@@ -20,7 +20,7 @@
 </div>
 
 
-<h2 id="title_instruction_doc" class="toggling_on" onclick="utils.toggle_visibility('instruction_doc');">{{ _("Documentation") }}</h2>
+<h2 id="title_instruction_doc" class="toggling_on">{{ _("Documentation") }}</h2>
 <div id="instruction_doc">
   <ul class="normal_list">
     <li><a href="/stl/index.html">{{ _("Standard Template Library") }}</a></li>

@@ -11,7 +11,7 @@
     <script type="text/javascript" src="/static/utils.js"></script>
     <script type="text/javascript" src="/static/web_async_library.js"></script>
     <script type="text/javascript" src="/static/scripts.js"></script>
-
+    <script type="text/javascript" src="/static/jq/jquery-1.6.4.min.js"></script>
     <script type="text/javascript" src="/static/sh/shCore.js"></script>
     <script type="text/javascript" src="/static/sh/shBrushCpp.js"></script>
     <script type="text/javascript" src="/static/sh/shBrushDelphi.js"></script>
@@ -34,18 +34,21 @@ function init()
     utils.update_notifications();
     setInterval(cmsutils.bind_func(utils, utils.update_notifications), 15000);
 
-    document.onclick = utils.hide_subpage
+    $(document).click(utils.hide_subpage);
+    $('.toggling_on').click(utils.toggle_visibility);
+    $('.toggling_off').click(utils.toggle_visibility);
+
     {% block js_init %}{% end %}
 }
 
 {% block js %}{% end %}
 
-window.onload = init;
+$(document).ready(init);
+
 //-->
     </script>
   </head>
   <body>
-
     <div id="global">
       <div id="sidebar">
         <h1>{{ contest.description }}</h1>

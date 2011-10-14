@@ -8,7 +8,7 @@ function update_submissions_status(response)
     var msg = utils.standard_response(response);
     if (msg != "")
     {
-        table.html('<tr><td style="text-align: center;" colspan="5">'+ msg + '</td></tr>');
+        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
         return;
     }
 
@@ -36,13 +36,13 @@ function update_queue_status(response)
     var msg = utils.standard_response(response);
     if (msg != "")
     {
-        table.html('<tr><td style="text-align: center;" colspan="5">'+ msg + '</td></tr>');
+        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
         return;
     }
 
     var l = response['data'].length;
     if (l == 0)
-        table.html('<tr><td colspan="5">Queue empty.</td></tr>');
+        table.html('<tr><td colspan="100">Queue empty.</td></tr>');
 
     var strings = [];
     for (var i = 0; i < l; i++)
@@ -64,13 +64,13 @@ function update_workers_status(response)
     var msg = utils.standard_response(response);
     if (msg != "")
     {
-        table.html('<tr><td style="text-align: center;" colspan="5">'+ msg + '</td></tr>');
+        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
         return;
     }
 
     var l = response['data'].length;
     if (l == 0)
-        table.html('<tr><td colspan="5">No workers found.</td>');
+        table.html('<tr><td colspan="100">No workers found.</td>');
 
     var strings = [];
     for (var i in response['data'])
@@ -102,13 +102,13 @@ function update_logs(response)
     var msg = utils.standard_response(response);
     if (msg != "")
     {
-        table.html('<tr><td style="text-align: center;" colspan="5">'+ msg + '</td></tr>');
+        table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
         return;
     }
 
     var l = response['data'].length;
     if (l == 0)
-        table.html('<tr><td colspan="5">No log entries.</td>');
+        table.html('<tr><td colspan="100">No log entries.</td>');
 
     var strings = [];
     response['data'] = response['data'].reverse()
@@ -178,6 +178,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
+      <tr><td style="text-align: center;" colspan="100"><img src="/static/loading.gif" /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -196,6 +197,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
+      <tr><td style="text-align: center;" colspan="100"><img src="/static/loading.gif" /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -214,6 +216,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
+      <tr><td style="text-align: center;" colspan="100"><img src="/static/loading.gif" /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -233,6 +236,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
+      <tr><td style="text-align: center;" colspan="100"><img src="/static/loading.gif" /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>

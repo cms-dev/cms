@@ -5,7 +5,7 @@ function submission_status_received(response, error)
     var submission_id = this;
     var evaluation = document.getElementById("evaluation_" + submission_id);
     var visibility;
-    if(evaluation == null)
+    if (evaluation == null)
         visibility = "none";
     else
         visibility = evaluation.style.display;
@@ -17,7 +17,7 @@ function submission_status_received(response, error)
         new_sub_id = cell.children[0].id.replace("submission_status_", "");
         if(document.getElementById("evaluation_" + new_sub_id) != null)
         {
-            utils.toggle_visibility("evaluation_"+new_sub_id);
+            utils.toggle_visibility("evaluation_" + new_sub_id);
         }
     }
 }
@@ -45,6 +45,10 @@ function update_submission_status()
     }
 }
 
+{% end %}
+
+{% block js_init %}
+
 setInterval(update_submission_status, 5000);
 
 {% end %}
@@ -53,7 +57,7 @@ setInterval(update_submission_status, 5000);
 
 <h1>{{ task.title }} ({{ task.name }})</h1>
 
-<h2 id="title_task_information" class="toggling_on" onclick="utils.toggle_visibility('task_information');">{{ _("Task information") }}</h2>
+<h2 id="title_task_information" class="toggling_on">{{ _("Task information") }}</h2>
 <div id="task_information">
   <div><a href="/tasks/{{ Cryptographics.encrypt_number(task.id) }}/statement">{{ _("Download task statement") }}</a></div>
 
@@ -63,7 +67,7 @@ setInterval(update_submission_status, 5000);
 </div>
 
 
-<h2 id="title_submit_solution" class="toggling_on" onclick="utils.toggle_visibility('submit_solution');">{{ _("Submit a solution") }}</h2>
+<h2 id="title_submit_solution" class="toggling_on">{{ _("Submit a solution") }}</h2>
 <div id="submit_solution">
   <table>
     <tr>
@@ -89,7 +93,7 @@ setInterval(update_submission_status, 5000);
 </div>
 
 
-<h2 id="title_previous_submissions" class="toggling_on" onclick="utils.toggle_visibility('previous_submissions');">{{ _("Previous submissions") }}</h2>
+<h2 id="title_previous_submissions" class="toggling_on">{{ _("Previous submissions") }}</h2>
 <div id="previous_submissions">
   <div class="task_tokens">
     {% set tokens_info = contest.tokens_available(current_user.username, task.name, timestamp) %}

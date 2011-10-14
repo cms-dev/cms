@@ -5,7 +5,7 @@
 
 <h1>{{ _("Contest overview") }}</h1>
 
-<h2 id="title_announcements" class="toggling_on" onclick="utils.toggle_visibility('announcements');">{{ _("Announcements") }}</h2>
+<h2 id="title_announcements" class="toggling_on">{{ _("Announcements") }}</h2>
 <div id="announcements">
   {% if contest.announcements != [] %}
   <div class="notifications">
@@ -27,7 +27,7 @@
   <div class="hr"></div>
 </div>
 
-<h2 id="title_general_information" class="toggling_on" onclick="utils.toggle_visibility('general_information');">{{ _("General information") }}</h2>
+<h2 id="title_general_information" class="toggling_on">{{ _("General information") }}</h2>
 <div id="general_information">
 
   {% if phase == 0 %}

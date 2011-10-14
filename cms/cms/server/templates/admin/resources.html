@@ -22,7 +22,7 @@ var getters = [];
             var msg = utils.standard_response(response);
             if (msg != "")
             {
-                table.html('<tr><td style="text-align: center;" colspan="7">'+ msg + '</td></tr>');
+                table.html('<tr><td style="text-align: center;" colspan="100">'+ msg + '</td></tr>');
                 return;
             }
 
@@ -141,7 +141,7 @@ var getters = [];
                 strings.push('<tr><td>');
                 strings.push(s);
                 if (response['data'][l-1][1]['services'][s]['running'] == false)
-                    strings.push('</td><td colspan="6">Not running');
+                    strings.push('</td><td colspan="100">Not running');
                 else
                 {
                     strings.push('</td><td>');
@@ -248,7 +248,8 @@ for (var i = 0; i < {{ resource_shards }}; i++)
       </tr>
     </thead>
     <tbody>
-    </tbody>
+      <tr><td style="text-align: center;" colspan="100"><img src="/static/loading.gif" /></td></tr>
+  </tbody>
   </table>
 
   <table>
