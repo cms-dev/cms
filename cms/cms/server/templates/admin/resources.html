@@ -232,44 +232,45 @@ for (var i = 0; i < {{ resource_shards }}; i++)
 
 {% for i in xrange(resource_shards) %}
 
-<h2 id="title_machine_{{ i }}" class="toggling_on" onclick="utils.toggle_visibility('machine_{{ i }}');">Machine {{ i }} ({{ resource_addresses[i] }})</h2>
+<h2 id="title_machine_{{ i }}" class="toggling_on">Machine {{ i }} ({{ resource_addresses[i] }})</h2>
 <div id="machine_{{ i }}">
 
-<table id="services_{{ i }}_table" class="sub_table">
-  <thead>
-    <tr>
-      <th style="width: 19%">Service</th>
-      <th style="width: 13%">Uptime</th>
-      <th style="width: 10%">Threads</th>
-      <th style="width: 16%">Resident (MB)</th>
-      <th style="width: 16%">Virtual (MB)</th>
-      <th style="width: 13%">User (%)</th>
-      <th style="width: 13%">System (%)</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
+  <table id="services_{{ i }}_table" class="sub_table">
+    <thead>
+      <tr>
+        <th style="width: 19%">Service</th>
+        <th style="width: 13%">Uptime</th>
+        <th style="width: 10%">Threads</th>
+        <th style="width: 16%">Resident (MB)</th>
+        <th style="width: 16%">Virtual (MB)</th>
+        <th style="width: 13%">User (%)</th>
+        <th style="width: 13%">System (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
 
-<table>
-  <thead>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="vertical-align:top;">CPU</td>
-      <td style="padding: 1em 0.25em;"><div id="cpu_{{ i }}" style="width: 500px; height: 9.75em;"></div></td>
-    </tr>
-    <tr>
-      <td style="vertical-align:top;">Memory</td>
-      <td style="padding: 1em 0.25em;"><div id="memory_{{ i }}" style="width: 500px; height: 9.75em;"></div></td>
-    </tr>
-    <tr>
-      <td style="vertical-align:top;">Swap</td>
-      <td style="padding: 1em 0.25em;"><div id="swap_{{ i }}" style="width: 500px; height: 9.75em;"></div></td>
-    </tr>
-  </tbody>
-</table>
+  <table>
+    <thead>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="vertical-align:top;">CPU</td>
+        <td style="padding: 1em 0.25em;"><div id="cpu_{{ i }}" style="width: 500px; height: 9.75em;"></div></td>
+      </tr>
+      <tr>
+        <td style="vertical-align:top;">Memory</td>
+        <td style="padding: 1em 0.25em;"><div id="memory_{{ i }}" style="width: 500px; height: 9.75em;"></div></td>
+      </tr>
+      <tr>
+        <td style="vertical-align:top;">Swap</td>
+        <td style="padding: 1em 0.25em;"><div id="swap_{{ i }}" style="width: 500px; height: 9.75em;"></div></td>
+      </tr>
+    </tbody>
+  </table>
 
+  <div class="hr"></div>
 </div>
 {% end %}
 

@@ -5,7 +5,7 @@
   <h1>{{ task.title }} ({{ task.name }})</h1>
 </div>
 
-<h2 id="title_submissions" class="toggling_on" onclick="utils.toggle_visibility('submissions');">Submissions</h2>
+<h2 id="title_submissions" class="toggling_on">Submissions</h2>
 <div id="submissions">
 
   {% if submissions == [] %}
@@ -33,7 +33,7 @@
           Compiling...
 
           {% else %}
-          <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ s.id }}');">
+          <div id="title_evaluation_{{ s.id }}" class="toggling_off">
             {% if s.compilation_outcome == "fail" %}
             Compilation failed
             {% elif not s.evaluated() %}
@@ -105,7 +105,7 @@
 <div class="hr"></div>
 
 <form enctype="multipart/form-data" action="/task/{{ task.id }}" method="POST">
-  <h2 id="title_task_information" class="toggling_on" onclick="utils.toggle_visibility('task_information');">Task information</h2>
+  <h2 id="title_task_information" class="toggling_on">Task information</h2>
   <div id="task_information">
     <table>
       <tr>
@@ -211,7 +211,7 @@
     </table>
   </div>
   <div class="hr"></div>
-  <h2 id="title_testcases" class="toggling_on" onclick="utils.toggle_visibility('testcases');">Testcases</h2>
+  <h2 id="title_testcases" class="toggling_on">Testcases</h2>
   <div id="testcases">
 
     <table class="bordered" style="text-align:center">
@@ -242,7 +242,7 @@
     </table>
   </div>
   <div class="hr"></div>
-  <h2 id="title_token_options" class="toggling_on" onclick="utils.toggle_visibility('token_options');">Token Options</h2>
+  <h2 id="title_token_options" class="toggling_on">Token Options</h2>
   <div id="token_options">
     <table>
       <tr>

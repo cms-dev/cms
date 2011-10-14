@@ -5,7 +5,7 @@
   <h1>Submission {{ s.id }}</h1>
 </div>
 
-<h2 id="title_details" class="toggling_on" onclick="utils.toggle_visibility('details');">Submission details</h2>
+<h2 id="title_details" class="toggling_on">Submission details</h2>
 <div id="details">
 
   <table class="bordered">
@@ -85,7 +85,7 @@
 
   {% if s.evaluated() %}
 
-<h2 id="title_evaluation" class="toggling_on" onclick="utils.toggle_visibility('evaluation');">Evaluation</h2>
+<h2 id="title_evaluation" class="toggling_on">Evaluation</h2>
 <div id="evaluation">
 
   <table class="bordered">
@@ -118,7 +118,7 @@
 
   {% if s.compiled() %}
 
-<h2 id="title_compilation" class="toggling_on" onclick="utils.toggle_visibility('compilation');">Compilation</h2>
+<h2 id="title_compilation" class="toggling_on">Compilation</h2>
 <div id="compilation">
 
   <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>

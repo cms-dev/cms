@@ -31,7 +31,7 @@ function update_additional_answer(element, invoker)
 
 <h1>{{ selected_user.real_name }} ({{ selected_user.username }})</h1>
 
-<h2 id="title_submissions" class="toggling_on" onclick="utils.toggle_visibility('submissions');">Submissions</h2>
+<h2 id="title_submissions" class="toggling_on">Submissions</h2>
 <div id="submissions">
 
   {% if submissions == [] %}
@@ -59,7 +59,7 @@ function update_additional_answer(element, invoker)
           Compiling...
 
           {% else %}
-          <div id="title_evaluation_{{ s.id }}" class="toggling_off" onclick="utils.toggle_visibility('evaluation_{{ s.id }}');">
+          <div id="title_evaluation_{{ s.id }}" class="toggling_off">
             {% if s.compilation_outcome == "fail" %}
             Compilation failed
             {% elif not s.evaluated() %}
@@ -124,7 +124,7 @@ function update_additional_answer(element, invoker)
 </div>
 
 
-<h2 id="title_general_info" class="toggling_on" onclick="utils.toggle_visibility('general_info');">General Information</h2>
+<h2 id="title_general_info" class="toggling_on">General Information</h2>
 <div id="general_info">
   <form action="/user/{{ selected_user.id }}" method="POST">
     <table>
@@ -157,7 +157,7 @@ function update_additional_answer(element, invoker)
 </div>
 
 
-<h2 id="title_questions" class="toggling_on" onclick="utils.toggle_visibility('questions');">Questions</h2>
+<h2 id="title_questions" class="toggling_on">Questions</h2>
 <div id="questions">
   {% if selected_user.questions != [] %}
   <div class="notifications">
@@ -210,7 +210,7 @@ function update_additional_answer(element, invoker)
 </div>
 
 
-<h2 id="title_messages" class="toggling_on" onclick="utils.toggle_visibility('messages');">Messages</h2>
+<h2 id="title_messages" class="toggling_on">Messages</h2>
 <div id="messages">
 
   <div class="notifications">

@@ -23,55 +23,41 @@
 
     {% if contest is None %}
     <title>Admin</title>
-    <script type="text/javascript">
-<!--
-var util;
-function init()
-{
-  cmsrpc = new CMSAjaxRPC();
-  cmsutils = new CMSUtils();
-  utils = new Utils({{ timestamp }}, 0, 0, -1);
-
-  document.onclick = utils.hide_subpage
-
-  {% block js_init %}{% end %}
-}
-
-{% block js %}{% end %}
-
-window.onload = init;
-//-->
-    </script>
-
     {% else %}
     <title>Admin: {{ contest.description }}</title>
+    {% end %}
 
     <script type="text/javascript">
 <!--
 var util;
 function init()
 {
-  cmsrpc = new CMSAjaxRPC();
-  cmsutils = new CMSUtils();
-  utils = new Utils({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }});
+    cmsrpc = new CMSAjaxRPC();
+    cmsutils = new CMSUtils();
+    {% if contest is None %}
+    utils = new Utils({{ timestamp }}, 0, 0, -1);
+    {% else %}
+    utils = new Utils({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }});
 
-  document.onclick = utils.hide_subpage
+    firstDate = new Date();
+    utils.get_time();
+    setInterval(cmsutils.bind_func(utils, utils.get_time), 1000);
+    utils.update_notifications();
+    setInterval(cmsutils.bind_func(utils, utils.update_notifications), 15000);
+    {% end %}
 
-  firstDate = new Date();
-  utils.get_time();
-  setInterval(cmsutils.bind_func(utils, utils.get_time), 1000);
-  utils.update_notifications();
-  setInterval(cmsutils.bind_func(utils, utils.update_notifications), 15000);
-  {% block js_init %}{% end %}
+    document.onclick = utils.hide_subpage;
+    $('.toggling_on').click(utils.toggle_visibility);
+    $('.toggling_off').click(utils.toggle_visibility);
+
+    {% block js_init %}{% end %}
 }
 
 {% block js %}{% end %}
 
-window.onload = init;
-//-->
-    </script>
-    {% end %}
+$(document).ready(init);
 
+    </script>
   </head>
   <body class="admin">
     <div id="global">

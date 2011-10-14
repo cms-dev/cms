@@ -102,25 +102,14 @@
 
         /**
          * To be added to the onclick of an element named
-         * title_XXX. Hide/show an element named XXX, and change the class
-         * of title_XXX between toggling_on and toggling_off
+         * title_XXX. Hide/show an element named XXX, and change the
+         * class of title_XXX between toggling_on and toggling_off
          */
-        toggle_visibility: function(item_id)
+        toggle_visibility: function()
         {
-            var item = document.getElementById(item_id);
-            var title = document.getElementById("title_" + item_id);
-            if (item.style.display != "none")
-            {
-                title.className = item.className.replace(/\btoggling_on\b/, '');
-                title.className += ' toggling_off';
-                item.style.display = "none"
-            }
-            else
-            {
-                title.className = item.className.replace(/\btoggling_off\b/, '');
-                title.className += ' toggling_on';
-                item.style.display = "block"
-            }
+            var title = $(this);
+            var item = $(this.id.replace("title_", "#"));
+            item.slideToggle("normal", function() {title.toggleClass("toggling_on toggling_off")});
         },
 
         /**

@@ -168,74 +168,73 @@ update_statuses();
 <span id="update_time"></span>
 
 {% if contest is not None %}
-<h2 id="title_submissions_status" class="toggling_on" onclick="utils.toggle_visibility('submissions_status');">Submissions status</h2>
+<h2 id="title_submissions_status" class="toggling_on">Submissions status</h2>
 <div id="submissions_status">
-
-<table id="submissions_status_table" class="sub_table">
-  <thead>
-    <tr>
-      <th style="width:80%">Status</th>
-      <th style="width:20%">Number</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
+  <table id="submissions_status_table" class="sub_table">
+    <thead>
+      <tr>
+        <th style="width:80%">Status</th>
+        <th style="width:20%">Number</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <div class="hr"></div>
 </div>
 {% end %}
 
-<h2 id="title_queue_status" class="toggling_on" onclick="utils.toggle_visibility('queue_status');">Queue status</h2>
+<h2 id="title_queue_status" class="toggling_on">Queue status</h2>
 <div id="queue_status">
-
-<table id="queue_status_table" class="sub_table">
-  <thead>
-    <tr>
-      <th style="width:10%">Id</th>
-      <th style="width:40%">Job</th>
-      <th style="width:10%">Priority</th>
-      <th style="width:40%">Since</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
+  <table id="queue_status_table" class="sub_table">
+    <thead>
+      <tr>
+        <th style="width:10%">Id</th>
+        <th style="width:40%">Job</th>
+        <th style="width:10%">Priority</th>
+        <th style="width:40%">Since</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <div class="hr"></div>
 </div>
 
-<h2 id="title_workers_status" class="toggling_on" onclick="utils.toggle_visibility('workers_status');">Workers status</h2>
+<h2 id="title_workers_status" class="toggling_on">Workers status</h2>
 <div id="workers_status">
-
-<table id="workers_status_table" class="sub_table">
-  <thead>
-    <tr>
-      <th style="width:15%">Shard</th>
-      <th style="width:15%">Connected</th>
-      <th style="width:15%">Errors</th>
-      <th style="width:40%">Current job</th>
-      <th style="width:15%">Since</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-
+  <table id="workers_status_table" class="sub_table">
+    <thead>
+      <tr>
+        <th style="width:15%">Shard</th>
+        <th style="width:15%">Connected</th>
+        <th style="width:15%">Errors</th>
+        <th style="width:40%">Current job</th>
+        <th style="width:15%">Since</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <div class="hr"></div>
 </div>
 
-<h2 id="title_logs" class="toggling_on" onclick="utils.toggle_visibility('logs');">Logs</h2>
+<h2 id="title_logs" class="toggling_on">Logs</h2>
 <div id="logs">
 
-<table id="logs_table" class="sub_table">
-  <thead>
-    <tr>
-      <th style="width:12%">Time</th>
-      <th style="width:10%">Severity</th>
-      <th style="width:15%">Service</th>
-      <th style="width:25%">Operation</th>
-      <th style="width:38%">Message</th>
-    </tr>
-  </thead>
-  <tbody>
-  </tbody>
-</table>
-
+  <table id="logs_table" class="sub_table">
+    <thead>
+      <tr>
+        <th style="width:12%">Time</th>
+        <th style="width:10%">Severity</th>
+        <th style="width:15%">Service</th>
+        <th style="width:25%">Operation</th>
+        <th style="width:38%">Message</th>
+      </tr>
+    </thead>
+    <tbody>
+    </tbody>
+  </table>
+  <div class="hr"></div>
 </div>
 {% end %}
