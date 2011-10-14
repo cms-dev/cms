@@ -108,7 +108,7 @@
         toggle_visibility: function()
         {
             var title = $(this);
-            var item = $(this.id.replace("title_", "#"));
+            var item = $(this.id.replace("title_", "#").replace(".", "\\."));
             item.slideToggle("normal", function() {title.toggleClass("toggling_on toggling_off")});
         },
 
