@@ -124,8 +124,17 @@ def file_handler_gen(BaseClass):
             self.set_header("Content-Type", content_type)
             self.set_header("Content-Disposition",
                             "attachment; filename=\"%s\"" % filename)
-            # TODO: split this sending smaller blocks.
-            self.write(data)
-            self.finish()
+            self.data = data
+            self.application.service.add_timeout(self._fetch_write_chunk, None, 0.01)
+
+        def _fetch_write_chunk(self, chunk_size=8192):
+            if len(self.data) > chunk_size:
+                self.write(self.data[:chunk_size])
+                self.data = self.data[chunk_size:]
+                return True
+            else:
+                self.write(self.data)
+                self.finish()
+                return False
 
     return FileHandler
