@@ -100,9 +100,8 @@
     </tbody>
   </table>
   {% end %}
+  <div class="hr"></div>
 </div>
-
-<div class="hr"></div>
 
 <form enctype="multipart/form-data" action="/task/{{ task.id }}" method="POST">
   <h2 id="title_task_information" class="toggling_on">Task information</h2>
@@ -209,8 +208,9 @@
         <td>{{ task.score_parameters }}</td>
       </tr>
     </table>
+    <div class="hr"></div>
   </div>
-  <div class="hr"></div>
+
   <h2 id="title_testcases" class="toggling_on">Testcases</h2>
   <div id="testcases">
 
@@ -240,8 +240,9 @@
         {% end %}
       </tbody>
     </table>
+    <div class="hr"></div>
   </div>
-  <div class="hr"></div>
+
   <h2 id="title_token_options" class="toggling_on">Token Options</h2>
   <div id="token_options">
     <table>
@@ -270,6 +271,7 @@
         <td><input type="text" name="token_gen_number" value="{{ task.token_gen_number if task.token_gen_number is not None else "" }}" /></td>
       </tr>
     </table>
+    <div class="hr"></div>
   </div>
   <input type="submit" value="Update" />
   <input type="reset" value="Reset" />
