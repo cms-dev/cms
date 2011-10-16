@@ -271,7 +271,7 @@ class Service:
         # Let's not spam the logs...
         # # logger.debug("Service._step")
         with async_lock:
-            asyncore.loop(0.02, True, None, 1)
+            asyncore.loop(0.02, False, None, 1)
         self._trigger()
 
     def _reconnect(self):
