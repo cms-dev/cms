@@ -26,12 +26,13 @@ import time
 import os
 import re
 import base64
-import logger
-import logging
 from operator import attrgetter
 
-import store
-import submissions
+from Config import config
+from Logger import logger
+
+import Store
+import Submissions
 
 
 def authenticated(method):
@@ -45,8 +46,8 @@ def authenticated(method):
             token = base64.b64decode(match.group(1))
             username = token.split(':')[0]
             password = ':'.join(token.split(':')[1:])
-            assert username == self.settings['username']
-            assert password == self.settings['password']
+            assert username == config.username
+            assert password == config.password
         except:
             raise tornado.web.HTTPError(401)
         return method(self, *args, **kwargs)
@@ -65,7 +66,7 @@ class DataHandler(tornado.web.RequestHandler):
     def write_error(self, status_code, **kwargs):
         if status_code == 401:
             self.set_header('WWW-Authenticate',
-                            'Basic realm="' + self.settings['pagename'] + '"')
+                            'Basic realm="' + config.realm_name + '"')
 
 def create_handler(entity_store):
     """Return a handler for the given store.
@@ -76,7 +77,7 @@ def create_handler(entity_store):
         /<root>/<entity>/(.+)   (the group matches the key of the entity)
 
     """
-    assert isinstance(entity_store, store.EntityStore)
+    assert isinstance(entity_store, Store.EntityStore)
 
     class RestHandler(DataHandler):
         @authenticated
@@ -84,10 +85,10 @@ def create_handler(entity_store):
             # create
             try:
                 entity_store.create(entity_id, self.request.body)
-            except store.InvalidKey:
+            except Store.InvalidKey:
                 raise tornado.web.HTTPError(405)
-            except store.InvalidData, exc:
-                logging.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
+            except Store.InvalidData, exc:
+                logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
                 raise tornado.web.HTTPError(400)
 
         @authenticated
@@ -95,10 +96,10 @@ def create_handler(entity_store):
             # update
             try:
                 entity_store.update(entity_id, self.request.body)
-            except store.InvalidKey:
+            except Store.InvalidKey:
                 raise tornado.web.HTTPError(404)
-            except store.InvalidData, exc:
-                logging.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
+            except Store.InvalidData, exc:
+                logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
                 raise tornado.web.HTTPError(400)
 
         @authenticated
@@ -106,7 +107,7 @@ def create_handler(entity_store):
             # delete
             try:
                 entity_store.delete(entity_id)
-            except store.InvalidKey:
+            except Store.InvalidKey:
                 raise tornado.web.HTTPError(404)
 
         def get(self, entity_id):
@@ -118,7 +119,7 @@ def create_handler(entity_store):
                 try:
                     entity = entity_store.retrieve(entity_id)
                     self.write(entity + '\n')
-                except store.InvalidKey:
+                except Store.InvalidKey:
                     raise tornado.web.HTTPError(404)
 
     return RestHandler
@@ -129,35 +130,35 @@ class MessageProxy(object):
     def __init__(self):
         self.clients = list()
 
-        store.contest_store.add_create_callback(
+        Store.contest_store.add_create_callback(
             functools.partial(self.callback, "contest", "create"))
-        store.contest_store.add_update_callback(
+        Store.contest_store.add_update_callback(
             functools.partial(self.callback, "contest", "update"))
-        store.contest_store.add_delete_callback(
+        Store.contest_store.add_delete_callback(
             functools.partial(self.callback, "contest", "delete"))
 
-        store.task_store.add_create_callback(
+        Store.task_store.add_create_callback(
             functools.partial(self.callback, "task", "create"))
-        store.task_store.add_update_callback(
+        Store.task_store.add_update_callback(
             functools.partial(self.callback, "task", "update"))
-        store.task_store.add_delete_callback(
+        Store.task_store.add_delete_callback(
             functools.partial(self.callback, "task", "delete"))
 
-        store.team_store.add_create_callback(
+        Store.team_store.add_create_callback(
             functools.partial(self.callback, "team", "create"))
-        store.team_store.add_update_callback(
+        Store.team_store.add_update_callback(
             functools.partial(self.callback, "team", "update"))
-        store.team_store.add_delete_callback(
+        Store.team_store.add_delete_callback(
             functools.partial(self.callback, "team", "delete"))
 
-        store.user_store.add_create_callback(
+        Store.user_store.add_create_callback(
             functools.partial(self.callback, "user", "create"))
-        store.user_store.add_update_callback(
+        Store.user_store.add_update_callback(
             functools.partial(self.callback, "user", "update"))
-        store.user_store.add_delete_callback(
+        Store.user_store.add_delete_callback(
             functools.partial(self.callback, "user", "delete"))
 
-        submissions.submission_store.add_callback(self.score_callback)
+        Submissions.submission_store.add_callback(self.score_callback)
 
     def callback(self, entity, event, key):
         msg = 'id: ' + str(int(time.time())) + '\n' + \
@@ -217,48 +218,62 @@ class SubmissionHandler(DataHandler):
     def post(self, entity_id):
         # create
         try:
-            submissions.submission_store.create(entity_id, json.loads(self.request.body))
-        except submissions.InvalidKey:
+            Submissions.submission_store.create(entity_id, json.loads(self.request.body))
+        except Submissions.InvalidKey:
             raise tornado.web.HTTPError(405)
-        except (ValueError, submissions.InvalidTime, submissions.InvalidData):
+        except ValueError, exc:
+            logger.error("Invalid JSON\n" + self.request.full_url(), extra={'request_body': self.request.body})
+            raise tornado.web.HTTPError(400)
+        except Submissions.InvalidTime, exc:
+            logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
+            raise tornado.web.HTTPError(400)
+        except Submissions.InvalidData, exc:
+            logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
             raise tornado.web.HTTPError(400)
 
     @authenticated
     def put(self, entity_id):
         # update
         try:
-            submissions.submission_store.update(entity_id, json.loads(self.request.body))
-        except submissions.InvalidKey:
+            Submissions.submission_store.update(entity_id, json.loads(self.request.body))
+        except Submissions.InvalidKey:
             raise tornado.web.HTTPError(404)
-        except (ValueError, submissions.InvalidTime, submissions.InvalidData):
+        except ValueError, exc:
+            logger.error("Invalid JSON\n" + self.request.full_url(), extra={'request_body': self.request.body})
+            raise tornado.web.HTTPError(400)
+        except Submissions.InvalidTime, exc:
+            logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
+            raise tornado.web.HTTPError(400)
+        except Submissions.InvalidData, exc:
+            logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
             raise tornado.web.HTTPError(400)
 
     @authenticated
     def delete(self, entity_id):
         # delete
         try:
-            submissions.submission_store.delete(entity_id)
-        except submissions.InvalidKey:
+            Submissions.submission_store.delete(entity_id)
+        except Submissions.InvalidKey:
             raise tornado.web.HTTPError(404)
 
     def get(self, entity_id):
         # retrieve
         try:
-            entity = submissions.submission_store.retrieve(entity_id)
+            entity = Submissions.submission_store.retrieve(entity_id)
             self.write(json.dumps(entity.dump()) + '\n')
-        except submissions.InvalidKey:
+        except Submissions.InvalidKey:
             raise tornado.web.HTTPError(404)
 
 
 class SubListHandler(DataHandler):
     def get(self, user_id):
-        if user_id not in store.user_store._store:
+        if user_id not in Store.user_store._store:
             self.set_status(404)
-        elif user_id not in submissions.submission_store._scores:
+        elif user_id not in Submissions.submission_store._scores:
             self.write("[]\n")
         else:
             subs = []
-            for task_id, l in submissions.submission_store._scores[user_id].iteritems():
+            for task_id, l in Submissions.submission_store._scores[user_id].iteritems():
                 for i in l._subs.itervalues():
                     s = {}
                     s['task'] = task_id
@@ -273,24 +288,24 @@ class SubListHandler(DataHandler):
 
 class HistoryHandler(DataHandler):
     def get(self):
-        self.write(json.dumps(list(submissions.get_global_history())) + '\n')
+        self.write(json.dumps(list(Submissions.get_global_history())) + '\n')
 
 
 class ScoreHandler(DataHandler):
     def get(self):
-        for u_id, user in submissions.submission_store._scores.iteritems():
+        for u_id, user in Submissions.submission_store._scores.iteritems():
             for t_id, task in user.iteritems():
                 if task.get_score() > 0:
                     self.write('%s %s %f\n' % (u_id, t_id, task.get_score()))
 
 
-if __name__ == "__main__":
+def main():
     application = tornado.web.Application(
         [
-            (r"/contests/([A-Za-z0-9_]*)", create_handler(store.contest_store)),
-            (r"/tasks/([A-Za-z0-9_]*)", create_handler(store.task_store)),
-            (r"/teams/([A-Za-z0-9_]*)", create_handler(store.team_store)),
-            (r"/users/([A-Za-z0-9_]*)", create_handler(store.user_store)),
+            (r"/contests/([A-Za-z0-9_]*)", create_handler(Store.contest_store)),
+            (r"/tasks/([A-Za-z0-9_]*)", create_handler(Store.task_store)),
+            (r"/teams/([A-Za-z0-9_]*)", create_handler(Store.team_store)),
+            (r"/users/([A-Za-z0-9_]*)", create_handler(Store.user_store)),
             (r"/subs/([A-Za-z0-9_]*)", SubmissionHandler),
             (r"/submissions/([A-Za-z0-9_]+)", SubListHandler),
             (r"/history", HistoryHandler),
@@ -298,10 +313,10 @@ if __name__ == "__main__":
             (r"/events", NotificationHandler),
             (r"/(.*)", tornado.web.StaticFileHandler,
                 dict(path=os.path.join(os.path.dirname(__file__), 'static'))),
-        ],
-        pagename='Scoreboard',
-        username='usern4me',
-        password='passw0rd')
+        ])
     # application.add_transform (tornado.web.ChunkedTransferEncoding)
-    application.listen(8890)
+    application.listen(config.port)
     tornado.ioloop.IOLoop.instance().start()
+
+if __name__ == "__main__":
+    main()

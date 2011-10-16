@@ -34,6 +34,9 @@ import logging
 import json
 import os
 
+from Config import config
+from Logger import logger
+
 
 class InvalidKey(Exception):
     """Exception raised in case of invalid key."""
@@ -289,13 +292,13 @@ class EntityStore(object):
                         self._store[ent[:-5]] = entity(json.loads(data))
         except OSError:
             # the directory doesn't exist or is inaccessible
-            logging.error("OSError occured", exc_info=True)
+            logger.error("OSError occured", exc_info=True)
         except IOError:
-            logging.error("IOError occured", exc_info=True)
+            logger.error("IOError occured", exc_info=True)
         except ValueError:
-            logging.error("Invalid JSON\n" + path + ent, extra={'request_body': data})
+            logger.error("Invalid JSON\n" + path + ent, extra={'request_body': data})
         except InvalidData, exc:
-            logging.error(str(exc) + "\n" + path + ent, extra={'request_body': data})
+            logger.error(str(exc) + "\n" + path + ent, extra={'request_body': data})
 
     def add_create_callback(self, callback):
         """Add a callback to be called when entities are created.
@@ -354,7 +357,7 @@ class EntityStore(object):
             with open(self._path + key + '.json', 'w') as f:
                 f.write(json.dumps(self._store[key].dump()))
         except IOError:
-            logging.error("IOError occured", exc_info=True)
+            logger.error("IOError occured", exc_info=True)
 
     def update(self, key, data):
         """Update an entity.
@@ -386,7 +389,7 @@ class EntityStore(object):
             with open(self._path + key + '.json', 'w') as f:
                 f.write(json.dumps(self._store[key].dump()))
         except IOError:
-            logging.error("IOError occured", exc_info=True)
+            logger.error("IOError occured", exc_info=True)
 
     def delete(self, key):
         """Delete an entity.
@@ -411,7 +414,7 @@ class EntityStore(object):
         try:
             os.remove(self._path + key + '.json')
         except OSError:
-            logging.error("OSError occured", exc_info=True)
+            logger.error("OSError occured", exc_info=True)
 
     def retrieve(self, key):
         """Retrieve an entity.
