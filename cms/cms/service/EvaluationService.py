@@ -615,6 +615,7 @@ class EvaluationService(Service):
             logger.info("Job %s for submission %s put again in the queue "
                         "because of timeout worker." % (job[0], job[1]))
             self.queue.push(job, priority, timestamp)
+        return True
 
     def check_workers_connection(self):
         """We ask WorkerPool for the unconnected workers, and we put
@@ -626,6 +627,7 @@ class EvaluationService(Service):
             logger.info("Job %s for submission %s put again in the queue "
                         "because of disconnected worker." % (job[0], job[1]))
             self.queue.push(job, priority, timestamp)
+        return True
 
     @rpc_callback
     def action_finished(self, data, plus, error=None):
