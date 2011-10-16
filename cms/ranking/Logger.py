@@ -76,7 +76,10 @@ class LogFormatter(logging.Formatter):
         else: # DEBUG
             prefix += ' %s DBG %s ' % (self.dbg_prefix, self.dbg_suffix)
 
-        formatted = prefix + record.message
+        formatted = prefix + record.message.rstrip()
+
+        if '\n' in formatted and not formatted[-1] == '\n':
+            formatted += '\n'
 
         if 'request_body' in record.__dict__:
             formatted = formatted.rstrip() + "\n\n" + record.request_body.rstrip() + "\n"

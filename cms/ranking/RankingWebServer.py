@@ -44,18 +44,28 @@ import Submissions
 def authenticated(method):
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
+        if 'Authorization' not in self.request.headers:
+            logger.error("Auth: Header is missing\n" + self.request.full_url())
+            raise tornado.web.HTTPError(401)
+        header = self.request.headers['Authorization']
+
         try:
-            header = self.request.headers['Authorization']
-            # FIXME we're assuming there's no whitespace other than the
-            # space separating the two strings. Is that correct?
-            match = re.compile('^Basic ([A-Za-z0-9+/]+={0,2})$').match(header)
+            match = re.match('^Basic[ ]+([A-Za-z0-9+/]+[=]{0,2})$', header)
+            if match is None:
+                raise Exception("Invalid header")
+            if len(match.group(1)) % 4 != 0:  # base64 tokens are 4*k chars long
+                raise Exception("Invalid header")
             token = base64.b64decode(match.group(1))
+            assert ':' in token, "Invalid header"
             username = token.split(':')[0]
             password = ':'.join(token.split(':')[1:])
-            assert username == config.username
-            assert password == config.password
-        except:
+            assert username == config.username, "Wrong username"
+            assert password == config.password, "Wrong password"
+        except Exception as e:
+            logger.error("Auth: " + str(e) + "\n" + self.request.full_url(),
+                         extra={'request_body': header})
             raise tornado.web.HTTPError(401)
+
         return method(self, *args, **kwargs)
     return wrapper
 
