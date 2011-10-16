@@ -17,240 +17,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""A module providing storage facilities for entities.
-
-It provides four EntityStore instances for the four main entity types.
-Each EntityStore provides methods to modify the data and to receive
-notifications about data updates.
-
-Entities are represented as dicts, containing the entity's properties.
-
-The EntityStores are persistent: they store the data on disk and load
-it again when the program is restared.
-
-"""
-
-import logging
-import json
-import os
-
 from Config import config
 from Logger import logger
 
+from Entity import Entity, InvalidKey, InvalidData
 
-class InvalidKey(Exception):
-    """Exception raised in case of invalid key."""
-    pass
-
-
-class InvalidData(Exception):
-    """Exception raised in case of invalid data."""
-    pass
+import json
+import os
 
 
-class _Entity(object):
-    """Base virtual class which all entities should extend.
-
-    Provide some virtual methods that other classes should implement.
-
-    """
-    def __init__(self, data):
-        """Initialize the entity.
-
-        Do some generic init-stuff and then call the load() method, which
-        should have been implemented by each entity.
-
-        data (dict): the properties of the entity
-
-        """
-        self.load(data)
-
-    def load(self, data):
-        """Validate and load the data given as argument.
-
-        Check if the dict given as argument provides all needed data, then
-        update the entity's properties with that data.
-
-        data (dict): the properties of the entity
-
-        Raise InvalidData if not able to parse the data argument.
-
-        """
-        pass
-
-    def dump(self):
-        """Return a dict with all properties of the entity.
-
-        If the returned dict is given to the load() method it should produce
-        an entity identical to this one.
-
-        return (dict): the properties of the entity
-
-        """
-        pass
-
-
-class _Contest(_Entity):
-    """The entity representing a contest.
-
-    It consists of the following properties:
-    - name (str): the human-readable name of the contest
-
-    """
-    def load(self, data):
-        """Validate and load the data given as argument.
-
-        See the description of load() in _Entity.
-
-        """
-        # validate
-        try:
-            assert type(data) is dict, "Not a dictionary"
-            assert type(data['name']) is unicode, "Field 'name' isn't a string"
-            assert type(data['begin']) is int, "Field 'begin' isn't an integer"
-            assert type(data['end']) is int, "Field 'end' isn't an integer"
-        except KeyError as field:
-            raise InvalidData('Field %s is missing' % field)
-        except AssertionError as message:
-            raise InvalidData(message)
-        # load
-        self.name = data['name']
-        self.begin = data['begin']
-        self.end = data['end']
-
-    def dump(self):
-        """Return a dict with all properties of the entity.
-
-        See the description of dump() in _Entity.
-
-        """
-        # dump
-        return self.__dict__
-
-
-class _Task(_Entity):
-    """The entity representing a task.
-
-    It consists of the following properties:
-    - name (str): the human-readable name of the task
-    - contest (str): the id of the contest the task belongs to
-    - score (float): the maximum achievable score for the task
-    - data_headers (list of str): a list with the descriptions of the extra
-        fields that will be provided with each submission for the task
-
-    """
-    def load(self, data):
-        """Validate and load the data given as argument.
-
-        See the description of load() in _Entity.
-
-        """
-        # validate
-        try:
-            assert type(data) is dict, "Not a dictionary"
-            assert type(data['name']) is unicode, "Field 'name' isn't a string"
-            assert type(data['contest']) is unicode, "Field 'contest' isn't a string"
-            assert type(data['score']) is float, "Field 'score' isn't a float"
-            assert type(data['extra_headers']) is list, "Field 'extra_headers' isn't a list of strings"
-            for i in data['extra_headers']:
-                assert type(i) is unicode, "Field 'extra_headers' isn't a list of strings"
-            assert type(data['order']) is int, "Field 'order' isn't an integer"
-        except KeyError as field:
-            raise InvalidData('Field %s is missing' % field)
-        except AssertionError as message:
-            raise InvalidData(message)
-        # load
-        self.name = data['name']
-        self.contest = data['contest']
-        self.score = data['score']
-        self.extra_headers = data['extra_headers']
-        self.order = data['order']
-
-    def dump(self):
-        """Return a dict with all properties of the entity.
-
-        See the description of dump() in _Entity.
-
-        """
-        # dump
-        return self.__dict__
-
-
-class _Team(_Entity):
-    """The entity representing a team.
-
-    It consists of the following properties:
-    - name (str): the human-readable name of the team
-
-    """
-    def load(self, data):
-        """Validate and load the data given as argument.
-
-        See the description of load() in _Entity.
-
-        """
-        # validate
-        try:
-            assert type(data) is dict, "Not a dictionary"
-            assert type(data['name']) is unicode, "Field 'name' isn't a string"
-        except KeyError as field:
-            raise InvalidData('Field %s is missing' % field)
-        except AssertionError as message:
-            raise InvalidData(message)
-        # load
-        self.name = data['name']
-
-    def dump(self):
-        """Return a dict with all properties of the entity.
-
-        See the description of dump() in _Entity.
-
-        """
-        # dump
-        return self.__dict__
-
-
-class _User(_Entity):
-    """The entity representing a user.
-
-    It consists of the following properties:
-    - f_name (str): the first name of the user
-    - l_name (str): the last name of the user
-    - team (str): the id of the team the user belongs to
-
-    """
-    def load(self, data):
-        """Validate and load the data given as argument.
-
-        See the description of load() in _Entity.
-
-        """
-        # validate
-        try:
-            assert type(data) is dict, "Not a dictionary"
-            assert type(data['f_name']) is unicode, "Field 'f_name' isn't a string"
-            assert type(data['l_name']) is unicode, "Field 'l_name' isn't a string"
-            assert type(data['team']) is unicode, "Field 'team' isn't a string"
-        except KeyError as field:
-            raise InvalidData('Field %s is missing' % field)
-        except AssertionError as message:
-            raise InvalidData(message)
-        # load
-        self.f_name = data['f_name']
-        self.l_name = data['l_name']
-        self.team = data['team']
-
-    def dump(self):
-        """Return a dict with all properties of the entity.
-
-        See the description of dump() in _Entity.
-
-        """
-        # dump
-        return self.__dict__
-
-
-class EntityStore(object):
+class Store(object):
     """A store for entities.
 
     Provide methods to perform the CRUD operations (create, retrieve, update,
@@ -260,7 +36,7 @@ class EntityStore(object):
     when something changes by providing appropriate callbacks.
 
     """
-    def __init__(self, entity, path):
+    def __init__(self, entity, dir_name):
         """Initialize an empty EntityStore.
 
         The entity definition given as argument will define what kind of
@@ -270,35 +46,40 @@ class EntityStore(object):
             be stored
 
         """
-        assert issubclass(entity, _Entity)
+        if not issubclass(entity, Entity):
+            raise ValueError("The 'entity' parameter isn't a subclass of Entity")
         self._entity = entity
-        self._path = path
+        self._path = os.path.join(config.lib_dir, dir_name)
         self._store = dict()
         self._create_callbacks = list()
         self._update_callbacks = list()
         self._delete_callbacks = list()
 
         try:
-            os.mkdir(path)
+            os.mkdir(self._path)
         except OSError:
             # it's ok: it means the directory already exists
             pass
 
         try:
-            for ent in os.listdir(path):
-                if ent[-5:] == '.json' and ent[:-5] != '':
-                    with open(path + ent, 'r') as f:
+            for name in os.listdir(self._path):
+                if name[-5:] == '.json' and name[:-5] != '':
+                    with open(os.path.join(self._path, name), 'r') as f:
                         data = f.read()
-                        self._store[ent[:-5]] = entity(json.loads(data))
+                        item = self._entity()
+                        item.load(json.loads(data))
+                        self._store[name[:-5]] = item
         except OSError:
-            # the directory doesn't exist or is inaccessible
+            # the path isn't a directory or is inaccessible
             logger.error("OSError occured", exc_info=True)
         except IOError:
             logger.error("IOError occured", exc_info=True)
         except ValueError:
-            logger.error("Invalid JSON\n" + path + ent, extra={'request_body': data})
+            logger.error("Invalid JSON\n" + os.path.join(self._path, name),
+                extra={'request_body': data})
         except InvalidData, exc:
-            logger.error(str(exc) + "\n" + path + ent, extra={'request_body': data})
+            logger.error(str(exc) + "\n" + os.path.join(self._path, name),
+                extra={'request_body': data})
 
     def add_create_callback(self, callback):
         """Add a callback to be called when entities are created.
@@ -346,7 +127,9 @@ class EntityStore(object):
             raise InvalidKey
         # create entity
         try:
-            self._store[key] = self._entity(json.loads(data))
+            item = self._entity()
+            item.set(json.loads(data))
+            self._store[key] = item
         except ValueError:
             raise InvalidData('Invalid JSON')
         # notify callbacks
@@ -354,7 +137,7 @@ class EntityStore(object):
             callback(key)
         # reflect changes on the persistent storage
         try:
-            with open(self._path + key + '.json', 'w') as f:
+            with open(os.path.join(self._path, key + '.json'), 'w') as f:
                 f.write(json.dumps(self._store[key].dump()))
         except IOError:
             logger.error("IOError occured", exc_info=True)
@@ -378,7 +161,9 @@ class EntityStore(object):
             raise InvalidKey
         # update entity
         try:
-            self._store[key] = self._entity(json.loads(data))
+            item = self._entity()
+            item.set(json.loads(data))
+            self._store[key] = item
         except ValueError:
             raise InvalidData('Invalid JSON')
         # notify callbacks
@@ -386,7 +171,7 @@ class EntityStore(object):
             callback(key)
         # reflect changes on the persistent storage
         try:
-            with open(self._path + key + '.json', 'w') as f:
+            with open(os.path.join(self._path, key + '.json'), 'w') as f:
                 f.write(json.dumps(self._store[key].dump()))
         except IOError:
             logger.error("IOError occured", exc_info=True)
@@ -412,7 +197,7 @@ class EntityStore(object):
             callback(key)
         # reflect changes on the persistent storage
         try:
-            os.remove(self._path + key + '.json')
+            os.remove(os.path.join(self._path, key + '.json'))
         except OSError:
             logger.error("OSError occured", exc_info=True)
 
@@ -431,16 +216,11 @@ class EntityStore(object):
         if not isinstance(key, unicode) or not key in self._store:
             raise InvalidKey
         # retrieve entity
-        return json.dumps(self._store[key].dump())
+        return json.dumps(self._store[key].get())
 
     def list(self):
         """List all entities."""
         result = dict()
-        for key, data in self._store.iteritems():
-            result[key] = data.dump()
+        for key, value in self._store.iteritems():
+            result[key] = value.get()
         return json.dumps(result)
-
-contest_store = EntityStore(_Contest, 'contests/')
-task_store = EntityStore(_Task, 'tasks/')
-team_store = EntityStore(_Team, 'teams/')
-user_store = EntityStore(_User, 'users/')

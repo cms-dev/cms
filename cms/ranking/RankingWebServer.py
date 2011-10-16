@@ -31,7 +31,13 @@ from operator import attrgetter
 from Config import config
 from Logger import logger
 
+from Entity import InvalidKey, InvalidData
 import Store
+import Contest
+import Task
+import Team
+import User
+
 import Submissions
 
 
@@ -77,7 +83,8 @@ def create_handler(entity_store):
         /<root>/<entity>/(.+)   (the group matches the key of the entity)
 
     """
-    assert isinstance(entity_store, Store.EntityStore)
+    if not isinstance(entity_store, Store.Store):
+        raise ValueError("The 'entity_store' parameter isn't a subclass of Store")
 
     class RestHandler(DataHandler):
         @authenticated
@@ -85,9 +92,9 @@ def create_handler(entity_store):
             # create
             try:
                 entity_store.create(entity_id, self.request.body)
-            except Store.InvalidKey:
+            except InvalidKey:
                 raise tornado.web.HTTPError(405)
-            except Store.InvalidData, exc:
+            except InvalidData, exc:
                 logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
                 raise tornado.web.HTTPError(400)
 
@@ -96,9 +103,9 @@ def create_handler(entity_store):
             # update
             try:
                 entity_store.update(entity_id, self.request.body)
-            except Store.InvalidKey:
+            except InvalidKey:
                 raise tornado.web.HTTPError(404)
-            except Store.InvalidData, exc:
+            except InvalidData, exc:
                 logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
                 raise tornado.web.HTTPError(400)
 
@@ -107,7 +114,7 @@ def create_handler(entity_store):
             # delete
             try:
                 entity_store.delete(entity_id)
-            except Store.InvalidKey:
+            except InvalidKey:
                 raise tornado.web.HTTPError(404)
 
         def get(self, entity_id):
@@ -119,7 +126,7 @@ def create_handler(entity_store):
                 try:
                     entity = entity_store.retrieve(entity_id)
                     self.write(entity + '\n')
-                except Store.InvalidKey:
+                except InvalidKey:
                     raise tornado.web.HTTPError(404)
 
     return RestHandler
@@ -130,32 +137,32 @@ class MessageProxy(object):
     def __init__(self):
         self.clients = list()
 
-        Store.contest_store.add_create_callback(
+        Contest.store.add_create_callback(
             functools.partial(self.callback, "contest", "create"))
-        Store.contest_store.add_update_callback(
+        Contest.store.add_update_callback(
             functools.partial(self.callback, "contest", "update"))
-        Store.contest_store.add_delete_callback(
+        Contest.store.add_delete_callback(
             functools.partial(self.callback, "contest", "delete"))
 
-        Store.task_store.add_create_callback(
+        Task.store.add_create_callback(
             functools.partial(self.callback, "task", "create"))
-        Store.task_store.add_update_callback(
+        Task.store.add_update_callback(
             functools.partial(self.callback, "task", "update"))
-        Store.task_store.add_delete_callback(
+        Task.store.add_delete_callback(
             functools.partial(self.callback, "task", "delete"))
 
-        Store.team_store.add_create_callback(
+        Team.store.add_create_callback(
             functools.partial(self.callback, "team", "create"))
-        Store.team_store.add_update_callback(
+        Team.store.add_update_callback(
             functools.partial(self.callback, "team", "update"))
-        Store.team_store.add_delete_callback(
+        Team.store.add_delete_callback(
             functools.partial(self.callback, "team", "delete"))
 
-        Store.user_store.add_create_callback(
+        User.store.add_create_callback(
             functools.partial(self.callback, "user", "create"))
-        Store.user_store.add_update_callback(
+        User.store.add_update_callback(
             functools.partial(self.callback, "user", "update"))
-        Store.user_store.add_delete_callback(
+        User.store.add_delete_callback(
             functools.partial(self.callback, "user", "delete"))
 
         Submissions.submission_store.add_callback(self.score_callback)
@@ -267,7 +274,7 @@ class SubmissionHandler(DataHandler):
 
 class SubListHandler(DataHandler):
     def get(self, user_id):
-        if user_id not in Store.user_store._store:
+        if user_id not in User.store._store:
             self.set_status(404)
         elif user_id not in Submissions.submission_store._scores:
             self.write("[]\n")
@@ -302,10 +309,10 @@ class ScoreHandler(DataHandler):
 def main():
     application = tornado.web.Application(
         [
-            (r"/contests/([A-Za-z0-9_]*)", create_handler(Store.contest_store)),
-            (r"/tasks/([A-Za-z0-9_]*)", create_handler(Store.task_store)),
-            (r"/teams/([A-Za-z0-9_]*)", create_handler(Store.team_store)),
-            (r"/users/([A-Za-z0-9_]*)", create_handler(Store.user_store)),
+            (r"/contests/([A-Za-z0-9_]*)", create_handler(Contest.store)),
+            (r"/tasks/([A-Za-z0-9_]*)", create_handler(Task.store)),
+            (r"/teams/([A-Za-z0-9_]*)", create_handler(Team.store)),
+            (r"/users/([A-Za-z0-9_]*)", create_handler(User.store)),
             (r"/subs/([A-Za-z0-9_]*)", SubmissionHandler),
             (r"/submissions/([A-Za-z0-9_]+)", SubListHandler),
             (r"/history", HistoryHandler),
