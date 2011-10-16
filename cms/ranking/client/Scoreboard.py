@@ -25,11 +25,16 @@ from pyjamas import DOM
 from __pyjamas__ import JS
 
 
+class omni_container(object):
+    def __contains__(self, a):
+        return True
+
+
 class Scoreboard(object):
     def __init__(self, ds, up):
         self.ds = ds
         self.up = up
-        self.expanded = set(['day1', 'day2'])
+        self.expanded = omni_container()
 
         self.tcols_el = DOM.getElementById('Scoreboard_cols')
         self.thead_el = DOM.getElementById('Scoreboard_head')
