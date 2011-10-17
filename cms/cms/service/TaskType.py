@@ -475,7 +475,10 @@ class TaskType:
             signal = self.sandbox.get_killing_signal()
             with async_lock:
                 logger.info("Execution killed with signal %d." % signal)
-            return True, 0.0, "Execution killed with signal %d." % signal
+            return True, 0.0, \
+                   "Execution killed with signal %d. " \
+                   "This could be triggered by " \
+                   "violating memory limits" % signal
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment.
