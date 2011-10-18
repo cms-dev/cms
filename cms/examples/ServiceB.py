@@ -44,7 +44,6 @@ class ServiceB(Service):
         Service.__init__(self, shard)
 
     @rpc_method
-    @rpc_threaded
     def long_rpc_method(self, string):
         """Anoter example RPC method that takes a while.
 

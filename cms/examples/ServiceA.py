@@ -27,7 +27,8 @@ file from ServiceB,0.
 import time
 
 from cms.async.AsyncLibrary import Service, rpc_callback, logger
-from cms.async import ServiceCoord
+from cms.async import ServiceCoord, make_async
+
 
 
 class ServiceA(Service):
@@ -46,28 +47,43 @@ class ServiceA(Service):
         self.ServiceB.append(self.connect_to(
                 ServiceCoord("ServiceB", 1)))
 
-        for i in xrange(10):
-            self.ServiceB[1].long_rpc_method(string="%d - %s" %
-                                             (i, str(time.time())),
-                                             callback=ServiceA.echo_callback,
-                                             plus=i)
         self.add_timeout(self.ask_for_echo, None, 4,
                          immediately=True)
-        self.t = 5
+        self.add_timeout(self.ask_for_echos, None, 100000,
+                         immediately=True)
+        self.t = 1
+
+    @make_async
+    def ask_for_echos(self):
+        """Ask all ServiceB for some fakely synchronous echos.
+
+        """
+        for i in xrange(0, 2):
+            remote_service = self.ServiceB[i]
+            try:
+                logger.info("Asking %s for yielded echo..."
+                            % str(remote_service.remote_service_coord))
+                data = yield remote_service.long_rpc_method(
+                    string=str(time.time()),
+                    timeout=True)
+                logger.info("ServiceB,%d answered yielding %s" % (i, data))
+            except Exception as e:
+                logger.error(repr(e))
 
     def ask_for_echo(self):
         """Ask all ServiceB for a echo.
 
         """
         self.t -= 1
-        if self.t <= 0: return
+        if self.t < 0:
+            self.exit()
         logger.debug("ServiceA.ask_for_echo")
         for i in xrange(0, 2):
             remote_service = self.ServiceB[i]
             if remote_service.connected:
                 logger.info("Asking %s for echo..."
                             % str(remote_service.remote_service_coord))
-                remote_service.echo(string=str(time.time()),
+                remote_service.long_rpc_method(string=str(time.time()),
                                     callback=ServiceA.echo_callback,
                                     plus=i)
             else:
