@@ -693,9 +693,9 @@ class RemoteService(asynchat.async_chat):
             return
         self._push_right(json_length + json_message + binary_message)
 
-    @make_sync
     def execute_rpc(self, method, data,
-                    callback=None, plus=None, bind_obj=None):
+                    callback=None, plus=None, bind_obj=None,
+                    timeout=None):
         """Method to send an RPC request to the remote service.
 
         The message sent to the remote service is of this kind:
@@ -717,14 +717,37 @@ class RemoteService(asynchat.async_chat):
         plus (object): additional object to be passed to the callback.
         bind_obj (object): context for the callback (None means the
                            local service).
+        timeout (int/bool): the time (in seconds) to wait for the
+                            response of a yielded call; None to signal
+                            that the call is not yielded, True to give
+                            a default value.
+
+        return (bool/dict): False if the remote service is not
+                            connected; in a non-yielded call True if
+                            it is connected; in a yielded call, a
+                            dictionary with fields 'completed',
+                            'data', and 'error'.
 
         """
         # logger.debug("RemoteService.execute_rpc")
 
+        # Sanity checks.
+        if callback is not None and timeout is not None:
+            raise ValueError("Cannot use both callback and timeout.")
+        if timeout is not None and plus is not None:
+            raise ValueError("Cannot use both timeout and plus.")
+
+        # Default timeout
+        if timeout == True:
+            timeout = 10
+
+        # Try to connect, or fail.
         if not self.connected:
             self.connect_remote_service()
             if not self.connected:
                 return False
+
+        # If we don't specify, we bind on the service.
         if bind_obj is None:
             bind_obj = self.service
 
@@ -732,6 +755,18 @@ class RemoteService(asynchat.async_chat):
         message = {}
         message["__method"] = method
         message["__data"] = data
+
+        # If timeout is valid, we are in a coroutine, and we use our
+        # callback.
+        if timeout is not None:
+            cb_result = {"data": None,
+                         "error": None,
+                         "completed": False}
+            @rpc_callback
+            def callback(self, data, error=None):
+                cb_result["data"] = data
+                cb_result["error"] = error
+                cb_result["completed"] = True
 
         # And we remember that we need to wait for a reply
         request = RPCRequest(message, bind_obj, callback, plus)
@@ -766,6 +801,13 @@ class RemoteService(asynchat.async_chat):
             request.complete({"__error": msg})
             return
 
+        if timeout is not None:
+            send_time = time.time()
+            while not cb_result["completed"] and \
+                  time.time() - send_time < timeout:
+                self.service._step()
+            return cb_result
+
         return True
 
     def __getattr__(self, method):
@@ -781,14 +823,15 @@ class RemoteService(asynchat.async_chat):
         def remote_method(callback=None,
                           plus=None,
                           bind_obj=None,
-                          sync=None,
+                          timeout=None,
                           **data):
             """Call execute_rpc with the given method name.
 
             """
             return self.execute_rpc(method=method, data=data,
-                                    callback=callback, plus=plus, bind_obj=bind_obj,
-                                    sync=sync)
+                                    callback=callback, plus=plus,
+                                    bind_obj=bind_obj,
+                                    timeout=timeout)
         return remote_method
 
     def _push_right(self, data):

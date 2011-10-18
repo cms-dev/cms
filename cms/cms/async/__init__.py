@@ -19,11 +19,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Useful classes for async.
+"""Useful classes and methods for async.
 
 """
 
 from collections import namedtuple
+from functools import wraps
 
 
 Address = namedtuple("Address", "ip port")
@@ -86,3 +87,37 @@ def get_service_shards(service):
             return i
         i += 1
 
+
+def make_async(f):
+    """Decorator to allow the use of yields in a method instead of
+    splitting the computation in several methods/callbacks. RPC calls
+    in the method are done in the same way as a normal call, but one
+    must omit the parameters 'callback' and 'plus' (because the former
+    makes no sense and the second is useless), and add the parameter
+    timeout. Note that giving a timeout is essential because otherwise
+    we don't know that the call is yielded.
+
+    """
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        generator = f(self, *args, **kwargs)
+        try:
+            result = generator.next()
+            while True:
+                new_result = None
+                if result == False:
+                    new_result = generator.throw(
+                        Exception("Service not connected"))
+                elif result["completed"] == False:
+                    new_result = generator.throw(
+                        Exception("RPC call timeout"))
+                elif result["error"] is not None:
+                    new_result = generator.throw(
+                        Exception(cb_result["error"]))
+                else:
+                    new_result = generator.send(result["data"])
+                result = new_result
+        except StopIteration:
+            return
+
+    return wrapper
