@@ -22,6 +22,10 @@ import json
 import functools
 import heapq
 
+from Config import config
+from Logger import logger
+
+
 class InvalidKey(Exception):
     """Exception raised in case of invalid key."""
     pass
@@ -190,44 +194,46 @@ class Submission(object):
         """Load the submission."""
         # validate data
         try:
-            assert type(data) is dict
-            assert type(data['time']) is int
-            assert data['time'] >= 0
-            assert type(data['_score']) is list
+            assert type(data) is dict, "Not a dictionary"
+            assert type(data['time']) is int, "Field 'time' isn't a string"
+            assert data['time'] >= 0, "Field 'time' is negative"
+            assert type(data['_score']) is list, "Field '_score' isn't a list of tuples"
             for idx, x in enumerate(data['_score']):
-                assert type(x) is list
-                assert len(x) == 2
-                assert type(x[0]) is int
-                assert type(x[1]) is float
-                assert x[1] >= 0.0
+                assert type(x) is list, "Field '_score' isn't a list of tuples"
+                assert len(x) == 2, "Field '_score' isn't a list of tuples"
+                assert type(x[0]) is int, "Field '_score' contains an incorrect tuple"
+                assert type(x[1]) is float, "Field '_score' contains an incorrect tuple"
+                assert x[1] >= 0.0, "Field '_score' contains an incorrect tuple"
                 if idx == 0:
-                    assert x[0] == data['time']
+                    assert x[0] == data['time'], "Field '_score' contains an incorrect tuple"
                 else:
-                    assert x[0] > data['_score'][idx-1][0]
-            assert type(data['_token']) is list
+                    assert x[0] > data['_score'][idx-1][0], "Field '_score' contains an incorrect tuple"
+            assert type(data['_token']) is list, "Field '_token' isn't a list of tuples"
             for idx, x in enumerate(data['_token']):
-                assert type(x) is list
-                assert len(x) == 2
-                assert type(x[0]) is int
-                assert type(x[1]) is bool
+                assert type(x) is list, "Field '_token' isn't a list of tuples"
+                assert len(x) == 2, "Field '_token' isn't a list of tuples"
+                assert type(x[0]) is int, "Field '_token' contains an incorrect tuple"
+                assert type(x[1]) is bool, "Field '_token' contains an incorrect tuple"
                 if idx == 0:
-                    assert x[0] == data['time']
+                    assert x[0] == data['time'], "Field '_token' contains an incorrect tuple"
                 else:
-                    assert x[0] > data['_token'][idx-1][0]
-            assert type(data['_extra']) is list
+                    assert x[0] > data['_token'][idx-1][0], "Field '_token' contains an incorrect tuple"
+            assert type(data['_extra']) is list, "Field '_extra' isn't a list of tuples"
             for idx, x in enumerate(data['_extra']):
-                assert type(x) is list
-                assert len(x) == 2
-                assert type(x[0]) is int
-                assert type(x[1]) is list
+                assert type(x) is list, "Field '_extra' isn't a list of tuples"
+                assert len(x) == 2, "Field '_extra' isn't a list of tuples"
+                assert type(x[0]) is int, "Field '_extra' contains an incorrect tuple"
+                assert type(x[1]) is list, "Field '_extra' contains an incorrect tuple"
                 if idx == 0:
-                    assert x[0] == data['time']
+                    assert x[0] == data['time'], "Field '_extra' contains an incorrect tuple"
                 else:
-                    assert x[0] > data['_score'][idx-1][0]
+                    assert x[0] > data['_score'][idx-1][0], "Field '_extra' contains an incorrect tuple"
                 for j in x[1]:
-                    assert type(j) is unicode
-        except (KeyError, AssertionError):
-            raise InvalidData
+                    assert type(j) is unicode, "Field '_extra' contains an incorrect tuple"
+        except KeyError as field:
+            raise InvalidData('Field %s is missing' % field)
+        except AssertionError as message:
+            raise InvalidData(message)
         self.time = data['time']
         self._score = [(x[0], x[1]) for x in data['_score']]
         self._token = [(x[0], x[1]) for x in data['_token']]
@@ -455,13 +461,16 @@ class SubmissionStore(object):
                 if name[-5:] == '.json' and name[:-5] != '':
                     with open(path + name, 'r') as f:
                         key = name[:-5]
-                        data = json.loads(f.read())
+                        content = f.read()
+                        data = json.loads(content)
                         try:
-                            assert type(data) is dict
-                            assert type(data['user']) is unicode
-                            assert type(data['task']) is unicode
-                        except (KeyError, ValueError):
-                            raise InvalidData
+                            assert type(data) is dict, "Not a dictionary"
+                            assert type(data['user']) is unicode, "Field 'user' isn't a string"
+                            assert type(data['task']) is unicode, "Field 'task' isn't a string"
+                        except KeyError as field:
+                            raise InvalidData('Field %s is missing' % field)
+                        except AssertionError as message:
+                            raise InvalidData(message)
                         user, task = data['user'], data['task']
                         if not user in self._scores:
                             self._scores[user] = dict()
@@ -473,14 +482,13 @@ class SubmissionStore(object):
                         self._scores[user][task].load(key, data)
         except OSError:
             # the directory doesn't exist or is inaccessible
-            # TODO tell it to some human operator
-            pass
+            logger.error("OSError occured", exc_info=True)
         except IOError:
-            # TODO tell it to some human operator
-            pass
-        except InvalidData:
-            # someone edited the data incorrectly
-            pass
+            logger.error("IOError occured", exc_info=True)
+        except ValueError:
+            logger.error("Invalid JSON\n" + path + name, extra={'request_body': content})
+        except InvalidData, exc:
+            logger.error(str(exc) + "\n" + path + name, extra={'request_body': content})
 
     def callback(self, user, task, score):
         for f in self._callbacks:
@@ -509,20 +517,22 @@ class SubmissionStore(object):
             raise InvalidKey
         # validate data
         try:
-            assert type(data) is dict
-            assert type(data['user']) is unicode
-            assert type(data['task']) is unicode
-            assert type(data['time']) is int  # unix timestamp
-            assert type(data['score']) is float
-            assert type(data['token']) is bool
-            assert type(data['extra']) is list
+            assert type(data) is dict, "Not a dictionary"
+            assert type(data['user']) is unicode, "Field 'user' isn't a string"
+            assert type(data['task']) is unicode, "Field 'task' isn't a string"
+            assert type(data['time']) is int, "Field 'time' isn't an integer (unix timestamp)"
+            assert type(data['score']) is float, "Field 'score' isn't a float"
+            assert type(data['token']) is bool, "Field 'token' isn't a boolean"
+            assert type(data['extra']) is list, "Field 'extra' isn't a list of strings"
             for i in data['extra']:
-                assert type(i) is unicode
+                assert type(i) is unicode, "Field 'extra' isn't a list of strings"
             # additional validation
-            assert data['time'] >= 0
-            assert data['score'] >= 0.0
-        except (KeyError, AssertionError):
-            raise InvalidData
+            assert data['time'] >= 0, "Field 'time' is negative"
+            assert data['score'] >= 0.0, "Field 'score' is negative"
+        except KeyError as field:
+            raise InvalidData('Field %s is missing' % field)
+        except AssertionError as message:
+            raise InvalidData(message)
         # create entity
         user, task, time = data['user'], data['task'], data['time']
         if not user in self._scores:
@@ -560,27 +570,29 @@ class SubmissionStore(object):
             raise InvalidKey
         # validate data
         try:
-            assert type(data) is dict
-            assert type(data['time']) is int
+            assert type(data) is dict, "Not a dictionary"
+            assert type(data['time']) is int, "Field 'time' isn't an integer (unix timestamp)"
             if 'user' in data:
-                assert type(data['user']) is unicode
-                assert data['user'] == self._store[key][0]
+                assert type(data['user']) is unicode, "Field 'user' isn't a string"
+                assert data['user'] == self._store[key][0], "Field 'user' cannot be changed"
             if 'task' in data:
-                assert type(data['task']) is unicode
-                assert data['task'] == self._store[key][1]
+                assert type(data['task']) is unicode, "Field 'task' isn't a string"
+                assert data['task'] == self._store[key][1], "Field 'task' cannot be changed"
             if 'score' in data:
-                assert type(data['score']) is float
-                assert data['score'] >= 0.0
-            if 'released' in data:
-                assert type(data['token']) is bool
-            if 'data' in data:
-                assert type(data['extra']) is list
+                assert type(data['score']) is float, "Field 'score' isn't a float"
+                assert data['score'] >= 0.0, "Field 'score' is negative"
+            if 'token' in data:
+                assert type(data['token']) is bool, "Field 'token' isn't a string"
+            if 'extra' in data:
+                assert type(data['extra']) is list, "Field 'extra' isn't a list of strings"
                 for i in data['extra']:
-                    assert type(i) is unicode
+                    assert type(i) is unicode, "Field 'extra' isn't a list of strings"
             # additional validation
-            assert data['time'] >= 0
-        except (KeyError, AssertionError) as e:
-            raise InvalidData, e
+            assert data['time'] >= 0, "Field 'time' is negative"
+        except KeyError as field:
+            raise InvalidData('Field %s is missing' % field)
+        except AssertionError as message:
+            raise InvalidData(message)
         # update entity
         (user, task), time = self._store[key], data['time']
         assert user in self._scores

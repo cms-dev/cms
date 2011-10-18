@@ -94,6 +94,66 @@ a
 
 /******************************************************************************\
 |                                                                              |
+|                                    Time View                                 |
+|                                    ---------                                 |
+\******************************************************************************/
+
+/* CSS to put TimeView in top-right corner */
+/*
+#timer
+{
+}
+
+#timer .contest_name
+{
+    display: none;
+}
+
+#timer .contest_time
+{
+    position: fixed;
+    top: 0;
+    right: 2px;
+    height: 3em;
+    text-align: right;
+    line-height: 1.2em;
+    font-size: 2.5em;
+    z-index: 11;
+}
+*/
+
+/* CSS to put TimeView above the left panel */
+#timer
+{
+    position: fixed;
+    left: 0px;
+    top: 208px;
+    width: 224px;
+    height: 48px;
+}
+
+#timer.active + .right_panel
+{
+    top: 280px;
+}
+
+#timer .contest_name
+{
+    text-align: center;
+    line-height: 16px;
+    font-size: 12px;
+}
+
+#timer .contest_time
+{
+    text-align: center;
+    line-height: 32px;
+    font-size: 32px;
+}
+
+
+/******************************************************************************\
+|                                                                              |
 |                                   Right panel                                |
 |                                   -----------                                |
 \******************************************************************************/
@@ -607,6 +667,11 @@ body:not(.user_panel) .UserPanel_bg
 
 .UserPanel .scores tbody tr td:nth-child(4)
 {
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
     text-align: center;
     border: 1px solid #999999;
     box-shadow: 0 0 1px 0 gray;

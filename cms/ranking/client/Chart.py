@@ -79,17 +79,18 @@ def draw_chart(canvas, y_min, y_max, y_def, h_def, x_int, data, color, marks):
         canvas.lineTo(get_x(x_size), get_y(m))
         canvas.stroke()
 
-    i = 0
-    x_cum = 0
-    x_pos = 0
-    y_pos = y_def
-    h_pos = h_def
-    x_b = 0
-    x_e = 0
+    i = 0  # index of current interval
+    x_cum = 0  # cumulated x value (sum of the size of the first i-1 intervals)
+    x_pos = 0  # current x value
+    y_pos = y_def  # current y value
+    h_pos = h_def  # current h value
+    x_b = 0  # the 'begin' value of the current interval
+    x_e = 0  # the 'end' value of the current interval
 
-    tops = [(x_pos, y_pos)]
-    bots = [(x_pos, y_pos + h_pos)]
+    tops = [(x_pos, y_pos)]  # points of the line marking the top of the area
+    bots = [(x_pos, y_pos + h_pos)]  # points of the line marking the bottom
 
+    # helper method to open an interval
     def open_group():
         canvas.setLineWidth(2)
         canvas.setStrokeStyle(Color.Color(color[0], color[1], color[2]))
@@ -98,6 +99,7 @@ def draw_chart(canvas, y_min, y_max, y_def, h_def, x_int, data, color, marks):
         x_e += x_int[i][1] - x_e  # x_e = x_int[i][1]
         canvas.moveTo(get_x(x_pos), get_y(y_pos))
 
+    # helper method to close an interval
     def close_group():
         x_cum += x_e - x_b
         x_pos += x_cum - x_pos  # x_pos = x_cum
@@ -106,6 +108,7 @@ def draw_chart(canvas, y_min, y_max, y_def, h_def, x_int, data, color, marks):
         bots.append((x_pos, y_pos + h_pos))
         canvas.stroke()
 
+    # helper method to draw a separator
     def draw_separator():
         canvas.setLineWidth(2)
         canvas.setStrokeStyle(Color.Color("#dddddd"))
@@ -138,6 +141,8 @@ def draw_chart(canvas, y_min, y_max, y_def, h_def, x_int, data, color, marks):
             y_pos = y
             h_pos = h
             canvas.moveTo(get_x(x_pos), get_y(y_pos))
+            tops.append((x_pos, y_pos))
+            bots.append((x_pos, y_pos + h_pos))
     if i < len(x_int):
         close_group()
         i += 1
