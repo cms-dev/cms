@@ -106,21 +106,31 @@ class FileStorage(Service):
 
     @rpc_method
     @rpc_binary_response
-    def get_file(self, digest):
+    def get_file(self, digest, start=0, chunk_size=None):
         """Method to get a file from the file storage.
 
-        digest (string): the SHA1 digest of the requested file
+        digest (string): the SHA1 digest of the requested file.
+        start (int): where to start to serve file.
+        chunk_size (int): how many bytes to serve, or None to serve
+                          everything.
         returns (string): the binary string containing the content of
-                          the file
+                          the file.
 
         """
         logger.debug("FileStorage.get")
         logger.info("Getting file %s." % digest)
         # Errors are managed by the caller
         input_file = open(os.path.join(self.obj_dir, digest), "rb")
-        data = input_file.read()
-        logger.debug("File with digest %s and description `%s' retrieved" %
-                     (digest, self.describe(digest)))
+        input_file.seek(start)
+        if chunk_size is None:
+            data = input_file.read()
+            logger.debug("Dile with digest %s and description `%s' "
+                         "retrieved" % (digest, self.describe(digest)))
+        else:
+            data = input_file.read(chunk_size)
+            logger.debug("Chunk of file with digest %s, of length %d "
+                         "starting from %d, and description `%s' retrieved" %
+                         (digest, chunk_size, start, self.describe(digest)))
         return data
 
     @rpc_method
@@ -220,49 +230,33 @@ class FileCacherSync:
                 return
 
         else:
-            data = yield self.file_storage.get_file(digest=digest,
-                                                    timeout=True)
-            try:
-                with open(cache_path, "wb") as f:
+            temp_path = os.path.join(self.tmp_dir, random_string(16))
+            start = 0
+            with open(temp_path, "wb") as f:
+                while True:
+                    data = yield self.file_storage.get_file(
+                        digest=digest, start=start, chunk_size=8192,
+                        timeout=True)
+                    if data is None:
+                        break
+                    start += len(data)
                     f.write(data)
-            except IOError as e:
-                pass
-            else:
-                cache_exists = True
-
-        # Here we have at least one amongst data not None
-        # cache_exists.
-        if data is None and not cache_exists:
-            yield async_error("No data nor cache, this should not happen.")
-            return
+                    if len(data) < 8192:
+                        break
+            shutil.copy(temp_path, cache_path)
 
         # Saving to path
         if path is not None:
-            if cache_exists:
-                shutil.copy(cache_path, path)
-            else: # data is not None
-                try:
-                    with open(path, "wb") as f:
-                        f.write(data)
-                except IOError as e:
-                    yield async_error("Cannot save file %s to path "
-                                      "`%s'. Error: %r" % (digest, path, e))
-                    return
+            shutil.copy(cache_path, path)
 
         # Saving to file object
         if file_obj is not None:
-            if cache_exists:
-                with open(cache_path, "rb") as f:
-                    shutil.copyfileobj(f, file_obj)
-            else: # data is not None
-                file_obj.write(data)
+            with open(cache_path, "rb") as f:
+                shutil.copyfileobj(f, file_obj)
 
         # Returning string?
         if string == True:
-            if data is not None:
-                yield async_response(data)
-            else: # cache_exists
-                data = open(cache_path, "rb").read()
+            data = open(cache_path, "rb").read()
             yield async_response(data)
         else:
             yield async_response(None)
