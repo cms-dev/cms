@@ -69,6 +69,23 @@ class ServiceA(Service):
                 logger.info("ServiceB,%d answered yielding %s" % (i, data))
             except Exception as e:
                 logger.error(repr(e))
+        self.ServiceB[1].long_rpc_method(string=str(time.time()),
+                                         callback=ServiceA.asynced_echo_callback,
+                                         plus=1)
+
+    @make_async
+    @rpc_callback
+    def asynced_echo_callback(self, data, plus, error=None):
+        """Callback for ask_for_echo.
+
+        """
+        logger.debug("ServiceA.echo_callback")
+        if error is not None:
+            return
+        logger.info("ServiceB,%d answered %s" % (plus, data))
+        data = yield self.ServiceB[plus].echo(string="Tentative", timeout=3)
+        logger.info( "In callback, ServiceB,%d answered %s." % (plus, data))
+
 
     def ask_for_echo(self):
         """Ask all ServiceB for a echo.
