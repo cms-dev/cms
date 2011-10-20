@@ -30,11 +30,13 @@ import tempfile
 import shutil
 import codecs
 import hashlib
+import cStringIO
 
 from cms.async.AsyncLibrary import Service, \
      rpc_method, rpc_binary_response, rpc_callback, \
-     logger, make_sync
-from cms.async import ServiceCoord, Address, Config
+     logger
+from cms.async import ServiceCoord, Address, Config,\
+     make_async, async_response, async_error
 from cms.service.Utils import mkdir, random_string
 
 
@@ -151,15 +153,19 @@ class FileStorage(Service):
             return None
 
 
-class FileCacher:
+class FileCacherSync:
     """This class implement a local cache for files obtainable from a
-    FileStorage service.
+    FileStorage service. This class uses the make_async decorator,
+    hence it may be called as the operations it does were
+    synchronous. One has to be aware that some other code may be
+    executed between the call and the return.
 
     """
 
     def __init__(self, service, file_storage):
-        """
-        service (Service): the service we are running in
+        """Initialization.
+
+        service (Service): the service we are running in.
         file_storage (RemoteService): the local instance of the
                                       FileStorage service.
 
@@ -180,436 +186,258 @@ class FileCacher:
 
     ## GET ##
 
-    @make_sync()
-    def get_file(self, digest, path=None, callback=None,
-                 plus=None, bind_obj=None):
+    @make_async
+    def get_file(self, digest, path=None, file_obj=None, string=None):
         """Get a file from the cache or from the service if not
         present.
 
-        digest (string): the sha1 sum of the file
-        path (string): a path where to save the file
-        callback (function): to be called with the open file
-        plus (object): additional data for the callback
-        bind_obj (object): context for the callback (None means
-                           the service that created the FileCacher)
-        return (bool): True if request got passed along
+        digest (string): the sha1 sum of the file.
+        path (string): a path where to save the file.
+        file_obj (file): a handler where to save the file.
+        string (bool): True if forced to return content as a string.
 
         """
 
         cache_path = os.path.join(self.obj_dir, digest)
+        cache_exists = os.path.exists(cache_path)
+        data = None
 
-        @rpc_callback
-        def _got_file(self, data, plus2=None, error=None):
-            """Callback for get_file when the file is taken from the local
-            cache. This is the callback for the is_file_present request.
-
-            data (bool): if the file is really present in the storage
-            plus2 (dict): ignored
-
-            """
-
-            # Error while testing for remote file presence
-            if error is not None:
-                logger.error(error)
-                if callback is not None:
-                    callback(bind_obj, None, plus, error)
-
-            # File not existing remotely, deleting it from the cache
-            # and returning with error
-            elif not data:
+        if cache_exists:
+            # If there is the file in the cache, maybe it has been
+            # deleted remotely. We need to ask.
+            # TODO: since we never delete files, we could just give
+            # the file without checking... and even if we delete file,
+            # what's the problem?
+            present = yield self.file_storage.is_file_present(digest=digest,
+                                                              timeout=1)
+            # File not available remotely, deleting from cache.
+            if not present:
                 try:
                     os.unlink(os.path.join(self.obj_dir, digest))
                 except OSError:
                     pass
-                if callback is not None:
-                    callback(bind_obj, None, plus,
-                             "IOError: 2 No such file or directory.")
+                yield async_error("IOError: 2 No such file or directory.")
+                return
 
-            # File available remotely, returning the cached instance
+        else:
+            data = yield self.file_storage.get_file(digest=digest,
+                                                    timeout=True)
+            try:
+                with open(cache_path, "wb") as f:
+                    f.write(data)
+            except IOError as e:
+                pass
             else:
+                cache_exists = True
 
-                # Save it in the requested path
-                if path is not None:
-                    try:
-                        shutil.copyfile(cache_path, path)
-                    except IOError as e:
-                        if callback is not None:
-                            callback(bind_obj, None, plus, repr(e))
-                        return
+        # Here we have at least one amongst data not None
+        # cache_exists.
+        if data is None and not cache_exists:
+            yield async_error("No data nor cache, this should not happen.")
+            return
 
-                # Invocation of the callback
-                if callback is not None:
-                    cached_file = open(cache_path, "rb")
-                    callback(bind_obj, cached_file, plus, error)
-
-            # Do not call me again:
-            return False
-
-        @rpc_callback
-        def _got_file_remote(self, data, plus2=None, error=None):
-            """Callback for get_file when the file is taken from the
-            remote FileStorage service.
-
-            data (string): the content of the file
-            plus2 (dict): ignored
-            error (string): an error from FileStorage
-
-            """
-
-            # If there were no errors, save the file to the cache,
-            # _got_file will be responsible for returning it back to
-            # the callback; if there were errors, just pass them
-            # along.
-            if error is None:
+        # Saving to path
+        if path is not None:
+            if cache_exists:
+                shutil.copy(cache_path, path)
+            else: # data is not None
                 try:
-                    with open(cache_path, "wb") as f:
+                    with open(path, "wb") as f:
                         f.write(data)
                 except IOError as e:
-                    error = repr(e)
+                    yield async_error("Cannot save file %s to path "
+                                      "`%s'. Error: %r" % (digest, path, e))
+                    return
 
-            _got_file(self, True, plus2, error)
+        # Saving to file object
+        if file_obj is not None:
+            if cache_exists:
+                with open(cache_path, "rb") as f:
+                    shutil.copyfileobj(f, file_obj)
+            else: # data is not None
+                file_obj.write(data)
 
-        if bind_obj is None:
-            bind_obj = self.service
-
-        if os.path.exists(cache_path):
-            # If there is the file in the cache, maybe it has been
-            # deleted remotely. We need to ask.
-            self.file_storage.is_file_present(digest=digest,
-                                              bind_obj=self,
-                                              callback=_got_file)
-            # TODO: since we never delete files, we could just give
-            # the file without checking... and even if we delete file,
-            # what's the problem?
+        # Returning string?
+        if string == True:
+            if data is not None:
+                yield async_response(data)
+            else: # cache_exists
+                data = open(cache_path, "rb").read()
+            yield async_response(data)
         else:
-            self.file_storage.get_file(digest=digest,
-                                       bind_obj=self,
-                                       callback=_got_file_remote)
-        return True
+            yield async_response(None)
 
     ## GET VARIATIONS ##
 
-    @make_sync()
-    def get_file_to_file(self, digest,
-                         callback=None, plus=None, bind_obj=None):
+    def get_file_to_file(self, digest):
         """Get a file from the cache or from the service if not
         present. Returns it as a file-like object.
 
-        digest (string): the sha1 sum of the file
-        callback (function): to be called with the received
-                             file-like object
-        plus (object): additional data for the callback
-        bind_obj (object): context for the callback (None means
-                           the service that created the FileCacher)
+        digest (string): the sha1 sum of the file.
+        return (file): an open handler for the file.
 
         """
-        return self.get_file(digest=digest,
-                             callback=callback,
-                             plus=plus,
-                             bind_obj=bind_obj)
+        self.get_file(digest=digest)
 
-    @make_sync()
-    def get_file_to_write_file(self, digest, file_obj,
-                               callback=None, plus=None, bind_obj=None):
+    def get_file_to_write_file(self, digest, file_obj):
         """Get a file from the cache or from the service if not
         present. It writes it on a file-like object.
 
-        digest (string): the sha1 sum of the file
+        digest (string): the sha1 sum of the file.
         file_obj (file): the file-like object on which to write
-                         the received file
-        callback (function): to be called upon completion
-        plus (object): additional data for the callback
-        bind_obj (object): context for the callback (None means
-                           the service that created the FileCacher)
+                         the received file.
 
         """
+        self.get_file(digest=digest, file_obj=file_obj)
 
-        @rpc_callback
-        def _got_file_to_write_file(self, data, plus2, error=None):
-            """Callback for get_file_to_write_file that copies the content
-            of the received file to the specified file-like object.
-
-            data(file): the file got from get_file()
-            plus2(dict): ignored
-
-            """
-            if callback is not None:
-                if error is not None:
-                    callback(bind_obj, None, plus, error)
-                else:
-                    shutil.copyfileobj(data, file_obj)
-                    data.close()
-                    callback(bind_obj, None, plus)
-
-        if bind_obj is None:
-            bind_obj = self.service
-        return self.get_file(digest=digest,
-                             callback=_got_file_to_write_file,
-                             plus=None,
-                             bind_obj=self)
-
-    @make_sync()
-    def get_file_to_path(self, digest, path,
-                         callback=None, plus=None, bind_obj=None):
+    def get_file_to_path(self, digest, path):
         """Get a file from the cache or from the service if not
         present. Returns it by putting it in the specified path.
 
-        digest (string): the sha1 sum of the file
-        path (string): the path where to copy the received file
-        callback (function): to be called upon completion
-        plus (object): additional data for the callback
-        bind_obj (object): context for the callback (None means
-                           the service that created the FileCacher)
+        digest (string): the sha1 sum of the file.
+        path (string): the path where to copy the received file.
 
         """
-        return self.get_file(digest=digest,
-                             path=path,
-                             callback=callback,
-                             plus=plus,
-                             bind_obj=bind_obj)
+        self.get_file(digest=digest, path=path)
 
-    @make_sync()
-    def get_file_to_cache(self, digest,
-                          callback=None, plus=None, bind_obj=None):
+    def get_file_to_cache(self, digest):
         """Get a file from storage, but do not return it. Just keep it
         in the cache. Return True if file was successfully cached,
         False otherwise.
 
-        digest (string): the sha1 sum of the file
-        callback (function): to be called with True or False
-        plus (object): additional data for the callback
-        bind_obj (object): context for the callback (None means
-                           the service that created the FileCacher)
+        digest (string): the sha1 sum of the file.
 
         """
-        return self.get_file_to_string(digest=digest,
-                                       callback=callback,
-                                       plus=plus,
-                                       bind_obj=bind_obj) is not None
+        self.get_file(digest=digest)
 
-    @make_sync()
-    def get_file_to_string(self, digest,
-                           callback=None, plus=None, bind_obj=None):
+    def get_file_to_string(self, digest):
         """Get a file from the cache or from the service if not
         present. Returns it as a string.
 
-        digest (string): the sha1 sum of the file
-        callback (function): to be called with the received
-                             file content
-        plus (object): additional data for the callback
-        bind_obj (object): context for the callback (None means
-                           the service that created the FileCacher)
+        digest (string): the sha1 sum of the file.
+        return (string): the content of the file.
 
         """
-
-        @rpc_callback
-        def _got_file_to_string(self, data, plus2, error=None):
-            """Callback for get_file_to_string that unpacks the file-like object
-            to a string representing its content.
-
-            data(file): the file got from get_file()
-            plus(dict): a dictionary with the fields: callback, plus, bind_obj
-
-            """
-            if callback is not None:
-                if error is not None:
-                    callback(bind_obj, None, plus, error)
-                else:
-                    file_content = data.read()
-                    data.close()
-                    callback(bind_obj, file_content, plus)
-
-        if bind_obj is None:
-            bind_obj = self.service
-
-        return self.get_file(digest=digest,
-                             callback=_got_file_to_string,
-                             plus=None,
-                             bind_obj=self)
-
+        s = cStringIO.StringIO()
+        self.get_file(digest=digest, file_obj=s)
+        return s.getvalue()
 
     ## PUT ##
 
-    @make_sync()
-    def put_file(self, binary_data=None, description="", file_obj=None,
-                 path=None, callback=None, plus=None, bind_obj=None):
-        """Send a file to FileStorage, and keep a copy locally. The caller has to
-        provide exactly one among binary_data, file_obj and path.
+    @make_async
+    def put_file(self, binary_data=None, description="",
+                 file_obj=None, path=None):
+        """Send a file to FileStorage, and keep a copy locally. The
+        caller has to provide exactly one among binary_data, file_obj
+        and path.
 
-        binary_data (string): the content of the file to send
-        description (string): a human-readable description of the content
-        file_obj (file): the file-like object to send
-        path (string): the file to send
-        callback (function): to be called with the digest of the file
-        plus (object): additional data for the callback
-        bind_obj (object): context for the callback (None means
-                           the service that created the FileCacher)
+        binary_data (string): the content of the file to send.
+        description (string): a human-readable description of the
+                              content.
+        file_obj (file): the file-like object to send.
+        path (string): the file to send.
 
         """
-
         temp_path = os.path.join(self.tmp_dir, random_string(16))
 
-        def _put_file_callback(data, error):
-            """Callback for put_file, move the temporary file to the right
-            place in the cache and call the real callback with the digest.
-
-            """
-            if error is not None:
-                logger.error(error)
-                if callback is not None:
-                    callback(bind_obj, None, plus, error)
-            else:
-                shutil.move(temp_path,
-                            os.path.join(self.obj_dir, data))
-                callback(bind_obj, data, plus, None)
-
-            # Do not call me again:
-            return False
-
-        @rpc_callback
-        def _put_file_remote_callback(self, data, plus, error=None):
-            """Callback for put_file, obtains the digest and call the
-            local callback.
-
-            plus (dict): a dictionary with the fields: callback, plus,
-                         temp_path
-
-            """
-            _put_file_callback(data, error)
-
-        if sum(map(lambda x: {True: 1, False: 0}[x is not None],
-                   [binary_data, file_obj, path])) != 1:
+        if [binary_data, file_obj, path].count(None) != 2:
             logger.error("No content (or too many) specified in put_file.")
             raise ValueError
 
-        if bind_obj is None:
-            bind_obj = self.service
-
         if path is not None:
             # If we cannot store locally the file, we do not report
-            # errors
+            # errors.
             try:
                 shutil.copy(path, temp_path)
             except IOError:
                 pass
             # But if we cannot read the actual data, we are forced to
-            # report
+            # report.
             try:
                 binary_data = open(path, "rb").read()
             except IOError as e:
-                error = repr(e)
-                callback(bind_obj, None, plus, error)
+                yield async_error(repr(e))
                 return
 
         elif binary_data is not None:
-            # Again, no error for inability of caching locally
+            # Again, no error for inability of caching locally.
             try:
                 open(temp_path, "wb").write(binary_data)
             except IOError:
                 pass
 
-        else: # file_obj is not None
+        else: # file_obj is not None.
             binary_data = file_obj.read()
             try:
                 open(temp_path, "wb").write(binary_data)
             except IOError:
                 pass
 
-        # FIXME - Why isn't plus=None working?
-        self.file_storage.put_file(binary_data=binary_data,
-                                   description=description,
-                                   callback=_put_file_remote_callback,
-                                   plus=[],
-                                   bind_obj=self)
+        try:
+            digest = yield self.file_storage.put_file(binary_data=binary_data,
+                                                      description=description,
+                                                      timeout=True)
+            shutil.move(temp_path,
+                        os.path.join(self.obj_dir, digest))
+            yield async_response(digest)
+        except Exception as e:
+            yield async_error(repr(e))
 
     ## PUT SYNTACTIC SUGARS ##
 
-    @make_sync()
-    def put_file_from_string(self, content, description="",
-                             callback=None, plus=None, bind_obj=None):
-        """Send a file to FileStorage keeping a copy locally. The file is
-        obtained from a string.
+    def put_file_from_string(self, content, description=""):
+        """Send a file to FileStorage keeping a copy locally. The file
+        is obtained from a string.
 
         This call is actually a syntactic sugar over put_file().
 
-        content (string): the content of the file to send
-        description (string): a human-readable description of the content
-        callback (function): to be called with the digest of the file
-        plus (object): additional data for the callback
-        bind_obj (object): context for the callback (None means
-                           the service that created the FileCacher)
+        content (string): the content of the file to send.
+        description (string): a human-readable description of the
+                              content.
 
         """
-        return self.put_file(binary_data=content,
-                             description=description,
-                             callback=callback,
-                             plus=plus,
-                             bind_obj=bind_obj)
+        self.put_file(binary_data=content, description=description)
 
-    @make_sync()
-    def put_file_from_file(self, file_obj, description="",
-                           callback=None, plus=None, bind_obj=None):
-        """Send a file to FileStorage keeping a copy locally. The file is
-        obtained from a file-like object.
+    def put_file_from_file(self, file_obj, description=""):
+        """Send a file to FileStorage keeping a copy locally. The file
+        is obtained from a file-like object.
 
         This call is actually a syntactic sugar over put_file().
 
-        file_obj (file): the file-like object to send
-        description (string): a human-readable description of the content
-        callback (function): to be called with the digest of the file
-        plus (object): additional data for the callback
-        bind_obj (object): context for the callback (None means
-                           the service that created the FileCacher)
+        file_obj (file): the file-like object to send.
+        description (string): a human-readable description of the
+                              content.
 
         """
-        return self.put_file(file_obj=file_obj,
-                             description=description,
-                             callback=callback,
-                             plus=plus,
-                             bind_obj=bind_obj)
+        self.put_file(file_obj=file_obj, description=description)
 
-    @make_sync()
-    def put_file_from_path(self, path, description="",
-                           callback=None, plus=None, bind_obj=None):
+    def put_file_from_path(self, path, description=""):
         """Send a file to FileStorage keeping a copy locally. The file is
         obtained from a file specified by its path.
 
         This call is actually a syntactic sugar over put_file().
 
-        path (string): the file to send
-        description (string): a human-readable description of the content
-        callback (function): to be called with the digest of the file
-        plus (object): additional data for the callback
-        bind_obj (object): context for the callback (None means
-                           the service that created the FileCacher)
+        path (string): the file to send.
+        description (string): ahuman-readable description of the
+                              content.
 
         """
-        return self.put_file(path=path,
-                             description=description,
-                             callback=callback,
-                             plus=plus,
-                             bind_obj=bind_obj)
+        self.put_file(path=path, description=description)
 
     ## OTHER ROUTINES ##
 
-    @make_sync()
-    def describe(self, digest,
-                 callback=None, plus=None, bind_obj=None):
-        """Return the description of a file given its digest. This request is not
-        actually cached, since is mostly meant for debugging purposes and it isn't
-        used by the contest system itself.
+    @make_async
+    def describe(self, digest):
+        """Return the description of a file given its digest. This
+        request is not actually cached, since is mostly meant for
+        debugging purposes and it isn't used by the contest system
+        itself.
 
-        digest (string): the digest to describe
-        callback (function): to be called with the file's description
-        plus (object): additional data for the callback
-        bind_obj (object): context for the callback (None means
-                           the service that created the FileCacher)
+        digest (string): the digest to describe.
+        return (string): the description associated.
 
         """
-        return self.file_storage.describe(digest=digest,
-                                          callback=callback,
-                                          plus=plus,
-                                          bind_obj=bind_obj)
+        yield self.file_storage.describe(digest=digest)
 
 
 def main():

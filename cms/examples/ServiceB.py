@@ -27,9 +27,11 @@ method, and offer a quite long version of the echo method.
 import time
 import threading
 
+from cms.service.FileStorage import FileCacherSync
+
 from cms.async.AsyncLibrary import Service, rpc_method, \
      rpc_binary_response, rpc_threaded, logger, async_lock
-from cms.async import ServiceCoord
+from cms.async import ServiceCoord, make_async
 
 
 class ServiceB(Service):
@@ -42,6 +44,30 @@ class ServiceB(Service):
         logger.initialize(ServiceCoord("ServiceB", shard))
         logger.debug("ServiceB.__init__")
         Service.__init__(self, shard)
+        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+        self.FC = FileCacherSync(self, self.FS)
+        self.add_timeout(self.operate, None, 100000, immediately=True)
+
+    def operate(self):
+        """Operate.
+
+        """
+        s = "Tentative binary file \xff\xff"
+        try:
+            digest = self.FC.put_file(binary_data=s, description="Tentative")
+        except Exception as e:
+            logger.error(repr(e))
+            return
+        logger.info(digest)
+        try:
+            data = self.FC.get_file(digest=digest, string=True)
+        except Exception as e:
+            logger.error(repr(e))
+            return
+        if s == data:
+            logger.info("File %s put and got ok." % digest)
+        else:
+            logger.error("Files not equal.")
 
     @rpc_method
     def long_rpc_method(self, string):
