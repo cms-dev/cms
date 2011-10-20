@@ -25,7 +25,7 @@
 
 from collections import namedtuple
 from functools import wraps
-
+from types import GeneratorType
 
 Address = namedtuple("Address", "ip port")
 
@@ -99,8 +99,13 @@ def make_async(f):
 
     """
     @wraps(f)
-    def wrapper(self, *args, **kwargs):
-        generator = f(self, *args, **kwargs)
+    def wrapper(*args, **kwargs):
+        generator = f(*args, **kwargs)
+        if not isinstance(generator, GeneratorType):
+            # The method we are decorating is not a generator (i.e.,
+            # containes no yields), hence we return immediately its
+            # value.
+            return generator
         try:
             result = generator.next()
             while True:
@@ -113,11 +118,37 @@ def make_async(f):
                         Exception("RPC call timeout"))
                 elif result["error"] is not None:
                     new_result = generator.throw(
-                        Exception(cb_result["error"]))
+                        Exception(result["error"]))
                 else:
                     new_result = generator.send(result["data"])
                 result = new_result
         except StopIteration:
-            return
+            return result['data']
 
     return wrapper
+
+
+def async_response(data):
+    """Return a dictionary that encodes a standard not-error response
+    in a make_async context.
+
+    data (object): the response.
+    return (dict): the response ready to be yielded.
+
+    """
+    return {"data": data,
+            "error": None,
+            "completed": True}
+
+
+def async_error(message):
+    """Return a dictionary that encodes a standard error response in a
+    make_async context.
+
+    message (string): the error message.
+    return (dict): am error response ready to be yielded.
+
+    """
+    return {"data": None,
+            "error": message,
+            "completed": True}
