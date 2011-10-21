@@ -52,6 +52,7 @@ class ServiceB(Service):
         """Operate.
 
         """
+        start = time.time()
         s = "Tentative binary file \xff\xff\n"
         s = s * 100000
         digest = "d727e20eb5580ad553433f1cb805bac3380ba174"
@@ -61,7 +62,9 @@ class ServiceB(Service):
             except Exception as e:
                 logger.error(repr(e))
                 return
+        logger.info("Time elapsed for put: %.3lf" % (time.time() - start))
         self.FC.delete_from_cache(digest)
+        start = time.time()
         try:
             data = self.FC.get_file(digest=digest, string=True)
         except Exception as e:
@@ -71,6 +74,7 @@ class ServiceB(Service):
             logger.info("File %s put and got ok." % digest)
         else:
             logger.error("Files not equal.")
+        logger.info("Time elapsed for get: %.3lf" % (time.time() - start))
 
     @rpc_method
     def long_rpc_method(self, string):

@@ -25,6 +25,7 @@
 
 import os
 import sys
+import time
 
 import tempfile
 import shutil
@@ -69,6 +70,8 @@ class FileStorage(Service):
         # Format: chunk_ref (= temp_filename) -> (temp_file, hasher).
         self.partial = {}
 
+        self.stats = {"put": [0, 0.0], "get": [0, 0.0]}
+
     @rpc_method
     def put_file(self, binary_data, description=None,
                  chunk_ref=None, final_chunk=True):
@@ -86,6 +89,7 @@ class FileStorage(Service):
         returns (string): the SHA1 digest of the file
 
         """
+        start_time = time.time()
         logger.debug("FileStorage.put")
         if not final_chunk and description is not None:
             raise ValueError("Description will get lost "
@@ -130,8 +134,16 @@ class FileStorage(Service):
 
             logger.debug("File with digest %s and description `%s' put" %
                          (digest, description))
+            self.stats["put"][0] += 1
+            self.stats["put"][1] += time.time() - start_time
+            logger.info("Calls: %d" % self.stats["put"][0])
+            logger.info("Total time: %.3lf" % self.stats["put"][1])
+            logger.info("Average time: %.5lf" % (self.stats["put"][1]/self.stats["put"][0]))
+            self.stats["put"] = [0, 0.0]
             return digest
         else:
+            self.stats["put"][0] += 1
+            self.stats["put"][1] += time.time() - start_time
             return chunk_ref
 
 
@@ -148,6 +160,7 @@ class FileStorage(Service):
                           the file.
 
         """
+        start_time = time.time()
         logger.debug("FileStorage.get")
         logger.info("Getting file %s." % digest)
         # Errors are managed by the caller
@@ -162,6 +175,13 @@ class FileStorage(Service):
             logger.debug("Chunk of file with digest %s, of length %d "
                          "starting from %d, and description `%s' retrieved" %
                          (digest, chunk_size, start, self.describe(digest)))
+        self.stats["get"][0] += 1
+        self.stats["get"][1] += time.time() - start_time
+        if chunk_size is None or len(data) < chunk_size:
+            logger.info("Calls: %d" % self.stats["get"][0])
+            logger.info("Total time: %.3lf" % self.stats["get"][1])
+            logger.info("Average time: %.5lf" % (self.stats["get"][1]/self.stats["get"][0]))
+            self.stats["get"] = [0, 0.0]
         return data
 
     @rpc_method
@@ -203,7 +223,7 @@ class FileCacher:
 
     """
 
-    CHUNK_SIZE = 8192
+    CHUNK_SIZE = 2**20
 
     def __init__(self, service, file_storage):
         """Initialization.
