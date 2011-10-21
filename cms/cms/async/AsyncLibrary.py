@@ -803,8 +803,9 @@ class RemoteService(asynchat.async_chat):
 
         if timeout is not None:
             send_time = time.time()
-            while not cb_result["completed"] and \
-                  time.time() - send_time < timeout:
+            while not self.service._exit and \
+                    not cb_result["completed"] and \
+                    time.time() - send_time < timeout:
                 self.service._step()
             return cb_result
 
