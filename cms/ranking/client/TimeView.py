@@ -35,7 +35,6 @@ def _get_time():
 
 class TimeView(object):
     def __init__(self, ds):
-        print "wtf"
         self.ds = ds
         JS('''
         window.setInterval(function() {

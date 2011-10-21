@@ -38,8 +38,8 @@ class User(Entity):
                 "Field 'f_name' isn't a string"
             assert type(data['l_name']) is unicode,\
                 "Field 'l_name' isn't a string"
-            assert type(data['team']) is unicode,\
-                "Field 'team' isn't a string"
+            assert data['team'] is None or type(data['team']) is unicode,\
+                "Field 'team' isn't a string (or null)"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)
         except AssertionError as message:

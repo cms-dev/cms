@@ -120,9 +120,19 @@ class UserPanel(object):
             # FIXME possible security issue: code injection
             self.f_name_label.innerHTML = self.user['f_name']
             self.l_name_label.innerHTML = self.user['l_name']
-            self.team_label.innerHTML = self.ds.teams[self.user['team']]['name']
-            DOM.setAttribute(self.team_image, 'src', '/flags/' + self.user['team'] + '.png')
             DOM.setAttribute(self.face_image, 'src', '/faces/' + self.user_id)
+
+            if self.user['team']:
+                self.team_label.innerHTML = self.ds.teams[self.user['team']]['name']
+                DOM.setAttribute(self.team_image, 'src', '/flags/' + self.user['team'] + '.png')
+                JS('''
+                self.team_image.classList.remove('hidden');
+                ''')
+            else:
+                self.team_label.innerHTML = ''
+                JS('''
+                self.team_image.classList.add('hidden');
+                ''')
 
             s =  """<tr class="global">
                         <td>Global</td>

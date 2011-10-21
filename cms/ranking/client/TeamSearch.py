@@ -68,7 +68,8 @@ class TeamSearch(object):
             self.cnt[t_id] = 0
 
         for u_id, user in self.ds.users.iteritems():
-            self.cnt[user['team']] += 1
+            if user['team']:
+                self.cnt[user['team']] += 1
 
         inner_html = ''
         for t_id, team in sorted(self.ds.teams.iteritems(), key=lambda a:a[1]['name']):
@@ -91,6 +92,10 @@ class TeamSearch(object):
 
     def select_handler(self, u_id, flag):
         user = self.ds.users[u_id]
+
+        if not user['team']:
+            return
+
         if flag:
             self.sel[user['team']] += 1
         else:

@@ -86,8 +86,12 @@ class Scoreboard(object):
     </td>
     <td class="rank">''' + str(rank) + '''</td>
     <td class="f_name">''' + user['f_name'] + '''</td>
-    <td class="l_name">''' + user['l_name'] + '''</td>
-    <td class="team"><img src="/flags/''' + user['team'] + '''.png" title="''' + self.ds.teams[user['team']]['name'] + '''" /></td>'''
+    <td class="l_name">''' + user['l_name'] + '''</td>'''
+
+        if user['team']:
+            result += '''<td class="team"><img src="/flags/''' + user['team'] + '''.png" title="''' + self.ds.teams[user['team']]['name'] + '''" /></td>'''
+        else:
+            result += '''<td class="team"></td>'''
 
         for (c_id, contest) in self.ds.iter_contests():
             if c_id in self.expanded:

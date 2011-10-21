@@ -624,6 +624,11 @@ body:not(.user_panel) .UserPanel_bg
     box-shadow: 0 0 2px 1px gray;
 }
 
+.UserPanel .summary .flag.hidden
+{
+    display: none;
+}
+
 .UserPanel .scores
 {
     display: table-cell;
