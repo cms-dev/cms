@@ -65,44 +65,75 @@ class FileStorage(Service):
             logger.error("Cannot create necessary directories.")
             self.exit()
 
+        # Remember put operation yet to finish.
+        # Format: chunk_ref (= temp_filename) -> (temp_file, hasher).
+        self.partial = {}
+
     @rpc_method
-    def put_file(self, binary_data, description=""):
+    def put_file(self, binary_data, description=None,
+                 chunk_ref=None, final_chunk=True):
         """Method to put a file in the file storage.
 
+        binary_data (string): the content of the file.
         description (string): a human-readable description of the
                               content of the file (not used
-                              internally, just for human convenience)
+                              internally, just for human convenience).
+        chunk_ref (string): None if we are sending the first chunk of
+                            a file, the previously got return value if
+                            we are sending a middle chunk.
+        final_chunk (bool): True if the file ends after the current
+                            chunk.
         returns (string): the SHA1 digest of the file
 
         """
         logger.debug("FileStorage.put")
+        if not final_chunk and description is not None:
+            raise ValueError("Description will get lost "
+                             "if chunk is not final.")
+
         # Avoid too long descriptions, that can bloat our logs
-        if len(description) > 1024:
+        if description is not None and len(description) > 1024:
             log.info("Description '%s...' trimmed because too long." %
                      description[:50])
             description = description[:1024]
-        logger.info("New file added: `%s'" % description)
 
-        # FIXME - Error management
-        temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
-        temp_file = os.fdopen(temp_file, "wb")
+        logger.info("New chunk received")
 
-        # Get the file and compute the hash
-        hasher = hashlib.sha1()
+        if chunk_ref is None:
+            temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
+            chunk_ref = temp_filename
+            temp_file = os.fdopen(temp_file, "wb")
+            hasher = hashlib.sha1()
+            if not final_chunk:
+                self.partial[chunk_ref] = (temp_file, hasher)
+
+        else:
+            if chunk_ref not in self.partial:
+                raise KeyError("Chunk reference not found.")
+            temp_file, hasher = self.partial[chunk_ref]
+
         temp_file.write(binary_data)
         hasher.update(binary_data)
-        temp_file.close()
-        digest = hasher.hexdigest()
-        shutil.move(temp_filename, os.path.join(self.obj_dir, digest))
 
-        # Update description
-        with codecs.open(os.path.join(self.desc_dir, digest), "w",
-                         "utf-8") as desc_file:
-            print >> desc_file, description
+        if final_chunk:
+            # Close file and move to destination.
+            temp_file.close()
+            digest = hasher.hexdigest()
+            shutil.move(chunk_ref, os.path.join(self.obj_dir, digest))
+            if chunk_ref in self.partial:
+                del self.partial[chunk_ref]
 
-        logger.debug("File with digest %s and description `%s' put" %
-                     (digest, description))
-        return digest
+            # Update description
+            with codecs.open(os.path.join(self.desc_dir, digest), "w",
+                             "utf-8") as desc_file:
+                desc_file.write(description)
+
+            logger.debug("File with digest %s and description `%s' put" %
+                         (digest, description))
+            return digest
+        else:
+            return chunk_ref
+
 
     @rpc_method
     @rpc_binary_response
@@ -124,7 +155,7 @@ class FileStorage(Service):
         input_file.seek(start)
         if chunk_size is None:
             data = input_file.read()
-            logger.debug("Dile with digest %s and description `%s' "
+            logger.debug("File with digest %s and description `%s' "
                          "retrieved" % (digest, self.describe(digest)))
         else:
             data = input_file.read(chunk_size)
@@ -368,9 +399,16 @@ class FileCacherSync:
                 pass
 
         try:
-            digest = yield self.file_storage.put_file(binary_data=binary_data,
-                                                      description=description,
-                                                      timeout=True)
+            chunk_ref = None
+            while len(binary_data) > 8192:
+                data = binary_data[:8192]
+                binary_data = binary_data[8192:]
+                chunk_ref = yield self.file_storage.put_file(
+                    binary_data=data, chunk_ref=chunk_ref,
+                    final_chunk=False, timeout=True)
+            digest = yield self.file_storage.put_file(
+                binary_data=binary_data, description=description,
+                chunk_ref=chunk_ref, final_chunk=True, timeout=True)
             shutil.move(temp_path,
                         os.path.join(self.obj_dir, digest))
             yield async_response(digest)

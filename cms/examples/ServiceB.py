@@ -46,14 +46,15 @@ class ServiceB(Service):
         Service.__init__(self, shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
         self.FC = FileCacherSync(self, self.FS)
-        self.add_timeout(self.operate, False, 100000, immediately=True)
+        self.add_timeout(self.operate, True, 100000, immediately=True)
 
     def operate(self, put):
         """Operate.
 
         """
-        s = "Tentative binary file \xff\xff"
-        digest = "797953cec72bbe36c58cf8cf40bd5cb3f556695d"
+        s = "Tentative binary file \xff\xff\n"
+        s = s * 100000
+        digest = "d727e20eb5580ad553433f1cb805bac3380ba174"
         if put:
             try:
                 digest = self.FC.put_file(binary_data=s, description="Tentative")
