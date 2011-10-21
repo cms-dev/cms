@@ -27,7 +27,7 @@ method, and offer a quite long version of the echo method.
 import time
 import threading
 
-from cms.service.FileStorage import FileCacherSync
+from cms.service.FileStorage import FileCacher
 
 from cms.async.AsyncLibrary import Service, rpc_method, \
      rpc_binary_response, rpc_threaded, logger, async_lock
@@ -45,7 +45,7 @@ class ServiceB(Service):
         logger.debug("ServiceB.__init__")
         Service.__init__(self, shard)
         self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
-        self.FC = FileCacherSync(self, self.FS)
+        self.FC = FileCacher(self, self.FS)
         self.add_timeout(self.operate, True, 100000, immediately=True)
 
     def operate(self, put):

@@ -194,7 +194,7 @@ class FileStorage(Service):
             return None
 
 
-class FileCacherSync:
+class FileCacher:
     """This class implement a local cache for files obtainable from a
     FileStorage service. This class uses the make_async decorator,
     hence it may be called as the operations it does were
@@ -202,6 +202,8 @@ class FileCacherSync:
     executed between the call and the return.
 
     """
+
+    CHUNK_SIZE = 8192
 
     def __init__(self, service, file_storage):
         """Initialization.
@@ -266,13 +268,13 @@ class FileCacherSync:
             with open(temp_path, "wb") as f:
                 while True:
                     data = yield self.file_storage.get_file(
-                        digest=digest, start=start, chunk_size=8192,
-                        timeout=True)
+                        digest=digest, start=start,
+                        chunk_size=FileCacher.CHUNK_SIZE, timeout=True)
                     if data is None:
                         break
                     start += len(data)
                     f.write(data)
-                    if len(data) < 8192:
+                    if len(data) < FileCacher.CHUNK_SIZE:
                         break
             shutil.copy(temp_path, cache_path)
 
@@ -400,9 +402,9 @@ class FileCacherSync:
 
         try:
             chunk_ref = None
-            while len(binary_data) > 8192:
-                data = binary_data[:8192]
-                binary_data = binary_data[8192:]
+            while len(binary_data) > FileCacher.CHUNK_SIZE:
+                data = binary_data[:FileCacher.CHUNK_SIZE]
+                binary_data = binary_data[FileCacher.CHUNK_SIZE:]
                 chunk_ref = yield self.file_storage.put_file(
                     binary_data=data, chunk_ref=chunk_ref,
                     final_chunk=False, timeout=True)
