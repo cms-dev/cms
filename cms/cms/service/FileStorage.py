@@ -473,6 +473,24 @@ class FileCacher:
         """
         yield self.file_storage.describe(digest=digest)
 
+    @make_async
+    def delete(self, digest):
+        """Delete from cache and FS the file with that digest.
+
+        digest (string): the file to delete.
+
+        """
+        self.delete_from_cache(digest)
+        yield self.file_storage.delete(digest=digest, timeout=True)
+
+    def delete_from_cache(self, digest):
+        """Delete the specified file from the local cache.
+
+        digest (string): the file to delete.
+
+        """
+        os.unlink(os.path.join(self.obj_dir, digest))
+
 
 def main():
     import sys

@@ -61,7 +61,7 @@ class ServiceB(Service):
             except Exception as e:
                 logger.error(repr(e))
                 return
-
+        self.FC.delete_from_cache(digest)
         try:
             data = self.FC.get_file(digest=digest, string=True)
         except Exception as e:
