@@ -28,6 +28,7 @@ import optparse
 from cms.async import ServiceCoord
 from cms.db.SQLAlchemyAll import metadata, Session, Task, Manager, \
      Testcase, User, Contest, SubmissionFormatElement
+from cms.service.FileStorage import FileCacher
 from cms.service.ScoreType import ScoreTypes
 from cms.async.AsyncLibrary import rpc_callback, Service, logger
 from cms.db.Utils import analyze_all_tables
@@ -43,9 +44,8 @@ class YamlImporter(Service):
         logger.initialize(ServiceCoord("YamlImporter", shard))
         logger.debug("YamlImporter.__init__")
         Service.__init__(self, shard)
-        self.FS = self.connect_to(
-            ServiceCoord("FileStorage", 0),
-            sync=True)
+        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+        self.FC = FileCacher(self, self.FS)
         self.add_timeout(self.do_import, None, 10, immediately=True)
 
     def get_params_for_contest(self, path):
@@ -119,9 +119,8 @@ class YamlImporter(Service):
         """
         path = os.path.realpath(path)
         super_path, name = os.path.split(path)
-        conf = yaml.load(codecs.open(\
-                os.path.join(super_path, name + ".yaml"),
-                "r", "utf-8"))
+        conf = yaml.load(codecs.open(
+            os.path.join(super_path, name + ".yaml"), "r", "utf-8"))
 
         logger.info("Loading parameters for task %s" % (name))
 
@@ -131,21 +130,20 @@ class YamlImporter(Service):
         params["time_limit"] = conf["timeout"]
         params["memory_limit"] = conf["memlimit"]
         params["attachments"] = {} # FIXME - Use auxiliary
-        with open(os.path.join(path, "testo", "testo.pdf")) as f:
-            params["statement"] = self.FS.put_file(binary_data=f.read(),
-                                                   description="PDF statement for task %s" % (name),
-                                                   sync = True)
+        params["statement"] = self.FC.put_file(
+            path=os.path.join(path, "testo", "testo.pdf"),
+            description="PDF statement for task %s" % name)
         params["task_type"] = Task.TASK_TYPE_BATCH
 
         params["submission_format"] = [SubmissionFormatElement("%s.%%l" % (name))]
 
-        try:
-            with open(os.path.join(path, "cor", "correttore")) as f:
-                params["managers"] = {"checker": Manager(self.FS.put_file(binary_data=f.read(),
-                                                                          description="Manager for task %s" % (name),
-                                                                          sync=True))}
-                params["task_type_parameters"] = "[\"comp\", \"file\"]"
-        except IOError:
+        if os.path.exists(os.path.join(path, "cor", "correttore")):
+            params["managers"] = {
+                "checker": Manager(self.FC.put_file(
+                    path=os.path.join(path, "cor", "correttore"),
+                    description="Manager for task %s" % (name)))}
+            params["task_type_parameters"] = "[\"comp\", \"file\"]"
+        else:
             params["managers"] = {}
             params["task_type_parameters"] = "[\"diff\", \"file\"]"
         params["score_type"] = conf.get("score_type", ScoreTypes.SCORE_TYPE_SUM)
@@ -157,15 +155,14 @@ class YamlImporter(Service):
             public_testcases = []
         params["testcases"] = []
         for i in xrange(int(conf["n_input"])):
-            with open(os.path.join(path, "input", "input%d.txt" % (i))) as fi:
-                with open(os.path.join(path, "output", "output%d.txt" % (i))) as fo:
-                    params["testcases"].append(Testcase(self.FS.put_file(binary_data=fi.read(),
-                                                                         description="Input %d for task %s" % (i, name),
-                                                                         sync=True),
-                                                        self.FS.put_file(binary_data=fo.read(),
-                                                                         description="Output %d for task %s" % (i, name),
-                                                                         sync=True),
-                                                        public=(i in public_testcases)))
+            fi = os.path.join(path, "input", "input%d.txt" % i)
+            fo = os.path.join(path, "output", "output%d.txt" % i)
+            params["testcases"].append(Testcase(
+                self.FC.put_file(
+                    path=fi, description="Input %d for task %s" % (i, name)),
+                self.FC.put_file(
+                    path=fo, description="Output %d for task %s" % (i, name))
+                public=(i in public_testcases)))
         params["token_initial"] = conf.get("token_initial", 0)
         params["token_max"] = conf.get("token_max", None)
         params["token_total"] = conf.get("token_total", None)
