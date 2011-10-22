@@ -33,10 +33,10 @@ import codecs
 import hashlib
 
 from cms.async.AsyncLibrary import Service, \
-     rpc_method, rpc_binary_response, rpc_callback, \
-     logger
-from cms.async import ServiceCoord, Address, Config,\
-     make_async, async_response, async_error
+    rpc_method, rpc_binary_response, rpc_callback, \
+    logger
+from cms.async import ServiceCoord, Address, Config, \
+    make_async, async_response, async_error
 from cms.service.Utils import mkdir, random_string
 
 
@@ -137,7 +137,8 @@ class FileStorage(Service):
             self.stats["put"][1] += time.time() - start_time
             logger.info("Calls: %d" % self.stats["put"][0])
             logger.info("Total time: %.3lf" % self.stats["put"][1])
-            logger.info("Average time: %.5lf" % (self.stats["put"][1]/self.stats["put"][0]))
+            logger.info("Average time: %.5lf" % (self.stats["put"][1] /
+                                                 self.stats["put"][0]))
             self.stats["put"] = [0, 0.0]
             return digest
         else:
@@ -179,7 +180,8 @@ class FileStorage(Service):
         if chunk_size is None or len(data) < chunk_size:
             logger.info("Calls: %d" % self.stats["get"][0])
             logger.info("Total time: %.3lf" % self.stats["get"][1])
-            logger.info("Average time: %.5lf" % (self.stats["get"][1]/self.stats["get"][0]))
+            logger.info("Average time: %.5lf" % (self.stats["get"][1] /
+                                                 self.stats["get"][0]))
             self.stats["get"] = [0, 0.0]
         return data
 
@@ -245,8 +247,6 @@ class FileCacher:
                not mkdir(self.tmp_dir) or \
                not mkdir(self.obj_dir):
             logger.error("Cannot create necessary directories.")
-
-    ## GET ##
 
     @make_async
     def get_file(self, digest, path=None, file_obj=None,
@@ -329,60 +329,6 @@ class FileCacher:
         # Nothing to say otherwise
         else:
             yield async_response(None)
-    ## GET VARIATIONS ##
-
-    def get_file_to_file(self, digest):
-        """Get a file from the cache or from the service if not
-        present. Returns it as a file-like object.
-
-        digest (string): the sha1 sum of the file.
-        return (file): an open handler for the file.
-
-        """
-        self.get_file(digest=digest)
-
-    def get_file_to_write_file(self, digest, file_obj):
-        """Get a file from the cache or from the service if not
-        present. It writes it on a file-like object.
-
-        digest (string): the sha1 sum of the file.
-        file_obj (file): the file-like object on which to write
-                         the received file.
-
-        """
-        self.get_file(digest=digest, file_obj=file_obj)
-
-    def get_file_to_path(self, digest, path):
-        """Get a file from the cache or from the service if not
-        present. Returns it by putting it in the specified path.
-
-        digest (string): the sha1 sum of the file.
-        path (string): the path where to copy the received file.
-
-        """
-        self.get_file(digest=digest, path=path)
-
-    def get_file_to_cache(self, digest):
-        """Get a file from storage, but do not return it. Just keep it
-        in the cache. Return True if file was successfully cached,
-        False otherwise.
-
-        digest (string): the sha1 sum of the file.
-
-        """
-        self.get_file(digest=digest)
-
-    def get_file_to_string(self, digest):
-        """Get a file from the cache or from the service if not
-        present. Returns it as a string.
-
-        digest (string): the sha1 sum of the file.
-        return (string): the content of the file.
-
-        """
-        return self.get_file(digest=digest, string=True)
-
-    ## PUT ##
 
     @make_async
     def put_file(self, binary_data=None, description="",
@@ -449,49 +395,6 @@ class FileCacher:
             yield async_response(digest)
         except Exception as e:
             yield async_error(repr(e))
-
-    ## PUT SYNTACTIC SUGARS ##
-
-    def put_file_from_string(self, content, description=""):
-        """Send a file to FileStorage keeping a copy locally. The file
-        is obtained from a string.
-
-        This call is actually a syntactic sugar over put_file().
-
-        content (string): the content of the file to send.
-        description (string): a human-readable description of the
-                              content.
-
-        """
-        self.put_file(binary_data=content, description=description)
-
-    def put_file_from_file(self, file_obj, description=""):
-        """Send a file to FileStorage keeping a copy locally. The file
-        is obtained from a file-like object.
-
-        This call is actually a syntactic sugar over put_file().
-
-        file_obj (file): the file-like object to send.
-        description (string): a human-readable description of the
-                              content.
-
-        """
-        self.put_file(file_obj=file_obj, description=description)
-
-    def put_file_from_path(self, path, description=""):
-        """Send a file to FileStorage keeping a copy locally. The file is
-        obtained from a file specified by its path.
-
-        This call is actually a syntactic sugar over put_file().
-
-        path (string): the file to send.
-        description (string): ahuman-readable description of the
-                              content.
-
-        """
-        self.put_file(path=path, description=description)
-
-    ## OTHER ROUTINES ##
 
     @make_async
     def describe(self, digest):
