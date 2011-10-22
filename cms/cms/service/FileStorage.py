@@ -31,7 +31,6 @@ import tempfile
 import shutil
 import codecs
 import hashlib
-import cStringIO
 
 from cms.async.AsyncLibrary import Service, \
      rpc_method, rpc_binary_response, rpc_callback, \
@@ -250,16 +249,22 @@ class FileCacher:
     ## GET ##
 
     @make_async
-    def get_file(self, digest, path=None, file_obj=None, string=None):
+    def get_file(self, digest, path=None, file_obj=None,
+                 string=False, temp_path=False):
         """Get a file from the cache or from the service if not
         present.
 
         digest (string): the sha1 sum of the file.
         path (string): a path where to save the file.
         file_obj (file): a handler where to save the file.
-        string (bool): True if forced to return content as a string.
+        string (bool): True to return content as a string.
+        temp_path (bool): True to return path of a temporary file with
+                          that content. The file is reserved to the
+                          caller, who has the duty to unlink it.
 
         """
+        if string and temp_path:
+            raise ValueError("Cannot ask for both content and temp path.")
 
         cache_path = os.path.join(self.obj_dir, digest)
         cache_exists = os.path.exists(cache_path)
@@ -272,7 +277,7 @@ class FileCacher:
             # the file without checking... and even if we delete file,
             # what's the problem?
             present = yield self.file_storage.is_file_present(digest=digest,
-                                                              timeout=1)
+                                                              timeout=True)
             # File not available remotely, deleting from cache.
             if not present:
                 try:
@@ -283,20 +288,21 @@ class FileCacher:
                 return
 
         else:
-            temp_path = os.path.join(self.tmp_dir, random_string(16))
+            temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
+            temp_file = os.fdopen(temp_file, "wb")
             start = 0
-            with open(temp_path, "wb") as f:
-                while True:
-                    data = yield self.file_storage.get_file(
-                        digest=digest, start=start,
-                        chunk_size=FileCacher.CHUNK_SIZE, timeout=True)
-                    if data is None:
-                        break
-                    start += len(data)
-                    f.write(data)
-                    if len(data) < FileCacher.CHUNK_SIZE:
-                        break
-            shutil.copy(temp_path, cache_path)
+            while True:
+                data = yield self.file_storage.get_file(
+                    digest=digest, start=start,
+                    chunk_size=FileCacher.CHUNK_SIZE, timeout=True)
+                if data is None:
+                    break
+                start += len(data)
+                temp_file.write(data)
+                if len(data) < FileCacher.CHUNK_SIZE:
+                    break
+            temp_file.close()
+            shutil.move(temp_filename, cache_path)
 
         # Saving to path
         if path is not None:
@@ -311,9 +317,17 @@ class FileCacher:
         if string == True:
             data = open(cache_path, "rb").read()
             yield async_response(data)
+
+        # Returning temporary file?
+        elif temp_path == True:
+            temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
+            os.close(temp_file)
+            shutil.copy(cache_path, temp_filename)
+            yield async_response(temp_filename)
+
+        # Nothing to say otherwise
         else:
             yield async_response(None)
-
     ## GET VARIATIONS ##
 
     def get_file_to_file(self, digest):
@@ -365,9 +379,7 @@ class FileCacher:
         return (string): the content of the file.
 
         """
-        s = cStringIO.StringIO()
-        self.get_file(digest=digest, file_obj=s)
-        return s.getvalue()
+        return self.get_file(digest=digest, string=True)
 
     ## PUT ##
 
