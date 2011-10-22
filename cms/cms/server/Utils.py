@@ -22,7 +22,10 @@
 """Random utilities for web servers.
 
 """
+
+import os
 import traceback
+import time
 
 from functools import wraps
 
@@ -30,6 +33,7 @@ from cms.async.WebAsyncLibrary import rpc_callback
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import logger
 from cms.util.Cryptographics import decrypt_number
+from cms.service.FileStorage import FileCacher
 
 from tornado.web import HTTPError
 
@@ -105,34 +109,31 @@ def file_handler_gen(BaseClass):
             """Sends the RPC to the FS.
 
             """
-            self.application.service.FC.get_file_to_string(
-                callback=self._fetch_callback,
-                plus=[content_type, filename],
-                digest=digest)
-
-        @rpc_callback
-        def _fetch_callback(self, caller, data, plus, error=None):
-            """This is the callback for the RPC method called from a web
-            page, that just collects the response.
-
-            """
-            if data is None:
+            try:
+                self.temp_filename = self.application.service.FC.get_file(
+                    digest=digest, temp_path=True)
+            except Exception as e:
+                logger.error("Exception while retrieving file `%s'. %r" %
+                             (filename, e))
                 self.finish()
                 return
-            (content_type, filename) = plus
 
             self.set_header("Content-Type", content_type)
             self.set_header("Content-Disposition",
                             "attachment; filename=\"%s\"" % filename)
-            self.data = data
+            self.start_time = time.time()
+            self.temp_file = open(self.temp_filename, "rb")
             self.application.service.add_timeout(self._fetch_write_chunk,
                                                  None, 0.02,
                                                  immediately=True)
 
-        def _fetch_write_chunk(self, chunk_size=2097152):
-            self.write(self.data[:chunk_size])
-            self.data = self.data[chunk_size:]
-            if self.data == "":
+        def _fetch_write_chunk(self):
+            data = self.temp_file.read(FileCacher.CHUNK_SIZE)
+            self.write(data)
+            if len(data) < FileCacher.CHUNK_SIZE:
+                self.temp_file.close()
+                os.unlink(self.temp_filename)
+                print "Time: %.3lf" % (time.time() - self.start_time)
                 self.finish()
                 return False
             return True
