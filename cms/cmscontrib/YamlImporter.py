@@ -27,11 +27,12 @@ import optparse
 
 from cms.async import ServiceCoord
 from cms.db.SQLAlchemyAll import metadata, Session, Task, Manager, \
-     Testcase, User, Contest, SubmissionFormatElement
+    Testcase, User, Contest, SubmissionFormatElement
 from cms.service.FileStorage import FileCacher
 from cms.service.ScoreType import ScoreTypes
 from cms.async.AsyncLibrary import rpc_callback, Service, logger
 from cms.db.Utils import analyze_all_tables
+
 
 class YamlImporter(Service):
 
@@ -50,11 +51,13 @@ class YamlImporter(Service):
 
     def get_params_for_contest(self, path):
         """Given the path of a contest, extract the data from its
-        contest.yaml file, and create a dictionary with the parameter to
-        give to the Contest class. Since tasks and users need to be
-        handled differently if we are doing an import or a reimport, we do
-        not fill the dictionary with tasks' and users' information, but we
-        return the lists of their names after the dictionay of parameters.
+        contest.yaml file, and create a dictionary with the parameter
+        to give to the Contest class. Since tasks and users need to be
+        handled differently if we are doing an import or a reimport,
+        we do not fill the dictionary with tasks' and users'
+        information, but we return the lists of their names after the
+        dictionay of parameters.
+
         """
         path = os.path.realpath(path)
         name = os.path.split(path)[1]
@@ -88,9 +91,10 @@ class YamlImporter(Service):
         return params, conf["problemi"], conf["utenti"]
 
     def get_params_for_user(self, user_dict):
-        """Given the dictionary of information of a user (extracted from
-        contest.yaml), it fills another dictionary with the parameters to
-        give to our class User.
+        """Given the dictionary of information of a user (extracted
+        from contest.yaml), it fills another dictionary with the
+        parameters to give to our class User.
+
         """
         params = {}
         params["username"] = user_dict["username"]
@@ -116,6 +120,7 @@ class YamlImporter(Service):
         """Given the path of a task, this function put all needed data
         into FS, and fills the dictionary of parameters to pass to the
         class Task.
+
         """
         path = os.path.realpath(path)
         super_path, name = os.path.split(path)
@@ -135,7 +140,8 @@ class YamlImporter(Service):
             description="PDF statement for task %s" % name)
         params["task_type"] = Task.TASK_TYPE_BATCH
 
-        params["submission_format"] = [SubmissionFormatElement("%s.%%l" % (name))]
+        params["submission_format"] = [SubmissionFormatElement("%s.%%l" %
+                                                               (name))]
 
         if os.path.exists(os.path.join(path, "cor", "correttore")):
             params["managers"] = {
@@ -146,11 +152,13 @@ class YamlImporter(Service):
         else:
             params["managers"] = {}
             params["task_type_parameters"] = "[\"diff\", \"file\"]"
-        params["score_type"] = conf.get("score_type", ScoreTypes.SCORE_TYPE_SUM)
+        params["score_type"] = conf.get("score_type",
+                                        ScoreTypes.SCORE_TYPE_SUM)
         params["score_parameters"] = conf.get("score_parameters", "5.0")
         public_testcases = conf.get("risultati", "").strip()
         if public_testcases != "":
-            public_testcases = [int(x.strip()) for x in public_testcases.split(",")]
+            public_testcases = [int(x.strip())
+                                for x in public_testcases.split(",")]
         else:
             public_testcases = []
         params["testcases"] = []
@@ -180,7 +188,8 @@ class YamlImporter(Service):
         params, tasks, users = self.get_params_for_contest(self.path)
         params["tasks"] = []
         for task in tasks:
-            task_params = self.get_params_for_task(os.path.join(self.path, task))
+            task_params = self.get_params_for_task(os.path.join(self.path,
+                                                                task))
             params["tasks"].append(Task(**task_params))
         params["users"] = []
         if self.user_num is None:
@@ -227,18 +236,24 @@ class YamlImporter(Service):
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
     parser.add_option("-z", "--zero-time",
-                      dest="zero_time", help="set to zero contest start and stop time",
+                      dest="zero_time",
+                      help="set to zero contest start and stop time",
                       default=False, action="store_true")
     parser.add_option("-t", "--test",
-                      dest="test", help="setup a contest for testing (times: 0, 2*10^9; ips: 0.0.0.0, passwords: a)",
+                      dest="test",
+                      help="setup a contest for testing "
+                      "(times: 0, 2*10^9; ips: 0.0.0.0, passwords: a)",
                       default=False, action="store_true")
     parser.add_option("-d", "--drop",
-                      dest="drop", help="drop everything from the database before importing",
+                      dest="drop", help="drop everything from the database "
+                      "before importing",
                       default=False, action="store_true")
     parser.add_option("-s", "--shard", help="service shard number",
                       dest="shard", action="store", type="int", default=None)
-    parser.add_option("-n", "--user-number", help="put N random users instead of importing them",
-                      dest="user_num", action="store", type="int", default=None)
+    parser.add_option("-n", "--user-number",
+                      help="put N random users instead of importing them",
+                      dest="user_num", action="store", type="int",
+                      default=None)
     options, args = parser.parse_args()
     if len(args) != 1:
         parser.error("I need exactly one parameter, the contest directory")
