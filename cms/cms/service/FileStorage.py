@@ -256,7 +256,8 @@ class FileCacher:
 
         digest (string): the sha1 sum of the file.
         path (string): a path where to save the file.
-        file_obj (file): a handler where to save the file.
+        file_obj (file): a handler where to save the file (that is not
+                         closed at return).
         string (bool): True to return content as a string.
         temp_path (bool): True to return path of a temporary file with
                           that content. The file is reserved to the
