@@ -78,11 +78,13 @@ class ContestExporter(Service):
             logger.info("Exporting files")
             files = c.enumerate_files()
             for f in files:
-                self.safe_get_file(f, os.path.join(files_dir, f), os.path.join(descr_dir, f))
+                self.safe_get_file(f, os.path.join(files_dir, f),
+                                   os.path.join(descr_dir, f))
 
             # Export the contest in JSON format
             logger.info("Exporting the contest in JSON format")
-            with open(os.path.join(self.export_dir, "contest.json"), 'w') as fout:
+            with open(os.path.join(self.export_dir,
+                                   "contest.json"), 'w') as fout:
                 json.dump(c.export_to_dict(), fout, indent=4)
 
         # The database dump is never used; however, this part is
@@ -101,13 +103,16 @@ class ContestExporter(Service):
                 if db_match is not None:
                     username, password, host, database = db_match.groups()
                     os.environ['PGPASSWORD'] = password
-                    export_res = os.system('pg_dump -h %s -U %s -w %s -x --attribute-inserts > %s' % (host, username, database, db_exportfile))
+                    export_res = os.system('pg_dump -h %s -U %s -w %s -x " \
+                        "--attribute-inserts > %s' % (host, username, database,
+                                                      db_exportfile))
                     del os.environ['PGPASSWORD']
                     if export_res != 0:
                         logger.critical("Database export failed")
                         sys.exit(1)
                 else:
-                    logger.critical("Cannot obtain parameters for database connection")
+                    logger.critical("Cannot obtain parameters for "
+                                    "database connection")
                     sys.exit(1)
 
             # Export procedure for SQLite
@@ -121,7 +126,8 @@ class ContestExporter(Service):
                         logger.critical("Database export failed")
                         sys.exit(1)
                 else:
-                    logger.critical("Cannot obtain parameters for database connection")
+                    logger.critical("Cannot obtain parameters for "
+                                    "database connection")
                     sys.exit(1)
 
             else:
@@ -136,33 +142,41 @@ class ContestExporter(Service):
     def safe_get_file(self, digest, path, descr_path=None):
         # First get the file
         try:
-            self.FC.get_file_to_path(digest, path, sync=True)
-        except SyncRPCError:
-            logger.error("File %s could not retrieved from file server, aborting..." % digest)
+            self.FC.get_file(digest, path=path)
+        except Exception as e:
+            logger.error("File %s could not retrieved from file server "
+                         "(%r), aborting..." % (digest, e))
             sys.exit(1)
 
         # Then check the digest
         calc_digest = sha1sum(path)
         if digest != calc_digest:
-            logger.error("File %s has wrong hash %s, aborting..." % (digest, calc_digest))
+            logger.error("File %s has wrong hash %s, aborting..." %
+                         (digest, calc_digest))
             sys.exit(1)
 
         # If applicable, retrieve also the description
         if descr_path is not None:
             with open(descr_path, 'w') as fout:
-                fout.write(self.FC.describe(digest, sync=True))
+                fout.write(self.FC.describe(digest))
 
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
     parser.add_option("-c", "--contest", help="contest ID to export",
-                      dest="contest_id", action="store", type="int", default=None)
+                      dest="contest_id", action="store", type="int",
+                      default=None)
     parser.add_option("-s", "--shard", help="service shard number",
-                      dest="shard", action="store", type="int", default=None)
-    parser.add_option("-d", "--dump-database", help="include a SQL dump of the database (this will disclose data about other contests stored in the same database)",
+                      dest="shard", action="store", type="int",
+                      default=None)
+    parser.add_option("-d", "--dump-database",
+                      help="include a SQL dump of the database (this will "
+                      "disclose data about other contests stored in the same "
+                      "database)",
                       dest="dump", action="store_true", default=False)
     options, args = parser.parse_args()
     if len(args) != 1:
-        parser.error("I need exactly one parameter, the directory where to export the contest")
+        parser.error("I need exactly one parameter, "
+                     "the directory where to export the contest")
     if options.shard is None:
         parser.error("The `-s' option is mandatory!")
 
