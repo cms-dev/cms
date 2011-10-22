@@ -122,6 +122,7 @@ def file_handler_gen(BaseClass):
             self.set_header("Content-Disposition",
                             "attachment; filename=\"%s\"" % filename)
             self.start_time = time.time()
+            self.size = 0
             self.temp_file = open(self.temp_filename, "rb")
             self.application.service.add_timeout(self._fetch_write_chunk,
                                                  None, 0.02,
@@ -129,11 +130,15 @@ def file_handler_gen(BaseClass):
 
         def _fetch_write_chunk(self):
             data = self.temp_file.read(FileCacher.CHUNK_SIZE)
+            l = len(data)
+            self.size += l / 1024.0 / 1024.0
             self.write(data)
-            if len(data) < FileCacher.CHUNK_SIZE:
+            if l < FileCacher.CHUNK_SIZE:
                 self.temp_file.close()
                 os.unlink(self.temp_filename)
-                print "Time: %.3lf" % (time.time() - self.start_time)
+                duration = time.time() - self.start_time
+                logger.info("%.3lf seconds for %.3lf MB, %.3lf MB/s" %
+                            (duration, self.size, self.size/duration))
                 self.finish()
                 return False
             return True
