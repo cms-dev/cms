@@ -512,8 +512,6 @@ class RemoteService(asynchat.async_chat):
         data (string): arrived data.
         """
         # logger.debug("RemoteService.collect_incoming_data")
-        if self.service is None:
-            return
         self.data.append(data)
 
     def found_terminator(self):
@@ -524,8 +522,6 @@ class RemoteService(asynchat.async_chat):
 
         """
         # logger.debug("RemoteService.found_terminator")
-        if self.service is None:
-            return
         data = "".join(self.data)
         self.data = []
 
