@@ -198,19 +198,18 @@ class Service:
         if address is not None:
             self.server = ListeningSocket(self, address)
 
-    def connect_to(self, service, sync=False, on_connect=None):
+    def connect_to(self, service, on_connect=None):
         """Ask the service to connect to another service. A channel is
         established and connected. The connection will be reopened if
         closed.
 
         service (ServiceCoord): the service to connect to.
-        sync (bool): if True all rpc calls are synchronous.
         on_connect (function): to be called when the service connects.
         return (RemoteService): the connected RemoteService istance.
 
         """
         self.on_remote_service_connected[service] = on_connect
-        self.remote_services[service] = RemoteService(self, service, sync=sync)
+        self.remote_services[service] = RemoteService(self, service)
 
         # These commented lines are commented because I thought that
         # connect to remote services *before* our service was given
@@ -460,80 +459,6 @@ class ThreadedRPC(threading.Thread):
         self.service._threaded_responses_lock.release()
 
 
-class SyncRPCError(Exception):
-    pass
-
-class SyncRPCConnectError(SyncRPCError):
-    pass
-
-def make_sync(func):
-    def newfunc(*args, **kwargs):
-
-        # Detects if the call is synchronous or not; deletes the
-        # sync key from the arguments (it must be a keyword
-        # argument)
-        if 'sync' not in kwargs:
-            sync = False
-        else:
-            sync = kwargs['sync']
-            del kwargs['sync']
-
-        # If the call is synchronous...
-        if sync:
-
-            # The plus object is used to get information back from
-            # the callback to the calling context; the callback
-            # just has to copy the received data to the plus;
-            # finished is the last thing, since it triggers the
-            # continuation of the calling context
-            plus = {'finished': False,
-                    'data':     None,
-                    'error':    None}
-
-            @rpc_callback
-            def sync_callback(context, data, plus, error=None):
-                # logger.debug("sync_callback: callback for sync function received")
-                plus['data'] = data
-                plus['error'] = error
-                plus['finished'] = True
-
-            # Remove duplicate parameters
-            for key in ['plus', 'bind_obj', 'callback']:
-                try:
-                    del kwargs[key]
-                except KeyError:
-                    pass
-
-            # Do the call...
-            func(callback=sync_callback,
-                 plus=plus,
-                 bind_obj=None,
-                 *args, **kwargs)
-
-            # ...and wait for it to be finished, giving time to
-            # other operations
-            while not plus['finished']:
-                asyncore.loop(0.02, True, None, 1)
-
-            # Return the data if no errors were raised; cast an
-            # exception otherwise
-            error = plus['error']
-            data = plus['data']
-            if error is not None:
-                raise SyncRPCError(error)
-            else:
-                return data
-
-        # If the call is asynchronous, just do it (after having
-        # deleted the sync keyword argument)
-        else:
-            if 'sync' in kwargs:
-                del kwargs['sync']
-            return func(*args, **kwargs)
-
-    return newfunc
-
-
 class RemoteService(asynchat.async_chat):
     """This class mimick the local presence of a remote service. A
     local service can define many RemoteService object and call
@@ -543,8 +468,7 @@ class RemoteService(asynchat.async_chat):
 
     """
 
-    def __init__(self, service, remote_service_coord=None,
-                 address=None, sync=False):
+    def __init__(self, service, remote_service_coord=None, address=None):
         """Create a communication channel to a remote service.
 
         service (Service): the local service.
@@ -553,7 +477,6 @@ class RemoteService(asynchat.async_chat):
                                              to.
         address (Address): alternatively, the address to connect to
                            (used when accepting a connection).
-        sync (bool): if True, rpc calls return immediately by default
 
         """
         # Can't log using logger here, since it is not yet defined.
@@ -561,12 +484,8 @@ class RemoteService(asynchat.async_chat):
         if address is None and remote_service_coord is None:
             raise
 
-        # service is the local service connecting to the remote
-        # service
+        # service is the local service connecting to the remote one.
         self.service = service
-        # sync is True if we want that every rpc call in this channel
-        # is synchronous by default
-        self.sync = sync
 
         if address is None:
             self.remote_service_coord = remote_service_coord
