@@ -250,7 +250,7 @@ class FileCacher:
 
     @make_async
     def get_file(self, digest, path=None, file_obj=None,
-                 string=False, temp_path=False):
+                 string=False, temp_path=False, temp_file_obj=False):
         """Get a file from the cache or from the service if not
         present.
 
@@ -264,8 +264,9 @@ class FileCacher:
                           caller, who has the duty to unlink it.
 
         """
-        if string and temp_path:
-            raise ValueError("Cannot ask for both content and temp path.")
+        if [string, temp_path, temp_file_obj].count(True) != 1:
+            raise ValueError("Ask for at most one amongst content, "
+                             "temp path and temp file obj.")
 
         cache_path = os.path.join(self.obj_dir, digest)
         cache_exists = os.path.exists(cache_path)
@@ -325,6 +326,14 @@ class FileCacher:
             os.close(temp_file)
             shutil.copy(cache_path, temp_filename)
             yield async_response(temp_filename)
+
+        # Returning temporary file object?
+        elif temp_file_obj == True:
+            temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
+            os.close(temp_file)
+            shutil.copy(cache_path, temp_filename)
+            temp_file = open(temp_filename, "rb")
+            yield async_response(temp_file)
 
         # Nothing to say otherwise
         else:
