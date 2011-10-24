@@ -262,6 +262,12 @@ class FileCacher:
         temp_path (bool): True to return path of a temporary file with
                           that content. The file is reserved to the
                           caller, who has the duty to unlink it.
+        temp_file-obj (bool): True to return a file object opened to a
+                              temporary file with that content. The
+                              file is reserved to the caller. Use this
+                              method only for debugging purpose, as it
+                              leave a file lying in the temporary
+                              directory of FileCacher.
 
         """
         if [string, temp_path, temp_file_obj].count(True) != 1:
