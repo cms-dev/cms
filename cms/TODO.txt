@@ -2,12 +2,6 @@
 
 
 
-** Medium priority
-
-* Remove all sync'ed RPC (e.g. there are some in Worker).
-
-
-
 ** Low priority
 
 * Always refer to tasks, testcases and such by id instead of num (as
