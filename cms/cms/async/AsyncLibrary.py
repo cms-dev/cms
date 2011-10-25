@@ -263,14 +263,15 @@ class Service:
                       (repr(e), traceback.format_exc())
             logger.critical(err_msg)
 
-    def _step(self):
+    def _step(self, maximum=2.0):
         """One step of the main loop.
 
         """
         # Let's not spam the logs...
         # # logger.debug("Service._step")
+        next_timeout = self._find_next_timeout(maximum=maximum)
         with async_lock:
-            asyncore.loop(0.02, False, None, 1)
+            asyncore.loop(next_timeout, False, None, 1)
         self._trigger()
 
     def _reconnect(self):
@@ -296,10 +297,10 @@ class Service:
         """
         current = time.time()
 
-        # Try to connect to disconnected services
+        # Try to connect to disconnected services.
         self._reconnect()
 
-        # Check if some threaded RPC call ended
+        # Check if some threaded RPC call ended.
         self._threaded_responses_lock.acquire()
         local_threaded_responses = self._threaded_responses[:]
         self._threaded_responses = []
@@ -307,7 +308,7 @@ class Service:
         for remote_service, response in local_threaded_responses:
             remote_service.send_reply(*response)
 
-        # Check if some scheduled function needs to be called
+        # Check if some scheduled function needs to be called.
         for func in self._timeouts.keys():
             plus, seconds, timestamp = self._timeouts[func]
             if current - timestamp > seconds:
@@ -318,6 +319,21 @@ class Service:
                     ret = func(plus)
                 if not ret:
                     del self._timeouts[func]
+
+    def _find_next_timeout(self, maximum=2.0):
+        """Find interval to next timeout (capped to maximum second).
+
+        maximum (float): seconds to cap to the value.
+        return (float): seconds to next timeout.
+
+        """
+        current = time.time()
+        next_timeout = maximum
+        for func in self._timeouts.keys():
+            plus, seconds, timestamp = self._timeouts[func]
+            interval = timestamp + seconds - current
+            next_timeout = min(interval, next_timeout)
+        return max(0, next_timeout)
 
     @rpc_method
     def echo(self, string):

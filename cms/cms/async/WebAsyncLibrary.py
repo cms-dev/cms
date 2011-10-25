@@ -205,7 +205,7 @@ class WebService(Service):
         """
         # Let's not spam the logs...
         # # logger.debug("WebService._webstep")
-        self._step()
+        self._step(maximum=0.02)
         self.instance.add_callback(self._webstep)
 
     @rpc_callback
