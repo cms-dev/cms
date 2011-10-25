@@ -23,6 +23,8 @@
 an asynchronous RPC service.
 
 """
+
+import time
 import fcntl
 
 import tornado.httpserver
@@ -206,7 +208,7 @@ class WebService(Service):
         # Let's not spam the logs...
         # # logger.debug("WebService._webstep")
         self._step(maximum=0.02)
-        self.instance.add_callback(self._webstep)
+        self.instance.add_timeout(time.time() + 0.01, self._webstep)
 
     @rpc_callback
     def _default_callback(self, data, plus, error=None):
