@@ -31,6 +31,7 @@ import os
 import signal
 import threading
 import traceback
+import heapq
 
 import asyncore
 import asynchat
@@ -170,9 +171,10 @@ class Service:
         # logger.debug("Service.__init__")
         signal.signal(signal.SIGINT, lambda x, y: self.exit())
         self.shard = shard
-        # Stores the function to call periodically. Format: function
-        # -> [plus_obj, interval_in_seconds, time of last call]
-        self._timeouts = {}
+        # Stores the function to call periodically. It is to be
+        # managed with heapq. Format: (next_timeout, period, function,
+        # plus)
+        self._timeouts = []
         # If we want to exit the main loop
         self._exit = False
         # The return values of the rpc calls executed in a different
@@ -237,10 +239,10 @@ class Service:
                             beginning.
 
         """
-        last = time.time()
-        if immediately:
-            last -= seconds
-        self._timeouts[func] = [plus, seconds, last]
+        next_timeout = time.time()
+        if not immediately:
+            next_timeout += seconds
+        heapq.heappush(self._timeouts, (next_timeout, seconds, func, plus))
 
     def exit(self):
         """Terminate the service at the next step.
@@ -309,16 +311,20 @@ class Service:
             remote_service.send_reply(*response)
 
         # Check if some scheduled function needs to be called.
-        for func in self._timeouts.keys():
-            plus, seconds, timestamp = self._timeouts[func]
-            if current - timestamp > seconds:
-                self._timeouts[func][2] = current
+        while self._timeouts != []:
+            next_timeout, seconds, func, plus = self._timeouts[0]
+            if current > next_timeout:
                 if plus is None:
                     ret = func()
                 else:
                     ret = func(plus)
-                if not ret:
-                    del self._timeouts[func]
+                if ret:
+                    heapq.heappushpop(self._timeouts, (next_timeout + seconds,
+                                                       seconds, func, plus))
+                else:
+                    heapq.heappop(self._timeouts)
+            else:
+                break
 
     def _find_next_timeout(self, maximum=2.0):
         """Find interval to next timeout (capped to maximum second).
@@ -329,10 +335,8 @@ class Service:
         """
         current = time.time()
         next_timeout = maximum
-        for func in self._timeouts.keys():
-            plus, seconds, timestamp = self._timeouts[func]
-            interval = timestamp + seconds - current
-            next_timeout = min(interval, next_timeout)
+        if self._timeouts != []:
+            next_timeout = min(next_timeout, self._timeouts[0][0] - current)
         return max(0, next_timeout)
 
     @rpc_method
