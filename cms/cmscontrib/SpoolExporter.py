@@ -95,12 +95,10 @@ class SpoolExporter(Service):
                 upload_filename = os.path.join(
                     user_dir, "%s.%d.%s" %
                     (task, timestamp, submission.language))
-                self.FC.get_file_to_path(file_digest, upload_filename,
-                                         sync=True)
+                self.FC.get_file(file_digest, path=upload_filename)
                 upload_filename = os.path.join(user_dir, "%s.%s" %
                                                (task, submission.language))
-                self.FC.get_file_to_path(file_digest, upload_filename,
-                                         sync=True)
+                self.FC.get_file(file_digest, path=upload_filename)
                 print >> queue_file, "./upload/%s/%s.%d.%s" % \
                     (username, task, timestamp, submission.language)
 

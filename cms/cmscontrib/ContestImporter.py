@@ -100,9 +100,9 @@ class ContestImporter(Service):
 
         # Put the file
         try:
-            digest = self.FC.put_file_from_path(path, description=description, sync=True)
-        except SyncRPCError:
-            logger.error("File %s could not be put to file server, aborting..." % path)
+            digest = self.FC.put_file(path=path, description=description)
+        except Exception as e:
+            logger.error("File %s could not be put to file server (%r), aborting..." % (path, e))
             sys.exit(1)
 
         # Then check the digest

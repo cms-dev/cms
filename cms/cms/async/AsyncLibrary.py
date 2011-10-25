@@ -198,19 +198,18 @@ class Service:
         if address is not None:
             self.server = ListeningSocket(self, address)
 
-    def connect_to(self, service, sync=False, on_connect=None):
+    def connect_to(self, service, on_connect=None):
         """Ask the service to connect to another service. A channel is
         established and connected. The connection will be reopened if
         closed.
 
         service (ServiceCoord): the service to connect to.
-        sync (bool): if True all rpc calls are synchronous.
         on_connect (function): to be called when the service connects.
         return (RemoteService): the connected RemoteService istance.
 
         """
         self.on_remote_service_connected[service] = on_connect
-        self.remote_services[service] = RemoteService(self, service, sync=sync)
+        self.remote_services[service] = RemoteService(self, service)
 
         # These commented lines are commented because I thought that
         # connect to remote services *before* our service was given
@@ -460,84 +459,6 @@ class ThreadedRPC(threading.Thread):
         self.service._threaded_responses_lock.release()
 
 
-class SyncRPCError(Exception):
-    pass
-
-class SyncRPCConnectError(SyncRPCError):
-    pass
-
-def make_sync(default_sync=False):
-
-    def decorator(func):
-
-        def newfunc(*args, **kwargs):
-
-            # Detects if the call is synchronous or not; deletes the
-            # sync key from the arguments (it must be a keyword
-            # argument)
-            if 'sync' not in kwargs:
-                sync = default_sync
-            else:
-                sync = kwargs['sync']
-                del kwargs['sync']
-
-            # If the call is synchronous...
-            if sync:
-
-                # The plus object is used to get information back from
-                # the callback to the calling context; the callback
-                # just has to copy the received data to the plus;
-                # finished is the last thing, since it triggers the
-                # continuation of the calling context
-                plus = {'finished': False,
-                        'data':     None,
-                        'error':    None}
-
-                @rpc_callback
-                def sync_callback(context, data, plus, error=None):
-                    # logger.debug("sync_callback: callback for sync function received")
-                    plus['data'] = data
-                    plus['error'] = error
-                    plus['finished'] = True
-
-                # Remove duplicate parameters
-                for key in ['plus', 'bind_obj', 'callback']:
-                    try:
-                        del kwargs[key]
-                    except KeyError:
-                        pass
-
-                # Do the call...
-                func(callback=sync_callback,
-                     plus=plus,
-                     bind_obj=None,
-                     *args, **kwargs)
-
-                # ...and wait for it to be finished, giving time to
-                # other operations
-                while not plus['finished']:
-                    asyncore.loop(0.02, True, None, 1)
-
-                # Return the data if no errors were raised; cast an
-                # exception otherwise
-                error = plus['error']
-                data = plus['data']
-                if error is not None:
-                    raise SyncRPCError(error)
-                else:
-                    return data
-
-            # If the call is asynchronous, just do it (after having
-            # deleted the sync keyword argument)
-            else:
-                if 'sync' in kwargs:
-                    del kwargs['sync']
-                return func(*args, **kwargs)
-
-        return newfunc
-
-    return decorator
-
 class RemoteService(asynchat.async_chat):
     """This class mimick the local presence of a remote service. A
     local service can define many RemoteService object and call
@@ -547,8 +468,7 @@ class RemoteService(asynchat.async_chat):
 
     """
 
-    def __init__(self, service, remote_service_coord=None,
-                 address=None, sync=False):
+    def __init__(self, service, remote_service_coord=None, address=None):
         """Create a communication channel to a remote service.
 
         service (Service): the local service.
@@ -557,7 +477,6 @@ class RemoteService(asynchat.async_chat):
                                              to.
         address (Address): alternatively, the address to connect to
                            (used when accepting a connection).
-        sync (bool): if True, rpc calls return immediately by default
 
         """
         # Can't log using logger here, since it is not yet defined.
@@ -565,12 +484,8 @@ class RemoteService(asynchat.async_chat):
         if address is None and remote_service_coord is None:
             raise
 
-        # service is the local service connecting to the remote
-        # service
+        # service is the local service connecting to the remote one.
         self.service = service
-        # sync is True if we want that every rpc call in this channel
-        # is synchronous by default
-        self.sync = sync
 
         if address is None:
             self.remote_service_coord = remote_service_coord
@@ -597,8 +512,6 @@ class RemoteService(asynchat.async_chat):
         data (string): arrived data.
         """
         # logger.debug("RemoteService.collect_incoming_data")
-        if self.service is None:
-            return
         self.data.append(data)
 
     def found_terminator(self):
@@ -609,8 +522,6 @@ class RemoteService(asynchat.async_chat):
 
         """
         # logger.debug("RemoteService.found_terminator")
-        if self.service is None:
-            return
         data = "".join(self.data)
         self.data = []
 
@@ -697,9 +608,9 @@ class RemoteService(asynchat.async_chat):
             return
         self._push_right(json_length + json_message + binary_message)
 
-    @make_sync(default_sync=False)
     def execute_rpc(self, method, data,
-                    callback=None, plus=None, bind_obj=None):
+                    callback=None, plus=None, bind_obj=None,
+                    timeout=None):
         """Method to send an RPC request to the remote service.
 
         The message sent to the remote service is of this kind:
@@ -721,14 +632,37 @@ class RemoteService(asynchat.async_chat):
         plus (object): additional object to be passed to the callback.
         bind_obj (object): context for the callback (None means the
                            local service).
+        timeout (int/bool): the time (in seconds) to wait for the
+                            response of a yielded call; None to signal
+                            that the call is not yielded, True to give
+                            a default value.
+
+        return (bool/dict): False if the remote service is not
+                            connected; in a non-yielded call True if
+                            it is connected; in a yielded call, a
+                            dictionary with fields 'completed',
+                            'data', and 'error'.
 
         """
         # logger.debug("RemoteService.execute_rpc")
 
+        # Sanity checks.
+        if callback is not None and timeout is not None:
+            raise ValueError("Cannot use both callback and timeout.")
+        if timeout is not None and plus is not None:
+            raise ValueError("Cannot use both timeout and plus.")
+
+        # Default timeout
+        if timeout == True:
+            timeout = 10
+
+        # Try to connect, or fail.
         if not self.connected:
             self.connect_remote_service()
             if not self.connected:
                 return False
+
+        # If we don't specify, we bind on the service.
         if bind_obj is None:
             bind_obj = self.service
 
@@ -736,6 +670,18 @@ class RemoteService(asynchat.async_chat):
         message = {}
         message["__method"] = method
         message["__data"] = data
+
+        # If timeout is valid, we are in a coroutine, and we use our
+        # callback.
+        if timeout is not None:
+            cb_result = {"data": None,
+                         "error": None,
+                         "completed": False}
+            @rpc_callback
+            def callback(self, data, error=None):
+                cb_result["data"] = data
+                cb_result["error"] = error
+                cb_result["completed"] = True
 
         # And we remember that we need to wait for a reply
         request = RPCRequest(message, bind_obj, callback, plus)
@@ -770,6 +716,14 @@ class RemoteService(asynchat.async_chat):
             request.complete({"__error": msg})
             return
 
+        if timeout is not None:
+            send_time = time.time()
+            while not self.service._exit and \
+                    not cb_result["completed"] and \
+                    time.time() - send_time < timeout:
+                self.service._step()
+            return cb_result
+
         return True
 
     def __getattr__(self, method):
@@ -785,14 +739,15 @@ class RemoteService(asynchat.async_chat):
         def remote_method(callback=None,
                           plus=None,
                           bind_obj=None,
-                          sync=None,
+                          timeout=None,
                           **data):
             """Call execute_rpc with the given method name.
 
             """
             return self.execute_rpc(method=method, data=data,
-                                    callback=callback, plus=plus, bind_obj=bind_obj,
-                                    sync=sync)
+                                    callback=callback, plus=plus,
+                                    bind_obj=bind_obj,
+                                    timeout=timeout)
         return remote_method
 
     def _push_right(self, data):

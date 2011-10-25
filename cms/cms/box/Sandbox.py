@@ -347,7 +347,7 @@ class Sandbox:
         """
         fd = self.create_file(path, executable)
         with async_lock:
-            self.FC.get_file_to_write_file(digest, fd, sync=True)
+            self.FC.get_file(digest, file_obj=fd)
         fd.close()
 
     def create_file_from_string(self, path, content, executable=False):
@@ -406,7 +406,7 @@ class Sandbox:
         """
         fd = self.get_file(path)
         with async_lock:
-            digest = self.FC.put_file_from_file(fd, description, sync=True)
+            digest = self.FC.put_file(file_obj=fd, description)
         fd.close()
         return digest
 

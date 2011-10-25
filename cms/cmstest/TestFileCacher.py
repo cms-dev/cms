@@ -44,7 +44,8 @@ class TestFileCacher(TestService):
         logger.debug("TestFileCacher.__init__")
         TestService.__init__(self, shard)
 
-        # Assume we store the cache in "./fs-cache"
+        # Assume we store the cache in "./cache/fs-cache-TestFileCacher-0/"
+        self.cache_base_path = os.path.join(".", "cache", "fs-cache-TestFileCacher-0")
         self.cache_path = None
         self.content = None
         self.fake_content = None
@@ -52,10 +53,10 @@ class TestFileCacher(TestService):
         self.file_obj = None
 
     def prepare(self):
-        self.FS = self.connect_to(
-            ServiceCoord("FileStorage", 0))
-        if os.path.exists("fs-cache"):
-            logger.error("Please delete directory fs-cache before.")
+        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+        if os.path.exists(self.cache_base_path):
+            logger.error("Please delete directory %s before." %
+                         self.cache_base_path)
             self.exit()
         self.FC = FileCacher(self, self.FS)
 
@@ -76,32 +77,24 @@ class TestFileCacher(TestService):
             self.content += chr(random.randint(0, 255))
 
         logger.info("  I am sending the ~100B binary file to FileCacher")
-        self.FC.put_file_from_file(file_obj=StringIO(self.content),
-                                   description="Test #000",
-                                   callback=TestFileCacher.test_000_callback,
-                                   plus=("Test #", 0))
+        try:
+            data = self.FC.put_file(file_obj=StringIO(self.content),
+                                    description="Test #000")
+        except Exception as e:
+            self.test_end(False, "Error received: %r." % e)
 
-    @rpc_callback
-    def test_000_callback(self, data, plus, error=None):
-        """Called with the digest of the sent file.
-
-        """
-        if error is not None:
-            self.test_end(False, "Error received: %s." % error)
-        elif plus != ("Test #", 0):
-            self.test_end(False, "Plus object not received correctly.")
-        elif not os.path.exists(
-            os.path.join("fs-cache", "objects", data)):
+        if not os.path.exists(
+            os.path.join(self.cache_base_path, "objects", data)):
             self.test_end(False, "File not stored in local cache.")
-        elif open(os.path.join("fs-cache", "objects", data),
+        elif open(os.path.join(self.cache_base_path, "objects", data),
                   "rb").read() != self.content:
-            self.test_end(False, "Local cache's content differ " +
+            self.test_end(False, "Local cache's content differ "
                           "from original file.")
         else:
-            self.cache_path = os.path.join("fs-cache", "objects", data)
+            self.cache_path = os.path.join(self.cache_base_path, "objects",
+                                           data)
             self.digest = data
-            self.test_end(True, "Data sent and cached without error " +
-                          "and plus object received.")
+            self.test_end(True, "Data sent and cached without error.")
 
 ### TEST 001 ###
 
@@ -117,30 +110,21 @@ class TestFileCacher(TestService):
         self.fake_content = "Fake content.\n"
         with open(self.cache_path, "wb") as cached_file:
             cached_file.write(self.fake_content)
-        self.FC.get_file_to_file(digest=self.digest,
-                                 callback=TestFileCacher.test_001_callback,
-                                 plus=("Test #", 1))
+        try:
+            data = self.FC.get_file(digest=self.digest, temp_file_obj=True)
+        except Exception as e:
+            self.test_end(False, "Error received: %r." % e)
 
-    @rpc_callback
-    def test_001_callback(self, data, plus, error=None):
-        """Called with the content of the file (from FC).
-
-        """
-        if error is not None:
-            self.test_end(False, "Error received: %s." % error)
-        elif plus != ("Test #", 1):
-            self.test_end(False, "Plus object not received correctly.")
-        else:
-            received = data.read()
-            data.close()
-            if received != self.fake_content:
-                if received == self.content:
-                    self.test_end(False,
-                                  "Did not use the cache even if it could.")
-                else:
-                    self.test_end(False, "Content differ.")
+        received = data.read()
+        data.close()
+        if received != self.fake_content:
+            if received == self.content:
+                self.test_end(False,
+                              "Did not use the cache even if it could.")
             else:
-                self.test_end(True, "Data and plus object received correctly.")
+                self.test_end(False, "Content differ.")
+        else:
+            self.test_end(True, "Data object received correctly.")
 
 ### TEST 002 ###
 
@@ -155,32 +139,23 @@ class TestFileCacher(TestService):
         logger.info("  I am retrieving the file from FileCacher " +
                     "after deleting the cache.")
         os.unlink(self.cache_path)
-        self.FC.get_file_to_file(digest=self.digest,
-                                 callback=TestFileCacher.test_002_callback,
-                                 plus=("Test #", 2))
+        try:
+            data = self.FC.get_file(digest=self.digest, temp_file_obj=True)
+        except Exception as e:
+            self.test_end(False, "Error received: %r." % e)
 
-    @rpc_callback
-    def test_002_callback(self, data, plus, error=None):
-        """Called with the content of the file (from FS).
-
-        """
-        if error is not None:
-            self.test_end(False, "Error received: %s." % error)
-        elif plus != ("Test #", 2):
-            self.test_end(False, "Plus object not received correctly.")
+        received = data.read()
+        data.close()
+        if received != self.content:
+            self.test_end(False, "Content differ.")
+        elif not os.path.exists(self.cache_path):
+            self.test_end(False, "File not stored in local cache.")
+        elif open(self.cache_path).read() != self.content:
+            self.test_end(False, "Local cache's content differ " +
+                          "from original file.")
         else:
-            received = data.read()
-            data.close()
-            if received != self.content:
-                self.test_end(False, "Content differ.")
-            elif not os.path.exists(self.cache_path):
-                self.test_end(False, "File not stored in local cache.")
-            elif open(self.cache_path).read() != self.content:
-                self.test_end(False, "Local cache's content differ " +
-                              "from original file.")
-            else:
-                self.test_end(True, "Content and plus object received " +
-                              "and cached correctly.")
+            self.test_end(True, "Content object received " +
+                          "and cached correctly.")
 
 ### TEST 003 ###
 
@@ -211,23 +186,12 @@ class TestFileCacher(TestService):
         else:
             logger.info("  File deleted correctly.")
             logger.info("  I am getting the file from FileCacher.")
-            self.FC.get_file(digest=self.digest,
-                             callback=TestFileCacher.test_003_callback_2,
-                             plus=("Test #", 3))
-
-    @rpc_callback
-    def test_003_callback_2(self, data, plus, error=None):
-        """Called with an error.
-
-        """
-        if error is None:
-            self.test_end(False, "No error received.")
-        elif plus != ("Test #", 3):
-            self.test_end(False, "Plus object not received correctly.")
-        elif data is not None:
-            self.test_end(False, "Some data received.")
-        else:
-            self.test_end(True, "Correctly received an error: %s." % error)
+            try:
+                data = self.FC.get_file(digest=self.digest)
+            except Exception as e:
+                self.test_end(True, "Correctly received an error: %r." % e)
+            else:
+                self.test_end(False, "Did not receive error.")
 
 ### TEST 004 ###
 
@@ -240,23 +204,12 @@ class TestFileCacher(TestService):
             return
 
         logger.info("  I am retrieving an unexisting file from FileCacher.")
-        self.FC.get_file_to_file(digest=self.digest,
-                                 callback=TestFileCacher.test_004_callback,
-                                 plus=("Test #", 4))
-
-    @rpc_callback
-    def test_004_callback(self, data, plus, error=None):
-        """Called with an error.
-
-        """
-        if error is None:
-            self.test_end(False, "No error received.")
-        elif plus != ("Test #", 4):
-            self.test_end(False, "Plus object not received correctly.")
-        elif data is not None:
-            self.test_end(False, "Some data received.")
+        try:
+            data = self.FC.get_file(digest=self.digest, temp_file_obj=True)
+        except Exception as e:
+            self.test_end(True, "Correctly received an error: %r." % e)
         else:
-            self.test_end(True, "Correctly received an error: %s." % error)
+            self.test_end(False, "Did not receive error.")
 
 ### TEST 005 ###
 
@@ -274,32 +227,24 @@ class TestFileCacher(TestService):
             self.content += chr(random.randint(0, 255))
 
         logger.info("  I am sending the ~100B binary file to FileCacher")
-        self.FC.put_file_from_string(content=self.content,
-                                     description="Test #005",
-                                     callback=TestFileCacher.test_005_callback,
-                                     plus=("Test #", 5))
+        try:
+            data = self.FC.put_file(binary_data=self.content,
+                                    description="Test #005")
+        except Exception as e:
+            self.test_end(False, "Error received: %r." % e)
 
-    @rpc_callback
-    def test_005_callback(self, data, plus, error=None):
-        """Called with the digest of the sent file.
-
-        """
-        if error is not None:
-            self.test_end(False, "Error received: %s." % error)
-        elif plus != ("Test #", 5):
-            self.test_end(False, "Plus object not received correctly.")
-        elif not os.path.exists(
-            os.path.join("fs-cache", "objects", data)):
+        if not os.path.exists(
+            os.path.join(self.cache_base_path, "objects", data)):
             self.test_end(False, "File not stored in local cache.")
-        elif open(os.path.join("fs-cache", "objects", data),
+        elif open(os.path.join(self.cache_base_path, "objects", data),
                   "rb").read() != self.content:
-            self.test_end(False, "Local cache's content differ " +
+            self.test_end(False, "Local cache's content differ "
                           "from original file.")
         else:
-            self.cache_path = os.path.join("fs-cache", "objects", data)
+            self.cache_path = os.path.join(self.cache_base_path, "objects",
+                                           data)
             self.digest = data
-            self.test_end(True, "Data sent and cached without error " +
-                          "and plus object received.")
+            self.test_end(True, "Data sent and cached without error.")
 
 ### TEST 006 ###
 
@@ -316,81 +261,10 @@ class TestFileCacher(TestService):
         self.fake_content = "Fake content.\n"
         with open(self.cache_path, "wb") as cached_file:
             cached_file.write(self.fake_content)
-        self.FC.get_file_to_string(digest=self.digest,
-                                   callback=TestFileCacher.test_006_callback,
-                                   plus=("Test #", 6))
-
-    @rpc_callback
-    def test_006_callback(self, data, plus, error=None):
-        """Called with the content of the file (from FC).
-
-        """
-        if error is not None:
-            self.test_end(False, "Error received: %s." % error)
-        elif plus != ("Test #", 6):
-            self.test_end(False, "Plus object not received correctly.")
-        elif data != self.fake_content:
-            if data == self.content:
-                self.test_end(False,
-                              "Did not use the cache even if it could.")
-            else:
-                self.test_end(False, "Content differ.")
-        else:
-            self.test_end(True, "Data and plus object received correctly.")
-
-### TEST 007 ###
-
-    def test_007(self):
-        """Send a ~100B random binary file to FileStorage through
-        FileCacher as a string. FC should cache the content locally.
-        Use the synchronous interface.
-
-        """
-        if not self.FS.connected:
-            self.test_end(False, "Please start FileStorage.", True)
-            return
-
-        self.content = ""
-        for i in xrange(100):
-            self.content += chr(random.randint(0, 255))
-
-        logger.info("  I am sending the ~100B binary file to FileCacher "
-                    "using the synchronous interface")
-        data = self.FC.put_file_from_string(content=self.content,
-                                            description="Test #007",
-                                            sync=True)
-
-        if not os.path.exists(
-            os.path.join("fs-cache", "objects", data)):
-            self.test_end(False, "File not stored in local cache.")
-        elif open(os.path.join("fs-cache", "objects", data),
-                  "rb").read() != self.content:
-            self.test_end(False, "Local cache's content differ " +
-                          "from original file.")
-        else:
-            self.cache_path = os.path.join("fs-cache", "objects", data)
-            self.digest = data
-            self.test_end(True, "Data sent and cached without error " +
-                          "and plus object received.")
-
-### TEST 008 ###
-
-    def test_008(self):
-        """Retrieve the file as a string. Use the synchronous interface.
-
-        """
-        if not self.FS.connected:
-            self.test_end(False, "Please start FileStorage.", True)
-            return
-
-        logger.info("  I am retrieving the ~100B binary file from FileCacher "
-                    "using get_file_to_string() "
-                    "and the synchronous interface")
-        self.fake_content = "Fake content.\n"
-        with open(self.cache_path, "wb") as cached_file:
-            cached_file.write(self.fake_content)
-        data = self.FC.get_file_to_string(digest=self.digest,
-                                          sync=True)
+        try:
+            data = self.FC.get_file(digest=self.digest, string=True)
+        except Exception as e:
+            self.test_end(False, "Error received: %r." % e)
 
         if data != self.fake_content:
             if data == self.content:
@@ -399,81 +273,7 @@ class TestFileCacher(TestService):
             else:
                 self.test_end(False, "Content differ.")
         else:
-            self.test_end(True, "Data and plus object received correctly.")
-
-### TEST 009 ###
-
-    def test_009(self):
-        """Retrieve the file writing it on a file-like object.
-
-        """
-        if not self.FS.connected:
-            self.test_end(False, "Please start FileStorage.", True)
-            return
-
-        logger.info("  I am retrieving the ~100B binary file from FileCacher "
-                    "using get_file_to_write_file()")
-        self.fake_content = "Fake content.\n"
-        with open(self.cache_path, "wb") as cached_file:
-            cached_file.write(self.fake_content)
-        self.file_obj = StringIO()
-        self.FC.get_file_to_write_file(
-            digest=self.digest,
-            file_obj=self.file_obj,
-            callback=TestFileCacher.test_009_callback,
-            plus=("Test #", 9))
-
-    @rpc_callback
-    def test_009_callback(self, data, plus, error=None):
-        """Called with true to confirm the operation, and the content
-        of the file in the file-like object (from FC).
-
-        """
-        if error is not None:
-            self.test_end(False, "Error received: %s." % error)
-        elif plus != ("Test #", 9):
-            self.test_end(False, "Plus object not received correctly.")
-        else:
-            content = self.file_obj.getvalue()
-            if content != self.fake_content:
-                if content == self.content:
-                    self.test_end(False,
-                                  "Did not use the cache even if it could.")
-                else:
-                    self.test_end(False, "Content differ.")
-            else:
-                self.test_end(True, "Data and plus object received correctly.")
-
-### TEST 010 ###
-
-    def test_010(self):
-        """Retrieve the file writing it on a file-like object. Use the
-        synchronous interface.
-
-        """
-        if not self.FS.connected:
-            self.test_end(False, "Please start FileStorage.", True)
-            return
-
-        logger.info("  I am retrieving the ~100B binary file from FileCacher "
-                    "using get_file_to_write_file() "
-                    "and the synchronous interface")
-        self.fake_content = "Fake content.\n"
-        with open(self.cache_path, "wb") as cached_file:
-            cached_file.write(self.fake_content)
-        self.file_obj = StringIO()
-        data = self.FC.get_file_to_write_file(digest=self.digest,
-                                              file_obj=self.file_obj,
-                                              sync=True)
-        content = self.file_obj.getvalue()
-        if content != self.fake_content:
-            if content == self.content:
-                self.test_end(False,
-                              "Did not use the cache even if it could.")
-            else:
-                self.test_end(False, "Content differ.")
-        else:
-            self.test_end(True, "Data and plus object received correctly.")
+            self.test_end(True, "Data received correctly.")
 
 
 def main():

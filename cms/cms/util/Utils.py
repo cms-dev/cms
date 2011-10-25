@@ -319,6 +319,7 @@ def white_diff(output, res):
                 return False
 
 
+# TODO: this needs some love.
 class FileExplorer:
     def __init__(self, directory = "./fs"):
         self.directory = directory

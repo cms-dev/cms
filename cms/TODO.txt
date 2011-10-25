@@ -2,12 +2,6 @@
 
 
 
-** Medium priority
-
-* Remove all sync'ed RPC (e.g. there are some in Worker).
-
-
-
 ** Low priority
 
 * Always refer to tasks, testcases and such by id instead of num (as
@@ -77,8 +71,6 @@
 
 * MED: auto updating submission statuses.
 
-* LOW: show resource usage of all the boxes.
-
 
 
 ** YamlImporter
@@ -98,40 +90,15 @@
 
 ** File{Storage,Cacher}
 
-* HIGH: Duly document callbacks in FileCacher.
-
-* MED: Don't load the whole files when transferring them, you uselessly eat
-  a huge lot of memory.
-
-* MED: The current implementation is very confused and probably quite
-  prone to errors; try to make it a bit simpler.
-
 * LOW: Add support to optionally check file digests when trasferring them, both
   on client and on server side. Moreover, add an API call to ask the
   server to verify some file's digest.
 
 
 
-
 ** AsyncLibrary
 
-* HIGH: Duly document the make_sync decorator.
-
-* HIGH: Understand which call we need when a long running function has time
-  to spare (_step? asyncore.loop?), for example as in make_sync
-  implementation.
-  - Actually, synchronous interfaces are a pain anyway. We should just
-    not use them in the main system (importers, exporters and other things
-    are fine, since they're not critical and run human-assisted).
-
 * MED: Decide on bind_obj=None behaviour and about keeping bind_obj.
-
-* MED: Add a method to do a one-time deferred call (like add_timeout(),
-  but just one time).
-  - Already done, but it has many shortcomings and completely breaks
-    synchronous interfaces.
-
-* MED: Fix sync default.
 
 
 

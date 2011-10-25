@@ -27,9 +27,11 @@ method, and offer a quite long version of the echo method.
 import time
 import threading
 
+from cms.service.FileStorage import FileCacher
+
 from cms.async.AsyncLibrary import Service, rpc_method, \
      rpc_binary_response, rpc_threaded, logger, async_lock
-from cms.async import ServiceCoord
+from cms.async import ServiceCoord, make_async
 
 
 class ServiceB(Service):
@@ -42,9 +44,39 @@ class ServiceB(Service):
         logger.initialize(ServiceCoord("ServiceB", shard))
         logger.debug("ServiceB.__init__")
         Service.__init__(self, shard)
+        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+        self.FC = FileCacher(self, self.FS)
+        self.add_timeout(self.operate, True, 100000, immediately=True)
+
+    def operate(self, put):
+        """Operate.
+
+        """
+        start = time.time()
+        s = "Tentative binary file \xff\xff\n"
+        s = s * 100000
+        digest = "d727e20eb5580ad553433f1cb805bac3380ba174"
+        if put:
+            try:
+                digest = self.FC.put_file(binary_data=s, description="Tentative")
+            except Exception as e:
+                logger.error(repr(e))
+                return
+        logger.info("Time elapsed for put: %.3lf" % (time.time() - start))
+        self.FC.delete_from_cache(digest)
+        start = time.time()
+        try:
+            data = self.FC.get_file(digest=digest, string=True)
+        except Exception as e:
+            logger.error(repr(e))
+            return
+        if s == data:
+            logger.info("File %s put and got ok." % digest)
+        else:
+            logger.error("Files not equal.")
+        logger.info("Time elapsed for get: %.3lf" % (time.time() - start))
 
     @rpc_method
-    @rpc_threaded
     def long_rpc_method(self, string):
         """Anoter example RPC method that takes a while.
 

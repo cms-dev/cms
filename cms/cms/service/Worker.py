@@ -100,7 +100,7 @@ class Worker(Service):
         with SessionGen(commit=False) as session:
             contest = Contest.get_from_id(contest_id, session)
             for digest in contest.enumerate_files():
-                self.FC.get_file_to_cache(digest)
+                self.FC.get_file(digest)
         logger.info("Precaching finished")
 
     def action(self, submission_id, job_type):
