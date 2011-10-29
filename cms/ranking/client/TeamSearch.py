@@ -78,7 +78,7 @@ class TeamSearch(object):
 <div class="item" id="''' + t_id + '''">
     <input type="checkbox" id="''' + t_id + '''_check" />
     <label for="''' + t_id + '''_check">
-        <img class="flag" src="/flags/''' + t_id + '''.png" />
+        <img class="flag" src="/flags/''' + t_id + '''" />
         ''' + team['name'] + '''
     </label>
 </div>'''

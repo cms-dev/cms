@@ -89,7 +89,8 @@ class Scoreboard(object):
     <td class="l_name">''' + user['l_name'] + '''</td>'''
 
         if user['team']:
-            result += '''<td class="team"><img src="/flags/''' + user['team'] + '''.png" title="''' + self.ds.teams[user['team']]['name'] + '''" /></td>'''
+            # FIXME: hardcoded flag path
+            result += '''<td class="team"><img src="/flags/''' + user['team'] + '''" title="''' + self.ds.teams[user['team']]['name'] + '''" /></td>'''
         else:
             result += '''<td class="team"></td>'''
 

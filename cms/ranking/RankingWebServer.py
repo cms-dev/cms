@@ -23,6 +23,7 @@ import tornado.web
 import json
 import functools
 import time
+from datetime import datetime
 import os
 import re
 import base64
@@ -316,6 +317,40 @@ class ScoreHandler(DataHandler):
                     self.write('%s %s %f\n' % (u_id, t_id, task.get_score()))
 
 
+class ImageHandler(tornado.web.RequestHandler):
+    formats = {
+        'png': 'image/png',
+        'jpg': 'image/jpeg',
+        'gif': 'image/gif',
+        'bmp': 'image/bmp'
+    }
+
+    def initialize(self, location, fallback):
+        self.location = location
+        self.fallback = fallback
+
+    def get(self, *args):
+        self.location %= tuple(args)
+
+        for ext, type in self.formats.iteritems():
+            if os.path.isfile(self.location + '.' + ext):
+                self.serve(self.location + '.' + ext, type)
+                return
+
+        self.serve(self.fallback, 'image/png')  # FIXME hardcoded type
+
+    def serve(self, path, type):
+        self.set_header("Content-Type", type)
+
+        modified = datetime.utcfromtimestamp(int(os.path.getmtime(path)))
+        self.set_header('Last-Modified', modified)
+
+        # TODO check for If-Modified-Since and If-None-Match
+
+        with open(path, 'rb') as f:
+            self.write(f.read())
+
+
 def main():
     application = tornado.web.Application(
         [
@@ -328,8 +363,21 @@ def main():
             (r"/history", HistoryHandler),
             (r"/scores", ScoreHandler),
             (r"/events", NotificationHandler),
-            (r"/(.*)", tornado.web.StaticFileHandler,
-                dict(path=os.path.join(os.path.dirname(__file__), 'static'))),
+            (r"/logo", ImageHandler, {
+                'location': os.path.join(config.lib_dir, 'logo'),
+                'fallback': os.path.join(config.web_dir, 'logo.png')
+            }),
+            (r"/faces/([A-Za-z0-9_]+)", ImageHandler, {
+                'location': os.path.join(config.lib_dir, 'faces', '%s'),
+                'fallback': os.path.join(config.web_dir, 'face.png')
+            }),
+            (r"/flags/([A-Za-z0-9_]+)", ImageHandler, {
+                'location': os.path.join(config.lib_dir, 'flags', '%s'),
+                'fallback': os.path.join(config.web_dir, 'flag.png')
+            }),
+            (r"/(.*)", tornado.web.StaticFileHandler, {
+                'path': os.path.join(os.path.dirname(__file__), 'static')
+            })
         ])
     # application.add_transform (tornado.web.ChunkedTransferEncoding)
     application.listen(config.port)

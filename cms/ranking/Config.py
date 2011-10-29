@@ -40,6 +40,7 @@ class Config(object):
 
         # file system
         self.lib_dir = os.path.join("/", "var", "local", "lib", "cms", "ranking")
+        self.web_dir = os.path.join(".", "static")  # FIXME put absolute path
 
         # logging
         self.log_color = True

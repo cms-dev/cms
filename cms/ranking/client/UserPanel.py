@@ -124,7 +124,7 @@ class UserPanel(object):
 
             if self.user['team']:
                 self.team_label.innerHTML = self.ds.teams[self.user['team']]['name']
-                DOM.setAttribute(self.team_image, 'src', '/flags/' + self.user['team'] + '.png')
+                DOM.setAttribute(self.team_image, 'src', '/flags/' + self.user['team'])
                 JS('''
                 self.team_image.classList.remove('hidden');
                 ''')

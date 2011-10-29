@@ -21,6 +21,7 @@ import os
 import json
 import functools
 import heapq
+import os.path
 
 from Config import config
 from Logger import logger
@@ -635,7 +636,7 @@ class SubmissionStore(object):
         assert task in self._scores[user]
         return self._scores[user][task].retrieve(key)
 
-submission_store = SubmissionStore("subs/")
+submission_store = SubmissionStore(os.path.join(config.get('lib_dir'), "subs/"))
 
 def get_global_history():
     """Merge all individual histories into a global one.
