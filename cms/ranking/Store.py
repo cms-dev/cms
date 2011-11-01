@@ -157,7 +157,7 @@ class Store(object):
 
         """
         # verify key
-        if not isinstance(key, unicode) or not key in self._store:
+        if not isinstance(key, unicode) or key not in self._store:
             raise InvalidKey
         # update entity
         try:
@@ -188,7 +188,7 @@ class Store(object):
 
         """
         # verify key
-        if not isinstance(key, unicode) or not key in self._store:
+        if not isinstance(key, unicode) or key not in self._store:
             raise InvalidKey
         # delete entity
         del self._store[key]
@@ -213,7 +213,7 @@ class Store(object):
 
         """
         # verify key
-        if not isinstance(key, unicode) or not key in self._store:
+        if not isinstance(key, unicode) or key not in self._store:
             raise InvalidKey
         # retrieve entity
         return json.dumps(self._store[key].get())
@@ -224,3 +224,6 @@ class Store(object):
         for key, value in self._store.iteritems():
             result[key] = value.get()
         return json.dumps(result)
+
+    def __contains__(self, key):
+        return key in self._store

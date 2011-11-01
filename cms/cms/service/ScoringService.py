@@ -228,7 +228,7 @@ class ScoringService(Service):
             users = [["/users/%s" % user.username,
                       {"f_name": user.real_name.split()[0],
                        "l_name": " ".join(user.real_name.split()[1:]),
-                       "team": "None"}]
+                       "team": None}]
                      for user in contest.users
                      if not user.hidden]
 
@@ -240,17 +240,17 @@ class ScoringService(Service):
                        "order": task.num}]
                      for task in contest.tasks]
 
-        safe_post_data(connection, contest_url, contest_data, auth,
-                       "sending contest %s" % contest_name)
+        safe_put_data(connection, contest_url, contest_data, auth,
+                      "sending contest %s" % contest_name)
 
         for user in users:
-            safe_post_data(connection, user[0], user[1], auth,
-                           "sending user %s" % (user[1]["l_name"] + " " +
+            safe_put_data(connection, user[0], user[1], auth,
+                          "sending user %s" % (user[1]["l_name"] + " " +
                                                 user[1]["f_name"]))
 
         for task in tasks:
-            safe_post_data(connection, task[0], task[1], auth,
-                           "sending task %s" % task[1]["name"])
+            safe_put_data(connection, task[0], task[1], auth,
+                          "sending task %s" % task[1]["name"])
 
         return True
 

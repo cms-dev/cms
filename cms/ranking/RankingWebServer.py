@@ -99,26 +99,24 @@ def create_handler(entity_store):
 
     class RestHandler(DataHandler):
         @authenticated
-        def post(self, entity_id):
-            # create
-            try:
-                entity_store.create(entity_id, self.request.body)
-            except InvalidKey:
-                raise tornado.web.HTTPError(405)
-            except InvalidData, exc:
-                logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
-                raise tornado.web.HTTPError(400)
-
-        @authenticated
         def put(self, entity_id):
-            # update
-            try:
-                entity_store.update(entity_id, self.request.body)
-            except InvalidKey:
+            if not entity_id:
+                logger.error("No entity ID specified\n" + self.request.full_url(), extra={'request_body': self.request.body})
                 raise tornado.web.HTTPError(404)
-            except InvalidData, exc:
-                logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
-                raise tornado.web.HTTPError(400)
+            if entity_id not in entity_store:
+                # create
+                try:
+                    entity_store.create(entity_id, self.request.body)
+                except InvalidData, exc:
+                    logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
+                    raise tornado.web.HTTPError(400)
+            else:
+                # update
+                try:
+                    entity_store.update(entity_id, self.request.body)
+                except InvalidData, exc:
+                    logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
+                    raise tornado.web.HTTPError(400)
 
         @authenticated
         def delete(self, entity_id):
@@ -129,7 +127,7 @@ def create_handler(entity_store):
                 raise tornado.web.HTTPError(404)
 
         def get(self, entity_id):
-            if entity_id == '':
+            if not entity_id:
                 # list
                 self.write(entity_store.list() + '\n')
             else:
