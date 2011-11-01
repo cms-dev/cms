@@ -32,6 +32,7 @@ class TeamSearch(object):
 
         inputfield = DOM.getElementById('team_search_input')
         background = DOM.getElementById('team_search_bg')
+        close_button = DOM.getElementById('team_search_close')
 
         JS('''
         inputfield.addEventListener("focus", function(evt){
@@ -46,6 +47,10 @@ class TeamSearch(object):
             if (evt.target == background){
                 self.hide();
             }
+        });
+
+        close_button.addEventListener("click", function(evt){
+            self.hide();
         });
         ''')
 

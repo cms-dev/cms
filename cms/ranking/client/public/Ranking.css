@@ -249,14 +249,14 @@ div.team_search div.search_results
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(255,255,255,0.9);
+    background-color: rgba(0,0,0,0.5);
     z-index: 10;
     display: none;
 }
 
 body.team_search div.team_search input.search_field
 {
-    border: 1px solid gray;
+    border: 1px solid #555555;
     top: -1px;
     left: -1px;
 }
@@ -266,19 +266,48 @@ body.team_search div.team_search div.search_results
     display: block;
 }
 
+div.team_search div.search_results div.frame
+{
+    position: absolute;
+    top: 64px;
+    bottom: 48px;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    width: 940px;
+    border-radius: 12px;
+    background-color: white;
+}
+
+div.team_search div.search_results img.close
+{
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+}
+
 div.team_search div.search_results div.body
 {
-    margin: 6em auto 0;
-    padding: 0;
-    width: 960px;
+    position: absolute;
+    top: 14px; /* 20px - 0.5em at a 12px font-size */
+    bottom: 14px; /* 20px - 0.5em at a 12px font-size */
+    left: 10px;
+    right: 10px;
+    overflow: auto;
 }
 
 div.team_search div.search_results div.body div.item
 {
     float: left;
-    width: 162px;
-    height: 1.5em;
-    margin: 0.5em 10px;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 25%;
+    height: 3em;
+    border: solid white;
+    border-width: 0.5em 10px;
     padding: 0.25em 5px;
     background-color: lightgray;
     position: relative;
@@ -314,6 +343,11 @@ div.team_search div.search_results div.body div.item label
     overflow: hidden;
     padding: 0.25em 0.25em 0.25em 4em;
     white-space: nowrap;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -o-user-select: none;
+    user-select: none;
 }
 
 div.team_search div.search_results div.body div.item label img
