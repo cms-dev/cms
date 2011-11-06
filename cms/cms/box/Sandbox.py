@@ -406,7 +406,7 @@ class Sandbox:
         """
         fd = self.get_file(path)
         with async_lock:
-            digest = self.FC.put_file(file_obj=fd, description)
+            digest = self.FC.put_file(file_obj=fd, description=description)
         fd.close()
         return digest
 
