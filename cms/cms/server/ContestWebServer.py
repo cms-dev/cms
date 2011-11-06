@@ -655,7 +655,7 @@ class SubmitHandler(BaseHandler):
             self.file_digests[plus] = data
             if len(self.file_digests) == len(self.files) + self.retrieved:
                 # All the files are stored, ready to submit!
-                logger.info("I saved all the files")
+                logger.info("All files stored for submission sent by " + self.current_user.username)
                 s = Submission(user=self.current_user,
                                task=self.task,
                                timestamp=self.timestamp,

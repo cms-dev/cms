@@ -313,8 +313,8 @@ class Service:
         # Check if some scheduled function needs to be called.
         while self._timeouts != []:
             next_timeout, seconds, func, plus = self._timeouts[0]
-            heapq.heappop(self._timeouts)
             if current > next_timeout:
+                heapq.heappop(self._timeouts)
                 if plus is None:
                     ret = func()
                 else:
