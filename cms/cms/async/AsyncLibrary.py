@@ -313,16 +313,15 @@ class Service:
         # Check if some scheduled function needs to be called.
         while self._timeouts != []:
             next_timeout, seconds, func, plus = self._timeouts[0]
+            heapq.heappop(self._timeouts)
             if current > next_timeout:
                 if plus is None:
                     ret = func()
                 else:
                     ret = func(plus)
                 if ret:
-                    heapq.heappushpop(self._timeouts, (next_timeout + seconds,
-                                                       seconds, func, plus))
-                else:
-                    heapq.heappop(self._timeouts)
+                    heapq.heappush(self._timeouts, (next_timeout + seconds,
+                                                    seconds, func, plus))
             else:
                 break
 
@@ -603,7 +602,8 @@ class RemoteService(asynchat.async_chat):
 
         # Otherwise, is a response to our rpc call.
         else:
-            self.service.handle_rpc_response(message)
+            if self.service is not None:
+                self.service.handle_rpc_response(message)
 
     def send_reply(self, response, method_response, binary_response):
         """Send back a reply to an rpc call.
