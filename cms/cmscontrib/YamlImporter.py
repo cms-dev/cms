@@ -169,7 +169,7 @@ class YamlImporter(Service):
                 self.FC.put_file(
                     path=fi, description="Input %d for task %s" % (i, name)),
                 self.FC.put_file(
-                    path=fo, description="Output %d for task %s" % (i, name))
+                    path=fo, description="Output %d for task %s" % (i, name)),
                 public=(i in public_testcases)))
         params["token_initial"] = conf.get("token_initial", 0)
         params["token_max"] = conf.get("token_max", None)
