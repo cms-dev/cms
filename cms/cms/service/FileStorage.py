@@ -270,7 +270,7 @@ class FileCacher:
                               directory of FileCacher.
 
         """
-        if [string, temp_path, temp_file_obj].count(True) != 1:
+        if [string, temp_path, temp_file_obj].count(True) > 1:
             raise ValueError("Ask for at most one amongst content, "
                              "temp path and temp file obj.")
 
