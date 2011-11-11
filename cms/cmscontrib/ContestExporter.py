@@ -26,7 +26,7 @@ import optparse
 import re
 import json
 
-from cms.async.AsyncLibrary import Service, logger, SyncRPCError
+from cms.async.AsyncLibrary import Service, logger
 from cms.async import ServiceCoord
 from cms.service.FileStorage import FileCacher
 
