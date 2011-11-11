@@ -124,6 +124,8 @@ def make_async(f):
                 result = new_result
         except StopIteration:
             return result['data']
+        except TypeError:
+            raise TypeError("Did you pass the 'timeout' argument to the RPC?")
 
     return wrapper
 

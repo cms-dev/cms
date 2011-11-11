@@ -422,7 +422,7 @@ class FileCacher:
         return (string): the description associated.
 
         """
-        yield self.file_storage.describe(digest=digest)
+        yield self.file_storage.describe(digest=digest, timeout=True)
 
     @make_async
     def delete(self, digest):
