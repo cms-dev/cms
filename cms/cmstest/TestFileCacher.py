@@ -29,7 +29,7 @@ from StringIO import StringIO
 
 from cms.async.AsyncLibrary import rpc_callback, logger
 from cms.async.TestService import TestService
-from cms.async import ServiceCoord
+from cms.async import ServiceCoord, Config
 from cms.service.FileStorage import FileCacher
 
 
@@ -45,7 +45,7 @@ class TestFileCacher(TestService):
         TestService.__init__(self, shard)
 
         # Assume we store the cache in "./cache/fs-cache-TestFileCacher-0/"
-        self.cache_base_path = os.path.join(".", "cache", "fs-cache-TestFileCacher-0")
+        self.cache_base_path = os.path.join(Config._cache_dir, "fs-cache-TestFileCacher-0")
         self.cache_path = None
         self.content = None
         self.fake_content = None
