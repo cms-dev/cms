@@ -125,7 +125,7 @@ if "install" in sys.argv:
     os.umask(022)
     shutil.copy(os.path.join(".", "box", "mo-box"),
                 os.path.join("/", "usr", "local", "bin"))
-    os.chmod(os.path.join("/", "usr", "local", "bin"), 0755)
+    os.chmod(os.path.join("/", "usr", "local", "bin", "mo-box"), 0755)
 
     print "copying configuration to /usr/local/etc/."
     os.umask(007)
