@@ -265,7 +265,7 @@ class Service:
                       (repr(e), traceback.format_exc())
             logger.critical(err_msg)
 
-    def _step(self, maximum=2.0):
+    def _step(self, maximum=0.1):
         """One step of the main loop.
 
         """
