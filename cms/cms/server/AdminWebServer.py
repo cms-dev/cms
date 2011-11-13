@@ -396,6 +396,53 @@ class TaskStatementViewHandler(FileHandler):
 
         self.fetch(task.statement, "application/pdf", "%s.pdf" % task.name)
 
+class AddTaskHandler(SimpleContestHandler("add_task.html")):
+    def post(self, contest_id):
+        self.retrieve_contest(contest_id)
+
+        name = self.get_argument("name","")
+        title = self.get_argument("title", "")
+        time_limit = self.get_argument("time_limit", "")
+        memory_limit = self.get_argument("memory_limit","")
+        task_type = self.get_argument("task_type", "")
+        submission_format = []
+        score_type = self.get_argument("score_type", "")
+        score_parameters = self.get_argument("score_parameters","")
+        attachments = {}
+        statement = []
+        task_type_parameters = ""
+        managers = {}
+        testcases = []
+        token_initial = self.get_non_negative_int(
+            "token_initial",
+            None,
+            allow_empty=False)
+        token_max = self.get_non_negative_int(
+            "token_max",
+            None)
+        token_total = self.get_non_negative_int(
+            "token_total",
+            None)
+        token_min_interval = self.get_non_negative_int(
+            "token_min_interval",
+            None)
+        token_gen_time = self.get_non_negative_int(
+            "token_gen_time",
+            None)
+        token_gen_number = self.get_non_negative_int(
+            "token_gen_number",
+            None)
+        task = Task(name, title, attachments, statement,
+                 time_limit, memory_limit,
+                 task_type, task_type_parameters, submission_format, managers,
+                 score_type, score_parameters, testcases,
+                 token_initial, token_max, token_total,
+                 token_min_interval, token_gen_time, token_gen_number,
+                 contest=self.contest)
+        task.num = 0
+        self.sql_session.add(task)
+        self.sql_session.commit()
+        self.redirect("/task/%d" % task.id)
 
 class EditContestHandler(BaseHandler):
     """Called when managers edit the information of a contest.
@@ -548,6 +595,37 @@ class UserViewHandler(BaseHandler):
             "")
         self.redirect("/user/%s" % user.id)
 
+class AddUserHandler(SimpleContestHandler("add_user.html")):
+    def post(self,contest_id):
+        self.retrieve_contest(contest_id)
+
+        real_name = self.get_argument("real_name", "")
+        username = self.get_argument("username", "")
+
+        # Prevent duplicate usernames in the contest.
+        for u in self.contest.users:
+            if u.username == username:
+                self.application.service.add_notification(int(time.time()),
+                    "Duplicate username",
+                    "The requested username already exists in the contest.")
+                self.redirect("/add_user/%d" % self.contest.id)
+                return
+
+        password = self.get_argument("password", "")
+
+        # FIXME: Check IP validity
+        ip = self.get_argument("ip", "0.0.0.0")
+
+        hidden = self.get_argument("hidden", False) != False
+
+        user = User(real_name, username, password = password, ip = ip,
+            hidden = hidden, contest = self.contest)
+        self.sql_session.add(user)
+        self.sql_session.commit()
+        self.application.service.add_notification(int(time.time()),
+            "User added successfully.",
+            "")
+        self.redirect("/user/%s" % user.id)
 
 class SubmissionViewHandler(BaseHandler):
     """Shows the details of a submission. All data is already present
@@ -764,7 +842,9 @@ handlers = [
     (r"/contest/edit/([0-9]+)", EditContestHandler),
     (r"/task/([0-9]+)",           TaskViewHandler),
     (r"/task/([0-9]+)/statement", TaskStatementViewHandler),
+    (r"/add_task/([0-9]+)",                AddTaskHandler),
     (r"/user/([a-zA-Z0-9_-]+)",   UserViewHandler),
+    (r"/add_user/([0-9]+)",       AddUserHandler),
     (r"/reevaluate/task/([0-9]+)",               TaskReevaluateHandler),
     (r"/reevaluate/user/([0-9]+)",               UserReevaluateHandler),
     (r"/reevaluate/submission/([a-zA-Z0-9_-]+)", SubmissionReevaluateHandler),

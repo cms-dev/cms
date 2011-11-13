@@ -2,11 +2,11 @@
 
 {% block core %}
 <div class="core_title">
-  <h1>Add task</h1>
+  <h1>New task</h1>
 </div>
 
-<form enctype="multipart/form-data" action="/add_task" method="post" >
-  <h2 id="title_task_information" class"toggling_on">Task information</h2>
+<form enctype="multipart/form-data" action="/add_task/{{ contest.id }}" method="post" >
+  <h2 id="title_task_information" class="toggling_on">Task information</h2>
 
   <div id="task_information">
     <table>
@@ -34,23 +34,68 @@
         <td>Memory limit</td>
         <td><input type="text" name="memory_limit" value="512"/> MB</td>
       </tr>
+    </table>
+    <div class="hr"></div>
+  </div>
+  
+  <h2 id="title_task_type" class="toggling_on">Task type settings</h2>
+
+  <div id="task_type">
+    <table>
       <tr>
         <td>Task type</td>
         <td>
-          <select name="task_type">
-            <option value="TaskTypeBatch">Batch</option>
+          <select name="task_type" disabled>
+            <option value="TaskTypeBatch" selected>Batch</option>
             <option value="TaskTypeProgramming">Programming</option>
             <option value="TaskTypeOutputOnly">Output only</option>
           </select>
+        <table>
+          <tr>
+            <td>Output evaluation</td>
+            <td>
+              <select name="evaluation">
+                <option value="diff">White diff</option>
+                <option value="comp">Comparator</option>
+                <option value="grad">Grader</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>Input/Output on file</td>
+            <td><input type="checkbox" name="use_files"/></td>
+          </tr>
+        </table>
         </td>
       </tr>
       <tr>
         <td>Submission format</td>
-        <td><input type="text" name="submission_format"/></td>
+        <td>
+          <table>
+            <tr>
+              <td>
+                <input type="radio" name="submission_format" value="single"/> 
+              </td>
+              <td>task_name.%l</td>
+            </tr>
+            <tr>
+              <td><input type="radio" name="submission_format" value="other">
+              </td>
+              <td>
+                Other: <input type="text" name="submission_format_other"/></td>
+              </td>
+            </tr>
+          </table>
       </tr>
       <tr>
-        <td>Managers</td>
-        <td><input type="file" name="manager"></input></td>
+        <td>Manager</td>
+        <td>
+          <table id="manager_files">
+          <tr>
+            <td><input type="file" name="manager"/></td>
+          </tr>
+          </table>
+        </td>
       </tr>
       <tr>
         <td>Score Type</td>
@@ -68,19 +113,13 @@
         <td>Score Parameters</td>
         <td><textarea name="score_parameters"></textarea></td>
       </tr>
-      <tr>
-        <td>Testcases</td>
-        <td>
-          <table style="border: 1px solid gray;">
-            <tr><th>File</th><th>Public</th></tr>
-            <tr>
-              <td><input type="file" name="test_case"></input></td>
-              <td><input type="checkbox" name="public_test_case"/></td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-      <tr>
+    </table>
+    <div class="hr"></div>
+  </div>
+  <h2 id="title_tokens" class="toggling_on">Tokens</h2>
+
+  <div id="tokens">
+    <table>
         <td>Initial number of tokens</td>
         <td><input type="text" name="token_initial" value="0"/></td>
       </tr>
@@ -105,7 +144,9 @@
         <td><input type="text" name="token_gen_number" value="1"/></td>
       </tr>
     </table>
+    <div class="hr"></div>
   </div>
+  <input type="submit"/><input type="reset">
 </form>
 {% end %}
 
