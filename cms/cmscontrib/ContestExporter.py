@@ -37,10 +37,12 @@ from cms import Config
 
 class ContestExporter(Service):
 
-    def __init__(self, shard, contest_id, dump, export_dir):
+    def __init__(self, shard, contest_id, dump,
+                 export_dir, skip_submissions):
         self.contest_id = contest_id
         self.export_dir = export_dir
         self.dump = dump
+        self.skip_submissions = skip_submissions
 
         logger.initialize(ServiceCoord("ContestExporter", shard))
         logger.debug("ContestExporter.__init__")
@@ -76,7 +78,7 @@ class ContestExporter(Service):
 
             # Export files
             logger.info("Exporting files")
-            files = c.enumerate_files()
+            files = c.enumerate_files(self.skip_submissions)
             for f in files:
                 self.safe_get_file(f, os.path.join(files_dir, f),
                                    os.path.join(descr_dir, f))
@@ -85,7 +87,7 @@ class ContestExporter(Service):
             logger.info("Exporting the contest in JSON format")
             with open(os.path.join(self.export_dir,
                                    "contest.json"), 'w') as fout:
-                json.dump(c.export_to_dict(), fout, indent=4)
+                json.dump(c.export_to_dict(self.skip_submissions), fout, indent=4)
 
         # The database dump is never used; however, this part is
         # retained for historical reasons
@@ -173,6 +175,9 @@ def main():
                       "disclose data about other contests stored in the same "
                       "database)",
                       dest="dump", action="store_true", default=False)
+    parser.add_option("-S", "--skip-submissions",
+                      help="don't export submissions, only contest data",
+                      dest="skip_submissions", action="store_true", default=False)
     options, args = parser.parse_args()
     if len(args) != 1:
         parser.error("I need exactly one parameter, "
@@ -186,7 +191,8 @@ def main():
     contest_exporter = ContestExporter(shard=options.shard,
                                        contest_id=options.contest_id,
                                        dump=options.dump,
-                                       export_dir=args[0]).run()
+                                       export_dir=args[0],
+                                       skip_submissions=options.skip_submissions).run()
 
 if __name__ == "__main__":
     main()

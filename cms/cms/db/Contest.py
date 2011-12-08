@@ -108,7 +108,7 @@ class Contest(Base):
         self.announcements = announcements
         self.ranking_view = ranking_view
 
-    def export_to_dict(self):
+    def export_to_dict(self, skip_submissions=False):
         """Return object data as a dictionary.
 
         """
@@ -116,7 +116,7 @@ class Contest(Base):
                 'description':        self.description,
                 'tasks':              [task.export_to_dict()
                                        for task in self.tasks],
-                'users':              [user.export_to_dict()
+                'users':              [user.export_to_dict(skip_submissions)
                                        for user in self.users],
                 'token_initial':      self.token_initial,
                 'token_max':          self.token_max,
@@ -171,7 +171,7 @@ class Contest(Base):
                 return u
         raise KeyError("User not found")
 
-    def enumerate_files(self):
+    def enumerate_files(self, skip_submissions=False):
         """Enumerate all the files (by digest) referenced by the
         contest.
 
@@ -197,15 +197,16 @@ class Contest(Base):
                 files.add(testcase.input)
                 files.add(testcase.output)
 
-        for submission in self.get_submissions():
+        if not skip_submissions:
+            for submission in self.get_submissions():
 
-            # Enumerate files
-            for f in submission.files.values():
-                files.add(f.digest)
+                # Enumerate files
+                for f in submission.files.values():
+                    files.add(f.digest)
 
-            # Enumerate executables
-            for f in submission.executables.values():
-                files.add(f.digest)
+                # Enumerate executables
+                for f in submission.executables.values():
+                    files.add(f.digest)
 
         return files
 

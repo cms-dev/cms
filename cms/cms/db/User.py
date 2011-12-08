@@ -107,10 +107,13 @@ class User(Base):
             submissions = []
         self.submissions = submissions
 
-    def export_to_dict(self):
+    def export_to_dict(self, skip_submissions=False):
         """Return object data as a dictionary.
 
         """
+        submissions = []
+        if not skip_submissions:
+            submissions = [submission.export_to_dict() for submission in self.submissions]
         return {'real_name':   self.real_name,
                 'username':    self.username,
                 'password':    self.password,
@@ -119,7 +122,7 @@ class User(Base):
                 'hidden':      self.hidden,
                 'messages':    [message.export_to_dict() for message in self.messages],
                 'questions':   [question.export_to_dict() for question in self.questions],
-                'submissions': [submission.export_to_dict() for submission in self.submissions]}
+                'submissions': submissions}
 
 class Message(Base):
     """Class to store a private message from the managers to the
