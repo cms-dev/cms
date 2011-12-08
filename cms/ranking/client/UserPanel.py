@@ -208,10 +208,10 @@ class UserPanel(object):
 
         Chart.draw_chart(self.score_chart, 0, score, 0, 0,
                 intervals, self.hs.get_score_history(self.user_id),
-                (102, 102, 238), [score/4, score/2, score*3/4, score])
-        Chart.draw_chart(self.rank_chart, len(self.ds.users), 1, 1, len(self.ds.users),
+                (102, 102, 238), [score/4, score/2, score*3/4])
+        Chart.draw_chart(self.rank_chart, len(self.ds.users), 1, 1, len(self.ds.users)-1,
                 intervals, self.hs.get_rank_history(self.user_id),
-                (210, 50, 50), [1, math.ceil(len(self.ds.users)/12), math.ceil(len(self.ds.users)/4), math.floor(len(self.ds.users)/2)])
+                (210, 50, 50), [math.ceil(len(self.ds.users)/12), math.ceil(len(self.ds.users)/4), math.floor(len(self.ds.users)/2)])
 
     def callback_factory_task(self, task_id):
         def result(widget):
@@ -248,11 +248,11 @@ class UserPanel(object):
             Chart.draw_chart(self.score_chart, 0, score, 0, 0,
                 [(contest['begin'], contest['end'])],
                 self.hs.get_score_history_for_task(self.user_id, task_id),
-                (102, 102, 238), [score/4, score/2, score*3/4, score])
-            Chart.draw_chart(self.rank_chart, len(self.ds.users), 1, 1, len(self.ds.users),
+                (102, 102, 238), [score/4, score/2, score*3/4])
+            Chart.draw_chart(self.rank_chart, len(self.ds.users), 1, 1, len(self.ds.users)-1,
                 [(contest['begin'], contest['end'])],
                 self.hs.get_rank_history_for_task(self.user_id, task_id),
-                (210, 50, 50), [1, math.ceil(len(self.ds.users)/12), math.ceil(len(self.ds.users)/4), math.floor(len(self.ds.users)/2)])
+                (210, 50, 50), [math.ceil(len(self.ds.users)/12), math.ceil(len(self.ds.users)/4), math.floor(len(self.ds.users)/2)])
         return result
 
     def callback_factory_contest(self, contest_id):
@@ -271,11 +271,11 @@ class UserPanel(object):
             Chart.draw_chart(self.score_chart, 0, score, 0, 0,
                 [(contest['begin'], contest['end'])],
                 self.hs.get_score_history_for_contest(self.user_id, contest_id),
-                (102, 102, 238), [score/4, score/2, score*3/4, score])
-            Chart.draw_chart(self.rank_chart, len(self.ds.users), 1, 1, len(self.ds.users),
+                (102, 102, 238), [score/4, score/2, score*3/4])
+            Chart.draw_chart(self.rank_chart, len(self.ds.users), 1, 1, len(self.ds.users)-1,
                 [(contest['begin'], contest['end'])],
                 self.hs.get_rank_history_for_contest(self.user_id, contest_id),
-                (210, 50, 50), [1, math.ceil(len(self.ds.users)/12), math.ceil(len(self.ds.users)/4), math.floor(len(self.ds.users)/2)])
+                (210, 50, 50), [math.ceil(len(self.ds.users)/12), math.ceil(len(self.ds.users)/4), math.floor(len(self.ds.users)/2)])
         return result
 
     def hide(self, widget):
