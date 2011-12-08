@@ -222,6 +222,7 @@ class DataStore:
             self.set_score(user, task, float(score))
 
     def set_score(self, user, task, score):
+        score = round(score, 2)
         if score == 0.0:
             del self.scores[user][task]
             if not self.scores[user]:

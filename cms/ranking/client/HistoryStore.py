@@ -61,21 +61,22 @@ class HistoryStore:
         self.history_g = []
 
         for user, task, time, score in data:
-            d[user][task] = score
+            if user in d and task in d[user]:
+                d[user][task] = score
 
-            self.history_t.append((user, task, time, score))
+                self.history_t.append((user, task, time, round(score, 2)))
 
-            contest_id = self.ds.tasks[task]['contest']
-            tmp_score = 0.0
-            for x in d[user].iterkeys():
-                if self.ds.tasks[x]['contest'] is contest_id:
+                contest_id = self.ds.tasks[task]['contest']
+                tmp_score = 0.0
+                for x in d[user].iterkeys():
+                    if self.ds.tasks[x]['contest'] is contest_id:
+                        tmp_score += d[user][x]
+                self.history_c.append((user, contest_id, time, round(tmp_score, 2)))
+
+                tmp_score = 0.0
+                for x in d[user].iterkeys():
                     tmp_score += d[user][x]
-            self.history_c.append((user, contest_id, time, tmp_score))
-
-            tmp_score = 0.0
-            for x in d[user].iterkeys():
-                tmp_score += d[user][x]
-            self.history_g.append((user, time, tmp_score))
+                self.history_g.append((user, time, round(tmp_score, 2)))
 
         callback()
 

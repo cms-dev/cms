@@ -102,18 +102,18 @@ class Scoreboard(object):
                         if t_id == t_key:
                             score_class += ' sort_key'
                         result += '''
-    <td class="score task ''' + score_class + '''">''' + str(self.ds.get_score_t(u_id, t_id)) + '''</td>'''
+    <td class="score task ''' + score_class + '''">''' + str(round(self.ds.get_score_t(u_id, t_id), 2)) + '''</td>'''
             score_class = self.get_score_class(self.ds.get_score_c(u_id, c_id), sum([task['score'] for task in self.ds.tasks.itervalues() if task['contest'] == c_id]))
             if c_id == c_key:
                 score_class += ' sort_key'
             result += '''
-    <td class="score contest ''' + score_class + '''">''' + str(self.ds.get_score_c(u_id, c_id)) + '''</td>'''
+    <td class="score contest ''' + score_class + '''">''' + str(round(self.ds.get_score_c(u_id, c_id), 2)) + '''</td>'''
 
         score_class = self.get_score_class(self.ds.get_score(u_id), sum([task['score'] for task in self.ds.tasks.itervalues()]))
         if t_key is None and c_key is None:
             score_class += ' sort_key'
         result += '''
-    <td class="score global ''' + score_class + '''">''' + str(self.ds.get_score(u_id)) + '''</td>
+    <td class="score global ''' + score_class + '''">''' + str(round(self.ds.get_score(u_id), 2)) + '''</td>
 </tr>'''
 
         return result
