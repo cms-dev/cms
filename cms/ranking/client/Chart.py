@@ -42,10 +42,10 @@ def draw_chart(canvas, y_min, y_max, y_def, h_def, x_int, data, color, marks):
     hei = canvas.getCoordHeight()
 
     # the padding around the chart
-    pad_l = 1
+    pad_l = 22
     pad_r = 1
-    pad_t = 1
-    pad_b = 1
+    pad_t = 6
+    pad_b = 6
 
     # the intervals of allowed x values
     x_size = sum([e - b for b, e in x_int])
@@ -73,11 +73,21 @@ def draw_chart(canvas, y_min, y_max, y_def, h_def, x_int, data, color, marks):
 
     # draw horizontal markers
     canvas.setLineWidth(1)
+    canvas.moveTo(pad_l, pad_t)
+    canvas.lineTo(wid - pad_r, pad_t)
+    canvas.stroke()
     for m in marks:
         canvas.beginPath()
         canvas.moveTo(get_x(0), get_y(m))
         canvas.lineTo(get_x(x_size), get_y(m))
         canvas.stroke()
+
+    # draw labels on the axes
+    canvas.setFillStyle(Color.Color("#000000"))
+    canvas.impl.canvasContext.fillText(str(y_min), 0, hei-pad_b+3)
+    canvas.impl.canvasContext.fillText(str(y_max), 0, pad_t+3)
+    for m in marks:
+        canvas.impl.canvasContext.fillText(str(m), 0, get_y(m)+3)
 
     i = 0  # index of current interval
     x_cum = 0  # cumulated x value (sum of the size of the first i-1 intervals)

@@ -131,7 +131,7 @@ class HistoryStore:
                     if new_above is not above or new_equal is not equal:
                         above = new_above
                         equal = new_equal
-                        result.append((time, above+1, equal))
+                        result.append((time, above+1, equal-1))
                 else:
                     changed = False
                     if d[user] <= d[user_id] and score > d[user_id]:
@@ -147,7 +147,7 @@ class HistoryStore:
                         equal += 1
                         changed = True
                     if changed:
-                        result.append((time, above+1, equal))
+                        result.append((time, above+1, equal-1))
                     d[user] = score
 
         return result
@@ -176,7 +176,7 @@ class HistoryStore:
                     if new_above is not above or new_equal is not equal:
                         above = new_above
                         equal = new_equal
-                        result.append((time, above+1, equal))
+                        result.append((time, above+1, equal-1))
                 else:
                     changed = False
                     if d[user] <= d[user_id] and score > d[user_id]:
@@ -192,7 +192,7 @@ class HistoryStore:
                         equal += 1
                         changed = True
                     if changed:
-                        result.append((time, above+1, equal))
+                        result.append((time, above+1, equal-1))
                     d[user] = score
 
         return result
@@ -220,7 +220,7 @@ class HistoryStore:
                 if new_above is not above or new_equal is not equal:
                     above = new_above
                     equal = new_equal
-                    result.append((time, above+1, equal))
+                    result.append((time, above+1, equal-1))
             else:
                 changed = False
                 if d[user] <= d[user_id] and score > d[user_id]:
@@ -236,7 +236,7 @@ class HistoryStore:
                     equal += 1
                     changed = True
                 if changed:
-                    result.append((time, above+1, equal))
+                    result.append((time, above+1, equal-1))
                 d[user] = score
 
         return result
