@@ -229,7 +229,7 @@ class Sandbox:
             return int(self.log['exitcode'][0])
         return 0
 
-    KILLING_SYSCALL_RE = re.compile("$Forbidden syscall (.*)^")
+    KILLING_SYSCALL_RE = re.compile("^Forbidden syscall (.*)$")
     def get_killing_syscall(self):
         """Return the syscall that triggered the killing of the
         sandboxed process, reading the log if necessary.
@@ -240,7 +240,7 @@ class Sandbox:
         if self.log is None:
             self.get_log()
         if 'message' in self.log:
-            syscall_match = KILLING_SYSCALL_RE.match(self.log['message'][0])
+            syscall_match = self.KILLING_SYSCALL_RE.match(self.log['message'][0])
             if syscall_match is None:
                 return None
             else:

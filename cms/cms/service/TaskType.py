@@ -279,7 +279,7 @@ class TaskType:
         self.sandbox.chdir = self.sandbox.path
         self.sandbox.preserve_env = True
         self.sandbox.filter_syscalls = 1
-        self.sandbox.allow_syscall = ["waitpid"]
+        self.sandbox.allow_syscall = ["waitpid", "prlimit64"]
         self.sandbox.allow_fork = True
         self.sandbox.file_check = 2
         # FIXME - File access limits are not enforced on children
@@ -374,8 +374,9 @@ class TaskType:
         # administrator should relax the syscall constraints
         if exit_status == Sandbox.EXIT_SYSCALL:
             with async_lock:
+                syscall = self.sandbox.get_killing_syscall()
                 logger.error("Compilation aborted "
-                             "because of forbidden syscall")
+                             "because of forbidden syscall %s" % (syscall))
             return False, None, None
 
         # Forbidden file access: this could be triggered by the user
@@ -492,9 +493,10 @@ class TaskType:
         # dynamically (offensive syscall is mprotect).
         # FIXME - Tell which syscall raised this error.
         if exit_status == Sandbox.EXIT_SYSCALL:
+            syscall = self.sandbox.get_killing_syscall()
             with async_lock:
-                logger.info("Execution killed because of forbidden syscall.")
-            return True, 0.0, "Execution killed because of forbidden syscall."
+                logger.info("Execution killed because of forbidden syscall %s." % (syscall))
+            return True, 0.0, "Execution killed because of forbidden syscall %s." % (syscall)
 
         # Forbidden file access: returning the error to the user.
         # FIXME - Tell which file raised this error.
