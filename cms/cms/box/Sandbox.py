@@ -25,6 +25,7 @@ import subprocess
 import tempfile
 import stat
 import select
+import re
 
 from cms.async.AsyncLibrary import logger, async_lock
 
@@ -228,6 +229,24 @@ class Sandbox:
             return int(self.log['exitcode'][0])
         return 0
 
+    KILLING_SYSCALL_RE = re.compile("$Forbidden syscall (.*)^")
+    def get_killing_syscall(self):
+        """Return the syscall that triggered the killing of the
+        sandboxed process, reading the log if necessary.
+
+        return (string): offending syscall, or None.
+
+        """
+        if self.log is None:
+            self.get_log()
+        if 'message' in self.log:
+            syscall_match = KILLING_SYSCALL_RE.match(self.log['message'][0])
+            if syscall_match is None:
+                return None
+            else:
+                return syscall_match.group(1)
+        return None
+
     def get_status_list(self):
         """Reads the sandbox log file, and set and return the status
         of the sandbox.
@@ -282,18 +301,19 @@ class Sandbox:
         status = self.get_exit_status()
         if status == self.EXIT_OK:
             return "Execution successfully finished (with exit code %d)" % \
-                   self.get_exit_code()
+                self.get_exit_code()
         elif status == self.EXIT_SANDBOX_ERROR:
             return "Execution failed because of sandbox error"
         elif status == self.EXIT_SYSCALL:
-            return "Execution killed because of forbidden syscall"
+            return "Execution killed because of forbidden syscall %s" % \
+                self.get_killing_syscall()
         elif status == self.EXIT_FILE_ACCESS:
             return "Execution killed because of forbidden file access"
         elif status == self.EXIT_TIMEOUT:
             return "Execution timed out"
         elif status == self.EXIT_SIGNAL:
             return "Execution killed with signal %d" % \
-                   self.get_killing_signal()
+                self.get_killing_signal()
 
     def get_stats(self):
         """Return a human-readable string representing execution time
