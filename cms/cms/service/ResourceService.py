@@ -50,7 +50,7 @@ class ResourceService(Service):
         # Floating point epoch using for precise measurement of percents
         self._last_saved_time = time.time()
         # Starting point for cpu times
-        self._prev_cpu_times = psutil.get_system_cpu_times()._asdict()
+        self._prev_cpu_times = psutil.get_system_cpu_times()
         # Sorted list of ServiceCoord running in the same machine
         self._local_services = self._find_local_services()
         self._procs = dict((service, None)
@@ -119,7 +119,7 @@ class ResourceService(Service):
         data = {}
 
         # CPU
-        cpu_times = psutil.get_system_cpu_times()._asdict()
+        cpu_times = psutil.get_system_cpu_times()
         data["cpu"] = dict((x, int(round((cpu_times[x] -
                                           self._prev_cpu_times[x])
                                    / delta * 100.0)))
