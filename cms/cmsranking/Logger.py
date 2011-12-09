@@ -20,6 +20,7 @@
 from Config import config
 
 import logging
+import os.path
 import time
 
 
@@ -103,3 +104,10 @@ _stream_log = logging.StreamHandler()
 _stream_log.setLevel(logging.WARNING)
 _stream_log.setFormatter(LogFormatter(color=config.log_color))
 logger.addHandler(_stream_log)
+
+# define the file handler to output on the specified log directory
+_file_log = logging.FileHandler(os.path.join(config.log_dir,
+                                time.strftime("%Y-%m-%d-%H-%M-%S.log")))
+_file_log.setLevel(logging.WARNING)
+_file_log.setFormatter(LogFormatter(color=False))
+logger.addHandler(_file_log)
