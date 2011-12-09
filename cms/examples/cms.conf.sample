@@ -60,7 +60,7 @@
  "block_hidden_users":     false,
 
  "tornado_secret_key":     "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
- "tornado_debug":          true,
+ "tornado_debug":          false,
 
  "rankings_address":        [["localhost", 8890]],
  "rankings_username":       ["usern4me"],
