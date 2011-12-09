@@ -43,6 +43,8 @@ class RequestLog:
         self.failure = 0
         self.error = 0
         self.undecided = 0
+        self.total_time = 0.0
+        self.max_time = 0.0
 
         self.log_dir = log_dir
         if self.log_dir is not None:
@@ -52,11 +54,14 @@ class RequestLog:
                 pass
 
     def print_stats(self):
-        print >> sys.stderr, "TOTAL:       %5d" % (self.total)
-        print >> sys.stderr, "SUCCESS:     %5d" % (self.success)
-        print >> sys.stderr, "FAIL:        %5d" % (self.failure)
-        print >> sys.stderr, "ERROR:       %5d" % (self.error)
-        print >> sys.stderr, "UNDECIDED:   %5d" % (self.undecided)
+        print >> sys.stderr, "TOTAL:          %5d" % (self.total)
+        print >> sys.stderr, "SUCCESS:        %5d" % (self.success)
+        print >> sys.stderr, "FAIL:           %5d" % (self.failure)
+        print >> sys.stderr, "ERROR:          %5d" % (self.error)
+        print >> sys.stderr, "UNDECIDED:      %5d" % (self.undecided)
+        print >> sys.stderr, "Total time:   %7.3f" % (self.total_time)
+        print >> sys.stderr, "Average time: %7.3f" % (self.total_time / self.total)
+        print >> sys.stderr, "Max time:     %7.3f" % (self.max_time)
 
     def merge(self, log2):
         self.total += log2.total
@@ -64,6 +69,8 @@ class RequestLog:
         self.failure += log2.failure
         self.error += log2.error
         self.undecided += log2.undecided
+        self.total_time += log2.total_time
+        self.max_time = max(self.max_time, log2.max_time)
 
     def store_to_file(self, request):
         if self.log_dir is None:
@@ -152,6 +159,8 @@ class Actor(threading.Thread):
         self.log.total += 1
         request.execute()
         self.log.__dict__[request.outcome] += 1
+        self.log.total_time += request.duration
+        self.log.max_time = max(self.log.max_time, request.duration)
         self.log.store_to_file(request)
 
     def wait_next(self):
@@ -229,6 +238,12 @@ def main():
         print >> sys.stderr, "Taking down actors"
         for actor in actors:
             actor.die = True
+
+    # Turn on some memory profiling
+    #from meliae import scanner
+    #print "Dumping"
+    #scanner.dump_all_objects('objects.json')
+    #print "Dump finished"
 
     finished = False
     while not finished:
