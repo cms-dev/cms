@@ -20,6 +20,10 @@
 
 ** Database
 
+* MED: (Probably) useful to store scores once they are computed by
+  ScoringService. This may be useful also for displaying reason
+  (i.e. show to user/admins the score of a submission).
+
 * LOW: Define appropriate UNIQUE indexes in the database.
 
 * LOW: It may be interesting to keep in the Contest not only the last
@@ -68,6 +72,10 @@
 
 
 ** AdminWebServer
+
+* MED: when reevaluating, ask if we want to wipe everything, or only
+  the evaluation, or only the scoring (in the case we implement the
+  persistent scores in the db).
 
 * MED: auto updating submission statuses.
 
