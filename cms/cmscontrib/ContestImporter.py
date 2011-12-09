@@ -85,9 +85,11 @@ class ContestImporter(Service):
                 if len(missing_files) > 0:
                     logger.warning("Some files needed to the contest are missing in the import directory")
 
-            session.commit()
+                session.flush()
+                contest_id = c.id
+                session.commit()
 
-        logger.info("Import finished")
+        logger.info("Import finished (contest id: %d)" % (contest_id))
         logger.operation = ""
         self.exit()
         return False
