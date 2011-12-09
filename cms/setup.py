@@ -41,6 +41,7 @@ setup(name="cms",
                 "cms.util",
                 "cms.async",
                 "cms.box",
+                "cmsranking",
                 "cmscontrib",
                 "cmstest"],
       package_data={"cms.async":
@@ -64,6 +65,8 @@ setup(name="cms",
               "cmsChecker=cms.service.Checker:main",
               "cmsContestWebServer=cms.server.ContestWebServer:main",
               "cmsAdminWebServer=cms.server.AdminWebServer:main",
+
+              "cmsRankingWebServer=cmsranking.RankingWebServer:main",
 
               "cmsTestFileStorage=cmstest.TestFileStorage:main",
               "cmsTestFileCacher=cmstest.TestFileCacher:main",
@@ -101,6 +104,11 @@ if "build" in sys.argv:
         path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
         os.system("mkdir -p %s" % path)
         os.system("msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
+
+    print "compiling client code for ranking:"
+    os.chdir(os.path.join("cmsranking", "client"))
+    os.system("pyjsbuild -o ../static/ Ranking")
+    os.chdir(os.path.join("..", ".."))
 
     print "done."
 
@@ -154,7 +162,8 @@ if "install" in sys.argv:
     print "creating directories."
     dirs = [os.path.join("/", "var", "local", "log"),
             os.path.join("/", "var", "local", "cache"),
-            os.path.join("/", "var", "local", "lib")]
+            os.path.join("/", "var", "local", "lib"),
+            os.path.join("/", "usr", "local", "share")]
     for d in dirs:
         os.umask(002)
         os.system("mkdir -p %s" % d)
@@ -162,6 +171,20 @@ if "install" in sys.argv:
         os.umask(007)
         os.system("mkdir -p %s" % d)
         os.chown(d, cmsuser.pw_uid, cmsuser.pw_gid)
+
+    print "copying static file for ranking."
+    shutil.rmtree(os.path.join("/", "usr", "local", "share",
+                               "cms", "ranking"))
+    shutil.copytree(os.path.join("cmsranking", "static"),
+                    os.path.join("/", "usr", "local", "share",
+                                 "cms", "ranking"))
+    os.system("chown -R cmsuser:cmsuser %s" %
+              os.path.join("/", "usr", "local", "share",
+                           "cms", "ranking"))
+    # Please fix me I'm ugly.
+    os.system("chmod -R 0770 %s" %
+              os.path.join("/", "usr", "local", "share",
+                           "cms", "ranking"))
 
     print "done."
 
