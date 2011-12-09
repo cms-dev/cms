@@ -28,6 +28,7 @@ import optparse
 import random
 import time
 import re
+import codecs
 
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
@@ -71,7 +72,7 @@ class RequestLog:
         filename = "%s_%s.log" % (request.start_time, request.__class__.__name__)
         filepath = os.path.join(self.log_dir, filename)
         linkpath = os.path.join(self.log_dir, request.__class__.__name__)
-        with open(filepath, 'w') as fd:
+        with codecs.open(filepath, 'w', encoding='utf-8') as fd:
             request.store_to_file(fd)
         try:
             os.remove(linkpath)

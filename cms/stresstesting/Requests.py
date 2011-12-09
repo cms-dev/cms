@@ -25,8 +25,11 @@ import re
 import urllib
 import datetime
 import traceback
+import codecs
 
 from cms.util.Cryptographics import encrypt_number
+
+utf8_decoder = codecs.getdecoder('utf-8')
 
 class TestRequest:
     """Docstring TODO.
@@ -147,7 +150,7 @@ class GenericRequest(TestRequest):
 
     def specific_info(self):
         if self.res_data is not None:
-            return "\nRESPONSE DATA\n" + self.res_data
+            return "\nRESPONSE DATA\n" + utf8_decoder(self.res_data)[0]
         else:
             return ''
 
@@ -234,3 +237,6 @@ class TaskStatementRequest(GenericRequest):
 
     def describe(self):
         return "load statement for task %s" % (self.task_id)
+
+    def specific_info(self):
+        return '\nNO DATA DUMP FOR TASK STATEMENTS\n'
