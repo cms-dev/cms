@@ -115,7 +115,3 @@
 * LOW: Add pyjamas building of ranking and installing the scripts.
 
 
-** Irene
-
-* MED: Find out why Irene takes so much CPU resources.
-
