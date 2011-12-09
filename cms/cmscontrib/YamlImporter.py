@@ -26,7 +26,7 @@ import codecs
 import optparse
 
 from cms.async import ServiceCoord
-from cms.db.SQLAlchemyAll import metadata, Session, Task, Manager, \
+from cms.db.SQLAlchemyAll import metadata, SessionGen, Task, Manager, \
     Testcase, User, Contest, SubmissionFormatElement
 from cms.service.FileStorage import FileCacher
 from cms.service.ScoreType import ScoreTypes
@@ -34,20 +34,13 @@ from cms.async.AsyncLibrary import rpc_callback, Service, logger
 from cms.db.Utils import analyze_all_tables
 
 
-class YamlImporter(Service):
+class YamlLoader:
 
-    def __init__(self, shard, drop, modif, path, user_num):
+    def __init__(self, FC, drop, modif, user_num):
         self.drop = drop
         self.modif = modif
-        self.path = path
         self.user_num = user_num
-
-        logger.initialize(ServiceCoord("YamlImporter", shard))
-        logger.debug("YamlImporter.__init__")
-        Service.__init__(self, shard)
-        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
-        self.FC = FileCacher(self, self.FS)
-        self.add_timeout(self.do_import, None, 10, immediately=True)
+        self.FC = FC
 
     def get_params_for_contest(self, path):
         """Given the path of a contest, extract the data from its
@@ -67,7 +60,8 @@ class YamlImporter(Service):
 
         logger.info("Loading parameters for contest %s." % (name))
 
-        params = {"name": name}
+        params = {}
+        params["name"] = name
         assert name == conf["nome_breve"]
         params["description"] = conf["nome"]
         params["token_initial"] = conf.get("token_initial", 0)
@@ -87,6 +81,11 @@ class YamlImporter(Service):
             params["stop"] = conf.get("fine", 0)
 
         logger.info("Contest parameters loaded.")
+
+        params["tasks"] = []
+        params["users"] = []
+        params["announcements"] = []
+        params["ranking_view"] = None
 
         return params, conf["problemi"], conf["utenti"]
 
@@ -111,6 +110,11 @@ class YamlImporter(Service):
         surname = user_dict.get("cognome", user_dict["username"])
         params["real_name"] = " ".join([name, surname])
         params["hidden"] = "True" == user_dict.get("fake", "False")
+
+        params["timezone"] = 0.0
+        params["messages"] = []
+        params["questions"] = []
+        params["submissions"] = []
 
         logger.info("User parameters loaded.")
 
@@ -141,13 +145,13 @@ class YamlImporter(Service):
         params["task_type"] = Task.TASK_TYPE_BATCH
 
         params["submission_format"] = [SubmissionFormatElement("%s.%%l" %
-                                                               (name))]
+                                                               (name)).export_to_dict()]
 
         if os.path.exists(os.path.join(path, "cor", "correttore")):
-            params["managers"] = {
-                "checker": Manager(self.FC.put_file(
-                    path=os.path.join(path, "cor", "correttore"),
-                    description="Manager for task %s" % (name)))}
+            params["managers"] = [Manager(self.FC.put_file(
+                        path=os.path.join(path, "cor", "correttore"),
+                        description="Manager for task %s" % (name)),
+                                          "checker").export_to_dict()]
             params["task_type_parameters"] = "[\"comp\", \"file\"]"
         else:
             params["managers"] = {}
@@ -170,7 +174,7 @@ class YamlImporter(Service):
                     path=fi, description="Input %d for task %s" % (i, name)),
                 self.FC.put_file(
                     path=fo, description="Output %d for task %s" % (i, name)),
-                public=(i in public_testcases)))
+                public=(i in public_testcases)).export_to_dict())
         params["token_initial"] = conf.get("token_initial", 0)
         params["token_max"] = conf.get("token_max", None)
         params["token_total"] = conf.get("token_total", None)
@@ -180,27 +184,45 @@ class YamlImporter(Service):
 
         logger.info("Task parameters loaded.")
 
+        params["attachments"] = []
+
         return params
 
-    def import_contest(self):
+    def import_contest(self, path):
         """Import a contest into the system.
         """
-        params, tasks, users = self.get_params_for_contest(self.path)
-        params["tasks"] = []
+        params, tasks, users = self.get_params_for_contest(path)
         for task in tasks:
-            task_params = self.get_params_for_task(os.path.join(self.path,
-                                                                task))
-            params["tasks"].append(Task(**task_params))
-        params["users"] = []
+            task_params = self.get_params_for_task(os.path.join(path, task))
+            params["tasks"].append(task_params)
         if self.user_num is None:
             for user in users:
                 user_params = self.get_params_for_user(user)
-                params["users"].append(User(**user_params))
+                params["users"].append(user_params)
         else:
             logger.info("Generating %d random users." % (self.user_num))
             for i in xrange(self.user_num):
-                params["users"].append(User("User %d" % (i), "user%03d" % (i)))
-        return Contest(**params)
+                params["users"].append(User("User %d" % (i), "user%03d" % (i)).export_to_dict())
+        return params
+
+
+class YamlImporter(Service):
+
+    def __init__(self, shard, drop, modif, path, user_num):
+        self.drop = drop
+        self.modif = modif
+        self.path = path
+        self.user_num = user_num
+
+        logger.initialize(ServiceCoord("YamlImporter", shard))
+        logger.debug("YamlImporter.__init__")
+        Service.__init__(self, shard)
+        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
+        self.FC = FileCacher(self, self.FS)
+
+        self.loader = YamlLoader(self.FC, drop, modif, user_num)
+
+        self.add_timeout(self.do_import, None, 10, immediately=True)
 
     def do_import(self):
         if not self.FS.connected:
@@ -212,20 +234,19 @@ class YamlImporter(Service):
             metadata.drop_all()
         metadata.create_all()
 
-        c = self.import_contest()
+        c = Contest.import_from_dict(self.loader.import_contest(self.path))
 
         logger.info("Creating contest on the database.")
-        session = Session()
-        session.add(c)
-        c.create_empty_ranking_view()
-        session.flush()
+        with SessionGen() as session:
+            session.add(c)
+            c.create_empty_ranking_view()
+            session.flush()
 
-        contest_id = c.id
+            contest_id = c.id
 
-        logger.info("Analyzing database.")
-        analyze_all_tables(session)
-        session.commit()
-        session.close()
+            logger.info("Analyzing database.")
+            analyze_all_tables(session)
+            session.commit()
 
         logger.info("Import finished (new contest ID: %d)." % (contest_id))
 
