@@ -141,6 +141,12 @@ class GenericRequest(TestRequest):
                                               urllib.urlencode(self.data))
         self.res_data = self.response.read()
 
+        # TODO - We here clear the history, otherwise the memory
+        # consumption would explode; maybe it would be better to use a
+        # custom History object that just discards the history; on the
+        # other hand the History interface is still unstable
+        self.browser.clear_history()
+
     def test_success(self):
         #if self.response.getcode() != 200:
         #    return False
