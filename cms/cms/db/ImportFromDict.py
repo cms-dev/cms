@@ -52,7 +52,8 @@ def contest_import_from_dict(cls, data):
     data['tasks'] = [Task.import_from_dict(task_data) for task_data in data['tasks']]
     data['users'] = [User.import_from_dict(user_data, tasks=data['tasks']) for user_data in data['users']]
     data['announcements'] = [Announcement.import_from_dict(ann_data) for ann_data in data['announcements']]
-    data['ranking_view'] = RankingView.import_from_dict(data['ranking_view'], tasks=data['tasks'], users=data['users'])
+    if data['ranking_view'] is not None:
+        data['ranking_view'] = RankingView.import_from_dict(data['ranking_view'], tasks=data['tasks'], users=data['users'])
     return cls(**data)
 Contest.import_from_dict = contest_import_from_dict
 

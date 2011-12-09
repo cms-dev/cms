@@ -70,14 +70,12 @@ class SessionGen:
 
     and at the end the session is automatically closed.
 
-    commit (bool): whether to commit or to rollback the session
-                   by default, when no other instruction has
-                   been specified. To do the commit or the rollback
+    commit (bool): whether to commit or to rollback the session by
+                   default, when no other instruction has been
+                   specified. To do the commit or the rollback
                    idependently of this setting, just call the
-                   relevant function from the session.
-                   ATTENTION: by default, the session is
-                   committed, but this behaviour may change
-                   in the future.
+                   relevant function from the session.  ATTENTION: by
+                   default, the session is not committed.
 
     """
     def __init__(self, commit=False):
