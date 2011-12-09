@@ -237,7 +237,8 @@ class ScoringService(Service):
                        "contest": contest.name,
                        "score": 100.0,
                        "extra_headers": [],
-                       "order": task.num}]
+                       "order": task.num,
+                       "short_name": task.name}]
                      for task in contest.tasks]
 
         safe_put_data(connection, contest_url, contest_data, auth,
