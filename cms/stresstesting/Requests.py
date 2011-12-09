@@ -50,6 +50,7 @@ class TestRequest:
 
         self.start_time = None
         self.stop_time = None
+        self.duration = None
         self.exception_data = None
 
     def execute(self):
@@ -60,6 +61,7 @@ class TestRequest:
             self.start_time = time.time()
             self.do_request()
             self.stop_time = time.time()
+            self.duration = self.stop_time - self.start_time
             success = self.test_success()
 
         # Catch possible exceptions
@@ -107,7 +109,7 @@ class TestRequest:
         print >> fd, "Test type: %s" % (self.__class__.__name__)
         print >> fd, "Execution start time: %s" % (datetime.datetime.fromtimestamp(self.start_time).strftime("%d/%m/%Y %H:%M:%S.%f"))
         print >> fd, "Execution stop time: %s" % (datetime.datetime.fromtimestamp(self.stop_time).strftime("%d/%m/%Y %H:%M:%S.%f"))
-        print >> fd, "Duration: %f seconds" % (self.stop_time - self.start_time)
+        print >> fd, "Duration: %f seconds" % (self.duration)
         print >> fd, "Outcome: %s" % (self.outcome)
         if self.exception_data is not None:
             print >> fd
@@ -140,6 +142,12 @@ class GenericRequest(TestRequest):
             self.response = self.browser.open(self.url,
                                               urllib.urlencode(self.data))
         self.res_data = self.response.read()
+
+        # TODO - We here clear the history, otherwise the memory
+        # consumption would explode; maybe it would be better to use a
+        # custom History object that just discards the history; on the
+        # other hand the History interface is still unstable
+        self.browser.clear_history()
 
     def test_success(self):
         #if self.response.getcode() != 200:

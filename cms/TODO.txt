@@ -110,7 +110,8 @@
 
 
 
-** Irene
+** setup.py
 
-* MED: Find out why Irene takes so much CPU resources.
+* LOW: Add pyjamas building of ranking and installing the scripts.
+
 
