@@ -99,7 +99,7 @@ class Actor(threading.Thread):
 
     """
 
-    def __init__(self, username, password, metrics, tasks, log=None):
+    def __init__(self, username, password, metrics, tasks, log=None, base_url=None):
         threading.Thread.__init__(self)
 
         self.username = username
@@ -107,6 +107,7 @@ class Actor(threading.Thread):
         self.metric = metrics
         self.tasks = tasks
         self.log = log
+        self.base_url = base_url
 
         self.name = "Actor thread for user %s" % (self.username)
 
@@ -120,23 +121,26 @@ class Actor(threading.Thread):
             # Start with logging in and checking to be logged in
             self.do_step(HomepageRequest(self.browser,
                                          self.username,
-                                         loggedin=False))
+                                         loggedin=False,
+                                         base_url=self.base_url))
             self.do_step(LoginRequest(self.browser,
                                       self.username,
-                                      self.password))
+                                      self.password,
+                                      base_url=self.base_url))
             self.do_step(HomepageRequest(self.browser,
                                          self.username,
-                                         loggedin=True))
+                                         loggedin=True,
+                                         base_url=self.base_url))
 
             # Then keep forever stumbling across user pages
             while True:
                 choice = random.random()
                 if choice < 0.5:
                     task = random.choice(self.tasks)
-                    self.do_step(TaskRequest(self.browser, task))
+                    self.do_step(TaskRequest(self.browser, task, base_url=self.base_url))
                 else:
                     task = random.choice(self.tasks)
-                    self.do_step(TaskStatementRequest(self.browser, task))
+                    self.do_step(TaskStatementRequest(self.browser, task, base_url=self.base_url))
 
         except ActorDying:
             print >> sys.stderr, "Actor dying for user %s" % (self.username)
@@ -197,6 +201,9 @@ def main():
     parser.add_option("-s", "--sort-actors",
                       help="sort usernames alphabetically instead of randomizing before slicing them",
                       action="store_true", default=False, dest="sort_actors")
+    parser.add_option("-u", "--base-url",
+                      help="base URL for placing HTTP requests",
+                      action="store", default=None, dest="base_url")
     options = parser.parse_args()[0]
 
     users, tasks = harvest_contest_data(options.contest_id)
@@ -209,14 +216,15 @@ def main():
         users = dict(user_items[:options.actor_num])
 
     actors = [Actor(username, data['password'], DEFAULT_METRICS, tasks,
-                    log=RequestLog(log_dir=os.path.join('./test_logs', username)))
+                    log=RequestLog(log_dir=os.path.join('./test_logs', username)),
+                    base_url=options.base_url)
               for username, data in users.iteritems()]
     for actor in actors:
         actor.start()
 
     try:
         while True:
-            pass
+            time.sleep(1)
     except KeyboardInterrupt:
         print >> sys.stderr, "Taking down actors"
         for actor in actors:
