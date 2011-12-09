@@ -349,6 +349,11 @@ class ImageHandler(tornado.web.RequestHandler):
             self.write(f.read())
 
 
+class HomeHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.redirect('Ranking.html')
+
+
 def main():
     application = tornado.web.Application(
         [
@@ -373,9 +378,10 @@ def main():
                 'location': os.path.join(config.lib_dir, 'flags', '%s'),
                 'fallback': os.path.join(config.web_dir, 'flag.png')
             }),
-            (r"/(.*)", tornado.web.StaticFileHandler, {
-                'path': os.path.join(os.path.dirname(__file__), 'static')
-            })
+            (r"/(.+)", tornado.web.StaticFileHandler, {
+                'path': config.web_dir
+            }),
+            (r"/", HomeHandler)
         ])
     # application.add_transform (tornado.web.ChunkedTransferEncoding)
     application.listen(config.port)

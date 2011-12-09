@@ -170,7 +170,7 @@ class ContestWebServer(WebService):
         parameters["static_path"] = os.path.join(os.path.dirname(__file__),
                                                  "static")
         WebService.__init__(self,
-            Config.contest_listen_port,
+            Config.contest_listen_port[shard],
             handlers,
             parameters,
             shard=shard)

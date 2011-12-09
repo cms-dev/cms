@@ -65,7 +65,7 @@ class YamlImporter(Service):
                 os.path.join(path, "contest.yaml"),
                 "r", "utf-8"))
 
-        logger.info("Loading parameters for contest %s" % (name))
+        logger.info("Loading parameters for contest %s." % (name))
 
         params = {"name": name}
         assert name == conf["nome_breve"]
@@ -86,7 +86,7 @@ class YamlImporter(Service):
             params["start"] = conf.get("inizio", 0)
             params["stop"] = conf.get("fine", 0)
 
-        logger.info("Contest parameters loaded")
+        logger.info("Contest parameters loaded.")
 
         return params, conf["problemi"], conf["utenti"]
 
@@ -99,7 +99,7 @@ class YamlImporter(Service):
         params = {}
         params["username"] = user_dict["username"]
 
-        logger.info("Loading parameters for user %s" % (params['username']))
+        logger.info("Loading parameters for user %s." % (params['username']))
 
         if self.modif == 'test':
             params["password"] = 'a'
@@ -112,7 +112,7 @@ class YamlImporter(Service):
         params["real_name"] = " ".join([name, surname])
         params["hidden"] = "True" == user_dict.get("fake", "False")
 
-        logger.info("User parameters loaded")
+        logger.info("User parameters loaded.")
 
         return params
 
@@ -127,7 +127,7 @@ class YamlImporter(Service):
         conf = yaml.load(codecs.open(
             os.path.join(super_path, name + ".yaml"), "r", "utf-8"))
 
-        logger.info("Loading parameters for task %s" % (name))
+        logger.info("Loading parameters for task %s." % (name))
 
         params = {"name": name}
         assert name == conf["nome_breve"]
@@ -178,7 +178,7 @@ class YamlImporter(Service):
         params["token_gen_time"] = conf.get("token_gen_time", None)
         params["token_gen_number"] = conf.get("token_gen_number", None)
 
-        logger.info("Task parameters loaded")
+        logger.info("Task parameters loaded.")
 
         return params
 
@@ -197,7 +197,7 @@ class YamlImporter(Service):
                 user_params = self.get_params_for_user(user)
                 params["users"].append(User(**user_params))
         else:
-            logger.info("Generating %d random users" % (self.user_num))
+            logger.info("Generating %d random users." % (self.user_num))
             for i in xrange(self.user_num):
                 params["users"].append(User("User %d" % (i), "user%03d" % (i)))
         return Contest(**params)
@@ -207,14 +207,14 @@ class YamlImporter(Service):
             logger.warning("Please run FileStorage.")
             return True
 
-        logger.info("Creating database structure")
+        logger.info("Creating database structure.")
         if self.drop:
             metadata.drop_all()
         metadata.create_all()
 
         c = self.import_contest()
 
-        logger.info("Creating contest on the database")
+        logger.info("Creating contest on the database.")
         session = Session()
         session.add(c)
         c.create_empty_ranking_view()
@@ -222,12 +222,12 @@ class YamlImporter(Service):
 
         contest_id = c.id
 
-        logger.info("Analyzing database")
+        logger.info("Analyzing database.")
         analyze_all_tables(session)
         session.commit()
         session.close()
 
-        logger.info("Import finished (new contest ID: %d)" % (contest_id))
+        logger.info("Import finished (new contest ID: %d)." % (contest_id))
 
         self.exit()
         return False
