@@ -21,10 +21,12 @@
 
 import sys
 import os
+import shutil
+import re
+import pwd
 
+from glob import glob
 from setuptools import setup
-
-old_umask = os.umask(022)
 
 setup(name="cms",
       version="0.1",
@@ -88,10 +90,55 @@ setup(name="cms",
                   ],
      )
 
-if "build" in sys.argv:
-    import re
-    from glob import glob
+def copyfile(src, dest, owner, perm):
+    """Copy the file src to dest, and assign owner and permissions.
 
+    src (string): the complete path of the source file.
+    dest (string): the complete path of the destination file (i.e.,
+                   not the destination directory).
+    owner (as given by pwd.getpwnam): the owner we want for dest.
+    perm (integer): the permission for dest (example: 0660).
+
+    """
+    shutil.copy(src, dest)
+    os.chmod(dest, perm)
+    os.chown(dest, owner.pw_uid, owner.pw_gid)
+
+def makedir(dir_path, owner, perm):
+    """Create a directory with given owner and permission.
+
+    dir_path (string): the new directory to create.
+    owner (as given by pwd.getpwnam): the owner we want for dest.
+    perm (integer): the permission for dest (example: 0660).
+
+    """
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+    os.chmod(dir_path, perm)
+    os.chown(dir_path, owner.pw_uid, owner.pw_gid)
+
+def copytree(src_path, dest_path, owner, perm_files, perm_dirs):
+    """Copy the *content* of src_path in dest_path, assigning the
+    given owner and permissions.
+
+    src_path (string): the root of the subtree to copy.
+    dest_path (string): the destination path.
+    owner (as given by pwd.getpwnam): the owner we want for dest.
+    perm_files (integer): the permission for copied not-directories.
+    perm_dirs (integer): the permission for copied directories.
+
+    """
+    for path in glob(os.path.join(src_path, "*")):
+        sub_dest = os.path.join(dest_path, os.path.basename(path))
+        if os.path.isdir(path):
+            makedir(sub_dest, owner, perm_dirs)
+            copytree(path, sub_dest, owner, perm_files, perm_dirs)
+        elif os.path.isfile(path):
+            copyfile(path, sub_dest, owner, perm_files)
+        else:
+            print "Error: unexpected filetype for file %s. Not copied" % path
+
+if "build" in sys.argv:
     print "compiling mo-box..."
     os.chdir("box")
     os.system(os.path.join(".", "compile.sh"))
@@ -102,7 +149,7 @@ if "build" in sys.argv:
         country_code = re.search("/([^/]*)\.po", locale).groups()[0]
         print "  %s" % country_code
         path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
-        os.system("mkdir -p %s" % path)
+        os.makedirs(path)
         os.system("msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
 
     print "compiling client code for ranking:"
@@ -113,51 +160,43 @@ if "build" in sys.argv:
     print "done."
 
 if "install" in sys.argv:
-    import shutil
-    import re
-    import pwd
-    from glob import glob
-
     # Two kind of files: owned by root with umask 022, or owned by
     # cmsuser with umask 007. The latter because we do not want
     # regular users to sniff around our contests' data. Note that
     # umask is not enough if we copy files (permissions could be less
     # open in repository), so sometimes we do also a chmod.
-    os.umask(007)
 
     print "creating user and group cmsuser."
     os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
     cmsuser = pwd.getpwnam("cmsuser")
+    root = pwd.getpwnam("root")
 
     print "copying mo-box to /usr/local/bin/."
-    os.umask(022)
-    shutil.copy(os.path.join(".", "box", "mo-box"),
-                os.path.join("/", "usr", "local", "bin"))
-    os.chmod(os.path.join("/", "usr", "local", "bin", "mo-box"), 0755)
+    copyfile(os.path.join(".", "box", "mo-box"),
+             os.path.join("/", "usr", "local", "bin", "mo-box"),
+             root, 0755)
 
     print "copying configuration to /usr/local/etc/."
-    os.umask(007)
     conf_file = os.path.join("/", "usr", "local", "etc", "cms.conf")
     if os.path.exists(os.path.join(".", "examples", "cms.conf")):
-        shutil.copy(os.path.join(".", "examples", "cms.conf"), conf_file)
+        copyfile(os.path.join(".", "examples", "cms.conf"), conf_file,
+                 cmsuser, 0660)
     else:
-        shutil.copy(os.path.join(".", "examples", "cms.conf.sample"),
-                    os.path.join("/", "usr", "local", "etc", "cms.conf"))
-    os.chown(conf_file, cmsuser.pw_uid, cmsuser.pw_gid)
-    os.chmod(conf_file, 0660)
+        copyfile(os.path.join(".", "examples", "cms.conf.sample"),
+                 os.path.join("/", "usr", "local", "etc", "cms.conf"),
+                 cmsuser, 0660)
 
     print "copying localization files:"
-    os.umask(022)
     for locale in glob(os.path.join("cms", "server", "po", "*.po")):
         country_code = re.search("/([^/]*)\.po", locale).groups()[0]
         print "  %s" % country_code
         path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
         dest_path = os.path.join("/", "usr", "local", "share", "locale",
                                  country_code, "LC_MESSAGES")
-        os.system("mkdir -p %s" % dest_path)
-        shutil.copy(os.path.join(path, "cms.mo"),
-                    os.path.join(dest_path, "cms.mo"))
-        os.chmod(os.path.join(dest_path, "cms.mo"), 0644)
+        makedir(dest_path, root, 0755)
+        copyfile(os.path.join(path, "cms.mo"),
+                 os.path.join(dest_path, "cms.mo"),
+                 root, 0644)
 
     print "creating directories."
     dirs = [os.path.join("/", "var", "local", "log"),
@@ -165,28 +204,22 @@ if "install" in sys.argv:
             os.path.join("/", "var", "local", "lib"),
             os.path.join("/", "usr", "local", "share")]
     for d in dirs:
-        os.umask(002)
-        os.system("mkdir -p %s" % d)
+        makedir(d, root, 0755)
         d = os.path.join(d, "cms")
-        os.umask(007)
-        os.system("mkdir -p %s" % d)
-        os.chown(d, cmsuser.pw_uid, cmsuser.pw_gid)
+        makedir(d, cmsuser, 0770)
 
     print "copying static file for ranking."
-    shutil.rmtree(os.path.join("/", "usr", "local", "share",
-                               "cms", "ranking"))
-    shutil.copytree(os.path.join("cmsranking", "static"),
-                    os.path.join("/", "usr", "local", "share",
-                                 "cms", "ranking"))
-    os.system("chown -R cmsuser:cmsuser %s" %
-              os.path.join("/", "usr", "local", "share",
-                           "cms", "ranking"))
-    # Please fix me I'm ugly.
-    os.system("chmod -R 0770 %s" %
-              os.path.join("/", "usr", "local", "share",
-                           "cms", "ranking"))
+    try:
+        shutil.rmtree(os.path.join("/", "usr", "local", "share",
+                                   "cms", "ranking"))
+    except OSError:
+        pass
+    makedir(os.path.join("/", "usr", "local", "share",
+                         "cms", "ranking"), cmsuser, 0770)
+    copytree(os.path.join("cmsranking", "static"),
+             os.path.join("/", "usr", "local", "share",
+                          "cms", "ranking"),
+             cmsuser, 0660, 0770)
 
     print "done."
 
-# Go back to user's umask.
-os.umask(old_umask)
