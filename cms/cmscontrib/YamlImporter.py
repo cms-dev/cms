@@ -45,11 +45,11 @@ class YamlLoader:
     def get_params_for_contest(self, path):
         """Given the path of a contest, extract the data from its
         contest.yaml file, and create a dictionary with the parameter
-        to give to the Contest class. Since tasks and users need to be
-        handled differently if we are doing an import or a reimport,
-        we do not fill the dictionary with tasks' and users'
-        information, but we return the lists of their names after the
-        dictionay of parameters.
+        required by Contest.import_from_dict().
+
+        Returns that dictionary and the two pieces of data that must
+        be processed with get_params_for_task and
+        get_params_for_users.
 
         """
         path = os.path.realpath(path)
@@ -92,7 +92,7 @@ class YamlLoader:
     def get_params_for_user(self, user_dict):
         """Given the dictionary of information of a user (extracted
         from contest.yaml), it fills another dictionary with the
-        parameters to give to our class User.
+        parameters required by User.import_from_dict().
 
         """
         params = {}
@@ -122,8 +122,8 @@ class YamlLoader:
 
     def get_params_for_task(self, path):
         """Given the path of a task, this function put all needed data
-        into FS, and fills the dictionary of parameters to pass to the
-        class Task.
+        into FS, and fills the dictionary of parameters required by
+        Task.import_from_dict().
 
         """
         path = os.path.realpath(path)
@@ -189,7 +189,9 @@ class YamlLoader:
         return params
 
     def import_contest(self, path):
-        """Import a contest into the system.
+        """Import a contest into the system, returning a dictionary
+        that can be passed to Contest.import_from_dict().
+
         """
         params, tasks, users = self.get_params_for_contest(path)
         for task in tasks:
