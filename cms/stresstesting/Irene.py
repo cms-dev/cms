@@ -224,7 +224,7 @@ def main():
 
     try:
         while True:
-            pass
+            time.sleep(1)
     except KeyboardInterrupt:
         print >> sys.stderr, "Taking down actors"
         for actor in actors:
