@@ -88,7 +88,10 @@ def safe_post_data(connection, url, data, auth, operation):
     from 200 or 201. See post_data for parameters.
 
     """
-    status = post_data(connection, url, data, auth)
+    try:
+        status = post_data(connection, url, data, auth)
+    except Exception as e:
+        status = repr(e)
     if status not in [200, 201]:
         logger.info("Status %s while %s to ranking." %
                     (status, operation))
@@ -99,7 +102,10 @@ def safe_put_data(connection, url, data, auth, operation):
     from 200 or 201. See post_data for parameters.
 
     """
-    status = put_data(connection, url, data, auth)
+    try:
+        status = put_data(connection, url, data, auth)
+    except Exception as e:
+        status = repr(e)
     if status not in [200, 201]:
         logger.info("Status %s while %s to ranking." %
                     (status, operation))
@@ -160,10 +166,12 @@ class ScoringService(Service):
         case of many old submissions.
 
         """
-        if len(self.submission_ids_to_score) == 0:
+        to_score = len(self.submission_ids_to_score)
+        if to_score == 0:
             logger.info("Finished loading old submissions.")
             return False
         else:
+            logger.info("Old submission yet to score: %s." % to_score)
             self.new_evaluation(self.submission_ids_to_score[0])
             self.submission_ids_to_score = self.submission_ids_to_score[1:]
             return True
@@ -186,12 +194,8 @@ class ScoringService(Service):
             try:
                 method(*args)
             except Exception as err:
-                # Connection aborted / refused / reset by peer
-                if err.errno not in [errno.ECONNABORTED,
-                                     errno.ECONNREFUSED,
-                                     errno.ECONNRESET]:
-                    raise err
-                logger.info("Ranking %s not connected." % args[0][0])
+                logger.info("Ranking %s not connected (errno %s)." %
+                            (args[0][0], err.errno))
                 new_queue.append((method, args))
                 failed_rankings.add(args[0])
         self.operation_queue = new_queue
