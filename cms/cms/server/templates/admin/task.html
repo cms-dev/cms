@@ -1,6 +1,20 @@
 {% extends base.html %}
 
+{% block js_init %}
+
+function showTaskTypeOption() {
+    var selector = $("select[name=task_type]")[0];
+    $(".TaskTypeOptions:visible").hide("fast"); 
+    $("#" + selector.options[selector.selectedIndex].value + "Options").show("fast")
+};
+
+showTaskTypeOption();
+$("select[name=task_type]").change(showTaskTypeOption);
+
+{% end %}
+
 {% block core %}
+{% import json %}
 <div class="core_title">
   <h1>{{ task.title }} ({{ task.name }})</h1>
 </div>
@@ -120,22 +134,26 @@
         <td>{{task.num}}</td>
       </tr>
       <tr>
-        <td><a href="/task/{{ task.id }}/statement">Statement</a></td>
-        <td><input type="file" name="statement"></input></td>
+        <td>Statement</td>
+        <td>
+          <a href="/task/{{ task.id }}/statement">Current statement</a> - 
+          <a href="/add_statement/{{ task.id }}">Upload a new statement</a><br/>
+        </td>
       </tr>
       <tr>
         <td>Attachments</td>
         <td>
+          <a href="/add_attachment/{{ task.id }}" >Add attachment</a><br/>
           {% if len(task.attachments) == 0 %}
             No attachments.
           {% else %}
-            {% for attachment in task.attachments %}
+            {% for attachment in task.attachments.values() %}
               <div class="attachment">
                 <a href="/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
+                - <a href="/delete_attachment/{{ attachment.id }}">Delete</a>
               </div>
             {% end %}
           {% end %}
-          <!--<input type="file" name="attachment"/>-->
         </td>
       </tr>
       <tr>
@@ -146,38 +164,77 @@
         <td>Memory limit</td>
         <td><input type="text" name="memory_limit" value="{{ task.memory_limit }}"/> MB</td>
       </tr>
+    </table>
+    <div class="hr"></div>
+  </div>
+
+<!-- Task type settings -->
+
+  <h2 id="title_task_type" class="toggling_on">Task type settings</h2>
+
+  <div id="task_type">
+    <table>
       <tr>
         <td>Task type</td>
         <td>
-          <!--
-          TODO: re-enable
-          -->
-          <select name="task_type" disabled>
-            <option value="TaskTypeBatch"{% if task.task_type == "TaskTypeBatch" %} selected{% end %}>
-              Batch
-            </option>
-            <option value="TaskTypeProgramming"{% if task.task_type == "TaskTypeProgramming" %} selected{% end %}>
-              Programming
-            </option>
-            <option value="TaskTypeOutputOnly"{% if task.task_type == "TaskTypeOutputOnly" %} selected{% end %}>
-              Output Only
-            </option>
+          <select name="task_type">
+            <option value="TaskTypeBatch" {% if task.task_type == "TaskTypeBatch" %}selected{% end %}>Batch</option>
+            <option value="TaskTypeOutputOnly" {% if task.task_type == "TaskTypeOutputOnly" %}selected{% end %}>Output only</option>
           </select>
+        {% set parameters = json.loads(task.task_type_parameters) if task.task_type_parameters != '' else None %}
+
+        <!-- Batch specific settings -->
+        <table class="TaskTypeOptions bordered" id="TaskTypeBatchOptions" style="display: none;" >
+          <tr>
+            <td>Output evaluation</td>
+            <td>
+              <select name="Batch_evaluation">
+                <option value="diff" {% if task.task_type == "TaskTypeBatch" and parameters is not None and parameters[0]=="diff" %}selected{% end %} >White diff</option>
+                <option value="comp" {% if task.task_type == "TaskTypeBatch" and parameters is not None and parameters[0]=="comp" %}selected{% end %}>Comparator</option>
+                <option value="grad" {% if task.task_type == "TaskTypeBatch" and parameters is not None and parameters[0]=="grad" %}selected{% end %}>Grader</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td>Input/Output on file</td>
+            <td><input type="checkbox" name="Batch_use_files" {% if task.task_type == "TaskTypeBatch" and parameters is not None and parameters[0]!="grad" and parameters[1]=="file" %}checked{% end %}/></td>
+          </tr>
+        </table>
+
+        <!-- Output only specific settings -->
+        <table class="TaskTypeOptions bordered" id="TaskTypeOutputOnlyOptions" style="display: none;">
+          <tr>
+            <td>Output evaluation</td>
+            <td>
+              <select name="OutputOnly_evaluation">
+                <option value="diff" {% if task.task_type == "TaskTypeOutputOnly" and parameters is not None and parameters[0]=="diff" %}selected{% end %}>White diff</option>
+                <option value="comp"{% if task.task_type == "TaskTypeOutputOnly" and parameters is not None and parameters[0]=="comp" %}selected{% end %}>Comparator</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+
         </td>
       </tr>
       <tr>
         <td>Submission format</td>
         <td>
-          {% for format in task.submission_format %}
-          {{ format.filename }}</br>
-          {% end %}
+          <input type="text" name="submission_format" value="{{ json.dumps([x.filename for x in task.submission_format]) }}"/>
         </td>
       </tr>
       <tr>
         <td>Managers</td>
         <td>
-          {% for filename, manager in task.managers.iteritems() %}
-          <a href="/file/{{ manager.digest }}/{{ filename }}">{{ filename }}</a>
+          <a href="/add_manager/{{ task.id }}">Add a manager</a></br>
+          {% if len(task.managers) == 0 %}
+            No managers.
+          {% else %}
+            {% for manager in task.managers.values() %}
+              <div class="manager">
+                <a href="/file/{{ manager.digest }}/{{ manager.filename }}">{{ manager.filename }}</a>
+                - <a href="/delete_manager/{{ manager.id }}">Delete</a>
+              </div>
+            {% end %}
           {% end %}
         </td>
       </tr>
@@ -187,7 +244,7 @@
           <!--
             TODO: Fetch the score types from ScoreType.
           -->
-          <select name="score_type" disabled>
+          <select name="score_type">
             <option value="ScoreTypeSum"{% if task.score_type == "ScoreTypeSum" %} selected{% end %}>
               Sum
             </option>
@@ -205,7 +262,7 @@
       </tr>
       <tr>
         <td>Score Parameters</td>
-        <td>{{ task.score_parameters }}</td>
+        <td><input type="text" name="score_parameters" value="{{ task.score_parameters }}"/></td>
       </tr>
     </table>
     <div class="hr"></div>
@@ -213,7 +270,7 @@
 
   <h2 id="title_testcases" class="toggling_on">Testcases</h2>
   <div id="testcases">
-
+    <a href="/add_testcase/{{task.id}}">Add a testcase</a>
     <table class="bordered" style="text-align:center">
       <thead>
         <tr>
@@ -221,6 +278,7 @@
           <th>Public</th>
           <th>Input</th>
           <th>Output</th>
+          <th>Ops</th>
         </tr>
       </thead>
       <tbody>
@@ -235,6 +293,9 @@
           </td>
           <td>
             <a href="#" onclick="utils.show_file('output{{ testcase.num }}','/file/{{ testcase.output }}/output{{ testcase.num }}')">Show output</a>
+          </td>
+          <td>
+            <a href="/delete_testcase/{{testcase.id}}">Delete</a>
           </td>
         </tr>
         {% end %}
