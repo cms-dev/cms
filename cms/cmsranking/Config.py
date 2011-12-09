@@ -40,7 +40,8 @@ class Config(object):
 
         # file system
         self.lib_dir = os.path.join("/", "var", "local", "lib", "cms", "ranking")
-        self.web_dir = os.path.join(".", "static")  # FIXME put absolute path
+        self.web_dir = os.path.join("/", "usr", "local", "share", "cms", "ranking")
+        self.log_dir = os.path.join("/", "var", "local", "log", "cms", "ranking")
 
         # logging
         self.log_color = True
@@ -62,11 +63,8 @@ class Config(object):
 config = Config()
 
 
-# FIXME verify this order (later files overwrtite previous ones)
-# FIXME why not /usr/etc?
-for path in [os.path.join(".", "cms.ranking.conf"),
-             os.path.join("/", "etc", "cms.ranking.conf"),
-             os.path.join("/", "usr", "local", "etc", "cms.ranking.conf")]:
+for path in [os.path.join("/", "usr", "local", "etc", "cms.ranking.conf"),
+             os.path.join(".", "cms.ranking.conf")]:
     try:
         data = json.load(open(path))
         assert isinstance(data, dict)
@@ -74,3 +72,18 @@ for path in [os.path.join(".", "cms.ranking.conf"),
             config.set(key, value)
     except:
         pass
+
+try:
+    os.makedirs(config.lib_dir)
+except OSError:
+    pass  # we assume the directory already exists...
+
+try:
+    os.makedirs(config.web_dir)
+except OSError:
+    pass  # we assume the directory already exists...
+
+try:
+    os.makedirs(config.log_dir)
+except OSError:
+    pass  # we assume the directory already exists...
