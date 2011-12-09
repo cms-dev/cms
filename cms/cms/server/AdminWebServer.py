@@ -34,8 +34,9 @@ from cms.async.AsyncLibrary import logger, rpc_callback
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord, get_service_shards, get_service_address
 
-from cms.db.SQLAlchemyAll import ScopedSession, \
-     Contest, User, Announcement, Question, Message, Submission, File, Task
+from cms.db.SQLAlchemyAll import Session, \
+     Contest, User, Announcement, Question, Message, Submission, File, Task, \
+     Attachment, Manager, Testcase, SubmissionFormatElement
 
 import cms.util.WebConfig as WebConfig
 from cms.server.Utils import file_handler_gen
@@ -69,7 +70,7 @@ class BaseHandler(tornado.web.RequestHandler):
         # If this fails, the request terminates.
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
-        self.sql_session = ScopedSession()
+        self.sql_session = Session()
         self.sql_session.expire_all()
         self.contest = None
 
@@ -99,15 +100,15 @@ class BaseHandler(tornado.web.RequestHandler):
         params["cookie"] = str(self.cookies)
         return params
 
-#    def finish(self, *args, **kwds):
-#        """ Finish this response, ending the HTTP request.
+    def finish(self, *args, **kwds):
+        """ Finish this response, ending the HTTP request.
 
-#        We override this method in order to properly close the database.
+        We override this method in order to properly close the database.
 
-#        """
-#        logger.debug("Closing SQL connection.")
-#        self.sql_session.close()
-#        tornado.web.RequestHandler.finish(self, *args, **kwds)
+        """
+        logger.debug("Closing SQL connection.")
+        self.sql_session.close()
+        tornado.web.RequestHandler.finish(self, *args, **kwds)
 
     def get_non_negative_int(self, argument_name, default, allow_empty=True):
         """ Get a non-negative integer from the arguments.
@@ -305,6 +306,239 @@ class AddContestHandler(BaseHandler):
         self.sql_session.commit()
         self.write(str(c.id))
 
+class AddStatementHandler(BaseHandler):
+    """Add a statement to a task.
+
+    """
+    def get(self, task_id):
+        task = Task.get_from_id(task_id, self.sql_session)
+        if task is None:
+            raise tornado.web.HTTPError(404)
+        self.contest = task.contest
+        r_params = self.render_params()
+        r_params["task"] = task
+        self.render("add_statement.html", **r_params)
+
+    @tornado.web.asynchronous
+    def post(self, task_id):
+        self.task = Task.get_from_id(task_id, self.sql_session)
+        if self.task is None:
+            raise tornado.web.HTTPError(404)
+        self.contest = self.task.contest
+        self.statement = self.request.files["statement"][0]
+        if not self.statement["filename"].endswith(".pdf"):
+            self.application.service.add_notification(time.time(),
+                "Invalid task statement",
+                "The task statement must be a .pdf file.")
+            self.redirect("/add_statement/%s" % self.task.id)
+            return
+        if self.application.service.FS.put_file(
+            callback=AddStatementHandler.storage_callback,
+            plus=self.statement["filename"],
+            binary_data=self.statement["body"],
+            description="Task statement for %s" % self.task.name,
+            bind_obj=self) == False:
+            self.storage_callback(None, None, error="Connection failed.")
+
+    @rpc_callback
+    def storage_callback(self, data, plus, error=None):
+        if error is None:
+            self.task.statement = data
+            self.sql_session.commit()
+            self.redirect("/task/%s" % self.task.id)
+        else:
+            self.application.service.add_notification(time.time(),
+                "Task statement storage failed",
+                error)
+            self.redirect("/add_statement/%s" % self.task.id)
+
+class AddAttachmentHandler(BaseHandler):
+    """Add an attachment to a task.
+
+    """
+    def get(self, task_id):
+        task = Task.get_from_id(task_id, self.sql_session)
+        if task is None:
+            raise tornado.web.HTTPError(404)
+        self.contest = task.contest
+        r_params = self.render_params()
+        r_params["task"] = task
+        self.render("add_attachment.html", **r_params)
+
+    @tornado.web.asynchronous
+    def post(self, task_id):
+        self.task = Task.get_from_id(task_id, self.sql_session)
+        if self.task is None:
+            raise tornado.web.HTTPError(404)
+        self.contest = self.task.contest
+        self.attachment = self.request.files["attachment"][0]
+        if self.application.service.FS.put_file(
+            callback=AddAttachmentHandler.storage_callback,
+            plus=self.attachment["filename"],
+            binary_data=self.attachment["body"],
+            description="Task attachment for %s" % self.task.name,
+            bind_obj=self) == False:
+            self.storage_callback(None, None, error="Connection failed.")
+
+    @rpc_callback
+    def storage_callback(self, data, plus, error=None):
+        if error is None:
+            self.sql_session.add(Attachment(
+                data, 
+                self.attachment["filename"],
+                self.task))
+            self.sql_session.commit()
+            self.redirect("/task/%s" % self.task.id)
+        else:
+            self.application.service.add_notification(time.time(),
+                "Attachment storage failed",
+                error)
+            self.redirect("/add_statement/%s" % self.task.id)
+
+class DeleteAttachmentHandler(BaseHandler):
+    """Delete an attachment.
+    
+    """
+    def get(self, attachment_id):
+        attachment = Attachment.get_from_id(attachment_id, self.sql_session)
+        if attachment is None:
+            raise tornado.web.HTTPError(404)
+        task = attachment.task
+        self.sql_session.delete(attachment)
+        self.sql_session.commit()
+        # TODO: Remove the attachment from FS.
+        self.redirect("/task/%s" % task.id)
+
+class AddManagerHandler(BaseHandler):
+    """Add a manager to a task.
+
+    """
+    def get(self, task_id):
+        task = Task.get_from_id(task_id, self.sql_session)
+        if task is None:
+            raise tornado.web.HTTPError(404)
+        self.contest = task.contest
+        r_params = self.render_params()
+        r_params["task"] = task
+        self.render("add_manager.html", **r_params)
+
+    @tornado.web.asynchronous
+    def post(self, task_id):
+        self.task = Task.get_from_id(task_id, self.sql_session)
+        if self.task is None:
+            raise tornado.web.HTTPError(404)
+        self.contest = self.task.contest
+        self.manager = self.request.files["manager"][0]
+        if self.application.service.FS.put_file(
+            callback=AddManagerHandler.storage_callback,
+            plus=self.manager["filename"],
+            binary_data=self.manager["body"],
+            description="Task manager for %s" % self.task.name,
+            bind_obj=self) == False:
+            self.storage_callback(None, None, error="Connection failed.")
+
+    @rpc_callback
+    def storage_callback(self, data, plus, error=None):
+        if error is None:
+            self.sql_session.add(Manager(
+                data, 
+                self.manager["filename"],
+                self.task))
+            self.sql_session.commit()
+            self.redirect("/task/%s" % self.task.id)
+        else:
+            self.application.service.add_notification(time.time(),
+                "Manager storage failed",
+                error)
+            self.redirect("/add_manager/%s" % self.task.id)
+
+class DeleteManagerHandler(BaseHandler):
+    """Delete a manager.
+    
+    """
+    def get(self, manager_id):
+        manager = Manager.get_from_id(manager_id, self.sql_session)
+        if manager is None:
+            raise tornado.web.HTTPError(404)
+        task = manager.task
+        self.sql_session.delete(manager)
+        self.sql_session.commit()
+        # TODO: Remove the manager from FS.
+        self.redirect("/task/%s" % task.id)
+
+class AddTestcaseHandler(BaseHandler):
+    """Add a testcase to a task.
+
+    """
+    def get(self, task_id):
+        task = Task.get_from_id(task_id, self.sql_session)
+        if task is None:
+            raise tornado.web.HTTPError(404)
+        self.contest = task.contest
+        r_params = self.render_params()
+        r_params["task"] = task
+        self.render("add_testcase.html", **r_params)
+
+    @tornado.web.asynchronous
+    def post(self, task_id):
+        self.task = Task.get_from_id(task_id, self.sql_session)
+        if self.task is None:
+            raise tornado.web.HTTPError(404)
+        self.contest = self.task.contest
+        self.input = self.request.files["input"][0]
+        self.output = self.request.files["output"][0]
+        self.public = self.get_argument("public", None) is not None
+
+        self.successful_calls = {};
+
+        if self.application.service.FS.put_file(
+            callback=AddTestcaseHandler.storage_callback,
+            plus="input",
+            binary_data=self.input["body"],
+            description="Testcase input for task %s" % self.task.name,
+            bind_obj=self) == False:
+            self.storage_callback(None, None, error="Connection failed.")
+
+        if self.application.service.FS.put_file(
+            callback=AddTestcaseHandler.storage_callback,
+            plus="output",
+            binary_data=self.output["body"],
+            description="Testcase output for task %s" % self.task.name,
+            bind_obj=self) == False:
+            self.storage_callback(None, None, error="Connection failed.")
+
+    @rpc_callback
+    def storage_callback(self, data, plus, error=None):
+        if error is None:
+            self.successful_calls[plus] = data;
+            if len(self.successful_calls) >= 2:
+                self.sql_session.add(Testcase(
+                    self.successful_calls["input"],
+                    self.successful_calls["output"], 
+                    len(self.task.testcases),
+                    self.public,
+                    self.task))
+                self.sql_session.commit()
+                self.redirect("/task/%s" % self.task.id)
+        else:
+            self.application.service.add_notification(time.time(),
+                "Testcase storage failed",
+                error)
+            self.redirect("/add_testcase/%s" % self.task.id)
+
+class DeleteTestcaseHandler(BaseHandler):
+    """Delete a testcase.
+    
+    """
+    def get(self, testcase_id):
+        testcase = Testcase.get_from_id(testcase_id, self.sql_session)
+        if testcase is None:
+            raise tornado.web.HTTPError(404)
+        task = testcase.task
+        self.sql_session.delete(testcase)
+        self.sql_session.commit()
+        # TODO: Remove the testcase from FS.
+        self.redirect("/task/%s" % task.id)
 
 class TaskViewHandler(BaseHandler):
     """Task handler, with a POST method to edit the task.
@@ -378,6 +612,66 @@ class TaskViewHandler(BaseHandler):
                 "testcase_%s_public" % testcase.num,
                 False) != False
 
+        self.task.task_type = self.get_argument("task_type", "")
+
+        if self.task.task_type == "TaskTypeBatch":
+            batch_evaluation = self.get_argument("Batch_evaluation","")
+            if batch_evaluation not in ["diff", "comp", "grad"]:
+                self.application.service.add_notification(time.time(),
+                "Invalid field",
+                "Output evaluation not recognized.")
+                self.redirect("/task/%s" % task_id)
+            batch_use_files = self.get_argument("Batch_use_files", None)
+
+            if batch_use_files is not None:
+                batch_use_files = "file"
+            else:
+                batch_use_files = "nofile"
+            task_type_parameters = [batch_evaluation, batch_use_files]
+
+        elif self.task.task_type == "TaskTypeOutputOnly":
+            oo_evaluation = self.get_argument("OutputOnly_evaluation","")
+            if oo_evaluation not in ["diff", "comp"]:
+                self.application.service.add_notification(time.time(),
+                "Invalid field",
+                "Output evaluation not recognized.")
+                self.redirect("/task/%s" % task_id)
+
+            task_type_parameters = [oo_evaluation]
+
+        else:
+            self.application.service.add_notification(time.time(),
+                "Invalid field",
+                "Task type not recognized.")
+            self.redirect("/add_task/%s" % contest_id)
+
+        self.task.task_type_parameters = simplejson.dumps(task_type_parameters)
+
+        self.task.score_type = self.get_argument("score_type", "")
+
+        self.task.score_parameters = self.get_argument("score_parameters","")
+
+        submission_format = self.get_argument("submission_format","")
+        if submission_format not in ["", "[]"] \
+            and submission_format != simplejson.dumps(
+                [x.filename for x in self.task.submission_format]
+                ):
+            try:
+                format_list = simplejson.loads(submission_format)
+                for element in self.task.submission_format:
+                    self.sql_session.delete(element)
+                del self.task.submission_format[:]
+                for element in format_list:
+                    self.sql_session.add(SubmissionFormatElement(str(element), self.task))
+            except Exception as e:
+                self.sql_session.rollback()
+                logger.info(e)
+                self.application.service.add_notification(time.time(),
+                "Invalid field",
+                "Submission format not recognized.")
+                self.redirect("/task/%s" % task_id)
+                return
+
         self.sql_session.commit()
         self.redirect("/task/%s" % self.task.id)
 
@@ -405,14 +699,74 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         time_limit = self.get_argument("time_limit", "")
         memory_limit = self.get_argument("memory_limit","")
         task_type = self.get_argument("task_type", "")
-        submission_format = []
+
+        if task_type == "TaskTypeBatch":
+            batch_evaluation = self.get_argument("Batch_evaluation","")
+            if batch_evaluation not in ["diff", "comp", "grad"]:
+                self.application.service.add_notification(time.time(),
+                "Invalid field",
+                "Output evaluation not recognized.")
+                self.redirect("/add_task/%s" % contest_id)
+            batch_use_files = self.get_argument("Batch_use_files", None)
+
+            if batch_use_files is not None:
+                batch_use_files = "file"
+            else:
+                batch_use_files = "nofile"
+            task_type_parameters = [batch_evaluation, batch_use_files]
+
+        elif task_type == "TaskTypeOutputOnly":
+            oo_evaluation = self.get_argument("OutputOnly_evaluation","")
+            if oo_evaluation not in ["diff", "comp"]:
+                self.application.service.add_notification(time.time(),
+                "Invalid field",
+                "Output evaluation not recognized.")
+                self.redirect("/add_task/%s" % contest_id)
+
+            task_type_parameters = [oo_evaluation]
+
+        else:
+            self.application.service.add_notification(time.time(),
+                "Invalid field",
+                "Task type not recognized.")
+            self.redirect("/add_task/%s" % contest_id)
+
+        task_type_parameters = simplejson.dumps(task_type_parameters)
+
+        submission_format_choice = self.get_argument("submission_format", "")
+
+        if submission_format_choice == "simple":
+            submission_format = [SubmissionFormatElement("%s.%%l" % name)]
+        elif submission_format_choice == "other":
+            submission_format = self.get_argument("submission_format_other", "")
+            if submission_format not in ["", "[]"]:
+                try:
+                    format_list = simplejson.loads(submission_format)
+                    submission_format = []
+                    for element in format_list:
+                        submission_format.append(SubmissionFormatElement(str(element)))
+                except Exception as e:
+                    self.sql_session.rollback()
+                    logger.info(e)
+                    self.application.service.add_notification(time.time(),
+                    "Invalid field",
+                    "Submission format not recognized.")
+                    self.redirect("/task/%s" % task_id)
+                    return
+        else:
+            self.application.service.add_notification(time.time(),
+                "Invalid field",
+                "Submission format not recognized.")
+            self.redirect("/add_task/%s" % contest_id)
+
         score_type = self.get_argument("score_type", "")
         score_parameters = self.get_argument("score_parameters","")
+
         attachments = {}
-        statement = []
-        task_type_parameters = ""
+        statement = ""
         managers = {}
         testcases = []
+
         token_initial = self.get_non_negative_int(
             "token_initial",
             None,
@@ -438,8 +792,7 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
                  score_type, score_parameters, testcases,
                  token_initial, token_max, token_total,
                  token_min_interval, token_gen_time, token_gen_number,
-                 contest=self.contest)
-        task.num = 0
+                 contest=self.contest, num=len(self.contest.tasks))
         self.sql_session.add(task)
         self.sql_session.commit()
         self.redirect("/task/%d" % task.id)
@@ -843,6 +1196,13 @@ handlers = [
     (r"/task/([0-9]+)",           TaskViewHandler),
     (r"/task/([0-9]+)/statement", TaskStatementViewHandler),
     (r"/add_task/([0-9]+)",                AddTaskHandler),
+    (r"/add_statement/([0-9]+)",       AddStatementHandler),
+    (r"/add_attachment/([0-9]+)",       AddAttachmentHandler),
+    (r"/delete_attachment/([0-9]+)",       DeleteAttachmentHandler),
+    (r"/add_manager/([0-9]+)",       AddManagerHandler),
+    (r"/delete_manager/([0-9]+)",       DeleteManagerHandler),
+    (r"/add_testcase/([0-9]+)",       AddTestcaseHandler),
+    (r"/delete_testcase/([0-9]+)",       DeleteTestcaseHandler),
     (r"/user/([a-zA-Z0-9_-]+)",   UserViewHandler),
     (r"/add_user/([0-9]+)",       AddUserHandler),
     (r"/reevaluate/task/([0-9]+)",               TaskReevaluateHandler),

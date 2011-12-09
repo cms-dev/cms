@@ -119,12 +119,13 @@ class Task(Base):
                  score_type, score_parameters, testcases,
                  token_initial=0, token_max=0, token_total=0,
                  token_min_interval=0, token_gen_time=60, token_gen_number=1,
-                 contest=None):
+                 contest=None, num = 0):
         for filename, attachment in attachments.iteritems():
             attachment.filename = filename
         for filename, manager in managers.iteritems():
             manager.filename = filename
 
+        self.num = num
         self.name = name
         self.title = title
         self.attachments = attachments
