@@ -42,6 +42,11 @@
     everything works at 32 bits. I have a 64 bits system and keep
     the Worker inside a 32 bits chroot.
 
+* MED: Check before and after the job that the job isn't already
+  done. This might happen if we lose contact with a worker and we
+  reassign the job. We trust both workers' result, but we want that
+  the outcomes are refreshed only when the admins say so.
+
 
 
 ** Task types
@@ -116,3 +121,5 @@
 
 * MED: Sometimes files with %l in filename are stored in the database.
 
+* LOW: ES and SS should periodically find automatically submission to
+  analyze (i.e., not compiled/evaluated/scored).
