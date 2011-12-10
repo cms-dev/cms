@@ -158,7 +158,7 @@ class YamlLoader:
             params["task_type_parameters"] = "[\"diff\", \"file\"]"
         params["score_type"] = conf.get("score_type",
                                         ScoreTypes.SCORE_TYPE_SUM)
-        params["score_parameters"] = conf.get("score_parameters", "5.0")
+        params["score_parameters"] = conf.get("score_parameters", str(100.0 / float(conf["n_input"])))
         public_testcases = conf.get("risultati", "").strip()
         if public_testcases != "":
             public_testcases = [int(x.strip())
