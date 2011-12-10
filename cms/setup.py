@@ -74,6 +74,7 @@ setup(name="cms",
               "cmsTestFileCacher=cmstest.TestFileCacher:main",
 
               "cmsYamlImporter=cmscontrib.YamlImporter:main",
+              "cmsYamlReimporter=cmscontrib.YamlReimporter:main",
               "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
               "cmsContestExporter=cmscontrib.ContestExporter:main",
               "cmsContestImporter=cmscontrib.ContestImporter:main",
