@@ -349,25 +349,6 @@ class Service:
         logger.debug("Service.echo")
         return string
 
-    def handle_rpc_response(self, message):
-        """To be called when the channel finishes to collect a message
-        that is a response to a rpc call we did. It ask the RPCRequest
-        to complete the conversation (i.e., not waiting anymore and
-        calling the callback).
-
-        message (object): the decoded message.
-        """
-        # logger.debug("Service.handle_rpc_response")
-        if "__id" not in message:
-            logger.error("Response without __id field detected, discarding.")
-            return
-        ident = message["__id"]
-        if ident in RPCRequest.pending_requests:
-            rpc = RPCRequest.pending_requests[ident]
-            rpc.complete(message)
-        else:
-            logger.error("No pending request with id %s found." % ident)
-
     def method_info(self, method_name):
         """Returns some information about the requested method, or
         exceptions if the method does not exists.
@@ -543,7 +524,7 @@ class RemoteService(asynchat.async_chat):
         # logger.debug("RemoteService.found_terminator")
         data = "".join(self.data)
         self.data = []
-
+        
         # We decode the arriving data
         try:
             json_length = decode_length(data[:4])
@@ -602,8 +583,15 @@ class RemoteService(asynchat.async_chat):
 
         # Otherwise, is a response to our rpc call.
         else:
-            if self.service is not None:
-                self.service.handle_rpc_response(message)
+            if "__id" not in message:
+                logger.error("Response without __id field detected, discarding.")
+                return
+            ident = message["__id"]
+            if ident in RPCRequest.pending_requests:
+                rpc = RPCRequest.pending_requests[ident]
+                rpc.complete(message)
+            else:
+                logger.error("No pending request with id %s found." % ident)
 
     def send_reply(self, response, method_response, binary_response):
         """Send back a reply to an rpc call.
