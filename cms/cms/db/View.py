@@ -142,5 +142,5 @@ class Score(Base):
 
         """
         return {'user':  self.user.username,
-                'task':  self.task.num,
+                'task':  self.task.name,
                 'score': self.score}
