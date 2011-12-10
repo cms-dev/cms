@@ -172,8 +172,15 @@ class WebService(Service):
                       SyncRPCRequestHandler),]
         self.application = tornado.web.Application(handlers, **parameters)
 
+        # xheaders=True means that Tornado uses the content of the
+        # header X-Real-IP as the request IP. This means that if it is
+        # behind a proxy, it can see the real IP the request is coming
+        # from. But, to use it, we need to be sure we can trust it
+        # (i.e., if we are not behind a proxy that sets that header,
+        # we must not use it).
         self.application.service = self
-        http_server = tornado.httpserver.HTTPServer(self.application)
+        http_server = tornado.httpserver.HTTPServer(self.application,
+                                                    xheaders=Config.is_proxy_used)
         http_server.listen(listen_port)
         self.instance = tornado.ioloop.IOLoop.instance()
 
