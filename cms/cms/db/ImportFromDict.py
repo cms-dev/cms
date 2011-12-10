@@ -50,25 +50,26 @@ def contest_import_from_dict(cls, data):
 
     """
     data['tasks'] = [Task.import_from_dict(task_data) for task_data in data['tasks']]
-    data['users'] = [User.import_from_dict(user_data, tasks=data['tasks']) for user_data in data['users']]
+    tasks_by_name = dict(map(lambda x: (x.name, x), data['tasks']))
+    data['users'] = [User.import_from_dict(user_data, tasks_by_name=tasks_by_name) for user_data in data['users']]
     data['announcements'] = [Announcement.import_from_dict(ann_data) for ann_data in data['announcements']]
     if data['ranking_view'] is not None:
-        data['ranking_view'] = RankingView.import_from_dict(data['ranking_view'], tasks=data['tasks'], users=data['users'])
+        data['ranking_view'] = RankingView.import_from_dict(data['ranking_view'], tasks_by_name=tasks_by_name, users=data['users'])
     return cls(**data)
 Contest.import_from_dict = contest_import_from_dict
 
 @classmethod
-def rankingview_import_from_dict(cls, data, tasks, users):
+def rankingview_import_from_dict(cls, data, tasks_by_name, users):
     """Build the object using data from a dictionary.
 
     """
-    data['scores'] = [Score.import_from_dict(score_data, tasks=tasks, users=users) for score_data in data['scores']]
+    data['scores'] = [Score.import_from_dict(score_data, tasks_by_name=tasks_by_name, users=users) for score_data in data['scores']]
     data['scores'] = dict([(Score.rankingview_keyfunc(score), score) for score in data['scores']])
     return cls(**data)
 RankingView.import_from_dict = rankingview_import_from_dict
 
 @classmethod
-def score_import_from_dict(cls, data, tasks, users):
+def score_import_from_dict(cls, data, tasks_by_name, users):
     """Build the object using data from a dictionary.
 
     """
@@ -84,19 +85,19 @@ def score_import_from_dict(cls, data, tasks, users):
                 return u
         raise KeyError("User not found")
 
-    data['task'] = tasks[data['task']]
+    data['task'] = tasks_by_name[data['task']]
     data['user'] = get_user(users, data['user'])
     return cls(**data)
 Score.import_from_dict = score_import_from_dict
 
 @classmethod
-def user_import_from_dict(cls, data, tasks):
+def user_import_from_dict(cls, data, tasks_by_name):
     """Build the object using data from a dictionary.
 
     """
     data['messages'] = [Message.import_from_dict(message_data) for message_data in data['messages']]
     data['questions'] = [Question.import_from_dict(question_data) for question_data in data['questions']]
-    data['submissions'] = [Submission.import_from_dict(submission_data, tasks=tasks) for submission_data in data['submissions']]
+    data['submissions'] = [Submission.import_from_dict(submission_data, tasks_by_name=tasks_by_name) for submission_data in data['submissions']]
     obj = cls(**data)
     for submission in obj.submissions:
         submission.user = obj
@@ -118,7 +119,7 @@ def task_import_from_dict(cls, data):
 Task.import_from_dict = task_import_from_dict
 
 @classmethod
-def submission_import_from_dict(cls, data, tasks):
+def submission_import_from_dict(cls, data, tasks_by_name):
     """Build the object using data from a dictionary.
 
     """
@@ -129,7 +130,7 @@ def submission_import_from_dict(cls, data, tasks):
     data['evaluations'] = [Evaluation.import_from_dict(eval_data) for eval_data in data['evaluations']]
     if data['token'] is not None:
         data['token'] = Token.import_from_dict(data['token'])
-    data['task'] = tasks[data['task']]
+    data['task'] = tasks_by_name[data['task']]
     data['user'] = None
     return cls(**data)
 Submission.import_from_dict = submission_import_from_dict

@@ -128,7 +128,7 @@ class Submission(Base):
         """Return object data as a dictionary.
 
         """
-        res = {'task':                self.task.num,
+        res = {'task':                self.task.name,
                'timestamp':           self.timestamp,
                'files':               [file.export_to_dict() for file in self.files.itervalues()],
                'language':            self.language,
