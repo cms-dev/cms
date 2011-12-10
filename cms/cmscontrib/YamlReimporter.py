@@ -80,7 +80,9 @@ class YamlReimporter(Service):
             # but not in the new one
             for user_num, user in enumerate(cms_contest['users']):
                 try:
+                    user_submissions = cms_contest['users'][user_num]['submissions']
                     cms_contest['users'][user_num] = yaml_users[user['username']]
+                    cms_contest['users'][user_num]['submissions'] = user_submissions
                 except KeyError:
                     logger.error("User %s exists in old contest, but not in the new one" % (user['username']))
 
