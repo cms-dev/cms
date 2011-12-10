@@ -216,11 +216,11 @@ if "install" in sys.argv:
     except OSError:
         pass
     makedir(os.path.join("/", "usr", "local", "share",
-                         "cms", "ranking"), cmsuser, 0770)
+                         "cms", "ranking"), root, 0755)
     copytree(os.path.join("cmsranking", "static"),
              os.path.join("/", "usr", "local", "share",
                           "cms", "ranking"),
-             cmsuser, 0660, 0770)
+             root, 0644, 0755)
 
     print "done."
 
