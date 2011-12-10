@@ -169,6 +169,7 @@ class ContestWebServer(WebService):
                                                    "templates", "contest")
         parameters["static_path"] = os.path.join(os.path.dirname(__file__),
                                                  "static")
+        parameters["is_proxy_used"] = Config.is_proxy_used
         WebService.__init__(self,
             Config.contest_listen_port[shard],
             handlers,

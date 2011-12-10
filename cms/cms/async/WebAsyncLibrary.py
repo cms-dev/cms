@@ -179,8 +179,8 @@ class WebService(Service):
         # (i.e., if we are not behind a proxy that sets that header,
         # we must not use it).
         self.application.service = self
-        http_server = tornado.httpserver.HTTPServer(self.application,
-                                                    xheaders=Config.is_proxy_used)
+        http_server = tornado.httpserver.HTTPServer(
+            self.application, xheaders=parameters.get("is_proxy_used", True))
         http_server.listen(listen_port)
         self.instance = tornado.ioloop.IOLoop.instance()
 
