@@ -90,10 +90,6 @@
 
 
 
-** Contest{Exporter,Importer}
-
-* LOW: Use consistenly names to export Tasks, as in the cases of Users.
-
 
 
 ** File{Storage,Cacher}
@@ -114,4 +110,9 @@
 
 * LOW: Add pyjamas building of ranking and installing the scripts.
 
+
+
+** Misc
+
+* MED: Sometimes files with %l in filename are stored in the database.
 
