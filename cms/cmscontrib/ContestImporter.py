@@ -37,10 +37,11 @@ from cms import Config
 
 class ContestImporter(Service):
 
-    def __init__(self, shard, drop, import_dir, only_files):
+    def __init__(self, shard, drop, import_dir, only_files, no_files):
         self.import_dir = import_dir
         self.drop = drop
         self.only_files = only_files
+        self.no_files = no_files
 
         logger.initialize(ServiceCoord("ContestImporter", shard))
         logger.debug("ContestImporter.__init__")
@@ -63,12 +64,13 @@ class ContestImporter(Service):
             metadata.drop_all()
         metadata.create_all()
 
-        logger.info("Importing files")
-        files_dir = os.path.join(self.import_dir, "files")
-        descr_dir = os.path.join(self.import_dir, "descriptions")
-        files = set(os.listdir(files_dir))
-        for file in files:
-            self.safe_put_file(os.path.join(files_dir, file), os.path.join(descr_dir, file))
+        if not self.no_files:
+            logger.info("Importing files")
+            files_dir = os.path.join(self.import_dir, "files")
+            descr_dir = os.path.join(self.import_dir, "descriptions")
+            files = set(os.listdir(files_dir))
+            for file in files:
+                self.safe_put_file(os.path.join(files_dir, file), os.path.join(descr_dir, file))
 
         if not self.only_files:
             with SessionGen(commit=False) as session:
@@ -79,11 +81,13 @@ class ContestImporter(Service):
                     c = Contest.import_from_dict(json.load(fin))
                     session.add(c)
 
-                # Check that no files were missing
-                contest_files = c.enumerate_files()
-                missing_files = contest_files.difference(files)
-                if len(missing_files) > 0:
-                    logger.warning("Some files needed to the contest are missing in the import directory")
+                # Check that no files were missing (only if files were
+                # imported)
+                if not self.no_files:
+                    contest_files = c.enumerate_files()
+                    missing_files = contest_files.difference(files)
+                    if len(missing_files) > 0:
+                        logger.warning("Some files needed to the contest are missing in the import directory")
 
                 session.flush()
                 contest_id = c.id
@@ -125,16 +129,22 @@ def main():
     parser.add_option("-f", "--only-files",
                       dest="only_files", help="only import files, ignore database structure",
                       default=False, action="store_true")
+    parser.add_option("-F", "--no-files",
+                      dest="no_files", help="only import database structure, ignore files",
+                      default=False, action="store_true")
     options, args = parser.parse_args()
     if len(args) != 1:
         parser.error("I need exactly one parameter, the directory from where to import the contest")
     if options.shard is None:
         parser.error("The `-s' option is mandatory!")
+    if options.only_files and options.no_files:
+        parser.error("Only one of `-f' and `-F' can be specified")
 
     contest_importer = ContestImporter(shard=options.shard,
                                        drop=options.drop,
                                        import_dir=args[0],
-                                       only_files=options.only_files).run()
+                                       only_files=options.only_files,
+                                       no_files=options.no_files).run()
 
 if __name__ == "__main__":
     main()
