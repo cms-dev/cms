@@ -57,24 +57,26 @@ class TestRequest:
 
         # Execute the test
         description = self.describe()
+        self.start_time = time.time()
         try:
-            self.start_time = time.time()
             self.do_request()
-            self.stop_time = time.time()
-            self.duration = self.stop_time - self.start_time
-            success = self.test_success()
 
         # Catch possible exceptions
         except Exception as exc:
-            if self.stop_time is None:
-                self.stop_time = time.time()
             self.exception_data = traceback.format_exc()
-            print >> sys.stderr, "Request '%s' terminated " \
-                "with an exception: %s" % (description, repr(exc))
             self.outcome = TestRequest.OUTCOME_ERROR
 
-        # If no exceptions were casted, decode the test evaluation
         else:
+            self.outcome = None
+
+        finally:
+            self.stop_time = time.time()
+            self.duration = self.stop_time - self.start_time
+
+        success = self.test_success()
+
+        # If no exceptions were casted, decode the test evaluation
+        if self.outcome is None:
 
             # Could not decide on the evaluation
             if success is None:
@@ -92,6 +94,11 @@ class TestRequest:
             elif not success:
                 print >> sys.stderr, "Request '%s' failed" % (description)
                 self.outcome = TestRequest.OUTCOME_FAILURE
+
+        # Otherwise report the exception
+        else:
+            print >> sys.stderr, "Request '%s' terminated " \
+                "with an exception: %s" % (description, repr(exc))
 
     def describe(self):
         raise NotImplementedError("Please subclass this class "
@@ -111,11 +118,11 @@ class TestRequest:
         print >> fd, "Execution stop time: %s" % (datetime.datetime.fromtimestamp(self.stop_time).strftime("%d/%m/%Y %H:%M:%S.%f"))
         print >> fd, "Duration: %f seconds" % (self.duration)
         print >> fd, "Outcome: %s" % (self.outcome)
+        fd.write(self.specific_info())
         if self.exception_data is not None:
             print >> fd
             print >> fd, "EXCEPTION CASTED"
             fd.write(self.exception_data)
-        fd.write(self.specific_info())
 
     def specific_info(self):
         return ''
@@ -152,15 +159,15 @@ class GenericRequest(TestRequest):
     def test_success(self):
         #if self.response.getcode() != 200:
         #    return False
-        if len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
+        if self.res_data is not None and len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
             return False
         return True
 
     def specific_info(self):
+        res = "URL: %s\n" % (self.url)
         if self.res_data is not None:
-            return "\nRESPONSE DATA\n" + utf8_decoder(self.res_data)[0]
-        else:
-            return ''
+            res += "\nRESPONSE DATA\n%s" % (utf8_decoder(self.res_data)[0])
+        return res
 
 
 class HomepageRequest(GenericRequest):
