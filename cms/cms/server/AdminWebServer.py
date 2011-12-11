@@ -528,7 +528,7 @@ class AddTestcaseHandler(BaseHandler):
 
 class DeleteTestcaseHandler(BaseHandler):
     """Delete a testcase.
-    
+
     """
     def get(self, testcase_id):
         testcase = Testcase.get_from_id(testcase_id, self.sql_session)
@@ -1012,7 +1012,14 @@ class SubmissionFileHandler(FileHandler):
         if sub_file is None:
             raise tornado.web.HTTPError(404)
 
-        self.fetch(sub_file.digest, "text/plain", sub_file.filename)
+        submission = sub_file.submission
+        real_filename = sub_file.filename
+        if submission.language is not None:
+            real_filename = real_filename.replace("%l", submission.language)
+        digest = sub_file.digest
+        self.sql_session.close()
+
+        self.fetch(sub_file.digest, "text/plain", real_filename)
 
 
 class QuestionsHandler(BaseHandler):
