@@ -34,6 +34,9 @@
 
 ** Worker
 
+* MED: with keep_sandboxes = True, give a way to find rapidly the
+  sandbox associated to a specific job step.
+
 * LOW: Should be able to work with 32 bits programs even when running in
   64 bits mode.
   - This actually appears to be quite complicated: it is probably
@@ -62,7 +65,10 @@
 * MED: concurrency: if there are more than 1 CWS, there is a (very
   slight) chance that feature such as - but not limited to - "partial
   submission filler" and "avoid frequent submissions" will not work as
-  expected.
+  expected. (This may be fixed using ip_hash in nginx.)
+
+* LOW: Reload of submissions' status does not work as it best, please
+  fix.
 
 * LOW: ability to send not only zipped but also tarred submissions.
 
@@ -78,11 +84,21 @@
 
 ** AdminWebServer
 
+* HIGH: Fix the fact that if I write a long answer, then select a
+  short one, the long one disappears from the interface but is sent
+  anyway.
+
 * MED: when reevaluating, ask if we want to wipe everything, or only
   the evaluation, or only the scoring (in the case we implement the
   persistent scores in the db).
 
-* MED: auto updating submission statuses.
+* LOW: when updating/adding contests, users, and so on, warn SS so
+  that it gives the new information to RWS.
+
+* MED: give possibility to see the output of an evaluation (storing
+  them in the FS?).
+
+* LOW: auto updating submission statuses.
 
 
 
@@ -92,6 +108,8 @@
 
 * LOW: Provide an environment to build tasks better than make_Makefile and
   friends.
+
+* HIGH: Honour task order.
 
 
 
@@ -113,13 +131,29 @@
 
 ** setup.py
 
-* LOW: Add pyjamas building of ranking and installing the scripts.
+* LOW: static file for rws can be installed using package_data instead
+  of manually.
+
+
+
+** ResourceService
+
+* LOW: do not occupy a lot of memory.
+
+
+
+
+** RankingWebServer
+
+* HIGH: why tokens are always "No"?
+
 
 
 
 ** Misc
 
-* MED: Sometimes files with %l in filename are stored in the database.
-
 * LOW: ES and SS should periodically find automatically submission to
   analyze (i.e., not compiled/evaluated/scored).
+
+* MED: Ditch RelativeScores and assume that a score depends only on
+  the outcome of the submission.
