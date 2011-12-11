@@ -633,50 +633,18 @@ class SubmitHandler(BaseHandler):
                              traceback.format_exc())
 
         # We now have to send all the files to the destination...
-        for filename in self.files:
-            if self.application.service.FS.put_file(
-                callback=SubmitHandler.storage_callback,
-                plus=filename,
-                binary_data=self.files[filename][1],
-                description="Submission file %s sent by %s at %d." % (
-                    filename,
-                    self.current_user.username,
-                    self.timestamp),
-                bind_obj=self) == False:
-                self.storage_callback(None, None, error="Connection failed.")
-                break
+        try:
+            for filename in self.files:
+                digest = self.application.service.FC.put_file(
+                    description="Submission file %s sent by %s at %d." % (
+                        filename,
+                        self.current_user.username,
+                        self.timestamp),
+                    binary_data=self.files[filename][1])
+                self.file_digests[filename] = digest
 
-    @catch_exceptions
-    @rpc_callback
-    def storage_callback(self, data, plus, error=None):
-        logger.debug("Storage callback")
-        if error is None:
-            self.file_digests[plus] = data
-            if len(self.file_digests) == len(self.files) + self.retrieved:
-                # All the files are stored, ready to submit!
-                logger.info("All files stored for submission sent by " + self.current_user.username)
-                s = Submission(user=self.current_user,
-                               task=self.task,
-                               timestamp=self.timestamp,
-                               files={},
-                               language=self.submission_lang)
-
-                for filename, digest in self.file_digests.items():
-                    self.sql_session.add(File(digest, filename, s))
-                self.sql_session.add(s)
-                self.sql_session.commit()
-                self.submission_id = s.id
-                self.r_params["submission"] = s
-                self.r_params["warned"] = False
-                self.application.service.ES.new_submission(submission_id=s.id)
-                self.application.service.add_notification(
-                    self.current_user.username,
-                    int(time.time()),
-                    self._("Submission received"),
-                    self._("Your submission has been received "
-                           "and is currently being evaluated."))
-                self.redirect("/tasks/%s" % encrypt_number(self.task.id))
-        else:
+        # In case of error, the server aborts the submission
+        except Exception as error:
             logger.error("Storage failed! %s" % error)
             if self.local_copy_saved:
                 message = "In case of emergency, this server has a local copy."
@@ -689,6 +657,30 @@ class SubmitHandler(BaseHandler):
                 self._(message))
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
 
+        # All the files are stored, ready to submit!
+        logger.info("All files stored for submission sent by " + self.current_user.username)
+        s = Submission(user=self.current_user,
+                       task=self.task,
+                       timestamp=self.timestamp,
+                       files={},
+                       language=self.submission_lang)
+
+        for filename, digest in self.file_digests.items():
+            self.sql_session.add(File(digest, filename, s))
+        self.sql_session.add(s)
+        self.sql_session.commit()
+        self.submission_id = s.id
+        self.r_params["submission"] = s
+        self.r_params["warned"] = False
+        self.application.service.ES.new_submission(submission_id=s.id)
+        self.application.service.add_notification(
+            self.current_user.username,
+            int(time.time()),
+            self._("Submission received"),
+            self._("Your submission has been received "
+                   "and is currently being evaluated."))
+        self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+           
 
 class UseTokenHandler(BaseHandler):
     """Called when the user try to use a token on a submission.
