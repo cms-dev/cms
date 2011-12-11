@@ -67,6 +67,8 @@
   submission filler" and "avoid frequent submissions" will not work as
   expected. (This may be fixed using ip_hash in nginx.)
 
+* MED: make cookies expire after some inactivity time.
+
 * LOW: Reload of submissions' status does not work as it best, please
   fix.
 
