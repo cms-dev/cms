@@ -46,16 +46,10 @@ class ContestImporter(Service):
         logger.initialize(ServiceCoord("ContestImporter", shard))
         logger.debug("ContestImporter.__init__")
         Service.__init__(self, shard)
-        self.FS = self.connect_to(
-            ServiceCoord("FileStorage", 0))
-        self.FC = FileCacher(self, self.FS)
+        self.FC = FileCacher(self)
         self.add_timeout(self.do_import, None, 10, immediately=True)
 
     def do_import(self):
-        if not self.FS.connected:
-            logger.warning("Please run FileStorage.")
-            return True
-
         logger.operation = "importing contest from %s" % (self.import_dir)
         logger.info("Starting import")
 

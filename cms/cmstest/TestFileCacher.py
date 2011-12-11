@@ -26,11 +26,56 @@
 import os
 import random
 from StringIO import StringIO
+import hashlib
 
-from cms.async.AsyncLibrary import rpc_callback, logger
+from cms.async.AsyncLibrary import logger
 from cms.async.TestService import TestService
 from cms.async import ServiceCoord, Config
 from cms.service.FileStorage import FileCacher
+
+class RandomFile:
+    """Simulate a random file with dim bytes, calculating its
+    SHA1 hash.
+
+    """
+    def __init__(self, dim):
+        self.dim = dim
+        self.source = open('/dev/urandom')
+        self.hasher = hashlib.sha1()
+
+    def read(self, byte_num):
+        if byte_num > self.dim:
+            byte_num = self.dim
+        if byte_num == 0:
+            return ''
+        buf = self.source.read(byte_num)
+        self.dim -= len(buf)
+        self.hasher.update(buf)
+        return buf
+
+    def close(self):
+        self.source.close()
+
+    def get_digest(self):
+        return self.hasher.hexdigest()
+
+
+class HashingFile:
+    """Hashes the content written to this files.
+
+    """
+    def __init__(self):
+        self.hasher = hashlib.sha1()
+
+    def write(self, buf):
+        self.hasher.update(buf)
+        return len(buf)
+
+    def get_digest(self):
+        return self.hasher.hexdigest()
+
+    def close(self):
+        pass
 
 
 class TestFileCacher(TestService):
@@ -53,25 +98,20 @@ class TestFileCacher(TestService):
         self.file_obj = None
 
     def prepare(self):
-        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
         if os.path.exists(self.cache_base_path):
             logger.error("Please delete directory %s before." %
                          self.cache_base_path)
             self.exit()
-        self.FC = FileCacher(self, self.FS)
+        self.FC = FileCacher(self)
 
 ### TEST 000 ###
 
     def test_000(self):
-        """Send a ~100B random binary file to FileStorage through
+        """Send a ~100B random binary file to the storage through
         FileCacher as a file-like object. FC should cache the content
         locally.
 
         """
-        if not self.FS.connected:
-            self.test_end(False, "Please start FileStorage.", True)
-            return
-
         self.content = ""
         for i in xrange(100):
             self.content += chr(random.randint(0, 255))
@@ -102,10 +142,6 @@ class TestFileCacher(TestService):
         """Retrieve the file.
 
         """
-        if not self.FS.connected:
-            self.test_end(False, "Please start FileStorage.", True)
-            return
-
         logger.info("  I am retrieving the ~100B binary file from FileCacher")
         self.fake_content = "Fake content.\n"
         with open(self.cache_path, "wb") as cached_file:
@@ -132,10 +168,6 @@ class TestFileCacher(TestService):
         """Get file from FileCacher.
 
         """
-        if not self.FS.connected:
-            self.test_end(False, "Please start FileStorage.", True)
-            return
-
         logger.info("  I am retrieving the file from FileCacher " +
                     "after deleting the cache.")
         os.unlink(self.cache_path)
@@ -163,26 +195,12 @@ class TestFileCacher(TestService):
         """Delete the file through FS and tries to get it again through FC.
 
         """
-        if not self.FS.connected:
-            self.test_end(False, "Please start FileStorage.", True)
-            return
+        logger.info("  I am deleting the file from FileCacher.")
+        try:
+            self.FC.delete(digest=self.digest)
+        except Exception as e:
+            self.test_end(False, "Error received: %s." % e)
 
-        logger.info("  I am deleting the file from FileStorage.")
-        self.FS.delete(digest=self.digest,
-                       callback=TestFileCacher.test_003_callback,
-                       plus=("Test #", 3))
-
-    @rpc_callback
-    def test_003_callback(self, data, plus, error=None):
-        """Called with an error.
-
-        """
-        if error is not None:
-            self.test_end(False, "Error received: %s." % error)
-        elif plus != ("Test #", 3):
-            self.test_end(False, "Plus object not received correctly.")
-        elif not data:
-            self.test_end(False, "File not deleted correctly.")
         else:
             logger.info("  File deleted correctly.")
             logger.info("  I am getting the file from FileCacher.")
@@ -199,10 +217,6 @@ class TestFileCacher(TestService):
         """Get unexisting file from FileCacher.
 
         """
-        if not self.FS.connected:
-            self.test_end(False, "Please start FileStorage.", True)
-            return
-
         logger.info("  I am retrieving an unexisting file from FileCacher.")
         try:
             data = self.FC.get_file(digest=self.digest, temp_file_obj=True)
@@ -214,14 +228,10 @@ class TestFileCacher(TestService):
 ### TEST 005 ###
 
     def test_005(self):
-        """Send a ~100B random binary file to FileStorage through
+        """Send a ~100B random binary file to the storage through
         FileCacher as a string. FC should cache the content locally.
 
         """
-        if not self.FS.connected:
-            self.test_end(False, "Please start FileStorage.", True)
-            return
-
         self.content = ""
         for i in xrange(100):
             self.content += chr(random.randint(0, 255))
@@ -252,10 +262,6 @@ class TestFileCacher(TestService):
         """Retrieve the file as a string.
 
         """
-        if not self.FS.connected:
-            self.test_end(False, "Please start FileStorage.", True)
-            return
-
         logger.info("  I am retrieving the ~100B binary file from FileCacher "
                     "using get_file_to_string()")
         self.fake_content = "Fake content.\n"
@@ -274,6 +280,64 @@ class TestFileCacher(TestService):
                 self.test_end(False, "Content differ.")
         else:
             self.test_end(True, "Data received correctly.")
+
+### TEST 007 ###
+
+    def test_007(self):
+        """Put a ~100MB file into the storage (using a specially
+        crafted file-like object).
+
+        """
+        logger.info("  I am sending the ~100MB binary file to FileCacher")
+        rand_file = RandomFile(100000000)
+        try:
+            data = self.FC.put_file(file_obj=rand_file,
+                                    description="Test #007")
+        except Exception as e:
+            self.test_end(False, "Error received: %r." % e)
+        if rand_file.dim != 0:
+            self.test_end(False, "The input file wasn't read completely.")
+        my_digest = rand_file.get_digest()
+        rand_file.close()
+
+        if not os.path.exists(
+            os.path.join(self.cache_base_path, "objects", data)):
+            self.test_end(False, "File not stored in local cache.")
+        elif my_digest != data:
+            self.test_end(False, "File received with wrong hash.")
+        else:
+            self.cache_path = os.path.join(self.cache_base_path, "objects",
+                                           data)
+            self.digest = data
+            self.test_end(True, "Data sent and cached without error.")
+
+### TEST 008 ###
+
+    def test_008(self):
+        """Get the ~100MB file from FileCacher.
+
+        """
+        logger.info("  I am retrieving the ~100MB file from FileCacher " +
+                    "after deleting the cache.")
+        os.unlink(self.cache_path)
+        hash_file = HashingFile()
+        try:
+            data = self.FC.get_file(digest=self.digest, file_obj=hash_file)
+        except Exception as e:
+            self.test_end(False, "Error received: %r." % e)
+        my_digest = hash_file.get_digest()
+        hash_file.close()
+
+        try:
+            if self.digest != my_digest:
+                self.test_end(False, "Content differs.")
+            elif not os.path.exists(self.cache_path):
+                self.test_end(False, "File not stored in local cache.")
+            else:
+                self.test_end(True, "Content object received " +
+                              "and cached correctly.")
+        finally:
+            self.FC.delete(self.digest)
 
 
 def main():

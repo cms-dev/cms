@@ -36,6 +36,7 @@ from cms.db.User import User, Message, Question
 from cms.db.Task import Task, Manager, Testcase, Attachment, \
      SubmissionFormatElement
 from cms.db.Submission import Submission, Token, Evaluation, File, Executable
+from cms.db.FSObject import FSObject
 
 # Load all import_from_dict() class methods
 import cms.db.ImportFromDict
