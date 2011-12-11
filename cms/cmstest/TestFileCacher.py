@@ -107,7 +107,7 @@ class TestFileCacher(TestService):
 ### TEST 000 ###
 
     def test_000(self):
-        """Send a ~100B random binary file to FileStorage through
+        """Send a ~100B random binary file to the storage through
         FileCacher as a file-like object. FC should cache the content
         locally.
 
@@ -228,7 +228,7 @@ class TestFileCacher(TestService):
 ### TEST 005 ###
 
     def test_005(self):
-        """Send a ~100B random binary file to FileStorage through
+        """Send a ~100B random binary file to the storage through
         FileCacher as a string. FC should cache the content locally.
 
         """

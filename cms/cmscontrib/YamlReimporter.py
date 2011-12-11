@@ -44,18 +44,13 @@ class YamlReimporter(Service):
         logger.initialize(ServiceCoord("YamlReimporter", shard))
         logger.debug("YamlReimporter.__init__")
         Service.__init__(self, shard)
-        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
-        self.FC = FileCacher(self, self.FS)
+        self.FC = FileCacher(self)
 
         self.loader = YamlLoader(self.FC, False, None, None)
 
         self.add_timeout(self.do_reimport, None, 10, immediately=True)
 
     def do_reimport(self):
-        if not self.FS.connected:
-            logger.warning("Please run FileStorage.")
-            return True
-
         # Create the dict corresponding to the new contest
         yaml_contest = self.loader.import_contest(self.path)
         yaml_users = dict(map(lambda x: (x['username'], x), yaml_contest['users']))

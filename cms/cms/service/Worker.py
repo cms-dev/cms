@@ -37,8 +37,7 @@ class Worker(Service):
         logger.initialize(ServiceCoord("Worker", shard))
         logger.debug("Worker.__init__")
         Service.__init__(self, shard)
-        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
-        self.FC = FileCacher(self, self.FS)
+        self.FC = FileCacher(self)
 
         self.work_lock = threading.Lock()
         self.session = None

@@ -60,7 +60,6 @@ setup(name="cms",
           "console_scripts": [
               "cmsLogService=cms.service.LogService:main",
               "cmsScoringService=cms.service.ScoringService:main",
-              "cmsFileStorage=cms.service.FileStorage:main",
               "cmsEvaluationService=cms.service.EvaluationService:main",
               "cmsWorker=cms.service.Worker:main",
               "cmsResourceService=cms.service.ResourceService:main",
@@ -70,7 +69,6 @@ setup(name="cms",
 
               "cmsRankingWebServer=cmsranking.RankingWebServer:main",
 
-              "cmsTestFileStorage=cmstest.TestFileStorage:main",
               "cmsTestFileCacher=cmstest.TestFileCacher:main",
 
               "cmsYamlImporter=cmscontrib.YamlImporter:main",

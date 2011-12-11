@@ -47,16 +47,10 @@ class ContestExporter(Service):
         logger.initialize(ServiceCoord("ContestExporter", shard))
         logger.debug("ContestExporter.__init__")
         Service.__init__(self, shard)
-        self.FS = self.connect_to(
-            ServiceCoord("FileStorage", 0))
-        self.FC = FileCacher(self, self.FS)
+        self.FC = FileCacher(self)
         self.add_timeout(self.do_export, None, 10, immediately=True)
 
     def do_export(self):
-        if not self.FS.connected:
-            logger.warning("Please run FileStorage.")
-            return True
-
         logger.operation = "exporting contest %d" % self.contest_id
         logger.info("Starting export")
 

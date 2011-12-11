@@ -174,8 +174,7 @@ class ContestWebServer(WebService):
             handlers,
             parameters,
             shard=shard)
-        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
-        self.FC = FileCacher(self, self.FS)
+        self.FC = FileCacher(self)
         self.ES = self.connect_to(ServiceCoord("EvaluationService", 0))
         self.SS = self.connect_to(ServiceCoord("ScoringService", 0))
 
