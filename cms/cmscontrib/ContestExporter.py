@@ -1,4 +1,4 @@
-#!/usr/bin/python
+r#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
@@ -38,11 +38,13 @@ from cms import Config
 class ContestExporter(Service):
 
     def __init__(self, shard, contest_id, dump,
-                 export_dir, skip_submissions):
+                 export_dir, skip_submissions,
+                 light):
         self.contest_id = contest_id
         self.export_dir = export_dir
         self.dump = dump
         self.skip_submissions = skip_submissions
+        self.light = light
 
         logger.initialize(ServiceCoord("ContestExporter", shard))
         logger.debug("ContestExporter.__init__")
@@ -78,7 +80,7 @@ class ContestExporter(Service):
 
             # Export files
             logger.info("Exporting files")
-            files = c.enumerate_files(self.skip_submissions)
+            files = c.enumerate_files(self.skip_submissions, light=light)
             for f in files:
                 self.safe_get_file(f, os.path.join(files_dir, f),
                                    os.path.join(descr_dir, f))
@@ -178,6 +180,9 @@ def main():
     parser.add_option("-S", "--skip-submissions",
                       help="don't export submissions, only contest data",
                       dest="skip_submissions", action="store_true", default=False)
+    parser.add_option("-l", "--light",
+                      help="light export (without executables)",
+                      dest="light", action="store_true", default=False)
     options, args = parser.parse_args()
     if len(args) != 1:
         parser.error("I need exactly one parameter, "

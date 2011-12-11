@@ -171,7 +171,7 @@ class Contest(Base):
                 return u
         raise KeyError("User not found")
 
-    def enumerate_files(self, skip_submissions=False):
+    def enumerate_files(self, skip_submissions=False, light=False):
         """Enumerate all the files (by digest) referenced by the
         contest.
 
@@ -208,8 +208,9 @@ class Contest(Base):
                     files.add(f.digest)
 
                 # Enumerate executables
-                for f in submission.executables.values():
-                    files.add(f.digest)
+                if not light:
+                    for f in submission.executables.values():
+                        files.add(f.digest)
 
         return files
 
