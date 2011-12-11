@@ -50,7 +50,7 @@ from cms.async.AsyncLibrary import logger
 from cms.async.WebAsyncLibrary import WebService, rpc_callback
 from cms.async import ServiceCoord
 
-from cms.db.SQLAlchemyAll import ScopedSession, Contest, User, Question, \
+from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, Task, File
 from cms.service.TaskType import TaskTypes
 from cms.service.FileStorage import FileCacher
@@ -81,8 +81,9 @@ class BaseHandler(tornado.web.RequestHandler):
         """
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
-        self.sql_session = ScopedSession()
-        self.sql_session.expire_all()
+        self.sql_session = Session()
+# This was used with ScopedSession.
+#        self.sql_session.expire_all()
         self.contest = Contest.get_from_id(self.application.service.contest,
                                            self.sql_session)
 
@@ -130,19 +131,19 @@ class BaseHandler(tornado.web.RequestHandler):
         ret["cookie"] = str(self.cookies)
         return ret
 
-#    def finish(self, *args, **kwds):
-#        """ Finishes this response, ending the HTTP request.
+    def finish(self, *args, **kwds):
+        """ Finishes this response, ending the HTTP request.
 
-#        We override this method in order to properly close the database.
+        We override this method in order to properly close the database.
 
-#        """
-#        if hasattr(self, "sql_session"):
-#            logger.debug("Closing SQL connection.")
-#            try:
-#                self.sql_session.close()
-#            except Exception as e:
-#                logger.warning("Couldn't close SQL connection: %r" % e)
-#        tornado.web.RequestHandler.finish(self, *args, **kwds)
+        """
+        if hasattr(self, "sql_session"):
+            logger.debug("Closing SQL connection.")
+            try:
+                self.sql_session.close()
+            except Exception as e:
+                logger.warning("Couldn't close SQL connection: %r" % e)
+        tornado.web.RequestHandler.finish(self, *args, **kwds)
 
 
 FileHandler = file_handler_gen(BaseHandler)
@@ -309,7 +310,7 @@ class TaskStatementViewHandler(FileHandler):
         if task is None or task.contest != self.contest:
             raise tornado.web.HTTPError(404)
         statement, name = task.statement, task.name
-#        self.sql_session.close()
+        self.sql_session.close()
 
         self.fetch(statement, "application/pdf", "%s.pdf" % name)
 
@@ -339,7 +340,7 @@ class SubmissionFileHandler(FileHandler):
         if submission.language is not None:
             real_filename = real_filename.replace("%l", submission.language)
         digest = sub_file.digest
-#        self.sql_session.close()
+        self.sql_session.close()
 
         self.fetch(digest, "text/plain", real_filename)
 
@@ -458,6 +459,7 @@ class SubmitHandler(BaseHandler):
 
         self.timestamp = self.r_params["timestamp"]
 
+        self.task_id = task_id
         self.task = Task.get_from_id(task_id, self.sql_session)
 
         if self.current_user is None or \
@@ -633,6 +635,8 @@ class SubmitHandler(BaseHandler):
             except Exception as e:
                 logger.error("Submission local copy failed - %s" %
                              traceback.format_exc())
+        self.username = self.current_user.username
+        self.sql_session.close()
 
         # We now have to send all the files to the destination...
         for filename in self.files:
@@ -640,10 +644,8 @@ class SubmitHandler(BaseHandler):
                 callback=SubmitHandler.storage_callback,
                 plus=filename,
                 binary_data=self.files[filename][1],
-                description="Submission file %s sent by %s at %d." % (
-                    filename,
-                    self.current_user.username,
-                    self.timestamp),
+                description="Submission file %s sent by %s at %d." % \
+                    (filename, self.username, self.timestamp),
                 bind_obj=self) == False:
                 self.storage_callback(None, None, error="Connection failed.")
                 break
@@ -656,8 +658,12 @@ class SubmitHandler(BaseHandler):
             self.file_digests[plus] = data
             if len(self.file_digests) == len(self.files) + self.retrieved:
                 # All the files are stored, ready to submit!
-                logger.info("All files stored for submission sent by " + self.current_user.username)
-                s = Submission(user=self.current_user,
+                self.sql_session = Session()
+                current_user = self.get_current_user()
+                self.task = Task.get_from_id(self.task_id, self.sql_session)
+                logger.info("All files stored for submission sent by %s" %
+                            self.username)
+                s = Submission(user=current_user,
                                task=self.task,
                                timestamp=self.timestamp,
                                files={},
@@ -672,12 +678,12 @@ class SubmitHandler(BaseHandler):
                 self.r_params["warned"] = False
                 self.application.service.ES.new_submission(submission_id=s.id)
                 self.application.service.add_notification(
-                    self.current_user.username,
+                    self.username,
                     int(time.time()),
                     self._("Submission received"),
                     self._("Your submission has been received "
                            "and is currently being evaluated."))
-                self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+                self.redirect("/tasks/%s" % encrypt_number(self.task_id))
         else:
             logger.error("Storage failed! %s" % error)
             if self.local_copy_saved:
@@ -685,11 +691,11 @@ class SubmitHandler(BaseHandler):
             else:
                 message = "No local copy stored! Your submission was ignored."
             self.application.service.add_notification(
-                self.current_user.username,
+                self.username,
                 int(time.time()),
                 self._("Submission storage failed!"),
                 self._(message))
-            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s" % encrypt_number(self.task_id))
 
 
 class UseTokenHandler(BaseHandler):
