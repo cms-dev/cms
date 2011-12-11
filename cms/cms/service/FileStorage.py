@@ -233,23 +233,43 @@ class FileCacher:
             else:
                 return None
 
-    # @make_async
-    # def delete(self, digest):
-    #     """Delete from cache and FS the file with that digest.
+    def delete(self, digest):
+        """Delete from cache and FS the file with that digest.
 
-    #     digest (string): the file to delete.
+        digest (string): the file to delete.
 
-    #     """
-    #     self.delete_from_cache(digest)
-    #     yield self.file_storage.delete(digest=digest, timeout=True)
+        """
+        self.delete_from_cache(digest)
+        with SessionGen() as session:
+            fso = FSObject.get_from_digest(digest, session)
+            with fso.get_lobject() as lo:
+                lo.unlink()
+            session.delete(fso)
+            session.commit()
 
-    # def delete_from_cache(self, digest):
-    #     """Delete the specified file from the local cache.
+    def delete_from_cache(self, digest):
+        """Delete the specified file from the local cache.
 
-    #     digest (string): the file to delete.
+        digest (string): the file to delete.
 
-    #     """
-    #     os.unlink(os.path.join(self.obj_dir, digest))
+        """
+        try:
+            os.unlink(os.path.join(self.obj_dir, digest))
+        except OSError:
+            pass
+
+    def list(self, session=None):
+        """List the files available in the storage.
+
+        """
+        def _list(session):
+            return map(lambda x: (x.digest, x.description), session.query(FSObject))
+
+        if session is not None:
+            return _list(session)
+        else:
+            with SessionGen() as session:
+                return _list(session)
 
 def main():
     global ls, fc, Session
