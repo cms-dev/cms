@@ -80,7 +80,7 @@ class ContestExporter(Service):
 
             # Export files
             logger.info("Exporting files")
-            files = c.enumerate_files(self.skip_submissions, light=light)
+            files = c.enumerate_files(self.skip_submissions, light=self.light)
             for f in files:
                 self.safe_get_file(f, os.path.join(files_dir, f),
                                    os.path.join(descr_dir, f))
@@ -197,7 +197,8 @@ def main():
                                        contest_id=options.contest_id,
                                        dump=options.dump,
                                        export_dir=args[0],
-                                       skip_submissions=options.skip_submissions).run()
+                                       skip_submissions=options.skip_submissions,
+                                       light=options.light).run()
 
 if __name__ == "__main__":
     main()
