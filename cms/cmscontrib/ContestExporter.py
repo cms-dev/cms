@@ -181,7 +181,7 @@ def main():
                       help="don't export submissions, only contest data",
                       dest="skip_submissions", action="store_true", default=False)
     parser.add_option("-l", "--light",
-                      help="light export (without executables)",
+                      help="light export (without executables and testcases)",
                       dest="light", action="store_true", default=False)
     options, args = parser.parse_args()
     if len(args) != 1:

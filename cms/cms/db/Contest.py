@@ -193,9 +193,10 @@ class Contest(Base):
                 files.add(f.digest)
 
             # Enumerate testcases
-            for testcase in task.testcases:
-                files.add(testcase.input)
-                files.add(testcase.output)
+            if not light:
+                for testcase in task.testcases:
+                    files.add(testcase.input)
+                    files.add(testcase.output)
 
             # Emit statement
             files.add(task.statement)
