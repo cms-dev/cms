@@ -1,4 +1,4 @@
-r#!/usr/bin/python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
