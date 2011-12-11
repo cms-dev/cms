@@ -28,7 +28,8 @@ from sqlalchemy.orm import session as sessionlib
 from cms import Config
 
 db_string = Config.database.replace("%s", Config._data_dir)
-db = create_engine(db_string, echo=Config.database_debug)
+db = create_engine(db_string, echo=Config.database_debug,
+                   pool_size=20, pool_recycle=120)
 
 Base = declarative_base(db)
 metadata = Base.metadata
