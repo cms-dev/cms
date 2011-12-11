@@ -132,6 +132,9 @@ class ScoringService(Service):
             logger.info("Loaded contest %s" % contest.name)
             self.submission_ids_to_score = \
                 [x.id for x in contest.get_submissions() if x.evaluated()]
+            self.submission_ids_to_token = \
+                [(x.id, x.token.timestamp) for x in contest.get_submissions()
+                 if x.tokened()]
             contest.create_empty_ranking_view(timestamp=contest.start)
             for task in contest.tasks:
                 self.scorers[task.id] = task.get_scorer()
@@ -168,13 +171,20 @@ class ScoringService(Service):
         """
         to_score = len(self.submission_ids_to_score)
         if to_score == 0:
-            logger.info("Finished loading old submissions.")
-            return False
+            to_token = len(self.submission_ids_to_token)
+            if to_token == 0:
+                logger.info("Finished loading old submissions.")
+                return False
+            else:
+                logger.info("Old submission yet to token: %s." % to_token)
+                self.submission_tokened(self.submission_ids_to_token[0][0],
+                                        self.submission_ids_to_token[0][1])
+            self.submission_ids_to_token = self.submission_ids_to_token[1:]
         else:
             logger.info("Old submission yet to score: %s." % to_score)
             self.new_evaluation(self.submission_ids_to_score[0])
             self.submission_ids_to_score = self.submission_ids_to_score[1:]
-            return True
+        return True
 
     def dispatch_operations(self):
         """Look at the operations still to do in the queue and tries
@@ -289,7 +299,7 @@ class ScoringService(Service):
             contest.update_ranking_view(self.scorers,
                                         task=submission.task)
 
-            score = scorer.scores.get(submission.user.username, 0.0)
+            score = scorer.pool[submission_id]["score"]
             # TODO: implement extras in scoretype
             extra = []
 
@@ -368,7 +378,7 @@ class ScoringService(Service):
                              "token": False,
                              "extra": []}
             sub_put_data = {"time": timestamp,
-                            "token": True},
+                            "token": True}
 
         for ranking in self.rankings:
             self.operation_queue.append((self.send_token,
