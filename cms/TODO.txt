@@ -34,9 +34,6 @@
 
 ** Worker
 
-* MED: with keep_sandboxes = True, give a way to find rapidly the
-  sandbox associated to a specific job step.
-
 * LOW: Should be able to work with 32 bits programs even when running in
   64 bits mode.
   - This actually appears to be quite complicated: it is probably
@@ -89,6 +86,9 @@
 * HIGH: Fix the fact that if I write a long answer, then select a
   short one, the long one disappears from the interface but is sent
   anyway.
+
+* HIGH (and easy): show information about {compilation,evaluation}
+  shard and sandbox when available on the database.
 
 * MED: when reevaluating, ask if we want to wipe everything, or only
   the evaluation, or only the scoring (in the case we implement the

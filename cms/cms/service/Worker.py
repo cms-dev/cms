@@ -126,6 +126,9 @@ class Worker(Service):
                     submission, task_type = \
                         self.get_submission_data(submission_id)
 
+                    # Store in the task type the shard number
+                    task_type.worker_shard = self.shard
+
                     # Do the actual work
                     success = False
                     task_type_action = task_type.evaluate

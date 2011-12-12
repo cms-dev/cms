@@ -84,6 +84,10 @@ class Submission(Base):
     # Number of tentatives of compilation.
     compilation_tries = Column(Integer, nullable=False)
 
+    # Worker shard and sanbox where the compilation was performed
+    compilation_shard = Column(Integer, nullable=True)
+    compilation_sandbox = Column(String, nullable=True)
+
     # Evaluation outcome (can be None = yet to evaluate, "ok" =
     # evaluation successful). At any time, this should be equal to
     # evaluations != [].
@@ -105,7 +109,8 @@ class Submission(Base):
                  compilation_outcome=None, compilation_text=None,
                  compilation_tries=0, executables=None,
                  evaluation_outcome=None, evaluation_tries=0,
-                 evaluations=None, token=None):
+                 evaluations=None, token=None, compilation_shard=None,
+                 compilation_sandbox=None):
         self.user = user
         self.task = task
         self.timestamp = timestamp
@@ -123,6 +128,8 @@ class Submission(Base):
         self.compilation_tries = compilation_tries
         self.evaluation_tries = evaluation_tries
         self.token = token
+        self.compilation_shard = compilation_shard
+        self.compilation_sandbox = compilation_sandbox
 
     def export_to_dict(self):
         """Return object data as a dictionary.
@@ -135,6 +142,8 @@ class Submission(Base):
                'compilation_outcome': self.compilation_outcome,
                'compilation_tries':   self.compilation_tries,
                'compilation_text':    self.compilation_text,
+               'compilation_shard':   self.compilation_shard,
+               'compilation_sandbox': self.compilation_sandbox,
                'executables':         [executable.export_to_dict() for executable in self.executables.itervalues()],
                'evaluation_outcome':  self.evaluation_outcome,
                'evaluations':         [evaluation.export_to_dict() for evaluation in self.evaluations],
@@ -351,16 +360,25 @@ class Evaluation(Base):
     # the scorer.
     outcome = Column(String, nullable=True)
 
-    def __init__(self, text, outcome, num=None, submission=None):
+    # Worker shard and sanbox where the evaluation was performed
+    evaluation_shard = Column(Integer, nullable=True)
+    evaluation_sandbox = Column(String, nullable=True)
+
+    def __init__(self, text, outcome, num=None, submission=None,
+                 evaluation_shard=None, evaluation_sandbox=None):
         self.text = text
         self.outcome = outcome
         self.num = num
         self.submission = submission
+        self.evaluation_shard = evaluation_shard
+        self.evaluation_sandbox = evaluation_sandbox
 
     def export_to_dict(self):
         """Return object data as a dictionary.
 
         """
-        return {'text':    self.text,
-                'outcome': self.outcome,
-                'num':     self.num}
+        return {'text':               self.text,
+                'outcome':            self.outcome,
+                'num':                self.num,
+                'evaluation_shard':   self.evaluation_shard,
+                'evaluation_sandbox': self.evaluation_sandbox}

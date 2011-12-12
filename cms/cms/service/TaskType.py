@@ -658,6 +658,9 @@ class TaskTypeBatch(TaskType):
 
         # First and only one compilation.
         self.create_sandbox()
+        self.submission.compilation_sandbox = self.sandbox.path
+        if "worker_shard" in self.__dict__:
+            self.submission.compilation_shard = self.worker_shard
         files_to_get = {}
         format_filename = self.submission.files.keys()[0]
         source_filenames = [format_filename.replace("%l", language)]
@@ -687,6 +690,11 @@ class TaskTypeBatch(TaskType):
 
     def evaluate_testcase(self, test_number):
         self.create_sandbox()
+        self.submission.evaluations[test_number].evaluation_sandbox = \
+            self.sandbox.path
+        if "worker_shard" in self.__dict__:
+            self.submission.evaluations[test_number].evaluation_shard = \
+                self.worker_shard
 
         # First step: execute the contestant program. This is also the
         # final step if w have a grader, otherwise we need to run also
@@ -805,6 +813,11 @@ class TaskTypeOutputOnly(TaskType):
 
     def evaluate_testcase(self, test_number):
         self.create_sandbox()
+        self.submission.evaluations[test_number].evaluation_sandbox = \
+            self.sandbox.path
+        if "worker_shard" in self.__dict__:
+            self.submission.evaluations[test_number].evaluation_shard = \
+                self.worker_shard
 
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
