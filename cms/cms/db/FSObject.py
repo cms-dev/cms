@@ -34,11 +34,23 @@ from cms.db.SQLAlchemyUtils import Base
 from contextlib import contextmanager
 
 class FSObject(Base):
+    """Class to describe a file stored in the database.
+
+    """
 
     __tablename__ = 'fsobjects'
 
+    # Here we use the digest (SHA1 sum) of the file as primary key;
+    # ideally al the columns that refer digests could be declared as
+    # foreign keys against this column, but we intentiolally avoid
+    # doing this to keep uncoupled the database and the file storage
     digest = Column(String, primary_key=True)
+
+    # OID of the large object in the database
     loid = Column(Integer, nullable=False)
+
+    # Human-readable description, primarily meant for debugging (i.e,
+    # should have no semantic value from the viewpoint of CMS)
     description = Column(String, nullable=True)
 
     def __init__(self, digest=None, loid=0, description=None):
@@ -48,13 +60,30 @@ class FSObject(Base):
 
     @contextmanager
     def get_lobject(self, session=None, mode=None):
+        """Return an open file bounded to the represented large
+        object. This is a context manager, so it should be used with
+        the `with' clause this way:
+
+          with fsobject.get_lobject() as lo:
+
+        session (session object): the session to use, or None to use
+                                  the one associated with the FSObject.
+        mode (string): how to open the file (r -> read, w -> write,
+                       b -> binary). If None, use `rb'.
+
+        """
         if mode is None:
             mode = 'rb'
         if session is None:
             session = self.get_session()
+
+        # Here we relay on the fact that we're using psycopg2 as
+        # PostgreSQL backend
         lo = lobject(session.connection().connection.connection, self.loid)
+
         if self.loid == 0:
             self.loid = lo.oid
+
         try:
             yield lo
         finally:
@@ -62,6 +91,10 @@ class FSObject(Base):
 
     @classmethod
     def get_from_digest(cls, digest, session):
+        """Return the FSObject with the specified digest, using the
+        specified session.
+
+        """
         try:
             return session.query(cls).filter(cls.digest == digest).one()
         except NoResultFound:
