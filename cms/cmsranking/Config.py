@@ -40,7 +40,7 @@ class Config(object):
 
         # file system
         self.lib_dir = os.path.join("/", "var", "local", "lib", "cms", "ranking")
-        self.web_dir = os.path.join("/", "usr", "local", "share", "cms", "ranking")
+        self.web_dir = os.path.dirname(__file__)
         self.log_dir = os.path.join("/", "var", "local", "log", "cms", "ranking")
 
         # logging

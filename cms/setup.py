@@ -28,6 +28,7 @@ import pwd
 from glob import glob
 from setuptools import setup
 
+old_umask = os.umask(022)
 setup(name="cms",
       version="0.1",
       author="Matteo Boscariol, Stefano Maggiolo, Giovanni Mascellani",
@@ -46,16 +47,22 @@ setup(name="cms",
                 "cmsranking",
                 "cmscontrib",
                 "cmstest"],
-      package_data={"cms.async":
-                    [os.path.join("static", "*")],
-                    "cms.server": [
-                        os.path.join("static", "jq", "*"),
-                        os.path.join("static", "sh", "*"),
-                        os.path.join("static", "*.*"),
-                        os.path.join("templates","contest","*.*"),
-                        os.path.join("templates","admin","*.*"),
-                        os.path.join("templates","ranking","*.*"),
-                        ]},
+      package_data={
+          "cms.async": [
+              os.path.join("static", "*")
+              ],
+          "cms.server": [
+              os.path.join("static", "jq", "*"),
+              os.path.join("static", "sh", "*"),
+              os.path.join("static", "*.*"),
+              os.path.join("templates","contest","*.*"),
+              os.path.join("templates","admin","*.*"),
+              os.path.join("templates","ranking","*.*"),
+              ],
+          "cmsranking": [
+              os.path.join("static", "lib", "*"),
+              os.path.join("static", "*.*")
+              ]},
       entry_points={
           "console_scripts": [
               "cmsLogService=cms.service.LogService:main",
@@ -88,6 +95,7 @@ setup(name="cms",
                    "GNU Affero General Public License v3",
                   ],
      )
+os.umask(old_umask)
 
 def copyfile(src, dest, owner, perm):
     """Copy the file src to dest, and assign owner and permissions.
@@ -103,7 +111,7 @@ def copyfile(src, dest, owner, perm):
     os.chmod(dest, perm)
     os.chown(dest, owner.pw_uid, owner.pw_gid)
 
-def makedir(dir_path, owner, perm):
+def makedir(dir_path, owner=None, perm=None):
     """Create a directory with given owner and permission.
 
     dir_path (string): the new directory to create.
@@ -113,8 +121,10 @@ def makedir(dir_path, owner, perm):
     """
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-    os.chmod(dir_path, perm)
-    os.chown(dir_path, owner.pw_uid, owner.pw_gid)
+    if perm != None:
+        os.chmod(dir_path, perm)
+    if owner != None:
+        os.chown(dir_path, owner.pw_uid, owner.pw_gid)
 
 def copytree(src_path, dest_path, owner, perm_files, perm_dirs):
     """Copy the *content* of src_path in dest_path, assigning the
@@ -148,7 +158,7 @@ if "build" in sys.argv:
         country_code = re.search("/([^/]*)\.po", locale).groups()[0]
         print "  %s" % country_code
         path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
-        os.makedirs(path)
+        makedir(path)
         os.system("msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
 
     print "compiling client code for ranking:"
@@ -159,11 +169,9 @@ if "build" in sys.argv:
     print "done."
 
 if "install" in sys.argv:
-    # Two kind of files: owned by root with umask 022, or owned by
-    # cmsuser with umask 007. The latter because we do not want
-    # regular users to sniff around our contests' data. Note that
-    # umask is not enough if we copy files (permissions could be less
-    # open in repository), so sometimes we do also a chmod.
+    # We set permissions for each manually installed files, so we want
+    # max liberty to change them.
+    old_umask = os.umask(000)
 
     print "creating user and group cmsuser."
     os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
@@ -220,5 +228,5 @@ if "install" in sys.argv:
                           "cms", "ranking"),
              root, 0644, 0755)
 
+    os.umask(old_umask)
     print "done."
-
