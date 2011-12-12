@@ -111,8 +111,6 @@
 * LOW: Provide an environment to build tasks better than make_Makefile and
   friends.
 
-* HIGH: Honour task order.
-
 
 
 
@@ -129,12 +127,6 @@
 
 * MED: Decide on bind_obj=None behaviour and about keeping bind_obj.
 
-
-
-** setup.py
-
-* LOW: static file for rws can be installed using package_data instead
-  of manually.
 
 
 

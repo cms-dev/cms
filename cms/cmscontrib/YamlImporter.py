@@ -120,7 +120,7 @@ class YamlLoader:
 
         return params
 
-    def get_params_for_task(self, path):
+    def get_params_for_task(self, path, num):
         """Given the path of a task, this function put all needed data
         into FS, and fills the dictionary of parameters required by
         Task.import_from_dict().
@@ -136,6 +136,10 @@ class YamlLoader:
         params = {"name": name}
         assert name == conf["nome_breve"]
         params["title"] = conf["nome"]
+        if name == params["title"]:
+            logger.warning("Short name equals long name (title). "
+                           "Is this intended?")
+        params["num"] = num
         params["time_limit"] = conf["timeout"]
         params["memory_limit"] = conf["memlimit"]
         params["attachments"] = {} # FIXME - Use auxiliary
@@ -144,8 +148,8 @@ class YamlLoader:
             description="PDF statement for task %s" % name)
         params["task_type"] = Task.TASK_TYPE_BATCH
 
-        params["submission_format"] = [SubmissionFormatElement("%s.%%l" %
-                                                               (name)).export_to_dict()]
+        params["submission_format"] = [
+            SubmissionFormatElement("%s.%%l" % name).export_to_dict()]
 
         if os.path.exists(os.path.join(path, "cor", "correttore")):
             params["managers"] = [Manager(self.FC.put_file(
@@ -158,7 +162,8 @@ class YamlLoader:
             params["task_type_parameters"] = "[\"diff\", \"file\"]"
         params["score_type"] = conf.get("score_type",
                                         ScoreTypes.SCORE_TYPE_SUM)
-        params["score_parameters"] = conf.get("score_parameters", str(100.0 / float(conf["n_input"])))
+        params["score_parameters"] = conf.get(
+            "score_parameters", str(100.0 / float(conf["n_input"])))
         public_testcases = conf.get("risultati", "").strip()
         if public_testcases != "":
             public_testcases = [int(x.strip())
@@ -194,8 +199,9 @@ class YamlLoader:
 
         """
         params, tasks, users = self.get_params_for_contest(path)
-        for task in tasks:
-            task_params = self.get_params_for_task(os.path.join(path, task))
+        for i, task in enumerate(tasks):
+            task_params = self.get_params_for_task(os.path.join(path, task),
+                                                   num=i)
             params["tasks"].append(task_params)
         if self.user_num is None:
             for user in users:
