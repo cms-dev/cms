@@ -144,14 +144,6 @@
 
 
 
-
-** RankingWebServer
-
-* HIGH: why tokens are always "No"?
-
-
-
-
 ** Misc
 
 * LOW: ES and SS should periodically find automatically submission to
