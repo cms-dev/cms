@@ -225,18 +225,13 @@ class YamlImporter(Service):
         logger.initialize(ServiceCoord("YamlImporter", shard))
         logger.debug("YamlImporter.__init__")
         Service.__init__(self, shard)
-        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
-        self.FC = FileCacher(self, self.FS)
+        self.FC = FileCacher(self)
 
         self.loader = YamlLoader(self.FC, drop, modif, user_num)
 
         self.add_timeout(self.do_import, None, 10, immediately=True)
 
     def do_import(self):
-        if not self.FS.connected:
-            logger.warning("Please run FileStorage.")
-            return True
-
         logger.info("Creating database structure.")
         if self.drop:
             metadata.drop_all()

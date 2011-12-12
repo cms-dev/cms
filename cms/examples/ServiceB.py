@@ -44,8 +44,7 @@ class ServiceB(Service):
         logger.initialize(ServiceCoord("ServiceB", shard))
         logger.debug("ServiceB.__init__")
         Service.__init__(self, shard)
-        self.FS = self.connect_to(ServiceCoord("FileStorage", 0))
-        self.FC = FileCacher(self, self.FS)
+        self.FC = FileCacher(self)
         self.add_timeout(self.operate, True, 100000, immediately=True)
 
     def operate(self, put):

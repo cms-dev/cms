@@ -69,7 +69,9 @@ def load_config_file(cmsconf):
     # Put also the _installed data.
     import pwd
     import sys
-    Config._installed = sys.argv[0].startswith("/usr/")
+    Config._installed = sys.argv[0].startswith("/usr/") and \
+        sys.argv[0] != '/usr/bin/ipython' and \
+        sys.argv[0] != '/usr/bin/python'
 
     if Config._installed:
         Config._log_dir = os.path.join("/", "var", "local", "log", "cms")
