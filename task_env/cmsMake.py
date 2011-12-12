@@ -74,9 +74,9 @@ def get_compilation_command(language, source_filenames, executable_filename):
         command = ["/usr/bin/fpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename)]
     return command + source_filenames
 
-def call(args, stdin=None, stdout=None, stderr=None):
-    print >> sys.stderr, "> Executing command %s" % (" ".join(args))
-    return subprocess.call(args, stdin=stdin, stdout=stdout, stderr=stderr)
+def call(base_dir, args, stdin=None, stdout=None, stderr=None):
+    print >> sys.stderr, "> Executing command %s in dir %s" % (" ".join(args), base_dir)
+    return subprocess.call(args, stdin=stdin, stdout=stdout, stderr=stderr, cwd=base_dir)
 
 def build_sols_list(base_dir):
     sol_dir = os.path.join(base_dir, SOL_DIRNAME)
@@ -89,7 +89,7 @@ def build_sols_list(base_dir):
         # Delete the dot
         lang = lang[1:]
         def compile():
-            call(get_compilation_command(lang, [src], exe))
+            call(base_dir, get_compilation_command(lang, [src], exe))
         actions.append(([src], [exe], compile, "compilation"))
 
     return actions
@@ -131,13 +131,49 @@ def build_execution_tree(actions):
         for exe in action[1]:
             if exe in exec_tree:
                 raise Exception("Targets not unique")
-            exec_tree[exe] = (actions[0], actions[2])
+            exec_tree[exe] = (action[0], action[2])
             generated_list.append(exe)
         for src in action[0]:
             if src in exec_tree:
                 raise Exception("Targets not unique")
             exec_tree[src] = ([], noop)
     return exec_tree, generated_list
+
+def execute_target(exec_tree, target, already_executed=None, stack=None):
+    # Initialization
+    if already_executed is None:
+        already_executed = set()
+    if stack is None:
+        stack = set()
+
+    # Get target information
+    deps = exec_tree[target][0]
+    action = exec_tree[target][1]
+
+    # If this target is already in the stack, we have a circular
+    # dependency
+    if target in stack:
+        raise Exception("Circular dependency detected")
+
+    # If the target was already made in another subtree, we have
+    # nothing to do
+    if target in already_executed:
+        return
+
+    # Otherwise, do a step of the DFS to make dependencies
+    already_executed.add(target)
+    stack.add(target)
+    for dep in deps:
+        execute_target(exec_tree, dep, already_executed, stack)
+    stack.remove(target)
+
+    # At last: actually make the so long desired action :-)
+    action()
+
+def execute_multiple_targets(exec_tree, targets):
+    already_executed = set()
+    for target in targets:
+        execute_target(exec_tree, target, already_executed)
 
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] [target]")
@@ -171,6 +207,8 @@ def main():
         print "Cleaning"
         clean(base_dir, generated_list)
 
+    else:
+        execute_multiple_targets(exec_tree, args)
 
 if __name__ == '__main__':
     main()
