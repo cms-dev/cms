@@ -24,9 +24,27 @@ import optparse
 import os
 import sys
 import subprocess
+import copy
+import functools
 
 SOL_DIRNAME = 'sol'
 SOL_EXTS = ['.cpp', '.c', '.pas']
+TEXT_DIRNAME = 'testo'
+TEXT_XML = 'testo.xml'
+TEXT_TEX = 'testo.tex'
+TEXT_PDF = 'testo.pdf'
+TEXT_AUX = 'testo.aux'
+TEXT_LOG = 'testo.log'
+TEXT_HTML = 'testo.html'
+
+DATA_DIRS = [os.path.join('.', 'data'), os.path.join('/', 'usr', 'local', 'share', 'cms', 'cmsMake')]
+
+def detect_data_dir():
+    for dir in DATA_DIRS:
+        if os.path.exists(dir):
+            return os.path.abspath(dir)
+
+DATA_DIR = detect_data_dir()
 
 def endswith2(str, suffixes):
     """True if str ends with one of the given suffixes.
@@ -74,9 +92,13 @@ def get_compilation_command(language, source_filenames, executable_filename):
         command = ["/usr/bin/fpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename)]
     return command + source_filenames
 
-def call(base_dir, args, stdin=None, stdout=None, stderr=None):
+def call(base_dir, args, stdin=None, stdout=None, stderr=None, env=None):
     print >> sys.stderr, "> Executing command %s in dir %s" % (" ".join(args), base_dir)
-    return subprocess.call(args, stdin=stdin, stdout=stdout, stderr=stderr, cwd=base_dir)
+    if env is None:
+        env = {}
+    env2 = copy.copy(os.environ)
+    env2.update(env)
+    return subprocess.call(args, stdin=stdin, stdout=stdout, stderr=stderr, cwd=base_dir, env=env2)
 
 def build_sols_list(base_dir):
     sol_dir = os.path.join(base_dir, SOL_DIRNAME)
@@ -88,10 +110,41 @@ def build_sols_list(base_dir):
         exe, lang = basename2(src, SOL_EXTS)
         # Delete the dot
         lang = lang[1:]
-        def compile():
+        def compile_src(src, exe):
             call(base_dir, get_compilation_command(lang, [src], exe))
-        actions.append(([src], [exe], compile, "compilation"))
+        actions.append(([src], [exe], functools.partial(compile_src, src, exe), "compilation"))
 
+    return actions
+
+def build_text_list(base_dir):
+    text_xml = os.path.join(TEXT_DIRNAME, TEXT_XML)
+    text_tex = os.path.join(TEXT_DIRNAME, TEXT_TEX)
+    text_pdf = os.path.join(TEXT_DIRNAME, TEXT_PDF)
+    text_aux = os.path.join(TEXT_DIRNAME, TEXT_AUX)
+    text_log = os.path.join(TEXT_DIRNAME, TEXT_LOG)
+    text_html = os.path.join(TEXT_DIRNAME, TEXT_HTML)
+
+    def make_html():
+        with open(os.path.join(base_dir, text_html), 'w') as fout:
+            call(base_dir,
+                 ['xsltproc', os.path.join(DATA_DIR, 'problem_layout.xslt'), text_xml],
+                 stdout=fout)
+
+    def make_tex():
+        with open(os.path.join(base_dir, text_tex), 'w') as fout:
+            call(base_dir,
+                 ['xsltproc', os.path.join(DATA_DIR, 'problem_layout_tex.xslt'), text_xml],
+                 stdout=fout)
+
+    def make_pdf():
+        call(base_dir,
+             ['pdflatex', '-output-directory', TEXT_DIRNAME, '-interaction', 'batchmode', text_tex],
+             env={'TEXINPUTS': '.:%s:%s/file:' % (TEXT_DIRNAME, TEXT_DIRNAME)})
+
+    actions = []
+    actions.append(([text_xml], [text_html], make_html, 'compile to HTML'))
+    actions.append(([text_xml], [text_tex], make_tex, 'compile to LaTeX'))
+    actions.append(([text_tex], [text_pdf, text_aux, text_log], make_pdf, 'compile to PDF'))
     return actions
 
 def build_action_list(base_dir):
@@ -113,6 +166,7 @@ def build_action_list(base_dir):
     # action does.
     actions = []
     actions += build_sols_list(base_dir)
+    actions += build_text_list(base_dir)
     return actions
 
 def clean(base_dir, generated_list):
@@ -127,6 +181,7 @@ def build_execution_tree(actions):
         pass
     exec_tree = {}
     generated_list = []
+    src_list = set()
     for action in actions:
         for exe in action[1]:
             if exe in exec_tree:
@@ -134,8 +189,9 @@ def build_execution_tree(actions):
             exec_tree[exe] = (action[0], action[2])
             generated_list.append(exe)
         for src in action[0]:
-            if src in exec_tree:
-                raise Exception("Targets not unique")
+            src_list.add(src)
+    for src in src_list:
+        if src not in exec_tree:
             exec_tree[src] = ([], noop)
     return exec_tree, generated_list
 
@@ -186,6 +242,9 @@ def main():
     parser.add_option("-c", "--clean",
                       help="clean all generated files",
                       dest="clean", action="store_true", default=False)
+    parser.add_option("-a", "--all",
+                      help="make all targets",
+                      dest="all", action="store_true", default=False)
 
     options, args = parser.parse_args()
 
@@ -195,17 +254,21 @@ def main():
     actions = build_action_list(base_dir)
     exec_tree, generated_list = build_execution_tree(actions)
 
-    if [len(args) > 0, options.list, options.clean].count(True) > 1:
+    if [len(args) > 0, options.list, options.clean, options.all].count(True) > 1:
         parser.error("Too many commands")
 
     if options.list:
         print "Available operations:"
         for entry in actions:
-            print "  %s -> %s (%s)" % (", ".join(entry[0]), ", ".join(entry[1]), entry[3])
+            print "  %s -> %s (%s) %s" % (", ".join(entry[0]), ", ".join(entry[1]), entry[3], repr(entry[2]))
 
     elif options.clean:
         print "Cleaning"
         clean(base_dir, generated_list)
+
+    elif options.all:
+        print "Making all targets"
+        execute_multiple_targets(exec_tree, generated_list)
 
     else:
         execute_multiple_targets(exec_tree, args)
