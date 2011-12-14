@@ -49,16 +49,6 @@ contest_parameters = {
     "debug" : Config.tornado_debug,
     }
 
-ranking_parameters = {
-    "login_url": "/" ,
-    "template_path": os.path.join(tornado_files_basepath,
-                                  "templates", "ranking"),
-    "static_path": os.path.join(tornado_files_basepath,
-                                "static", "ranking"),
-    "cookie_secret": Config.tornado_secret_key,
-    "debug" : Config.tornado_debug,
-   }
-
 admin_parameters = {
     "login_url": "/",
     "template_path": os.path.join(tornado_files_basepath,
