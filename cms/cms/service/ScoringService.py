@@ -68,7 +68,7 @@ def encode_id(entity_id):
 
     """
     encoded_id = ""
-    for c in entity_id:
+    for c in str(entity_id):
         if c not in string.letters + "0123456789":
             try:
                 encoded_id += "_" + hex(ord(c))[-2:]
@@ -231,7 +231,8 @@ class ScoringService(Service):
             try:
                 method(*args)
             except Exception as err:
-                logger.info("Ranking %s not connected." % args[0][0])
+                logger.info("Ranking %s not connected or generic error." %
+                            args[0][0])
                 new_queue.append((method, args))
                 failed_rankings.add(args[0])
         self.operation_queue = new_queue
@@ -330,53 +331,28 @@ class ScoringService(Service):
             extra = []
 
             # Data to send to remote rankings
-            sub_url = "/subs/%s" % encode_id(submission_id)
-            sub_post_data = {"user": encode_id(submission.user.username),
-                             "task": encode_id(submission.task.name),
-                             "time": submission.timestamp,
-                             "score": score,
-                             "token": False,
-                             "extra": extra}
-            sub_put_data = {"time": submission.timestamp,
-                            "score": score,
-                            "extra": extra}
+            submission_url = "/submissions/%s" % encode_id(submission_id)
+            submission_put_data = {"user": encode_id(submission.user.username),
+                            "task": encode_id(submission.task.name),
+                            "time": submission.timestamp}
+            subchange_url = "/subchanges/%s" % encode_id("%s%ss" %
+                                                         (submission.timestamp,
+                                                          submission_id))
+            subchange_put_data = {"submission": encode_id(submission_id),
+                                  "time": submission.timestamp,
+                                  "score": score,
+                                  "extra": extra}
 
         # TODO: ScoreRelative here does not work with remote
         # rankings (it does in the ranking view) because we
         # update only the user owning the submission.
         for ranking in self.rankings:
-            self.operation_queue.append((self.send_score,
-                                         [ranking, sub_url,
-                                          sub_post_data, sub_put_data]))
-
-    def send_score(self, ranking, sub_url, sub_post_data, sub_put_data):
-        """Send a score to the remote ranking.
-
-        ranking ((string, string)): address and authorization string
-                                    of ranking server.
-        sub_url (string): relative url in the remote ranking.
-        sub_post_data (dict): dictionary to send to the ranking to
-                              create the submission.
-        sub_put_data (dict): dictionary to send to the ranking to
-                             update the submission.
-        return (bool): success of operation.
-
-        """
-        logger.info("Posting new score %s for submission %s." %
-                    (sub_put_data["score"], sub_url))
-        connection = httplib.HTTPConnection(ranking[0])
-        auth = ranking[1]
-
-        # We try to use put, if something goes wrong (i.e., the
-        # submission does not exists in the server), we try also to
-        # post before.
-        status = put_data(connection, sub_url, sub_put_data, auth)
-
-        if status not in [200, 201]:
-            safe_post_data(connection, sub_url, sub_post_data, auth,
-                           "sending submission %s" % sub_url)
-            safe_put_data(connection, sub_url, sub_put_data, auth,
-                          "sending submission %s" % sub_url)
+            self.operation_queue.append((self.send_submission,
+                                         [ranking, submission_url,
+                                          submission_put_data]))
+            self.operation_queue.append((self.send_change,
+                                         [ranking, subchange_url,
+                                          subchange_put_data]))
 
     @rpc_method
     def submission_tokened(self, submission_id, timestamp):
@@ -396,48 +372,61 @@ class ScoringService(Service):
             if submission.user.hidden:
                 return
 
-            sub_url = "/subs/%s" % encode_id(submission_id)
-            sub_post_data = {"user": encode_id(submission.user.username),
-                             "task": encode_id(submission.task.name),
-                             "time": submission.timestamp,
-                             "score": 0.0,
-                             "token": False,
-                             "extra": []}
-            sub_put_data = {"time": timestamp,
-                            "token": True}
+            # Data to send to remote rankings
+            submission_url = "/submissions/%s" % encode_id(submission_id)
+            submission_put_data = {"user": encode_id(submission.user.username),
+                            "task": encode_id(submission.task.name),
+                            "time": submission.timestamp}
+            subchange_url = "/subchanges/%s" % encode_id("%s%st" %
+                                                         (timestamp,
+                                                          submission_id))
+            subchange_put_data = {"submission": encode_id(submission_id),
+                                  "time": timestamp,
+                                  "token": True}
 
         for ranking in self.rankings:
-            self.operation_queue.append((self.send_token,
-                                         [ranking, sub_url,
-                                          sub_post_data, sub_put_data]))
+            self.operation_queue.append((self.send_submission,
+                                         [ranking, submission_url,
+                                          submission_put_data]))
+            self.operation_queue.append((self.send_change,
+                                         [ranking, subchange_url,
+                                          subchange_put_data]))
 
-    def send_token(self, ranking, sub_url, sub_post_data, sub_put_data):
-        """Send the data that a token has been played.
+    def send_submission(self, ranking, submission_url, submission_put_data):
+        """Send a submission to the remote ranking.
 
         ranking ((string, string)): address and authorization string
                                     of ranking server.
-        sub_url (string): relative url in the remote ranking.
-        sub_post_data (dict): dictionary to send to the ranking to
-                              create the submission.
-        sub_put_data (dict): dictionary to send to the ranking to
-                             update the submission.
+        submission_url (string): relative url in the remote ranking.
+        submission_put_data (dict): dictionary to send to the ranking
+                                    to send the submission.
         return (bool): success of operation.
 
         """
-        logger.info("Posting token usage for submission %s." % sub_url)
+        logger.info("Posting new submission %s." % submission_url)
+        connection = httplib.HTTPConnection(ranking[0])
+        auth = ranking[1]
+        safe_put_data(connection, submission_url, submission_put_data, auth,
+                      "sending submission %s" % submission_url)
+
+    def send_change(self, ranking, subchange_url, subchange_put_data):
+        """Send a change to a submission (token or score update
+
+        ranking ((string, string)): address and authorization string
+                                    of ranking server.
+        subchange_url (string): relative url in the remote ranking.
+        subchange_put_data (dict): dictionary to send to the ranking
+                                   to update the submission.
+        return (bool): success of operation.
+
+        """
+        logger.info("Posting change %s for submission %s." %
+                    (subchange_url, subchange_put_data["submission"]))
         connection = httplib.HTTPConnection(ranking[0])
         auth = ranking[1]
 
-        # We try to use put, if something goes wrong (i.e., the
-        # submission does not exists in the server), we try also to
-        # post before.
-        status = put_data(connection, sub_url, sub_put_data, auth)
-
-        if status not in [200, 201]:
-            safe_post_data(connection, sub_url, sub_post_data, auth,
-                           "sending submission %s" % sub_url)
-            safe_put_data(connection, sub_url, sub_put_data, auth,
-                          "sending token for submission %s" % sub_url)
+        safe_put_data(connection, subchange_url, subchange_put_data, auth,
+                      "sending change %s" % subchange_url)
 
 
 def main():
