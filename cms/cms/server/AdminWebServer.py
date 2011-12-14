@@ -943,8 +943,7 @@ class UserViewHandler(BaseHandler):
 
         self.sql_session.commit()
         self.application.service.add_notification(int(time.time()),
-            "User updated successfully.",
-            "")
+            "User updated successfully.", "")
         self.redirect("/user/%s" % user.id)
 
 class AddUserHandler(SimpleContestHandler("add_user.html")):
@@ -1052,8 +1051,10 @@ class QuestionReplyHandler(BaseHandler):
         if reply_subject_code not in WebConfig.quick_answers:
             question.reply_subject = ""
         else:
+            # Quick answer given, ignore long answer.
             question.reply_subject = \
                 WebConfig.quick_answers[reply_subject_code]
+            question.reply_text = ""
 
         question.reply_timestamp = int(time.time())
 
