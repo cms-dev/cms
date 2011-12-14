@@ -129,6 +129,7 @@ class Store(object):
         try:
             item = self._entity()
             item.set(json.loads(data))
+            item.key = key
             self._store[key] = item
         except ValueError:
             raise InvalidData('Invalid JSON')
@@ -163,6 +164,7 @@ class Store(object):
         try:
             item = self._entity()
             item.set(json.loads(data))
+            item.key = key
             self._store[key] = item
         except ValueError:
             raise InvalidData('Invalid JSON')

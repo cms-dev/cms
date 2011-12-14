@@ -1,0 +1,335 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Programming contest management system
+# Copyright © 2011 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from Logger import logger
+
+import Submission
+import Subchange
+
+import heapq
+
+
+class NumberSet:
+    """A fast data structure on numbers.
+
+    It supports:
+    - inserting a value
+    - removing a value
+    - querying the maximum value
+
+    It can hold the same value multiple times.
+
+    This data structure could be implemented with a binary tree,
+    but at the moment we're actually using a standard python list.
+
+    """
+    def __init__(self):
+        self._impl = list()
+
+    def insert(self, x):
+        self._impl.append(x)
+
+    def remove(self, x):
+        self._impl.remove(x)
+
+    def query(self):
+        return max(self._impl + [0.0])
+
+    def clear(self):
+        del self._impl[:]
+
+class Score:
+    """The score of a user for a task.
+
+    It computes the current score (and its history) for this user/task.
+    It gets notified in case a submission is created, updated and deleted.
+
+    """
+    # We assume that the submissions will all have different times, since cms
+    # enforces a minimum delay between two submissions of the same user for
+    # the same task.
+    # On the other hand, different subchanges may have the same time but cms
+    # assures that the order in which the subchanges have to be processed is
+    # the ascending order of their keys (actually, this is enforced only for
+    # suchanges with the same time).
+    def __init__(self):
+        # The submissions in their current status
+        self._submissions = dict()
+
+        # The list of changes of the submissions
+        self._changes = list()
+
+        # The set of the scores of the currently released submissions
+        self._released = NumberSet()
+
+        # The last submitted submission (with at least one subchange)
+        self._last = None
+
+        # The history of score changes (the actual "output" of this object)
+        self._history = list()
+
+    def append_change(self, change):
+        # Remove from released submission (if needed), apply changes, add back
+        # to released submissions (if needed) and check if it's the last.
+        # Compute the new score and, if it changed, append it to the history.
+        s_id = change.submission
+        if self._submissions[s_id].token:
+            self._released.remove(self._submissions[s_id].score)
+        if change.score is not None:
+            self._submissions[s_id].score = change.score
+        if change.token is not None:
+            self._submissions[s_id].token = change.token
+        if change.extra is not None:
+            self._submissions[s_id].extra = change.extra
+        if self._submissions[s_id].token:
+            self._released.insert(self._submissions[s_id].score)
+        if self._last is None or self._submissions[s_id].time > self._last.time:
+            self._last = self._submissions[s_id]
+
+        score = max(self._released.query(), self._last.score)
+
+        if score != self.get_score():
+            self._history.append((change.time, score))
+
+    def get_score(self):
+        return self._history[-1][1] if len(self._history) > 0 else 0.0
+
+    def reset_history(self):
+        # Delete everything except the submissions and the subchanges
+        self._last = None
+        self._released.clear()
+        del self._history[:]
+
+        # Reset the submissions at their default value
+        for sub in self._submissions.itervalues():
+            sub.score = 0.0
+            sub.token = False
+            sub.extra = list()
+
+        # Append each change, one at a time
+        for change in self._changes:
+            self.append_change(change)
+
+    def create_subchange(self, key, subchange):
+        # Insert the subchange at the right position inside the (sorted) list
+        # and call the appropriate method (append_change or reset_history)
+        if len(self._changes) == 0 or \
+           subchange.time > self._changes[-1].time or \
+           (subchange.time == self._changes[-1].time and subchange.key > self._changes[-1].key):
+            self._changes.append(subchange)
+            self.append_change(subchange)
+        else:
+            for i, v in enumerate(self._changes):
+                if subchange.time < v.time or \
+                   (subchange.time == v.time and subchange.key < v.key):
+                    self._changes.insert(i, subchange)
+                    break
+            self.reset_history()
+            logger.info("Reset history for user '" +
+                self._submissions[subchange.submission].user + "' and task '" +
+                self._submissions[subchange.submission].user +
+                "' after creating subchange '" + key + "' for submission '" +
+                subchange.submission + "'")
+
+    def update_subchange(self, key, subchange):
+        # Update the subchange inside the (sorted) list and, regardless of its
+        # position in that list, reset the history.
+        for i in range(len(self._changes)):
+            if self._changes[i].key == key:
+                self._changes[i] = subchange
+        self.reset_history()
+        logger.info("Reset history for user '" +
+            self._submissions[subchange.submission].user + "' and task '" +
+            self._submissions[subchange.submission].user +
+            "' after updating subchange '" + key + "' for submission '" +
+            subchange.submission + "'")
+
+    def delete_subchange(self, key):
+        # Delete the subchange from the (sorted) list and reset the history
+        for i in range(len(self._changes)):
+            if self._changes[i].key == key:
+                del self._changes[i]
+        self.reset_history()
+        logger.info("Reset history after deleting subchange '" + key + "'")
+
+    def create_submission(self, key, submission):
+        # A new submission never triggers an update in the history, since it
+        # doesn't have a score.
+        submission.score = 0.0
+        submission.token = False
+        submission.extra = list()
+        self._submissions[key] = submission
+
+    def update_submission(self, key, submission):
+        # An updated submission may cause an update in history because it may
+        # change the "last" submission at some point in history.
+        self._submissions[key] = submission
+        self.reset_history()
+
+    def delete_submission(self, key):
+        # A deleted submission shouldn't cause any history changes (because
+        # its associated subchanges are deleted before it) but we reset it
+        # just to be sure...
+        del self._submissions[key]
+        self.reset_history()
+
+class ScoringStore:
+    """A manager for all instances of Scoring.
+
+    It listens to the events of Submission.store and Subchange.store and
+    redirects them to the corresponding Score (based on their user/task).
+    When asked to provide a global history of score changes it takes the
+    ones of each Score and combines them toghether (using a binary heap).
+
+    """
+    # We can do an important assumption here too: since the data has to be
+    # consistent we are sure that if there's at least one subchange there's
+    # also at least one submission (and if there's no submission there's no
+    # subchange). We can also assume that when a submission is deleted its
+    # subchanges have already been deleted. So we are sure that we can delete
+    # the Score after we delete the last submission, but we cannot after
+    # we delete the last subchange.
+    def __init__(self):
+        Submission.store.add_create_callback(self.create_submission)
+        Submission.store.add_update_callback(self.update_submission)
+        Submission.store.add_delete_callback(self.delete_submission)
+        Subchange.store.add_create_callback(self.create_subchange)
+        Subchange.store.add_update_callback(self.update_subchange)
+        Subchange.store.add_delete_callback(self.delete_subchange)
+
+        self._scores = dict()
+
+        self._callbacks = list()
+
+        for key in Submission.store._store.iterkeys():
+            self.create_submission(key)
+        for key in Subchange.store._store.iterkeys():
+            self.create_subchange(key)
+
+    def add_score_callback(self, callback):
+        """Add a callback to be called when a score changes.
+
+        Callbacks can be any kind of callable objects. They must accept
+        three arguments: the user, the task and the new score.
+
+        """
+        self._callbacks.append(callback)
+
+    def notify_callbacks(self, user, task, score):
+        for c in self._callbacks:
+            c(user, task, score)
+
+    def create_submission(self, key):
+        submission = Submission.store._store[key]
+        if submission.user not in self._scores:
+            self._scores[submission.user] = dict()
+        if submission.task not in self._scores[submission.user]:
+            self._scores[submission.user][submission.task] = Score()
+        old_score = self._scores[submission.user][submission.task].get_score()
+        self._scores[submission.user][submission.task].create_submission(key, submission)
+        new_score = self._scores[submission.user][submission.task].get_score()
+        if old_score != new_score:
+            self.notify_callbacks(submission.user, submission.task, new_score)
+
+    def update_submission(self, key):
+        submission = Submission.store._store[key]
+        old_score = self._scores[submission.user][submission.task].get_score()
+        self._scores[submission.user][submission.task].update_submission(key, submission)
+        new_score = self._scores[submission.user][submission.task].get_score()
+        if old_score != new_score:
+            self.notify_callbacks(submission.user, submission.task, new_score)
+
+    def delete_submission(self, key):
+        # Since we don't know the user and the task of a deleted submission we
+        # have two solutions: either we store them on our own or we ask every
+        # Score to delete the submission (would be very expensive)
+        # Since the deletion is very unfrequent we choose the second option.
+        for u_id, user in self._scores.itervalues():
+            for t_id, task in user.itervalues():
+                old_score = task.get_score()
+                task.delete_submission(key)
+                new_score = task.get_score()
+                if old_score != new_score:
+                    self.notify_callbacks(u_id, t_id, new_score)
+
+    def create_subchange(self, key):
+        subchange = Subchange.store._store[key]
+        submission = Submission.store._store[subchange.submission]
+        old_score = self._scores[submission.user][submission.task].get_score()
+        self._scores[submission.user][submission.task].create_subchange(key, subchange)
+        new_score = self._scores[submission.user][submission.task].get_score()
+        if old_score != new_score:
+            self.notify_callbacks(submission.user, submission.task, new_score)
+
+    def update_subchange(self, key):
+        subchange = Subchange.store._store[key]
+        submission = Submission.store._store[subchange.submission]
+        old_score = self._scores[submission.user][submission.task].get_score()
+        self._scores[submission.user][submission.task].update_subchange(key, subchange)
+        new_score = self._scores[submission.user][submission.task].get_score()
+        if old_score != new_score:
+            self.notify_callbacks(submission.user, submission.task, new_score)
+
+    def delete_subchange(self, key):
+        # I'd say we have here the same problem as above: since we don't know
+        # which submission the subchange belongs to, we don't know which
+        # Score to ask to delete it. So we ask it to all of them.
+        for u_id, user in self._scores.itervalues():
+            for t_id, task in user.itervalues():
+                old_score = task.get_score()
+                task.delete_subchange(key)
+                new_score = task.get_score()
+                if old_score != new_score:
+                    self.notify_callbacks(u_id, t_id, new_score)
+
+    def get_score(self, user, task):
+        if user not in self._scores or task not in self._scores[user]:
+            return 0  # We may want to raise an exception to distinguish
+                      # between "no submissions" and "submission with 0 points"
+        return self._scores[user][task].get_score()
+
+    def get_submissions(self, user, task):
+        if user not in self._scores or task not in self._scores[user]:
+            return dict()
+        return self._scores[user][task]._submissions
+
+    def get_global_history(self):
+        """Merge all individual histories into a global one.
+
+        Take all per-user/per-task histories and merge them, providing a global
+        history of all schore changes and return it using a generator.
+        Returned data is in the form (user_id, task_id, time, score).
+
+        """
+        # Use a priority queue, containing only one entry per-user/per-task
+        queue = list()
+        for user, d in self._scores.iteritems():
+            for task, scoring in d.iteritems():
+                if scoring._history:
+                    heapq.heappush(queue, (scoring._history[0], user, task, scoring, 0))
+
+        # When an entry is popped, push the next entry for that user/task (if any)
+        while len(queue) != 0:
+            (time, score), user, task, scoring, index = heapq.heappop(queue)
+            yield (user, task, time, score)
+            if len(scoring._history) > index+1:
+                heapq.heappush(queue, (scoring._history[index+1], user, task, scoring, index+1))
+
+
+store = ScoringStore()

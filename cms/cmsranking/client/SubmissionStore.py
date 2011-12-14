@@ -23,7 +23,7 @@ from pyjamas import Window
 
 
 # Config
-submission_url = '/submissions/%s'
+submission_url = '/sublist/%s'
 
 
 class Callback:

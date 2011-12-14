@@ -1,0 +1,89 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Programming contest management system
+# Copyright © 2011 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from Entity import Entity, InvalidData
+from Store import Store
+
+
+class Subchange(Entity):
+    """The entity representing a change in the status of a submission.
+
+    It consists of the following properties:
+    - user (str): the key of the user who submitted
+    - task (str): the key of the task of the submission
+    - time (int): the time the submission has been submitted
+
+    """
+    def validate(self, data):
+        try:
+            assert type(data) is dict,\
+                "Not a dictionary"
+            assert type(data['submission']) is unicode,\
+                "Field 'submission' isn't a string"
+            assert type(data['time']) is int,\
+                "Field 'time' isn't an integer (unix timestamp)"
+            if 'score' in data:
+                assert type(data['score']) is float,\
+                    "Field 'score' isn't a float"
+            if 'token' in data:
+                assert type(data['token']) is bool,\
+                    "Field 'token' isn't a boolean"
+            if 'extra' in data:
+                assert type(data['extra']) is list,\
+                    "Field 'extra' isn't a list of strings"
+                for i in data['extra']:
+                    assert type(i) is unicode,\
+                        "Field 'extra' isn't a list of strings"
+        except KeyError as field:
+            raise InvalidData("Field %s is missing" % field)
+        except AssertionError as message:
+            raise InvalidData(message)
+
+    def set(self, data):
+        self.validate(data)
+        self.submission = data['submission']
+        self.time = data['time']
+        self.score = (data['score'] if 'score' in data else None)
+        self.token = (data['token'] if 'token' in data else None)
+        self.extra = (data['extra'] if 'extra' in data else None)
+
+    def get(self):
+        result = dict(self.__dict__)
+        for field in ['score', 'token', 'extra']:
+            if result[field] is None:
+                del result[field]
+        return result
+
+    def load(self, data):
+        self.validate(data)
+        self.submission = data['submission']
+        self.time = data['time']
+        self.score = (data['score'] if 'score' in data else None)
+        self.token = (data['token'] if 'token' in data else None)
+        self.extra = (data['extra'] if 'extra' in data else None)
+
+    def dump(self):
+        result = dict(self.__dict__)
+        for field in ['score', 'token', 'extra']:
+            if result[field] is None:
+                del result[field]
+        return result
+
+
+store = Store(Subchange, 'subchanges')

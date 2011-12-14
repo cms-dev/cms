@@ -39,8 +39,9 @@ import Contest
 import Task
 import Team
 import User
-
-import Submissions
+import Submission
+import Subchange
+import Scoring
 
 
 def authenticated(method):
@@ -176,7 +177,7 @@ class MessageProxy(object):
         User.store.add_delete_callback(
             functools.partial(self.callback, "user", "delete"))
 
-        Submissions.submission_store.add_callback(self.score_callback)
+        Scoring.store.add_score_callback(self.score_callback)
 
     def callback(self, entity, event, key):
         msg = 'id: ' + str(int(time.time())) + '\n' + \
@@ -231,90 +232,26 @@ class NotificationHandler(DataHandler):
         self.flush()
 
 
-class SubmissionHandler(DataHandler):
-    @authenticated
-    def post(self, entity_id):
-        # create
-        try:
-            Submissions.submission_store.create(entity_id, json.loads(self.request.body))
-        except Submissions.InvalidKey:
-            raise tornado.web.HTTPError(405)
-        except ValueError, exc:
-            logger.error("Invalid JSON\n" + self.request.full_url(), extra={'request_body': self.request.body})
-            raise tornado.web.HTTPError(400)
-        except Submissions.InvalidTime, exc:
-            logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
-            raise tornado.web.HTTPError(400)
-        except Submissions.InvalidData, exc:
-            logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
-            raise tornado.web.HTTPError(400)
-
-    @authenticated
-    def put(self, entity_id):
-        # update
-        try:
-            Submissions.submission_store.update(entity_id, json.loads(self.request.body))
-        except Submissions.InvalidKey:
-            raise tornado.web.HTTPError(404)
-        except ValueError, exc:
-            logger.error("Invalid JSON\n" + self.request.full_url(), extra={'request_body': self.request.body})
-            raise tornado.web.HTTPError(400)
-        except Submissions.InvalidTime, exc:
-            logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
-            raise tornado.web.HTTPError(400)
-        except Submissions.InvalidData, exc:
-            logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
-            raise tornado.web.HTTPError(400)
-
-    @authenticated
-    def delete(self, entity_id):
-        # delete
-        try:
-            Submissions.submission_store.delete(entity_id)
-        except Submissions.InvalidKey:
-            raise tornado.web.HTTPError(404)
-
-    def get(self, entity_id):
-        # retrieve
-        try:
-            entity = Submissions.submission_store.retrieve(entity_id)
-            self.write(json.dumps(entity.dump()) + '\n')
-        except Submissions.InvalidKey:
-            raise tornado.web.HTTPError(404)
-
-
 class SubListHandler(DataHandler):
     def get(self, user_id):
-        if user_id not in User.store._store:
-            self.set_status(404)
-        elif user_id not in Submissions.submission_store._scores:
-            self.write("[]\n")
-        else:
-            subs = []
-            for task_id, l in Submissions.submission_store._scores[user_id].iteritems():
-                for i in l._subs.itervalues():
-                    s = {}
-                    s['task'] = task_id
-                    s['time'] = i.time
-                    s['score'] = i.get_current_score()
-                    s['token'] = i.get_current_token()
-                    s['extra'] = i.get_current_extra()
-                    subs.append(s)
-            subs.sort(key=lambda x: (x['task'], x['time']))
-            self.write(json.dumps(subs) + '\n')
+        result = list()
+        for task_id in Task.store._store.iterkeys():
+            result.extend(Scoring.store.get_submissions(user_id, task_id).values())
+        result.sort(key=lambda x: (x.task, x.time))
+        self.write(json.dumps(map(lambda a: a.__dict__, result)) + '\n')
 
 
 class HistoryHandler(DataHandler):
     def get(self):
-        self.write(json.dumps(list(Submissions.get_global_history())) + '\n')
+        self.write(json.dumps(list(Scoring.store.get_global_history())) + '\n')
 
 
 class ScoreHandler(DataHandler):
     def get(self):
-        for u_id, user in Submissions.submission_store._scores.iteritems():
-            for t_id, task in user.iteritems():
-                if task.get_score() > 0:
-                    self.write('%s %s %f\n' % (u_id, t_id, task.get_score()))
+        for u_id, d in Scoring.store._scores.iteritems():
+            for t_id, score in d.iteritems():
+                if score.get_score() > 0.0:
+                    self.write('%s %s %f\n' % (u_id, t_id, score.get_score()))
 
 
 class ImageHandler(tornado.web.RequestHandler):
@@ -363,8 +300,9 @@ def main():
             (r"/tasks/([A-Za-z0-9_]*)", create_handler(Task.store)),
             (r"/teams/([A-Za-z0-9_]*)", create_handler(Team.store)),
             (r"/users/([A-Za-z0-9_]*)", create_handler(User.store)),
-            (r"/subs/([A-Za-z0-9_]*)", SubmissionHandler),
-            (r"/submissions/([A-Za-z0-9_]+)", SubListHandler),
+            (r"/submissions/([A-Za-z0-9_]*)", create_handler(Submission.store)),
+            (r"/subchanges/([A-Za-z0-9_]*)", create_handler(Subchange.store)),
+            (r"/sublist/([A-Za-z0-9_]+)", SubListHandler),
             (r"/history", HistoryHandler),
             (r"/scores", ScoreHandler),
             (r"/events", NotificationHandler),
