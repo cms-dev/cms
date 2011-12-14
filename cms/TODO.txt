@@ -1,51 +1,37 @@
-*** BLOCKERS
-
-
-
-** Low priority
-
-* Always refer to tasks, testcases and such by id instead of num (as
-  it is for everything else).
-
-* In the submissions list (both *WS), provide some fast way to see the
-  result without open the fold. This should work with subtasks, but
-  first we need to understand what are subtasks for us.
-
-
-
-
-*** OTHERS
-
-
-
 ** Database
 
-* MED: (Probably) useful to store scores once they are computed by
+* MED: (probably) useful to store scores once they are computed by
   ScoringService. This may be useful also for displaying reason
   (i.e. show to user/admins the score of a submission).
 
-* LOW: Define appropriate UNIQUE indexes in the database.
+* LOW: use first_name/last_name instead of name.
 
-* LOW: It may be interesting to keep in the Contest not only the last
+* LOW: define appropriate UNIQUE indexes in the database.
+
+* LOW: it may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
   scorings change.
+
+* LOW: associate to a task also some "test_solutions" that can be
+  compiled/evaluated to ensure that the proposed solutions score
+  exactly as they are supposed to.
 
 
 
 ** Worker
 
-* LOW: Should be able to work with 32 bits programs even when running in
+* MED: check before and after the job that the job isn't already
+  done. This might happen if we lose contact with a worker and we
+  reassign the job. We trust both workers' result, but we want that
+  the outcomes are refreshed only when the admins say so.
+
+* LOW: should be able to work with 32 bits programs even when running in
   64 bits mode.
   - This actually appears to be quite complicated: it is probably
     easier and more secure to just ask that everything must be made
     with the same number of bits; at the moment it is assumed that
     everything works at 32 bits. I have a 64 bits system and keep
     the Worker inside a 32 bits chroot.
-
-* MED: Check before and after the job that the job isn't already
-  done. This might happen if we lose contact with a worker and we
-  reassign the job. We trust both workers' result, but we want that
-  the outcomes are refreshed only when the admins say so.
 
 
 
@@ -59,6 +45,10 @@
 
 ** ContestWebServer
 
+* HIGH: in the submissions list (both *WS), provide some fast way to
+  see the result without open the fold. This should work with
+  subtasks, but first we need to understand what are subtasks for us.
+
 * MED: concurrency: if there are more than 1 CWS, there is a (very
   slight) chance that feature such as - but not limited to - "partial
   submission filler" and "avoid frequent submissions" will not work as
@@ -66,12 +56,12 @@
 
 * MED: make cookies expire after some inactivity time.
 
-* LOW: Reload of submissions' status does not work as it best, please
+* LOW: reload of submissions' status does not work as it best, please
   fix.
 
 * LOW: ability to send not only zipped but also tarred submissions.
 
-* LOW: Some idea to improve the Web interface:
+* LOW: some idea to improve the Web interface:
   - Ability to backup files.
   - Ability to talk with Emacs psychologist, in case of a particularly
     difficult contest.
@@ -83,22 +73,15 @@
 
 ** AdminWebServer
 
-* HIGH: Fix the fact that if I write a long answer, then select a
-  short one, the long one disappears from the interface but is sent
-  anyway.
-
-* HIGH (and easy): show information about {compilation,evaluation}
-  shard and sandbox when available on the database.
-
 * MED: when reevaluating, ask if we want to wipe everything, or only
   the evaluation, or only the scoring (in the case we implement the
   persistent scores in the db).
 
-* LOW: when updating/adding contests, users, and so on, warn SS so
-  that it gives the new information to RWS.
-
 * MED: give possibility to see the output of an evaluation (storing
   them in the FS?).
+
+* LOW: when updating/adding contests, users, and so on, warn SS so
+  that it gives the new information to RWS.
 
 * LOW: auto updating submission statuses.
 
@@ -106,18 +89,16 @@
 
 ** YamlImporter
 
-* LOW: Provide facilities to translate the task's statement.
+* LOW: provide facilities to translate the task's statement.
 
-* LOW: Provide an environment to build tasks better than make_Makefile and
+* LOW: provide an environment to build tasks better than make_Makefile and
   friends.
-
-
 
 
 
 ** File{Storage,Cacher}
 
-* LOW: Add support to optionally check file digests when trasferring them, both
+* LOW: add support to optionally check file digests when trasferring them, both
   on client and on server side. Moreover, add an API call to ask the
   server to verify some file's digest.
 
@@ -125,8 +106,7 @@
 
 ** AsyncLibrary
 
-* MED: Decide on bind_obj=None behaviour and about keeping bind_obj.
-
+* MED: decide on bind_obj=None behaviour and about keeping bind_obj.
 
 
 
@@ -138,8 +118,11 @@
 
 ** Misc
 
+* HIGH: always refer to tasks, testcases and such by id instead of num
+  (as it is for everything else).
+
+* MED: ditch RelativeScores and assume that a score depends only on
+  the outcome of the submission.
+
 * LOW: ES and SS should periodically find automatically submission to
   analyze (i.e., not compiled/evaluated/scored).
-
-* MED: Ditch RelativeScores and assume that a score depends only on
-  the outcome of the submission.
