@@ -53,11 +53,10 @@ function update_additional_answer(element, invoker)
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
         <td>{{ Utils.format_time_or_date(s.timestamp) }}</td>
-        <td>{{ s.task.name }}</td>
+        <td><a href="/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
         <td>
           {% if s.compilation_outcome is None %}
           Compiling...
-
           {% else %}
           <div id="title_evaluation_{{ s.id }}" class="toggling_off">
             {% if s.compilation_outcome == "fail" %}
