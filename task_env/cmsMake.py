@@ -29,6 +29,8 @@ import functools
 
 SOL_DIRNAME = 'sol'
 SOL_EXTS = ['.cpp', '.c', '.pas']
+CHECK_DIRNAME = 'cor'
+CHECK_EXTS = SOL_EXTS
 TEXT_DIRNAME = 'testo'
 TEXT_XML = 'testo.xml'
 TEXT_TEX = 'testo.tex'
@@ -116,6 +118,23 @@ def build_sols_list(base_dir):
 
     return actions
 
+def build_checker_list(base_dir):
+    check_dir = os.path.join(base_dir, CHECK_DIRNAME)
+    actions = []
+
+    if os.path.exists(check_dir):
+        entries = map(lambda x: os.path.join(CHECK_DIRNAME, x), os.listdir(check_dir))
+        sources = filter(lambda x: endswith2(x, SOL_EXTS), entries)
+        for src in sources:
+            exe, lang = basename2(src, CHECK_EXTS)
+            # Delete the dot
+            lang = lang[1:]
+            def compile_check(src, exe):
+                call(base_dir, get_compilation_command(lang, [src], exe))
+            actions.append(([src], [exe], functools.partial(compile_check, src, exe), "compilation"))
+
+    return actions
+
 def build_text_list(base_dir):
     text_xml = os.path.join(TEXT_DIRNAME, TEXT_XML)
     text_tex = os.path.join(TEXT_DIRNAME, TEXT_TEX)
@@ -166,6 +185,7 @@ def build_action_list(base_dir):
     # action does.
     actions = []
     actions += build_sols_list(base_dir)
+    actions += build_checker_list(base_dir)
     actions += build_text_list(base_dir)
     return actions
 
