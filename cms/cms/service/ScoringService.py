@@ -32,6 +32,7 @@ import httplib
 import simplejson
 import base64
 import errno
+import string
 
 from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
 from cms.db.Utils import ask_for_contest
@@ -40,6 +41,9 @@ from cms.async.AsyncLibrary import Service, rpc_method, logger
 from cms.async import ServiceCoord
 from cms import Config
 
+
+class CannotSendError(Exception):
+    pass
 
 def get_authorization(username, password):
     """Compute the basic authentication string needed to send data to
@@ -54,6 +58,27 @@ def get_authorization(username, password):
     if ":" in username:
         raise ValueError
     return "Basic %s" % base64.b64encode(username + ':' + password)
+
+
+def encode_id(entity_id):
+    """Encode the id using only A-Za-z0-9_.
+
+    entity_id (string): the entity id to encode.
+    return (string): encoded entity id.
+
+    """
+    encoded_id = ""
+    for c in entity_id:
+        if c not in string.letters + "0123456789":
+            try:
+                encoded_id += "_" + hex(ord(c))[-2:]
+            except TypeError:
+                logging.error("Entity %s cannot be send correctly, "
+                              "sending anyway (this may cause errors)." %
+                              entity_id)
+        else:
+            encoded_id += c
+    return encoded_id
 
 
 def post_data(connection, url, data, auth, method="POST"):
@@ -95,6 +120,7 @@ def safe_post_data(connection, url, data, auth, operation):
     if status not in [200, 201]:
         logger.info("Status %s while %s to ranking." %
                     (status, operation))
+        raise CannotSendError
 
 
 def safe_put_data(connection, url, data, auth, operation):
@@ -109,6 +135,7 @@ def safe_put_data(connection, url, data, auth, operation):
     if status not in [200, 201]:
         logger.info("Status %s while %s to ranking." %
                     (status, operation))
+        raise CannotSendError
 
 
 class ScoringService(Service):
@@ -204,8 +231,7 @@ class ScoringService(Service):
             try:
                 method(*args)
             except Exception as err:
-                logger.info("Ranking %s not connected (errno %s)." %
-                            (args[0][0], err.errno))
+                logger.info("Ranking %s not connected." % args[0][0])
                 new_queue.append((method, args))
                 failed_rankings.add(args[0])
         self.operation_queue = new_queue
@@ -234,25 +260,25 @@ class ScoringService(Service):
                              self.contest_id)
                 raise KeyError
             contest_name = contest.name
-            contest_url = "/contests/%s" % contest_name
+            contest_url = "/contests/%s" % encode_id(contest_name)
             contest_data = {"name": contest.description,
                             "begin": contest.start,
                             "end": contest.stop}
 
-            users = [["/users/%s" % user.username,
+            users = [["/users/%s" % encode_id(user.username),
                       {"f_name": user.real_name.split()[0],
                        "l_name": " ".join(user.real_name.split()[1:]),
                        "team": None}]
                      for user in contest.users
                      if not user.hidden]
 
-            tasks = [["/tasks/%s" % task.name,
+            tasks = [["/tasks/%s" % encode_id(task.name),
                       {"name": task.title,
-                       "contest": contest.name,
+                       "contest": encode_id(contest.name),
                        "score": 100.0,
                        "extra_headers": [],
                        "order": task.num,
-                       "short_name": task.name}]
+                       "short_name": encode_id(task.name)}]
                      for task in contest.tasks]
 
         safe_put_data(connection, contest_url, contest_data, auth,
@@ -304,9 +330,9 @@ class ScoringService(Service):
             extra = []
 
             # Data to send to remote rankings
-            sub_url = "/subs/%s" % submission_id
-            sub_post_data = {"user": submission.user.username,
-                             "task": submission.task.name,
+            sub_url = "/subs/%s" % encode_id(submission_id)
+            sub_post_data = {"user": encode_id(submission.user.username),
+                             "task": encode_id(submission.task.name),
                              "time": submission.timestamp,
                              "score": score,
                              "token": False,
@@ -370,9 +396,9 @@ class ScoringService(Service):
             if submission.user.hidden:
                 return
 
-            sub_url = "/subs/%s" % submission_id
-            sub_post_data = {"user": submission.user.username,
-                             "task": submission.task.name,
+            sub_url = "/subs/%s" % encode_id(submission_id)
+            sub_post_data = {"user": encode_id(submission.user.username),
+                             "task": encode_id(submission.task.name),
                              "time": submission.timestamp,
                              "score": 0.0,
                              "token": False,

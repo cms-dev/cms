@@ -1,3 +1,4 @@
+
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
@@ -69,6 +70,7 @@ def authenticated(method):
 
         return method(self, *args, **kwargs)
     return wrapper
+
 
 class DataHandler(tornado.web.RequestHandler):
     def initialize(self):
