@@ -71,6 +71,14 @@
         <td>{{ s.compilation_tries }}</td>
       </tr>
       <tr>
+        <td>Compilation shard</td>
+        <td>{{ s.compilation_shard }}</td>
+      </tr>
+      <tr>
+        <td>Compilation sandbox</td>
+        <td>{{ s.compilation_sandbox }}</td>
+      </tr>
+      <tr>
         <td>Evaluation tentatives</td>
         <td>{{ s.evaluation_tries }}</td>
       </tr>
@@ -93,7 +101,9 @@
       <tr>
         <th style="width: 13%">Outcome</th>
         <th style="width: 2%"></th>
-        <th style="width: 85%">Details</th>
+        <th style="width: 55%">Details</th>
+        <th style="width: 10%">Shard</th>
+        <th style="width: 20%">Sandbox</th>
       </tr>
     </thead>
     <tbody>
@@ -106,6 +116,8 @@
         <td></td>
         {% end %}
         <td>{{ ev.text }}</td>
+        <td>{{ ev.evaluation_shard }}</td>
+        <td>{{ ev.evaluation_sandbox }}</td>
       </tr>
       {% end %}
     </tbody>
