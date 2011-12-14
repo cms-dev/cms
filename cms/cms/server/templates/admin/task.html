@@ -40,12 +40,11 @@ $("select[name=task_type]").change(showTaskTypeOption);
     <tbody>
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
-        <td>{{ Utils.format_time_or_date(s.timestamp) }}</td>
+        <td><a href="/submission/{{ s.id }}">{{ Utils.format_time_or_date(s.timestamp) }}</a></td>
         <td><a href="/user/{{ s.user.id }}">{{s.user.username}}</a></td>
         <td>
           {% if s.compilation_outcome is None %}
           Compiling...
-
           {% else %}
           <div id="title_evaluation_{{ s.id }}" class="toggling_off">
             {% if s.compilation_outcome == "fail" %}

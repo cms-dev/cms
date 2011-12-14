@@ -52,7 +52,7 @@ function update_additional_answer(element, invoker)
     <tbody>
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
-        <td>{{ Utils.format_time_or_date(s.timestamp) }}</td>
+        <td><a href="/submission/{{ s.id }}">{{ Utils.format_time_or_date(s.timestamp) }}</a></td>
         <td><a href="/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
         <td>
           {% if s.compilation_outcome is None %}
