@@ -7,7 +7,6 @@
    "LogService":        [["localhost", 29000]],
    "ResourceService":   [["localhost", 28000]],
    "ScoringService":    [["localhost", 28500]],
-   "FileStorage":       [["localhost", 27000]],
    "Checker":           [["localhost", 22000]],
    "EvaluationService": [["localhost", 25000]],
    "Worker":            [["localhost", 26000]],
