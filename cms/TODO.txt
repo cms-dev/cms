@@ -114,6 +114,9 @@
 
 * LOW: do not occupy a lot of memory.
 
+* LOW: provide RPC to stop/restart services to be accessed via
+  AWS and set autorestart on a perservice basis.
+
 
 
 ** Misc

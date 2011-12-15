@@ -25,12 +25,16 @@ that saves the resources usage in that machine. We require psutil >=
 
 """
 
+import os
 import time
+import subprocess
+import optparse
 
 import psutil
 
 from cms.async.AsyncLibrary import Service, rpc_method, logger
 from cms.async import ServiceCoord, Config
+from cms.db.Utils import ask_for_contest
 
 
 class ResourceService(Service):
@@ -40,17 +44,23 @@ class ResourceService(Service):
 
     """
 
-    def __init__(self, shard):
+    def __init__(self, shard, contest_id=None):
+        """If contest_id != None, we assume the user wants the
+        autorestart feature.
+
+        """
         logger.initialize(ServiceCoord("ResourceService", shard))
         logger.debug("ResourceService.__init__")
         Service.__init__(self, shard)
+
+        self.contest_id = contest_id
 
         # _local_store is a dictionary indexed by time in int(epoch)
         self._local_store = []
         # Floating point epoch using for precise measurement of percents
         self._last_saved_time = time.time()
         # Starting point for cpu times
-        self._prev_cpu_times = psutil.get_system_cpu_times()
+        self._prev_cpu_times = self._get_cpu_times()
         # Sorted list of ServiceCoord running in the same machine
         self._local_services = self._find_local_services()
         self._procs = dict((service, None)
@@ -60,6 +70,53 @@ class ResourceService(Service):
         self._store_resources(store=False)
 
         self.add_timeout(self._store_resources, None, 5)
+        if self.contest_id is not None:
+            self.add_timeout(self._restart_services, None, 5,
+                             immediately=True)
+
+    def _restart_services(self):
+        """Check if the services that are supposed to run on this
+        machine are actually running. If not, start them.
+
+        """
+        for service in self._local_services:
+            # We let the user start the logservice.
+            if service.name == "LogService":
+                continue
+
+            running = True
+            proc = self._procs[service]
+            # If we don't have a previously found process for the
+            # service, we find it
+            if proc is None:
+                proc = self._find_proc(service)
+            if proc is None:
+                running = False
+            else:
+                self._procs[service] = proc
+                # We have a process, but maybe it has been shut down
+                if not proc.is_running():
+                    # If so, let us find the new one
+                    proc = self._find_proc(service)
+                    # If there is no new one, continue
+                    if proc is None:
+                        running = False
+                    else:
+                        self._procs[service] = proc
+
+            if not running:
+                # We give contest_id even if the service doesn't need
+                # it, since it causes no trouble.
+                logger.info("Restarting (%s, %s)..." % (service.name,
+                                                        service.shard))
+                devnull = os.open(os.devnull, os.O_WRONLY)
+                subprocess.Popen(["cms%s" % service.name,
+                                  str(service.shard),
+                                  str(self.contest_id)],
+                                 stdout=devnull,
+                                 stderr=subprocess.STDOUT)
+        # Run forever.
+        return True
 
     def _find_local_services(self):
         """Returns the services that are running on the same machine
@@ -101,6 +158,21 @@ class ResourceService(Service):
                 continue
         return None
 
+    def _get_cpu_times(self):
+        """Wrapper of psutil.cpu_times to get the format we like.
+
+        return (dict): dictionary of cpu times information.
+
+        """
+        cpu_times = psutil.cpu_times()
+        return {"user": cpu_times.user,
+                "nice": cpu_times.nice,
+                "system": cpu_times.system,
+                "idle": cpu_times.idle,
+                "iowait": cpu_times.iowait,
+                "irq": cpu_times.irq,
+                "softirq": cpu_times.softirq}
+
     def _store_resources(self, store=True):
         """Looks at the resources usage and store the data locally.
 
@@ -119,7 +191,7 @@ class ResourceService(Service):
         data = {}
 
         # CPU
-        cpu_times = psutil.get_system_cpu_times()
+        cpu_times = self._get_cpu_times()
         data["cpu"] = dict((x, int(round((cpu_times[x] -
                                           self._prev_cpu_times[x])
                                    / delta * 100.0)))
@@ -156,9 +228,7 @@ class ResourceService(Service):
                 data["services"][str(service)] = {"running": False}
                 continue
             # We have a process, but maybe it has been shut down
-            try:
-                proc.getcwd()
-            except psutil.error.NoSuchProcess:
+            if not proc.is_running():
                 # If so, let us find the new one
                 proc = self._find_proc(service)
                 # If there is no new one, continue
@@ -233,11 +303,21 @@ class ResourceService(Service):
 
 
 def main():
-    import sys
-    if len(sys.argv) != 2:
-        print sys.argv[0], "shard"
+    usage = "usage: %prog shard [contest_id] [options]"
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option("-a", "--autorestart",
+                      help="restart automatically services on its machine",
+                      action="store_true", default=False, dest="autorestart")
+    options, args = parser.parse_args()
+    if len(args) == 2 and options.autorestart:
+        ResourceService(int(args[0]), contest_id=int(args[1])).run()
+    elif len(args) == 1 and options.autorestart:
+        ResourceService(int(args[0]),
+                        contest_id=ask_for_contest(None)).run()
+    elif len(args) == 1 and not options.autorestart:
+        ResourceService(int(args[0])).run()
     else:
-        ResourceService(int(sys.argv[1])).run()
+        parser.print_help()
 
 
 if __name__ == "__main__":
