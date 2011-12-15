@@ -276,6 +276,8 @@ class ResourceService(Service):
             data["services"][str(service)] = d
 
         if store:
+            if len(self._local_store) >= 5000: # almost 7 hours
+                self._local_store = self._local_store[1:]
             self._local_store.append((now, data))
 
         return True
