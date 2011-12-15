@@ -383,7 +383,7 @@ class AddAttachmentHandler(BaseHandler):
     def storage_callback(self, data, plus, error=None):
         if error is None:
             self.sql_session.add(Attachment(
-                data, 
+                data,
                 self.attachment["filename"],
                 self.task))
             self.sql_session.commit()
@@ -396,7 +396,7 @@ class AddAttachmentHandler(BaseHandler):
 
 class DeleteAttachmentHandler(BaseHandler):
     """Delete an attachment.
-    
+
     """
     def get(self, attachment_id):
         attachment = Attachment.get_from_id(attachment_id, self.sql_session)
@@ -440,7 +440,7 @@ class AddManagerHandler(BaseHandler):
     def storage_callback(self, data, plus, error=None):
         if error is None:
             self.sql_session.add(Manager(
-                data, 
+                data,
                 self.manager["filename"],
                 self.task))
             self.sql_session.commit()
@@ -453,7 +453,7 @@ class AddManagerHandler(BaseHandler):
 
 class DeleteManagerHandler(BaseHandler):
     """Delete a manager.
-    
+
     """
     def get(self, manager_id):
         manager = Manager.get_from_id(manager_id, self.sql_session)
@@ -513,7 +513,7 @@ class AddTestcaseHandler(BaseHandler):
             if len(self.successful_calls) >= 2:
                 self.sql_session.add(Testcase(
                     self.successful_calls["input"],
-                    self.successful_calls["output"], 
+                    self.successful_calls["output"],
                     len(self.task.testcases),
                     self.public,
                     self.task))
@@ -1231,7 +1231,7 @@ handlers = [
 
 def main():
     import sys
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print sys.argv[0], "shard"
     else:
         AdminWebServer(int(sys.argv[1])).run()

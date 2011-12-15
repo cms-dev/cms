@@ -177,7 +177,7 @@ class Worker(Service):
 
 def main():
     import sys
-    if len(sys.argv) != 2:
+    if len(sys.argv) < 2:
         print sys.argv[0], "shard"
     else:
         Worker(shard=int(sys.argv[1])).run()
