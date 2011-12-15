@@ -103,7 +103,8 @@ class Score:
            self._submissions[s_id].time > self._last.time):
             self._last = self._submissions[s_id]
 
-        score = max(self._released.query(), self._last.score)
+        score = max(self._released.query(),
+                    self._last.score if self._last is not None else 0.0)
 
         if score != self.get_score():
             self._history.append((change.time, score))
