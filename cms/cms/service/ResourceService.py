@@ -21,7 +21,7 @@
 
 """Service to be run once for each machine the system is running on,
 that saves the resources usage in that machine. We require psutil >=
-0.2.
+0.2.0.
 
 """
 
@@ -71,6 +71,7 @@ class ResourceService(Service):
 
         self.add_timeout(self._store_resources, None, 5)
         if self.contest_id is not None:
+            self._launched_processes = set([])
             self.add_timeout(self._restart_services, None, 5,
                              immediately=True)
 
@@ -79,6 +80,18 @@ class ResourceService(Service):
         machine are actually running. If not, start them.
 
         """
+        # To avoid zombies, we poll the process we launched. Anyway we
+        # use the information from psutil to see if the process we are
+        # interested in are alive (since if the user has already
+        # launched another instance, we don't want to duplicate
+        # services).
+        new_launched_processes = set([])
+        for process in self._launched_processes:
+            if process.poll() == None:
+                new_launched_processes.add(process)
+        self._launched_processes = new_launched_processes
+
+        # Look for dead processes, and restart them.
         for service in self._local_services:
             # We let the user start the logservice.
             if service.name == "LogService":
@@ -110,11 +123,13 @@ class ResourceService(Service):
                 logger.info("Restarting (%s, %s)..." % (service.name,
                                                         service.shard))
                 devnull = os.open(os.devnull, os.O_WRONLY)
-                subprocess.Popen(["cms%s" % service.name,
-                                  str(service.shard),
-                                  str(self.contest_id)],
-                                 stdout=devnull,
-                                 stderr=subprocess.STDOUT)
+                p = subprocess.Popen(["cms%s" % service.name,
+                                      str(service.shard),
+                                      str(self.contest_id)],
+                                     stdout=devnull,
+                                     stderr=subprocess.STDOUT)
+                self._launched_processes.add(p)
+
         # Run forever.
         return True
 
