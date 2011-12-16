@@ -32,7 +32,7 @@ import optparse
 
 import psutil
 
-from cms.async.AsyncLibrary import Service, rpc_method, logger
+from cms.async.AsyncLibrary import Service, rpc_method, logger, RemoteService
 from cms.async import ServiceCoord, Config
 from cms.db.Utils import ask_for_contest
 
@@ -291,8 +291,11 @@ class ResourceService(Service):
 
         """
         logger.debug("ResourceService._locate")
+        l = len(self._local_store)
+        if l == 0:
+            return start
         if end is None:
-            end = len(self._local_store) - 1
+            end = l - 1
         if self._local_store[start][0] >= time:
             return start
         elif self._local_store[end][0] < time:
@@ -317,6 +320,29 @@ class ResourceService(Service):
         logger.debug("ResourceService._get_resources")
         index = self._locate(last_time + 1)
         return self._local_store[index:]
+
+    @rpc_method
+    def kill_service(self, service):
+        """Restart the service. Note that after calling successfully
+        this method, get_resource could still report the service
+        running untile we call _store_resources again.
+
+        service (string): format: name,shard.
+
+        """
+        logger.info("Killing %s as asked." % service)
+        try:
+            idx = service.rindex(",")
+        except ValueError:
+            logger.error("Unable to decode service string.")
+        name = service[:idx]
+        try:
+            shard = int(service[idx + 1:])
+        except ValueError:
+            logger.error("Unable to decode service shard.")
+
+        rs = RemoteService(self, ServiceCoord(name, shard))
+        rs.quit(reason="Asked by ResourceService")
 
 
 def main():

@@ -190,6 +190,8 @@ class AdminWebServer(WebService):
         if service.name == "ResourceService":
             if method == "get_resources":
                 return True
+            elif method == "kill_service":
+                return True
 
         # Default fallback: don't authorize.
         return False

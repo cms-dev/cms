@@ -114,8 +114,7 @@
 
 ** ResourceService
 
-* LOW: provide RPC to stop/restart services to be accessed via
-  AWS and set autorestart on a perservice basis.
+* LOW: provide RPC to set autorestart on a perservice basis.
 
 
 

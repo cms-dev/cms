@@ -349,6 +349,18 @@ class Service:
         logger.debug("Service.echo")
         return string
 
+    @rpc_method
+    def quit(self, reason=""):
+        """Shut down the service
+
+        reason (string): why, oh why, you want me down?
+
+        """
+        logger.info("Trying to exit as asked by another service (%s)." %
+                    reason)
+        self.exit()
+
+
     def method_info(self, method_name):
         """Returns some information about the requested method, or
         exceptions if the method does not exists.
@@ -524,7 +536,7 @@ class RemoteService(asynchat.async_chat):
         # logger.debug("RemoteService.found_terminator")
         data = "".join(self.data)
         self.data = []
-        
+
         # We decode the arriving data
         try:
             json_length = decode_length(data[:4])

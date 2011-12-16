@@ -146,6 +146,9 @@ var getters = [];
                 {
                     strings.push('</td><td>');
                     strings.push(utils.repr_time_ago_2((new Date()).getTime()/1000 - response['data'][l-1][1]['services'][s]['since']));
+                    if (s.lastIndexOf("LogService,", 0) !== 0 &&
+                        s.lastIndexOf("ResourceService,", 0) !== 0)
+                      strings.push(" <a onclick='window.getters[" + this.shard + "].kill_service(\"" + s + "\", this);'>[Kill]</a>");
                     strings.push('</td><td style="text-align: center;">');
                     strings.push(response['data'][l-1][1]['services'][s]['threads']);
                     strings.push('</td><td style="text-align: center;">');
@@ -169,6 +172,14 @@ var getters = [];
                            "get_resources",
                            {"last_time": this.last_time},
                            f);
+        },
+
+        kill_service: function(s, link)
+        {
+            link.parentNode.innerHTML = '<img src="/static/loading.gif" />';
+            cmsrpc.request("ResourceService", this.shard,
+                           "kill_service",
+                           {"service": s});
         }
     }
 })();
@@ -239,17 +250,18 @@ for (var i = 0; i < {{ resource_shards }}; i++)
     <thead>
       <tr>
         <th style="width: 19%">Service</th>
-        <th style="width: 13%">Uptime</th>
+        <th style="width: 13%">Uptime (s)</th>
         <th style="width: 10%">Threads</th>
-        <th style="width: 16%">Resident (MB)</th>
-        <th style="width: 16%">Virtual (MB)</th>
-        <th style="width: 13%">User (%)</th>
-        <th style="width: 13%">System (%)</th>
+        <th style="width: 13%">Resident (MB)</th>
+        <th style="width: 13%">Virtual (MB)</th>
+        <th style="width: 10%">User (%)</th>
+        <th style="width: 10%">System (%)</th>
+        <th style="width: 12%">Autorestart</th>
       </tr>
     </thead>
     <tbody>
       <tr><td style="text-align: center;" colspan="100"><img src="/static/loading.gif" /></td></tr>
-  </tbody>
+    </tbody>
   </table>
 
   <table>
