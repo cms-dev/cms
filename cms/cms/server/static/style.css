@@ -28,6 +28,7 @@ h3 {
     font-weight: bold;
     margin-left: 1em;
 }
+
 p {
     padding: 0.75em 0;
 }
@@ -41,6 +42,10 @@ pre {
     padding-left: 0.25em;
     font-family: monospace;
     min-height: 1.5em;
+}
+
+a {
+    cursor: pointer;
 }
 
 .login_error {
