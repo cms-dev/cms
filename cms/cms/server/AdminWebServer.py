@@ -192,6 +192,8 @@ class AdminWebServer(WebService):
                 return True
             elif method == "kill_service":
                 return True
+            elif method == "toggle_autorestart":
+                return True
 
         # Default fallback: don't authorize.
         return False

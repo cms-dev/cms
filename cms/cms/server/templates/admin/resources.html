@@ -141,7 +141,7 @@ var getters = [];
                 strings.push('<tr><td>');
                 strings.push(s);
                 if (response['data'][l-1][1]['services'][s]['running'] == false)
-                    strings.push('</td><td colspan="100">Not running');
+                    strings.push('</td><td colspan="6">Not running');
                 else
                 {
                     strings.push('</td><td>');
@@ -160,6 +160,16 @@ var getters = [];
                     strings.push('</td><td style="text-align: center;">');
                     strings.push(response['data'][l-1][1]['services'][s]['sys']);
                 }
+                strings.push('</td><td style="text-align: center;">');
+                if (s.lastIndexOf("LogService,", 0) === 0 ||
+                    s.lastIndexOf("ResourceService,", 0) === 0)
+                  strings.push('N/A');
+                else if (response['data'][l-1][1]['services'][s]['autorestart'] == true)
+                  strings.push(" <input type='checkbox' checked onchange='window.getters[" + this.shard + "].toggle_autorestart(\"" + s + "\", this);' />");
+                else if (response['data'][l-1][1]['services'][s]['autorestart'] == false)
+                  strings.push(" <input type='checkbox' onchange='window.getters[" + this.shard + "].toggle_autorestart(\"" + s + "\", this);' />");
+                else
+                  strings.push('N/A');
                 strings.push('</td></tr>');
             }
             table.html(strings.join(""));
@@ -179,6 +189,13 @@ var getters = [];
             link.parentNode.innerHTML = '<img src="/static/loading.gif" />';
             cmsrpc.request("ResourceService", this.shard,
                            "kill_service",
+                           {"service": s});
+        },
+
+        toggle_autorestart: function(s, checkbox)
+        {
+            cmsrpc.request("ResourceService", this.shard,
+                           "toggle_autorestart",
                            {"service": s});
         }
     }

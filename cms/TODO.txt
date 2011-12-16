@@ -93,16 +93,16 @@
 
 * LOW: provide facilities to translate the task's statement.
 
-* LOW: provide an environment to build tasks better than make_Makefile and
-  friends.
+* LOW: provide an environment to build tasks better than make_Makefile
+  and friends.
 
 
 
 ** File{Storage,Cacher}
 
-* LOW: add support to optionally check file digests when trasferring them, both
-  on client and on server side. Moreover, add an API call to ask the
-  server to verify some file's digest.
+* LOW: add support to optionally check file digests when trasferring
+  them, both on client and on server side. Moreover, add an API call
+  to ask the server to verify some file's digest.
 
 
 
@@ -110,11 +110,6 @@
 
 * MED: decide on bind_obj=None behaviour and about keeping bind_obj.
 
-
-
-** ResourceService
-
-* LOW: provide RPC to set autorestart on a perservice basis.
 
 
 

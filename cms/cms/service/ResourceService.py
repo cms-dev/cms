@@ -63,10 +63,17 @@ class ResourceService(Service):
         self._prev_cpu_times = self._get_cpu_times()
         # Sorted list of ServiceCoord running in the same machine
         self._local_services = self._find_local_services()
+        # Dict service with bool to mark if we will restart them.
+        self._will_restart = dict((service,
+                                   None if self.contest_id is None else True)
+                                  for service in self._local_services)
+        # Found process associate to the ServiceCoord.
         self._procs = dict((service, None)
             for service in self._local_services)
+        # Previous cpu time for each service.
         self._services_prev_cpu_times = dict((service, (0.0, 0.0))
             for service in self._local_services)
+        # Start finding processes and their cputimes.
         self._store_resources(store=False)
 
         self.add_timeout(self._store_resources, None, 5)
@@ -93,8 +100,14 @@ class ResourceService(Service):
 
         # Look for dead processes, and restart them.
         for service in self._local_services:
-            # We let the user start the logservice.
-            if service.name == "LogService":
+            # We let the user start logservice and resourceservice.
+            if service.name == "LogService" or \
+                   service.name == "ResourceService":
+                continue
+
+            # If the user specified not to restart some service, we
+            # ignore it.
+            if self._will_restart[service] != True:
                 continue
 
             running = True
@@ -232,7 +245,8 @@ class ResourceService(Service):
         data["services"] = {}
         # Details of our services
         for service in self._local_services:
-            d = {}
+            d = {"autorestart": self._will_restart[service],
+                 "running": True}
             proc = self._procs[service]
             # If we don't have a previously found process for the
             # service, we find it
@@ -240,19 +254,20 @@ class ResourceService(Service):
                 proc = self._find_proc(service)
             # If we still do not find it, there is no process
             if proc is None:
-                data["services"][str(service)] = {"running": False}
-                continue
+                d["running"] = False
             # We have a process, but maybe it has been shut down
-            if not proc.is_running():
+            elif not proc.is_running():
                 # If so, let us find the new one
                 proc = self._find_proc(service)
                 # If there is no new one, continue
                 if proc is None:
-                    data["services"][str(service)] = {"running": False}
-                    continue
+                    d["running"] = False
+            # If the process is not running, we have nothing to do.
+            if not d["running"]:
+                data["services"][str(service)] = d
+                continue
 
             try:
-                d["running"] = True
                 d["since"] = self._last_saved_time - \
                                          proc.create_time
                 d["resident"], d["virtual"] = \
@@ -272,7 +287,9 @@ class ResourceService(Service):
 
                 self._procs[service] = proc
             except psutil.error.NoSuchProcess:
-                d = {"running": False}
+                # Shut down while we operated?
+                d = {"autorestart": self._will_restart[service],
+                     "running": False}
             data["services"][str(service)] = d
 
         if store:
@@ -343,6 +360,38 @@ class ResourceService(Service):
 
         rs = RemoteService(self, ServiceCoord(name, shard))
         rs.quit(reason="Asked by ResourceService")
+
+    @rpc_method
+    def toggle_autorestart(self, service):
+        """If the service is scheduled for autorestart, disable it,
+        otherwise enable it.
+
+        service (string): format: name,shard.
+
+        return (bool/None): current status of will_restart.
+
+        """
+        # If the contest_id is not set, we cannot autorestart.
+        if self.contest_id is None:
+            return None
+
+        # Decode name,shard
+        try:
+            idx = service.rindex(",")
+        except ValueError:
+            logger.error("Unable to decode service string.")
+        name = service[:idx]
+        try:
+            shard = int(service[idx + 1:])
+        except ValueError:
+            logger.error("Unable to decode service shard.")
+        service = ServiceCoord(name, shard)
+
+        self._will_restart[service] = not self._will_restart[service]
+        logger.info("Will restart %s,%s is now %s." %
+                    (service.name, service.shard, self._will_restart[service]))
+
+        return self._will_restart[service]
 
 
 def main():
