@@ -50,7 +50,8 @@
             if(error != null)
             {
                 this.__delete_request(rid);
-                cb({'status': 'fail'}, 'fail');
+                if (cb != undefined)
+                    cb({'status': 'fail'}, 'fail');
             }
             else
             {
@@ -61,16 +62,20 @@
                     {
                         this.__delete_request(rid);
                     }
-                    if (response['status'] == 'ok')
-                        cb(response, null);
-                    else if (response['status'] != 'wait')
-                        cb(response, response['status']);
+                    if (cb != undefined)
+                    {
+                        if (response['status'] == 'ok')
+                            cb(response, null);
+                        else if (response['status'] != 'wait')
+                            cb(response, response['status']);
+                    }
                 }
                 catch(e)
                 {
                     console.log(e);
                     this.__delete_request(rid);
-                    cb(null, response);
+                    if (cb != undefined)
+                        cb(null, response);
                 }
             }
         },
