@@ -319,32 +319,22 @@ def white_diff(output, res):
                 return False
 
 
-# TODO: this needs some love.
-class FileExplorer:
-    def __init__(self, directory = "./fs"):
-        self.directory = directory
+def valid_ip(ip):
+    """Return True if ip is a valid IPv4 address.
 
-    def list_files(self):
-        import glob
-        self.files = {}
-        for f in glob.glob(os.path.join(self.directory, "descriptions", "*")):
-            self.files[os.path.basename(f)] = open(f).read().strip()
-        self.sorted_files = self.files.keys()
-        self.sorted_files.sort(lambda x, y: cmp(self.files[x], self.files[y]))
-        for i, f in enumerate(self.sorted_files):
-            print "%3d - %s" % (i+1, self.files[f])
+    ip (string): the ip to validate.
 
-    def get_file(self, i):
-        f = os.path.join(self.directory, "objects", self.sorted_files[i])
-        os.system("less %s" % f)
+    return (bool): True iff valid.
 
-    def run(self):
-        while True:
-            self.list_files()
-            print "Display file number: ",
-            self.get_file(int(raw_input())-1)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) == 2 and sys.argv[1] == "fs_explorer":
-        FileExplorer().run()
+    """
+    fields = ip.split(".")
+    if len(fields) != 4:
+        return
+    for field in fields:
+        try:
+            num = int(field)
+        except Exception as error:
+            return False
+        if num < 0 or num >= 256:
+            return False
+    return True

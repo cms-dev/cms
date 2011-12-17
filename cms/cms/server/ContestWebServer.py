@@ -82,8 +82,6 @@ class BaseHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
         self.sql_session = Session()
-# This was used with ScopedSession.
-#        self.sql_session.expire_all()
         self.contest = Contest.get_from_id(self.application.service.contest,
                                            self.sql_session)
 
@@ -689,7 +687,7 @@ class SubmitHandler(BaseHandler):
             self._("Your submission has been received "
                    "and is currently being evaluated."))
         self.redirect("/tasks/%s" % encrypt_number(self.task.id))
-           
+
 
 class UseTokenHandler(BaseHandler):
     """Called when the user try to use a token on a submission.

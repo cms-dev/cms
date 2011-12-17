@@ -30,7 +30,7 @@ import simplejson
 import tornado.web
 import tornado.locale
 
-from cms.async.AsyncLibrary import logger, rpc_callback
+from cms.async.AsyncLibrary import logger
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord, get_service_shards, get_service_address
 
@@ -39,6 +39,7 @@ from cms.db.SQLAlchemyAll import Session, \
      Attachment, Manager, Testcase, SubmissionFormatElement
 
 import cms.util.WebConfig as WebConfig
+from cms.util.Utils import valid_ip
 from cms.server.Utils import file_handler_gen
 from cms.service.FileStorage import FileCacher
 from cms import Config
@@ -52,13 +53,13 @@ class BaseHandler(tornado.web.RequestHandler):
 
     """
 
-    def safe_get_item(self, cls, id, session=None):
-        """Get item from database of class cls and id id, using
+    def safe_get_item(self, cls, ident, session=None):
+        """Get item from database of class cls and id ident, using
         session if given, or self.sql_session if not given. If id is
         not found, raise a 404.
 
         cls (class): class of object to retrieve.
-        id (string): id of object.
+        ident (string): id of object.
         session (session/None): session to use.
 
         return (object/404): the object with the given id, or 404.
@@ -66,7 +67,7 @@ class BaseHandler(tornado.web.RequestHandler):
         """
         if session is None:
             session = self.sql_session
-        entity = cls.get_from_id(id, session)
+        entity = cls.get_from_id(ident, session)
         if entity is None:
             raise tornado.web.HTTPError(404)
         return entity
@@ -185,24 +186,17 @@ class AdminWebServer(WebService):
 
         """
         if service == ServiceCoord("EvaluationService", 0):
-            if method == "submissions_status":
-                return True
-            elif method == "queue_status":
-                return True
-            elif method == "workers_status":
-                return True
+            return method in ["submissions_status",
+                              "queue_status",
+                              "workers_status"]
 
-        if service == ServiceCoord("LogService", 0):
-            if method == "last_messages":
-                return True
+        elif service == ServiceCoord("LogService", 0):
+            return method in ["last_messages"]
 
-        if service.name == "ResourceService":
-            if method == "get_resources":
-                return True
-            elif method == "kill_service":
-                return True
-            elif method == "toggle_autorestart":
-                return True
+        elif service.name == "ResourceService":
+            return method in ["get_resources",
+                              "kill_service",
+                              "toggle_autorestart"]
 
         # Default fallback: don't authorize.
         return False
@@ -292,8 +286,8 @@ class AddContestHandler(BaseHandler):
             token_gen_number = self.get_non_negative_int(
                 "token_gen_number",
                 None)
-        except Exception as e:
-            self.write("Invalid token field(s). %r" % e)
+        except Exception as error:
+            self.write("Invalid token field(s). %r" % error)
             return
 
         try:
@@ -301,21 +295,21 @@ class AddContestHandler(BaseHandler):
                                               "%d/%m/%Y %H:%M:%S"))
             stop = time.mktime(time.strptime(self.get_argument("end", ""),
                                              "%d/%m/%Y %H:%M:%S"))
-        except Exception as e:
-            self.write("Invalid date(s). %r" % e)
+        except Exception as error:
+            self.write("Invalid date(s). %r" % error)
             return
 
         if start > stop:
             self.write("Contest ends before it starts")
             return
 
-        c = Contest(name, description, [], [], token_initial,
-            token_max, token_total, token_min_interval,
-            token_gen_time, token_gen_number, start, stop)
+        contest = Contest(name, description, [], [], token_initial,
+                          token_max, token_total, token_min_interval,
+                          token_gen_time, token_gen_number, start, stop)
 
-        self.sql_session.add(c)
+        self.sql_session.add(contest)
         self.sql_session.commit()
-        self.write(str(c.id))
+        self.write(str(contest.id))
 
 
 class AddStatementHandler(BaseHandler):
@@ -456,6 +450,7 @@ class DeleteManagerHandler(BaseHandler):
         self.sql_session.commit()
         self.redirect("/task/%s" % task.id)
 
+
 class AddTestcaseHandler(BaseHandler):
     """Add a testcase to a task.
 
@@ -511,6 +506,7 @@ class DeleteTestcaseHandler(BaseHandler):
         self.sql_session.commit()
         self.redirect("/task/%s" % task.id)
 
+
 class TaskViewHandler(BaseHandler):
     """Task handler, with a POST method to edit the task.
 
@@ -537,7 +533,7 @@ class TaskViewHandler(BaseHandler):
             time_limit = float(time_limit)
             if time_limit < 0 or time_limit >= float("+inf"):
                 raise TypeError("Time limit out of range.")
-        except TypeError as e:
+        except TypeError as error:
             self.write("Invalid time limit.")
             self.finish()
             return
@@ -569,8 +565,8 @@ class TaskViewHandler(BaseHandler):
             task.token_gen_number = self.get_non_negative_int(
                 "token_gen_number",
                 task.token_gen_number)
-        except ValueError as e:
-            self.write("Invalid fields. %r" % e)
+        except ValueError as error:
+            self.write("Invalid fields. %r" % error)
             self.finish()
             return
 
@@ -582,7 +578,7 @@ class TaskViewHandler(BaseHandler):
         task.task_type = self.get_argument("task_type", "")
 
         if task.task_type == "TaskTypeBatch":
-            batch_evaluation = self.get_argument("Batch_evaluation","")
+            batch_evaluation = self.get_argument("Batch_evaluation", "")
             if batch_evaluation not in ["diff", "comp", "grad"]:
                 self.application.service.add_notification(int(time.time()),
                 "Invalid field",
@@ -598,7 +594,7 @@ class TaskViewHandler(BaseHandler):
             task_type_parameters = [batch_evaluation, batch_use_files]
 
         elif task.task_type == "TaskTypeOutputOnly":
-            oo_evaluation = self.get_argument("OutputOnly_evaluation","")
+            oo_evaluation = self.get_argument("OutputOnly_evaluation", "")
             if oo_evaluation not in ["diff", "comp"]:
                 self.application.service.add_notification(int(time.time()),
                 "Invalid field",
@@ -619,9 +615,9 @@ class TaskViewHandler(BaseHandler):
 
         task.score_type = self.get_argument("score_type", "")
 
-        task.score_parameters = self.get_argument("score_parameters","")
+        task.score_parameters = self.get_argument("score_parameters", "")
 
-        submission_format = self.get_argument("submission_format","")
+        submission_format = self.get_argument("submission_format", "")
         if submission_format not in ["", "[]"] \
             and submission_format != simplejson.dumps(
                 [x.filename for x in task.submission_format]
@@ -632,10 +628,11 @@ class TaskViewHandler(BaseHandler):
                     self.sql_session.delete(element)
                 del task.submission_format[:]
                 for element in format_list:
-                    self.sql_session.add(SubmissionFormatElement(str(element), task))
-            except Exception as e:
+                    self.sql_session.add(SubmissionFormatElement(str(element),
+                                                                 task))
+            except Exception as error:
                 self.sql_session.rollback()
-                logger.info(e)
+                logger.info(repr(error))
                 self.application.service.add_notification(int(time.time()),
                 "Invalid field",
                 "Submission format not recognized.")
@@ -664,14 +661,14 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
     def post(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
-        name = self.get_argument("name","")
+        name = self.get_argument("name", "")
         title = self.get_argument("title", "")
         time_limit = self.get_argument("time_limit", "")
-        memory_limit = self.get_argument("memory_limit","")
+        memory_limit = self.get_argument("memory_limit", "")
         task_type = self.get_argument("task_type", "")
 
         if task_type == "TaskTypeBatch":
-            batch_evaluation = self.get_argument("Batch_evaluation","")
+            batch_evaluation = self.get_argument("Batch_evaluation", "")
             if batch_evaluation not in ["diff", "comp", "grad"]:
                 self.application.service.add_notification(int(time.time()),
                 "Invalid field",
@@ -687,7 +684,7 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
             task_type_parameters = [batch_evaluation, batch_use_files]
 
         elif task_type == "TaskTypeOutputOnly":
-            oo_evaluation = self.get_argument("OutputOnly_evaluation","")
+            oo_evaluation = self.get_argument("OutputOnly_evaluation", "")
             if oo_evaluation not in ["diff", "comp"]:
                 self.application.service.add_notification(int(time.time()),
                 "Invalid field",
@@ -711,16 +708,18 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         if submission_format_choice == "simple":
             submission_format = [SubmissionFormatElement("%s.%%l" % name)]
         elif submission_format_choice == "other":
-            submission_format = self.get_argument("submission_format_other", "")
+            submission_format = self.get_argument("submission_format_other",
+                                                  "")
             if submission_format not in ["", "[]"]:
                 try:
                     format_list = simplejson.loads(submission_format)
                     submission_format = []
                     for element in format_list:
-                        submission_format.append(SubmissionFormatElement(str(element)))
-                except Exception as e:
+                        submission_format.append(SubmissionFormatElement(
+                            str(element)))
+                except Exception as error:
                     self.sql_session.rollback()
-                    logger.info(e)
+                    logger.info(repr(error))
                     self.application.service.add_notification(int(time.time()),
                     "Invalid field",
                     "Submission format not recognized.")
@@ -734,7 +733,7 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
             return
 
         score_type = self.get_argument("score_type", "")
-        score_parameters = self.get_argument("score_parameters","")
+        score_parameters = self.get_argument("score_parameters", "")
 
         attachments = {}
         statement = ""
@@ -809,9 +808,9 @@ class EditContestHandler(BaseHandler):
             token_gen_number = self.get_non_negative_int(
                 "token_gen_number",
                 self.contest.token_gen_number)
-        except Exception as e:
+        except Exception as error:
             self.application.service.add_notification(int(time.time()),
-                "Invalid token field(s).", repr(e))
+                "Invalid token field(s).", repr(error))
             self.redirect("/contest/%s" % contest_id)
             return
 
@@ -820,9 +819,9 @@ class EditContestHandler(BaseHandler):
                                               "%d/%m/%Y %H:%M:%S"))
             stop = time.mktime(time.strptime(self.get_argument("end", ""),
                                              "%d/%m/%Y %H:%M:%S"))
-        except Exception as e:
+        except Exception as error:
             self.application.service.add_notification(int(time.time()),
-                "Invalid date(s).", repr(e))
+                "Invalid date(s).", repr(error))
             self.redirect("/contest/%s" % contest_id)
             return
 
@@ -906,8 +905,12 @@ class UserViewHandler(BaseHandler):
 
         user.password = self.get_argument("password", user.password)
 
-        # FIXME: Check IP validity
         user.ip = self.get_argument("ip", user.ip)
+        if not valid_ip(user.ip):
+            self.application.service.add_notification(
+                int(time.time()), "Invalid ip", "")
+            self.redirect("/user/%s" % user_id)
+            return
 
         user.hidden = self.get_argument("hidden", False) != False
 
@@ -918,7 +921,7 @@ class UserViewHandler(BaseHandler):
 
 
 class AddUserHandler(SimpleContestHandler("add_user.html")):
-    def post(self,contest_id):
+    def post(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
         real_name = self.get_argument("real_name", "")
@@ -935,8 +938,12 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
 
         password = self.get_argument("password", "")
 
-        # FIXME: Check IP validity
         ip = self.get_argument("ip", "0.0.0.0")
+        if not valid_ip(ip):
+            self.application.service.add_notification(
+                int(time.time()), "Invalid ip", "")
+            self.redirect("/add_user/%s" % contest_id)
+            return
 
         hidden = self.get_argument("hidden", False) != False
 
@@ -980,7 +987,7 @@ class SubmissionFileHandler(FileHandler):
             real_filename = real_filename.replace("%l", submission.language)
         digest = sub_file.digest
         self.sql_session.close()
-        self.fetch(sub_file.digest, "text/plain", real_filename)
+        self.fetch(digest, "text/plain", real_filename)
 
 
 class QuestionsHandler(BaseHandler):
