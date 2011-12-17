@@ -109,6 +109,10 @@ def file_handler_gen(BaseClass):
             """Sends the RPC to the FS.
 
             """
+            if digest == "":
+                logger.error("No digest given")
+                self.finish()
+                return
             try:
                 self.temp_filename = self.application.service.FC.get_file(
                     digest, temp_path=True)

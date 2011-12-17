@@ -4,7 +4,7 @@
 
 function showTaskTypeOption() {
     var selector = $("select[name=task_type]")[0];
-    $(".TaskTypeOptions:visible").hide("fast"); 
+    $(".TaskTypeOptions:visible").hide("fast");
     $("#" + selector.options[selector.selectedIndex].value + "Options").show("fast")
 };
 
@@ -135,7 +135,12 @@ $("select[name=task_type]").change(showTaskTypeOption);
       <tr>
         <td>Statement</td>
         <td>
-          <a href="/task/{{ task.id }}/statement">Current statement</a> - 
+          {% if task.statement == "" %}
+          No statement uploaded yet
+          {% else %}
+          <a href="/task/{{ task.id }}/statement">Current statement</a>
+          {% end %}
+          -
           <a href="/add_statement/{{ task.id }}">Upload a new statement</a><br/>
         </td>
       </tr>

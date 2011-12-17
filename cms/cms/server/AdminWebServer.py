@@ -52,15 +52,24 @@ class BaseHandler(tornado.web.RequestHandler):
 
     """
 
-    def retrieve_contest(self, contest_id):
-        """Retrieve the contest with the specified id.
+    def safe_get_item(self, cls, id, session=None):
+        """Get item from database of class cls and id id, using
+        session if given, or self.sql_session if not given. If id is
+        not found, raise a 404.
 
-        Raise tornado.web.HTTPError(404) if the contest doesn't exist.
+        cls (class): class of object to retrieve.
+        id (string): id of object.
+        session (session/None): session to use.
+
+        return (object/404): the object with the given id, or 404.
 
         """
-        self.contest = Contest.get_from_id(contest_id, self.sql_session)
-        if self.contest is None:
+        if session is None:
+            session = self.sql_session
+        entity = cls.get_from_id(id, session)
+        if entity is None:
             raise tornado.web.HTTPError(404)
+        return entity
 
     def prepare(self):
         """This method is executed at the beginning of each request.
@@ -91,11 +100,10 @@ class BaseHandler(tornado.web.RequestHandler):
             params["phase"] = self.contest.phase(params["timestamp"])
             # Keep "== None" in filter arguments
             params["unanswered"] = self.sql_session.query(Question)\
-                                    .join(User)\
-                                    .filter(User.contest_id ==
-                                            self.contest.id)\
-                                    .filter(Question.reply_timestamp == None)\
-                                    .count()
+                .join(User)\
+                .filter(User.contest_id == self.contest.id)\
+                .filter(Question.reply_timestamp == None)\
+                .count()
         params["contest_list"] = self.sql_session.query(Contest).all()
         params["cookie"] = str(self.cookies)
         return params
@@ -116,8 +124,8 @@ class BaseHandler(tornado.web.RequestHandler):
         Use default if the argument is missing; If allow_empty=False,
         Empty values such as "" and None are not permitted.
 
-        Raise ValueError if the argument can't be converted into a non-negative
-        integer.
+        Raise ValueError if the argument can't be converted into a
+        non-negative integer.
 
         """
         argument = self.get_argument(argument_name, repr(default))
@@ -132,6 +140,7 @@ class BaseHandler(tornado.web.RequestHandler):
         if argument < 0:
             raise ValueError("%s is negative." % argument_name)
         return argument
+
 
 FileHandler = file_handler_gen(BaseHandler)
 
@@ -217,7 +226,7 @@ class MainHandler(BaseHandler):
 
     def get(self, contest_id=None):
         if contest_id is not None:
-            self.retrieve_contest(contest_id)
+            self.contest = self.safe_get_item(Contest, contest_id)
 
         r_params = self.render_params()
         self.render("welcome.html", **r_params)
@@ -226,7 +235,7 @@ class MainHandler(BaseHandler):
 def SimpleContestHandler(page):
     class Cls(BaseHandler):
         def get(self, contest_id):
-            self.retrieve_contest(contest_id)
+            self.contest = self.safe_get_item(Contest, contest_id)
             r_params = self.render_params()
             self.render(page, **r_params)
     return Cls
@@ -235,7 +244,7 @@ def SimpleContestHandler(page):
 class ResourcesHandler(BaseHandler):
     def get(self, contest_id=None):
         if contest_id is not None:
-            self.retrieve_contest(contest_id)
+            self.contest = self.safe_get_item(Contest, contest_id)
 
         r_params = self.render_params()
         r_params["resource_shards"] = get_service_shards("ResourceService")
@@ -256,7 +265,6 @@ class AddContestHandler(BaseHandler):
         self.render("add_contest.html", **r_params)
 
     def post(self):
-
         name = self.get_argument("name", "")
         if name == "":
             self.write("No contest name specified")
@@ -309,164 +317,143 @@ class AddContestHandler(BaseHandler):
         self.sql_session.commit()
         self.write(str(c.id))
 
+
 class AddStatementHandler(BaseHandler):
     """Add a statement to a task.
 
     """
     def get(self, task_id):
-        task = Task.get_from_id(task_id, self.sql_session)
-        if task is None:
-            raise tornado.web.HTTPError(404)
+        task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
         r_params = self.render_params()
         r_params["task"] = task
         self.render("add_statement.html", **r_params)
 
-    @tornado.web.asynchronous
     def post(self, task_id):
-        self.task = Task.get_from_id(task_id, self.sql_session)
-        if self.task is None:
-            raise tornado.web.HTTPError(404)
-        self.contest = self.task.contest
-        self.statement = self.request.files["statement"][0]
-        if not self.statement["filename"].endswith(".pdf"):
-            self.application.service.add_notification(time.time(),
+        task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
+        statement = self.request.files["statement"][0]
+        if not statement["filename"].endswith(".pdf"):
+            self.application.service.add_notification(int(time.time()),
                 "Invalid task statement",
                 "The task statement must be a .pdf file.")
-            self.redirect("/add_statement/%s" % self.task.id)
+            self.redirect("/add_statement/%s" % task_id)
             return
-        if self.application.service.FS.put_file(
-            callback=AddStatementHandler.storage_callback,
-            plus=self.statement["filename"],
-            binary_data=self.statement["body"],
-            description="Task statement for %s" % self.task.name,
-            bind_obj=self) == False:
-            self.storage_callback(None, None, error="Connection failed.")
+        task_name = task.name
+        self.sql_session.close()
 
-    @rpc_callback
-    def storage_callback(self, data, plus, error=None):
-        if error is None:
-            self.task.statement = data
-            self.sql_session.commit()
-            self.redirect("/task/%s" % self.task.id)
-        else:
-            self.application.service.add_notification(time.time(),
+        try:
+            digest = self.application.service.FC.put_file(
+                binary_data=statement["body"],
+                description="Task statement for %s" % task_name)
+        except Exception as error:
+            self.application.service.add_notification(int(time.time()),
                 "Task statement storage failed",
-                error)
-            self.redirect("/add_statement/%s" % self.task.id)
+                repr(error))
+            self.redirect("/add_statement/%s" % task_id)
+            return
+
+        self.sql_session = Session()
+        task = self.safe_get_item(Task, task_id)
+        task.statement = digest
+        self.sql_session.commit()
+        self.redirect("/task/%s" % task_id)
+
 
 class AddAttachmentHandler(BaseHandler):
     """Add an attachment to a task.
 
     """
     def get(self, task_id):
-        task = Task.get_from_id(task_id, self.sql_session)
-        if task is None:
-            raise tornado.web.HTTPError(404)
+        task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
         r_params = self.render_params()
         r_params["task"] = task
         self.render("add_attachment.html", **r_params)
 
-    @tornado.web.asynchronous
     def post(self, task_id):
-        self.task = Task.get_from_id(task_id, self.sql_session)
-        if self.task is None:
-            raise tornado.web.HTTPError(404)
-        self.contest = self.task.contest
-        self.attachment = self.request.files["attachment"][0]
-        if self.application.service.FS.put_file(
-            callback=AddAttachmentHandler.storage_callback,
-            plus=self.attachment["filename"],
-            binary_data=self.attachment["body"],
-            description="Task attachment for %s" % self.task.name,
-            bind_obj=self) == False:
-            self.storage_callback(None, None, error="Connection failed.")
+        task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
+        attachment = self.request.files["attachment"][0]
+        task_name = task.name
+        self.sql_session.close()
 
-    @rpc_callback
-    def storage_callback(self, data, plus, error=None):
-        if error is None:
-            self.sql_session.add(Attachment(
-                data,
-                self.attachment["filename"],
-                self.task))
-            self.sql_session.commit()
-            self.redirect("/task/%s" % self.task.id)
-        else:
-            self.application.service.add_notification(time.time(),
+        try:
+            digest = self.application.service.FC.put_file(
+                binary_data=attachment["body"],
+                description="Task attachment for %s" % task_name)
+        except Exception as error:
+            self.application.service.add_notification(int(time.time()),
                 "Attachment storage failed",
-                error)
-            self.redirect("/add_statement/%s" % self.task.id)
+                repr(error))
+            self.redirect("/add_attachment/%s" % task_id)
+            return
+
+        self.sql_session = Session()
+        task = self.safe_get_item(Task, task_id)
+        self.sql_session.add(Attachment(digest, attachment["filename"], task))
+        self.sql_session.commit()
+        self.redirect("/task/%s" % task_id)
+
 
 class DeleteAttachmentHandler(BaseHandler):
     """Delete an attachment.
 
     """
     def get(self, attachment_id):
-        attachment = Attachment.get_from_id(attachment_id, self.sql_session)
-        if attachment is None:
-            raise tornado.web.HTTPError(404)
+        attachment = self.safe_get_item(Attachment, attachment_id)
         task = attachment.task
         self.sql_session.delete(attachment)
         self.sql_session.commit()
-        # TODO: Remove the attachment from FS.
         self.redirect("/task/%s" % task.id)
+
 
 class AddManagerHandler(BaseHandler):
     """Add a manager to a task.
 
     """
     def get(self, task_id):
-        task = Task.get_from_id(task_id, self.sql_session)
-        if task is None:
-            raise tornado.web.HTTPError(404)
+        task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
         r_params = self.render_params()
         r_params["task"] = task
         self.render("add_manager.html", **r_params)
 
-    @tornado.web.asynchronous
     def post(self, task_id):
-        self.task = Task.get_from_id(task_id, self.sql_session)
-        if self.task is None:
-            raise tornado.web.HTTPError(404)
-        self.contest = self.task.contest
-        self.manager = self.request.files["manager"][0]
-        if self.application.service.FS.put_file(
-            callback=AddManagerHandler.storage_callback,
-            plus=self.manager["filename"],
-            binary_data=self.manager["body"],
-            description="Task manager for %s" % self.task.name,
-            bind_obj=self) == False:
-            self.storage_callback(None, None, error="Connection failed.")
+        task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
+        manager = self.request.files["manager"][0]
+        task_name = task.name
+        self.sql_session.close()
 
-    @rpc_callback
-    def storage_callback(self, data, plus, error=None):
-        if error is None:
-            self.sql_session.add(Manager(
-                data,
-                self.manager["filename"],
-                self.task))
-            self.sql_session.commit()
-            self.redirect("/task/%s" % self.task.id)
-        else:
-            self.application.service.add_notification(time.time(),
+        try:
+            digest = self.application.service.FC.put_file(
+                binary_data=manager["body"],
+                description="Task manager for %s" % task_name)
+        except Exception as error:
+            self.application.service.add_notification(int(time.time()),
                 "Manager storage failed",
-                error)
-            self.redirect("/add_manager/%s" % self.task.id)
+                repr(error))
+            self.redirect("/add_manager/%s" % task_id)
+            return
+
+        self.sql_session = Session()
+        task = self.safe_get_item(Task, task_id)
+        self.sql_session.add(Manager(digest, manager["filename"], task))
+        self.sql_session.commit()
+        self.redirect("/task/%s" % task_id)
+
 
 class DeleteManagerHandler(BaseHandler):
     """Delete a manager.
 
     """
     def get(self, manager_id):
-        manager = Manager.get_from_id(manager_id, self.sql_session)
-        if manager is None:
-            raise tornado.web.HTTPError(404)
+        manager = self.safe_get_item(Manager, manager_id)
         task = manager.task
+        self.contest = task
         self.sql_session.delete(manager)
         self.sql_session.commit()
-        # TODO: Remove the manager from FS.
         self.redirect("/task/%s" % task.id)
 
 class AddTestcaseHandler(BaseHandler):
@@ -474,73 +461,54 @@ class AddTestcaseHandler(BaseHandler):
 
     """
     def get(self, task_id):
-        task = Task.get_from_id(task_id, self.sql_session)
-        if task is None:
-            raise tornado.web.HTTPError(404)
+        task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
         r_params = self.render_params()
         r_params["task"] = task
         self.render("add_testcase.html", **r_params)
 
-    @tornado.web.asynchronous
     def post(self, task_id):
-        self.task = Task.get_from_id(task_id, self.sql_session)
-        if self.task is None:
-            raise tornado.web.HTTPError(404)
-        self.contest = self.task.contest
-        self.input = self.request.files["input"][0]
-        self.output = self.request.files["output"][0]
-        self.public = self.get_argument("public", None) is not None
+        task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
+        input = self.request.files["input"][0]
+        output = self.request.files["output"][0]
+        public = self.get_argument("public", None) is not None
+        task_name = task.name
+        self.sql_session.close()
 
-        self.successful_calls = {};
-
-        if self.application.service.FS.put_file(
-            callback=AddTestcaseHandler.storage_callback,
-            plus="input",
-            binary_data=self.input["body"],
-            description="Testcase input for task %s" % self.task.name,
-            bind_obj=self) == False:
-            self.storage_callback(None, None, error="Connection failed.")
-
-        if self.application.service.FS.put_file(
-            callback=AddTestcaseHandler.storage_callback,
-            plus="output",
-            binary_data=self.output["body"],
-            description="Testcase output for task %s" % self.task.name,
-            bind_obj=self) == False:
-            self.storage_callback(None, None, error="Connection failed.")
-
-    @rpc_callback
-    def storage_callback(self, data, plus, error=None):
-        if error is None:
-            self.successful_calls[plus] = data;
-            if len(self.successful_calls) >= 2:
-                self.sql_session.add(Testcase(
-                    self.successful_calls["input"],
-                    self.successful_calls["output"],
-                    len(self.task.testcases),
-                    self.public,
-                    self.task))
-                self.sql_session.commit()
-                self.redirect("/task/%s" % self.task.id)
-        else:
-            self.application.service.add_notification(time.time(),
+        try:
+            input_digest = self.application.service.FC.put_file(
+                binary_data=input["body"],
+                description="Testcase input for task %s" % task_name)
+            output_digest = self.application.service.FC.put_file(
+                binary_data=output["body"],
+                description="Testcase output for task %s" % task_name)
+        except Exception as error:
+            self.application.service.add_notification(int(time.time()),
                 "Testcase storage failed",
-                error)
-            self.redirect("/add_testcase/%s" % self.task.id)
+                repr(error))
+            self.redirect("/add_testcase/%s" % task_id)
+            return
+
+        self.sql_session = Session()
+        task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
+        self.sql_session.add(Testcase(
+            input_digest, output_digest, len(task.testcases), public, task))
+        self.sql_session.commit()
+        self.redirect("/task/%s" % task_id)
+
 
 class DeleteTestcaseHandler(BaseHandler):
     """Delete a testcase.
 
     """
     def get(self, testcase_id):
-        testcase = Testcase.get_from_id(testcase_id, self.sql_session)
-        if testcase is None:
-            raise tornado.web.HTTPError(404)
+        testcase = self.safe_get_item(Testcase, testcase_id)
         task = testcase.task
+        self.contest = task.contest
         self.sql_session.delete(testcase)
         self.sql_session.commit()
-        # TODO: Remove the testcase from FS.
         self.redirect("/task/%s" % task.id)
 
 class TaskViewHandler(BaseHandler):
@@ -548,10 +516,9 @@ class TaskViewHandler(BaseHandler):
 
     """
     def get(self, task_id):
-        task = Task.get_from_id(task_id, self.sql_session)
-        if task is None:
-            raise tornado.web.HTTPError(404)
+        task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
+
         r_params = self.render_params()
         r_params["task"] = task
         r_params["submissions"] = self.sql_session.query(Submission)\
@@ -559,71 +526,69 @@ class TaskViewHandler(BaseHandler):
                                   .order_by(Submission.timestamp.desc())
         self.render("task.html", **r_params)
 
-    @tornado.web.asynchronous
     def post(self, task_id):
-        self.task = Task.get_from_id(task_id, self.sql_session)
-        if self.task is None:
-            raise tornado.web.HTTPError(404)
-        self.task.name = self.get_argument("name", self.task.name)
-        self.task.title = self.get_argument("title", self.task.title)
-
+        task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
+        task.name = self.get_argument("name", task.name)
+        task.title = self.get_argument("title", task.title)
         time_limit = self.get_argument("time_limit",
-                                       repr(self.task.time_limit))
+                                       repr(task.time_limit))
         try:
             time_limit = float(time_limit)
-            if time_limit < 0 or time_limit > "+inf":
+            if time_limit < 0 or time_limit >= float("+inf"):
                 raise TypeError("Time limit out of range.")
         except TypeError as e:
             self.write("Invalid time limit.")
             self.finish()
             return
-        self.task.time_limit = time_limit
+        task.time_limit = time_limit
 
         try:
-            self.task.memory_limit = self.get_non_negative_int(
+            task.memory_limit = self.get_non_negative_int(
                 "memory_limit",
-                self.task.memory_limit,
+                task.memory_limit,
                 allow_empty=False)
-            if self.task.memory_limit == 0:
+            if task.memory_limit == 0:
                 raise ValueError("Memory limit is 0.")
-            self.task.token_initial = self.get_non_negative_int(
+            task.token_initial = self.get_non_negative_int(
                 "token_initial",
-                self.task.token_initial,
+                task.token_initial,
                 allow_empty=False)
-            self.task.token_max = self.get_non_negative_int(
+            task.token_max = self.get_non_negative_int(
                 "token_max",
-                self.task.token_max)
-            self.task.token_total = self.get_non_negative_int(
+                task.token_max)
+            task.token_total = self.get_non_negative_int(
                 "token_total",
-                self.task.token_total)
-            self.task.token_min_interval = self.get_non_negative_int(
+                task.token_total)
+            task.token_min_interval = self.get_non_negative_int(
                 "token_min_interval",
-                self.task.token_min_interval)
-            self.task.token_gen_time = self.get_non_negative_int(
+                task.token_min_interval)
+            task.token_gen_time = self.get_non_negative_int(
                 "token_gen_time",
-                self.task.token_gen_time)
-            self.task.token_gen_number = self.get_non_negative_int(
+                task.token_gen_time)
+            task.token_gen_number = self.get_non_negative_int(
                 "token_gen_number",
-                self.task.token_gen_number)
+                task.token_gen_number)
         except ValueError as e:
             self.write("Invalid fields. %r" % e)
             self.finish()
             return
 
-        for testcase in self.task.testcases:
+        for testcase in task.testcases:
             testcase.public = self.get_argument(
                 "testcase_%s_public" % testcase.num,
                 False) != False
 
-        self.task.task_type = self.get_argument("task_type", "")
+        task.task_type = self.get_argument("task_type", "")
 
-        if self.task.task_type == "TaskTypeBatch":
+        if task.task_type == "TaskTypeBatch":
             batch_evaluation = self.get_argument("Batch_evaluation","")
             if batch_evaluation not in ["diff", "comp", "grad"]:
-                self.application.service.add_notification(time.time(),
+                self.application.service.add_notification(int(time.time()),
                 "Invalid field",
                 "Output evaluation not recognized.")
                 self.redirect("/task/%s" % task_id)
+                return
             batch_use_files = self.get_argument("Batch_use_files", None)
 
             if batch_use_files is not None:
@@ -632,51 +597,53 @@ class TaskViewHandler(BaseHandler):
                 batch_use_files = "nofile"
             task_type_parameters = [batch_evaluation, batch_use_files]
 
-        elif self.task.task_type == "TaskTypeOutputOnly":
+        elif task.task_type == "TaskTypeOutputOnly":
             oo_evaluation = self.get_argument("OutputOnly_evaluation","")
             if oo_evaluation not in ["diff", "comp"]:
-                self.application.service.add_notification(time.time(),
+                self.application.service.add_notification(int(time.time()),
                 "Invalid field",
                 "Output evaluation not recognized.")
                 self.redirect("/task/%s" % task_id)
+                return
 
             task_type_parameters = [oo_evaluation]
 
         else:
-            self.application.service.add_notification(time.time(),
+            self.application.service.add_notification(int(time.time()),
                 "Invalid field",
                 "Task type not recognized.")
             self.redirect("/add_task/%s" % contest_id)
+            return
 
-        self.task.task_type_parameters = simplejson.dumps(task_type_parameters)
+        task.task_type_parameters = simplejson.dumps(task_type_parameters)
 
-        self.task.score_type = self.get_argument("score_type", "")
+        task.score_type = self.get_argument("score_type", "")
 
-        self.task.score_parameters = self.get_argument("score_parameters","")
+        task.score_parameters = self.get_argument("score_parameters","")
 
         submission_format = self.get_argument("submission_format","")
         if submission_format not in ["", "[]"] \
             and submission_format != simplejson.dumps(
-                [x.filename for x in self.task.submission_format]
+                [x.filename for x in task.submission_format]
                 ):
             try:
                 format_list = simplejson.loads(submission_format)
-                for element in self.task.submission_format:
+                for element in task.submission_format:
                     self.sql_session.delete(element)
-                del self.task.submission_format[:]
+                del task.submission_format[:]
                 for element in format_list:
-                    self.sql_session.add(SubmissionFormatElement(str(element), self.task))
+                    self.sql_session.add(SubmissionFormatElement(str(element), task))
             except Exception as e:
                 self.sql_session.rollback()
                 logger.info(e)
-                self.application.service.add_notification(time.time(),
+                self.application.service.add_notification(int(time.time()),
                 "Invalid field",
                 "Submission format not recognized.")
                 self.redirect("/task/%s" % task_id)
                 return
 
         self.sql_session.commit()
-        self.redirect("/task/%s" % self.task.id)
+        self.redirect("/task/%s" % task_id)
 
 
 class TaskStatementViewHandler(FileHandler):
@@ -686,16 +653,16 @@ class TaskStatementViewHandler(FileHandler):
     @tornado.web.asynchronous
     def get(self, task_id):
         r_params = self.render_params()
-        try:
-            task = Task.get_from_id(task_id, self.sql_session)
-        except IndexError:
-            self.write("Task %s not found." % task_id)
+        task = self.safe_get_item(Task, task_id)
+        statement = task.statement
+        task_name = task.name
+        self.sql_session.close()
+        self.fetch(statement, "application/pdf", "%s.pdf" % task_name)
 
-        self.fetch(task.statement, "application/pdf", "%s.pdf" % task.name)
 
 class AddTaskHandler(SimpleContestHandler("add_task.html")):
     def post(self, contest_id):
-        self.retrieve_contest(contest_id)
+        self.contest = self.safe_get_item(Contest, contest_id)
 
         name = self.get_argument("name","")
         title = self.get_argument("title", "")
@@ -706,10 +673,11 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         if task_type == "TaskTypeBatch":
             batch_evaluation = self.get_argument("Batch_evaluation","")
             if batch_evaluation not in ["diff", "comp", "grad"]:
-                self.application.service.add_notification(time.time(),
+                self.application.service.add_notification(int(time.time()),
                 "Invalid field",
                 "Output evaluation not recognized.")
                 self.redirect("/add_task/%s" % contest_id)
+                return
             batch_use_files = self.get_argument("Batch_use_files", None)
 
             if batch_use_files is not None:
@@ -721,18 +689,20 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         elif task_type == "TaskTypeOutputOnly":
             oo_evaluation = self.get_argument("OutputOnly_evaluation","")
             if oo_evaluation not in ["diff", "comp"]:
-                self.application.service.add_notification(time.time(),
+                self.application.service.add_notification(int(time.time()),
                 "Invalid field",
                 "Output evaluation not recognized.")
                 self.redirect("/add_task/%s" % contest_id)
+                return
 
             task_type_parameters = [oo_evaluation]
 
         else:
-            self.application.service.add_notification(time.time(),
+            self.application.service.add_notification(int(time.time()),
                 "Invalid field",
                 "Task type not recognized.")
             self.redirect("/add_task/%s" % contest_id)
+            return
 
         task_type_parameters = simplejson.dumps(task_type_parameters)
 
@@ -751,16 +721,17 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
                 except Exception as e:
                     self.sql_session.rollback()
                     logger.info(e)
-                    self.application.service.add_notification(time.time(),
+                    self.application.service.add_notification(int(time.time()),
                     "Invalid field",
                     "Submission format not recognized.")
-                    self.redirect("/task/%s" % task_id)
+                    self.redirect("/add_task/%s" % contest_id)
                     return
         else:
-            self.application.service.add_notification(time.time(),
+            self.application.service.add_notification(int(time.time()),
                 "Invalid field",
                 "Submission format not recognized.")
             self.redirect("/add_task/%s" % contest_id)
+            return
 
         score_type = self.get_argument("score_type", "")
         score_parameters = self.get_argument("score_parameters","")
@@ -798,14 +769,15 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
                  contest=self.contest, num=len(self.contest.tasks))
         self.sql_session.add(task)
         self.sql_session.commit()
-        self.redirect("/task/%d" % task.id)
+        self.redirect("/task/%s" % task.id)
+
 
 class EditContestHandler(BaseHandler):
     """Called when managers edit the information of a contest.
 
     """
     def post(self, contest_id):
-        self.retrieve_contest(contest_id)
+        self.contest = self.safe_get_item(Contest, contest_id)
 
         name = self.get_argument("name", "")
         if name == "":
@@ -880,7 +852,8 @@ class AddAnnouncementHandler(BaseHandler):
 
     """
     def post(self, contest_id):
-        self.retrieve_contest(contest_id)
+        self.contest = self.safe_get_item(Contest, contest_id)
+
         subject = self.get_argument("subject", "")
         text = self.get_argument("text", "")
         if subject != "":
@@ -895,10 +868,8 @@ class RemoveAnnouncementHandler(BaseHandler):
 
     """
     def get(self, ann_id):
-        ann = Announcement.get_from_id(ann_id, self.sql_session)
-        if ann is None:
-            raise tornado.web.HTTPError(404)
-        contest_id = str(ann.contest.id)
+        ann = self.safe_get_item(Announcement, ann_id)
+        contest_id = ann.contest.id
         self.sql_session.delete(ann)
         self.sql_session.commit()
         self.redirect("/announcements/%s" % contest_id)
@@ -910,10 +881,7 @@ class UserViewHandler(BaseHandler):
 
     """
     def get(self, user_id):
-
-        user = User.get_from_id(user_id, self.sql_session)
-        if user is None:
-            raise tornado.web.HTTPError(404)
+        user = self.safe_get_item(User, user_id)
         self.contest = user.contest
         r_params = self.render_params()
         r_params["selected_user"] = user
@@ -921,9 +889,7 @@ class UserViewHandler(BaseHandler):
         self.render("user.html", **r_params)
 
     def post(self, user_id):
-        user = User.get_from_id(user_id, self.sql_session)
-        if user is None:
-            raise tornado.web.HTTPError(404)
+        user = self.safe_get_item(User, user_id)
         self.contest = user.contest
         user.real_name = self.get_argument("real_name", user.real_name)
         username = self.get_argument("username", user.username)
@@ -934,7 +900,7 @@ class UserViewHandler(BaseHandler):
                 self.application.service.add_notification(int(time.time()),
                     "Duplicate username",
                     "The requested username already exists in the contest.")
-                self.redirect("/user/%s" % user.id)
+                self.redirect("/user/%s" % user_id)
                 return
         user.username = username
 
@@ -948,11 +914,12 @@ class UserViewHandler(BaseHandler):
         self.sql_session.commit()
         self.application.service.add_notification(int(time.time()),
             "User updated successfully.", "")
-        self.redirect("/user/%s" % user.id)
+        self.redirect("/user/%s" % user_id)
+
 
 class AddUserHandler(SimpleContestHandler("add_user.html")):
     def post(self,contest_id):
-        self.retrieve_contest(contest_id)
+        self.contest = self.safe_get_item(Contest, contest_id)
 
         real_name = self.get_argument("real_name", "")
         username = self.get_argument("username", "")
@@ -963,7 +930,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
                 self.application.service.add_notification(int(time.time()),
                     "Duplicate username",
                     "The requested username already exists in the contest.")
-                self.redirect("/add_user/%d" % self.contest.id)
+                self.redirect("/add_user/%d" % contest_id)
                 return
 
         password = self.get_argument("password", "")
@@ -973,14 +940,15 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
 
         hidden = self.get_argument("hidden", False) != False
 
-        user = User(real_name, username, password = password, ip = ip,
-            hidden = hidden, contest = self.contest)
+        user = User(real_name, username, password=password, ip=ip,
+            hidden=hidden, contest=self.contest)
         self.sql_session.add(user)
         self.sql_session.commit()
         self.application.service.add_notification(int(time.time()),
             "User added successfully.",
             "")
         self.redirect("/user/%s" % user.id)
+
 
 class SubmissionViewHandler(BaseHandler):
     """Shows the details of a submission. All data is already present
@@ -990,9 +958,7 @@ class SubmissionViewHandler(BaseHandler):
 
     """
     def get(self, submission_id):
-        submission = Submission.get_from_id(submission_id, self.sql_session)
-        if submission is None:
-            raise tornado.web.HTTPError(404)
+        submission = self.safe_get_item(Submission, submission_id)
         self.contest = submission.user.contest
         r_params = self.render_params()
         r_params["s"] = submission
@@ -1003,24 +969,17 @@ class SubmissionFileHandler(FileHandler):
     """Shows a submission file.
 
     """
-
     # FIXME: Replace with FileFromDigestHandler?
-
     @tornado.web.asynchronous
     def get(self, file_id):
-
-        sub_file = File.get_from_id(file_id, self.sql_session)
-
-        if sub_file is None:
-            raise tornado.web.HTTPError(404)
-
+        sub_file = self.safe_get_item(File, file_id)
         submission = sub_file.submission
+        self.contest = submission.task.contest
         real_filename = sub_file.filename
         if submission.language is not None:
             real_filename = real_filename.replace("%l", submission.language)
         digest = sub_file.digest
         self.sql_session.close()
-
         self.fetch(sub_file.digest, "text/plain", real_filename)
 
 
@@ -1029,7 +988,8 @@ class QuestionsHandler(BaseHandler):
 
     """
     def get(self, contest_id):
-        self.retrieve_contest(contest_id)
+        self.contest = self.safe_get_item(Contest, contest_id)
+
         r_params = self.render_params()
         r_params["questions"] = self.sql_session.query(Question)\
             .join(User).filter(User.contest_id == contest_id).all()
@@ -1042,11 +1002,8 @@ class QuestionReplyHandler(BaseHandler):
     """
     def post(self, question_id):
         ref = self.get_argument("ref", "/")
-
-        question = Question.get_from_id(question_id, self.sql_session)
-        if question is None:
-            raise tornado.web.HTTPError(404)
-
+        question = self.safe_get_item(Question, question_id)
+        self.contest = question.user.contest
         reply_subject_code = self.get_argument("reply_question_quick_answer",
                                                "")
         question.reply_text = self.get_argument("reply_question_text", "")
@@ -1078,9 +1035,8 @@ class MessageHandler(BaseHandler):
     def post(self, user_id):
         r_params = self.render_params()
 
-        user = User.get_from_id(user_id, self.sql_session)
-        if user is None:
-            raise tornado.web.HTTPError(404)
+        user = self.safe_get_item(User, user_id)
+        self.contest = user.contest
 
         message = Message(int(time.time()),
                           self.get_argument("message_subject", ""),
@@ -1090,7 +1046,7 @@ class MessageHandler(BaseHandler):
         self.sql_session.commit()
 
         logger.warning("Message submitted to user %s."
-                       % user)
+                       % user.username)
 
         self.redirect("/user/%s" % user_id)
 
@@ -1100,30 +1056,21 @@ class SubmissionReevaluateHandler(BaseHandler):
 
     """
 
-    @tornado.web.asynchronous
     def get(self, submission_id):
-        submission = Submission.get_from_id(submission_id, self.sql_session)
-        if submission is None:
-            raise tornado.web.HTTPError(404)
-
+        submission = self.safe_get_item(Submission, submission_id)
         self.submission = submission
         self.contest = submission.task.contest
 
         submission.invalid()
         self.sql_session.commit()
         self.application.service.ES.new_submission(submission_id=submission.id)
-        self.redirect("/submission/%s" % submission.id)
+        self.redirect("/submission/%s" % submission_id)
 
 
 class UserReevaluateHandler(BaseHandler):
 
-    @tornado.web.asynchronous
     def get(self, user_id):
-        self.user_id = user_id
-        user = User.get_from_id(user_id, self.sql_session)
-        if user is None:
-            raise tornado.web.HTTPError(404)
-
+        user = self.safe_get_item(User, user_id)
         self.contest = user.contest
 
         self.pending_requests = len(user.submissions)
@@ -1132,18 +1079,13 @@ class UserReevaluateHandler(BaseHandler):
             self.sql_session.commit()
             self.application.service.ES.new_submission(submission_id=s.id)
 
-        self.redirect("/user/%s" % self.user_id)
+        self.redirect("/user/%s" % user_id)
 
 
 class TaskReevaluateHandler(BaseHandler):
 
-    @tornado.web.asynchronous
     def get(self, task_id):
-        self.task_id = task_id
-        task = Task.get_from_id(task_id, self.sql_session)
-        if task is None:
-            raise tornado.web.HTTPError(404)
-
+        task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
 
         self.pending_requests = len(task.submissions)
@@ -1152,7 +1094,7 @@ class TaskReevaluateHandler(BaseHandler):
             self.sql_session.commit()
             self.application.service.ES.new_submission(submission_id=s.id)
 
-        self.redirect("/task/%s" % self.task_id)
+        self.redirect("/task/%s" % task_id)
 
 
 class FileFromDigestHandler(FileHandler):
@@ -1160,6 +1102,7 @@ class FileFromDigestHandler(FileHandler):
     @tornado.web.asynchronous
     def get(self, digest, filename):
         #TODO: Accept a MIME type
+        self.sql_session.close()
         self.fetch(digest, "text/plain", filename)
 
 
@@ -1174,9 +1117,9 @@ class NotificationsHandler(BaseHandler):
 
         # Keep "== None" in filter arguments
         questions = self.sql_session.query(Question)\
-                      .filter(Question.reply_timestamp == None)\
-                      .filter(Question.question_timestamp > last_notification)\
-                      .all()
+            .filter(Question.reply_timestamp == None)\
+            .filter(Question.question_timestamp > last_notification)\
+            .all()
 
         for question in questions:
             res.append({"type": "new_question",
@@ -1206,14 +1149,14 @@ handlers = [
     (r"/contest/edit/([0-9]+)", EditContestHandler),
     (r"/task/([0-9]+)",           TaskViewHandler),
     (r"/task/([0-9]+)/statement", TaskStatementViewHandler),
-    (r"/add_task/([0-9]+)",                AddTaskHandler),
+    (r"/add_task/([0-9]+)",            AddTaskHandler),
     (r"/add_statement/([0-9]+)",       AddStatementHandler),
-    (r"/add_attachment/([0-9]+)",       AddAttachmentHandler),
-    (r"/delete_attachment/([0-9]+)",       DeleteAttachmentHandler),
-    (r"/add_manager/([0-9]+)",       AddManagerHandler),
-    (r"/delete_manager/([0-9]+)",       DeleteManagerHandler),
-    (r"/add_testcase/([0-9]+)",       AddTestcaseHandler),
-    (r"/delete_testcase/([0-9]+)",       DeleteTestcaseHandler),
+    (r"/add_attachment/([0-9]+)",      AddAttachmentHandler),
+    (r"/delete_attachment/([0-9]+)",   DeleteAttachmentHandler),
+    (r"/add_manager/([0-9]+)",         AddManagerHandler),
+    (r"/delete_manager/([0-9]+)",      DeleteManagerHandler),
+    (r"/add_testcase/([0-9]+)",        AddTestcaseHandler),
+    (r"/delete_testcase/([0-9]+)",     DeleteTestcaseHandler),
     (r"/user/([a-zA-Z0-9_-]+)",   UserViewHandler),
     (r"/add_user/([0-9]+)",       AddUserHandler),
     (r"/reevaluate/task/([0-9]+)",               TaskReevaluateHandler),
