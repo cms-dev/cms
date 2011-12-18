@@ -47,7 +47,7 @@ import tornado.web
 import tornado.locale
 
 from cms.async.AsyncLibrary import logger
-from cms.async.WebAsyncLibrary import WebService, rpc_callback
+from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
@@ -139,8 +139,8 @@ class BaseHandler(tornado.web.RequestHandler):
             logger.debug("Closing SQL connection.")
             try:
                 self.sql_session.close()
-            except Exception as e:
-                logger.warning("Couldn't close SQL connection: %r" % e)
+            except Exception as error:
+                logger.warning("Couldn't close SQL connection: %r" % error)
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
 
@@ -629,7 +629,7 @@ class SubmitHandler(BaseHandler):
                                  self.task,
                                  self.files), fd)
                 self.local_copy_saved = True
-            except Exception as e:
+            except Exception as error:
                 logger.error("Submission local copy failed - %s" %
                              traceback.format_exc())
         self.username = self.current_user.username
@@ -784,11 +784,11 @@ handlers = [
     (r"/",       MainHandler),
     (r"/login",  LoginHandler),
     (r"/logout", LogoutHandler),
-    (r"/tasks/([%s]+)"             % enc_alph, TaskViewHandler),
-    (r"/tasks/([%s]+)/statement"   % enc_alph, TaskStatementViewHandler),
-    (r"/submission_file/([%s]+)"   % enc_alph, SubmissionFileHandler),
+    (r"/tasks/([%s]+)" % enc_alph,             TaskViewHandler),
+    (r"/tasks/([%s]+)/statement" % enc_alph,   TaskStatementViewHandler),
+    (r"/submission_file/([%s]+)" % enc_alph,   SubmissionFileHandler),
     (r"/submission_status/([%s]+)" % enc_alph, SubmissionStatusHandler),
-    (r"/submit/([%s]+)"            % enc_alph, SubmitHandler),
+    (r"/submit/([%s]+)" % enc_alph,            SubmitHandler),
     (r"/usetoken",                             UseTokenHandler),
     (r"/communication", CommunicationHandler),
     (r"/instructions",  InstructionHandler),

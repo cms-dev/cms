@@ -65,20 +65,20 @@ def encode_length(length):
 
     """
     try:
-        s = ""
+        string = ""
         tmp = length / (1 << 24)
-        s += chr(tmp)
+        string += chr(tmp)
         length -= tmp * (1 << 24)
         tmp = length / (1 << 16)
-        s += chr(tmp)
+        string += chr(tmp)
         length -= tmp * (1 << 16)
         tmp = length / (1 << 8)
-        s += chr(tmp)
+        string += chr(tmp)
         length -= tmp * (1 << 8)
-        s += chr(length)
-        return s
-    except Exception as e:
-        print >> sys.stderr, "Can't encode length: %d %s" % (length, repr(e))
+        string += chr(length)
+        return string
+    except Exception as error:
+        print >> sys.stderr, "Can't encode length: %s %r" % (length, error)
         raise ValueError
 
 

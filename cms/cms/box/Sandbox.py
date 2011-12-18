@@ -230,6 +230,7 @@ class Sandbox:
         return 0
 
     KILLING_SYSCALL_RE = re.compile("^Forbidden syscall (.*)$")
+
     def get_killing_syscall(self):
         """Return the syscall that triggered the killing of the
         sandboxed process, reading the log if necessary.
@@ -240,7 +241,8 @@ class Sandbox:
         if self.log is None:
             self.get_log()
         if 'message' in self.log:
-            syscall_match = self.KILLING_SYSCALL_RE.match(self.log['message'][0])
+            syscall_match = self.KILLING_SYSCALL_RE.match(
+                self.log['message'][0])
             if syscall_match is None:
                 return None
             else:
@@ -520,7 +522,7 @@ class Sandbox:
         # too much memory). Unix specific.
         to_consume = [popen.stdout, popen.stderr]
         while len(to_consume) > 0:
-            read, tmp1, tmp2 = select.select(to_consume, [], [])
+            read = select.select(to_consume, [], [])[0]
             for f in read:
                 if f.read(8192) == '':
                     to_consume.remove(f)

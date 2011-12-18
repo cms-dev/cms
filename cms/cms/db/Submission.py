@@ -137,16 +137,20 @@ class Submission(Base):
         """
         res = {'task':                self.task.name,
                'timestamp':           self.timestamp,
-               'files':               [file.export_to_dict() for file in self.files.itervalues()],
+               'files':               [_file.export_to_dict()
+                                       for _file in self.files.itervalues()],
                'language':            self.language,
                'compilation_outcome': self.compilation_outcome,
                'compilation_tries':   self.compilation_tries,
                'compilation_text':    self.compilation_text,
                'compilation_shard':   self.compilation_shard,
                'compilation_sandbox': self.compilation_sandbox,
-               'executables':         [executable.export_to_dict() for executable in self.executables.itervalues()],
+               'executables':         [executable.export_to_dict()
+                                       for executable
+                                       in self.executables.itervalues()],
                'evaluation_outcome':  self.evaluation_outcome,
-               'evaluations':         [evaluation.export_to_dict() for evaluation in self.evaluations],
+               'evaluations':         [evaluation.export_to_dict()
+                                       for evaluation in self.evaluations],
                'evaluation_tries':    self.evaluation_tries,
                'token':               self.token}
         if self.token is not None:
@@ -222,10 +226,11 @@ class Token(Base):
                                       onupdate="CASCADE", ondelete="CASCADE"),
                            nullable=False)
     submission = relationship(Submission,
-                              backref=backref("token",
-                                              uselist=False,
-                                              single_parent=True,
-                                              cascade="all, delete, delete-orphan"),
+                              backref=backref(
+                                  "token",
+                                  uselist=False,
+                                  single_parent=True,
+                                  cascade="all, delete, delete-orphan"),
                               single_parent=True)
 
     # Time the token was played.

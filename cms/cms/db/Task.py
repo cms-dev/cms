@@ -153,17 +153,24 @@ class Task(Base):
         """
         return {'name':                 self.name,
                 'title':                self.title,
-                'attachments':          [attachment.export_to_dict() for attachment in self.attachments.itervalues()],
+                'attachments':          [attachment.export_to_dict()
+                                         for attachment
+                                         in self.attachments.itervalues()],
                 'statement':            self.statement,
                 'time_limit':           self.time_limit,
                 'memory_limit':         self.memory_limit,
                 'task_type':            self.task_type,
                 'task_type_parameters': self.task_type_parameters,
-                'submission_format':    [element.export_to_dict() for element in self.submission_format],
-                'managers':             [manager.export_to_dict() for manager in self.managers.itervalues()],
+                'submission_format':    [element.export_to_dict()
+                                         for element
+                                         in self.submission_format],
+                'managers':             [manager.export_to_dict()
+                                         for manager
+                                         in self.managers.itervalues()],
                 'score_type':           self.score_type,
                 'score_parameters':     self.score_parameters,
-                'testcases':            [testcase.export_to_dict() for testcase in self.testcases],
+                'testcases':            [testcase.export_to_dict()
+                                         for testcase in self.testcases],
                 'token_initial':        self.token_initial,
                 'token_max':            self.token_max,
                 'token_total':          self.token_total,
@@ -217,8 +224,8 @@ class Testcase(Base):
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
-    def __init__(self, input, output, num=None, public=False, task=None):
-        self.input = input
+    def __init__(self, _input, output, num=None, public=False, task=None):
+        self.input = _input
         self.output = output
         self.num = num
         self.public = public

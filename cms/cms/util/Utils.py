@@ -19,16 +19,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
 import datetime
 import os
-import sys
-import codecs
 import hashlib
 
 
-## ANSI utilities ##
-# see for reference: http://pueblo.sourceforge.net/doc/manual/ansi_color_codes.html
+## ANSI utilities. See for reference:
+# http://pueblo.sourceforge.net/doc/manual/ansi_color_codes.html
 
 ANSI_FG_COLORS = {'black':   30,
                   'red':     31,
@@ -62,18 +59,18 @@ ANSI_STRIKETHROUGH_OFF_CMD = 29
 ANSI_INVERT_CMD = 7
 
 
-def filter_ansi_escape(s):
+def filter_ansi_escape(string):
     """Filter out ANSI commands from the given string.
 
     """
     ansi_mode = False
     res = ''
-    for c in s:
-        if c == u'\033':
+    for char in string:
+        if char == u'\033':
             ansi_mode = True
         if not ansi_mode:
-            res += c
-        if c == u'm':
+            res += char
+        if char == u'm':
             ansi_mode = False
     return res
 
@@ -83,40 +80,41 @@ def ansi_command(*args):
     command.
 
     """
-    return '\033[%sm' % (";".join(map(lambda x: str(x), args)))
+    return '\033[%sm' % (";".join((str(x) for x in args)))
 
 
-def ansi_color_hash(s):
+def ansi_color_hash(string):
     """Enclose a string in a ANSI code giving it a color that
     depends on its content.
 
-    s (string): the string to color
-    return (string): s enclosed in an ANSI code
+    string (string): the string to color
+    return (string): string enclosed in an ANSI code
 
     """
     # Magic number: 30 is the lowest of ANSI_FG_COLORS
-    return 30 + (sum([ord(x) for x in s]) % len(ANSI_FG_COLORS))
+    return 30 + (sum((ord(x) for x in string)) % len(ANSI_FG_COLORS))
 
 
-def ansi_color_string(s, col):
+def ansi_color_string(string, col):
     """Enclose a string in a ANSI code giving it the specified color.
 
-    s (string): the string to color
+    string (string): the string to color
     col (int): the color ANSI code
     return (string): s enclosed in an ANSI code
 
     """
     return ansi_command(col, ANSI_BOLD_ON_CMD) + \
-        s + ansi_command(ANSI_RESET_CMD)
+        string + ansi_command(ANSI_RESET_CMD)
 
 
 ## Logging utilities ##
 
-SEV_CRITICAL = "CRITICAL"
-SEV_ERROR    = "ERROR   "
-SEV_WARNING  = "WARNING "
-SEV_INFO     = "INFO    "
-SEV_DEBUG    = "DEBUG   "
+SEV_CRITICAL, SEV_ERROR, SEV_WARNING, SEV_INFO, SEV_DEBUG = \
+              "CRITICAL", \
+              "ERROR   ", \
+              "WARNING ", \
+              "INFO    ", \
+              "DEBUG   "
 
 SEVERITY_COLORS = {SEV_CRITICAL: 'red',
                    SEV_ERROR:    'red',
@@ -139,10 +137,7 @@ def format_log(msg, coord, operation, severity, timestamp, colors=False):
     returns (string): the formatted log
 
     """
-    d = datetime.datetime.fromtimestamp(timestamp)
-    service_full = coord
-    if operation != "":
-        service_full += "/%s" % (operation)
+    _datetime = datetime.datetime.fromtimestamp(timestamp)
 
     if colors:
         severity_color = ANSI_FG_COLORS[SEVERITY_COLORS[severity]]
@@ -164,16 +159,16 @@ def format_log(msg, coord, operation, severity, timestamp, colors=False):
             format_string = "%s - %s [%s/%s] %s"
 
     if operation == "":
-        return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(d),
+        return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(_datetime),
                                 severity, coord, msg)
     else:
-        return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(d),
+        return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(_datetime),
                                 severity, coord, operation, msg)
 
 
 ## Other utilities ##
 
-def maybe_mkdir(d):
+def maybe_mkdir(dir_name):
     """Make a directory without throwing an exception if it already
     exists. Warning: this method fails silently also if the directory
     could not be created because there is a non-directory file with
@@ -182,7 +177,7 @@ def maybe_mkdir(d):
 
     """
     try:
-        os.mkdir(d)
+        os.mkdir(dir_name)
     except OSError:
         pass
 
@@ -221,11 +216,17 @@ def get_compilation_command(language, source_filenames, executable_filename):
     # different way depending on whether it will execute 32- or 64-bit
     # programs).
     if language == "c":
-        command = ["/usr/bin/gcc", "-DEVAL", "-static", "-O2", "-lm", "-o", executable_filename]
+        command = ["/usr/bin/gcc",
+                   "-DEVAL", "-static", "-O2", "-lm", "-o",
+                   executable_filename]
     elif language == "cpp":
-        command = ["/usr/bin/g++", "-DEVAL", "-static", "-O2", "-o", executable_filename]
+        command = ["/usr/bin/g++",
+                   "-DEVAL", "-static", "-O2", "-o",
+                   executable_filename]
     elif language == "pas":
-        command = ["/usr/bin/fpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename)]
+        command = ["/usr/bin/fpc",
+                   "-dEVAL", "-XS", "-O2",
+                   "-o%s" % executable_filename]
     return command + source_filenames
 
 
@@ -248,7 +249,7 @@ def format_time_or_date(timestamp):
 WHITES = " \t\n\r"
 
 
-def white_diff_canonicalize(s):
+def white_diff_canonicalize(string):
     """Convert the input string to a canonical form for the white diff
     algorithm; that is, the strings a and b are mapped to the same
     string by white_diff_canonicalize() if and only if they have to be
@@ -260,22 +261,22 @@ def white_diff_canonicalize(s):
     consecutive whitespaces into just one copy of one specific
     whitespace.
 
-    s (string): the string to canonicalize.
+    string (string): the string to canonicalize.
     return (string): the canonicalized string.
 
     """
     # Replace all the whitespaces with copies of " ", making the rest
     # of the algorithm simpler
-    for c in WHITES[1:]:
-        s = s.replace(c, WHITES[0])
+    for char in WHITES[1:]:
+        string = string.replace(char, WHITES[0])
 
     # Split the string according to " ", filter out empty tokens and
     # join again the string using just one copy of the first
     # whitespace; this way, runs of more than one whitespaces are
     # collapsed into just one copy.
-    s = WHITES[0].join([x for x in s.split(WHITES[0])
-                        if x != ''])
-    return s
+    string = WHITES[0].join([x for x in string.split(WHITES[0])
+                             if x != ''])
+    return string
 
 
 def white_diff(output, res):
@@ -333,7 +334,7 @@ def valid_ip(ip):
     for field in fields:
         try:
             num = int(field)
-        except Exception as error:
+        except ValueError:
             return False
         if num < 0 or num >= 256:
             return False

@@ -36,7 +36,7 @@ import simplejson
 
 from cms.async.AsyncLibrary import logger, async_lock
 from cms.box.Sandbox import Sandbox
-from cms.db.SQLAlchemyAll import Task, Executable, Evaluation
+from cms.db.SQLAlchemyAll import Executable, Evaluation
 from cms.service import JobException
 from cms.util.Utils import get_compilation_command, white_diff, \
     filter_ansi_escape
@@ -71,7 +71,7 @@ class TaskTypes:
         if submission is not None:
             task = submission.task
         elif task is None:
-            raise ArgumentError("Can't have both submission and Task None.")
+            raise ValueError("Can't have both submission and Task None.")
         if task.task_type == TaskTypes.TASK_TYPE_BATCH:
             return TaskTypeBatch(
                 submission,
@@ -210,9 +210,9 @@ class TaskType:
         """
         try:
             self.sandbox = Sandbox(self.FC)
-        except (OSError, IOError), e:
+        except (OSError, IOError), error:
             with async_lock:
-                logger.error("Couldn't create sandbox (error: %s)" % repr(e))
+                logger.error("Couldn't create sandbox (error: %r)" % error)
             self.delete_sandbox()
             raise JobException()
 
@@ -227,22 +227,22 @@ class TaskType:
 
         """
         if self.sandbox is None:
-            with async.lock:
+            with async_lock:
                 logger.error("Sandbox not present while doing "
                              "sandbox operation %s." % operation)
             raise JobException()
 
         try:
             return getattr(self.sandbox, operation)(*args, **kwargs)
-        except (OSError, IOError) as e:
+        except (OSError, IOError) as error:
             with async_lock:
                 logger.error("Error in safe sandbox operation %s, "
                              "with arguments %s, %s. %r" %
-                             (operation, args, kwargs, e))
+                             (operation, args, kwargs, error))
             self.delete_sandbox()
             raise JobException()
         except AttributeError:
-            with async.lock:
+            with async_lock:
                 logger.error("Invalid sandbox operation %s." % operation)
             self.delete_sandbox()
             raise JobException()
@@ -316,7 +316,6 @@ class TaskType:
                           "%s\n" \
                           "Compiler standard error:\n" \
                           "%s" % (stdout, stderr)
-
 
         # From now on, we test for the various possible outcomes and
         # act appropriately.
@@ -395,7 +394,7 @@ class TaskType:
 
     def evaluation_step(self, command, executables_to_get,
                         files_to_get, time_limit=0, memory_limit=None,
-                        allow_path=[],
+                        allow_path=None,
                         stdin_redirect=None, stdout_redirect=None,
                         final=False):
         """Execute an evaluation command in the sandbox. Note that in
@@ -433,11 +432,14 @@ class TaskType:
             self.sandbox_operation("create_file_from_storage",
                                    filename, digest)
 
+        if allow_path is None:
+            allow_path = []
+
         # Set sandbox parameters suitable for evaluation.
         self.sandbox.chdir = self.sandbox.path
         self.sandbox.filter_syscalls = 2
-        self.sandbox.timeout = self.submission.task.time_limit
-        self.sandbox.address_space = self.submission.task.memory_limit * 1024
+        self.sandbox.timeout = time_limit
+        self.sandbox.address_space = memory_limit * 1024
         self.sandbox.file_check = 1
         self.sandbox.allow_path = allow_path
         self.sandbox.stdin_file = stdin_redirect
@@ -452,7 +454,9 @@ class TaskType:
         # These syscalls and paths are used by executables generated
         # by fpc.
         self.sandbox.allow_path += ["/proc/self/exe"]
-        self.sandbox.allow_syscall += ["getrlimit", "rt_sigaction", "ugetrlimit"]
+        self.sandbox.allow_syscall += ["getrlimit",
+                                       "rt_sigaction",
+                                       "ugetrlimit"]
         # This one seems to be used for a C++ executable.
         self.sandbox.allow_path += ["/proc/meminfo"]
 
@@ -495,8 +499,10 @@ class TaskType:
         if exit_status == Sandbox.EXIT_SYSCALL:
             syscall = self.sandbox.get_killing_syscall()
             with async_lock:
-                logger.info("Execution killed because of forbidden syscall %s." % (syscall))
-            return True, 0.0, "Execution killed because of forbidden syscall %s." % (syscall)
+                logger.info("Execution killed because of "
+                            "forbidden syscall %s." % syscall)
+            return True, 0.0, "Execution killed because of " \
+                "forbidden syscall %s." % syscall
 
         # Forbidden file access: returning the error to the user.
         # FIXME - Tell which file raised this error.
@@ -525,17 +531,17 @@ class TaskType:
             with codecs.open(stderr_filename, "r", "utf-8") as stderr_file:
                 try:
                     outcome = stdout_file.readline().strip()
-                except UnicodeDecodeError as e:
+                except UnicodeDecodeError as error:
                     with async_lock:
                         logger.error("Unable to interpret manager stdout "
-                                     "(outcome) as unicode. %s" % repr(e))
+                                     "(outcome) as unicode. %r" % error)
                     return False, None, None
                 try:
                     text = filter_ansi_escape(stderr_file.readline())
-                except UnicodeDecodeError as e:
+                except UnicodeDecodeError as error:
                     with async_lock:
                         logger.error("Unable to interpret manager stderr "
-                                     "(text) as unicode. %s" % repr(e))
+                                     "(text) as unicode. %r" % error)
                     return False, None, None
         try:
             outcome = float(outcome)
@@ -560,6 +566,7 @@ class TaskType:
         return (bool, float, string): see evaluation_step.
 
         """
+        # TODO: why we don't use *output_filename?
         for filename, digest in files_to_get.iteritems():
             self.sandbox_operation("create_file_from_storage",
                                    filename, digest)
@@ -759,7 +766,6 @@ class TaskTypeBatch(TaskType):
         return self.finish_evaluation_testcase(test_number,
                                                success, outcome, text)
 
-
     def evaluate(self):
         """See TaskType.evaluate.
 
@@ -856,7 +862,6 @@ class TaskTypeOutputOnly(TaskType):
         return self.finish_evaluation_testcase(test_number,
                                                success, outcome, text)
 
-
     def evaluate(self):
         """See TaskType.evaluate.
 
@@ -876,4 +881,3 @@ class TaskTypeOutputOnly(TaskType):
             if not success:
                 return self.finish_evaluation(False)
         return self.finish_evaluation(True)
-

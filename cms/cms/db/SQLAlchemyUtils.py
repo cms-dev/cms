@@ -81,12 +81,13 @@ class SessionGen:
     """
     def __init__(self, commit=False):
         self.commit = commit
+        self.session = None
 
     def __enter__(self):
         self.session = Session()
         return self.session
 
-    def __exit__(self, a, b, c):
+    def __exit__(self, unused1, unused2, unused3):
         if self.commit:
             self.session.commit()
         else:
@@ -94,23 +95,23 @@ class SessionGen:
         self.session.close()
 
 
-def get_from_id(cls, id, session):
+def get_from_id(cls, _id, session):
     """Given a session and an id, this class method returns the object
     corresponding to the class and id, if existing.
 
     cls (class): the class to which the method is attached
-    id (string): the id of the object we want
+    _id (string): the id of the object we want
     session (SQLAlchemy session): the session to query
     returns (object): the wanted object, or None
 
     """
     try:
-        return session.query(cls).filter(cls.id == id).one()
+        return session.query(cls).filter(cls.id == _id).one()
     except NoResultFound:
         return None
     except MultipleResultsFound:
         return None
-Base.get_from_id = classmethod(get_from_id)
+
 
 def get_session(self):
     """Get the session to which this object is bound, possibly None.
@@ -120,4 +121,7 @@ def get_session(self):
         return sessionlib.object_session(self)
     except:
         return None
+
+
+Base.get_from_id = classmethod(get_from_id)
 Base.get_session = get_session

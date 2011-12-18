@@ -28,7 +28,6 @@ service.
 import time
 
 from AsyncLibrary import Service, logger
-from cms.async import ServiceCoord
 
 
 class TestService(Service):
@@ -78,7 +77,7 @@ class TestService(Service):
 
         try:
             method = getattr(self, "test_%03d" % self.current)
-        except AttributeError as e:
+        except AttributeError:
             total = self.current
             if total == 0:
                 logger.info("Test suite completed.")
@@ -120,5 +119,3 @@ class TestService(Service):
         else:
             self.retry = retry
         self.delta = time.time() - self.start
-
-

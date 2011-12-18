@@ -33,6 +33,7 @@ from cms.db.SQLAlchemyUtils import Base
 
 from contextlib import contextmanager
 
+
 class FSObject(Base):
     """Class to describe a file stored in the database.
 

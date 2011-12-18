@@ -19,8 +19,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 class JobException(Exception):
-    def __init__(self, msg = ""):
+    """Exception raised by a worker doing a job.
+
+    """
+    def __init__(self, msg=""):
         self.msg = msg
 
     def __str__(self):

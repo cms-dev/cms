@@ -136,12 +136,12 @@ class ResourceService(Service):
                 logger.info("Restarting (%s, %s)..." % (service.name,
                                                         service.shard))
                 devnull = os.open(os.devnull, os.O_WRONLY)
-                p = subprocess.Popen(["cms%s" % service.name,
-                                      str(service.shard),
-                                      str(self.contest_id)],
-                                     stdout=devnull,
-                                     stderr=subprocess.STDOUT)
-                self._launched_processes.add(p)
+                process = subprocess.Popen(["cms%s" % service.name,
+                                            str(service.shard),
+                                            str(self.contest_id)],
+                                           stdout=devnull,
+                                           stderr=subprocess.STDOUT)
+                self._launched_processes.add(process)
 
         # Run forever.
         return True
@@ -172,13 +172,13 @@ class ResourceService(Service):
         """
         logger.debug("ResourceService._find_proc")
         cmdline = Config.process_cmdline[:]
-        l = len(cmdline)
-        for i in range(l):
+        length = len(cmdline)
+        for i in range(length):
             cmdline[i] = cmdline[i].replace("%s", service.name)
             cmdline[i] = cmdline[i].replace("%d", str(service.shard))
         for proc in psutil.get_process_list():
             try:
-                if proc.cmdline[:l] == cmdline:
+                if proc.cmdline[:length] == cmdline:
                     self._services_prev_cpu_times[service] = \
                         proc.get_cpu_times()
                     return proc
@@ -245,8 +245,8 @@ class ResourceService(Service):
         data["services"] = {}
         # Details of our services
         for service in self._local_services:
-            d = {"autorestart": self._will_restart[service],
-                 "running": True}
+            dic = {"autorestart": self._will_restart[service],
+                   "running": True}
             proc = self._procs[service]
             # If we don't have a previously found process for the
             # service, we find it
@@ -254,73 +254,74 @@ class ResourceService(Service):
                 proc = self._find_proc(service)
             # If we still do not find it, there is no process
             if proc is None:
-                d["running"] = False
+                dic["running"] = False
             # We have a process, but maybe it has been shut down
             elif not proc.is_running():
                 # If so, let us find the new one
                 proc = self._find_proc(service)
                 # If there is no new one, continue
                 if proc is None:
-                    d["running"] = False
+                    dic["running"] = False
             # If the process is not running, we have nothing to do.
-            if not d["running"]:
-                data["services"][str(service)] = d
+            if not dic["running"]:
+                data["services"][str(service)] = dic
                 continue
 
             try:
-                d["since"] = self._last_saved_time - \
-                                         proc.create_time
-                d["resident"], d["virtual"] = \
+                dic["since"] = self._last_saved_time - proc.create_time
+                dic["resident"], dic["virtual"] = \
                     (x / 1048576  for x in proc.get_memory_info())
                 cpu_times = proc.get_cpu_times()
-                d["user"] = int(round((cpu_times[0] -
-                    self._services_prev_cpu_times[service][0])
-                    / delta * 100))
-                d["sys"] = int(round((cpu_times[1] -
-                    self._services_prev_cpu_times[service][1])
-                    / delta * 100))
+                dic["user"] = int(
+                    round((cpu_times[0] -
+                           self._services_prev_cpu_times[service][0])
+                          / delta * 100))
+                dic["sys"] = int(
+                    round((cpu_times[1] -
+                           self._services_prev_cpu_times[service][1])
+                          / delta * 100))
                 self._services_prev_cpu_times[service] = cpu_times
                 try:
-                    d["threads"] = proc.get_num_threads()
+                    dic["threads"] = proc.get_num_threads()
                 except AttributeError:
-                    d["threads"] = 0 # 0 = Not implemented
+                    dic["threads"] = 0  # 0 = Not implemented
 
                 self._procs[service] = proc
             except psutil.error.NoSuchProcess:
                 # Shut down while we operated?
-                d = {"autorestart": self._will_restart[service],
-                     "running": False}
-            data["services"][str(service)] = d
+                dic = {"autorestart": self._will_restart[service],
+                       "running": False}
+            data["services"][str(service)] = dic
 
         if store:
-            if len(self._local_store) >= 5000: # almost 7 hours
+            if len(self._local_store) >= 5000:  # almost 7 hours
                 self._local_store = self._local_store[1:]
             self._local_store.append((now, data))
 
         return True
 
-    def _locate(self, time, start=0, end=None):
+    def _locate(self, _time, start=0, end=None):
         """Perform a binary search to find the index of the first
-        element >= time.
+        element >= _time.
 
-        time (int): the time to search
-        returns (int): the index of the first element >= time
+        _time (int): the time to search
+        returns (int): the index of the first element >= _time
 
         """
         logger.debug("ResourceService._locate")
-        l = len(self._local_store)
-        if l == 0:
+        length = len(self._local_store)
+        if length == 0:
             return start
         if end is None:
-            end = l - 1
-        if self._local_store[start][0] >= time:
+            end = length - 1
+        if self._local_store[start][0] >= _time:
             return start
-        elif self._local_store[end][0] < time:
+        elif self._local_store[end][0] < _time:
             return None
         elif end == start + 1:
             return end
         mid = (start + end) / 2
-        if self._local_store[mid][0] >= time:
+        if self._local_store[mid][0] >= _time:
             return self._locate(time, start, mid)
         else:
             return self._locate(time, mid, end)
@@ -358,8 +359,8 @@ class ResourceService(Service):
         except ValueError:
             logger.error("Unable to decode service shard.")
 
-        rs = RemoteService(self, ServiceCoord(name, shard))
-        rs.quit(reason="Asked by ResourceService")
+        remote_service = RemoteService(self, ServiceCoord(name, shard))
+        remote_service.quit(reason="Asked by ResourceService")
 
     @rpc_method
     def toggle_autorestart(self, service):

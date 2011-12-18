@@ -121,10 +121,7 @@ class SyncRPCRequestHandler(tornado.web.RequestHandler):
             return
 
         self.application.service.remote_services[service].__getattr__(method)(
-            callback=self._request_callback,
-            plus = 0,
-            **arguments)
-
+            callback=self._request_callback, plus=0, **arguments)
 
     @rpc_callback
     def _request_callback(self, caller, data, plus, error=None):
@@ -155,7 +152,8 @@ class WebService(Service):
 
         try:
             if parameters["debug"] == True:
-                fcntl.fcntl(self.server.socket, fcntl.F_SETFD, fcntl.FD_CLOEXEC)
+                fcntl.fcntl(self.server.socket,
+                            fcntl.F_SETFD, fcntl.FD_CLOEXEC)
         except KeyError:
             pass
 
@@ -169,7 +167,7 @@ class WebService(Service):
                      (r"/rpc_answer", RPCAnswerHandler),
                      (r"/sync_rpc_request/([a-zA-Z0-9_-]+)/" + \
                       "([0-9]+)/([a-zA-Z0-9_-]+)",
-                      SyncRPCRequestHandler),]
+                      SyncRPCRequestHandler)]
         self.application = tornado.web.Application(handlers, **parameters)
 
         # xheaders=True means that Tornado uses the content of the

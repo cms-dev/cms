@@ -24,17 +24,14 @@
 """
 
 import os
-import sys
-import time
 
 import tempfile
 import shutil
-import codecs
 import hashlib
 
 from cms import Config
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
-from cms.service.Utils import mkdir, random_string
+from cms.service.Utils import mkdir
 
 
 class FileCacher:
@@ -43,7 +40,7 @@ class FileCacher:
 
     """
 
-    CHUNK_SIZE = 2**20
+    CHUNK_SIZE = 2 ** 20
 
     def __init__(self, service):
         """Initialization.
@@ -105,7 +102,7 @@ class FileCacher:
 
                     # Copy the file into the lobject
                     with fso.get_lobject(mode='rb') as lo:
-                        buf = lo.read(self.CHUNK_SIZE) 
+                        buf = lo.read(self.CHUNK_SIZE)
                         while buf != '':
                             #hasher.update(buf)
                             temp_file.write(buf)
@@ -175,7 +172,7 @@ class FileCacher:
         elif binary_data is not None:
             with open(temp_path, 'wb') as temp_file:
                 temp_file.write(binary_data)
-        else: # file_obj is not None.
+        else:  # file_obj is not None.
             with open(temp_path, 'wb') as temp_file:
                 shutil.copyfileobj(file_obj, temp_file)
 
@@ -187,7 +184,7 @@ class FileCacher:
 
                 # Copy the file into the lobject
                 with fso.get_lobject(session, mode='wb') as lo:
-                    buf = temp_file.read(self.CHUNK_SIZE) 
+                    buf = temp_file.read(self.CHUNK_SIZE)
                     while buf != '':
                         hasher.update(buf)
                         while len(buf) > 0:
@@ -217,7 +214,6 @@ class FileCacher:
                     os.path.join(self.obj_dir, digest))
 
         return digest
-
 
     def describe(self, digest):
         """Return the description of a file given its digest.
@@ -263,7 +259,8 @@ class FileCacher:
 
         """
         def _list(session):
-            return map(lambda x: (x.digest, x.description), session.query(FSObject))
+            return map(lambda x: (x.digest, x.description),
+                       session.query(FSObject))
 
         if session is not None:
             return _list(session)
@@ -271,14 +268,16 @@ class FileCacher:
             with SessionGen() as session:
                 return _list(session)
 
+
 def main():
-    global ls, fc, Session
-    from cms.db.SQLAlchemyAll import Session, metadata
+    global ls, fc
+    from cms.db.SQLAlchemyAll import metadata
     metadata.create_all()
     from cms.service import LogService
     ls = LogService.LogService(0)
     fc = FileCacher(ls)
     #fc.put_file(description="ciao", path="/etc/resolv.conf")
+
 
 if __name__ == '__main__':
     main()

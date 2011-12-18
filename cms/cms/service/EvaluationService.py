@@ -36,8 +36,7 @@ from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback, logger
 from cms.async import ServiceCoord, get_service_shards
 from cms.db.Utils import ask_for_contest
 
-from cms.db.SQLAlchemyAll import Session, Contest, Submission, \
-     SessionGen, Score
+from cms.db.SQLAlchemyAll import Contest, Submission, SessionGen
 
 
 class JobQueue:
@@ -220,7 +219,6 @@ class WorkerPool:
             priority, timestamp = self.side_data[shard]
             self.release_worker(shard)
             self.service.queue.push(job, priority, timestamp)
-
 
     def acquire_worker(self, job, side_data=None):
         """Tries to assign a job to an available worker. If no workers
@@ -416,6 +414,7 @@ class WorkerPool:
 
         return lost_jobs
 
+
 class EvaluationService(Service):
     """Evaluation service.
 
@@ -561,20 +560,20 @@ class EvaluationService(Service):
             contest = session.query(Contest).\
                       filter_by(id=self.contest_id).first()
             for user in contest.users:
-                for s in user.submissions:
-                    if s.compilation_outcome == "fail":
+                for submission in user.submissions:
+                    if submission.compilation_outcome == "fail":
                         stats["compilation_fail"] += 1
-                    elif s.compilation_outcome == None:
-                        if s.compilation_tries >= \
+                    elif submission.compilation_outcome == None:
+                        if submission.compilation_tries >= \
                                EvaluationService.MAX_COMPILATION_TRIES:
                             stats["max_compilations"] += 1
                         else:
                             stats["compiling"] += 1
-                    elif s.compilation_outcome == "ok":
-                        if s.evaluated():
+                    elif submission.compilation_outcome == "ok":
+                        if submission.evaluated():
                             stats["evaluated"] += 1
                         else:
-                            if s.evaluation_tries >= \
+                            if submission.evaluation_tries >= \
                                    EvaluationService.MAX_EVALUATION_TRIES:
                                 stats["max_evaluations"] += 1
                             else:

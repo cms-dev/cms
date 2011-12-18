@@ -28,7 +28,8 @@ import sys
 
 from sqlalchemy.orm import relationship, backref
 
-from cms.db.SQLAlchemyUtils import db, Base, metadata, Session, ScopedSession, SessionGen
+from cms.db.SQLAlchemyUtils import db, Base, metadata, Session, \
+     ScopedSession, SessionGen
 
 from cms.db.Contest import Contest, Announcement
 from cms.db.View import RankingView, Score

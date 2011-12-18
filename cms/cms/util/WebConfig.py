@@ -24,29 +24,29 @@ from cms import Config
 
 # ssl_options are the same options for ssl.wrap_socket.
 # server side is already included.
-# ssl_options = {"certfile" : "cert.pem"}
+# ssl_options = {"certfile": "cert.pem"}
 ssl_options = None
 
 
 quick_answers = {
     "yes": "Yes",
-    "no" : "No",
-    "answered" : "Answered in task description",
-    "invalid" : "Invalid question",
-    "nocomment" : "No comment",
+    "no": "No",
+    "answered": "Answered in task description",
+    "invalid": "Invalid question",
+    "nocomment": "No comment",
     }
 
 # FIXME - Implement some smarter search function
 tornado_files_basepath = os.path.dirname(__file__)
 
 contest_parameters = {
-    "login_url": "/" ,
+    "login_url": "/",
     "template_path": os.path.join(tornado_files_basepath,
                                   "templates", "contest"),
     "static_path": os.path.join(tornado_files_basepath,
                                 "static", "contest"),
     "cookie_secret": Config.tornado_secret_key,
-    "debug" : Config.tornado_debug,
+    "debug": Config.tornado_debug,
     }
 
 admin_parameters = {
@@ -58,4 +58,3 @@ admin_parameters = {
     "cookie_secret": Config.tornado_secret_key,
     "debug": Config.tornado_debug,
     }
-

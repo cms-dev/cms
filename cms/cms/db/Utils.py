@@ -19,9 +19,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Utilities functions that interacts with the database.
+
+"""
+
 import sys
 
-from cms.db.SQLAlchemyAll import Session, metadata, Contest, SessionGen
+from cms.db.SQLAlchemyAll import metadata, Contest, SessionGen
+
 
 def analyze_table(tablename, session=None):
     """Analyze the specified table (issuing the corresponding ANALYZE
@@ -39,6 +44,7 @@ def analyze_table(tablename, session=None):
 
     session.execute("ANALYZE %s;" % (tablename))
 
+
 def analyze_all_tables(session=None):
     """Analyze all tables tracked by SQLAlchemy.
 
@@ -54,6 +60,7 @@ def analyze_all_tables(session=None):
 
     for table in metadata.sorted_tables:
         analyze_table(table.name, session)
+
 
 def get_contest_list(session=None):
     """Return all the contest objects available on the database.
@@ -73,10 +80,18 @@ def get_contest_list(session=None):
 
     return session.query(Contest).all()
 
+
 def ask_for_contest(skip=None):
-    # We are here because a service that needs a contest just
-    # started. It seems nice to create the tables first if they do not
-    # exists.
+    """Print a greeter that ask the user for a contest, if there is
+    not an indication of which contest to use in the command line.
+
+    skip (int/None): how many commandline arguments are already taken
+                     by other usages.
+
+    return (int): a contest_id.
+
+    """
+    # It seems nice to create the tables first if they do not exists.
     metadata.create_all()
 
     if isinstance(skip, int) and len(sys.argv) > skip + 1:
@@ -97,14 +112,16 @@ def ask_for_contest(skip=None):
                 sys.exit(0)
             print "Contests available:"
             for i, row in enumerate(contests):
-                print "%3d  -  ID: %d  -  Name: %s  -  Description: %s" % (i + 1, row.id, row.name, row.description),
-                matches[i+1] = row.id
+                print "%3d  -  ID: %d  -  Name: %s  -  Description: %s" % \
+                      (i + 1, row.id, row.name, row.description),
+                matches[i + 1] = row.id
                 if i == n_contests - 1:
                     print " (default)"
                 else:
                     print
 
-        contest_number = raw_input("Insert the number next to the contest you want to load: ")
+        contest_number = raw_input("Insert the number next to the contest "
+                                   "you want to load: ")
         if contest_number == "":
             contest_number = n_contests - 1
         try:

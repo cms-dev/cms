@@ -138,9 +138,9 @@ class Contest(Base):
         return (Task): the corresponding task object, or KeyError.
 
         """
-        for t in self.tasks:
-            if t.name == task_name:
-                return t
+        for task in self.tasks:
+            if task.name == task_name:
+                return task
         raise KeyError("Task not found")
 
     # FIXME - Use SQL syntax
@@ -153,9 +153,9 @@ class Contest(Base):
                       KeyError.
 
         """
-        for i, t in enumerate(self.tasks):
-            if t.name == task_name:
-                return i
+        for idx, task in enumerate(self.tasks):
+            if task.name == task_name:
+                return idx
         raise KeyError("Task not found")
 
     # FIXME - Use SQL syntax
@@ -166,9 +166,9 @@ class Contest(Base):
         return (User): the corresponding user object, or KeyError.
 
         """
-        for u in self.users:
-            if u.username == username:
-                return u
+        for user in self.users:
+            if user.username == username:
+                return user
         raise KeyError("User not found")
 
     def enumerate_files(self, skip_submissions=False, light=False):
@@ -185,12 +185,12 @@ class Contest(Base):
         for task in self.tasks:
 
             # Enumerate attachments
-            for f in task.attachments.values():
-                files.add(f.digest)
+            for _file in task.attachments.values():
+                files.add(_file.digest)
 
             # Enumerate managers
-            for f in task.managers.values():
-                files.add(f.digest)
+            for _file in task.managers.values():
+                files.add(_file.digest)
 
             # Enumerate testcases
             if not light:
@@ -205,13 +205,13 @@ class Contest(Base):
             for submission in self.get_submissions():
 
                 # Enumerate files
-                for f in submission.files.values():
-                    files.add(f.digest)
+                for _file in submission.files.values():
+                    files.add(_file.digest)
 
                 # Enumerate executables
                 if not light:
-                    for f in submission.executables.values():
-                        files.add(f.digest)
+                    for _file in submission.executables.values():
+                        files.add(_file.digest)
 
         return files
 
@@ -341,7 +341,8 @@ class Contest(Base):
         if token_gen_time is not None and token_gen_number > 0 and \
                 (token_max is None or avail < token_max):
             next_gen_time = start + token_gen_time * 60 * \
-                            int((timestamp - start) / (token_gen_time * 60) + 1)
+                            int((timestamp - start) /
+                                (token_gen_time * 60) + 1)
 
         # If we have more tokens than how many we are allowed to play,
         # cap it, and note that no more will be generated.

@@ -28,6 +28,7 @@ import simplejson as json
 
 from cms.async import ServiceCoord, Address, Config
 
+
 def load_config_file(cmsconf):
     """Populate the Config class with everything that sits inside the
     JSON file cmsconf (usually something/etc/cms.conf). The only
@@ -44,30 +45,29 @@ def load_config_file(cmsconf):
 
     """
     # Load config file
-    d = json.load(open(cmsconf))
+    dic = json.load(open(cmsconf))
 
     # Put core and test services in Config
-    for service in d["core_services"]:
-        for shard_number, shard in enumerate(d["core_services"][service]):
+    for service in dic["core_services"]:
+        for shard_number, shard in enumerate(dic["core_services"][service]):
             Config.core_services[ServiceCoord(service, shard_number)] = \
                 Address(*shard)
-    del d["core_services"]
+    del dic["core_services"]
 
-    for service in d["other_services"]:
-        for shard_number, shard in enumerate(d["other_services"][service]):
+    for service in dic["other_services"]:
+        for shard_number, shard in enumerate(dic["other_services"][service]):
             Config.other_services[ServiceCoord(service, shard_number)] = \
                 Address(*shard)
-    del d["other_services"]
+    del dic["other_services"]
 
     # Put everything else. Note that we re-use the Config class, which
     # async thinks it is just for itself. This should cause no
     # problem, though, since Config's usage by async is very
     # read-only.
-    for key in d:
-        setattr(Config, key, d[key])
+    for key in dic:
+        setattr(Config, key, dic[key])
 
     # Put also the _installed data.
-    import pwd
     import sys
     Config._installed = sys.argv[0].startswith("/usr/") and \
         sys.argv[0] != '/usr/bin/ipython' and \

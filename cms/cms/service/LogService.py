@@ -27,7 +27,6 @@ import os
 import time
 
 import codecs
-import base64
 
 from cms.async.AsyncLibrary import Service, rpc_method, logger
 from cms.async import ServiceCoord
@@ -35,6 +34,7 @@ from cms.util.Utils import format_log, SEV_CRITICAL, SEV_ERROR, \
     SEV_WARNING, SEV_INFO, SEV_DEBUG
 from cms.service.Utils import mkdir
 from cms import Config
+
 
 class LogService(Service):
     """Logger service.
@@ -80,13 +80,16 @@ class LogService(Service):
             if len(self._last_messages) > 100:
                 del self._last_messages[0]
 
-        print >> self._log_file, format_log(msg, coord, operation, severity, timestamp, colors=Config.color_remote_file_log)
-        print format_log(msg, coord, operation, severity, timestamp, colors=Config.color_remote_shell_log)
-
+        print >> self._log_file, format_log(
+            msg, coord, operation, severity, timestamp,
+            colors=Config.color_remote_file_log)
+        print format_log(msg, coord, operation, severity, timestamp,
+                         colors=Config.color_remote_shell_log)
 
     @rpc_method
     def last_messages(self):
         return self._last_messages
+
 
 def main():
     import sys

@@ -35,16 +35,16 @@ import heapq
 
 import asyncore
 import asynchat
-import datetime
 import codecs
 
 from Utils import random_string, mkdir, \
      encode_binary, encode_length, encode_json, \
      decode_binary, decode_length, decode_json
-from cms.util.Utils import ANSI_FG_COLORS, format_log, \
+from cms.util.Utils import format_log, \
     SEV_CRITICAL, SEV_ERROR, SEV_WARNING, SEV_INFO, SEV_DEBUG
 from cms.async import ServiceCoord, Address, get_service_address
 from cms import Config
+
 
 def rpc_callback(func):
     """Tentative decorator for a RPC callback function. Up to now it
@@ -259,10 +259,10 @@ class Service:
         try:
             while not self._exit:
                 self._step()
-        except Exception as e:
+        except Exception as error:
             err_msg = "Exception not managed, quitting. " \
                       "Exception `%s' and traceback `%s'" % \
-                      (repr(e), traceback.format_exc())
+                      (repr(error), traceback.format_exc())
             logger.critical(err_msg)
 
     def _step(self, maximum=0.1):
@@ -359,7 +359,6 @@ class Service:
         logger.info("Trying to exit as asked by another service (%s)." %
                     reason)
         self.exit()
-
 
     def method_info(self, method_name):
         """Returns some information about the requested method, or
@@ -577,8 +576,8 @@ class RemoteService(asynchat.async_chat):
             # If the rpc method is threaded, then we start the thread
             # and return immediately.
             if threaded:
-                t = ThreadedRPC(self, message, response, binary_response)
-                t.start()
+                thread = ThreadedRPC(self, message, response, binary_response)
+                thread.start()
                 return
 
             # Otherwise, we compute the method here and send the reply
@@ -596,7 +595,7 @@ class RemoteService(asynchat.async_chat):
         # Otherwise, is a response to our rpc call.
         else:
             if "__id" not in message:
-                logger.error("Response without __id field detected, discarding.")
+                logger.error("Response without __id field, discarding.")
                 return
             ident = message["__id"]
             if ident in RPCRequest.pending_requests:
@@ -622,9 +621,9 @@ class RemoteService(asynchat.async_chat):
                 binary_message = ""
             json_message = encode_json(response)
             json_length = encode_length(len(json_message))
-        except ValueError as e:
+        except ValueError as error:
             logger.error("Cannot send response because of " +
-                         "encoding error. %s" % repr(e))
+                         "encoding error. %s" % repr(error))
             return
         self._push_right(json_length + json_message + binary_message)
 
@@ -697,6 +696,7 @@ class RemoteService(asynchat.async_chat):
             cb_result = {"data": None,
                          "error": None,
                          "completed": False}
+
             @rpc_callback
             def callback(self, data, error=None):
                 cb_result["data"] = data
@@ -781,8 +781,8 @@ class RemoteService(asynchat.async_chat):
         to_push = "".join(data) + "\r\n"
         try:
             self.push(to_push)
-        except Exception as e:
-            logger.error("Push not ended correctly because of %r" % e)
+        except Exception as error:
+            logger.error("Push not ended correctly because of %r" % error)
             return False
         return True
 
@@ -919,7 +919,6 @@ class Logger:
             os.path.join(log_dir, "%d.log" % int(time.time())),
             "w", "utf-8")
         self.info("%s %d up and running!" % service)
-
 
     def log(self, msg, operation=None, severity=None, timestamp=None):
         """Record locally a log message and tries to send it to the

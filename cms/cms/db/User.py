@@ -113,16 +113,20 @@ class User(Base):
         """
         submissions = []
         if not skip_submissions:
-            submissions = [submission.export_to_dict() for submission in self.submissions]
+            submissions = [submission.export_to_dict()
+                           for submission in self.submissions]
         return {'real_name':   self.real_name,
                 'username':    self.username,
                 'password':    self.password,
                 'timezone':    self.timezone,
                 'ip':          self.ip,
                 'hidden':      self.hidden,
-                'messages':    [message.export_to_dict() for message in self.messages],
-                'questions':   [question.export_to_dict() for question in self.questions],
+                'messages':    [message.export_to_dict()
+                                for message in self.messages],
+                'questions':   [question.export_to_dict()
+                                for question in self.questions],
                 'submissions': submissions}
+
 
 class Message(Base):
     """Class to store a private message from the managers to the

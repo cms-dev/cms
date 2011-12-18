@@ -117,12 +117,14 @@ class ScoreType:
 
         # We expect submissions to arrive more or less in the right
         # order, so we insert-sort the new one.
-        i = len(self.submissions[username])-1
+        i = len(self.submissions[username]) - 1
         while i > 0 and \
-            self.pool[self.submissions[username][i-1]]["timestamp"] > \
+            self.pool[self.submissions[username][i - 1]]["timestamp"] > \
             self.pool[self.submissions[username][i]]["timestamp"]:
-            self.submissions[username][i-1], self.submissions[username][i] = \
-                self.submissions[username][i], self.submissions[username][i-1]
+            self.submissions[username][i - 1], \
+                self.submissions[username][i] = \
+                self.submissions[username][i], \
+                self.submissions[username][i - 1]
             i -= 1
 
         self.update_scores(submission_id)
@@ -300,8 +302,8 @@ class ScoreTypeRelative(ScoreType):
         # amongst the last submissions, but only tokened and basic
         # outcomes. Elements may be None.
         self.best_tokenized_outcomes = []
-        for p in self.parameters[1]:
-            self.best_tokenized_outcomes.append(p)
+        for par in self.parameters[1]:
+            self.best_tokenized_outcomes.append(par)
 
         # Temporary store the best outcomes for every evaluation as
         # computed in compute_score, to use them in update_scores.
@@ -336,7 +338,6 @@ class ScoreTypeRelative(ScoreType):
         best_outcomes (list):
 
         """
-        submission_details = self.pool[new_submission_id]
         # If we just computed best_outcomes in compute_score, we don't
         # compute it again.
         if self.best_outcomes is None:

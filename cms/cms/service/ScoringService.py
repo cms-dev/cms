@@ -31,8 +31,6 @@ services the scores, via http requests.
 import httplib
 import simplejson
 import base64
-import errno
-import string
 
 from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
 from cms.db.Utils import ask_for_contest
@@ -44,6 +42,7 @@ from cms import Config
 
 class CannotSendError(Exception):
     pass
+
 
 def get_authorization(username, password):
     """Compute the basic authentication string needed to send data to
@@ -68,16 +67,18 @@ def encode_id(entity_id):
 
     """
     encoded_id = ""
-    for c in str(entity_id):
-        if c not in string.letters + "0123456789":
+    for char in str(entity_id):
+        if char not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
+               "abcdefghijklmnopqrstuvwxyz" \
+               "0123456789":
             try:
-                encoded_id += "_" + hex(ord(c))[-2:]
+                encoded_id += "_" + hex(ord(char))[-2:]
             except TypeError:
-                logging.error("Entity %s cannot be send correctly, "
-                              "sending anyway (this may cause errors)." %
-                              entity_id)
+                logger.error("Entity %s cannot be send correctly, "
+                             "sending anyway (this may cause errors)." %
+                             entity_id)
         else:
-            encoded_id += c
+            encoded_id += char
     return encoded_id
 
 
@@ -96,9 +97,9 @@ def post_data(connection, url, data, auth, method="POST"):
                        url,
                        simplejson.dumps(data),
                        {'Authorization': auth})
-    r = connection.getresponse()
-    r.read()
-    return r.status
+    res = connection.getresponse()
+    res.read()
+    return res.status
 
 
 def put_data(connection, url, data, auth):
@@ -115,8 +116,8 @@ def safe_post_data(connection, url, data, auth, operation):
     """
     try:
         status = post_data(connection, url, data, auth)
-    except Exception as e:
-        status = repr(e)
+    except Exception as error:
+        status = repr(error)
     if status not in [200, 201]:
         logger.info("Status %s while %s to ranking." %
                     (status, operation))
@@ -130,8 +131,8 @@ def safe_put_data(connection, url, data, auth, operation):
     """
     try:
         status = put_data(connection, url, data, auth)
-    except Exception as e:
-        status = repr(e)
+    except Exception as error:
+        status = repr(error)
     if status not in [200, 201]:
         logger.info("Status %s while %s to ranking." %
                     (status, operation))
@@ -230,7 +231,7 @@ class ScoringService(Service):
                 continue
             try:
                 method(*args)
-            except Exception as err:
+            except:
                 logger.info("Ranking %s not connected or generic error." %
                             args[0][0])
                 new_queue.append((method, args))

@@ -88,7 +88,7 @@ def get_service_shards(service):
         i += 1
 
 
-def make_async(f):
+def make_async(func):
     """Decorator to allow the use of yields in a method instead of
     splitting the computation in several methods/callbacks. RPC calls
     in the method are done in the same way as a normal call, but one
@@ -98,9 +98,9 @@ def make_async(f):
     we don't know that the call is yielded.
 
     """
-    @wraps(f)
+    @wraps(func)
     def wrapper(*args, **kwargs):
-        generator = f(*args, **kwargs)
+        generator = func(*args, **kwargs)
         if not isinstance(generator, GeneratorType):
             # The method we are decorating is not a generator (i.e.,
             # containes no yields), hence we return immediately its

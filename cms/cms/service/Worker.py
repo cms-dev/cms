@@ -20,18 +20,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import threading
-import sys
 import traceback
 
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import logger, async_lock, Service, \
      rpc_method, rpc_threaded
 from cms.service.TaskType import TaskTypes
-from cms.db.SQLAlchemyAll import Session, Submission, SessionGen, Contest
+from cms.db.SQLAlchemyAll import Submission, SessionGen, Contest
 from cms.service import JobException
 from cms.service.FileStorage import FileCacher
 
+
 class Worker(Service):
+    """This service implement the possibility to compile and evaluate
+    submissions in a sandbox. The instructions to follow for the
+    operations are in the TaskType classes, while the sandbox is in
+    the Sandbox module.
+
+    """
 
     def __init__(self, shard):
         logger.initialize(ServiceCoord("Worker", shard))
@@ -47,8 +53,8 @@ class Worker(Service):
         if submission is None:
             err_msg = "Couldn't find submission %s " + \
                 "in the database" % submission_id
-            logger.critical(msg_err)
-            raise JobException(msg_err)
+            logger.critical(err_msg)
+            raise JobException(err_msg)
 
         try:
             task_type = TaskTypes.get_task_type(submission, self.session,
@@ -57,7 +63,7 @@ class Worker(Service):
             err_msg = "Task type `%s' not known for submission %s" \
                 % (submission.task.task_type, submission_id)
             logger.critical(err_msg)
-            raise JobException(msg_err)
+            raise JobException(err_msg)
 
         return (submission, task_type)
 
@@ -84,7 +90,7 @@ class Worker(Service):
         """
         return self.action(submission_id, "evaluation")
 
-    # FIXME - rpc_threaded is distable becuase it makes the call fail:
+    # FIXME - rpc_threaded is disable because it makes the call fail:
     # we should investigate on this
     @rpc_method
     #@rpc_threaded
@@ -136,10 +142,10 @@ class Worker(Service):
                         task_type_action = task_type.compile
                     try:
                         success = task_type_action()
-                    except Exception as e:
+                    except Exception as error:
                         err_msg = "%s failed with not caught " \
-                            "exception `%s' and traceback `%s'" % \
-                            (job_type, repr(e), traceback.format_exc())
+                            "exception `%r' and traceback `%s'" % \
+                            (job_type, error, traceback.format_exc())
                         with async_lock:
                             logger.error(err_msg)
                         raise JobException(err_msg)
@@ -148,10 +154,10 @@ class Worker(Service):
                     with async_lock:
                         logger.info("Request finished")
                     return success
-            except Exception as e:
+            except Exception as error:
                 err_msg = "Worker failed the %s with exception " \
-                    "`%s' and traceback `%s'" % \
-                    (job_type, repr(e), traceback.format_exc())
+                    "`%r' and traceback `%s'" % \
+                    (job_type, error, traceback.format_exc())
                 with async_lock:
                     logger.error(err_msg)
                 raise JobException(err_msg)
@@ -170,9 +176,13 @@ class Worker(Service):
 
     @rpc_method
     def shut_down(self, reason):
-        #logger.operation = ""
-        #logger.info("Shutting down the worker because of reason `%s'" % reason)
-        raise NotImplementedError, "Worker.shut_down not implemented yet"
+        """Tries to shut down the worker. Not yet implemented.
+
+        """
+        # logger.operation = ""
+        # logger.info("Shutting down the worker "
+        #             "because of reason `%s'" % reason)
+        raise NotImplementedError("Worker.shut_down not implemented yet")
 
 
 def main():
