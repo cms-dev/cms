@@ -68,6 +68,7 @@ class Store(object):
                         data = f.read()
                         item = self._entity()
                         item.load(json.loads(data))
+                        item.key = name[:-5]
                         self._store[name[:-5]] = item
         except OSError:
             # the path isn't a directory or is inaccessible
