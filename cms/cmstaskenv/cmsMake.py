@@ -325,7 +325,7 @@ def main():
     if options.list:
         print "Available operations:"
         for entry in actions:
-            print "  %s -> %s (%s)" % (", ".join(entry[0]), ", ".join(entry[1]), entry[3])
+            print "  %s: %s -> %s" % (entry[3], ", ".join(entry[0]), ", ".join(entry[1]))
 
     elif options.clean:
         print "Cleaning"
