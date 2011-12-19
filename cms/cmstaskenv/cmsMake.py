@@ -40,6 +40,13 @@ TEXT_PDF = 'testo.pdf'
 TEXT_AUX = 'testo.aux'
 TEXT_LOG = 'testo.log'
 TEXT_HTML = 'testo.html'
+GEN_DIRNAME = 'gen'
+GEN_GEN = 'GEN'
+GEN_BASENAME = 'generatore'
+GEN_EXTS = ['.py', '.sh']
+INPUT_DIRNAME = 'input'
+OUTPUT_DIRNAME = 'output'
+RESULT_DIRNAME = 'result'
 
 DATA_DIRS = [os.path.join('.', 'cmstaskenv', 'data'), os.path.join('/', 'usr', 'local', 'share', 'cms', 'cmsMake')]
 
@@ -140,6 +147,55 @@ def build_text_list(base_dir):
     actions.append(([text_tex], [text_pdf, text_aux, text_log], make_pdf, 'compile to PDF'))
     return actions
 
+def iter_file(name):
+    for l in open(name, "r"):
+        l = (" " + l).split("#")[0][1:].strip("\n")
+        if l != "":
+            yield l
+
+def build_gen_list(base_dir):
+    input_dir = os.path.join(base_dir, INPUT_DIRNAME)
+    output_dir = os.path.join(base_dir, OUTPUT_DIRNAME)
+    gen_dir = os.path.join(base_dir, GEN_DIRNAME)
+    entries = os.listdir(gen_dir)
+    sources = filter(lambda x: endswith2(x, GEN_EXTS), entries)
+    gen_exe = None
+    for src in sources:
+        base, lang = basename2(src, GEN_EXTS)
+        if base == GEN_BASENAME:
+            gen_exe = os.path.join(GEN_DIRNAME, base + lang)
+            break
+    if gen_exe is None:
+        raise Exception("Couldn't find generator")
+    gen_GEN = os.path.join(GEN_DIRNAME, GEN_GEN)
+
+    # Count non-trivial lines in GEN
+    testcase_num = 0
+    for line in iter_file(os.path.join(base_dir, gen_GEN)):
+        testcase_num += 1
+
+    def make_input():
+        n = 1
+        try:
+            os.makedirs(input_dir)
+        except OSError:
+            pass
+        for line in iter_file(os.path.join(base_dir, gen_GEN)):
+            print >> sys.stderr, "Generating input # %d" % (n)
+            with open(os.path.join(input_dir, 'input%d.txt' % (n)), 'w') as fout:
+                call(base_dir,
+                     [gen_exe] + line.split(),
+                     stdout=fout)
+            n += 1
+
+    actions = []
+    actions.append(([gen_GEN, gen_exe],
+                    map(lambda x: os.path.join(INPUT_DIRNAME, 'input%d.txt' % (x)),
+                        range(1, testcase_num+1)),
+                    make_input,
+                    "input generation"))
+    return actions
+
 def build_action_list(base_dir):
     # Build a list of actions that cmsMake is able to do here. Each
     # action is described by a tuple (infiles, outfiles, callable,
@@ -161,14 +217,19 @@ def build_action_list(base_dir):
     actions += build_sols_list(base_dir)
     actions += build_checker_list(base_dir)
     actions += build_text_list(base_dir)
+    actions += build_gen_list(base_dir)
     return actions
 
 def clean(base_dir, generated_list):
+    # Delete all generated files
     for f in generated_list:
         try:
             os.remove(os.path.join(base_dir, f))
         except OSError:
             pass
+
+    # Delete other things
+    os.rmdir(os.path.join(base_dir, INPUT_DIRNAME))
 
 def build_execution_tree(actions):
     def noop():
