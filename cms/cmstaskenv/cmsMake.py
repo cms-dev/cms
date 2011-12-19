@@ -41,7 +41,7 @@ TEXT_AUX = 'testo.aux'
 TEXT_LOG = 'testo.log'
 TEXT_HTML = 'testo.html'
 
-DATA_DIRS = [os.path.join('.', 'data'), os.path.join('/', 'usr', 'local', 'share', 'cms', 'cmsMake')]
+DATA_DIRS = [os.path.join('.', 'cmstaskenv', 'data'), os.path.join('/', 'usr', 'local', 'share', 'cms', 'cmsMake')]
 
 def detect_data_dir():
     for dir in DATA_DIRS:
