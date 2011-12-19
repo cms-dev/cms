@@ -27,6 +27,8 @@ import subprocess
 import copy
 import functools
 
+from cms.util.Utils import get_compilation_command
+
 SOL_DIRNAME = 'sol'
 SOL_EXTS = ['.cpp', '.c', '.pas']
 CHECK_DIRNAME = 'cor'
@@ -65,34 +67,6 @@ def basename2(str, suffixes):
     except ValueError:
         return None
     return (str[:-len(suffixes[idx])], str[-len(suffixes[idx]):])
-
-# Copied from CMS; probably we should unify them
-def get_compilation_command(language, source_filenames, executable_filename):
-    """Returns the compilation command for the specified language,
-    source filenames and executable filename. The command is a list of
-    strings, suitable to be passed to the methods in subprocess
-    package.
-
-    language (string): one of the recognized languages.
-    source_filenames (list): a list of the string that are the
-                             filenames of the source files to compile.
-    executable_filename (string): the output file.
-    return (list): a list of string to be passed to subprocess.
-
-    """
-    # For compiling in 32-bit mode under 64-bit OS: add "-march=i686",
-    # "-m32" for gcc/g++. Don't know about Pascal. Anyway, this will
-    # require some better support from the evaluation environment
-    # (particularly the sandbox, which has to be compiled in a
-    # different way depending on whether it will execute 32- or 64-bit
-    # programs).
-    if language == "c":
-        command = ["/usr/bin/gcc", "-DEVAL", "-static", "-O2", "-lm", "-o", executable_filename]
-    elif language == "cpp":
-        command = ["/usr/bin/g++", "-DEVAL", "-static", "-O2", "-o", executable_filename]
-    elif language == "pas":
-        command = ["/usr/bin/fpc", "-dEVAL", "-XS", "-O2", "-o%s" % (executable_filename)]
-    return command + source_filenames
 
 def call(base_dir, args, stdin=None, stdout=None, stderr=None, env=None):
     print >> sys.stderr, "> Executing command %s in dir %s" % (" ".join(args), base_dir)
