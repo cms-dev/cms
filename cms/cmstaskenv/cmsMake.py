@@ -26,6 +26,7 @@ import sys
 import subprocess
 import copy
 import functools
+import shutil
 
 from cms.util.Utils import get_compilation_command
 
@@ -40,6 +41,8 @@ TEXT_PDF = 'testo.pdf'
 TEXT_AUX = 'testo.aux'
 TEXT_LOG = 'testo.log'
 TEXT_HTML = 'testo.html'
+INPUT0_TXT = 'input0.txt'
+OUTPUT0_TXT = 'output0.txt'
 GEN_DIRNAME = 'gen'
 GEN_GEN = 'GEN'
 GEN_BASENAME = 'generatore'
@@ -95,7 +98,7 @@ def build_sols_list(base_dir):
         lang = lang[1:]
         def compile_src(src, exe):
             call(base_dir, get_compilation_command(lang, [src], exe))
-        actions.append(([src], [exe], functools.partial(compile_src, src, exe), "compilation"))
+        actions.append(([src], [exe], functools.partial(compile_src, src, exe), 'compile solution'))
 
     return actions
 
@@ -112,7 +115,7 @@ def build_checker_list(base_dir):
             lang = lang[1:]
             def compile_check(src, exe):
                 call(base_dir, get_compilation_command(lang, [src], exe))
-            actions.append(([src], [exe], functools.partial(compile_check, src, exe), "compilation"))
+            actions.append(([src], [exe], functools.partial(compile_check, src, exe), 'compile checker'))
 
     return actions
 
@@ -141,10 +144,24 @@ def build_text_list(base_dir):
              ['pdflatex', '-output-directory', TEXT_DIRNAME, '-interaction', 'batchmode', text_tex],
              env={'TEXINPUTS': '.:%s:%s/file:' % (TEXT_DIRNAME, TEXT_DIRNAME)})
 
+    def make_input0():
+        with open(os.path.join(base_dir, INPUT0_TXT), 'w') as fout:
+            call(base_dir,
+                 ['xsltproc', os.path.join(DATA_DIR, 'estrai_input.xslt'), text_xml],
+                 stdout=fout)
+
+    def make_output0():
+        with open(os.path.join(base_dir, OUTPUT0_TXT), 'w') as fout:
+            call(base_dir,
+                 ['xsltproc', os.path.join(DATA_DIR, 'estrai_output.xslt'), text_xml],
+                 stdout=fout)
+
     actions = []
     actions.append(([text_xml], [text_html], make_html, 'compile to HTML'))
     actions.append(([text_xml], [text_tex], make_tex, 'compile to LaTeX'))
     actions.append(([text_tex], [text_pdf, text_aux, text_log], make_pdf, 'compile to PDF'))
+    actions.append(([text_xml], [INPUT0_TXT], make_input0, 'extract first input'))
+    actions.append(([text_xml], [OUTPUT0_TXT], make_output0, 'extract first output'))
     return actions
 
 def iter_file(name):
@@ -180,6 +197,7 @@ def build_gen_list(base_dir):
             os.makedirs(input_dir)
         except OSError:
             pass
+        shutil.copy(os.path.join(base_dir, INPUT0_TXT), os.path.join(input_dir, 'input0.txt'))
         for line in iter_file(os.path.join(base_dir, gen_GEN)):
             print >> sys.stderr, "Generating input # %d" % (n)
             with open(os.path.join(input_dir, 'input%d.txt' % (n)), 'w') as fout:
@@ -189,9 +207,9 @@ def build_gen_list(base_dir):
             n += 1
 
     actions = []
-    actions.append(([gen_GEN, gen_exe],
+    actions.append(([gen_GEN, gen_exe, INPUT0_TXT],
                     map(lambda x: os.path.join(INPUT_DIRNAME, 'input%d.txt' % (x)),
-                        range(1, testcase_num+1)),
+                        range(0, testcase_num+1)),
                     make_input,
                     "input generation"))
     return actions
