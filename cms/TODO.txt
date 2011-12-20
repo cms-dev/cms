@@ -54,6 +54,8 @@
   submission filler" and "avoid frequent submissions" will not work as
   expected. (This may be fixed using ip_hash in nginx.)
 
+* MED: why we forgot the possibility of using ssl for CWS?
+
 * MED: make cookies expire after some inactivity time.
 
 * LOW: reload of submissions' status does not work as it best, please

@@ -56,9 +56,7 @@ from cms.service.TaskType import TaskTypes
 from cms.service.FileStorage import FileCacher
 
 from cms.db.Utils import ask_for_contest
-
 from cms import Config
-import cms.util.WebConfig as WebConfig
 
 from cms.server.Utils import file_handler_gen, \
      catch_exceptions, decrypt_arguments, valid_phase_required
@@ -163,11 +161,15 @@ class ContestWebServer(WebService):
         # of tuples (timestamp, subject, text).
         self.notifications = {}
 
-        parameters = WebConfig.contest_parameters
-        parameters["template_path"] = os.path.join(os.path.dirname(__file__),
-                                                   "templates", "contest")
-        parameters["static_path"] = os.path.join(os.path.dirname(__file__),
-                                                 "static")
+        parameters = {
+            "login_url": "/",
+            "template_path": os.path.join(os.path.dirname(__file__),
+                                          "templates", "contest"),
+            "static_path": os.path.join(os.path.dirname(__file__),
+                                        "static"),
+            "cookie_secret": Config.tornado_secret_key,
+            "debug": Config.tornado_debug,
+            }
         parameters["is_proxy_used"] = Config.is_proxy_used
         WebService.__init__(self,
             Config.contest_listen_port[shard],

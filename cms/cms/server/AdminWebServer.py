@@ -38,7 +38,6 @@ from cms.db.SQLAlchemyAll import Session, \
      Contest, User, Announcement, Question, Message, Submission, File, Task, \
      Attachment, Manager, Testcase, SubmissionFormatElement
 
-import cms.util.WebConfig as WebConfig
 from cms.util.Utils import valid_ip
 from cms.server.Utils import file_handler_gen
 from cms.service.FileStorage import FileCacher
@@ -151,6 +150,14 @@ class AdminWebServer(WebService):
 
     """
 
+    QUICK_ANSWERS = {
+        "yes": "Yes",
+        "no": "No",
+        "answered": "Answered in task description",
+        "invalid": "Invalid question",
+        "nocomment": "No comment",
+        }
+
     def __init__(self, shard):
         logger.initialize(ServiceCoord("AdminWebServer", shard))
         logger.debug("AdminWebServer.__init__")
@@ -158,11 +165,16 @@ class AdminWebServer(WebService):
         # A list of pending notifications.
         self.notifications = []
 
-        parameters = WebConfig.admin_parameters
-        parameters["template_path"] = os.path.join(os.path.dirname(__file__),
-                                                   "templates", "admin")
-        parameters["static_path"] = os.path.join(os.path.dirname(__file__),
-                                                 "static")
+        parameters = {
+            "login_url": "/",
+            "template_path": os.path.join(os.path.dirname(__file__),
+                                          "templates", "admin"),
+            "static_path": os.path.join(os.path.dirname(__file__),
+                                        "static"),
+            "cookie_secret": Config.tornado_secret_key,
+            "debug": Config.tornado_debug,
+            }
+        logger.critical(parameters["static_path"])
         WebService.__init__(self,
                             Config.admin_listen_port,
                             handlers,
@@ -1016,12 +1028,12 @@ class QuestionReplyHandler(BaseHandler):
         question.reply_text = self.get_argument("reply_question_text", "")
 
         # Ignore invalid answers
-        if reply_subject_code not in WebConfig.quick_answers:
+        if reply_subject_code not in AdminWebServer.QUICK_ANSWERS:
             question.reply_subject = ""
         else:
             # Quick answer given, ignore long answer.
             question.reply_subject = \
-                WebConfig.quick_answers[reply_subject_code]
+                AdminWebServer.QUICK_ANSWERS[reply_subject_code]
             question.reply_text = ""
 
         question.reply_timestamp = int(time.time())
