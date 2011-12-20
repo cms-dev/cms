@@ -70,6 +70,9 @@ class LogService(Service):
         returns (bool): True
 
         """
+        # To avoid possible mistakes.
+        msg = str(msg)
+        operation = str(operation)
 
         if severity in  [SEV_CRITICAL, SEV_ERROR, SEV_WARNING]:
             self._last_messages.append({"message": msg,
