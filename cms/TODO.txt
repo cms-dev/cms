@@ -108,12 +108,6 @@
 
 
 
-** AsyncLibrary
-
-* MED: decide on bind_obj=None behaviour and about keeping bind_obj.
-
-
-
 
 ** Misc
 

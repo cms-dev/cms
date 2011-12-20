@@ -174,7 +174,6 @@ class AdminWebServer(WebService):
             "cookie_secret": Config.tornado_secret_key,
             "debug": Config.tornado_debug,
             }
-        logger.critical(parameters["static_path"])
         WebService.__init__(self,
                             Config.admin_listen_port,
                             handlers,

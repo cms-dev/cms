@@ -627,8 +627,7 @@ class RemoteService(asynchat.async_chat):
             return
         self._push_right(json_length + json_message + binary_message)
 
-    def execute_rpc(self, method, data,
-                    callback=None, plus=None, bind_obj=None,
+    def execute_rpc(self, method, data, callback=None, plus=None,
                     timeout=None):
         """Method to send an RPC request to the remote service.
 
@@ -649,8 +648,6 @@ class RemoteService(asynchat.async_chat):
         data (object): the object to pass to the remote method.
         callback (function): method to call with the RPC response.
         plus (object): additional object to be passed to the callback.
-        bind_obj (object): context for the callback (None means the
-                           local service).
         timeout (int/bool): the time (in seconds) to wait for the
                             response of a yielded call; None to signal
                             that the call is not yielded, True to give
@@ -681,10 +678,6 @@ class RemoteService(asynchat.async_chat):
             if not self.connected:
                 return False
 
-        # If we don't specify, we bind on the service.
-        if bind_obj is None:
-            bind_obj = self.service
-
         # We start building the request message
         message = {}
         message["__method"] = method
@@ -704,7 +697,7 @@ class RemoteService(asynchat.async_chat):
                 cb_result["completed"] = True
 
         # And we remember that we need to wait for a reply
-        request = RPCRequest(message, bind_obj, callback, plus)
+        request = RPCRequest(message, self.service, callback, plus)
         message = request.pre_execute()
 
         # We encode the request and send it
@@ -758,7 +751,6 @@ class RemoteService(asynchat.async_chat):
 
         def remote_method(callback=None,
                           plus=None,
-                          bind_obj=None,
                           timeout=None,
                           **data):
             """Call execute_rpc with the given method name.
@@ -766,7 +758,6 @@ class RemoteService(asynchat.async_chat):
             """
             return self.execute_rpc(method=method, data=data,
                                     callback=callback, plus=plus,
-                                    bind_obj=bind_obj,
                                     timeout=timeout)
         return remote_method
 
