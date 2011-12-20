@@ -162,20 +162,28 @@
         {
             var unread_public = document.getElementById("unread_public")
             var unread_private = document.getElementById("unread_private")
-            var msgs_public = parseInt(unread_public.innerHTML);
-            var msgs_private = parseInt(unread_private.innerHTML);
-            msgs_public += delta_public;
-            msgs_private += delta_private;
-            unread_public.innerHTML = msgs_public;
-            unread_private.innerHTML = msgs_private;
-            if (msgs_public > 0)
-                unread_public.style.display = "inline-block"
-            else
-                unread_public.style.display = "none"
-            if (msgs_private > 0)
-                unread_private.style.display = "inline-block"
-            else
-                unread_private.style.display = "none"
+            var msgs_public = "";
+            var msgs_private = "";
+            if (unread_public)
+            {
+                var msg_public = parseInt(unread_public.innerHTML);
+                msgs_public += delta_public;
+                unread_public.innerHTML = msgs_public;
+                if (msgs_public > 0)
+                    unread_public.style.display = "inline-block"
+                else
+                    unread_public.style.display = "none"
+            }
+            if (unread_private)
+            {
+                msg_private = parseInt(unread_private.innerHTML);
+                msgs_private += delta_private;
+                unread_private.innerHTML = msgs_private;
+                if (msgs_private > 0)
+                    unread_private.style.display = "inline-block"
+                else
+                    unread_private.style.display = "none"
+            }
         },
 
         /**
