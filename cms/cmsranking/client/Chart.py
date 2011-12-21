@@ -20,6 +20,8 @@ from pyjamas.Canvas import Color
 
 from pyjamas import Window
 
+from __pyjamas__ import JS
+
 
 def draw_chart(canvas, y_min, y_max, y_def, h_def, x_int, data, color, marks):
     """Draw a chart on the given canvas.
@@ -128,31 +130,42 @@ def draw_chart(canvas, y_min, y_max, y_def, h_def, x_int, data, color, marks):
         canvas.stroke()
 
     open_group()
-    for x, y, h in data:
-        while i < len(x_int) and x_e <= x:
-            close_group()
-            i += 1
-            if i < len(x_int):
-                draw_separator()
-                open_group()
-            else:
-                x_b = x_e = 0
-        if x_b <= x < x_e:
-            x_pos = x_cum + x - x_b
-            canvas.lineTo(get_x(x_pos), get_y(y_pos))
-            tops.append((x_pos, y_pos))
-            bots.append((x_pos, y_pos + h_pos))
-            y_pos = y
-            h_pos = h
-            canvas.lineTo(get_x(x_pos), get_y(y_pos))
-            tops.append((x_pos, y_pos))
-            bots.append((x_pos, y_pos + h_pos))
+    x = 0
+    y = 0
+    h = 0
+    JS('''
+    for (var idx in data) {
+        x = data[idx][0];
+        y = data[idx][1];
+        h = data[idx][2];
+    ''')
+    while i < len(x_int) and x_e <= x:
+        close_group()
+        i += 1
+        if i < len(x_int):
+            draw_separator()
+            open_group()
         else:
-            y_pos = y
-            h_pos = h
-            canvas.moveTo(get_x(x_pos), get_y(y_pos))
-            tops.append((x_pos, y_pos))
-            bots.append((x_pos, y_pos + h_pos))
+            x_b = x_e = 0
+    if x_b <= x < x_e:
+        x_pos = x_cum + x - x_b
+        canvas.lineTo(get_x(x_pos), get_y(y_pos))
+        tops.append((x_pos, y_pos))
+        bots.append((x_pos, y_pos + h_pos))
+        y_pos = y
+        h_pos = h
+        canvas.lineTo(get_x(x_pos), get_y(y_pos))
+        tops.append((x_pos, y_pos))
+        bots.append((x_pos, y_pos + h_pos))
+    else:
+        y_pos = y
+        h_pos = h
+        canvas.moveTo(get_x(x_pos), get_y(y_pos))
+        tops.append((x_pos, y_pos))
+        bots.append((x_pos, y_pos + h_pos))
+    JS('''
+    }
+    ''')
     if i < len(x_int):
         close_group()
         i += 1

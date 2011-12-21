@@ -22,6 +22,8 @@ from pyjamas.JSONParser import JSONParser
 from pyjamas import Window
 from pyjamas import DOM
 
+from __pyjamas__ import JS
+
 
 # Config
 history_url = '/history'
@@ -41,203 +43,289 @@ class HistoryCallback:
 
 class HistoryStore:
     def __init__(self, datastore):
-        self.history_t = []  # per task
-        self.history_c = []  # per contest
-        self.history_g = []  # global
+        JS('''
+        // List of score-change events divided by scope
+        // _t contains all the tasks together, and _c does the same
+        self.history_t = new Array();  // per task
+        self.history_c = new Array();  // per contest
+        self.history_g = new Array();  // global
+        ''')
         self.ds = datastore
 
     def request_update(self, callback):
         HTTPRequest().asyncGet(history_url, HistoryCallback(self, callback))
 
     def perform_update(self, data, callback):
-        d = dict()
-        for i in self.ds.users.iterkeys():
-            d[i] = dict()
-            for j in self.ds.tasks.iterkeys():
-                d[i][j] = 0.0
+        JS('''
+        var d = new Object();
+        for (var u_id in self.ds.users) {
+            d[u_id] = new Object();
+            for (var t_id in self.ds.tasks) {
+                d[u_id][t_id] = 0.0;
+            }
+        }
 
-        self.history_t = []
-        self.history_c = []
-        self.history_g = []
+        self.history_t = new Array();
+        self.history_c = new Array();
+        self.history_g = new Array();
+        ''')
 
         for user, task, time, score in data:
-            if user in d and task in d[user]:
-                d[user][task] = score
+            JS('''
+            if (d[user]) {
+                d[user][task] = score;
 
-                self.history_t.append((user, task, time, round(score, 2)))
+                self.history_t.push([user, task, time, score]);
 
-                contest_id = self.ds.tasks[task]['contest']
-                tmp_score = 0.0
-                for x in d[user].iterkeys():
-                    if self.ds.tasks[x]['contest'] is contest_id:
-                        tmp_score += d[user][x]
-                self.history_c.append((user, contest_id, time, round(tmp_score, 2)))
+                var contest_id = self.ds.tasks[task]['contest'];
+                var tmp_score = 0.0;
+                for (var t_id in d[user]) {
+                    if (self.ds.tasks[t_id]['contest'] == contest_id) {
+                        tmp_score += d[user][t_id];
+                    }
+                }
+                self.history_c.push([user, contest_id, time, tmp_score])
 
-                tmp_score = 0.0
-                for x in d[user].iterkeys():
-                    tmp_score += d[user][x]
-                self.history_g.append((user, time, round(tmp_score, 2)))
+                var tmp_score = 0.0;
+                for (var t_id in d[user]) {
+                    tmp_score += d[user][t_id];
+                }
+                self.history_g.push([user, time, tmp_score]);
+            }
+            ''')
 
         callback()
 
     def get_score_history_for_task(self, user_id, task_id):
-        result = []
+        JS('''
+        var result = new Array();
 
-        for user, task, time, score in self.history_t:
-            if user is user_id and task is task_id:
-                result.append((time, score, 0))
+        for (var i in self.history_t) {
+            var user = self.history_t[i][0];
+            var task = self.history_t[i][1];
+            var time = self.history_t[i][2];
+            var score = self.history_t[i][3];
+            if (user == user_id && task == task_id) {
+                result.push([time, score, 0]);
+            }
+        }
 
-        return result
+        return result;
+        ''')
 
     def get_score_history_for_contest(self, user_id, contest_id):
-        result = []
+        JS('''
+        var result = new Array();
 
-        for user, contest, time, score in self.history_c:
-            if user is user_id and contest is contest_id:
-                result.append((time, score, 0))
+        for (var i in self.history_c) {
+            var user = self.history_c[i][0];
+            var contest = self.history_c[i][1];
+            var time = self.history_c[i][2];
+            var score = self.history_c[i][3];
+            if (user == user_id && contest == contest_id) {
+                result.push([time, score, 0]);
+            }
+        }
 
-        return result
+        return result;
+        ''')
 
     def get_score_history(self, user_id):
-        result = []
+        JS('''
+        var result = new Array();
 
-        for user, time, score in self.history_g:
-            if user is user_id:
-                result.append((time, score, 0))
+        for (var i in self.history_g) {
+            var user = self.history_g[i][0];
+            var time = self.history_g[i][1];
+            var score = self.history_g[i][2];
+            if (user == user_id) {
+                result.push([time, score, 0]);
+            }
+        }
 
-        return result
+        return result;
+        ''')
 
     def get_rank_history_for_task(self, user_id, task_id):
-        d = dict()
-        for i in self.ds.users.iterkeys():
-            d[i] = 0.0
-        above = 0
-        equal = len(self.ds.users)
+        JS('''
+        var d = new Object();
+        for (var u_id in self.ds.users) {
+            d[u_id] = 0.0;
+        }
+        var above = 0;
+        var equal = Object.keys(self.ds.users).length;
 
-        result = []
+        var result = new Array();
 
-        for user, task, time, score in self.history_t:
-            # TODO consider together changes with the same time
-            if task is task_id:
-                if user is user_id:
-                    d[user_id] = score
-                    new_above = 0
-                    new_equal = 0
-                    for s in d.itervalues():
-                        if s > score:
-                            new_above += 1
-                        elif s == score:
-                            new_equal += 1
-                    if new_above is not above or new_equal is not equal:
-                        above = new_above
-                        equal = new_equal
-                        result.append((time, above+1, equal-1))
-                else:
-                    changed = False
-                    if d[user] <= d[user_id] and score > d[user_id]:
-                        above += 1
-                        changed = True
-                    elif d[user] > d[user_id] and score <= d[user_id]:
-                        above -= 1
-                        changed = True
-                    if d[user] == d[user_id]:
-                        equal -= 1
-                        changed = True
-                    elif score == d[user_id]:
-                        equal += 1
-                        changed = True
-                    if changed:
-                        result.append((time, above+1, equal-1))
-                    d[user] = score
+        // TODO consider together changes with the same time
+        for (var i in self.history_t) {
+            var user = self.history_t[i][0];
+            var task = self.history_t[i][1];
+            var time = self.history_t[i][2];
+            var score = self.history_t[i][3];
 
-        return result
+            if (task == task_id) {
+                if (user == user_id) {
+                    d[user_id] = score;
+                    var new_above = 0;
+                    var new_equal = 0;
+                    for (var s in d) {
+                        if (d[s] > score) {
+                            new_above += 1;
+                        } else if (d[s] == score) {
+                            new_equal += 1;
+                        }
+                    }
+                    if (new_above != above || new_equal != equal) {
+                        above = new_above;
+                        equal = new_equal;
+                        result.push([time, above+1, equal-1]);
+                    }
+                } else {
+                    changed = false;
+                    if (d[user] <= d[user_id] && score > d[user_id]) {
+                        above += 1;
+                        changed = true;
+                    } else if (d[user] > d[user_id] && score <= d[user_id]) {
+                        above -= 1;
+                        changed = true;
+                    }
+                    if (d[user] == d[user_id]) {
+                        equal -= 1;
+                        changed = true;
+                    } else if (score == d[user_id]) {
+                        equal += 1;
+                        changed = true;
+                    }
+                    if (changed) {
+                        result.push([time, above+1, equal-1]);
+                    }
+                    d[user] = score;
+                }
+            }
+        }
+
+        return result;
+        ''')
 
     def get_rank_history_for_contest(self, user_id, contest_id):
-        d = dict()
-        for i in self.ds.users.iterkeys():
-            d[i] = 0.0
-        above = 0
-        equal = len(self.ds.users)
+        JS('''
+        var d = new Object();
+        for (var u_id in self.ds.users) {
+            d[u_id] = 0.0;
+        }
+        var above = 0;
+        var equal = Object.keys(self.ds.users).length;
 
-        result = []
+        var result = new Array();
 
-        for user, contest, time, score in self.history_c:
-            # TODO consider together changes with the same time
-            if contest is contest_id:
-                if user is user_id:
-                    d[user_id] = score
-                    new_above = 0
-                    new_equal = 0
-                    for s in d.itervalues():
-                        if s > score:
-                            new_above += 1
-                        elif s == score:
-                            new_equal += 1
-                    if new_above is not above or new_equal is not equal:
-                        above = new_above
-                        equal = new_equal
-                        result.append((time, above+1, equal-1))
-                else:
-                    changed = False
-                    if d[user] <= d[user_id] and score > d[user_id]:
-                        above += 1
-                        changed = True
-                    elif d[user] > d[user_id] and score <= d[user_id]:
-                        above -= 1
-                        changed = True
-                    if d[user] == d[user_id]:
-                        equal -= 1
-                        changed = True
-                    elif score == d[user_id]:
-                        equal += 1
-                        changed = True
-                    if changed:
-                        result.append((time, above+1, equal-1))
-                    d[user] = score
+        // TODO consider together changes with the same time
+        for (var i in self.history_c) {
+            var user = self.history_c[i][0];
+            var contest = self.history_c[i][1];
+            var time = self.history_c[i][2];
+            var score = self.history_c[i][3];
 
-        return result
+            if (contest == contest_id) {
+                if (user == user_id) {
+                    d[user_id] = score;
+                    var new_above = 0;
+                    var new_equal = 0;
+                    for (var s in d) {
+                        if (d[s] > score) {
+                            new_above += 1;
+                        } else if (d[s] == score) {
+                            new_equal += 1;
+                        }
+                    }
+                    if (new_above != above || new_equal != equal) {
+                        above = new_above;
+                        equal = new_equal;
+                        result.push([time, above+1, equal-1]);
+                    }
+                } else {
+                    changed = false;
+                    if (d[user] <= d[user_id] && score > d[user_id]) {
+                        above += 1;
+                        changed = true;
+                    } else if (d[user] > d[user_id] && score <= d[user_id]) {
+                        above -= 1;
+                        changed = true;
+                    }
+                    if (d[user] == d[user_id]) {
+                        equal -= 1;
+                        changed = true;
+                    } else if (score == d[user_id]) {
+                        equal += 1;
+                        changed = true;
+                    }
+                    if (changed) {
+                        result.push([time, above+1, equal-1]);
+                    }
+                    d[user] = score;
+                }
+            }
+        }
+
+        return result;
+        ''')
 
     def get_rank_history(self, user_id):
-        d = dict()
-        for i in self.ds.users.iterkeys():
-            d[i] = 0.0
-        above = 0
-        equal = len(self.ds.users)
+        JS('''
+        var d = new Object();
+        for (var u_id in self.ds.users) {
+            d[u_id] = 0.0;
+        }
+        var above = 0;
+        var equal = Object.keys(self.ds.users).length;
 
-        result = []
+        var result = new Array();
 
-        for user, time, score in self.history_g:
-            # TODO consider together changes with the same time
-            if user is user_id:
-                d[user_id] = score
-                new_above = 0
-                new_equal = 0
-                for s in d.itervalues():
-                    if s > score:
-                        new_above += 1
-                    elif s == score:
-                        new_equal += 1
-                if new_above is not above or new_equal is not equal:
-                    above = new_above
-                    equal = new_equal
-                    result.append((time, above+1, equal-1))
-            else:
-                changed = False
-                if d[user] <= d[user_id] and score > d[user_id]:
-                    above += 1
-                    changed = True
-                elif d[user] > d[user_id] and score <= d[user_id]:
-                    above -= 1
-                    changed = True
-                if d[user] == d[user_id]:
-                    equal -= 1
-                    changed = True
-                elif score == d[user_id]:
-                    equal += 1
-                    changed = True
-                if changed:
-                    result.append((time, above+1, equal-1))
-                d[user] = score
+        // TODO consider together changes with the same time
+        for (var i in self.history_g) {
+            var user = self.history_g[i][0];
+            var time = self.history_g[i][1];
+            var score = self.history_g[i][2];
 
-        return result
+            if (user == user_id) {
+                d[user_id] = score;
+                var new_above = 0;
+                var new_equal = 0;
+                for (var s in d) {
+                    if (d[s] > score) {
+                        new_above += 1;
+                    } else if (d[s] == score) {
+                        new_equal += 1;
+                    }
+                }
+                if (new_above != above || new_equal != equal) {
+                    above = new_above;
+                    equal = new_equal;
+                    result.push([time, above+1, equal-1]);
+                }
+            } else {
+                changed = false;
+                if (d[user] <= d[user_id] && score > d[user_id]) {
+                    above += 1;
+                    changed = true;
+                } else if (d[user] > d[user_id] && score <= d[user_id]) {
+                    above -= 1;
+                    changed = true;
+                }
+                if (d[user] == d[user_id]) {
+                    equal -= 1;
+                    changed = true;
+                } else if (score == d[user_id]) {
+                    equal += 1;
+                    changed = true;
+                }
+                if (changed) {
+                    result.push([time, above+1, equal-1]);
+                }
+                d[user] = score;
+            }
+        }
+
+        return result;
+        ''')
 

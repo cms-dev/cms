@@ -23,6 +23,8 @@ from pyjamas.JSONParser import JSONParser
 
 from pyjamas import Window
 
+from __pyjamas__ import JS
+
 
 # Config
 event_url = '/events'
@@ -54,8 +56,10 @@ class JsonHandler:
         self.callback = callback
 
     def onCompletion(self, response):
-        data = JSONParser().decode(response)
-        self.callback(self.key, data)
+        JS('''
+        var data = JSON.parse(response);
+        self.callback(self.key, data);
+        ''')
 
     def onError(self, response, code):
         Window.alert("Error " + code + '\n' + response)
@@ -64,15 +68,20 @@ class JsonHandler:
 class DataStore:
     def __init__(self, callback):
         self.init_callback = callback
-        self.inits_done = 0
+        self.inits_todo = 0
 
         # Dictionaries
-        self.contests = dict()
-        self.tasks = dict()
-        self.teams = dict()
-        self.users = dict()
+        JS('''
+        self.contests = new Object();
+        self.tasks = new Object();
+        self.teams = new Object();
+        self.users = new Object();
 
-        self.scores = dict()
+        self.scores = new Object();
+
+        self.contest_list = new Array();
+        self.team_list = new Array();
+        ''')
 
         self.selected = set()
         self.select_handlers = list()
@@ -86,50 +95,67 @@ class DataStore:
 
         # Initial data
         def contest_dispatch(data):
-            for (key, val) in JSONParser().decode(data).iteritems():
-                self.create_contest(key, val)
-            self.done_init()
-        HTTPRequest().asyncGet(contest_list_url,
-                               TextHandler(contest_dispatch))
+            JS('''
+            var data = JSON.parse(data);
+            for (var key in data) {
+                self.create_contest(key, data[key]);
+            }
+            self.done_init();
+            ''')
+        self.inits_todo += 1
+        HTTPRequest().asyncGet(contest_list_url, TextHandler(contest_dispatch))
 
         def task_dispatch(data):
-            for (key, val) in JSONParser().decode(data).iteritems():
-                self.create_task(key, val)
-            self.done_init()
-        HTTPRequest().asyncGet(task_list_url,
-                               TextHandler(task_dispatch))
+            JS('''
+            var data = JSON.parse(data);
+            for (var key in data) {
+                self.create_task(key, data[key]);
+            }
+            self.done_init();
+            ''')
+        self.inits_todo += 1
+        HTTPRequest().asyncGet(task_list_url, TextHandler(task_dispatch))
 
         def team_dispatch(data):
-            for (key, val) in JSONParser().decode(data).iteritems():
-                self.create_team(key, val)
-            self.done_init()
-        HTTPRequest().asyncGet(team_list_url,
-                               TextHandler(team_dispatch))
+            JS('''
+            var data = JSON.parse(data);
+            for (var key in data) {
+                self.create_team(key, data[key]);
+            }
+            self.done_init();
+            ''')
+        self.inits_todo += 1
+        HTTPRequest().asyncGet(team_list_url, TextHandler(team_dispatch))
 
         def user_dispatch(data):
-            for (key, val) in JSONParser().decode(data).iteritems():
-                self.create_user(key, val)
-            self.done_init()
-        HTTPRequest().asyncGet(user_list_url,
-                               TextHandler(user_dispatch))
+            JS('''
+            var data = JSON.parse(data);
+            for (var key in data) {
+                self.create_user(key, data[key]);
+            }
+            self.done_init();
+            ''')
+        self.inits_todo += 1
+        HTTPRequest().asyncGet(user_list_url, TextHandler(user_dispatch))
 
         def score_dispatch(data):
             for line in data.split('\n')[:-1]:
                 user, task, score = line.split(' ')
                 self.set_score(user, task, float(score))
             self.done_init()
-        HTTPRequest().asyncGet(score_url,
-                               TextHandler(score_dispatch))
+        self.inits_todo += 1
+        HTTPRequest().asyncGet(score_url, TextHandler(score_dispatch))
 
     def done_init(self):
-        self.inits_done += 1
-        if self.inits_done == 5:
+        """Called by each init when it's done."""
+        self.inits_todo -= 1
+        if self.inits_todo == 0:
             self.init_callback()
 
     ### Contest
 
     def contest_listener(self, event):
-        (action, key) = event.data.split(" ")
+        action, key = event.data.split(' ')
         if action is 'create':
             HTTPRequest().asyncGet(contest_read_url % key,
                                    JsonHandler(key, self.create_contest))
@@ -140,18 +166,52 @@ class DataStore:
             self.delete_contest(key)
 
     def create_contest(self, key, data):
-        self.contests[key] = data
+        JS('''
+        data["key"] = key;
+        data["tasks"] = new Array();
+        self.contests[key] = data;
+
+        // Insert data in the sorted contest list
+        var a = data;
+        for (var i = 0; i < self.contest_list.length; i += 1) {
+            var b = self.contest_list[i];
+            if ((a["begin"] < b["begin"]) || ((a["begin"] == b["begin"]) &&
+               ((a["end"]   < b["end"]  ) || ((a["end"]   == b["end"]  ) &&
+               ((a["name"]  < b["name"] ) || ((a["name"]  == b["name"] ) &&
+               (key < b["key"]))))))) {
+                // We found the first element which is greater than a
+                self.contest_list.splice(i, 0, a);
+                return;
+            }
+        }
+        self.contest_list.push(a);
+        ''')
 
     def update_contest(self, key, data):
-        self.contests[key] = data
+        JS('''
+        self.delete_contest(key);
+        self.create_contest(key, data);
+        ''')
 
     def delete_contest(self, key):
-        del self.contests[key]
+        JS('''
+        delete self.contests[key];
+
+        // Remove data from the sorted contest list
+        for (var i = 0; i < self.contest_list.length; i += 1) {
+            var b = self.contest_list[i];
+            if (key == b["key"]) {
+                self.contest_list.splice(i, 1);
+                return;
+            }
+        }
+        self.contest_list.pop();
+        ''')
 
     ### Task
 
     def task_listener(self, event):
-        (action, key) = event.data.split(" ")
+        action, key = event.data.split(' ')
         if action is 'create':
             HTTPRequest().asyncGet(task_read_url % key,
                                    JsonHandler(key, self.create_task))
@@ -162,18 +222,60 @@ class DataStore:
             self.delete_task(key)
 
     def create_task(self, key, data):
-        self.tasks[key] = data
+        JS('''
+        if (!self.contests[data["contest"]])
+        {
+            console.error("Could not find contest: " + data["contest"]);
+            return;
+        }
+        var task_list = self.contests[data["contest"]]["tasks"];
+
+        data["key"] = key;
+        self.tasks[key] = data;
+
+        // Insert data in the sorted task list for the contest
+        var a = data;
+        for (var i = 0; i < task_list.length; i += 1) {
+            var b = task_list[i];
+            if ((a["order"] < b["order"]) || ((a["order"] == b["order"]) &&
+               ((a["name"]  < b["name"] ) || ((a["name"]  == b["name"] ) &&
+               (key < b["key"]))))) {
+                // We found the first element which is greater than a
+                task_list.splice(i, 0, a);
+                return;
+            }
+        }
+        task_list.push(a);
+        ''')
+
 
     def update_task(self, key, data):
-        self.tasks[key] = data
+        JS('''
+        self.delete_task(key);
+        self.create_task(key, data);
+        ''')
 
     def delete_task(self, key):
-        del self.tasks[key]
+        JS('''
+        var task_list = self.contests[self.tasks[key]["contest"]]["tasks"];
+
+        delete self.tasks[key];
+
+        // Remove data from the sorted task list for the contest
+        for (var i = 0; i < task_list.length; i += 1) {
+            var b = task_list[i];
+            if (key == b["key"]) {
+                task_list.splice(i, 1);
+                return;
+            }
+        }
+        task_list.pop();
+        ''')
 
     ### Team
 
     def team_listener(self, event):
-        (action, key) = event.data.split(" ")
+        action, key = event.data.split(' ')
         if action is 'create':
             HTTPRequest().asyncGet(team_read_url % key,
                                    JsonHandler(key, self.create_team))
@@ -184,18 +286,48 @@ class DataStore:
             self.delete_team(key)
 
     def create_team(self, key, data):
-        self.teams[key] = data
+        JS('''
+        data["key"] = key;
+        self.teams[key] = data;
+
+        // Insert data in the sorted team list
+        var a = data;
+        for (var i = 0; i < self.team_list.length; i += 1) {
+            var b = self.team_list[i];
+            if ((a["name"] < b["name"]) || (key < b["key"])) {
+                // We found the first element which is greater than a
+                self.team_list.splice(i, 0, a);
+                return;
+            }
+        }
+        self.team_list.push(a);
+        ''')
 
     def update_team(self, key, data):
-        self.teams[key] = data
+        JS('''
+        self.delete_team(key);
+        self.create_team(key, data);
+        ''')
 
     def delete_team(self, key):
-        del self.teams[key]
+        JS('''
+        delete self.teams[key];
+
+        // Remove data from the sorted team list
+        for (var i = 0; i < self.team_list.length; i += 1) {
+            var b = self.team_list[i];
+            if (key == b["key"]) {
+                self.team_list.splice(i, 1);
+                return;
+            }
+        }
+        self.team_list.pop();
+        ''')
 
     ### User
 
     def user_listener(self, event):
-        (action, key) = event.data.split(" ")
+        action, key = event.data.split(' ')
         if action is 'create':
             HTTPRequest().asyncGet(user_read_url % key,
                                    JsonHandler(key, self.create_user))
@@ -206,60 +338,87 @@ class DataStore:
             self.delete_user(key)
 
     def create_user(self, key, data):
-        self.users[key] = data
+        JS('''
+        if (data["team"] !== null && !self.teams[data["team"]])
+        {
+            console.error("Could not find team: " + data["team"]);
+            data["team"] = null;
+        }
+
+        data["key"] = key;
+        self.users[key] = data;
+        ''')
 
     def update_user(self, key, data):
-        self.users[key] = data
+        JS('''
+        self.delete_user(key);
+        self.create_user(key, data);
+        ''')
 
     def delete_user(self, key):
-        del self.users[key]
+        JS('''
+        delete self.users[key];
+        ''')
 
     ### Score
 
     def score_listener(self, event):
         for line in event.data.split('\n'):
-            (user, task, score) = line.split(" ")
+            user, task, score = line.split(' ')
             self.set_score(user, task, float(score))
+            print user, task, score
 
     def set_score(self, user, task, score):
-        score = round(score, 2)
-        if score == 0.0:
-            del self.scores[user][task]
-            if not self.scores[user]:
-                del self.scores[user]
-        else:
-            if user not in self.scores:
-                self.scores[user] = dict()
-            self.scores[user][task] = score
+        JS('''
+        if (score === 0.0) {
+            delete self.scores[user][task];
+            if (Object.keys(self.scores[user]).length === 0) {
+                delete self.scores[user];
+            }
+        } else {
+            if (!self.scores[user]) {
+                self.scores[user] = new Object();
+            }
+            self.scores[user][task] = score;
+        }
+        ''')
 
     def get_score_t(self, user, task):
-        if user not in self.scores or task not in self.scores[user]:
-            return 0
-        else:
-            return self.scores[user][task]
+        JS('''
+        if (!self.scores[user] || !self.scores[user][task]) {
+            return 0.0;
+        } else {
+            return self.scores[user][task];
+        }
+        ''')
 
     def get_score_c(self, user, contest):
-        if user not in self.scores:
-            return 0
-        else:
-            return sum([s for t, s in self.scores[user].iteritems()
-                        if self.tasks[t]['contest'] == contest])
+        JS('''
+        if (!self.scores[user]) {
+            return 0.0;
+        } else {
+            var sum = 0.0;
+            for (var t_id in self.scores[user]) {
+                if (self.tasks[t_id]["contest"] == contest) {
+                    sum += self.scores[user][t_id];
+                }
+            }
+            return sum;
+        }
+        ''')
 
     def get_score(self, user):
-        if user not in self.scores:
-            return 0
-        else:
-            return sum(self.scores[user].itervalues())
-
-    ### Sorting
-
-    def iter_contests(self):
-        return sorted(self.contests.iteritems(),
-            key=lambda a: (a[1]['begin'], a[1]['end'], a[1]['name'], a[0]))
-
-    def iter_tasks(self):
-        return sorted(self.tasks.iteritems(),
-            key=lambda a: (a[1]['order'], a[1]['name'], a[0]))
+        JS('''
+        if (!self.scores[user]) {
+            return 0.0;
+        } else {
+            var sum = 0.0;
+            for (var t_id in self.scores[user]) {
+                sum += self.scores[user][t_id];
+            }
+            return sum;
+        }
+        ''')
 
     ### Selection
 

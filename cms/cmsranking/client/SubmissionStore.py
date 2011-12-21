@@ -21,6 +21,8 @@ from pyjamas.JSONParser import JSONParser
 
 from pyjamas import Window
 
+from __pyjamas__ import JS
+
 
 # Config
 submission_url = '/sublist/%s'
@@ -31,7 +33,10 @@ class Callback:
         self.callback = callback
 
     def onCompletion(self, response):
-        self.callback(JSONParser().decode(response))
+        JS('''
+        var data = JSON.parse(response);
+        self.callback(data);
+        ''')
 
     def onError(self, response, code):
         Window.alert("Error " + code + '\n' + response)
