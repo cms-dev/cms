@@ -36,7 +36,7 @@ from cms.async import ServiceCoord, get_service_shards, get_service_address
 
 from cms.db.SQLAlchemyAll import Session, \
      Contest, User, Announcement, Question, Message, Submission, File, Task, \
-     Attachment, Manager, Testcase, SubmissionFormatElement
+     Attachment, Manager, Testcase, SubmissionFormatElement, metadata
 
 from cms.util.Utils import valid_ip
 from cms.server.Utils import file_handler_gen
@@ -1199,6 +1199,7 @@ def main():
     if len(sys.argv) < 2:
         print sys.argv[0], "shard"
     else:
+        metadata.create_all()
         AdminWebServer(int(sys.argv[1])).run()
 
 
