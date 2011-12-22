@@ -12,11 +12,9 @@ http {
   upstream cms {
     ip_hash;
     server 127.0.0.1:8888;
-    server 127.0.0.1:9999;
   }
 
   server {
-    #listen 80;
     listen 443 default_server ssl;
 
     # How to generate certificate: http://wiki.nginx.org/HttpSslModule
@@ -31,4 +29,13 @@ http {
     proxy_set_header X-Real-IP       $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
   }
+
+  server {
+    listen 80;
+    server_name ioi.phc.unipi.it;
+    location / {
+      rewrite ^/(.*)$ https://ioi.phc.unipi.it/$1;
+    }
+  }
+
 }
