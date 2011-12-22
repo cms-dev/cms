@@ -16,8 +16,14 @@ http {
   }
 
   server {
-    listen 80;
-    server_name cmsserver;
+    #listen 80;
+    listen 443 default_server ssl;
+
+    # How to generate certificate: http://wiki.nginx.org/HttpSslModule
+    ssl_certificate /etc/nginx/ssl/server.cert;
+    ssl_certificate_key /etc/nginx/ssl/server.key;
+
+    server_name ioi.phc.unipi.it;
     location / {
       proxy_pass http://cms;
     }
