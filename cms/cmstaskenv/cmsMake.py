@@ -31,6 +31,7 @@ import shutil
 from cms.util.Utils import get_compilation_command
 
 SOL_DIRNAME = 'sol'
+SOL_FILENAME = 'soluzione'
 SOL_EXTS = ['.cpp', '.c', '.pas']
 CHECK_DIRNAME = 'cor'
 CHECK_EXTS = SOL_EXTS
@@ -97,7 +98,7 @@ def build_sols_list(base_dir):
         # Delete the dot
         lang = lang[1:]
         def compile_src(src, exe):
-            call(base_dir, get_compilation_command(lang, [src], exe))
+            call(base_dir, get_compilation_command(lang, [src], exe, for_evaluation=False))
         actions.append(([src], [exe], functools.partial(compile_src, src, exe), 'compile solution'))
 
     return actions
@@ -177,6 +178,7 @@ def build_gen_list(base_dir):
     entries = os.listdir(gen_dir)
     sources = filter(lambda x: endswith2(x, GEN_EXTS), entries)
     gen_exe = None
+
     for src in sources:
         base, lang = basename2(src, GEN_EXTS)
         if base == GEN_BASENAME:
@@ -185,6 +187,8 @@ def build_gen_list(base_dir):
     if gen_exe is None:
         raise Exception("Couldn't find generator")
     gen_GEN = os.path.join(GEN_DIRNAME, GEN_GEN)
+
+    sol_exe = os.path.join(SOL_DIRNAME, SOL_FILENAME)
 
     # Count non-trivial lines in GEN
     testcase_num = 0
@@ -206,12 +210,34 @@ def build_gen_list(base_dir):
                      stdout=fout)
             n += 1
 
+    def make_output(n):
+        try:
+            os.makedirs(output_dir)
+        except OSError:
+            pass
+        if n == 0:
+            shutil.copy(os.path.join(base_dir, OUTPUT0_TXT), os.path.join(output_dir, 'output0.txt'))
+        else:
+            print >> sys.stderr, "Generating output # %d" % (n)
+            with open(os.path.join(input_dir, 'input%d.txt' % (n))) as fin:
+                with open(os.path.join(output_dir, 'output%d.txt' % (n)), 'w') as fout:
+                    call(base_dir, [sol_exe], stdin=fin, stdout=fout)
+
     actions = []
     actions.append(([gen_GEN, gen_exe, INPUT0_TXT],
                     map(lambda x: os.path.join(INPUT_DIRNAME, 'input%d.txt' % (x)),
                         range(0, testcase_num+1)),
                     make_input,
                     "input generation"))
+    actions.append(([OUTPUT0_TXT],
+                    [os.path.join(OUTPUT_DIRNAME, 'output0.txt')],
+                    functools.partial(make_output, 0),
+                    "output generation"))
+    for n in range(1, testcase_num+1):
+        actions.append(([os.path.join(INPUT_DIRNAME, 'input%d.txt' % (n))],
+                        [os.path.join(OUTPUT_DIRNAME, 'output%d.txt' % (n))],
+                        functools.partial(make_output, n),
+                        "output generation"))
     return actions
 
 def build_action_list(base_dir):
@@ -247,7 +273,14 @@ def clean(base_dir, generated_list):
             pass
 
     # Delete other things
-    os.rmdir(os.path.join(base_dir, INPUT_DIRNAME))
+    try:
+        os.rmdir(os.path.join(base_dir, INPUT_DIRNAME))
+    except OSError:
+        pass
+    try:
+        os.rmdir(os.path.join(base_dir, OUTPUT_DIRNAME))
+    except OSError:
+        pass
 
 def build_execution_tree(actions):
     def noop():

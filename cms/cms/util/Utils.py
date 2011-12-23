@@ -196,7 +196,7 @@ def sha1sum(path):
         return hasher.hexdigest()
 
 
-def get_compilation_command(language, source_filenames, executable_filename):
+def get_compilation_command(language, source_filenames, executable_filename, for_evaluation=True):
     """Returns the compilation command for the specified language,
     source filenames and executable filename. The command is a list of
     strings, suitable to be passed to the methods in subprocess
@@ -206,6 +206,8 @@ def get_compilation_command(language, source_filenames, executable_filename):
     source_filenames (list): a list of the string that are the
                              filenames of the source files to compile.
     executable_filename (string): the output file.
+    for_evaluation (bool): if True, define EVAL during the compilation;
+                           defaults to True.
     return (list): a list of string to be passed to subprocess.
 
     """
@@ -216,18 +218,24 @@ def get_compilation_command(language, source_filenames, executable_filename):
     # different way depending on whether it will execute 32- or 64-bit
     # programs).
     if language == "c":
-        command = ["/usr/bin/gcc",
-                   "-DEVAL", "-static", "-O2", "-lm", "-o",
-                   executable_filename]
+        command = ["/usr/bin/gcc"]
+        if for_evaluation:
+            command += ["-DEVAL"]
+        command += ["-static", "-O2", "-lm", "-o", executable_filename]
+        command += source_filenames
     elif language == "cpp":
-        command = ["/usr/bin/g++",
-                   "-DEVAL", "-static", "-O2", "-o",
-                   executable_filename]
+        command = ["/usr/bin/g++"]
+        if for_evaluation:
+            command += ["-DEVAL"]
+        command += ["-static", "-O2", "-o", executable_filename]
+        command += source_filenames
     elif language == "pas":
-        command = ["/usr/bin/fpc",
-                   "-dEVAL", "-XS", "-O2",
-                   "-o%s" % executable_filename]
-    return command + source_filenames
+        command = ["/usr/bin/fpc"]
+        if for_evaluation:
+            command += ["-dEVAL"]
+        command += ["-XS", "-O2", "-o%s" % executable_filename]
+        command += source_filenames
+    return command
 
 
 def format_time_or_date(timestamp):
