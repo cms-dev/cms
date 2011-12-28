@@ -26,6 +26,7 @@
 import os
 import time
 
+import base64
 import simplejson
 import tornado.web
 import tornado.locale
