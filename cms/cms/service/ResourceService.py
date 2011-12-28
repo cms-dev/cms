@@ -396,7 +396,7 @@ class ResourceService(Service):
 
 
 def main():
-    usage = "usage: %prog shard [contest_id] [options]"
+    usage = "usage: %prog shard [-a [contest_id]] [-h]"
     parser = optparse.OptionParser(usage=usage)
     parser.add_option("-a", "--autorestart",
                       help="restart automatically services on its machine",
