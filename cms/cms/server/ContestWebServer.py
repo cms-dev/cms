@@ -38,6 +38,7 @@ import pickle
 import time
 import codecs
 
+import base64
 import simplejson
 import tempfile
 import traceback
@@ -167,7 +168,7 @@ class ContestWebServer(WebService):
                                           "templates", "contest"),
             "static_path": os.path.join(os.path.dirname(__file__),
                                         "static"),
-            "cookie_secret": Config.tornado_secret_key,
+            "cookie_secret": base64.b64encode(Config.secret_key),
             "debug": Config.tornado_debug,
             }
         parameters["is_proxy_used"] = Config.is_proxy_used

@@ -171,7 +171,7 @@ class AdminWebServer(WebService):
                                           "templates", "admin"),
             "static_path": os.path.join(os.path.dirname(__file__),
                                         "static"),
-            "cookie_secret": Config.tornado_secret_key,
+            "cookie_secret": base64.b64encode(Config.secret_key),
             "debug": Config.tornado_debug,
             }
         WebService.__init__(self,
