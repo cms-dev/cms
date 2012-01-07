@@ -444,22 +444,25 @@ class EvaluationService(Service):
     # How often we check if we can assign a job to a worker.
     CHECK_DISPATCH_TIME = 2.0
 
+    # How often we look for submission not compiled/evaluated.
+    JOBS_NOT_DONE_CHECK_TIME = 117.0
+
     def __init__(self, shard, contest_id):
         logger.initialize(ServiceCoord("EvaluationService", shard))
         Service.__init__(self, shard)
 
         self.contest_id = contest_id
-        with SessionGen(commit=False) as session:
-            contest = session.query(Contest).\
-                      filter_by(id=contest_id).first()
-            logger.info("Loaded contest %s" % contest.name)
-            self.submission_ids_to_check = \
-                [x.id for x in contest.get_submissions()
-                 if not x.compiled() or not x.evaluated()]
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
         self.SS = self.connect_to(ServiceCoord("ScoringService", 0))
+
+        # If for some reason (ES switched off for a while, or broken
+        # connection with CWS), submissions have been left with some
+        # jobs to do, this is the list where you want to pur their
+        # ids. Note that list != [] if and only if there is a live
+        # timeout for the method "check_old_submission".
+        self.submission_ids_to_check = []
 
         for i in xrange(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
@@ -474,13 +477,40 @@ class EvaluationService(Service):
         self.add_timeout(self.check_workers_connection, None,
                          EvaluationService.WORKER_CONNECTION_CHECK_TIME,
                          immediately=False)
+        self.add_timeout(self.search_jobs_not_done, None,
+                         EvaluationService.JOBS_NOT_DONE_CHECK_TIME,
+                         immediately=True)
 
-        # Submit to compilation all the submissions already in DB
-        # TODO - Make this configurable
-        logger.info("Starting loading %d old submissions." %
-                    len(self.submission_ids_to_check))
-        self.add_timeout(self.check_old_submissions, None,
-                         0.01, immediately=True)
+    def search_jobs_not_done(self):
+        """Look in the database for submissions that have not been
+        compiled or evaluated for no good reasons. Put the missing job
+        in the queue.
+
+        """
+        with SessionGen(commit=False) as session:
+            contest = session.query(Contest).\
+                      filter_by(id=self.contest_id).first()
+
+            # Only adding submission not compiled/evaluated that have
+            # not yet reached the limit of tries.
+            new_submission_ids_to_check = \
+                [x.id for x in contest.get_submissions()
+                 if (not x.compiled() and x.compilation_tries <
+                     EvaluationService.MAX_COMPILATION_TRIES)
+                    or (not x.evaluated() and x.evaluation_tries <
+                        EvaluationService.MAX_EVALUATION_TRIES)]
+
+        new = len(new_submission_ids_to_check)
+        old = len(self.submission_ids_to_check)
+        logger.info("Submissions found with jobs to do: %d." % new)
+        if new > 0:
+            self.submission_ids_to_check += new_submission_ids_to_check
+            if old == 0:
+                self.add_timeout(self.check_old_submissions, None,
+                                 0.01, immediately=True)
+
+        # Run forever.
+        return True
 
     def check_old_submissions(self):
         """The submissions in the submission_ids_to_check list are to
