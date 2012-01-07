@@ -43,6 +43,14 @@
 
 
 
+** Score types
+
+* HIGH: implement detailed results for tasks. Detailed results is a
+  way to have subtask scores when applicable, to see them in CWS and
+  AWS and to send to RWS.
+
+
+
 ** ContestWebServer
 
 * HIGH: in the submissions list (both *WS), provide some fast way to
