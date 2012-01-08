@@ -127,7 +127,10 @@ class FSObject(Base):
         """Iterate over all the FSObjects available in the database.
 
         """
-        return session.query(cls)
+        if cls.__table__.exists():
+            return session.query(cls)
+        else:
+            return []
 
     @classmethod
     def delete_all(cls, session):

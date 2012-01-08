@@ -33,7 +33,6 @@ from cms.service.ScoreType import ScoreTypes
 from cms.async.AsyncLibrary import rpc_callback, Service, logger
 from cms.db.Utils import analyze_all_tables
 
-
 class YamlLoader:
 
     def __init__(self, FC, drop, modif, user_num):
