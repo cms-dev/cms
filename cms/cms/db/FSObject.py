@@ -27,6 +27,7 @@ used directly (import from SQLAlchemyAll).
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.exc import NoResultFound
 
+from psycopg2 import OperationalError
 from psycopg2.extensions import lobject
 
 from cms.db.SQLAlchemyUtils import Base
@@ -90,6 +91,26 @@ class FSObject(Base):
         finally:
             lo.close()
 
+    def check_lobject(self):
+        """Check that the referenced large object is actually
+        available in the database.
+
+        """
+        try:
+            lo = lobject(self.get_session().connection().connection.connection, self.loid)
+            lo.close()
+            return True
+        except OperationalError:
+            return False
+
+    def delete(self):
+        """Delete this file.
+
+        """
+        with self.get_lobject() as lo:
+            lo.unlink()
+        self.get_session().delete(self)
+
     @classmethod
     def get_from_digest(cls, digest, session):
         """Return the FSObject with the specified digest, using the
@@ -100,3 +121,20 @@ class FSObject(Base):
             return session.query(cls).filter(cls.digest == digest).one()
         except NoResultFound:
             return None
+
+    @classmethod
+    def get_all(cls, session):
+        """Iterate over all the FSObjects available in the database.
+
+        """
+        return session.query(cls)
+
+    @classmethod
+    def delete_all(cls, session):
+        """Delete all files stored in the database. This cannot be
+        undone. Large objects not linked by some FSObject cannot be
+        detected at the moment, so they don't get deleted.
+
+        """
+        for fso in cls.get_all(session):
+            fso.delete()

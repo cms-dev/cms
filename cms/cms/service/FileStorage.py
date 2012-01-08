@@ -238,9 +238,7 @@ class FileCacher:
         self.delete_from_cache(digest)
         with SessionGen() as session:
             fso = FSObject.get_from_digest(digest, session)
-            with fso.get_lobject() as lo:
-                lo.unlink()
-            session.delete(fso)
+            fso.delete()
             session.commit()
 
     def delete_from_cache(self, digest):
