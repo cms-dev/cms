@@ -226,8 +226,8 @@ class Testcase(Base):
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
-    def __init__(self, _input, output, num=None, public=False, task=None):
-        self.input = _input
+    def __init__(self, input, output, num=None, public=False, task=None):
+        self.input = input
         self.output = output
         self.num = num
         self.public = public
