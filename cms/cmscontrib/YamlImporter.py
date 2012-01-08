@@ -27,7 +27,7 @@ import optparse
 
 from cms.async import ServiceCoord
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Task, Manager, \
-    Testcase, User, Contest, SubmissionFormatElement
+    Testcase, User, Contest, SubmissionFormatElement, FSObject
 from cms.service.FileStorage import FileCacher
 from cms.service.ScoreType import ScoreTypes
 from cms.async.AsyncLibrary import rpc_callback, Service, logger
@@ -234,6 +234,9 @@ class YamlImporter(Service):
     def do_import(self):
         logger.info("Creating database structure.")
         if self.drop:
+            with SessionGen() as session:
+                FSObject.delete_all(session)
+                session.commit()
             metadata.drop_all()
         metadata.create_all()
 
