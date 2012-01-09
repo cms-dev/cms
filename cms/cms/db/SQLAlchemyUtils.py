@@ -34,7 +34,7 @@ db = create_engine(db_string, echo=Config.database_debug,
 Base = declarative_base(db)
 metadata = Base.metadata
 
-Session = sessionmaker(db)
+Session = sessionmaker(db, twophase=Config.twophase_commit)
 ScopedSession = scoped_session(Session)
 
 # For two-phases transactions:
