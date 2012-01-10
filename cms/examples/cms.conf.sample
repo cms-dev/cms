@@ -29,10 +29,11 @@
 
  "process_cmdline": ["/usr/bin/python", "./%s.py", "%d"],
 
- "_DB choice": "Please uncomment exactly one of the following; the first is the PostgreSQL server, the second is the name of the SQLite file (SQLite can be used only when everything runs on the same machine, and the path is decided by us). If a %s is present in the value, we will replace it with data_dir.",
+ "_DB choice": "Please uncomment exactly one of the following; the first is the PostgreSQL server, the second is the name of the SQLite file (SQLite can be used only when everything runs on the same machine, and the path is decided by us). If a %s is present in the value, we will replace it with data_dir. Also, notice that file storage now works only with PostgreSQL and psycopg2, so SQLite is not an option anymore.",
  "database":         "postgresql+psycopg2://username:password@localhost/database",
  "_database":        "sqlite:///%s/database.sqlite",
- "database_debug":   true,
+ "database_debug":   false,
+ "twophase_commit":  true,
 
  "keep_sandbox":     true,
 

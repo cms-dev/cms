@@ -176,35 +176,34 @@ class FileCacher:
             with open(temp_path, 'wb') as temp_file:
                 shutil.copyfileobj(file_obj, temp_file)
 
-        # (Re)open the temporary file and send it to the database
+        hasher = hashlib.sha1()
+        fso = FSObject(description=description)
+
+        # Calculate the file SHA1 digest
         with open(temp_path, 'rb') as temp_file:
-            hasher = hashlib.sha1()
-            fso = FSObject(description=description)
-            with SessionGen() as session:
+            buf = temp_file.read(self.CHUNK_SIZE)
+            while buf != '':
+                hasher.update(buf)
+                buf = temp_file.read(self.CHUNK_SIZE)
 
-                # Copy the file into the lobject
-                with fso.get_lobject(session, mode='wb') as lo:
-                    buf = temp_file.read(self.CHUNK_SIZE)
-                    while buf != '':
-                        hasher.update(buf)
-                        while len(buf) > 0:
-                            written = lo.write(buf)
-                            buf = buf[written:]
-                            self.service._step()
+        # Check the digest uniqueness
+        with SessionGen() as session:
+            digest = hasher.hexdigest()
+            if FSObject.get_from_digest(digest, session) is not None:
+                session.rollback()
+
+            # If it is not already present, copy the file into the
+            # lobject
+            else:
+                with open(temp_path, 'rb') as temp_file:
+                    with fso.get_lobject(session, mode='wb') as lo:
                         buf = temp_file.read(self.CHUNK_SIZE)
-
-                # Check the digest uniqueness
-                # TODO - This is done after the file has been
-                # uploaded; we could save bandwidth if the digest were
-                # computed before, but then we need to process the
-                # file twice; which one is better?
-                digest = hasher.hexdigest()
-                if FSObject.get_from_digest(digest, session) is not None:
-                    # Apparently the rollback also deletes the loaded
-                    # large object, which is good
-                    session.rollback()
-
-                else:
+                        while buf != '':
+                            while len(buf) > 0:
+                                written = lo.write(buf)
+                                buf = buf[written:]
+                                self.service._step()
+                            buf = temp_file.read(self.CHUNK_SIZE)
                     fso.digest = digest
                     session.add(fso)
                     session.commit()
@@ -238,9 +237,7 @@ class FileCacher:
         self.delete_from_cache(digest)
         with SessionGen() as session:
             fso = FSObject.get_from_digest(digest, session)
-            with fso.get_lobject() as lo:
-                lo.unlink()
-            session.delete(fso)
+            fso.delete()
             session.commit()
 
     def delete_from_cache(self, digest):

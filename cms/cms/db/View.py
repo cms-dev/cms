@@ -48,7 +48,8 @@ class RankingView(Base):
     contest_id = Column(Integer,
                         ForeignKey(Contest.id,
                                    onupdate="CASCADE", ondelete="CASCADE"),
-                        nullable=False)
+                        nullable=False,
+                        index=True)
     contest = relationship(
         Contest,
         backref=backref("ranking_view",
@@ -106,7 +107,8 @@ class Score(Base):
     rankingview_id = Column(Integer,
                             ForeignKey(RankingView.id,
                                        onupdate="CASCADE", ondelete="CASCADE"),
-                            nullable=False)
+                            nullable=False,
+                            index=True)
     rankingview = relationship(
         RankingView,
         backref=backref("scores",
@@ -119,14 +121,16 @@ class Score(Base):
     task_id = Column(Integer,
                      ForeignKey(Task.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False)
+                     nullable=False,
+                     index=True)
     task = relationship(Task)
 
     # User (id and object) owning the score.
     user_id = Column(Integer,
                      ForeignKey(User.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False)
+                     nullable=False,
+                     index=True)
     user = relationship(User)
 
     # The actual score.

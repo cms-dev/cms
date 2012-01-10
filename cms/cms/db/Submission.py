@@ -50,7 +50,8 @@ class Submission(Base):
     user_id = Column(Integer,
                      ForeignKey(User.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False)
+                     nullable=False,
+                     index=True)
     user = relationship(User,
                         backref=backref("submissions",
                                         single_parent=True,
@@ -60,7 +61,8 @@ class Submission(Base):
     task_id = Column(Integer,
                      ForeignKey(Task.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False)
+                     nullable=False,
+                     index=True)
     task = relationship(Task,
                         backref=backref("submissions",
                                         single_parent=True,
@@ -224,7 +226,8 @@ class Token(Base):
     submission_id = Column(Integer,
                            ForeignKey(Submission.id,
                                       onupdate="CASCADE", ondelete="CASCADE"),
-                           nullable=False)
+                           nullable=False,
+                           index=True)
     submission = relationship(Submission,
                               backref=backref(
                                   "token",
@@ -268,7 +271,8 @@ class File(Base):
     submission_id = Column(Integer,
                            ForeignKey(Submission.id,
                                       onupdate="CASCADE", ondelete="CASCADE"),
-                           nullable=False)
+                           nullable=False,
+                           index=True)
     submission = relationship(
         Submission,
         backref=backref('files',
@@ -308,7 +312,8 @@ class Executable(Base):
     submission_id = Column(Integer,
                            ForeignKey(Submission.id,
                                       onupdate="CASCADE", ondelete="CASCADE"),
-                           nullable=False)
+                           nullable=False,
+                           index=True)
     submission = relationship(
         Submission,
         backref=backref('executables',
@@ -347,7 +352,8 @@ class Evaluation(Base):
     submission_id = Column(Integer,
                            ForeignKey(Submission.id,
                                       onupdate="CASCADE", ondelete="CASCADE"),
-                           nullable=False)
+                           nullable=False,
+                           index=True)
     submission = relationship(
         Submission,
         backref=backref('evaluations',

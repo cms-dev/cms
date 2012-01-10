@@ -53,7 +53,8 @@ class Task(Base):
     contest_id = Column(Integer,
                         ForeignKey(Contest.id,
                                    onupdate="CASCADE", ondelete="CASCADE"),
-                        nullable=False)
+                        nullable=False,
+                        index=True)
     contest = relationship(
         Contest,
         backref=backref('tasks',
@@ -216,7 +217,8 @@ class Testcase(Base):
     task_id = Column(Integer,
                      ForeignKey(Task.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False)
+                     nullable=False,
+                     index=True)
     task = relationship(
         Task,
         backref=backref('testcases',
@@ -224,8 +226,8 @@ class Testcase(Base):
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
-    def __init__(self, _input, output, num=None, public=False, task=None):
-        self.input = _input
+    def __init__(self, input, output, num=None, public=False, task=None):
+        self.input = input
         self.output = output
         self.num = num
         self.public = public
@@ -259,7 +261,8 @@ class Attachment(Base):
     task_id = Column(Integer,
                      ForeignKey(Task.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False)
+                     nullable=False,
+                     index=True)
     task = relationship(
         Task,
         backref=backref('attachments',
@@ -299,7 +302,8 @@ class Manager(Base):
     task_id = Column(Integer,
                      ForeignKey(Task.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False)
+                     nullable=False,
+                     index=True)
     task = relationship(
         Task,
         backref=backref('managers',
@@ -336,7 +340,8 @@ class SubmissionFormatElement(Base):
     task_id = Column(Integer,
                      ForeignKey(Task.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False)
+                     nullable=False,
+                     index=True)
     task = relationship(Task,
                         backref=backref('submission_format',
                                         single_parent=True,

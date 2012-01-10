@@ -64,7 +64,8 @@ class User(Base):
     contest_id = Column(Integer,
                         ForeignKey(Contest.id,
                                    onupdate="CASCADE", ondelete="CASCADE"),
-                        nullable=False)
+                        nullable=False,
+                        index=True)
     contest = relationship(
         Contest,
         backref=backref("users",
@@ -149,7 +150,8 @@ class Message(Base):
     user_id = Column(Integer,
                      ForeignKey(User.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False)
+                     nullable=False,
+                     index=True)
     user = relationship(
         User,
         backref=backref('messages',
@@ -202,7 +204,8 @@ class Question(Base):
     user_id = Column(Integer,
                      ForeignKey(User.id,
                                 onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False)
+                     nullable=False,
+                     index=True)
     user = relationship(
         User,
         backref=backref('questions',

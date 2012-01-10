@@ -483,7 +483,8 @@ class Announcement(Base):
                         ForeignKey(Contest.id,
                                    onupdate="CASCADE",
                                    ondelete="CASCADE"),
-                        nullable=False)
+                        nullable=False,
+                        index=True)
     contest = relationship(Contest,
                            backref=backref(
                                'announcements',
