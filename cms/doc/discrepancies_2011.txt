@@ -1,0 +1,60 @@
+DISCREPANCIES BETWEEN CMS AND IOI 2011 OFFICIAL RULES
+=====================================================
+
+This document details the differences between the current capabilities
+of CMS and the official IOI 2011 rules, i.e., the features that need
+to be added to CMS to fully comply with the rules used in 2011.
+
+Warning: I'm working with rules detailed here[1], which appear to be
+draft. I don't know where to find a more up-to-date copy.
+
+ [1] http://www.ioi2011.or.th/rules
+
+ * Attachments: the contestants must be able to download skeleton
+   implementations and other files related to some task from the Web
+   interface; in CMS database there is a table 'attachments' for this
+   sort of files, but the Web interface doesn't show anything.
+
+ * Programming tasks: not implemented.
+
+ * RunC interface, both command-line and gedit plugin versions: not
+   implemented.
+
+ * Translation support: does the IOI 2011 Web interface served
+   translated task statements?
+
+ * Clarification requests: according to the rules, clarification
+   requests can happen only via paper requests, so our support in the
+   Web interface is, strictly speaking, not according to the
+   rules. Moreover, there is no way to electronically handle the
+   translation of questions (and the database doesn't support it).
+
+ * Cheating logging: the rules consider cheating also "probing the
+   server with customized URL"; probably we could create a "cheat log"
+   where we log events like this.
+
+ * Nearly all the Competition Server is ill-worded, and interpreting
+   it strictly would make most of CMS not according to the rules
+   (e.g., it implicitly assumes that there is only one Competition
+   Server and that it runs on the same hardware as the contestants'
+   computer, while the only logical requirements is that the workers
+   run in the same environment as contestants).
+
+ * Printing interface: not implemented.
+
+ * Multiple-files submissions (via a single .zip file): not
+   implemented.
+
+ * Test interface: not implemented (and probably we also need some
+   modification to the database to support it).
+
+ * Audible end signals: probably the system must offer some interface
+   to trigger the audible signals that mark the end of the
+   competition.
+
+ * Re-evaluation: according to the rules, contestants are notified
+   when some of their submissions if re-evaluated; it for some reason
+   we do mass re-evaluation, we need an automated system to manage all
+   the notifications.
+
+ * Submission details grouped into subtasks: not implemented.
