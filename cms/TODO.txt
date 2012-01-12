@@ -63,6 +63,8 @@
   expected. (This may be fixed using ip_hash in nginx.)
 
 * MED: why we forgot the possibility of using ssl for CWS?
+  - Probably because it's better to support it via some proxy like
+    nginx.
 
 * MED: make cookies expire after some inactivity time.
 
@@ -97,6 +99,8 @@
 
 * LOW: see old data about resource usage (i.e., longer graphs).
 
+* LOW: facility for mass-importing users data (reading a list with
+  names, generating passwords, creating IP association, ...)
 
 
 ** YamlImporter
