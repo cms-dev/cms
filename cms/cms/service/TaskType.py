@@ -71,7 +71,7 @@ class TaskTypes:
         if submission is not None:
             task = submission.task
         elif task is None:
-            raise ValueError("Can't have both submission and Task None.")
+            raise ValueError("Can't have both submission and task None.")
         if task.task_type == TaskTypes.TASK_TYPE_BATCH:
             return TaskTypeBatch(
                 submission,
@@ -288,8 +288,8 @@ class TaskType:
         self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/',
                                    '%s/' % (self.sandbox.path)]
         self.sandbox.allow_path += ["/proc/self/exe"]
-        self.sandbox.timeout = 8
-        self.sandbox.wallclock_timeout = 10
+        self.sandbox.timeout = 10
+        self.sandbox.wallclock_timeout = 12
         self.sandbox.address_space = 256 * 1024
         self.sandbox.stdout_file = \
             self.sandbox.relative_path("compiler_stdout.txt")

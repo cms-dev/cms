@@ -26,6 +26,7 @@ import tempfile
 import stat
 import select
 import re
+import shutil
 
 from cms.async.AsyncLibrary import logger, async_lock
 
@@ -338,6 +339,7 @@ class Sandbox:
         """
         return os.path.join(self.path, path)
 
+    # TODO - Rewrite it as context manager
     def create_file(self, path, executable=False):
         """Create an empty file in the sandbox and open it in write
         binary mode.
@@ -368,8 +370,7 @@ class Sandbox:
 
         """
         fd = self.create_file(path, executable)
-        with async_lock:
-            self.FC.get_file(digest, file_obj=fd)
+        self.FC.get_file(digest, file_obj=fd)
         fd.close()
 
     def create_file_from_string(self, path, content, executable=False):
@@ -384,6 +385,20 @@ class Sandbox:
         fd.write(content)
         fd.close()
 
+    def create_file_from_fileobj(self, path, file_obj, executable=False):
+        """Write a file in the sandbox copying the content of an open
+        file-like object.
+
+        path (string): relative path of the file inside the sandbox.
+        file_obj (file): where from read the file content.
+        executable (bool): to set permissions.
+
+        """
+        dest = self.create_file(path, executable)
+        shutil.copyfileobj(file_obj, dest)
+        dest.close()
+
+    # TODO - Rewrite it as context manager
     def get_file(self, path):
         """Open a file in the sandbox given its relative path.
 
@@ -427,8 +442,7 @@ class Sandbox:
 
         """
         fd = self.get_file(path)
-        with async_lock:
-            digest = self.FC.put_file(file_obj=fd, description=description)
+        digest = self.FC.put_file(file_obj=fd, description=description)
         fd.close()
         return digest
 
