@@ -54,13 +54,12 @@ class TaskTypes:
     TASK_TYPE_OUTPUT_ONLY = "TaskTypeOutputOnly"
 
     @staticmethod
-    def get_task_type(submission=None, session=None, file_cacher=None,
+    def get_task_type(submission=None, file_cacher=None,
                       task=None):
         """Given a submission, istantiate the corresponding TaskType
         class.
 
         submission (Submission): the submission that needs the task type.
-        session (SQLSession): the session the submission lives in.
         file_cacher (FileCacher): a file cacher object.
         task (Task): if we don't want to grade, but just to get
                      information, we can provide only the
@@ -72,16 +71,17 @@ class TaskTypes:
             task = submission.task
         elif task is None:
             raise ValueError("Can't have both submission and task None.")
+
         if task.task_type == TaskTypes.TASK_TYPE_BATCH:
             return TaskTypeBatch(
                 submission,
                 simplejson.loads(task.task_type_parameters),
-                session, file_cacher)
+                file_cacher)
         elif task.task_type == TaskTypes.TASK_TYPE_OUTPUT_ONLY:
             return TaskTypeOutputOnly(
                 submission,
                 simplejson.loads(task.task_type_parameters),
-                session, file_cacher)
+                file_cacher)
         else:
             raise KeyError
 
@@ -110,20 +110,17 @@ class TaskType:
     # the non-provided files with the one in the previous submission.
     ALLOW_PARTIAL_SUBMISSION = False
 
-    def __init__(self, submission, parameters, session, file_cacher):
+    def __init__(self, submission, parameters, file_cacher):
         """
         submission (Submission): the submission to grade.
         parameters (dict): parameters coming from the task; their
                            meaning depends on the specific TaskType.
-        session (SQLSession): the SQLAlchemy session the submission
-                              lives in.
         file_cacher (FileCacher): a FileCacher object to retrieve
                                   files from FS.
 
         """
         self.submission = submission
         self.parameters = parameters
-        self.session = session
         self.FC = file_cacher
 
     def finish_compilation(self, success, compilation_success=False, text=""):
@@ -327,7 +324,7 @@ class TaskType:
                 digest = self.sandbox_operation("get_file_to_storage",
                                                 filename, digest)
 
-                self.session.add(
+                self.submission.get_session().add(
                     Executable(digest, filename, self.submission))
 
             with async_lock:
@@ -783,10 +780,11 @@ class TaskTypeBatch(TaskType):
 
         for test_number in xrange(len(self.submission.evaluations),
                                   len(self.submission.task.testcases)):
-            self.session.add(Evaluation(text=None,
-                                        outcome=None,
-                                        num=test_number,
-                                        submission=self.submission))
+            self.submission.get_session().add(
+                Evaluation(text=None,
+                           outcome=None,
+                           num=test_number,
+                           submission=self.submission))
         self.submission.evaluation_outcome = "ok"
 
         for test_number in xrange(len(self.submission.task.testcases)):
@@ -870,10 +868,11 @@ class TaskTypeOutputOnly(TaskType):
         """
         for test_number in xrange(len(self.submission.evaluations),
                                   len(self.submission.task.testcases)):
-            self.session.add(Evaluation(text=None,
-                                        outcome=None,
-                                        num=test_number,
-                                        submission=self.submission))
+            self.submission.get_session().add(
+                Evaluation(text=None,
+                           outcome=None,
+                           num=test_number,
+                           submission=self.submission))
         self.submission.evaluation_outcome = "ok"
 
         for test_number in xrange(len(self.submission.task.testcases)):
