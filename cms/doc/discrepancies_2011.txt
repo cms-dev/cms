@@ -20,14 +20,19 @@ draft. I don't know where to find a more up-to-date copy.
  * RunC interface, both command-line and gedit plugin versions: not
    implemented.
 
- * Translation support: does the IOI 2011 Web interface served
-   translated task statements?
+ * Translation support: currently the website is (could be) localized,
+   but tasks statements are composed of a single binary file. We
+   should change the statement information to a map language -> binary
+   file. Moreover, users should be able to choose their language (for
+   interface and statements).
 
- * Clarification requests: according to the rules, clarification
-   requests can happen only via paper requests, so our support in the
-   Web interface is, strictly speaking, not according to the
-   rules. Moreover, there is no way to electronically handle the
-   translation of questions (and the database doesn't support it).
+ * Clarification requests: the rules do not prohibite an electronic
+   form for sending and answering questions. The system handles this,
+   but does not handle translations (it stores only the "localized"
+   copies of the questions and answers). Problem: the managers should
+   be able to input the localized answer (which could also be in a
+   non-latin alphabet). Though, most of the time the answer is
+   standard, so there is no need to translate it.
 
  * Cheating logging: the rules consider cheating also "probing the
    server with customized URL"; probably we could create a "cheat log"
@@ -42,9 +47,6 @@ draft. I don't know where to find a more up-to-date copy.
 
  * Printing interface: not implemented.
 
- * Multiple-files submissions (via a single .zip file): not
-   implemented.
-
  * Test interface: not implemented (and probably we also need some
    modification to the database to support it).
 
@@ -53,8 +55,7 @@ draft. I don't know where to find a more up-to-date copy.
    competition.
 
  * Re-evaluation: according to the rules, contestants are notified
-   when some of their submissions if re-evaluated; it for some reason
-   we do mass re-evaluation, we need an automated system to manage all
-   the notifications.
+   when some of their submissions if re-evaluated; this must be done
+   manually by the managers (that initiated the re-evaluation).
 
  * Submission details grouped into subtasks: not implemented.
