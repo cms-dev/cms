@@ -2,10 +2,10 @@ Format: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?view=co&rev=174
 Upstream-Name: cms
 Upstream-Contact: Stefano Maggiolo <s.maggiolo@gmail.com>
 Source: ssh://gitosis@poisson.phc.unipi.it/cms.git
-Copyright: 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-           2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
-           2010-2011 Matteo Boscariol <boscarim@hotmail.com>
-           2011 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+Copyright: © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+           © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+           © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+           © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: AGPL-3+
 
 License: AGPL-3+
@@ -23,19 +23,23 @@ License: AGPL-3+
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Files: *
-Copyright: 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-           2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
-           2010-2011 Matteo Boscariol <boscarim@hotmail.com>
+Copyright: © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+           © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+           © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 License: AGPL-3+
 
 Files: cms/ranking/*
-Copyright: 2011 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+Copyright: © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: AGPL-3+
 
 Files: cms/ranking/client/images/* cms/ranking/client/public/*.png
-Copyright: 2011 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+Copyright: © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: CC-BY-SA-3.0
 
 Files: cms/ranking/client/EventSource.js
-Copyright: 2010 Remy Sharp, http://remysharp.com
+Copyright: © 2010 Remy Sharp, http://remysharp.com
 License: Expat
+
+Files: cms/server/static/jq/*
+Copyright: © 2009-2011 Chris Leonello
+License: MIT or GPL
