@@ -57,8 +57,7 @@ class Worker(Service):
             raise JobException(err_msg)
 
         try:
-            task_type = TaskTypes.get_task_type(submission, self.session,
-                                                self.FC)
+            task_type = TaskTypes.get_task_type(submission, self.FC)
         except KeyError:
             err_msg = "Task type `%s' not known for submission %s" \
                 % (submission.task.task_type, submission_id)
@@ -140,6 +139,7 @@ class Worker(Service):
                     task_type_action = task_type.evaluate
                     if job_type == "compilation":
                         task_type_action = task_type.compile
+
                     try:
                         success = task_type_action()
                     except Exception as error:
@@ -149,8 +149,10 @@ class Worker(Service):
                         with async_lock:
                             logger.error(err_msg)
                         raise JobException(err_msg)
+
                     if success:
                         self.session.commit()
+
                     with async_lock:
                         logger.info("Request finished")
                     return success
