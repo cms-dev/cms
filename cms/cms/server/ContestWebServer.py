@@ -53,7 +53,7 @@ from cms.async import ServiceCoord
 
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, Task, File
-from cms.service.TaskType import TaskTypes
+from cms.grading.TaskType import TaskTypes
 from cms.service.FileStorage import FileCacher
 
 from cms.db.Utils import ask_for_contest
