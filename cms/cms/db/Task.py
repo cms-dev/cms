@@ -110,10 +110,6 @@ class Task(Base):
     # building the scores of the submissions..
     scorer = None
 
-    TASK_TYPE_BATCH = "TaskTypeBatch"
-    TASK_TYPE_PROGRAMMING = "TaskTypeProgramming"
-    TASK_TYPE_OUTPUT_ONLY = "TaskTypeOutputOnly"
-
     def __init__(self, name, title, attachments, statement,
                  time_limit, memory_limit,
                  task_type, task_type_parameters, submission_format, managers,
