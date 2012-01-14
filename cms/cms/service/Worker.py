@@ -27,7 +27,7 @@ from cms.async.AsyncLibrary import logger, async_lock, Service, \
      rpc_method, rpc_threaded
 from cms.service.TaskType import TaskTypes
 from cms.db.SQLAlchemyAll import Submission, SessionGen, Contest
-from cms.service import JobException
+from cms.grading import JobException
 from cms.service.FileStorage import FileCacher
 
 

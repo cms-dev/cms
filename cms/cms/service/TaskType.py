@@ -37,7 +37,7 @@ import simplejson
 from cms.async.AsyncLibrary import logger, async_lock
 from cms.box.Sandbox import Sandbox
 from cms.db.SQLAlchemyAll import Executable, Evaluation
-from cms.service import JobException
+from cms.grading import JobException
 from cms.util.Utils import get_compilation_command, white_diff, \
     filter_ansi_escape
 from cms import Config
