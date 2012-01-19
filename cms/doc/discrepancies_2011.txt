@@ -15,7 +15,7 @@ draft. I don't know where to find a more up-to-date copy.
    interface; in CMS database there is a table 'attachments' for this
    sort of files, but the Web interface doesn't show anything.
 
- * Programming tasks: not implemented.
+ * Communication tasks: not implemented.
 
  * RunC interface, both command-line and gedit plugin versions: not
    implemented.
