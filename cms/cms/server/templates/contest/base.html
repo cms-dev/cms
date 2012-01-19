@@ -25,7 +25,7 @@ function init()
 {
     cmsrpc = new CMSAjaxRPC();
     cmsutils = new CMSUtils();
-    utils = new Utils({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }});
+    utils = new Utils({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(valid_phase_end) }}, {{ phase }});
 
     firstDate = new Date();
     utils.get_time();

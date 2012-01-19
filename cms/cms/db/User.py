@@ -72,6 +72,11 @@ class User(Base):
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
+    # Starting time: for contests where every user has at most x hours
+    # of the y > x hours totally available. This is the first time the
+    # user logged in while the contest was active.
+    starting_time = Column(Integer, nullable=True)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # messages (list of Message objects)
@@ -82,9 +87,8 @@ class User(Base):
     # get_tokens (defined in SQLAlchemyAll)
 
     def __init__(self, real_name, username, password=None, ip=None,
-                 timezone=0.0, contest=None,
-                 hidden=False, messages=None, questions=None,
-                 submissions=None):
+                 timezone=0.0, contest=None, hidden=False, starting_time=None,
+                 messages=None, questions=None, submissions=None):
         self.real_name = real_name
         self.username = username
         if password is None:
@@ -97,6 +101,7 @@ class User(Base):
             ip = '0.0.0.0'
         self.ip = ip
         self.hidden = hidden
+        self.starting_time = starting_time
         if messages is None:
             messages = []
         self.messages = messages
@@ -116,17 +121,18 @@ class User(Base):
         if not skip_submissions:
             submissions = [submission.export_to_dict()
                            for submission in self.submissions]
-        return {'real_name':   self.real_name,
-                'username':    self.username,
-                'password':    self.password,
-                'timezone':    self.timezone,
-                'ip':          self.ip,
-                'hidden':      self.hidden,
-                'messages':    [message.export_to_dict()
-                                for message in self.messages],
-                'questions':   [question.export_to_dict()
-                                for question in self.questions],
-                'submissions': submissions}
+        return {'real_name':     self.real_name,
+                'username':      self.username,
+                'password':      self.password,
+                'timezone':      self.timezone,
+                'ip':            self.ip,
+                'hidden':        self.hidden,
+                'starting_time': self.starting_time,
+                'messages':      [message.export_to_dict()
+                                  for message in self.messages],
+                'questions':     [question.export_to_dict()
+                                  for question in self.questions],
+                'submissions':   submissions}
 
 
 class Message(Base):

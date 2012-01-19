@@ -73,6 +73,9 @@ class Contest(Base):
     start = Column(Integer, nullable=True)
     stop = Column(Integer, nullable=True)
 
+    # Max contest time for each user in seconds.
+    per_user_time = Column(Integer, nullable = True)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # tasks (list of Task objects)
@@ -89,8 +92,8 @@ class Contest(Base):
                  token_initial=0, token_max=0, token_total=0,
                  token_min_interval=0,
                  token_gen_time=60, token_gen_number=1,
-                 start=None, stop=None, announcements=None,
-                 ranking_view=None):
+                 start=None, stop=None, per_user_time=None,
+                 announcements=None, ranking_view=None):
         self.name = name
         self.description = description
         self.tasks = tasks
@@ -103,6 +106,7 @@ class Contest(Base):
         self.token_gen_number = token_gen_number
         self.start = start
         self.stop = stop
+        self.per_user_time = per_user_time
         if announcements is None:
             announcements = []
         self.announcements = announcements
@@ -126,6 +130,7 @@ class Contest(Base):
                 'token_gen_number':   self.token_gen_number,
                 'start':              self.start,
                 'stop':               self.stop,
+                'per_user_time':      self.per_user_time,
                 'announcements':      [announcement.export_to_dict()
                                        for announcement in self.announcements],
                 'ranking_view':       self.ranking_view.export_to_dict()}

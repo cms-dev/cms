@@ -47,6 +47,10 @@
       <td>End</td>
       <td><input type="text" name="end" value="{{ datetime.datetime.fromtimestamp(contest.stop).strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
     </tr>
+    <tr>
+      <td>Maximum length of the contest for a user (seconds)</td>
+      <td><input type="text" name="per_user_time" value="{{ contest.per_user_time }}"></td>
+    </tr>
   </table>
   <input type="submit" value="Update" />
   <input type="reset" value="Reset" />

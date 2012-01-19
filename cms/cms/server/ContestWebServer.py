@@ -98,6 +98,8 @@ class BaseHandler(tornado.web.RequestHandler):
         username specified in the cookie. Otherwise, return None.
 
         """
+        timestamp = time.time()
+
         if self.get_secure_cookie("login") is None:
             return None
         try:
@@ -111,6 +113,16 @@ class BaseHandler(tornado.web.RequestHandler):
         if user is None:
             self.clear_cookie("login")
             return None
+
+        # If this is the first time we see user during the active
+        # phase of the contest, we note that his/her time starts from
+        # now.
+        if self.contest.phase(timestamp) == 0 and \
+           user.starting_time is None:
+            logger.info("Starting now for user %s" % user.username)
+            user.starting_time = timestamp
+            self.sql_session.commit()
+
         return user
 
     def render_params(self):
@@ -122,8 +134,22 @@ class BaseHandler(tornado.web.RequestHandler):
         ret = {}
         ret["timestamp"] = int(time.time())
         ret["contest"] = self.contest
+        ret["valid_phase_end"] = self.contest.stop
         if(self.contest is not None):
             ret["phase"] = self.contest.phase(ret["timestamp"])
+            # If we have a user logged in, the contest may be ended
+            # before contest.stop if the user has finished the time
+            # allocated for him/her.
+            if ret["phase"] == 0 and \
+                   self.current_user is not None and \
+                   self.contest.per_user_time is not None:
+                delta = ret["timestamp"] - self.current_user.starting_time
+                if delta >= self.contest.per_user_time:
+                    ret["phase"] = 1
+                user_end_time = (self.current_user.starting_time +
+                                 self.contest.per_user_time)
+                if user_end_time < self.contest.stop:
+                    ret["valid_phase_end"] = user_end_time
         ret["contest_list"] = self.sql_session.query(Contest).all()
         ret["cookie"] = str(self.cookies)
         return ret

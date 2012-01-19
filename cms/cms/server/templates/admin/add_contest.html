@@ -24,6 +24,7 @@ function validate_contest()
     var token_gen_number = document.add_contest.token_gen_number.value;
     var start = document.add_contest.start.value;
     var end = document.add_contest.end.value;
+    var per_user_time = document.add_contest.per_user_time.value;
 
     if( name === undefined || name == '')
     {
@@ -43,6 +44,7 @@ function validate_contest()
     par += "&token_gen_number="+encodeURIComponent(token_gen_number);
     par += "&start="+encodeURIComponent(start);
     par += "&end="+encodeURIComponent(end);
+    par += "&per_user_time="+encodeURIComponent(per_user_time);
 
     cmsutils.ajax_request('/contest/add', par, contest_response, "POST");
     return false;
@@ -95,6 +97,10 @@ function validate_contest()
     <tr>
       <td>End</td>
       <td><input type="text" name="end" value="{{ datetime.datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
+    </tr>
+    <tr>
+      <td>Maximum length of the contest for a user (seconds)</td>
+      <td><input type="text" name="per_user_time" value="None"></td>
     </tr>
   </table>
   <input type="submit"><input type="reset" value="Reset">

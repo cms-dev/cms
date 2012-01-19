@@ -317,9 +317,18 @@ class AddContestHandler(BaseHandler):
             self.write("Contest ends before it starts")
             return
 
+        try:
+            per_user_time = self.get_non_negative_int(
+                "per_user_time",
+                None)
+        except Exception as error:
+            self.write("Invalid per user time. %r" % error)
+            return
+
         contest = Contest(name, description, [], [], token_initial,
                           token_max, token_total, token_min_interval,
-                          token_gen_time, token_gen_number, start, stop)
+                          token_gen_time, token_gen_number, start, stop,
+                          per_user_time)
 
         self.sql_session.add(contest)
         self.sql_session.commit()
@@ -845,6 +854,15 @@ class EditContestHandler(BaseHandler):
             self.redirect("/contest/%s" % contest_id)
             return
 
+        try:
+            per_user_time = self.get_non_negative_int(
+                "per_user_time",
+                None)
+        except Exception as error:
+            self.write("Invalid per user time. %r" % error)
+            self.redirect("/contest/%s" % contest_id)
+            return
+
         self.contest.name = name
         self.contest.description = description
         self.contest.token_initial = token_initial
@@ -855,6 +873,7 @@ class EditContestHandler(BaseHandler):
         self.contest.token_gen_number = token_gen_number
         self.contest.start = start
         self.contest.stop = stop
+        self.contest.per_user_time = per_user_time
 
         self.sql_session.commit()
         self.redirect("/contest/%s" % contest_id)
@@ -926,6 +945,20 @@ class UserViewHandler(BaseHandler):
             self.redirect("/user/%s" % user_id)
             return
 
+        starting_time = None
+        if self.get_argument("starting_time", "") not in ["", "None"]:
+            try:
+                starting_time = time.mktime(
+                    time.strptime(self.get_argument("starting_time", ""),
+                                  "%d/%m/%Y %H:%M:%S"))
+            except Exception as error:
+                self.application.service.add_notification(
+                    int(time.time()),
+                    "Invalid starting time(s).", repr(error))
+                self.redirect("/add_user/%s" % contest_id)
+                return
+        user.starting_time = starting_time
+
         user.hidden = self.get_argument("hidden", False) != False
 
         self.sql_session.commit()
@@ -959,10 +992,23 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
             self.redirect("/add_user/%s" % contest_id)
             return
 
+        starting_time = None
+        if self.get_argument("starting_time", "") not in ["", "None"]:
+            try:
+                starting_time = time.mktime(
+                    time.strptime(self.get_argument("starting_time", ""),
+                                  "%d/%m/%Y %H:%M:%S"))
+            except Exception as error:
+                self.application.service.add_notification(
+                    int(time.time()),
+                    "Invalid starting time(s).", repr(error))
+                self.redirect("/add_user/%s" % contest_id)
+                return
+
         hidden = self.get_argument("hidden", False) != False
 
         user = User(real_name, username, password=password, ip=ip,
-            hidden=hidden, contest=self.contest)
+            hidden=hidden, starting_time=starting_time, contest=self.contest)
         self.sql_session.add(user)
         self.sql_session.commit()
         self.application.service.add_notification(int(time.time()),
