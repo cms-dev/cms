@@ -45,7 +45,13 @@ def load_config_file(cmsconf):
 
     """
     # Load config file
-    dic = json.load(open(cmsconf))
+    try:
+        dic = json.load(open(cmsconf))
+    except json.decoder.JSONDecodeError:
+        print "Unable to load JSON configuration file %s " \
+              "because of a JSON decoding error. Aborting." % cmsconf
+        import sys
+        sys.exit(1)
 
     # Put core and test services in Config
     for service in dic["core_services"]:
