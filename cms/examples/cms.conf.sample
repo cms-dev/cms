@@ -33,7 +33,7 @@
  "database":         "postgresql+psycopg2://username:password@localhost/database",
  "_database":        "sqlite:///%s/database.sqlite",
  "database_debug":   false,
- "twophase_commit":  true,
+ "twophase_commit":  false,
 
  "keep_sandbox":     true,
 
