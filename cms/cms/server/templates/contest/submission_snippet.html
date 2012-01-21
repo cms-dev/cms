@@ -14,8 +14,20 @@
   {{ _("Compilation failed") }}
   {% elif not s.evaluated() %}
   {{ _("Evaluating...") }}
+  {% elif s.score is not None %}
+    {% if s.token is not None %}
+  Evaluated ({{ s.score }} / {{ s.task.max_score }})
+      {% for detail in json.loads(s.score_details) %}
+  <br/>{{ detail }}
+      {% end %}
+    {% else %}
+  Evaluated ({{ s.public_score }} / {{ s.task.max_public_score }})
+      {% for detail in json.loads(s.public_score_details) %}
+  <br/>{{ detail }}
+      {% end %}
+    {% end %}
   {% else %}
-  {{ _("Evaluated") }}
+  Evaluated
   {% end %}
 </div>
 <div id="evaluation_{{ encrypted_id }}" style="display: none;">

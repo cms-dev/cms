@@ -51,6 +51,11 @@ $("select[name=task_type]").change(showTaskTypeOption);
             Compilation failed
             {% elif not s.evaluated() %}
             Evaluating...
+            {% elif s.score is not None %}
+            Evaluated ({{ s.score }} / {{ s.task.max_score }})
+              {% for detail in json.loads(s.score_details) %}
+            <br/>{{ detail }}
+              {% end %}
             {% else %}
             Evaluated
             {% end %}
