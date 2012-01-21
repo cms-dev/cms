@@ -26,7 +26,7 @@ used directly (import  from SQLAlchemyAll).
 
 import time
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, Float
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -76,7 +76,7 @@ class Submission(Base):
 
     # Compilation outcome (can be None = yet to compile, "ok" =
     # compilation successful and we can evaluate, "fail" =
-    # compilation unsuccessful, thorow it away).
+    # compilation unsuccessful, throw it away).
     compilation_outcome = Column(String, nullable=True)
 
     # String containing output from the sandbox, and the compiler
@@ -97,6 +97,20 @@ class Submission(Base):
 
     # Number of tentatives of evaluation.
     evaluation_tries = Column(Integer, nullable=False)
+
+    # Score as computed by ScoreService. Null means not yet scored.
+    score = Column(Float, nullable=True)
+
+    # Score details (e.g., for subtask information). Null means not
+    # yet scored. ScoreType is the only one with the power to
+    # interpret this field - ok, maybe also RWS). Usually this is
+    # JSON, and composed of a list of strings.
+    score_details = Column(String, nullable=True)
+
+    # The same as the last two fields, but from the point of view of
+    # the user (when he/she did not play a token).
+    public_score = Column(Float, nullable=True)
+    public_score_details = Column(String, nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.

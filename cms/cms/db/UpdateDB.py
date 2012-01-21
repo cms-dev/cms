@@ -39,7 +39,8 @@ class ScriptsContainer(object):
     def __init__(self):
         # List of scripts dates and names (assumed to be sorted).
         self.list = [
-            ("20120119", "add_user_starting_time"),
+            ("20120119", "add_per_user_time"),
+            ("20120121", "add_submissions_score"),
             ]
         self.list.sort()
 
@@ -50,7 +51,7 @@ class ScriptsContainer(object):
         return (bool): True if script is in the collection.
 
         """
-        for (unused_date, contained_script) in self.list:
+        for (_date, contained_script) in self.list:
             if contained_script == script:
                 return True
         return False
@@ -72,7 +73,7 @@ class ScriptsContainer(object):
         return (list): list of (date, name) of scripts.
 
         """
-        for i, (date, name) in enumerate(self.list):
+        for i, (date, _name) in enumerate(self.list):
             if date >= starting_from:
                 return self.list[i:]
         return []
@@ -83,14 +84,14 @@ class ScriptsContainer(object):
         """
         print "Date         Name"
         for date, name in self.list:
-            y, m, d = date[:4], date[4:6], date[6:]
-            print "%s %s %s   %s" % (y, m, d, name)
+            year, month, day = date[:4], date[4:6], date[6:]
+            print "%s %s %s   %s" % (year, month, day, name)
             print "             %s" % \
                   self.__getattribute__(name).__doc__.split("\n")[0]
 
     # Following is the list of scripts implementions.
 
-    def add_per_user__time(self):
+    def add_per_user_time(self):
         """Support for contest where users may use up to x seconds.
 
         When we want a contest that, for example, is open for 3 days
@@ -105,20 +106,40 @@ class ScriptsContainer(object):
             session.execute("ALTER TABLE contests "
                             "ADD COLUMN per_user_time INTEGER;")
 
+    def add_submissions_score(self):
+        """Support for storing the score in the submission.
 
-def execute_single_script(sc, script):
+        We add two fields to the submission: score and score details,
+        that holds the total score (a float) and a (usually)
+        JSON-encoded string storing the details of the scoring (e.g.,
+        subtasks' scores). Details' meaning is decided by the
+        ScoreType.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE submissions "
+                            "ADD COLUMN score FLOAT;")
+            session.execute("ALTER TABLE submissions "
+                            "ADD COLUMN score_details VARCHAR;")
+            session.execute("ALTER TABLE submissions "
+                            "ADD COLUMN public_score FLOAT;")
+            session.execute("ALTER TABLE submissions "
+                            "ADD COLUMN public_score_details VARCHAR;")
+
+
+def execute_single_script(scripts_container, script):
     """Execute one script. Exit on errors.
 
-    sc (ScriptContainer): the list of scripts.
+    scripts_container (ScriptContainer): the list of scripts.
     script (string): the script name.
 
     """
-    if script in sc:
+    if script in scripts_container:
         print "Executing script %s..." % script
         try:
-            sc[script]()
-        except Exception as e:
-            print "Error received, aborting: %r" % e
+            scripts_container[script]()
+        except Exception as error:
+            print "Error received, aborting: %r" % error
             sys.exit(1)
         else:
             print "Script executed successfully"
@@ -144,24 +165,29 @@ def main():
                        action="store")
     args = parser.parse_args()
 
-    sc = ScriptsContainer()
+    something_done = False
+    scripts_container = ScriptsContainer()
     if args.list:
-        sc.print_list()
+        scripts_container.print_list()
+        something_done = True
 
     for script in args.execute_script:
-        execute_single_script(sc, script)
+        execute_single_script(scripts_container, script)
+        something_done = True
 
     if args.execute_scripts_since is not None:
+        something_done = True
         if len(args.execute_scripts_since) == 8:
-            scripts = sc.get_scripts(starting_from=args.execute_scripts_since)
-            for date, script in scripts:
-                execute_single_script(sc, script)
+            scripts = scripts_container.get_scripts(
+                starting_from=args.execute_scripts_since)
+            for _date, script in scripts:
+                execute_single_script(scripts_container, script)
         else:
             print "Invalid date format (should be YYYYMMDD)."
             sys.exit(1)
 
-
-
+    if not something_done:
+        parser.print_help()
 
 
 if __name__ == "__main__":
