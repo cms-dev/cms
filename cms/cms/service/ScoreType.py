@@ -45,7 +45,7 @@ class ScoreTypes:
     SCORE_TYPE_RELATIVE = "ScoreTypeRelative"
 
     @staticmethod
-    def get_score_type(score_type, score_parameters):
+    def get_score_type(score_type, score_parameters, public_testcases):
         """Returns the right score type class for a given string.
 
         score_type (string): the name of the score type class.
@@ -53,13 +53,13 @@ class ScoreTypes:
 
         """
         if score_type == ScoreTypes.SCORE_TYPE_SUM:
-            return ScoreTypeSum(score_parameters)
+            return ScoreTypeSum(score_parameters, public_testcases)
         elif score_type == ScoreTypes.SCORE_TYPE_GROUP_MIN:
-            return ScoreTypeGroupMin(score_parameters)
+            return ScoreTypeGroupMin(score_parameters, public_testcases)
         elif score_type == ScoreTypes.SCORE_TYPE_GROUP_MUL:
-            return ScoreTypeGroupMul(score_parameters)
+            return ScoreTypeGroupMul(score_parameters, public_testcases)
         elif score_type == ScoreTypes.SCORE_TYPE_RELATIVE:
-            return ScoreTypeRelative(score_parameters)
+            return ScoreTypeRelative(score_parameters, public_testcases)
         else:
             raise KeyError
 
@@ -69,13 +69,15 @@ class ScoreType:
     defined here.
 
     """
-    def __init__(self, parameters):
+    def __init__(self, parameters, public_testcases):
         """Initializer.
 
         parameters (object): format is specified in the subclasses.
-
+        public_testcases (list): list of booleans indicating if the
+                                 testcases are pulic or not
         """
         self.parameters = parameters
+        self.public_testcases = public_testcases
 
         # Dict that associate to a username the list of its
         # submission_ids - sorted by timestamp.
@@ -88,6 +90,19 @@ class ScoreType:
         # Dict that associate to a username the maximum score amongst
         # its tokened submissions and the last one.
         self.scores = {}
+
+        # Preload the maximum possible scores.
+        self.max_score, self.max_public_score = \
+            self.max_scores()
+
+        # Initialization method that can be overwritten by subclass.
+        self.initialize()
+
+    def initialize(self):
+        """Intended to be overwritten by subclasses.
+
+        """
+        pass
 
     def add_submission(self, submission_id, timestamp, username,
                        evaluations, tokened):
@@ -106,9 +121,18 @@ class ScoreType:
             "username": username,
             "evaluations": evaluations,
             "tokened": tokened,
-            "score": None
+            "score": None,
+            "details": None,
+            "public_score": None,
+            "public_details": None
             }
-        self.pool[submission_id]["score"] = self.compute_score(submission_id)
+        (score, details, public_score, public_details) = \
+                self.compute_score(submission_id)
+        self.pool[submission_id]["score"] = score
+        self.pool[submission_id]["details"] = details
+        self.pool[submission_id]["public_score"] = public_score
+        self.pool[submission_id]["public_details"] = public_details
+
         if username not in self.submissions or \
             self.submissions[username] is None:
             self.submissions[username] = [submission_id]
@@ -166,25 +190,44 @@ class ScoreType:
 
         """
         logger.error("Unimplemented method update_scores.")
-        self.scores[username] = 0.0
+        raise NotImplementedError
+
+    def max_scores(self):
+        """Returns the maximum score that one could aim to in this
+        problem. Also return the maximum score from the point of view
+        of a user that did not play the token. Depend on the subclass.
+
+        return (float, float): maximum score and maximum score with
+                               only public testcases.
+
+        """
+        logger.error("Unimplemented method max_scores.")
+        raise NotImplementedError
 
     def compute_score(self, submission_id):
         """Computes a score of a single submission. We don't know here
-        how to for it, but our subclasses will.
+        how to do it, but our subclasses will.
 
         submission_id (int): the submission to evaluate.
-        returns (float): the score
+
+        returns (float, list, float, list): respectively: the score,
+                                            the list of additional
+                                            information (e.g.
+                                            subtasks' score), and the
+                                            same information from the
+                                            point of view of a user
+                                            that did not play a token.
 
         """
         logger.error("Unimplemented method compute_score.")
-        return 0.0
+        raise NotImplementedError
 
 
 class ScoreTypeAlone(ScoreType):
     """Intermediate class to manage tasks where the score of a
     submission depends only on the submission itself and not on the
     other submissions' outcome. Remains to implement compute_score to
-    obtain the score of a single submission.
+    obtain the score of a single submission and max_scores.
 
     """
     def update_scores(self, new_submission_id):
@@ -215,6 +258,21 @@ class ScoreTypeSum(ScoreTypeAlone):
     multiplied by the integer parameter.
 
     """
+    def max_scores(self):
+        """Compute the maximum score of a submission. FIXME: this
+        suppose that the outcomes are in [0, 1].
+
+        returns (float, float): maximum score overall and public.
+
+        """
+        public_score = 0.0
+        score = 0.0
+        for public in self.public_testcases:
+            if public:
+                public_score += self.parameters
+            score += self.parameters
+        return score, public_score
+
     def compute_score(self, submission_id):
         """Compute the score of a submission.
 
@@ -223,7 +281,14 @@ class ScoreTypeSum(ScoreTypeAlone):
 
         """
         evaluations = self.pool[submission_id]["evaluations"]
-        return sum(evaluations) * self.parameters
+        public_score = 0.0
+        score = 0.0
+        for evaluation, public in zip(evaluations, self.public_testcases):
+            if public:
+                public_score += evaluation
+            score += evaluation
+        return score * self.parameters, None, \
+               public_score * self.parameters, None
 
 
 class ScoreTypeGroupMin(ScoreTypeAlone):
@@ -235,6 +300,24 @@ class ScoreTypeGroupMin(ScoreTypeAlone):
     the min will be multiplied by m.
 
     """
+    def max_scores(self):
+        """Compute the maximum score of a submission. FIXME: this
+        suppose that the outcomes are in [0, 1].
+
+        returns (float, float): maximum score overall and public.
+
+        """
+        public_score = 0.0
+        score = 0.0
+        current = 0
+        for parameter in self.parameters:
+            next_ = current + parameter[1]
+            score += parameter[0]
+            if all(self.public_testcases[current:next_]):
+                public_score += parameter[0]
+            current = next_
+        return score, public_score
+
     def compute_score(self, submission_id):
         """Compute the score of a submission.
 
@@ -244,12 +327,22 @@ class ScoreTypeGroupMin(ScoreTypeAlone):
         """
         evaluations = self.pool[submission_id]["evaluations"]
         current = 0
-        score = 0.0
+        scores = []
+        public_scores = []
         for parameter in self.parameters:
             next_ = current + parameter[1]
-            score += min(evaluations[current:next_]) * parameter[0]
+            scores.append(min(evaluations[current:next_]) * parameter[0])
+            if all(self.public_testcases[current:next_]):
+                public_scores.append(scores[-1])
+                public_index = len(scores)-1
             current = next_
-        return score
+        score = sum(scores)
+        public_score = sum(public_scores)
+        details = ["Subtask %d: %lf" % (i + 1, score)
+                   for i, score in scores]
+        public_details = ["Subtask %d: %lf" % (i + 1, score)
+                          for i, score in zip(public_index, public_scores)]
+        return score, details, public_score, public_details
 
 
 class ScoreTypeGroupMul(ScoreTypeAlone):
@@ -257,6 +350,24 @@ class ScoreTypeGroupMul(ScoreTypeAlone):
     the minimum.
 
     """
+    def max_scores(self):
+        """Compute the maximum score of a submission. FIXME: this
+        suppose that the outcomes are in [0, 1].
+
+        returns (float, float): maximum score overall and public.
+
+        """
+        public_score = 0.0
+        score = 0.0
+        current = 0
+        for parameter in self.parameters:
+            next_ = current + parameter[1]
+            score += parameter[0]
+            if all(self.public_testcases[current:next_]):
+                public_score += parameter[0]
+            current = next_
+        return score, public_score
+
     def compute_score(self, submission_id):
         """Compute the score of a submission.
 
@@ -266,13 +377,23 @@ class ScoreTypeGroupMul(ScoreTypeAlone):
         """
         evaluations = self.pool[submission_id]["evaluations"]
         current = 0
-        score = 0.0
+        scores = []
+        public_scores = []
         for parameter in self.parameters:
             next_ = current + parameter[1]
-            score += reduce(lambda x, y: x * y,
-                            evaluations[current:next_]) * parameter[0]
+            scores.append(reduce(lambda x, y: x * y,
+                                 evaluations[current:next_]) * parameter[0])
+            if all(self.public_testcases[current:next_]):
+                public_scores.append(scores[-1])
+                public_index = len(scores)-1
             current = next_
-        return score
+        score = sum(scores)
+        public_score = sum(public_scores)
+        details = ["Subtask %d: %lf" % (i + 1, score)
+                   for i, score in scores]
+        public_details = ["Subtask %d: %lf" % (i + 1, score)
+                          for i, score in zip(public_index, public_scores)]
+        return score, details, public_score, public_details
 
 
 class ScoreTypeRelative(ScoreType):
@@ -286,7 +407,7 @@ class ScoreTypeRelative(ScoreType):
     score is multiplied by a multiplier given as parameter.
 
     """
-    def __init__(self, parameters):
+    def initialize(self):
         """Init.
 
         parameters (couple): the first element is a float, the
@@ -296,8 +417,6 @@ class ScoreTypeRelative(ScoreType):
                              outcome.
 
         """
-        ScoreType.__init__(self, parameters)
-
         # We keep the best outcome that is gonna stay (i.e., not
         # amongst the last submissions, but only tokened and basic
         # outcomes. Elements may be None.
@@ -362,6 +481,21 @@ class ScoreTypeRelative(ScoreType):
                 score = max(score, self.pool[submissions[-1]]["score"])
             self.scores[username] = score
 
+    def max_scores(self):
+        """Compute the maximum score of a submission. FIXME: this
+        suppose that the outcomes are in [0, 1].
+
+        returns (float, float): maximum score overall and public.
+
+        """
+        public_score = 0.0
+        score = 0.0
+        for public in self.public_testcases:
+            score += parameter[0]
+            if public:
+                public_score += parameter[0]
+        return score, public_score
+
     def compute_score(self, submission_id):
         """Compute the score of a submission.
 
@@ -370,7 +504,14 @@ class ScoreTypeRelative(ScoreType):
 
         """
         self.best_outcomes = self.compute_best_outcomes()
-        score = sum([float(x) / y for x, y
-                     in zip(self.pool[submission_id]["evaluations"],
-                            self.best_outcomes)]) * self.parameters[0]
-        return score
+        score = 0.0
+        public_score = 0.0
+        for public, evaluation, best in zip(
+            self.public_testcases,
+            self.pool[submission_id]["evaluations"],
+            self.best_outcomes):
+            to_add = float(evaluation) / best * self.parameters[0]
+            score += to_add
+            if public:
+                public_score += to_add
+        return score, None, public_score, None

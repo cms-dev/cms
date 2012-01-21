@@ -19,8 +19,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Scoring service. Its jobs is to handle everything is bout assigning
-scores and communicating them to the world.
+"""Scoring service. Its jobs is to handle everything is about
+assigning scores and communicating them to the world.
 
 In particular, it takes care of handling the internal way of keeping
 the score (i.e., the ranking view) and send to the external ranking
@@ -29,7 +29,7 @@ services the scores, via http requests.
 """
 
 import httplib
-import simplejson
+import simplejson as json
 import base64
 
 from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
@@ -95,7 +95,7 @@ def post_data(connection, url, data, auth, method="POST"):
     """
     connection.request(method,
                        url,
-                       simplejson.dumps(data),
+                       json.dumps(data),
                        {'Authorization': auth})
     res = connection.getresponse()
     res.read()
@@ -327,22 +327,32 @@ class ScoringService(Service):
             contest.update_ranking_view(self.scorers,
                                         task=submission.task)
 
-            score = scorer.pool[submission_id]["score"]
+            submission.score = scorer.pool[submission_id]["score"]
+            submission.public_score = scorer.pool[submission_id]["public_score"]
             # TODO: implement extras in scoretype
-            extra = []
+            details = scorer.pool[submission_id]["details"]
+            if details is None:
+                details = []
+            submission.score_details = json.dumps(details)
+            public_details = scorer.pool[submission_id]["public_details"]
+            if public_details is None:
+                public_details = []
+            print submission.public_score, public_details
+            submission.public_score_details = json.dumps(public_details)
 
             # Data to send to remote rankings
             submission_url = "/submissions/%s" % encode_id(submission_id)
-            submission_put_data = {"user": encode_id(submission.user.username),
-                            "task": encode_id(submission.task.name),
-                            "time": submission.timestamp}
+            submission_put_data = {
+                "user": encode_id(submission.user.username),
+                "task": encode_id(submission.task.name),
+                "time": submission.timestamp}
             subchange_url = "/subchanges/%s" % encode_id("%s%ss" %
                                                          (submission.timestamp,
                                                           submission_id))
             subchange_put_data = {"submission": encode_id(submission_id),
                                   "time": submission.timestamp,
-                                  "score": score,
-                                  "extra": extra}
+                                  "score": submission.score,
+                                  "extra": details}
 
         # TODO: ScoreRelative here does not work with remote
         # rankings (it does in the ranking view) because we

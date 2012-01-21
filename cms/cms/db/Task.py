@@ -24,7 +24,7 @@ directly (import it from SQLAlchemyAll).
 
 """
 
-import simplejson
+import simplejson as json
 
 from sqlalchemy import Column, ForeignKey, Boolean, Integer, String, Float
 from sqlalchemy.orm import relationship, backref
@@ -184,8 +184,31 @@ class Task(Base):
         if self.scorer is None:
             self.scorer = ScoreTypes.get_score_type(
                 self.score_type,
-                simplejson.loads(self.score_parameters))
+                json.loads(self.score_parameters),
+                [testcase.public for testcase in self.testcases])
+
         return self.scorer
+
+    @property
+    def max_score(self):
+        """Return the maximum possible score for this task.
+
+        return (float): maximum score.
+
+        """
+        self.get_scorer()
+        return self.scorer.max_score
+
+    @property
+    def max_public_score(self):
+        """Return the maximum possible score for the public part of
+        this task.
+
+        return (float): maximum score in the public part.
+
+        """
+        self.get_scorer()
+        return self.scorer.max_public_score
 
 
 class Testcase(Base):
@@ -202,7 +225,7 @@ class Testcase(Base):
     num = Column(Integer, nullable=False)
 
     # If the testcase outcome is going to be showed to the user (even
-    # without playing a token.
+    # without playing a token).
     public = Column(Boolean, nullable=False)
 
     # Digests of the input and output files.
