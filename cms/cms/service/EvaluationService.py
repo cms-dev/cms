@@ -579,6 +579,7 @@ class EvaluationService(Service):
 
         """
         stats = {
+            "scored": 0,
             "evaluated": 0,
             "compilation_fail": 0,
             "compiling": 0,
@@ -601,7 +602,10 @@ class EvaluationService(Service):
                             stats["compiling"] += 1
                     elif submission.compilation_outcome == "ok":
                         if submission.evaluated():
-                            stats["evaluated"] += 1
+                            if submission.score is not None:
+                                stats["scored"] += 1
+                            else:
+                                stats["evaluated"] += 1
                         else:
                             if submission.evaluation_tries >= \
                                    EvaluationService.MAX_EVALUATION_TRIES:

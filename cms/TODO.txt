@@ -1,9 +1,5 @@
 ** Database
 
-* MED: (probably) useful to store scores once they are computed by
-  ScoringService. This may be useful also for displaying reason
-  (i.e. show to user/admins the score of a submission).
-
 * LOW: use first_name/last_name instead of name.
 
 * LOW: define appropriate UNIQUE indexes in the database.
