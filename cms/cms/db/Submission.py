@@ -197,6 +197,14 @@ class Submission(Base):
         """
         return self.evaluation_outcome is not None
 
+    def scored(self):
+        """Return if the submission has been scored.
+
+        return (bool): True if scored, False otherwise.
+
+        """
+        return self.score is not None
+
     def invalid(self):
         """Blank all compilation and evaluation outcomes, so that ES
         will reschedule the submission for compilation.

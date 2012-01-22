@@ -460,7 +460,7 @@ class EvaluationService(Service):
         # If for some reason (ES switched off for a while, or broken
         # connection with CWS), submissions have been left with some
         # jobs to do, this is the list where you want to pur their
-        # ids. Note that list != [] if and only if there is a live
+        # ids. Note that list != [] if and only if there is an alive
         # timeout for the method "check_old_submission".
         self.submission_ids_to_check = []
 
@@ -602,7 +602,7 @@ class EvaluationService(Service):
                             stats["compiling"] += 1
                     elif submission.compilation_outcome == "ok":
                         if submission.evaluated():
-                            if submission.score is not None:
+                            if submission.scored():
                                 stats["scored"] += 1
                             else:
                                 stats["evaluated"] += 1

@@ -14,7 +14,7 @@
   {{ _("Compilation failed") }}
   {% elif not s.evaluated() %}
   {{ _("Evaluating...") }}
-  {% elif s.score is not None %}
+  {% elif s.scored() %}
     {% if s.token is not None %}
   Evaluated ({{ s.score }} / {{ s.task.max_score }})
       {% for detail in json.loads(s.score_details) %}
