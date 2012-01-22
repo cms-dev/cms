@@ -28,6 +28,7 @@ import time
 
 from cms.async.AsyncLibrary import Service, rpc_callback, logger
 from cms.async import ServiceCoord, make_async
+from cms.db.Utils import default_argument_parser
 
 
 class ServiceA(Service):
@@ -156,8 +157,4 @@ class ServiceA(Service):
 
 
 if __name__ == "__main__":
-    import sys
-    if len(sys.argv) != 2:
-        print sys.argv[0], "shard"
-    else:
-        ServiceA(int(sys.argv[1])).run()
+    default_argument_parser("Example service A for CMS.", ServiceA).run()

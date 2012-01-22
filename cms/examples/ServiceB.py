@@ -28,7 +28,7 @@ import time
 import threading
 
 from cms.service.FileStorage import FileCacher
-
+from cms.db.Utils import default_argument_parser
 from cms.async.AsyncLibrary import Service, rpc_method, \
      rpc_binary_response, rpc_threaded, logger, async_lock
 from cms.async import ServiceCoord, make_async
@@ -138,8 +138,4 @@ class ServiceB(Service):
 
 
 if __name__ == "__main__":
-    import sys
-    if len(sys.argv) != 2:
-        print sys.argv[0], "shard"
-    else:
-        ServiceB(int(sys.argv[1])).run()
+    default_argument_parser("Example service B for CMS.", ServiceB).run()

@@ -131,3 +131,36 @@ def ask_for_contest(skip=None):
             sys.exit(1)
 
     return contest_id
+
+
+def default_argument_parser(description, cls, ask_contest=False):
+    """Default argument parser for services - in two versions: needing
+    a contest_id, or not.
+
+    description (string): description of the service.
+    cls (class): service's class.
+    ask_contest (bool): True if the service needs a contest_id.
+
+    return (object): an instance of a service.
+
+    """
+    from argparse import ArgumentParser
+    parser = ArgumentParser(description=description)
+    parser.add_argument("shard", type=int)
+
+    # We need to allow using the switch "-c" also for services that do
+    # not need the contest_id because RS needs to be able to restart
+    # everything without knowing which is which.
+    contest_id_help = "id of the contest to automatically load"
+    if not ask_contest:
+        contest_id_help += " (ignored)"
+    parser.add_argument("-c", "--contest-id", help=contest_id_help,
+                        nargs="?", type=int)
+    args = parser.parse_args()
+    if ask_contest:
+        if args.contest_id is not None:
+            return cls(args.shard, args.contest_id)
+        else:
+            return cls(args.shard, ask_for_contest())
+    else:
+        return cls(args.shard)

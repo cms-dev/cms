@@ -27,6 +27,7 @@ import time
 
 from cms.async.AsyncLibrary import Service, rpc_callback, logger
 from cms.async import ServiceCoord, Config
+from cms.db.Utils import default_argument_parser
 
 
 class Checker(Service):
@@ -93,11 +94,8 @@ class Checker(Service):
 
 
 def main():
-    import sys
-    if len(sys.argv) < 2:
-        print sys.argv[0], "shard"
-    else:
-        Checker(int(sys.argv[1])).run()
+    default_argument_parser("Checker for aliveness of other CMS service.",
+                            Checker).run()
 
 
 if __name__ == "__main__":

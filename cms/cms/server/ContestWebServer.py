@@ -56,7 +56,7 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
 from cms.grading.TaskType import TaskTypes
 from cms.service.FileStorage import FileCacher
 
-from cms.db.Utils import ask_for_contest
+from cms.db.Utils import default_argument_parser
 from cms import Config
 
 from cms.server.Utils import file_handler_gen, \
@@ -828,12 +828,8 @@ handlers = [
 
 
 def main():
-    import sys
-    if len(sys.argv) < 2:
-        print sys.argv[0], "shard [contest]"
-        exit(1)
-    ContestWebServer(int(sys.argv[1]),
-                     ask_for_contest(1)).run()
+    default_argument_parser("Contestants' web server for CMS.",
+                            ContestWebServer, ask_contest=True).run()
 
 
 if __name__ == "__main__":

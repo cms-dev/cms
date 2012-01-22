@@ -33,8 +33,7 @@ import simplejson as json
 import base64
 
 from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
-from cms.db.Utils import ask_for_contest
-
+from cms.db.Utils import default_argument_parser
 from cms.async.AsyncLibrary import Service, rpc_method, logger
 from cms.async import ServiceCoord
 from cms import Config
@@ -505,12 +504,8 @@ class ScoringService(Service):
 
 
 def main():
-    import sys
-    if len(sys.argv) < 2:
-        print sys.argv[0], "shard [contest]"
-    else:
-        ScoringService(int(sys.argv[1]),
-                     ask_for_contest(1)).run()
+    default_argument_parser("Score computer and relayer for CMS.",
+                            ScoringService, ask_contest=True).run()
 
 
 if __name__ == "__main__":

@@ -25,6 +25,7 @@ import traceback
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import logger, async_lock, Service, \
      rpc_method, rpc_threaded
+from cms.db.Utils import default_argument_parser
 from cms.grading.TaskType import TaskTypes
 from cms.db.SQLAlchemyAll import Submission, SessionGen, Contest
 from cms.grading import JobException
@@ -188,11 +189,7 @@ class Worker(Service):
 
 
 def main():
-    import sys
-    if len(sys.argv) < 2:
-        print sys.argv[0], "shard"
-    else:
-        Worker(shard=int(sys.argv[1])).run()
+    default_argument_parser("Safe command executer for CMS.", Worker).run()
 
 
 if __name__ == "__main__":

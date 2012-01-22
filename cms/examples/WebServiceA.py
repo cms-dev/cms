@@ -30,6 +30,7 @@ import tornado.web
 from cms.async.AsyncLibrary import logger
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
+from cms.db.Utils import default_argument_parser
 
 
 class WebServiceA(WebService):
@@ -63,8 +64,5 @@ class MainHandler(tornado.web.RequestHandler):
 
 
 if __name__ == "__main__":
-    import sys
-    if len(sys.argv) != 2:
-        print sys.argv[0], "shard"
-    else:
-        WebServiceA(int(sys.argv[1])).run()
+    default_argument_parser("Example web service A for CMS.",
+                            WebServiceA).run()

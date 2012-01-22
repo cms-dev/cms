@@ -138,6 +138,7 @@ class ResourceService(Service):
                 devnull = os.open(os.devnull, os.O_WRONLY)
                 process = subprocess.Popen(["cms%s" % service.name,
                                             str(service.shard),
+                                            "-c",
                                             str(self.contest_id)],
                                            stdout=devnull,
                                            stderr=subprocess.STDOUT)
@@ -403,10 +404,10 @@ def main():
                         nargs="?", type=int, const=-1)
     parser.add_argument("shard", type=int)
     args = parser.parse_args()
-    if args.autorestart != None:
+    if args.autorestart is not None:
         if args.autorestart == -1:
             ResourceService(args.shard,
-                            contest_id=ask_for_contest(None)).run()
+                            contest_id=ask_for_contest()).run()
         else:
             ResourceService(args.shard, contest_id=args.autorestart).run()
     else:

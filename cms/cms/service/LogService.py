@@ -30,8 +30,9 @@ import codecs
 
 from cms.async.AsyncLibrary import Service, rpc_method, logger
 from cms.async import ServiceCoord
-from cms.util.Utils import format_log, SEV_CRITICAL, SEV_ERROR, \
-    SEV_WARNING, SEV_INFO, SEV_DEBUG
+from cms.db.Utils import default_argument_parser
+from cms.util.Utils import format_log, \
+     SEV_CRITICAL, SEV_ERROR, SEV_WARNING, SEV_INFO, SEV_DEBUG
 from cms.service.Utils import mkdir
 from cms import Config
 
@@ -95,11 +96,7 @@ class LogService(Service):
 
 
 def main():
-    import sys
-    if len(sys.argv) < 2:
-        print sys.argv[0], "shard"
-    else:
-        LogService(int(sys.argv[1])).run()
+    default_argument_parser("Logger for CMS.", LogService).run()
 
 
 if __name__ == "__main__":

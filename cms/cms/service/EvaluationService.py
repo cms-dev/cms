@@ -34,8 +34,7 @@ import heapq
 
 from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback, logger
 from cms.async import ServiceCoord, get_service_shards
-from cms.db.Utils import ask_for_contest
-
+from cms.db.Utils import default_argument_parser
 from cms.db.SQLAlchemyAll import Contest, Submission, SessionGen
 
 
@@ -871,12 +870,8 @@ class EvaluationService(Service):
 
 
 def main():
-    import sys
-    if len(sys.argv) < 2:
-        print sys.argv[0], "shard [contest]"
-    else:
-        EvaluationService(int(sys.argv[1]),
-                          ask_for_contest(1)).run()
+    default_argument_parser("Submission's compiler and evaluator for CMS.",
+                            EvaluationService, ask_contest=True).run()
 
 
 if __name__ == "__main__":
