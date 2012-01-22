@@ -28,7 +28,7 @@ that saves the resources usage in that machine. We require psutil >=
 import os
 import time
 import subprocess
-import optparse
+import argparse
 
 import psutil
 
@@ -396,21 +396,21 @@ class ResourceService(Service):
 
 
 def main():
-    usage = "usage: %prog shard [-a [contest_id]] [-h]"
-    parser = optparse.OptionParser(usage=usage)
-    parser.add_option("-a", "--autorestart",
-                      help="restart automatically services on its machine",
-                      action="store_true", default=False, dest="autorestart")
-    options, args = parser.parse_args()
-    if len(args) == 2 and options.autorestart:
-        ResourceService(int(args[0]), contest_id=int(args[1])).run()
-    elif len(args) == 1 and options.autorestart:
-        ResourceService(int(args[0]),
-                        contest_id=ask_for_contest(None)).run()
-    elif len(args) == 1 and not options.autorestart:
-        ResourceService(int(args[0])).run()
+    parser = argparse.ArgumentParser(
+        description="Resource monitor and service starter for CMS.")
+    parser.add_argument("-a", "--autorestart", metavar="CONTEST_ID",
+                        help="restart automatically services on its machine",
+                        nargs="?", type=int, const=-1)
+    parser.add_argument("shard", type=int)
+    args = parser.parse_args()
+    if args.autorestart != None:
+        if args.autorestart == -1:
+            ResourceService(args.shard,
+                            contest_id=ask_for_contest(None)).run()
+        else:
+            ResourceService(args.shard, contest_id=args.autorestart).run()
     else:
-        parser.print_help()
+        ResourceService(args.shard).run()
 
 
 if __name__ == "__main__":
