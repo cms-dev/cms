@@ -147,27 +147,43 @@ class ScoringService(Service):
     # How often we try to send data to remote rankings.
     CHECK_DISPATCH_TIME = 5.0
 
+    # How often we look for submission not scored/tokened.
+    JOBS_NOT_DONE_CHECK_TIME = 347.0
+
     def __init__(self, shard, contest_id):
         logger.initialize(ServiceCoord("ScoringService", shard))
         Service.__init__(self, shard)
 
         self.contest_id = contest_id
 
+        # Initialize scorers, the ScoreType objects holding all
+        # submissions for a given task and deciding scores.
         self.scorers = {}
         with SessionGen(commit=False) as session:
             contest = session.query(Contest).\
                       filter_by(id=contest_id).first()
             logger.info("Loaded contest %s" % contest.name)
-            self.submission_ids_to_score = \
-                [x.id for x in contest.get_submissions() if x.evaluated()]
-            self.submission_ids_to_token = \
-                [(x.id, x.token.timestamp) for x in contest.get_submissions()
-                 if x.tokened()]
             contest.create_empty_ranking_view(timestamp=contest.start)
             for task in contest.tasks:
                 self.scorers[task.id] = task.get_scorer()
             session.commit()
 
+        # If for some reason (SS switched off for a while, or broken
+        # connection with ES), submissions have been left without
+        # score, this is the list where you want to pur their
+        # ids. Note that list != [] if and only if there is an alive
+        # timeout for the method "score_old_submission".
+        self.submission_ids_to_score = []
+        self.submission_ids_to_token = []
+
+        # We need to load every submission at start, but we don't want
+        # to invalidate every score so that we can simply load the
+        # score-less submissions. So we keep a set of submissions that
+        # we analyzed (for scoring and for tokens).
+        self.submission_ids_scored = set()
+        self.submission_ids_tokened = set()
+
+        # Initialize ranking web servers we need to send data to.
         self.rankings = []
         for i in xrange(len(Config.rankings_address)):
             address = Config.rankings_address[i]
@@ -181,10 +197,47 @@ class ScoringService(Service):
             self.operation_queue.append((self.initialize, [ranking]))
 
         self.add_timeout(self.dispatch_operations, None,
-                         ScoringService.CHECK_DISPATCH_TIME, immediately=True)
+                         ScoringService.CHECK_DISPATCH_TIME,
+                         immediately=True)
+        self.add_timeout(self.search_jobs_not_done, None,
+                         ScoringService.JOBS_NOT_DONE_CHECK_TIME,
+                         immediately=True)
 
-        self.add_timeout(self.score_old_submissions, None,
-                         0.01, immediately=True)
+    def search_jobs_not_done(self):
+        """Look in the database for submissions that have not been
+        scored for no good reasons. Put the missing job in the queue.
+
+        """
+        with SessionGen(commit=False) as session:
+            contest = session.query(Contest).\
+                      filter_by(id=self.contest_id).first()
+
+            new_submission_ids_to_score = []
+            new_submission_ids_to_token = []
+            for submission in contest.get_submissions():
+                if submission.evaluated() and \
+                        submission.id not in self.submission_ids_scored:
+                    new_submission_ids_to_score.append(submission.id)
+                if submission.tokened() and \
+                        submission.id not in self.submission_ids_tokened:
+                    new_submission_ids_to_token.append(
+                        (submission.id, submission.token.timestamp))
+
+        new_s = len(new_submission_ids_to_score)
+        old_s = len(self.submission_ids_to_score)
+        new_t = len(new_submission_ids_to_token)
+        old_t = len(self.submission_ids_to_token)
+        logger.info("Submissions found to score/token: %d, %d." %
+                    (new_s, new_t))
+        if new_s + new_t > 0:
+            self.submission_ids_to_score += new_submission_ids_to_score
+            self.submission_ids_to_token += new_submission_ids_to_token
+            if old_s + old_t == 0:
+                self.add_timeout(self.score_old_submissions, None,
+                                 0.01, immediately=True)
+
+        # Run forever.
+        return True
 
     def score_old_submissions(self):
         """The submissions in the submission_ids_to_score list are
@@ -198,21 +251,21 @@ class ScoringService(Service):
 
         """
         to_score = len(self.submission_ids_to_score)
-        if to_score == 0:
-            to_token = len(self.submission_ids_to_token)
-            if to_token == 0:
-                logger.info("Finished loading old submissions.")
-                return False
-            else:
-                logger.info("Old submission yet to token: %s." % to_token)
-                self.submission_tokened(self.submission_ids_to_token[0][0],
-                                        self.submission_ids_to_token[0][1])
-            self.submission_ids_to_token = self.submission_ids_to_token[1:]
-        else:
+        to_token = len(self.submission_ids_to_token)
+        if to_score > 0:
             logger.info("Old submission yet to score: %s." % to_score)
             self.new_evaluation(self.submission_ids_to_score[0])
             self.submission_ids_to_score = self.submission_ids_to_score[1:]
-        return True
+            return True
+        if to_token > 0:
+            logger.info("Old submission yet to token: %s." % to_token)
+            self.submission_tokened(self.submission_ids_to_token[0][0],
+                                    self.submission_ids_to_token[0][1])
+            self.submission_ids_to_token = self.submission_ids_to_token[1:]
+            return True
+
+        logger.info("Finished loading old submissions.")
+        return False
 
     def dispatch_operations(self):
         """Look at the operations still to do in the queue and tries
@@ -313,7 +366,7 @@ class ScoringService(Service):
                                 submission_id)
                 return
 
-            # Assign score to the submission
+            # Assign score to the submission.
             scorer = self.scorers[submission.task_id]
             scorer.add_submission(submission_id, submission.timestamp,
                                   submission.user.username,
@@ -321,26 +374,30 @@ class ScoringService(Service):
                                    for ev in submission.evaluations],
                                   submission.tokened())
 
-            # Update the ranking view
+            # Mark submission as scored.
+            self.submission_ids_scored.add(submission_id)
+
+            # Update the ranking view.
             contest = session.query(Contest).\
                       filter_by(id=self.contest_id).first()
             contest.update_ranking_view(self.scorers,
                                         task=submission.task)
 
+            # Filling submission's score info in the db.
             submission.score = scorer.pool[submission_id]["score"]
             submission.public_score = scorer.pool[submission_id]["public_score"]
-            # TODO: implement extras in scoretype
+
             details = scorer.pool[submission_id]["details"]
             if details is None:
                 details = []
             submission.score_details = json.dumps(details)
+
             public_details = scorer.pool[submission_id]["public_details"]
             if public_details is None:
                 public_details = []
-            print submission.public_score, public_details
             submission.public_score_details = json.dumps(public_details)
 
-            # Data to send to remote rankings
+            # Data to send to remote rankings.
             submission_url = "/submissions/%s" % encode_id(submission_id)
             submission_put_data = {
                 "user": encode_id(submission.user.username),
@@ -357,6 +414,8 @@ class ScoringService(Service):
         # TODO: ScoreRelative here does not work with remote
         # rankings (it does in the ranking view) because we
         # update only the user owning the submission.
+
+        # Adding operations to the queue.
         for ranking in self.rankings:
             self.operation_queue.append((self.send_submission,
                                          [ranking, submission_url,
@@ -383,7 +442,10 @@ class ScoringService(Service):
             if submission.user.hidden:
                 return
 
-            # Data to send to remote rankings
+            # Mark submission as tokened.
+            self.submission_ids_tokened.add(submission_id)
+
+            # Data to send to remote rankings.
             submission_url = "/submissions/%s" % encode_id(submission_id)
             submission_put_data = {"user": encode_id(submission.user.username),
                             "task": encode_id(submission.task.name),
@@ -395,6 +457,7 @@ class ScoringService(Service):
                                   "time": timestamp,
                                   "token": True}
 
+        # Adding operations to the queue.
         for ranking in self.rankings:
             self.operation_queue.append((self.send_submission,
                                          [ranking, submission_url,

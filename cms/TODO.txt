@@ -124,6 +124,3 @@
 
 * MED: ditch RelativeScores and assume that a score depends only on
   the outcome of the submission.
-
-* LOW: SS should periodically find automatically submission to
-  analyze (i.e., not scored).
