@@ -32,8 +32,9 @@ import codecs
 
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
-from stresstesting.Requests import TestRequest, HomepageRequest, LoginRequest, \
-    TaskRequest, TaskStatementRequest
+from stresstesting.Requests import TestRequest, HomepageRequest, \
+     LoginRequest, TaskRequest, TaskStatementRequest
+
 
 class RequestLog:
 
@@ -60,7 +61,8 @@ class RequestLog:
         print >> sys.stderr, "ERROR:          %5d" % (self.error)
         print >> sys.stderr, "UNDECIDED:      %5d" % (self.undecided)
         print >> sys.stderr, "Total time:   %7.3f" % (self.total_time)
-        print >> sys.stderr, "Average time: %7.3f" % (self.total_time / self.total)
+        print >> sys.stderr, "Average time: %7.3f" % (self.total_time /
+                                                      self.total)
         print >> sys.stderr, "Max time:     %7.3f" % (self.max_time)
 
     def merge(self, log2):
@@ -76,7 +78,8 @@ class RequestLog:
         if self.log_dir is None:
             return
 
-        filename = "%s_%s.log" % (request.start_time, request.__class__.__name__)
+        filename = "%s_%s.log" % (request.start_time,
+                                  request.__class__.__name__)
         filepath = os.path.join(self.log_dir, filename)
         linkpath = os.path.join(self.log_dir, request.__class__.__name__)
         with codecs.open(filepath, 'w', encoding='utf-8') as fd:
@@ -106,7 +109,8 @@ class Actor(threading.Thread):
 
     """
 
-    def __init__(self, username, password, metrics, tasks, log=None, base_url=None):
+    def __init__(self, username, password, metrics, tasks,
+                 log=None, base_url=None):
         threading.Thread.__init__(self)
 
         self.username = username
@@ -144,10 +148,12 @@ class Actor(threading.Thread):
                 choice = random.random()
                 if choice < 0.5:
                     task = random.choice(self.tasks)
-                    self.do_step(TaskRequest(self.browser, task, base_url=self.base_url))
+                    self.do_step(TaskRequest(self.browser, task,
+                                             base_url=self.base_url))
                 else:
                     task = random.choice(self.tasks)
-                    self.do_step(TaskStatementRequest(self.browser, task, base_url=self.base_url))
+                    self.do_step(TaskStatementRequest(self.browser, task,
+                                                      base_url=self.base_url))
 
         except ActorDying:
             print >> sys.stderr, "Actor dying for user %s" % (self.username)
@@ -173,6 +179,7 @@ class Actor(threading.Thread):
         time_to_wait = self.metric['time_coeff'] * \
                        random.expovariate(self.metric['time_lambda'])
         time.sleep(time_to_wait)
+
 
 def harvest_contest_data(contest_id):
     """Retrieve the couples username, password and the task list for a
@@ -208,7 +215,8 @@ def main():
                       help="the number of actors to spawn", dest="actor_num",
                       action="store", type="int", default=None)
     parser.add_option("-s", "--sort-actors",
-                      help="sort usernames alphabetically instead of randomizing before slicing them",
+                      help="sort usernames alphabetically "
+                      "instead of randomizing before slicing them",
                       action="store_true", default=False, dest="sort_actors")
     parser.add_option("-u", "--base-url",
                       help="base URL for placing HTTP requests",
@@ -225,7 +233,8 @@ def main():
         users = dict(user_items[:options.actor_num])
 
     actors = [Actor(username, data['password'], DEFAULT_METRICS, tasks,
-                    log=RequestLog(log_dir=os.path.join('./test_logs', username)),
+                    log=RequestLog(log_dir=os.path.join('./test_logs',
+                                                        username)),
                     base_url=options.base_url)
               for username, data in users.iteritems()]
     for actor in actors:

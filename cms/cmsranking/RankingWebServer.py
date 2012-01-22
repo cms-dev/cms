@@ -55,7 +55,7 @@ def authenticated(method):
             match = re.match('^Basic[ ]+([A-Za-z0-9+/]+[=]{0,2})$', header)
             if match is None:
                 raise Exception("Invalid header")
-            if len(match.group(1)) % 4 != 0:  # base64 tokens are 4*k chars long
+            if len(match.group(1)) % 4 != 0:  # base64 tokens are 4k chars long
                 raise Exception("Invalid header")
             token = base64.b64decode(match.group(1))
             assert ':' in token, "Invalid header"
@@ -87,37 +87,44 @@ class DataHandler(tornado.web.RequestHandler):
             self.set_header('WWW-Authenticate',
                             'Basic realm="' + config.realm_name + '"')
 
+
 def create_handler(entity_store):
     """Return a handler for the given store.
 
-    Return a RESTful Tornado RequestHandler to manage the given EntityStore.
-    The HTTP methods are mapped to the CRUD actions available on the store.
-    The returned handler is supposed to be paired with an URL like:
+    Return a RESTful Tornado RequestHandler to manage the given
+    EntityStore. The HTTP methods are mapped to the CRUD actions
+    available on the store.  The returned handler is supposed to be
+    paired with an URL like:
         /<root>/<entity>/(.+)   (the group matches the key of the entity)
 
     """
     if not isinstance(entity_store, Store.Store):
-        raise ValueError("The 'entity_store' parameter isn't a subclass of Store")
+        raise ValueError("The 'entity_store' parameter "
+                         "isn't a subclass of Store")
 
     class RestHandler(DataHandler):
         @authenticated
         def put(self, entity_id):
             if not entity_id:
-                logger.error("No entity ID specified\n" + self.request.full_url(), extra={'request_body': self.request.body})
+                logger.error("No entity ID specified\n%s" %
+                             self.request.full_url(),
+                             extra={'request_body': self.request.body})
                 raise tornado.web.HTTPError(404)
             if entity_id not in entity_store:
                 # create
                 try:
                     entity_store.create(entity_id, self.request.body)
                 except InvalidData, exc:
-                    logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
+                    logger.error("%r\n%s" % (exc, self.request.full_url()),
+                                 extra={'request_body': self.request.body})
                     raise tornado.web.HTTPError(400)
             else:
                 # update
                 try:
                     entity_store.update(entity_id, self.request.body)
                 except InvalidData, exc:
-                    logger.error(str(exc) + "\n" + self.request.full_url(), extra={'request_body': self.request.body})
+                    logger.error("%r\n%s" % (exc, self.request.full_url()),
+                                 extra={'request_body': self.request.body})
                     raise tornado.web.HTTPError(400)
 
         @authenticated
@@ -179,17 +186,17 @@ class MessageProxy(object):
         Scoring.store.add_score_callback(self.score_callback)
 
     def callback(self, entity, event, key):
-        msg = 'id: ' + str(int(time.time())) + '\n' + \
-              'event: ' + entity + '\n' + \
-              'data: ' + event + ' ' + key + '\n' + \
-              '\n'
+        msg = 'id: %s\n' \
+              'event: %s\n' \
+              'data: %s %s\n' \
+              '\n' % (int(time.time()), entity, event, key)
         self.send(msg)
 
     def score_callback(self, user, task, score):
-        msg = 'id: ' + str(int(time.time())) + '\n' + \
-              'event: score\n' + \
-              'data: ' + user + ' ' + task + ' ' + str(score) + '\n' + \
-              '\n'
+        msg = 'id: %s\n' \
+              'event: score\n' \
+              'data: %s %s %s\n' \
+              '\n' % (int(time.time()), user, task, score)
         self.send(msg)
 
     def send(self, message):
@@ -221,7 +228,8 @@ class NotificationHandler(DataHandler):
 
         proxy.add_callback(self.send_event)
 
-        # TODO add automatic connection close after a certain timeout
+        # TODO: add automatic connection close after a certain
+        # timeout.
 
     def on_connection_close(self):
         proxy.remove_callback(self.send_event)
@@ -235,7 +243,8 @@ class SubListHandler(DataHandler):
     def get(self, user_id):
         result = list()
         for task_id in Task.store._store.iterkeys():
-            result.extend(Scoring.store.get_submissions(user_id, task_id).values())
+            result.extend(Scoring.store.get_submissions(user_id,
+                                                        task_id).values())
         result.sort(key=lambda x: (x.task, x.time))
         self.write(json.dumps(map(lambda a: a.__dict__, result)) + '\n')
 
@@ -293,38 +302,38 @@ class HomeHandler(tornado.web.RequestHandler):
 
 
 def main():
-    application = tornado.web.Application(
-        [
-            (r"/contests/([A-Za-z0-9_]*)", create_handler(Contest.store)),
-            (r"/tasks/([A-Za-z0-9_]*)", create_handler(Task.store)),
-            (r"/teams/([A-Za-z0-9_]*)", create_handler(Team.store)),
-            (r"/users/([A-Za-z0-9_]*)", create_handler(User.store)),
-            (r"/submissions/([A-Za-z0-9_]*)", create_handler(Submission.store)),
-            (r"/subchanges/([A-Za-z0-9_]*)", create_handler(Subchange.store)),
-            (r"/sublist/([A-Za-z0-9_]+)", SubListHandler),
-            (r"/history", HistoryHandler),
-            (r"/scores", ScoreHandler),
-            (r"/events", NotificationHandler),
-            (r"/logo", ImageHandler, {
-                'location': os.path.join(config.lib_dir, 'logo'),
-                'fallback': os.path.join(config.web_dir, 'logo.png')
+    application = tornado.web.Application([
+        (r"/contests/([A-Za-z0-9_]*)", create_handler(Contest.store)),
+        (r"/tasks/([A-Za-z0-9_]*)", create_handler(Task.store)),
+        (r"/teams/([A-Za-z0-9_]*)", create_handler(Team.store)),
+        (r"/users/([A-Za-z0-9_]*)", create_handler(User.store)),
+        (r"/submissions/([A-Za-z0-9_]*)", create_handler(Submission.store)),
+        (r"/subchanges/([A-Za-z0-9_]*)", create_handler(Subchange.store)),
+        (r"/sublist/([A-Za-z0-9_]+)", SubListHandler),
+        (r"/history", HistoryHandler),
+        (r"/scores", ScoreHandler),
+        (r"/events", NotificationHandler),
+        (r"/logo", ImageHandler, {
+            'location': os.path.join(config.lib_dir, 'logo'),
+            'fallback': os.path.join(config.web_dir, 'logo.png')
             }),
-            (r"/faces/([A-Za-z0-9_]+)", ImageHandler, {
-                'location': os.path.join(config.lib_dir, 'faces', '%s'),
-                'fallback': os.path.join(config.web_dir, 'face.png')
+        (r"/faces/([A-Za-z0-9_]+)", ImageHandler, {
+            'location': os.path.join(config.lib_dir, 'faces', '%s'),
+            'fallback': os.path.join(config.web_dir, 'face.png')
             }),
-            (r"/flags/([A-Za-z0-9_]+)", ImageHandler, {
-                'location': os.path.join(config.lib_dir, 'flags', '%s'),
-                'fallback': os.path.join(config.web_dir, 'flag.png')
+        (r"/flags/([A-Za-z0-9_]+)", ImageHandler, {
+            'location': os.path.join(config.lib_dir, 'flags', '%s'),
+            'fallback': os.path.join(config.web_dir, 'flag.png')
             }),
-            (r"/(.+)", tornado.web.StaticFileHandler, {
-                'path': config.web_dir
+        (r"/(.+)", tornado.web.StaticFileHandler, {
+            'path': config.web_dir
             }),
-            (r"/", HomeHandler)
+        (r"/", HomeHandler)
         ])
-    # application.add_transform (tornado.web.ChunkedTransferEncoding)
+    # application.add_transform(tornado.web.ChunkedTransferEncoding)
     application.listen(config.port)
     tornado.ioloop.IOLoop.instance().start()
+
 
 if __name__ == "__main__":
     main()

@@ -33,6 +33,7 @@ from cms.service.ScoreType import ScoreTypes
 from cms.async.AsyncLibrary import rpc_callback, Service, logger
 from cms.db.Utils import analyze_all_tables
 
+
 class YamlLoader:
 
     def __init__(self, FC, drop, modif, user_num):
@@ -141,7 +142,7 @@ class YamlLoader:
         params["num"] = num
         params["time_limit"] = conf["timeout"]
         params["memory_limit"] = conf["memlimit"]
-        params["attachments"] = {} # FIXME - Use auxiliary
+        params["attachments"] = {}  # FIXME - Use auxiliary
         params["statement"] = self.FC.put_file(
             path=os.path.join(path, "testo", "testo.pdf"),
             description="PDF statement for task %s" % name)
@@ -209,7 +210,8 @@ class YamlLoader:
         else:
             logger.info("Generating %d random users." % (self.user_num))
             for i in xrange(self.user_num):
-                params["users"].append(User("User %d" % (i), "user%03d" % (i)).export_to_dict())
+                params["users"].append(User("User %d" % (i),
+                                            "user%03d" % (i)).export_to_dict())
         return params
 
 

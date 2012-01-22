@@ -31,8 +31,8 @@ class LogFormatter(logging.Formatter):
     def __init__(self, color=True, *args, **kwargs):
         """Initialize the formatter.
 
-        Based on the 'color' parameter we set the tags for many elements
-        of our formatted output.
+        Based on the 'color' parameter we set the tags for many
+        elements of our formatted output.
 
         """
         logging.Formatter.__init__(self, *args, **kwargs)
@@ -74,7 +74,7 @@ class LogFormatter(logging.Formatter):
             prefix += ' %s WRN %s ' % (self.wrn_prefix, self.wrn_suffix)
         elif record.levelno == logging.INFO:
             prefix += ' %s INF %s ' % (self.inf_prefix, self.inf_suffix)
-        else: # DEBUG
+        else:  # DEBUG
             prefix += ' %s DBG %s ' % (self.dbg_prefix, self.dbg_suffix)
 
         formatted = prefix + record.message.rstrip()
@@ -83,29 +83,31 @@ class LogFormatter(logging.Formatter):
             formatted += '\n'
 
         if 'request_body' in record.__dict__:
-            formatted = formatted.rstrip() + "\n\n" + record.request_body.rstrip() + "\n"
+            formatted = "%s\n\n%s\n" % (formatted.rstrip(),
+                                        record.request_body.rstrip())
 
         if record.exc_info:
             if not record.exc_text:
                 record.exc_text = self.formatException(record.exc_info)
         if record.exc_text:
-            formatted = formatted.rstrip() + "\n\n" + record.exc_text.rstrip() + "\n"
+            formatted = "%s\n\n%s\n" % (formatted.rstrip(),
+                                        record.exc_text.rstrip())
 
         return formatted.replace("\n", "\n    ")
 
 
-# create a global reference to the root logger
+# Create a global reference to the root logger.
 logger = logging.getLogger()
-# catch all logging messages (we'll filter them on the handlers)
+# Catch all logging messages (we'll filter them on the handlers).
 logger.setLevel(logging.DEBUG)
 
-# define the stream handler to output on stderr
+# Define the stream handler to output on stderr.
 _stream_log = logging.StreamHandler()
 _stream_log.setLevel(logging.WARNING)
 _stream_log.setFormatter(LogFormatter(color=config.log_color))
 logger.addHandler(_stream_log)
 
-# define the file handler to output on the specified log directory
+# Define the file handler to output on the specified log directory.
 _file_log = logging.FileHandler(os.path.join(config.log_dir,
                                 time.strftime("%Y-%m-%d-%H-%M-%S.log")))
 _file_log.setLevel(logging.WARNING)

@@ -35,6 +35,7 @@ from cms.db.Utils import ask_for_contest
 from cms.util.Utils import sha1sum
 from cms import Config
 
+
 class ContestImporter(Service):
 
     def __init__(self, shard, drop, import_dir, only_files, no_files):
@@ -64,14 +65,16 @@ class ContestImporter(Service):
             descr_dir = os.path.join(self.import_dir, "descriptions")
             files = set(os.listdir(files_dir))
             for file in files:
-                self.safe_put_file(os.path.join(files_dir, file), os.path.join(descr_dir, file))
+                self.safe_put_file(os.path.join(files_dir, file),
+                                   os.path.join(descr_dir, file))
 
         if not self.only_files:
             with SessionGen(commit=False) as session:
 
                 # Import the contest in JSON format
                 logger.info("Importing the contest from JSON file")
-                with open(os.path.join(self.import_dir, "contest.json")) as fin:
+                with open(os.path.join(self.import_dir,
+                                       "contest.json")) as fin:
                     c = Contest.import_from_dict(json.load(fin))
                     session.add(c)
 
@@ -81,7 +84,8 @@ class ContestImporter(Service):
                     contest_files = c.enumerate_files()
                     missing_files = contest_files.difference(files)
                     if len(missing_files) > 0:
-                        logger.warning("Some files needed to the contest are missing in the import directory")
+                        logger.warning("Some files needed to the contest "
+                                       "are missing in the import directory")
 
                 session.flush()
                 contest_id = c.id
@@ -103,32 +107,37 @@ class ContestImporter(Service):
         # Put the file
         try:
             digest = self.FC.put_file(path=path, description=description)
-        except Exception as e:
-            logger.error("File %s could not be put to file server (%r), aborting..." % (path, e))
+        except Exception as error:
+            logger.error("File %s could not be put to file server (%r), "
+                         "aborting..." % (path, error))
             sys.exit(1)
 
         # Then check the digest
         calc_digest = sha1sum(path)
         if digest != calc_digest:
-            logger.error("File %s has hash %s, but the server returned %d, aborting..." % (path, calc_digest, digest))
+            logger.error("File %s has hash %s, but the server returned %d, "
+                         "aborting..." % (path, calc_digest, digest))
             sys.exit(1)
+
 
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
     parser.add_option("-s", "--shard", help="service shard number",
                       dest="shard", action="store", type="int", default=None)
-    parser.add_option("-d", "--drop",
-                      dest="drop", help="drop everything from the database before importing",
+    parser.add_option("-d", "--drop", dest="drop",
+                      help="drop everything from the database "
+                      "before importing",
                       default=False, action="store_true")
-    parser.add_option("-f", "--only-files",
-                      dest="only_files", help="only import files, ignore database structure",
+    parser.add_option("-f", "--only-files", dest="only_files",
+                      help="only import files, ignore database structure",
                       default=False, action="store_true")
-    parser.add_option("-F", "--no-files",
-                      dest="no_files", help="only import database structure, ignore files",
+    parser.add_option("-F", "--no-files", dest="no_files",
+                      help="only import database structure, ignore files",
                       default=False, action="store_true")
     options, args = parser.parse_args()
     if len(args) != 1:
-        parser.error("I need exactly one parameter, the directory from where to import the contest")
+        parser.error("I need exactly one parameter, the directory "
+                     "from where to import the contest")
     if options.shard is None:
         parser.error("The `-s' option is mandatory!")
     if options.only_files and options.no_files:
@@ -139,6 +148,7 @@ def main():
                                        import_dir=args[0],
                                        only_files=options.only_files,
                                        no_files=options.no_files).run()
+
 
 if __name__ == "__main__":
     main()

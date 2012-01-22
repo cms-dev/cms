@@ -385,7 +385,8 @@ class ScoringService(Service):
 
             # Filling submission's score info in the db.
             submission.score = scorer.pool[submission_id]["score"]
-            submission.public_score = scorer.pool[submission_id]["public_score"]
+            submission.public_score = \
+                scorer.pool[submission_id]["public_score"]
 
             details = scorer.pool[submission_id]["details"]
             if details is None:

@@ -29,21 +29,23 @@ class Config(object):
         """Fill this object with the default values for each key.
 
         """
-        # connection
+        # Connection.
         self.host = 'localhost'
         self.port = 8890
 
-        # authentication
+        # Authentication.
         self.realm_name = 'Scoreboard'
         self.username = 'usern4me'
         self.password = 'passw0rd'
 
-        # file system
-        self.lib_dir = os.path.join("/", "var", "local", "lib", "cms", "ranking")
+        # File system.
+        self.lib_dir = os.path.join("/", "var", "local", "lib",
+                                    "cms", "ranking")
         self.web_dir = os.path.join(os.path.dirname(__file__), "static")
-        self.log_dir = os.path.join("/", "var", "local", "log", "cms", "ranking")
+        self.log_dir = os.path.join("/", "var", "local", "log",
+                                    "cms", "ranking")
 
-        # logging
+        # Logging.
         self.log_color = True
 
     def get(self, key):
@@ -59,7 +61,7 @@ class Config(object):
         setattr(self, key, value)
 
 
-# create an instance of the Config class
+# Create an instance of the Config class.
 config = Config()
 
 
@@ -76,14 +78,14 @@ for path in [os.path.join("/", "usr", "local", "etc", "cms.ranking.conf"),
 try:
     os.makedirs(config.lib_dir)
 except OSError:
-    pass  # we assume the directory already exists...
+    pass  # We assume the directory already exists...
 
 try:
     os.makedirs(config.web_dir)
 except OSError:
-    pass  # we assume the directory already exists...
+    pass  # We assume the directory already exists...
 
 try:
     os.makedirs(config.log_dir)
 except OSError:
-    pass  # we assume the directory already exists...
+    pass  # We assume the directory already exists...

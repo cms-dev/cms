@@ -51,11 +51,10 @@ class SynchronousRPCRequestHandler(tornado.web.RequestHandler):
             self.finish()
             return
 
-        self.application.service.remote_services[service].__getattr__(method)(\
+        self.application.service.remote_services[service].__getattr__(method)(
             callback=self._request_callback,
-            plus = 0,
+            plus=0,
             **arguments)
-
 
     @rpc_callback
     def _request_callback(self, caller, data, plus, error=None):
@@ -81,17 +80,16 @@ class WebServiceA(WebService):
         WebService.__init__(self,
             9999,
             [(r"/", MainHandler),
-            (r"/sync_rpc_request/([a-zA-Z0-9_-]+)/" + \
-                      "([0-9]+)/([a-zA-Z0-9_-]+)",
-                      SynchronousRPCRequestHandler)],
-            {
-                "login_url": "/",
-                "template_path": "./",
-                "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
-                "static_path": os.path.join(os.path.dirname(__file__),
-                                            "..", "cms", "async", "static"),
-                "debug": "True",
-            },
+            (r"/sync_rpc_request/([a-zA-Z0-9_-]+)/" \
+             "([0-9]+)/([a-zA-Z0-9_-]+)",
+             SynchronousRPCRequestHandler)],
+            {"login_url": "/",
+             "template_path": "./",
+             "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
+             "static_path": os.path.join(os.path.dirname(__file__),
+                                         "..", "cms", "async", "static"),
+             "debug": "True",
+             },
             shard=shard)
         self.ServiceB = self.connect_to(ServiceCoord("ServiceB", 1))
 
@@ -110,4 +108,3 @@ if __name__ == "__main__":
         print sys.argv[0], "shard"
     else:
         WebServiceA(int(sys.argv[1])).run()
-

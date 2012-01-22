@@ -57,7 +57,8 @@ class ServiceB(Service):
         digest = "d727e20eb5580ad553433f1cb805bac3380ba174"
         if put:
             try:
-                digest = self.FC.put_file(binary_data=s, description="Tentative")
+                digest = self.FC.put_file(binary_data=s,
+                                          description="Tentative")
             except Exception as e:
                 logger.error(repr(e))
                 return

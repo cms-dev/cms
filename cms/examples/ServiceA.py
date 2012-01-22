@@ -30,7 +30,6 @@ from cms.async.AsyncLibrary import Service, rpc_callback, logger
 from cms.async import ServiceCoord, make_async
 
 
-
 class ServiceA(Service):
     """Simple service that ask for echo from all ServiceB, and request
     a file from ServiceB,0.
@@ -69,9 +68,10 @@ class ServiceA(Service):
                 logger.info("ServiceB,%d answered yielding %s" % (i, data))
             except Exception as e:
                 logger.error(repr(e))
-        self.ServiceB[1].long_rpc_method(string=str(time.time()),
-                                         callback=ServiceA.asynced_echo_callback,
-                                         plus=1)
+        self.ServiceB[1].long_rpc_method(
+            string=str(time.time()),
+            callback=ServiceA.asynced_echo_callback,
+            plus=1)
 
     @make_async
     @rpc_callback
@@ -84,8 +84,7 @@ class ServiceA(Service):
             return
         logger.info("ServiceB,%d answered %s" % (plus, data))
         data = yield self.ServiceB[plus].echo(string="Tentative", timeout=3)
-        logger.info( "In callback, ServiceB,%d answered %s." % (plus, data))
-
+        logger.info("In callback, ServiceB,%d answered %s." % (plus, data))
 
     def ask_for_echo(self):
         """Ask all ServiceB for a echo.
@@ -143,7 +142,7 @@ class ServiceA(Service):
             return
         seconds = time.time() - plus
         megabytes = len(data) / 1024.0 / 1024.0
-        logger.info(("ServiceB's gave us aaa: %5.3lf MB in %5.3lf seconds " + \
+        logger.info(("ServiceB's gave us aaa: %5.3lf MB in %5.3lf seconds " \
                      "(%5.3lf MB/s)")
                     % (megabytes, seconds, megabytes / seconds))
         with open("bbb", "wb") as bbb:

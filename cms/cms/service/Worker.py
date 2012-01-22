@@ -51,8 +51,8 @@ class Worker(Service):
     def get_submission_data(self, submission_id):
         submission = Submission.get_from_id(submission_id, self.session)
         if submission is None:
-            err_msg = "Couldn't find submission %s " + \
-                "in the database" % submission_id
+            err_msg = "Couldn't find submission %s " \
+                      "in the database" % submission_id
             logger.critical(err_msg)
             raise JobException(err_msg)
 

@@ -84,10 +84,10 @@ def draw_chart(canvas, y_min, y_max, y_def, h_def, x_int, data, color, marks):
 
     # draw labels on the axes
     canvas.setFillStyle(Color.Color("#000000"))
-    canvas.impl.canvasContext.fillText(str(y_min), 0, hei-pad_b+3)
-    canvas.impl.canvasContext.fillText(str(y_max), 0, pad_t+3)
+    canvas.impl.canvasContext.fillText(str(y_min), 0, hei - pad_b + 3)
+    canvas.impl.canvasContext.fillText(str(y_max), 0, pad_t + 3)
     for m in marks:
-        canvas.impl.canvasContext.fillText(str(m), 0, get_y(m)+3)
+        canvas.impl.canvasContext.fillText(str(m), 0, get_y(m) + 3)
 
     i = 0  # index of current interval
     x_cum = 0  # cumulated x value (sum of the size of the first i-1 intervals)
@@ -163,7 +163,8 @@ def draw_chart(canvas, y_min, y_max, y_def, h_def, x_int, data, color, marks):
         i += 1
 
     # bug in Pyjamas: I have to create the color string manually
-    canvas.setFillStyle(Color.Color("rgba(%d,%d,%d,%.2f)" % (color[0], color[1], color[2], 0.3)))
+    canvas.setFillStyle(Color.Color("rgba(%d,%d,%d,%.2f)" %
+                                    (color[0], color[1], color[2], 0.3)))
     canvas.beginPath()
     canvas.moveTo(get_x(tops[0][0]), get_y(tops[0][1]))
     for p in tops:

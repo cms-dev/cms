@@ -47,7 +47,8 @@ class Store(object):
 
         """
         if not issubclass(entity, Entity):
-            raise ValueError("The 'entity' parameter isn't a subclass of Entity")
+            raise ValueError("The 'entity' parameter "
+                             "isn't a subclass of Entity")
         self._entity = entity
         self._path = os.path.join(config.lib_dir, dir_name)
         self._store = dict()

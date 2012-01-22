@@ -31,15 +31,16 @@ from cms.util.Cryptographics import encrypt_number
 
 utf8_decoder = codecs.getdecoder('utf-8')
 
+
 class TestRequest:
     """Docstring TODO.
 
     """
 
-    OUTCOME_SUCCESS   = 'success'
-    OUTCOME_FAILURE   = 'failure'
+    OUTCOME_SUCCESS = 'success'
+    OUTCOME_FAILURE = 'failure'
     OUTCOME_UNDECIDED = 'undecided'
-    OUTCOME_ERROR     = 'error'
+    OUTCOME_ERROR = 'error'
 
     def __init__(self, browser, base_url=None):
         if base_url is None:
@@ -114,8 +115,12 @@ class TestRequest:
 
     def store_to_file(self, fd):
         print >> fd, "Test type: %s" % (self.__class__.__name__)
-        print >> fd, "Execution start time: %s" % (datetime.datetime.fromtimestamp(self.start_time).strftime("%d/%m/%Y %H:%M:%S.%f"))
-        print >> fd, "Execution stop time: %s" % (datetime.datetime.fromtimestamp(self.stop_time).strftime("%d/%m/%Y %H:%M:%S.%f"))
+        print >> fd, "Execution start time: %s" % (
+            datetime.datetime.fromtimestamp(self.start_time).\
+            strftime("%d/%m/%Y %H:%M:%S.%f"))
+        print >> fd, "Execution stop time: %s" % (
+            datetime.datetime.fromtimestamp(self.stop_time).\
+            strftime("%d/%m/%Y %H:%M:%S.%f"))
         print >> fd, "Duration: %f seconds" % (self.duration)
         print >> fd, "Outcome: %s" % (self.outcome)
         fd.write(self.specific_info())
@@ -159,7 +164,8 @@ class GenericRequest(TestRequest):
     def test_success(self):
         #if self.response.getcode() != 200:
         #    return False
-        if self.res_data is not None and len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
+        if self.res_data is not None and \
+               len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
             return False
         return True
 
@@ -204,7 +210,7 @@ class LoginRequest(GenericRequest):
         TestRequest.__init__(self, browser, base_url)
         self.username = username
         self.password = password
-        self.url = self.base_url + 'login'
+        self.url = '%slogin' % self.base_url
         self.data = {'username': self.username,
                      'password': self.password,
                      'next': '/'}
@@ -224,7 +230,8 @@ class LoginRequest(GenericRequest):
         return True
 
     def specific_info(self):
-        return 'Username: %s\nPassword: %s\n' % (self.username, self.password) + \
+        return 'Username: %s\nPassword: %s\n' % \
+               (self.username, self.password) + \
             GenericRequest.specific_info(self)
 
 
@@ -234,7 +241,7 @@ class TaskRequest(GenericRequest):
     """
     def __init__(self, browser, task_id, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
-        self.url = self.base_url + "tasks/" + encrypt_number(task_id)
+        self.url = "%stasks/%s" % (self.base_url, encrypt_number(task_id))
         self.task_id = task_id
 
     def describe(self):
@@ -247,7 +254,8 @@ class TaskStatementRequest(GenericRequest):
     """
     def __init__(self, browser, task_id, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
-        self.url = self.base_url + "tasks/" + encrypt_number(task_id) + "/statement"
+        self.url = "%stasks/%s/statement" % (self.base_url,
+                                             encrypt_number(task_id))
         self.task_id = task_id
 
     def describe(self):

@@ -196,7 +196,8 @@ def sha1sum(path):
         return hasher.hexdigest()
 
 
-def get_compilation_command(language, source_filenames, executable_filename, for_evaluation=True):
+def get_compilation_command(language, source_filenames, executable_filename,
+                            for_evaluation=True):
     """Returns the compilation command for the specified language,
     source filenames and executable filename. The command is a list of
     strings, suitable to be passed to the methods in subprocess

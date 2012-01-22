@@ -161,11 +161,11 @@ class WebService(Service):
         # TODO: why are the following two lines needed?
         self._RPCRequestHandler__responses = self.__responses
         self._RPCAnswerHandler__responses = self.__responses
-        handlers += [(r"/rpc_request/([a-zA-Z0-9_-]+)/" + \
+        handlers += [(r"/rpc_request/([a-zA-Z0-9_-]+)/" \
                       "([0-9]+)/([a-zA-Z0-9_-]+)",
                       RPCRequestHandler),
                      (r"/rpc_answer", RPCAnswerHandler),
-                     (r"/sync_rpc_request/([a-zA-Z0-9_-]+)/" + \
+                     (r"/sync_rpc_request/([a-zA-Z0-9_-]+)/" \
                       "([0-9]+)/([a-zA-Z0-9_-]+)",
                       SyncRPCRequestHandler)]
         self.application = tornado.web.Application(handlers, **parameters)

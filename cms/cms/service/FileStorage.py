@@ -96,7 +96,8 @@ class FileCacher:
 
         if not cache_exists:
             with async_lock:
-                logger.debug("File %s not in cache, downloading from database" % (digest))
+                logger.debug("File %s not in cache, downloading "
+                             "from database" % (digest))
 
             temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
             temp_file = os.fdopen(temp_file, "wb")
@@ -207,7 +208,8 @@ class FileCacher:
         with SessionGen() as session:
             if FSObject.get_from_digest(digest, session) is not None:
                 with async_lock:
-                    logger.debug("File %s already on database, dropping this one" % (digest))
+                    logger.debug("File %s already on database, "
+                                 "dropping this one" % (digest))
                 session.rollback()
 
             # If it is not already present, copy the file into the

@@ -33,6 +33,7 @@ def _get_time():
     return parseInt(date.getTime() / 1000);
     ''')
 
+
 class TimeView(object):
     def __init__(self, ds):
         self.ds = ds
@@ -55,15 +56,16 @@ class TimeView(object):
         elem = DOM.getElementById('timer')
         if i is not None:
             time_dlt = abs(cur_time - self.ds.contests[i]['begin'])
-            time_str = '%d:%02d:%02d' % (time_dlt / 3600, time_dlt / 60 % 60, time_dlt % 60)
+            time_str = '%d:%02d:%02d' % (time_dlt / 3600,
+                                         time_dlt / 60 % 60,
+                                         time_dlt % 60)
             if self.ds.contests[i]['begin'] > cur_time:
                 time_str = '-' + time_str
-            result = '''
-<div class="contest_name">''' + self.ds.contests[i]['name'] + '''</div>
-<div class="contest_time">''' + time_str + '''</div'''
+            html = '<div class="contest_name">%s</div>\n' \
+                   '<div class="contest_time">%s</div>\n'
+            result = html % (self.ds.contests[i]['name'], time_str)
             DOM.setInnerHTML(elem, result)
             JS('elem.classList.add("active");')
         else:
             DOM.setInnerHTML(elem, 'No active contest')
             JS('elem.classList.remove("active");')
-

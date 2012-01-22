@@ -35,6 +35,7 @@ from cms.db.Utils import ask_for_contest
 from cms.util.Utils import sha1sum
 from cms import Config
 
+
 class ContestExporter(Service):
 
     def __init__(self, shard, contest_id, dump,
@@ -83,7 +84,8 @@ class ContestExporter(Service):
             logger.info("Exporting the contest in JSON format")
             with open(os.path.join(self.export_dir,
                                    "contest.json"), 'w') as fout:
-                json.dump(c.export_to_dict(self.skip_submissions), fout, indent=4)
+                json.dump(c.export_to_dict(self.skip_submissions),
+                          fout, indent=4)
 
         # The database dump is never used; however, this part is
         # retained for historical reasons
@@ -119,7 +121,8 @@ class ContestExporter(Service):
                 db_match = db_regex.match(connection)
                 if db_match is not None:
                     dbfile, = db_match.groups()
-                    export_res = os.system('sqlite3 %s .dump > %s' % (dbfile, db_exportfile))
+                    export_res = os.system('sqlite3 %s .dump > %s' %
+                                           (dbfile, db_exportfile))
                     if export_res != 0:
                         logger.critical("Database export failed")
                         sys.exit(1)
@@ -158,6 +161,7 @@ class ContestExporter(Service):
             with open(descr_path, 'w') as fout:
                 fout.write(self.FC.describe(digest))
 
+
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
     parser.add_option("-c", "--contest", help="contest ID to export",
@@ -173,7 +177,8 @@ def main():
                       dest="dump", action="store_true", default=False)
     parser.add_option("-S", "--skip-submissions",
                       help="don't export submissions, only contest data",
-                      dest="skip_submissions", action="store_true", default=False)
+                      dest="skip_submissions", action="store_true",
+                      default=False)
     parser.add_option("-l", "--light",
                       help="light export (without executables and testcases)",
                       dest="light", action="store_true", default=False)
@@ -187,12 +192,13 @@ def main():
     if options.contest_id is None:
         options.contest_id = ask_for_contest()
 
-    contest_exporter = ContestExporter(shard=options.shard,
-                                       contest_id=options.contest_id,
-                                       dump=options.dump,
-                                       export_dir=args[0],
-                                       skip_submissions=options.skip_submissions,
-                                       light=options.light).run()
+    contest_exporter = ContestExporter(
+        shard=options.shard,
+        contest_id=options.contest_id,
+        dump=options.dump,
+        export_dir=args[0],
+        skip_submissions=options.skip_submissions,
+        light=options.light).run()
 
 if __name__ == "__main__":
     main()

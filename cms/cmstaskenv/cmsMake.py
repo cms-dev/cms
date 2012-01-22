@@ -52,20 +52,25 @@ INPUT_DIRNAME = 'input'
 OUTPUT_DIRNAME = 'output'
 RESULT_DIRNAME = 'result'
 
-DATA_DIRS = [os.path.join('.', 'cmstaskenv', 'data'), os.path.join('/', 'usr', 'local', 'share', 'cms', 'cmsMake')]
+DATA_DIRS = [os.path.join('.', 'cmstaskenv', 'data'),
+             os.path.join('/', 'usr', 'local', 'share', 'cms', 'cmsMake')]
+
 
 def detect_data_dir():
     for dir in DATA_DIRS:
         if os.path.exists(dir):
             return os.path.abspath(dir)
 
+
 DATA_DIR = detect_data_dir()
+
 
 def endswith2(str, suffixes):
     """True if str ends with one of the given suffixes.
 
     """
     return any(map(lambda x: str.endswith(x), suffixes))
+
 
 def basename2(str, suffixes):
     """If str ends with one of the specified suffixes, returns its
@@ -79,13 +84,17 @@ def basename2(str, suffixes):
         return None
     return (str[:-len(suffixes[idx])], str[-len(suffixes[idx]):])
 
+
 def call(base_dir, args, stdin=None, stdout=None, stderr=None, env=None):
-    print >> sys.stderr, "> Executing command %s in dir %s" % (" ".join(args), base_dir)
+    print >> sys.stderr, "> Executing command %s in dir %s" % \
+          (" ".join(args), base_dir)
     if env is None:
         env = {}
     env2 = copy.copy(os.environ)
     env2.update(env)
-    return subprocess.call(args, stdin=stdin, stdout=stdout, stderr=stderr, cwd=base_dir, env=env2)
+    return subprocess.call(args, stdin=stdin, stdout=stdout, stderr=stderr,
+                           cwd=base_dir, env=env2)
+
 
 def build_sols_list(base_dir):
     sol_dir = os.path.join(base_dir, SOL_DIRNAME)
@@ -97,28 +106,39 @@ def build_sols_list(base_dir):
         exe, lang = basename2(src, SOL_EXTS)
         # Delete the dot
         lang = lang[1:]
+
         def compile_src(src, exe):
-            call(base_dir, get_compilation_command(lang, [src], exe, for_evaluation=False))
-        actions.append(([src], [exe], functools.partial(compile_src, src, exe), 'compile solution'))
+            call(base_dir, get_compilation_command(lang, [src], exe,
+                                                   for_evaluation=False))
+
+        actions.append(([src], [exe], functools.partial(compile_src, src, exe),
+                        'compile solution'))
 
     return actions
+
 
 def build_checker_list(base_dir):
     check_dir = os.path.join(base_dir, CHECK_DIRNAME)
     actions = []
 
     if os.path.exists(check_dir):
-        entries = map(lambda x: os.path.join(CHECK_DIRNAME, x), os.listdir(check_dir))
+        entries = map(lambda x: os.path.join(CHECK_DIRNAME, x),
+                      os.listdir(check_dir))
         sources = filter(lambda x: endswith2(x, SOL_EXTS), entries)
         for src in sources:
             exe, lang = basename2(src, CHECK_EXTS)
             # Delete the dot
             lang = lang[1:]
+
             def compile_check(src, exe):
                 call(base_dir, get_compilation_command(lang, [src], exe))
-            actions.append(([src], [exe], functools.partial(compile_check, src, exe), 'compile checker'))
+
+            actions.append(([src], [exe],
+                            functools.partial(compile_check, src, exe),
+                            'compile checker'))
 
     return actions
+
 
 def build_text_list(base_dir):
     text_xml = os.path.join(TEXT_DIRNAME, TEXT_XML)
@@ -131,45 +151,57 @@ def build_text_list(base_dir):
     def make_html():
         with open(os.path.join(base_dir, text_html), 'w') as fout:
             call(base_dir,
-                 ['xsltproc', os.path.join(DATA_DIR, 'problem_layout.xslt'), text_xml],
+                 ['xsltproc',
+                  os.path.join(DATA_DIR, 'problem_layout.xslt'), text_xml],
                  stdout=fout)
 
     def make_tex():
         with open(os.path.join(base_dir, text_tex), 'w') as fout:
             call(base_dir,
-                 ['xsltproc', os.path.join(DATA_DIR, 'problem_layout_tex.xslt'), text_xml],
+                 ['xsltproc',
+                  os.path.join(DATA_DIR, 'problem_layout_tex.xslt'), text_xml],
                  stdout=fout)
 
     def make_pdf():
         call(base_dir,
-             ['pdflatex', '-output-directory', TEXT_DIRNAME, '-interaction', 'batchmode', text_tex],
+             ['pdflatex', '-output-directory', TEXT_DIRNAME,
+              '-interaction', 'batchmode', text_tex],
              env={'TEXINPUTS': '.:%s:%s/file:' % (TEXT_DIRNAME, TEXT_DIRNAME)})
 
     def make_input0():
         with open(os.path.join(base_dir, INPUT0_TXT), 'w') as fout:
             call(base_dir,
-                 ['xsltproc', os.path.join(DATA_DIR, 'estrai_input.xslt'), text_xml],
+                 ['xsltproc',
+                  os.path.join(DATA_DIR, 'estrai_input.xslt'), text_xml],
                  stdout=fout)
 
     def make_output0():
         with open(os.path.join(base_dir, OUTPUT0_TXT), 'w') as fout:
             call(base_dir,
-                 ['xsltproc', os.path.join(DATA_DIR, 'estrai_output.xslt'), text_xml],
+                 ['xsltproc',
+                  os.path.join(DATA_DIR, 'estrai_output.xslt'), text_xml],
                  stdout=fout)
 
     actions = []
-    actions.append(([text_xml], [text_html], make_html, 'compile to HTML'))
-    actions.append(([text_xml], [text_tex], make_tex, 'compile to LaTeX'))
-    actions.append(([text_tex], [text_pdf, text_aux, text_log], make_pdf, 'compile to PDF'))
-    actions.append(([text_xml], [INPUT0_TXT], make_input0, 'extract first input'))
-    actions.append(([text_xml], [OUTPUT0_TXT], make_output0, 'extract first output'))
+    actions.append(([text_xml], [text_html],
+                    make_html, 'compile to HTML'))
+    actions.append(([text_xml], [text_tex],
+                    make_tex, 'compile to LaTeX'))
+    actions.append(([text_tex], [text_pdf, text_aux, text_log],
+                    make_pdf, 'compile to PDF'))
+    actions.append(([text_xml], [INPUT0_TXT],
+                    make_input0, 'extract first input'))
+    actions.append(([text_xml], [OUTPUT0_TXT],
+                    make_output0, 'extract first output'))
     return actions
+
 
 def iter_file(name):
     for l in open(name, "r"):
         l = (" " + l).split("#")[0][1:].strip("\n")
         if l != "":
             yield l
+
 
 def build_gen_list(base_dir):
     input_dir = os.path.join(base_dir, INPUT_DIRNAME)
@@ -201,10 +233,12 @@ def build_gen_list(base_dir):
             os.makedirs(input_dir)
         except OSError:
             pass
-        shutil.copy(os.path.join(base_dir, INPUT0_TXT), os.path.join(input_dir, 'input0.txt'))
+        shutil.copy(os.path.join(base_dir, INPUT0_TXT),
+                    os.path.join(input_dir, 'input0.txt'))
         for line in iter_file(os.path.join(base_dir, gen_GEN)):
             print >> sys.stderr, "Generating input # %d" % (n)
-            with open(os.path.join(input_dir, 'input%d.txt' % (n)), 'w') as fout:
+            with open(os.path.join(input_dir,
+                                   'input%d.txt' % (n)), 'w') as fout:
                 call(base_dir,
                      [gen_exe] + line.split(),
                      stdout=fout)
@@ -216,29 +250,33 @@ def build_gen_list(base_dir):
         except OSError:
             pass
         if n == 0:
-            shutil.copy(os.path.join(base_dir, OUTPUT0_TXT), os.path.join(output_dir, 'output0.txt'))
+            shutil.copy(os.path.join(base_dir, OUTPUT0_TXT),
+                        os.path.join(output_dir, 'output0.txt'))
         else:
             print >> sys.stderr, "Generating output # %d" % (n)
             with open(os.path.join(input_dir, 'input%d.txt' % (n))) as fin:
-                with open(os.path.join(output_dir, 'output%d.txt' % (n)), 'w') as fout:
+                with open(os.path.join(output_dir,
+                                       'output%d.txt' % (n)), 'w') as fout:
                     call(base_dir, [sol_exe], stdin=fin, stdout=fout)
 
     actions = []
     actions.append(([gen_GEN, gen_exe, INPUT0_TXT],
-                    map(lambda x: os.path.join(INPUT_DIRNAME, 'input%d.txt' % (x)),
-                        range(0, testcase_num+1)),
+                    map(lambda x: os.path.join(INPUT_DIRNAME,
+                                               'input%d.txt' % (x)),
+                        range(0, testcase_num + 1)),
                     make_input,
                     "input generation"))
     actions.append(([OUTPUT0_TXT],
                     [os.path.join(OUTPUT_DIRNAME, 'output0.txt')],
                     functools.partial(make_output, 0),
                     "output generation"))
-    for n in range(1, testcase_num+1):
+    for n in range(1, testcase_num + 1):
         actions.append(([os.path.join(INPUT_DIRNAME, 'input%d.txt' % (n))],
                         [os.path.join(OUTPUT_DIRNAME, 'output%d.txt' % (n))],
                         functools.partial(make_output, n),
                         "output generation"))
     return actions
+
 
 def build_action_list(base_dir):
     # Build a list of actions that cmsMake is able to do here. Each
@@ -264,6 +302,7 @@ def build_action_list(base_dir):
     actions += build_gen_list(base_dir)
     return actions
 
+
 def clean(base_dir, generated_list):
     # Delete all generated files
     for f in generated_list:
@@ -282,9 +321,11 @@ def clean(base_dir, generated_list):
     except OSError:
         pass
 
+
 def build_execution_tree(actions):
     def noop():
         pass
+
     exec_tree = {}
     generated_list = []
     src_list = set()
@@ -301,7 +342,9 @@ def build_execution_tree(actions):
             exec_tree[src] = ([], noop)
     return exec_tree, generated_list
 
-def execute_target(base_dir, exec_tree, target, already_executed=None, stack=None):
+
+def execute_target(base_dir, exec_tree, target,
+                   already_executed=None, stack=None):
     # Initialization
     if already_executed is None:
         already_executed = set()
@@ -331,7 +374,8 @@ def execute_target(base_dir, exec_tree, target, already_executed=None, stack=Non
 
     # Check if the action really needs to be done (i.e., there is one
     # dependency more recent than the generated file)
-    dep_times = max([0] + map(lambda dep: os.stat(os.path.join(base_dir, dep)).st_mtime, deps))
+    dep_times = max([0] + map(lambda dep: os.stat(
+        os.path.join(base_dir, dep)).st_mtime, deps))
     try:
         gen_time = os.stat(os.path.join(base_dir, target)).st_mtime
     except OSError:
@@ -342,15 +386,18 @@ def execute_target(base_dir, exec_tree, target, already_executed=None, stack=Non
     # At last: actually make the so long desired action :-)
     action()
 
+
 def execute_multiple_targets(base_dir, exec_tree, targets):
     already_executed = set()
     for target in targets:
         execute_target(base_dir, exec_tree, target, already_executed)
 
+
 def main():
     parser = optparse.OptionParser(usage="usage: %prog [options] [target]")
     parser.add_option("-D", "--base-dir",
-                      help="base directory for problem to make (CWD by default)",
+                      help="base directory for problem to make "
+                      "(CWD by default)",
                       dest="base_dir", action="store", default=None)
     parser.add_option("-l", "--list",
                       help="list actions that cmsMake is aware of",
@@ -370,13 +417,15 @@ def main():
     actions = build_action_list(base_dir)
     exec_tree, generated_list = build_execution_tree(actions)
 
-    if [len(args) > 0, options.list, options.clean, options.all].count(True) > 1:
+    if [len(args) > 0, options.list, options.clean,
+        options.all].count(True) > 1:
         parser.error("Too many commands")
 
     if options.list:
         print "Available operations:"
         for entry in actions:
-            print "  %s: %s -> %s" % (entry[3], ", ".join(entry[0]), ", ".join(entry[1]))
+            print "  %s: %s -> %s" % (entry[3], ", ".join(entry[0]),
+                                      ", ".join(entry[1]))
 
     elif options.clean:
         print "Cleaning"

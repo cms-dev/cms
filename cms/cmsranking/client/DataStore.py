@@ -275,7 +275,6 @@ class DataStore:
                 for h in self.select_handlers:
                     h(u_id, flag)
 
-
     def get_selected(self, u_id):
         return u_id in self.selected
 

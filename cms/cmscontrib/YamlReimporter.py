@@ -53,8 +53,10 @@ class YamlReimporter(Service):
     def do_reimport(self):
         # Create the dict corresponding to the new contest
         yaml_contest = self.loader.import_contest(self.path)
-        yaml_users = dict(map(lambda x: (x['username'], x), yaml_contest['users']))
-        yaml_tasks = dict(map(lambda x: (x['name'], x), yaml_contest['tasks']))
+        yaml_users = dict(map(lambda x: (x['username'], x),
+                              yaml_contest['users']))
+        yaml_tasks = dict(map(lambda x: (x['name'], x),
+                              yaml_contest['tasks']))
 
         with SessionGen(commit=False) as session:
 
@@ -62,8 +64,10 @@ class YamlReimporter(Service):
             # the database
             contest = Contest.get_from_id(self.contest_id, session)
             cms_contest = contest.export_to_dict()
-            cms_users = dict(map(lambda x: (x['username'], x), cms_contest['users']))
-            cms_tasks = dict(map(lambda x: (x['name'], x), cms_contest['tasks']))
+            cms_users = dict(map(lambda x: (x['username'], x),
+                                 cms_contest['users']))
+            cms_tasks = dict(map(lambda x: (x['name'], x),
+                                 cms_contest['tasks']))
 
             # Delete the old contest from the database
             session.delete(contest)
@@ -75,11 +79,15 @@ class YamlReimporter(Service):
             # but not in the new one
             for user_num, user in enumerate(cms_contest['users']):
                 try:
-                    user_submissions = cms_contest['users'][user_num]['submissions']
-                    cms_contest['users'][user_num] = yaml_users[user['username']]
-                    cms_contest['users'][user_num]['submissions'] = user_submissions
+                    user_submissions = \
+                        cms_contest['users'][user_num]['submissions']
+                    cms_contest['users'][user_num] = \
+                        yaml_users[user['username']]
+                    cms_contest['users'][user_num]['submissions'] = \
+                        user_submissions
                 except KeyError:
-                    logger.error("User %s exists in old contest, but not in the new one" % (user['username']))
+                    logger.error("User %s exists in old contest, "
+                                 "but not in the new one" % (user['username']))
 
             # The append the users in the new contest, not present in
             # the old one
@@ -92,7 +100,8 @@ class YamlReimporter(Service):
                 try:
                     cms_contest['tasks'][task_num] = yaml_tasks[task['name']]
                 except KeyError:
-                    logger.error("Task %d exists in old contest, but not in the new one" % (task['name']))
+                    logger.error("Task %d exists in old contest, "
+                                 "but not in the new one" % (task['name']))
 
             # And add new tasks
             for task in yaml_contest['tasks']:
@@ -121,7 +130,8 @@ def main():
                       dest="shard", action="store", type="int", default=None)
     parser.add_option("-c", "--contest",
                       help="contest ID to overwrite",
-                      dest="contest_id", action="store", type="int", default=None)
+                      dest="contest_id", action="store", type="int",
+                      default=None)
     options, args = parser.parse_args()
     if len(args) != 1:
         parser.error("I need exactly one parameter, the contest directory")

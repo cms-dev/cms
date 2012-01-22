@@ -24,6 +24,7 @@ from them being on the filesystem or in a database.
 
 """
 
+
 class AbstractTask:
     """Represents some aspect of a task, independently from it being
     on the filesystem or in a database.
@@ -111,7 +112,8 @@ class AbstractTaskFromDB(AbstractTask):
 
         """
         try:
-            self.FC.get_file(self.task.managers[filename].digest, file_obj=file_obj)
+            self.FC.get_file(self.task.managers[filename].digest,
+                             file_obj=file_obj)
             return True
         except KeyError:
             return False
@@ -124,7 +126,8 @@ class AbstractTaskFromDB(AbstractTask):
 
         """
         try:
-            self.FC.get_file(self.task.attachments[filename].digest, file_obj=file_obj)
+            self.FC.get_file(self.task.attachments[filename].digest,
+                             file_obj=file_obj)
             return True
         except KeyError:
             return False
@@ -156,7 +159,7 @@ class AbstractSubmission:
 
         """
         raise NotImplementedError("Please subclass AbstractSubmission")
-        
+
     def get_executable(self, filename, file_obj):
         """Retrieve the specified compiled executable from the
         submission and write it to the file-like object file_obj.
@@ -181,7 +184,7 @@ class AbstractSubmissionFromDB:
         """Create an AbstractSubmission that shadows the specified
         submission object from the database.
 
-        """        
+        """
         self.submission = submission
         self.FC = FC
 
@@ -205,7 +208,8 @@ class AbstractSubmissionFromDB:
 
         """
         try:
-            self.FC.get_file(self.submission.files[filename].digest, file_obj=file_obj)
+            self.FC.get_file(self.submission.files[filename].digest,
+                             file_obj=file_obj)
             return True
         except KeyError:
             return False
@@ -218,7 +222,8 @@ class AbstractSubmissionFromDB:
 
         """
         try:
-            self.FC.get_file(self.submission.executables[filename].digest, file_obj=file_obj)
+            self.FC.get_file(self.submission.executables[filename].digest,
+                             file_obj=file_obj)
             return True
         except KeyError:
             return False
@@ -229,7 +234,9 @@ class AbstractSubmissionFromDB:
         filename. The file is read from the file-like object file_obj.
 
         """
-        digest = self.FC.put_file(self, description=description, file_obj=file_obj)
+        digest = self.FC.put_file(self, description=description,
+                                  file_obj=file_obj)
         if filename in self.submission.executables:
             del self.submission.executables[filename]
-        self.submission.get_session().add(Executable(digest, filename, self.submission))
+        self.submission.get_session().add(Executable(digest, filename,
+                                                     self.submission))

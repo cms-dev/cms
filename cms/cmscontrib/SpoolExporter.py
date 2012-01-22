@@ -136,7 +136,7 @@ class SpoolExporter(Service):
             users = {}
             for u in c.users:
                 if u.username not in hidden_users:
-                    users[u.username] = [0, u.username, [None]*len(c.tasks)]
+                    users[u.username] = [0, u.username, [None] * len(c.tasks)]
             for (username, task_num), score in \
                     c.ranking_view.scores.iteritems():
                 if username not in hidden_users:

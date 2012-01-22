@@ -43,29 +43,30 @@ class Scoreboard(object):
         self.ds.add_select_handler(self.select_handler)
 
     def make_head(self):
-        result = '''
-<tr>
-    <th class="sel"></th>
-    <th class="rank">Rank</th>
-    <th class="f_name">First Name</th>
-    <th class="l_name">Last Name</th>
-    <th class="team">Team</th>'''
+        result = ''
+        html = '<tr>\n' \
+               '    <th class="sel"></th>\n' \
+               '    <th class="rank">Rank</th>\n' \
+               '    <th class="f_name">First Name</th>\n' \
+               '    <th class="l_name">Last Name</th>\n' \
+               '    <th class="team">Team</th>\n'
+        result += html
 
         for (c_id, contest) in self.ds.iter_contests():
             if c_id in self.expanded:
                 for (t_id, task) in self.ds.iter_tasks():
                     if task['contest'] == c_id:
-                        result += '''
-    <th class="score task"><abbr title="''' + task['name'] + '''">''' + task['name'][0] + '''</abbr></th>'''
-            result += '''
-    <th class="score contest">''' + contest['name'] + '''</th>'''
+                        html = '    <th class="score task">' \
+                               '<abbr title="%s">%s</abbr></th>'
+                        result += html % (task['name'], task['name'][0])
+            html = '    <th class="score contest">%s</th>'
+            result += html % contest['name']
 
-        result += '''
-    <th class="score global">Global</th>
-</tr>'''
+        html = '    <th class="score global">Global</th>\n' \
+               '</tr>'
+        result += html
 
         return result
-
 
     def get_score_class(self, score, max_score):
         if score == 0:
@@ -77,47 +78,66 @@ class Scoreboard(object):
             else:
                 return "score_%d_%d" % (rel_score, rel_score + 10)
 
-
     def make_row(self, u_id, user, rank, t_key=None, c_key=None):
-        result = '''
-<tr id="''' + u_id + '"' + (' class="selected"' if self.ds.get_selected(u_id) else '') + '''>
-    <td class="sel">
-        <input type="checkbox"''' + ('checked' if self.ds.get_selected(u_id) else '') + ''' />
-    </td>
-    <td class="rank">''' + str(rank) + '''</td>
-    <td class="f_name">''' + user['f_name'] + '''</td>
-    <td class="l_name">''' + user['l_name'] + '''</td>'''
+        result = ''
+        html = '<tr id="%s"%s>\n' \
+               '    <td class="sel">\n' \
+               '        <input type="checkbox"%s />\n' \
+               '    </td>\n' \
+               '    <td class="rank">%s</td>\n' \
+               '    <td class="f_name">%s</td>\n' \
+               '    <td class="l_name">%s</td>\n'
+        result += html % (
+            u_id,
+            (' class="selected"' if self.ds.get_selected(u_id) else ''),
+            ('checked' if self.ds.get_selected(u_id) else ''),
+            rank, user['f_name'], user['l_name'])
 
         if user['team']:
             # FIXME: hardcoded flag path
-            result += '''<td class="team"><img src="/flags/''' + user['team'] + '''" title="''' + self.ds.teams[user['team']]['name'] + '''" /></td>'''
+            html = '    <td class="team">\n' \
+                   '        <img src="/flags/%s" title="%s" />\n' \
+                   '    </td>\n'
+            result += html % (user['team'],
+                              self.ds.teams[user['team']]['name'])
         else:
-            result += '''<td class="team"></td>'''
+            html = '    <td class="team"></td>\n'
+            result += html
 
         for (c_id, contest) in self.ds.iter_contests():
             if c_id in self.expanded:
                 for (t_id, task) in self.ds.iter_tasks():
                     if task['contest'] == c_id:
-                        score_class = self.get_score_class(self.ds.get_score_t(u_id, t_id), self.ds.tasks[t_id]['score'])
+                        score_class = self.get_score_class(
+                            self.ds.get_score_t(u_id, t_id),
+                            self.ds.tasks[t_id]['score'])
                         if t_id == t_key:
                             score_class += ' sort_key'
-                        result += '''
-    <td class="score task ''' + score_class + '''">''' + str(round(self.ds.get_score_t(u_id, t_id), 2)) + '''</td>'''
-            score_class = self.get_score_class(self.ds.get_score_c(u_id, c_id), sum([task['score'] for task in self.ds.tasks.itervalues() if task['contest'] == c_id]))
+                        html = '    <td class="score task %s">%s</td>\n'
+                        result += html % (
+                            score_class,
+                            round(self.ds.get_score_t(u_id, t_id), 2))
+            score_class = self.get_score_class(
+                self.ds.get_score_c(u_id, c_id),
+                sum([task['score']
+                     for task in self.ds.tasks.itervalues()
+                     if task['contest'] == c_id]))
             if c_id == c_key:
                 score_class += ' sort_key'
-            result += '''
-    <td class="score contest ''' + score_class + '''">''' + str(round(self.ds.get_score_c(u_id, c_id), 2)) + '''</td>'''
+            html = '    <td class="score contest %s">%s</td>\n'
+            result += html % (score_class,
+                              round(self.ds.get_score_c(u_id, c_id), 2))
 
-        score_class = self.get_score_class(self.ds.get_score(u_id), sum([task['score'] for task in self.ds.tasks.itervalues()]))
+        score_class = self.get_score_class(
+            self.ds.get_score(u_id),
+            sum([task['score'] for task in self.ds.tasks.itervalues()]))
         if t_key is None and c_key is None:
             score_class += ' sort_key'
-        result += '''
-    <td class="score global ''' + score_class + '''">''' + str(round(self.ds.get_score(u_id), 2)) + '''</td>
-</tr>'''
+        html = '    <td class="score global %s">%s</td>\n' \
+               '</tr>\n'
+        result += html % (score_class, round(self.ds.get_score(u_id), 2))
 
         return result
-
 
     def make_body(self, t_key=None, c_key=None):
         if t_key:
@@ -136,7 +156,9 @@ class Scoreboard(object):
                              user['l_name'], user['f_name'], u_id)
                             for (u_id, user) in self.ds.users.iteritems()])
 
-        col_count = len(self.ds.contests) + len([t_id for t_id, task in self.ds.tasks.iteritems() if task['contest'] in self.expanded])
+        col_count = len(self.ds.contests) + \
+                    len([t_id for t_id, task in self.ds.tasks.iteritems()
+                         if task['contest'] in self.expanded])
 
         result = ''
         prev_score = None
@@ -145,10 +167,10 @@ class Scoreboard(object):
 
         for idx, item in enumerate(users):
             if idx != 0:
-                result += '''
-<tr class="separator">
-    <td colspan="''' + str(col_count + 5) + '''"></td>
-</tr>'''
+                html = '<tr class="separator">\n' \
+                       '    <td colspan="%s"></td>\n' \
+                       '</tr>'
+                result += html % (col_count + 5)
 
             score = -1 * item[0]
             if score == prev_score:
@@ -158,10 +180,10 @@ class Scoreboard(object):
                 rank += equal
                 equal = 1
 
-            result += self.make_row(item[4], self.ds.users[item[4]], rank, t_key, c_key)
+            result += self.make_row(item[4], self.ds.users[item[4]],
+                                    rank, t_key, c_key)
 
         return result
-
 
     def update(self, t_key=None, c_key=None):
         col_layout = ''
@@ -238,7 +260,8 @@ class Scoreboard(object):
             row = DOM.getElementById(u_id)
             cell = DOM.getChild(row, 0)
             check = DOM.getChild(cell, 0)
-            self.ds.set_selected(u_id, DOM.getBooleanAttribute(check, 'checked'))
+            self.ds.set_selected(u_id,
+                                 DOM.getBooleanAttribute(check, 'checked'))
         return result
 
     def user_callback_factory(self, u_id):
@@ -246,18 +269,15 @@ class Scoreboard(object):
             self.up.show(u_id)
         return result
 
-
     def sort_task_factory(self, t_id):
         def result():
             self.update(t_key=t_id)
         return result
 
-
     def sort_contest_factory(self, c_id):
         def result():
             self.update(c_key=c_id)
         return result
-
 
     def sort_global_factory(self):
         def result():

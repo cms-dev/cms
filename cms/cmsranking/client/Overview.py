@@ -42,9 +42,9 @@ class Overview:
         self.ds.add_select_handler(self.update_select)
         self.update_score()
 
-
     def update_score(self):
-        users = sorted([(-1 * self.ds.get_score(u_id), u_id) for u_id in self.ds.users.iterkeys()])
+        users = sorted([(-1 * self.ds.get_score(u_id), u_id)
+                        for u_id in self.ds.users.iterkeys()])
 
         prev_score = None
         rank = 0
@@ -60,10 +60,15 @@ class Overview:
                 equal += 1
 
             elem1 = DOM.getElementById(u_id + '_lm')
-            DOM.setStyleAttribute(elem1, 'bottom', str(score / sum([task['score'] for task in self.ds.tasks.itervalues()]) * 100) + '%')
+            DOM.setStyleAttribute(
+                elem1, 'bottom', str(score / sum(
+                    [task['score'] for task in self.ds.tasks.itervalues()]
+                    ) * 100) + '%')
 
             elem2 = DOM.getElementById(u_id + '_rm')
-            DOM.setStyleAttribute(elem2, 'bottom', str(100 - (rank - 1) / (len(self.ds.users) - 1) * 100) + '%')
+            DOM.setStyleAttribute(elem2, 'bottom', str(100 - (rank - 1) /
+                                                       (len(self.ds.users) - 1)
+                                                       * 100) + '%')
 
     def update_select(self, u_id, flag):
         elem1 = UIObject(Element=DOM.getElementById(u_id + '_lm'))
@@ -75,4 +80,3 @@ class Overview:
         else:
             elem1.removeStyleName('selected')
             elem2.removeStyleName('selected')
-

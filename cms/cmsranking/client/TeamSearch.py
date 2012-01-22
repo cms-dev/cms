@@ -77,7 +77,8 @@ class TeamSearch(object):
                 self.cnt[user['team']] += 1
 
         inner_html = ''
-        for t_id, team in sorted(self.ds.teams.iteritems(), key=lambda a:a[1]['name']):
+        for t_id, team in sorted(self.ds.teams.iteritems(),
+                                 key=lambda a: a[1]['name']):
             # FIXME hardcoded flag path
             inner_html += '''
 <div class="item" id="''' + t_id + '''">
@@ -151,4 +152,3 @@ class TeamSearch(object):
                 if user['team'] == t_id:
                     self.ds.set_selected(u_id, status)
         return result
-

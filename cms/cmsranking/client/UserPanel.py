@@ -57,7 +57,8 @@ class UserPanel(object):
         # this is how it should be done
         self.close_button = FocusWidget(DOM.getElementById('UserPanel_close'))
         self.close_button.addClickListener(self.hide)
-        DOM.setEventListener(DOM.getElementById('UserPanel_close'), self.close_button)
+        DOM.setEventListener(DOM.getElementById('UserPanel_close'),
+                             self.close_button)
 
         # FIXME these is how it shouldn't be done
         self.f_name_label = DOM.getElementById('UserPanel_f_name')
@@ -89,14 +90,18 @@ class UserPanel(object):
         self.task_s = dict()
         self.task_r = dict()
         for t in self.ds.tasks.iterkeys():
-            self.task_s[t] = self.hs.get_score_history_for_task(self.user_id, t)
-            self.task_r[t] = self.hs.get_rank_history_for_task(self.user_id, t)
+            self.task_s[t] = self.hs.get_score_history_for_task(
+                self.user_id, t)
+            self.task_r[t] = self.hs.get_rank_history_for_task(
+                self.user_id, t)
 
         self.contest_s = dict()
         self.contest_r = dict()
         for c in self.ds.contests.iterkeys():
-            self.contest_s[c] = self.hs.get_score_history_for_contest(self.user_id, c)
-            self.contest_r[c] = self.hs.get_rank_history_for_contest(self.user_id, c)
+            self.contest_s[c] = self.hs.get_score_history_for_contest(
+                self.user_id, c)
+            self.contest_r[c] = self.hs.get_rank_history_for_contest(
+                self.user_id, c)
 
         self.global_s = self.hs.get_score_history(self.user_id)
         self.global_r = self.hs.get_rank_history(self.user_id)
@@ -123,8 +128,10 @@ class UserPanel(object):
             DOM.setAttribute(self.face_image, 'src', '/faces/' + self.user_id)
 
             if self.user['team']:
-                self.team_label.innerHTML = self.ds.teams[self.user['team']]['name']
-                DOM.setAttribute(self.team_image, 'src', '/flags/' + self.user['team'])
+                self.team_label.innerHTML = self.ds.teams[
+                    self.user['team']]['name']
+                DOM.setAttribute(self.team_image, 'src',
+                                 '/flags/%s' % self.user['team'])
                 JS('''
                 self.team_image.classList.remove('hidden');
                 ''')
@@ -134,47 +141,68 @@ class UserPanel(object):
                 self.team_image.classList.add('hidden');
                 ''')
 
-            s =  """<tr class="global">
-                        <td>Global</td>
-                        <td>"""+str(self.global_s[-1][1] if self.global_s else 0)+"""</td>
-                        <td>"""+str(self.global_r[-1][1] if self.global_r else 1)+"""</td>
-                        <td><a>Show</a></td>
-                    </tr>"""
+            s = ""
+            html = '<tr class="global">\n' \
+                   '    <td>Global</td>\n' \
+                   '    <td>%s</td>\n' \
+                   '    <td>%s</td>\n' \
+                   '    <td><a>Show</a></td>\n' \
+                   '</tr>\n'
+            s += html % ((self.global_s[-1][1] if self.global_s else 0),
+                         (self.global_r[-1][1] if self.global_r else 1))
 
             for c_id, contest in self.ds.iter_contests():
-                s += """<tr class="contest">
-                            <td>"""+contest['name']+"""</td>
-                            <td>"""+str(self.contest_s[c_id][-1][1] if self.contest_s[c_id] else 0)+"""</td>
-                            <td>"""+str(self.contest_r[c_id][-1][1] if self.contest_r[c_id] else 1)+"""</td>
-                            <td><a>Show</a></td>
-                        </tr>"""
+                html = '<tr class="contest">\n' \
+                       '       <td>%s</td>\n' \
+                       '       <td>%s</td>\n' \
+                       '       <td>%s</td>\n' \
+                       '       <td><a>Show</a></td>\n' \
+                       '</tr>\n'
+                s += html % (contest['name'],
+                             (self.contest_s[c_id][-1][1]
+                              if self.contest_s[c_id] else 0),
+                             (self.contest_r[c_id][-1][1]
+                              if self.contest_r[c_id] else 1))
                 for t_id, task in self.ds.iter_tasks():
                     if task['contest'] is c_id:
-                        s += """<tr class="task">
-                                    <td>"""+task['name']+"""</td>
-                                    <td>"""+str(self.task_s[t_id][-1][1] if self.task_s[t_id] else 0)+"""</td>
-                                    <td>"""+str(self.task_r[t_id][-1][1] if self.task_r[t_id] else 1)+"""</td>
-                                    <td><a>Show</a></td>
-                                </tr>"""
+                        html = '<tr class="task">\n' \
+                               '    <td>%s</td>\n' \
+                               '    <td>%s</td>\n' \
+                               '    <td>%s</td>\n' \
+                               '    <td><a>Show</a></td>\n' \
+                               '</tr>\n'
+                        s += html % (task['name'],
+                                     (self.task_s[t_id][-1][1]
+                                      if self.task_s[t_id] else 0),
+                                     (self.task_r[t_id][-1][1]
+                                      if self.task_r[t_id] else 1))
             self.summary.innerHTML = s
 
             self.active = None
 
-            glob_show = FocusWidget(DOM.getChild(DOM.getChild(self.summary, 0), 3))
+            glob_show = FocusWidget(
+                DOM.getChild(DOM.getChild(self.summary, 0), 3))
             glob_show.addClickListener(self.callback_global)
-            DOM.setEventListener(DOM.getChild(DOM.getChild(self.summary, 0), 3), glob_show)
+            DOM.setEventListener(
+                DOM.getChild(DOM.getChild(self.summary, 0), 3), glob_show)
 
             i = 1
             for c_id, contest in self.ds.iter_contests():
-                cont_show = FocusWidget(DOM.getChild(DOM.getChild(self.summary, i), 3))
+                cont_show = FocusWidget(
+                    DOM.getChild(DOM.getChild(self.summary, i), 3))
                 cont_show.addClickListener(self.callback_factory_contest(c_id))
-                DOM.setEventListener(DOM.getChild(DOM.getChild(self.summary, i), 3), cont_show)
+                DOM.setEventListener(
+                    DOM.getChild(DOM.getChild(self.summary, i), 3), cont_show)
                 i += 1
                 for t_id, task in self.ds.iter_tasks():
                     if task['contest'] is c_id:
-                        task_show = FocusWidget(DOM.getChild(DOM.getChild(self.summary, i), 3))
-                        task_show.addClickListener(self.callback_factory_task(t_id))
-                        DOM.setEventListener(DOM.getChild(DOM.getChild(self.summary, i), 3), task_show)
+                        task_show = FocusWidget(
+                            DOM.getChild(DOM.getChild(self.summary, i), 3))
+                        task_show.addClickListener(
+                            self.callback_factory_task(t_id))
+                        DOM.setEventListener(
+                            DOM.getChild(DOM.getChild(self.summary, i), 3),
+                            task_show)
                         i += 1
 
             self.callback_global(glob_show)
@@ -191,14 +219,16 @@ class UserPanel(object):
         self.active.addStyleName("active")
 
         intervals = []
-        contests = sorted(self.ds.contests.itervalues(), key=lambda c: c['begin'])
+        contests = sorted(self.ds.contests.itervalues(),
+                          key=lambda c: c['begin'])
         i = 0
         b = 0
         e = 0
         while i < len(contests):
             b = contests[i]['begin']
             e = contests[i]['end']
-            while i+1 < len(contests) and contests[i+1]['begin'] <= e:  # someone may want only a <
+            # Someone may want only a ... < e
+            while i + 1 < len(contests) and contests[i + 1]['begin'] <= e:
                 i += 1
                 e = max(e, contests[i]['end'])
             intervals.append((b, e))
@@ -206,12 +236,16 @@ class UserPanel(object):
 
         score = sum([t['score'] for t in self.ds.tasks.itervalues()])
 
-        Chart.draw_chart(self.score_chart, 0, score, 0, 0,
-                intervals, self.hs.get_score_history(self.user_id),
-                (102, 102, 238), [score/4, score/2, score*3/4])
-        Chart.draw_chart(self.rank_chart, len(self.ds.users), 1, 1, len(self.ds.users)-1,
-                intervals, self.hs.get_rank_history(self.user_id),
-                (210, 50, 50), [math.ceil(len(self.ds.users)/12), math.ceil(len(self.ds.users)/4), math.floor(len(self.ds.users)/2)])
+        Chart.draw_chart(
+            self.score_chart, 0, score, 0, 0,
+            intervals, self.hs.get_score_history(self.user_id),
+            (102, 102, 238), [score / 4, score / 2, score * 3 / 4])
+        Chart.draw_chart(
+            self.rank_chart, len(self.ds.users), 1, 1, len(self.ds.users) - 1,
+            intervals, self.hs.get_rank_history(self.user_id),
+            (210, 50, 50), [math.ceil(len(self.ds.users) / 12),
+                            math.ceil(len(self.ds.users) / 4),
+                            math.floor(len(self.ds.users) / 2)])
 
     def callback_factory_task(self, task_id):
         def result(widget):
@@ -221,38 +255,58 @@ class UserPanel(object):
             self.active.addStyleName("active")
 
             self.title_label.innerHTML = self.ds.tasks[task_id]['name']
-            s = """<thead>
-                <tr>
-                    <td>Time</td>
-                    <td>Score</td>
-                    <td>Token</td>
-                    """ + '\n'.join(['<td>'+x+'</td>' for x in self.ds.tasks[task_id]['extra_headers']]) + """
-                </tr>
-            </thead><tbody>"""
-            if task_id not in self.submissions or not self.submissions[task_id]:
-                s += '<tr><td colspan="'+str(3+len(self.ds.tasks[task_id]['extra_headers']))+'">No Submissions</td></tr>'
+            s = ""
+            html = '<thead>\n' \
+                   '    <tr>\n' \
+                   '        <td>Time</td>\n' \
+                   '        <td>Score</td>\n' \
+                   '        <td>Token</td>\n' \
+                   '%s\n' \
+                   '    </tr>\n' \
+                   '</thead>\n' \
+                   '<tbody>\n'
+            s += html % ('\n'.join([
+                '        <td>' + x + '</td>'
+                for x in self.ds.tasks[task_id]['extra_headers']]))
+            if task_id not in self.submissions or \
+                   not self.submissions[task_id]:
+                html = '    <tr><td colspan="%s">No Submissions</td></tr>\n'
+                s += html % (3 + len(self.ds.tasks[task_id]['extra_headers']))
             else:
                 for i in self.submissions[task_id]:
-                    time = i['time'] - self.ds.contests[self.ds.tasks[task_id]['contest']]['begin']
-                    time = '%02d' % (time//3600) + ':' + '%02d' % (time//60%60) + ':' + '%02d' % (time%60)
-                    s += '<tr><td>'+time+'''</td>
-                    <td>'''+str(i['score'])+'''</td>
-                    <td>'''+('Yes' if i['token'] else 'No')+'''</td>
-                    ''' + ''.join(['<td>'+x+'</td>' for x in i['extra']]) + '</tr>'
-            s += '</tbody>'
+                    time = i['time'] - self.ds.contests[
+                        self.ds.tasks[task_id]['contest']]['begin']
+                    time = '%02d:%02d:%02d' % (time // 3600,
+                                               time // 60 % 60,
+                                               time % 60)
+                    html = '    <tr><td>%s</td>' \
+                           '<td>%s</td>' \
+                           '<td>%s</td>' \
+                           '%s' \
+                           '</tr>\n'
+                    s += html % (
+                        time,
+                        i['score'],
+                        ('Yes' if i['token'] else 'No'),
+                        ''.join(['<td>%s</td>' % x for x in i['extra']]))
+            s += '</tbody>\n'
             self.submits.innerHTML = s
-            
+
             task = self.ds.tasks[task_id]
             contest = self.ds.contests[task['contest']]
             score = task['score']
-            Chart.draw_chart(self.score_chart, 0, score, 0, 0,
+            Chart.draw_chart(
+                self.score_chart, 0, score, 0, 0,
                 [(contest['begin'], contest['end'])],
                 self.hs.get_score_history_for_task(self.user_id, task_id),
-                (102, 102, 238), [score/4, score/2, score*3/4])
-            Chart.draw_chart(self.rank_chart, len(self.ds.users), 1, 1, len(self.ds.users)-1,
-                [(contest['begin'], contest['end'])],
+                (102, 102, 238), [score / 4, score / 2, score * 3 / 4])
+            Chart.draw_chart(
+                self.rank_chart, len(self.ds.users), 1, 1,
+                len(self.ds.users) - 1, [(contest['begin'], contest['end'])],
                 self.hs.get_rank_history_for_task(self.user_id, task_id),
-                (210, 50, 50), [math.ceil(len(self.ds.users)/12), math.ceil(len(self.ds.users)/4), math.floor(len(self.ds.users)/2)])
+                (210, 50, 50), [math.ceil(len(self.ds.users) / 12),
+                                math.ceil(len(self.ds.users) / 4),
+                                math.floor(len(self.ds.users) / 2)])
         return result
 
     def callback_factory_contest(self, contest_id):
@@ -268,14 +322,19 @@ class UserPanel(object):
             contest = self.ds.contests[contest_id]
             score = sum([t['score'] for t in self.ds.tasks.itervalues()
                          if t['contest'] == contest_id])
-            Chart.draw_chart(self.score_chart, 0, score, 0, 0,
+            Chart.draw_chart(
+                self.score_chart, 0, score, 0, 0,
                 [(contest['begin'], contest['end'])],
-                self.hs.get_score_history_for_contest(self.user_id, contest_id),
-                (102, 102, 238), [score/4, score/2, score*3/4])
-            Chart.draw_chart(self.rank_chart, len(self.ds.users), 1, 1, len(self.ds.users)-1,
-                [(contest['begin'], contest['end'])],
+                self.hs.get_score_history_for_contest(self.user_id,
+                                                      contest_id),
+                (102, 102, 238), [score / 4, score / 2, score * 3 / 4])
+            Chart.draw_chart(
+                self.rank_chart, len(self.ds.users), 1, 1,
+                len(self.ds.users) - 1, [(contest['begin'], contest['end'])],
                 self.hs.get_rank_history_for_contest(self.user_id, contest_id),
-                (210, 50, 50), [math.ceil(len(self.ds.users)/12), math.ceil(len(self.ds.users)/4), math.floor(len(self.ds.users)/2)])
+                (210, 50, 50), [math.ceil(len(self.ds.users) / 12),
+                                math.ceil(len(self.ds.users) / 4),
+                                math.floor(len(self.ds.users) / 2)])
         return result
 
     def hide(self, widget):

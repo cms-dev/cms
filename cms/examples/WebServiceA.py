@@ -43,13 +43,12 @@ class WebServiceA(WebService):
         WebService.__init__(self,
             9999,
             [(r"/", MainHandler)],
-            {
-                "login_url": "/",
-                "template_path": "./",
-                "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
-                "static_path": os.path.join(os.path.dirname(__file__),
-                                            "..", "cms", "async", "static"),
-                "debug": "True",
+            {"login_url": "/",
+             "template_path": "./",
+             "cookie_secret": "DsEwRxZER06etXcqgfowEJuM6rZjwk1JvknlbngmNck=",
+             "static_path": os.path.join(os.path.dirname(__file__),
+                                         "..", "cms", "async", "static"),
+             "debug": "True",
             },
             shard=shard)
         self.ServiceB = self.connect_to(ServiceCoord("ServiceB", 1))
@@ -69,4 +68,3 @@ if __name__ == "__main__":
         print sys.argv[0], "shard"
     else:
         WebServiceA(int(sys.argv[1])).run()
-

@@ -334,7 +334,7 @@ class ScoreTypeGroupMin(ScoreTypeAlone):
             scores.append(min(evaluations[current:next_]) * parameter[0])
             if all(self.public_testcases[current:next_]):
                 public_scores.append(scores[-1])
-                public_index = len(scores)-1
+                public_index = len(scores) - 1
             current = next_
         score = sum(scores)
         public_score = sum(public_scores)
@@ -385,7 +385,7 @@ class ScoreTypeGroupMul(ScoreTypeAlone):
                                  evaluations[current:next_]) * parameter[0])
             if all(self.public_testcases[current:next_]):
                 public_scores.append(scores[-1])
-                public_index = len(scores)-1
+                public_index = len(scores) - 1
             current = next_
         score = sum(scores)
         public_score = sum(public_scores)

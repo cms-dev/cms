@@ -33,6 +33,7 @@ from cms.async.TestService import TestService
 from cms.async import ServiceCoord, Config
 from cms.service.FileStorage import FileCacher
 
+
 class RandomFile:
     """Simulate a random file with dim bytes, calculating its
     SHA1 hash.
@@ -90,7 +91,8 @@ class TestFileCacher(TestService):
         TestService.__init__(self, shard)
 
         # Assume we store the cache in "./cache/fs-cache-TestFileCacher-0/"
-        self.cache_base_path = os.path.join(Config._cache_dir, "fs-cache-TestFileCacher-0")
+        self.cache_base_path = os.path.join(Config._cache_dir,
+                                            "fs-cache-TestFileCacher-0")
         self.cache_path = None
         self.content = None
         self.fake_content = None

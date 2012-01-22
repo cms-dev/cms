@@ -56,9 +56,9 @@ setup(name="cms",
               os.path.join("static", "jq", "*"),
               os.path.join("static", "sh", "*"),
               os.path.join("static", "*.*"),
-              os.path.join("templates","contest","*.*"),
-              os.path.join("templates","admin","*.*"),
-              os.path.join("templates","ranking","*.*"),
+              os.path.join("templates", "contest", "*.*"),
+              os.path.join("templates", "admin", "*.*"),
+              os.path.join("templates", "ranking", "*.*"),
               ],
           "cmsranking": [
               os.path.join("static", "lib", "*"),
@@ -98,6 +98,7 @@ setup(name="cms",
      )
 os.umask(old_umask)
 
+
 def copyfile(src, dest, owner, perm):
     """Copy the file src to dest, and assign owner and permissions.
 
@@ -111,6 +112,7 @@ def copyfile(src, dest, owner, perm):
     shutil.copy(src, dest)
     os.chmod(dest, perm)
     os.chown(dest, owner.pw_uid, owner.pw_gid)
+
 
 def makedir(dir_path, owner=None, perm=None):
     """Create a directory with given owner and permission.
@@ -126,6 +128,7 @@ def makedir(dir_path, owner=None, perm=None):
         os.chmod(dir_path, perm)
     if owner != None:
         os.chown(dir_path, owner.pw_uid, owner.pw_gid)
+
 
 def copytree(src_path, dest_path, owner, perm_files, perm_dirs):
     """Copy the *content* of src_path in dest_path, assigning the
@@ -148,86 +151,96 @@ def copytree(src_path, dest_path, owner, perm_files, perm_dirs):
         else:
             print "Error: unexpected filetype for file %s. Not copied" % path
 
-if "build" in sys.argv:
-    print "compiling mo-box..."
-    os.chdir("box")
-    os.system(os.path.join(".", "compile.sh"))
-    os.chdir("..")
 
-    print "compiling localization files:"
-    for locale in glob(os.path.join("cms", "server", "po", "*.po")):
-        country_code = re.search("/([^/]*)\.po", locale).groups()[0]
-        print "  %s" % country_code
-        path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
-        makedir(path)
-        os.system("msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
+def main():
+    if "build" in sys.argv:
+        print "compiling mo-box..."
+        os.chdir("box")
+        os.system(os.path.join(".", "compile.sh"))
+        os.chdir("..")
 
-    print "compiling client code for ranking:"
-    os.chdir(os.path.join("cmsranking", "client"))
-    os.system("pyjsbuild -o ../static/ Ranking")
-    os.chdir(os.path.join("..", ".."))
+        print "compiling localization files:"
+        for locale in glob(os.path.join("cms", "server", "po", "*.po")):
+            country_code = re.search("/([^/]*)\.po", locale).groups()[0]
+            print "  %s" % country_code
+            path = os.path.join("cms", "server", "mo", country_code,
+                                "LC_MESSAGES")
+            makedir(path)
+            os.system("msgfmt %s -o %s" % (locale,
+                                           os.path.join(path, "cms.mo")))
 
-    print "done."
+        print "compiling client code for ranking:"
+        os.chdir(os.path.join("cmsranking", "client"))
+        os.system("pyjsbuild -o ../static/ Ranking")
+        os.chdir(os.path.join("..", ".."))
 
-if "install" in sys.argv:
-    # We set permissions for each manually installed files, so we want
-    # max liberty to change them.
-    old_umask = os.umask(000)
+        print "done."
 
-    print "creating user and group cmsuser."
-    os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
-    cmsuser = pwd.getpwnam("cmsuser")
-    root = pwd.getpwnam("root")
+    if "install" in sys.argv:
+        # We set permissions for each manually installed files, so we want
+        # max liberty to change them.
+        old_umask = os.umask(000)
 
-    print "copying mo-box to /usr/local/bin/."
-    copyfile(os.path.join(".", "box", "mo-box"),
-             os.path.join("/", "usr", "local", "bin", "mo-box"),
-             root, 0755)
+        print "creating user and group cmsuser."
+        os.system("useradd cmsuser "
+                  "-c 'CMS default user' -M -r -s /bin/false -U")
+        cmsuser = pwd.getpwnam("cmsuser")
+        root = pwd.getpwnam("root")
 
-    print "copying configuration to /usr/local/etc/."
-    conf_file = os.path.join("/", "usr", "local", "etc", "cms.conf")
-    if os.path.exists(os.path.join(".", "examples", "cms.conf")):
-        copyfile(os.path.join(".", "examples", "cms.conf"), conf_file,
-                 cmsuser, 0660)
-    else:
-        copyfile(os.path.join(".", "examples", "cms.conf.sample"),
-                 os.path.join("/", "usr", "local", "etc", "cms.conf"),
-                 cmsuser, 0660)
+        print "copying mo-box to /usr/local/bin/."
+        copyfile(os.path.join(".", "box", "mo-box"),
+                 os.path.join("/", "usr", "local", "bin", "mo-box"),
+                 root, 0755)
 
-    print "copying localization files:"
-    for locale in glob(os.path.join("cms", "server", "po", "*.po")):
-        country_code = re.search("/([^/]*)\.po", locale).groups()[0]
-        print "  %s" % country_code
-        path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
-        dest_path = os.path.join("/", "usr", "local", "share", "locale",
-                                 country_code, "LC_MESSAGES")
-        makedir(dest_path, root, 0755)
-        copyfile(os.path.join(path, "cms.mo"),
-                 os.path.join(dest_path, "cms.mo"),
-                 root, 0644)
+        print "copying configuration to /usr/local/etc/."
+        conf_file = os.path.join("/", "usr", "local", "etc", "cms.conf")
+        if os.path.exists(os.path.join(".", "examples", "cms.conf")):
+            copyfile(os.path.join(".", "examples", "cms.conf"), conf_file,
+                     cmsuser, 0660)
+        else:
+            copyfile(os.path.join(".", "examples", "cms.conf.sample"),
+                     os.path.join("/", "usr", "local", "etc", "cms.conf"),
+                     cmsuser, 0660)
 
-    print "creating directories."
-    dirs = [os.path.join("/", "var", "local", "log"),
-            os.path.join("/", "var", "local", "cache"),
-            os.path.join("/", "var", "local", "lib"),
-            os.path.join("/", "usr", "local", "share")]
-    for d in dirs:
-        makedir(d, root, 0755)
-        d = os.path.join(d, "cms")
-        makedir(d, cmsuser, 0770)
+        print "copying localization files:"
+        for locale in glob(os.path.join("cms", "server", "po", "*.po")):
+            country_code = re.search("/([^/]*)\.po", locale).groups()[0]
+            print "  %s" % country_code
+            path = os.path.join("cms", "server", "mo", country_code,
+                                "LC_MESSAGES")
+            dest_path = os.path.join("/", "usr", "local", "share", "locale",
+                                     country_code, "LC_MESSAGES")
+            makedir(dest_path, root, 0755)
+            copyfile(os.path.join(path, "cms.mo"),
+                     os.path.join(dest_path, "cms.mo"),
+                     root, 0644)
 
-    print "copying static file for ranking."
-    try:
-        shutil.rmtree(os.path.join("/", "usr", "local", "share",
-                                   "cms", "ranking"))
-    except OSError:
-        pass
-    makedir(os.path.join("/", "usr", "local", "share",
-                         "cms", "ranking"), root, 0755)
-    copytree(os.path.join("cmsranking", "static"),
-             os.path.join("/", "usr", "local", "share",
-                          "cms", "ranking"),
-             root, 0644, 0755)
+        print "creating directories."
+        dirs = [os.path.join("/", "var", "local", "log"),
+                os.path.join("/", "var", "local", "cache"),
+                os.path.join("/", "var", "local", "lib"),
+                os.path.join("/", "usr", "local", "share")]
+        for d in dirs:
+            makedir(d, root, 0755)
+            d = os.path.join(d, "cms")
+            makedir(d, cmsuser, 0770)
 
-    os.umask(old_umask)
-    print "done."
+        print "copying static file for ranking."
+        try:
+            shutil.rmtree(os.path.join("/", "usr", "local", "share",
+                                       "cms", "ranking"))
+        except OSError:
+            pass
+        makedir(os.path.join("/", "usr", "local", "share",
+                             "cms", "ranking"), root, 0755)
+        copytree(os.path.join("cmsranking", "static"),
+                 os.path.join("/", "usr", "local", "share",
+                              "cms", "ranking"),
+                 root, 0644, 0755)
+
+        os.umask(old_umask)
+        print "done."
+
+
+if __name__ == "__main__":
+    main()

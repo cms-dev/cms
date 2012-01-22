@@ -74,7 +74,7 @@ class Contest(Base):
     stop = Column(Integer, nullable=True)
 
     # Max contest time for each user in seconds.
-    per_user_time = Column(Integer, nullable = True)
+    per_user_time = Column(Integer, nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.

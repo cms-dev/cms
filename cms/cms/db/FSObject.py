@@ -97,7 +97,8 @@ class FSObject(Base):
 
         """
         try:
-            lo = lobject(self.get_session().connection().connection.connection, self.loid)
+            lo = lobject(self.get_session().connection().connection.connection,
+                         self.loid)
             lo.close()
             return True
         except OperationalError:
