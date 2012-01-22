@@ -902,6 +902,12 @@ class Logger:
 
         """
         self._my_coord = service
+
+        # Warn if the service, shard is not supposed to be there.
+        if self._my_coord not in Config.core_services and \
+           self._my_coord not in Config.other_services:
+            raise ValueError("Service not present in configuration.")
+
         log_dir = os.path.join(Config._log_dir,
                                "%s-%d" % (service.name, service.shard))
         mkdir(Config._log_dir)
