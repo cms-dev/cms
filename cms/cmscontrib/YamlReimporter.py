@@ -19,18 +19,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import yaml
-import os
-import sys
-import codecs
 import optparse
 
 from cms.async import ServiceCoord
-from cms.db.SQLAlchemyAll import metadata, SessionGen, Task, Manager, \
-    Testcase, User, Contest, SubmissionFormatElement
+from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.service.FileStorage import FileCacher
-from cms.service.ScoreType import ScoreTypes
-from cms.async.AsyncLibrary import rpc_callback, Service, logger
+from cms.async.AsyncLibrary import Service, logger
 from cms.db.Utils import analyze_all_tables, ask_for_contest
 from cmscontrib.YamlImporter import YamlLoader
 
@@ -144,9 +138,9 @@ def main():
 
     path = args[0]
 
-    yaml_importer = YamlReimporter(shard=options.shard,
-                                   path=path,
-                                   contest_id=contest_id).run()
+    YamlReimporter(shard=options.shard,
+                   path=path,
+                   contest_id=contest_id).run()
 
 
 if __name__ == "__main__":

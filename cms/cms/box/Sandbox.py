@@ -26,9 +26,8 @@ import tempfile
 import stat
 import select
 import re
-import shutil
 
-from cms.async.AsyncLibrary import logger, async_lock
+from cms.async.AsyncLibrary import logger
 
 
 class Sandbox:

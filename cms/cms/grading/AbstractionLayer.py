@@ -24,6 +24,8 @@ from them being on the filesystem or in a database.
 
 """
 
+from cms.db.SQLAlchemyAll import Executable
+
 
 class AbstractTask:
     """Represents some aspect of a task, independently from it being
@@ -99,7 +101,8 @@ class AbstractTaskFromDB(AbstractTask):
 
         """
         try:
-            self.FC.get_file(self.task.testcases[num].output, file_obj=file_bj)
+            self.FC.get_file(self.task.testcases[num].output,
+                             file_obj=file_obj)
             return True
         except IndexError:
             return False

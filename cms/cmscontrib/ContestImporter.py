@@ -21,9 +21,7 @@
 
 import sys
 import os
-import codecs
 import optparse
-import re
 import json
 
 from cms.async.AsyncLibrary import Service, logger
@@ -31,9 +29,7 @@ from cms.async import ServiceCoord
 from cms.service.FileStorage import FileCacher
 
 from cms.db.SQLAlchemyAll import SessionGen, Contest, metadata
-from cms.db.Utils import ask_for_contest
 from cms.util.Utils import sha1sum
-from cms import Config
 
 
 class ContestImporter(Service):
@@ -143,11 +139,11 @@ def main():
     if options.only_files and options.no_files:
         parser.error("Only one of `-f' and `-F' can be specified")
 
-    contest_importer = ContestImporter(shard=options.shard,
-                                       drop=options.drop,
-                                       import_dir=args[0],
-                                       only_files=options.only_files,
-                                       no_files=options.no_files).run()
+    ContestImporter(shard=options.shard,
+                    drop=options.drop,
+                    import_dir=args[0],
+                    only_files=options.only_files,
+                    no_files=options.no_files).run()
 
 
 if __name__ == "__main__":

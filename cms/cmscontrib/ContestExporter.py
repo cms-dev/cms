@@ -21,7 +21,6 @@
 
 import sys
 import os
-import codecs
 import optparse
 import re
 import json
@@ -192,13 +191,12 @@ def main():
     if options.contest_id is None:
         options.contest_id = ask_for_contest()
 
-    contest_exporter = ContestExporter(
-        shard=options.shard,
-        contest_id=options.contest_id,
-        dump=options.dump,
-        export_dir=args[0],
-        skip_submissions=options.skip_submissions,
-        light=options.light).run()
+    ContestExporter(shard=options.shard,
+                    contest_id=options.contest_id,
+                    dump=options.dump,
+                    export_dir=args[0],
+                    skip_submissions=options.skip_submissions,
+                    light=options.light).run()
 
 if __name__ == "__main__":
     main()

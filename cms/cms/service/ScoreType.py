@@ -491,9 +491,9 @@ class ScoreTypeRelative(ScoreType):
         public_score = 0.0
         score = 0.0
         for public in self.public_testcases:
-            score += parameter[0]
+            score += self.parameter[0]
             if public:
-                public_score += parameter[0]
+                public_score += self.parameter[0]
         return score, public_score
 
     def compute_score(self, submission_id):

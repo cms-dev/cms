@@ -207,7 +207,7 @@ class TestFileCacher(TestService):
             logger.info("  File deleted correctly.")
             logger.info("  I am getting the file from FileCacher.")
             try:
-                data = self.FC.get_file(digest=self.digest)
+                self.FC.get_file(digest=self.digest)
             except Exception as e:
                 self.test_end(True, "Correctly received an error: %r." % e)
             else:
@@ -221,7 +221,7 @@ class TestFileCacher(TestService):
         """
         logger.info("  I am retrieving an unexisting file from FileCacher.")
         try:
-            data = self.FC.get_file(digest=self.digest, temp_file_obj=True)
+            self.FC.get_file(digest=self.digest, temp_file_obj=True)
         except Exception as e:
             self.test_end(True, "Correctly received an error: %r." % e)
         else:
@@ -324,7 +324,7 @@ class TestFileCacher(TestService):
         os.unlink(self.cache_path)
         hash_file = HashingFile()
         try:
-            data = self.FC.get_file(digest=self.digest, file_obj=hash_file)
+            self.FC.get_file(digest=self.digest, file_obj=hash_file)
         except Exception as e:
             self.test_end(False, "Error received: %r." % e)
         my_digest = hash_file.get_digest()

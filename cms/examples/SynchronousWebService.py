@@ -27,7 +27,7 @@ import os
 
 import tornado.web
 
-from cms.async.Utils import encode_json, decode_json
+from cms.async.Utils import decode_json
 from cms.async.AsyncLibrary import logger, rpc_callback
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord

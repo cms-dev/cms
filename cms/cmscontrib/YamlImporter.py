@@ -21,7 +21,6 @@
 
 import yaml
 import os
-import sys
 import codecs
 import optparse
 
@@ -30,7 +29,7 @@ from cms.db.SQLAlchemyAll import metadata, SessionGen, Task, Manager, \
     Testcase, User, Contest, SubmissionFormatElement, FSObject
 from cms.service.FileStorage import FileCacher
 from cms.service.ScoreType import ScoreTypes
-from cms.async.AsyncLibrary import rpc_callback, Service, logger
+from cms.async.AsyncLibrary import Service, logger
 from cms.db.Utils import analyze_all_tables
 
 
@@ -298,11 +297,11 @@ def main():
 
     path = args[0]
 
-    yaml_importer = YamlImporter(shard=options.shard,
-                                 drop=options.drop,
-                                 modif=modif,
-                                 path=path,
-                                 user_num=options.user_num).run()
+    YamlImporter(shard=options.shard,
+                 drop=options.drop,
+                 modif=modif,
+                 path=path,
+                 user_num=options.user_num).run()
 
 
 if __name__ == "__main__":

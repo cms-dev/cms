@@ -64,8 +64,8 @@ def catch_exceptions(func):
             # they're expected and tornado will take care of them.
             raise
         except Exception as error:
-            logger.critical("Uncaught exception while processing "
-                            "a request: %s" % traceback.format_exc())
+            logger.critical("Uncaught exception (%r) while processing "
+                            "a request: %s" % (error, traceback.format_exc()))
             self.write("A critical error has occurred :-(")
             self.finish()
     return newfunc

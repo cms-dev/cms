@@ -25,13 +25,12 @@ method, and offer a quite long version of the echo method.
 """
 
 import time
-import threading
 
 from cms.service.FileStorage import FileCacher
 from cms.db.Utils import default_argument_parser
 from cms.async.AsyncLibrary import Service, rpc_method, \
      rpc_binary_response, rpc_threaded, logger, async_lock
-from cms.async import ServiceCoord, make_async
+from cms.async import ServiceCoord
 
 
 class ServiceB(Service):

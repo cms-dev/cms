@@ -38,7 +38,7 @@ from cms.async import ServiceCoord, get_service_shards, get_service_address
 from cms.db.Utils import default_argument_parser
 from cms.db.SQLAlchemyAll import Session, \
      Contest, User, Announcement, Question, Message, Submission, File, Task, \
-     Attachment, Manager, Testcase, SubmissionFormatElement, metadata
+     Attachment, Manager, Testcase, SubmissionFormatElement
 
 from cms.grading.TaskType import TaskTypes
 
@@ -632,7 +632,7 @@ class TaskViewHandler(BaseHandler):
             self.application.service.add_notification(int(time.time()),
                 "Invalid field",
                 "Task type not recognized.")
-            self.redirect("/add_task/%s" % contest_id)
+            self.redirect("/task/%s" % task_id)
             return
 
         task.task_type_parameters = simplejson.dumps(task_type_parameters)
@@ -673,7 +673,6 @@ class TaskStatementViewHandler(FileHandler):
     """
     @tornado.web.asynchronous
     def get(self, task_id):
-        r_params = self.render_params()
         task = self.safe_get_item(Task, task_id)
         statement = task.statement
         task_name = task.name
@@ -850,8 +849,10 @@ class EditContestHandler(BaseHandler):
             return
 
         if start > stop:
-            self.application.service.add_notification(int(time.time()),
-                "Contest ends before it starts", repr(e))
+            self.application.service.add_notification(
+                int(time.time()),
+                "Contest ends before it starts",
+                "Please check start and stop times.")
             self.redirect("/contest/%s" % contest_id)
             return
 
@@ -956,7 +957,7 @@ class UserViewHandler(BaseHandler):
                 self.application.service.add_notification(
                     int(time.time()),
                     "Invalid starting time(s).", repr(error))
-                self.redirect("/add_user/%s" % contest_id)
+                self.redirect("/user/%s" % user_id)
                 return
         user.starting_time = starting_time
 
@@ -1101,8 +1102,6 @@ class MessageHandler(BaseHandler):
     """
 
     def post(self, user_id):
-        r_params = self.render_params()
-
         user = self.safe_get_item(User, user_id)
         self.contest = user.contest
 
@@ -1179,7 +1178,6 @@ class NotificationsHandler(BaseHandler):
 
     """
     def get(self):
-        timestamp = int(time.time())
         res = []
         last_notification = float(self.get_argument("last_notification", "0"))
 

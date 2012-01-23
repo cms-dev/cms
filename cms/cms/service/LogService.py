@@ -32,7 +32,7 @@ from cms.async.AsyncLibrary import Service, rpc_method, logger
 from cms.async import ServiceCoord
 from cms.db.Utils import default_argument_parser
 from cms.util.Utils import format_log, \
-     SEV_CRITICAL, SEV_ERROR, SEV_WARNING, SEV_INFO, SEV_DEBUG
+     SEV_CRITICAL, SEV_ERROR, SEV_WARNING  # , SEV_INFO, SEV_DEBUG
 from cms.service.Utils import mkdir
 from cms import Config
 

@@ -27,7 +27,6 @@ from datetime import datetime
 import os
 import re
 import base64
-from operator import attrgetter
 
 from Config import config
 from Logger import logger

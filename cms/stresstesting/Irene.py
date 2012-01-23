@@ -21,18 +21,16 @@
 
 import os
 import sys
-import urllib
 import mechanize
 import threading
 import optparse
 import random
 import time
-import re
 import codecs
 
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
-from stresstesting.Requests import TestRequest, HomepageRequest, \
+from stresstesting.Requests import HomepageRequest, \
      LoginRequest, TaskRequest, TaskStatementRequest
 
 

@@ -89,7 +89,6 @@ class FileCacher:
 
         cache_path = os.path.join(self.obj_dir, digest)
         cache_exists = os.path.exists(cache_path)
-        data = None
 
         with async_lock:
             logger.debug("Getting file %s" % (digest))

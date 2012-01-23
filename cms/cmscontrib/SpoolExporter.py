@@ -180,9 +180,9 @@ def main():
     if options.contest_id is None:
         options.contest_id = ask_for_contest()
 
-    spool_exporter = SpoolExporter(shard=options.shard,
-                                   contest_id=options.contest_id,
-                                   spool_dir=args[0]).run()
+    SpoolExporter(shard=options.shard,
+                  contest_id=options.contest_id,
+                  spool_dir=args[0]).run()
 
 
 if __name__ == "__main__":
