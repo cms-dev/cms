@@ -12,6 +12,7 @@
   compiled/evaluated to ensure that the proposed solutions score
   exactly as they are supposed to.
 
+* LOW: decide what to do with ranking views (actually not used).
 
 
 ** Worker
@@ -124,3 +125,10 @@
 
 * MED: ditch RelativeScores and assume that a score depends only on
   the outcome of the submission.
+
+* MED: implement the TEST facility mentioned in IOI rules (i.e., the
+  user send a source and an input file and the system evaluates it and
+  gives back the result). This might be useful also for admins ("CMS,
+  please give me the output of submission X on testcase Y").
+
+* LOW: implement task versioning?

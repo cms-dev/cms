@@ -107,7 +107,7 @@ class Task(Base):
 
     # This object (independent from SQLAlchemy) is the instance of the
     # ScoreType class with the given parameters, taking care of
-    # building the scores of the submissions..
+    # building the scores of the submissions.
     scorer = None
 
     def __init__(self, name, title, attachments, statement,
