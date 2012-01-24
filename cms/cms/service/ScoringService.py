@@ -54,7 +54,7 @@ def get_authorization(username, password):
 
     """
     if ":" in username:
-        raise ValueError
+        raise ValueError("Colon `:' is not allowed in a username.")
     return "Basic %s" % base64.b64encode(username + ':' + password)
 
 
@@ -136,6 +136,45 @@ def safe_put_data(connection, url, data, auth, operation):
         logger.info("Status %s while %s to ranking." %
                     (status, operation))
         raise CannotSendError
+
+
+def send_submission(ranking, submission_url, submission_put_data):
+    """Send a submission to the remote ranking.
+
+    ranking ((string, string)): address and authorization string of
+                                ranking server.
+    submission_url (string): relative url in the remote ranking.
+    submission_put_data (dict): dictionary to send to the ranking to
+                                send the submission.
+
+    return (bool): success of operation.
+
+    """
+    logger.info("Posting new submission %s." % submission_url)
+    connection = httplib.HTTPConnection(ranking[0])
+    auth = ranking[1]
+    safe_put_data(connection, submission_url, submission_put_data, auth,
+                  "sending submission %s" % submission_url)
+
+
+def send_change(ranking, subchange_url, subchange_put_data):
+    """Send a change to a submission (token or score update).
+
+    ranking ((string, string)): address and authorization string of
+                                ranking server.
+    subchange_url (string): relative url in the remote ranking.
+    subchange_put_data (dict): dictionary to send to the ranking to
+                               update the submission.
+
+    return (bool): success of operation.
+
+    """
+    logger.info("Posting change %s for submission %s." %
+                (subchange_url, subchange_put_data["submission"]))
+    connection = httplib.HTTPConnection(ranking[0])
+    auth = ranking[1]
+    safe_put_data(connection, subchange_url, subchange_put_data, auth,
+                  "sending change %s" % subchange_url)
 
 
 class ScoringService(Service):
@@ -417,10 +456,10 @@ class ScoringService(Service):
 
         # Adding operations to the queue.
         for ranking in self.rankings:
-            self.operation_queue.append((self.send_submission,
+            self.operation_queue.append((send_submission,
                                          [ranking, submission_url,
                                           submission_put_data]))
-            self.operation_queue.append((self.send_change,
+            self.operation_queue.append((send_change,
                                          [ranking, subchange_url,
                                           subchange_put_data]))
 
@@ -459,48 +498,12 @@ class ScoringService(Service):
 
         # Adding operations to the queue.
         for ranking in self.rankings:
-            self.operation_queue.append((self.send_submission,
+            self.operation_queue.append((send_submission,
                                          [ranking, submission_url,
                                           submission_put_data]))
-            self.operation_queue.append((self.send_change,
+            self.operation_queue.append((send_change,
                                          [ranking, subchange_url,
                                           subchange_put_data]))
-
-    def send_submission(self, ranking, submission_url, submission_put_data):
-        """Send a submission to the remote ranking.
-
-        ranking ((string, string)): address and authorization string
-                                    of ranking server.
-        submission_url (string): relative url in the remote ranking.
-        submission_put_data (dict): dictionary to send to the ranking
-                                    to send the submission.
-        return (bool): success of operation.
-
-        """
-        logger.info("Posting new submission %s." % submission_url)
-        connection = httplib.HTTPConnection(ranking[0])
-        auth = ranking[1]
-        safe_put_data(connection, submission_url, submission_put_data, auth,
-                      "sending submission %s" % submission_url)
-
-    def send_change(self, ranking, subchange_url, subchange_put_data):
-        """Send a change to a submission (token or score update
-
-        ranking ((string, string)): address and authorization string
-                                    of ranking server.
-        subchange_url (string): relative url in the remote ranking.
-        subchange_put_data (dict): dictionary to send to the ranking
-                                   to update the submission.
-        return (bool): success of operation.
-
-        """
-        logger.info("Posting change %s for submission %s." %
-                    (subchange_url, subchange_put_data["submission"]))
-        connection = httplib.HTTPConnection(ranking[0])
-        auth = ranking[1]
-
-        safe_put_data(connection, subchange_url, subchange_put_data, auth,
-                      "sending change %s" % subchange_url)
 
 
 def main():
