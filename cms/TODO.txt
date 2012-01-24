@@ -15,6 +15,7 @@
 * LOW: decide what to do with ranking views (actually not used).
 
 
+
 ** Worker
 
 * MED: check before and after the job that the job isn't already
@@ -40,19 +41,7 @@
 
 
 
-** Score types
-
-* HIGH: implement detailed results for tasks. Detailed results is a
-  way to have subtask scores when applicable, to see them in CWS and
-  AWS and to send to RWS.
-
-
-
 ** ContestWebServer
-
-* HIGH: in the submissions list (both *WS), provide some fast way to
-  see the result without open the fold. This should work with
-  subtasks, but first we need to understand what are subtasks for us.
 
 * MED: concurrency: if there are more than 1 CWS, there is a (very
   slight) chance that feature such as - but not limited to - "partial
@@ -69,6 +58,12 @@
   fix.
 
 * LOW: ability to send not only zipped but also tarred submissions.
+
+* LOW: think at giving CWS some caching capabilities w.r.t. to the
+  database. Currently there are several queries per page load, even if
+  the data is (supposedly) stable during the contest (start/stop
+  times, ...) or the data hasn't change since last page view
+  (submissions, ...).
 
 * LOW: some idea to improve the Web interface:
   - Ability to backup files.
@@ -87,7 +82,7 @@
   persistent scores in the db).
 
 * MED: give possibility to see the output of an evaluation (storing
-  them in the FS?).
+  them in the FS? cirumventing the yet-to-be-born TEST facility?).
 
 * LOW: when updating/adding contests, users, and so on, warn SS so
   that it gives the new information to RWS.
@@ -98,6 +93,7 @@
 
 * LOW: facility for mass-importing users data (reading a list with
   names, generating passwords, creating IP association, ...)
+
 
 
 ** YamlImporter
@@ -114,7 +110,6 @@
 * LOW: add support to optionally check file digests when trasferring
   them, both on client and on server side. Moreover, add an API call
   to ask the server to verify some file's digest.
-
 
 
 
