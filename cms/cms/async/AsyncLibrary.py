@@ -26,6 +26,7 @@ usinc asynchat and JSON encoding.
 
 import socket
 import time
+import types
 import sys
 import os
 import signal
@@ -37,7 +38,7 @@ import asyncore
 import asynchat
 import codecs
 
-from Utils import random_string, mkdir, \
+from cms.async.Utils import random_string, mkdir, \
      encode_binary, encode_length, encode_json, \
      decode_binary, decode_length, decode_json
 from cms.util.Utils import format_log, \
@@ -169,7 +170,7 @@ class Service:
     """
     def __init__(self, shard=0):
         # logger.debug("Service.__init__")
-        signal.signal(signal.SIGINT, lambda x, y: self.exit())
+        signal.signal(signal.SIGINT, lambda unused_x, unused_y: self.exit())
         self.shard = shard
         # Stores the function to call periodically. It is to be
         # managed with heapq. Format: (next_timeout, period, function,
@@ -495,6 +496,8 @@ class RemoteService(asynchat.async_chat):
         if address is None and remote_service_coord is None:
             raise
 
+        asynchat.async_chat.__init__(self)
+
         # service is the local service connecting to the remote one.
         self.service = service
 
@@ -668,9 +671,12 @@ class RemoteService(asynchat.async_chat):
         if timeout is not None and plus is not None:
             raise ValueError("Cannot use both timeout and plus.")
 
-        # Default timeout
-        if timeout == True:
-            timeout = 10
+        # Default timeout.
+        if type(timeout) == types.BooleanType:
+            if timeout:
+                timeout = 10
+            else:
+                raise ValueError("Timeout cannot be False.")
 
         # Try to connect, or fail.
         if not self.connected:

@@ -199,10 +199,10 @@ class ContestWebServer(WebService):
             }
         parameters["is_proxy_used"] = Config.is_proxy_used
         WebService.__init__(self,
-            Config.contest_listen_port[shard],
-            handlers,
-            parameters,
-            shard=shard)
+                            Config.contest_listen_port[shard],
+                            _cws_handlers,
+                            parameters,
+                            shard=shard)
         self.FC = FileCacher(self)
         self.ES = self.connect_to(ServiceCoord("EvaluationService", 0))
         self.SS = self.connect_to(ServiceCoord("ScoringService", 0))
@@ -779,7 +779,7 @@ class UseTokenHandler(BaseHandler):
         self.application.service.SS.submission_tokened(
             submission_id=submission_id, timestamp=timestamp)
         self.application.service.ES.submission_tokened(
-            submission_id=submission_id, timestamp=timestamp)
+            submission_id=submission_id)
 
         logger.info("Token played by user %s on task %s."
                     % (self.current_user.username, submission.task.name))
@@ -809,7 +809,7 @@ class SubmissionStatusHandler(BaseHandler):
 
 
 enc_alph = get_encryption_alphabet()
-handlers = [
+_cws_handlers = [
     (r"/",       MainHandler),
     (r"/login",  LoginHandler),
     (r"/logout", LogoutHandler),

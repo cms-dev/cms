@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Random utility and logging facilities.
+"""Random utilities and logging facilities.
 
 """
 
@@ -35,10 +35,7 @@ def random_string(length):
 
     """
     letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    string = ""
-    for i in range(length):
-        string += choice(letters)
-    return string
+    return "".join(choice(letters) for unused_i in xrange(length))
 
 
 def mkdir(path):
@@ -65,20 +62,20 @@ def encode_length(length):
 
     """
     try:
-        s = ""
+        string = ""
         tmp = length / (1 << 24)
-        s += chr(tmp)
+        string += chr(tmp)
         length -= tmp * (1 << 24)
         tmp = length / (1 << 16)
-        s += chr(tmp)
+        string += chr(tmp)
         length -= tmp * (1 << 16)
         tmp = length / (1 << 8)
-        s += chr(tmp)
+        string += chr(tmp)
         length -= tmp * (1 << 8)
-        s += chr(length)
-        return s
-    except Exception as e:
-        print >> sys.stderr, "Can't encode length: %d %s" % (length, repr(e))
+        string += chr(length)
+        return string
+    except Exception as error:
+        print >> sys.stderr, "Can't encode length: %s %r" % (length, error)
         raise ValueError
 
 
@@ -109,7 +106,7 @@ def encode_json(obj):
     try:
         return simplejson.dumps(obj)
     except:
-        print >> sys.stderr, "Can't encode JSON: %s" % repr(obj)
+        print >> sys.stderr, "Can't encode JSON: %r" % obj
         raise ValueError
 
 

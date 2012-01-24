@@ -177,16 +177,6 @@ class Worker(Service):
                             (job_type, submission_id))
             return False
 
-    @rpc_method
-    def shut_down(self, reason):
-        """Tries to shut down the worker. Not yet implemented.
-
-        """
-        # logger.operation = ""
-        # logger.info("Shutting down the worker "
-        #             "because of reason `%s'" % reason)
-        raise NotImplementedError("Worker.shut_down not implemented yet")
-
 
 def main():
     default_argument_parser("Safe command executer for CMS.", Worker).run()

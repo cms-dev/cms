@@ -388,8 +388,8 @@ class WorkerPool:
                     # life.
                     self.schedule_disabling[shard] = True
                     self.release_worker(shard)
-                    self.worker[shard].shut_down("No response in %.2f "
-                                                  "seconds" % active_for)
+                    self.worker[shard].quit("No response in %.2f "
+                                            "seconds" % active_for)
 
         return lost_jobs
 
@@ -593,7 +593,7 @@ class EvaluationService(Service):
                 for submission in user.submissions:
                     if submission.compilation_outcome == "fail":
                         stats["compilation_fail"] += 1
-                    elif submission.compilation_outcome == None:
+                    elif submission.compilation_outcome is None:
                         if submission.compilation_tries >= \
                                EvaluationService.MAX_COMPILATION_TRIES:
                             stats["max_compilations"] += 1
@@ -850,12 +850,11 @@ class EvaluationService(Service):
                                       tokened)
 
     @rpc_method
-    def submission_tokened(self, submission_id, timestamp):
+    def submission_tokened(self, submission_id):
         """This RPC inform EvaluationService that the user has played
         the token on a submission.
 
         submission_id (int): the id of the submission that changed.
-        timestamp (int): the time of the token.
 
         """
         try:

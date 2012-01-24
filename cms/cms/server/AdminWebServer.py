@@ -27,7 +27,7 @@ import os
 import time
 
 import base64
-import simplejson
+import simplejson as json
 import tornado.web
 import tornado.locale
 
@@ -180,7 +180,7 @@ class AdminWebServer(WebService):
             }
         WebService.__init__(self,
                             Config.admin_listen_port,
-                            handlers,
+                            _aws_handlers,
                             parameters,
                             shard=shard)
         self.FC = FileCacher(self)
@@ -489,7 +489,7 @@ class AddTestcaseHandler(BaseHandler):
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
-        input = self.request.files["input"][0]
+        _input = self.request.files["input"][0]
         output = self.request.files["output"][0]
         public = self.get_argument("public", None) is not None
         task_name = task.name
@@ -497,7 +497,7 @@ class AddTestcaseHandler(BaseHandler):
 
         try:
             input_digest = self.application.service.FC.put_file(
-                binary_data=input["body"],
+                binary_data=_input["body"],
                 description="Testcase input for task %s" % task_name)
             output_digest = self.application.service.FC.put_file(
                 binary_data=output["body"],
@@ -595,9 +595,8 @@ class TaskViewHandler(BaseHandler):
             return
 
         for testcase in task.testcases:
-            testcase.public = self.get_argument(
-                "testcase_%s_public" % testcase.num,
-                False) != False
+            testcase.public = bool(self.get_argument("testcase_%s_public" %
+                                                     testcase.num, False))
 
         task.task_type = self.get_argument("task_type", "")
 
@@ -635,7 +634,7 @@ class TaskViewHandler(BaseHandler):
             self.redirect("/task/%s" % task_id)
             return
 
-        task.task_type_parameters = simplejson.dumps(task_type_parameters)
+        task.task_type_parameters = json.dumps(task_type_parameters)
 
         task.score_type = self.get_argument("score_type", "")
 
@@ -643,11 +642,11 @@ class TaskViewHandler(BaseHandler):
 
         submission_format = self.get_argument("submission_format", "")
         if submission_format not in ["", "[]"] \
-            and submission_format != simplejson.dumps(
+            and submission_format != json.dumps(
                 [x.filename for x in task.submission_format]
                 ):
             try:
-                format_list = simplejson.loads(submission_format)
+                format_list = json.loads(submission_format)
                 for element in task.submission_format:
                     self.sql_session.delete(element)
                 del task.submission_format[:]
@@ -724,7 +723,7 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
             self.redirect("/add_task/%s" % contest_id)
             return
 
-        task_type_parameters = simplejson.dumps(task_type_parameters)
+        task_type_parameters = json.dumps(task_type_parameters)
 
         submission_format_choice = self.get_argument("submission_format", "")
 
@@ -735,7 +734,7 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
                                                   "")
             if submission_format not in ["", "[]"]:
                 try:
-                    format_list = simplejson.loads(submission_format)
+                    format_list = json.loads(submission_format)
                     submission_format = []
                     for element in format_list:
                         submission_format.append(SubmissionFormatElement(
@@ -961,7 +960,7 @@ class UserViewHandler(BaseHandler):
                 return
         user.starting_time = starting_time
 
-        user.hidden = self.get_argument("hidden", False) != False
+        user.hidden = bool(self.get_argument("hidden", False))
 
         self.sql_session.commit()
         self.application.service.add_notification(int(time.time()),
@@ -1007,7 +1006,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
                 self.redirect("/add_user/%s" % contest_id)
                 return
 
-        hidden = self.get_argument("hidden", False) != False
+        hidden = bool(self.get_argument("hidden", False))
 
         user = User(real_name, username, password=password, ip=ip,
             hidden=hidden, starting_time=starting_time, contest=self.contest)
@@ -1201,10 +1200,10 @@ class NotificationsHandler(BaseHandler):
                         "text": notification[2]})
         self.application.service.notifications = []
 
-        self.write(simplejson.dumps(res))
+        self.write(json.dumps(res))
 
 
-handlers = [
+_aws_handlers = [
     (r"/",         MainHandler),
     (r"/([0-9]+)", MainHandler),
     (r"/contest/([0-9]+)",       SimpleContestHandler("contest.html")),

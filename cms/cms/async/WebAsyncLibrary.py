@@ -151,7 +151,7 @@ class WebService(Service):
         # the server reloads.
 
         try:
-            if parameters["debug"] == True:
+            if parameters["debug"]:
                 fcntl.fcntl(self.server.socket,
                             fcntl.F_SETFD, fcntl.FD_CLOEXEC)
         except KeyError:

@@ -31,7 +31,7 @@ import hashlib
 
 from cms import Config
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
-from cms.service.Utils import mkdir
+from cms.async.Utils import mkdir
 from cms.async.AsyncLibrary import async_lock, logger
 
 
@@ -132,19 +132,19 @@ class FileCacher:
                 shutil.copyfileobj(f, file_obj)
 
         # Returning string?
-        if string == True:
+        if string:
             with open(cache_path, "rb") as cache_file:
                 return cache_file.read()
 
         # Returning temporary file?
-        elif temp_path == True:
+        elif temp_path:
             temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
             os.close(temp_file)
             shutil.copy(cache_path, temp_filename)
             return temp_filename
 
         # Returning temporary file object?
-        elif temp_file_obj == True:
+        elif temp_file_obj:
             temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
             os.close(temp_file)
             shutil.copy(cache_path, temp_filename)
@@ -289,17 +289,3 @@ class FileCacher:
         else:
             with SessionGen() as session:
                 return _list(session)
-
-
-def main():
-    global ls, fc
-    from cms.db.SQLAlchemyAll import metadata
-    metadata.create_all()
-    from cms.service import LogService
-    ls = LogService.LogService(0)
-    fc = FileCacher(ls)
-    #fc.put_file(description="ciao", path="/etc/resolv.conf")
-
-
-if __name__ == '__main__':
-    main()

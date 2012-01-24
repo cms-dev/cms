@@ -114,9 +114,8 @@ class TestFileCacher(TestService):
         locally.
 
         """
-        self.content = ""
-        for i in xrange(100):
-            self.content += chr(random.randint(0, 255))
+        self.content = "".join(chr(random.randint(0, 255))
+                               for unused_i in xrange(100))
 
         logger.info("  I am sending the ~100B binary file to FileCacher")
         try:
@@ -234,9 +233,8 @@ class TestFileCacher(TestService):
         FileCacher as a string. FC should cache the content locally.
 
         """
-        self.content = ""
-        for i in xrange(100):
-            self.content += chr(random.randint(0, 255))
+        self.content = "".join(chr(random.randint(0, 255))
+                               for unused_i in xrange(100))
 
         logger.info("  I am sending the ~100B binary file to FileCacher")
         try:

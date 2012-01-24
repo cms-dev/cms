@@ -195,7 +195,7 @@ class AbstractSubmissionFromDB:
         """Return the AbstractTask linked to this AbstractSubmissions.
 
         """
-        return AbstractTaskFromDB(self.submission.task)
+        return AbstractTaskFromDB(self.submission.task, self.FC)
 
     def get_language(self):
         """Return the language of this submission.

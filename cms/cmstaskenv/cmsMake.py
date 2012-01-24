@@ -57,9 +57,9 @@ DATA_DIRS = [os.path.join('.', 'cmstaskenv', 'data'),
 
 
 def detect_data_dir():
-    for dir in DATA_DIRS:
-        if os.path.exists(dir):
-            return os.path.abspath(dir)
+    for _dir in DATA_DIRS:
+        if os.path.exists(_dir):
+            return os.path.abspath(_dir)
 
 
 DATA_DIR = detect_data_dir()
@@ -69,7 +69,7 @@ def endswith2(str, suffixes):
     """True if str ends with one of the given suffixes.
 
     """
-    return any(map(lambda x: str.endswith(x), suffixes))
+    return any(map(lambda x: str.endswith(x)), suffixes)
 
 
 def basename2(str, suffixes):

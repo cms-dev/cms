@@ -45,7 +45,7 @@ class ResourceService(Service):
     """
 
     def __init__(self, shard, contest_id=None):
-        """If contest_id != None, we assume the user wants the
+        """If contest_id is not None, we assume the user wants the
         autorestart feature.
 
         """
@@ -94,7 +94,7 @@ class ResourceService(Service):
         # services).
         new_launched_processes = set([])
         for process in self._launched_processes:
-            if process.poll() == None:
+            if process.poll() is None:
                 new_launched_processes.add(process)
         self._launched_processes = new_launched_processes
 
@@ -107,7 +107,7 @@ class ResourceService(Service):
 
             # If the user specified not to restart some service, we
             # ignore it.
-            if self._will_restart[service] != True:
+            if not self._will_restart[service]:
                 continue
 
             running = True

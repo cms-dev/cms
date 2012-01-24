@@ -25,8 +25,9 @@ import codecs
 import optparse
 
 from cms.async import ServiceCoord
-from cms.db.SQLAlchemyAll import metadata, SessionGen, Task, Manager, \
+from cms.db.SQLAlchemyAll import metadata, SessionGen, Manager, \
     Testcase, User, Contest, SubmissionFormatElement, FSObject
+from cms.grading.TaskType import TaskTypes
 from cms.service.FileStorage import FileCacher
 from cms.service.ScoreType import ScoreTypes
 from cms.async.AsyncLibrary import Service, logger
@@ -145,7 +146,7 @@ class YamlLoader:
         params["statement"] = self.FC.put_file(
             path=os.path.join(path, "testo", "testo.pdf"),
             description="PDF statement for task %s" % name)
-        params["task_type"] = Task.TASK_TYPE_BATCH
+        params["task_type"] = TaskTypes.TASK_TYPE_BATCH
 
         params["submission_format"] = [
             SubmissionFormatElement("%s.%%l" % name).export_to_dict()]

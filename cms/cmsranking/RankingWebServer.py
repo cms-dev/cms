@@ -276,9 +276,9 @@ class ImageHandler(tornado.web.RequestHandler):
     def get(self, *args):
         self.location %= tuple(args)
 
-        for ext, type in self.formats.iteritems():
+        for ext, _type in self.formats.iteritems():
             if os.path.isfile(self.location + '.' + ext):
-                self.serve(self.location + '.' + ext, type)
+                self.serve(self.location + '.' + ext, _type)
                 return
 
         self.serve(self.fallback, 'image/png')  # FIXME hardcoded type

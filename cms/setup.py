@@ -124,9 +124,9 @@ def makedir(dir_path, owner=None, perm=None):
     """
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
-    if perm != None:
+    if perm is not None:
         os.chmod(dir_path, perm)
-    if owner != None:
+    if owner is not None:
         os.chown(dir_path, owner.pw_uid, owner.pw_gid)
 
 
