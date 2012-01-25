@@ -169,8 +169,9 @@ class FileCacher:
 
         # Input checking
         if [binary_data, file_obj, path].count(None) != 2:
-            logger.error("No content (or too many) specified in put_file.")
-            raise ValueError
+            error_string = "No content (or too many) specified in put_file."
+            logger.error(error_string)
+            raise ValueError(error_string)
 
         with async_lock:
             logger.debug("Reading input file to store on the database")
