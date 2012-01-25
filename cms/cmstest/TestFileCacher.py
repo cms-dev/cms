@@ -32,6 +32,7 @@ from cms.async.AsyncLibrary import logger
 from cms.async.TestService import TestService
 from cms.async import ServiceCoord, Config
 from cms.service.FileStorage import FileCacher
+from cms.db.Utils import default_argument_parser
 
 
 class RandomFile:
@@ -121,8 +122,8 @@ class TestFileCacher(TestService):
         try:
             data = self.FC.put_file(file_obj=StringIO(self.content),
                                     description="Test #000")
-        except Exception as e:
-            self.test_end(False, "Error received: %r." % e)
+        except Exception as error:
+            self.test_end(False, "Error received: %r." % error)
 
         if not os.path.exists(
             os.path.join(self.cache_base_path, "objects", data)):
@@ -149,8 +150,8 @@ class TestFileCacher(TestService):
             cached_file.write(self.fake_content)
         try:
             data = self.FC.get_file(digest=self.digest, temp_file_obj=True)
-        except Exception as e:
-            self.test_end(False, "Error received: %r." % e)
+        except Exception as error:
+            self.test_end(False, "Error received: %r." % error)
 
         received = data.read()
         data.close()
@@ -174,8 +175,8 @@ class TestFileCacher(TestService):
         os.unlink(self.cache_path)
         try:
             data = self.FC.get_file(digest=self.digest, temp_file_obj=True)
-        except Exception as e:
-            self.test_end(False, "Error received: %r." % e)
+        except Exception as error:
+            self.test_end(False, "Error received: %r." % error)
 
         received = data.read()
         data.close()
@@ -199,16 +200,16 @@ class TestFileCacher(TestService):
         logger.info("  I am deleting the file from FileCacher.")
         try:
             self.FC.delete(digest=self.digest)
-        except Exception as e:
-            self.test_end(False, "Error received: %s." % e)
+        except Exception as error:
+            self.test_end(False, "Error received: %s." % error)
 
         else:
             logger.info("  File deleted correctly.")
             logger.info("  I am getting the file from FileCacher.")
             try:
                 self.FC.get_file(digest=self.digest)
-            except Exception as e:
-                self.test_end(True, "Correctly received an error: %r." % e)
+            except Exception as error:
+                self.test_end(True, "Correctly received an error: %r." % error)
             else:
                 self.test_end(False, "Did not receive error.")
 
@@ -221,8 +222,8 @@ class TestFileCacher(TestService):
         logger.info("  I am retrieving an unexisting file from FileCacher.")
         try:
             self.FC.get_file(digest=self.digest, temp_file_obj=True)
-        except Exception as e:
-            self.test_end(True, "Correctly received an error: %r." % e)
+        except Exception as error:
+            self.test_end(True, "Correctly received an error: %r." % error)
         else:
             self.test_end(False, "Did not receive error.")
 
@@ -240,8 +241,8 @@ class TestFileCacher(TestService):
         try:
             data = self.FC.put_file(binary_data=self.content,
                                     description="Test #005")
-        except Exception as e:
-            self.test_end(False, "Error received: %r." % e)
+        except Exception as error:
+            self.test_end(False, "Error received: %r." % error)
 
         if not os.path.exists(
             os.path.join(self.cache_base_path, "objects", data)):
@@ -269,8 +270,8 @@ class TestFileCacher(TestService):
             cached_file.write(self.fake_content)
         try:
             data = self.FC.get_file(digest=self.digest, string=True)
-        except Exception as e:
-            self.test_end(False, "Error received: %r." % e)
+        except Exception as error:
+            self.test_end(False, "Error received: %r." % error)
 
         if data != self.fake_content:
             if data == self.content:
@@ -293,8 +294,8 @@ class TestFileCacher(TestService):
         try:
             data = self.FC.put_file(file_obj=rand_file,
                                     description="Test #007")
-        except Exception as e:
-            self.test_end(False, "Error received: %r." % e)
+        except Exception as error:
+            self.test_end(False, "Error received: %r." % error)
         if rand_file.dim != 0:
             self.test_end(False, "The input file wasn't read completely.")
         my_digest = rand_file.get_digest()
@@ -323,8 +324,8 @@ class TestFileCacher(TestService):
         hash_file = HashingFile()
         try:
             self.FC.get_file(digest=self.digest, file_obj=hash_file)
-        except Exception as e:
-            self.test_end(False, "Error received: %r." % e)
+        except Exception as error:
+            self.test_end(False, "Error received: %r." % error)
         my_digest = hash_file.get_digest()
         hash_file.close()
 
@@ -341,11 +342,8 @@ class TestFileCacher(TestService):
 
 
 def main():
-    import sys
-    if len(sys.argv) != 2:
-        print sys.argv[0], "shard"
-    else:
-        TestFileCacher(int(sys.argv[1])).run()
+    default_argument_parser("Test for CMS FileCacher class.",
+                            TestFileCacher).run()
 
 
 if __name__ == "__main__":

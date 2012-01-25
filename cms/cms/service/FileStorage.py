@@ -239,7 +239,8 @@ class FileCacher:
 
         return digest
 
-    def describe(self, digest):
+    @staticmethod
+    def describe(digest):
         """Return the description of a file given its digest.
 
         digest (string): the digest to describe.
@@ -276,6 +277,7 @@ class FileCacher:
         except OSError:
             pass
 
+    @staticmethod
     def list(self, session=None):
         """List the files available in the storage.
 

@@ -175,7 +175,8 @@ class TaskType:
         self.submission.evaluations[test_number].outcome = outcome
         return True
 
-    def finish_evaluation(self, success):
+    @staticmethod
+    def finish_evaluation(success):
         """Finalize the operation of evaluating. Currently there is
         nothing to do.
 

@@ -30,15 +30,16 @@ class Contest(Entity):
     - end (int): the unix timestamp at which the contest ends
 
     """
-    def validate(self, data):
+    @staticmethod
+    def validate(data):
         try:
-            assert type(data) is dict,\
+            assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['name']) is unicode,\
+            assert type(data['name']) is unicode, \
                 "Field 'name' isn't a string"
-            assert type(data['begin']) is int,\
+            assert type(data['begin']) is int, \
                 "Field 'begin' isn't an integer"
-            assert type(data['end']) is int,\
+            assert type(data['end']) is int, \
                 "Field 'end' isn't an integer"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)

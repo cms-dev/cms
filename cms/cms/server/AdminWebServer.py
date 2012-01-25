@@ -190,7 +190,8 @@ class AdminWebServer(WebService):
             self.RS.append(self.connect_to(ServiceCoord("ResourceService", i)))
         self.logservice = self.connect_to(ServiceCoord("LogService", 0))
 
-    def authorized_rpc(self, service, method, arguments):
+    @staticmethod
+    def authorized_rpc(service, method, arguments):
         """Used by WebService to check if the browser can call a
         certain RPC method.
 

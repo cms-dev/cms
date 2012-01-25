@@ -28,7 +28,8 @@ class Team(Entity):
     - name (str): the human-readable name of the team
 
     """
-    def validate(self, data):
+    @staticmethod
+    def validate(data):
         try:
             assert type(data) is dict,\
                 "Not a dictionary"

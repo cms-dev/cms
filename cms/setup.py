@@ -19,6 +19,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Build and installation routines for CMS.
+
+"""
+
 import sys
 import os
 import shutil
@@ -28,75 +32,80 @@ import pwd
 from glob import glob
 from setuptools import setup
 
-old_umask = os.umask(022)
-setup(name="cms",
-      version="0.1",
-      author="Matteo Boscariol, Stefano Maggiolo, Giovanni Mascellani",
-      author_email="s.maggiolo@gmail.com",
-      url="",
-      download_url="",
-      description="A contest management system and grader "
-                  "for IOI-like programming competitions",
-      packages=["cms",
-                "cms.db",
-                "cms.server",
-                "cms.service",
-                "cms.util",
-                "cms.async",
-                "cms.grading",
-                "cms.box",
-                "cmsranking",
-                "cmscontrib",
-                "cmstest"],
-      package_data={
-          "cms.async": [
-              os.path.join("static", "*")
-              ],
-          "cms.server": [
-              os.path.join("static", "jq", "*"),
-              os.path.join("static", "sh", "*"),
-              os.path.join("static", "*.*"),
-              os.path.join("templates", "contest", "*.*"),
-              os.path.join("templates", "admin", "*.*"),
-              os.path.join("templates", "ranking", "*.*"),
-              ],
-          "cmsranking": [
-              os.path.join("static", "lib", "*"),
-              os.path.join("static", "*.*")
-              ]},
-      entry_points={
-          "console_scripts": [
-              "cmsLogService=cms.service.LogService:main",
-              "cmsScoringService=cms.service.ScoringService:main",
-              "cmsEvaluationService=cms.service.EvaluationService:main",
-              "cmsWorker=cms.service.Worker:main",
-              "cmsResourceService=cms.service.ResourceService:main",
-              "cmsChecker=cms.service.Checker:main",
-              "cmsContestWebServer=cms.server.ContestWebServer:main",
-              "cmsAdminWebServer=cms.server.AdminWebServer:main",
 
-              "cmsRankingWebServer=cmsranking.RankingWebServer:main",
+def do_setup():
+    """Execute the setup thanks to setuptools.
 
-              "cmsTestFileCacher=cmstest.TestFileCacher:main",
-
-              "cmsYamlImporter=cmscontrib.YamlImporter:main",
-              "cmsYamlReimporter=cmscontrib.YamlReimporter:main",
-              "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
-              "cmsContestExporter=cmscontrib.ContestExporter:main",
-              "cmsContestImporter=cmscontrib.ContestImporter:main",
-              ]
-          },
-      keywords="ioi programming contest grader management system",
-      license="Affero General Public License v3",
-      classifiers=["Development Status :: 3 - Alpha",
-                   "Natural Language :: English",
-                   "Operating System :: POSIX :: Linux",
-                   "Programming Language :: Python :: 2",
-                   "License :: OSI Approved :: "
-                   "GNU Affero General Public License v3",
+    """
+    old_umask = os.umask(022)
+    setup(name="cms",
+          version="0.1",
+          author="Matteo Boscariol, Stefano Maggiolo, Giovanni Mascellani",
+          author_email="s.maggiolo@gmail.com",
+          url="",
+          download_url="",
+          description="A contest management system and grader "
+                      "for IOI-like programming competitions",
+          packages=["cms",
+                    "cms.db",
+                    "cms.server",
+                    "cms.service",
+                    "cms.util",
+                    "cms.async",
+                    "cms.grading",
+                    "cms.box",
+                    "cmsranking",
+                    "cmscontrib",
+                    "cmstest"],
+          package_data={
+              "cms.async": [
+                  os.path.join("static", "*")
                   ],
-     )
-os.umask(old_umask)
+              "cms.server": [
+                  os.path.join("static", "jq", "*"),
+                  os.path.join("static", "sh", "*"),
+                  os.path.join("static", "*.*"),
+                  os.path.join("templates", "contest", "*.*"),
+                  os.path.join("templates", "admin", "*.*"),
+                  os.path.join("templates", "ranking", "*.*"),
+                  ],
+              "cmsranking": [
+                  os.path.join("static", "lib", "*"),
+                  os.path.join("static", "*.*")
+                  ]},
+          entry_points={
+              "console_scripts": [
+                  "cmsLogService=cms.service.LogService:main",
+                  "cmsScoringService=cms.service.ScoringService:main",
+                  "cmsEvaluationService=cms.service.EvaluationService:main",
+                  "cmsWorker=cms.service.Worker:main",
+                  "cmsResourceService=cms.service.ResourceService:main",
+                  "cmsChecker=cms.service.Checker:main",
+                  "cmsContestWebServer=cms.server.ContestWebServer:main",
+                  "cmsAdminWebServer=cms.server.AdminWebServer:main",
+
+                  "cmsRankingWebServer=cmsranking.RankingWebServer:main",
+
+                  "cmsTestFileCacher=cmstest.TestFileCacher:main",
+
+                  "cmsYamlImporter=cmscontrib.YamlImporter:main",
+                  "cmsYamlReimporter=cmscontrib.YamlReimporter:main",
+                  "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
+                  "cmsContestExporter=cmscontrib.ContestExporter:main",
+                  "cmsContestImporter=cmscontrib.ContestImporter:main",
+                  ]
+              },
+          keywords="ioi programming contest grader management system",
+          license="Affero General Public License v3",
+          classifiers=["Development Status :: 3 - Alpha",
+                       "Natural Language :: English",
+                       "Operating System :: POSIX :: Linux",
+                       "Programming Language :: Python :: 2",
+                       "License :: OSI Approved :: "
+                       "GNU Affero General Public License v3",
+                      ],
+         )
+    os.umask(old_umask)
 
 
 def copyfile(src, dest, owner, perm):
@@ -152,95 +161,106 @@ def copytree(src_path, dest_path, owner, perm_files, perm_dirs):
             print "Error: unexpected filetype for file %s. Not copied" % path
 
 
-def main():
-    if "build" in sys.argv:
-        print "compiling mo-box..."
-        os.chdir("box")
-        os.system(os.path.join(".", "compile.sh"))
-        os.chdir("..")
+def build():
+    """This function builds the pieces of CMS that need a compilation
+    and are not handled by setuptools: mo-box, localization files,
+    pyjamas code for the client of RWS.
 
-        print "compiling localization files:"
-        for locale in glob(os.path.join("cms", "server", "po", "*.po")):
-            country_code = re.search("/([^/]*)\.po", locale).groups()[0]
-            print "  %s" % country_code
-            path = os.path.join("cms", "server", "mo", country_code,
-                                "LC_MESSAGES")
-            makedir(path)
-            os.system("msgfmt %s -o %s" % (locale,
-                                           os.path.join(path, "cms.mo")))
 
-        print "compiling client code for ranking:"
-        os.chdir(os.path.join("cmsranking", "client"))
-        os.system("pyjsbuild -o ../static/ Ranking")
-        os.chdir(os.path.join("..", ".."))
+    """
+    print "compiling mo-box..."
+    os.chdir("box")
+    os.system(os.path.join(".", "compile.sh"))
+    os.chdir("..")
 
-        print "done."
+    print "compiling localization files:"
+    for locale in glob(os.path.join("cms", "server", "po", "*.po")):
+        country_code = re.search("/([^/]*)\.po", locale).groups()[0]
+        print "  %s" % country_code
+        path = os.path.join("cms", "server", "mo", country_code,
+                            "LC_MESSAGES")
+        makedir(path)
+        os.system("msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
 
-    if "install" in sys.argv:
-        # We set permissions for each manually installed files, so we want
-        # max liberty to change them.
-        old_umask = os.umask(000)
+    print "compiling client code for ranking:"
+    os.chdir(os.path.join("cmsranking", "client"))
+    os.system("pyjsbuild -o ../static/ Ranking")
+    os.chdir(os.path.join("..", ".."))
 
-        print "creating user and group cmsuser."
-        os.system("useradd cmsuser "
-                  "-c 'CMS default user' -M -r -s /bin/false -U")
-        cmsuser = pwd.getpwnam("cmsuser")
-        root = pwd.getpwnam("root")
+    print "done."
 
-        print "copying mo-box to /usr/local/bin/."
-        copyfile(os.path.join(".", "box", "mo-box"),
-                 os.path.join("/", "usr", "local", "bin", "mo-box"),
-                 root, 0755)
 
-        print "copying configuration to /usr/local/etc/."
-        conf_file = os.path.join("/", "usr", "local", "etc", "cms.conf")
-        if os.path.exists(os.path.join(".", "examples", "cms.conf")):
-            copyfile(os.path.join(".", "examples", "cms.conf"), conf_file,
-                     cmsuser, 0660)
-        else:
-            copyfile(os.path.join(".", "examples", "cms.conf.sample"),
-                     os.path.join("/", "usr", "local", "etc", "cms.conf"),
-                     cmsuser, 0660)
+def install():
+    """Manual installation of files not handled by setuptools: cmsuser
+    user, mo-box, configuration, localization files, static files for
+    RWS.
 
-        print "copying localization files:"
-        for locale in glob(os.path.join("cms", "server", "po", "*.po")):
-            country_code = re.search("/([^/]*)\.po", locale).groups()[0]
-            print "  %s" % country_code
-            path = os.path.join("cms", "server", "mo", country_code,
-                                "LC_MESSAGES")
-            dest_path = os.path.join("/", "usr", "local", "share", "locale",
-                                     country_code, "LC_MESSAGES")
-            makedir(dest_path, root, 0755)
-            copyfile(os.path.join(path, "cms.mo"),
-                     os.path.join(dest_path, "cms.mo"),
-                     root, 0644)
+    """
+    # We set permissions for each manually installed files, so we want
+    # max liberty to change them.
+    old_umask = os.umask(000)
 
-        print "creating directories."
-        dirs = [os.path.join("/", "var", "local", "log"),
-                os.path.join("/", "var", "local", "cache"),
-                os.path.join("/", "var", "local", "lib"),
-                os.path.join("/", "usr", "local", "share")]
-        for d in dirs:
-            makedir(d, root, 0755)
-            d = os.path.join(d, "cms")
-            makedir(d, cmsuser, 0770)
+    print "creating user and group cmsuser."
+    os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
+    cmsuser = pwd.getpwnam("cmsuser")
+    root = pwd.getpwnam("root")
 
-        print "copying static file for ranking."
-        try:
-            shutil.rmtree(os.path.join("/", "usr", "local", "share",
-                                       "cms", "ranking"))
-        except OSError:
-            pass
-        makedir(os.path.join("/", "usr", "local", "share",
-                             "cms", "ranking"), root, 0755)
-        copytree(os.path.join("cmsranking", "static"),
-                 os.path.join("/", "usr", "local", "share",
-                              "cms", "ranking"),
-                 root, 0644, 0755)
+    print "copying mo-box to /usr/local/bin/."
+    copyfile(os.path.join(".", "box", "mo-box"),
+             os.path.join("/", "usr", "local", "bin", "mo-box"),
+             root, 0755)
 
-        os.umask(old_umask)
-        print "done."
+    print "copying configuration to /usr/local/etc/."
+    conf_file = os.path.join("/", "usr", "local", "etc", "cms.conf")
+    if os.path.exists(os.path.join(".", "examples", "cms.conf")):
+        copyfile(os.path.join(".", "examples", "cms.conf"), conf_file,
+                 cmsuser, 0660)
+    else:
+        copyfile(os.path.join(".", "examples", "cms.conf.sample"),
+                 os.path.join("/", "usr", "local", "etc", "cms.conf"),
+                 cmsuser, 0660)
+
+    print "copying localization files:"
+    for locale in glob(os.path.join("cms", "server", "po", "*.po")):
+        country_code = re.search("/([^/]*)\.po", locale).groups()[0]
+        print "  %s" % country_code
+        path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
+        dest_path = os.path.join("/", "usr", "local", "share", "locale",
+                                 country_code, "LC_MESSAGES")
+        makedir(dest_path, root, 0755)
+        copyfile(os.path.join(path, "cms.mo"),
+                 os.path.join(dest_path, "cms.mo"),
+                 root, 0644)
+
+    print "creating directories."
+    dirs = [os.path.join("/", "var", "local", "log"),
+            os.path.join("/", "var", "local", "cache"),
+            os.path.join("/", "var", "local", "lib"),
+            os.path.join("/", "usr", "local", "share")]
+    for _dir in dirs:
+        makedir(_dir, root, 0755)
+        _dir = os.path.join(_dir, "cms")
+        makedir(_dir, cmsuser, 0770)
+
+    print "copying static file for ranking."
+    try:
+        shutil.rmtree(os.path.join("/", "usr", "local", "share",
+                                   "cms", "ranking"))
+    except OSError:
+        pass
+    makedir(os.path.join("/", "usr", "local", "share", "cms", "ranking"),
+            root, 0755)
+    copytree(os.path.join("cmsranking", "static"),
+             os.path.join("/", "usr", "local", "share", "cms", "ranking"),
+             root, 0644, 0755)
+
+    os.umask(old_umask)
+    print "done."
 
 
 if __name__ == "__main__":
-    main()
+    do_setup()
+    if "build" in sys.argv:
+        build()
+    if "install" in sys.argv:
+        install()

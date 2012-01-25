@@ -30,25 +30,26 @@ class Subchange(Entity):
     - time (int): the time the submission has been submitted
 
     """
-    def validate(self, data):
+    @staticmethod
+    def validate(data):
         try:
-            assert type(data) is dict,\
+            assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['submission']) is unicode,\
+            assert type(data['submission']) is unicode, \
                 "Field 'submission' isn't a string"
-            assert type(data['time']) is int,\
+            assert type(data['time']) is int, \
                 "Field 'time' isn't an integer (unix timestamp)"
             if 'score' in data:
-                assert type(data['score']) is float,\
+                assert type(data['score']) is float, \
                     "Field 'score' isn't a float"
             if 'token' in data:
-                assert type(data['token']) is bool,\
+                assert type(data['token']) is bool, \
                     "Field 'token' isn't a boolean"
             if 'extra' in data:
-                assert type(data['extra']) is list,\
+                assert type(data['extra']) is list, \
                     "Field 'extra' isn't a list of strings"
                 for i in data['extra']:
-                    assert type(i) is unicode,\
+                    assert type(i) is unicode, \
                         "Field 'extra' isn't a list of strings"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)

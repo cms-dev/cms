@@ -896,7 +896,6 @@ class Logger:
         ]
 
     def __init__(self):
-
         self._log_service = RemoteService(None,
                                           ServiceCoord("LogService", 0))
         self.operation = ""

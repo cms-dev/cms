@@ -65,24 +65,24 @@ def detect_data_dir():
 DATA_DIR = detect_data_dir()
 
 
-def endswith2(str, suffixes):
-    """True if str ends with one of the given suffixes.
+def endswith2(string, suffixes):
+    """True if string ends with one of the given suffixes.
 
     """
-    return any(map(lambda x: str.endswith(x)), suffixes)
+    return any(map(lambda x: string.endswith(x)), suffixes)
 
 
-def basename2(str, suffixes):
-    """If str ends with one of the specified suffixes, returns its
+def basename2(string, suffixes):
+    """If string ends with one of the specified suffixes, returns its
     basename (i.e., itself after removing the suffix) and the suffix
     packed in a tuple. Otherwise returns None.
 
     """
     try:
-        idx = map(lambda x: str.endswith(x), suffixes).index(True)
+        idx = map(lambda x: string.endswith(x), suffixes).index(True)
     except ValueError:
         return None
-    return (str[:-len(suffixes[idx])], str[-len(suffixes[idx]):])
+    return (string[:-len(suffixes[idx])], string[-len(suffixes[idx]):])
 
 
 def call(base_dir, args, stdin=None, stdout=None, stderr=None, env=None):

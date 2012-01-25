@@ -30,15 +30,16 @@ class User(Entity):
     - team (str): the id of the team the user belongs to
 
     """
-    def validate(self, data):
+    @staticmethod
+    def validate(data):
         try:
-            assert type(data) is dict,\
+            assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['f_name']) is unicode,\
+            assert type(data['f_name']) is unicode, \
                 "Field 'f_name' isn't a string"
-            assert type(data['l_name']) is unicode,\
+            assert type(data['l_name']) is unicode, \
                 "Field 'l_name' isn't a string"
-            assert data['team'] is None or type(data['team']) is unicode,\
+            assert data['team'] is None or type(data['team']) is unicode, \
                 "Field 'team' isn't a string (or null)"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)

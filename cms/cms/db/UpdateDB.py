@@ -91,7 +91,8 @@ class ScriptsContainer(object):
 
     # Following is the list of scripts implementions.
 
-    def add_per_user_time(self):
+    @staticmethod
+    def add_per_user_time():
         """Support for contest where users may use up to x seconds.
 
         When we want a contest that, for example, is open for 3 days
@@ -106,7 +107,8 @@ class ScriptsContainer(object):
             session.execute("ALTER TABLE contests "
                             "ADD COLUMN per_user_time INTEGER;")
 
-    def add_submissions_score(self):
+    @staticmethod
+    def add_submissions_score():
         """Support for storing the score in the submission.
 
         We add two fields to the submission: score and score details,
@@ -149,6 +151,9 @@ def execute_single_script(scripts_container, script):
 
 
 def main():
+    """Parse arguments and call scripts.
+
+    """
     parser = argparse.ArgumentParser(
         description="List and execute updating scripts for the DB "
         "when CMS changes it")

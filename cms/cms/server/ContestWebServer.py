@@ -207,7 +207,8 @@ class ContestWebServer(WebService):
         self.ES = self.connect_to(ServiceCoord("EvaluationService", 0))
         self.SS = self.connect_to(ServiceCoord("ScoringService", 0))
 
-    def authorized_rpc(self, service, method, arguments):
+    @staticmethod
+    def authorized_rpc(service, method, arguments):
         """Used by WebService to check if the browser can call a
         certain RPC method.
 

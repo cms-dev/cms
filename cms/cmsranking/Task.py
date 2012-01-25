@@ -33,7 +33,8 @@ class Task(Entity):
     - order (int): the order of the tasks inside of the contest
 
     """
-    def validate(self, data):
+    @staticmethod
+    def validate(data):
         try:
             assert type(data) is dict,\
                 "Not a dictionary"

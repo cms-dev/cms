@@ -175,6 +175,10 @@ class GenericRequest(TestRequest):
             res += "\nRESPONSE DATA\n%s" % (utf8_decoder(self.res_data)[0])
         return res
 
+    def describe(self):
+        raise NotImplementedError("Please subclass this class "
+                                  "and actually implement some request")
+
 
 class HomepageRequest(GenericRequest):
     """Load the main page of CWS.

@@ -187,7 +187,8 @@ class ResourceService(Service):
                 continue
         return None
 
-    def _get_cpu_times(self):
+    @staticmethod
+    def _get_cpu_times():
         """Wrapper of psutil.cpu_times to get the format we like.
 
         return (dict): dictionary of cpu times information.

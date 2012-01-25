@@ -30,15 +30,16 @@ class Submission(Entity):
     - time (int): the time the submission has been submitted
 
     """
-    def validate(self, data):
+    @staticmethod
+    def validate(data):
         try:
-            assert type(data) is dict,\
+            assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['user']) is unicode,\
+            assert type(data['user']) is unicode, \
                 "Field 'user' isn't a string"
-            assert type(data['task']) is unicode,\
+            assert type(data['task']) is unicode, \
                 "Field 'task' isn't a string"
-            assert type(data['time']) is int,\
+            assert type(data['time']) is int, \
                 "Field 'time' isn't an integer (unix timestamp)"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)
