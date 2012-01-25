@@ -32,9 +32,10 @@ import argparse
 
 import psutil
 
-from cms.async.AsyncLibrary import Service, rpc_method, logger, RemoteService
 from cms.async import ServiceCoord, Config
+from cms.async.AsyncLibrary import Service, rpc_method, RemoteService
 from cms.db.Utils import ask_for_contest
+from cms.service.LogService import logger
 
 
 class ResourceService(Service):
@@ -50,8 +51,7 @@ class ResourceService(Service):
 
         """
         logger.initialize(ServiceCoord("ResourceService", shard))
-        logger.debug("ResourceService.__init__")
-        Service.__init__(self, shard)
+        Service.__init__(self, shard, custom_logger=logger)
 
         self.contest_id = contest_id
 
@@ -398,6 +398,9 @@ class ResourceService(Service):
 
 
 def main():
+    """Parses arguments and launch service.
+
+    """
     parser = argparse.ArgumentParser(
         description="Resource monitor and service starter for CMS.")
     parser.add_argument("-a", "--autorestart", metavar="CONTEST_ID",

@@ -25,14 +25,14 @@ import optparse
 import re
 import json
 
-from cms.async.AsyncLibrary import Service, logger
+from cms import Config
 from cms.async import ServiceCoord
-from cms.service.FileStorage import FileCacher
-
+from cms.async.AsyncLibrary import Service
 from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.db.Utils import ask_for_contest
+from cms.service.FileStorage import FileCacher
+from cms.service.LogService import logger
 from cms.util.Utils import sha1sum
-from cms import Config
 
 
 class ContestExporter(Service):
@@ -47,8 +47,7 @@ class ContestExporter(Service):
         self.light = light
 
         logger.initialize(ServiceCoord("ContestExporter", shard))
-        logger.debug("ContestExporter.__init__")
-        Service.__init__(self, shard)
+        Service.__init__(self, shard, custom_logger=logger)
         self.FC = FileCacher(self)
         self.add_timeout(self.do_export, None, 10, immediately=True)
 

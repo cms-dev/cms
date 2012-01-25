@@ -22,10 +22,12 @@
 import optparse
 
 from cms.async import ServiceCoord
+from cms.async.AsyncLibrary import Service
 from cms.db.SQLAlchemyAll import SessionGen, Contest
-from cms.service.FileStorage import FileCacher
-from cms.async.AsyncLibrary import Service, logger
 from cms.db.Utils import analyze_all_tables, ask_for_contest
+from cms.service.FileStorage import FileCacher
+from cms.service.LogService import logger
+
 from cmscontrib.YamlImporter import YamlLoader
 
 
@@ -36,8 +38,7 @@ class YamlReimporter(Service):
         self.contest_id = contest_id
 
         logger.initialize(ServiceCoord("YamlReimporter", shard))
-        logger.debug("YamlReimporter.__init__")
-        Service.__init__(self, shard)
+        Service.__init__(self, shard, custom_logger=logger)
         self.FC = FileCacher(self)
 
         self.loader = YamlLoader(self.FC, False, None, None)

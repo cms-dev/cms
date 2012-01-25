@@ -22,14 +22,15 @@
 import threading
 import traceback
 
+from cms import default_argument_parser
 from cms.async import ServiceCoord
-from cms.async.AsyncLibrary import logger, async_lock, Service, \
+from cms.async.AsyncLibrary import async_lock, Service, \
      rpc_method, rpc_threaded
-from cms.db.Utils import default_argument_parser
-from cms.grading.TaskType import TaskTypes
 from cms.db.SQLAlchemyAll import Submission, SessionGen, Contest
 from cms.grading import JobException
+from cms.grading.TaskType import TaskTypes
 from cms.service.FileStorage import FileCacher
+from cms.service.LogService import logger
 
 
 class Worker(Service):
@@ -42,8 +43,7 @@ class Worker(Service):
 
     def __init__(self, shard):
         logger.initialize(ServiceCoord("Worker", shard))
-        logger.debug("Worker.__init__")
-        Service.__init__(self, shard)
+        Service.__init__(self, shard, custom_logger=logger)
         self.FC = FileCacher(self)
 
         self.work_lock = threading.Lock()
@@ -179,6 +179,9 @@ class Worker(Service):
 
 
 def main():
+    """Parse arguments and launch service.
+
+    """
     default_argument_parser("Safe command executer for CMS.", Worker).run()
 
 

@@ -25,8 +25,10 @@
 
 import os
 import sys
+import datetime
+import time
 
-import simplejson
+import simplejson as json
 from random import choice
 
 
@@ -104,7 +106,7 @@ def encode_json(obj):
 
     """
     try:
-        return simplejson.dumps(obj)
+        return json.dumps(obj)
     except:
         print >> sys.stderr, "Can't encode JSON: %r" % obj
         raise ValueError
@@ -120,8 +122,8 @@ def decode_json(string):
     """
     try:
         string = string.decode("utf8")
-        return simplejson.loads(string)
-    except simplejson.JSONDecodeError:
+        return json.loads(string)
+    except json.JSONDecodeError:
         print >> sys.stderr, "Can't decode JSON: %s" % string
         raise ValueError
 
@@ -153,3 +155,58 @@ def decode_binary(string):
     except:
         print >> sys.stderr, "Can't decode binary."
         raise ValueError
+
+
+class Logger:
+    """Utility class for simple logging.
+
+    """
+    def __init__(self):
+        self.operation = ""
+
+    def log(self, msg, operation=None, severity=None, timestamp=None):
+        """Print a log message.
+
+        msg (string): the message to log
+        operation (string): a high-level description of the long-term
+                            operation that is going on in the service
+        severity (string): a constant defined in Logger
+        timestamp (float): seconds from epoch
+
+        """
+        if severity is None:
+            severity = "INFO"
+        if timestamp is None:
+            timestamp = time.time()
+        if operation is None:
+            operation = self.operation
+
+        _datetime = datetime.datetime.fromtimestamp(timestamp)
+
+        if operation == "":
+            fmt_string = "%s - %s [%s] - %s"
+            print fmt_string % ("{0:%Y/%m/%d %H:%M:%S}".format(_datetime),
+                                severity, operation, msg)
+        else:
+            fmt_string = "%s - %s - %s"
+            print fmt_string % ("{0:%Y/%m/%d %H:%M:%S}".format(_datetime),
+                                severity, msg)
+
+    def __getattr__(self, method):
+        """Syntactic sugar to allow, e.g., logger.debug(...).
+
+        """
+        severities = {
+            "debug": "DEBUG",
+            "info": "INFO",
+            "warning": "WARNING",
+            "error": "ERROR",
+            "critical": "CRITICAL"
+            }
+        if method in severities:
+            def new_method(msg, operation=None, timestamp=None):
+                """Syntactic sugar around log().
+
+                """
+                return self.log(msg, operation, severities[method], timestamp)
+            return new_method

@@ -28,7 +28,6 @@ import socket
 import time
 import types
 import sys
-import os
 import signal
 import threading
 import traceback
@@ -36,15 +35,16 @@ import heapq
 
 import asyncore
 import asynchat
-import codecs
 
-from cms.async.Utils import random_string, mkdir, \
+from cms.async import ServiceCoord, Address, get_service_address
+from cms.async.Utils import random_string, Logger, \
      encode_binary, encode_length, encode_json, \
      decode_binary, decode_length, decode_json
-from cms.util.Utils import format_log, \
-    SEV_CRITICAL, SEV_ERROR, SEV_WARNING, SEV_INFO, SEV_DEBUG
-from cms.async import ServiceCoord, Address, get_service_address
-from cms import Config
+
+
+# Our logger object - can be a standard one (provided in Utils), or a
+# custom one provided by the class subclassing service.
+logger = None
 
 
 def rpc_callback(func):
@@ -118,7 +118,6 @@ class RPCRequest:
         plus (object): additional argument for callback.
 
         """
-        # logger.debug("RPCRequest.__init__")
         self.message = message
         self.bind_obj = bind_obj
         self.callback = callback
@@ -130,7 +129,6 @@ class RPCRequest:
 
         return (object): the object to send.
         """
-        # logger.debug("RPCRequest.pre_execute")
         self.message["__id"] = random_string(16)
         RPCRequest.pending_requests[self.message["__id"]] = self
 
@@ -142,7 +140,6 @@ class RPCRequest:
 
         response (object): The response, already decoded from JSON.
         """
-        # logger.debug("RPCRequest.complete")
         del RPCRequest.pending_requests[self.message["__id"]]
         if self.callback is not None:
             params = []
@@ -168,9 +165,15 @@ class Service:
     need only one of the two behaviours.
 
     """
-    def __init__(self, shard=0):
-        # logger.debug("Service.__init__")
+    def __init__(self, shard=0, custom_logger=None):
         signal.signal(signal.SIGINT, lambda unused_x, unused_y: self.exit())
+
+        global logger
+        if custom_logger is None:
+            logger = Logger()
+        else:
+            logger = custom_logger
+
         self.shard = shard
         # Stores the function to call periodically. It is to be
         # managed with heapq. Format: (next_timeout, period, function,
@@ -256,7 +259,6 @@ class Service:
         """Starts the main loop of the service.
 
         """
-        # logger.debug("Service.run")
         try:
             while not self._exit:
                 self._step()
@@ -270,8 +272,6 @@ class Service:
         """One step of the main loop.
 
         """
-        # Let's not spam the logs...
-        # # logger.debug("Service._step")
         next_timeout = self._find_next_timeout(maximum=maximum)
         with async_lock:
             asyncore.loop(next_timeout, False, None, 1)
@@ -347,7 +347,6 @@ class Service:
         return (string): string, again.
 
         """
-        logger.debug("Service.echo")
         return string
 
     @rpc_method
@@ -369,8 +368,6 @@ class Service:
         return (dict): infos about the method
 
         """
-        # logger.debug("Service.method_info")
-
         try:
             method = getattr(self, method_name)
         except:
@@ -393,8 +390,6 @@ class Service:
                                is to be interpreted as a binary
                                string.
         """
-        # logger.debug("Service.handle_message")
-
         method_name = message["__method"]
         try:
             method = getattr(self, method_name)
@@ -491,8 +486,6 @@ class RemoteService(asynchat.async_chat):
                            (used when accepting a connection).
 
         """
-        # Can't log using logger here, since it is not yet defined.
-        # # logger.debug("RemoteService.__init__")
         if address is None and remote_service_coord is None:
             raise
 
@@ -516,7 +509,6 @@ class RemoteService(asynchat.async_chat):
 
         sock (socket): the socket to use as a communication channel.
         """
-        # logger.debug("RemoteService._initialize_channel")
         asynchat.async_chat.__init__(self, sock)
         self.set_terminator("\r\n")
 
@@ -525,7 +517,6 @@ class RemoteService(asynchat.async_chat):
 
         data (string): arrived data.
         """
-        # logger.debug("RemoteService.collect_incoming_data")
         self.data.append(data)
 
     def found_terminator(self):
@@ -535,7 +526,6 @@ class RemoteService(asynchat.async_chat):
         respond, it sends back the response.
 
         """
-        # logger.debug("RemoteService.found_terminator")
         data = "".join(self.data)
         self.data = []
 
@@ -663,8 +653,6 @@ class RemoteService(asynchat.async_chat):
                             'data', and 'error'.
 
         """
-        # logger.debug("RemoteService.execute_rpc")
-
         # Sanity checks.
         if callback is not None and timeout is not None:
             raise ValueError("Cannot use both callback and timeout.")
@@ -753,8 +741,6 @@ class RemoteService(asynchat.async_chat):
         method (string): the method to call.
 
         """
-        # logger.debug("RemoteService.__getattr__(%s)" % method)
-
         def remote_method(callback=None,
                           plus=None,
                           timeout=None,
@@ -774,7 +760,6 @@ class RemoteService(asynchat.async_chat):
         data (string): the data to send.
 
         """
-        # logger.debug("RemoteService._push_right")
         to_push = "".join(data) + "\r\n"
         try:
             self.push(to_push)
@@ -787,7 +772,6 @@ class RemoteService(asynchat.async_chat):
         """Handle a generic error in the communication.
 
         """
-        # logger.debug("RemoteService.handle_error")
         self.handle_close()
         raise
 
@@ -795,7 +779,6 @@ class RemoteService(asynchat.async_chat):
         """Handle the case when the connection fall.
 
         """
-        # logger.debug("RemoteService.handle_close")
         self.close()
         self.connected = False
 
@@ -803,7 +786,6 @@ class RemoteService(asynchat.async_chat):
         """Try to connect to the remote service.
 
         """
-        # logger.debug("RemoteService.connect_remote_service")
         try:
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock.connect(self.address)
@@ -828,7 +810,6 @@ class ListeningSocket(asyncore.dispatcher):
         address (Address): the address to listen at.
 
         """
-        # logger.debug("ListeningSocket.__init__")
         asyncore.dispatcher.__init__(self)
         self._service = service
         self._address = address
@@ -843,7 +824,6 @@ class ListeningSocket(asyncore.dispatcher):
         manage the connection.
 
         """
-        # logger.debug("ListeningSocket.handle_accept")
         try:
             connection, address = self.accept()
         except socket.error:
@@ -864,127 +844,9 @@ class ListeningSocket(asyncore.dispatcher):
         """Handle when the connection falls.
 
         """
-        # logger.debug("ListeningSocket.handle_close")
         pass
 
 
-class Logger:
-    """Utility class to connect to the remote log service and to
-    store/display locally and remotely log messages.
-
-    """
-    TO_STORE = [
-        SEV_CRITICAL,
-        SEV_ERROR,
-        SEV_WARNING,
-        SEV_INFO,
-        SEV_DEBUG,
-        ]
-    TO_DISPLAY = [
-        SEV_CRITICAL,
-        SEV_ERROR,
-        SEV_WARNING,
-        SEV_INFO
-        ]
-    # FIXME - SEV_DEBUG cannot be added to TO_SEND, otherwise we enter
-    # an infinite loop
-    TO_SEND = [
-        SEV_CRITICAL,
-        SEV_ERROR,
-        SEV_WARNING,
-        SEV_INFO
-        ]
-
-    def __init__(self):
-        self._log_service = RemoteService(None,
-                                          ServiceCoord("LogService", 0))
-        self.operation = ""
-
-    def initialize(self, service):
-        """To be set by the service we are currently running.
-
-        service (ServiceCoord): the service that we are running
-
-        """
-        self._my_coord = service
-
-        # Warn if the service, shard is not supposed to be there.
-        if self._my_coord not in Config.core_services and \
-           self._my_coord not in Config.other_services:
-            raise ValueError("Service not present in configuration.")
-
-        log_dir = os.path.join(Config._log_dir,
-                               "%s-%d" % (service.name, service.shard))
-        mkdir(Config._log_dir)
-        mkdir(log_dir)
-        self._log_file = codecs.open(
-            os.path.join(log_dir, "%d.log" % int(time.time())),
-            "w", "utf-8")
-        self.info("%s %d up and running!" % service)
-
-    def log(self, msg, operation=None, severity=None, timestamp=None):
-        """Record locally a log message and tries to send it to the
-        log service.
-
-        msg (string): the message to log
-        operation (string): a high-level description of the long-term
-                            operation that is going on in the service
-        severity (string): a constant defined in Logger
-        timestamp (float): seconds from epoch
-
-        """
-        if severity is None:
-            severity = SEV_INFO
-        if timestamp is None:
-            timestamp = time.time()
-        if operation is None:
-            operation = self.operation
-        coord = repr(self._my_coord)
-
-        if severity in Logger.TO_DISPLAY:
-            print format_log(msg, coord, operation, severity, timestamp,
-                             colors=Config.color_shell_log)
-        if severity in Logger.TO_STORE:
-            print >> self._log_file, format_log(msg, coord, operation,
-                                                severity, timestamp,
-                                                colors=Config.color_file_log)
-        if severity in Logger.TO_SEND:
-            self._log_service.Log(msg=msg, coord=coord, operation=operation,
-                                  severity=severity, timestamp=timestamp)
-
-    def debug(self, msg, operation=None, timestamp=None):
-        """Syntactic sugar.
-
-        """
-        return self.log(msg, operation, SEV_DEBUG, timestamp)
-
-    def info(self, msg, operation=None, timestamp=None):
-        """Syntactic sugar.
-
-        """
-        return self.log(msg, operation, SEV_INFO, timestamp)
-
-    def warning(self, msg, operation=None, timestamp=None):
-        """Syntactic sugar.
-
-        """
-        return self.log(msg, operation, SEV_WARNING, timestamp)
-
-    def error(self, msg, operation=None, timestamp=None):
-        """Syntactic sugar.
-
-        """
-        return self.log(msg, operation, SEV_ERROR, timestamp)
-
-    def critical(self, msg, operation=None, timestamp=None):
-        """Syntactic sugar.
-
-        """
-        return self.log(msg, operation, SEV_CRITICAL, timestamp)
-
-
-logger = Logger()
-
 # Use a reentrant lock, so the same thread can obtain more than one
-# lock
+# lock.
 async_lock = threading.RLock()

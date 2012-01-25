@@ -25,17 +25,17 @@ import codecs
 import optparse
 
 from cms.async import ServiceCoord
+from cms.async.AsyncLibrary import Service
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Manager, \
     Testcase, User, Contest, SubmissionFormatElement, FSObject
+from cms.db.Utils import analyze_all_tables
 from cms.grading.TaskType import TaskTypes
 from cms.service.FileStorage import FileCacher
+from cms.service.LogService import logger
 from cms.service.ScoreType import ScoreTypes
-from cms.async.AsyncLibrary import Service, logger
-from cms.db.Utils import analyze_all_tables
 
 
 class YamlLoader:
-
     def __init__(self, FC, drop, modif, user_num):
         self.drop = drop
         self.modif = modif
@@ -224,8 +224,7 @@ class YamlImporter(Service):
         self.user_num = user_num
 
         logger.initialize(ServiceCoord("YamlImporter", shard))
-        logger.debug("YamlImporter.__init__")
-        Service.__init__(self, shard)
+        Service.__init__(self, shard, custom_logger=logger)
         self.FC = FileCacher(self)
 
         self.loader = YamlLoader(self.FC, drop, modif, user_num)

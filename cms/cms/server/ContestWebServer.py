@@ -47,18 +47,15 @@ import zipfile
 import tornado.web
 import tornado.locale
 
-from cms.async.AsyncLibrary import logger
+from cms import Config, default_argument_parser
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
-
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, Task, File
+from cms.db.Utils import ask_for_contest
 from cms.grading.TaskType import TaskTypes
 from cms.service.FileStorage import FileCacher
-
-from cms.db.Utils import default_argument_parser
-from cms import Config
-
+from cms.service.LogService import logger
 from cms.server.Utils import file_handler_gen, \
      catch_exceptions, decrypt_arguments, valid_phase_required
 from cms.util.Cryptographics import encrypt_number, decrypt_number, \
@@ -178,7 +175,6 @@ class ContestWebServer(WebService):
     """
     def __init__(self, shard, contest):
         logger.initialize(ServiceCoord("ContestWebServer", shard))
-        logger.debug("ContestWebServer.__init__")
         self.contest = contest
 
         # This is a dictionary (indexed by username) of pending
@@ -829,9 +825,12 @@ _cws_handlers = [
 
 
 def main():
-    default_argument_parser("Contestants' web server for CMS.",
-                            ContestWebServer, ask_contest=True).run()
+    """Parse arguments and launch service.
 
+    """
+    default_argument_parser("Contestants' web server for CMS.",
+                            ContestWebServer,
+                            ask_contest=ask_for_contest).run()
 
 if __name__ == "__main__":
     main()

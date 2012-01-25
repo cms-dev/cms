@@ -32,10 +32,12 @@ import random
 
 import heapq
 
-from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback, logger
+from cms import default_argument_parser
+from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback
 from cms.async import ServiceCoord, get_service_shards
-from cms.db.Utils import default_argument_parser
+from cms.db.Utils import ask_for_contest
 from cms.db.SQLAlchemyAll import Contest, Submission, SessionGen
+from cms.service.LogService import logger
 
 
 class JobQueue:
@@ -448,7 +450,7 @@ class EvaluationService(Service):
 
     def __init__(self, shard, contest_id):
         logger.initialize(ServiceCoord("EvaluationService", shard))
-        Service.__init__(self, shard)
+        Service.__init__(self, shard, custom_logger=logger)
 
         self.contest_id = contest_id
 
@@ -869,8 +871,12 @@ class EvaluationService(Service):
 
 
 def main():
+    """Parse arguments and launch service.
+
+    """
     default_argument_parser("Submission's compiler and evaluator for CMS.",
-                            EvaluationService, ask_contest=True).run()
+                            EvaluationService,
+                            ask_contest=ask_for_contest).run()
 
 
 if __name__ == "__main__":

@@ -24,12 +24,12 @@ import os
 import codecs
 import optparse
 
-from cms.async.AsyncLibrary import Service, logger
+from cms.async.AsyncLibrary import Service
 from cms.async import ServiceCoord
-from cms.service.FileStorage import FileCacher
-
 from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.db.Utils import ask_for_contest
+from cms.service.FileStorage import FileCacher
+from cms.service.LogService import logger
 
 
 class SpoolExporter(Service):
@@ -42,8 +42,7 @@ class SpoolExporter(Service):
         self.spool_dir = spool_dir
 
         logger.initialize(ServiceCoord("SpoolExporter", shard))
-        logger.debug("SpoolExporter.__init__")
-        Service.__init__(self, shard)
+        Service.__init__(self, shard, custom_logger=logger)
         self.FC = FileCacher(self)
         self.add_timeout(self.do_export, None, 10, immediately=True)
 

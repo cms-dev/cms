@@ -25,9 +25,10 @@
 
 import time
 
-from cms.async.AsyncLibrary import Service, rpc_callback, logger
+from cms import default_argument_parser
+from cms.async.AsyncLibrary import Service, rpc_callback
 from cms.async import ServiceCoord, Config
-from cms.db.Utils import default_argument_parser
+from cms.service.LogService import logger
 
 
 class Checker(Service):
@@ -37,8 +38,7 @@ class Checker(Service):
 
     def __init__(self, shard):
         logger.initialize(ServiceCoord("Checker", shard))
-        logger.debug("Checker.__init__")
-        Service.__init__(self, shard)
+        Service.__init__(self, shard, custom_logger=logger)
         for service in Config.core_services:
             self.connect_to(service)
         self.add_timeout(self.check, None, 10, immediately=True)
@@ -94,6 +94,9 @@ class Checker(Service):
 
 
 def main():
+    """Parse arguments and launch service.
+
+    """
     default_argument_parser("Checker for aliveness of other CMS service.",
                             Checker).run()
 

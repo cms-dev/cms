@@ -28,11 +28,11 @@ import random
 from StringIO import StringIO
 import hashlib
 
+from cms import default_argument_parser
 from cms.async.AsyncLibrary import logger
 from cms.async.TestService import TestService
 from cms.async import ServiceCoord, Config
 from cms.service.FileStorage import FileCacher
-from cms.db.Utils import default_argument_parser
 
 
 class RandomFile:
@@ -122,8 +122,7 @@ class TestFileCacher(TestService):
 
     def __init__(self, shard):
         logger.initialize(ServiceCoord("TestFileCacher", shard))
-        logger.debug("TestFileCacher.__init__")
-        TestService.__init__(self, shard)
+        TestService.__init__(self, shard, custom_logger=logger)
 
         # Assume we store the cache in "./cache/fs-cache-TestFileCacher-0/"
         self.cache_base_path = os.path.join(Config._cache_dir,
@@ -133,13 +132,17 @@ class TestFileCacher(TestService):
         self.fake_content = None
         self.digest = None
         self.file_obj = None
+        self.file_cacher = FileCacher(self)
 
     def prepare(self):
+        """Initialization for the test code - make sure that the cache
+        is empty before testing.
+
+        """
         if os.path.exists(self.cache_base_path):
             logger.error("Please delete directory %s before." %
                          self.cache_base_path)
             self.exit()
-        self.file_cacher = FileCacher(self)
 
 ### TEST 000 ###
 
@@ -378,9 +381,11 @@ class TestFileCacher(TestService):
 
 
 def main():
+    """Parse arguments and launch service.
+
+    """
     default_argument_parser("Test for CMS FileCacher class.",
                             TestFileCacher).run()
-
 
 if __name__ == "__main__":
     main()

@@ -28,12 +28,11 @@ import traceback
 import time
 
 from functools import wraps
+from tornado.web import HTTPError
 
-from cms.async.AsyncLibrary import logger
 from cms.util.Cryptographics import decrypt_number
 from cms.service.FileStorage import FileCacher
-
-from tornado.web import HTTPError
+from cms.service.LogService import logger
 
 
 def valid_phase_required(func):

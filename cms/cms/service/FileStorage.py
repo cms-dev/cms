@@ -30,9 +30,10 @@ import shutil
 import hashlib
 
 from cms import Config
-from cms.db.SQLAlchemyAll import SessionGen, FSObject
 from cms.async.Utils import mkdir
-from cms.async.AsyncLibrary import async_lock, logger
+from cms.async.AsyncLibrary import async_lock
+from cms.db.SQLAlchemyAll import SessionGen, FSObject
+from cms.service.LogService import logger
 
 
 class FileCacher:

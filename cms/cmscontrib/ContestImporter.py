@@ -24,11 +24,11 @@ import os
 import optparse
 import json
 
-from cms.async.AsyncLibrary import Service, logger
 from cms.async import ServiceCoord
-from cms.service.FileStorage import FileCacher
-
+from cms.async.AsyncLibrary import Service
 from cms.db.SQLAlchemyAll import SessionGen, Contest, metadata
+from cms.service.FileStorage import FileCacher
+from cms.service.LogService import logger
 from cms.util.Utils import sha1sum
 
 
@@ -41,8 +41,7 @@ class ContestImporter(Service):
         self.no_files = no_files
 
         logger.initialize(ServiceCoord("ContestImporter", shard))
-        logger.debug("ContestImporter.__init__")
-        Service.__init__(self, shard)
+        Service.__init__(self, shard, custom_logger=logger)
         self.FC = FileCacher(self)
         self.add_timeout(self.do_import, None, 10, immediately=True)
 

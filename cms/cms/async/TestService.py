@@ -27,7 +27,8 @@ service.
 
 import time
 
-from AsyncLibrary import Service, logger
+from cms.async.AsyncLibrary import Service
+from cms.service.LogService import logger
 
 
 class TestService(Service):

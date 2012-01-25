@@ -25,6 +25,7 @@
 
 import os
 import simplejson as json
+from argparse import ArgumentParser
 
 from cms.async import ServiceCoord, Address, Config
 
@@ -100,3 +101,37 @@ for conffile in CONFIGURATION_FILES:
         pass
     else:
         break
+
+
+def default_argument_parser(description, cls, ask_contest=None):
+    """Default argument parser for services - in two versions: needing
+    a contest_id, or not.
+
+    description (string): description of the service.
+    cls (class): service's class.
+    ask_contest (function): None if the service does not require a
+                            contest, otherwise a function that returns
+                            a contest_id (after asking the admins?)
+
+    return (object): an instance of a service.
+
+    """
+    parser = ArgumentParser(description=description)
+    parser.add_argument("shard", type=int)
+
+    # We need to allow using the switch "-c" also for services that do
+    # not need the contest_id because RS needs to be able to restart
+    # everything without knowing which is which.
+    contest_id_help = "id of the contest to automatically load"
+    if ask_contest is None:
+        contest_id_help += " (ignored)"
+    parser.add_argument("-c", "--contest-id", help=contest_id_help,
+                        nargs="?", type=int)
+    args = parser.parse_args()
+    if ask_contest is not None:
+        if args.contest_id is not None:
+            return cls(args.shard, args.contest_id)
+        else:
+            return cls(args.shard, ask_contest())
+    else:
+        return cls(args.shard)

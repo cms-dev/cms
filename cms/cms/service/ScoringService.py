@@ -32,11 +32,12 @@ import httplib
 import simplejson as json
 import base64
 
-from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
-from cms.db.Utils import default_argument_parser
-from cms.async.AsyncLibrary import Service, rpc_method, logger
+from cms import Config, default_argument_parser
 from cms.async import ServiceCoord
-from cms import Config
+from cms.async.AsyncLibrary import Service, rpc_method
+from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
+from cms.db.Utils import ask_for_contest
+from cms.service.LogService import logger
 
 
 class CannotSendError(Exception):
@@ -190,7 +191,7 @@ class ScoringService(Service):
 
     def __init__(self, shard, contest_id):
         logger.initialize(ServiceCoord("ScoringService", shard))
-        Service.__init__(self, shard)
+        Service.__init__(self, shard, custom_logger=logger)
 
         self.contest_id = contest_id
 
@@ -507,8 +508,12 @@ class ScoringService(Service):
 
 
 def main():
+    """Parse arguments and launch service.
+
+    """
     default_argument_parser("Score computer and relayer for CMS.",
-                            ScoringService, ask_contest=True).run()
+                            ScoringService,
+                            ask_contest=ask_for_contest).run()
 
 
 if __name__ == "__main__":

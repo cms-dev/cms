@@ -31,21 +31,17 @@ import simplejson as json
 import tornado.web
 import tornado.locale
 
-from cms.async.AsyncLibrary import logger
+from cms import Config, default_argument_parser
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord, get_service_shards, get_service_address
-
-from cms.db.Utils import default_argument_parser
 from cms.db.SQLAlchemyAll import Session, \
      Contest, User, Announcement, Question, Message, Submission, File, Task, \
      Attachment, Manager, Testcase, SubmissionFormatElement
-
 from cms.grading.TaskType import TaskTypes
-
-from cms.util.Utils import valid_ip
 from cms.server.Utils import file_handler_gen
 from cms.service.FileStorage import FileCacher
-from cms import Config
+from cms.service.LogService import logger
+from cms.util.Utils import valid_ip
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -164,7 +160,6 @@ class AdminWebServer(WebService):
 
     def __init__(self, shard):
         logger.initialize(ServiceCoord("AdminWebServer", shard))
-        logger.debug("AdminWebServer.__init__")
 
         # A list of pending notifications.
         self.notifications = []
@@ -182,7 +177,8 @@ class AdminWebServer(WebService):
                             Config.admin_listen_port,
                             _aws_handlers,
                             parameters,
-                            shard=shard)
+                            shard=shard,
+                            custom_logger=logger)
         self.FC = FileCacher(self)
         self.ES = self.connect_to(ServiceCoord("EvaluationService", 0))
         self.RS = []
@@ -1243,9 +1239,11 @@ _aws_handlers = [
 
 
 def main():
+    """Parse arguments and launch service.
+
+    """
     default_argument_parser("Admins' web server for CMS.",
                             AdminWebServer).run()
-
 
 if __name__ == "__main__":
     main()

@@ -32,9 +32,14 @@ import tornado.ioloop
 import tornado.web
 import tornado.escape
 
-from cms.async.AsyncLibrary import Service, rpc_callback, logger
-from cms.async.Utils import decode_json
 from cms.async import ServiceCoord
+from cms.async.AsyncLibrary import Service, rpc_callback
+from cms.async.Utils import decode_json
+
+
+# Our logger. We cannot simply import from AsyncLibrary because at
+# loading it is not yet defined.
+logger = None
 
 
 class RPCRequestHandler(tornado.web.RequestHandler):
@@ -141,9 +146,13 @@ class WebService(Service):
 
     """
 
-    def __init__(self, listen_port, handlers, parameters, shard=0):
-        # logger.debug("WebService.__init__")
-        Service.__init__(self, shard)
+    def __init__(self, listen_port, handlers, parameters, shard=0,
+                 custom_logger=None):
+        Service.__init__(self, shard, custom_logger)
+
+        global logger
+        from cms.async.AsyncLibrary import logger as _logger
+        logger = _logger
 
         # This ensures that when the server autoreloads because its source is
         # modified, the socket is closed correctly.
@@ -195,7 +204,6 @@ class WebService(Service):
         loops).
 
         """
-        # logger.debug("WebService.run")
         try:
             # TODO: to have a less hacky collaboration between tornado
             # and asyncore, we may use a solution similar to the one
@@ -210,8 +218,6 @@ class WebService(Service):
         to execute one (or more) step of the tornado loop.
 
         """
-        # Let's not spam the logs...
-        # # logger.debug("WebService._webstep")
         self._step(maximum=0.02)
         self.instance.add_timeout(time.time() + 0.01, self._webstep)
 
@@ -221,5 +227,4 @@ class WebService(Service):
         page, that just collect the response.
 
         """
-        # logger.debug("WebService._default_callback")
         self.__responses[plus] = (data, error)

@@ -34,13 +34,32 @@ import os
 import codecs
 import simplejson
 
+from cms import Config
 from cms.async.AsyncLibrary import logger, async_lock
 from cms.box.Sandbox import Sandbox
 from cms.db.SQLAlchemyAll import Executable, Evaluation
 from cms.grading import JobException
-from cms.util.Utils import get_compilation_command, white_diff, \
-    filter_ansi_escape
-from cms import Config
+from cms.util.Utils import get_compilation_command, white_diff
+
+
+def filter_ansi_escape(string):
+    """Filter out ANSI commands from the given string.
+
+    string (string): string to process.
+
+    return (string): string with ANSI commands stripped.
+
+    """
+    ansi_mode = False
+    res = ''
+    for char in string:
+        if char == u'\033':
+            ansi_mode = True
+        if not ansi_mode:
+            res += char
+        if char == u'm':
+            ansi_mode = False
+    return res
 
 
 class TaskTypes:
