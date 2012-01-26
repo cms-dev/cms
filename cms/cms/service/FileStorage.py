@@ -280,7 +280,7 @@ class FileCacher:
             pass
 
     @staticmethod
-    def list(self, session=None):
+    def list(session=None):
         """List the files available in the storage.
 
         """

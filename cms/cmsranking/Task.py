@@ -36,22 +36,22 @@ class Task(Entity):
     @staticmethod
     def validate(data):
         try:
-            assert type(data) is dict,\
+            assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['name']) is unicode,\
+            assert type(data['name']) is unicode, \
                 "Field 'name' isn't a string"
-            assert type(data['contest']) is unicode,\
+            assert type(data['contest']) is unicode, \
                 "Field 'contest' isn't a string"
-            assert type(data['score']) is float,\
+            assert type(data['score']) is float, \
                 "Field 'score' isn't a float"
-            assert type(data['extra_headers']) is list,\
+            assert type(data['extra_headers']) is list, \
                 "Field 'extra_headers' isn't a list of strings"
             for i in data['extra_headers']:
-                assert type(i) is unicode,\
+                assert type(i) is unicode, \
                     "Field 'extra_headers' isn't a list of strings"
-            assert type(data['order']) is int,\
+            assert type(data['order']) is int, \
                 "Field 'order' isn't an integer"
-            assert data['order'] >= 0,\
+            assert data['order'] >= 0, \
                 "Field 'order' is negative"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)

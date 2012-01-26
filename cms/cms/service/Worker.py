@@ -129,7 +129,7 @@ class Worker(Service):
                 with SessionGen(commit=False) as self.session:
 
                     # Retrieve submission and task_type
-                    submission, task_type = \
+                    unused_submission, task_type = \
                         self.get_submission_data(submission_id)
 
                     # Store in the task type the shard number

@@ -116,6 +116,9 @@ class ContestImporter(Service):
 
 
 def main():
+    """Parse arguments and launch process.
+
+    """
     parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
     parser.add_option("-s", "--shard", help="service shard number",
                       dest="shard", action="store", type="int", default=None)

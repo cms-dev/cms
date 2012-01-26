@@ -19,10 +19,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
+"""This service creates a tree structure "similar" to the one used
+    in Italian IOI repository for storing the results of a contest.
+
+"""
+
 import os
 import codecs
-import optparse
+import argparse
 
 from cms.async.AsyncLibrary import Service
 from cms.async import ServiceCoord
@@ -40,13 +44,18 @@ class SpoolExporter(Service):
     def __init__(self, shard, contest_id, spool_dir):
         self.contest_id = contest_id
         self.spool_dir = spool_dir
+        self.upload_dir = os.path.join(self.spool_dir, "upload")
+        self.contest = None
 
         logger.initialize(ServiceCoord("SpoolExporter", shard))
         Service.__init__(self, shard, custom_logger=logger)
-        self.FC = FileCacher(self)
+        self.file_cacher = FileCacher(self)
         self.add_timeout(self.do_export, None, 10, immediately=True)
 
     def do_export(self):
+        """Run the actual export code.
+
+        """
         logger.operation = "exporting contest %d" % (self.contest_id)
         logger.info("Starting export")
 
@@ -56,132 +65,164 @@ class SpoolExporter(Service):
         except OSError:
             logger.error("The specified directory already exists, "
                          "I won't overwrite it")
-            sys.exit(1)
-        queue_file = codecs.open(os.path.join(self.spool_dir, "queue"), "w",
-                                 encoding="utf-8")
-        upload_dir = os.path.join(self.spool_dir, "upload")
-        os.mkdir(upload_dir)
+            self.exit()
+            return False
+        os.mkdir(self.upload_dir)
 
         with SessionGen(commit=False) as session:
+            self.contest = Contest.get_from_id(self.contest_id, session)
 
-            c = Contest.get_from_id(self.contest_id, session)
-
-            hidden_users = []
-            for user in c.users:
+            # Creating users' directory.
+            for user in self.contest.users:
                 if not user.hidden:
-                    user_dir = os.path.join(upload_dir, user.username)
-                    os.mkdir(user_dir)
-                else:
-                    hidden_users.append(user.username)
+                    os.mkdir(os.path.join(self.upload_dir, user.username))
 
-            # FIXME - The enumeration of submission should be time-increasing
-            for submission in c.get_submissions():
-                if submission.user.hidden:
-                    continue
-                logger.info("Exporting submission %s" % (submission.id))
-                username = submission.user.username
-                task = submission.task.name
-                timestamp = submission.timestamp
-                user_dir = os.path.join(upload_dir, username)
+            self.export_submissions()
+            self.export_ranking()
 
-                file_digest = submission.files["%s.%s" % (task, "%l")].digest
-                upload_filename = os.path.join(
-                    user_dir, "%s.%d.%s" %
-                    (task, timestamp, submission.language))
-                self.FC.get_file(file_digest, path=upload_filename)
-                upload_filename = os.path.join(user_dir, "%s.%s" %
-                                               (task, submission.language))
-                self.FC.get_file(file_digest, path=upload_filename)
-                print >> queue_file, "./upload/%s/%s.%d.%s" % \
-                    (username, task, timestamp, submission.language)
+        logger.info("Export finished")
+        logger.operation = ""
 
-                if submission.evaluated():
-                    res_file = codecs.open(os.path.join(
-                        self.spool_dir,
-                        "%d.%s.%s.%s.res" % (timestamp, username,
-                                             task, submission.language)),
-                                           "w", encoding="utf-8")
-                    res2_file = codecs.open(os.path.join(
-                        self.spool_dir,
-                        "%s.%s.%s.res" % (username, task,
-                                          submission.language)),
-                                            "w", encoding="utf-8")
-                    total = 0.0
-                    for num, evaluation in enumerate(submission.evaluations):
-                        outcome = float(evaluation.outcome)
-                        total += outcome
-                        line = "Executing on file n. %2d %s (%.4f)" % \
-                            (num, evaluation.text, outcome)
-                        print >> res_file, line
-                        print >> res2_file, line
-                    line = "Score: %.6f" % (total)
-                    print >> res_file, line
-                    print >> res2_file, line
-                    res_file.close()
-                    res2_file.close()
-
-            print >> queue_file
-            queue_file.close()
-
-            logger.info("Exporting ranking")
-            ranking_file = codecs.open(
-                os.path.join(self.spool_dir, "classifica.txt"),
-                "w", encoding="utf-8")
-            ranking_csv = codecs.open(
-                os.path.join(self.spool_dir, "classifica.csv"),
-                "w", encoding="utf-8")
-            print >> ranking_file, "Classifica finale del contest `%s'" % \
-                c.description
-            users = {}
-            for u in c.users:
-                if u.username not in hidden_users:
-                    users[u.username] = [0, u.username, [None] * len(c.tasks)]
-            for (username, task_num), score in \
-                    c.ranking_view.scores.iteritems():
-                if username not in hidden_users:
-                    users[username][0] += score.score
-                    users[username][2][task_num] = score.score
-            users = users.values()
-            users.sort(reverse=True)
-            print >> ranking_file, ("%20s %10s" + " %10s" * len(c.tasks)) % \
-                (("Utente", "Totale") + tuple([t.name for t in c.tasks]))
-            print >> ranking_csv, ("%s,%s" + ",%s" * len(c.tasks)) % \
-                (("utente", "totale") + tuple([t.name for t in c.tasks]))
-            for total, user, problems in users:
-                print >> ranking_file, \
-                      ("%20s %10.3f" + " %10.3f" * len(c.tasks)) % \
-                    ((user, total) + tuple(problems))
-                print >> ranking_csv, ("%s,%.6f" + ",%.6f" * len(c.tasks)) % \
-                      ((user, total) + tuple(problems))
-            ranking_file.close()
-            ranking_csv.close()
-
-            logger.info("Export finished")
-            logger.operation = ""
         self.exit()
         return False
 
+    def export_submissions(self):
+        """Export submissions' source files.
+
+        """
+        logger.info("Exporting submissions.")
+
+        queue_file = codecs.open(os.path.join(self.spool_dir, "queue"), "w",
+                                 encoding="utf-8")
+        # FIXME - The enumeration of submission should be time-increasing
+        for submission in self.contest.get_submissions():
+            if submission.user.hidden:
+                continue
+            logger.info("Exporting submission %s." % submission.id)
+            username = submission.user.username
+            task = submission.task.name
+            timestamp = submission.timestamp
+
+            # Get source files to the spool directory.
+            file_digest = submission.files["%s.%s" % (task, "%l")].digest
+            upload_filename = os.path.join(
+                self.upload_dir, username, "%s.%d.%s" %
+                (task, timestamp, submission.language))
+            self.file_cacher.get_file(file_digest, path=upload_filename)
+            upload_filename = os.path.join(
+                self.upload_dir, username, "%s.%s" %
+                (task, submission.language))
+            self.file_cacher.get_file(file_digest, path=upload_filename)
+            print >> queue_file, "./upload/%s/%s.%d.%s" % \
+                (username, task, timestamp, submission.language)
+
+            # Write results file for the submission.
+            if submission.evaluated():
+                res_file = codecs.open(os.path.join(
+                    self.spool_dir,
+                    "%d.%s.%s.%s.res" % (timestamp, username,
+                                         task, submission.language)),
+                                       "w", encoding="utf-8")
+                res2_file = codecs.open(os.path.join(
+                    self.spool_dir,
+                    "%s.%s.%s.res" % (username, task,
+                                      submission.language)),
+                                        "w", encoding="utf-8")
+                total = 0.0
+                for num, evaluation in enumerate(submission.evaluations):
+                    outcome = float(evaluation.outcome)
+                    total += outcome
+                    line = "Executing on file n. %2d %s (%.4f)" % \
+                        (num, evaluation.text, outcome)
+                    print >> res_file, line
+                    print >> res2_file, line
+                line = "Score: %.6f" % total
+                print >> res_file, line
+                print >> res2_file, line
+                res_file.close()
+                res2_file.close()
+
+        print >> queue_file
+        queue_file.close()
+
+    def export_ranking(self):
+        """Exports the ranking in csv and txt (human-readable) form.
+
+        """
+        logger.info("Exporting ranking.")
+
+        # Create a list of (points, usernames, [task_points]) to write
+        # to the rankings.
+        users = {}
+        hidden_users = {}
+        for user in self.contest.users:
+            # Avoid hidden users.
+            if not user.hidden:
+                users[user.username] = [0, user.username,
+                                        [None] * len(self.contest.tasks)]
+            else:
+                hidden_users[user.username] = True
+        for (username, task_num), score in \
+                self.contest.ranking_view.scores.iteritems():
+            if username not in hidden_users:
+                users[username][0] += score.score
+                users[username][2][task_num] = score.score
+        users = users.values()
+        users.sort(reverse=True)
+
+        ranking_file = codecs.open(
+            os.path.join(self.spool_dir, "classifica.txt"),
+            "w", encoding="utf-8")
+        ranking_csv = codecs.open(
+            os.path.join(self.spool_dir, "classifica.csv"),
+            "w", encoding="utf-8")
+
+        # Write rankings' header.
+        print >> ranking_file, "Classifica finale del contest `%s'" % \
+            self.contest.description
+        ranking_file_line = "%20s %10s" + " %10s" * len(self.contest.tasks)
+        print >> ranking_file, ranking_file_line % \
+            (("Utente", "Totale") + \
+             tuple([t.name for t in self.contest.tasks]))
+        ranking_csv_line = "%s,%s" + ",%s" * len(self.contest.tasks)
+        print >> ranking_csv, ranking_csv_line % \
+            (("utente", "totale") + \
+             tuple([t.name for t in self.contest.tasks]))
+
+        # Write rankings' content.
+        for total, user, problems in users:
+            ranking_file_line = "%20s %10.3f" + \
+                                " %10.3f" * len(self.contest.tasks)
+            print >> ranking_file, ranking_file_line % \
+                ((user, total) + tuple(problems))
+            ranking_csv_line = "%s,%.6f" + \
+                               ",%.6f" * len(self.contest.tasks)
+            print >> ranking_csv, ranking_csv_line % \
+                ((user, total) + tuple(problems))
+
+        ranking_file.close()
+        ranking_csv.close()
+
 
 def main():
-    parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
-    parser.add_option("-c", "--contest", help="contest ID to export",
-                      dest="contest_id", action="store", type="int",
-                      default=None)
-    parser.add_option("-s", "--shard", help="service shard number",
-                      dest="shard", action="store", type="int", default=None)
-    options, args = parser.parse_args()
-    if len(args) != 1:
-        parser.error("I need exactly one parameter, the directory "
-                     "where to export the contest")
-    if options.shard is None:
-        parser.error("The `-s' option is mandatory!")
+    """Parse arguments and launch process.
 
-    if options.contest_id is None:
-        options.contest_id = ask_for_contest()
+    """
+    parser = argparse.ArgumentParser(
+        description="Exporter for the Italian repository for CMS.")
+    parser.add_argument("-c", "--contest-id", help="id of contest to export",
+                      action="store", type=int)
+    parser.add_argument("shard", help="shard number", type=int)
+    parser.add_argument("export_directory",
+                        help="target directory where to export")
+    args = parser.parse_args()
 
-    SpoolExporter(shard=options.shard,
-                  contest_id=options.contest_id,
-                  spool_dir=args[0]).run()
+    if args.contest_id is None:
+        args.contest_id = ask_for_contest()
+
+    SpoolExporter(shard=args.shard,
+                  contest_id=args.contest_id,
+                  spool_dir=args.export_directory).run()
 
 
 if __name__ == "__main__":
