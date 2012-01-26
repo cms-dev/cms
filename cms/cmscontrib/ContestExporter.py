@@ -19,9 +19,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
+"""This service exports every data about the contest that CMS
+knows. The process of exporting and importing again should be
+idempotent.
+
+"""
+
 import os
-import optparse
+import argparse
 import re
 import json
 
@@ -36,7 +41,11 @@ from cms.util.Utils import sha1sum
 
 
 class ContestExporter(Service):
+    """This service exports every data about the contest that CMS
+    knows. The process of exporting and importing again should be
+    idempotent.
 
+    """
     def __init__(self, shard, contest_id, dump,
                  export_dir, skip_submissions,
                  light):
@@ -48,10 +57,13 @@ class ContestExporter(Service):
 
         logger.initialize(ServiceCoord("ContestExporter", shard))
         Service.__init__(self, shard, custom_logger=logger)
-        self.FC = FileCacher(self)
+        self.file_cacher = FileCacher(self)
         self.add_timeout(self.do_export, None, 10, immediately=True)
 
     def do_export(self):
+        """Run the actual export code.
+
+        """
         logger.operation = "exporting contest %d" % self.contest_id
         logger.info("Starting export")
 
@@ -61,7 +73,8 @@ class ContestExporter(Service):
         except OSError:
             logger.error("The specified directory already exists, "
                          "I won't overwrite it")
-            sys.exit(1)
+            self.exit()
+            return False
         files_dir = os.path.join(self.export_dir, "files")
         descr_dir = os.path.join(self.export_dir, "descriptions")
         os.mkdir(files_dir)
@@ -69,136 +82,156 @@ class ContestExporter(Service):
 
         with SessionGen(commit=False) as session:
 
-            c = Contest.get_from_id(self.contest_id, session)
+            contest = Contest.get_from_id(self.contest_id, session)
 
             # Export files
-            logger.info("Exporting files")
-            files = c.enumerate_files(self.skip_submissions, light=self.light)
-            for f in files:
-                self.safe_get_file(f, os.path.join(files_dir, f),
-                                   os.path.join(descr_dir, f))
+            logger.info("Exporting files.")
+            files = contest.enumerate_files(self.skip_submissions,
+                                            light=self.light)
+            for _file in files:
+                if not self.safe_get_file(_file,
+                                          os.path.join(files_dir, _file),
+                                          os.path.join(descr_dir, _file)):
+                    self.exit()
+                    return False
 
             # Export the contest in JSON format
             logger.info("Exporting the contest in JSON format")
             with open(os.path.join(self.export_dir,
                                    "contest.json"), 'w') as fout:
-                json.dump(c.export_to_dict(self.skip_submissions),
+                json.dump(contest.export_to_dict(self.skip_submissions),
                           fout, indent=4)
 
-        # The database dump is never used; however, this part is
-        # retained for historical reasons
         if self.dump:
+            if not self.dump_database():
+                self.exit()
+                return False
 
-            # Warning: this part depends on the specific database used
-            logger.info("Dumping SQL database")
-            (engine, connection) = Config.database.split(':', 1)
-            db_exportfile = os.path.join(self.export_dir, "database_dump.sql")
-
-            # Export procedure for PostgreSQL
-            if engine == 'postgresql':
-                db_regex = re.compile('//(\w*):(\w*)@(\w*)/(\w*)')
-                db_match = db_regex.match(connection)
-                if db_match is not None:
-                    username, password, host, database = db_match.groups()
-                    os.environ['PGPASSWORD'] = password
-                    export_res = os.system('pg_dump -h %s -U %s -w %s -x " \
-                        "--attribute-inserts > %s' % (host, username, database,
-                                                      db_exportfile))
-                    del os.environ['PGPASSWORD']
-                    if export_res != 0:
-                        logger.critical("Database export failed")
-                        sys.exit(1)
-                else:
-                    logger.critical("Cannot obtain parameters for "
-                                    "database connection")
-                    sys.exit(1)
-
-            # Export procedure for SQLite
-            elif engine == 'sqlite':
-                db_regex = re.compile('///(.*)')
-                db_match = db_regex.match(connection)
-                if db_match is not None:
-                    dbfile, = db_match.groups()
-                    export_res = os.system('sqlite3 %s .dump > %s' %
-                                           (dbfile, db_exportfile))
-                    if export_res != 0:
-                        logger.critical("Database export failed")
-                        sys.exit(1)
-                else:
-                    logger.critical("Cannot obtain parameters for "
-                                    "database connection")
-                    sys.exit(1)
-
-            else:
-                logger.critical("Database engine not supported :-(")
-                sys.exit(1)
-
-        logger.info("Export finished")
+        logger.info("Export finished.")
         logger.operation = ""
         self.exit()
         return False
 
+    def dump_database(self):
+        """Dump the whole database. This is never used; however, this
+        part is retained for historical reasons.
+
+        """
+        # Warning: this part depends on the specific database used.
+        logger.info("Dumping SQL database.")
+        (engine, connection) = Config.database.split(':', 1)
+        db_exportfile = os.path.join(self.export_dir, "database_dump.sql")
+
+        # Export procedure for PostgreSQL.
+        if engine == 'postgresql':
+            db_regex = re.compile('//(\w*):(\w*)@(\w*)/(\w*)')
+            db_match = db_regex.match(connection)
+            if db_match is not None:
+                username, password, host, database = db_match.groups()
+                os.environ['PGPASSWORD'] = password
+                export_res = os.system('pg_dump -h %s -U %s -w %s -x " \
+                    "--attribute-inserts > %s' % (host, username, database,
+                                                  db_exportfile))
+                del os.environ['PGPASSWORD']
+                if export_res != 0:
+                    logger.critical("Database export failed.")
+                    return False
+            else:
+                logger.critical("Cannot obtain parameters for "
+                                "database connection.")
+                return False
+
+        # Export procedure for SQLite.
+        elif engine == 'sqlite':
+            db_regex = re.compile('///(.*)')
+            db_match = db_regex.match(connection)
+            if db_match is not None:
+                dbfile, = db_match.groups()
+                export_res = os.system('sqlite3 %s .dump > %s' %
+                                       (dbfile, db_exportfile))
+                if export_res != 0:
+                    logger.critical("Database export failed.")
+                    return False
+            else:
+                logger.critical("Cannot obtain parameters for "
+                                "database connection.")
+                return False
+
+        else:
+            logger.critical("Database engine not supported :-(")
+            return False
+
+        return True
+
     def safe_get_file(self, digest, path, descr_path=None):
+        """Get file from FileCacher ensuring that the digest is
+        correct.
+
+        digest (string): the digest of the file to retrieve.
+        path (string): the path where to save the file.
+        descr_path (string): the path where to save the description.
+
+        return (bool): True if all ok, False if something wrong.
+
+        """
         # First get the file
         try:
-            self.FC.get_file(digest, path=path)
-        except Exception as e:
-            logger.error("File %s could not retrieved from file server "
-                         "(%r), aborting..." % (digest, e))
-            sys.exit(1)
+            self.file_cacher.get_file(digest, path=path)
+        except Exception as error:
+            logger.error("File %s could not retrieved from file server (%r)." %
+                         (digest, error))
+            return False
 
         # Then check the digest
         calc_digest = sha1sum(path)
         if digest != calc_digest:
-            logger.error("File %s has wrong hash %s, aborting..." %
-                         (digest, calc_digest))
-            sys.exit(1)
+            logger.error("File %s has wrong hash %s." % (digest, calc_digest))
+            return False
 
         # If applicable, retrieve also the description
         if descr_path is not None:
             with open(descr_path, 'w') as fout:
-                fout.write(self.FC.describe(digest))
+                fout.write(self.file_cacher.describe(digest))
+
+        return True
 
 
 def main():
     """Parse arguments and launch process.
 
     """
-    parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
-    parser.add_option("-c", "--contest", help="contest ID to export",
-                      dest="contest_id", action="store", type="int",
-                      default=None)
-    parser.add_option("-s", "--shard", help="service shard number",
-                      dest="shard", action="store", type="int",
-                      default=None)
-    parser.add_option("-d", "--dump-database",
-                      help="include a SQL dump of the database (this will "
-                      "disclose data about other contests stored in the same "
-                      "database)",
-                      dest="dump", action="store_true", default=False)
-    parser.add_option("-S", "--skip-submissions",
-                      help="don't export submissions, only contest data",
-                      dest="skip_submissions", action="store_true",
-                      default=False)
-    parser.add_option("-l", "--light",
-                      help="light export (without executables and testcases)",
-                      dest="light", action="store_true", default=False)
-    options, args = parser.parse_args()
-    if len(args) != 1:
-        parser.error("I need exactly one parameter, "
-                     "the directory where to export the contest")
-    if options.shard is None:
-        parser.error("The `-s' option is mandatory!")
+    parser = argparse.ArgumentParser(
+        description="Exporter of CMS contests.")
+    parser.add_argument("-c", "--contest-id", help="id of contest to export",
+                        action="store", type=int)
+    parser.add_argument("-d", "--dump-database",
+                        help="include a SQL dump of the database (this will "
+                        "disclose data about other contests stored in the "
+                        "same database) - deprecated",
+                        action="store_true", default=False)
+    parser.add_argument("-s", "--skip-submissions",
+                        help="don't export submissions, only contest data",
+                        action="store_true", default=False)
+    parser.add_argument("-l", "--light",
+                        help="light export (without executables and "
+                        "testcases)",
+                        action="store_true", default=False)
+    parser.add_argument("shard", help="shard number", type=int)
+    parser.add_argument("export_directory",
+                        help="target directory where to export")
 
-    if options.contest_id is None:
-        options.contest_id = ask_for_contest()
+    args = parser.parse_args()
 
-    ContestExporter(shard=options.shard,
-                    contest_id=options.contest_id,
-                    dump=options.dump,
-                    export_dir=args[0],
-                    skip_submissions=options.skip_submissions,
-                    light=options.light).run()
+    if args.contest_id is None:
+        args.contest_id = ask_for_contest()
+
+    ContestExporter(shard=args.shard,
+                    contest_id=args.contest_id,
+                    dump=args.dump_database,
+                    export_dir=args.export_directory,
+                    skip_submissions=args.skip_submissions,
+                    light=args.light).run()
+
 
 if __name__ == "__main__":
     main()
