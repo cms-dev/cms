@@ -180,23 +180,21 @@ class SpoolExporter(Service):
         # Write rankings' header.
         print >> ranking_file, "Classifica finale del contest `%s'" % \
             self.contest.description
-        ranking_file_line = "%20s %10s" + " %10s" * len(self.contest.tasks)
-        print >> ranking_file, ranking_file_line % \
-            (("Utente", "Totale") + \
-             tuple([t.name for t in self.contest.tasks]))
-        ranking_csv_line = "%s,%s" + ",%s" * len(self.contest.tasks)
-        print >> ranking_csv, ranking_csv_line % \
-            (("utente", "totale") + \
-             tuple([t.name for t in self.contest.tasks]))
+        points_line = " %10s" * len(self.contest.tasks)
+        csv_points_line = ",%s" * len(self.contest.tasks)
+        print >> ranking_file, ("%20s %10s" % ("Utente", "Totale")) + \
+              (points_line % tuple([t.name for t in self.contest.tasks]))
+        print >> ranking_csv, ("%s,%s" % ("utente", "totale")) + \
+              (csv_points_line % tuple([t.name for t in self.contest.tasks]))
 
         # Write rankings' content.
         points_line = " %10.3f" * len(self.contest.tasks)
         csv_points_line = ",%.6f" * len(self.contest.tasks)
         for total, user, problems in users:
-            print >> ranking_file, "%20s %10.3f" % (user, total),
-            print >> ranking_file, points_line % tuple(problems)
-            print >> ranking_csv, "%s,%.6f" % (user, total),
-            print >> ranking_csv, csv_points_line % tuple(problems)
+            print >> ranking_file, ("%20s %10.3f" % (user, total)) + \
+                  (points_line % tuple(problems))
+            print >> ranking_csv, ("%s,%.6f" % (user, total)) + \
+                  (csv_points_line % tuple(problems))
 
         ranking_file.close()
         ranking_csv.close()
