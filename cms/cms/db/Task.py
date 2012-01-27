@@ -150,6 +150,7 @@ class Task(Base):
         """
         return {'name':                 self.name,
                 'title':                self.title,
+                'num':                  self.num,
                 'attachments':          [attachment.export_to_dict()
                                          for attachment
                                          in self.attachments.itervalues()],

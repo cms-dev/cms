@@ -193,7 +193,6 @@ class SpoolExporter(Service):
         points_line = " %10.3f" * len(self.contest.tasks)
         csv_points_line = ",%.6f" * len(self.contest.tasks)
         for total, user, problems in users:
-            print total, user, problems
             print >> ranking_file, "%20s %10.3f" % (user, total),
             print >> ranking_file, points_line % tuple(problems)
             print >> ranking_csv, "%s,%.6f" % (user, total),
