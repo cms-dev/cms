@@ -31,9 +31,6 @@ db_string = Config.database.replace("%s", Config._data_dir)
 db = create_engine(db_string, echo=Config.database_debug,
                    pool_size=20, pool_recycle=120)
 
-Base = declarative_base(db)
-metadata = Base.metadata
-
 Session = sessionmaker(db, twophase=Config.twophase_commit)
 ScopedSession = scoped_session(Session)
 
@@ -95,33 +92,60 @@ class SessionGen:
         self.session.close()
 
 
-def get_from_id(cls, _id, session):
-    """Given a session and an id, this class method returns the object
-    corresponding to the class and id, if existing.
-
-    cls (class): the class to which the method is attached
-    _id (string): the id of the object we want
-    session (SQLAlchemy session): the session to query
-    returns (object): the wanted object, or None
+class Base(declarative_base(db)):
+    """Base class for all classes managed by SQLAlchemy. Extending the
+    base class given by SQLAlchemy.
 
     """
-    try:
-        return session.query(cls).filter(cls.id == _id).one()
-    except NoResultFound:
+    # Needed so that SQLAlchemy does not think that this corresponds
+    # to a table.
+    __abstract__ = True
+
+    @classmethod
+    def get_from_id(cls, _id, session):
+        """Given a session and an id, this class method returns the object
+        corresponding to the class and id, if existing.
+
+        cls (class): the class to which the method is attached
+        _id (string): the id of the object we want
+        session (SQLAlchemy session): the session to query
+
+        return (object): the wanted object, or None
+
+        """
+        try:
+            return session.query(cls).filter(cls.id == _id).one()
+        except NoResultFound:
+            return None
+        except MultipleResultsFound:
+            return None
+
+    def get_session(self):
+        """Get the session to which this object is bound, possibly None.
+
+        """
+        try:
+            return sessionlib.object_session(self)
+        except:
+            return None
+
+    def export_to_dict(self):
+        """Placeholder for exporting method.
+
+        """
+        raise NotImplementedError("Please subclass me.")
+
+    @classmethod
+    def import_from_dict(cls, unused_data):
+        """Placeholder for importing method. These cannot be defined
+        neither here nor at the time of the definition of the subclass
+        (because they usually depends on a lot of other db-related
+        classes. So we define them in ImportFromDict. To avoid
+        unnecessary warning, we don't throw a NotImplementedError
+        here.
+
+        """
         return None
-    except MultipleResultsFound:
-        return None
 
 
-def get_session(self):
-    """Get the session to which this object is bound, possibly None.
-
-    """
-    try:
-        return sessionlib.object_session(self)
-    except:
-        return None
-
-
-Base.get_from_id = classmethod(get_from_id)
-Base.get_session = get_session
+metadata = Base.metadata
