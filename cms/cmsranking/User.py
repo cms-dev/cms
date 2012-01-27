@@ -30,8 +30,22 @@ class User(Entity):
     - team (str): the id of the team the user belongs to
 
     """
+    def __init__(self):
+        """Set the properties to some default values.
+
+        """
+        Entity.__init__(self)
+        self.f_name = None
+        self.l_name = None
+        self.team = None
+
     @staticmethod
     def validate(data):
+        """Validate the given dictionary.
+
+        See if it contains a valid representation of this entity.
+
+        """
         try:
             assert type(data) is dict, \
                 "Not a dictionary"

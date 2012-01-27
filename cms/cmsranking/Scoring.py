@@ -42,11 +42,11 @@ class NumberSet:
     def __init__(self):
         self._impl = list()
 
-    def insert(self, x):
-        self._impl.append(x)
+    def insert(self, val):
+        self._impl.append(val)
 
-    def remove(self, x):
-        self._impl.remove(x)
+    def remove(self, val):
+        self._impl.remove(val)
 
     def query(self):
         return max(self._impl + [0.0])
@@ -143,10 +143,10 @@ class Score:
             self._changes.append(subchange)
             self.append_change(subchange)
         else:
-            for i, v in enumerate(self._changes):
-                if subchange.time < v.time or \
-                   (subchange.time == v.time and subchange.key < v.key):
-                    self._changes.insert(i, subchange)
+            for idx, val in enumerate(self._changes):
+                if subchange.time < val.time or \
+                   (subchange.time == val.time and subchange.key < val.key):
+                    self._changes.insert(idx, subchange)
                     break
             self.reset_history()
             logger.info("Reset history for user '" +
@@ -244,8 +244,8 @@ class ScoringStore:
         self._callbacks.append(callback)
 
     def notify_callbacks(self, user, task, score):
-        for c in self._callbacks:
-            c(user, task, score)
+        for call in self._callbacks:
+            call(user, task, score)
 
     def create_submission(self, key):
         submission = Submission.store._store[key]
@@ -340,8 +340,8 @@ class ScoringStore:
         # Use a priority queue, containing only one entry
         # per-user/per-task.
         queue = list()
-        for user, d in self._scores.iteritems():
-            for task, scoring in d.iteritems():
+        for user, dic in self._scores.iteritems():
+            for task, scoring in dic.iteritems():
                 if scoring._history:
                     heapq.heappush(queue, (scoring._history[0],
                                            user, task, scoring, 0))

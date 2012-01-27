@@ -59,8 +59,8 @@ class LogFormatter(logging.Formatter):
         """
         try:
             record.message = record.getMessage()
-        except Exception, e:
-            record.message = 'Bad message (%r): %r' % (e, record.__dict__)
+        except Exception, exc:
+            record.message = 'Bad message (%r): %r' % (exc, record.__dict__)
 
         prefix = '%s%s.%03d%s' % (self.time_prefix,
             self.formatTime(record, '%Y-%m-%d %H:%M:%S'), record.msecs,

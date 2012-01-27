@@ -30,8 +30,22 @@ class Contest(Entity):
     - end (int): the unix timestamp at which the contest ends
 
     """
+    def __init__(self):
+        """Set the properties to some default values.
+
+        """
+        Entity.__init__(self)
+        self.name = None
+        self.begin = None
+        self.end = None
+
     @staticmethod
     def validate(data):
+        """Validate the given dictionary.
+
+        See if it contains a valid representation of this entity.
+
+        """
         try:
             assert type(data) is dict, \
                 "Not a dictionary"
