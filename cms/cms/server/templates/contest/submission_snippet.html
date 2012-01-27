@@ -47,7 +47,7 @@
     <tbody>
       {% for ev in s.evaluations %}
         {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
-        <tr><td>{{ ev.outcome }}</td><td>{{ ev.text }}</td></tr>
+      <tr><td>{{ ev.outcome }}</td><td>{{ ev.text }}</td></tr>
         {% end %}
       {% end %}
       {% if s.token is None and not any([testcase.public for testcase in s.task.testcases]) %}

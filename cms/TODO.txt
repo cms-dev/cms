@@ -1,8 +1,9 @@
 ** Database
 
-* LOW: use first_name/last_name instead of name.
+* MED: define appropriate UNIQUE indexes in the database. (E.g.: (num,
+  submission_id) in evaluations).
 
-* LOW: define appropriate UNIQUE indexes in the database.
+* LOW: use first_name/last_name instead of name.
 
 * LOW: it may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
