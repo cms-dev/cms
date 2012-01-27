@@ -220,6 +220,7 @@ class Store(object):
         if not isinstance(key, unicode) or key not in self._store:
             raise InvalidKey
         # retrieve entity
+        # TODO remove "key" field from returned entity
         return json.dumps(self._store[key].get())
 
     def list(self):
@@ -227,6 +228,7 @@ class Store(object):
         result = dict()
         for key, value in self._store.iteritems():
             result[key] = value.get()
+        # TODO remove "key" field from returned entities
         return json.dumps(result)
 
     def __contains__(self, key):
