@@ -200,8 +200,7 @@ def main():
     """Parse arguments and launch process.
 
     """
-    parser = argparse.ArgumentParser(
-        description="Exporter of CMS contests.")
+    parser = argparse.ArgumentParser(description="Exporter of CMS contests.")
     parser.add_argument("-c", "--contest-id", help="id of contest to export",
                         action="store", type=int)
     parser.add_argument("-d", "--dump-database",
