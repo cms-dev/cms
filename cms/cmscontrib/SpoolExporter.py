@@ -158,8 +158,8 @@ class SpoolExporter(Service):
         for user in self.contest.users:
             # Avoid hidden users.
             if not user.hidden:
-                users[user.username] = [0, user.username,
-                                        [None] * len(self.contest.tasks)]
+                users[user.username] = [0.0, user.username,
+                                        [0.0] * len(self.contest.tasks)]
             else:
                 hidden_users[user.username] = True
         for (username, task_num), score in \
@@ -190,15 +190,14 @@ class SpoolExporter(Service):
              tuple([t.name for t in self.contest.tasks]))
 
         # Write rankings' content.
+        points_line = " %10.3f" * len(self.contest.tasks)
+        csv_points_line = ",%.6f" * len(self.contest.tasks)
         for total, user, problems in users:
-            ranking_file_line = "%20s %10.3f" + \
-                                " %10.3f" * len(self.contest.tasks)
-            print >> ranking_file, ranking_file_line % \
-                ((user, total) + tuple(problems))
-            ranking_csv_line = "%s,%.6f" + \
-                               ",%.6f" * len(self.contest.tasks)
-            print >> ranking_csv, ranking_csv_line % \
-                ((user, total) + tuple(problems))
+            print total, user, problems
+            print >> ranking_file, "%20s %10.3f" % (user, total),
+            print >> ranking_file, points_line % tuple(problems)
+            print >> ranking_csv, "%s,%.6f" % (user, total),
+            print >> ranking_csv, csv_points_line % tuple(problems)
 
         ranking_file.close()
         ranking_csv.close()
