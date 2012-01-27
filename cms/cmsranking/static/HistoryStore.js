@@ -1,66 +1,49 @@
-# -*- coding: utf-8 -*-
+/* Programming contest management system
+ * Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 
-# Programming contest management system
-# Copyright © 2011 Luca Wehrstedt <luca.wehrstedt@gmail.com>
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+var HistoryStore = new function () {
+    var self = this;
 
-from pyjamas.HTTPRequest import HTTPRequest
-from pyjamas.JSONParser import JSONParser
-
-from pyjamas import Window
-from pyjamas import DOM
-
-from __pyjamas__ import JS
-
-
-# Config
-history_url = '/history'
-
-
-class HistoryCallback:
-    def __init__(self, store, callback):
-        self.store = store
-        self.callback = callback
-
-    def onCompletion(self, response):
-        self.store.perform_update(JSONParser().decode(response), self.callback)
-
-    def onError(self, response, code):
-        Window.alert("Error " + code + '\n' + response)
-
-
-class HistoryStore:
-    def __init__(self, datastore):
-        JS('''
+    self.init = function () {
         // List of score-change events divided by scope
         // _t contains all the tasks together, and _c does the same
         self.history_t = new Array();  // per task
         self.history_c = new Array();  // per contest
         self.history_g = new Array();  // global
-        ''')
-        self.ds = datastore
+    };
 
-    def request_update(self, callback):
-        HTTPRequest().asyncGet(history_url, HistoryCallback(self, callback))
+    self.request_update = function (callback) {
+        $.ajax({
+            url: Config.get_history_url(),
+            dataType: "json",
+            success: function (data) {
+                self.perform_update(data, callback);
+            },
+            error: function () {
+                console.error("Error while getting the history");
+            }
+        });
+    };
 
-    def perform_update(self, data, callback):
-        JS('''
+    self.perform_update = function (data, callback) {
         var d = new Object();
-        for (var u_id in self.ds.users) {
+        for (var u_id in DataStore.users) {
             d[u_id] = new Object();
-            for (var t_id in self.ds.tasks) {
+            for (var t_id in DataStore.tasks) {
                 d[u_id][t_id] = 0.0;
             }
         }
@@ -68,19 +51,22 @@ class HistoryStore:
         self.history_t = new Array();
         self.history_c = new Array();
         self.history_g = new Array();
-        ''')
 
-        for user, task, time, score in data:
-            JS('''
+        for (var i in data) {
+            var user = data[i][0];
+            var task = data[i][1];
+            var time = data[i][2];
+            var score = data[i][3];
+
             if (d[user]) {
                 d[user][task] = score;
 
                 self.history_t.push([user, task, time, score]);
 
-                var contest_id = self.ds.tasks[task]['contest'];
+                var contest_id = DataStore.tasks[task]['contest'];
                 var tmp_score = 0.0;
                 for (var t_id in d[user]) {
-                    if (self.ds.tasks[t_id]['contest'] == contest_id) {
+                    if (DataStore.tasks[t_id]['contest'] == contest_id) {
                         tmp_score += d[user][t_id];
                     }
                 }
@@ -92,12 +78,12 @@ class HistoryStore:
                 }
                 self.history_g.push([user, time, tmp_score]);
             }
-            ''')
+        }
 
-        callback()
+        callback();
+    };
 
-    def get_score_history_for_task(self, user_id, task_id):
-        JS('''
+    self.get_score_history_for_task = function (user_id, task_id) {
         var result = new Array();
 
         for (var i in self.history_t) {
@@ -111,10 +97,9 @@ class HistoryStore:
         }
 
         return result;
-        ''')
+    };
 
-    def get_score_history_for_contest(self, user_id, contest_id):
-        JS('''
+    self.get_score_history_for_contest = function (user_id, contest_id) {
         var result = new Array();
 
         for (var i in self.history_c) {
@@ -128,10 +113,9 @@ class HistoryStore:
         }
 
         return result;
-        ''')
+    };
 
-    def get_score_history(self, user_id):
-        JS('''
+    self.get_score_history = function (user_id) {
         var result = new Array();
 
         for (var i in self.history_g) {
@@ -144,16 +128,15 @@ class HistoryStore:
         }
 
         return result;
-        ''')
+    };
 
-    def get_rank_history_for_task(self, user_id, task_id):
-        JS('''
+    self.get_rank_history_for_task = function (user_id, task_id) {
         var d = new Object();
-        for (var u_id in self.ds.users) {
+        for (var u_id in DataStore.users) {
             d[u_id] = 0.0;
         }
         var above = 0;
-        var equal = Object.keys(self.ds.users).length;
+        var equal = Object.keys(DataStore.users).length;
 
         var result = new Array();
 
@@ -206,16 +189,15 @@ class HistoryStore:
         }
 
         return result;
-        ''')
+    };
 
-    def get_rank_history_for_contest(self, user_id, contest_id):
-        JS('''
+    self.get_rank_history_for_contest = function (user_id, contest_id) {
         var d = new Object();
-        for (var u_id in self.ds.users) {
+        for (var u_id in DataStore.users) {
             d[u_id] = 0.0;
         }
         var above = 0;
-        var equal = Object.keys(self.ds.users).length;
+        var equal = Object.keys(DataStore.users).length;
 
         var result = new Array();
 
@@ -268,16 +250,15 @@ class HistoryStore:
         }
 
         return result;
-        ''')
+    };
 
-    def get_rank_history(self, user_id):
-        JS('''
+    self.get_rank_history = function (user_id) {
         var d = new Object();
-        for (var u_id in self.ds.users) {
+        for (var u_id in DataStore.users) {
             d[u_id] = 0.0;
         }
         var above = 0;
-        var equal = Object.keys(self.ds.users).length;
+        var equal = Object.keys(DataStore.users).length;
 
         var result = new Array();
 
@@ -327,5 +308,5 @@ class HistoryStore:
         }
 
         return result;
-        ''')
-
+    };
+};

@@ -1,12 +1,25 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta name="pygwt:module" content="Ranking">
         <link rel='stylesheet' href='Ranking.css'>
+        <script type="text/javascript" src="lib/jquery.js"></script>
+        <script type="text/javascript" src="lib/eventsource.js"></script>
+        <!--[if lt IE 9]>
+            <script type="text/javascript" src="lib/explorercanvas.js"></script>
+        <![endif]-->
+        <script type="text/javascript" src="Config.js"></script>
+        <script type="text/javascript" src="DataStore.js"></script>
+        <script type="text/javascript" src="HistoryStore.js"></script>
+        <script type="text/javascript" src="Chart.js"></script>
+        <script type="text/javascript" src="UserDetail.js"></script>
+        <script type="text/javascript" src="TimeView.js"></script>
+        <script type="text/javascript" src="TeamSearch.js"></script>
+        <script type="text/javascript" src="Overview.js"></script>
+        <script type="text/javascript" src="Scoreboard.js"></script>
+        <script type="text/javascript" src="Ranking.js"></script>
         <title>Ranking</title>
     </head>
     <body id="body">
-        <script language="javascript" src="bootstrap.js"></script>
         <div class="outer_frame">
             <div class="logo_panel">
                 <img src="logo" />
@@ -17,7 +30,7 @@
                      class="search_field" type="search" />
                     <div id="team_search_bg" class="search_results">
                         <div class="frame">
-                            <img src="close.png" class="close" id="team_search_close" />
+                            <img src="img/close.png" class="close" id="team_search_close" />
                             <div class="body" id="team_search_body"></div>
                         </div>
                     </div>
@@ -48,7 +61,7 @@
         </div>
         <div class="UserPanel_bg" id="user_detail_background">
             <div class="UserPanel" id="user_detail_panel">
-                <img src="close.png" class="close" id="user_detail_close" />
+                <img src="img/close.png" class="close" id="user_detail_close" />
                 <div class="header">
                     <div class="summary">
                         <img id="user_detail_face" class="face" src=""/>
@@ -77,7 +90,10 @@
                     </div>
                 </div>
                 <div id="user_detail_title" class="title"></div>
-                <div id="user_detail_charts" class="charts"></div>
+                <div id="user_detail_charts" class="charts">
+                    <canvas id="user_detail_score_chart" width="940" height="250"></canvas>
+                    <canvas id="user_detail_rank_chart" width="940" height="250"></canvas>
+                </div>
                 <div class="submits">
                     <table id="user_detail_submissions"></table>
                 </div>
