@@ -69,9 +69,10 @@ def do_setup():
                   os.path.join("templates", "admin", "*.*"),
                   os.path.join("templates", "ranking", "*.*"),
                   ],
-              "cmsranking": [
-                  os.path.join("static", "lib", "*"),
-                  os.path.join("static", "*.*")
+          "cmsranking": [
+              os.path.join("static", "img", "*"),
+              os.path.join("static", "lib", "*"),
+              os.path.join("static", "*.*")
                   ]},
           entry_points={
               "console_scripts": [
@@ -182,11 +183,6 @@ def build():
         makedir(path)
         os.system("msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
 
-    print "compiling client code for ranking:"
-    os.chdir(os.path.join("cmsranking", "client"))
-    os.system("pyjsbuild -o ../static/ Ranking")
-    os.chdir(os.path.join("..", ".."))
-
     print "done."
 
 
@@ -206,18 +202,19 @@ def install():
     root = pwd.getpwnam("root")
 
     print "copying mo-box to /usr/local/bin/."
+    makedir(os.path.join("/", "usr", "local", "bin"), root, 0755)
     copyfile(os.path.join(".", "box", "mo-box"),
              os.path.join("/", "usr", "local", "bin", "mo-box"),
              root, 0755)
 
     print "copying configuration to /usr/local/etc/."
+    makedir(os.path.join("/", "usr", "local", "etc"), root, 0755)
     conf_file = os.path.join("/", "usr", "local", "etc", "cms.conf")
     if os.path.exists(os.path.join(".", "examples", "cms.conf")):
         copyfile(os.path.join(".", "examples", "cms.conf"), conf_file,
                  cmsuser, 0660)
     else:
-        copyfile(os.path.join(".", "examples", "cms.conf.sample"),
-                 os.path.join("/", "usr", "local", "etc", "cms.conf"),
+        copyfile(os.path.join(".", "examples", "cms.conf.sample"), conf_file,
                  cmsuser, 0660)
 
     print "copying localization files:"
@@ -241,18 +238,6 @@ def install():
         makedir(_dir, root, 0755)
         _dir = os.path.join(_dir, "cms")
         makedir(_dir, cmsuser, 0770)
-
-    print "copying static file for ranking."
-    try:
-        shutil.rmtree(os.path.join("/", "usr", "local", "share",
-                                   "cms", "ranking"))
-    except OSError:
-        pass
-    makedir(os.path.join("/", "usr", "local", "share", "cms", "ranking"),
-            root, 0755)
-    copytree(os.path.join("cmsranking", "static"),
-             os.path.join("/", "usr", "local", "share", "cms", "ranking"),
-             root, 0644, 0755)
 
     os.umask(old_umask)
     print "done."

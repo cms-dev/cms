@@ -1,11 +1,11 @@
-Format: http://svn.debian.org/wsvn/dep/web/deps/dep5.mdwn?view=co&rev=174
+Format: http://dep.debian.net/deps/dep5/
 Upstream-Name: cms
 Upstream-Contact: Stefano Maggiolo <s.maggiolo@gmail.com>
-Source: ssh://gitosis@poisson.phc.unipi.it/cms.git
-Copyright: © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-           © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
-           © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-           © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+Source: http://github.com/giomasce/cms
+Copyright: 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+           2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+           2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+           2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: AGPL-3+
 
 License: AGPL-3+
@@ -16,30 +16,38 @@ License: AGPL-3+
  .
  This program is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  GNU Affero General Public License for more details.
  .
  You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 Files: *
-Copyright: © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-           © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
-           © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+Copyright: 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+           2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+           2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 License: AGPL-3+
 
-Files: cms/ranking/*
-Copyright: © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+Files: cms/cmsranking/*
+Copyright: 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: AGPL-3+
 
-Files: cms/ranking/client/images/* cms/ranking/client/public/*.png
-Copyright: © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+Files: cms/cmsranking/images/* cms/ranking/static/img/*.png
+Copyright: 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: CC-BY-SA-3.0
 
-Files: cms/ranking/client/EventSource.js
-Copyright: © 2010 Remy Sharp, http://remysharp.com
+Files: cms/cmsranking/static/lib/jquery.js
+Copyright: 2011 John Resig, http://jquery.com/
+License: Expat or GPL-2
+
+Files: cms/cmsranking/static/lib/explorercanvas.js
+Copyright: 2006 Google Inc., http://code.google.com/p/explorercanvas/
+License: Apache-2.0
+
+Files: cms/cmsranking/static/lib/eventsource.js
+Copyright: 2010 Remy Sharp, http://remysharp.com
 License: Expat
 
 Files: cms/server/static/jq/*
-Copyright: © 2009-2011 Chris Leonello
-License: MIT or GPL
+Copyright: 2009-2011 Chris Leonello
+License: Expat or GPL-2

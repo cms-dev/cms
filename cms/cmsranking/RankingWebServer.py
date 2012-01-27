@@ -314,15 +314,15 @@ def main():
         (r"/events", NotificationHandler),
         (r"/logo", ImageHandler, {
             'location': os.path.join(config.lib_dir, 'logo'),
-            'fallback': os.path.join(config.web_dir, 'logo.png')
-            }),
+            'fallback': os.path.join(config.web_dir, 'img', 'logo.png')
+        }),
         (r"/faces/([A-Za-z0-9_]+)", ImageHandler, {
             'location': os.path.join(config.lib_dir, 'faces', '%s'),
-            'fallback': os.path.join(config.web_dir, 'face.png')
-            }),
+            'fallback': os.path.join(config.web_dir, 'img', 'face.png')
+        }),
         (r"/flags/([A-Za-z0-9_]+)", ImageHandler, {
             'location': os.path.join(config.lib_dir, 'flags', '%s'),
-            'fallback': os.path.join(config.web_dir, 'flag.png')
+            'fallback': os.path.join(config.web_dir, 'img', 'flag.png')
             }),
         (r"/(.+)", tornado.web.StaticFileHandler, {
             'path': config.web_dir
