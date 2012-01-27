@@ -67,12 +67,12 @@ class ContestExporter(Service):
         logger.operation = "exporting contest %d" % self.contest_id
         logger.info("Starting export")
 
-        logger.info("Creating dir structure")
+        logger.info("Creating dir structure.")
         try:
             os.mkdir(self.export_dir)
         except OSError:
             logger.error("The specified directory already exists, "
-                         "I won't overwrite it")
+                         "I won't overwrite it.")
             self.exit()
             return False
         files_dir = os.path.join(self.export_dir, "files")
@@ -96,7 +96,7 @@ class ContestExporter(Service):
                     return False
 
             # Export the contest in JSON format
-            logger.info("Exporting the contest in JSON format")
+            logger.info("Exporting the contest in JSON format.")
             with open(os.path.join(self.export_dir,
                                    "contest.json"), 'w') as fout:
                 json.dump(contest.export_to_dict(self.skip_submissions),
@@ -201,21 +201,19 @@ def main():
 
     """
     parser = argparse.ArgumentParser(description="Exporter of CMS contests.")
-    parser.add_argument("-c", "--contest-id", help="id of contest to export",
-                        action="store", type=int)
-    parser.add_argument("-d", "--dump-database",
+    parser.add_argument("-c", "--contest-id", action="store", type=int,
+                        help="id of contest to export")
+    parser.add_argument("-d", "--dump-database", action="store_true",
                         help="include a SQL dump of the database (this will "
                         "disclose data about other contests stored in the "
-                        "same database) - deprecated",
-                        action="store_true", default=False)
-    parser.add_argument("-s", "--skip-submissions",
-                        help="don't export submissions, only contest data",
-                        action="store_true", default=False)
-    parser.add_argument("-l", "--light",
+                        "same database) - deprecated")
+    parser.add_argument("-s", "--skip-submissions", action="store_true",
+                        help="don't export submissions, only contest data")
+    parser.add_argument("-l", "--light", action="store_true",
                         help="light export (without executables and "
-                        "testcases)",
-                        action="store_true", default=False)
-    parser.add_argument("shard", help="shard number", type=int)
+                        "testcases)")
+    parser.add_argument("shard", type=int,
+                        help="shard number")
     parser.add_argument("export_directory",
                         help="target directory where to export")
 

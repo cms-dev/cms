@@ -19,8 +19,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This service creates a tree structure "similar" to the one used
-    in Italian IOI repository for storing the results of a contest.
+"""This service creates a tree structure "similar" to the one used in
+Italian IOI repository for storing the results of a contest.
 
 """
 

@@ -19,10 +19,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""This service load a contest from a tree structure "similar" to the
+one used in Italian IOI repository.
+
+"""
+
 import yaml
 import os
 import codecs
-import optparse
+import argparse
 
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service
@@ -36,11 +41,15 @@ from cms.service.ScoreType import ScoreTypes
 
 
 class YamlLoader:
-    def __init__(self, FC, drop, modif, user_num):
+    """Actually look into the directory of the contest, and load all
+    data and files.
+
+    """
+    def __init__(self, file_cacher, drop, modif, user_number):
         self.drop = drop
         self.modif = modif
-        self.user_num = user_num
-        self.FC = FC
+        self.user_number = user_number
+        self.file_cacher = file_cacher
 
     def get_params_for_contest(self, path):
         """Given the path of a contest, extract the data from its
@@ -50,6 +59,10 @@ class YamlLoader:
         Returns that dictionary and the two pieces of data that must
         be processed with get_params_for_task and
         get_params_for_users.
+
+        path (string): the input directory.
+
+        return (dict): data of the contest.
 
         """
         path = os.path.realpath(path)
@@ -125,6 +138,11 @@ class YamlLoader:
         into FS, and fills the dictionary of parameters required by
         Task.import_from_dict().
 
+        path (string): path of the task.
+        num (int): number of the task in the contest task ordering.
+
+        return (dict): info of the task.
+
         """
         path = os.path.realpath(path)
         super_path, name = os.path.split(path)
@@ -143,7 +161,7 @@ class YamlLoader:
         params["time_limit"] = conf["timeout"]
         params["memory_limit"] = conf["memlimit"]
         params["attachments"] = {}  # FIXME - Use auxiliary
-        params["statement"] = self.FC.put_file(
+        params["statement"] = self.file_cacher.put_file(
             path=os.path.join(path, "testo", "testo.pdf"),
             description="PDF statement for task %s" % name)
         params["task_type"] = TaskTypes.TASK_TYPE_BATCH
@@ -152,7 +170,7 @@ class YamlLoader:
             SubmissionFormatElement("%s.%%l" % name).export_to_dict()]
 
         if os.path.exists(os.path.join(path, "cor", "correttore")):
-            params["managers"] = [Manager(self.FC.put_file(
+            params["managers"] = [Manager(self.file_cacher.put_file(
                         path=os.path.join(path, "cor", "correttore"),
                         description="Manager for task %s" % (name)),
                                           "checker").export_to_dict()]
@@ -172,13 +190,15 @@ class YamlLoader:
             public_testcases = []
         params["testcases"] = []
         for i in xrange(int(conf["n_input"])):
-            fi = os.path.join(path, "input", "input%d.txt" % i)
-            fo = os.path.join(path, "output", "output%d.txt" % i)
+            _input = os.path.join(path, "input", "input%d.txt" % i)
+            output = os.path.join(path, "output", "output%d.txt" % i)
             params["testcases"].append(Testcase(
-                self.FC.put_file(
-                    path=fi, description="Input %d for task %s" % (i, name)),
-                self.FC.put_file(
-                    path=fo, description="Output %d for task %s" % (i, name)),
+                self.file_cacher.put_file(
+                    path=_input,
+                    description="Input %d for task %s" % (i, name)),
+                self.file_cacher.put_file(
+                    path=output,
+                    description="Output %d for task %s" % (i, name)),
                 public=(i in public_testcases)).export_to_dict())
         params["token_initial"] = conf.get("token_initial", 0)
         params["token_max"] = conf.get("token_max", None)
@@ -203,35 +223,43 @@ class YamlLoader:
             task_params = self.get_params_for_task(os.path.join(path, task),
                                                    num=i)
             params["tasks"].append(task_params)
-        if self.user_num is None:
+        if self.user_number is None:
             for user in users:
                 user_params = self.get_params_for_user(user)
                 params["users"].append(user_params)
         else:
-            logger.info("Generating %d random users." % (self.user_num))
-            for i in xrange(self.user_num):
+            logger.info("Generating %s random users." % self.user_number)
+            for i in xrange(self.user_number):
                 params["users"].append(User("User %d" % (i),
                                             "user%03d" % (i)).export_to_dict())
         return params
 
 
 class YamlImporter(Service):
+    """This service load a contest from a tree structure "similar" to
+    the one used in Italian IOI repository.
 
-    def __init__(self, shard, drop, modif, path, user_num):
+    """
+    def __init__(self, shard, drop, modif, path, user_number):
         self.drop = drop
         self.modif = modif
         self.path = path
-        self.user_num = user_num
+        self.user_number = user_number
 
         logger.initialize(ServiceCoord("YamlImporter", shard))
         Service.__init__(self, shard, custom_logger=logger)
-        self.FC = FileCacher(self)
+        self.file_cacher = FileCacher(self)
 
-        self.loader = YamlLoader(self.FC, drop, modif, user_num)
+        self.loader = YamlLoader(self.file_cacher, drop, modif, user_number)
 
         self.add_timeout(self.do_import, None, 10, immediately=True)
 
     def do_import(self):
+        """Take care of creating the database structure, delegating
+        the loading of the contest data and putting them on the
+        database.
+
+        """
         logger.info("Creating database structure.")
         if self.drop:
             with SessionGen() as session:
@@ -240,21 +268,22 @@ class YamlImporter(Service):
             metadata.drop_all()
         metadata.create_all()
 
-        c = Contest.import_from_dict(self.loader.import_contest(self.path))
+        contest = Contest.import_from_dict(
+            self.loader.import_contest(self.path))
 
         logger.info("Creating contest on the database.")
         with SessionGen() as session:
-            session.add(c)
-            c.create_empty_ranking_view()
+            session.add(contest)
+            contest.create_empty_ranking_view()
             session.flush()
 
-            contest_id = c.id
+            contest_id = contest.id
 
             logger.info("Analyzing database.")
             analyze_all_tables(session)
             session.commit()
 
-        logger.info("Import finished (new contest ID: %d)." % (contest_id))
+        logger.info("Import finished (new contest ID: %s)." % (contest_id))
 
         self.exit()
         return False
@@ -264,47 +293,37 @@ def main():
     """Parse arguments and launch process.
 
     """
-    parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
-    parser.add_option("-z", "--zero-time",
-                      dest="zero_time",
-                      help="set to zero contest start and stop time",
-                      default=False, action="store_true")
-    parser.add_option("-t", "--test",
-                      dest="test",
-                      help="setup a contest for testing "
-                      "(times: 0, 2*10^9; ips: 0.0.0.0, passwords: a)",
-                      default=False, action="store_true")
-    parser.add_option("-d", "--drop",
-                      dest="drop", help="drop everything from the database "
-                      "before importing",
-                      default=False, action="store_true")
-    parser.add_option("-s", "--shard", help="service shard number",
-                      dest="shard", action="store", type="int", default=None)
-    parser.add_option("-n", "--user-number",
-                      help="put N random users instead of importing them",
-                      dest="user_num", action="store", type="int",
-                      default=None)
-    options, args = parser.parse_args()
-    if len(args) != 1:
-        parser.error("I need exactly one parameter, the contest directory")
-    if options.shard is None:
-        parser.error("The `-s' option is mandatory!")
-    if options.test and options.zero_time:
-        parser.error("At most one between `-z' and `-t' can be specified")
+    parser = argparse.ArgumentParser(
+        description="Importer from the Italian repository for CMS.")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-z", "--zero-time", action="store_true",
+                       help="set to zero contest start and stop time")
+    group.add_argument("-t", "--test", action="store_true",
+                       help="setup a contest for testing "
+                       "(times: 0, 2*10^9; ips: 0.0.0.0, passwords: a)")
+    parser.add_argument("-d", "--drop", action="store_true",
+                        help="drop everything from the database "
+                        "before importing")
+    parser.add_argument("-n", "--user-number", action="store", type=int,
+                        help="put N random users instead of importing them")
+    parser.add_argument("shard", type=int,
+                        help="shard number")
+    parser.add_argument("import_directory",
+                        help="source directory from where import")
+
+    args = parser.parse_args()
 
     modif = None
-    if options.test:
+    if args.test:
         modif = 'test'
-    elif options.zero_time:
+    elif args.zero_time:
         modif = 'zero_time'
 
-    path = args[0]
-
-    YamlImporter(shard=options.shard,
-                 drop=options.drop,
+    YamlImporter(shard=args.shard,
+                 drop=args.drop,
                  modif=modif,
-                 path=path,
-                 user_num=options.user_num).run()
+                 path=args.import_directory,
+                 user_number=args.user_number).run()
 
 
 if __name__ == "__main__":

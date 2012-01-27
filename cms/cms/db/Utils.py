@@ -120,8 +120,8 @@ def ask_for_contest(skip=None):
                 else:
                     print
 
-        contest_number = raw_input("Insert the number next to the contest "
-                                   "you want to load: ")
+        contest_number = raw_input("Insert the row number next to the contest "
+                                   "you want to load (not the id): ")
         if contest_number == "":
             contest_number = n_contests - 1
         try:

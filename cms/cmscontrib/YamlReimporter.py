@@ -19,7 +19,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import optparse
+"""This service load a contest from a tree structure "similar" to the
+one used in Italian IOI repository ***over*** a contest already in
+CMS.
+
+"""
+
+import argparse
 
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service
@@ -32,46 +38,51 @@ from cmscontrib.YamlImporter import YamlLoader
 
 
 class YamlReimporter(Service):
+    """This service load a contest from a tree structure "similar" to
+    the one used in Italian IOI repository ***over*** a contest
+    already in CMS.
 
+    """
     def __init__(self, shard, path, contest_id):
         self.path = path
         self.contest_id = contest_id
 
         logger.initialize(ServiceCoord("YamlReimporter", shard))
         Service.__init__(self, shard, custom_logger=logger)
-        self.FC = FileCacher(self)
+        self.file_cacher = FileCacher(self)
 
-        self.loader = YamlLoader(self.FC, False, None, None)
+        self.loader = YamlLoader(self.file_cacher, False, None, None)
 
         self.add_timeout(self.do_reimport, None, 10, immediately=True)
 
     def do_reimport(self):
-        # Create the dict corresponding to the new contest
+        """Ask the loader to load the contest and actually merge the
+        two.
+
+        """
+        # Create the dict corresponding to the new contest.
         yaml_contest = self.loader.import_contest(self.path)
-        yaml_users = dict(map(lambda x: (x['username'], x),
-                              yaml_contest['users']))
-        yaml_tasks = dict(map(lambda x: (x['name'], x),
-                              yaml_contest['tasks']))
+        yaml_users = dict(((x['username'], x) for x in yaml_contest['users']))
+        yaml_tasks = dict(((x['name'], x) for x in yaml_contest['tasks']))
 
         with SessionGen(commit=False) as session:
 
             # Create the dict corresponding to the old contest, from
-            # the database
+            # the database.
             contest = Contest.get_from_id(self.contest_id, session)
             cms_contest = contest.export_to_dict()
-            cms_users = dict(map(lambda x: (x['username'], x),
-                                 cms_contest['users']))
-            cms_tasks = dict(map(lambda x: (x['name'], x),
-                                 cms_contest['tasks']))
+            cms_users = dict(((x['username'], x)
+                              for x in cms_contest['users']))
+            cms_tasks = dict(((x['name'], x) for x in cms_contest['tasks']))
 
-            # Delete the old contest from the database
+            # Delete the old contest from the database.
             session.delete(contest)
             session.flush()
 
             # Do the actual merge: first of all update all users of
             # the old contest with the corresponding ones from the new
             # contest; fail if some user is present in the old contest
-            # but not in the new one
+            # but not in the new one.
             for user_num, user in enumerate(cms_contest['users']):
                 try:
                     user_submissions = \
@@ -85,12 +96,12 @@ class YamlReimporter(Service):
                                  "but not in the new one" % (user['username']))
 
             # The append the users in the new contest, not present in
-            # the old one
+            # the old one.
             for user in yaml_contest['users']:
                 if user['username'] not in cms_users.keys():
                     cms_contest['users'].append(user)
 
-            # The same for tasks: update old tasks
+            # The same for tasks: update old tasks.
             for task_num, task in enumerate(cms_contest['tasks']):
                 try:
                     cms_contest['tasks'][task_num] = yaml_tasks[task['name']]
@@ -98,12 +109,13 @@ class YamlReimporter(Service):
                     logger.error("Task %d exists in old contest, "
                                  "but not in the new one" % (task['name']))
 
-            # And add new tasks
+            # And add new tasks.
             for task in yaml_contest['tasks']:
                 if task['name'] not in cms_tasks.keys():
                     cms_contest['tasks'].append(task)
 
-            # Reimport the contest in the database, with the previous ID
+            # Reimport the contest in the database, with the previous
+            # ID.
             contest = Contest.import_from_dict(cms_contest)
             contest.id = self.contest_id
             session.add(contest)
@@ -113,7 +125,7 @@ class YamlReimporter(Service):
             analyze_all_tables(session)
             session.commit()
 
-        logger.info("Reimport of contest %d finished." % (self.contest_id))
+        logger.info("Reimport of contest %s finished." % self.contest_id)
 
         self.exit()
         return False
@@ -123,28 +135,23 @@ def main():
     """Parse arguments and launch process.
 
     """
-    parser = optparse.OptionParser(usage="usage: %prog [options] contest_dir")
-    parser.add_option("-s", "--shard", help="service shard number",
-                      dest="shard", action="store", type="int", default=None)
-    parser.add_option("-c", "--contest",
-                      help="contest ID to overwrite",
-                      dest="contest_id", action="store", type="int",
-                      default=None)
-    options, args = parser.parse_args()
-    if len(args) != 1:
-        parser.error("I need exactly one parameter, the contest directory")
-    if options.shard is None:
-        parser.error("The `-s' option is mandatory!")
+    parser = argparse.ArgumentParser(
+        descrption="Load a contest from the Italian repository "
+        "over an old one in CMS.")
+    parser.add_argument("-c", "--contest-id", action="store", type=int,
+                        help="id of contest to overwrite")
+    parser.add_argument("shard", help="shard number", type=int)
+    parser.add_argument("import_directory",
+                        help="source directory from where import")
 
-    contest_id = options.contest_id
-    if contest_id is None:
-        contest_id = ask_for_contest()
+    args = parser.parse_args()
 
-    path = args[0]
+    if args.contest_id is None:
+        args.contest_id = ask_for_contest()
 
-    YamlReimporter(shard=options.shard,
-                   path=path,
-                   contest_id=contest_id).run()
+    YamlReimporter(shard=args.shard,
+                   path=args.import_directory,
+                   contest_id=args.contest_id).run()
 
 
 if __name__ == "__main__":

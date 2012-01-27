@@ -55,7 +55,7 @@ class ContestImporter(Service):
         self.add_timeout(self.do_import, None, 10, immediately=True)
 
     def do_import(self):
-        """Run the actual export code.
+        """Run the actual import code.
 
         """
         logger.operation = "importing contest from %s" % (self.import_dir)
@@ -138,6 +138,8 @@ class ContestImporter(Service):
                          "aborting..." % (path, calc_digest, digest))
             return False
 
+        return True
+
 
 def main():
     """Parse arguments and launch process.
@@ -145,17 +147,15 @@ def main():
     """
     parser = argparse.ArgumentParser(description="Importer of CMS contests")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("-f", "--only-files",
-                       help="only import files, ignore database structure",
-                       action="store_true", default=False)
-    group.add_argument("-F", "--no-files",
-                       help="only import database structure, ignore files",
-                       action="store_true", default=False)
-    parser.add_argument("-d", "--drop",
+    group.add_argument("-f", "--only-files", action="store_true",
+                       help="only import files, ignore database structure")
+    group.add_argument("-F", "--no-files", action="store_true",
+                       help="only import database structure, ignore files")
+    parser.add_argument("-d", "--drop", action="store_true",
                         help="drop everything from the database "
-                        "before importing",
-                        action="store_true", default=False)
-    parser.add_argument("shard", help="shard number", type=int)
+                        "before importing")
+    parser.add_argument("shard", type=int,
+                        help="shard number")
     parser.add_argument("import_directory",
                         help="source directory from where import")
 
