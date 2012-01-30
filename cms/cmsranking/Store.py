@@ -65,8 +65,8 @@ class Store(object):
         try:
             for name in os.listdir(self._path):
                 if name[-5:] == '.json' and name[:-5] != '':
-                    with open(os.path.join(self._path, name), 'r') as f:
-                        data = f.read()
+                    with open(os.path.join(self._path, name), 'r') as rec:
+                        data = rec.read()
                         item = self._entity()
                         item.load(json.loads(data))
                         item.key = name[:-5]
@@ -140,8 +140,8 @@ class Store(object):
             callback(key)
         # reflect changes on the persistent storage
         try:
-            with open(os.path.join(self._path, key + '.json'), 'w') as f:
-                f.write(json.dumps(self._store[key].dump()))
+            with open(os.path.join(self._path, key + '.json'), 'w') as rec:
+                rec.write(json.dumps(self._store[key].dump()))
         except IOError:
             logger.error("IOError occured", exc_info=True)
 
@@ -175,8 +175,8 @@ class Store(object):
             callback(key)
         # reflect changes on the persistent storage
         try:
-            with open(os.path.join(self._path, key + '.json'), 'w') as f:
-                f.write(json.dumps(self._store[key].dump()))
+            with open(os.path.join(self._path, key + '.json'), 'w') as rec:
+                rec.write(json.dumps(self._store[key].dump()))
         except IOError:
             logger.error("IOError occured", exc_info=True)
 

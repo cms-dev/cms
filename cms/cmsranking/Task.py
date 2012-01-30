@@ -33,8 +33,24 @@ class Task(Entity):
     - order (int): the order of the tasks inside of the contest
 
     """
+    def __init__(self):
+        """Set the properties to some default values.
+
+        """
+        Entity.__init__(self)
+        self.name = None
+        self.contest = None
+        self.score = None
+        self.extra_headers = None
+        self.order = None
+
     @staticmethod
     def validate(data):
+        """Validate the given dictionary.
+
+        See if it contains a valid representation of this entity.
+
+        """
         try:
             assert type(data) is dict, \
                 "Not a dictionary"

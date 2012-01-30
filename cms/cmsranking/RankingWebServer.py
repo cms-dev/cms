@@ -62,8 +62,8 @@ def authenticated(method):
             password = ':'.join(token.split(':')[1:])
             assert username == config.username, "Wrong username"
             assert password == config.password, "Wrong password"
-        except Exception as e:
-            logger.error("Auth: " + str(e) + "\n" + self.request.full_url(),
+        except Exception as exc:
+            logger.error("Auth: %r\n%s" % (exc, self.request.full_url()),
                          extra={'request_body': header})
             raise tornado.web.HTTPError(401)
 
@@ -216,7 +216,6 @@ class NotificationHandler(DataHandler):
     @tornado.web.asynchronous
     def get(self):
         """Send asynchronous updates."""
-        global proxy
         self.set_status(200)
         self.set_header('Content-Type', 'text/event-stream')
         self.set_header('Cache-Control', 'no-cache')
@@ -255,8 +254,8 @@ class HistoryHandler(DataHandler):
 
 class ScoreHandler(DataHandler):
     def get(self):
-        for u_id, d in Scoring.store._scores.iteritems():
-            for t_id, score in d.iteritems():
+        for u_id, dic in Scoring.store._scores.iteritems():
+            for t_id, score in dic.iteritems():
                 if score.get_score() > 0.0:
                     self.write('%s %s %f\n' % (u_id, t_id, score.get_score()))
 
@@ -276,23 +275,23 @@ class ImageHandler(tornado.web.RequestHandler):
     def get(self, *args):
         self.location %= tuple(args)
 
-        for ext, _type in self.formats.iteritems():
+        for ext, filetype in self.formats.iteritems():
             if os.path.isfile(self.location + '.' + ext):
-                self.serve(self.location + '.' + ext, _type)
+                self.serve(self.location + '.' + ext, filetype)
                 return
 
         self.serve(self.fallback, 'image/png')  # FIXME hardcoded type
 
-    def serve(self, path, type):
-        self.set_header("Content-Type", type)
+    def serve(self, path, filetype):
+        self.set_header("Content-Type", filetype)
 
         modified = datetime.utcfromtimestamp(int(os.path.getmtime(path)))
         self.set_header('Last-Modified', modified)
 
         # TODO check for If-Modified-Since and If-None-Match
 
-        with open(path, 'rb') as f:
-            self.write(f.read())
+        with open(path, 'rb') as data:
+            self.write(data.read())
 
 
 class HomeHandler(tornado.web.RequestHandler):

@@ -64,28 +64,33 @@ class Config(object):
 # Create an instance of the Config class.
 config = Config()
 
+def load_config():
+    """Load the configuration from the default locations.
 
-for path in [os.path.join("/", "usr", "local", "etc", "cms.ranking.conf"),
-             os.path.join(".", "cms.ranking.conf")]:
+    """
+    for path in [os.path.join("/", "usr", "local", "etc", "cms.ranking.conf"),
+                 os.path.join(".", "cms.ranking.conf")]:
+        try:
+            data = json.load(open(path))
+            assert isinstance(data, dict)
+            for key, value in data.iteritems():
+                config.set(key, value)
+        except:
+            pass
+
     try:
-        data = json.load(open(path))
-        assert isinstance(data, dict)
-        for key, value in data.iteritems():
-            config.set(key, value)
-    except:
-        pass
+        os.makedirs(config.lib_dir)
+    except OSError:
+        pass  # We assume the directory already exists...
 
-try:
-    os.makedirs(config.lib_dir)
-except OSError:
-    pass  # We assume the directory already exists...
+    try:
+        os.makedirs(config.web_dir)
+    except OSError:
+        pass  # We assume the directory already exists...
 
-try:
-    os.makedirs(config.web_dir)
-except OSError:
-    pass  # We assume the directory already exists...
+    try:
+        os.makedirs(config.log_dir)
+    except OSError:
+        pass  # We assume the directory already exists...
 
-try:
-    os.makedirs(config.log_dir)
-except OSError:
-    pass  # We assume the directory already exists...
+load_config()

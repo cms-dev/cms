@@ -28,12 +28,24 @@ class Team(Entity):
     - name (str): the human-readable name of the team
 
     """
+    def __init__(self):
+        """Set the properties to some default values.
+
+        """
+        Entity.__init__(self)
+        self.name = None
+
     @staticmethod
     def validate(data):
+        """Validate the given dictionary.
+
+        See if it contains a valid representation of this entity.
+
+        """
         try:
-            assert type(data) is dict,\
+            assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['name']) is unicode,\
+            assert type(data['name']) is unicode, \
                 "Field 'name' isn't a string"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)
