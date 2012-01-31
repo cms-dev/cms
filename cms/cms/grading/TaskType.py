@@ -35,10 +35,11 @@ import codecs
 import simplejson
 
 from cms import Config
-from cms.async.AsyncLibrary import logger, async_lock
+from cms.async.AsyncLibrary import async_lock
 from cms.box.Sandbox import Sandbox
 from cms.db.SQLAlchemyAll import Executable, Evaluation
 from cms.grading import JobException
+from cms.service.LogService import logger
 from cms.util.Utils import get_compilation_command, white_diff
 
 
@@ -410,7 +411,7 @@ class TaskType:
         return False, None, None
 
     def evaluation_step(self, command, executables_to_get,
-                        files_to_get, time_limit=0, memory_limit=None,
+                        files_to_get, time_limit=0, memory_limit=0,
                         allow_path=None,
                         stdin_redirect=None, stdout_redirect=None,
                         final=False):

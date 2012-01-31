@@ -27,7 +27,7 @@ import stat
 import select
 import re
 
-from cms.async.AsyncLibrary import logger
+from cms.service.LogService import logger
 
 
 class Sandbox:
