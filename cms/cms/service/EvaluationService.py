@@ -56,6 +56,9 @@ class JobQueue:
     def __init__(self):
         self.queue = []
 
+    def __contains__(self, job):
+        return job in (x[2] for x in self.queue)
+
     def push(self, job, priority, timestamp=None):
         """Push a job in the queue. If timestamp is not specified,
         uses the current time.
@@ -175,6 +178,9 @@ class WorkerPool:
         self.error_count = {}
         self.side_data = {}
         self.schedule_disabling = {}
+
+    def __contains__(self, job):
+        return job in self.job.values()
 
     def add_worker(self, worker_coord):
         """Add a new worker to the worker pool. This is for
@@ -497,9 +503,17 @@ class EvaluationService(Service):
             new_submission_ids_to_check = \
                 [x.id for x in contest.get_submissions()
                  if (not x.compiled() and x.compilation_tries <
-                     EvaluationService.MAX_COMPILATION_TRIES)
+                     EvaluationService.MAX_COMPILATION_TRIES and
+                     (EvaluationService.JOB_TYPE_COMPILATION, x.id) not in
+                     self.queue and
+                     (EvaluationService.JOB_TYPE_COMPILATION, x.id) not in
+                     self.pool)
                     or (not x.evaluated() and x.evaluation_tries <
-                        EvaluationService.MAX_EVALUATION_TRIES)]
+                        EvaluationService.MAX_EVALUATION_TRIES and
+                        (EvaluationService.JOB_TYPE_EVALUATION, x.id) not in
+                        self.queue and
+                        (EvaluationService.JOB_TYPE_EVALUATION, x.id)
+                        not in self.pool)]
 
         new = len(new_submission_ids_to_check)
         old = len(self.submission_ids_to_check)
