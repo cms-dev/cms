@@ -247,7 +247,7 @@ class Contest(Base):
 
         token_timestamps (list): list of timestamps of used tokens.
         token_* (int): the parameters we want to enforce.
-        start (int): the time the contest start.
+        start (int): the time from which we start accumulating tokens.
         timestamp (int): the time relative to which make the
                          calculation.
         return (tuple): same as tokens_available.
@@ -283,7 +283,8 @@ class Contest(Base):
         if token_gen_number is None:
             token_gen_number = 0
 
-        # This is the index of the first non-yet-considered token.
+        # This is the index of the first non-yet-considered played
+        # token.
         tokens_index = 0
 
         # This is the next expiring time for *_min_intervals. Note
@@ -426,17 +427,25 @@ class Contest(Base):
             token.timestamp for token in tokens
             if token.submission.task.name == task_name]
 
+        # If the contest is USACO-style (i.e., the time for each user
+        # start when he/she logs in for the first time), then we start
+        # accumulating tokens from the user starting time; otherwise,
+        # from the start of the contest.
+        start = self.start
+        if self.per_user_time is not None:
+            start = user.starting_time
+
         # Compute separately for contest-wise and task-wise.
         res_contest = Contest._tokens_available(
             token_timestamps_contest, self.token_initial,
             self.token_max, self.token_total, self.token_min_interval,
             self.token_gen_time, self.token_gen_number,
-            self.start, timestamp)
+            start, timestamp)
         res_task = Contest._tokens_available(
             token_timestamps_task, task.token_initial,
             task.token_max, task.token_total, task.token_min_interval,
             task.token_gen_time, task.token_gen_number,
-            self.start, timestamp)
+            start, timestamp)
 
         # Merge the results.
         res = []

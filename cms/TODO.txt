@@ -5,6 +5,9 @@
 
 * LOW: use first_name/last_name instead of name.
 
+* LOW: allow token_initial = None to disable token checking (as stated
+  in the comments, but now it is not nullable).
+
 * LOW: it may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
   scorings change.
