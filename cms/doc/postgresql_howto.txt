@@ -74,8 +74,8 @@ your system.
 
 # sudo -s -u postgres
 $ createuser cms_user -P
-Enter password for new role: 
-Enter it again: 
+Enter password for new role:
+Enter it again:
 Shall the new role be a superuser? (y/n) n
 Shall the new role be allowed to create databases? (y/n) n
 Shall the new role be allowed to create more new roles? (y/n) n
@@ -129,6 +129,20 @@ The second one allows ident log in for other local users and
 the last two allow remote log in. You may be interested into
 changing the allowed address masks once deploying your CMS
 instance in a real multi-computer environment.
+
+  For example, if the local network in which CMS runs is
+192.168.0.0/24, then you have to do two changes: add one line to the
+pg_hba.conf file like this:
+
+host    all         all         192.168.0.0/24        md5
+
+and change the listen address of PostgreSQL in the postgresql.conf
+file, adding the line
+
+listen_addresses = '127.0.0.1,192.168.0.x'
+
+where 192.168.0.x is the address of the machine with the database. Of
+course you need to restart PostgreSQL after changing these files.
 
   I hope this is enough at least for starting. Of course nothing
 is said here about how to tweak the database to have optimum
