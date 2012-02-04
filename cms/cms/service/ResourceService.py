@@ -324,9 +324,9 @@ class ResourceService(Service):
             return end
         mid = (start + end) / 2
         if self._local_store[mid][0] >= _time:
-            return self._locate(time, start, mid)
+            return self._locate(_time, start, mid)
         else:
-            return self._locate(time, mid, end)
+            return self._locate(_time, mid, end)
 
     @rpc_method
     def get_resources(self, last_time=0):
