@@ -202,7 +202,7 @@ ul.normal_list {
 
 
 #subpage {
-    position: absolute;
+    position: fixed;
     left: 345px;
     top: 0px;
     bottom: 0px;
@@ -225,11 +225,9 @@ ul.normal_list {
 
 #subpage_content {
     background:white;
-    z-index: 2;
-}
-
-#subpage_content pre {
     overflow: auto;
+    z-index: 2;
+    height: 100%;
 }
 
 #subpage h1 {
