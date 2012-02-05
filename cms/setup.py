@@ -209,13 +209,15 @@ def install():
 
     print "copying configuration to /usr/local/etc/."
     makedir(os.path.join("/", "usr", "local", "etc"), root, 0755)
-    conf_file = os.path.join("/", "usr", "local", "etc", "cms.conf")
-    if os.path.exists(os.path.join(".", "examples", "cms.conf")):
-        copyfile(os.path.join(".", "examples", "cms.conf"), conf_file,
-                 cmsuser, 0660)
-    else:
-        copyfile(os.path.join(".", "examples", "cms.conf.sample"), conf_file,
-                 cmsuser, 0660)
+    for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
+        conf_file = os.path.join("/", "usr", "local", "etc", conf_file_name)
+        if os.path.exists(os.path.join(".", "examples", conf_file_name)):
+            copyfile(os.path.join(".", "examples", conf_file_name),
+                     conf_file, cmsuser, 0660)
+        else:
+            conf_file_name = "%s.sample" % conf_file_name
+            copyfile(os.path.join(".", "examples", conf_file_name),
+                     conf_file, cmsuser, 0660)
 
     print "copying localization files:"
     for locale in glob(os.path.join("cms", "server", "po", "*.po")):

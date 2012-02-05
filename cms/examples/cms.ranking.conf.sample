@@ -1,0 +1,16 @@
+{
+    "_help": "There is no way to put comments in a JSON file; the",
+    "_help": "fields starting with '_' are meant to be comments.",
+
+    "_help": "Listening port for RankingWebServer.",
+    "port": 8890,
+
+    "_help": "Login information for adding and editing data.",
+    "username":   "usern4me",
+    "password":   "passw0rd",
+
+    "_help": "Whether to write logs with ANSI color codes.",
+    "log_color": true,
+
+    "_help": "This is the end of this file."
+}
