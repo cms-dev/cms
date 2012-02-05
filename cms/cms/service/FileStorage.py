@@ -29,7 +29,7 @@ import tempfile
 import shutil
 import hashlib
 
-from cms import Config
+from cms import config
 from cms.async.Utils import mkdir
 from cms.async.AsyncLibrary import async_lock
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
@@ -52,12 +52,12 @@ class FileCacher:
         """
         self.service = service
         self.base_dir = os.path.join(
-            Config._cache_dir,
+            config.cache_dir,
             "fs-cache-%s-%d" % (service._my_coord.name,
                                 service._my_coord.shard))
         self.tmp_dir = os.path.join(self.base_dir, "tmp")
         self.obj_dir = os.path.join(self.base_dir, "objects")
-        if not mkdir(Config._cache_dir) or \
+        if not mkdir(config.cache_dir) or \
                not mkdir(self.base_dir) or \
                not mkdir(self.tmp_dir) or \
                not mkdir(self.obj_dir):

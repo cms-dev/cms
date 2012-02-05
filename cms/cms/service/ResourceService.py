@@ -32,7 +32,8 @@ import argparse
 
 import psutil
 
-from cms.async import ServiceCoord, Config
+from cms import config
+from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_method, RemoteService
 from cms.db.Utils import ask_for_contest
 from cms.service.LogService import logger
@@ -156,7 +157,7 @@ class ResourceService(Service):
 
         """
         logger.debug("ResourceService._find_local_services")
-        services = Config.core_services
+        services = config.async.core_services
         local_machine = services[self._my_coord].ip
         local_services = [x
                           for x in services
@@ -172,7 +173,7 @@ class ResourceService(Service):
 
         """
         logger.debug("ResourceService._find_proc")
-        cmdline = Config.process_cmdline[:]
+        cmdline = config.process_cmdline[:]
         length = len(cmdline)
         for i in range(length):
             cmdline[i] = cmdline[i].replace("%s", service.name)

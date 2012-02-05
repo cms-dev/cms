@@ -64,6 +64,7 @@ class Config(object):
 # Create an instance of the Config class.
 config = Config()
 
+
 def load_config():
     """Load the configuration from the default locations.
 

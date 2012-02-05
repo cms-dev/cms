@@ -30,7 +30,7 @@ import argparse
 import re
 import json
 
-from cms import Config
+from cms import config
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service
 from cms.db.SQLAlchemyAll import SessionGen, Contest
@@ -119,7 +119,7 @@ class ContestExporter(Service):
         """
         # Warning: this part depends on the specific database used.
         logger.info("Dumping SQL database.")
-        (engine, connection) = Config.database.split(':', 1)
+        (engine, connection) = config.database.split(':', 1)
         db_exportfile = os.path.join(self.export_dir, "database_dump.sql")
 
         # Export procedure for PostgreSQL.

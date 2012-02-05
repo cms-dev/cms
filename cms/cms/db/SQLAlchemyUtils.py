@@ -25,13 +25,13 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.orm import session as sessionlib
 
-from cms import Config
+from cms import config
 
-db_string = Config.database.replace("%s", Config._data_dir)
-db = create_engine(db_string, echo=Config.database_debug,
+db_string = config.database.replace("%s", config.data_dir)
+db = create_engine(db_string, echo=config.database_debug,
                    pool_size=20, pool_recycle=120)
 
-Session = sessionmaker(db, twophase=Config.twophase_commit)
+Session = sessionmaker(db, twophase=config.twophase_commit)
 ScopedSession = scoped_session(Session)
 
 # For two-phases transactions:

@@ -24,83 +24,142 @@
 """
 
 import os
+import sys
 import simplejson as json
 from argparse import ArgumentParser
 
-from cms.async import ServiceCoord, Address, Config
+from cms.async import ServiceCoord, Address, config as async_config
 
 
-def load_config_file(cmsconf):
-    """Populate the Config class with everything that sits inside the
-    JSON file cmsconf (usually something/etc/cms.conf). The only
-    pieces of data treated differently are the elements of
-    core_services and other_services.
-
-    Also, add a boolean field '_installed' that discerns if the
-    program is run from the repository or from the installed
-    package. To do so, it check if sys.argv[0] is in /usr/.
-
-    Finally, add _*_dir for specific directories used by the services.
-
-    cmsconf (string): the path of the JSON config file
+class Config:
+    """This class will contain the configuration for CMS. This needs
+    to be populated at the initilization stage. This is loaded by
+    default with some sane data. See cms.conf.sample in the examples
+    for information on the meaning of the fields.
 
     """
-    # Load config file
-    try:
-        dic = json.load(open(cmsconf))
-    except json.decoder.JSONDecodeError:
-        print "Unable to load JSON configuration file %s " \
-              "because of a JSON decoding error. Aborting." % cmsconf
-        import sys
-        sys.exit(1)
+    def __init__(self):
+        """Default values for configuration, plus decide if this
+        instance is running from the system path or from the source
+        directory.
 
-    # Put core and test services in Config
-    for service in dic["core_services"]:
-        for shard_number, shard in enumerate(dic["core_services"][service]):
-            Config.core_services[ServiceCoord(service, shard_number)] = \
-                Address(*shard)
-    del dic["core_services"]
+        """
+        self.async = async_config
 
-    for service in dic["other_services"]:
-        for shard_number, shard in enumerate(dic["other_services"][service]):
-            Config.other_services[ServiceCoord(service, shard_number)] = \
-                Address(*shard)
-    del dic["other_services"]
+        # Database.
+        self.database = "postgresql+psycopg2://cmsuser@localhost/cms"
+        self.database_debug = False
+        self.twophase_commit = False
 
-    # Put everything else. Note that we re-use the Config class, which
-    # async thinks it is just for itself. This should cause no
-    # problem, though, since Config's usage by async is very
-    # read-only.
-    for key in dic:
-        setattr(Config, key, dic[key])
+        # Worker.
+        self.keep_sandbox = True
 
-    # Put also the _installed data.
-    import sys
-    Config._installed = sys.argv[0].startswith("/usr/") and \
-        sys.argv[0] != '/usr/bin/ipython' and \
-        sys.argv[0] != '/usr/bin/python'
+        # WebServers.
+        self.secret_key = "8e045a51e4b102ea803c06f92841a1fb",
+        self.tornado_debug = False
 
-    if Config._installed:
-        Config._log_dir = os.path.join("/", "var", "local", "log", "cms")
-        Config._cache_dir = os.path.join("/", "var", "local", "cache", "cms")
-        Config._data_dir = os.path.join("/", "var", "local", "lib", "cms")
-    else:
-        Config._log_dir = "log"
-        Config._cache_dir = "cache"
-        Config._data_dir = "lib"
+        # ContestWebServer.
+        self.contest_listen_port = [8888]
+        self.submit_local_copy = True
+        self.submit_local_copy_path = "%s/submissions/"
+        self.ip_lock = True
+        self.block_hidden_users = False
+        self.is_proxy_used = False
+        self.max_submission_length = 100000
+        self.min_submission_interval = 60
+        self.stl_path = "/usr/share/doc/stl-manual/html/"
+
+        # AdminWebServer.
+        self.admin_listen_port = 8889
+
+        # ScoringService.
+        self.rankings_address = [["localhost", 8890]]
+        self.rankings_username = ["usern4me"]
+        self.rankings_password = ["passw0rd"]
+
+        # ResourceService.
+        self.process_cmdline = ["/usr/bin/python", "./%s.py", "%d"]
+
+        # LogService.
+        self.color_shell_log = True
+        self.color_file_log = False
+        self.color_remote_shell_log = True
+        self.color_remote_file_log = True
+
+        # Installed or from source?
+        self.installed = sys.argv[0].startswith("/usr/") and \
+            sys.argv[0] != '/usr/bin/ipython' and \
+            sys.argv[0] != '/usr/bin/python'
+
+        if self.installed:
+            self.log_dir = os.path.join("/", "var", "local", "log", "cms")
+            self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
+            self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
+            paths = [os.path.join("/", "usr", "local", "etc", "cms.conf"),
+                     os.path.join("/", "etc", "cms.conf")]
+        else:
+            self.log_dir = "log"
+            self.cache_dir = "cache"
+            self.data_dir = "lib"
+            paths = [os.path.join(".", "examples", "cms.conf"),
+                     os.path.join("/", "usr", "local", "etc", "cms.conf"),
+                     os.path.join("/", "etc", "cms.conf")]
+
+        self._load(paths)
+
+    def _load(self, paths):
+        """Try to load the config files one at a time, until one loads
+        correctly.
+
+        """
+        for conf_file in paths:
+            try:
+                self._load_unique(conf_file)
+            except IOError:
+                pass
+            except json.decoder.JSONDecodeError as error:
+                print "Unable to load JSON configuration file %s " \
+                      "because of a JSON decoding error.\n%r" % (conf_file,
+                                                                 error)
+            else:
+                print "Using configuration file %s." % conf_file
+                return
+        print "Warning: no configuration file found."
+
+    def _load_unique(self, path):
+        """Populate the Config class with everything that sits inside
+        the JSON file path (usually something like /etc/cms.conf). The
+        only pieces of data treated differently are the elements of
+        core_services and other_services that are sent to async
+        config.
+
+        path (string): the path of the JSON config file.
+
+        """
+        # Load config file
+        dic = json.load(open(path))
+
+        # Put core and test services in async_config
+        for service in dic["core_services"]:
+            for shard_number, shard in \
+                    enumerate(dic["core_services"][service]):
+                coord = ServiceCoord(service, shard_number)
+                self.async.core_services[coord] = Address(*shard)
+        del dic["core_services"]
+
+        for service in dic["other_services"]:
+            for shard_number, shard in \
+                    enumerate(dic["other_services"][service]):
+                coord = ServiceCoord(service, shard_number)
+                self.async.other_services[coord] = Address(*shard)
+        del dic["other_services"]
+
+        # Put everything else.
+        for key in dic:
+            setattr(self, key, dic[key])
 
 
-CONFIGURATION_FILES = [os.path.join(".", "examples", "cms.conf"),
-                       os.path.join("/", "etc", "cms.conf"),
-                       os.path.join("/", "usr", "local", "etc", "cms.conf")]
-
-for conffile in CONFIGURATION_FILES:
-    try:
-        load_config_file(conffile)
-    except IOError:
-        pass
-    else:
-        break
+config = Config()
 
 
 def default_argument_parser(description, cls, ask_contest=None):

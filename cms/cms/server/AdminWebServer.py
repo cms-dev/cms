@@ -31,7 +31,7 @@ import simplejson as json
 import tornado.web
 import tornado.locale
 
-from cms import Config, default_argument_parser
+from cms import config, default_argument_parser
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord, get_service_shards, get_service_address
 from cms.db.SQLAlchemyAll import Session, \
@@ -170,11 +170,11 @@ class AdminWebServer(WebService):
                                           "templates", "admin"),
             "static_path": os.path.join(os.path.dirname(__file__),
                                         "static"),
-            "cookie_secret": base64.b64encode(Config.secret_key),
-            "debug": Config.tornado_debug,
+            "cookie_secret": base64.b64encode(config.secret_key),
+            "debug": config.tornado_debug,
             }
         WebService.__init__(self,
-                            Config.admin_listen_port,
+                            config.admin_listen_port,
                             _aws_handlers,
                             parameters,
                             shard=shard,

@@ -32,7 +32,7 @@ import httplib
 import simplejson as json
 import base64
 
-from cms import Config, default_argument_parser
+from cms import config, default_argument_parser
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_method
 from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
@@ -224,10 +224,10 @@ class ScoringService(Service):
 
         # Initialize ranking web servers we need to send data to.
         self.rankings = []
-        for i in xrange(len(Config.rankings_address)):
-            address = Config.rankings_address[i]
-            username = Config.rankings_username[i]
-            password = Config.rankings_password[i]
+        for i in xrange(len(config.rankings_address)):
+            address = config.rankings_address[i]
+            username = config.rankings_username[i]
+            password = config.rankings_password[i]
             auth = get_authorization(username, password)
             self.rankings.append(("%s:%d" % tuple(address), auth))
         self.operation_queue = []

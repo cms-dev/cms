@@ -57,6 +57,9 @@ class Config:
     other_services = {}
 
 
+config = Config()
+
+
 def get_service_address(key):
     """Give the Address of a ServiceCoord.
 
@@ -64,10 +67,10 @@ def get_service_address(key):
     returns (Address): listening address of key.
 
     """
-    if key in Config.core_services:
-        return Config.core_services[key]
-    elif key in Config.other_services:
-        return Config.other_services[key]
+    if key in config.core_services:
+        return config.core_services[key]
+    elif key in config.other_services:
+        return config.other_services[key]
     else:
         raise KeyError
 

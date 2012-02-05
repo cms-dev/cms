@@ -25,9 +25,9 @@
 
 import time
 
-from cms import default_argument_parser
+from cms import config, default_argument_parser
+from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_callback
-from cms.async import ServiceCoord, Config
 from cms.service.LogService import logger
 
 
@@ -39,7 +39,7 @@ class Checker(Service):
     def __init__(self, shard):
         logger.initialize(ServiceCoord("Checker", shard))
         Service.__init__(self, shard, custom_logger=logger)
-        for service in Config.core_services:
+        for service in config.async.core_services:
             self.connect_to(service)
         self.add_timeout(self.check, None, 10, immediately=True)
 

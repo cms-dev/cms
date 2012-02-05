@@ -47,7 +47,7 @@ import zipfile
 import tornado.web
 import tornado.locale
 
-from cms import Config, default_argument_parser
+from cms import config, default_argument_parser
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
@@ -190,12 +190,12 @@ class ContestWebServer(WebService):
                                           "templates", "contest"),
             "static_path": os.path.join(os.path.dirname(__file__),
                                         "static"),
-            "cookie_secret": base64.b64encode(Config.secret_key),
-            "debug": Config.tornado_debug,
+            "cookie_secret": base64.b64encode(config.secret_key),
+            "debug": config.tornado_debug,
             }
-        parameters["is_proxy_used"] = Config.is_proxy_used
+        parameters["is_proxy_used"] = config.is_proxy_used
         WebService.__init__(self,
-                            Config.contest_listen_port[shard],
+                            config.contest_listen_port[shard],
                             _cws_handlers,
                             parameters,
                             shard=shard)
@@ -268,13 +268,13 @@ class LoginHandler(BaseHandler):
                       (username, password, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
-        if Config.ip_lock and user.ip != "0.0.0.0" \
+        if config.ip_lock and user.ip != "0.0.0.0" \
                 and user.ip != self.request.remote_ip:
             logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s." %
                       (username, password, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
-        if user.hidden and Config.block_hidden_users:
+        if user.hidden and config.block_hidden_users:
             logger.info("Hidden user login attempt: "
                         "user=%s pass=%s remote_ip=%s." %
                         (username, password, self.request.remote_ip))
@@ -497,14 +497,14 @@ class SubmitHandler(BaseHandler):
             .order_by(Submission.timestamp.desc()).first()
         if last_submission is not None and \
                self.timestamp - last_submission.timestamp < \
-               Config.min_submission_interval:
+               config.min_submission_interval:
             self.application.service.add_notification(
                 self.current_user.username,
                 int(time.time()),
                 self._("Submissions too frequent!"),
                 self._("For each task, you can submit "
                        "again after %s seconds from last submission.") %
-                Config.min_submission_interval)
+                config.min_submission_interval)
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
@@ -623,14 +623,14 @@ class SubmitHandler(BaseHandler):
             return
 
         # Check if submitted files are small enough.
-        if any([len(f[1]) > Config.max_submission_length
+        if any([len(f[1]) > config.max_submission_length
                 for f in self.files.values()]):
             self.application.service.add_notification(
                 self.current_user.username,
                 int(time.time()),
                 self._("Submission too big!"),
                 self._("Each files must be at most %d bytes long.") %
-                    Config.max_submission_length)
+                    config.max_submission_length)
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
@@ -640,11 +640,11 @@ class SubmitHandler(BaseHandler):
         # recover a failure.
         self.local_copy_saved = False
 
-        if Config.submit_local_copy:
+        if config.submit_local_copy:
             try:
                 path = os.path.join(
-                    Config.submit_local_copy_path.replace("%s",
-                                                          Config._data_dir),
+                    config.submit_local_copy_path.replace("%s",
+                                                          config.data_dir),
                     self.current_user.username)
                 if not os.path.exists(path):
                     os.makedirs(path)
@@ -820,7 +820,7 @@ _cws_handlers = [
     (r"/instructions",  InstructionHandler),
     (r"/notifications", NotificationsHandler),
     (r"/question",      QuestionHandler),
-    (r"/stl/(.*)", tornado.web.StaticFileHandler, {"path": Config.stl_path}),
+    (r"/stl/(.*)", tornado.web.StaticFileHandler, {"path": config.stl_path}),
     ]
 
 

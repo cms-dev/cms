@@ -28,7 +28,7 @@ import time
 import codecs
 import datetime
 
-from cms import Config, default_argument_parser
+from cms import config, default_argument_parser
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, RemoteService, rpc_method
 from cms.async.Utils import mkdir
@@ -173,8 +173,8 @@ class LogService(Service):
         logger.initialize(ServiceCoord("LogService", shard))
         Service.__init__(self, shard, custom_logger=logger)
 
-        log_dir = os.path.join(Config._log_dir, "cms")
-        if not mkdir(Config._log_dir) or \
+        log_dir = os.path.join(config.log_dir, "cms")
+        if not mkdir(config.log_dir) or \
                not mkdir(log_dir):
             logger.error("Cannot create necessary directories.")
             self.exit()
@@ -213,9 +213,9 @@ class LogService(Service):
 
         print >> self._log_file, format_log(
             msg, coord, operation, severity, timestamp,
-            colors=Config.color_remote_file_log)
+            colors=config.color_remote_file_log)
         print format_log(msg, coord, operation, severity, timestamp,
-                         colors=Config.color_remote_shell_log)
+                         colors=config.color_remote_shell_log)
 
     @rpc_method
     def last_messages(self):
@@ -275,13 +275,13 @@ class Logger(object):
         self._my_coord = service
 
         # Warn if the service, shard is not supposed to be there.
-        if self._my_coord not in Config.core_services and \
-           self._my_coord not in Config.other_services:
+        if self._my_coord not in config.async.core_services and \
+           self._my_coord not in config.async.other_services:
             raise ValueError("Service not present in configuration.")
 
-        log_dir = os.path.join(Config._log_dir,
+        log_dir = os.path.join(config.log_dir,
                                "%s-%d" % (service.name, service.shard))
-        mkdir(Config._log_dir)
+        mkdir(config.log_dir)
         mkdir(log_dir)
         self._log_file = codecs.open(
             os.path.join(log_dir, "%d.log" % int(time.time())),
@@ -309,11 +309,11 @@ class Logger(object):
 
         if severity in Logger.TO_DISPLAY:
             print format_log(msg, coord, operation, severity, timestamp,
-                             colors=Config.color_shell_log)
+                             colors=config.color_shell_log)
         if severity in Logger.TO_STORE:
             print >> self._log_file, format_log(msg, coord, operation,
                                                 severity, timestamp,
-                                                colors=Config.color_file_log)
+                                                colors=config.color_file_log)
         if severity in Logger.TO_SEND:
             self._log_service.Log(msg=msg, coord=coord, operation=operation,
                                   severity=severity, timestamp=timestamp)

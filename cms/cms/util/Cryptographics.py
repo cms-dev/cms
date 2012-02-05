@@ -25,8 +25,10 @@ import base64
 import binascii
 import random
 
-from cms.async import Config
-secret_key_unhex = binascii.unhexlify(Config.secret_key)
+from cms import config
+
+
+secret_key_unhex = binascii.unhexlify(config.secret_key)
 
 
 def get_random_key():
