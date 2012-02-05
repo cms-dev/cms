@@ -28,18 +28,18 @@ import os
 import re
 import base64
 
-from Config import config
-from Logger import logger
+from cmsranking.Config import config
+from cmsranking.Logger import logger
 
-from Entity import InvalidKey, InvalidData
-import Store
-import Contest
-import Task
-import Team
-import User
-import Submission
-import Subchange
-import Scoring
+from cmsranking.Entity import InvalidKey, InvalidData
+import cmsranking.Store as Store
+import cmsranking.Contest as Contest
+import cmsranking.Task as Task
+import cmsranking.Team as Team
+import cmsranking.User as User
+import cmsranking.Submission as Submission
+import cmsranking.Subchange as Subchange
+import cmsranking.Scoring as Scoring
 
 
 def authenticated(method):

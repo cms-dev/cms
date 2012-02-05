@@ -17,13 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from Config import config
-from Logger import logger
-
-from Entity import Entity, InvalidKey, InvalidData
-
 import json
 import os
+
+from cmsranking.Config import config
+from cmsranking.Logger import logger
+
+from cmsranking.Entity import Entity, InvalidKey, InvalidData
 
 
 class Store(object):

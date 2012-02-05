@@ -17,12 +17,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from Logger import logger
-
-import Submission
-import Subchange
-
 import heapq
+
+from cmsranking.Logger import logger
+
+import cmsranking.Submission as Submission
+import cmsranking.Subchange as Subchange
 
 
 class NumberSet:
