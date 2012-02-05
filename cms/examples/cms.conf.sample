@@ -1,69 +1,143 @@
 {
+    "_help": "There is no way to put comments in a JSON file; the",
+    "_help": "fields starting with '_' are meant to be comments.",
 
- "_comment": "There is no way to put comments in a JSON file; the fields starting with _ are meant to be comments",
 
- "core_services":
-  {
-   "LogService":        [["localhost", 29000]],
-   "ResourceService":   [["localhost", 28000]],
-   "ScoringService":    [["localhost", 28500]],
-   "Checker":           [["localhost", 22000]],
-   "EvaluationService": [["localhost", 25000]],
-   "Worker":            [["localhost", 26000]],
-   "ContestWebServer":  [["localhost", 21000]],
-   "AdminWebServer":    [["localhost", 21100]]
-  },
 
- "other_services":
-  {
-   "TestFileStorage":   [["localhost", 27500]],
-   "TestFileCacher":    [["localhost", 27501]],
-   "YamlImporter":      [["localhost", 23000]],
-   "SpoolExporter":     [["localhost", 23100]],
-   "ContestExporter":   [["localhost", 23200]],
-   "ContestImporter":   [["localhost", 23300]],
-   "ServiceA":          [["localhost", 35000]],
-   "ServiceB":          [["localhost", 36000], ["localhost", 36001]],
-   "WebServiceA":       [["localhost", 37000]]
-  },
+    "_section": "AsyncLibrary",
 
- "process_cmdline": ["/usr/bin/python", "./%s.py", "%d"],
+    "core_services":
+    {
+        "LogService":        [["localhost", 29000]],
+        "ResourceService":   [["localhost", 28000]],
+        "ScoringService":    [["localhost", 28500]],
+        "Checker":           [["localhost", 22000]],
+        "EvaluationService": [["localhost", 25000]],
+        "Worker":            [["localhost", 26000], ["localhost", 26001]],
+        "ContestWebServer":  [["localhost", 21000]],
+        "AdminWebServer":    [["localhost", 21100]]
+        },
 
- "_DB choice": "Please uncomment exactly one of the following; the first is the PostgreSQL server, the second is the name of the SQLite file (SQLite can be used only when everything runs on the same machine, and the path is decided by us). If a %s is present in the value, we will replace it with data_dir. Also, notice that file storage now works only with PostgreSQL and psycopg2, so SQLite is not an option anymore.",
- "database":         "postgresql+psycopg2://username:password@localhost/database",
- "_database":        "sqlite:///%s/database.sqlite",
- "database_debug":   false,
- "twophase_commit":  false,
+    "other_services":
+    {
+        "TestFileStorage":   [["localhost", 27500]],
+        "TestFileCacher":    [["localhost", 27501]],
+        "YamlImporter":      [["localhost", 23000]],
+        "SpoolExporter":     [["localhost", 23100]],
+        "ContestExporter":   [["localhost", 23200]],
+        "ContestImporter":   [["localhost", 23300]]
+        },
 
- "keep_sandbox":     true,
 
- "maximum_conflict_attempts": 50,
- "submit_local_copy":	        true,
- "submit_local_copy_path":    "%s/submissions/",
- "max_submission_length":     100000,
- "min_submission_interval":   60,
 
- "color_shell_log":        true,
- "color_file_log":         false,
- "color_remote_shell_log": true,
- "color_remote_file_log":  true,
+    "_section": "Database",
 
- "_secret_key":            "This key is used to encode information that can be seen by the user, namely cookies and auto-incremented numbers. It should be changed for each contest. Particularly, you should not use this example for other than testing. You can easily create a key calling cms.util.Cryptographics.get_hex_random_key().",
- "secret_key":             "8e045a51e4b102ea803c06f92841a1fb",
+    "_help": "Connection string for the database.",
+    "database": "postgresql+psycopg2://username:password@localhost/database",
 
- "contest_listen_port":    [8888],
- "admin_listen_port":      8889,
+    "_help": "Whether SQLAlchemy prints DB queries on stdout.",
+    "database_debug": false,
 
- "stl_path":               "/usr/share/doc/stl-manual/html/",
+    "_help": "Whether to use two-phase commit.",
+    "twophase_commit": false,
 
- "ip_lock":                true,
- "block_hidden_users":     false,
 
- "tornado_debug":          false,
- "is_proxy_used":          false,
 
- "rankings_address":        [["localhost", 8890]],
- "rankings_username":       ["usern4me"],
- "rankings_password":       ["passw0rd"]
+    "_section": "Worker",
 
+    "_help": "Don't delete the sandbox directory under /tmp/ when they",
+    "_help": "are not needed anymore. Warning: this can easily eat GB",
+    "_help": "of space very soon.",
+    "keep_sandbox": true,
+
+
+
+    "_section": "WebServers",
+
+    "_help": "This key is used to encode information that can be seen",
+    "_help": "by the user, namely cookies and auto-incremented",
+    "_help": "numbers. It should be changed for each",
+    "_help": "contest. Particularly, you should not use this example",
+    "_help": "for other than testing. You can easily create a key",
+    "_help": "calling cms.util.Cryptographics.get_hex_random_key().",
+    "secret_key":             "8e045a51e4b102ea803c06f92841a1fb",
+
+    "_help": "Whether Tornado prints debug information on stdout.",
+    "tornado_debug": false,
+
+
+
+    "_section": "ContestWebServer",
+
+    "_help": "Listening http ports for the CWS listed before in",
+    "_help": "core_services.",
+    "contest_listen_port": [8888],
+
+    "_help": "If CWSs write submissions to disk before storing them in",
+    "_help": "the DB, and where to save them. %s = DATA_DIR.",
+    "submit_local_copy":      true,
+    "submit_local_copy_path": "%s/submissions/",
+
+    "_help": "If we allow users to log in only from their specified IP",
+    "_help": "address. Users with IP = 0.0.0.0 are anyway allowed to",
+    "_help": "log in from anywhere.",
+    "ip_lock": true,
+
+    "_help": "Whether hidden users are allowed to log in.",
+    "block_hidden_users": false,
+
+    "_help": "Whether the CWSs are behind a (trusted) proxy (e.g.,",
+    "_help": "nginx) that does load balancing. Used to know if it is",
+    "_help": "save to assume that the real source IP address is the",
+    "_help": "one listed in the request headers.",
+    "is_proxy_used": false,
+
+    "_help": "Maximum size of a submission in bytes and minimum",
+    "_help": "interval between two submission in seconds.",
+    "max_submission_length":   100000,
+    "min_submission_interval": 60,
+
+    "_help": "STL documentation path in the system (exposed in CWS).",
+    "stl_path": "/usr/share/doc/stl-manual/html/",
+
+
+
+    "_section": "AdminWebServer",
+
+    "_help": "Listening http port for AdminWebServer.",
+    "admin_listen_port": 8889,
+
+
+
+    "_section": "ScoringService",
+
+    "_help": "Lists of addresses (ip, port), usernames and passwords",
+    "_help": "where the scores are to be sent.",
+    "rankings_address":        [["localhost", 8890]],
+    "rankings_username":       ["usern4me"],
+    "rankings_password":       ["passw0rd"],
+
+
+
+    "_section": "ResourceService",
+
+    "_help": "Format of the *beginning* of the command line that we",
+    "_help": "expect services are running from. Used to found their",
+    "_help": "associated processes.",
+    "process_cmdline": ["/usr/bin/python", "./%s.py", "%d"],
+
+
+
+    "_section": "LogService",
+
+    "_help": "Whether to print ANSI color codes on stdout/logfiles, in",
+    "_help": "the local logs and in the remote ones.",
+    "color_shell_log":        true,
+    "color_file_log":         false,
+    "color_remote_shell_log": true,
+    "color_remote_file_log":  true,
+
+
+
+    "_help": "This is the end of this file."
 }
