@@ -23,7 +23,6 @@
 
 """
 
-import os
 import sys
 import datetime
 import time
@@ -38,22 +37,6 @@ def random_string(length):
     """
     letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     return "".join(choice(letters) for unused_i in xrange(length))
-
-
-def mkdir(path):
-    """Make a directory without complaining for errors.
-
-    path (string): the path of the directory to create
-    returns (bool): True if the dir is ok, False if it is not
-
-    """
-    try:
-        os.mkdir(path)
-        return True
-    except OSError:
-        if os.path.isdir(path):
-            return True
-    return False
 
 
 def encode_length(length):

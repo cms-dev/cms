@@ -31,7 +31,7 @@ import datetime
 from cms import config, default_argument_parser
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, RemoteService, rpc_method
-from cms.async.Utils import mkdir
+from cms.util.Utils import mkdir
 
 
 ## ANSI utilities. See for reference:

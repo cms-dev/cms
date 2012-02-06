@@ -24,18 +24,20 @@ import os
 import hashlib
 
 
-def maybe_mkdir(dir_name):
-    """Make a directory without throwing an exception if it already
-    exists. Warning: this method fails silently also if the directory
-    could not be created because there is a non-directory file with
-    the same name. In oter words, there is no guarantee that after the
-    execution, the file d exists and is a directory.
+def mkdir(path):
+    """Make a directory without complaining for errors.
+
+    path (string): the path of the directory to create
+    returns (bool): True if the dir is ok, False if it is not
 
     """
     try:
-        os.mkdir(dir_name)
+        os.mkdir(path)
+        return True
     except OSError:
-        pass
+        if os.path.isdir(path):
+            return True
+    return False
 
 
 def sha1sum(path):
