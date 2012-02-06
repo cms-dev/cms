@@ -176,6 +176,25 @@ class Task(Base):
                 'token_gen_time':       self.token_gen_time,
                 'token_gen_number':     self.token_gen_number}
 
+    @classmethod
+    def import_from_dict(cls, data):
+        """Build the object using data from a dictionary.
+
+        """
+        data['attachments'] = [Attachment.import_from_dict(attch_data)
+                               for attch_data in data['attachments']]
+        data['attachments'] = dict([(attachment.filename, attachment)
+                                    for attachment in data['attachments']])
+        data['submission_format'] = [SubmissionFormatElement.import_from_dict(
+            sfe_data) for sfe_data in data['submission_format']]
+        data['managers'] = [Manager.import_from_dict(manager_data)
+                            for manager_data in data['managers']]
+        data['managers'] = dict([(manager.filename, manager)
+                                 for manager in data['managers']])
+        data['testcases'] = [Testcase.import_from_dict(testcase_data)
+                             for testcase_data in data['testcases']]
+        return cls(**data)
+
     def get_scorer(self):
         """Returns an appropriare ScoreType instance with the right parameters.
 

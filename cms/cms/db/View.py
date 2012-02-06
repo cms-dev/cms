@@ -80,6 +80,19 @@ class RankingView(Base):
                 'scores':    [score.export_to_dict()
                               for score in self.scores.itervalues()]}
 
+    @classmethod
+    def import_from_dict(cls, data, tasks_by_name, users):
+        """Build the object using data from a dictionary.
+
+        """
+        data['scores'] = [Score.import_from_dict(score_data,
+                                                 tasks_by_name=tasks_by_name,
+                                                 users=users)
+                          for score_data in data['scores']]
+        data['scores'] = dict([(Score.rankingview_keyfunc(score), score)
+                               for score in data['scores']])
+        return cls(**data)
+
     def set_score(self, score):
         """Assign the score to this ranking view. Used to create an
         empty ranking.
@@ -149,3 +162,24 @@ class Score(Base):
         return {'user':  self.user.username,
                 'task':  self.task.name,
                 'score': self.score}
+
+    @classmethod
+    def import_from_dict(cls, data, tasks_by_name, users):
+        """Build the object using data from a dictionary.
+
+        """
+
+        def get_user(users, username):
+            """Return a user given its username. This is mostly a hack.
+            We can't use Contest.get_user() because we don't have the full
+            Contest itself, and having it would require even worse hacks.
+
+            """
+            for user in users:
+                if user.username == username:
+                    return user
+            raise KeyError("User not found")
+
+        data['task'] = tasks_by_name[data['task']]
+        data['user'] = get_user(users, data['user'])
+        return cls(**data)

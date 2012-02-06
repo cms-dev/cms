@@ -173,6 +173,27 @@ class Submission(Base):
             res['token'] = self.token.export_to_dict()
         return res
 
+    @classmethod
+    def import_from_dict(cls, data, tasks_by_name):
+        """Build the object using data from a dictionary.
+
+        """
+        data['files'] = [File.import_from_dict(file_data)
+                         for file_data in data['files']]
+        data['files'] = dict([(_file.filename, _file)
+                              for _file in data['files']])
+        data['executables'] = [Executable.import_from_dict(executable_data)
+                               for executable_data in data['executables']]
+        data['executables'] = dict([(executable.filename, executable)
+                                    for executable in data['executables']])
+        data['evaluations'] = [Evaluation.import_from_dict(eval_data)
+                               for eval_data in data['evaluations']]
+        if data['token'] is not None:
+            data['token'] = Token.import_from_dict(data['token'])
+        data['task'] = tasks_by_name[data['task']]
+        data['user'] = None
+        return cls(**data)
+
     def tokened(self):
         """Return if the user played a token against the submission.
 
