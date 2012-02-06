@@ -39,7 +39,7 @@ import time
 import codecs
 
 import base64
-import simplejson
+import simplejson as json
 import tempfile
 import traceback
 import zipfile
@@ -437,7 +437,7 @@ class NotificationsHandler(BaseHandler):
                             "text": notification[2]})
             del notifications[username]
 
-        self.write(simplejson.dumps(res))
+        self.write(json.dumps(res))
 
 
 class QuestionHandler(BaseHandler):

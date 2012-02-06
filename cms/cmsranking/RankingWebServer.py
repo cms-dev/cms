@@ -20,7 +20,7 @@
 import tornado.ioloop
 import tornado.web
 
-import json
+import simplejson as json
 import functools
 import time
 from datetime import datetime

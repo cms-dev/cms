@@ -32,7 +32,7 @@ compilation and the evaluation are contained in the task type class.
 
 import os
 import codecs
-import simplejson
+import simplejson as json
 
 from cms import config
 from cms.async.AsyncLibrary import async_lock
@@ -95,12 +95,12 @@ class TaskTypes:
         if task.task_type == TaskTypes.TASK_TYPE_BATCH:
             return TaskTypeBatch(
                 submission,
-                simplejson.loads(task.task_type_parameters),
+                json.loads(task.task_type_parameters),
                 file_cacher)
         elif task.task_type == TaskTypes.TASK_TYPE_OUTPUT_ONLY:
             return TaskTypeOutputOnly(
                 submission,
-                simplejson.loads(task.task_type_parameters),
+                json.loads(task.task_type_parameters),
                 file_cacher)
         else:
             raise KeyError

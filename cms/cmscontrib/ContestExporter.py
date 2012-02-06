@@ -28,7 +28,7 @@ idempotent.
 import os
 import argparse
 import re
-import json
+import simplejson as json
 
 from cms import config
 from cms.async import ServiceCoord
