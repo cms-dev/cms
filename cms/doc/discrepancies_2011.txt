@@ -57,5 +57,3 @@ draft. I don't know where to find a more up-to-date copy.
  * Re-evaluation: according to the rules, contestants are notified
    when some of their submissions if re-evaluated; this must be done
    manually by the managers (that initiated the re-evaluation).
-
- * Submission details grouped into subtasks: not implemented.
