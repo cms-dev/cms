@@ -30,9 +30,9 @@ import hashlib
 
 from cms import default_argument_parser, config
 from cms.async import ServiceCoord
-from cms.async.AsyncLibrary import logger
 from cms.async.TestService import TestService
 from cms.service.FileStorage import FileCacher
+from cms.service.LogService import logger
 
 
 class RandomFile:

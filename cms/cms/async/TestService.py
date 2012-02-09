@@ -35,8 +35,8 @@ class TestService(Service):
     """Runs automatically a suite of tests defined on the subclass.
 
     """
-    def __init__(self, shard):
-        Service.__init__(self, shard)
+    def __init__(self, shard, custom_logger=None):
+        Service.__init__(self, shard, custom_logger)
 
         self.start = 0
         self.total_time = 0
