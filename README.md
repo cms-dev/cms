@@ -2,16 +2,16 @@ CMS - A Contest Management System
 =================================
 
 
-CMS?
-----
+Introduction
+------------
 
 CMS, or Contest Management System, is a distributed system for running
 and (with some extent) organizing a programming contest.
 
 CMS has been designed to be general and to handle many different types
-of contests, tasks, scorings, ... Nonetheless, CMS has been explicitly
-build to be used in the 2012 International Olympiads in Informatics,
-to be held in September 2012 in Italy.
+of contests, tasks, scoring, ... . Nonetheless, CMS has been
+explicitly build to be used in the 2012 International Olympiads in
+Informatics, to be held in September 2012 in Italy.
 
 
 Description
@@ -54,7 +54,7 @@ There are also other services for testing, importing and exporting
 contests.
 
 Each of the core service is designed to be able to be killed and
-reactiveated in a way that keeps the consistence of data.
+reactivated in a way that keeps the consistence of data.
 
 
 Recommended setup
