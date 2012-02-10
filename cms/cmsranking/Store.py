@@ -101,6 +101,22 @@ class Store(object):
         """
         self._update_callbacks.append(callback)
 
+    def _verify_key(self, key, must_be_present=False):
+        """Verify that the key has the correct type.
+
+        key (string): the key of the entity we want to interact with.
+        must_be_present (bool): True if we need the key in the store,
+                                False if the key must not be in the
+                                store.
+
+        raise: InvalidKey if key is not valid.
+        """
+        if not (isinstance(key, unicode) or isinstance(key, str)):
+            raise InvalidKey
+        if (key in self._store and not must_be_present) or \
+               (key not in self._store and must_be_present):
+            raise InvalidKey
+
     def add_delete_callback(self, callback):
         """Add a callback to be called when entities are deleted.
 
@@ -124,9 +140,8 @@ class Store(object):
         properties or if properties are of the wrong type.
 
         """
-        # verify key
-        if not isinstance(key, unicode) or key in self._store:
-            raise InvalidKey
+        self._verify_key(key)
+
         # create entity
         try:
             item = self._entity()
@@ -159,9 +174,8 @@ class Store(object):
         properties or if properties are of the wrong type.
 
         """
-        # verify key
-        if not isinstance(key, unicode) or key not in self._store:
-            raise InvalidKey
+        self._verify_key(key, must_be_present=True)
+
         # update entity
         try:
             item = self._entity()
@@ -191,9 +205,8 @@ class Store(object):
         is present in the store.
 
         """
-        # verify key
-        if not isinstance(key, unicode) or key not in self._store:
-            raise InvalidKey
+        self._verify_key(key, must_be_present=True)
+
         # delete entity
         del self._store[key]
         # notify callbacks
@@ -216,9 +229,8 @@ class Store(object):
         is present in the store.
 
         """
-        # verify key
-        if not isinstance(key, unicode) or key not in self._store:
-            raise InvalidKey
+        self._verify_key(key, must_be_present=True)
+
         # retrieve entity
         # TODO remove "key" field from returned entity
         return json.dumps(self._store[key].get())
