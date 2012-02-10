@@ -191,7 +191,7 @@ Once configured, we can proceed to install it using the commands:
 
 ```bash
 cd $REPO/cms/
-./setup.py build
+sudo ./setup.py build
 sudo ./setup.py install
 ```
 
@@ -207,10 +207,13 @@ sudo usermod -a -G cmsuser
 Updating CMS
 ------------
 
-To update CMS, go in the repository and run:
+To update CMS, run the following:
 
 ```bash
+cd $REPO/cms
 git pull
+sudo ./setup.py build
+sudo ./setup.py install
 ```
 
 Since CMS is still in heavy development, we are introducing many
