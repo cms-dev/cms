@@ -45,7 +45,8 @@ class Team(Entity):
         try:
             assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['name']) is unicode, \
+            assert type(data['name']) is unicode or \
+                   type(data['name']) is str, \
                 "Field 'name' isn't a string"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)

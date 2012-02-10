@@ -51,7 +51,8 @@ class Subchange(Entity):
         try:
             assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['submission']) is unicode, \
+            assert type(data['submission']) is unicode or \
+                   type(data['submission']) is str, \
                 "Field 'submission' isn't a string"
             assert type(data['time']) is int, \
                 "Field 'time' isn't an integer (unix timestamp)"
@@ -65,7 +66,8 @@ class Subchange(Entity):
                 assert type(data['extra']) is list, \
                     "Field 'extra' isn't a list of strings"
                 for i in data['extra']:
-                    assert type(i) is unicode, \
+                    assert type(i) is unicode or \
+                           type(i) is str, \
                         "Field 'extra' isn't a list of strings"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)

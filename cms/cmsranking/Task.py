@@ -54,16 +54,19 @@ class Task(Entity):
         try:
             assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['name']) is unicode, \
+            assert type(data['name']) is unicode or \
+                   type(data['name']) is str, \
                 "Field 'name' isn't a string"
-            assert type(data['contest']) is unicode, \
+            assert type(data['contest']) is unicode or \
+                   type(data['contest']) is str, \
                 "Field 'contest' isn't a string"
             assert type(data['score']) is float, \
                 "Field 'score' isn't a float"
             assert type(data['extra_headers']) is list, \
                 "Field 'extra_headers' isn't a list of strings"
             for i in data['extra_headers']:
-                assert type(i) is unicode, \
+                assert type(i) is unicode or \
+                       type(i) is str, \
                     "Field 'extra_headers' isn't a list of strings"
             assert type(data['order']) is int, \
                 "Field 'order' isn't an integer"

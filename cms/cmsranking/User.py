@@ -49,11 +49,15 @@ class User(Entity):
         try:
             assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['f_name']) is unicode, \
+            assert type(data['f_name']) is unicode or \
+                   type(data['f_name']) is str, \
                 "Field 'f_name' isn't a string"
-            assert type(data['l_name']) is unicode, \
+            assert type(data['l_name']) is unicode or \
+                   type(data['l_name']) is str, \
                 "Field 'l_name' isn't a string"
-            assert data['team'] is None or type(data['team']) is unicode, \
+            assert data['team'] is None or \
+                   type(data['team']) is unicode or \
+                   type(data['team']) is str, \
                 "Field 'team' isn't a string (or null)"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)

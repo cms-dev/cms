@@ -49,7 +49,8 @@ class Contest(Entity):
         try:
             assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['name']) is unicode, \
+            assert type(data['name']) is unicode or \
+                   type(data['name']) is str, \
                 "Field 'name' isn't a string"
             assert type(data['begin']) is int, \
                 "Field 'begin' isn't an integer"

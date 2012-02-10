@@ -49,9 +49,11 @@ class Submission(Entity):
         try:
             assert type(data) is dict, \
                 "Not a dictionary"
-            assert type(data['user']) is unicode, \
+            assert type(data['user']) is unicode or \
+                   type(data['user']) is str, \
                 "Field 'user' isn't a string"
-            assert type(data['task']) is unicode, \
+            assert type(data['task']) is unicode or \
+                   type(data['task']) is str, \
                 "Field 'task' isn't a string"
             assert type(data['time']) is int, \
                 "Field 'time' isn't an integer (unix timestamp)"
