@@ -20,7 +20,6 @@
 
     "other_services":
     {
-        "TestFileStorage":   [["localhost", 27500]],
         "TestFileCacher":    [["localhost", 27501]],
         "YamlImporter":      [["localhost", 23000]],
         "SpoolExporter":     [["localhost", 23100]],
@@ -33,7 +32,7 @@
     "_section": "Database",
 
     "_help": "Connection string for the database.",
-    "database": "postgresql+psycopg2://username:password@localhost/database",
+    "database": "postgresql+psycopg2://cmsuser:password@localhost/database",
 
     "_help": "Whether SQLAlchemy prints DB queries on stdout.",
     "database_debug": false,
@@ -123,11 +122,14 @@
 
     "_help": "Format of the *beginning* of the command line that we",
     "_help": "expect services are running from. Used to found their",
-    "_help": "associated processes.",
-    "process_cmdline": ["/usr/bin/python", "./%s.py", "%d"],
-    "_help": "A process_cmdline that may work by default for CMS",
-    "_help": "installed is the following:",
-    "_process_cmdline": ["/usr/bin/python", "/usr/local/bin/cms%s", "%d"],
+    "_help": "associated processes - %s is replaced by the service",
+    "_help": "name (e.g. LogService) and %d by the shard number.",
+    "_help": "The first is a process_cmdline that may work by default",
+    "_help": "for CMS installed, while the second is for CMS run from",
+    "_help": "the repository.",
+    "process_cmdline": ["/usr/bin/python", "/usr/local/bin/cms%s", "%d"],
+    "_process_cmdline": ["/usr/bin/python", "./%s.py", "%d"],
+
 
 
     "_section": "LogService",

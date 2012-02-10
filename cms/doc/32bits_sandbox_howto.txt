@@ -1,7 +1,5 @@
-
-------------------------------------
 USING THE WORKER IN A 32 BITS CHROOT
-------------------------------------
+====================================
 
 by Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 

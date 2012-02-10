@@ -1,135 +1,201 @@
-*** HOW TO RUN CMS FOR THE FIRST TIME
-
-First of all, there are some choice you can do: run it on a 32 or 64
-bit system, and use PostgreSQL or SQLite for the database. In this
-guide we restrict to the simplest case (32 bit and SQLite). Note that
-SQLite has many shortcomings and should be used just for testing, but
-you can change to PostgreSQL after reading this introduction. The more
-advanced topics are covered in 32bit_sandbox_howto.txt and
-postgresql_howto.txt.
-
-Said that, you can run CMS in two ways: from the repository, or
-install it in the system. We strongly suggest the second as it is
-faster.
-
-WARNING!! If you're going to organize a real contest with CMS, you'll
-have to take care of proper installing anti-cheating devices on your
-computers: for example, you have to set up firewalls so that users
-cannot communicate between them. Also consider that all communications
-between CMS services are not encrypted nor authenticated, so you also
-have to properly insulate them from the network used by contestants;
-the same applies to AdminWebServer that do not require any sort of
-authentication.
+HOW TO RUN CMS FOR THE FIRST TIME
+=================================
 
 
-** RUN IT FROM THE REPOSITORY
+** RECOMMENDED SETUP
 
-We assume that you already cloned the repository, and that $CMSPATH is
-the path of the cms directory in the repository (i.e., the parent of
-doc/).
+We are not going to discuss here how many servers you need to run a
+contest, since that depends on too many factors (number of
+participants, money availability, more technical matters...).
 
-* DEPENDENCIES
+The recommended setup we are going to talk about is the type of
+servers. Our preferred distribution is Ubuntu >= 11.10. With Ubuntu
+11.10 you will need to install some out-of-repository packages, and
+note that, as soon as it is deployed, we will target explicitly Ubuntu
+12.04 LTS. We will hopefully support Ubuntu 12.04.x out of the box for
+the length of Ubuntu's support duration, that is five years.
 
-You need some dependencies (the Ubuntu packages are in brackets):
-- SQLAlchemy packages for Python (python-sqlalchemy);
-- simplejson library for Python (python-simplejson);
-- Tornado (>= 0.2) (python-tornado in ppa:chris-lea/python-tornado);
-- psutil (>= 0.2) (python-psutil in ppa:therve/ppa).
+Very important note: we support only 32 bit distributions.
 
-* LOCALIZATION
-
-Next, you need to compile the localization you are interested
-in. Create the directory $CMSPATH/cms/server/mo/<code>/LC_MESSAGES/ for
-every country code <code>, and run the command
-$ msgfmt $CMSPATH/cms/server/po/<code>.po \
-  -o $CMSPATH/cms/server/mo/<code>/LC_MESSAGES/cms.mo
-for every country code.
-
-* CONFIGURATION
-
-Then you need to configure CMS, copying
-$CMSPATH/example/cms.conf.sample onto $CMSPATH/example/cms.conf and
-changing the value as you prefer. In particular, since we are using
-SQLite, you need to remove the key "database" and change "_database"
-in "database'.
-
-* PYTHONPATH
-
-The last thing to do is to instruct Python to search for modules also
-in $CMSPATH. You need to write on every terminal where you want to run
-some CMS service the following: $ export PYTHONPATH=$CMSPATH/
-
-* IMPORTING AND RUNNING
-
-Finally, you can run the services. We are going first to run the
-services for logging and file storage, then we are importing a sample
-contest, and finally we are going to run all the services for the
-given contest. In every terminal, enter in the directory $CMSPATH.
-
-These (one for each terminal) run the logging and file capabilities.
-$ ./cms/service/LogService.py 0
-$ ./cms/service/FileStorage.py 0
-
-This import the contest in the given directory:
-$ ./contrib/ContestImporter.py -s 0 /path/to/contest/
-
-After the importer ended, you can run the other services with:
-$ ./cms/service/Worker.py 0
-$ ./cms/service/EvaluationService.py 0
-$ ./cms/server/ContestWebServer.py 0
-$ ./cms/server/AdminWebServer.py 0
-The middle two are contest-dependent, hence they are going to ask you
-which contest you want to load before starting.
+Saying that, you are not forced to follow the previous rules, and it
+should not be very hard to successfully run CMS on different
+distributions or even on 64 bit installations (see the howto about
+setting up a 32 bits chroot for more information about this).
 
 
-** INSTALL AND RUN IT FROM THE SYSTEM
+** DEPENDENCIES
 
-If you prefer installing CMS in the system, things are a little
-easier. Note that the installation is going to copy some file to the
-/usr/local tree and add the group cmsuser to the system. We tested the
-installation script in a standard environment, but we do not take any
-responsibility for possible damages.
+* These are our requirements (in particular we highlight those that
+  are not usually installed by default) - previous versions may or may
+  not work:
 
-* DEPENDENCIES
+  - python >= 2.7 (and < 3.0);
 
-You need some dependencies (the Ubuntu packages are in brackets):
-- SQLAlchemy packages for Python (python-sqlalchemy);
-- simplejson library for Python (python-simplejson);
-- Tornado (>= 0.2) (python-tornado in ppa:chris-lea/python-tornado);
-- psutil (>= 0.2) (python-psutil in ppa:therve/ppa);
-- setuptools (python-setuptools).
+  - postgreSQL >= 8.4;
 
-* INSTALL
+  - python-setuptools >= 0.6;
 
-Just move to /path/to/repo/cms/, and launch
-$ sudo setup.py install
+  - python-tornado >= 2.0;
 
-* CONFIGURATION
+  - python-psycopg2 >= 2.4;
 
-To configure CMS edit /usr/local/etc/cms.conf. In particular, since we
-are using SQLite, you need to remove the key "database" and change
-"_database_sqlite" in "database'.
+  - python-sqlalchemy >= 0.7;
 
-* IMPORTING AND RUNNING
+  - python-psutils >= 0.2;
 
-First you need to add your user to the group "cmsuser":
-$ sudo usermod -a -G cmsuser
-After restarting your shell (or logging out from X), you can check
-that you actually are in the group cmsuser:
-$ groups
+  - python-yaml >= 3.10 (only for YamlImporter);
 
-If this is true, you can now run the services. These (one for each
-terminal) run the logging and file capabilities.
-$ cmsLogService 0
-$ cmsFileStorage 0
+  - gettext >= 0.18;
 
-These are enough to import the contest in the given directory:
-$ cmsContestImporter -s 0 /path/to/contest/
+  - building environment for the programming languages allowed in the
+    competition.
 
-After the importer ended, you can run the other services with:
-$ cmsWorker 0
-$ cmsEvaluationService 0
-$ cmsContestWebServer 0
-$ cmsAdminWebServer 0
-The middle two are contest-dependent, hence they are going to ask you
-which contest you want to load before starting.
+
+* If you are running Ubuntu 11.10, you will need to run the following
+  script to satisfy all dependencies:
+
+---
+# For apt-add-repository.
+sudo apt-get install python-software-properties
+
+sudo apt-add-repository ppa:chris-lea/python-tornado
+wget "https://launchpad.net/~neil-u/+archive/ppa/+build/3103042/"\
+     "+files/python-sqlalchemy_0.7.4-1ubuntu1_all.deb"
+wget "https://launchpad.net/~neil-u/+archive/ppa/+build/3103042/"\
+     "+files/python-sqlalchemy-ext_0.7.4-1ubuntu1_i386.deb"
+
+sudo apt-get update
+sudo apt-get upgrade
+
+sudo apt-get install postgresql postgresql-client python-setuptools \
+     python-tornado python-psycopg2 python-psutils gettext \
+     build-essential fpc stl-manual
+
+sudo dpkg -i python-sqlalchemy_0.7.4-1ubuntu1_all.deb \
+     python-sqlalchemy-ext_0.7.4-1ubuntu1_all.deb
+
+# Optional.
+# sudo apt-get install phppgadmin python-yaml
+---
+
+
+* If you are running Ubuntu 12.04, you will need to run the following
+  script to satisfy all dependencies:
+
+---
+sudo apt-get update
+sudo apt-get upgrade
+
+sudo apt-get install postgresql postgresql-client python-setuptools \
+     python-tornado python-psycopg2 python-sqlalchemy \
+     python-psutils gettext build-essential fpc stl-manual
+
+# Optional.
+# sudo apt-get install phppgadmin python-yaml
+---
+
+
+** Obtaining, configuring and installing CMS
+
+CMS is composed of several services potentially running on different
+machines. You can run all services on a single server, but to have a
+fair evaluation we encourage you to have at least one server devoted
+only to the evaluations.
+
+For every server you want to have, you need to retrieve CMS. Since CMS
+does not yet have a release schedule, the fastest way to obtain it is
+via its git repository:
+
+---
+sudo apt-get install git
+git clone git://github.com/giomasce/cms.git
+---
+
+This will create a directory ./cms/ with the source code.
+
+Next step is to configure CMS. There are two configuration files, one
+for CMS itself and one for the rankings. Samples for both files are in
+$REPO/cms/examples. You want to copy them to the same file names but
+without the ".sample" suffix (i.e. to $REPO/cms/example/cms.conf and
+$REPO/cms/example/cms.ranking.conf) before modifying them.
+
+- cms.conf is intended to be the same in all servers; all
+  configurations are explained in the file; particular importance has
+  the definition of core_services, that specifies where are the
+  service going to be run, and how many of them. Usually, there are
+  one ResourceService for each server, one each of LogService,
+  ScoringService, Checker, EvaluationService, AdminWebServer, and one
+  or more of ContestWebServer and Worker.
+
+- cms.ranking.conf is intended to be different on each server that
+  will host a ranking. The addresses and log-in information of each
+  ranking must be the same as the ones found in cms.conf.
+
+Once you configured CMS, we can proceed to install it using the
+commands:
+
+---
+cd $REPO/cms/
+./setup.py build
+sudo ./setup.py install
+---
+
+These will create a user and a group named "cmsuser". If you want to
+run CMS from your account, just add yourself to the cmsuser group and
+log-in again before continuing.
+
+---
+sudo usermod -a -G cmsuser
+---
+
+** Updating CMS
+
+To update CMS, go in the repository and run:
+
+---
+git pull
+---
+
+Since CMS is still in heavy development, we are introducing many
+changes in the database structure. If you created a database with a
+previous version, you may need to run UpdateDB.py to organize the data
+in the new structure:
+
+---
+cd $REPO/cms/cms/db
+python UpdateDB.py -l # To see which updating scripts are available.
+python UpdateDB.py -s YYYYMMDD # To update the DB, where YYYYMMDD is
+                               # the last date in which you created or
+                               # updated the DB.
+
+---
+
+** Running CMS
+
+Before running CMS, you need to create in some way a contest. There
+are two main facilities: cmsContestImporter and cmsYamlImporter. The
+former load into the system a contest exported from CMS with
+cmsContestExporter. The latter imports a contest from a directory with
+the structure of the Italian Olympiads repository.
+
+Once that a contest is loaded, the first thing to run is the logger
+(from the correct server!):
+
+---
+cmsLogService 0
+---
+
+After that, for each server you can run (and keep alive) all services
+associated to the server with:
+
+---
+cmsResourceService <shard-number> -a
+---
+
+where shard-number is the shard associated to the ResourceService on
+that server. This will ask for which contest to load. The "--help"
+switch is enabled for every program for additional information.
+
+If the services keeps restarting you may need to change
+"process_cmdline" in the configuration to one more suited to your
+system.

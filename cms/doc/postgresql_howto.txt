@@ -68,18 +68,18 @@ when installing the packages. When authenticated with such
 user, you have full rights in every database stored in
 your system.
 
-  Let's suppose you want to create a PostgreSQL user named
-"cms_user" without administrative powers, owner of the database
-"cms". So you give:
+  Let's suppose you want to create a PostgreSQL user named "cmsuser"
+without administrative powers, owner of the database "cms". So you
+give:
 
 # sudo -s -u postgres
-$ createuser cms_user -P
+$ createuser cmsuser -P
 Enter password for new role:
 Enter it again:
 Shall the new role be a superuser? (y/n) n
 Shall the new role be allowed to create databases? (y/n) n
 Shall the new role be allowed to create more new roles? (y/n) n
-$ createdb -O cms_user cms
+$ createdb -O cmsuser cms
 
   Wonderful, you're now the proud owner of a brand new database.
 Take out the goblets and pop the champagne! :-) And, of course,
