@@ -10,12 +10,19 @@ function submission_status_received(response, error)
     var $evaluation = $(utils.escape_jquery_selectors("evaluation_" + submission_id));
     var isVisible = $evaluation.length != 0 && $evaluation.is(":visible");
 
-    $status.replaceWith($new_status);
-
     if(isVisible)
     {
-        cmsutils.bind_func($new_status.find(".toggling_off").get(0), utils.toggle_visibility)();
+        // The new evaluation box retains the same visibility,
+        // with no animations.
+        var $title = $new_status.find(".toggling_off");
+        var $item = $new_status.find(utils.escape_jquery_selectors($title[0].id.replace("title_", "#")));
+        $item.show();
+        $title.toggleClass("toggling_on toggling_off");
     }
+
+    $status.replaceWith($new_status);
+
+
 
 
 }
