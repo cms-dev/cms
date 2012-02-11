@@ -494,7 +494,11 @@
                                       "utils.show_page('questions', "+ i + "); " +
                                       "return false;\">" + i + "</a>&nbsp;";
             }
-        }
+        },
 
+        escape_jquery_selectors: function (myid)
+        {
+            return '#' + myid.replace(/(:|\.)/g,'\\$1');
+        }
     };
 }());

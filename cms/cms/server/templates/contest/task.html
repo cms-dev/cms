@@ -3,46 +3,31 @@
 function submission_status_received(response, error)
 {
     var submission_id = this;
-    var evaluation = document.getElementById("evaluation_" + submission_id);
-    var visibility;
-    if (evaluation == null)
-        visibility = "none";
-    else
-        visibility = evaluation.style.display;
-    var div_id = "submission_status_" + submission_id;
-    var cell = document.getElementById(div_id).parentNode;
-    cell.innerHTML = response;
-    if(visibility != "none")
+
+    var $status = $(utils.escape_jquery_selectors("submission_status_" + submission_id));
+    var $new_status = $(response);
+
+    var $evaluation = $(utils.escape_jquery_selectors("evaluation_" + submission_id));
+    var isVisible = $evaluation.length != 0 && $evaluation.is(":visible");
+
+    $status.replaceWith($new_status);
+
+    if(isVisible)
     {
-        new_sub_id = cell.children[0].id.replace("submission_status_", "");
-        if(document.getElementById("evaluation_" + new_sub_id) != null)
-        {
-            utils.toggle_visibility("evaluation_" + new_sub_id);
-        }
+        cmsutils.bind_func($new_status.find(".toggling_off").get(0), utils.toggle_visibility)();
     }
+
+
 }
 
 function update_submission_status()
 {
-    var sub_list = document.getElementsByName("submission_status");
-    var submission_ids = new Array();
-    var i=0;
-    var j=0;
-    for(i = 0; i < sub_list.length; i++)
-    {
-        var status = sub_list[i].children[0].innerHTML;
-        // Non-definitive statuses are distinguished with "...".
-        if (status.indexOf("...") != -1)
-        {
-            submission_ids[i] = new String(sub_list[i].id);
-            submission_ids[i] = submission_ids[i].replace("submission_status_", "");
-        }
-    }
-    for(j = 0; j < submission_ids.length; j++)
-    {
-        func = cmsutils.bind_func(submission_ids[j], submission_status_received);
-        cmsutils.ajax_request("/submission_status/" + submission_ids[j], "", func);
-    }
+    var $sub_list = $('.submission_pending');
+    $sub_list.each(function(index){
+        var id = this.id.replace("submission_status_", "");
+        func = cmsutils.bind_func(id, submission_status_received);
+        cmsutils.ajax_request("/submission_status/" + id, "", func);
+    });
 }
 
 setInterval(update_submission_status, 5000);
