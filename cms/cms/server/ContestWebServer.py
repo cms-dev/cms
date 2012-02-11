@@ -57,7 +57,8 @@ from cms.grading.TaskType import TaskTypes
 from cms.service.FileStorage import FileCacher
 from cms.service.LogService import logger
 from cms.server.Utils import file_handler_gen, \
-     catch_exceptions, decrypt_arguments, valid_phase_required
+     catch_exceptions, decrypt_arguments, valid_phase_required, \
+     extract_archive
 from cms.util.Cryptographics import encrypt_number, decrypt_number, \
      get_encryption_alphabet
 
@@ -524,19 +525,35 @@ class SubmitHandler(BaseHandler):
         # as request.files.
         if len(self.request.files) == 1 and \
                self.request.files.keys()[0] == "submission":
-            zip_file = self.request.files["submission"][0]
+            archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
             # Extract the files from the archive.
 
-            temp_zip_file, temp_zip_filename = tempfile.mkstemp()
-            with os.fdopen(temp_zip_file, "w") as temp_zip_file:
-                temp_zip_file.write(zip_file["body"])
+            temp_archive_file, temp_archive_filename = tempfile.mkstemp()
+            with os.fdopen(temp_archive_file, "w") as temp_archive_file:
+                temp_archive_file.write(archive_data["body"])
 
-            zip_object = zipfile.ZipFile(temp_zip_filename, "r")
-            for item in zip_object.infolist():
-                self.request.files[item.filename] = [{
-                    "filename": item.filename,
-                    "body": zip_object.read(item)}]
+            archive_contents = extract_archive(temp_archive_filename, 
+                archive_data["filename"]);
+
+
+            if archive_contents is None:
+                self.application.service.add_notification(
+                    self.current_user.username,
+                    int(time.time()),
+                    self._("Invalid archive format!"),
+                    self._("The submitted archive could not be opened."))
+                self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+                return
+
+            for item in archive_contents:
+                self.request.files[item["filename"]] = [item]
+
+#            zip_object = zipfile.ZipFile(temp_zip_filename, "r")
+#            for item in zip_object.infolist():
+#                self.request.files[item.filename] = [{
+#                    "filename": item.filename,
+#                    "body": zip_object.read(item)}]
 
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task

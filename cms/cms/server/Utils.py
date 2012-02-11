@@ -27,6 +27,9 @@ import os
 import traceback
 import time
 
+import tarfile
+import zipfile
+
 from functools import wraps
 from tornado.web import HTTPError
 
@@ -96,6 +99,41 @@ def decrypt_arguments(func):
         return func(self, *new_args, **new_kwargs)
     return newfunc
 
+
+def extract_archive(temp_name, original_filename):
+    """Obtain a list of files inside the specified archive.
+        
+        Returns a list of the files inside the archive located in
+        temp_name, using original_filename to guess the type of the archive.
+        
+    """
+    file_list = []
+    if original_filename.endswith(".zip"):
+        try:
+            zip_object = zipfile.ZipFile(temp_zip_filename, "r")
+            for item in zip_object.infolist():
+                file_list.append({
+                    "filename": item.filename,
+                    "body": zip_object.read(item)})
+        except Exception as error:
+            return None
+    elif original_filename.endswith(".tar.gz") \
+        or original_filename.endswith(".tar.bz2") \
+        or original_filename.endswith(".tar"):
+        try:
+            tar_object = tarfile.open(name = temp_name)
+            for item in tar_object.getmembers():
+                if item.isfile():
+                    file_list.append({
+                        "filename": item.name,
+                        "body": tar_object.extractfile(item).read()})
+        except tarfile.TarError as error:
+            return None
+        except IOError as error:
+            return None
+    else:
+        return None
+    return file_list
 
 def file_handler_gen(BaseClass):
     """This generates an extension of the BaseHandler that allows us
