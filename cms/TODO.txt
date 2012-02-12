@@ -60,11 +60,6 @@
 
 * MED: make cookies expire after some inactivity time.
 
-* LOW: reload of submissions' status does not work as it best, please
-  fix.
-
-* LOW: ability to send not only zipped but also tarred submissions.
-
 * LOW: think at giving CWS some caching capabilities w.r.t. to the
   database. Currently there are several queries per page load, even if
   the data is (supposedly) stable during the contest (start/stop

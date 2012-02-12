@@ -549,12 +549,6 @@ class SubmitHandler(BaseHandler):
             for item in archive_contents:
                 self.request.files[item["filename"]] = [item]
 
-#            zip_object = zipfile.ZipFile(temp_zip_filename, "r")
-#            for item in zip_object.infolist():
-#                self.request.files[item.filename] = [{
-#                    "filename": item.filename,
-#                    "body": zip_object.read(item)}]
-
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
         # type says so.
@@ -573,7 +567,7 @@ class SubmitHandler(BaseHandler):
 
         # Add submitted files. After this, self.files is a dictionary
         # indexed by *our* filenames (something like "output01.txt" or
-        # "taskname.%;", and whose value is a couple
+        # "taskname.%l", and whose value is a couple
         # (user_assigned_filename, content).
         self.files = {}
         for uploaded, data in self.request.files.iteritems():
