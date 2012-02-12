@@ -71,6 +71,11 @@ class BaseHandler(tornado.web.RequestHandler):
 
     """
 
+    # Whether the login cookie duration has to be refreshed when
+    # this handler is called. Useful to filter asynchronous
+    # requests.
+    refresh_cookie = True
+
     @catch_exceptions
     def prepare(self):
         """This method is executed at the beginning of each request.
@@ -101,8 +106,15 @@ class BaseHandler(tornado.web.RequestHandler):
         if self.get_secure_cookie("login") is None:
             return None
         try:
-            username = str(pickle.loads(self.get_secure_cookie("login"))[0])
+            cookie = pickle.loads(self.get_secure_cookie("login"))
+            username = str(cookie[0])
+            last_update = int(cookie[1])
         except:
+            self.clear_cookie("login")
+            return None
+
+        # Check if the cookie is expired.
+        if timestamp - last_update > config.cookie_duration:
             self.clear_cookie("login")
             return None
 
@@ -111,6 +123,11 @@ class BaseHandler(tornado.web.RequestHandler):
         if user is None:
             self.clear_cookie("login")
             return None
+
+        if self.refresh_cookie:
+            self.set_secure_cookie("login",
+                               pickle.dumps((user.username, int(time.time()))),
+                               expires_days=None)
 
         # If this is the first time we see user during the active
         # phase of the contest, we note that his/her time starts from
@@ -283,7 +300,8 @@ class LoginHandler(BaseHandler):
             return
 
         self.set_secure_cookie("login",
-                               pickle.dumps((user.username, int(time.time()))))
+                               pickle.dumps((user.username, int(time.time()))),
+                               expires_days=None)
         self.redirect(next_page)
 
 
@@ -384,6 +402,9 @@ class NotificationsHandler(BaseHandler):
     """Displays notifications.
 
     """
+
+    refresh_cookie = False
+
     @catch_exceptions
     def get(self):
         if not self.current_user:
@@ -533,9 +554,8 @@ class SubmitHandler(BaseHandler):
             with os.fdopen(temp_archive_file, "w") as temp_archive_file:
                 temp_archive_file.write(archive_data["body"])
 
-            archive_contents = extract_archive(temp_archive_filename, 
-                archive_data["filename"]);
-
+            archive_contents = extract_archive(temp_archive_filename,
+                archive_data["filename"])
 
             if archive_contents is None:
                 self.application.service.add_notification(
@@ -804,6 +824,9 @@ class UseTokenHandler(BaseHandler):
 
 
 class SubmissionStatusHandler(BaseHandler):
+
+    refresh_cookie = False
+
     @catch_exceptions
     @tornado.web.authenticated
     @valid_phase_required
