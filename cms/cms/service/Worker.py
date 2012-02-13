@@ -28,7 +28,7 @@ from cms.async.AsyncLibrary import async_lock, Service, \
      rpc_method, rpc_threaded
 from cms.db.SQLAlchemyAll import Submission, SessionGen, Contest
 from cms.grading import JobException
-from cms.grading.TaskType import TaskTypes
+from cms.grading.tasktypes import get_task_type
 from cms.service.FileStorage import FileCacher
 from cms.service.LogService import logger
 
@@ -41,34 +41,44 @@ class Worker(Service):
 
     """
 
+    JOB_TYPE_COMPILATION = "compile"
+    JOB_TYPE_EVALUATION = "evaluate"
+
     def __init__(self, shard):
         logger.initialize(ServiceCoord("Worker", shard))
         Service.__init__(self, shard, custom_logger=logger)
-        self.FC = FileCacher(self)
+        self.file_cacher = FileCacher(self)
 
         self.work_lock = threading.Lock()
         self.session = None
 
     def get_submission_data(self, submission_id):
+        """Given the id, returns the submission object and a new task
+        type object of the correct type.
+
+        submission_id (int): id of the submission.
+
+        return (Submission, TaskType): corresponding objects.
+
+        raise: JobException if id or task type not found.
+
+        """
         submission = Submission.get_from_id(submission_id, self.session)
         if submission is None:
             err_msg = "Couldn't find submission %s " \
-                      "in the database" % submission_id
+                      "in the database." % submission_id
             logger.critical(err_msg)
             raise JobException(err_msg)
 
         try:
-            task_type = TaskTypes.get_task_type(submission, self.FC)
+            task_type = get_task_type(submission, self.file_cacher)
         except KeyError:
-            err_msg = "Task type `%s' not known for submission %s" \
+            err_msg = "Task type `%s' not known for submission %s." \
                 % (submission.task.task_type, submission_id)
-            logger.critical(err_msg)
+            logger.error(err_msg)
             raise JobException(err_msg)
 
         return (submission, task_type)
-
-    # FIXME - There is far too common code among compile() and
-    # evaluate() that should be deduplicated
 
     @rpc_method
     @rpc_threaded
@@ -78,7 +88,7 @@ class Worker(Service):
         submission_id (int): the id of the submission to compile.
 
         """
-        return self.action(submission_id, "compilation")
+        return self.action(submission_id, Worker.JOB_TYPE_COMPILATION)
 
     @rpc_method
     @rpc_threaded
@@ -88,7 +98,7 @@ class Worker(Service):
         submission_id (int): the id of the submission to evaluate.
 
         """
-        return self.action(submission_id, "evaluation")
+        return self.action(submission_id, Worker.JOB_TYPE_EVALUATION)
 
     # FIXME - rpc_threaded is disable because it makes the call fail:
     # we should investigate on this
@@ -105,7 +115,7 @@ class Worker(Service):
         with SessionGen(commit=False) as session:
             contest = Contest.get_from_id(contest_id, session)
             for digest in contest.enumerate_files():
-                self.FC.get_file(digest)
+                self.file_cacher.get_file(digest)
         logger.info("Precaching finished")
 
     def action(self, submission_id, job_type):
@@ -114,7 +124,7 @@ class Worker(Service):
         what we ask TaskType to do).
 
         submission_id (string): the submission to which act on.
-        job_type (string): "compilation" or "evaluation".
+        job_type (string): a constant JOB_TYPE_*.
 
         """
         if self.work_lock.acquire(False):
@@ -137,32 +147,26 @@ class Worker(Service):
 
                     # Do the actual work
                     success = False
-                    task_type_action = task_type.evaluate
-                    if job_type == "compilation":
+                    if job_type == Worker.JOB_TYPE_COMPILATION:
                         task_type_action = task_type.compile
+                    elif job_type == Worker.JOB_TYPE_EVALUATION:
+                        task_type_action = task_type.evaluate
+                    else:
+                        raise KeyError("Unexpected job type %s." % job_type)
 
-                    try:
-                        success = task_type_action()
-                    except Exception as error:
-                        err_msg = "%s failed with not caught " \
-                            "exception `%r' and traceback `%s'" % \
-                            (job_type, error, traceback.format_exc())
-                        with async_lock:
-                            logger.error(err_msg)
-                        raise JobException(err_msg)
-
+                    success = task_type_action()
                     if success:
                         self.session.commit()
 
                     with async_lock:
                         logger.info("Request finished")
                     return success
-            except Exception as error:
-                err_msg = "Worker failed the %s with exception " \
-                    "`%r' and traceback `%s'" % \
-                    (job_type, error, traceback.format_exc())
+
+            except:
                 with async_lock:
-                    logger.error(err_msg)
+                    err_msg = "Worker failed on operation `%s'" % \
+                              logger.operation
+                    logger.error("%s\n%s" % (err_msg, traceback.format_exc()))
                 raise JobException(err_msg)
 
             finally:
@@ -172,9 +176,9 @@ class Worker(Service):
 
         else:
             with async_lock:
-                logger.info("Request of %s of submission %s received, "
-                            "but declined because of acquired lock" %
-                            (job_type, submission_id))
+                logger.warning("Request of %s of submission %s received, "
+                               "but declined because of acquired lock" %
+                               (job_type, submission_id))
             return False
 
 

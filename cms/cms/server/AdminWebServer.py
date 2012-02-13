@@ -37,7 +37,6 @@ from cms.async import ServiceCoord, get_service_shards, get_service_address
 from cms.db.SQLAlchemyAll import Session, \
      Contest, User, Announcement, Question, Message, Submission, File, Task, \
      Attachment, Manager, Testcase, SubmissionFormatElement
-from cms.grading.TaskType import TaskTypes
 from cms.server.Utils import file_handler_gen
 from cms.service.FileStorage import FileCacher
 from cms.service.LogService import logger
@@ -597,7 +596,7 @@ class TaskViewHandler(BaseHandler):
 
         task.task_type = self.get_argument("task_type", "")
 
-        if task.task_type == TaskTypes.TASK_TYPE_BATCH:
+        if task.task_type == "Batch":
             batch_evaluation = self.get_argument("Batch_evaluation", "")
             if batch_evaluation not in ["diff", "comp", "grad"]:
                 self.application.service.add_notification(int(time.time()),
@@ -613,7 +612,7 @@ class TaskViewHandler(BaseHandler):
                 batch_use_files = "nofile"
             task_type_parameters = [batch_evaluation, batch_use_files]
 
-        elif task.task_type == TaskTypes.TASK_TYPE_OUTPUT_ONLY:
+        elif task.task_type == "OutputOnly":
             oo_evaluation = self.get_argument("OutputOnly_evaluation", "")
             if oo_evaluation not in ["diff", "comp"]:
                 self.application.service.add_notification(int(time.time()),
@@ -686,7 +685,7 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         memory_limit = self.get_argument("memory_limit", "")
         task_type = self.get_argument("task_type", "")
 
-        if task_type == TaskTypes.TASK_TYPE_BATCH:
+        if task_type == "Batch":
             batch_evaluation = self.get_argument("Batch_evaluation", "")
             if batch_evaluation not in ["diff", "comp", "grad"]:
                 self.application.service.add_notification(int(time.time()),
@@ -702,7 +701,7 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
                 batch_use_files = "nofile"
             task_type_parameters = [batch_evaluation, batch_use_files]
 
-        elif task_type == TaskTypes.TASK_TYPE_OUTPUT_ONLY:
+        elif task_type == "OutputOnly":
             oo_evaluation = self.get_argument("OutputOnly_evaluation", "")
             if oo_evaluation not in ["diff", "comp"]:
                 self.application.service.add_notification(int(time.time()),

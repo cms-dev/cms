@@ -34,7 +34,6 @@ from cms.async.AsyncLibrary import Service
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Manager, \
     Testcase, User, Contest, SubmissionFormatElement, FSObject
 from cms.db.Utils import analyze_all_tables
-from cms.grading.TaskType import TaskTypes
 from cms.service.FileStorage import FileCacher
 from cms.service.LogService import logger
 from cms.service.ScoreType import ScoreTypes
@@ -164,7 +163,7 @@ class YamlLoader:
         params["statement"] = self.file_cacher.put_file(
             path=os.path.join(path, "testo", "testo.pdf"),
             description="PDF statement for task %s" % name)
-        params["task_type"] = TaskTypes.TASK_TYPE_BATCH
+        params["task_type"] = "Batch"
 
         params["submission_format"] = [
             SubmissionFormatElement("%s.%%l" % name).export_to_dict()]
