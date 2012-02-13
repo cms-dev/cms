@@ -42,11 +42,13 @@
 
 
 
-** Task types
+** Task/Score types
 
 * HIGH: implement communication task types.
 
-* LOW: ease the creation of new task types.
+* MED: make score types plugin-able.
+
+* LOW: ease the creation of new types.
 
 
 
@@ -65,8 +67,6 @@
 * MED: why we forgot the possibility of using ssl for CWS?
   - Probably because it's better to support it via some proxy like
     nginx.
-
-* MED: make cookies expire after some inactivity time.
 
 * LOW: think at giving CWS some caching capabilities w.r.t. to the
   database. Currently there are several queries per page load, even if
