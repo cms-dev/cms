@@ -60,6 +60,7 @@ class Config:
 
         # ContestWebServer.
         self.contest_listen_port = [8888]
+        self.cookie_duration = 1800
         self.submit_local_copy = True
         self.submit_local_copy_path = "%s/submissions/"
         self.ip_lock = True
