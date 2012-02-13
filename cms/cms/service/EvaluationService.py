@@ -435,7 +435,6 @@ class EvaluationService(Service):
 
     JOB_TYPE_COMPILATION = "compile"
     JOB_TYPE_EVALUATION = "evaluate"
-    JOB_TYPE_BOMB = "bomb"
 
     MAX_COMPILATION_TRIES = 3
     MAX_EVALUATION_TRIES = 3
@@ -698,7 +697,7 @@ class EvaluationService(Service):
             return
 
         if error is not None:
-            logger.error("Received error from Worker: %s" % (error))
+            logger.error("Received error from Worker: `%s'" % error)
             return
 
         job_type, submission_id = job

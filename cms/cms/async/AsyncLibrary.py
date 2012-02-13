@@ -35,6 +35,7 @@ import heapq
 
 import asyncore
 import asynchat
+from functools import wraps
 
 from cms.async import ServiceCoord, Address, get_service_address
 from cms.async.Utils import random_string, Logger, \
@@ -53,7 +54,7 @@ def rpc_callback(func):
     Pythonic way.
 
     """
-
+    @wraps(func)
     def newfunc(self, *args, **kwargs):
         """Mangle __error and give back error when appropriate.
 
@@ -450,9 +451,8 @@ class ThreadedRPC(threading.Thread):
         try:
             method_response = self.service.handle_message(self.message)
         except Exception, exception:
-            self.response["__error"] = "%s: %s" % (
-                exception.__class__.__name__,
-                " ".join([str(x) for x in exception.args]))
+            self.response["__error"] = "%s: %s" % \
+                (exception.__class__.__name__, exception)
             self.binary_response = False
             method_response = None
 
@@ -559,9 +559,8 @@ class RemoteService(asynchat.async_chat):
                 binary_response = method_info["binary_response"]
                 threaded = method_info["threaded"]
             except KeyError as exception:
-                response["__error"] = "%s: %s" % (
-                    exception.__class__.__name__,
-                    " ".join([str(x) for x in exception.args]))
+                response["__error"] = "%s: %s" % \
+                    (exception.__class__.__name__, exception)
                 binary_response = False
                 method_response = None
                 threaded = False
@@ -577,10 +576,9 @@ class RemoteService(asynchat.async_chat):
             # right away.
             try:
                 method_response = self.service.handle_message(message)
-            except Exception, exception:
-                response["__error"] = "%s: %s" % (
-                    exception.__class__.__name__,
-                    " ".join([str(x) for x in exception.args]))
+            except Exception as exception:
+                response["__error"] = "%s: %s" % \
+                    (exception.__class__.__name__, exception)
                 binary_response = False
                 method_response = None
             self.send_reply(response, method_response, binary_response)
@@ -764,7 +762,7 @@ class RemoteService(asynchat.async_chat):
         try:
             self.push(to_push)
         except Exception as error:
-            logger.error("Push not ended correctly because of %r" % error)
+            logger.error("Push not ended correctly because of %r." % error)
             return False
         return True
 
