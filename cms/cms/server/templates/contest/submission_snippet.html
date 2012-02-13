@@ -5,7 +5,7 @@
 
 {% set encrypted_id = Cryptographics.encrypt_number(s.id) %}
 
-<div id="submission_status_{{ encrypted_id }}" name="submission_status" 
+<div id="submission_status_{{ encrypted_id }}" name="submission_status"
     {% if s.compilation_outcome is None or (s.compilation_outcome != "fail" and not s.evaluated()) %}
     class="submission_pending"
     {% end %}

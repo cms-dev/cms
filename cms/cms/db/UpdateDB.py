@@ -41,6 +41,7 @@ class ScriptsContainer(object):
         self.list = [
             ("20120119", "add_per_user_time"),
             ("20120121", "add_submissions_score"),
+            ("20120213", "change_tasktype_names"),
             ]
         self.list.sort()
 
@@ -127,6 +128,17 @@ class ScriptsContainer(object):
                             "ADD COLUMN public_score FLOAT;")
             session.execute("ALTER TABLE submissions "
                             "ADD COLUMN public_score_details VARCHAR;")
+
+    @staticmethod
+    def change_tasktype_names():
+        """Remove the TaskType prefix from every task type name.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("UPDATE tasks SET task_type = 'Batch' "
+                            "WHERE task_type = 'TaskTypeBatch';")
+            session.execute("UPDATE tasks SET task_type = 'OutputOnly' "
+                            "WHERE task_type = 'TaskTypeOutputOnly';")
 
 
 def execute_single_script(scripts_container, script):
