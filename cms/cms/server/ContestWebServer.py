@@ -57,7 +57,8 @@ from cms.grading.tasktypes import get_task_type
 from cms.service.FileStorage import FileCacher
 from cms.service.LogService import logger
 from cms.server.Utils import file_handler_gen, \
-     catch_exceptions, decrypt_arguments, valid_phase_required
+     catch_exceptions, decrypt_arguments, valid_phase_required, \
+     extract_archive
 from cms.util.Cryptographics import encrypt_number, decrypt_number, \
      get_encryption_alphabet
 
@@ -69,6 +70,11 @@ class BaseHandler(tornado.web.RequestHandler):
     child of this class.
 
     """
+
+    # Whether the login cookie duration has to be refreshed when
+    # this handler is called. Useful to filter asynchronous
+    # requests.
+    refresh_cookie = True
 
     @catch_exceptions
     def prepare(self):
@@ -100,8 +106,15 @@ class BaseHandler(tornado.web.RequestHandler):
         if self.get_secure_cookie("login") is None:
             return None
         try:
-            username = str(pickle.loads(self.get_secure_cookie("login"))[0])
+            cookie = pickle.loads(self.get_secure_cookie("login"))
+            username = str(cookie[0])
+            last_update = int(cookie[1])
         except:
+            self.clear_cookie("login")
+            return None
+
+        # Check if the cookie is expired.
+        if timestamp - last_update > config.cookie_duration:
             self.clear_cookie("login")
             return None
 
@@ -110,6 +123,11 @@ class BaseHandler(tornado.web.RequestHandler):
         if user is None:
             self.clear_cookie("login")
             return None
+
+        if self.refresh_cookie:
+            self.set_secure_cookie("login",
+                               pickle.dumps((user.username, int(time.time()))),
+                               expires_days=None)
 
         # If this is the first time we see user during the active
         # phase of the contest, we note that his/her time starts from
@@ -282,7 +300,8 @@ class LoginHandler(BaseHandler):
             return
 
         self.set_secure_cookie("login",
-                               pickle.dumps((user.username, int(time.time()))))
+                               pickle.dumps((user.username, int(time.time()))),
+                               expires_days=None)
         self.redirect(next_page)
 
 
@@ -383,6 +402,9 @@ class NotificationsHandler(BaseHandler):
     """Displays notifications.
 
     """
+
+    refresh_cookie = False
+
     @catch_exceptions
     def get(self):
         if not self.current_user:
@@ -524,19 +546,28 @@ class SubmitHandler(BaseHandler):
         # as request.files.
         if len(self.request.files) == 1 and \
                self.request.files.keys()[0] == "submission":
-            zip_file = self.request.files["submission"][0]
+            archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
             # Extract the files from the archive.
 
-            temp_zip_file, temp_zip_filename = tempfile.mkstemp()
-            with os.fdopen(temp_zip_file, "w") as temp_zip_file:
-                temp_zip_file.write(zip_file["body"])
+            temp_archive_file, temp_archive_filename = tempfile.mkstemp()
+            with os.fdopen(temp_archive_file, "w") as temp_archive_file:
+                temp_archive_file.write(archive_data["body"])
 
-            zip_object = zipfile.ZipFile(temp_zip_filename, "r")
-            for item in zip_object.infolist():
-                self.request.files[item.filename] = [{
-                    "filename": item.filename,
-                    "body": zip_object.read(item)}]
+            archive_contents = extract_archive(temp_archive_filename,
+                archive_data["filename"])
+
+            if archive_contents is None:
+                self.application.service.add_notification(
+                    self.current_user.username,
+                    int(time.time()),
+                    self._("Invalid archive format!"),
+                    self._("The submitted archive could not be opened."))
+                self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+                return
+
+            for item in archive_contents:
+                self.request.files[item["filename"]] = [item]
 
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
@@ -556,7 +587,7 @@ class SubmitHandler(BaseHandler):
 
         # Add submitted files. After this, self.files is a dictionary
         # indexed by *our* filenames (something like "output01.txt" or
-        # "taskname.%;", and whose value is a couple
+        # "taskname.%l", and whose value is a couple
         # (user_assigned_filename, content).
         self.files = {}
         for uploaded, data in self.request.files.iteritems():
@@ -793,6 +824,9 @@ class UseTokenHandler(BaseHandler):
 
 
 class SubmissionStatusHandler(BaseHandler):
+
+    refresh_cookie = False
+
     @catch_exceptions
     @tornado.web.authenticated
     @valid_phase_required

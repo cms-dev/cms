@@ -46,8 +46,11 @@ function init()
     {% end %}
 
     $(document).click(utils.hide_subpage);
-    $('.toggling_on').click(utils.toggle_visibility);
-    $('.toggling_off').click(utils.toggle_visibility);
+
+    // delegate() ensures that the event is fired even for elements
+    // that are added in the future.
+    $(document).delegate('.toggling_on', 'click', utils.toggle_visibility);
+    $(document).delegate('.toggling_off', 'click', utils.toggle_visibility);
 
     {% block js_init %}{% end %}
 }

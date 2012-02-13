@@ -72,6 +72,10 @@
     "_help": "core_services.",
     "contest_listen_port": [8888],
 
+    "_help": "Login cookie duration in seconds. The duration is refreshed",
+    "_help": "on every manual request.",
+    "cookie_duration": 1800,
+
     "_help": "If CWSs write submissions to disk before storing them in",
     "_help": "the DB, and where to save them. %s = DATA_DIR.",
     "submit_local_copy":      true,
