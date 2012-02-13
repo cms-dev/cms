@@ -29,6 +29,9 @@
   reassign the job. We trust both workers' result, but we want that
   the outcomes are refreshed only when the admins say so.
 
+* LOW: kill the worker thread when the main thread receives a signal
+  to exit (Ctrl-C or from RS). Now the other thread stays alive.
+
 * LOW: should be able to work with 32 bits programs even when running in
   64 bits mode.
   - This actually appears to be quite complicated: it is probably
@@ -53,6 +56,11 @@
   slight) chance that feature such as - but not limited to - "partial
   submission filler" and "avoid frequent submissions" will not work as
   expected. (This may be fixed using ip_hash in nginx.)
+
+* MED: show attachments in the interface.
+
+* MED: configurability of the presence of questions in the interface
+  (some contests may prefer handling questions in a paper-y way).
 
 * MED: why we forgot the possibility of using ssl for CWS?
   - Probably because it's better to support it via some proxy like
@@ -118,6 +126,10 @@
 
 * HIGH: always refer to tasks, testcases and such by id instead of num
   (as it is for everything else).
+
+* MED: TEST interface.
+
+* MED: RunC interface.
 
 * MED: ditch RelativeScores and assume that a score depends only on
   the outcome of the submission.
