@@ -471,6 +471,24 @@ class Sandbox:
         """
         os.remove(self.relative_path(path))
 
+    def translate_box_exitcode(self, exitcode):
+        """Translate the sandbox exit code according to the following
+        table:
+         * 0 -> everything ok -> returns True
+         * 1 -> error in the program inside the sandbox -> returns True
+         * 2 -> error in the sandbox itself -> returns False
+
+        Basically, it recognizes whether the sandbox executed
+        correctly or not.
+
+        """
+        if exitcode == 0 or exitcode == 1:
+            return True
+        elif exitcode == 2:
+            return False
+        else:
+            raise Exception("Sandbox exit status unknown")
+
     def execute(self, command):
         """Execute the given command in the sandbox using
         subprocess.call.
@@ -483,7 +501,7 @@ class Sandbox:
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: %s" %
                      " ".join(args))
-        return subprocess.call(args)
+        return self.translate_box_exitcode(subprocess.call(args))
 
     def popen(self, command,
               stdin=None, stdout=None, stderr=None,
@@ -540,7 +558,7 @@ class Sandbox:
                 if f.read(8192) == '':
                     to_consume.remove(f)
 
-        return popen.wait()
+        return self.translate_box_exitcode(popen.wait())
 
     def delete(self):
         """Delete the directory where the sendbox operated.

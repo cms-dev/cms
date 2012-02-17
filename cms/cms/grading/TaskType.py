@@ -299,7 +299,12 @@ class TaskType:
         # Actually run the compilation command.
         with async_lock:
             logger.info("Starting compilation step")
-        self.sandbox_operation("execute_without_std", command)
+        box_success = self.sandbox_operation("execute_without_std", command)
+        if not box_success:
+            with async_lock:
+                logger.error("Compilation aborted because of "
+                             "sandbox error in %s" % (self.sandbox.path))
+            return False, None, None
 
         # Detect the outcome of the compilation.
         exit_status = self.sandbox.get_exit_status()
@@ -463,7 +468,12 @@ class TaskType:
         # Actually run the evaluation command.
         with async_lock:
             logger.info("Starting evaluation step.")
-        self.sandbox_operation("execute_without_std", command)
+        box_success = self.sandbox_operation("execute_without_std", command)
+        if not box_success:
+            with async_lock:
+                logger.error("Evaluation aborted because of sandbox "
+                             "error in %s" % (self.sandbox.path))
+            return False, None, None
 
         # Detect the outcome of the execution.
         exit_status = self.sandbox.get_exit_status()
