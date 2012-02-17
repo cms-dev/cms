@@ -26,10 +26,91 @@ import urllib
 import datetime
 import traceback
 import codecs
+import os
+import random
+import email
+import mimetypes
 
 from cms.util.Cryptographics import encrypt_number
 
 utf8_decoder = codecs.getdecoder('utf-8')
+
+
+def format_multipart_formdata(data, files):
+    """Format some data and files so they can be sent inside a POST
+    request with Content-type multipart/form-data.
+
+    data (dict): a dictionary of parameters to pass as POST arguments.
+    files (list): a list of files to pass as POST arguments. Each
+                  entry is a tuple containing two strings: the field
+                  name and the file name to send.
+
+    """
+    formdata = email.mime.Multipart.MIMEMultipart('form-data')
+    for key, value in data.iteritems():
+        part = email.mime.Text.MIMEText(value)
+        part.add_header('Content-Disposition', 'form-data; name="%s"' % (key))
+        part._headers = filter(lambda (key, value):
+                                   key.lower() != 'mime-version',
+                               part._headers)
+        formdata.attach(part)
+
+    for key, filename in files:
+        type_, encoding = mimetypes.guess_type(filename)
+        if type_ is None:
+            type_ = 'application/octet-stream'
+        type2 = type_.split('/', 1)
+        if type2[0] == 'text':
+            with open(filename) as fd:
+                part = email.mime.Text.MIMEText(fd.read(), _subtype=type2[1])
+        else:
+            part = email.mime.Base.MIMEBase(type2[0], type2[1])
+            with open(filename) as fd:
+                part.set_payload(fd.read())
+            email.Encoders.encode_base64(part)
+        part.add_header('Content-Disposition',
+                        'form-data; name="%s"; filename="%s"' % \
+                            (key, filename))
+        part._headers = filter(lambda (key, value):
+                                   key.lower() != 'mime-version',
+                               part._headers)
+        formdata.attach(part)
+
+    # Unfortunately we have to remove the first header lines
+    lines = formdata.as_string(unixfrom=False).split('\n')
+    empty_idx = lines.index('')
+    lines = lines[empty_idx + 1:]
+
+    return '\r\n'.join(lines), formdata.get_boundary()
+
+
+def browser_do_request(browser, url, data=None, files=None):
+    """Open an URL in a mechanize browser, optionally passing the
+    specified data and files as POST arguments.
+
+    browser (mechanize.Browser): the browser to use.
+    url (string): the URL to open.
+    data (dict): a dictionary of parameters to pass as POST arguments.
+    files (list): a list of files to pass as POST arguments. Each
+                  entry is a tuple containing two strings: the field
+                  name and the file name to send.
+
+    """
+    if files is None:
+        if data is None:
+            response = browser.open(url)
+        else:
+            response = browser.open(url, urllib.urlencode(data))
+    else:
+        body, boundary = format_multipart_formdata(data, files)
+        # TODO - This requires a patched version of mechanize,
+        # otherwise the Content-type is forcedly set to
+        # application/x-www-form-urlencoded when data is not None
+        response = browser.open(
+            url,
+            data=body,
+            content_type='multipart/form-data; boundary=%s' % (boundary))
+    return response
 
 
 class TestRequest:
@@ -74,7 +155,12 @@ class TestRequest:
             self.stop_time = time.time()
             self.duration = self.stop_time - self.start_time
 
-        success = self.test_success()
+        success = None
+        try:
+            success = self.test_success()
+        except Exception as exc:
+            self.exception_data = traceback.format_exc()
+            self.outcome = TestRequest.OUTCOME_ERROR
 
         # If no exceptions were casted, decode the test evaluation
         if self.outcome is None:
@@ -143,16 +229,16 @@ class GenericRequest(TestRequest):
         TestRequest.__init__(self, browser, base_url)
         self.url = None
         self.data = None
+        self.files = None
 
         self.response = None
         self.res_data = None
 
     def do_request(self):
-        if self.data is None:
-            self.response = self.browser.open(self.url)
-        else:
-            self.response = self.browser.open(self.url,
-                                              urllib.urlencode(self.data))
+        self.response = browser_do_request(self.browser,
+                                           self.url,
+                                           self.data,
+                                           self.files)
         self.res_data = self.response.read()
 
         # TODO - We here clear the history, otherwise the memory
@@ -164,15 +250,34 @@ class GenericRequest(TestRequest):
     def test_success(self):
         #if self.response.getcode() != 200:
         #    return False
-        if self.res_data is not None and \
-               len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
+        if self.res_data is None:
+            return False
+        if len(self.res_data) < GenericRequest.MINIMUM_LENGTH:
             return False
         return True
 
     def specific_info(self):
         res = "URL: %s\n" % (self.url)
+        if self.browser.request is not None:
+            res += "\nREQUEST HEADERS\n"
+            for (key, value) in self.browser.request.header_items():
+                res += "%s: %s\n" % (key, value)
+            if self.browser.request.get_data() is not None:
+                res += "\nREQUEST DATA\n%s\n" % \
+                    (self.browser.request.get_data())
+            else:
+                res += "\nNO REQUEST DATA\n"
+        else:
+            res += "\nNO REQUEST INFORMATION AVAILABLE\n"
         if self.res_data is not None:
-            res += "\nRESPONSE DATA\n%s" % (utf8_decoder(self.res_data)[0])
+            headers = self.browser.response()._headers.items()
+            res += "\nRESPONSE HEADERS\n%s" % \
+                ("".join(["%s: %s\n" % (utf8_decoder(header[0])[0],
+                                        utf8_decoder(header[1])[0])
+                          for header in headers]))
+            res += "\nRESPONSE DATA\n%s\n" % (utf8_decoder(self.res_data)[0])
+        else:
+            res += "\nNO RESPONSE INFORMATION AVAILABLE\n"
         return res
 
     def describe(self):
@@ -211,7 +316,7 @@ class LoginRequest(GenericRequest):
 
     """
     def __init__(self, browser, username, password, base_url=None):
-        TestRequest.__init__(self, browser, base_url)
+        GenericRequest.__init__(self, browser, base_url)
         self.username = username
         self.password = password
         self.url = '%slogin' % self.base_url
@@ -267,3 +372,32 @@ class TaskStatementRequest(GenericRequest):
 
     def specific_info(self):
         return '\nNO DATA DUMP FOR TASK STATEMENTS\n'
+
+
+class SubmitRequest(GenericRequest):
+    """Submit a solution in CWS.
+
+    """
+    def __init__(self, browser, task, base_url=None,
+                 submissions_path=None):
+        GenericRequest.__init__(self, browser, base_url)
+        self.url = "%ssubmit/%s" % (self.base_url,
+                                    encrypt_number(task[0]))
+        self.task = task
+        self.submissions_path = submissions_path
+        self.data = {}
+
+        task_path = os.path.join(self.submissions_path, self.task[1])
+        sources = os.listdir(task_path)
+        source = random.choice(sources)
+        self.source_path = os.path.join(task_path, source)
+        self.files = [('%s.%%l' % (task[1]), self.source_path)]
+
+    def describe(self):
+        return "submit source %s for task %s (ID %d)" % \
+            (self.source_path, self.task[1], self.task[0])
+
+    def specific_info(self):
+        return 'Task: %s (ID %d)\nFile: %s\n' % \
+            (self.task[1], self.task[0], self.source_path) + \
+            GenericRequest.specific_info(self)

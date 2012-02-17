@@ -31,7 +31,8 @@ import codecs
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
 from stresstesting.Requests import HomepageRequest, \
-     LoginRequest, TaskRequest, TaskStatementRequest
+     LoginRequest, TaskRequest, TaskStatementRequest, \
+     SubmitRequest
 
 
 class RequestLog:
@@ -108,7 +109,7 @@ class Actor(threading.Thread):
     """
 
     def __init__(self, username, password, metrics, tasks,
-                 log=None, base_url=None):
+                 log=None, base_url=None, submissions_path=None):
         threading.Thread.__init__(self)
 
         self.username = username
@@ -117,6 +118,7 @@ class Actor(threading.Thread):
         self.tasks = tasks
         self.log = log
         self.base_url = base_url
+        self.submissions_path = submissions_path
 
         self.name = "Actor thread for user %s" % (self.username)
 
@@ -144,13 +146,22 @@ class Actor(threading.Thread):
             # Then keep forever stumbling across user pages
             while True:
                 choice = random.random()
-                if choice < 0.5:
+                if choice < 0.05 and self.submissions_path is not None:
                     task = random.choice(self.tasks)
-                    self.do_step(TaskRequest(self.browser, task,
+                    self.do_step(SubmitRequest(
+                            self.browser,
+                            task,
+                            base_url=self.base_url,
+                            submissions_path=self.submissions_path))
+                elif choice < 0.5:
+                    task = random.choice(self.tasks)
+                    self.do_step(TaskRequest(self.browser,
+                                             task[0],
                                              base_url=self.base_url))
                 else:
                     task = random.choice(self.tasks)
-                    self.do_step(TaskStatementRequest(self.browser, task,
+                    self.do_step(TaskStatementRequest(self.browser,
+                                                      task[0],
                                                       base_url=self.base_url))
 
         except ActorDying:
@@ -196,7 +207,7 @@ def harvest_contest_data(contest_id):
         for user in contest.users:
             users[user.username] = {'password': user.password}
         for task in contest.tasks:
-            tasks.append(task.id)
+            tasks.append((task.id, task.name))
     return users, tasks
 
 
@@ -219,6 +230,9 @@ def main():
     parser.add_option("-u", "--base-url",
                       help="base URL for placing HTTP requests",
                       action="store", default=None, dest="base_url")
+    parser.add_option("-S", "--submissions-path",
+                      help="base path for submission to send",
+                      action="store", default=None, dest="submissions_path")
     options = parser.parse_args()[0]
 
     users, tasks = harvest_contest_data(options.contest_id)
@@ -233,7 +247,8 @@ def main():
     actors = [Actor(username, data['password'], DEFAULT_METRICS, tasks,
                     log=RequestLog(log_dir=os.path.join('./test_logs',
                                                         username)),
-                    base_url=options.base_url)
+                    base_url=options.base_url,
+                    submissions_path=options.submissions_path)
               for username, data in users.iteritems()]
     for actor in actors:
         actor.start()
