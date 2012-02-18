@@ -194,7 +194,7 @@ class Sandbox:
         """Return the memory used by the sandbox, reading the logs if
         necessary.
 
-        return (float): memory used by the sandbox.
+        return (float): memory used by the sandbox (in bytes).
 
         """
         if self.log is None:
