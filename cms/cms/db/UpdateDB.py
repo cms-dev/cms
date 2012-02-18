@@ -42,6 +42,7 @@ class ScriptsContainer(object):
             ("20120119", "add_per_user_time"),
             ("20120121", "add_submissions_score"),
             ("20120213", "change_tasktype_names"),
+            ("20120218", "constraints_on_tokens"),
             ]
         self.list.sort()
 
@@ -139,6 +140,56 @@ class ScriptsContainer(object):
                             "WHERE task_type = 'TaskTypeBatch';")
             session.execute("UPDATE tasks SET task_type = 'OutputOnly' "
                             "WHERE task_type = 'TaskTypeOutputOnly';")
+
+    @staticmethod
+    def constraints_on_tokens():
+        """Remove the TaskType prefix from every task type name.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE contests "
+                            "ALTER COLUMN token_initial "
+                            "DROP NOT NULL;")
+            session.execute("ALTER TABLE contests "
+                            "ADD CONSTRAINT contests_token_initial_check "
+                            "CHECK (token_initial >= 0);")
+            session.execute("ALTER TABLE contests "
+                            "ADD CONSTRAINT contests_token_max_check "
+                            "CHECK (token_max >= 0);")
+            session.execute("ALTER TABLE contests "
+                            "ADD CONSTRAINT contests_token_total_check "
+                            "CHECK (token_total >= 0);")
+            session.execute("ALTER TABLE contests "
+                            "ADD CONSTRAINT contests_token_min_interval_check "
+                            "CHECK (token_min_interval >= 0);")
+            session.execute("ALTER TABLE contests "
+                            "ADD CONSTRAINT contests_token_gen_time_check "
+                            "CHECK (token_gen_time > 0);")
+            session.execute("ALTER TABLE contests "
+                            "ADD CONSTRAINT contests_token_gen_number_check "
+                            "CHECK (token_gen_number >= 0);")
+
+            session.execute("ALTER TABLE tasks "
+                            "ALTER COLUMN token_initial "
+                            "DROP NOT NULL;")
+            session.execute("ALTER TABLE tasks "
+                            "ADD CONSTRAINT tasks_token_initial_check "
+                            "CHECK (token_initial >= 0);")
+            session.execute("ALTER TABLE tasks "
+                            "ADD CONSTRAINT tasks_token_max_check "
+                            "CHECK (token_max >= 0);")
+            session.execute("ALTER TABLE tasks "
+                            "ADD CONSTRAINT tasks_token_total_check "
+                            "CHECK (token_total >= 0);")
+            session.execute("ALTER TABLE tasks "
+                            "ADD CONSTRAINT tasks_token_min_interval_check "
+                            "CHECK (token_min_interval >= 0);")
+            session.execute("ALTER TABLE tasks "
+                            "ADD CONSTRAINT tasks_token_gen_time_check "
+                            "CHECK (token_gen_time > 0);")
+            session.execute("ALTER TABLE tasks "
+                            "ADD CONSTRAINT tasks_token_gen_number_check "
+                            "CHECK (token_gen_number >= 0);")
 
 
 def execute_single_script(scripts_container, script):

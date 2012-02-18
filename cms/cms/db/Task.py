@@ -26,7 +26,8 @@ directly (import it from SQLAlchemyAll).
 
 import simplejson as json
 
-from sqlalchemy import Column, ForeignKey, Boolean, Integer, String, Float
+from sqlalchemy import Column, ForeignKey, Boolean, Integer, String, Float, \
+     CheckConstraint
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -91,12 +92,18 @@ class Task(Base):
     # contest in a task-per-task behaviour. To play a token on a given
     # task, a user must satisfy the condition of the contest and the
     # one of the task.
-    token_initial = Column(Integer, nullable=False)
-    token_max = Column(Integer, nullable=True)
-    token_total = Column(Integer, nullable=True)
-    token_min_interval = Column(Integer, nullable=True)
-    token_gen_time = Column(Integer, nullable=True)
-    token_gen_number = Column(Integer, nullable=True)
+    token_initial = Column(
+        Integer, CheckConstraint("token_initial >= 0"), nullable=True)
+    token_max = Column(
+        Integer, CheckConstraint("token_max >= 0"), nullable=True)
+    token_total = Column(
+        Integer, CheckConstraint("token_total >= 0"), nullable=True)
+    token_min_interval = Column(
+        Integer, CheckConstraint("token_min_interval >= 0"), nullable=True)
+    token_gen_time = Column(
+        Integer, CheckConstraint("token_gen_time > 0"), nullable=True)
+    token_gen_number = Column(
+        Integer, CheckConstraint("token_gen_number >= 0"), nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.

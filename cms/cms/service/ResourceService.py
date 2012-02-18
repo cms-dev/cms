@@ -29,6 +29,7 @@ import os
 import time
 import subprocess
 import argparse
+import bisect
 
 import psutil
 
@@ -303,32 +304,6 @@ class ResourceService(Service):
 
         return True
 
-    def _locate(self, _time, start=0, end=None):
-        """Perform a binary search to find the index of the first
-        element >= _time.
-
-        _time (int): the time to search
-        returns (int): the index of the first element >= _time
-
-        """
-        logger.debug("ResourceService._locate")
-        length = len(self._local_store)
-        if length == 0:
-            return start
-        if end is None:
-            end = length - 1
-        if self._local_store[start][0] >= _time:
-            return start
-        elif self._local_store[end][0] < _time:
-            return None
-        elif end == start + 1:
-            return end
-        mid = (start + end) / 2
-        if self._local_store[mid][0] >= _time:
-            return self._locate(_time, start, mid)
-        else:
-            return self._locate(_time, mid, end)
-
     @rpc_method
     def get_resources(self, last_time=0):
         """Returns the resurce usage information from last_time to
@@ -339,7 +314,7 @@ class ResourceService(Service):
 
         """
         logger.debug("ResourceService._get_resources")
-        index = self._locate(last_time + 1)
+        index = bisect.bisect_right(self._local_store, (last_time, 0))
         return self._local_store[index:]
 
     @rpc_method

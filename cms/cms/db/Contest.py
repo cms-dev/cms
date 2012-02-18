@@ -26,7 +26,7 @@ directly (import it from SQLAlchemyAll).
 
 import time
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, CheckConstraint
 from sqlalchemy.orm import relationship, backref
 
 from cms.db.SQLAlchemyUtils import Base
@@ -53,21 +53,27 @@ class Contest(Base):
 
     # token_initial is the initial number of tokens available, or None
     # to disable completely the tokens.
-    token_initial = Column(Integer, nullable=False)
+    token_initial = Column(
+        Integer, CheckConstraint("token_initial >= 0"), nullable=True)
     # token_max is the maximum number in any given time, or None not
     # to enforce this limitation.
-    token_max = Column(Integer, nullable=True)
+    token_max = Column(
+        Integer, CheckConstraint("token_max >= 0"), nullable=True)
     # token_total is the maximum number that can be used in the whole
     # contest, or None not to enforce this limitation.
-    token_total = Column(Integer, nullable=True)
+    token_total = Column(
+        Integer, CheckConstraint("token_total >= 0"), nullable=True)
     # token_min_interval is the minimum interval in seconds between
     # two uses of a token, or None not to enforce this limitation.
-    token_min_interval = Column(Integer, nullable=True)
+    token_min_interval = Column(
+        Integer, CheckConstraint("token_min_interval >= 0"), nullable=True)
     # Every token_gen_time minutes from the beginning of the contest
     # we generate token_gen_number tokens, or we don't if either is
     # None.
-    token_gen_time = Column(Integer, nullable=True)
-    token_gen_number = Column(Integer, nullable=True)
+    token_gen_time = Column(
+        Integer, CheckConstraint("token_gen_time > 0"), nullable=True)
+    token_gen_number = Column(
+        Integer, CheckConstraint("token_gen_number >= 0"), nullable=True)
 
     # Beginning and ending of the contest, unix times.
     start = Column(Integer, nullable=True)
@@ -420,12 +426,12 @@ class Contest(Base):
         user = self.get_user(username)
         task = self.get_task(task_name)
 
-        # Take the list of the tokens already played.
+        # Take the list of the tokens already played (sorted by time).
         tokens = user.get_tokens()
-        token_timestamps_contest = [token.timestamp for token in tokens]
-        token_timestamps_task = [
+        token_timestamps_contest = sorted([token.timestamp for token in tokens])
+        token_timestamps_task = sorted([
             token.timestamp for token in tokens
-            if token.submission.task.name == task_name]
+            if token.submission.task.name == task_name])
 
         # If the contest is USACO-style (i.e., the time for each user
         # start when he/she logs in for the first time), then we start
