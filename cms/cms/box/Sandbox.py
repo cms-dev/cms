@@ -30,6 +30,51 @@ import re
 from cms.service.LogService import logger
 
 
+def wait_without_std(list_of_processes):
+    """Wait for the conclusion of the processes in the list, avoiding
+    starving for input and output.
+
+    list_of_process (list): a list of processes as returned by Popen.
+
+    return (list): a list of return codes.
+
+    """
+    def get_to_consume():
+        """Amongst stdout and stderr of list of processes, find the
+        ones that are alive and not closed (i.e., that may still want
+        to write to).
+
+        return (list): a list of open streams.
+
+        """
+        to_consume = []
+        for process in list_of_processes:
+            if process.poll() == None:  # If the process is alive.
+                if not process.stdout.closed:
+                    to_consume.append(process.stdout)
+                if not process.stderr.closed:
+                    to_consume.append(process.stderr)
+        return to_consume
+
+    # Close stdin; just saying stdin=None isn't ok, because the
+    # standard input would be obtained from the application stdin,
+    # that could interfere with the child process behaviour
+    for process in list_of_processes:
+        process.stdin.close()
+
+    # Read stdout and stderr to the end without having to block
+    # because of insufficient buffering (and without allocating too
+    # much memory). Unix specific.
+    to_consume = get_to_consume()
+    while len(to_consume) > 0:
+        to_read = select.select(to_consume, [], [], 1.0)[0]
+        for f in to_read:
+            f.read(8192)
+        to_consume = get_to_consume()
+
+    return [process.wait() for process in list_of_processes]
+
+
 class Sandbox:
     """This class creates, deletes and manages the interaction with a
     sandbox.
@@ -508,7 +553,7 @@ class Sandbox:
                                 stdin=stdin, stdout=stdout, stderr=stderr,
                                 close_fds=close_fds)
 
-    def execute_without_std(self, command):
+    def execute_without_std(self, command, wait=False):
         """Execute the given command in the sandbox using
         subprocess.Popen and discardind standard input, output and
         error. More specifically, the standard input gets closed just
@@ -525,22 +570,13 @@ class Sandbox:
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                            close_fds=True)
 
-        # Close stdin; just saying stdin=None isn't ok, because the
-        # standard input would be obtained from the application stdin,
-        # that could interfere with the child process behaviour
-        popen.stdin.close()
-
-        # Read stdout and stderr to the end without having to block
-        # because of insufficient buffering (and without allocating
-        # too much memory). Unix specific.
-        to_consume = [popen.stdout, popen.stderr]
-        while len(to_consume) > 0:
-            read = select.select(to_consume, [], [])[0]
-            for f in read:
-                if f.read(8192) == '':
-                    to_consume.remove(f)
-
-        return popen.wait()
+        # If the caller wants us to wait for completion, we also avoid
+        # std*** to interfere with command. Otherwise we let the
+        # caller handle these issues.
+        if wait:
+            return wait_without_std([popen])[0]
+        else:
+            return popen
 
     def delete(self):
         """Delete the directory where the sendbox operated.

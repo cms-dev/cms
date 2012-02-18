@@ -32,7 +32,8 @@ import argparse
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Manager, \
-    Testcase, User, Contest, SubmissionFormatElement, FSObject
+    Testcase, User, Contest, SubmissionFormatElement, FSObject, \
+    Submission
 from cms.db.Utils import analyze_all_tables
 from cms.service.FileStorage import FileCacher
 from cms.service.LogService import logger
@@ -169,11 +170,29 @@ class YamlLoader:
             SubmissionFormatElement("%s.%%l" % name).export_to_dict()]
 
         if os.path.exists(os.path.join(path, "cor", "correttore")):
-            params["managers"] = [Manager(self.file_cacher.put_file(
-                        path=os.path.join(path, "cor", "correttore"),
-                        description="Manager for task %s" % (name)),
-                                          "checker").export_to_dict()]
+            params["managers"] = [
+                Manager(self.file_cacher.put_file(
+                    path=os.path.join(path, "cor", "correttore"),
+                    description="Manager for task %s" % (name)),
+                        "checker").export_to_dict()]
             params["task_type_parameters"] = "[\"comp\", \"file\"]"
+        elif os.path.exists(os.path.join(path, "cor", "manager")):
+            params["task_type"] = "Communication"
+            params["task_type_parameters"] = "{}"
+            params["managers"] = [
+                Manager(self.file_cacher.put_file(
+                    path=os.path.join(path, "cor", "manager"),
+                    description="Manager for task %s" % (name)),
+                        "manager").export_to_dict()]
+            for lang in Submission.LANGUAGES:
+                stub_name = os.path.join(path, "sol", "stub.%s" % lang)
+                if os.path.exists(stub_name):
+                    params["managers"].append(
+                        Manager(self.file_cacher.put_file(
+                            path=stub_name,
+                            description="Stub for task %s and language %s" % \
+                            (name, lang)),
+                                "stub.%s" % lang).export_to_dict())
         else:
             params["managers"] = {}
             params["task_type_parameters"] = "[\"diff\", \"file\"]"

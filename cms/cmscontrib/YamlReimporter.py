@@ -136,7 +136,7 @@ def main():
 
     """
     parser = argparse.ArgumentParser(
-        descrption="Load a contest from the Italian repository "
+        description="Load a contest from the Italian repository "
         "over an old one in CMS.")
     parser.add_argument("-c", "--contest-id", action="store", type=int,
                         help="id of contest to overwrite")

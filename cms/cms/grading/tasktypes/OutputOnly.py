@@ -24,7 +24,8 @@
 """
 
 from cms.db.SQLAlchemyAll import Evaluation
-from cms.grading.TaskType import TaskType
+from cms.grading.TaskType import TaskType, \
+     create_sandbox, delete_sandbox
 
 
 class OutputOnly(TaskType):
@@ -49,9 +50,9 @@ class OutputOnly(TaskType):
         return self.finish_compilation(True, True, "No compilation needed.")
 
     def evaluate_testcase(self, test_number):
-        self.create_sandbox()
+        sandbox = create_sandbox(self)
         self.submission.evaluations[test_number].evaluation_sandbox = \
-            self.sandbox.path
+            sandbox.path
         if "worker_shard" in self.__dict__:
             self.submission.evaluations[test_number].evaluation_shard = \
                 self.worker_shard
@@ -69,6 +70,7 @@ class OutputOnly(TaskType):
             # No manager: I'll do a white_diff between the submission
             # file and the correct output res.txt.
             success, outcome, text = self.white_diff_step(
+                sandbox,
                 "output.txt", "res.txt",
                 {"res.txt":
                  self.submission.task.testcases[test_number].output,
@@ -77,6 +79,7 @@ class OutputOnly(TaskType):
             # Manager present: wonderful, he'll do all the job.
             manager_filename = self.submission.task.managers.keys()[0]
             success, outcome, text = self.evaluation_step(
+                sandbox,
                 ["./%s" % manager_filename,
                  "input.txt", "res.txt", "output.txt"],
                 {manager_filename:
@@ -89,7 +92,7 @@ class OutputOnly(TaskType):
                 final=True)
 
         # Whatever happened, we conclude.
-        self.delete_sandbox()
+        delete_sandbox(sandbox)
         return self.finish_evaluation_testcase(test_number,
                                                success, outcome, text)
 

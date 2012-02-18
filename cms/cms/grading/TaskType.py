@@ -42,6 +42,42 @@ from cms.service.LogService import logger
 from cms.util.Utils import white_diff
 
 
+def create_sandbox(task_type):
+    """Create a sandbox, and return it.
+
+    task_type (TaskType): a task type instance.
+
+    return (Sandbox): a sandbox.
+
+    raise: JobException
+
+    """
+    try:
+        sandbox = Sandbox(task_type.file_cacher)
+    except (OSError, IOError):
+        err_msg = "Couldn't create sandbox."
+        with async_lock:
+            logger.error("%s\n%s" % (err_msg, traceback.format_exc()))
+        raise JobException(err_msg)
+    return sandbox
+
+
+def delete_sandbox(sandbox):
+    """Delete the sandbox, if the configuration allows it to be
+    deleted.
+
+    sandbox (Sandbox): the sandbox to delete.
+
+    """
+    if not config.keep_sandbox:
+        try:
+            sandbox.delete()
+        except (IOError, OSError):
+            with async_lock:
+                logger.warning("Couldn't delete sandbox.\n%s",
+                               traceback.format_exc())
+
+
 def filter_ansi_escape(string):
     """Filter out ANSI commands from the given string.
 
@@ -99,14 +135,12 @@ class TaskType:
         self.parameters = parameters
         self.file_cacher = file_cacher
 
-        self.sandbox = None
         self.worker_shard = None
 
     def finish_compilation(self, success, compilation_success=False,
                            text="", to_log=None):
-        """Finalize the operation of compilation, deleting the
-        sandbox, and writing back in the submission object the
-        information (if success is True).
+        """Finalize the operation of compilation and write back in the
+        submission object the information (if success is True).
 
         success (bool): if the operation was successful (i.e., if cms
                         did everything in the right way).
@@ -143,8 +177,7 @@ class TaskType:
     def finish_evaluation_testcase(self, test_number, success,
                                    outcome=0, text="", to_log=None):
         """Finalize the operation of evaluating the submission on a
-        testcase. Fill the information in the submission and delete
-        the sandbox.
+        testcase. Fill the information in the submission.
 
         test_number (int): number of testcase.
         success (bool): if the operation was successful.
@@ -186,74 +219,15 @@ class TaskType:
             return False
         return True
 
-    def delete_sandbox(self):
-        """Delete the sandbox created by this class, if the
-        configuration allows it to be deleted.
-
-        """
-        if self.sandbox is not None and not config.keep_sandbox:
-            try:
-                self.sandbox.delete()
-            except (IOError, OSError):
-                with async_lock:
-                    logger.warning("Couldn't delete sandbox.\n%s",
-                                   traceback.format_exc())
-
-    def create_sandbox(self):
-        """Create a sandbox, and put it in self.sandbox. At any given
-        time, we have at most one sandbox in an instance of TaskType,
-        stored there.
-
-        """
-        try:
-            self.sandbox = Sandbox(self.file_cacher)
-        except (OSError, IOError):
-            with async_lock:
-                logger.error("Couldn't create sandbox.\n%s" %
-                             traceback.format_exc())
-            self.delete_sandbox()
-            raise JobException()
-
-    def sandbox_operation(self, operation, *args, **kwargs):
-        """Execute a method of the sandbox.
-
-        operation (string): the method to call in the sandbox.
-        args (list): arguments to pass to the sandbox method.
-        kwargs (dict): also arguments.
-        return (object): the return value of the method, or
-                         JobException.
-
-        """
-        if self.sandbox is None:
-            err_msg = "Sandbox not present while doing " \
-                      "sandbox operation %s." % operation
-            with async_lock:
-                logger.error(err_msg)
-            raise JobException(err_msg)
-
-        try:
-            return getattr(self.sandbox, operation)(*args, **kwargs)
-        except (OSError, IOError):
-            err_msg = "Error in safe sandbox operation %s, with arguments " \
-                      "%s, %s." % (operation, args, kwargs)
-            with async_lock:
-                logger.error("%s\n%s" % (err_msg, traceback.format_exc()))
-            self.delete_sandbox()
-            raise JobException(err_msg)
-        except AttributeError:
-            err_msg = "Invalid sandbox operation %s." % operation
-            with async_lock:
-                logger.error("%s\n%s" % (err_msg, traceback.format_exc()))
-            self.delete_sandbox()
-            raise JobException(err_msg)
-
-    def compilation_step(self, command, files_to_get, executables_to_store):
+    def compilation_step(self, sandbox, command, files_to_get,
+                         executables_to_store):
         """Execute a compilation command in the sandbox. Note that in
         some task types, there may be more than one compilation
         commands (in others there can be none, of course).
 
         Note: this needs a sandbox already created.
 
+        sandbox (Sandbox): the sandbox we consider.
         command (string): the actual compilation line.
         files_to_get (dict): digests of file to get from FS, indexed
                              by the filenames they should be put in.
@@ -272,44 +246,39 @@ class TaskType:
         """
         # Copy all necessary files.
         for filename, digest in files_to_get.iteritems():
-            self.sandbox_operation("create_file_from_storage",
-                                   filename, digest)
+            sandbox.create_file_from_storage(filename, digest)
 
         # Set sandbox parameters suitable for compilation.
-        self.sandbox.chdir = self.sandbox.path
-        self.sandbox.preserve_env = True
-        self.sandbox.filter_syscalls = 1
-        self.sandbox.allow_syscall = ["waitpid", "prlimit64"]
-        self.sandbox.allow_fork = True
-        self.sandbox.file_check = 2
+        sandbox.chdir = sandbox.path
+        sandbox.preserve_env = True
+        sandbox.filter_syscalls = 1
+        sandbox.allow_syscall = ["waitpid", "prlimit64"]
+        sandbox.allow_fork = True
+        sandbox.file_check = 2
         # FIXME - File access limits are not enforced on children
         # processes (like ld).
-        self.sandbox.set_env['TMPDIR'] = self.sandbox.path
-        self.sandbox.allow_path = ['/etc/', '/lib/', '/usr/',
-                                   '%s/' % (self.sandbox.path)]
-        self.sandbox.allow_path += ["/proc/self/exe"]
-        self.sandbox.timeout = 10
-        self.sandbox.wallclock_timeout = 12
-        self.sandbox.address_space = 256 * 1024
-        self.sandbox.stdout_file = \
-            self.sandbox.relative_path("compiler_stdout.txt")
-        self.sandbox.stderr_file = \
-            self.sandbox.relative_path("compiler_stderr.txt")
+        sandbox.set_env['TMPDIR'] = sandbox.path
+        sandbox.allow_path = ['/etc/', '/lib/', '/usr/',
+                              '%s/' % (sandbox.path)]
+        sandbox.allow_path += ["/proc/self/exe"]
+        sandbox.timeout = 10
+        sandbox.wallclock_timeout = 20
+        sandbox.address_space = 256 * 1024
+        sandbox.stdout_file = sandbox.relative_path("compiler_stdout.txt")
+        sandbox.stderr_file = sandbox.relative_path("compiler_stderr.txt")
 
         # Actually run the compilation command.
         with async_lock:
-            logger.info("Starting compilation step")
-        self.sandbox_operation("execute_without_std", command)
+            logger.info("Starting compilation step.")
+        sandbox.execute_without_std(command, wait=True)
 
         # Detect the outcome of the compilation.
-        exit_status = self.sandbox.get_exit_status()
-        exit_code = self.sandbox.get_exit_code()
-        stdout = self.sandbox_operation("get_file_to_string",
-                                        "compiler_stdout.txt")
+        exit_status = sandbox.get_exit_status()
+        exit_code = sandbox.get_exit_code()
+        stdout = sandbox.get_file_to_string("compiler_stdout.txt")
         if stdout.strip() == "":
             stdout = "(empty)\n"
-        stderr = self.sandbox_operation("get_file_to_string",
-                                        "compiler_stderr.txt")
+        stderr = sandbox.get_file_to_string("compiler_stderr.txt")
         if stderr.strip() == "":
             stderr = "(empty)\n"
         compiler_output = "Compiler standard output:\n" \
@@ -324,8 +293,7 @@ class TaskType:
         # correctly compiled.
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
             for filename, digest in executables_to_store.iteritems():
-                digest = self.sandbox_operation("get_file_to_storage",
-                                                filename, digest)
+                digest = sandbox.get_file_to_storage(filename, digest)
 
                 self.submission.get_session().add(
                     Executable(digest, filename, self.submission))
@@ -333,34 +301,34 @@ class TaskType:
             with async_lock:
                 logger.info("Compilation successfully finished.")
 
-            return True, True, "OK %s\n%s" % (self.sandbox.get_stats(),
+            return True, True, "OK %s\n%s" % (sandbox.get_stats(),
                                               compiler_output)
 
         # Error in compilation: returning the error to the user.
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
             with async_lock:
                 logger.info("Compilation failed")
-            return True, False, "Failed %s\n%s" % (self.sandbox.get_stats(),
+            return True, False, "Failed %s\n%s" % (sandbox.get_stats(),
                                                    compiler_output)
 
         # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
             with async_lock:
                 logger.info("Compilation timed out")
-            return True, False, "Time out %s\n%s" % (self.sandbox.get_stats(),
+            return True, False, "Time out %s\n%s" % (sandbox.get_stats(),
                                                      compiler_output)
 
         # Suicide with signal (probably memory limit): returning the
         # error to the user
         if exit_status == Sandbox.EXIT_SIGNAL:
-            signal = self.sandbox.get_killing_signal()
+            signal = sandbox.get_killing_signal()
             with async_lock:
                 logger.info("Compilation killed with signal %d" % (signal))
             return True, False, \
                    "Killed with signal %d %s\n" \
                    "This could be triggered by " \
                    "violating memory limits\n%s" % \
-                   (signal, self.sandbox.get_stats(), compiler_output)
+                   (signal, sandbox.get_stats(), compiler_output)
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment
@@ -373,7 +341,7 @@ class TaskType:
         # administrator should relax the syscall constraints
         if exit_status == Sandbox.EXIT_SYSCALL:
             with async_lock:
-                syscall = self.sandbox.get_killing_syscall()
+                syscall = sandbox.get_killing_syscall()
                 logger.error("Compilation aborted "
                              "because of forbidden syscall %s" % (syscall))
             return False, None, None
@@ -392,18 +360,18 @@ class TaskType:
             logger.error("Shouldn't arrive here, failing")
         return False, None, None
 
-    def evaluation_step(self, command, executables_to_get,
-                        files_to_get, time_limit=0, memory_limit=0,
+    def evaluation_step(self, sandbox, command,
+                        executables_to_get, files_to_get,
+                        time_limit=0, memory_limit=0,
                         allow_path=None,
                         stdin_redirect=None, stdout_redirect=None,
-                        final=False):
+                        final=False, wait=True):
         """Execute an evaluation command in the sandbox. Note that in
         some task types, there may be more than one evaluation
         commands (per testcase) (in others there can be none, of
         course).
 
-        Note: this needs a sandbox already created.
-
+        sandbox (Sandbox): the sandbox we consider.
         command (string): the actual execution line.
         executables_to_get (dict): digests of executables file to get
                                    from FS, indexed by the filenames
@@ -424,49 +392,69 @@ class TaskType:
                                       (or None).
 
         """
+        self.evaluation_step_before_run(
+            sandbox, command, executables_to_get, files_to_get,
+            time_limit, memory_limit, allow_path,
+            stdin_redirect, stdout_redirect, wait)
+        return self.evaluation_step_after_run(sandbox, final)
+
+    def evaluation_step_before_run(self, sandbox, command,
+                                   executables_to_get, files_to_get,
+                                   time_limit=0, memory_limit=0,
+                                   allow_path=None,
+                                   stdin_redirect=None, stdout_redirect=None,
+                                   wait=False):
+        """First part of an evaluation step, until the running.
+
+        """
         # Copy all necessary files.
         for filename, digest in executables_to_get.iteritems():
-            self.sandbox_operation("create_file_from_storage",
-                                   filename, digest, executable=True)
+            sandbox.create_file_from_storage(filename, digest, executable=True)
         for filename, digest in files_to_get.iteritems():
-            self.sandbox_operation("create_file_from_storage",
-                                   filename, digest)
+            sandbox.create_file_from_storage(filename, digest)
 
         if allow_path is None:
             allow_path = []
 
         # Set sandbox parameters suitable for evaluation.
-        self.sandbox.chdir = self.sandbox.path
-        self.sandbox.filter_syscalls = 2
-        self.sandbox.timeout = time_limit
-        self.sandbox.address_space = memory_limit * 1024
-        self.sandbox.file_check = 1
-        self.sandbox.allow_path = allow_path
-        self.sandbox.stdin_file = stdin_redirect
-        self.sandbox.stdout_file = stdout_redirect
-        stdout_filename = os.path.join(self.sandbox.path,
-                                       "stdout.txt")
-        stderr_filename = os.path.join(self.sandbox.path,
-                                       "stderr.txt")
-        if self.sandbox.stdout_file is None:
-            self.sandbox.stdout_file = stdout_filename
-        self.sandbox.stderr_file = stderr_filename
+        sandbox.chdir = sandbox.path
+        sandbox.filter_syscalls = 2
+        sandbox.timeout = time_limit
+        sandbox.wallclock_timeout = 2 * time_limit
+        sandbox.address_space = memory_limit * 1024
+        sandbox.file_check = 1
+        sandbox.allow_path = allow_path
+        sandbox.stdin_file = stdin_redirect
+        sandbox.stdout_file = stdout_redirect
+        stdout_filename = os.path.join(sandbox.path, "stdout.txt")
+        stderr_filename = os.path.join(sandbox.path, "stderr.txt")
+        if sandbox.stdout_file is None:
+            sandbox.stdout_file = stdout_filename
+        sandbox.stderr_file = stderr_filename
         # These syscalls and paths are used by executables generated
         # by fpc.
-        self.sandbox.allow_path += ["/proc/self/exe"]
-        self.sandbox.allow_syscall += ["getrlimit",
-                                       "rt_sigaction",
-                                       "ugetrlimit"]
+        sandbox.allow_path += ["/proc/self/exe"]
+        sandbox.allow_syscall += ["getrlimit",
+                                  "rt_sigaction",
+                                  "ugetrlimit"]
         # This one seems to be used for a C++ executable.
-        self.sandbox.allow_path += ["/proc/meminfo"]
+        sandbox.allow_path += ["/proc/meminfo"]
 
         # Actually run the evaluation command.
         with async_lock:
             logger.info("Starting evaluation step.")
-        self.sandbox_operation("execute_without_std", command)
+
+        return sandbox.execute_without_std(command, wait=wait)
+
+    def evaluation_step_after_run(self, sandbox, final=False):
+        """Second part of an evaluation step, after the running.
+
+        """
+        stdout_filename = os.path.join(sandbox.path, "stdout.txt")
+        stderr_filename = os.path.join(sandbox.path, "stderr.txt")
 
         # Detect the outcome of the execution.
-        exit_status = self.sandbox.get_exit_status()
+        exit_status = sandbox.get_exit_status()
 
         # Timeout: returning the error to the user.
         if exit_status == Sandbox.EXIT_TIMEOUT:
@@ -477,7 +465,7 @@ class TaskType:
         # Suicide with signal (memory limit, segfault, abort):
         # returning the error to the user.
         if exit_status == Sandbox.EXIT_SIGNAL:
-            signal = self.sandbox.get_killing_signal()
+            signal = sandbox.get_killing_signal()
             with async_lock:
                 logger.info("Execution killed with signal %d." % signal)
             return True, 0.0, \
@@ -497,7 +485,7 @@ class TaskType:
         # dynamically (offensive syscall is mprotect).
         # FIXME - Tell which syscall raised this error.
         if exit_status == Sandbox.EXIT_SYSCALL:
-            syscall = self.sandbox.get_killing_syscall()
+            syscall = sandbox.get_killing_syscall()
             with async_lock:
                 logger.info("Execution killed because of "
                             "forbidden syscall %s." % syscall)
@@ -552,13 +540,14 @@ class TaskType:
 
         return True, outcome, text
 
-    def white_diff_step(self, output_filename, correct_output_filename,
-                        files_to_get):
+    def white_diff_step(self, sandbox, output_filename,
+                        correct_output_filename, files_to_get):
         """This is like an evaluation_step with final = True (i.e.,
         returns an outcome and a text). The outcome is 1.0 if and only
         if the two output files corresponds up to white_diff, 0.0
         otherwise.
 
+        sandbox (Sandbox): the sandbox we consider.
         output_filename (string): the filename of user's output in the
                                   sandbox.
         correct_output_filename (string): the same with admin output.
@@ -568,11 +557,10 @@ class TaskType:
         """
         # TODO: why we don't use *output_filename?
         for filename, digest in files_to_get.iteritems():
-            self.sandbox_operation("create_file_from_storage",
-                                   filename, digest)
-        if self.sandbox_operation("file_exists", "output.txt"):
-            out_file = self.sandbox_operation("get_file", "output.txt")
-            res_file = self.sandbox_operation("get_file", "res.txt")
+            sandbox.create_file_from_storage(filename, digest)
+        if sandbox.file_exists("output.txt"):
+            out_file = sandbox.get_file("output.txt")
+            res_file = sandbox.get_file("res.txt")
             if white_diff(out_file, res_file):
                 outcome = 1.0
                 text = "Output file is correct"
