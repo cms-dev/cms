@@ -26,7 +26,7 @@ directly (import it from SQLAlchemyAll).
 
 import time
 
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String, CheckConstraint
 from sqlalchemy.orm import relationship, backref
 
 from cms.db.SQLAlchemyUtils import Base
@@ -53,21 +53,27 @@ class Contest(Base):
 
     # token_initial is the initial number of tokens available, or None
     # to disable completely the tokens.
-    token_initial = Column(Integer, nullable=False)
+    token_initial = Column(
+        Integer, CheckConstraint("token_initial >= 0"), nullable=True)
     # token_max is the maximum number in any given time, or None not
     # to enforce this limitation.
-    token_max = Column(Integer, nullable=True)
+    token_max = Column(
+        Integer, CheckConstraint("token_max >= 0"), nullable=True)
     # token_total is the maximum number that can be used in the whole
     # contest, or None not to enforce this limitation.
-    token_total = Column(Integer, nullable=True)
+    token_total = Column(
+        Integer, CheckConstraint("token_total >= 0"), nullable=True)
     # token_min_interval is the minimum interval in seconds between
     # two uses of a token, or None not to enforce this limitation.
-    token_min_interval = Column(Integer, nullable=True)
+    token_min_interval = Column(
+        Integer, CheckConstraint("token_min_interval >= 0"), nullable=True)
     # Every token_gen_time minutes from the beginning of the contest
     # we generate token_gen_number tokens, or we don't if either is
     # None.
-    token_gen_time = Column(Integer, nullable=True)
-    token_gen_number = Column(Integer, nullable=True)
+    token_gen_time = Column(
+        Integer, CheckConstraint("token_gen_time > 0"), nullable=True)
+    token_gen_number = Column(
+        Integer, CheckConstraint("token_gen_number >= 0"), nullable=True)
 
     # Beginning and ending of the contest, unix times.
     start = Column(Integer, nullable=True)
