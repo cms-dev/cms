@@ -146,7 +146,7 @@ class Actor(threading.Thread):
             # Then keep forever stumbling across user pages
             while True:
                 choice = random.random()
-                if choice < 0.05 and self.submissions_path is not None:
+                if choice < 0.02 and self.submissions_path is not None:
                     task = random.choice(self.tasks)
                     self.do_step(SubmitRequest(
                             self.browser,
