@@ -20,6 +20,9 @@
   SpoolExport). If we want to keep it, we at least need to change the
   indexing from task.num to something more sane, like task.id.
 
+* MED: Save evaluation results such as memory and time consumption in
+  the database and show them in the AWS.
+
 
 
 ** Worker
@@ -140,3 +143,6 @@
   please give me the output of submission X on testcase Y").
 
 * LOW: implement task versioning?
+
+* MED: Write in the sandbox a file with the commands executed in the
+  sandbox itself.
