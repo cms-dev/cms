@@ -143,7 +143,12 @@ class ScriptsContainer(object):
 
     @staticmethod
     def constraints_on_tokens():
-        """Remove the TaskType prefix from every task type name.
+        """Better constraints for token information.
+
+        We allow token_initial to be NULL, which means that the tokens
+        are disabled for that contest/task. Moreover, all information
+        are required to be non-negative (or positive when
+        appropriate).
 
         """
         with SessionGen(commit=True) as session:
