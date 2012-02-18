@@ -172,7 +172,18 @@ class Actor(threading.Thread):
         if self.die:
             raise ActorDying()
         self.log.total += 1
-        request.execute()
+        try:
+            request.prepare()
+        except Exception as exc:
+            print >> sys.stderr, "Unhandled exception while " \
+                "preparing the request: %s" % (str(exc))
+            return
+        try:
+            request.execute()
+        except Exception as exc:
+            print >> sys.stderr, "Unhandled exception while " \
+                "executing the request %s" % (str(exc))
+            return
         self.log.__dict__[request.outcome] += 1
         self.log.total_time += request.duration
         self.log.max_time = max(self.log.max_time, request.duration)

@@ -61,11 +61,13 @@ def format_multipart_formdata(data, files):
             type_ = 'application/octet-stream'
         type2 = type_.split('/', 1)
         if type2[0] == 'text':
-            with open(filename) as fd:
-                part = email.mime.Text.MIMEText(fd.read(), _subtype=type2[1])
+            with codecs.open(filename, 'r', encoding='utf-8') as fd:
+                part = email.mime.Text.MIMEText(fd.read(),
+                                                _subtype=type2[1],
+                                                _charset='UTF-8')
         else:
             part = email.mime.Base.MIMEBase(type2[0], type2[1])
-            with open(filename) as fd:
+            with open(filename, 'rb') as fd:
                 part.set_payload(fd.read())
             email.Encoders.encode_base64(part)
         part.add_header('Content-Disposition',
@@ -199,6 +201,11 @@ class TestRequest:
         raise NotImplementedError("Please subclass this class "
                                   "and actually implement some request")
 
+    def prepare(self):
+        # This is an optional convenience hook called just after
+        # creating the Request
+        pass
+
     def store_to_file(self, fd):
         print >> fd, "Test type: %s" % (self.__class__.__name__)
         print >> fd, "Execution start time: %s" % (
@@ -257,7 +264,7 @@ class GenericRequest(TestRequest):
         return True
 
     def specific_info(self):
-        res = "URL: %s\n" % (self.url)
+        res = "URL: %s\n" % (unicode(self.url))
         if self.browser.request is not None:
             res += "\nREQUEST HEADERS\n"
             for (key, value) in self.browser.request.header_items():
@@ -271,10 +278,10 @@ class GenericRequest(TestRequest):
             res += "\nNO REQUEST INFORMATION AVAILABLE\n"
         if self.res_data is not None:
             headers = self.browser.response()._headers.items()
-            res += "\nRESPONSE HEADERS\n%s" % \
-                ("".join(["%s: %s\n" % (utf8_decoder(header[0])[0],
-                                        utf8_decoder(header[1])[0])
-                          for header in headers]))
+            res += "\nRESPONSE HEADERS\n%s" % (
+                "".join(["%s: %s\n" % (unicode(header[0]),
+                                       unicode(header[1]))
+                         for header in headers]))
             res += "\nRESPONSE DATA\n%s\n" % (utf8_decoder(self.res_data)[0])
         else:
             res += "\nNO RESPONSE INFORMATION AVAILABLE\n"
@@ -387,11 +394,13 @@ class SubmitRequest(GenericRequest):
         self.submissions_path = submissions_path
         self.data = {}
 
+    def prepare(self):
+        GenericRequest.prepare(self)
         task_path = os.path.join(self.submissions_path, self.task[1])
         sources = os.listdir(task_path)
         source = random.choice(sources)
         self.source_path = os.path.join(task_path, source)
-        self.files = [('%s.%%l' % (task[1]), self.source_path)]
+        self.files = [('%s.%%l' % (self.task[1]), self.source_path)]
 
     def describe(self):
         return "submit source %s for task %s (ID %d)" % \
