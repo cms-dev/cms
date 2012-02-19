@@ -43,7 +43,7 @@ utils.show_page("questions", 1);
   <div id="page_selector_questions"></div>
   <div id="paged_content_questions">
   {% for msg_i, msg in enumerate(questions) %}
-  <div class="notification communication {{ ("answered" if msg.reply_timestamp is not None else "") }}">
+  <div class="notification communication {{ ("answered" if msg.reply_timestamp is not None else ("ignored" if msg.ignored else "")) }}">
     <div class="notification_msg">
       <div class="notification_timestamp"><a href="/user/{{ msg.user.id }}">{{msg.user.username}}</a> - {{ Utils.format_time_or_date(msg.question_timestamp) }}</div>
       <div class="notification_subject">{{ msg.subject }}</div>
@@ -53,6 +53,20 @@ utils.show_page("questions", 1);
       <div class="notification_text">{{ msg.reply_text }}</div>
       {% else %}
       <div class="notification_subject">Not yet replied.</div>
+      {% end %}
+      {% if msg.reply_timestamp is None %}
+      <div class="ignore_reply">
+        <form class="ignore_question_form" action="/ignore_question/{{msg.id}}" name="ignore{{msg.id}}" method="POST">
+          <input type="hidden" name="ref" value="/questions/{{contest.id}}"/>
+          {% if not msg.ignored %}
+          <input type="hidden" name="ignore" value="yes"/>
+          <a href="#" onclick="document.ignore{{msg.id}}.submit();">Ignore</a>
+          {% else %}
+          <input type="hidden" name="ignore" value="no"/>
+          <a href="#" onclick="document.ignore{{msg.id}}.submit();">Unignore</a>
+          {% end %}
+        </form>
+      </div>
       {% end %}
       <div class="reply_question_toggle">
         <a href="#" onclick="return question_reply_toggle({{ msg_i }}, this);">Reply</a>

@@ -547,11 +547,22 @@ body.admin .notifications .communication {
     border: 0.143em solid #637D53;
 }
 
+body.admin .notifications .ignored {
+    background-color: white;
+    border: 0.143em solid #CCCCCC;
+    color: #AAAAAA;
+    box-shadow: none;
+}
+
 body.admin .notifications .answered {
     background-color: #DDDDDD;
     border: 0.143em solid #555555;
 }
 
+body.admin .notifications .ignore_reply {
+    float: right;
+    padding-right: 0.5em;
+}
 
 body.admin .notifications .notification_close {
     background-color: #E475FF;

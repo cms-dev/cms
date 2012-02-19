@@ -201,6 +201,9 @@ class Question(Base):
     # Time the reply was sent.
     reply_timestamp = Column(Integer, nullable=True)
 
+    # Has this message been ignored by the admins?
+    ignored = Column(Boolean, nullable=False)
+
     # Short (as in 'chosen amongst some predetermined choices') and
     # long answer.
     reply_subject = Column(String, nullable=True)
@@ -221,11 +224,12 @@ class Question(Base):
 
     def __init__(self, question_timestamp, subject, text,
                  reply_timestamp=None, reply_subject=None, reply_text=None,
-                 user=None):
+                 user=None, ignored=False):
         self.question_timestamp = question_timestamp
         self.subject = subject
         self.text = text
         self.reply_timestamp = reply_timestamp
+        self.ignored = ignored
         self.reply_subject = reply_subject
         self.reply_text = reply_text
         self.user = user
@@ -239,4 +243,5 @@ class Question(Base):
                 'text':               self.text,
                 'reply_timestamp':    self.reply_timestamp,
                 'reply_subject':      self.reply_subject,
-                'reply_text':         self.reply_text}
+                'reply_text':         self.reply_text,
+                'ignored':            self.ignored}

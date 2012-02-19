@@ -102,6 +102,7 @@ class BaseHandler(tornado.web.RequestHandler):
                 .join(User)\
                 .filter(User.contest_id == self.contest.id)\
                 .filter(Question.reply_timestamp == None)\
+                .filter(Question.ignored == False)\
                 .count()
         params["contest_list"] = self.sql_session.query(Contest).all()
         params["cookie"] = str(self.cookies)
@@ -1092,6 +1093,30 @@ class QuestionReplyHandler(BaseHandler):
         self.redirect(ref)
 
 
+class QuestionIgnoreHandler(BaseHandler):
+    """Called when the manager chooses to ignore or stop ignoring a
+    question.
+
+    """
+    def post(self, question_id):
+        ref = self.get_argument("ref", "/")
+
+        # Fetch form data.
+        question = self.safe_get_item(Question, question_id)
+        self.contest = question.user.contest
+        should_ignore = self.get_argument("ignore", "no") == "yes"
+
+        # Commit the change.
+        question.ignored = should_ignore
+        self.sql_session.commit()
+
+        logger.warning("Question '%s' by user %s %s" %
+                (question.subject, question.user.username,
+                    ["ignored", "unignored"][should_ignore]))
+
+        self.redirect(ref)
+
+
 class MessageHandler(BaseHandler):
     """Called when a message is sent to a specific user.
 
@@ -1229,9 +1254,10 @@ _aws_handlers = [
     (r"/submission/([0-9]+)",                SubmissionViewHandler),
     (r"/submission_file/([a-zA-Z0-9_.-]+)",  SubmissionFileHandler),
     (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
-    (r"/message/([a-zA-Z0-9_-]+)",  MessageHandler),
-    (r"/question/([a-zA-Z0-9_-]+)", QuestionReplyHandler),
-    (r"/questions/([0-9]+)",        QuestionsHandler),
+    (r"/message/([a-zA-Z0-9_-]+)", MessageHandler),
+    (r"/question/([a-zA-Z0-9_-]+)",        QuestionReplyHandler),
+    (r"/ignore_question/([a-zA-Z0-9_-]+)", QuestionIgnoreHandler),
+    (r"/questions/([0-9]+)",               QuestionsHandler),
     (r"/resources",                 ResourcesHandler),
     (r"/resources/([0-9]+)",        ResourcesHandler),
     (r"/notifications",             NotificationsHandler),
