@@ -1056,7 +1056,8 @@ class QuestionsHandler(BaseHandler):
 
         r_params = self.render_params()
         r_params["questions"] = self.sql_session.query(Question)\
-            .join(User).filter(User.contest_id == contest_id).all()
+            .join(User).filter(User.contest_id == contest_id)\
+            .order_by(Question.question_timestamp.desc()).all()
         self.render("questions.html", **r_params)
 
 
