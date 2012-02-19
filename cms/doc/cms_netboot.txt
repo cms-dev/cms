@@ -1,0 +1,134 @@
+
+-----------------------------------
+          CMS with Netboot
+-----------------------------------
+
+by Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+
+
+RATIONALE
+
+  CMS employs many different services (possibly running on different
+computers) to set up the machinery needed to serve a contest. Usually
+the contest administrator is responsible to set up some different
+machines and keep their configurations synchronized. This can become a
+rather large amount of work.
+
+  Anyway, one advantage of CMS is that the state of the contest is
+entirely kept in a PostgreSQL database and the shard mechanism allows
+(and, to some extent, requires) the configuration files to be the same
+across all the CMS machines. This enables one to use the following
+solution: create a basic system with all CMS dependecies and CMS
+itself already installed and configured, then set up the machines to
+do network boot and execute that system without having anything
+installed on their hard drives.
+
+
+NETBOOT
+
+  Netboot is an interesting feature, available on virtually any
+computer marketed nowadays. At boot time, the firmware (usually the
+BIOS), instead of searching for the boot operating system on some
+local hard disk, performs a network DHCP request to obtain an IP
+address. The DHCP response can also contain information about a TFTP
+(Trivial File Transfer Protocol) server that can be used to get the
+actual bootloader, which, in turn, still using TFTP, con obtain the
+kernel and initrd to boot some Linux system.
+
+  Once started, the initrd must be configured to properly mount the
+root filesystem, that usually is exported via a NFS share (other
+options include downloading a SquashFS image via HTTP). The NFS share
+can be writable, so the changes in the netbooted computer are
+immediately reflected into the server, or read-only: in this second
+case, it is desirable to add another layer over NFS that makes the
+root filesystem writable keeping in RAM the local modifications. This
+can be done using aufs. Moreover, it can also be desirable having the
+option to mount some local hard disk partition and store them some
+data that one would like to preserve between reboots.
+
+
+OTHER APPROACHES
+
+  Another idea would be to install the system into a bootable USB
+memory stick and use it more or less the same way as the netboot. This
+doesn't need specific network configuration, but, on the other hand,
+probably requires more work when you have to change something inside
+the installed system (making changes in the netboot system is as
+simple as chroot-ing into it and do what you want: the changes will be
+instantly available also to the already booted clients). I haven't
+investigated this option yet.
+
+
+SOLUTION
+
+  The tools to run CMS the way described above are already available
+(modulo writing some simple case-specific scripts) and, to my
+experience, quite stable. Here I write some steps to build a netboot
+CMS with Debian or Ubuntu (they're more or less equivalent; at the
+time of writing, Debian Wheezey and Ubuntu Precise have all the
+dependencies required by CMS, while previous versions could require
+installing packages from external sources). They assume that you
+already have a Debian or Ubuntu machine and a network that you can
+configure at your needs (particularly, you have to be able to set up a
+DHCP server).
+
+  These instructions are not complete yet and they're meant mainly as
+tips and tricks that I needed during my experimentation. Since they're
+dealing with quite delicate matters, it is expected that the reader
+has a fair understanding of what is going on and can independently act
+in case of problems.
+
+ 1. Creating the system: see for example [1]. I used Debian instead of
+    Ubuntu and atftpd instead of tftp-hpa as TFTP server, but this
+    shouldn't change anything. I suggest to install a 32 bits system,
+    because CMS is mostly used and supported in that configuration. I
+    also set the NFS share read-only, because I'll be using aufs on
+    the client system (see configuration in point 4).
+
+ [1] https://help.ubuntu.com/community/DisklessUbuntuHowto
+
+ 2. Disable --manage-gids in NFS server: usually the Linux NFS kernel
+    server is configured with the --manage-gids option, which is
+    necessary to avoid a common protocol limitation (see [2] for more
+    information). This is undesirable in our situation, because the
+    user-group mapping is probably going to be different between the
+    server and the netboot system. It is then advisable to remove
+    --manage-gids from RPCMOUNTDOPTS in
+    /etc/default/nfs-kernel-server.
+
+ [2] https://xkyle.com/solving-the-nfs-16-group-limit-problem/
+
+ 3. Using chroot, login into the system created at point 1. Now you
+    can install packages, configure the system and do other
+    administrative operations. Sometimes you'll need to have /proc,
+    /sys or /dev filesystems mounted: you can have a copy of the
+    hosting computer corresponding filesystems using a bind mount, for
+    example:
+
+      mount -o bind /dev /chroot/dev
+
+ 4. Install aufs and use it to mount a writeable root filesystem. You
+    have to modify the initrd as specified in [3], although these
+    instructions should be used cum grano salis, since the describe a
+    slightly different use case. Actually, I didn't use these scripts,
+    but those written by some friends of mine, which appear anyway
+    mostly equivalent (and, probably, less powerful).
+
+    Don't forget to update the kernel command line and the initrd in
+    the TFTP directory (for the initrd, I actually used a symlink, so
+    updating was automatic).
+
+ [3] http://code.google.com/p/rootaufs/wiki/HowToUse
+
+ 5. Now you can boot the client and, if everything is ok, you have a
+    working Debian or Ubuntu system. Enjoy it! :-)
+
+
+TODO
+
+  This howto still misses a few pieces:
+
+ * Installing CMS and dependencies in the client system;
+
+ * Configuring an optional hard disk partition for keeping local data
+   storage.
