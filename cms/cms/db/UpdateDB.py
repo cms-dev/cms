@@ -43,6 +43,7 @@ class ScriptsContainer(object):
             ("20120121", "add_submissions_score"),
             ("20120213", "change_tasktype_names"),
             ("20120218", "constraints_on_tokens"),
+            ("20120220", "add_ignore_on_questions"),
             ]
         self.list.sort()
 
@@ -195,6 +196,20 @@ class ScriptsContainer(object):
             session.execute("ALTER TABLE tasks "
                             "ADD CONSTRAINT tasks_token_gen_number_check "
                             "CHECK (token_gen_number >= 0);")
+
+    @staticmethod
+    def add_ignore_on_questions():
+        """Possibility to ignore users' questions.
+
+        We simply add a field "ignored" in the questions table.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE questions "
+                            "ADD COLUMN ignored BOOLEAN;")
+            session.execute("UPDATE questions SET ignored = False;")
+            session.execute("ALTER TABLE questions "
+                            "ALTER COLUMN ignored SET NOT NULL;")
 
 
 def execute_single_script(scripts_container, script):
