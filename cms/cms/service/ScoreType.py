@@ -329,19 +329,20 @@ class ScoreTypeGroupMin(ScoreTypeAlone):
         current = 0
         scores = []
         public_scores = []
+        public_index = []
         for parameter in self.parameters:
             next_ = current + parameter[1]
             scores.append(min(evaluations[current:next_]) * parameter[0])
             if all(self.public_testcases[current:next_]):
                 public_scores.append(scores[-1])
-                public_index = len(scores) - 1
+                public_index.append(len(scores) - 1)
             current = next_
         score = sum(scores)
         public_score = sum(public_scores)
-        details = ["Subtask %d: %lf" % (i + 1, score)
-                   for i, score in scores]
-        public_details = ["Subtask %d: %lf" % (i + 1, score)
-                          for i, score in zip(public_index, public_scores)]
+        details = ["Subtask %d: %lg" % (i + 1, sc)
+                   for i, sc in enumerate(scores)]
+        public_details = ["Subtask %d: %lg" % (i + 1, sc)
+                          for i, sc in zip(public_index, public_scores)]
         return score, details, public_score, public_details
 
 
@@ -379,19 +380,20 @@ class ScoreTypeGroupMul(ScoreTypeAlone):
         current = 0
         scores = []
         public_scores = []
+        public_index = []
         for parameter in self.parameters:
             next_ = current + parameter[1]
             scores.append(reduce(lambda x, y: x * y,
                                  evaluations[current:next_]) * parameter[0])
             if all(self.public_testcases[current:next_]):
                 public_scores.append(scores[-1])
-                public_index = len(scores) - 1
+                public_index.append(len(scores) - 1)
             current = next_
         score = sum(scores)
         public_score = sum(public_scores)
-        details = ["Subtask %d: %lf" % (i + 1, score)
+        details = ["Subtask %d: %lg" % (i + 1, score)
                    for i, score in scores]
-        public_details = ["Subtask %d: %lf" % (i + 1, score)
+        public_details = ["Subtask %d: %lg" % (i + 1, score)
                           for i, score in zip(public_index, public_scores)]
         return score, details, public_score, public_details
 

@@ -502,17 +502,10 @@ class EvaluationService(Service):
             new_submission_ids_to_check = \
                 [x.id for x in contest.get_submissions()
                  if (not x.compiled() and x.compilation_tries <
-                     EvaluationService.MAX_COMPILATION_TRIES and
-                     (EvaluationService.JOB_TYPE_COMPILATION, x.id) not in
-                     self.queue and
-                     (EvaluationService.JOB_TYPE_COMPILATION, x.id) not in
-                     self.pool)
-                    or (not x.evaluated() and x.evaluation_tries <
-                        EvaluationService.MAX_EVALUATION_TRIES and
-                        (EvaluationService.JOB_TYPE_EVALUATION, x.id) not in
-                        self.queue and
-                        (EvaluationService.JOB_TYPE_EVALUATION, x.id)
-                        not in self.pool)]
+                     EvaluationService.MAX_COMPILATION_TRIES)
+                    or (x.compilation_outcome == "ok" and
+                        not x.evaluated() and x.evaluation_tries <
+                        EvaluationService.MAX_EVALUATION_TRIES)]
 
         new = len(new_submission_ids_to_check)
         old = len(self.submission_ids_to_check)
@@ -661,7 +654,7 @@ class EvaluationService(Service):
         for priority, timestamp, job in lost_jobs:
             logger.info("Job %s for submission %s put again in the queue "
                         "because of timeout worker." % (job[0], job[1]))
-            self.queue.push(job, priority, timestamp)
+            self.push_in_queue(job, priority, timestamp)
         return True
 
     def check_workers_connection(self):
@@ -673,8 +666,23 @@ class EvaluationService(Service):
         for priority, timestamp, job in lost_jobs:
             logger.info("Job %s for submission %s put again in the queue "
                         "because of disconnected worker." % (job[0], job[1]))
-            self.queue.push(job, priority, timestamp)
+            self.push_in_queue(job, priority, timestamp)
         return True
+
+    def push_in_queue(self, job, priority, timestamp):
+        """Push a job in the job queue if the job is not already in
+        the queue or assigned to a worker.
+
+        job (job): a couple (job_type, submission_id) to push.
+
+        return (bool): True if pushed, False if not.
+
+        """
+        if job in self.queue or job in self.pool:
+            return False
+        else:
+            self.queue.push(job, priority, timestamp)
+            return True
 
     @rpc_callback
     def action_finished(self, data, plus, error=None):
@@ -765,8 +773,8 @@ class EvaluationService(Service):
             priority = EvaluationService.JOB_PRIORITY_LOW
             if tokened:
                 priority = EvaluationService.JOB_PRIORITY_MEDIUM
-            self.queue.push((EvaluationService.JOB_TYPE_EVALUATION,
-                             submission_id), priority, timestamp)
+            self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
+                                submission_id), priority, timestamp)
         # If instead submission failed compilation, we don't evaluate.
         elif compilation_outcome == "fail":
             logger.info("Submission %s did not compile. Not going "
@@ -780,10 +788,10 @@ class EvaluationService(Service):
             else:
                 # Note: lower priority (MEDIUM instead of HIGH) for
                 # compilation that are probably failing again.
-                self.queue.push((EvaluationService.JOB_TYPE_COMPILATION,
-                                 submission_id),
-                                EvaluationService.JOB_PRIORITY_MEDIUM,
-                                timestamp)
+                self.push_in_queue((EvaluationService.JOB_TYPE_COMPILATION,
+                                    submission_id),
+                                   EvaluationService.JOB_PRIORITY_MEDIUM,
+                                   timestamp)
         # Otherwise, error.
         else:
             logger.error("Compilation outcome %r not recognized." %
@@ -813,8 +821,8 @@ class EvaluationService(Service):
             priority = EvaluationService.JOB_PRIORITY_LOW
             if tokened:
                 priority = EvaluationService.JOB_PRIORITY_MEDIUM
-            self.queue.push((EvaluationService.JOB_TYPE_EVALUATION,
-                             submission_id), priority, timestamp)
+            self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
+                                submission_id), priority, timestamp)
         else:
             logger.error("Maximum tries reached for the "
                          "evaluation of submission %s. I will "
@@ -845,10 +853,10 @@ class EvaluationService(Service):
             # If not compiled, I compile. Note that we give here a
             # chance for submissions that already have too many
             # compilation tries.
-            self.queue.push((EvaluationService.JOB_TYPE_COMPILATION,
-                             submission_id),
-                            EvaluationService.JOB_PRIORITY_HIGH,
-                            timestamp)
+            self.push_in_queue((EvaluationService.JOB_TYPE_COMPILATION,
+                                submission_id),
+                               EvaluationService.JOB_PRIORITY_HIGH,
+                               timestamp)
         else:
             if not evaluated:
                 self.compilation_ended(submission_id,

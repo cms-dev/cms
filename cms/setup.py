@@ -212,6 +212,9 @@ def install():
     makedir(os.path.join("/", "usr", "local", "etc"), root, 0755)
     for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
         conf_file = os.path.join("/", "usr", "local", "etc", conf_file_name)
+        # Skip if destination is a symlink
+        if os.path.islink(conf_file):
+            continue
         if os.path.exists(os.path.join(".", "examples", conf_file_name)):
             copyfile(os.path.join(".", "examples", conf_file_name),
                      conf_file, cmsuser, 0660)
@@ -238,6 +241,9 @@ def install():
             os.path.join("/", "var", "local", "lib"),
             os.path.join("/", "usr", "local", "share")]
     for _dir in dirs:
+        # Skip if destination is a symlink
+        if os.path.islink(os.path.join(_dir, "cms")):
+            continue
         makedir(_dir, root, 0755)
         _dir = os.path.join(_dir, "cms")
         makedir(_dir, cmsuser, 0770)

@@ -270,7 +270,12 @@ class TaskType:
         # Actually run the compilation command.
         with async_lock:
             logger.info("Starting compilation step.")
-        sandbox.execute_without_std(command, wait=True)
+        box_success = sandbox.execute_without_std(command, wait=True)
+        if not box_success:
+            with async_lock:
+                logger.error("Compilation aborted because of "
+                             "sandbox error in %s" % (self.sandbox.path))
+            return False, None, None
 
         # Detect the outcome of the compilation.
         exit_status = sandbox.get_exit_status()
@@ -392,11 +397,14 @@ class TaskType:
                                       (or None).
 
         """
-        self.evaluation_step_before_run(
+        success = self.evaluation_step_before_run(
             sandbox, command, executables_to_get, files_to_get,
             time_limit, memory_limit, allow_path,
             stdin_redirect, stdout_redirect, wait)
-        return self.evaluation_step_after_run(sandbox, final)
+        if not success:
+            return False, None, None
+        else:
+            return self.evaluation_step_after_run(sandbox, final)
 
     def evaluation_step_before_run(self, sandbox, command,
                                    executables_to_get, files_to_get,
@@ -405,6 +413,9 @@ class TaskType:
                                    stdin_redirect=None, stdout_redirect=None,
                                    wait=False):
         """First part of an evaluation step, until the running.
+
+        return: exit code already translated if wait is True, the
+                process if wait is False.
 
         """
         # Copy all necessary files.
@@ -443,8 +454,10 @@ class TaskType:
         # Actually run the evaluation command.
         with async_lock:
             logger.info("Starting evaluation step.")
-
-        return sandbox.execute_without_std(command, wait=wait)
+        if not wait:
+            return sandbox.execute_without_std(command, wait=False)
+        else:
+            return self.sandbox_operation("execute_without_std", command)
 
     def evaluation_step_after_run(self, sandbox, final=False):
         """Second part of an evaluation step, after the running.

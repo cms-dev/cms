@@ -147,7 +147,7 @@ class WebService(Service):
     """
 
     def __init__(self, listen_port, handlers, parameters, shard=0,
-                 custom_logger=None):
+                 custom_logger=None, listen_address='0.0.0.0'):
         Service.__init__(self, shard, custom_logger)
 
         global logger
@@ -188,7 +188,7 @@ class WebService(Service):
         self.application.service = self
         http_server = tornado.httpserver.HTTPServer(
             self.application, xheaders=parameters.get("is_proxy_used", True))
-        http_server.listen(listen_port)
+        http_server.listen(listen_port, address=listen_address)
         self.instance = tornado.ioloop.IOLoop.instance()
 
     def exit(self):

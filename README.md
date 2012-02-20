@@ -102,9 +102,11 @@ work:
 
 - python-psycopg2 >= 2.4;
 
+- python-simplejson;
+
 - python-sqlalchemy >= 0.7;
 
-- python-psutils >= 0.2;
+- python-psutil >= 0.2;
 
 - python-yaml >= 3.10 (only for YamlImporter);
 
@@ -130,8 +132,8 @@ wget "https://launchpad.net/~neil-u/+archive/ppa/+build/3103042/"\
 sudo apt-get update
 
 sudo apt-get install postgresql postgresql-client python-setuptools \
-     python-tornado python-psycopg2 python-psutils gettext \
-     build-essential fpc stl-manual
+     python-tornado python-psycopg2 python-psutil gettext \
+     build-essential fpc stl-manual python-simplejson
 
 sudo dpkg -i python-sqlalchemy_0.7.4-1ubuntu1_all.deb \
      python-sqlalchemy-ext_0.7.4-1ubuntu1_all.deb
@@ -146,7 +148,8 @@ all dependencies:
 ```bash
 sudo apt-get install postgresql postgresql-client python-setuptools \
      python-tornado python-psycopg2 python-sqlalchemy \
-     python-psutils gettext build-essential fpc stl-manual
+     python-psutil gettext build-essential fpc stl-manual \
+     python-simplejson
 
 # Optional.
 # sudo apt-get install phppgadmin python-yaml

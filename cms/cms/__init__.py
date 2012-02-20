@@ -106,6 +106,13 @@ class Config:
                      os.path.join("/", "usr", "local", "etc", "cms.conf"),
                      os.path.join("/", "etc", "cms.conf")]
 
+        # Allow user to override config file path using environment
+        # variable 'CMS_CONFIG'.
+        CMS_CONFIG_ENV_VAR = "CMS_CONFIG"
+        if CMS_CONFIG_ENV_VAR in os.environ:
+            paths = [os.environ[CMS_CONFIG_ENV_VAR]] + paths
+
+        # Attempt to load a config file.
         self._load(paths)
 
     def _load(self, paths):
@@ -125,7 +132,12 @@ class Config:
             else:
                 print "Using configuration file %s." % conf_file
                 return
-        print "Warning: no configuration file found."
+        else:
+            print "Warning: no configuration file found " \
+                  "in following locations:"
+            for path in paths:
+                print "    %s" % path
+            print "Using default values."
 
     def _load_unique(self, path):
         """Populate the Config class with everything that sits inside

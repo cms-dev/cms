@@ -153,6 +153,7 @@ class Communication(TaskType):
 
         # Consume output.
         wait_without_std([process, manager])
+        # TODO: check exit codes with translate_box_exitcode.
 
         success_user, outcome_user, text_user = \
                       self.evaluation_step_after_run(sandbox_user, final=False)

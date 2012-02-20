@@ -180,9 +180,15 @@ class LogService(Service):
             self.exit()
             return
 
-        self._log_file = codecs.open(os.path.join(log_dir, "%d.log" %
-                                                  int(time.time())),
+        log_filename = "%d.log" % int(time.time())
+        self._log_file = codecs.open(os.path.join(log_dir, log_filename),
                                      "w", "utf-8")
+        try:
+            os.remove(os.path.join(log_dir, "last.log"))
+        except OSError:
+            pass
+        os.symlink(log_filename,
+                   os.path.join(log_dir, "last.log"))
 
         self._last_messages = []
 
@@ -283,9 +289,16 @@ class Logger(object):
                                "%s-%d" % (service.name, service.shard))
         mkdir(config.log_dir)
         mkdir(log_dir)
+        log_filename = "%d.log" % int(time.time())
         self._log_file = codecs.open(
-            os.path.join(log_dir, "%d.log" % int(time.time())),
+            os.path.join(log_dir, log_filename),
             "w", "utf-8")
+        try:
+            os.remove(os.path.join(log_dir, "last.log"))
+        except OSError:
+            pass
+        os.symlink(log_filename,
+                   os.path.join(log_dir, "last.log"))
         self.info("%s %d up and running!" % service)
 
     def log(self, msg, operation=None, severity=None, timestamp=None):

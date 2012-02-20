@@ -33,6 +33,14 @@ var getters = [];
             this.last_time = response['data'][l-1][0];
             if (this.first)
             {
+                // Calculate a good spacing for y-axis labels.
+                var tick_increment = function(max_val, max_ticks, min_inc) {
+                   var res = min_inc;
+                   while (max_val / res > max_ticks)
+                       res *= 2;
+                   return res;
+                }
+
                 // CPU
                 this.cpu_graph = $.jqplot("cpu_" + this.shard, [[[-1, -1]], [[-1, -1]], [[-1, -1]]], plotOptions);
                 this.cpu_graph.series[0].label = "User";
@@ -45,11 +53,13 @@ var getters = [];
                 this.cpu_graph.axes.yaxis.max = this.num_cpu * 100;
                 this.cpu_graph.axes.yaxis.ticks = [];
                 var ytick = 0;
+                var cpu_ytick_inc = tick_increment(this.num_cpu, 10, 0.25);
                 while (ytick <= this.num_cpu * 100)
                 {
                     this.cpu_graph.axes.yaxis.ticks.push(ytick);
-                    ytick += 50;
+                    ytick += 100 * cpu_ytick_inc;
                 }
+
                 // Memory
                 this.memory_graph = $.jqplot("memory_" + this.shard, [[[-1, -1]], [[-1, -1]], [[-1, -1]]], plotOptions);
                 this.memory_graph.series[0].label = "Used";
@@ -62,12 +72,14 @@ var getters = [];
                 this.memory_graph.axes.yaxis.max = this.ram_total;
                 this.memory_graph.axes.yaxis.ticks = [];
                 ytick = 0;
+                var ram_ytick_inc = tick_increment(this.ram_total, 10, 1);
                 while (ytick + 100 <= this.ram_total)
                 {
                     this.memory_graph.axes.yaxis.ticks.push(ytick);
-                    ytick += 512;
+                    ytick += ram_ytick_inc;
                 }
                 this.memory_graph.axes.yaxis.ticks.push(this.ram_total);
+
                 // Swap
                 this.swap_graph = $.jqplot("swap_" + this.shard, [[[-1, -1]]], plotOptions);
                 this.swap_graph.series[0].label = "Used";
@@ -78,10 +90,11 @@ var getters = [];
                 this.swap_graph.axes.yaxis.max = this.ram_total;
                 this.swap_graph.axes.yaxis.ticks = [];
                 ytick = 0;
+                var swap_ytick_inc = tick_increment(this.swap_total, 10, 1);
                 while (ytick + 100 <= this.swap_total)
                 {
                     this.swap_graph.axes.yaxis.ticks.push(ytick);
-                    ytick += 512;
+                    ytick += swap_ytick_inc;
                 }
                 this.swap_graph.axes.yaxis.ticks.push(this.swap_total);
 

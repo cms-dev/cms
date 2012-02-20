@@ -239,7 +239,7 @@ class Sandbox:
         """Return the memory used by the sandbox, reading the logs if
         necessary.
 
-        return (float): memory used by the sandbox.
+        return (float): memory used by the sandbox (in bytes).
 
         """
         if self.log is None:
@@ -516,6 +516,24 @@ class Sandbox:
         """
         os.remove(self.relative_path(path))
 
+    def translate_box_exitcode(self, exitcode):
+        """Translate the sandbox exit code according to the following
+        table:
+         * 0 -> everything ok -> returns True
+         * 1 -> error in the program inside the sandbox -> returns True
+         * 2 -> error in the sandbox itself -> returns False
+
+        Basically, it recognizes whether the sandbox executed
+        correctly or not.
+
+        """
+        if exitcode == 0 or exitcode == 1:
+            return True
+        elif exitcode == 2:
+            return False
+        else:
+            raise Exception("Sandbox exit status unknown")
+
     def execute(self, command):
         """Execute the given command in the sandbox using
         subprocess.call.
@@ -528,7 +546,7 @@ class Sandbox:
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: %s" %
                      " ".join(args))
-        return subprocess.call(args)
+        return self.translate_box_exitcode(subprocess.call(args))
 
     def popen(self, command,
               stdin=None, stdout=None, stderr=None,
@@ -574,7 +592,7 @@ class Sandbox:
         # std*** to interfere with command. Otherwise we let the
         # caller handle these issues.
         if wait:
-            return wait_without_std([popen])[0]
+            return self.translate_box_exitcode(wait_without_std([popen])[0])
         else:
             return popen
 
