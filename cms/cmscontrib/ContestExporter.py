@@ -25,10 +25,14 @@ idempotent.
 
 """
 
-import os
 import argparse
+import os
 import re
+import shutil
 import simplejson as json
+import tempfile
+
+import tarfile
 
 from cms import config
 from cms.async import ServiceCoord
@@ -47,13 +51,14 @@ class ContestExporter(Service):
 
     """
     def __init__(self, shard, contest_id, dump,
-                 export_dir, skip_submissions,
+                 export_target, skip_submissions,
                  light):
         self.contest_id = contest_id
-        self.export_dir = export_dir
         self.dump = dump
         self.skip_submissions = skip_submissions
         self.light = light
+        self.export_target = export_target
+        self.export_dir = export_target
 
         logger.initialize(ServiceCoord("ContestExporter", shard))
         Service.__init__(self, shard, custom_logger=logger)
@@ -66,6 +71,23 @@ class ContestExporter(Service):
         """
         logger.operation = "exporting contest %d" % self.contest_id
         logger.info("Starting export")
+
+        # If target is not provided, we use the contest's name.
+        if self.export_target == "":
+            with SessionGen(commit=False) as session:
+                contest = Contest.get_from_id(self.contest_id, session)
+                self.export_target = "dump_%s.tar.gz" % contest.name
+
+        if self.export_target.endswith(".tar.gz") \
+               or self.export_target.endswith(".tar.bz2") \
+               or self.export_target.endswith(".tar"):
+            if self.export_target.endswith(".tar"):
+                basename = os.path.basename(self.export_target[:-4])
+            elif self.export_target.endswith(".tar.gz"):
+                basename = os.path.basename(self.export_target[:-7])
+            elif self.export_target.endswith(".tar.bz2"):
+                basename = os.path.basename(self.export_target[:-8])
+            self.export_dir = os.path.join(tempfile.mkdtemp(), basename)
 
         logger.info("Creating dir structure.")
         try:
@@ -106,6 +128,22 @@ class ContestExporter(Service):
             if not self.dump_database():
                 self.exit()
                 return False
+
+        # If the admin requested export to file, we do that.
+        if self.export_target.endswith(".tar.gz") \
+                 or self.export_target.endswith(".tar.bz2") \
+                 or self.export_target.endswith(".tar"):
+            if self.export_target.endswith(".tar.gz"):
+                mode = "w:gz"
+            elif self.export_target.endswith(".tar.bz2"):
+                mode = "w:bz2"
+            elif self.export_target.endswith(".tar"):
+                mode = "w:"
+            archive = tarfile.open(self.export_target, mode)
+            archive.add(self.export_dir, arcname=basename)
+            archive.close()
+            shutil.rmtree(self.export_dir)
+
 
         logger.info("Export finished.")
         logger.operation = ""
@@ -214,8 +252,8 @@ def main():
                         "testcases)")
     parser.add_argument("shard", type=int,
                         help="shard number")
-    parser.add_argument("export_directory",
-                        help="target directory where to export")
+    parser.add_argument("export_target", nargs='?', default="",
+                        help="target directory or archive for export")
 
     args = parser.parse_args()
 
@@ -225,7 +263,7 @@ def main():
     ContestExporter(shard=args.shard,
                     contest_id=args.contest_id,
                     dump=args.dump_database,
-                    export_dir=args.export_directory,
+                    export_target=args.export_target,
                     skip_submissions=args.skip_submissions,
                     light=args.light).run()
 

@@ -27,7 +27,12 @@ again should be idempotent.
 
 import os
 import argparse
+import shutil
 import simplejson as json
+import tempfile
+
+import tarfile
+import zipfile
 
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service
@@ -37,17 +42,39 @@ from cms.service.LogService import logger
 from cms.util.Utils import sha1sum
 
 
+def find_root_of_archive(file_names):
+    """Given a list of file names (the content of an archive) find the
+    name of the root directory, i.e., the only file that would be
+    created in a directory if we extract there the archive.
+
+    file_names (list of strings): the list of file names in the
+                                  archive
+
+    return (string): the root directory, or None if unable to find.
+
+    """
+    curr = None
+    for s in file_names:
+        if '/' not in s:
+            if curr is None:
+                curr = s
+            else:
+                return None
+    return curr
+
+
 class ContestImporter(Service):
     """This service imports a contest from a directory that has been
     the target of a ContestExport. The process of exporting and
     importing again should be idempotent.
 
     """
-    def __init__(self, shard, drop, import_dir, only_files, no_files):
-        self.import_dir = import_dir
+    def __init__(self, shard, drop, import_source, only_files, no_files):
         self.drop = drop
         self.only_files = only_files
         self.no_files = no_files
+        self.import_source = import_source
+        self.import_dir = import_source
 
         logger.initialize(ServiceCoord("ContestImporter", shard))
         Service.__init__(self, shard, custom_logger=logger)
@@ -58,8 +85,35 @@ class ContestImporter(Service):
         """Run the actual import code.
 
         """
-        logger.operation = "importing contest from %s" % (self.import_dir)
+        logger.operation = "importing contest from %s" % self.import_source
         logger.info("Starting import")
+
+        if not os.path.isdir(self.import_source):
+            if self.import_source.endswith(".zip"):
+                archive = zipfile.ZipFile(self.import_source, "r")
+                file_names = archive.infolist()
+
+                self.import_dir = tempfile.mkdtemp()
+                archive.extractall(self.import_dir)
+            elif self.import_source.endswith(".tar.gz") \
+                     or self.import_source.endswith(".tar.bz2") \
+                     or self.import_source.endswith(".tar"):
+                archive = tarfile.open(name=self.import_source)
+                file_names = archive.getnames()
+            else:
+                logger.critical("Unable to import from %s." %
+                                self.import_source)
+                self.exit()
+
+            root = find_root_of_archive(file_names)
+            if root is None:
+                logger.critical("Cannot find a root directory in %s." %
+                                self.import_source)
+                self.exit()
+
+            self.import_dir = tempfile.mkdtemp()
+            archive.extractall(self.import_dir)
+            self.import_dir = os.path.join(self.import_dir, root)
 
         if self.drop:
             logger.info("Dropping and recreating the database")
@@ -100,8 +154,13 @@ class ContestImporter(Service):
                 contest_id = contest.id
                 session.commit()
 
-        logger.info("Import finished (contest id: %d)" % (contest_id))
+        logger.info("Import finished (contest id: %s)" % contest_id)
         logger.operation = ""
+
+        # If we extracted an archive, we remove it.
+        if self.import_dir != self.import_source:
+            shutil.rmtree(self.import_dir)
+
         self.exit()
         return False
 
@@ -134,7 +193,7 @@ class ContestImporter(Service):
         # Then check the digest.
         calc_digest = sha1sum(path)
         if digest != calc_digest:
-            logger.error("File %s has hash %s, but the server returned %d, "
+            logger.error("File %s has hash %s, but the server returned %s, "
                          "aborting..." % (path, calc_digest, digest))
             return False
 
@@ -156,14 +215,14 @@ def main():
                         "before importing")
     parser.add_argument("shard", type=int,
                         help="shard number")
-    parser.add_argument("import_directory",
-                        help="source directory from where import")
+    parser.add_argument("import_source",
+                        help="source directory or compressed file")
 
     args = parser.parse_args()
 
     ContestImporter(shard=args.shard,
                     drop=args.drop,
-                    import_dir=args.import_directory,
+                    import_source=args.import_source,
                     only_files=args.only_files,
                     no_files=args.no_files).run()
 

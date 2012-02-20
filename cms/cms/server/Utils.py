@@ -102,10 +102,11 @@ def decrypt_arguments(func):
 
 def extract_archive(temp_name, original_filename):
     """Obtain a list of files inside the specified archive.
-        
-        Returns a list of the files inside the archive located in
-        temp_name, using original_filename to guess the type of the archive.
-        
+
+    Returns a list of the files inside the archive located in
+    temp_name, using original_filename to guess the type of the
+    archive.
+
     """
     file_list = []
     if original_filename.endswith(".zip"):
@@ -121,7 +122,7 @@ def extract_archive(temp_name, original_filename):
         or original_filename.endswith(".tar.bz2") \
         or original_filename.endswith(".tar"):
         try:
-            tar_object = tarfile.open(name = temp_name)
+            tar_object = tarfile.open(name=temp_name)
             for item in tar_object.getmembers():
                 if item.isfile():
                     file_list.append({
