@@ -5,9 +5,6 @@
 
 * LOW: use first_name/last_name instead of name.
 
-* LOW: allow token_initial = None to disable token checking (as stated
-  in the comments, but now it is not nullable).
-
 * LOW: it may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
   scorings change.
@@ -47,7 +44,7 @@
 
 ** Task/Score types
 
-* HIGH: implement communication task types.
+* HIGH: double-check communication type for mistakes.
 
 * MED: make score types plugin-able.
 
@@ -81,17 +78,13 @@
   - Ability to backup files.
   - Ability to talk with Emacs psychologist, in case of a particularly
     difficult contest.
-  - Put an Italian flag somewhere.
-  - I think that the AGPL license also asks us to put appropriate
-    copyright notices in the Web interface.
 
 
 
 ** AdminWebServer
 
 * MED: when reevaluating, ask if we want to wipe everything, or only
-  the evaluation, or only the scoring (in the case we implement the
-  persistent scores in the db).
+  the evaluation, or only the scoring.
 
 * MED: give possibility to see the output of an evaluation (storing
   them in the FS? cirumventing the yet-to-be-born TEST facility?).
@@ -101,10 +94,27 @@
 
 * LOW: auto updating submission statuses.
 
-* LOW: see old data about resource usage (i.e., longer graphs).
+* LOW: see old data about resource usage (i.e., longer graphs on
+  demand).
 
 * LOW: facility for mass-importing users data (reading a list with
-  names, generating passwords, creating IP association, ...)
+  names, generating/printing/sending by email passwords, creating IP
+  association, ...)
+
+* LOW: change color of textboxes we changed but not saved in the
+  DB. Ask before leaving the page if we are sure to discard our
+  changes.
+
+
+
+** EvaluationService
+
+* MED: be generally more careful when adding things on the
+  queue. Check if there are race conditions.
+
+* MED: factor time since submission when deciding the priority of the
+  job. (E.g.: when the queue is long, tokened evaluations are always
+  before untokened ones, hence the latter could never be evaluated).
 
 
 
@@ -130,8 +140,6 @@
 * HIGH: always refer to tasks, testcases and such by id instead of num
   (as it is for everything else).
 
-* MED: TEST interface.
-
 * MED: RunC interface.
 
 * MED: ditch RelativeScores and assume that a score depends only on
@@ -142,7 +150,8 @@
   gives back the result). This might be useful also for admins ("CMS,
   please give me the output of submission X on testcase Y").
 
-* LOW: implement task versioning?
-
 * MED: Write in the sandbox a file with the commands executed in the
   sandbox itself.
+
+* LOW: implement task versioning?
+
