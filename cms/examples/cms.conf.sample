@@ -74,7 +74,7 @@
 
     "_help": "Login cookie duration in seconds. The duration is refreshed",
     "_help": "on every manual request.",
-    "cookie_duration": 1800,
+    "cookie_duration": 10800,
 
     "_help": "If CWSs write submissions to disk before storing them in",
     "_help": "the DB, and where to save them. %s = DATA_DIR.",

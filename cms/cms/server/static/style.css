@@ -157,7 +157,15 @@ ul.normal_list {
     text-shadow: none;
 }
 
-
+.cr_notice {
+    font-size: 0.6em;
+    line-height: 1.125em;
+    text-align: center;
+    position: fixed;
+    bottom: 1.5em;
+    width: 200px;
+    margin-left: 15px;
+}
 
 
 
