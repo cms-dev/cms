@@ -977,7 +977,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
                 self.application.service.add_notification(int(time.time()),
                     "Duplicate username",
                     "The requested username already exists in the contest.")
-                self.redirect("/add_user/%d" % contest_id)
+                self.redirect("/add_user/%s" % contest_id)
                 return
 
         password = self.get_argument("password", "")
