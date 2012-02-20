@@ -20,6 +20,8 @@
 import tornado.ioloop
 import tornado.web
 
+import argparse
+import shutil
 import simplejson as json
 import functools
 import time
@@ -300,6 +302,23 @@ class HomeHandler(tornado.web.RequestHandler):
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        description="Ranking for CMS.")
+    parser.add_argument("-d", "--drop",
+                        help="drop the data already stored",
+                        action="store_true")
+    args = parser.parse_args()
+
+    if args.drop:
+        print "Are you sure you want to delete directory %s? [y/N]" % \
+              config.lib_dir,
+        ans = raw_input().lower()
+        if ans in ['y', 'yes']:
+            print "Removing directory %s." % config.lib_dir
+        else:
+            print "Not removing directory %s." % config.lib_dir
+        return
+
     application = tornado.web.Application([
         (r"/contests/([A-Za-z0-9_]*)", create_handler(Contest.store)),
         (r"/tasks/([A-Za-z0-9_]*)", create_handler(Task.store)),
