@@ -51,6 +51,16 @@ setInterval(update_submission_status, 5000);
 
   {{ _("Time limit: %(seconds)s second(s).") % {"seconds": task.time_limit} }}</br>
   {{ _("Memory limit: %(mb)s MB.") % {"mb": task.memory_limit} }}</br>
+  {% if task.attachments != {} %}
+  {{ _("Attachments") }}:
+  <ul>
+    {% for filename, attachment in task.attachments.items() %}
+    <li>
+        <a href="/attachment/{{ Cryptographics.encrypt_number(attachment.id) }}">{{ filename }}</a>
+    </li>
+    {% end %}
+  </ul>
+  {% end %}
   <div class="hr"></div>
 </div>
 

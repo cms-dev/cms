@@ -39,6 +39,7 @@ import time
 import codecs
 
 import base64
+import mimetypes
 import simplejson as json
 import tempfile
 import traceback
@@ -51,7 +52,7 @@ from cms import config, default_argument_parser
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
-     Submission, Token, Task, File
+     Submission, Token, Task, File, Attachment
 from cms.db.Utils import ask_for_contest
 from cms.grading.tasktypes import get_task_type
 from cms.service.FileStorage import FileCacher
@@ -355,6 +356,36 @@ class TaskStatementViewHandler(FileHandler):
         self.sql_session.close()
 
         self.fetch(statement, "application/pdf", "%s.pdf" % name)
+
+class TaskAttachmentViewHandler(FileHandler):
+    """Shows an attachment file of a task in the contest.
+
+    """
+    @catch_exceptions
+    @decrypt_arguments
+    @valid_phase_required
+    @tornado.web.authenticated
+    @tornado.web.asynchronous
+    def get(self, file_id):
+
+        attachment = self.sql_session.query(Attachment).join(Task)\
+            .filter(Attachment.id == file_id)\
+            .filter(Task.contest_id == self.contest.id)\
+            .first()
+
+        if attachment is None:
+            raise tornado.web.HTTPError(404)
+
+        filename = attachment.filename
+        digest = attachment.digest
+
+        # FIXME: Returns (None, None) if it can't guess the type.
+        # What shall we do in this situation?
+        mimetype = mimetypes.guess_type(filename)[0]
+
+        self.sql_session.close()
+
+        self.fetch(digest, mimetype, filename)
 
 
 class SubmissionFileHandler(FileHandler):
@@ -846,6 +877,7 @@ _cws_handlers = [
     (r"/logout", LogoutHandler),
     (r"/tasks/([%s]+)" % enc_alph,             TaskViewHandler),
     (r"/tasks/([%s]+)/statement" % enc_alph,   TaskStatementViewHandler),
+    (r"/attachment/([%s]+)" % enc_alph,        TaskAttachmentViewHandler),
     (r"/submission_file/([%s]+)" % enc_alph,   SubmissionFileHandler),
     (r"/submission_status/([%s]+)" % enc_alph, SubmissionStatusHandler),
     (r"/submit/([%s]+)" % enc_alph,            SubmitHandler),
