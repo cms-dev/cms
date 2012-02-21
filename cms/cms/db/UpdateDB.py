@@ -44,6 +44,7 @@ class ScriptsContainer(object):
             ("20120213", "change_tasktype_names"),
             ("20120218", "constraints_on_tokens"),
             ("20120220", "add_ignore_on_questions"),
+            ("20120221", "split_first_and_last_names"),
             ]
         self.list.sort()
 
@@ -210,6 +211,47 @@ class ScriptsContainer(object):
             session.execute("UPDATE questions SET ignored = False;")
             session.execute("ALTER TABLE questions "
                             "ALTER COLUMN ignored SET NOT NULL;")
+
+    @staticmethod
+    def split_first_and_last_names():
+        """Use two fields for the name instead of one.
+
+        'Last' name is intended to be used as a family name (or anyhow
+        the name you want to use to sort first); 'first' name is the
+        given name (if any).
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE users ADD COLUMN first_name VARCHAR;")
+            session.execute("ALTER TABLE users ADD COLUMN last_name VARCHAR;")
+            session.execute("ALTER TABLE users ADD COLUMN email VARCHAR;")
+
+            for user_id, user_real_name in session.execute("SELECT "
+                                                           "id, real_name "
+                                                           "FROM users;"):
+                split_names = user_real_name.split()
+                if len(split_names) == 0:
+                    first_name = ""
+                    last_name = ""
+                elif len(split_names) == 1:
+                    first_name = ""
+                    last_name = split_names[0]
+                else:
+                    first_name = split_names[0]
+                    last_name = " ".join(split_names[1:])
+                session.execute("UPDATE users SET "
+                                "first_name = '%s', last_name = '%s', "
+                                "email = '' "
+                                "WHERE id = %s;" % (first_name,
+                                                    last_name,
+                                                    user_id))
+            session.execute("ALTER TABLE users "
+                            "ALTER COLUMN first_name SET NOT NULL;")
+            session.execute("ALTER TABLE users "
+                            "ALTER COLUMN last_name SET NOT NULL;")
+            session.execute("ALTER TABLE users "
+                            "ALTER COLUMN email SET NOT NULL;")
+            session.execute("ALTER TABLE users DROP COLUMN real_name;")
 
 
 def execute_single_script(scripts_container, script):

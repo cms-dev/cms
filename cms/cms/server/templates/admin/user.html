@@ -29,7 +29,7 @@ function update_additional_answer(element, invoker)
 
 {% block core %}
 
-<h1>{{ selected_user.real_name }} ({{ selected_user.username }})</h1>
+<h1>{{ selected_user.first_name }} {{ selected_user.last_name }} ({{ selected_user.username }})</h1>
 
 <h2 id="title_submissions" class="toggling_on">Submissions</h2>
 <div id="submissions">
@@ -133,8 +133,12 @@ function update_additional_answer(element, invoker)
   <form action="/user/{{ selected_user.id }}" method="POST">
     <table>
       <tr>
-        <td>Real name</td>
-        <td><input type="text" name="real_name" value="{{ selected_user.real_name }}"/></td>
+        <td>First name</td>
+        <td><input type="text" name="first_name" value="{{ selected_user.first_name }}"/></td>
+      </tr>
+      <tr>
+        <td>Last name</td>
+        <td><input type="text" name="last_name" value="{{ selected_user.last_name }}"/></td>
       </tr>
       <tr>
         <td>Username</td>
@@ -144,6 +148,10 @@ function update_additional_answer(element, invoker)
         <td>Password</td>
         <!-- FIXME: Plain text? -->
         <td><input type="text" name="password" value="{{ selected_user.password }}"/></td>
+      </tr>
+      <tr>
+        <td>Email</td>
+        <td><input type="text" name="email" value="{{ selected_user.email }}"/></td>
       </tr>
       <tr>
         <td>IP</td>

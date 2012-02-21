@@ -44,11 +44,15 @@ class User(Base):
     id = Column(Integer, primary_key=True)
 
     # Real name (human readable) of the user.
-    real_name = Column(String, nullable=False)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
 
     # Username and password to log in the CWS.
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
+
+    # Email for any communications in case of remote contest.
+    email = Column(String, nullable=False)
 
     # User can log in CWS only from this ip.
     ip = Column(String, nullable=True)
@@ -86,32 +90,28 @@ class User(Base):
     # Moreover, we have the following methods.
     # get_tokens (defined in SQLAlchemyAll)
 
-    def __init__(self, real_name, username, password=None, ip=None,
-                 timezone=0.0, contest=None, hidden=False, starting_time=None,
-                 messages=None, questions=None, submissions=None):
-        self.real_name = real_name
-        self.username = username
+    def __init__(self, first_name, last_name, username, password=None,
+                 email=None, ip=None, timezone=0.0, contest=None,
+                 hidden=False, starting_time=None, messages=None,
+                 questions=None, submissions=None):
         if password is None:
             import random
             chars = "abcdefghijklmnopqrstuvwxyz"
             password = "".join([random.choice(chars) for i in xrange(6)])
+
+        self.first_name = first_name
+        self.last_name = last_name
+        self.username = username
         self.password = password
         self.timezone = timezone
-        if ip is None:
-            ip = '0.0.0.0'
-        self.ip = ip
+        self.email = email if email is not None else ""
+        self.ip = ip if ip is not None else "0.0.0.0"
         self.hidden = hidden
         self.starting_time = starting_time
-        if messages is None:
-            messages = []
-        self.messages = messages
-        if questions is None:
-            questions = []
-        self.questions = questions
+        self.messages = messages if messages is not None else []
+        self.questions = questions if questions is not None else []
         self.contest = contest
-        if submissions is None:
-            submissions = []
-        self.submissions = submissions
+        self.submissions = submissions if submissions is not None else []
 
     def export_to_dict(self, skip_submissions=False):
         """Return object data as a dictionary.
@@ -121,9 +121,11 @@ class User(Base):
         if not skip_submissions:
             submissions = [submission.export_to_dict()
                            for submission in self.submissions]
-        return {'real_name':     self.real_name,
+        return {'first_name':    self.first_name,
+                'last_name':     self.last_name,
                 'username':      self.username,
                 'password':      self.password,
+                'email'   :      self.email,
                 'timezone':      self.timezone,
                 'ip':            self.ip,
                 'hidden':        self.hidden,

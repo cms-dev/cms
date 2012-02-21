@@ -8,7 +8,8 @@
 <table class="bordered">
   <thead>
     <tr>
-      <th style="width: 50%">Name</th>
+      <th style="width: 25%">First name</th>
+      <th style="width: 25%">Last name</th>
       <th style="width: 30%">Username</th>
       <th style="width: 20%">Operations</th>
     </tr>
@@ -16,7 +17,8 @@
   <tbody>
     {% for u in sorted(contest.users, cmp = lambda x, y: cmp(x.username, y.username)) %}
     <tr>
-      <td>{{ u.real_name }}</td>
+      <td>{{ u.first_name }}</td>
+      <td>{{ u.last_name }}</td>
       <td><a href="/user/{{ u.id }}">{{ u.username }}</a></td>
       <td>[<a href="/reevaluate/user/{{ u.id }}">Reevaluate</a>]</td>
     </tr>

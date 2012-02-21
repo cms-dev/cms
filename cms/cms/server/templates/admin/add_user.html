@@ -9,8 +9,12 @@
   <form action="/add_user/{{ contest.id }}" method="POST">
     <table>
       <tr>
-        <td>Real name</td>
-        <td><input type="text" name="real_name"/></td>
+        <td>First name</td>
+        <td><input type="text" name="first_name"/></td>
+      </tr>
+      <tr>
+        <td>Last name</td>
+        <td><input type="text" name="last_name"/></td>
       </tr>
       <tr>
         <td>Username</td>
@@ -20,6 +24,10 @@
         <td>Password</td>
         <!-- FIXME: Plain text? -->
         <td><input type="text" name="password" /></td>
+      </tr>
+      <tr>
+        <td>Email</td>
+        <td><input type="text" name="email"/></td>
       </tr>
       <tr>
         <td>IP</td>

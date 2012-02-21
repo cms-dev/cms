@@ -3,8 +3,6 @@
 * MED: define appropriate UNIQUE indexes in the database. (E.g.: (num,
   submission_id) in evaluations).
 
-* LOW: use first_name/last_name instead of name.
-
 * LOW: it may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
   scorings change.
@@ -73,6 +71,9 @@
   the data is (supposedly) stable during the contest (start/stop
   times, ...) or the data hasn't change since last page view
   (submissions, ...).
+
+* LOW: allow signup via CWS (that asks for storing hashed
+  passwords instead of plain text...)
 
 * LOW: some idea to improve the Web interface:
   - Ability to backup files.

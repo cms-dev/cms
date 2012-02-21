@@ -133,14 +133,10 @@ class Submission(Base):
         self.files = files
         self.language = language
         self.compilation_outcome = compilation_outcome
-        if executables is None:
-            executables = {}
-        self.executables = executables
+        self.executables = executables if executables is not None else []
         self.compilation_text = compilation_text
         self.evaluation_outcome = evaluation_outcome
-        if evaluations is None:
-            evaluations = []
-        self.evaluations = evaluations
+        self.evaluations = evaluations if evaluations is not None else []
         self.compilation_tries = compilation_tries
         self.evaluation_tries = evaluation_tries
         self.token = token

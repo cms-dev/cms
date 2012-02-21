@@ -907,7 +907,7 @@ class RemoveAnnouncementHandler(BaseHandler):
 
 class UserViewHandler(BaseHandler):
     """Shows the details of a single user (submissions, questions,
-    messages, and allows to send the latters).
+    messages), and allows to send the latters.
 
     """
     def get(self, user_id):
@@ -921,7 +921,8 @@ class UserViewHandler(BaseHandler):
     def post(self, user_id):
         user = self.safe_get_item(User, user_id)
         self.contest = user.contest
-        user.real_name = self.get_argument("real_name", user.real_name)
+        user.first_name = self.get_argument("first_name", user.first_name)
+        user.last_name = self.get_argument("last_name", user.last_name)
         username = self.get_argument("username", user.username)
 
         # Prevent duplicate usernames in the contest.
@@ -935,6 +936,7 @@ class UserViewHandler(BaseHandler):
         user.username = username
 
         user.password = self.get_argument("password", user.password)
+        user.email = self.get_argument("email", user.email)
 
         user.ip = self.get_argument("ip", user.ip)
         if not valid_ip(user.ip):
@@ -969,7 +971,8 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
     def post(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
-        real_name = self.get_argument("real_name", "")
+        first_name = self.get_argument("first_name", "")
+        last_name = self.get_argument("last_name", "")
         username = self.get_argument("username", "")
 
         # Prevent duplicate usernames in the contest.
@@ -982,6 +985,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
                 return
 
         password = self.get_argument("password", "")
+        email = self.get_argument("email", "")
 
         ip = self.get_argument("ip", "0.0.0.0")
         if not valid_ip(ip):
@@ -1005,8 +1009,9 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
 
         hidden = bool(self.get_argument("hidden", False))
 
-        user = User(real_name, username, password=password, ip=ip,
-            hidden=hidden, starting_time=starting_time, contest=self.contest)
+        user = User(first_name, last_name, username, password=password,
+                    email=email, ip=ip, hidden=hidden,
+                    starting_time=starting_time, contest=self.contest)
         self.sql_session.add(user)
         self.sql_session.commit()
         self.application.service.add_notification(int(time.time()),

@@ -68,9 +68,7 @@ class RankingView(Base):
     def __init__(self, contest=None, timestamp=0.0, scores=None):
         self.contest = contest
         self.timestamp = timestamp
-        if scores is None:
-            scores = {}
-        self.scores = scores
+        self.scores = scores if scores is not None else {}
 
     def export_to_dict(self):
         """Return object data as a dictionary.

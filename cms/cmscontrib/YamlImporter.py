@@ -119,7 +119,8 @@ class YamlLoader:
             params["ip"] = user_dict.get("ip", "0.0.0.0")
         name = user_dict.get("nome", "")
         surname = user_dict.get("cognome", user_dict["username"])
-        params["real_name"] = " ".join([name, surname])
+        params["first_name"] = name
+        params["last_name"] = surname
         params["hidden"] = "True" == user_dict.get("fake", "False")
 
         params["timezone"] = 0.0

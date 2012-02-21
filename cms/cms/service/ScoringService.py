@@ -360,8 +360,8 @@ class ScoringService(Service):
                             "end": contest.stop}
 
             users = [["/users/%s" % encode_id(user.username),
-                      {"f_name": user.real_name.split()[0],
-                       "l_name": " ".join(user.real_name.split()[1:]),
+                      {"f_name": user.first_name,
+                       "l_name": user.last_name,
                        "team": None}]
                      for user in contest.users
                      if not user.hidden]

@@ -113,9 +113,7 @@ class Contest(Base):
         self.start = start
         self.stop = stop
         self.per_user_time = per_user_time
-        if announcements is None:
-            announcements = []
-        self.announcements = announcements
+        self.announcements = announcements if announcements is not None else []
         self.ranking_view = ranking_view
 
     def export_to_dict(self, skip_submissions=False):
