@@ -57,8 +57,6 @@
   submission filler" and "avoid frequent submissions" will not work as
   expected. (This may be fixed using ip_hash in nginx.)
 
-* MED: show attachments in the interface.
-
 * MED: configurability of the presence of questions in the interface
   (some contests may prefer handling questions in a paper-y way).
 
