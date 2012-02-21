@@ -271,6 +271,7 @@ class Logger(object):
         self._log_service = RemoteService(None,
                                           ServiceCoord("LogService", 0))
         self.operation = ""
+        self._my_coord = None
 
     def initialize(self, service):
         """To be set by the service we are currently running.
@@ -323,13 +324,16 @@ class Logger(object):
         if severity in Logger.TO_DISPLAY:
             print format_log(msg, coord, operation, severity, timestamp,
                              colors=config.color_shell_log)
-        if severity in Logger.TO_STORE:
-            print >> self._log_file, format_log(msg, coord, operation,
-                                                severity, timestamp,
-                                                colors=config.color_file_log)
-        if severity in Logger.TO_SEND:
-            self._log_service.Log(msg=msg, coord=coord, operation=operation,
-                                  severity=severity, timestamp=timestamp)
+        if self._my_coord is not None:
+            if severity in Logger.TO_STORE:
+                print >> self._log_file, format_log(
+                    msg, coord, operation,
+                    severity, timestamp,
+                    colors=config.color_file_log)
+            if severity in Logger.TO_SEND:
+                self._log_service.Log(
+                    msg=msg, coord=coord, operation=operation,
+                    severity=severity, timestamp=timestamp)
 
     def __getattr__(self, method):
         """Syntactic sugar to allow, e.g., logger.debug(...).

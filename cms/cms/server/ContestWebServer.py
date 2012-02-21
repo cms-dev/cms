@@ -541,15 +541,14 @@ class SubmitHandler(BaseHandler):
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
             return
 
-        # TODO: implement also tar, tar/gz, tar/bz2
         # If the user submitted an archive, extract it and use content
         # as request.files.
         if len(self.request.files) == 1 and \
                self.request.files.keys()[0] == "submission":
             archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
-            # Extract the files from the archive.
 
+            # Extract the files from the archive.
             temp_archive_file, temp_archive_filename = tempfile.mkstemp()
             with os.fdopen(temp_archive_file, "w") as temp_archive_file:
                 temp_archive_file.write(archive_data["body"])

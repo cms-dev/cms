@@ -27,8 +27,6 @@ CMS.
 
 import argparse
 
-from cms.async import ServiceCoord
-from cms.async.AsyncLibrary import Service
 from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.db.Utils import analyze_all_tables, ask_for_contest
 from cms.service.FileStorage import FileCacher
@@ -37,23 +35,23 @@ from cms.service.LogService import logger
 from cmscontrib.YamlImporter import YamlLoader
 
 
-class YamlReimporter(Service):
+class YamlReimporter:
     """This service load a contest from a tree structure "similar" to
     the one used in Italian IOI repository ***over*** a contest
     already in CMS.
 
     """
-    def __init__(self, shard, path, contest_id):
+    def __init__(self, path, contest_id):
         self.path = path
         self.contest_id = contest_id
 
-        logger.initialize(ServiceCoord("YamlReimporter", shard))
-        Service.__init__(self, shard, custom_logger=logger)
-        self.file_cacher = FileCacher(self)
+        self.file_cacher = FileCacher()
 
         self.loader = YamlLoader(self.file_cacher, False, None, None)
 
-        self.add_timeout(self.do_reimport, None, 10, immediately=True)
+    def run(self):
+        """Interface to make the class do its job."""
+        self.do_reimport()
 
     def do_reimport(self):
         """Ask the loader to load the contest and actually merge the
@@ -93,7 +91,7 @@ class YamlReimporter(Service):
                         user_submissions
                 except KeyError:
                     logger.error("User %s exists in old contest, "
-                                 "but not in the new one" % (user['username']))
+                                 "but not in the new one" % user['username'])
 
             # The append the users in the new contest, not present in
             # the old one.
@@ -107,7 +105,7 @@ class YamlReimporter(Service):
                     cms_contest['tasks'][task_num] = yaml_tasks[task['name']]
                 except KeyError:
                     logger.error("Task %d exists in old contest, "
-                                 "but not in the new one" % (task['name']))
+                                 "but not in the new one" % task['name'])
 
             # And add new tasks.
             for task in yaml_contest['tasks']:
@@ -127,8 +125,7 @@ class YamlReimporter(Service):
 
         logger.info("Reimport of contest %s finished." % self.contest_id)
 
-        self.exit()
-        return False
+        return True
 
 
 def main():
@@ -140,7 +137,6 @@ def main():
         "over an old one in CMS.")
     parser.add_argument("-c", "--contest-id", action="store", type=int,
                         help="id of contest to overwrite")
-    parser.add_argument("shard", help="shard number", type=int)
     parser.add_argument("import_directory",
                         help="source directory from where import")
 
@@ -149,8 +145,7 @@ def main():
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
 
-    YamlReimporter(shard=args.shard,
-                   path=args.import_directory,
+    YamlReimporter(path=args.import_directory,
                    contest_id=args.contest_id).run()
 
 

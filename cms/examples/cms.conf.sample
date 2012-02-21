@@ -20,11 +20,7 @@
 
     "other_services":
     {
-        "TestFileCacher":    [["localhost", 27501]],
-        "YamlImporter":      [["localhost", 23000]],
-        "SpoolExporter":     [["localhost", 23100]],
-        "ContestExporter":   [["localhost", 23200]],
-        "ContestImporter":   [["localhost", 23300]]
+        "TestFileCacher":    [["localhost", 27501]]
         },
 
 

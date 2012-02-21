@@ -44,17 +44,22 @@ class FileCacher:
 
     CHUNK_SIZE = 2 ** 20
 
-    def __init__(self, service):
+    def __init__(self, service=None):
         """Initialization.
 
-        service (Service): the service we are running in.
+        service (Service): the service we are running in. If None, we
+                           simply avoid caching and allowing the
+                           service to step in once in a while.
 
         """
         self.service = service
-        self.base_dir = os.path.join(
-            config.cache_dir,
-            "fs-cache-%s-%d" % (service._my_coord.name,
-                                service._my_coord.shard))
+        if self.service is None:
+            self.base_dir = tempfile.mkdtemp()
+        else:
+            self.base_dir = os.path.join(
+                config.cache_dir,
+                "fs-cache-%s-%d" % (service._my_coord.name,
+                                    service._my_coord.shard))
         self.tmp_dir = os.path.join(self.base_dir, "tmp")
         self.obj_dir = os.path.join(self.base_dir, "objects")
         if not mkdir(config.cache_dir) or \
@@ -114,7 +119,8 @@ class FileCacher:
                         while buf != '':
                             #hasher.update(buf)
                             temp_file.write(buf)
-                            self.service._step()
+                            if self.service is not None:
+                                self.service._step()
                             buf = lo.read(self.CHUNK_SIZE)
 
             # And move it in the cache
@@ -227,7 +233,8 @@ class FileCacher:
                             while len(buf) > 0:
                                 written = lo.write(buf)
                                 buf = buf[written:]
-                                self.service._step()
+                                if self.service is not None:
+                                    self.service._step()
                             buf = temp_file.read(self.CHUNK_SIZE)
                 fso.digest = digest
                 session.add(fso)

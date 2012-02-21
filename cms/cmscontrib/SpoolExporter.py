@@ -28,44 +28,42 @@ import os
 import codecs
 import argparse
 
-from cms.async.AsyncLibrary import Service
-from cms.async import ServiceCoord
 from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.db.Utils import ask_for_contest
 from cms.service.FileStorage import FileCacher
 from cms.service.LogService import logger
 
 
-class SpoolExporter(Service):
+class SpoolExporter:
     """This service creates a tree structure "similar" to the one used
     in Italian IOI repository for storing the results of a contest.
 
     """
-    def __init__(self, shard, contest_id, spool_dir):
+    def __init__(self, contest_id, spool_dir):
         self.contest_id = contest_id
         self.spool_dir = spool_dir
         self.upload_dir = os.path.join(self.spool_dir, "upload")
         self.contest = None
 
-        logger.initialize(ServiceCoord("SpoolExporter", shard))
-        Service.__init__(self, shard, custom_logger=logger)
-        self.file_cacher = FileCacher(self)
-        self.add_timeout(self.do_export, None, 10, immediately=True)
+        self.file_cacher = FileCacher()
+
+    def run(self):
+        """Interface to make the class do its job."""
+        return self.do_export()
 
     def do_export(self):
         """Run the actual export code.
 
         """
-        logger.operation = "exporting contest %d" % (self.contest_id)
-        logger.info("Starting export")
+        logger.operation = "exporting contest %s" % self.contest_id
+        logger.info("Starting export.")
 
-        logger.info("Creating dir structure")
+        logger.info("Creating dir structure.")
         try:
             os.mkdir(self.spool_dir)
         except OSError:
             logger.error("The specified directory already exists, "
-                         "I won't overwrite it")
-            self.exit()
+                         "I won't overwrite it.")
             return False
         os.mkdir(self.upload_dir)
 
@@ -80,11 +78,10 @@ class SpoolExporter(Service):
             self.export_submissions()
             self.export_ranking()
 
-        logger.info("Export finished")
+        logger.info("Export finished.")
         logger.operation = ""
 
-        self.exit()
-        return False
+        return True
 
     def export_submissions(self):
         """Export submissions' source files.
@@ -208,7 +205,6 @@ def main():
         description="Exporter for the Italian repository for CMS.")
     parser.add_argument("-c", "--contest-id", help="id of contest to export",
                       action="store", type=int)
-    parser.add_argument("shard", help="shard number", type=int)
     parser.add_argument("export_directory",
                         help="target directory where to export")
     args = parser.parse_args()
@@ -216,8 +212,7 @@ def main():
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
 
-    SpoolExporter(shard=args.shard,
-                  contest_id=args.contest_id,
+    SpoolExporter(contest_id=args.contest_id,
                   spool_dir=args.export_directory).run()
 
 

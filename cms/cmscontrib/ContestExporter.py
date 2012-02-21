@@ -35,8 +35,6 @@ import tempfile
 import tarfile
 
 from cms import config
-from cms.async import ServiceCoord
-from cms.async.AsyncLibrary import Service
 from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.db.Utils import ask_for_contest
 from cms.service.FileStorage import FileCacher
@@ -44,61 +42,101 @@ from cms.service.LogService import logger
 from cms.util.Utils import sha1sum
 
 
-class ContestExporter(Service):
+def get_archive_info(file_name):
+    """Return information about the archive name.
+
+    file_name (string): the file name of the archive to analyze.
+
+    return (dict): dictionary containing the following keys:
+                   "basename", "extension", "write_mode"
+
+    """
+    ret = {"basename": "",
+           "extension": "",
+           "write_mode": "",
+           }
+    if not (file_name.endswith(".tar.gz") \
+           or file_name.endswith(".tar.bz2") \
+           or file_name.endswith(".tar") \
+           or file_name.endswith(".zip")):
+        return ret
+
+    if file_name.endswith(".tar"):
+        ret["basename"] = os.path.basename(file_name[:-4])
+        ret["extension"] = "tar"
+        ret["write_mode"] = "w:"
+    elif file_name.endswith(".tar.gz"):
+        ret["basename"] = os.path.basename(file_name[:-7])
+        ret["extension"] = "tar.gz"
+        ret["write_mode"] = "w:gz"
+    elif file_name.endswith(".tar.bz2"):
+        ret["basename"] = os.path.basename(file_name[:-8])
+        ret["extension"] = "tar.bz2"
+        ret["write_mode"] = "w:bz2"
+    elif file_name.endswith(".zip"):
+        ret["basename"] = os.path.basename(file_name[:-4])
+        ret["extension"] = "zip"
+        ret["write_mode"] = ""
+
+    return ret
+
+
+class ContestExporter:
     """This service exports every data about the contest that CMS
     knows. The process of exporting and importing again should be
     idempotent.
 
     """
-    def __init__(self, shard, contest_id, dump,
-                 export_target, skip_submissions,
+    def __init__(self, contest_id, dump, export_target, skip_submissions,
                  light):
         self.contest_id = contest_id
         self.dump = dump
         self.skip_submissions = skip_submissions
         self.light = light
-        self.export_target = export_target
-        self.export_dir = export_target
 
-        logger.initialize(ServiceCoord("ContestExporter", shard))
-        Service.__init__(self, shard, custom_logger=logger)
-        self.file_cacher = FileCacher(self)
-        self.add_timeout(self.do_export, None, 10, immediately=True)
+        # If target is not provided, we use the contest's name.
+        if export_target == "":
+            with SessionGen(commit=False) as session:
+                contest = Contest.get_from_id(self.contest_id, session)
+                self.export_target = "dump_%s.tar.gz" % contest.name
+        else:
+            self.export_target = export_target
+
+        self.file_cacher = FileCacher()
+
+    def run(self):
+        """Interface to make the class do its job."""
+        return self.do_export()
 
     def do_export(self):
         """Run the actual export code.
 
         """
         logger.operation = "exporting contest %d" % self.contest_id
-        logger.info("Starting export")
+        logger.info("Starting export.")
 
-        # If target is not provided, we use the contest's name.
-        if self.export_target == "":
-            with SessionGen(commit=False) as session:
-                contest = Contest.get_from_id(self.contest_id, session)
-                self.export_target = "dump_%s.tar.gz" % contest.name
+        export_dir = self.export_target
+        archive_info = get_archive_info(self.export_target)
 
-        if self.export_target.endswith(".tar.gz") \
-               or self.export_target.endswith(".tar.bz2") \
-               or self.export_target.endswith(".tar"):
-            if self.export_target.endswith(".tar"):
-                basename = os.path.basename(self.export_target[:-4])
-            elif self.export_target.endswith(".tar.gz"):
-                basename = os.path.basename(self.export_target[:-7])
-            elif self.export_target.endswith(".tar.bz2"):
-                basename = os.path.basename(self.export_target[:-8])
-            self.export_dir = os.path.join(tempfile.mkdtemp(), basename)
+        if archive_info["write_mode"] != "":
+            # We are able to write to this archive.
+            if os.path.exists(self.export_target):
+                logger.error("The specified file already exists, "
+                             "I won't overwrite it.")
+                return False
+            export_dir = os.path.join(tempfile.mkdtemp(),
+                                      archive_info["basename"])
 
         logger.info("Creating dir structure.")
         try:
-            os.mkdir(self.export_dir)
+            os.mkdir(export_dir)
         except OSError:
             logger.error("The specified directory already exists, "
                          "I won't overwrite it.")
-            self.exit()
             return False
-        files_dir = os.path.join(self.export_dir, "files")
-        descr_dir = os.path.join(self.export_dir, "descriptions")
+
+        files_dir = os.path.join(export_dir, "files")
+        descr_dir = os.path.join(export_dir, "descriptions")
         os.mkdir(files_dir)
         os.mkdir(descr_dir)
 
@@ -106,7 +144,7 @@ class ContestExporter(Service):
 
             contest = Contest.get_from_id(self.contest_id, session)
 
-            # Export files
+            # Export files.
             logger.info("Exporting files.")
             files = contest.enumerate_files(self.skip_submissions,
                                             light=self.light)
@@ -114,43 +152,32 @@ class ContestExporter(Service):
                 if not self.safe_get_file(_file,
                                           os.path.join(files_dir, _file),
                                           os.path.join(descr_dir, _file)):
-                    self.exit()
                     return False
 
-            # Export the contest in JSON format
+            # Export the contest in JSON format.
             logger.info("Exporting the contest in JSON format.")
-            with open(os.path.join(self.export_dir,
-                                   "contest.json"), 'w') as fout:
+            with open(os.path.join(export_dir, "contest.json"), 'w') as fout:
                 json.dump(contest.export_to_dict(self.skip_submissions),
                           fout, indent=4)
 
         if self.dump:
-            if not self.dump_database():
-                self.exit()
+            if not self.dump_database(export_dir):
                 return False
 
         # If the admin requested export to file, we do that.
-        if self.export_target.endswith(".tar.gz") \
-                 or self.export_target.endswith(".tar.bz2") \
-                 or self.export_target.endswith(".tar"):
-            if self.export_target.endswith(".tar.gz"):
-                mode = "w:gz"
-            elif self.export_target.endswith(".tar.bz2"):
-                mode = "w:bz2"
-            elif self.export_target.endswith(".tar"):
-                mode = "w:"
-            archive = tarfile.open(self.export_target, mode)
-            archive.add(self.export_dir, arcname=basename)
+        if archive_info["write_mode"] != "":
+            archive = tarfile.open(self.export_target,
+                                   archive_info["write_mode"])
+            archive.add(export_dir, arcname=archive_info["basename"])
             archive.close()
-            shutil.rmtree(self.export_dir)
-
+            shutil.rmtree(export_dir)
 
         logger.info("Export finished.")
         logger.operation = ""
-        self.exit()
-        return False
 
-    def dump_database(self):
+        return True
+
+    def dump_database(self, export_dir):
         """Dump the whole database. This is never used; however, this
         part is retained for historical reasons.
 
@@ -158,7 +185,7 @@ class ContestExporter(Service):
         # Warning: this part depends on the specific database used.
         logger.info("Dumping SQL database.")
         (engine, connection) = config.database.split(':', 1)
-        db_exportfile = os.path.join(self.export_dir, "database_dump.sql")
+        db_exportfile = os.path.join(export_dir, "database_dump.sql")
 
         # Export procedure for PostgreSQL.
         if engine == 'postgresql':
@@ -196,7 +223,7 @@ class ContestExporter(Service):
                 return False
 
         else:
-            logger.critical("Database engine not supported :-(")
+            logger.critical("Database engine not supported. :-(")
             return False
 
         return True
@@ -250,8 +277,6 @@ def main():
     parser.add_argument("-l", "--light", action="store_true",
                         help="light export (without executables and "
                         "testcases)")
-    parser.add_argument("shard", type=int,
-                        help="shard number")
     parser.add_argument("export_target", nargs='?', default="",
                         help="target directory or archive for export")
 
@@ -260,8 +285,7 @@ def main():
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
 
-    ContestExporter(shard=args.shard,
-                    contest_id=args.contest_id,
+    ContestExporter(contest_id=args.contest_id,
                     dump=args.dump_database,
                     export_target=args.export_target,
                     skip_submissions=args.skip_submissions,

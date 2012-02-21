@@ -34,8 +34,6 @@ import tempfile
 import tarfile
 import zipfile
 
-from cms.async import ServiceCoord
-from cms.async.AsyncLibrary import Service
 from cms.db.SQLAlchemyAll import SessionGen, Contest, metadata
 from cms.service.FileStorage import FileCacher
 from cms.service.LogService import logger
@@ -53,40 +51,41 @@ def find_root_of_archive(file_names):
     return (string): the root directory, or None if unable to find.
 
     """
-    curr = None
-    for s in file_names:
-        if '/' not in s:
-            if curr is None:
-                curr = s
+    current_root = None
+    for file_name in file_names:
+        if '/' not in file_name:
+            if current_root is None:
+                current_root = file_name
             else:
                 return None
-    return curr
+    return current_root
 
 
-class ContestImporter(Service):
+class ContestImporter:
     """This service imports a contest from a directory that has been
     the target of a ContestExport. The process of exporting and
     importing again should be idempotent.
 
     """
-    def __init__(self, shard, drop, import_source, only_files, no_files):
+    def __init__(self, drop, import_source, only_files, no_files):
         self.drop = drop
         self.only_files = only_files
         self.no_files = no_files
         self.import_source = import_source
         self.import_dir = import_source
 
-        logger.initialize(ServiceCoord("ContestImporter", shard))
-        Service.__init__(self, shard, custom_logger=logger)
-        self.file_cacher = FileCacher(self)
-        self.add_timeout(self.do_import, None, 10, immediately=True)
+        self.file_cacher = FileCacher()
+
+    def run(self):
+        """Interface to make the class do its job."""
+        return self.do_import()
 
     def do_import(self):
         """Run the actual import code.
 
         """
         logger.operation = "importing contest from %s" % self.import_source
-        logger.info("Starting import")
+        logger.info("Starting import.")
 
         if not os.path.isdir(self.import_source):
             if self.import_source.endswith(".zip"):
@@ -103,39 +102,38 @@ class ContestImporter(Service):
             else:
                 logger.critical("Unable to import from %s." %
                                 self.import_source)
-                self.exit()
+                return False
 
             root = find_root_of_archive(file_names)
             if root is None:
                 logger.critical("Cannot find a root directory in %s." %
                                 self.import_source)
-                self.exit()
+                return False
 
             self.import_dir = tempfile.mkdtemp()
             archive.extractall(self.import_dir)
             self.import_dir = os.path.join(self.import_dir, root)
 
         if self.drop:
-            logger.info("Dropping and recreating the database")
+            logger.info("Dropping and recreating the database.")
             metadata.drop_all()
         metadata.create_all()
 
         if not self.no_files:
-            logger.info("Importing files")
+            logger.info("Importing files.")
             files_dir = os.path.join(self.import_dir, "files")
             descr_dir = os.path.join(self.import_dir, "descriptions")
             files = set(os.listdir(files_dir))
             for _file in files:
                 if not self.safe_put_file(os.path.join(files_dir, _file),
                                           os.path.join(descr_dir, _file)):
-                    self.exit()
                     return False
 
         if not self.only_files:
             with SessionGen(commit=False) as session:
 
                 # Import the contest in JSON format.
-                logger.info("Importing the contest from JSON file")
+                logger.info("Importing the contest from JSON file.")
                 with open(os.path.join(self.import_dir,
                                        "contest.json")) as fin:
                     contest = Contest.import_from_dict(json.load(fin))
@@ -148,21 +146,20 @@ class ContestImporter(Service):
                     missing_files = contest_files.difference(files)
                     if len(missing_files) > 0:
                         logger.warning("Some files needed to the contest "
-                                       "are missing in the import directory")
+                                       "are missing in the import directory.")
 
                 session.flush()
                 contest_id = contest.id
                 session.commit()
 
-        logger.info("Import finished (contest id: %s)" % contest_id)
+        logger.info("Import finished (contest id: %s)." % contest_id)
         logger.operation = ""
 
         # If we extracted an archive, we remove it.
         if self.import_dir != self.import_source:
             shutil.rmtree(self.import_dir)
 
-        self.exit()
-        return False
+        return True
 
     def safe_put_file(self, path, descr_path):
         """Put a file to FileCacher signaling every error (including
@@ -187,14 +184,14 @@ class ContestImporter(Service):
                                                description=description)
         except Exception as error:
             logger.error("File %s could not be put to file server (%r), "
-                         "aborting..." % (path, error))
+                         "aborting." % (path, error))
             return False
 
         # Then check the digest.
         calc_digest = sha1sum(path)
         if digest != calc_digest:
             logger.error("File %s has hash %s, but the server returned %s, "
-                         "aborting..." % (path, calc_digest, digest))
+                         "aborting." % (path, calc_digest, digest))
             return False
 
         return True
@@ -213,15 +210,12 @@ def main():
     parser.add_argument("-d", "--drop", action="store_true",
                         help="drop everything from the database "
                         "before importing")
-    parser.add_argument("shard", type=int,
-                        help="shard number")
     parser.add_argument("import_source",
                         help="source directory or compressed file")
 
     args = parser.parse_args()
 
-    ContestImporter(shard=args.shard,
-                    drop=args.drop,
+    ContestImporter(drop=args.drop,
                     import_source=args.import_source,
                     only_files=args.only_files,
                     no_files=args.no_files).run()

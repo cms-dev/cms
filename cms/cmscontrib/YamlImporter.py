@@ -29,8 +29,6 @@ import os
 import codecs
 import argparse
 
-from cms.async import ServiceCoord
-from cms.async.AsyncLibrary import Service
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Manager, \
     Testcase, User, Contest, SubmissionFormatElement, FSObject, \
     Submission
@@ -71,7 +69,7 @@ class YamlLoader:
                 os.path.join(path, "contest.yaml"),
                 "r", "utf-8"))
 
-        logger.info("Loading parameters for contest %s." % (name))
+        logger.info("Loading parameters for contest %s." % name)
 
         params = {}
         params["name"] = name
@@ -111,7 +109,7 @@ class YamlLoader:
         params = {}
         params["username"] = user_dict["username"]
 
-        logger.info("Loading parameters for user %s." % (params['username']))
+        logger.info("Loading parameters for user %s." % params['username'])
 
         if self.modif == 'test':
             params["password"] = 'a'
@@ -149,7 +147,7 @@ class YamlLoader:
         conf = yaml.load(codecs.open(
             os.path.join(super_path, name + ".yaml"), "r", "utf-8"))
 
-        logger.info("Loading parameters for task %s." % (name))
+        logger.info("Loading parameters for task %s." % name)
 
         params = {"name": name}
         assert name == conf["nome_breve"]
@@ -253,24 +251,24 @@ class YamlLoader:
         return params
 
 
-class YamlImporter(Service):
+class YamlImporter:
     """This service load a contest from a tree structure "similar" to
     the one used in Italian IOI repository.
 
     """
-    def __init__(self, shard, drop, modif, path, user_number):
+    def __init__(self, drop, modif, path, user_number):
         self.drop = drop
         self.modif = modif
         self.path = path
         self.user_number = user_number
 
-        logger.initialize(ServiceCoord("YamlImporter", shard))
-        Service.__init__(self, shard, custom_logger=logger)
-        self.file_cacher = FileCacher(self)
+        self.file_cacher = FileCacher()
 
         self.loader = YamlLoader(self.file_cacher, drop, modif, user_number)
 
-        self.add_timeout(self.do_import, None, 10, immediately=True)
+    def run(self):
+        """Interface to make the class do its job."""
+        self.do_import()
 
     def do_import(self):
         """Take care of creating the database structure, delegating
@@ -301,10 +299,9 @@ class YamlImporter(Service):
             analyze_all_tables(session)
             session.commit()
 
-        logger.info("Import finished (new contest ID: %s)." % (contest_id))
+        logger.info("Import finished (new contest id: %s)." % contest_id)
 
-        self.exit()
-        return False
+        return True
 
 
 def main():
@@ -324,8 +321,6 @@ def main():
                         "before importing")
     parser.add_argument("-n", "--user-number", action="store", type=int,
                         help="put N random users instead of importing them")
-    parser.add_argument("shard", type=int,
-                        help="shard number")
     parser.add_argument("import_directory",
                         help="source directory from where import")
 
@@ -337,8 +332,7 @@ def main():
     elif args.zero_time:
         modif = 'zero_time'
 
-    YamlImporter(shard=args.shard,
-                 drop=args.drop,
+    YamlImporter(drop=args.drop,
                  modif=modif,
                  path=args.import_directory,
                  user_number=args.user_number).run()

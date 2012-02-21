@@ -18,3 +18,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""This directory holds utilities to import and export data to and
+from CMS for different formats. Examples are ContestImport and
+ContestExport, whose aim is to be one the inverse of the other (hence
+losing no data in the process).
+
+"""
