@@ -577,7 +577,7 @@ class EvaluationService(Service):
         """Returns a dictionary of statistics about the number of
         submissions on a specific status. There are seven statuses:
         evaluated, compilation failed, evaluating, compiling, maximum
-        number of tentatives of compilations reached, the same for
+        number of attempts of compilations reached, the same for
         evaluations, and finally 'I have no idea what's
         happening'. The last three should not happen and require a
         check from the admin.

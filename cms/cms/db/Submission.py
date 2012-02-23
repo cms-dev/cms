@@ -83,7 +83,7 @@ class Submission(Base):
     # stdout and stderr.
     compilation_text = Column(String, nullable=True)
 
-    # Number of tentatives of compilation.
+    # Number of attempts of compilation.
     compilation_tries = Column(Integer, nullable=False)
 
     # Worker shard and sanbox where the compilation was performed
@@ -95,7 +95,7 @@ class Submission(Base):
     # evaluations != [].
     evaluation_outcome = Column(String, nullable=True)
 
-    # Number of tentatives of evaluation.
+    # Number of attempts of evaluation.
     evaluation_tries = Column(Integer, nullable=False)
 
     # Score as computed by ScoreService. Null means not yet scored.
