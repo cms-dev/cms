@@ -26,6 +26,7 @@
 from cms.db.SQLAlchemyAll import Evaluation
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
+from cms.util.ParameterTypes import ParameterTypeChoice
 
 
 class OutputOnly(TaskType):
@@ -39,6 +40,15 @@ class OutputOnly(TaskType):
 
     """
     ALLOW_PARTIAL_SUBMISSION = True
+
+    _EVALUATION = ParameterTypeChoice(
+        "Output evaluation",
+        "output_eval",
+        "",
+        {"diff": "Outputs compared with white diff",
+         "comp": "Outputs are compared by a comparator"})
+
+    ACCEPTED_PARAMETERS = [_EVALUATION]
 
     def compile(self):
         """See TaskType.compile.
@@ -66,6 +76,8 @@ class OutputOnly(TaskType):
         # First and only one step: diffing (manual or with manager).
         output_digest = self.submission.files["output_%03d.txt" %
                                               test_number].digest
+
+        # TODO: this should check self.parameters, not managers.
         if len(self.submission.task.managers) == 0:
             # No manager: I'll do a white_diff between the submission
             # file and the correct output res.txt.

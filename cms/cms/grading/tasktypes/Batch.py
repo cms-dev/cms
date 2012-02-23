@@ -22,6 +22,7 @@
 from cms.db.SQLAlchemyAll import Evaluation
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
+from cms.util.ParameterTypes import ParameterTypeChoice
 from cms.util.Utils import get_compilation_command
 
 
@@ -52,6 +53,29 @@ class Batch(TaskType):
 
     """
     ALLOW_PARTIAL_SUBMISSION = False
+
+    _COMPILATION = ParameterTypeChoice(
+        "Compilation",
+        "compilation",
+        "",
+        {"alone": "Submissions are self-sufficient",
+         "grader": "Submissions are compiled with a grader"})
+
+    _USE_FILE = ParameterTypeChoice(
+        "I/O",
+        "io",
+        "",
+        {"file": "Use 'input.txt' and 'output.txt'",
+         "nofile": "Use standard I/O"})
+
+    _EVALUATION = ParameterTypeChoice(
+        "Output evaluation",
+        "output_eval",
+        "",
+        {"diff": "Outputs compared with white diff",
+         "comp": "Outputs are compared by a comparator"})
+
+    ACCEPTED_PARAMETERS = [_COMPILATION, _USE_FILE, _EVALUATION]
 
     def compile(self):
         """See TaskType.compile.

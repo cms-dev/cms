@@ -37,10 +37,16 @@ from cms.async import ServiceCoord, get_service_shards, get_service_address
 from cms.db.SQLAlchemyAll import Session, \
      Contest, User, Announcement, Question, Message, Submission, File, Task, \
      Attachment, Manager, Testcase, SubmissionFormatElement
-from cms.server.Utils import file_handler_gen
+from cms.grading.tasktypes.Batch import Batch
+from cms.grading.tasktypes.OutputOnly import OutputOnly
+from cms.grading.tasktypes.Communication import Communication
+from cms.server.Utils import file_handler_gen, catch_exceptions
 from cms.service.FileStorage import FileCacher
 from cms.service.LogService import logger
 from cms.util.Utils import valid_ip
+
+
+task_type_list = [Batch, OutputOnly, Communication]
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -532,6 +538,7 @@ class TaskViewHandler(BaseHandler):
     """Task handler, with a POST method to edit the task.
 
     """
+    @catch_exceptions
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
@@ -597,39 +604,25 @@ class TaskViewHandler(BaseHandler):
 
         task.task_type = self.get_argument("task_type", "")
 
-        if task.task_type == "Batch":
-            batch_evaluation = self.get_argument("Batch_evaluation", "")
-            if batch_evaluation not in ["diff", "comp", "grad"]:
-                self.application.service.add_notification(int(time.time()),
-                "Invalid field",
-                "Output evaluation not recognized.")
-                self.redirect("/task/%s" % task_id)
-                return
-            batch_use_files = self.get_argument("Batch_use_files", None)
+        # Look for a task type with the specified name
+        task_type_class = None
+        for t in task_type_list:
+            if t.__name__ == task.task_type:
+                task_type_class = t
+                break
 
-            if batch_use_files is not None:
-                batch_use_files = "file"
-            else:
-                batch_use_files = "nofile"
-            task_type_parameters = [batch_evaluation, batch_use_files]
-
-        elif task.task_type == "OutputOnly":
-            oo_evaluation = self.get_argument("OutputOnly_evaluation", "")
-            if oo_evaluation not in ["diff", "comp"]:
-                self.application.service.add_notification(int(time.time()),
-                "Invalid field",
-                "Output evaluation not recognized.")
-                self.redirect("/task/%s" % task_id)
-                return
-
-            task_type_parameters = [oo_evaluation]
-
-        else:
+        if task_type_class is None:
+            # Taks type not found.
             self.application.service.add_notification(int(time.time()),
                 "Invalid field",
-                "Task type not recognized.")
+                "Task type not recognized: %s." % task.task_type)
             self.redirect("/task/%s" % task_id)
             return
+
+        task_type_parameters = task_type_class.parse_handler(self,
+            "TaskTypeOptions_%s_" % task.task_type)
+
+        logger.info(repr(task_type_parameters))
 
         task.task_type_parameters = json.dumps(task_type_parameters)
 
@@ -686,39 +679,23 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         memory_limit = self.get_argument("memory_limit", "")
         task_type = self.get_argument("task_type", "")
 
-        if task_type == "Batch":
-            batch_evaluation = self.get_argument("Batch_evaluation", "")
-            if batch_evaluation not in ["diff", "comp", "grad"]:
-                self.application.service.add_notification(int(time.time()),
-                "Invalid field",
-                "Output evaluation not recognized.")
-                self.redirect("/add_task/%s" % contest_id)
-                return
-            batch_use_files = self.get_argument("Batch_use_files", None)
+        # Look for a task type with the specified name
+        task_type_class = None
+        for t in task_type_list:
+            if t.__name__ == task_type:
+                task_type_class = t
+                break
 
-            if batch_use_files is not None:
-                batch_use_files = "file"
-            else:
-                batch_use_files = "nofile"
-            task_type_parameters = [batch_evaluation, batch_use_files]
-
-        elif task_type == "OutputOnly":
-            oo_evaluation = self.get_argument("OutputOnly_evaluation", "")
-            if oo_evaluation not in ["diff", "comp"]:
-                self.application.service.add_notification(int(time.time()),
-                "Invalid field",
-                "Output evaluation not recognized.")
-                self.redirect("/add_task/%s" % contest_id)
-                return
-
-            task_type_parameters = [oo_evaluation]
-
-        else:
+        if task_type_class is None:
+            # Taks type not found.
             self.application.service.add_notification(int(time.time()),
                 "Invalid field",
-                "Task type not recognized.")
+                "Task type not recognized: %s." % task_type)
             self.redirect("/add_task/%s" % contest_id)
             return
+
+        task_type_parameters = task_type_class.parse_handler(self,
+            "TaskTypeOptions_%s_" % task_type)
 
         task_type_parameters = json.dumps(task_type_parameters)
 

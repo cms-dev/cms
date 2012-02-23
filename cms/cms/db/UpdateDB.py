@@ -246,9 +246,9 @@ class ScriptsContainer(object):
                                 "email = '' "
                                 "WHERE id = :user_id",
                                 {
-                                   "first_name": first_name,
-                                   "last_name": last_name,
-                                   "user_id": user_id
+                                  "first_name": first_name,
+                                  "last_name": last_name,
+                                  "user_id": user_id,
                                 })
             session.execute("ALTER TABLE users "
                             "ALTER COLUMN first_name SET NOT NULL;")

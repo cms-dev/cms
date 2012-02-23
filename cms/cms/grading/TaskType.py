@@ -119,6 +119,22 @@ class TaskType:
     # the non-provided files with the one in the previous submission.
     ALLOW_PARTIAL_SUBMISSION = False
 
+    # A list of all the accepted parameters for this task type.
+    # Each item is an instance of TaskTypeParameter.
+    ACCEPTED_PARAMETERS = []
+
+    @classmethod
+    def parse_handler(cls, handler, prefix):
+        new_parameters = []
+        for parameter in cls.ACCEPTED_PARAMETERS:
+            try:
+                new_value = parameter.parse_handler(handler, prefix)
+                new_parameters.append(new_value)
+            except ValueError as e:
+                raise ValueError("Invalid parameter %s: %s"
+                    % (parameter.name, e.message))
+        return new_parameters
+
     def __init__(self, submission, parameters, file_cacher):
         """
         submission (Submission): the submission to grade.

@@ -5,7 +5,7 @@
 function showTaskTypeOption() {
     var selector = $("select[name=task_type]")[0];
     $(".TaskTypeOptions:visible").hide("fast");
-    $("#" + selector.options[selector.selectedIndex].value + "Options").show("fast")
+    $("#TaskType" + selector.options[selector.selectedIndex].value + "Options").show("fast")
 };
 
 showTaskTypeOption();
@@ -15,6 +15,13 @@ $("select[name=task_type]").change(showTaskTypeOption);
 
 {% block core %}
 {% import json %}
+
+{% comment TODO: Dynamic loading of task types %}
+{% from cms.grading.tasktypes.Batch import Batch %}
+{% from cms.grading.tasktypes.OutputOnly import OutputOnly %}
+{% from cms.grading.tasktypes.Communication import Communication %}
+{% set task_type_list = [Batch, OutputOnly, Communication] %}
+
 <div class="core_title">
   <h1>{{ task.title }} ({{ task.name }})</h1>
 </div>
@@ -186,42 +193,28 @@ $("select[name=task_type]").change(showTaskTypeOption);
       <tr>
         <td>Task type</td>
         <td>
+
           <select name="task_type">
-            <option value="TaskTypeBatch" {% if task.task_type == "TaskTypeBatch" %}selected{% end %}>Batch</option>
-            <option value="TaskTypeOutputOnly" {% if task.task_type == "TaskTypeOutputOnly" %}selected{% end %}>Output only</option>
+            {% for task_type in task_type_list %}
+            <option value="{{ task_type.__name__}}" {% if task.task_type == task_type.__name__ %}selected{% end %}>{{task_type.__name__}}</option>
+            {% end %}
           </select>
         {% set parameters = json.loads(task.task_type_parameters) if task.task_type_parameters != '' else None %}
 
-        <!-- Batch specific settings -->
-        <table class="TaskTypeOptions bordered" id="TaskTypeBatchOptions" style="display: none;" >
-          <tr>
-            <td>Output evaluation</td>
-            <td>
-              <select name="Batch_evaluation">
-                <option value="diff" {% if task.task_type == "TaskTypeBatch" and parameters is not None and parameters[0]=="diff" %}selected{% end %} >White diff</option>
-                <option value="comp" {% if task.task_type == "TaskTypeBatch" and parameters is not None and parameters[0]=="comp" %}selected{% end %}>Comparator</option>
-                <option value="grad" {% if task.task_type == "TaskTypeBatch" and parameters is not None and parameters[0]=="grad" %}selected{% end %}>Grader</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>Input/Output on file</td>
-            <td><input type="checkbox" name="Batch_use_files" {% if task.task_type == "TaskTypeBatch" and parameters is not None and parameters[0]!="grad" and parameters[1]=="file" %}checked{% end %}/></td>
-          </tr>
+        {% for task_type in task_type_list %}
+        <table class="TaskTypeOptions bordered" id="TaskType{{ task_type.__name__ }}Options" style="display: none;">
+          {% for i in range(len(task_type.ACCEPTED_PARAMETERS)) %}
+            {% set param_def = task_type.ACCEPTED_PARAMETERS[i] %}
+            {% set parameter_value = parameters[i] if task.task_type == task_type.__name__ and parameters is not None and i < len(parameters) else None %}
+            <tr>
+                <td>{{ param_def.name }}</td>
+                <td>
+                    {% raw param_def.render( "TaskTypeOptions_%s_" % task_type.__name__ , parameter_value) %}
+                </td>
+            </tr>
+          {% end %}
         </table>
-
-        <!-- Output only specific settings -->
-        <table class="TaskTypeOptions bordered" id="TaskTypeOutputOnlyOptions" style="display: none;">
-          <tr>
-            <td>Output evaluation</td>
-            <td>
-              <select name="OutputOnly_evaluation">
-                <option value="diff" {% if task.task_type == "TaskTypeOutputOnly" and parameters is not None and parameters[0]=="diff" %}selected{% end %}>White diff</option>
-                <option value="comp"{% if task.task_type == "TaskTypeOutputOnly" and parameters is not None and parameters[0]=="comp" %}selected{% end %}>Comparator</option>
-              </select>
-            </td>
-          </tr>
-        </table>
+        {% end %}
 
         </td>
       </tr>

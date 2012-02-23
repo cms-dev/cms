@@ -5,7 +5,7 @@
 function showTaskTypeOption() {
     var selector = $("select[name=task_type]")[0];
     $(".TaskTypeOptions:visible").hide("fast"); 
-    $("#" + selector.options[selector.selectedIndex].value + "Options").show("fast")
+    $("#TaskType" + selector.options[selector.selectedIndex].value + "Options").show("fast")
 };
 
 showTaskTypeOption();
@@ -14,6 +14,13 @@ $("select[name=task_type]").change(showTaskTypeOption);
 {% end %}
 
 {% block core %}
+
+{% comment TODO: Dynamic loading of task types %}
+{% from cms.grading.tasktypes.Batch import Batch %}
+{% from cms.grading.tasktypes.OutputOnly import OutputOnly %}
+{% from cms.grading.tasktypes.Communication import Communication %}
+{% set task_type_list = [Batch, OutputOnly, Communication] %}
+
 <div class="core_title">
   <h1>New task</h1>
 </div>
@@ -52,41 +59,27 @@ $("select[name=task_type]").change(showTaskTypeOption);
       <tr>
         <td>Task type</td>
         <td>
+
           <select name="task_type">
-            <option value="TaskTypeBatch" selected>Batch</option>
-            <option value="TaskTypeOutputOnly">Output only</option>
+            {% for task_type in task_type_list %}
+            <option value="{{ task_type.__name__}}">{{task_type.__name__}}</option>
+            {% end %}
           </select>
 
-        <!-- Batch specific settings -->
-        <table class="TaskTypeOptions bordered" id="TaskTypeBatchOptions" style="display: none;" >
-          <tr>
-            <td>Output evaluation</td>
-            <td>
-              <select name="Batch_evaluation">
-                <option value="diff">White diff</option>
-                <option value="comp">Comparator</option>
-                <option value="grad">Grader</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td>Input/Output on file</td>
-            <td><input type="checkbox" name="Batch_use_files"/></td>
-          </tr>
+        {% for task_type in task_type_list %}
+        <table class="TaskTypeOptions bordered" id="TaskType{{ task_type.__name__ }}Options" style="display: none;">
+          {% for i in range(len(task_type.ACCEPTED_PARAMETERS)) %}
+            {% set param_def = task_type.ACCEPTED_PARAMETERS[i] %}
+            <tr>
+                <td>{{ param_def.name }}</td>
+                <td>
+                    {% raw param_def.render( "TaskTypeOptions_%s_" % task_type.__name__) %}
+                </td>
+            </tr>
+          {% end %}
         </table>
+        {% end %}
 
-        <!-- Output only specific settings -->
-        <table class="TaskTypeOptions bordered" id="TaskTypeOutputOnlyOptions" style="display: none;">
-          <tr>
-            <td>Output evaluation</td>
-            <td>
-              <select name="OutputOnly_evaluation">
-                <option value="diff">White diff</option>
-                <option value="comp">Comparator</option>
-              </select>
-            </td>
-          </tr>
-        </table>
 
         </td>
       </tr>
