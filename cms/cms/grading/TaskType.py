@@ -370,7 +370,7 @@ class TaskType:
                         time_limit=0, memory_limit=0,
                         allow_path=None,
                         stdin_redirect=None, stdout_redirect=None,
-                        final=False, wait=True):
+                        final=False):
         """Execute an evaluation command in the sandbox. Note that in
         some task types, there may be more than one evaluation
         commands (per testcase) (in others there can be none, of
@@ -400,7 +400,7 @@ class TaskType:
         success = self.evaluation_step_before_run(
             sandbox, command, executables_to_get, files_to_get,
             time_limit, memory_limit, allow_path,
-            stdin_redirect, stdout_redirect, wait)
+            stdin_redirect, stdout_redirect, wait=True)
         if not success:
             return False, None, None
         else:
@@ -454,10 +454,8 @@ class TaskType:
         # Actually run the evaluation command.
         with async_lock:
             logger.info("Starting evaluation step.")
-        if not wait:
-            return sandbox.execute_without_std(command, wait=False)
-        else:
-            return self.sandbox_operation("execute_without_std", command)
+
+        return sandbox.execute_without_std(command, wait=wait)
 
     def evaluation_step_after_run(self, sandbox, final=False):
         """Second part of an evaluation step, after the running.
