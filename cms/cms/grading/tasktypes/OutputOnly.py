@@ -26,6 +26,8 @@
 from cms.db.SQLAlchemyAll import Evaluation
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
+from cms.grading.TaskTypeParameter import TaskTypeParameter
+from cms.util.ParameterTypes import ParameterTypeChoice, ParameterTypeBoolean
 
 
 class OutputOnly(TaskType):
@@ -39,6 +41,15 @@ class OutputOnly(TaskType):
 
     """
     ALLOW_PARTIAL_SUBMISSION = True
+
+    _OUTPUT_EVALUATION = ParameterTypeChoice(
+                            "Output evaluation",
+                            "output_eval",
+                            "",
+                            {"diff": "White diff",
+                             "grad": "Grader"})
+
+    ACCEPTED_PARAMETERS = [_OUTPUT_EVALUATION]
 
     def compile(self):
         """See TaskType.compile.

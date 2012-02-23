@@ -240,13 +240,14 @@ class ScriptsContainer(object):
                     first_name = split_names[0]
                     last_name = " ".join(split_names[1:])
                 session.execute("UPDATE users SET "
-                                "first_name = :first_name, last_name = :last_name, "
+                                "first_name = :first_name,"
+                                "last_name = :last_name, "
                                 "email = '' "
                                 "WHERE id = :user_id",
                                 {
-                                   "first_name": first_name,
-                                   "last_name": last_name,
-                                   "user_id": user_id
+                                  "first_name": first_name,
+                                  "last_name": last_name,
+                                  "user_id": user_id,
                                 })
             session.execute("ALTER TABLE users "
                             "ALTER COLUMN first_name SET NOT NULL;")
