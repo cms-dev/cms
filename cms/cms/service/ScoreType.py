@@ -92,8 +92,7 @@ class ScoreType:
         self.scores = {}
 
         # Preload the maximum possible scores.
-        self.max_score, self.max_public_score = \
-            self.max_scores()
+        self.max_score, self.max_public_score = self.max_scores()
 
         # Initialization method that can be overwritten by subclass.
         self.initialize()
@@ -271,7 +270,7 @@ class ScoreTypeSum(ScoreTypeAlone):
             if public:
                 public_score += self.parameters
             score += self.parameters
-        return score, public_score
+        return round(score, 2), round(public_score, 2)
 
     def compute_score(self, submission_id):
         """Compute the score of a submission.
@@ -287,8 +286,8 @@ class ScoreTypeSum(ScoreTypeAlone):
             if public:
                 public_score += evaluation
             score += evaluation
-        return score * self.parameters, None, \
-               public_score * self.parameters, None
+        return round(score * self.parameters, 2), None, \
+               round(public_score * self.parameters, 2), None
 
 
 class ScoreTypeGroupMin(ScoreTypeAlone):
@@ -316,7 +315,7 @@ class ScoreTypeGroupMin(ScoreTypeAlone):
             if all(self.public_testcases[current:next_]):
                 public_score += parameter[0]
             current = next_
-        return score, public_score
+        return round(score, 2), round(public_score, 2)
 
     def compute_score(self, submission_id):
         """Compute the score of a submission.
@@ -337,13 +336,14 @@ class ScoreTypeGroupMin(ScoreTypeAlone):
                 public_scores.append(scores[-1])
                 public_index.append(len(scores) - 1)
             current = next_
+        details = ["Subtask %d: %lg" % (i + 1, round(score, 2))
+                   for i, score in enumerate(scores)]
+        public_details = ["Subtask %d: %lg" % (i + 1, round(score, 2))
+                          for i, score in zip(public_index, public_scores)]
         score = sum(scores)
         public_score = sum(public_scores)
-        details = ["Subtask %d: %lg" % (i + 1, sc)
-                   for i, sc in enumerate(scores)]
-        public_details = ["Subtask %d: %lg" % (i + 1, sc)
-                          for i, sc in zip(public_index, public_scores)]
-        return score, details, public_score, public_details
+        return round(score, 2), details, \
+               round(public_score, 2), public_details
 
 
 class ScoreTypeGroupMul(ScoreTypeAlone):
@@ -367,7 +367,7 @@ class ScoreTypeGroupMul(ScoreTypeAlone):
             if all(self.public_testcases[current:next_]):
                 public_score += parameter[0]
             current = next_
-        return score, public_score
+        return round(score, 2), round(public_score, 2)
 
     def compute_score(self, submission_id):
         """Compute the score of a submission.
@@ -389,13 +389,14 @@ class ScoreTypeGroupMul(ScoreTypeAlone):
                 public_scores.append(scores[-1])
                 public_index.append(len(scores) - 1)
             current = next_
+        details = ["Subtask %d: %lg" % (i + 1, round(score, 2))
+                   for i, score in scores]
+        public_details = ["Subtask %d: %lg" % (i + 1, round(score, 2))
+                          for i, score in zip(public_index, public_scores)]
         score = sum(scores)
         public_score = sum(public_scores)
-        details = ["Subtask %d: %lg" % (i + 1, score)
-                   for i, score in scores]
-        public_details = ["Subtask %d: %lg" % (i + 1, score)
-                          for i, score in zip(public_index, public_scores)]
-        return score, details, public_score, public_details
+        return round(score, 2), details, \
+               round(public_score, 2), public_details
 
 
 class ScoreTypeRelative(ScoreType):
@@ -496,7 +497,7 @@ class ScoreTypeRelative(ScoreType):
             score += self.parameters[0]
             if public:
                 public_score += self.parameters[0]
-        return score, public_score
+        return round(score, 2), round(public_score, 2)
 
     def compute_score(self, submission_id):
         """Compute the score of a submission.
@@ -516,4 +517,4 @@ class ScoreTypeRelative(ScoreType):
             score += to_add
             if public:
                 public_score += to_add
-        return score, None, public_score, None
+        return round(score, 2), None, round(public_score, 2), None
