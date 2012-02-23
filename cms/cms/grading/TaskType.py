@@ -34,7 +34,6 @@ import codecs
 import traceback
 
 from cms import config
-from cms.async.AsyncLibrary import async_lock
 from cms.box.Sandbox import Sandbox
 from cms.db.SQLAlchemyAll import Executable
 from cms.grading import JobException
@@ -56,8 +55,7 @@ def create_sandbox(task_type):
         sandbox = Sandbox(task_type.file_cacher)
     except (OSError, IOError):
         err_msg = "Couldn't create sandbox."
-        with async_lock:
-            logger.error("%s\n%s" % (err_msg, traceback.format_exc()))
+        logger.error("%s\n%s" % (err_msg, traceback.format_exc()))
         raise JobException(err_msg)
     return sandbox
 
@@ -73,9 +71,8 @@ def delete_sandbox(sandbox):
         try:
             sandbox.delete()
         except (IOError, OSError):
-            with async_lock:
-                logger.warning("Couldn't delete sandbox.\n%s",
-                               traceback.format_exc())
+            logger.warning("Couldn't delete sandbox.\n%s",
+                           traceback.format_exc())
 
 
 def filter_ansi_escape(string):
@@ -158,8 +155,7 @@ class TaskType:
 
         """
         if to_log is not None:
-            with async_lock:
-                logger.warning(to_log)
+            logger.warning(to_log)
         if not success:
             return False
         if compilation_success:
@@ -170,8 +166,7 @@ class TaskType:
             self.submission.compilation_text = text.decode("utf-8")
         except UnicodeDecodeError:
             self.submission.compilation_text("Cannot decode compilation text.")
-            with async_lock:
-                logger.error("Unable to decode UTF-8 for string %s." % text)
+            logger.error("Unable to decode UTF-8 for string %s." % text)
         return True
 
     def finish_evaluation_testcase(self, test_number, success,
@@ -192,8 +187,7 @@ class TaskType:
 
         """
         if to_log is not None:
-            with async_lock:
-                logger.warning(to_log)
+            logger.warning(to_log)
         if not success:
             return False
         self.submission.evaluations[test_number].text = text
@@ -213,8 +207,7 @@ class TaskType:
 
         """
         if to_log is not None:
-            with async_lock:
-                logger.warning(to_log)
+            logger.warning(to_log)
         if not success:
             return False
         return True
@@ -268,13 +261,11 @@ class TaskType:
         sandbox.stderr_file = sandbox.relative_path("compiler_stderr.txt")
 
         # Actually run the compilation command.
-        with async_lock:
-            logger.info("Starting compilation step.")
+        logger.info("Starting compilation step.")
         box_success = sandbox.execute_without_std(command, wait=True)
         if not box_success:
-            with async_lock:
-                logger.error("Compilation aborted because of "
-                             "sandbox error in %s" % (self.sandbox.path))
+            logger.error("Compilation aborted because of "
+                         "sandbox error in `%s'." % self.sandbox.path)
             return False, None, None
 
         # Detect the outcome of the compilation.
@@ -303,23 +294,20 @@ class TaskType:
                 self.submission.get_session().add(
                     Executable(digest, filename, self.submission))
 
-            with async_lock:
-                logger.info("Compilation successfully finished.")
+            logger.info("Compilation successfully finished.")
 
             return True, True, "OK %s\n%s" % (sandbox.get_stats(),
                                               compiler_output)
 
         # Error in compilation: returning the error to the user.
         if exit_status == Sandbox.EXIT_OK and exit_code != 0:
-            with async_lock:
-                logger.info("Compilation failed")
+            logger.info("Compilation failed.")
             return True, False, "Failed %s\n%s" % (sandbox.get_stats(),
                                                    compiler_output)
 
         # Timeout: returning the error to the user
         if exit_status == Sandbox.EXIT_TIMEOUT:
-            with async_lock:
-                logger.info("Compilation timed out")
+            logger.info("Compilation timed out.")
             return True, False, "Time out %s\n%s" % (sandbox.get_stats(),
                                                      compiler_output)
 
@@ -327,8 +315,7 @@ class TaskType:
         # error to the user
         if exit_status == Sandbox.EXIT_SIGNAL:
             signal = sandbox.get_killing_signal()
-            with async_lock:
-                logger.info("Compilation killed with signal %d" % (signal))
+            logger.info("Compilation killed with signal %s." % (signal))
             return True, False, \
                    "Killed with signal %d %s\n" \
                    "This could be triggered by " \
@@ -338,31 +325,27 @@ class TaskType:
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-            with async_lock:
-                logger.error("Compilation aborted because of sandbox error")
+            logger.error("Compilation aborted because of sandbox error.")
             return False, None, None
 
         # Forbidden syscall: this shouldn't happen, probably the
         # administrator should relax the syscall constraints
         if exit_status == Sandbox.EXIT_SYSCALL:
-            with async_lock:
-                syscall = sandbox.get_killing_syscall()
-                logger.error("Compilation aborted "
-                             "because of forbidden syscall %s" % (syscall))
+            syscall = sandbox.get_killing_syscall()
+            logger.error("Compilation aborted "
+                         "because of forbidden syscall %s." % syscall)
             return False, None, None
 
         # Forbidden file access: this could be triggered by the user
         # including a forbidden file or too strict sandbox contraints;
         # the administrator should have a look at it
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            with async_lock:
-                logger.error("Compilation aborted "
-                             "because of forbidden file access")
+            logger.error("Compilation aborted "
+                         "because of forbidden file access.")
             return False, None, None
 
         # Why the exit status hasn't been captured before?
-        with async_lock:
-            logger.error("Shouldn't arrive here, failing")
+        logger.error("Shouldn't arrive here, failing.")
         return False, None, None
 
     def evaluation_step(self, sandbox, command,
@@ -452,8 +435,7 @@ class TaskType:
         sandbox.allow_path += ["/proc/meminfo"]
 
         # Actually run the evaluation command.
-        with async_lock:
-            logger.info("Starting evaluation step.")
+        logger.info("Starting evaluation step.")
 
         return sandbox.execute_without_std(command, wait=wait)
 
@@ -469,16 +451,14 @@ class TaskType:
 
         # Timeout: returning the error to the user.
         if exit_status == Sandbox.EXIT_TIMEOUT:
-            with async_lock:
-                logger.info("Execution timed out.")
+            logger.info("Execution timed out.")
             return True, 0.0, "Execution timed out."
 
         # Suicide with signal (memory limit, segfault, abort):
         # returning the error to the user.
         if exit_status == Sandbox.EXIT_SIGNAL:
             signal = sandbox.get_killing_signal()
-            with async_lock:
-                logger.info("Execution killed with signal %d." % signal)
+            logger.info("Execution killed with signal %d." % signal)
             return True, 0.0, \
                    "Execution killed with signal %d. " \
                    "This could be triggered by " \
@@ -487,8 +467,7 @@ class TaskType:
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment.
         if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
-            with async_lock:
-                logger.error("Evaluation aborted because of sandbox error.")
+            logger.error("Evaluation aborted because of sandbox error.")
             return False, None, None
 
         # Forbidden syscall: returning the error to the user. Note:
@@ -497,18 +476,15 @@ class TaskType:
         # FIXME - Tell which syscall raised this error.
         if exit_status == Sandbox.EXIT_SYSCALL:
             syscall = sandbox.get_killing_syscall()
-            with async_lock:
-                logger.info("Execution killed because of "
-                            "forbidden syscall %s." % syscall)
+            logger.info("Execution killed because of "
+                        "forbidden syscall %s." % syscall)
             return True, 0.0, "Execution killed because of " \
                 "forbidden syscall %s." % syscall
 
         # Forbidden file access: returning the error to the user.
         # FIXME - Tell which file raised this error.
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            with async_lock:
-                logger.info("Execution killed "
-                            "because of forbidden file access.")
+            logger.info("Execution killed because of forbidden file access.")
             return True, 0.0, \
                    "Execution killed because of forbidden file access."
 
@@ -516,8 +492,7 @@ class TaskType:
         # successfully; we accept the evaluation even if the exit code
         # isn't 0.
         if exit_status != Sandbox.EXIT_OK:
-            with async_lock:
-                logger.error("Shouldn't arrive here, failing")
+            logger.error("Shouldn't arrive here, failing.")
             return False, None, None
 
         # If this isn't the last step of the evaluation, return that
@@ -531,22 +506,19 @@ class TaskType:
                 try:
                     outcome = stdout_file.readline().strip()
                 except UnicodeDecodeError as error:
-                    with async_lock:
-                        logger.error("Unable to interpret manager stdout "
-                                     "(outcome) as unicode. %r" % error)
+                    logger.error("Unable to interpret manager stdout "
+                                 "(outcome) as unicode. %r" % error)
                     return False, None, None
                 try:
                     text = filter_ansi_escape(stderr_file.readline())
                 except UnicodeDecodeError as error:
-                    with async_lock:
-                        logger.error("Unable to interpret manager stderr "
-                                     "(text) as unicode. %r" % error)
+                    logger.error("Unable to interpret manager stderr "
+                                 "(text) as unicode. %r" % error)
                     return False, None, None
         try:
             outcome = float(outcome)
         except ValueError:
-            with async_lock:
-                logger.error("Wrong outcome `%s' from manager" % outcome)
+            logger.error("Wrong outcome `%s' from manager." % outcome)
             return False, None, None
 
         return True, outcome, text

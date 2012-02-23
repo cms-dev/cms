@@ -760,7 +760,8 @@ class RemoteService(asynchat.async_chat):
         """
         to_push = "".join(data) + "\r\n"
         try:
-            self.push(to_push)
+            with async_lock:
+                self.push(to_push)
         except Exception as error:
             logger.error("Push not ended correctly because of %r." % error)
             return False

@@ -24,8 +24,7 @@ import traceback
 
 from cms import default_argument_parser
 from cms.async import ServiceCoord
-from cms.async.AsyncLibrary import async_lock, Service, \
-     rpc_method, rpc_threaded
+from cms.async.AsyncLibrary import Service, rpc_method, rpc_threaded
 from cms.db.SQLAlchemyAll import Submission, SessionGen, Contest
 from cms.grading import JobException
 from cms.grading.tasktypes import get_task_type
@@ -132,9 +131,8 @@ class Worker(Service):
             try:
                 logger.operation = "%s of submission %s" % (job_type,
                                                             submission_id)
-                with async_lock:
-                    logger.info("Request received: %s of submission %s." %
-                                (job_type, submission_id))
+                logger.info("Request received: %s of submission %s." %
+                            (job_type, submission_id))
 
                 with SessionGen(commit=False) as self.session:
 
@@ -158,15 +156,12 @@ class Worker(Service):
                     if success:
                         self.session.commit()
 
-                    with async_lock:
-                        logger.info("Request finished")
+                    logger.info("Request finished.")
                     return success
 
             except:
-                with async_lock:
-                    err_msg = "Worker failed on operation `%s'" % \
-                              logger.operation
-                    logger.error("%s\n%s" % (err_msg, traceback.format_exc()))
+                err_msg = "Worker failed on operation `%s'" % logger.operation
+                logger.error("%s\n%s" % (err_msg, traceback.format_exc()))
                 raise JobException(err_msg)
 
             finally:
@@ -175,10 +170,9 @@ class Worker(Service):
                 self.work_lock.release()
 
         else:
-            with async_lock:
-                logger.warning("Request of %s of submission %s received, "
-                               "but declined because of acquired lock" %
-                               (job_type, submission_id))
+            logger.warning("Request of %s of submission %s received, "
+                           "but declined because of acquired lock" %
+                           (job_type, submission_id))
             return False
 
 

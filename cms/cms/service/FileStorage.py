@@ -30,7 +30,6 @@ import shutil
 import hashlib
 
 from cms import config
-from cms.async.AsyncLibrary import async_lock
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
 from cms.service.LogService import logger
 from cms.util.Utils import mkdir
@@ -96,13 +95,11 @@ class FileCacher:
         cache_path = os.path.join(self.obj_dir, digest)
         cache_exists = os.path.exists(cache_path)
 
-        with async_lock:
-            logger.debug("Getting file %s" % (digest))
+        logger.debug("Getting file %s" % (digest))
 
         if not cache_exists:
-            with async_lock:
-                logger.debug("File %s not in cache, downloading "
-                             "from database" % (digest))
+            logger.debug("File %s not in cache, downloading "
+                         "from database." % digest)
 
             temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
             temp_file = os.fdopen(temp_file, "wb")
@@ -126,8 +123,7 @@ class FileCacher:
             # And move it in the cache
             shutil.move(temp_filename, cache_path)
 
-            with async_lock:
-                logger.debug("File %s downloaded" % (digest))
+            logger.debug("File %s downloaded." % digest)
 
         # Saving to path
         if path is not None:
@@ -180,8 +176,7 @@ class FileCacher:
             logger.error(error_string)
             raise ValueError(error_string)
 
-        with async_lock:
-            logger.debug("Reading input file to store on the database")
+        logger.debug("Reading input file to store on the database.")
 
         # Copy the file content, whatever forms it arrives, into the
         # temporary file
@@ -208,26 +203,22 @@ class FileCacher:
                 buf = temp_file.read(self.CHUNK_SIZE)
         digest = hasher.hexdigest()
 
-        with async_lock:
-            logger.debug("File has digest %s" % (digest))
+        logger.debug("File has digest %s." % digest)
 
         # Check the digest uniqueness
         with SessionGen() as session:
             if FSObject.get_from_digest(digest, session) is not None:
-                with async_lock:
-                    logger.debug("File %s already on database, "
-                                 "dropping this one" % (digest))
+                logger.debug("File %s already on database, "
+                             "dropping this one." % digest)
                 session.rollback()
 
             # If it is not already present, copy the file into the
             # lobject
             else:
-                with async_lock:
-                    logger.debug("Sending file %s to the database" % (digest))
+                logger.debug("Sending file %s to the database." % digest)
                 with open(temp_path, 'rb') as temp_file:
                     with fso.get_lobject(session, mode='wb') as lo:
-                        with async_lock:
-                            logger.debug("Large object created")
+                        logger.debug("Large object created.")
                         buf = temp_file.read(self.CHUNK_SIZE)
                         while buf != '':
                             while len(buf) > 0:
@@ -239,8 +230,7 @@ class FileCacher:
                 fso.digest = digest
                 session.add(fso)
                 session.commit()
-                with async_lock:
-                    logger.debug("File %s sent to the database" % (digest))
+                logger.debug("File %s sent to the database." % digest)
 
         # Move the temporary file in the cache
         shutil.move(temp_path,

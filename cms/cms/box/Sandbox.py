@@ -93,7 +93,7 @@ class Sandbox:
         self.box_exec = self.detect_box_executable()
         self.info_file = "run.log"    # -M
         self.log = None
-        logger.debug("Sandbox in `%s' created, using box `%s'" %
+        logger.debug("Sandbox in `%s' created, using box `%s'." %
                      (self.path, self.box_exec))
 
         # Default parameters for mo-box
@@ -394,9 +394,9 @@ class Sandbox:
 
         """
         if executable:
-            logger.debug("Creating executable file %s in sandbox" % path)
+            logger.debug("Creating executable file %s in sandbox." % path)
         else:
-            logger.debug("Creating plain file %s in sandbox" % path)
+            logger.debug("Creating plain file %s in sandbox." % path)
         real_path = self.relative_path(path)
         fd = open(real_path, "wb")
         mod = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR
