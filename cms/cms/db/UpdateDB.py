@@ -45,6 +45,7 @@ class ScriptsContainer(object):
             ("20120218", "constraints_on_tokens"),
             ("20120220", "add_ignore_on_questions"),
             ("20120221", "split_first_and_last_names"),
+            ("20120223", "changed_batch_parameters"),
             ]
         self.list.sort()
 
@@ -240,7 +241,8 @@ class ScriptsContainer(object):
                     first_name = split_names[0]
                     last_name = " ".join(split_names[1:])
                 session.execute("UPDATE users SET "
-                                "first_name = :first_name, last_name = :last_name, "
+                                "first_name = :first_name, "
+                                "last_name = :last_name, "
                                 "email = '' "
                                 "WHERE id = :user_id",
                                 {
@@ -255,6 +257,50 @@ class ScriptsContainer(object):
             session.execute("ALTER TABLE users "
                             "ALTER COLUMN email SET NOT NULL;")
             session.execute("ALTER TABLE users DROP COLUMN real_name;")
+
+    @staticmethod
+    def changed_batch_parameters():
+        """Params for Batch tasktype changed. Warning: read full doc!
+
+        The parameters for Batch task type have been
+        rationalized. Note that the duty and semantic of the grader
+        have changed in a complete way - you cannot use old grader
+        with the new semantic.
+
+        """
+        import simplejson as json
+        with SessionGen(commit=True) as session:
+            for task_id, task_type_parameters in session.execute(
+                "SELECT id, task_type_parameters "
+                "FROM tasks WHERE task_type = 'Batch';"):
+                try:
+                    parameters = json.loads(task_type_parameters)
+                except json.decoder.JSONDecodeError:
+                    raise ValueError("Unable to decode parameter string "
+                                     "`%s'." % task_type_parameters)
+                if parameters == ["diff", "nofile"]:
+                    parameters = ["alone", "nofile", "diff"]
+                elif parameters == ["diff", "file"]:
+                    parameters = ["alone", "file", "diff"]
+                elif parameters == ["comp", "nofile"]:
+                    parameters = ["alone", "nofile", "comparator"]
+                elif parameters == ["comp", "file"]:
+                    parameters = ["alone", "nofile", "comparator"]
+                elif parameters == ["grad"]:
+                    parameters = ["grader", "file", "diff"]
+                    print "WARNING: grader semantic changed, please " \
+                          "read the documentation."
+                else:
+                    raise ValueError("Parameter string `%s' not recognized." %
+                                     parameters)
+
+                session.execute("UPDATE tasks SET "
+                                "task_type_parameters = :parameters "
+                                "WHERE id = :task_id",
+                                {
+                                   "parameters": json.dumps(parameters),
+                                   "task_id": task_id
+                                })
 
 
 def execute_single_script(scripts_container, script):

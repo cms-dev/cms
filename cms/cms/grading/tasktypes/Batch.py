@@ -29,25 +29,25 @@ class Batch(TaskType):
     """Task type class for a unique standalone submission source, with
     comparator (or not).
 
-    Parameters needs to be a list, whose first element is 'diff',
-    'comp' or 'grad', meaning that:
-    - the user source is compiled alone and the output is checked with
-      white diff if par[0] == 'diff';
-    - the same with check done with a comparator if par[0] == 'comp';
-    - the user source is compiled with the grader that also takes care
-      of assigning the outcome if par[0] == 'grad'.
+    Parameters needs to be a list of three elements.
 
-    In the first two cases, there is a second element which can be
-    'file' or 'nofile', meaning that the io of the user program is
-    done with 'input.txt' and 'output.txt' or with stdin and stdout.
+    The first element is 'grader' or 'alone': in the first
+    case, the source file is to be compiled with a provided piece of
+    software ('grader'); in the other by itself.
 
-    Note: a grader can read input.txt and res.txt (input and correct
-    output) and should write to stdout the outcome and to stderr the
-    explaination. It can also write to output.txt the output of the
-    user function, but up to now is not needed.
+    The second element is 'file' or 'nofile': in the former case, the
+    user program must read/write from/to the files 'input.txt' and
+    'output.txt', while in the latter from/to stdin and stdout.
+
+    The third element is 'diff' or 'comparator' and says whether the
+    output is compared with a simple diff algorithm or using a
+    comparator.
+
+    Note: the first element is used only in the compilation step; the
+    others only in the evaluation step.
 
     A comparator can read argv[1], argv[2], argv[3] (respectively,
-    input, correct output and user output) and again should write the
+    input, correct output and user output) and should write the
     outcome to stdout and the text to stderr.
 
     """
@@ -86,7 +86,7 @@ class Batch(TaskType):
             self.submission.files[format_filename].digest
         # If a grader is specified, we add to the command line (and to
         # the files to get) the corresponding manager.
-        if self.parameters[0] == "grad":
+        if self.parameters[0] == "grader":
             source_filenames.append("grader.%s" % language)
             files_to_get[source_filenames[1]] = \
                 self.submission.task.managers["grader.%s" % language].digest
@@ -129,11 +129,7 @@ class Batch(TaskType):
         allow_path = ["input.txt", "output.txt"]
         stdin_redirect = None
         stdout_redirect = None
-        if self.parameters[0] == "grad":
-            allow_path.append("res.txt")
-            files_to_get["res.txt"] = \
-                self.submission.task.testcases[test_number].output
-        elif self.parameters[1] == "nofile":
+        if self.parameters[1] == "nofile":
             stdin_redirect = "input.txt"
             stdout_redirect = "output.txt"
         success, outcome, text = self.evaluation_step(
@@ -146,23 +142,22 @@ class Batch(TaskType):
             allow_path,
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect,
-            final=(self.parameters[0] == "grad"))
-        # If an error occur (our or contestant's), or we have a
-        # grader, return immediately.
-        if not success or outcome is not None or self.parameters[0] == "grad":
+            final=False)
+        # If an error occur (our or contestant's), return immediately.
+        if not success or outcome is not None:
             delete_sandbox(sandbox)
             return self.finish_evaluation_testcase(test_number,
                                                    success, outcome, text)
 
-        # Second step: diffing (manual or with manager).
-        if self.parameters[0] == "diff":
+        # Second step: diffing (manual or with comparator).
+        if self.parameters[2] == "diff":
             # We white_diff output.txt and res.txt.
             success, outcome, text = self.white_diff_step(
                 sandbox,
                 "output.txt", "res.txt",
                 {"res.txt":
                  self.submission.task.testcases[test_number].output})
-        elif self.parameters[0] == "comp":
+        elif self.parameters[2] == "comparator":
             # Manager present: wonderful, it'll do all the job.
             manager_filename = self.submission.task.managers.keys()[0]
             success, outcome, text = self.evaluation_step(
@@ -174,6 +169,9 @@ class Batch(TaskType):
                  self.submission.task.testcases[test_number].output},
                 allow_path=["input.txt", "res.txt", "output.txt"],
                 final=True)
+        else:
+            raise ValueError("Unrecognized third parameter `%s' in for Batch "
+                             "tasktype." % self.parameters[2])
 
         # Whatever happened, we conclude.
         delete_sandbox(sandbox)
