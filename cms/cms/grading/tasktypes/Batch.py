@@ -185,6 +185,7 @@ class Batch(TaskType):
             # Manager present: wonderful, it'll do all the job.
             manager_filename = self.submission.task.managers.keys()[0]
             success, outcome, text = self.evaluation_step(
+                sandbox,
                 ["./%s" % manager_filename,
                  "input.txt", "res.txt", "output.txt"],
                 {manager_filename:
