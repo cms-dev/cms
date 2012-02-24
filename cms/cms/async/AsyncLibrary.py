@@ -274,6 +274,11 @@ class Service:
 
         """
         next_timeout = self._find_next_timeout(maximum=maximum)
+        # This sleep is needed to "force" Python to switch to another
+        # thread that may be waiting for async_lock; otherwise this
+        # thread will acquire over and over (with great probability)
+        # the lock without releasing it. Ever.
+        time.sleep(0.001)
         with async_lock:
             asyncore.loop(next_timeout, False, None, 1)
         self._trigger()
