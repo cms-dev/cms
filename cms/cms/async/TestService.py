@@ -28,7 +28,11 @@ service.
 import time
 
 from cms.async.AsyncLibrary import Service
-from cms.service.LogService import logger
+
+
+# Our logger. We cannot simply import from AsyncLibrary because at
+# loading it is not yet defined.
+logger = None
 
 
 class TestService(Service):
@@ -37,6 +41,10 @@ class TestService(Service):
     """
     def __init__(self, shard, custom_logger=None):
         Service.__init__(self, shard, custom_logger)
+
+        global logger
+        from cms.async.AsyncLibrary import logger as _logger
+        logger = _logger
 
         self.start = 0
         self.total_time = 0

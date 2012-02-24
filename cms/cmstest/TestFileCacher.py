@@ -139,10 +139,8 @@ class TestFileCacher(TestService):
         is empty before testing.
 
         """
-        if os.path.exists(self.cache_base_path):
-            logger.error("Please delete directory %s before." %
-                         self.cache_base_path)
-            self.exit()
+        logger.info("Please delete directory %s before." %
+                    self.cache_base_path)
 
 ### TEST 000 ###
 
