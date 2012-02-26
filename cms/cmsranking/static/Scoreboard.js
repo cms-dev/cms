@@ -32,36 +32,62 @@ var Scoreboard = new function () {
 
         DataStore.add_select_handler(self.select_handler);
 
+        self.generate();
+
+        DataStore.user_create.add(self.create_user);
+        DataStore.user_update.add(self.update_user);
+        DataStore.user_delete.add(self.delete_user);
+
+        DataStore.score_events.add(self.score_handler);
+        DataStore.rank_events.add(self.rank_handler);
+    };
+
+
+    self.generate = function () {
         var cols_html = self.make_cols();
+        $(self.tcols_el).html(cols_html);
+
         var head_html = self.make_head();
+        $(self.thead_el).html(head_html);
 
-        self.tcols_el.innerHTML = cols_html;
-        self.thead_el.innerHTML = head_html;
 
-        // create callbacks for sorting
-        var idx = 5;
-        var row_el = self.thead_el.children[0];
+        // Init cols_list
         var contests = DataStore.contest_list;
         for (var i in contests) {
             var contest = contests[i];
             var c_id = contest["key"];
+
             var tasks = contest["tasks"];
             for (var j in tasks) {
                 var task = tasks[j];
                 var t_id = task["key"];
 
-                var elem = row_el.children[idx];
-                $(elem).click(self.sort_task_factory(t_id));
-                idx += 1;
+                self.cols_list.push("t_" + t_id);
             }
-            var elem = row_el.children[idx];
-            $(elem).click(self.sort_contest_factory(c_id));
-            idx += 1;
+            self.cols_list.push("c_" + c_id);
         }
-        var elem = row_el.children[idx];
-        $(elem).click(self.sort_global_factory());
+        self.cols_list.push("global");
 
-        self.update(null, null);
+        // Create callbacks for sorting
+        $("#Scoreboard_head tr th").slice(5).each(function (index) {
+            $(this).click(self.sort_callback_factory(index));
+        });
+
+        self.sort_index = self.cols_list.length - 1;
+        self.make_body();
+
+        // create callbacks for selection
+        for (var u_id in DataStore.users) {
+            var check = document.getElementById(u_id).children[0].children[0];
+            check.addEventListener('change', self.select_factory(u_id));
+        }
+
+        // create callbacks for UserPanel
+        for (var u_id in DataStore.users) {
+            var row = document.getElementById(u_id);
+            row.children[2].addEventListener('click', self.user_callback_factory(u_id));
+            row.children[3].addEventListener('click', self.user_callback_factory(u_id));
+        }
     };
 
 
@@ -126,7 +152,10 @@ var Scoreboard = new function () {
     };
 
 
-    self.make_row = function (u_id, user, rank, t_key, c_key) {
+    self.make_row = function (user) {
+        var u_id = user["key"];
+        var rank = user["rank"];
+
         var result = " \
 <tr id=\"" + u_id + '\"' + (DataStore.get_selected(u_id) ? " class=\"selected\"" : "") + "> \
     <td class=\"sel\"> \
@@ -144,13 +173,13 @@ var Scoreboard = new function () {
     <td class=\"team\"></td>";
         }
 
-        var global_score = 0.0
+        var global_score = 0.0;
         var contests = DataStore.contest_list;
         for (var i in contests) {
             var contest = contests[i];
             var c_id = contest["key"];
 
-            var contest_score = 0.0
+            var contest_score = 0.0;
             var tasks = contest["tasks"];
             for (var j in tasks) {
                 var task = tasks[j];
@@ -159,27 +188,18 @@ var Scoreboard = new function () {
                 var task_score = DataStore.tasks[t_id]["score"];
 
                 var score_class = self.get_score_class(DataStore.get_score_t(u_id, t_id), task_score);
-                if (t_id === t_key) {
-                    score_class += " sort_key";
-                }
                 result += " \
     <td class=\"score task " + score_class + "\">" + round_to_str(DataStore.get_score_t(u_id, t_id)) + "</td>";
                 contest_score += task_score;
             }
 
             var score_class = self.get_score_class(DataStore.get_score_c(u_id, c_id), contest_score);
-            if (c_id === c_key) {
-                score_class += " sort_key";
-            }
             result += " \
     <td class=\"score contest " + score_class + "\">" + round_to_str(DataStore.get_score_c(u_id, c_id)) + "</td>";
             global_score += contest_score
         }
 
         var score_class = self.get_score_class(DataStore.get_score(u_id), global_score)
-        if (t_key === null && c_key === null) {
-            score_class += " sort_key";
-        }
         result += " \
     <td class=\"score global " + score_class + "\">" + round_to_str(DataStore.get_score(u_id)) + "</td> \
 </tr>";
@@ -187,76 +207,180 @@ var Scoreboard = new function () {
         return result;
     };
 
-    self.make_body = function (t_key, c_key) {
-        var users = new Array();
-        for (u_id in DataStore.users) {
-            user = DataStore.users[u_id];
-            if (t_key !== null) {
-                user["score1"] = DataStore.get_score_t(u_id, t_key);
-                user["score2"] = DataStore.get_score(u_id);
-            } else if (c_key !== null) {
-                user["score1"] = DataStore.get_score_c(u_id, c_key);
-                user["score2"] = DataStore.get_score(u_id);
-            } else {
-                user["score1"] = DataStore.get_score(u_id);
-                user["score2"] = DataStore.get_score(u_id);
-            }
-            users.push(user);
-        }
-        users.sort(function (a, b) {
-            if ((a["score1"] > b["score1"]) || ((a["score1"] == b["score1"]) &&
-               ((a["score2"] > b["score2"]) || ((a["score2"] == b["score2"]) &&
-               ((a["l_name"] < b["l_name"]) || ((a["l_name"] == b["l_name"]) &&
-               ((a["l_name"] < b["l_name"]) || ((a["l_name"] == b["l_name"]) &&
-               (a["key"] < b["key"]))))))))) {
-                return -1;
-            } else {
-                return +1;
-            }     
-        });
-
-        var result = "";
-
-        var prev_score =  null;
-        var rank = 0;
-        var equal = 1;
-
-        for (var i in users) {
-            user = users[i];
-            u_id = user["key"];
-            score = user["score1"];
-
-            if (score === prev_score) {
-                equal += 1;
-            } else {
-                prev_score = score;
-                rank += equal;
-                equal = 1;
-            }
-
-            result += self.make_row(u_id, user, rank, t_key, c_key)
+    self.make_body = function () {
+        for (var u_id in DataStore.users) {
+            var user = DataStore.users[u_id];
+            user["row"] = $(self.make_row(user)).get(0);
+            self.user_list.push(user);
         }
 
-        return result;
+        self.sort(self.sort_index);
     };
 
 
-    self.update = function (t_key, c_key) {
-        var body_html = self.make_body(t_key, c_key);
-        self.tbody_el.innerHTML = body_html;
+    // We keep a sorted list of user that represent the current order of the
+    // scoreboard. In particular we sort using these keys:
+    // - the score in the current active column
+    // - the global score
+    // - the last name
+    // - the first name
+    // - the key
 
-        // create callbacks for selection
-        for (var u_id in DataStore.users) {
-            var check = document.getElementById(u_id).children[0].children[0];
-            check.addEventListener('change', self.select_factory(u_id));
+    self.user_list = new Array();
+
+
+    // The index of the column that acts as primary sort key.
+    self.sort_index = 0;
+
+    // Compare two users. Returns true if "a <= b".
+    self.compare_users = function (a, b) {
+        var sort_key = self.cols_list[self.sort_index];
+        return ((a[sort_key] > b[sort_key]) || ((a[sort_key] == b[sort_key]) &&
+               ((a["global"] > b["global"]) || ((a["global"] == b["global"]) &&
+               ((a["l_name"] < b["l_name"]) || ((a["l_name"] == b["l_name"]) &&
+               ((a["f_name"] < b["f_name"]) || ((a["f_name"] == b["f_name"]) &&
+               (a["key"] <= b["key"])))))))));
+    };
+
+
+    // Suppose the scoreboard is correctly sorted except for the given user.
+    // Move this user (up or down) to put it in his correct position.
+    self.move_user = function (user) {
+        var list = self.user_list;
+        var compare = self.compare_users;
+
+        var list_l = list.length;
+        var j = parseInt(user["index"]);
+
+        if (j > 0 && compare(user, list[j-1])) {
+            // Move up
+
+            var i = j;
+            while (i > 0 && compare(user, list[i-1])) {
+                list[i] = list[i-1];
+                list[i]["index"] = i;
+                i -= 1;
+            }
+            list[i] = user;
+            user["index"] = i;
+
+            if (i == 0) {
+                $("#Scoreboard_body").prepend(user["row"]);
+            } else {
+                $("#Scoreboard_body").children("#" + list[i-1]["key"]).after(user["row"]);
+            }
+        } else if (j < list_l-1 && compare(list[j+1], user)) {
+            // Move down
+
+            var i = j;
+            while (i < list_l-1 && compare(list[i+1], user)) {
+                list[i] = list[i+1];
+                list[i]["index"] = i;
+                i += 1;
+            }
+            list[i] = user;
+            user["index"] = i;
+
+            if (i == list_l-1) {
+                $("#Scoreboard_body").append(user["row"]);
+            } else {
+                $("#Scoreboard_body").children("#" + list[i+1]["key"]).before(user["row"]);
+            }
+        }
+    };
+
+
+    // Sort the scoreboard using the column with the given index.
+    self.sort = function (sort_index) {
+        $("#Scoreboard_body tr td:nth-child(" + (6 + self.sort_index) + ")").removeClass("sort_key");
+
+        self.sort_index = sort_index;
+        
+        var sort_key = self.cols_list[self.sort_index];
+
+        var list = self.user_list;
+
+        list.sort(function (a, b) {
+            if ((a[sort_key] > b[sort_key]) || ((a[sort_key] == b[sort_key]) &&
+               ((a["global"] > b["global"]) || ((a["global"] == b["global"]) &&
+               ((a["l_name"] < b["l_name"]) || ((a["l_name"] == b["l_name"]) &&
+               ((a["f_name"] < b["f_name"]) || ((a["f_name"] == b["f_name"]) &&
+               (a["key"] <= b["key"]))))))))) {
+                return -1;
+            } else {
+                return +1;
+            }
+        });
+
+        var fragment = document.createDocumentFragment();
+        for (var idx in list)
+        {
+            list[idx]["index"] = idx;
+            fragment.appendChild(list[idx]["row"]);
         }
 
-        // create callbacks for UserPanel
-        for (var u_id in DataStore.users) {
-            var row = document.getElementById(u_id);
-            row.children[2].addEventListener('click', self.user_callback_factory(u_id));
-            row.children[3].addEventListener('click', self.user_callback_factory(u_id));
+        $("#Scoreboard_body").append(fragment);
+
+        $("#Scoreboard_body tr td:nth-child(" + (6 + self.sort_index) + ")").addClass("sort_key");
+    };
+
+
+    // A list to describe the sortable columns. Its element may be in the form
+    // "t_<task_id>", "c_<contest_id>" or "global".
+    self.cols_list = new Array();
+
+
+    // This callback is called by the DataStore when a user is created.
+    self.create_user = function (u_id, user) {
+        var row = self.make_row(user);
+
+        user["row"] = row;
+        $("#Scoreboard_body").append(row);
+
+        user["index"] = self.user_list.length;
+        self.user_list.push(user);
+        self.move_user(user);
+    };
+
+    // This callback is called by the DataStore when a user is updated.
+    // It updates only its basic information (first name, last name and team).
+    self.update_user = function (u_id, user) {
+        var row = user["row"];
+
+        $(row).children(".f_name").text(user["f_name"]);
+        $(row).children(".l_name").text(user["l_name"]);
+
+        if (user["team"]) {
+            $(row).children(".team").html("<img src=\"" + Config.get_flag_url(user["team"]) + "\" title=\"" + DataStore.teams[user["team"]]["name"] + "\" />");
+        } else {
+            $(row).children(".team").text("");
         }
+    };
+
+    // This callback is called by the DataStore when a user is deleted.
+    self.delete_user = function (u_id, user) {
+        var row = user["row"];
+
+        $(row).remove();
+    };
+
+    // This callback is called by the DataStore when a user changes score.
+    self.score_handler = function (u_id, user) {
+        var row = user["row"];
+
+        $(row).children(".score").each(function (index) {
+            // TODO remove (and re-add) score class!!
+            $(this).text(user[self.cols_list[index]]);
+        });
+
+        self.move_user(user);
+    };
+
+    // This callback is called by the DataStore when a user changes rank.
+    self.rank_handler = function (u_id, user) {
+        var row = user["row"];
+
+        $(row).children(".rank").text(user["rank"]);
     };
 
 
@@ -290,25 +414,9 @@ var Scoreboard = new function () {
     };
 
 
-    self.sort_task_factory = function (t_id) {
+    self.sort_callback_factory = function (index) {
         var result = function () {
-            self.update(t_id, null);
-        };
-        return result;
-    };
-
-
-    self.sort_contest_factory = function (c_id) {
-        var result = function () {
-            self.update(null, c_id);
-        };
-        return result;
-    };
-
-
-    self.sort_global_factory = function (t_id) {
-        var result = function () {
-            self.update(null, null);
+            self.sort(index);
         };
         return result;
     };
