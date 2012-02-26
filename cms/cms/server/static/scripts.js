@@ -67,7 +67,7 @@
                     utils.display_subpage(page);
                     return;
                 }
-                var escaped_response = response.replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                var escaped_response = utils.escape_html(response)
                 var pre_class="";
                 if(file_name.match(/.c(|pp)$/i))
                 {
@@ -144,9 +144,10 @@
             else if (type == "new_question")
                 s += '<a href="/questions/1">New question</a>: ';
 
-            s += subject + '</div>';
-            s += '<div class="notification_text">' + text + '</div>';
-            s += '</div></div>'
+            s += utils.escape_html(subject) + '</div>';
+            s += '<div class="notification_text">';
+            s += utils.escape_html(text);
+            s += '</div></div></div>';
             div.innerHTML += s;
         },
 
@@ -507,6 +508,20 @@
         escape_jquery_selectors: function (myid)
         {
             return '#' + myid.replace(/(:|\.)/g,'\\$1');
+        },
+
+        /**
+         * Escape the input string so that it is suitable for rendering in
+         * a HTML page.
+         */
+        escape_html: function(data)
+        {
+            return data
+                .replace(/&/g,"&amp;")
+                .replace(/</g,"&lt;")
+                .replace(/>/g,"&gt;")
+                .replace(/"/g,"&quot;");
         }
+
     };
 }());
