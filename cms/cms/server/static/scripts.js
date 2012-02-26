@@ -490,9 +490,17 @@
             selector.innerHTML = "Pages: ";
             for( var i = 1; i <= npages; i++)
             {
-                selector.innerHTML += "<a href=\"#\" onclick=\" " +
-                                      "utils.show_page('questions', "+ i + "); " +
-                                      "return false;\">" + i + "</a>&nbsp;";
+                if (i != page)
+                {
+                    selector.innerHTML +=
+                        "<a href=\"#\" onclick=\" " +
+                        "utils.show_page('questions', "+ i + "); " +
+                        "return false;\">" + i + "</a>&nbsp;";
+                }
+                else
+                {
+                    selector.innerHTML += (i + "&nbsp;");
+                }
             }
         },
 
