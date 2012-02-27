@@ -125,14 +125,25 @@ class TaskType:
 
     @classmethod
     def parse_handler(cls, handler, prefix):
+        """Ensure that the parameters list template agrees with the
+        parameters actually passed.
+
+        handler (Class): the Tornado handler with the parameters.
+        prefix (string): the prefix of the parameter names in the
+                         handler.
+
+        return (list): parameters list correctly formatted, or
+                       ValueError if the parameters are not correct.
+
+        """
         new_parameters = []
         for parameter in cls.ACCEPTED_PARAMETERS:
             try:
                 new_value = parameter.parse_handler(handler, prefix)
                 new_parameters.append(new_value)
-            except ValueError as e:
-                raise ValueError("Invalid parameter %s: %s"
-                    % (parameter.name, e.message))
+            except ValueError as error:
+                raise ValueError("Invalid parameter %s: %s."
+                                 % (parameter.name, error.message))
         return new_parameters
 
     def __init__(self, submission, parameters, file_cacher):

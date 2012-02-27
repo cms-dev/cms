@@ -404,6 +404,8 @@ class ScoringService(Service):
                                 " submission %d in the database" %
                                 submission_id)
                 return
+            if submission.user.hidden:
+                return
 
             # Assign score to the submission.
             scorer = self.scorers[submission.task_id]
