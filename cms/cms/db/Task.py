@@ -34,7 +34,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Contest import Contest
-from cms.service.ScoreType import ScoreTypes
+from cms.grading.ScoreType import ScoreTypes
 
 
 class Task(Base):

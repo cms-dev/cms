@@ -29,13 +29,13 @@ import os
 import codecs
 import argparse
 
+from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Manager, \
     Testcase, User, Contest, SubmissionFormatElement, FSObject, \
     Submission
 from cms.db.Utils import analyze_all_tables
-from cms.service.FileStorage import FileCacher
+from cms.grading.ScoreType import ScoreTypes
 from cms.service.LogService import logger
-from cms.service.ScoreType import ScoreTypes
 
 
 class YamlLoader:

@@ -31,7 +31,7 @@ import hashlib
 from cms import default_argument_parser, config
 from cms.async import ServiceCoord
 from cms.async.TestService import TestService
-from cms.service.FileStorage import FileCacher
+from cms.db.FileCacher import FileCacher
 from cms.service.LogService import logger
 
 

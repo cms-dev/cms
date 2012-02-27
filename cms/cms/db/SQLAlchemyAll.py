@@ -26,8 +26,6 @@ db objects must be imported from this module.
 
 import sys
 
-from sqlalchemy.orm import relationship, backref
-
 from cms.db.SQLAlchemyUtils import db, Base, metadata, Session, \
      ScopedSession, SessionGen
 
@@ -38,9 +36,6 @@ from cms.db.Task import Task, Manager, Testcase, Attachment, \
      SubmissionFormatElement
 from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 from cms.db.FSObject import FSObject
-
-# Load all import_from_dict() class methods
-import cms.db.ImportFromDict
 
 
 # The following are methods of Contest that cannot be put in the right

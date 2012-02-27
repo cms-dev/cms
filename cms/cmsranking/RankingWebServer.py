@@ -315,6 +315,7 @@ def main():
         ans = raw_input().lower()
         if ans in ['y', 'yes']:
             print "Removing directory %s." % config.lib_dir
+            shutil.rmtree(config.lib_dir)
         else:
             print "Not removing directory %s." % config.lib_dir
         return

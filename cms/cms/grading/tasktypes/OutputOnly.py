@@ -26,7 +26,7 @@
 from cms.db.SQLAlchemyAll import Evaluation
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
-from cms.util.ParameterTypes import ParameterTypeChoice
+from cms.grading.ParameterTypes import ParameterTypeChoice
 
 
 class OutputOnly(TaskType):

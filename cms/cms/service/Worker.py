@@ -25,10 +25,10 @@ import traceback
 from cms import default_argument_parser
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_method, rpc_threaded
+from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import Submission, SessionGen, Contest
 from cms.grading import JobException
 from cms.grading.tasktypes import get_task_type
-from cms.service.FileStorage import FileCacher
 from cms.service.LogService import logger
 
 

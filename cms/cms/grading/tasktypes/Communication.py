@@ -22,8 +22,8 @@
 import os
 import tempfile
 
-from cms.box.Sandbox import wait_without_std
 from cms.db.SQLAlchemyAll import Evaluation
+from cms.grading.Sandbox import wait_without_std
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
 from cms.util.Utils import get_compilation_command
