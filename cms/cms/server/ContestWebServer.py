@@ -355,6 +355,7 @@ class TaskStatementViewHandler(FileHandler):
 
         self.fetch(statement, "application/pdf", "%s.pdf" % name)
 
+
 class TaskAttachmentViewHandler(FileHandler):
     """Shows an attachment file of a task in the contest.
 

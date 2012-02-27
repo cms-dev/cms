@@ -125,7 +125,7 @@ class User(Base):
                 'last_name':     self.last_name,
                 'username':      self.username,
                 'password':      self.password,
-                'email'   :      self.email,
+                'email':         self.email,
                 'timezone':      self.timezone,
                 'ip':            self.ip,
                 'hidden':        self.hidden,

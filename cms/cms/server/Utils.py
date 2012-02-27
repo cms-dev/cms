@@ -140,6 +140,7 @@ def extract_archive(temp_name, original_filename):
         return None
     return file_list
 
+
 def file_handler_gen(BaseClass):
     """This generates an extension of the BaseHandler that allows us
     to send files to the user. This *Gen is needed because the code in
