@@ -292,7 +292,7 @@ class TaskType:
         box_success = sandbox.execute_without_std(command, wait=True)
         if not box_success:
             logger.error("Compilation aborted because of "
-                         "sandbox error in `%s'." % self.sandbox.path)
+                         "sandbox error in `%s'." % sandbox.path)
             return False, None, None
 
         # Detect the outcome of the compilation.
