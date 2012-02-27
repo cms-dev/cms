@@ -30,11 +30,15 @@ import re
 from cms.service.LogService import logger
 
 
-def wait_without_std(list_of_processes):
+class SandboxInterfaceException(Exception):
+    pass
+
+
+def wait_without_std(procs):
     """Wait for the conclusion of the processes in the list, avoiding
     starving for input and output.
 
-    list_of_process (list): a list of processes as returned by Popen.
+    procs (list): a list of processes as returned by Popen.
 
     return (list): a list of return codes.
 
@@ -48,7 +52,7 @@ def wait_without_std(list_of_processes):
 
         """
         to_consume = []
-        for process in list_of_processes:
+        for process in procs:
             if process.poll() == None:  # If the process is alive.
                 if not process.stdout.closed:
                     to_consume.append(process.stdout)
@@ -59,7 +63,7 @@ def wait_without_std(list_of_processes):
     # Close stdin; just saying stdin=None isn't ok, because the
     # standard input would be obtained from the application stdin,
     # that could interfere with the child process behaviour
-    for process in list_of_processes:
+    for process in procs:
         process.stdin.close()
 
     # Read stdout and stderr to the end without having to block
@@ -72,27 +76,43 @@ def wait_without_std(list_of_processes):
             f.read(8192)
         to_consume = get_to_consume()
 
-    return [process.wait() for process in list_of_processes]
+    return [process.wait() for process in procs]
 
 
 class Sandbox:
     """This class creates, deletes and manages the interaction with a
-    sandbox.
+    sandbox. The sandbox doesn't support concurrent operation, not
+    even for reading.
+
+    The Sandbox offers API for retrieving and storing file, as well as
+    executing programs in a controlled environment. There are anyway a
+    few files reserved for use by the Sandbox itself:
+
+     * commands.log: a text file with the commands ran into this
+       Sandbox, one for each line;
+
+     * run.log.N: for each N, the log produced by mo-box when running
+       command number N.
 
     """
-    def __init__(self, file_cacher):
+    def __init__(self, file_cacher, temp_dir=None):
         """Initialization.
 
         file_cacher (FileCacher): an instance of the FileCacher class
                                   (to interact with FS).
+        temp_dir (string): the directory where to put the sandbox
+                           (which is itself a directory).
+
         """
         self.FC = file_cacher
 
-        self.path = tempfile.mkdtemp()
+        self.path = tempfile.mkdtemp(dir=temp_dir)
         self.exec_name = 'mo-box'
         self.box_exec = self.detect_box_executable()
-        self.info_file = "run.log"    # -M
+        self.info_basename = "run.log"   # Used for -M
+        self.cmd_file = "commands.log"
         self.log = None
+        self.exec_num = -1
         logger.debug("Sandbox in `%s' created, using box `%s'." %
                      (self.path, self.box_exec))
 
@@ -186,28 +206,32 @@ class Sandbox:
             res += ["-w", str(self.wallclock_timeout)]
         if self.extra_timeout is not None:
             res += ["-x", str(self.extra_timeout)]
-        res += ["-M", self.relative_path(self.info_file)]
+        res += ["-M", self.relative_path("%s.%d" %
+                                         (self.info_basename, self.exec_num))]
         return res
 
     def get_log(self):
         """Read the content of the log file of the sandbox (usually
-        run.log), and set self.log as a dict containing the info in
-        the log file (time, memory, status, ...).
+        run.log.N for some integer N), and set self.log as a dict
+        containing the info in the log file (time, memory, status,
+        ...).
 
         """
         # self.log is a dictionary of lists (usually lists of length
         # one).
         self.log = {}
+        info_file = "%s.%d" % (self.info_basename, self.exec_num)
         try:
-            with self.get_file(self.info_file) as log_file:
+            with self.get_file(info_file) as log_file:
                 for line in log_file:
-                    k, v = line.strip().split(":", 1)
-                    if k in self.log:
-                        self.log[k].append(v)
+                    key, value = line.strip().split(":", 1)
+                    if key in self.log:
+                        self.log[key].append(value)
                     else:
-                        self.log[k] = [v]
+                        self.log[key] = [value]
         except IOError as e:
-            raise IOError("Error while reading execution log. %r" % e)
+            raise IOError("Error while reading execution log file %s. %r" %
+                          (info_file, e))
 
     def get_execution_time(self):
         """Return the time spent in the sandbox, reading the logs if
@@ -274,6 +298,7 @@ class Sandbox:
             return int(self.log['exitcode'][0])
         return 0
 
+    # TODO - Rather fragile interface...
     KILLING_SYSCALL_RE = re.compile("^Forbidden syscall (.*)$")
 
     def get_killing_syscall(self):
@@ -532,7 +557,7 @@ class Sandbox:
         elif exitcode == 2:
             return False
         else:
-            raise Exception("Sandbox exit status unknown")
+            raise SandboxInterfaceException("Sandbox exit status unknown")
 
     def execute(self, command):
         """Execute the given command in the sandbox using
@@ -540,12 +565,17 @@ class Sandbox:
 
         command (list): executable filename and arguments of the
                         command.
-        return (int): the exitcode.
+        return (bool): True if the sandbox didn't report errors
+                       (caused by the sandbox itself), False otherwise
 
         """
+        self.exec_num += 1
+        self.log = None
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: %s" %
                      " ".join(args))
+        with open(self.relative_path(self.cmd_file), 'a') as commands:
+            commands.write("%s\n" % (" ".join(args)))
         return self.translate_box_exitcode(subprocess.call(args))
 
     def popen(self, command,
@@ -564,9 +594,13 @@ class Sandbox:
         return (object): popen object.
 
         """
+        self.exec_num += 1
+        self.log = None
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: %s" %
                      " ".join(args))
+        with open(self.relative_path(self.cmd_file), 'a') as commands:
+            commands.write("%s\n" % (" ".join(args)))
         return subprocess.Popen(args,
                                 stdin=stdin, stdout=stdout, stderr=stderr,
                                 close_fds=close_fds)
@@ -581,7 +615,8 @@ class Sandbox:
 
         command (list): executable filename and arguments of the
                         command.
-        return (int): the exitcode.
+        return (bool): True if the sandbox didn't report errors
+                       (caused by the sandbox itself), False otherwise
 
         """
         popen = self.popen(command, stdin=subprocess.PIPE,
