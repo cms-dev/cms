@@ -48,11 +48,11 @@ results we intend to obtain.
 *** Implementation
 
 
-** Tasks & meta-tasks
+** Tasks & datasets
 
-We add a table of meta-tasks, effectively holding information about
-the task that do not change amongst versions (for sanity or because it
-is something the users can see):
+We change the tasks table, leaving only the information about the task
+that do not change amongst versions (for sanity or because it is
+something the users can see):
 
 * id, name, title, num, statement;
 
@@ -62,12 +62,12 @@ is something the users can see):
 
 * attachments, submission_format_elements.
 
-Meta-tasks also store a "live_version" field indicating which version
-is alive. The current Task table will be changed removing the
-information said before, and adding a version_id and a
-version_description field (used to offer a human-readable description
-of why that version is there and in what it differs from other
-versions. The pair (meta_task_id, version_id) will be the primary key.
+Tasks also stores a "live_dataset_id" field indicating which dataset
+is alive. We add a datasets table, holding all the task information
+not said before, and also an "id" and a "description" field (used to
+offer a human-readable description of why that version is there and in
+what it differs from other versions. The pair (task_id, id) is the
+primary key.
 
 
 ** Other changes
@@ -77,11 +77,11 @@ in particular because we want to fulfill aim #2. This implies that we
 need to be able to store evaluations and scores on a per version
 basis, and not per task.
 
-* evaluations are easily corrected adding a version_id field;
+* evaluations are easily corrected adding a dataset_id field;
 
 * (public_)scores(_details) need to be detached from the submission
   object and handled in a table by themselves holding the data and the
-  ids of the submission, the task and the version;
+  ids of the submission, the task and the dataset;
 
 * we need to detach also compilation/evaluation_outcome/text/tries
   etc. from the submission. Sadly some of these are user-visible
@@ -96,7 +96,7 @@ possible.
 ** Interface
 
 We also will need some big interface effort to implement the new tasks
-and meta-task and be able to do the switching and the
-reevaluation. Our admin interfaces is already quite cluttered, so my
-proposal is that versions-related information is displayed only in the
-tasks' page. Contestants should not see any change in their interface.
+and datasets and be able to do the switching and the reevaluation. Our
+admin interfaces is already quite cluttered, so my proposal is that
+versions-related information is displayed only in the tasks'
+page. Contestants should not see any change in their interface.
