@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from cms.service.LogService import logger
+from cms import logger
 
 
 class ScoreTypes:

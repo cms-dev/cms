@@ -23,8 +23,7 @@ import imp
 import os
 import simplejson as json
 
-from cms import config
-from cms.service.LogService import logger
+from cms import config, logger
 
 
 def _try_import(task_type, dir_name):

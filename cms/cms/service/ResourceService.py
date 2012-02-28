@@ -33,11 +33,10 @@ import bisect
 
 import psutil
 
-from cms import config
+from cms import config, logger
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_method, RemoteService
 from cms.db.Utils import ask_for_contest
-from cms.service.LogService import logger
 
 
 class ResourceService(Service):

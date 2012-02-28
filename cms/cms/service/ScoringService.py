@@ -32,12 +32,11 @@ import httplib
 import simplejson as json
 import base64
 
-from cms import config, default_argument_parser
+from cms import config, default_argument_parser, logger
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_method
 from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
 from cms.db.Utils import ask_for_contest
-from cms.service.LogService import logger
 
 
 class CannotSendError(Exception):

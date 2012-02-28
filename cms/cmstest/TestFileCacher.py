@@ -28,11 +28,10 @@ import random
 from StringIO import StringIO
 import hashlib
 
-from cms import default_argument_parser, config
+from cms import default_argument_parser, config, logger
 from cms.async import ServiceCoord
 from cms.async.TestService import TestService
 from cms.db.FileCacher import FileCacher
-from cms.service.LogService import logger
 
 
 class RandomFile:

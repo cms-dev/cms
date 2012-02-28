@@ -37,9 +37,8 @@ from Crypto.Cipher import AES
 from functools import wraps
 from tornado.web import HTTPError
 
-from cms import config
+from cms import config, logger
 from cms.db.FileCacher import FileCacher
-from cms.service.LogService import logger
 
 
 def valid_phase_required(func):
@@ -203,7 +202,7 @@ def file_handler_gen(BaseClass):
     return FileHandler
 
 
-# CRYPTOGRAPHICS
+## Cryptographics ##
 secret_key_unhex = binascii.unhexlify(config.secret_key)
 
 

@@ -33,11 +33,10 @@ import os
 import codecs
 import traceback
 
-from cms import config
+from cms import config, logger
 from cms.db.SQLAlchemyAll import Executable
 from cms.grading import JobException
 from cms.grading.Sandbox import Sandbox
-from cms.service.LogService import logger
 from cms.util.Utils import white_diff
 
 

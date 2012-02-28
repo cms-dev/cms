@@ -27,10 +27,10 @@ CMS.
 
 import argparse
 
+from cms import logger
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.db.Utils import analyze_all_tables, ask_for_contest
-from cms.service.LogService import logger
 
 from cmscontrib.YamlImporter import YamlLoader
 

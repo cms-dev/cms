@@ -29,9 +29,8 @@ import tempfile
 import shutil
 import hashlib
 
-from cms import config
+from cms import config, logger
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
-from cms.service.LogService import logger
 from cms.util.Utils import mkdir
 
 

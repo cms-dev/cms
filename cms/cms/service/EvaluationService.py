@@ -32,12 +32,11 @@ import random
 
 import heapq
 
-from cms import default_argument_parser
+from cms import default_argument_parser, logger
 from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback
 from cms.async import ServiceCoord, get_service_shards
 from cms.db.Utils import ask_for_contest
 from cms.db.SQLAlchemyAll import Contest, Submission, SessionGen
-from cms.service.LogService import logger
 
 
 class JobQueue:

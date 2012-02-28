@@ -31,7 +31,7 @@ import simplejson as json
 import tornado.web
 import tornado.locale
 
-from cms import config, default_argument_parser
+from cms import config, default_argument_parser, logger
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord, get_service_shards, get_service_address
 from cms.db.FileCacher import FileCacher
@@ -40,7 +40,6 @@ from cms.db.SQLAlchemyAll import Session, \
      Attachment, Manager, Testcase, SubmissionFormatElement
 from cms.grading.tasktypes import get_task_type
 from cms.server.Utils import file_handler_gen, catch_exceptions
-from cms.service.LogService import logger
 from cms.util.Utils import valid_ip
 
 

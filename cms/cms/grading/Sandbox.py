@@ -27,7 +27,7 @@ import stat
 import select
 import re
 
-from cms.service.LogService import logger
+from cms import logger
 
 
 class SandboxInterfaceException(Exception):
