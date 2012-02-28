@@ -174,10 +174,10 @@ class YamlLoader:
                     path=os.path.join(path, "cor", "correttore"),
                     description="Manager for task %s" % (name)),
                         "checker").export_to_dict()]
-            params["task_type_parameters"] = "[\"comp\", \"file\"]"
+            params["task_type_parameters"] = '["alone", "file", "comp"]'
         elif os.path.exists(os.path.join(path, "cor", "manager")):
             params["task_type"] = "Communication"
-            params["task_type_parameters"] = "{}"
+            params["task_type_parameters"] = '[]'
             params["managers"] = [
                 Manager(self.file_cacher.put_file(
                     path=os.path.join(path, "cor", "manager"),
@@ -194,7 +194,7 @@ class YamlLoader:
                                 "stub.%s" % lang).export_to_dict())
         else:
             params["managers"] = {}
-            params["task_type_parameters"] = "[\"diff\", \"file\"]"
+            params["task_type_parameters"] = '["alone", "file", "diff"]'
         params["score_type"] = conf.get("score_type",
                                         ScoreTypes.SCORE_TYPE_SUM)
         params["score_parameters"] = conf.get(
