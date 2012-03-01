@@ -845,7 +845,6 @@ class EvaluationService(Service):
             compiled = submission.compiled()
             evaluated = submission.evaluated()
             tokened = submission.tokened()
-            session.commit()
 
         if not compiled:
             # If not compiled, I compile. Note that we give here a
