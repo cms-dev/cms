@@ -201,7 +201,7 @@ class WorkerPool:
         self.error_count[shard] = 0
         self.schedule_disabling[shard] = False
         self.side_data[shard] = None
-        logger.debug("Worker %d added " % shard)
+        logger.debug("Worker %s added." % shard)
 
     def on_worker_connected(self, worker_coord):
         """To be called when a worker comes alive after being
@@ -213,7 +213,7 @@ class WorkerPool:
 
         """
         shard = worker_coord.shard
-        logger.info("Worker %d online again." % shard)
+        logger.info("Worker %s online again." % shard)
         self.worker[shard].precache_files(contest_id=self.service.contest_id)
         # If we know that the worker was doing some job, we requeue
         # the job.
@@ -250,16 +250,16 @@ class WorkerPool:
         self.job[shard] = job
         self.start_time[shard] = int(time.time())
         self.side_data[shard] = side_data
-        logger.debug("Worker %d acquired" % shard)
+        logger.debug("Worker %s acquired." % shard)
 
         # And finally we ask the worker to do the job
         action, submission_id = job
         timestamp = side_data[1]
         queue_time = self.start_time[shard] - timestamp
-        logger.info("Asking worker %d to %s submission %s "
-                    " (%d seconds after submission)" %
+        logger.info("Asking worker %s to %s submission %s "
+                    " (%s seconds after submission)" %
                     (shard, action, submission_id, queue_time))
-        logger.debug("Still %d jobs in the queue" %
+        logger.debug("Still %s jobs in the queue." %
                      self.service.queue.length())
         if action == EvaluationService.JOB_TYPE_COMPILATION:
             self.worker[shard].compile(
@@ -288,20 +288,19 @@ class WorkerPool:
         """
         if self.job[shard] == self.WORKER_INACTIVE or \
                 self.job[shard] == self.WORKER_DISABLED:
-            logger.error("Trying to release worker "
-                         "while it's inactive")
-            raise ValueError("Trying to release worker "
-                             "while it's inactive")
+            err_msg = "Trying to release worker while it's inactive."
+            logger.error(err_msg)
+            raise ValueError(err_msg)
         self.start_time[shard] = None
         self.side_data[shard] = None
         if self.schedule_disabling[shard]:
             self.job[shard] = self.WORKER_DISABLED
             self.schedule_disabling[shard] = False
-            logger.info("Worker %d released and disabled" % shard)
+            logger.info("Worker %s released and disabled." % shard)
             return True
         else:
             self.job[shard] = self.WORKER_INACTIVE
-            logger.debug("Worker %d released" % shard)
+            logger.debug("Worker %s released." % shard)
             return False
 
     def find_worker(self, job, require_connection=False, random_worker=False):
@@ -380,7 +379,7 @@ class WorkerPool:
                     # intelligent life for too much time.
                     logger.error("Disabling and shutting down "
                                  "worker %d because of no reponse "
-                                 "in %.2f seconds" %
+                                 "in %.2f seconds." %
                                  (shard, active_for))
                     assert self.job[shard] != self.WORKER_INACTIVE \
                         and self.job[shard] != self.WORKER_DISABLED
@@ -508,7 +507,7 @@ class EvaluationService(Service):
 
         new = len(new_submission_ids_to_check)
         old = len(self.submission_ids_to_check)
-        logger.info("Submissions found with jobs to do: %d." % new)
+        logger.info("Submissions found with jobs to do: %s." % new)
         if new > 0:
             self.submission_ids_to_check += new_submission_ids_to_check
             if old == 0:
@@ -704,7 +703,7 @@ class EvaluationService(Service):
             return
 
         if error is not None:
-            logger.error("Received error from Worker: `%s'" % error)
+            logger.error("Received error from Worker: `%s'." % error)
             return
 
         job_type, submission_id = job
@@ -718,7 +717,7 @@ class EvaluationService(Service):
             submission = Submission.get_from_id(submission_id, session)
             if submission is None:
                 logger.critical("[action_finished] Couldn't find submission "
-                                "%s in the database" % submission_id)
+                                "%s in the database." % submission_id)
                 return
 
             if job_type == EvaluationService.JOB_TYPE_COMPILATION:
@@ -750,7 +749,7 @@ class EvaluationService(Service):
 
         # Other (i.e. error)
         else:
-            logger.error("Invalid job type %r" % job_type)
+            logger.error("Invalid job type %r." % job_type)
             return
 
     def compilation_ended(self, submission_id,
@@ -783,7 +782,7 @@ class EvaluationService(Service):
             if compilation_tries > EvaluationService.MAX_COMPILATION_TRIES:
                 logger.error("Maximum tries reached for the "
                              "compilation of submission %s. I will "
-                             "not try again" % submission_id)
+                             "not try again." % submission_id)
             else:
                 # Note: lower priority (MEDIUM instead of HIGH) for
                 # compilation that are probably failing again.
@@ -825,7 +824,7 @@ class EvaluationService(Service):
         else:
             logger.error("Maximum tries reached for the "
                          "evaluation of submission %s. I will "
-                         "not try again" % submission_id)
+                         "not try again." % submission_id)
 
     @rpc_method
     def new_submission(self, submission_id):
