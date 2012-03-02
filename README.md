@@ -9,7 +9,7 @@ CMS, or Contest Management System, is a distributed system for running
 and (with some extent) organizing a programming contest.
 
 CMS has been designed to be general and to handle many different types
-of contests, tasks, scoring, ... . Nonetheless, CMS has been
+of contests, tasks, scorings, ... . Nonetheless, CMS has been
 explicitly build to be used in the 2012 International Olympiads in
 Informatics, to be held in September 2012 in Italy.
 
@@ -18,23 +18,23 @@ Description
 -----------
 
 CMS is composed of several services, that can be run on a single or on
-several servers. The core services are:
+many servers. The core services are:
 
 - LogService: collects all log message in a single place;
 
-- ResourceService: collects data about the server and the services
-  running there, and takes care of starting all of them with a single
+- ResourceService: collects data about the services running on the
+  same server, and takes care of starting all of them with a single
   command;
 
 - Checker: simple heartbeat monitor for all services;
 
 - EvaluationService: organizes the queue of the submissions to compile
-  or evaluate on the testcases, and dispatch these jobs to the
+  or evaluate on the testcases, and dispatches these jobs to the
   workers;
 
-- Worker: actually run the jobs in a sandboxed environment;
+- Worker: actually runs the jobs in a sandboxed environment;
 
-- ScoringService: collects the outcome of the submissions and compute
+- ScoringService: collects the outcomes of the submissions and compute
   the score; also sends these scores to the rankings;
 
 - ContestWebServer: the webserver that the contestants will be
@@ -45,8 +45,9 @@ several servers. The core services are:
 
 Finally, RankingWebServer, whose duty is of course to show the
 ranking. This webserver is - on purpose - separated from the inner
-core of CMS in order to easy the creation of mirrors and restrict the
-number of people that access to services accessing the database.
+core of CMS in order to ease the creation of mirrors and restrict the
+number of people that can access services that are directly connected
+to the database.
 
 Files and configurations are stored in a PostgreSQL database.
 
@@ -63,12 +64,12 @@ Recommended setup
 Of course, the number of servers one needs to run a contest depends on
 many factors (number of participants, length of the contest,
 economical issues, more technical matters...). We recommend that, for
-fairness, there is at least on server associated only to a worker.
+fairness, there is at least one server associated only to a worker.
 
-As for the distribution of services, usually there are one
+As for the distribution of services, usually there is one
 ResourceService for each server, one copy each of LogService,
 ScoringService, Checker, EvaluationService, AdminWebServer, and one or
-more of ContestWebServer and Worker. If there are more than one
+more of ContestWebServer and Worker. Again, if there are more than one
 worker, we recommend to run them on different servers.
 
 Our preferred distribution is Ubuntu >= 11.10. With Ubuntu 11.10 one
@@ -77,12 +78,12 @@ as soon as it is deployed, we will target explicitly Ubuntu 12.04
 LTS. We will hopefully support Ubuntu 12.04.x out of the box for the
 length of Ubuntu's support duration, that is five years.
 
-Very important note: we support only 32 bit distributions.
+Very important note: up to now, we support only 32 bit distributions.
 
 Saying that, one is not forced to follow the previous rules, and it
 should not be very hard to successfully run CMS on different
 distributions or even on 64 bit installations (see the howto about
-setting up a 32 bits chroot for more information about this).
+setting up a 32 bits chroot for more information on this).
 
 
 Dependencies
