@@ -37,7 +37,8 @@ import zipfile
 from cms import logger
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest, metadata
-from cms.util.Utils import sha1sum
+
+from cmscontrib import sha1sum
 
 
 def find_root_of_archive(file_names):

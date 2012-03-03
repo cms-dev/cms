@@ -40,7 +40,27 @@ from cms.db.SQLAlchemyAll import Session, \
      Attachment, Manager, Testcase, SubmissionFormatElement
 from cms.grading.tasktypes import get_task_type
 from cms.server.Utils import file_handler_gen, catch_exceptions
-from cms.util.Utils import valid_ip
+
+
+def valid_ip(ip_address):
+    """Return True if ip_address is a valid IPv4 address.
+
+    ip_address (string): the ip to validate.
+
+    return (bool): True iff valid.
+
+    """
+    fields = ip_address.split(".")
+    if len(fields) != 4:
+        return
+    for field in fields:
+        try:
+            num = int(field)
+        except ValueError:
+            return False
+        if num < 0 or num >= 256:
+            return False
+    return True
 
 
 class BaseHandler(tornado.web.RequestHandler):

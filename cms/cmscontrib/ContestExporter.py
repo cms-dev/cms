@@ -38,7 +38,8 @@ from cms import config, logger
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.db.Utils import ask_for_contest
-from cms.util.Utils import sha1sum
+
+from cmscontrib import sha1sum
 
 
 def get_archive_info(file_name):

@@ -1,9 +1,9 @@
 {% import time %}
 {% import simplejson as json %}
-{% import cms.util.Utils as Utils %}
-{% import cms.util.Cryptographics as Cryptographics %}
+{% import cms %}
+{% import cms.server.Utils as Utils %}
 
-{% set encrypted_id = Cryptographics.encrypt_number(s.id) %}
+{% set encrypted_id = Utils.encrypt_number(s.id) %}
 
 <div id="submission_status_{{ encrypted_id }}" name="submission_status"
     {% if s.compilation_outcome is None or (s.compilation_outcome != "fail" and not s.evaluated()) %}

@@ -33,10 +33,10 @@ from argparse import ArgumentParser
 
 from cms.async import ServiceCoord, Address, config as async_config
 from cms.async.AsyncLibrary import RemoteService
-from cms.util.Utils import mkdir
 
 
 ## Configuration ##
+
 class Config:
     """This class will contain the configuration for CMS. This needs
     to be populated at the initilization stage. This is loaded by
@@ -442,6 +442,8 @@ class Logger(object):
 logger = Logger()
 
 
+## Other utilities. ##
+
 def default_argument_parser(description, cls, ask_contest=None):
     """Default argument parser for services - in two versions: needing
     a contest_id, or not.
@@ -474,3 +476,19 @@ def default_argument_parser(description, cls, ask_contest=None):
             return cls(args.shard, ask_contest())
     else:
         return cls(args.shard)
+
+
+def mkdir(path):
+    """Make a directory without complaining for errors.
+
+    path (string): the path of the directory to create
+    returns (bool): True if the dir is ok, False if it is not
+
+    """
+    try:
+        os.mkdir(path)
+        return True
+    except OSError:
+        if os.path.isdir(path):
+            return True
+    return False

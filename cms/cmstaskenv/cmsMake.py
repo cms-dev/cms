@@ -28,7 +28,7 @@ import copy
 import functools
 import shutil
 
-from cms.util.Utils import get_compilation_command
+from cms.grading import get_compilation_command
 
 SOL_DIRNAME = 'sol'
 SOL_FILENAME = 'soluzione'

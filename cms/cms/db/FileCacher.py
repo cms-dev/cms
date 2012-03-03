@@ -29,9 +29,8 @@ import tempfile
 import shutil
 import hashlib
 
-from cms import config, logger
+from cms import config, logger, mkdir
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
-from cms.util.Utils import mkdir
 
 
 class FileCacher:

@@ -20,10 +20,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from cms.db.SQLAlchemyAll import Evaluation
+from cms.grading import get_compilation_command
+from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
-from cms.grading.ParameterTypes import ParameterTypeChoice
-from cms.util.Utils import get_compilation_command
 
 
 class Batch(TaskType):

@@ -70,10 +70,10 @@ class Worker(Service):
 
         try:
             task_type = get_task_type(submission, self.file_cacher)
-        except KeyError as ke:
+        except KeyError as error:
             err_msg = "Task type `%s' not known for " \
-                "submission %s (error: %s)." \
-                % (submission.task.task_type, submission_id, str(ke))
+                "submission %s (error: %s)." % (
+                submission.task.task_type, submission_id, error)
             logger.error(err_msg)
             raise JobException(err_msg)
 

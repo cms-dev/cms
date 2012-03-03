@@ -25,3 +25,23 @@ ContestExport, whose aim is to be one the inverse of the other (hence
 losing no data in the process).
 
 """
+
+import hashlib
+
+
+def sha1sum(path):
+    """Calculates the SHA1 sum of a file, given by its path.
+
+    path (string): path of the file we are interested in.
+
+    return (string): SHA1 sum of the file in path.
+
+    """
+    BUFLEN = 8192
+    with open(path, 'rb') as fin:
+        hasher = hashlib.sha1()
+        buf = fin.read(BUFLEN)
+        while buf != '':
+            hasher.update(buf)
+            buf = fin.read(BUFLEN)
+        return hasher.hexdigest()

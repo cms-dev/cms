@@ -27,11 +27,11 @@ import os
 import time
 import codecs
 
-from cms import config, default_argument_parser, logger, format_log, \
+from cms import config, default_argument_parser, mkdir, \
+     logger, format_log, \
      SEV_CRITICAL, SEV_ERROR, SEV_WARNING
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_method
-from cms.util.Utils import mkdir
 
 
 class LogService(Service):

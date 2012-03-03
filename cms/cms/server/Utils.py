@@ -24,6 +24,7 @@
 """
 
 import os
+import datetime
 import traceback
 import time
 import base64
@@ -140,6 +141,23 @@ def extract_archive(temp_name, original_filename):
     return file_list
 
 
+def format_time_or_date(timestamp):
+    """Return timestamp formatted as HH:MM:SS if the date is
+    the same date as today, as a complete date + time if the
+    date is different.
+
+    timestamp (int): unix time.
+
+    return (string): timestamp formatted as above.
+
+    """
+    dt_ts = datetime.datetime.fromtimestamp(timestamp)
+    if dt_ts.date() == datetime.date.today():
+        return dt_ts.strftime("%H:%M:%S")
+    else:
+        return dt_ts.strftime("%H:%M:%S, %d/%m/%Y")
+
+
 def file_handler_gen(BaseClass):
     """This generates an extension of the BaseHandler that allows us
     to send files to the user. This *Gen is needed because the code in
@@ -147,7 +165,8 @@ def file_handler_gen(BaseClass):
     they inherits from different BaseHandler.
 
     BaseClass (class): the BaseHandler of our server.
-    returns (class): a FileHandler extending BaseClass.
+
+    return (class): a FileHandler extending BaseClass.
 
     """
     class FileHandler(BaseClass):
@@ -203,6 +222,7 @@ def file_handler_gen(BaseClass):
 
 
 ## Cryptographics ##
+
 secret_key_unhex = binascii.unhexlify(config.secret_key)
 
 
