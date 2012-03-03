@@ -429,7 +429,7 @@ var DataStore = new function () {
     });
 
     self.user_create.add(function (key, data) {
-        // Set scores
+        // Add scores
         for (var t_id in self.tasks) {
             data["t_" + t_id] = 0.0;
         }
@@ -440,20 +440,29 @@ var DataStore = new function () {
     });
 
     self.user_update.add(function (key, old_data, data) {
-        // Set scores
+        // Copy scores
         for (var t_id in self.tasks) {
             data["t_" + t_id] = old_data["t_" + t_id];
+            delete old_data["t_" + t_id];
         }
         for (var c_id in self.contests) {
             data["c_" + c_id] = old_data["c_" + c_id];
+            delete old_data["c_" + c_id];
         }
         data["global"] = old_data["global"];
+        delete old_data["global"];
     });
 
-    /* Just for "completeness" we may want to add a handler also for the
-       deletion, to check that the user really has all scores set to zero and
-       to "delete" those scores, in order to return a "clean" user object.
-     */
+    self.user_delete.add(function (key, old_data) {
+        // Remove scores
+        for (var t_id in self.tasks) {
+            delete old_data["t_" + t_id];
+        }
+        for (var c_id in self.contests) {
+            delete old_data["c_" + c_id];
+        }
+        delete old_data["global"];
+    });
 
 
     ////// Score
@@ -723,7 +732,8 @@ var DataStore = new function () {
         var a = data;
         for (var i = 0; i < self.team_list.length; i += 1) {
             var b = self.team_list[i];
-            if ((a["name"] < b["name"]) || (key < b["key"])) {
+            if ((a["name"] < b["name"]) || ((a["name"] < b["name"]) &&
+                (key < b["key"]))) {
                 // We found the first element which is greater than a
                 self.team_list.splice(i, 0, a);
                 return;

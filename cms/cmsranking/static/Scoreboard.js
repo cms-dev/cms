@@ -295,7 +295,7 @@ var Scoreboard = new function () {
         $("#Scoreboard_body tr td:nth-child(" + (6 + self.sort_index) + ")").removeClass("sort_key");
 
         self.sort_index = sort_index;
-        
+
         var sort_key = self.cols_list[self.sort_index];
 
         var list = self.user_list;
@@ -332,7 +332,7 @@ var Scoreboard = new function () {
 
     // This callback is called by the DataStore when a user is created.
     self.create_user = function (u_id, user) {
-        var row = self.make_row(user);
+        var row = $(self.make_row(user)).get(0);
 
         user["row"] = row;
         $("#Scoreboard_body").append(row);
@@ -340,12 +340,24 @@ var Scoreboard = new function () {
         user["index"] = self.user_list.length;
         self.user_list.push(user);
         self.move_user(user);
+
+        // create callbacks for selection
+        var check = row.children[0].children[0];
+        check.addEventListener('change', self.select_factory(u_id));
+
+        // create callbacks for UserPanel
+        row.children[2].addEventListener('click', self.user_callback_factory(u_id));
+        row.children[3].addEventListener('click', self.user_callback_factory(u_id));
     };
 
     // This callback is called by the DataStore when a user is updated.
     // It updates only its basic information (first name, last name and team).
-    self.update_user = function (u_id, user) {
-        var row = user["row"];
+    self.update_user = function (u_id, old_user, user) {
+        var row = old_user["row"];
+        user["row"] = row;
+        user["index"] = old_user["index"];
+
+        self.user_list.splice(user["index"], 1, user);
 
         $(row).children(".f_name").text(user["f_name"]);
         $(row).children(".l_name").text(user["l_name"]);
@@ -358,8 +370,11 @@ var Scoreboard = new function () {
     };
 
     // This callback is called by the DataStore when a user is deleted.
-    self.delete_user = function (u_id, user) {
-        var row = user["row"];
+    self.delete_user = function (u_id, old_user) {
+        var row = old_user["row"];
+        self.user_list.splice(old_user["index"], 1);
+        delete old_user["row"];
+        delete old_user["index"];
 
         $(row).remove();
     };
