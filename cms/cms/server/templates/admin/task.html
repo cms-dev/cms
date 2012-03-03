@@ -15,6 +15,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
 
 {% block core %}
 {% import json %}
+{% from cms.grading.ScoreType import ScoreTypes %}
 
 {% comment TODO: Dynamic loading of task types %}
 {% from cms.grading.tasktypes.Batch import Batch %}
@@ -59,7 +60,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
             {% elif not s.evaluated() %}
             Evaluating...
             {% elif s.scored() %}
-            Evaluated ({{ s.score }} / {{ s.task.max_score }})
+            Evaluated ({{ s.score }} / {{ ScoreTypes.get_score_type(submission=s).max_score }})
               {% for detail in json.loads(s.score_details) %}
             <br/>{{ detail }}
               {% end %}

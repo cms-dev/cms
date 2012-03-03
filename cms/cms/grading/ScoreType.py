@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import simplejson as json
+
 from cms import logger
 
 
@@ -45,13 +47,35 @@ class ScoreTypes:
     SCORE_TYPE_RELATIVE = "ScoreTypeRelative"
 
     @staticmethod
-    def get_score_type(score_type, score_parameters, public_testcases):
-        """Returns the right score type class for a given string.
+    def get_score_type(submission=None, task=None, score_type=None):
+        """Returns the right score type class for a given string,
+        provided in one out of the three possible way (submission,
+        task or score_type).
 
-        score_type (string): the name of the score type class.
-        score_parameters (dict): the parameters for the new object.
+        submission (Submission): the submission that needs the score
+                                 type.
+        task (Task): the task that needs the score type.
+        score_type_name (string): the name of the desired score_type.
+
+        return (object): an instance of the correct ScoreType class.
 
         """
+        # Validate arguments.
+        if [x is not None
+            for x in [submission, task, score_type]].count(True) != 1:
+            raise ValueError("Need at most one way to get the score type.")
+
+        # Recover information from the arguments.
+        score_parameters = None
+        public_testcases = None
+        if submission is not None:
+            task = submission.task
+        if task is not None:
+            score_type = task.score_type
+            score_parameters = json.loads(task.score_parameters)
+            public_testcases = [testcase.public
+                                for testcase in task.testcases]
+
         if score_type == ScoreTypes.SCORE_TYPE_SUM:
             return ScoreTypeSum(score_parameters, public_testcases)
         elif score_type == ScoreTypes.SCORE_TYPE_GROUP_MIN:

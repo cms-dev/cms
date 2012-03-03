@@ -24,8 +24,6 @@ directly (import it from SQLAlchemyAll).
 
 """
 
-import simplejson as json
-
 from sqlalchemy import Column, ForeignKey, Boolean, Integer, String, Float, \
      CheckConstraint
 from sqlalchemy.orm import relationship, backref
@@ -34,7 +32,6 @@ from sqlalchemy.ext.orderinglist import ordering_list
 
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Contest import Contest
-from cms.grading.ScoreType import ScoreTypes
 
 
 class Task(Base):
@@ -201,41 +198,6 @@ class Task(Base):
         data['testcases'] = [Testcase.import_from_dict(testcase_data)
                              for testcase_data in data['testcases']]
         return cls(**data)
-
-    def get_scorer(self):
-        """Returns an appropriare ScoreType instance with the right parameters.
-
-        return (object): an appropriate ScoreType instance
-
-        """
-        if self.scorer is None:
-            self.scorer = ScoreTypes.get_score_type(
-                self.score_type,
-                json.loads(self.score_parameters),
-                [testcase.public for testcase in self.testcases])
-
-        return self.scorer
-
-    @property
-    def max_score(self):
-        """Return the maximum possible score for this task.
-
-        return (float): maximum score.
-
-        """
-        self.get_scorer()
-        return self.scorer.max_score
-
-    @property
-    def max_public_score(self):
-        """Return the maximum possible score for the public part of
-        this task.
-
-        return (float): maximum score in the public part.
-
-        """
-        self.get_scorer()
-        return self.scorer.max_public_score
 
 
 class Testcase(Base):

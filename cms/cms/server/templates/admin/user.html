@@ -1,6 +1,7 @@
 {% extends base.html %}
 
 {% block js %}
+{% from cms.grading.ScoreType import ScoreTypes %}
 function question_reply_toggle(element, invoker)
 {
   var obj = document.getElementsByClassName("reply_question")[element];
@@ -64,7 +65,7 @@ function update_additional_answer(element, invoker)
             {% elif not s.evaluated() %}
             Evaluating...
             {% elif s.scored() %}
-            Evaluated ({{ s.score }} / {{ s.task.max_score }})
+            Evaluated ({{ s.score }} / {{ ScoreTypes.get_score_type(submission=s).max_score }})
               {% for detail in json.loads(s.score_details) %}
             <br/>{{ detail }}
               {% end %}

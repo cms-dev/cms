@@ -1,6 +1,7 @@
 {% import time %}
 {% import simplejson as json %}
 {% import cms %}
+{% from cms.grading.ScoreType import ScoreTypes %}
 {% import cms.server.Utils as Utils %}
 
 {% set encrypted_id = Utils.encrypt_number(s.id) %}
@@ -21,12 +22,12 @@
   {{ _("Evaluating...") }}
   {% elif s.scored() %}
     {% if s.token is not None %}
-  Evaluated ({{ s.score }} / {{ s.task.max_score }})
+  Evaluated ({{ s.score }} / {{ ScoreTypes.get_score_type(submission=s).max_score }})
       {% for detail in json.loads(s.score_details) %}
   <br/>{{ detail }}
       {% end %}
     {% else %}
-  Evaluated ({{ s.public_score }} / {{ s.task.max_public_score }})
+  Evaluated ({{ s.public_score }} / {{ ScoreTypes.get_score_type(submission=s).max_public_score }})
       {% for detail in json.loads(s.public_score_details) %}
   <br/>{{ detail }}
       {% end %}
