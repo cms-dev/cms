@@ -397,7 +397,6 @@ var DataStore = new function () {
     self.contest_delete.add(function (key, data) {
         // Remove scores
         for (var u_id in self.users) {
-            self.users[u_id]["global"] -= self.users[u_id]["c_" + key];
             delete self.users[u_id]["c_" + key];
         }
     });
@@ -417,6 +416,12 @@ var DataStore = new function () {
     self.task_delete.add(function (key, data) {
         // Remove scores
         for (var u_id in self.users) {
+            /* Actually the next two lines aren't necessary because (in theory)
+               the server will delete all submissions and subchanges related to
+               this user/task before it deletes the task itself, so the score
+               should already have been set to zero. But since this isn't yet
+               implemented in the server, we keep this (for now).
+             */
             self.users[u_id]["global"] -= self.users[u_id]["t_" + key];
             self.users[u_id]["c_" + data["contest"]] -= self.users[u_id]["t_" + key];
             delete self.users[u_id]["t_" + key];
@@ -434,7 +439,21 @@ var DataStore = new function () {
         data["global"] = 0.0;
     });
 
-    // TODO: Copy all scores from old_data to new_data when user is updated.
+    self.user_update.add(function (key, old_data, data) {
+        // Set scores
+        for (var t_id in self.tasks) {
+            data["t_" + t_id] = old_data["t_" + t_id];
+        }
+        for (var c_id in self.contests) {
+            data["c_" + c_id] = old_data["c_" + c_id];
+        }
+        data["global"] = old_data["global"];
+    });
+
+    /* Just for "completeness" we may want to add a handler also for the
+       deletion, to check that the user really has all scores set to zero and
+       to "delete" those scores, in order to return a "clean" user object.
+     */
 
 
     ////// Score
@@ -465,6 +484,10 @@ var DataStore = new function () {
     };
 
     self.set_score = function (u_id, t_id, new_score) {
+        /* It may be "nice" (if not "useful") to check that the user and task
+           do actually exists! It should be the server to ensure that but since
+           it doesn't do it (yet) we cannot be sure about that.
+         */
         var user = self.users[u_id];
         var old_score = user["t_" + t_id];
         user["global"] += new_score - old_score;
@@ -521,10 +544,36 @@ var DataStore = new function () {
             user["rank"] = rank;
         }
 
+        self.score_events.add(self.update_rank);
+
+        self.user_create.add(function (u_id, user) {
+            var new_rank = 1;
+
+            for (var u_id in self.users) {
+                if (self.users[u_id]["global"] > user["global"]) {
+                    new_rank += 1;
+                }
+            }
+
+            user["rank"] = new_rank;
+        });
+
+        self.user_update.add(function (u_id, old_user, user) {
+            user["rank"] = old_user["rank"];
+        });
+
+        /* On deletion:
+           The score should already be zero, so the rank should aready be the
+           "last" (i.e. the "highest" possible). So deleting that user
+           shouldn't cause changes in other users' ranks. But we could add a
+           hanlder just to "delete" the rank, in order to return a "clean" user
+           object.
+         */
+
         self.init_callback();
     };
 
-    self.score_events.add(function (u_id, user) {
+    self.update_rank = function (u_id, user) {
         var new_score = user["global"];
         var old_rank = user["rank"];
         var new_rank = 1;
@@ -545,9 +594,7 @@ var DataStore = new function () {
 
         user["rank"] = new_rank;
         self.rank_events.fire(u_id, user);
-    });
-
-    // TODO: Add rank on user creation and remove it on user deletion
+    };
 
 
     ////// Initialization
