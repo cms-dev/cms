@@ -37,6 +37,8 @@ class Entity(object):
     def set(self, data):
         """Set all properties using the given data.
 
+        Accept the data format used on the HTTP interface.
+
         data (str): the properties of the entity, in the "external" format
 
         Raise InvalidData if not able to parse the data argument.
@@ -47,6 +49,8 @@ class Entity(object):
     def get(self):
         """Get all properties.
 
+        Produce the data format used on the HTTP interface.
+
         return (str): the properties of the entity, in the "external" format
 
         """
@@ -54,6 +58,8 @@ class Entity(object):
 
     def load(self, data):
         """Set all properties using the given data.
+
+        Accept the data format used for the file storage.
 
         data (str): the properties of the entity, in the "internal" format
 
@@ -64,6 +70,8 @@ class Entity(object):
 
     def dump(self):
         """Get all properties.
+
+        Produce the data format used for the file storage.
 
         return (str): the properties of the entity, in the "internal" format
 

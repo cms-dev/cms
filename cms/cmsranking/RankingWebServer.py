@@ -228,8 +228,7 @@ class NotificationHandler(DataHandler):
 
         proxy.add_callback(self.send_event)
 
-        # TODO: add automatic connection close after a certain
-        # timeout.
+        # TODO: add automatic connection close after a certain timeout.
 
     def on_connection_close(self):
         proxy.remove_callback(self.send_event)
@@ -342,10 +341,10 @@ def main():
         (r"/flags/([A-Za-z0-9_]+)", ImageHandler, {
             'location': os.path.join(config.lib_dir, 'flags', '%s'),
             'fallback': os.path.join(config.web_dir, 'img', 'flag.png')
-            }),
+        }),
         (r"/(.+)", tornado.web.StaticFileHandler, {
             'path': config.web_dir
-            }),
+        }),
         (r"/", HomeHandler)
         ])
     # application.add_transform(tornado.web.ChunkedTransferEncoding)
