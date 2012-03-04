@@ -327,6 +327,7 @@ var Scoreboard = new function () {
     // This callback is called by the DataStore when a user is created.
     self.create_user = function (u_id, user) {
         var row = $(self.make_row(user)).get(0);
+        $(row).children().eq(5 + self.sort_index).addClass("sort_key");
 
         user["row"] = row;
         $("#Scoreboard_body").append(row);
