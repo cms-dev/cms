@@ -128,7 +128,7 @@ var Scoreboard = new function () {
                 var task = tasks[j];
                 var t_id = task["key"];
                 result += " \
-    <th class=\"score task\"><abbr title=\"" + task["name"] + "\">" + task["name"][0] + "</abbr></th>";
+    <th class=\"score task\"><abbr title=\"" + task["name"] + "\">" + task["short_name"] + "</abbr></th>";
             }
             result += " \
     <th class=\"score contest\">" + contest["name"] + "</th>";

@@ -26,6 +26,7 @@ class Task(Entity):
 
     It consists of the following properties:
     - name (str): the human-readable name of the task
+    - short_name (str): a shorter name for the task, usually a code-name
     - contest (str): the id of the contest the task belongs to
     - score (float): the maximum achievable score for the task
     - data_headers (list of str): a list with the descriptions of the extra
@@ -39,6 +40,7 @@ class Task(Entity):
         """
         Entity.__init__(self)
         self.name = None
+        self.short_name = None
         self.contest = None
         self.score = None
         self.extra_headers = None
@@ -57,6 +59,9 @@ class Task(Entity):
             assert type(data['name']) is unicode or \
                    type(data['name']) is str, \
                 "Field 'name' isn't a string"
+            assert type(data['short_name']) is unicode or \
+                   type(data['short_name']) is str, \
+                "Field 'short_name' isn't a string"
             assert type(data['contest']) is unicode or \
                    type(data['contest']) is str, \
                 "Field 'contest' isn't a string"
@@ -80,6 +85,7 @@ class Task(Entity):
     def set(self, data):
         self.validate(data)
         self.name = data['name']
+        self.short_name = data['short_name']
         self.contest = data['contest']
         self.score = data['score']
         self.extra_headers = data['extra_headers']
@@ -91,6 +97,7 @@ class Task(Entity):
     def load(self, data):
         self.validate(data)
         self.name = data['name']
+        self.short_name = data['short_name']
         self.contest = data['contest']
         self.score = data['score']
         self.extra_headers = data['extra_headers']
