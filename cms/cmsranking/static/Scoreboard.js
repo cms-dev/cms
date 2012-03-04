@@ -173,33 +173,27 @@ var Scoreboard = new function () {
     <td class=\"team\"></td>";
         }
 
-        var global_score = 0.0;
         var contests = DataStore.contest_list;
         for (var i in contests) {
             var contest = contests[i];
             var c_id = contest["key"];
 
-            var contest_score = 0.0;
             var tasks = contest["tasks"];
             for (var j in tasks) {
                 var task = tasks[j];
                 var t_id = task["key"];
 
-                var task_score = DataStore.tasks[t_id]["score"];
-
-                var score_class = self.get_score_class(DataStore.get_score_t(u_id, t_id), task_score);
+                var score_class = self.get_score_class(user["t_" + t_id], task["max_score"]);
                 result += " \
     <td class=\"score task " + score_class + "\">" + round_to_str(DataStore.get_score_t(u_id, t_id)) + "</td>";
-                contest_score += task_score;
             }
 
-            var score_class = self.get_score_class(DataStore.get_score_c(u_id, c_id), contest_score);
+            var score_class = self.get_score_class(user["c_" + c_id], contest["max_score"]);
             result += " \
     <td class=\"score contest " + score_class + "\">" + round_to_str(DataStore.get_score_c(u_id, c_id)) + "</td>";
-            global_score += contest_score
         }
 
-        var score_class = self.get_score_class(DataStore.get_score(u_id), global_score)
+        var score_class = self.get_score_class(user["global"], DataStore.global_max_score);
         result += " \
     <td class=\"score global " + score_class + "\">" + round_to_str(DataStore.get_score(u_id)) + "</td> \
 </tr>";
@@ -384,8 +378,20 @@ var Scoreboard = new function () {
         var row = user["row"];
 
         $(row).children(".score").each(function (index) {
-            // TODO remove (and re-add) score class!!
-            $(this).text(user[self.cols_list[index]]);
+            var score_key = self.cols_list[index];
+
+            if (score_key.substring(0, 2) == "t_") { // task
+                var score_class = self.get_score_class(user[score_key], DataStore.tasks[score_key.substring(2)]["max_score"]);
+            } else if (score_key.substring(0, 2) == "c_") { // contest
+                var score_class = self.get_score_class(user[score_key], DataStore.contests[score_key.substring(2)]["max_score"]);
+            } else { // global
+                var score_class = self.get_score_class(user[score_key], DataStore.global_max_score);
+            }
+
+            $(this).removeClass("score_0 score_0_10 score_10_20 score_20_30 score_30_40 score_40_50 score_50_60 score_60_70 score_70_80 score_80_90 score_90_100 score_100");
+            $(this).addClass(score_class);
+
+            $(this).text(user[score_key]);
         });
 
         self.move_user(user);

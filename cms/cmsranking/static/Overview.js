@@ -38,39 +38,12 @@ var Overview = new function () {
     };
 
     self.update_score = function () {
-        var users = new Array();
-
+        var users_l = Object.keys(DataStore.users).length;
         for (var u_id in DataStore.users) {
-            users.push([u_id, DataStore.get_score(u_id)]);
-        }
+            var user = DataStore.users[u_id];
 
-        users.sort(function (a, b) {
-            return b[1] - a[1];
-        });
-
-        var total_score = 0;
-        for (var t_id in DataStore.tasks) {
-            total_score += DataStore.tasks[t_id]["score"];
-        }
-
-        var prev_score = null;
-        var rank = 0;
-        var equal = 1;
-
-        for (var idx in users) {
-            var u_id = users[idx][0];
-            var score = users[idx][1];
-
-            if (score !== prev_score) {
-                prev_score = score;
-                rank += equal;
-                equal = 1;
-            } else {
-                equal += 1;
-            }
-
-            $("#" + u_id + "_lm").css("bottom", (100 * score / total_score).toString() + "%");
-            $("#" + u_id + "_rm").css("bottom", (100 - 100 * (rank - 1) / users.length).toString() + "%");
+            $("#" + u_id + "_lm").css("bottom", (100 * user["global"] / DataStore.global_max_score).toString() + "%");
+            $("#" + u_id + "_rm").css("bottom", (100 - 100 * (user["rank"] - 1) / users_l).toString() + "%");
         }
     };
 

@@ -369,7 +369,7 @@ class ScoringService(Service):
             tasks = [["/tasks/%s" % encode_id(task.name),
                       {"name": task.title,
                        "contest": encode_id(contest.name),
-                       "score": 100.0,
+                       "max_score": 100.0,
                        "extra_headers": [],
                        "order": task.num,
                        "short_name": encode_id(task.name)}]

@@ -28,7 +28,7 @@ class Task(Entity):
     - name (str): the human-readable name of the task
     - short_name (str): a shorter name for the task, usually a code-name
     - contest (str): the id of the contest the task belongs to
-    - score (float): the maximum achievable score for the task
+    - max_score (float): the maximum achievable score for the task
     - data_headers (list of str): a list with the descriptions of the extra
         fields that will be provided with each submission for the task
     - order (int): the order of the tasks inside of the contest
@@ -42,7 +42,7 @@ class Task(Entity):
         self.name = None
         self.short_name = None
         self.contest = None
-        self.score = None
+        self.max_score = None
         self.extra_headers = None
         self.order = None
 
@@ -65,8 +65,8 @@ class Task(Entity):
             assert type(data['contest']) is unicode or \
                    type(data['contest']) is str, \
                 "Field 'contest' isn't a string"
-            assert type(data['score']) is float, \
-                "Field 'score' isn't a float"
+            assert type(data['max_score']) is float, \
+                "Field 'max_score' isn't a float"
             assert type(data['extra_headers']) is list, \
                 "Field 'extra_headers' isn't a list of strings"
             for i in data['extra_headers']:
@@ -87,7 +87,7 @@ class Task(Entity):
         self.name = data['name']
         self.short_name = data['short_name']
         self.contest = data['contest']
-        self.score = data['score']
+        self.max_score = data['max_score']
         self.extra_headers = data['extra_headers']
         self.order = data['order']
 
@@ -99,7 +99,7 @@ class Task(Entity):
         self.name = data['name']
         self.short_name = data['short_name']
         self.contest = data['contest']
-        self.score = data['score']
+        self.max_score = data['max_score']
         self.extra_headers = data['extra_headers']
         self.order = data['order']
 

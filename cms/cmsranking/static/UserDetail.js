@@ -219,11 +219,7 @@ var UserDetail = new function () {
                 intervals.push([b, e]);
             }
 
-            var score = 0;
-            for (var t_id in DataStore.tasks) {
-                score += DataStore.tasks[t_id]["score"];
-            }
-
+            var score = DataStore.global_max_score;
             var users = Object.keys(DataStore.users).length;
 
             Chart.draw_chart(self.score_chart, // canvas object
@@ -259,7 +255,8 @@ var UserDetail = new function () {
 
             var task = DataStore.tasks[task_id];
             var contest = DataStore.contests[task["contest"]];
-            var score = task["score"];
+
+            var score = task["max_score"];
             var users = Object.keys(DataStore.users).length;
 
             Chart.draw_chart(self.score_chart, // canvas object
@@ -295,11 +292,8 @@ var UserDetail = new function () {
             self.subm_table.innerHTML = "";
 
             var contest = DataStore.contests[contest_id];
-            var score = 0;
 
-            for (var i in contest["tasks"]) {
-                score += contest["tasks"][i]["score"];
-            }
+            var score = contest["max_score"];
             var users = Object.keys(DataStore.users).length
 
             Chart.draw_chart(self.score_chart, // canvas object

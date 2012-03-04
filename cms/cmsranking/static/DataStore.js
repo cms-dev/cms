@@ -386,19 +386,31 @@ var DataStore = new function () {
 
 
     ////// Default scores
-    
+
+    self.global_max_score = 0.0;
+
     self.contest_create.add(function (key, data) {
         // Add scores
         for (var u_id in self.users) {
             self.users[u_id]["c_" + key] = 0.0;
         }
+        // Maximum score
+        data["max_score"] = 0.0;
     });
 
-    self.contest_delete.add(function (key, data) {
+    self.contest_update.add(function (key, old_data, data) {
+        // Maximum score
+        data["max_score"] = old_data["max_score"];
+        delete old_data["max_score"];
+    });
+
+    self.contest_delete.add(function (key, old_data) {
         // Remove scores
         for (var u_id in self.users) {
             delete self.users[u_id]["c_" + key];
         }
+        // Maximum score
+        delete old_data["max_score"];
     });
 
     self.task_create.add(function (key, data) {
@@ -406,14 +418,24 @@ var DataStore = new function () {
         for (var u_id in self.users) {
             self.users[u_id]["t_" + key] = 0.0;
         }
+        // Maximum score
+        self.contests[data["contest"]]["max_score"] += data["max_score"];
+        self.global_max_score += data["max_score"];
     });
 
-    /* TODO: When a task is updated we may want to check that all scores are
-       still less than or equal to the maximum achievable score.
-       Or we may assume that this is handled by the server.
-     */
+    self.task_update.add(function (key, old_data, data) {
+        /* TODO: We may want to check that all scores are still less than or
+           equal to the maximum achievable score. Or we may assume that this is
+           handled by the server.
+         */
+        // Maximum score
+        self.contests[old_data["contest"]]["max_score"] -= old_data["max_score"];
+        self.global_max_score -= old_data["max_score"];
+        self.contests[data["contest"]]["max_score"] += data["max_score"];
+        self.global_max_score += data["max_score"];
+    });
 
-    self.task_delete.add(function (key, data) {
+    self.task_delete.add(function (key, old_data) {
         // Remove scores
         for (var u_id in self.users) {
             /* Actually the next two lines aren't necessary because (in theory)
@@ -423,9 +445,12 @@ var DataStore = new function () {
                implemented in the server, we keep this (for now).
              */
             self.users[u_id]["global"] -= self.users[u_id]["t_" + key];
-            self.users[u_id]["c_" + data["contest"]] -= self.users[u_id]["t_" + key];
+            self.users[u_id]["c_" + old_data["contest"]] -= self.users[u_id]["t_" + key];
             delete self.users[u_id]["t_" + key];
         }
+        // Maximum score
+        self.contests[old_data["contest"]]["max_score"] -= old_data["max_score"];
+        self.global_max_score -= old_data["max_score"];
     });
 
     self.user_create.add(function (key, data) {
