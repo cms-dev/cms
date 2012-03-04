@@ -1,4 +1,6 @@
+{% import simplejson as json %}
 {% from cms.grading.ScoreType import ScoreTypes %}
+{% from cms.server import encrypt_number %}
 
 {% set encrypted_id = encrypt_number(s.id) %}
 {% set score_type = ScoreTypes.get_score_type(submission=s) %}

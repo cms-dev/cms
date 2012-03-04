@@ -30,11 +30,11 @@ import codecs
 import argparse
 
 from cms import logger
+from cms.db import analyze_all_tables
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Manager, \
     Testcase, User, Contest, SubmissionFormatElement, FSObject, \
     Submission
-from cms.db.Utils import analyze_all_tables
 from cms.grading.ScoreType import ScoreTypes
 
 

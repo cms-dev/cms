@@ -50,10 +50,10 @@ import tornado.locale
 from cms import config, default_argument_parser, logger
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
+from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, Task, File, Attachment
-from cms.db.Utils import ask_for_contest
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
      valid_phase_required, encrypt_number, decrypt_number, decrypt_arguments, \

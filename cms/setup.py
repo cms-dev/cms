@@ -50,7 +50,6 @@ def do_setup():
                     "cms.db",
                     "cms.server",
                     "cms.service",
-                    "cms.util",
                     "cms.async",
                     "cms.grading",
                     "cms.grading.tasktypes",

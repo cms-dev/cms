@@ -29,9 +29,9 @@ import codecs
 import argparse
 
 from cms import logger
+from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest
-from cms.db.Utils import ask_for_contest
 
 
 class SpoolExporter:

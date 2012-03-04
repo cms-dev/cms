@@ -36,7 +36,7 @@ import psutil
 from cms import config, logger
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_method, RemoteService
-from cms.db.Utils import ask_for_contest
+from cms.db import ask_for_contest
 
 
 class ResourceService(Service):

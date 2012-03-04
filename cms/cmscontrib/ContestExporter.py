@@ -35,9 +35,9 @@ import tempfile
 import tarfile
 
 from cms import config, logger
+from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest
-from cms.db.Utils import ask_for_contest
 
 from cmscontrib import sha1sum
 
