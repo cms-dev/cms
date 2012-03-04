@@ -14,9 +14,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
 {% end %}
 
 {% block core %}
-{% import json %}
 {% from cms.grading.ScoreType import ScoreTypes %}
-
 {% comment TODO: Dynamic loading of task types %}
 {% from cms.grading.tasktypes.Batch import Batch %}
 {% from cms.grading.tasktypes.OutputOnly import OutputOnly %}
@@ -48,8 +46,8 @@ $("select[name=task_type]").change(showTaskTypeOption);
     <tbody>
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
-        <td><a href="/submission/{{ s.id }}">{{ Utils.format_time_or_date(s.timestamp) }}</a></td>
-        <td><a href="/user/{{ s.user.id }}">{{s.user.username}}</a></td>
+        <td><a href="/submission/{{ s.id }}">{{ format_time_or_date(s.timestamp) }}</a></td>
+        <td><a href="/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
         <td>
           {% if s.compilation_outcome is None %}
           Compiling...
@@ -119,7 +117,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
           {% end %}
         </td>
         <td>
-          [<a href="/reevaluate/submission/{{s.id}}?ref={{ "/task/%s" % task.id }}">Reevaluate</a>]
+          [<a href="/reevaluate/submission/{{ s.id }}?ref={{ "/task/%s" % task.id }}">Reevaluate</a>]
         </td>
       </tr>
       {% end %}
@@ -143,7 +141,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
       </tr>
       <tr>
         <td>Position</td>
-        <td>{{task.num}}</td>
+        <td>{{ task.num }}</td>
       </tr>
       <tr>
         <td>Statement</td>
@@ -197,7 +195,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
 
           <select name="task_type">
             {% for task_type in task_type_list %}
-            <option value="{{ task_type.__name__}}" {% if task.task_type == task_type.__name__ %}selected{% end %}>{{task_type.__name__}}</option>
+            <option value="{{ task_type.__name__}}" {% if task.task_type == task_type.__name__ %}selected{% end %}>{{ task_type.__name__ }}</option>
             {% end %}
           </select>
         {% set parameters = json.loads(task.task_type_parameters) if task.task_type_parameters != '' else None %}
@@ -273,7 +271,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
 
   <h2 id="title_testcases" class="toggling_on">Testcases</h2>
   <div id="testcases">
-    <a href="/add_testcase/{{task.id}}">Add a testcase</a>
+    <a href="/add_testcase/{{ task.id }}">Add a testcase</a>
     <table class="bordered" style="text-align:center">
       <thead>
         <tr>
@@ -298,7 +296,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
             <a href="#" onclick="utils.show_file('output{{ testcase.num }}','/file/{{ testcase.output }}/output{{ testcase.num }}')">Show output</a>
           </td>
           <td>
-            <a href="/delete_testcase/{{testcase.id}}">Delete</a>
+            <a href="/delete_testcase/{{ testcase.id }}">Delete</a>
           </td>
         </tr>
         {% end %}

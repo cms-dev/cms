@@ -21,7 +21,7 @@
     {% for msg in current_user.questions %}
     <div class="notification communication">
       <div class="notification_msg">
-        <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.question_timestamp) }}</div>
+        <div class="notification_timestamp">{{ format_time_or_date(msg.question_timestamp) }}</div>
         <div class="notification_subject">{{ msg.subject }}</div>
         <div class="notification_text">{{ msg.text }}</div>
         {% if msg.reply_timestamp is not None %}
@@ -49,7 +49,7 @@
     {% for msg in current_user.messages %}
     <div class="notification communication">
       <div class="notification_msg">
-        <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.timestamp) }}</div>
+        <div class="notification_timestamp">{{ format_time_or_date(msg.timestamp) }}</div>
         <div class="notification_subject">{{ msg.subject }}</div>
         <div class="notification_text">{{ msg.text }}</div>
       </div>

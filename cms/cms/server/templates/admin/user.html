@@ -1,7 +1,6 @@
 {% extends base.html %}
 
 {% block js %}
-{% from cms.grading.ScoreType import ScoreTypes %}
 function question_reply_toggle(element, invoker)
 {
   var obj = document.getElementsByClassName("reply_question")[element];
@@ -29,6 +28,7 @@ function update_additional_answer(element, invoker)
 {% end %}
 
 {% block core %}
+{% from cms.grading.ScoreType import ScoreTypes %}
 
 <h1>{{ selected_user.first_name }} {{ selected_user.last_name }} ({{ selected_user.username }})</h1>
 
@@ -53,7 +53,7 @@ function update_additional_answer(element, invoker)
     <tbody>
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
-        <td><a href="/submission/{{ s.id }}">{{ Utils.format_time_or_date(s.timestamp) }}</a></td>
+        <td><a href="/submission/{{ s.id }}">{{ format_time_or_date(s.timestamp) }}</a></td>
         <td><a href="/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
         <td>
           {% if s.compilation_outcome is None %}
@@ -99,7 +99,7 @@ function update_additional_answer(element, invoker)
               </tbody>
             </table>
             {% end %}
-            <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
+            <h3>Compilation output</h3>{% comment TODO: trim long outputs and add facility to see raw %}
             <pre>{% if s.compilation_text is not None %}{{ escape(s.compilation_text) }}{% end %}</pre>
           </div>
 
@@ -118,7 +118,7 @@ function update_additional_answer(element, invoker)
           {% end %}
         </td>
         <td>
-          [<a href="/reevaluate/submission/{{s.id}}?ref={{ "/user/%s" % selected_user.id }}">Reevaluate</a>]
+          [<a href="/reevaluate/submission/{{ s.id }}?ref={{ "/user/%s" % selected_user.id }}">Reevaluate</a>]
         </td>
       </tr>
       {% end %}
@@ -168,7 +168,7 @@ function update_additional_answer(element, invoker)
       </tr>
       <tr>
         <td>Hidden?</td>
-        <td><input type="checkbox" name="hidden" {% if selected_user.hidden %} checked {% end %}/></td>
+        <td><input type="checkbox" name="hidden" {% if selected_user.hidden %}checked{% end %}/></td>
       </tr>
     </table>
     <input type="submit" value="Update" />
@@ -185,7 +185,7 @@ function update_additional_answer(element, invoker)
     {% for msg_i, msg in enumerate(selected_user.questions) %}
     <div class="notification communication">
       <div class="notification_msg">
-        <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.question_timestamp) }}</div>
+        <div class="notification_timestamp">{{ format_time_or_date(msg.question_timestamp) }}</div>
         <div class="notification_subject">{{ msg.subject }}</div>
         <div class="notification_text">{{ msg.text }}</div>
         {% if msg.reply_timestamp is not None %}
@@ -199,8 +199,8 @@ function update_additional_answer(element, invoker)
         </div>
         <div class="reply_question" >
           <hr/>
-          <form class="reply_question_form" action="/question/{{msg.id}}" method="POST">
-            <input type="hidden" name="ref" value="/user/{{selected_user.id}}"/>
+          <form class="reply_question_form" action="/question/{{ msg.id }}" method="POST">
+            <input type="hidden" name="ref" value="/user/{{ selected_user.id }}"/>
             Precompiled answer:
             <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
               <option value="yes">Yes</option>
@@ -236,7 +236,7 @@ function update_additional_answer(element, invoker)
 
   <div class="notifications">
       <div class="notification communication">
-        <form id="send_message_form" action="/message/{{selected_user.id}}" method="POST">
+        <form id="send_message_form" action="/message/{{ selected_user.id }}" method="POST">
           <div class="notification_msg">
             <div class="notification_subject">
               Subject:
@@ -256,7 +256,7 @@ function update_additional_answer(element, invoker)
       {% for msg_i, msg in enumerate(reversed(selected_user.messages)) %}
       <div class="notification communication">
         <div class="notification_msg">
-          <div class="notification_timestamp">{{ Utils.format_time_or_date(msg.timestamp) }}</div>
+          <div class="notification_timestamp">{{ format_time_or_date(msg.timestamp) }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>
           <div class="notification_text">{{ msg.text }}</div>
         </div>

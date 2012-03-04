@@ -31,7 +31,7 @@ import random
 import email
 import mimetypes
 
-from cms.server.Utils import encrypt_number
+from cms.server import encrypt_number
 
 utf8_decoder = codecs.getdecoder('utf-8')
 

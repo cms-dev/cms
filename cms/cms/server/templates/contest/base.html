@@ -1,7 +1,6 @@
 {% import time %}
 {% import simplejson as json %}
-{% import cms %}
-{% import cms.server.Utils as Utils %}
+{% from cms.server import encrypt_number, format_time_or_date %}
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -74,7 +73,7 @@ $(document).ready(init);
         <div class="sidebar_right">
           <ul class="menu">
             {% for t_iter in contest.tasks %}
-            <li class="menu_entry"><a class="menu_link" href="/tasks/{{ Utils.encrypt_number(t_iter.id) }}">{{t_iter.name}}</a></li>
+            <li class="menu_entry"><a class="menu_link" href="/tasks/{{ encrypt_number(t_iter.id) }}">{{t_iter.name}}</a></li>
             {% end %}
           </ul>
         </div>

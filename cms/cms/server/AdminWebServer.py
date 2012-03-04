@@ -39,7 +39,7 @@ from cms.db.SQLAlchemyAll import Session, \
      Contest, User, Announcement, Question, Message, Submission, File, Task, \
      Attachment, Manager, Testcase, SubmissionFormatElement
 from cms.grading.tasktypes import get_task_type
-from cms.server.Utils import file_handler_gen, catch_exceptions
+from cms.server import file_handler_gen, catch_exceptions
 
 
 def valid_ip(ip_address):

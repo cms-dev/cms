@@ -1,13 +1,14 @@
 {% extends base.html %}
-{% import cms.grading %}
+
 {% block core %}
+{% from cms.grading import get_compilation_command %}
 
 <h2 id="title_instruction_comp" class="toggling_on">{{ _("Compilation") }}</h2>
 <div id="instruction_comp">
   <table class="nobordered">
-    <tr><td><strong>{{ _("C:") }}</strong></td><td><code>{{ " ".join(cms.grading.get_compilation_command("c", ["task.c"], "task")) }}</code></td></tr>
-    <tr><td><strong>{{ _("C++:") }}</strong></td><td><code>{{ " ".join(cms.grading.get_compilation_command("cpp", ["task.cpp"], "task")) }}</code></td></tr>
-    <tr><td><strong>{{ _("Pascal:") }}</strong></td><td><code>{{ " ".join(cms.grading.get_compilation_command("pas", ["task.pas"], "task")) }}</code></td></tr>
+    <tr><td><strong>{{ _("C:") }}</strong></td><td><code>{{ " ".join(get_compilation_command("c", ["task.c"], "task")) }}</code></td></tr>
+    <tr><td><strong>{{ _("C++:") }}</strong></td><td><code>{{ " ".join(get_compilation_command("cpp", ["task.cpp"], "task")) }}</code></td></tr>
+    <tr><td><strong>{{ _("Pascal:") }}</strong></td><td><code>{{ " ".join(get_compilation_command("pas", ["task.pas"], "task")) }}</code></td></tr>
   </table>
   <div class="hr"></div>
 </div>

@@ -1,11 +1,7 @@
-{% import time %}
-{% import simplejson as json %}
-{% import cms %}
 {% from cms.grading.ScoreType import ScoreTypes %}
-{% import cms.server.Utils as Utils %}
 
-{% set encrypted_id = Utils.encrypt_number(s.id) %}
-
+{% set encrypted_id = encrypt_number(s.id) %}
+{% set score_type = ScoreTypes.get_score_type(submission=s) %}
 <div id="submission_status_{{ encrypted_id }}" name="submission_status"
     {% if s.compilation_outcome is None or (s.compilation_outcome != "fail" and not s.evaluated()) %}
     class="submission_pending"
@@ -22,12 +18,12 @@
   {{ _("Evaluating...") }}
   {% elif s.scored() %}
     {% if s.token is not None %}
-  Evaluated ({{ s.score }} / {{ ScoreTypes.get_score_type(submission=s).max_score }})
+  Evaluated ({{ s.score }} / {{ score_type.max_score }})
       {% for detail in json.loads(s.score_details) %}
   <br/>{{ detail }}
       {% end %}
     {% else %}
-  Evaluated ({{ s.public_score }} / {{ ScoreTypes.get_score_type(submission=s).max_public_score }})
+  Evaluated ({{ s.public_score }} / {{ score_type.max_public_score }})
       {% for detail in json.loads(s.public_score_details) %}
   <br/>{{ detail }}
       {% end %}
@@ -62,7 +58,7 @@
     </tbody>
   </table>
   {% end %}
-  <h3>{{ _("Compilation output") }}</h3><!-- TODO: trim long outputs and add facility to see raw -->
+  <h3>{{ _("Compilation output") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
   <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
 </div>
 

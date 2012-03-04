@@ -45,7 +45,7 @@ utils.show_page("questions", 1);
   {% for msg_i, msg in enumerate(questions) %}
   <div class="notification communication {{ ("answered" if msg.reply_timestamp is not None else ("ignored" if msg.ignored else "")) }}">
     <div class="notification_msg">
-      <div class="notification_timestamp"><a href="/user/{{ msg.user.id }}">{{msg.user.username}}</a> - {{ Utils.format_time_or_date(msg.question_timestamp) }}</div>
+      <div class="notification_timestamp"><a href="/user/{{ msg.user.id }}">{{ msg.user.username }}</a> - {{ format_time_or_date(msg.question_timestamp) }}</div>
       <div class="notification_subject">{{ msg.subject }}</div>
       <div class="notification_text">{{ msg.text }}</div>
       {% if msg.reply_timestamp is not None %}
@@ -56,14 +56,14 @@ utils.show_page("questions", 1);
       {% end %}
       {% if msg.reply_timestamp is None %}
       <div class="ignore_reply">
-        <form class="ignore_question_form" action="/ignore_question/{{msg.id}}" name="ignore{{msg.id}}" method="POST">
-          <input type="hidden" name="ref" value="/questions/{{contest.id}}"/>
+        <form class="ignore_question_form" action="/ignore_question/{{ msg.id }}" name="ignore{{ msg.id }}" method="POST">
+          <input type="hidden" name="ref" value="/questions/{{ contest.id }}"/>
           {% if not msg.ignored %}
           <input type="hidden" name="ignore" value="yes"/>
-          <a href="#" onclick="document.ignore{{msg.id}}.submit();">Ignore</a>
+          <a href="#" onclick="document.ignore{{ msg.id }}.submit();">Ignore</a>
           {% else %}
           <input type="hidden" name="ignore" value="no"/>
-          <a href="#" onclick="document.ignore{{msg.id}}.submit();">Unignore</a>
+          <a href="#" onclick="document.ignore{{ msg.id }}.submit();">Unignore</a>
           {% end %}
         </form>
       </div>
@@ -73,8 +73,8 @@ utils.show_page("questions", 1);
       </div>
       <div class="reply_question" >
         <hr/>
-        <form class="reply_question_form" action="/question/{{msg.id}}" method="POST">
-          <input type="hidden" name="ref" value="/questions/{{contest.id}}"/>
+        <form class="reply_question_form" action="/question/{{ msg.id }}" method="POST">
+          <input type="hidden" name="ref" value="/questions/{{ contest.id }}"/>
           Precompiled answer:
           <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
             <option value="yes">Yes</option>

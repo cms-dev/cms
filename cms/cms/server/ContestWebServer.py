@@ -55,9 +55,8 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, Task, File, Attachment
 from cms.db.Utils import ask_for_contest
 from cms.grading.tasktypes import get_task_type
-from cms.server.Utils import file_handler_gen, \
-     catch_exceptions, decrypt_arguments, valid_phase_required, \
-     extract_archive, encrypt_number, decrypt_number, \
+from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
+     valid_phase_required, encrypt_number, decrypt_number, decrypt_arguments, \
      get_encryption_alphabet
 
 
