@@ -70,23 +70,43 @@
   running (potentially) on different machines, and providing
   extendability via service replications on several machines.
 
+  The state of the contest is wholly kept on a PostgreSQL database
+  (\DB). At the moment, there is no way to use other SQL databases,
+  because the Large Object (LO) feature of PostgreSQL is used. This
+  thing isn't changing in the near future, but could later.
+
+  As long as the \DB\ is operating correctly, all other services can
+  be started and stopped independently without problems. This means
+  that if a machine goes down, then the administrator can quickly
+  replace it with another identical one, which will take its
+  responsibilities (without having to carry out information from the
+  broken machine). Of course, this also means that if the \DB\ goes
+  down, then the entire system is unable to work. In critical
+  contexts, it is the necessary to configure \DB\ redundantly and
+  being prepared to rapidly doing a fail-over in case something bad
+  happens. The choice of PostgreSQL as the database to use should ease
+  this part, since there are many different, mature and well-known
+  solutions to provide such redundance a fail-over procedures.
+
+  \subsection{Services of the system}
+
   The system is composed of the following functional parts, listed
   here with their main capabilities:
   \begin{squishlist}
-  \item Database (\DB{}): stores and offers the configuration and
-    the state of the contest (this is not a ``service'' but the actual
-    database, usually PostgreSQL);
-  \item Log Service (\LS{}): collects all logs from the different
-    services and offers them for remote inspection;
-  \item File Storage (\FS{}): stores files that can be accessed from
-    the rest of the system;
-  \item Worker (\WS{}): can run compilation, evaluation and
-    grading processes on the submissions in a safe and fair
-    environment;
+  \item Log Service (\LS{}): receives all logs from the different
+    services and offers them for remote inspection (logs are also kept
+    on the machine where the service is running);
+  \item Worker (\WS{}): can run compilation, evaluation and grading
+    processes on the submissions in a safe and fair environment;
+    arguably, this is the most delicate service, since it deals with
+    untrusted code (submitted by users) and must do precise low-level
+    operation (such as estimating the memory and CPU time consumed by
+    an external program);
   \item Evaluation Service (\ES{}): builds a queue of jobs to do on the
     submissions and distribute them to the \WS{}'s;
-  \item Scoring Service (\SS{}): transforms the output of the grader
-    to an actual score of the submissions, and manages the ranking;
+  \item Scoring Service (\SS{}): transforms the output of the
+    evaluation to an actual score of the submissions, and manages the
+    ranking;
   \item Contest Web Server (\CWS{}): interacts with the contestants,
     allowing to submit, inspect previous submissions, look at
     information about the contest, asking questions, etc.;
@@ -94,25 +114,61 @@
     everything about the contest, and gives the possibility to change
     on the run configurations, and recover from some errors;
   \item Ranking Web Server (\RWS{}), that expose in real time to the
-    world what we want the world to know about the contest.
+    world what we want the world to know about the contest; \RWS\ is
+    rather different from other services, because while other services
+    are designed to run on the same local network, \RWS\ need not to:
+    you can run it on a remote service and feed it contest data (there
+    are multiple reasons for this decision: one is that the contest
+    venue could have reduced bandwidth or lack public IPs to publish
+    the results to the Web; the second is that, from a security
+    viewpoint, it is not advisable to allow public access to the
+    contest network).
   \end{squishlist}
 
-  One is not forced to run everything; here are some examples.
+  One is not forced to run everything: the only mandatory component is
+  the \DB, while \LS\ is always optional (but strongly suggested);
+  here are some examples.
   \begin{squishlist}
-  \item Bare: there are only a \FS{}, a \DB{}, and a \CWS{}; the
-    system would accept submissions, but is unable to give feedback to
-    the contestants and to the world, lacking something that evaluates
-    the submissions.
+  \item Bare: only a \CWS{}; the system would accept submissions, but
+    is unable to give feedback to the contestants and to the world,
+    lacking something that evaluates the submissions.
   \item Minimal: add an \ES{} and a \WS{}; now we can evaluate
     submissions, so the contestants are informed of the state of the
     submissions, but no ranking is built.
-  \item Private: add a \LS{}, a \SS{} and a \AWS{}; now a ranking is
-    built, and admins can interact with the system and make sure
-    everything is allright.
+  \item Private: add a \SS{} and a \AWS{}; now a ranking is built, and
+    admins can interact with the system and make sure everything is
+    allright.
   \item Public: add a \RWS{}, in order to show the live ranking.
   \item Redundant: add several other \WS{}'s and some other \CWS{}'s
-    to manage big contest without having a long evaluation queue.
+    to manage big contest without having a long evaluation queue and
+    without putting too much stress on the \CWS\ (which may lead to
+    reduced responsivity to the users).
   \end{squishlist}
+
+  In case there are more \CWS\ services, the administrators should set
+  up a load balancing mechanism. The repository contains an example
+  configuration to build a simple one using nginx.
+
+  As already said, these services can run on one or several machines
+  (as long as they're connected together). The distribution of the
+  services on the available machines usually depends on the number and
+  characteristics of the available machines: an important point,
+  though, is to keep each \WS\ on a dedicated machine, since the
+  presence of other running programs can impact on the measured
+  performance of the evaluated solutions. For the same motivation, it
+  is advised to check that \WS\ machines don't have cron jobs or
+  similars that step up at some point consuming computing resources.
+
+  \subsubsection{Security considerations}
+
+  With the exception of \RWS, there are no cryptographic or
+  authentication schemes between the various services or between the
+  services and the \DB. Thus, it is mandatory to keep the services on
+  a dedicated network, properly isolating it via firewalls from
+  contestants or other people's computers. This sort of operations,
+  like also preventing contestants from communicating and cheating, is
+  responsibility of the administrator and is not managed by
+  \CMS\ itself.
 
   \subsection{Interaction with the task development}
 
@@ -127,18 +183,18 @@
   the actual structure on the contest admin's file system: anytime
   after the finalization of the tasks and before the start of the
   contest, the contest admin has to run an \emph{importer\/} that
-  configures \CMS{}, filling \DB{} with the configuration and \FS{}
-  with the needed files. With the same aim, the contest admin will run
-  an \emph{exporter\/} at the end of the contest that will select the
+  configures \CMS{}, filling \DB{} with the configuration and needed
+  files. With the same aim, the contest admin will run an
+  \emph{exporter\/} at the end of the contest that will select the
   interesting data and write them in some format (e.g., suitable for
   the inclusion in a revision control system).
 
   We have currently two couples of importers/exporters (in the
   directory \file{cmscontrib}). The first one simply export and import
-  everything (so the composition of the two is equivalent to the
-  identity) and are called \file{ContestImporter} and
+  everything (so the composition of the two is more or less equivalent
+  to the identity) and are called \file{ContestImporter} and
   \file{ContestExporter}. These are useful for having a quick way to
-  backup a contest and its state at a precise time.
+  backup a contest and its state at some time.
 
   The second couple works specifically with the structure used by the
   Italian IOI team and by no means the exporter is useful to do
@@ -160,10 +216,10 @@
   library.
 
   From IOI 2010, the distinction between batch and interactive tasks
-  vanished, being them united in the "programming" tasks. In all these
-  tasks, the contestants have to submit one or more source files that
-  implement one or more functions; these source files will be linked
-  to a given source file that implements the I/O and calls the
+  vanished, being them united in the ``programming'' tasks. In all
+  these tasks, the contestants have to submit one or more source files
+  that implement one or more functions; these source files will be
+  linked to a given source file that implements the I/O and calls the
   contestants' functions.
 
   Note that the programming tasks may need to be treated differently
