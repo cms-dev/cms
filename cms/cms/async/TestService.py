@@ -48,7 +48,7 @@ class TestService(Service):
 
         self.start = 0
         self.total_time = 0
-        self.ok = 0
+        self.allright = 0
         self.current = -1
         self.ongoing = False
         self.failed = False
@@ -81,7 +81,7 @@ class TestService(Service):
             self.current += 1
         else:
             self.retry = False
-        if self.ok != self.current:
+        if self.allright != self.current:
             self.failed = True
 
         try:
@@ -94,8 +94,8 @@ class TestService(Service):
             else:
                 logger.info(("Test suite completed in %.2f seconds. " +
                              "Result: %d/%d (%.2f%%).") %
-                            (self.total_time, self.ok, total,
-                             self.ok * 100.0 / total))
+                            (self.total_time, self.allright, total,
+                             self.allright * 100.0 / total))
                 self.exit()
                 return False
 
@@ -124,7 +124,7 @@ class TestService(Service):
                 logger.error("  " + message)
         self.ongoing = False
         if success:
-            self.ok += 1
+            self.allright += 1
         else:
             self.retry = retry
         self.delta = time.time() - self.start

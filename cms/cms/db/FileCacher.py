@@ -104,19 +104,19 @@ class FileCacher:
 
             # Receives the file from the database
             with open(temp_filename, 'wb') as temp_file:
-                #hasher = hashlib.sha1()
+                # hasher = hashlib.sha1()
                 with SessionGen() as session:
                     fso = FSObject.get_from_digest(digest, session)
 
                     # Copy the file into the lobject
-                    with fso.get_lobject(mode='rb') as lo:
-                        buf = lo.read(self.CHUNK_SIZE)
+                    with fso.get_lobject(mode='rb') as lobject:
+                        buf = lobject.read(self.CHUNK_SIZE)
                         while buf != '':
-                            #hasher.update(buf)
+                            # hasher.update(buf)
                             temp_file.write(buf)
                             if self.service is not None:
                                 self.service._step()
-                            buf = lo.read(self.CHUNK_SIZE)
+                            buf = lobject.read(self.CHUNK_SIZE)
 
             # And move it in the cache
             shutil.move(temp_filename, cache_path)
@@ -129,8 +129,8 @@ class FileCacher:
 
         # Saving to file object
         if file_obj is not None:
-            with open(cache_path, "rb") as f:
-                shutil.copyfileobj(f, file_obj)
+            with open(cache_path, "rb") as file_:
+                shutil.copyfileobj(file_, file_obj)
 
         # Returning string?
         if string:
@@ -215,12 +215,12 @@ class FileCacher:
             else:
                 logger.debug("Sending file %s to the database." % digest)
                 with open(temp_path, 'rb') as temp_file:
-                    with fso.get_lobject(session, mode='wb') as lo:
+                    with fso.get_lobject(session, mode='wb') as lobject:
                         logger.debug("Large object created.")
                         buf = temp_file.read(self.CHUNK_SIZE)
                         while buf != '':
                             while len(buf) > 0:
-                                written = lo.write(buf)
+                                written = lobject.write(buf)
                                 buf = buf[written:]
                                 if self.service is not None:
                                     self.service._step()
@@ -280,6 +280,9 @@ class FileCacher:
 
         """
         def _list(session):
+            """Do the work assuming session is valid.
+
+            """
             return map(lambda x: (x.digest, x.description),
                        session.query(FSObject))
 

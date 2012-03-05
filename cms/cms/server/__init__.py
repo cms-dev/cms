@@ -205,10 +205,10 @@ def file_handler_gen(BaseClass):
 
             """
             data = self.temp_file.read(FileCacher.CHUNK_SIZE)
-            l = len(data)
-            self.size += l / 1024.0 / 1024.0
+            length = len(data)
+            self.size += length / 1024.0 / 1024.0
             self.write(data)
-            if l < FileCacher.CHUNK_SIZE:
+            if length < FileCacher.CHUNK_SIZE:
                 self.temp_file.close()
                 os.unlink(self.temp_filename)
                 duration = time.time() - self.start_time

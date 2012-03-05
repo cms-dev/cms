@@ -199,11 +199,13 @@ class AdminWebServer(WebService):
                             parameters,
                             shard=shard,
                             custom_logger=logger)
-        self.FC = FileCacher(self)
-        self.ES = self.connect_to(ServiceCoord("EvaluationService", 0))
-        self.RS = []
+        self.file_cacher = FileCacher(self)
+        self.evaluation_service = self.connect_to(
+            ServiceCoord("EvaluationService", 0))
+        self.resource_services = []
         for i in xrange(get_service_shards("ResourceService")):
-            self.RS.append(self.connect_to(ServiceCoord("ResourceService", i)))
+            self.resource_services.append(self.connect_to(
+                ServiceCoord("ResourceService", i)))
         self.logservice = self.connect_to(ServiceCoord("LogService", 0))
 
     @staticmethod
@@ -378,7 +380,7 @@ class AddStatementHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            digest = self.application.service.FC.put_file(
+            digest = self.application.service.file_cacher.put_file(
                 binary_data=statement["body"],
                 description="Task statement for %s" % task_name)
         except Exception as error:
@@ -414,7 +416,7 @@ class AddAttachmentHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            digest = self.application.service.FC.put_file(
+            digest = self.application.service.file_cacher.put_file(
                 binary_data=attachment["body"],
                 description="Task attachment for %s" % task_name)
         except Exception as error:
@@ -462,7 +464,7 @@ class AddManagerHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            digest = self.application.service.FC.put_file(
+            digest = self.application.service.file_cacher.put_file(
                 binary_data=manager["body"],
                 description="Task manager for %s" % task_name)
         except Exception as error:
@@ -513,10 +515,10 @@ class AddTestcaseHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            input_digest = self.application.service.FC.put_file(
+            input_digest = self.application.service.file_cacher.put_file(
                 binary_data=_input["body"],
                 description="Testcase input for task %s" % task_name)
-            output_digest = self.application.service.FC.put_file(
+            output_digest = self.application.service.file_cacher.put_file(
                 binary_data=output["body"],
                 description="Testcase output for task %s" % task_name)
         except Exception as error:
@@ -909,8 +911,9 @@ class UserViewHandler(BaseHandler):
         username = self.get_argument("username", user.username)
 
         # Prevent duplicate usernames in the contest.
-        for u in self.contest.users:
-            if u.username != user.username and u.username == username:
+        for other_user in self.contest.users:
+            if other_user.username != user.username and \
+                   other_user.username == username:
                 self.application.service.add_notification(int(time.time()),
                     "Duplicate username",
                     "The requested username already exists in the contest.")
@@ -959,8 +962,8 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
         username = self.get_argument("username", "")
 
         # Prevent duplicate usernames in the contest.
-        for u in self.contest.users:
-            if u.username == username:
+        for other_user in self.contest.users:
+            if other_user.username == username:
                 self.application.service.add_notification(int(time.time()),
                     "Duplicate username",
                     "The requested username already exists in the contest.")
@@ -970,8 +973,8 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
         password = self.get_argument("password", "")
         email = self.get_argument("email", "")
 
-        ip = self.get_argument("ip", "0.0.0.0")
-        if not valid_ip(ip):
+        ip_address = self.get_argument("ip", "0.0.0.0")
+        if not valid_ip(ip_address):
             self.application.service.add_notification(
                 int(time.time()), "Invalid ip", "")
             self.redirect("/add_user/%s" % contest_id)
@@ -993,7 +996,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
         hidden = bool(self.get_argument("hidden", False))
 
         user = User(first_name, last_name, username, password=password,
-                    email=email, ip=ip, hidden=hidden,
+                    email=email, ip=ip_address, hidden=hidden,
                     starting_time=starting_time, contest=self.contest)
         self.sql_session.add(user)
         self.sql_session.commit()
@@ -1129,7 +1132,7 @@ class MessageHandler(BaseHandler):
 
 
 class SubmissionReevaluateHandler(BaseHandler):
-    """Ask ES to reevaluate the specific submission.
+    """Ask EvaluationService to reevaluate the specific submission.
 
     """
 
@@ -1140,7 +1143,8 @@ class SubmissionReevaluateHandler(BaseHandler):
 
         submission.invalid()
         self.sql_session.commit()
-        self.application.service.ES.new_submission(submission_id=submission.id)
+        self.application.service.evaluation_service.new_submission(
+            submission_id=submission.id)
         self.redirect("/submission/%s" % submission_id)
 
 
@@ -1151,10 +1155,11 @@ class UserReevaluateHandler(BaseHandler):
         self.contest = user.contest
 
         self.pending_requests = len(user.submissions)
-        for s in user.submissions:
-            s.invalid()
+        for submission in user.submissions:
+            submission.invalid()
             self.sql_session.commit()
-            self.application.service.ES.new_submission(submission_id=s.id)
+            self.application.service.evaluation_service.new_submission(
+                submission_id=submission.id)
 
         self.redirect("/user/%s" % user_id)
 
@@ -1166,10 +1171,11 @@ class TaskReevaluateHandler(BaseHandler):
         self.contest = task.contest
 
         self.pending_requests = len(task.submissions)
-        for s in task.submissions:
-            s.invalid()
+        for submission in task.submissions:
+            submission.invalid()
             self.sql_session.commit()
-            self.application.service.ES.new_submission(submission_id=s.id)
+            self.application.service.evaluation_service.new_submission(
+                submission_id=submission.id)
 
         self.redirect("/task/%s" % task_id)
 

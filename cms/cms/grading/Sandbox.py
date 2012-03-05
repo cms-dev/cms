@@ -34,6 +34,25 @@ class SandboxInterfaceException(Exception):
     pass
 
 
+def translate_box_exitcode(exitcode):
+    """Translate the sandbox exit code according to the following
+    table:
+     * 0 -> everything ok -> returns True
+     * 1 -> error in the program inside the sandbox -> returns True
+     * 2 -> error in the sandbox itself -> returns False
+
+    Basically, it recognizes whether the sandbox executed correctly or
+    not.
+
+    """
+    if exitcode == 0 or exitcode == 1:
+        return True
+    elif exitcode == 2:
+        return False
+    else:
+        raise SandboxInterfaceException("Sandbox exit status unknown")
+
+
 def wait_without_std(procs):
     """Wait for the conclusion of the processes in the list, avoiding
     starving for input and output.
@@ -72,8 +91,8 @@ def wait_without_std(procs):
     to_consume = get_to_consume()
     while len(to_consume) > 0:
         to_read = select.select(to_consume, [], [], 1.0)[0]
-        for f in to_read:
-            f.read(8192)
+        for file_ in to_read:
+            file_.read(8192)
         to_consume = get_to_consume()
 
     return [process.wait() for process in procs]
@@ -104,7 +123,7 @@ class Sandbox:
                            (which is itself a directory).
 
         """
-        self.FC = file_cacher
+        self.file_cacher = file_cacher
 
         self.path = tempfile.mkdtemp(dir=temp_dir)
         self.exec_name = 'mo-box'
@@ -146,16 +165,16 @@ class Sandbox:
         return (string): the path to a valid (hopefully) mo-box.
 
         """
-        PATHS = [os.path.join('.', self.exec_name),
+        paths = [os.path.join('.', self.exec_name),
                  os.path.join('.', 'box', self.exec_name),
                  self.exec_name]
-        for p in PATHS:
-            if os.path.exists(p):
-                return p
+        for path in paths:
+            if os.path.exists(path):
+                return path
 
         # As default, return self.exec_name alone, that means that
         # system path is used.
-        return PATHS[-1]
+        return paths[-1]
 
     def build_box_options(self):
         """Translate the options defined in the instance to a string
@@ -229,9 +248,9 @@ class Sandbox:
                         self.log[key].append(value)
                     else:
                         self.log[key] = [value]
-        except IOError as e:
+        except IOError as error:
             raise IOError("Error while reading execution log file %s. %r" %
-                          (info_file, e))
+                          (info_file, error))
 
     def get_execution_time(self):
         """Return the time spent in the sandbox, reading the logs if
@@ -423,12 +442,12 @@ class Sandbox:
         else:
             logger.debug("Creating plain file %s in sandbox." % path)
         real_path = self.relative_path(path)
-        fd = open(real_path, "wb")
+        file_ = open(real_path, "wb")
         mod = stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH | stat.S_IWUSR
         if executable:
             mod |= stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH
         os.chmod(real_path, mod)
-        return fd
+        return file_
 
     def create_file_from_storage(self, path, digest, executable=False):
         """Write a file taken from FS in the sandbox.
@@ -438,9 +457,9 @@ class Sandbox:
         executable (bool): to set permissions.
 
         """
-        fd = self.create_file(path, executable)
-        self.FC.get_file(digest, file_obj=fd)
-        fd.close()
+        file_ = self.create_file(path, executable)
+        self.file_cacher.get_file(digest, file_obj=file_)
+        file_.close()
 
     def create_file_from_string(self, path, content, executable=False):
         """Write some data to a file in the sandbox.
@@ -450,9 +469,9 @@ class Sandbox:
         executable (bool): to set permissions.
 
         """
-        fd = self.create_file(path, executable)
-        fd.write(content)
-        fd.close()
+        file_ = self.create_file(path, executable)
+        file_.write(content)
+        file_.close()
 
     def create_file_from_fileobj(self, path, file_obj, executable=False):
         """Write a file in the sandbox copying the content of an open
@@ -477,8 +496,8 @@ class Sandbox:
         """
         logger.debug("Retrieving file %s from sandbox" % (path))
         real_path = self.relative_path(path)
-        fd = open(real_path, "rb")
-        return fd
+        file_ = open(real_path, "rb")
+        return file_
 
     def get_file_to_string(self, path, maxlen=1024):
         """Return the content of a file in the sandbox given its
@@ -490,16 +509,16 @@ class Sandbox:
         return (string): the content of the file up to maxlen bytes.
 
         """
-        fd = self.get_file(path)
+        file_ = self.get_file(path)
         try:
             if maxlen is None:
-                content = fd.read()
+                content = file_.read()
             else:
-                content = fd.read(maxlen)
-        except UnicodeDecodeError as e:
-            logger.error("Unable to interpret file as UTF-8. %s" % repr(e))
+                content = file_.read(maxlen)
+        except UnicodeDecodeError as error:
+            logger.error("Unable to interpret file as UTF-8. %r" % error)
             return None
-        fd.close()
+        file_.close()
         return content
 
     def get_file_to_storage(self, path, description=""):
@@ -510,9 +529,10 @@ class Sandbox:
         return (string): the digest of the file.
 
         """
-        fd = self.get_file(path)
-        digest = self.FC.put_file(file_obj=fd, description=description)
-        fd.close()
+        file_ = self.get_file(path)
+        digest = self.file_cacher.put_file(file_obj=file_,
+                                           description=description)
+        file_.close()
         return digest
 
     def stat_file(self, path):
@@ -541,24 +561,6 @@ class Sandbox:
         """
         os.remove(self.relative_path(path))
 
-    def translate_box_exitcode(self, exitcode):
-        """Translate the sandbox exit code according to the following
-        table:
-         * 0 -> everything ok -> returns True
-         * 1 -> error in the program inside the sandbox -> returns True
-         * 2 -> error in the sandbox itself -> returns False
-
-        Basically, it recognizes whether the sandbox executed
-        correctly or not.
-
-        """
-        if exitcode == 0 or exitcode == 1:
-            return True
-        elif exitcode == 2:
-            return False
-        else:
-            raise SandboxInterfaceException("Sandbox exit status unknown")
-
     def execute(self, command):
         """Execute the given command in the sandbox using
         subprocess.call.
@@ -576,7 +578,7 @@ class Sandbox:
                      " ".join(args))
         with open(self.relative_path(self.cmd_file), 'a') as commands:
             commands.write("%s\n" % (" ".join(args)))
-        return self.translate_box_exitcode(subprocess.call(args))
+        return translate_box_exitcode(subprocess.call(args))
 
     def popen(self, command,
               stdin=None, stdout=None, stderr=None,
@@ -627,7 +629,7 @@ class Sandbox:
         # std*** to interfere with command. Otherwise we let the
         # caller handle these issues.
         if wait:
-            return self.translate_box_exitcode(wait_without_std([popen])[0])
+            return translate_box_exitcode(wait_without_std([popen])[0])
         else:
             return popen
 

@@ -72,13 +72,13 @@ class AbstractTask:
 
 class AbstractTaskFromDB(AbstractTask):
 
-    def __init__(self, task, FC):
+    def __init__(self, task, file_cacher):
         """Create an AbstractTask that shadows the specified task
         object from the database.
 
         """
         self.task = task
-        self.FC = FC
+        self.file_cacher = file_cacher
 
     def get_input(self, num, file_obj):
         """Retrieve the specified input file from the task and write it
@@ -88,7 +88,8 @@ class AbstractTaskFromDB(AbstractTask):
 
         """
         try:
-            self.FC.get_file(self.task.testcases[num].input, file_obj=file_obj)
+            self.file_cacher.get_file(self.task.testcases[num].input,
+                                      file_obj=file_obj)
             return True
         except IndexError:
             return False
@@ -101,8 +102,8 @@ class AbstractTaskFromDB(AbstractTask):
 
         """
         try:
-            self.FC.get_file(self.task.testcases[num].output,
-                             file_obj=file_obj)
+            self.file_cacher.get_file(self.task.testcases[num].output,
+                                      file_obj=file_obj)
             return True
         except IndexError:
             return False
@@ -115,8 +116,8 @@ class AbstractTaskFromDB(AbstractTask):
 
         """
         try:
-            self.FC.get_file(self.task.managers[filename].digest,
-                             file_obj=file_obj)
+            self.file_cacher.get_file(self.task.managers[filename].digest,
+                                      file_obj=file_obj)
             return True
         except KeyError:
             return False
@@ -129,8 +130,8 @@ class AbstractTaskFromDB(AbstractTask):
 
         """
         try:
-            self.FC.get_file(self.task.attachments[filename].digest,
-                             file_obj=file_obj)
+            self.file_cacher.get_file(self.task.attachments[filename].digest,
+                                      file_obj=file_obj)
             return True
         except KeyError:
             return False
@@ -183,19 +184,19 @@ class AbstractSubmission:
 
 class AbstractSubmissionFromDB:
 
-    def __init__(self, submission, FC):
+    def __init__(self, submission, file_cacher):
         """Create an AbstractSubmission that shadows the specified
         submission object from the database.
 
         """
         self.submission = submission
-        self.FC = FC
+        self.file_cacher = file_cacher
 
     def get_task(self):
         """Return the AbstractTask linked to this AbstractSubmissions.
 
         """
-        return AbstractTaskFromDB(self.submission.task, self.FC)
+        return AbstractTaskFromDB(self.submission.task, self.file_cacher)
 
     def get_language(self):
         """Return the language of this submission.
@@ -211,8 +212,8 @@ class AbstractSubmissionFromDB:
 
         """
         try:
-            self.FC.get_file(self.submission.files[filename].digest,
-                             file_obj=file_obj)
+            self.file_cacher.get_file(self.submission.files[filename].digest,
+                                      file_obj=file_obj)
             return True
         except KeyError:
             return False
@@ -225,8 +226,9 @@ class AbstractSubmissionFromDB:
 
         """
         try:
-            self.FC.get_file(self.submission.executables[filename].digest,
-                             file_obj=file_obj)
+            self.file_cacher.get_file(
+                self.submission.executables[filename].digest,
+                file_obj=file_obj)
             return True
         except KeyError:
             return False
@@ -237,8 +239,8 @@ class AbstractSubmissionFromDB:
         filename. The file is read from the file-like object file_obj.
 
         """
-        digest = self.FC.put_file(self, description=description,
-                                  file_obj=file_obj)
+        digest = self.file_cacher.put_file(self, description=description,
+                                           file_obj=file_obj)
         if filename in self.submission.executables:
             del self.submission.executables[filename]
         self.submission.get_session().add(Executable(digest, filename,

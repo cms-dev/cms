@@ -37,11 +37,11 @@ def sha1sum(path):
     return (string): SHA1 sum of the file in path.
 
     """
-    BUFLEN = 8192
+    buffer_length = 8192
     with open(path, 'rb') as fin:
-        hasher = hashlib.sha1()
-        buf = fin.read(BUFLEN)
+        hasher = hashlib.new("sha1")
+        buf = fin.read(buffer_length)
         while buf != '':
             hasher.update(buf)
-            buf = fin.read(BUFLEN)
+            buf = fin.read(buffer_length)
         return hasher.hexdigest()

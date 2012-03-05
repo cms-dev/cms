@@ -214,9 +214,11 @@ class ContestWebServer(WebService):
                             _cws_handlers,
                             parameters,
                             shard=shard)
-        self.FC = FileCacher(self)
-        self.ES = self.connect_to(ServiceCoord("EvaluationService", 0))
-        self.SS = self.connect_to(ServiceCoord("ScoringService", 0))
+        self.file_cacher = FileCacher(self)
+        self.evaluation_service = self.connect_to(
+            ServiceCoord("EvaluationService", 0))
+        self.scoring_service = self.connect_to(
+            ServiceCoord("ScoringService", 0))
 
     @staticmethod
     def authorized_rpc(service, method, arguments):
@@ -707,11 +709,11 @@ class SubmitHandler(BaseHandler):
                 if not os.path.exists(path):
                     os.makedirs(path)
                 with codecs.open(os.path.join(path, str(self.timestamp)),
-                                 "w", "utf-8") as fd:
+                                 "w", "utf-8") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
                                  self.task,
-                                 self.files), fd)
+                                 self.files), file_)
                 self.local_copy_saved = True
             except Exception as error:
                 logger.error("Submission local copy failed - %s" %
@@ -722,7 +724,7 @@ class SubmitHandler(BaseHandler):
         # We now have to send all the files to the destination...
         try:
             for filename in self.files:
-                digest = self.application.service.FC.put_file(
+                digest = self.application.service.file_cacher.put_file(
                     description="Submission file %s sent by %s at %d." % (
                         filename,
                         self.username,
@@ -750,20 +752,20 @@ class SubmitHandler(BaseHandler):
         self.task = Task.get_from_id(self.task_id, self.sql_session)
         logger.info("All files stored for submission sent by %s" %
                     self.username)
-        s = Submission(user=current_user,
-                       task=self.task,
-                       timestamp=self.timestamp,
-                       files={},
-                       language=self.submission_lang)
+        submission = Submission(user=current_user,
+                                task=self.task,
+                                timestamp=self.timestamp,
+                                files={},
+                                language=self.submission_lang)
 
         for filename, digest in self.file_digests.items():
-            self.sql_session.add(File(digest, filename, s))
-        self.sql_session.add(s)
+            self.sql_session.add(File(digest, filename, submission))
+        self.sql_session.add(submission)
         self.sql_session.commit()
-        self.submission_id = s.id
-        self.r_params["submission"] = s
+        self.r_params["submission"] = submission
         self.r_params["warned"] = False
-        self.application.service.ES.new_submission(submission_id=s.id)
+        self.application.service.evaluation_service.new_submission(
+            submission_id=submission.id)
         self.application.service.add_notification(
             self.username,
             int(time.time()),
@@ -831,9 +833,9 @@ class UseTokenHandler(BaseHandler):
         # Inform ScoringService and eventually the ranking that the
         # token has been played. Also inform EvaluationService that
         # can adjust priority if needed.
-        self.application.service.SS.submission_tokened(
+        self.application.service.scoring_service.submission_tokened(
             submission_id=submission_id, timestamp=timestamp)
-        self.application.service.ES.submission_tokened(
+        self.application.service.evaluation_service.submission_tokened(
             submission_id=submission_id)
 
         logger.info("Token played by user %s on task %s."

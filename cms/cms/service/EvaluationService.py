@@ -459,7 +459,8 @@ class EvaluationService(Service):
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
-        self.SS = self.connect_to(ServiceCoord("ScoringService", 0))
+        self.scoring_service = self.connect_to(
+            ServiceCoord("ScoringService", 0))
 
         # If for some reason (ES switched off for a while, or broken
         # connection with CWS), submissions have been left with some
@@ -799,8 +800,8 @@ class EvaluationService(Service):
                          timestamp, evaluation_tries,
                          evaluated, tokened):
         """Actions to be performed when we have a submission that has
-        been evalutated. In particular: we inform SS on success, we
-        requeue on failure.
+        been evalutated. In particular: we inform ScoringService on
+        success, we requeue on failure.
 
         submission_id (string): db id of the submission.
         timestamp (int): time of submission.
@@ -813,7 +814,7 @@ class EvaluationService(Service):
         # Evaluation successful, we inform ScoringService so it can
         # update the score.
         if evaluated:
-            self.SS.new_evaluation(submission_id=submission_id)
+            self.scoring_service.new_evaluation(submission_id=submission_id)
         # Evaluation unsuccessful, we requeue (or not).
         elif evaluation_tries <= EvaluationService.MAX_EVALUATION_TRIES:
             priority = EvaluationService.JOB_PRIORITY_LOW

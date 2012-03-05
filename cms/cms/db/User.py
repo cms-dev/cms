@@ -97,7 +97,8 @@ class User(Base):
         if password is None:
             import random
             chars = "abcdefghijklmnopqrstuvwxyz"
-            password = "".join([random.choice(chars) for i in xrange(6)])
+            password = "".join([random.choice(chars)
+                                for unused_i in xrange(6)])
 
         self.first_name = first_name
         self.last_name = last_name
