@@ -33,6 +33,8 @@ var Overview = new function () {
 
         elem.innerHTML = inner_html;
 
+        DataStore.score_events.add(self.score_handler);
+        DataStore.rank_events.add(self.rank_handler);
         DataStore.add_select_handler(self.update_select);
         self.update_score();
     };
@@ -56,4 +58,17 @@ var Overview = new function () {
             $("#" + u_id + "_rm").removeClass("selected");
         }
     };
+
+    self.score_handler = function (u_id, user) {
+        $("#" + u_id + "_lm").css("bottom", (100 * user["global"] / DataStore.global_max_score).toString() + "%");
+    };
+
+    self.rank_handler = function (u_id, user) {
+        var users_l = Object.keys(DataStore.users).length;
+        $("#" + u_id + "_rm").css("bottom", (100 - 100 * (user["rank"] - 1) / users_l).toString() + "%");
+    };
+
+    /* TODO: When users get added/removed the total user count changes and all
+       rank "markers" need to be adjusted!
+     */
 };
