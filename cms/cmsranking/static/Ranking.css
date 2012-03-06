@@ -433,6 +433,10 @@ table.scoreboard thead tr th
     border-radius: 3px;
     box-shadow: 0 0 2px 0 #D2D2D4 inset;
     height: 24px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -o-text-overflow: ellipsis;
+    -ms-text-overflow: ellipsis;
 }
 
 table.scoreboard tbody tr td img
@@ -459,11 +463,6 @@ table.scoreboard tbody tr td.l_name
 table.scoreboard thead tr th.score
 {
     cursor: pointer;
-}
-
-table.scoreboard tbody tr.separator
-{
-    display: none;
 }
 
 table.scoreboard tbody tr:hover td:not(.score)
