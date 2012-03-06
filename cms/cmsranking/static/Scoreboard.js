@@ -396,6 +396,9 @@ var Scoreboard = new function () {
         });
 
         self.move_user(user);
+
+        // Restart CSS animation
+        $(row).removeClass("updated").addClass("updated");
     };
 
     // This callback is called by the DataStore when a user changes rank.

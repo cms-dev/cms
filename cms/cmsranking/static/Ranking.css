@@ -426,6 +426,32 @@ table.scoreboard tbody tr
     height: 2em;
 }
 
+/* FIXME: the following two rules are, at the moment, just a proof of concept!
+   The resulting style is neither beautiful (a dark gray fading color) nor
+   cross-browser compatible (it works only on the latest Firefox releases).
+   This needs to be improved!
+ */
+
+table.scoreboard tbody tr.updated {
+    -moz-animation-duration: 10s;
+    -moz-animation-name: blink;
+    -moz-animation-timing-function: ease-in;
+}
+
+@-moz-keyframes blink {
+    from {
+        background-color: rgba(255,255,255,0);
+    }
+
+    5% {
+        background-color: rgba(122,122,122,1);
+    }
+
+    to {
+        background-color: rgba(255,255,255,0);
+    }
+}
+
 table.scoreboard thead tr th
 {
     background-color: #ECECEF;
