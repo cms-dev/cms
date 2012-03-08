@@ -32,6 +32,7 @@ import email
 import mimetypes
 
 from cms.server import encrypt_number
+from mechanize import HTMLForm
 
 utf8_decoder = codecs.getdecoder('utf-8')
 
@@ -104,14 +105,14 @@ def browser_do_request(browser, url, data=None, files=None):
         else:
             response = browser.open(url, urllib.urlencode(data))
     else:
-        body, boundary = format_multipart_formdata(data, files)
-        # TODO - This requires a patched version of mechanize,
-        # otherwise the Content-type is forcedly set to
-        # application/x-www-form-urlencoded when data is not None
-        response = browser.open(
-            url,
-            data=body,
-            content_type='multipart/form-data; boundary=%s' % (boundary))
+        f = files[0]
+        browser.form = HTMLForm(url, method='POST', enctype='multipart/form-data', attrs=data)
+        browser.form.new_control('file', f[0], {'id': f[0]})
+        filename = os.path.basename(f[1])
+        browser.form.add_file(open(f[1]), 'text/plain', filename, id=f[0])
+        browser.form.set_all_readonly(False)
+        browser.form.fixup()
+        response = browser.submit()
     return response
 
 
@@ -382,6 +383,31 @@ class TaskStatementRequest(GenericRequest):
 
 
 class SubmitRequest(GenericRequest):
+    """Submit a solution in CWS.
+
+    """
+    def __init__(self, browser, task, filename, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
+        self.url = "%ssubmit/%s" % (self.base_url,
+                                    encrypt_number(task[0]))
+        self.task = task
+        self.filename = filename
+        self.data = {}
+
+    def prepare(self):
+        GenericRequest.prepare(self)
+        self.files = [('%s.%%l' % (self.task[1]), self.filename)]
+
+    def describe(self):
+        return "submit source %s for task %s (ID %d)" % \
+            (self.filename, self.task[1], self.task[0])
+
+    def specific_info(self):
+        return 'Task: %s (ID %d)\nFile: %s\n' % \
+            (self.task[1], self.task[0], self.filename) + \
+            GenericRequest.specific_info(self)
+
+class SubmitRandomRequest(SubmitRequest):
     """Submit a solution in CWS.
 
     """

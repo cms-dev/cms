@@ -32,7 +32,7 @@ from cms.db.SQLAlchemyAll import Contest, SessionGen
 
 from stresstesting.Requests import HomepageRequest, \
      LoginRequest, TaskRequest, TaskStatementRequest, \
-     SubmitRequest
+     SubmitRandomRequest
 
 
 class RequestLog:
@@ -148,7 +148,7 @@ class Actor(threading.Thread):
                 choice = random.random()
                 if choice < 0.02 and self.submissions_path is not None:
                     task = random.choice(self.tasks)
-                    self.do_step(SubmitRequest(
+                    self.do_step(SubmitRandomRequest(
                             self.browser,
                             task,
                             base_url=self.base_url,
