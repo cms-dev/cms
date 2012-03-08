@@ -182,7 +182,7 @@ def file_handler_gen(BaseClass):
                 self.finish()
                 return
             try:
-                self.temp_filename = self.application.service.FC.get_file(
+                self.temp_filename = self.application.service.file_cacher.get_file(
                     digest, temp_path=True)
             except Exception as error:
                 logger.error("Exception while retrieving file `%s'. %r" %
