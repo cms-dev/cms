@@ -649,10 +649,10 @@ class TaskType:
             res_file = sandbox.get_file("res.txt")
             if white_diff(out_file, res_file):
                 outcome = 1.0
-                text = "Output file is correct"
+                text = "Output is correct"
             else:
                 outcome = 0.0
-                text = "Output file isn't correct"
+                text = "Output isn't correct"
         else:
             outcome = 0.0
             text = "Evaluation didn't produce file output.txt"
