@@ -20,12 +20,18 @@
   {{ _("Evaluating...") }}
   {% elif s.scored() %}
     {% if s.token is not None %}
-  Evaluated ({{ s.score }} / {{ score_type.max_score }})
+  Evaluated
+      {% if score_type.max_score != 0 %}
+        ({{ s.score }} / {{ score_type.max_score }})
+      {% end %}
       {% for detail in json.loads(s.score_details) %}
   <br/>{{ detail }}
       {% end %}
     {% else %}
-  Evaluated ({{ s.public_score }} / {{ score_type.max_public_score }})
+  Evaluated
+      {% if score_type.max_public_score != 0 %}
+        ({{ s.public_score }} / {{ score_type.max_public_score }})
+      {% end %}
       {% for detail in json.loads(s.public_score_details) %}
   <br/>{{ detail }}
       {% end %}
