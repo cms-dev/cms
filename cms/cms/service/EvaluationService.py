@@ -800,7 +800,7 @@ class EvaluationService(Service):
                          timestamp, evaluation_tries,
                          evaluated, tokened):
         """Actions to be performed when we have a submission that has
-        been evalutated. In particular: we inform ScoringService on
+        been evaluated. In particular: we inform ScoringService on
         success, we requeue on failure.
 
         submission_id (string): db id of the submission.
