@@ -35,7 +35,7 @@ class OutputOnly(TaskType):
     comparator.
 
     Parameters are a list of string with one element (for future
-    possible expansions), which maybe 'diff' or 'comp', meaning that
+    possible expansions), which maybe 'diff' or 'comparator', meaning that
     the evaluation is done via white diff or via a comparator.
 
     """
@@ -46,7 +46,7 @@ class OutputOnly(TaskType):
         "output_eval",
         "",
         {"diff": "Outputs compared with white diff",
-         "comp": "Outputs are compared by a comparator"})
+         "comparator": "Outputs are compared by a comparator"})
 
     ACCEPTED_PARAMETERS = [_EVALUATION]
 

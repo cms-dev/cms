@@ -73,7 +73,7 @@ class Batch(TaskType):
         "output_eval",
         "",
         {"diff": "Outputs compared with white diff",
-         "comp": "Outputs are compared by a comparator"})
+         "comparator": "Outputs are compared by a comparator"})
 
     ACCEPTED_PARAMETERS = [_COMPILATION, _USE_FILE, _EVALUATION]
 

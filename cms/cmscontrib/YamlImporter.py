@@ -174,7 +174,7 @@ class YamlLoader:
                     path=os.path.join(path, "cor", "correttore"),
                     description="Manager for task %s" % (name)),
                         "checker").export_to_dict()]
-            params["task_type_parameters"] = '["alone", "file", "comp"]'
+            params["task_type_parameters"] = '["alone", "file", "comparator"]'
         elif os.path.exists(os.path.join(path, "cor", "manager")):
             params["task_type"] = "Communication"
             params["task_type_parameters"] = '[]'
