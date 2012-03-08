@@ -36,6 +36,7 @@ from cms.db.Task import Task, Manager, Testcase, Attachment, \
      SubmissionFormatElement
 from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 from cms.db.FSObject import FSObject
+import cms.db.ImportFromDict
 
 
 # The following are methods of Contest that cannot be put in the right
