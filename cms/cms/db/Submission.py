@@ -120,6 +120,11 @@ class Submission(Base):
     # token (Token object or None)
 
     LANGUAGES = ["c", "cpp", "pas"]
+    LANGUAGES_MAP = {".c": "c",
+                     ".cpp": "cpp",
+                     ".cc": "cpp",
+                     ".pas": "pas",
+                     }
 
     def __init__(self, user, task, timestamp, files, language=None,
                  compilation_outcome=None, compilation_text=None,

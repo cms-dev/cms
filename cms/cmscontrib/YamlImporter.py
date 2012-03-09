@@ -192,6 +192,8 @@ class YamlLoader:
                             description="Stub for task %s and language %s" % \
                             (name, lang)),
                                 "stub.%s" % lang).export_to_dict())
+                else:
+                    logger.warning("Stub for language %s not found." % lang)
         else:
             params["managers"] = {}
             params["task_type_parameters"] = '["alone", "file", "diff"]'

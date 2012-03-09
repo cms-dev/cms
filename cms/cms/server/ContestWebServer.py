@@ -654,10 +654,11 @@ class SubmitHandler(BaseHandler):
                              if it is not a recognized language.
 
             """
-            for lang in Submission.LANGUAGES:
-                if user_filename.endswith(".%s" % lang):
-                    return lang
-            return None
+            extension = os.path.splitext(user_filename)[1]
+            try:
+                return Submission.LANGUAGES_MAP[extension]
+            except KeyError:
+                return None
 
         error = None
         for our_filename in self.files:
