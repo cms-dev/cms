@@ -341,10 +341,10 @@ class Sandbox:
 
         """
         if 'message' in self.log:
-            syscall_match = self.KILLING_SYSCALL_RE.match(
+            match = self.KILLING_SYSCALL_RE.match(
                 self.log['message'][0])
-            if syscall_match is not None:
-                return syscall_match.group(1)
+            if match is not None:
+                return match.group(1)
         return None
 
     # TODO - Rather fragile interface...
@@ -359,10 +359,10 @@ class Sandbox:
 
         """
         if 'message' in self.log:
-            syscall_match = self.KILLING_FILE_ACCESS_RE.match(
+            match = self.KILLING_FILE_ACCESS_RE.match(
                 self.log['message'][0])
-            if syscall_match is not None:
-                return syscall_match.group(1)
+            if match is not None:
+                return match.group(1)
         return None
 
     @with_log
