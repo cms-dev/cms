@@ -26,12 +26,29 @@ import tempfile
 import stat
 import select
 import re
+from functools import wraps
 
 from cms import logger
 
 
 class SandboxInterfaceException(Exception):
     pass
+
+
+def with_log(func):
+    """Decorator for presuming that the logs are present.
+
+    """
+    @wraps(func)
+    def newfunc(self, *args, **kwargs):
+        """If they are not present, get the logs.
+
+        """
+        if self.log is None:
+            self.get_log()
+        return func(self, *args, **kwargs)
+
+    return newfunc
 
 
 def translate_box_exitcode(exitcode):
@@ -252,6 +269,7 @@ class Sandbox:
             raise IOError("Error while reading execution log file %s. %r" %
                           (info_file, error))
 
+    @with_log
     def get_execution_time(self):
         """Return the time spent in the sandbox, reading the logs if
         necessary.
@@ -259,12 +277,11 @@ class Sandbox:
         return (float): time spent in the sandbox.
 
         """
-        if self.log is None:
-            self.get_log()
         if 'time' in self.log:
             return float(self.log['time'][0])
         return None
 
+    @with_log
     def get_execution_wall_clock_time(self):
         """Return the total time from the start of the sandbox to the
         conclusion of the task, reading the logs if necessary.
@@ -272,12 +289,11 @@ class Sandbox:
         return (float): total time the sandbox was alive.
 
         """
-        if self.log is None:
-            self.get_log()
         if 'wall-time' in self.log:
             return float(self.log['wall-time'][0])
         return None
 
+    @with_log
     def get_memory_used(self):
         """Return the memory used by the sandbox, reading the logs if
         necessary.
@@ -285,12 +301,11 @@ class Sandbox:
         return (float): memory used by the sandbox (in bytes).
 
         """
-        if self.log is None:
-            self.get_log()
         if 'mem' in self.log:
             return float(self.log['mem'][0])
         return None
 
+    @with_log
     def get_killing_signal(self):
         """Return the signal that killed the sandboxed process,
         reading the logs if necessary.
@@ -298,12 +313,11 @@ class Sandbox:
         return (int): offending signal, or 0.
 
         """
-        if self.log is None:
-            self.get_log()
         if 'exitsig' in self.log:
             return int(self.log['exitsig'][0])
         return 0
 
+    @with_log
     def get_exit_code(self):
         """Return the exit code of the sandboxed process, reading the
         logs if necessary.
@@ -311,8 +325,6 @@ class Sandbox:
         return (float): exitcode, or 0.
 
         """
-        if self.log is None:
-            self.get_log()
         if 'exitcode' in self.log:
             return int(self.log['exitcode'][0])
         return 0
@@ -320,6 +332,7 @@ class Sandbox:
     # TODO - Rather fragile interface...
     KILLING_SYSCALL_RE = re.compile("^Forbidden syscall (.*)$")
 
+    @with_log
     def get_killing_syscall(self):
         """Return the syscall that triggered the killing of the
         sandboxed process, reading the log if necessary.
@@ -327,8 +340,6 @@ class Sandbox:
         return (string): offending syscall, or None.
 
         """
-        if self.log is None:
-            self.get_log()
         if 'message' in self.log:
             syscall_match = self.KILLING_SYSCALL_RE.match(
                 self.log['message'][0])
@@ -339,6 +350,7 @@ class Sandbox:
     # TODO - Rather fragile interface...
     KILLING_FILE_ACCESS_RE = re.compile("^Forbidden access to file (.*)$")
 
+    @with_log
     def get_forbidden_file_error(self):
         """Return the error that got us killed for forbidden file
         access.
@@ -346,8 +358,6 @@ class Sandbox:
         return (string): offending error, or None.
 
         """
-        if self.log is None:
-            self.get_log()
         if 'message' in self.log:
             syscall_match = self.KILLING_FILE_ACCESS_RE.match(
                 self.log['message'][0])
@@ -355,6 +365,7 @@ class Sandbox:
                 return syscall_match.group(1)
         return None
 
+    @with_log
     def get_status_list(self):
         """Reads the sandbox log file, and set and return the status
         of the sandbox.
@@ -362,8 +373,6 @@ class Sandbox:
         return (list): list of statuses of the sandbox.
 
         """
-        if self.log is None:
-            self.get_log()
         if 'status' in self.log:
             return self.log['status']
         return []
