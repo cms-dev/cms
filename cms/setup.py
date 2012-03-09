@@ -88,6 +88,7 @@ def do_setup():
 
                   "cmsTestFileCacher=cmstest.TestFileCacher:main",
 
+                  "cmsAddUser=cmscontrib.AddUser:main",
                   "cmsYamlImporter=cmscontrib.YamlImporter:main",
                   "cmsYamlReimporter=cmscontrib.YamlReimporter:main",
                   "cmsSpoolExporter=cmscontrib.SpoolExporter:main",

@@ -21,81 +21,61 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import sys
-import codecs
-import optparse
+import argparse
 
-from cms.async import ServiceCoord
-from cms.db.SQLAlchemyAll import metadata, SessionGen, Task, Manager, \
-    Testcase, User, Contest, SubmissionFormatElement
-from cms.grading.ScoreType import ScoreTypes
-from cms.async.AsyncLibrary import rpc_callback, Service
-from cms.service.LogService import logger
+from cms.db.SQLAlchemyAll import SessionGen, User, Contest
 from cms.db import ask_for_contest
 
-class AddUser(Service):
 
-    def __init__(self, shard, first_name, last_name, username, password, contest_id):
-        #logger.initialize(ServiceCoord("AddUser", shard))
-        #logger.debug("AddUser.__init__")
-        Service.__init__(self, shard)
+def add_user(contest_id, first_name, last_name, username,
+             password, ip_address, email, hidden):
+    with SessionGen(commit=True) as session:
+        contest = Contest.get_from_id(contest_id, session)
+        user = User(first_name=first_name,
+                    last_name=last_name,
+                    username=username,
+                    password=password,
+                    ip=ip_address,
+                    hidden=hidden,
+                    contest=contest)
+        session.add(user)
 
-        self.first_name = first_name
-        self.last_name = last_name
-        self.username = username
-        self.password = password
-        self.contest_id = contest_id
-
-        self.add_timeout(self.add_user, None, 10, immediately=True)
-
-    def add_user(self):
-        #logger.info("Creating question on the database.")
-        with SessionGen() as session:
-            # Create the dict corresponding to the old contest, from
-            # the database
-            contest = Contest.get_from_id(self.contest_id, session)
-
-            user = User(
-                    first_name=self.first_name,
-                    last_name=self.last_name,
-                    username=self.username,
-                    password=self.password,
-                    ip = "0.0.0.0",
-                    hidden = False,
-                    contest = contest)
-            session.add(user)
-            session.commit()
-
-        self.exit()
-        return False
 
 def main():
-    parser = optparse.OptionParser(usage="usage: %prog [options] <first name> <last name> <username> <password>")
-    parser.add_option("-s", "--shard", help="service shard number",
-                      dest="shard", action="store", type="int", default=None)
-    parser.add_option("-c", "--contest",
-                      help="contest ID to add username/password to",
-                      dest="contest_id", action="store", type="int", default=None)
-    options, args = parser.parse_args()
-    if len(args) != 4:
-        parser.error("I need exactly four parameters, the first name, last name, username and password")
-    if options.shard is None:
-        options.shard = 0
-    contest_id = options.contest_id
-    if contest_id is None:
-        contest_id = ask_for_contest()
+    """Parse arguments and launch process.
 
-    first_name = args[0]
-    last_name = args[1]
-    username = args[2]
-    password = args[3]
-    user_adder = AddUser(shard=options.shard,
-                        first_name=first_name,
-                        last_name=last_name,
-                        username=username,
-                        password=password,
-                        contest_id=contest_id).run()
+    """
+    parser = argparse.ArgumentParser(
+        description="Adds a user to a contest in CMS.")
+    parser.add_argument("first_name",
+                        help="first name of the user")
+    parser.add_argument("last_name",
+                        help="last name of the user")
+    parser.add_argument("username",
+                        help="username of the user")
+    parser.add_argument("-c", "--contest-id", help="id of contest to export",
+                      action="store", type=int)
+    parser.add_argument("-p", "--password", help="password of the user",
+                      action="store")
+    parser.add_argument("-i", "--ip-address", help="ip address of the user",
+                      action="store")
+    parser.add_argument("-e", "--email", help="email address of the user",
+                      action="store")
+    parser.add_argument("-H", "--hidden", help="if the user is hidden",
+                      action="store_true")
+    args = parser.parse_args()
+
+    if args.contest_id is None:
+        args.contest_id = ask_for_contest()
+
+    add_user(contest_id=args.contest_id,
+             first_name=args.first_name,
+             last_name=args.last_name,
+             username=args.username,
+             password=args.password,
+             ip_address=args.ip_address,
+             email=args.email,
+             hidden=args.hidden)
 
 if __name__ == "__main__":
     main()
