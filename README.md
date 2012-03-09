@@ -6,12 +6,12 @@ Introduction
 ------------
 
 CMS, or Contest Management System, is a distributed system for running
-and (with some extent) organizing a programming contest.
+and (to some extent) organizing a programming contest.
 
 CMS has been designed to be general and to handle many different types
-of contests, tasks, scorings, ... . Nonetheless, CMS has been
-explicitly build to be used in the 2012 International Olympiads in
-Informatics, to be held in September 2012 in Italy.
+of contests, tasks, scorings, etc. Nonetheless, CMS has been explicitly
+build to be used in the 2012 International Olympiads in Informatics, to
+be held in September 2012 in Italy.
 
 
 Description
@@ -20,7 +20,7 @@ Description
 CMS is composed of several services, that can be run on a single or on
 many servers. The core services are:
 
-- LogService: collects all log message in a single place;
+- LogService: collects all log messages in a single place;
 
 - ResourceService: collects data about the services running on the
   same server, and takes care of starting all of them with a single
@@ -54,8 +54,8 @@ Files and configurations are stored in a PostgreSQL database.
 There are also other services for testing, importing and exporting
 contests.
 
-Each of the core service is designed to be able to be killed and
-reactivated in a way that keeps the consistence of data.
+Each of the core services is designed to be able to be killed and
+reactivated in a way that keeps the consistency of data.
 
 
 Recommended setup
@@ -113,7 +113,7 @@ work:
 
 - gettext >= 0.18;
 
-- building environment for the programming languages allowed in the
+- build environment for the programming languages allowed in the
   competition.
 
 
@@ -121,10 +121,10 @@ On Ubuntu 11.10, one will need to run the following script to satisfy
 all dependencies:
 
 ```bash
-# For apt-add-repository.
+# For add-apt-repository.
 sudo apt-get install python-software-properties
 
-sudo apt-add-repository ppa:chris-lea/python-tornado
+sudo add-apt-repository ppa:chris-lea/python-tornado
 wget "https://launchpad.net/~neil-u/+archive/ppa/+build/3103042/"\
      "+files/python-sqlalchemy_0.7.4-1ubuntu1_all.deb"
 wget "https://launchpad.net/~neil-u/+archive/ppa/+build/3103042/"\
@@ -160,7 +160,7 @@ sudo apt-get install postgresql postgresql-client python-setuptools \
 Obtaining CMS
 -------------
 
-For every server, one need to retrieve CMS. Since CMS does not yet
+For every server, one needs to retrieve CMS. Since CMS does not yet
 have a release schedule, the fastest way to obtain it is via its git
 repository:
 
@@ -183,9 +183,9 @@ to copy them to the same file names but without the ".sample" suffix
 $REPO/cms/example/cms.ranking.conf) before modifying them.
 
 - cms.conf is intended to be the same in all servers; all
-  configurations are explained in the file; particular importance has
-  the definition of core_services, that specifies where are the
-  service going to be run, and how many of them.
+  configurations are explained in the file; of particular importance is
+  the definition of core_services, that specifies where the services
+  are going to be run, and how many of them.
 
 - cms.ranking.conf is intended to be different on each server that
   will host a ranking. The addresses and log-in information of each
@@ -243,7 +243,7 @@ former load into the system a contest exported from CMS with
 cmsContestExporter. The latter imports a contest from a directory with
 the structure of the Italian Olympiads repository.
 
-Once that a contest is loaded, the first thing to run is the logger
+Once a contest is loaded, the first thing to run is the logger
 (from the correct server!):
 
 ```bash
@@ -261,7 +261,7 @@ where shard-number is the shard associated to the ResourceService on
 that server. This will ask for which contest to load. The "--help"
 switch is enabled for every program for additional information.
 
-If the services keeps restarting you may need to change
+If a service keeps restarting you may need to change
 "process_cmdline" in the configuration to one more suited to your
 system.
 
