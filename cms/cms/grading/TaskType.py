@@ -585,9 +585,9 @@ class TaskType:
                 "forbidden syscall %s." % syscall
 
         # Forbidden file access: returning the error to the user.
-        # FIXME - Tell which file raised this error.
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            logger.info("Execution killed because of forbidden file access.")
+            error_str = sandbox.get_forbidden_file_error()
+            logger.info("Execution killed because of forbidden file access: `%s'." % error_str)
             return True, 0.0, \
                    "Execution killed because of forbidden file access."
 

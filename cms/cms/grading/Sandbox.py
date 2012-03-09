@@ -332,9 +332,26 @@ class Sandbox:
         if 'message' in self.log:
             syscall_match = self.KILLING_SYSCALL_RE.match(
                 self.log['message'][0])
-            if syscall_match is None:
-                return None
-            else:
+            if syscall_match is not None:
+                return syscall_match.group(1)
+        return None
+
+    # TODO - Rather fragile interface...
+    KILLING_FILE_ACCESS_RE = re.compile("^Forbidden access to file (.*)$")
+
+    def get_forbidden_file_error(self):
+        """Return the error that got us killed for forbidden file
+        access.
+
+        return (string): offending error, or None.
+
+        """
+        if self.log is None:
+            self.get_log()
+        if 'message' in self.log:
+            syscall_match = self.KILLING_FILE_ACCESS_RE.match(
+                self.log['message'][0])
+            if syscall_match is not None:
                 return syscall_match.group(1)
         return None
 
@@ -399,7 +416,8 @@ class Sandbox:
             return "Execution killed because of forbidden syscall %s" % \
                 self.get_killing_syscall()
         elif status == self.EXIT_FILE_ACCESS:
-            return "Execution killed because of forbidden file access"
+            return "Execution killed because of forbidden file access: %s" \
+                    % self.get_forbidden_file_error()
         elif status == self.EXIT_TIMEOUT:
             return "Execution timed out"
         elif status == self.EXIT_SIGNAL:
