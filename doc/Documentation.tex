@@ -11,6 +11,7 @@
 \newcommand{\LS}{\textsc{ls}}
 \newcommand{\FS}{\textsc{fs}}
 \newcommand{\ES}{\textsc{es}}
+\newcommand{\RS}{\textsc{rs}}
 \newcommand{\WS}{\textsc{w}}
 \renewcommand{\SS}{\textsc{ss}}
 \newcommand{\CWS}{\textsc{cws}}
@@ -113,16 +114,19 @@
   \item Admin Web Server (\AWS{}): exposes to the contest admins
     everything about the contest, and gives the possibility to change
     on the run configurations, and recover from some errors;
-  \item Ranking Web Server (\RWS{}), that expose in real time to the
-    world what we want the world to know about the contest; \RWS\ is
-    rather different from other services, because while other services
-    are designed to run on the same local network, \RWS\ need not to:
-    you can run it on a remote service and feed it contest data (there
-    are multiple reasons for this decision: one is that the contest
-    venue could have reduced bandwidth or lack public IPs to publish
-    the results to the Web; the second is that, from a security
-    viewpoint, it is not advisable to allow public access to the
-    contest network).
+  \item Resource Service (\RS): monitors and manages all other
+    services running on the same machine (see also subsection
+    \ref{ssec:sharding}).
+  \item Ranking Web Server (\RWS{}): exposes in real time to the world
+    what we want the world to know about the contest; \RWS\ is rather
+    different from other services, because while other services are
+    designed to run on the same local network, \RWS\ need not to: you
+    can run it on a remote service and feed it contest data (there are
+    multiple reasons for this decision: one is that the contest venue
+    could have reduced bandwidth or lack public IPs to publish the
+    results to the Web; the second is that, from a security viewpoint,
+    it is not advisable to allow public access to the contest
+    network);
   \end{squishlist}
 
   One is not forced to run everything: the only mandatory component is
@@ -157,7 +161,10 @@
   presence of other running programs can impact on the measured
   performance of the evaluated solutions. For the same motivation, it
   is advised to check that \WS\ machines don't have cron jobs or
-  similars that step up at some point consuming computing resources.
+  similars that step up at some point consuming computing
+  resources. Remember also that most IOI-style contests require the
+  evaluation to be run on computers identical to those used by the
+  contestants.
 
   \subsubsection{Security considerations}
 
@@ -169,6 +176,23 @@
   like also preventing contestants from communicating and cheating, is
   responsibility of the administrator and is not managed by
   \CMS\ itself.
+
+  \subsection{Sharding mechanism}
+  \label{ssec:sharding}
+
+  Since the management of many different services on possibly many
+  computers can be confusing for an administrator, there is a
+  \emph{sharding} mechanism that is used to distinguish between
+  different instances of the same system. The \CMS\ configuration file
+  is unique for all the computers and all the services composing a
+  single execution of \CMS: inside it for each services are defined
+  multiple \emph{shards}, i.e., multiple instances of that
+  service. They are uniquely defined by their IP and listening port
+  number. Moreover, there is one special \CMS\ service called
+  ResourceService (\RS), which takes care of starting all other
+  services running on the same machine and restarting them in case
+  they crash. It also collects information about the resource usage on
+  that machine, reporting them for monitoring on the \AWS.
 
   \subsection{Interaction with the task development}
 
@@ -230,6 +254,69 @@
   These difference can be implemented \emph{inside} the system, as
   plugins. We believe that our internal structure of a task is
   flexible enough to manage most task types.
+
+  \section{Setting up the system}
+
+  The process of setting up a system is described here. It is assumed
+  that you're working in a IOI-like environment: in cases with less
+  available hardware or less performance or security requirements,
+  some aspects of this description can or have to change.
+
+  \subsection{Network and computers set up}
+
+  Details of setting up contestants' computers are not discussed here:
+  briefly, the contest administrators will probably have to install a
+  reasonably modern Linux distribution on some reference computer and
+  then copy it on all other machines (after having installed the
+  packages that the contestants may use). Probably the administrators
+  will want a SSH server on any machine. Great care must be put in
+  configuring security aspects, in order to prevent users from
+  escalating privileges locally (i.e, becoming the root user) and
+  using the network improperly (i.e., anything that is not legal
+  communication with the \CWS).
+
+  It is advised to install all contestants' machines and \WS-s in 32
+  bits mode, because the system is especially tested in that
+  configuration. Anyway, it is a requirement to install each
+  \WS\ consistently, i.e., either all in 32 bits mode or all in 64
+  bits mode.
+
+  The network should be set up partitioning it in two distinct
+  subnets, one for the contestants and one for the \CMS\ machines. No
+  communication between these two branches must be allowed, except
+  HTTP requests directed towards the \CWS\ (or, even better, to an
+  HTTP proxy for the \CWS). The \CMS\ network can also accommodate
+  administrators' laptops. Of course it is expected that the firewall
+  allows them to connect via SSH to contestants' computers.
+
+  \subsection{Installing \CMS}
+
+  At the moment the only supported way to install \CMS\ is cloning the
+  GIT repository and running the \file{setup.py}. You also may want to
+  check out a specific version of \CMS: since there is no established
+  release cycle so far, the only indication about which GIT commits
+  are more ``stable'' than others are the tags that the Italian team
+  puts each time it uses a version of \CMS\ for one internal
+  contest. You may want to get in touch with the \CMS\ development
+  group to have more information.
+
+\begin{verbatim}
+$ git clone https://giomasce@github.com/giomasce/cms.git
+$ cd cms/cms
+$ ./setup.py build
+$ sudo ./setup.py install
+\end{verbatim}
+
+  During install, sample configuration files for \CMS\ will be copied
+  in \file{/usr/local/etc/cms.conf} and
+  \file{/usr/local/etc/cms.ranking.conf}. You should edit them to suit
+  your needs (and, particularly, your network configuration). However,
+  take care: these two files will be overwritten with the sample
+  copies each time you reinstall the system. To avoid losing your
+  changes, you can put the same files (with the same names) in the
+  directory \file{cms/cms/examples} in the repository: if such files
+  are present, the installer will copy them instead of their
+  \file{.sample} counterpart.
 
   \section{Description of the services}
 
