@@ -111,6 +111,8 @@ work:
 
 - python-yaml >= 3.10 (only for YamlImporter);
 
+- python-netifaces;
+
 - gettext >= 0.18;
 
 - build environment for the programming languages allowed in the
@@ -134,7 +136,8 @@ sudo apt-get update
 
 sudo apt-get install postgresql postgresql-client python-setuptools \
      python-tornado python-psycopg2 python-psutil gettext \
-     build-essential fpc stl-manual python-simplejson
+     build-essential fpc stl-manual python-simplejson \
+     python-netifaces
 
 sudo dpkg -i python-sqlalchemy_0.7.4-1ubuntu1_all.deb \
      python-sqlalchemy-ext_0.7.4-1ubuntu1_all.deb
@@ -150,7 +153,7 @@ all dependencies:
 sudo apt-get install postgresql postgresql-client python-setuptools \
      python-tornado python-psycopg2 python-sqlalchemy \
      python-psutil gettext build-essential fpc stl-manual \
-     python-simplejson
+     python-simplejson python-netifaces
 
 # Optional.
 # sudo apt-get install phppgadmin python-yaml
