@@ -132,3 +132,43 @@ TODO
 
  * Configuring an optional hard disk partition for keeping local data
    storage.
+
+
+RANDOM NOTES
+
+Some things to keep in mind for future improvements on this system:
+
+ * There should be some starting script that possibly prepares a
+   persistence layer for CMS, so that at least CMS data is not lost
+   across reboots. Thus, there should be some configuration that
+   specifies for each client what to do at boot time:
+
+   - Do not use any persistence layer, simply keep everything in RAM
+     and lose it at shutdown time.
+
+   - Mount a partition (for example given its label or UUID, or using
+     NFS), possibly create a suitable directory structure for keeping
+     CMS things and configuration. Or, maybe, we may want to get
+     configuration from the root filesystem (so changing it on the
+     server immediately replicates on all the machines) and the other
+     things (cache, logs, ...) from the mounted partition.
+
+   - Mount a partition as before and also create there a PostgreSQL
+     cluster (or one already existing). Then also launch PostgreSQL
+
+   This can be implemented this way: files and directories set up by
+   CMS (or PostgreSQL) are replaced in the root filesystem with
+   symbolic link to a common directory (for instance,
+   /data/cms). Moreover, a skeleton for this directory is kept
+   somewhere (for instance, /opt/data_skel). /data/cms is then created
+   as symbolic link to the skeleton directory: mounting another
+   partition over /data has the effect of hiding the skeleton and
+   putting in effect the data contained in the mounted partition. A
+   script that replicates the skeleton on the mounted partition must
+   also be provided.
+
+   It is important that said script doesn't overwrite already existing
+   directories and files. Moreover, we deliberately don't set up a
+   PostgreSQL cluster in systems without a mounted partition, because
+   it would be too dangerous to inadvertently put important data on a
+   database running in RAM.
