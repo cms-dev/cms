@@ -33,8 +33,8 @@ import bisect
 
 import psutil
 
-from cms import config, logger
-from cms.async import ServiceCoord
+from cms import config, logger, find_local_addresses
+from cms.async import ServiceCoord, get_shard_from_addresses
 from cms.async.AsyncLibrary import Service, rpc_method, RemoteService
 from cms.db import ask_for_contest
 
@@ -381,8 +381,15 @@ def main():
     parser.add_argument("-a", "--autorestart", metavar="CONTEST_ID",
                         help="restart automatically services on its machine",
                         nargs="?", type=int, const=-1)
-    parser.add_argument("shard", type=int)
+    parser.add_argument("shard", type=int, nargs="?", default=-1)
     args = parser.parse_args()
+
+    # If the shard is -1 (i.e., unspecified) we find it basing on the
+    # local IP addresses
+    if args.shard == -1:
+        addrs = find_local_addresses()
+        args.shard = get_shard_from_addresses("ResourceService", addrs)
+
     if args.autorestart is not None:
         if args.autorestart == -1:
             ResourceService(args.shard,

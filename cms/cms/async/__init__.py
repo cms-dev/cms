@@ -26,6 +26,7 @@
 from collections import namedtuple
 from functools import wraps
 from types import GeneratorType
+import socket
 
 Address = namedtuple("Address", "ip port")
 
@@ -73,6 +74,27 @@ def get_service_address(key):
         return config.other_services[key]
     else:
         raise KeyError
+
+
+def get_shard_from_addresses(service, addrs):
+    """Returns the first shard of a service that listens in one of the
+    specified addresses.
+
+    service (string): the name of the service.
+    addrs (list): a list of strings, the addresses that can match the
+                  shard.
+    returns (int): the found shard, or -1 in case it doesn't exist.
+
+    """
+    i = 0
+    while True:
+        try:
+            host, port = get_service_address(ServiceCoord(service, i))
+            if socket.gethostbyname(host) in addrs:
+                return i
+        except KeyError:
+            return -1
+        i += 1
 
 
 def get_service_shards(service):

@@ -29,6 +29,7 @@ import simplejson as json
 import time
 import datetime
 import codecs
+import netifaces
 from argparse import ArgumentParser
 
 from cms.async import ServiceCoord, Address, config as async_config
@@ -492,3 +493,19 @@ def mkdir(path):
         if os.path.isdir(path):
             return True
     return False
+
+
+def find_local_addresses():
+    """Returns the list of IPv4 addresses configured on the local
+    machine.
+
+    returns (list): a list of strings, each representing a local
+                    IPv4 address.
+
+    """
+    addrs = []
+    # Based on http://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib
+    for iface_name in netifaces.interfaces():
+        addrs += [i['addr'] for i in netifaces.ifaddresses(iface_name). \
+                      setdefault(netifaces.AF_INET, [])]
+    return addrs
