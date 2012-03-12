@@ -142,7 +142,7 @@
             else if (type == "question")
                 s += 'Reply to your question. ';
             else if (type == "new_question")
-                s += '<a href="/questions/1">New question</a>: ';
+                s += '<a href="' + url_root + '/questions/1">New question</a>: ';
 
             s += utils.escape_html(subject) + '</div>';
             s += '<div class="notification_text">';
@@ -197,7 +197,7 @@
                                                       this.display_notification);
             update_unread_counts = cmsutils.bind_func(this,
                                                       this.update_unread_counts);
-            cmsutils.ajax_request("/notifications",
+            cmsutils.ajax_request(url_root + "/notifications",
                                   "last_notification=" + this.last_notification,
                                   function(response, error)
                                   {
@@ -257,7 +257,7 @@
             var nowsec_to_start = sec_to_start - (now - firstDate) / 1000;
             if ((nowsec_to_end <= 0 && this.phase == 0 ) ||
                 (nowsec_to_start <= 0 && this.phase == -1 ))
-                window.location.href = "/";
+                window.location.href = url_root + "/";
 
             countdown = nowsec_to_end;
 
@@ -299,7 +299,7 @@
                 job_type = 'Compiling';
             else if (job[0] == 'evaluate')
                 job_type = 'Evaluating';
-            return job_type + ' submission <a href="/submission/' + job[1] + '">' + job[1] + '</a>';
+            return job_type + ' submission <a href="' + url_root + '/submission/' + job[1] + '">' + job[1] + '</a>';
         },
 
         /**
@@ -463,9 +463,9 @@
             var select = document.getElementById("contest_selection_select")
             var value = select.options[select.selectedIndex].value
             if (value == "null")
-                window.location = "/";
+                window.location = url_root + "/";
             else
-                window.location = "/contest/" + value;
+                window.location = url_root + "/contest/" + value;
         },
 
         show_page: function(item, page)

@@ -25,7 +25,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
   <h1>New task</h1>
 </div>
 
-<form enctype="multipart/form-data" action="/add_task/{{ contest.id }}" method="post" >
+<form enctype="multipart/form-data" action="{{ url_root }}/add_task/{{ contest.id }}" method="post" >
   <h2 id="title_task_information" class="toggling_on">Task information</h2>
 
   <div id="task_information">

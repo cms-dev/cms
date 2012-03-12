@@ -4,7 +4,7 @@
 <div class="core_title">
   <h1>Tasks list</h1>
 </div>
-<a href="/add_task/{{ contest.id }}">Add a new task</a>
+<a href="{{ url_root }}/add_task/{{ contest.id }}">Add a new task</a>
 <table class="bordered">
   <thead>
     <tr>
@@ -17,8 +17,8 @@
     {% for t in contest.tasks %}
     <tr>
       <td>{{ t.title }}</td>
-      <td><a href="/task/{{ t.id }}">{{ t.name }}</a></td>
-      <td>[<a href="/reevaluate/task/{{ t.id }}">Reevaluate</a>]</td>
+      <td><a href="{{ url_root }}/task/{{ t.id }}">{{ t.name }}</a></td>
+      <td>[<a href="{{ url_root }}/reevaluate/task/{{ t.id }}">Reevaluate</a>]</td>
     </tr>
     {% end %}
   </tbody>

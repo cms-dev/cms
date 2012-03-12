@@ -33,7 +33,7 @@ function update_submission_status()
     $sub_list.each(function(index){
         var id = this.id.replace("submission_status_", "");
         func = cmsutils.bind_func(id, submission_status_received);
-        cmsutils.ajax_request("/submission_status/" + id, "", func);
+        cmsutils.ajax_request("{{ url_root }}/submission_status/" + id, "", func);
     });
 }
 
@@ -47,7 +47,7 @@ setInterval(update_submission_status, 5000);
 
 <h2 id="title_task_information" class="toggling_on">{{ _("Task information") }}</h2>
 <div id="task_information">
-  <div><a href="/tasks/{{ encrypt_number(task.id) }}/statement">{{ _("Download task statement") }}</a></div>
+  <div><a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statement">{{ _("Download task statement") }}</a></div>
 
   {{ _("Time limit: %(seconds)s second(s).") % {"seconds": task.time_limit} }}</br>
   {{ _("Memory limit: %(mb)s MB.") % {"mb": task.memory_limit} }}</br>
@@ -56,7 +56,7 @@ setInterval(update_submission_status, 5000);
   <ul>
     {% for filename, attachment in task.attachments.items() %}
     <li>
-        <a href="/attachment/{{ encrypt_number(attachment.id) }}">{{ filename }}</a>
+        <a href="{{ url_root }}/attachment/{{ encrypt_number(attachment.id) }}">{{ filename }}</a>
     </li>
     {% end %}
   </ul>
@@ -70,7 +70,7 @@ setInterval(update_submission_status, 5000);
   <table>
     <tr>
       <td width="50%">
-        <form enctype="multipart/form-data" action="/submit/{{ encrypt_number(task.id) }}" method="post">
+        <form enctype="multipart/form-data" action="{{ url_root }}/submit/{{ encrypt_number(task.id) }}" method="post">
           {% for filename in [x.filename for x in task.submission_format] %}
           <p>{{ filename.replace(".%l", "") }}:<br/><input type="file" name="{{ filename }}"></input></p>
           {% end %}
@@ -154,7 +154,7 @@ setInterval(update_submission_status, 5000);
           {% for filename in [x.filename for x in task.submission_format] %}
             {% if filename in s.files %}
               {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
-          <a href="#" onclick="utils.show_file('{{ real_filename }}', '/submission_file/{{ encrypt_number(s.files[filename].id) }}');">
+          <a href="#" onclick="utils.show_file('{{ real_filename }}', '{{ url_root }}/submission_file/{{ encrypt_number(s.files[filename].id) }}');">
                {{ real_filename }}
           </a>
           <br/>
@@ -165,7 +165,7 @@ setInterval(update_submission_status, 5000);
           {% if s.token is None %}
           {{ _("No") }}
             {% if can_play_token %}
-          <form style="display: inline;" class="submit_form" action="/usetoken" method="POST">
+          <form style="display: inline;" class="submit_form" action="{{ url_root }}/usetoken" method="POST">
             <input type="hidden" name="submission_id" value="{{ encrypt_number(s.id) }}" />
             <input type="submit" value="{{ _("Use!") }}" />{% comment _("Use!") %}
           </form>

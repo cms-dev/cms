@@ -199,7 +199,7 @@ var getters = [];
 
         kill_service: function(s, link)
         {
-            link.parentNode.innerHTML = '<img src="/static/loading.gif" />';
+            link.parentNode.innerHTML = '<img src="{{ url_root }}/static/loading.gif" />';
             cmsrpc.request("ResourceService", this.shard,
                            "kill_service",
                            {"service": s});
@@ -290,7 +290,7 @@ for (var i = 0; i < {{ resource_shards }}; i++)
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="100"><img src="/static/loading.gif" /></td></tr>
+      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
     </tbody>
   </table>
 

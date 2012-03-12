@@ -5,7 +5,7 @@
   <h1>Contest information</h1>
 </div>
 
-<form name="edit_contest" action="/contest/edit/{{ contest.id }}" method="POST">
+<form name="edit_contest" action="{{ url_root }}/contest/edit/{{ contest.id }}" method="POST">
   <table class="sub_table">
     <tr>
       <td>Name</td>

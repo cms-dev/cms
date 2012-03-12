@@ -115,6 +115,7 @@ class BaseHandler(tornado.web.RequestHandler):
         params = {}
         params["timestamp"] = int(time.time())
         params["contest"] = self.contest
+        params["url_root"] = self.get_url_root()
         if self.contest is not None:
             params["phase"] = self.contest.phase(params["timestamp"])
             # Keep "== None" in filter arguments
@@ -160,6 +161,31 @@ class BaseHandler(tornado.web.RequestHandler):
         if argument < 0:
             raise ValueError("%s is negative." % argument_name)
         return argument
+
+    def get_url_root(self):
+        '''Generates a URL relative to the current page which would point to
+        the root of the website.'''
+
+        # Compute the number of levels we would need to ascend.
+        path_depth = self.request.uri.count("/") - 1
+
+        if path_depth > 0:
+            return "/".join([".."] * path_depth)
+        else:
+            return "."
+
+    def redirect(self, url):
+        url = self.get_url_root() + url
+
+        # We would prefer to just use this:
+        #   tornado.web.RequestHandler.redirect(self, url)
+        # but unfortunately that assumes it knows the full path to the current
+        # page to generate an absolute URL. This may not be the case if we are
+        # hidden behind a proxy which is remapping part of its URL space to us.
+
+        self.set_status(302)
+        self.set_header("Location", url)
+        self.finish()
 
 
 FileHandler = file_handler_gen(BaseHandler)

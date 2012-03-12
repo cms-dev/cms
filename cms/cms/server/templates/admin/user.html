@@ -53,8 +53,8 @@ function update_additional_answer(element, invoker)
     <tbody>
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
-        <td><a href="/submission/{{ s.id }}">{{ format_time_or_date(s.timestamp) }}</a></td>
-        <td><a href="/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
+        <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ format_time_or_date(s.timestamp) }}</a></td>
+        <td><a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
         <td>
           {% if s.compilation_outcome is None %}
           Compiling...
@@ -107,7 +107,7 @@ function update_additional_answer(element, invoker)
         </td>
         <td>
           {% for filename, sub_file in s.files.items() %}
-          <a href="#" onclick="utils.show_file('{{ filename.replace("%l", s.language) }}','/submission_file/{{ sub_file.id }}')">{{ filename.replace("%l", s.language) }}<br/>
+          <a href="#" onclick="utils.show_file('{{ filename.replace("%l", s.language) }}','{{ url_root }}/submission_file/{{ sub_file.id }}')">{{ filename.replace("%l", s.language) }}<br/>
           {% end %}
         </td>
         <td>
@@ -118,7 +118,7 @@ function update_additional_answer(element, invoker)
           {% end %}
         </td>
         <td>
-          [<a href="/reevaluate/submission/{{ s.id }}?ref={{ "/user/%s" % selected_user.id }}">Reevaluate</a>]
+          [<a href="{{ url_root }}/reevaluate/submission/{{ s.id }}?ref={{ "/user/%s" % selected_user.id }}">Reevaluate</a>]
         </td>
       </tr>
       {% end %}
@@ -131,7 +131,7 @@ function update_additional_answer(element, invoker)
 
 <h2 id="title_general_info" class="toggling_on">General Information</h2>
 <div id="general_info">
-  <form action="/user/{{ selected_user.id }}" method="POST">
+  <form action="{{ url_root }}/user/{{ selected_user.id }}" method="POST">
     <table>
       <tr>
         <td>First name</td>
@@ -199,7 +199,7 @@ function update_additional_answer(element, invoker)
         </div>
         <div class="reply_question" >
           <hr/>
-          <form class="reply_question_form" action="/question/{{ msg.id }}" method="POST">
+          <form class="reply_question_form" action="{{ url_root }}/question/{{ msg.id }}" method="POST">
             <input type="hidden" name="ref" value="/user/{{ selected_user.id }}"/>
             Precompiled answer:
             <select name="reply_question_quick_answer" onchange="update_additional_answer({{ msg_i }}, this);">
@@ -236,7 +236,7 @@ function update_additional_answer(element, invoker)
 
   <div class="notifications">
       <div class="notification communication">
-        <form id="send_message_form" action="/message/{{ selected_user.id }}" method="POST">
+        <form id="send_message_form" action="{{ url_root }}/message/{{ selected_user.id }}" method="POST">
           <div class="notification_msg">
             <div class="notification_subject">
               Subject:

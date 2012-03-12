@@ -4,18 +4,23 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="shortcut icon" href="/static/favicon.ico" />
-    <link rel="stylesheet" type="text/css" href="/static/reset.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/style.css"/>
-    <script type="text/javascript" src="/static/utils.js"></script>
-    <script type="text/javascript" src="/static/web_async_library.js"></script>
-    <script type="text/javascript" src="/static/scripts.js"></script>
-    <script type="text/javascript" src="/static/jq/jquery-1.6.4.min.js"></script>
-    <script type="text/javascript" src="/static/sh/shCore.js"></script>
-    <script type="text/javascript" src="/static/sh/shBrushCpp.js"></script>
-    <script type="text/javascript" src="/static/sh/shBrushDelphi.js"></script>
-    <link rel="stylesheet" type="text/css" href="/static/sh/shCore.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/sh/shThemeDefault.css"/>
+    <script type="text/javascript">
+<!--
+var url_root = "{{ url_root }}";
+-->
+    </script>
+    <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/reset.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/style.css"/>
+    <script type="text/javascript" src="{{ url_root }}/static/utils.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/web_async_library.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/scripts.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.6.4.min.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/sh/shCore.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/sh/shBrushCpp.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/sh/shBrushDelphi.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/sh/shCore.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/sh/shThemeDefault.css"/>
 
     <title>{{ contest.description }}</title>
 
@@ -57,14 +62,14 @@ $(document).ready(init);
         <ul class="menu">
           <li class="menu_entry">
             <span id="unread_public" class="unread" style="display: none;">0</span>
-            <a class="menu_link" href="/">{{ _("Overview") }}</a>
+            <a class="menu_link" href="{{ url_root }}/">{{ _("Overview") }}</a>
           </li>
           <li class="menu_entry">
-            <a class="menu_link" href="/instructions">{{ _("Instructions") }}</a>
+            <a class="menu_link" href="{{ url_root }}/instructions">{{ _("Instructions") }}</a>
           </li>
           <li class="menu_entry">
             <span id="unread_private" class="unread" style="display: none;">0</span>
-            <a class="menu_link" href="/communication">{{ _("Communication") }}</a>
+            <a class="menu_link" href="{{ url_root }}/communication">{{ _("Communication") }}</a>
           </li>
         </ul>
         <div class="hr"></div>
@@ -73,7 +78,7 @@ $(document).ready(init);
         <div class="sidebar_right">
           <ul class="menu">
             {% for t_iter in contest.tasks %}
-            <li class="menu_entry"><a class="menu_link" href="/tasks/{{ encrypt_number(t_iter.id) }}">{{t_iter.name}}</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/tasks/{{ encrypt_number(t_iter.id) }}">{{t_iter.name}}</a></li>
             {% end %}
           </ul>
         </div>
@@ -83,7 +88,7 @@ $(document).ready(init);
           {% if handler.get_argument("login_error", "") != "" %}
         <div class="footer login_error">{{ _("Failed to log in.") }}</div>
           {% end %}
-        <form action="/login" method="POST">
+        <form action="{{ url_root }}/login" method="POST">
           <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
           <div class="footer">
             <div class="sidebar_left">{{ _("Username:") }}</div>
@@ -99,7 +104,7 @@ $(document).ready(init);
           {% if phase != 1 %}
         <div class="footer">{{ _("Time left:") }} <span id="remaining"></span></div>
           {% end %}
-        <div class="footer">{{ current_user.first_name }} {{ current_user.last_name }} - {{ current_user.username }} (<a href="/logout">{{ _("logout") }}</a>)</div>
+        <div class="footer">{{ current_user.first_name }} {{ current_user.last_name }} - {{ current_user.username }} (<a href="{{ url_root }}/logout">{{ _("logout") }}</a>)</div>
         {% end %}
         <div class="cr_notice">CMS <a href="http://github.com/giomasce/cms/">codebase</a> is released under the<br/><a href="http://www.gnu.org/licenses/agpl.txt">GNU Affero General Public License</a>.</div>
       </div>
