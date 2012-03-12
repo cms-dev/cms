@@ -57,7 +57,7 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
      valid_phase_required, encrypt_number, decrypt_number, decrypt_arguments, \
-     get_encryption_alphabet
+     get_encryption_alphabet, get_url_root
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -146,7 +146,7 @@ class BaseHandler(tornado.web.RequestHandler):
         ret = {}
         ret["timestamp"] = int(time.time())
         ret["contest"] = self.contest
-        ret["url_root"] = self.get_url_root()
+        ret["url_root"] = get_url_root(self.request.uri)
         ret["valid_phase_end"] = self.contest.stop
         if(self.contest is not None):
             ret["phase"] = self.contest.phase(ret["timestamp"])
@@ -181,20 +181,8 @@ class BaseHandler(tornado.web.RequestHandler):
                 logger.warning("Couldn't close SQL connection: %r" % error)
         tornado.web.RequestHandler.finish(self, *args, **kwds)
 
-    def get_url_root(self):
-        '''Generates a URL relative to the current page which would point to
-        the root of the website.'''
-
-        # Compute the number of levels we would need to ascend.
-        path_depth = self.request.uri.count("/") - 1
-
-        if path_depth > 0:
-            return "/".join([".."] * path_depth)
-        else:
-            return "."
-
     def redirect(self, url):
-        url = self.get_url_root() + url
+        url = get_url_root(self.request.uri) + url
 
         # We would prefer to just use this:
         #   tornado.web.RequestHandler.redirect(self, url)

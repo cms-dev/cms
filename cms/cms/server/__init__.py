@@ -310,3 +310,16 @@ def decrypt_number(enc, key=None):
 
     """
     return int(decrypt_string(enc, key), 16)
+
+def get_url_root(request_uri):
+    '''Generates a URL relative to request_uri which would point to the root of
+    the website.'''
+
+    # Compute the number of levels we would need to ascend.
+    path_depth = request_uri.count("/") - 1
+
+    if path_depth > 0:
+        return "/".join([".."] * path_depth)
+    else:
+        return "."
+
