@@ -57,10 +57,10 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
      valid_phase_required, encrypt_number, decrypt_number, decrypt_arguments, \
-     get_encryption_alphabet, get_url_root
+     get_encryption_alphabet, get_url_root, CommonRequestHandler
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(CommonRequestHandler):
     """Base RequestHandler for this application.
 
     All the RequestHandler classes in this application should be a
@@ -180,19 +180,6 @@ class BaseHandler(tornado.web.RequestHandler):
             except Exception as error:
                 logger.warning("Couldn't close SQL connection: %r" % error)
         tornado.web.RequestHandler.finish(self, *args, **kwds)
-
-    def redirect(self, url):
-        url = get_url_root(self.request.uri) + url
-
-        # We would prefer to just use this:
-        #   tornado.web.RequestHandler.redirect(self, url)
-        # but unfortunately that assumes it knows the full path to the current
-        # page to generate an absolute URL. This may not be the case if we are
-        # hidden behind a proxy which is remapping part of its URL space to us.
-
-        self.set_status(302)
-        self.set_header("Location", url)
-        self.finish()
 
 
 FileHandler = file_handler_gen(BaseHandler)

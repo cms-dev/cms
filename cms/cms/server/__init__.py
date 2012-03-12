@@ -36,7 +36,7 @@ import zipfile
 from Crypto.Cipher import AES
 
 from functools import wraps
-from tornado.web import HTTPError
+from tornado.web import HTTPError, RequestHandler
 
 from cms import config, logger
 from cms.db.FileCacher import FileCacher
@@ -322,4 +322,21 @@ def get_url_root(request_uri):
         return "/".join([".."] * path_depth)
     else:
         return "."
+
+class CommonRequestHandler(RequestHandler):
+    """Encapsulates shared RequestHandler functionality.
+    """
+
+    def redirect(self, url):
+        url = get_url_root(self.request.uri) + url
+
+        # We would prefer to just use this:
+        #   tornado.web.RequestHandler.redirect(self, url)
+        # but unfortunately that assumes it knows the full path to the current
+        # page to generate an absolute URL. This may not be the case if we are
+        # hidden behind a proxy which is remapping part of its URL space to us.
+
+        self.set_status(302)
+        self.set_header("Location", url)
+        self.finish()
 
