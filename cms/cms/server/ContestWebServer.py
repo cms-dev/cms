@@ -196,7 +196,7 @@ class BaseHandler(tornado.web.RequestHandler):
     def redirect(self, url):
         url = self.get_url_root() + url
 
-        # We would to just use this:
+        # We would prefer to just use this:
         #   tornado.web.RequestHandler.redirect(self, url)
         # but unfortunately that assumes it knows the full path to the current
         # page to generate an absolute URL. This may not be the case if we are
