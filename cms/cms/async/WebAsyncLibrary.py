@@ -147,7 +147,7 @@ class WebService(Service):
     """
 
     def __init__(self, listen_port, handlers, parameters, shard=0,
-                 custom_logger=None, listen_address='0.0.0.0'):
+                 custom_logger=None, listen_address=""):
         Service.__init__(self, shard, custom_logger)
 
         global logger

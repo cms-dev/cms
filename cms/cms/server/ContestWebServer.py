@@ -213,7 +213,8 @@ class ContestWebServer(WebService):
                             config.contest_listen_port[shard],
                             _cws_handlers,
                             parameters,
-                            shard=shard)
+                            shard=shard,
+                            listen_address=config.contest_listen_address[shard])
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
             ServiceCoord("EvaluationService", 0))
