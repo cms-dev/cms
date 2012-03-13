@@ -5,22 +5,27 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <link rel="shortcut icon" href="/static/favicon.ico" />
-    <link rel="stylesheet" type="text/css" href="/static/reset.css">
-    <link rel="stylesheet" type="text/css" href="/static/style.css">
-    <script type="text/javascript" src="/static/utils.js"></script>
-    <script type="text/javascript" src="/static/web_async_library.js"></script>
-    <script type="text/javascript" src="/static/scripts.js"></script>
-    <script type="text/javascript" src="/static/jq/jquery-1.6.4.min.js"></script>
-    <script type="text/javascript" src="/static/jq/jquery.jqplot.min.js"></script>
-    <script type="text/javascript" src="/static/jq/jqplot.dateAxisRenderer.min.js"></script>
-    <script type="text/javascript" src="/static/jq/jqplot.enhancedLegendRenderer.min.js"></script>
-    <script type="text/javascript" src="/static/sh/shCore.js"></script>
-    <script type="text/javascript" src="/static/sh/shBrushCpp.js"></script>
-    <script type="text/javascript" src="/static/sh/shBrushDelphi.js"></script>
-    <link rel="stylesheet" type="text/css" href="/static/jq/jquery.jqplot.min.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/sh/shCore.css"/>
-    <link rel="stylesheet" type="text/css" href="/static/sh/shThemeDefault.css"/>
+    <script type="text/javascript">
+<!--
+var url_root = "{{ url_root }}";
+-->
+    </script>
+    <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/reset.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/style.css">
+    <script type="text/javascript" src="{{ url_root }}/static/utils.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/web_async_library.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/scripts.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.6.4.min.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/jq/jquery.jqplot.min.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/jq/jqplot.dateAxisRenderer.min.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/jq/jqplot.enhancedLegendRenderer.min.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/sh/shCore.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/sh/shBrushCpp.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/sh/shBrushDelphi.js"></script>
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/jq/jquery.jqplot.min.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/sh/shCore.css"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/sh/shThemeDefault.css"/>
 
     {% if contest is None %}
     <title>Admin</title>
@@ -68,8 +73,8 @@ $(document).ready(init);
       <div id="sidebar">
         <h1>Administration</h1>
         <ul class="menu">
-          <li class="menu_entry"><a class="menu_link" href="/{% if contest is not None %}{{ contest.id }}{% end %}">Overview</a></li>
-          <li class="menu_entry"><a class="menu_link" href="/resources{% if contest is not None %}/{{ contest.id }}{% end %}">Resource usage</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is not None %}{{ contest.id }}{% end %}">Overview</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/resources{% if contest is not None %}/{{ contest.id }}{% end %}">Resource usage</a></li>
         </ul>
         <div class="hr"></div>
         <select id="contest_selection_select" onchange="utils.switch_contest()">
@@ -86,21 +91,21 @@ $(document).ready(init);
           </option>
           {% end %}
         </select>
-        <a href="/contest/add" alt="New contest" style="text-decoration: none;">+</a>
+        <a href="{{ url_root }}/contest/add" alt="New contest" style="text-decoration: none;">+</a>
 
           {% if contest is not None %}
           <div class="sidebar_left">Contest:</div>
           <ul class="menu">
-            <li class="menu_entry"><a class="menu_link" href="/contest/{{ contest.id }}">General</a></li>
-            <li class="menu_entry"><a class="menu_link" href="/userlist/{{ contest.id }}">Users</a></li>
-            <li class="menu_entry"><a class="menu_link" href="/tasklist/{{ contest.id }}">Tasks</a></li>
-            <li class="menu_entry"><a class="menu_link" href="/announcements/{{ contest.id }}">Announcements</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}">General</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/userlist/{{ contest.id }}">Users</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/tasklist/{{ contest.id }}">Tasks</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/announcements/{{ contest.id }}">Announcements</a></li>
             <li class="menu_entry">
               <span id="unanswered_questions" class="unread"
                 {% if unanswered == 0 %} style="display: none;" {% end %}>
                 {{ unanswered }}
               </span>
-              <a class="menu_link" href="/questions/{{ contest.id }}">Questions</a>
+              <a class="menu_link" href="{{ url_root }}/questions/{{ contest.id }}">Questions</a>
             </li>
           </ul>
           <div class="hr"></div>

@@ -32,7 +32,7 @@
         __wait_for_answer: function(cb, rid)
         {
             var got_answer = this.__got_answer.bind(this, cb, rid)
-            this.utils.ajax_request("/rpc_answer", "__rid=" + rid, got_answer);
+            this.utils.ajax_request(url_root + "/rpc_answer", "__rid=" + rid, got_answer);
         },
 
         /**
@@ -112,7 +112,7 @@
             var base_url;
             if(sync == true)
             {
-                base_url = "sync_rpc_request/";
+                base_url = "/sync_rpc_request/";
                 args = "";
             }
             else
@@ -128,7 +128,7 @@
                 args += "&" + i + "=" + a;
             }
 
-            this.utils.ajax_request(base_url +
+            this.utils.ajax_request(url_root + base_url +
                                     service + "/" +
                                     shard + "/" +
                                     method,

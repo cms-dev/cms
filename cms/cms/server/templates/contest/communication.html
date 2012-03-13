@@ -4,7 +4,7 @@
 
 <h2 id="title_submit_questions" class="toggling_on">{{ _("Submit a question") }}</h2>
 <div id="submit_questions">
-  <form action="/question" method="POST">
+  <form action="{{ url_root }}/question" method="POST">
     <div class="footer">{{ _("Subject:") }}</div>
     <input type="text" name="question_subject" size="35" />
     <div class="footer">{{ _("Text:") }}</div>

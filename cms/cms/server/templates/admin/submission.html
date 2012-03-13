@@ -23,11 +23,11 @@
       </tr>
       <tr>
         <td>Task</td>
-        <td><a href="/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
+        <td><a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
       </tr>
       <tr>
         <td>User</td>
-        <td><a href="/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
+        <td><a href="{{ url_root }}/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
       </tr>
       <tr>
         <td>Files</td>
@@ -35,7 +35,7 @@
           {% for filename in [x.filename for x in s.task.submission_format] %}
             {% if filename in s.files %}
               {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
-          <a href="#" onclick="utils.show_file('{{ real_filename }}','/submission_file/{{ s.files[filename].id }}')">
+          <a href="#" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/submission_file/{{ s.files[filename].id }}')">
             {{ real_filename }}
           </a>
           <br/>
@@ -90,7 +90,7 @@
       </tr>
       <tr>
         <td>Ops</td>
-        <td>[<a href="/reevaluate/submission/{{ s.id }}">Reevaluate</a>]</td>
+        <td>[<a href="{{ url_root }}/reevaluate/submission/{{ s.id }}">Reevaluate</a>]</td>
       </tr>
     </tbody>
   </table>

@@ -5,7 +5,7 @@
 function contest_response(response, error)
 {
     if( error == null && response != null  && !isNaN(response))
-        window.location = "/contest/" + response;
+        window.location = url_root + "/contest/" + response;
     else
     {
         utils.display_notification("error", new Date().getTime() / 1000, error, response);
@@ -46,7 +46,7 @@ function validate_contest()
     par += "&end="+encodeURIComponent(end);
     par += "&per_user_time="+encodeURIComponent(per_user_time);
 
-    cmsutils.ajax_request('/contest/add', par, contest_response, "POST");
+    cmsutils.ajax_request(url_root + '/contest/add', par, contest_response, "POST");
     return false;
 }
 {% end %}
@@ -56,7 +56,7 @@ function validate_contest()
   <h1>New contest</h1>
 </div>
 
-<form name="add_contest" action="/contest/add" method="POST" onsubmit="return validate_contest();">
+<form name="add_contest" action="{{ url_root }}/contest/add" method="POST" onsubmit="return validate_contest();">
   <table class="sub_table">
     <tr>
       <td>Name</td>

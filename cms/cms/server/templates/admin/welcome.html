@@ -95,7 +95,7 @@ function update_workers_status(response)
 function link_submissions(s)
 {
     return s.replace(/submission ([0-9]+)/g,
-                     'submission <a href="/submission/$1">\$1</a>');
+                     'submission <a href="{{ url_root }}/submission/$1">\$1</a>');
 }
 
 function update_logs(response)
@@ -180,7 +180,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="100"><img src="/static/loading.gif" /></td></tr>
+      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -199,7 +199,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="100"><img src="/static/loading.gif" /></td></tr>
+      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -218,7 +218,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="100"><img src="/static/loading.gif" /></td></tr>
+      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>
@@ -238,7 +238,7 @@ update_statuses();
       </tr>
     </thead>
     <tbody>
-      <tr><td style="text-align: center;" colspan="100"><img src="/static/loading.gif" /></td></tr>
+      <tr><td style="text-align: center;" colspan="100"><img src="{{ url_root }}/static/loading.gif" /></td></tr>
     </tbody>
   </table>
   <div class="hr"></div>

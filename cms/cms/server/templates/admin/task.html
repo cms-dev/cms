@@ -46,8 +46,8 @@ $("select[name=task_type]").change(showTaskTypeOption);
     <tbody>
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
-        <td><a href="/submission/{{ s.id }}">{{ format_time_or_date(s.timestamp) }}</a></td>
-        <td><a href="/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
+        <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ format_time_or_date(s.timestamp) }}</a></td>
+        <td><a href="{{ url_root }}/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
         <td>
           {% if s.compilation_outcome is None %}
           Compiling...
@@ -102,7 +102,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
           {% for filename in [x.filename for x in task.submission_format] %}
             {% if filename in s.files %}
               {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
-          <a href="#" onclick="utils.show_file('{{ real_filename }}','/submission_file/{{ s.files[filename].id }}')">
+          <a href="#" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/submission_file/{{ s.files[filename].id }}')">
             {{ real_filename }}
           </a>
           <br/>
@@ -117,7 +117,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
           {% end %}
         </td>
         <td>
-          [<a href="/reevaluate/submission/{{ s.id }}?ref={{ "/task/%s" % task.id }}">Reevaluate</a>]
+          [<a href="{{ url_root }}/reevaluate/submission/{{ s.id }}?ref={{ "/task/%s" % task.id }}">Reevaluate</a>]
         </td>
       </tr>
       {% end %}
@@ -127,7 +127,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
   <div class="hr"></div>
 </div>
 
-<form enctype="multipart/form-data" action="/task/{{ task.id }}" method="POST">
+<form enctype="multipart/form-data" action="{{ url_root }}/task/{{ task.id }}" method="POST">
   <h2 id="title_task_information" class="toggling_on">Task information</h2>
   <div id="task_information">
     <table>
@@ -149,23 +149,23 @@ $("select[name=task_type]").change(showTaskTypeOption);
           {% if task.statement == "" %}
           No statement uploaded yet
           {% else %}
-          <a href="/task/{{ task.id }}/statement">Current statement</a>
+          <a href="{{ url_root }}/task/{{ task.id }}/statement">Current statement</a>
           {% end %}
           -
-          <a href="/add_statement/{{ task.id }}">Upload a new statement</a><br/>
+          <a href="{{ url_root }}/add_statement/{{ task.id }}">Upload a new statement</a><br/>
         </td>
       </tr>
       <tr>
         <td>Attachments</td>
         <td>
-          <a href="/add_attachment/{{ task.id }}" >Add attachment</a><br/>
+          <a href="{{ url_root }}/add_attachment/{{ task.id }}" >Add attachment</a><br/>
           {% if len(task.attachments) == 0 %}
             No attachments.
           {% else %}
             {% for attachment in task.attachments.values() %}
               <div class="attachment">
-                <a href="/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
-                - <a href="/delete_attachment/{{ attachment.id }}">Delete</a>
+                <a href="{{ url_root }}/file/{{ attachment.digest }}/{{ attachment.filename }}">{{ attachment.filename }}</a>
+                - <a href="{{ url_root }}/delete_attachment/{{ attachment.id }}">Delete</a>
               </div>
             {% end %}
           {% end %}
@@ -226,14 +226,14 @@ $("select[name=task_type]").change(showTaskTypeOption);
       <tr>
         <td>Managers</td>
         <td>
-          <a href="/add_manager/{{ task.id }}">Add a manager</a></br>
+          <a href="{{ url_root }}/add_manager/{{ task.id }}">Add a manager</a></br>
           {% if len(task.managers) == 0 %}
             No managers.
           {% else %}
             {% for manager in task.managers.values() %}
               <div class="manager">
-                <a href="/file/{{ manager.digest }}/{{ manager.filename }}">{{ manager.filename }}</a>
-                - <a href="/delete_manager/{{ manager.id }}">Delete</a>
+                <a href="{{ url_root }}/file/{{ manager.digest }}/{{ manager.filename }}">{{ manager.filename }}</a>
+                - <a href="{{ url_root }}/delete_manager/{{ manager.id }}">Delete</a>
               </div>
             {% end %}
           {% end %}
@@ -271,7 +271,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
 
   <h2 id="title_testcases" class="toggling_on">Testcases</h2>
   <div id="testcases">
-    <a href="/add_testcase/{{ task.id }}">Add a testcase</a>
+    <a href="{{ url_root }}/add_testcase/{{ task.id }}">Add a testcase</a>
     <table class="bordered" style="text-align:center">
       <thead>
         <tr>
@@ -290,13 +290,13 @@ $("select[name=task_type]").change(showTaskTypeOption);
             <input type="checkbox" name="testcase_{{ testcase.num }}_public" {% if testcase.public %}checked{% end %} />
           </td>
           <td>
-            <a href="#" onclick="utils.show_file('input{{ testcase.num }}','/file/{{ testcase.input }}/input{{ testcase.num }}')">Show input</a>
+            <a href="#" onclick="utils.show_file('input{{ testcase.num }}','{{ url_root }}/file/{{ testcase.input }}/input{{ testcase.num }}')">Show input</a>
           </td>
           <td>
-            <a href="#" onclick="utils.show_file('output{{ testcase.num }}','/file/{{ testcase.output }}/output{{ testcase.num }}')">Show output</a>
+            <a href="#" onclick="utils.show_file('output{{ testcase.num }}','{{ url_root }}/file/{{ testcase.output }}/output{{ testcase.num }}')">Show output</a>
           </td>
           <td>
-            <a href="/delete_testcase/{{ testcase.id }}">Delete</a>
+            <a href="{{ url_root }}/delete_testcase/{{ testcase.id }}">Delete</a>
           </td>
         </tr>
         {% end %}

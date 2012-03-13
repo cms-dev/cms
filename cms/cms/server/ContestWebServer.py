@@ -57,10 +57,10 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
      valid_phase_required, encrypt_number, decrypt_number, decrypt_arguments, \
-     get_encryption_alphabet
+     get_encryption_alphabet, get_url_root, CommonRequestHandler
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(CommonRequestHandler):
     """Base RequestHandler for this application.
 
     All the RequestHandler classes in this application should be a
@@ -146,6 +146,7 @@ class BaseHandler(tornado.web.RequestHandler):
         ret = {}
         ret["timestamp"] = int(time.time())
         ret["contest"] = self.contest
+        ret["url_root"] = get_url_root(self.request.uri)
         ret["valid_phase_end"] = self.contest.stop
         if(self.contest is not None):
             ret["phase"] = self.contest.phase(ret["timestamp"])

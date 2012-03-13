@@ -39,7 +39,8 @@ from cms.db.SQLAlchemyAll import Session, \
      Contest, User, Announcement, Question, Message, Submission, File, Task, \
      Attachment, Manager, Testcase, SubmissionFormatElement
 from cms.grading.tasktypes import get_task_type
-from cms.server import file_handler_gen, catch_exceptions
+from cms.server import file_handler_gen, catch_exceptions, get_url_root, \
+     CommonRequestHandler
 
 
 def valid_ip(ip_address):
@@ -63,7 +64,7 @@ def valid_ip(ip_address):
     return True
 
 
-class BaseHandler(tornado.web.RequestHandler):
+class BaseHandler(CommonRequestHandler):
     """Base RequestHandler for this application.
 
     All the RequestHandler classes in this application should be a
@@ -115,6 +116,7 @@ class BaseHandler(tornado.web.RequestHandler):
         params = {}
         params["timestamp"] = int(time.time())
         params["contest"] = self.contest
+        params["url_root"] = get_url_root(self.request.uri)
         if self.contest is not None:
             params["phase"] = self.contest.phase(params["timestamp"])
             # Keep "== None" in filter arguments

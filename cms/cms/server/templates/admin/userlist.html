@@ -4,7 +4,7 @@
 <div class="core_title">
   <h1>Users list</h1>
 </div>
-<a href ="/add_user/{{ contest.id }}">Add a new user</a>
+<a href="{{ url_root }}/add_user/{{ contest.id }}">Add a new user</a>
 <table class="bordered">
   <thead>
     <tr>
@@ -19,8 +19,8 @@
     <tr>
       <td>{{ u.first_name }}</td>
       <td>{{ u.last_name }}</td>
-      <td><a href="/user/{{ u.id }}">{{ u.username }}</a></td>
-      <td>[<a href="/reevaluate/user/{{ u.id }}">Reevaluate</a>]</td>
+      <td><a href="{{ url_root }}/user/{{ u.id }}">{{ u.username }}</a></td>
+      <td>[<a href="{{ url_root }}/reevaluate/user/{{ u.id }}">Reevaluate</a>]</td>
     </tr>
     {% end %}
   </tbody>

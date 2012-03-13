@@ -30,13 +30,14 @@ import time
 import base64
 import binascii
 import random
+import urlparse
 
 import tarfile
 import zipfile
 from Crypto.Cipher import AES
 
 from functools import wraps
-from tornado.web import HTTPError
+from tornado.web import HTTPError, RequestHandler
 
 from cms import config, logger
 from cms.db.FileCacher import FileCacher
@@ -310,3 +311,33 @@ def decrypt_number(enc, key=None):
 
     """
     return int(decrypt_string(enc, key), 16)
+
+def get_url_root(request_uri):
+    '''Generates a URL relative to request_uri which would point to the root of
+    the website.'''
+
+    # Compute the number of levels we would need to ascend.
+    path_depth = urlparse.urlparse(request_uri).path.count("/") - 1
+
+    if path_depth > 0:
+        return "/".join([".."] * path_depth)
+    else:
+        return "."
+
+class CommonRequestHandler(RequestHandler):
+    """Encapsulates shared RequestHandler functionality.
+    """
+
+    def redirect(self, url):
+        url = get_url_root(self.request.uri) + url
+
+        # We would prefer to just use this:
+        #   tornado.web.RequestHandler.redirect(self, url)
+        # but unfortunately that assumes it knows the full path to the current
+        # page to generate an absolute URL. This may not be the case if we are
+        # hidden behind a proxy which is remapping part of its URL space to us.
+
+        self.set_status(302)
+        self.set_header("Location", url)
+        self.finish()
+
