@@ -46,6 +46,7 @@ class ScriptsContainer(object):
             ("20120220", "add_ignore_on_questions"),
             ("20120221", "split_first_and_last_names"),
             ("20120223", "changed_batch_parameters"),
+            ("20120313", "changed_batch_iofile_parameters"),
             ]
         self.list.sort()
 
@@ -293,6 +294,39 @@ class ScriptsContainer(object):
                 else:
                     raise ValueError("Parameter string `%s' not recognized." %
                                      parameters)
+
+                session.execute("UPDATE tasks SET "
+                                "task_type_parameters = :parameters "
+                                "WHERE id = :task_id",
+                                {
+                                   "parameters": json.dumps(parameters),
+                                   "task_id": task_id
+                                })
+
+    @staticmethod
+    def changed_batch_iofile_parameters():
+        """Params for Batch tasktype changed to support custom I/O filenames.
+        """
+        import simplejson as json
+        with SessionGen(commit=True) as session:
+            for task_id, task_type_parameters in session.execute(
+                "SELECT id, task_type_parameters "
+                "FROM tasks WHERE task_type = 'Batch';"):
+                try:
+                    parameters = json.loads(task_type_parameters)
+                except json.decoder.JSONDecodeError:
+                    raise ValueError("Unable to decode parameter string "
+                                     "`%s'." % task_type_parameters)
+                if parameters[1] == "file":
+                    parameters[1] = ["input.txt", "output.txt"]
+                elif parameters[1] == "nofile":
+                    parameters[1] = ["", ""]
+                elif isinstance(parameters[1], list):
+                    print "WARNING: already updated or unrecognized "\
+                        "parameters in task %d" % task_id
+                else:
+                    raise ValueError("I/O type `%s' not recognized." %
+                                     parameters[1])
 
                 session.execute("UPDATE tasks SET "
                                 "task_type_parameters = :parameters "
