@@ -4,6 +4,7 @@
 \usepackage[a4paper]{geometry}
 \usepackage{fullpage}
 \usepackage{multicol}
+\usepackage{todonotes}
 
 \newcommand{\CMS}{\textsc{cms}}
 
@@ -317,6 +318,51 @@ $ sudo ./setup.py install
   directory \file{cms/cms/examples} in the repository: if such files
   are present, the installer will copy them instead of their
   \file{.sample} counterpart.
+
+  \subsection{Configuring \CMS}
+
+  Once \CMS\ is installed in all computers you're going to use, you
+  have to write a configuration file \file{cms.conf} and optionally a
+  configuration file for the \CWS\ (\file{cms.ranking.conf}). Both
+  file are in YAML format and the samples are quite documented, so
+  adapting them to your needs should be rather easy. One particularly
+  important section in \file{cms.conf} is the definition of shards to
+  be used by \CMS\ services (you just need to set \id{core\_services},
+  since \id{other\_services} are used only for testing and debugging
+  purposes).
+
+  For each service you need to specify a list of couples, each one
+  representing a shard via the IP address and port it has to listen
+  on. Shards are numbered starting from zero according to their
+  position in the list. Attention: even if it is possible, there are
+  services (such \LS, \ES) for which it makes no sense to define more
+  than one shard.
+
+  Another important thing to do is to change the \id{secret\_key}
+  value, that will be used to reliably store cookies in clients' web
+  browsers and prevent them to see real tasks and submissions
+  numbers. That means that if a users know this number, he can log in
+  as any other user even without knowing the password (that doesn't
+  gives him access to the database, though). It must be a random 16
+  bytes number, encoded in a hexadecimal string.
+
+  Once the configuration files are complete, you have to replicate
+  them on all the hosts you're going to use for your contest.
+
+  Then you also have to prepare the PostgreSQL database\todo{Merge
+    \file{postgresql\_howto.txt} here}: it is up to you to create a
+  database and a user with full access on it, and to set the
+  PostgreSQL engine to be reachable from all hosts involved in
+  \CMS\ (but, hopefully, not by the contestants or other untrusted
+  people). This will probably involve adding a proper line in
+  \file{pg\_hba.conf} and setting \id{listen\_addresses} in
+  \file{postgresql.conf} to somewhat appropriate.
+
+  It is also up to you to configure a firewall so that \CMS\ is not
+  reachable by unauthorized people (remember that \CMS\ services have
+  no mutual authentication process, so being able to connect to the
+  listening port is enough for a connection to be trusted by any
+  service).
 
   \section{Description of the services}
 
