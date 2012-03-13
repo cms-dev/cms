@@ -297,7 +297,10 @@ class ImageHandler(tornado.web.RequestHandler):
 
 class HomeHandler(tornado.web.RequestHandler):
     def get(self):
-        self.redirect('Ranking.html')
+        # Manually redirect us so that any relative paths are preserved.
+        self.set_status(302)
+        self.set_header("Location", "Ranking.html")
+        self.finish()
 
 
 def main():

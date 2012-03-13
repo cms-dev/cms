@@ -19,58 +19,58 @@ var Config = new function () {
     var self = this;
 
     self.get_contest_list_url = function () {
-        return "/contests/";
+        return "contests/";
     };
 
     self.get_contest_read_url = function (c_key) {
-        return "/contests/" + c_key;
+        return "contests/" + c_key;
     };
 
     self.get_task_list_url = function () {
-        return "/tasks/";
+        return "tasks/";
     };
 
     self.get_task_read_url = function (t_key) {
-        return "/tasks/" + t_key;
+        return "tasks/" + t_key;
     };
 
     self.get_team_list_url = function () {
-        return "/teams/";
+        return "teams/";
     };
 
     self.get_team_read_url = function (t_key) {
-        return "/teams/" + t_key;
+        return "teams/" + t_key;
     };
 
     self.get_user_list_url = function () {
-        return "/users/";
+        return "users/";
     };
 
     self.get_user_read_url = function (u_key) {
-        return "/users/" + u_key;
+        return "users/" + u_key;
     };
 
     self.get_flag_url = function (t_key) {
-        return "/flags/" + t_key;
+        return "flags/" + t_key;
     };
 
     self.get_face_url = function (u_key) {
-        return "/faces/" + u_key;
+        return "faces/" + u_key;
     };
 
     self.get_submissions_url = function (u_key) {
-        return "/sublist/" + u_key;
+        return "sublist/" + u_key;
     };
 
     self.get_score_url = function () {
-        return "/scores";
+        return "scores";
     };
 
     self.get_event_url = function (c_key) {
-        return "/events";
+        return "events";
     };
 
     self.get_history_url = function () {
-        return "/history";
+        return "history";
     }
 };

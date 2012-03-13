@@ -115,11 +115,11 @@ var UserDetail = new function () {
         if (self.data_fetched == 2) {
             self.f_name_label.innerHTML = self.user["f_name"];
             self.l_name_label.innerHTML = self.user["l_name"];
-            self.face_image.setAttribute("src", "/faces/" + self.user_id);
+            self.face_image.setAttribute("src", Config.get_face_url(self.user_id));
 
             if (self.user["team"]) {
                 self.team_label.innerHTML = DataStore.teams[self.user["team"]]["name"];
-                self.team_image.setAttribute("src", '/flags/' + self.user['team']);
+                self.team_image.setAttribute("src", Config.get_flag_url(self.user['team']));
                 $(self.team_image).removeClass("hidden");
             } else {
                 self.team_label.innerHTML = "";
