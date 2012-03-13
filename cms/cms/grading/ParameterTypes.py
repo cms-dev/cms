@@ -206,8 +206,8 @@ class ParameterTypeArray(ParameterType):
                "{% end %}" \
                "</table>"
 
-    def __init__(self, name, description, subparameter):
-        ParameterType.__init__(self, name, description)
+    def __init__(self, name, short_name, description, subparameter):
+        ParameterType.__init__(self, name, short_name, description)
         self.subparameter = subparameter
 
     def parse_string(self, value):
@@ -216,9 +216,9 @@ class ParameterTypeArray(ParameterType):
     def parse_handler(self, handler, prefix):
         parsed_values = []
         i = 0
-        while(handler.get_argument(prefix + self.short_name + "_" + i) \
-            is not None):
-            new_prefix = prefix + self.short_name + "_" + i + "_"
+        old_prefix = "%s%s_%d" % (prefix, self.short_name, i)
+        while handler.get_argument(old_prefix) is not None:
+            new_prefix = "%s%s_%d_" % (prefix, self.short_name, i)
             parsed_values.append(
                 self.subparameter.parse_handler(handler, new_prefix))
         return parsed_values
@@ -227,7 +227,7 @@ class ParameterTypeArray(ParameterType):
         elements = []
         for i in range(len(previous_value)):
             subparam_value = previous_value[i]
-            new_prefix = prefix + self.short_name + "_" + i + "_"
+            new_prefix = "%s%s_%d_" % (prefix, self.short_name, i)
             elements.append({
                 "name": self.subparameter.name,
                 "content": self.subparameter.render(new_prefix,
@@ -240,14 +240,14 @@ class ParameterTypeCollection(ParameterType):
     """
 
     TEMPLATE = "<table>" \
-               "{% for element in elements%}" \
-               "<tr><td>{{element.name}}</td>" \
-               "<td>{% raw element.content %}</td>" \
+               "{% for element in elements %}" \
+               "<tr><td>{{element['name']}}</td>" \
+               "<td>{% raw element['content'] %}</td>" \
                "{% end %}" \
                "</table>"
 
-    def __init__(self, name, description, subparameters):
-        ParameterType.__init__(self, name, description)
+    def __init__(self, name, shortname, description, subparameters):
+        ParameterType.__init__(self, name, shortname, description)
         self.subparameters = subparameters
 
     def parse_string(self, value):
@@ -255,10 +255,8 @@ class ParameterTypeCollection(ParameterType):
 
     def parse_handler(self, handler, prefix):
         parsed_values = []
-        i = 0
-        while(handler.get_argument(prefix + self.short_name + "_" + i) \
-            is not None and i < len(self.subparameters)):
-            new_prefix = prefix + self.short_name + "_" + i + "_"
+        for i in range(len(self.subparameters)):
+            new_prefix = "%s%s_%d_" % (prefix, self.short_name, i)
             parsed_values.append(
                 self.subparameters[i].parse_handler(handler, new_prefix))
         return parsed_values
@@ -266,9 +264,11 @@ class ParameterTypeCollection(ParameterType):
     def render(self, prefix, previous_value=None):
         elements = []
         for i in range(len(self.subparameters)):
-            subparam_value = previous_value[i] if previous_value is not None \
-                else None
-            new_prefix = prefix + self.short_name + "_" + i + "_"
+            try:
+                subparam_value = previous_value[i]
+            except:
+                subparam_value = ''
+            new_prefix = "%s%s_%d_" % (prefix, self.short_name, i)
             elements.append({
                 "name": self.subparameters[i].name,
                 "content": self.subparameters[i].render(new_prefix,
