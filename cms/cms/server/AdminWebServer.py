@@ -116,7 +116,7 @@ class BaseHandler(CommonRequestHandler):
         params = {}
         params["timestamp"] = int(time.time())
         params["contest"] = self.contest
-        params["url_root"] = get_url_root(self.request.uri)
+        params["url_root"] = get_url_root(self.request.path)
         if self.contest is not None:
             params["phase"] = self.contest.phase(params["timestamp"])
             # Keep "== None" in filter arguments

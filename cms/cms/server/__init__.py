@@ -30,7 +30,6 @@ import time
 import base64
 import binascii
 import random
-import urlparse
 
 import tarfile
 import zipfile
@@ -316,12 +315,12 @@ def decrypt_number(enc, key=None):
     return int(decrypt_string(enc, key), 16)
 
 
-def get_url_root(request_uri):
+def get_url_root(request_path):
     '''Generates a URL relative to request_uri which would point to the root of
     the website.'''
 
     # Compute the number of levels we would need to ascend.
-    path_depth = urlparse.urlparse(request_uri).path.count("/") - 1
+    path_depth = request_path.count("/") - 1
 
     if path_depth > 0:
         return "/".join([".."] * path_depth)
@@ -334,7 +333,7 @@ class CommonRequestHandler(RequestHandler):
     """
 
     def redirect(self, url):
-        url = get_url_root(self.request.uri) + url
+        url = get_url_root(self.request.path) + url
 
         # We would prefer to just use this:
         #   tornado.web.RequestHandler.redirect(self, url)

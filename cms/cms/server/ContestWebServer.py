@@ -146,7 +146,7 @@ class BaseHandler(CommonRequestHandler):
         ret = {}
         ret["timestamp"] = int(time.time())
         ret["contest"] = self.contest
-        ret["url_root"] = get_url_root(self.request.uri)
+        ret["url_root"] = get_url_root(self.request.path)
         ret["valid_phase_end"] = self.contest.stop
         if(self.contest is not None):
             ret["phase"] = self.contest.phase(ret["timestamp"])
