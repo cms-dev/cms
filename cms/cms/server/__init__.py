@@ -183,7 +183,8 @@ def file_handler_gen(BaseClass):
                 self.finish()
                 return
             try:
-                self.temp_filename = self.application.service.file_cacher.get_file(
+                self.temp_filename = \
+                    self.application.service.file_cacher.get_file(
                     digest, temp_path=True)
             except Exception as error:
                 logger.error("Exception while retrieving file `%s'. %r" %
@@ -232,6 +233,8 @@ def get_random_key():
 
     """
     # Bad hack: some older version of Crypto do not support Random
+    # (this also means that the generation isn't as sure as we wanted
+    # it to be...)
     #return Random.get_random_bytes(16)
     return binascii.unhexlify("%032x" % random.getrandbits(16 * 8))
 
@@ -312,6 +315,7 @@ def decrypt_number(enc, key=None):
     """
     return int(decrypt_string(enc, key), 16)
 
+
 def get_url_root(request_uri):
     '''Generates a URL relative to request_uri which would point to the root of
     the website.'''
@@ -323,6 +327,7 @@ def get_url_root(request_uri):
         return "/".join([".."] * path_depth)
     else:
         return "."
+
 
 class CommonRequestHandler(RequestHandler):
     """Encapsulates shared RequestHandler functionality.
@@ -340,4 +345,3 @@ class CommonRequestHandler(RequestHandler):
         self.set_status(302)
         self.set_header("Location", url)
         self.finish()
-
