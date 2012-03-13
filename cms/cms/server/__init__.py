@@ -30,6 +30,7 @@ import time
 import base64
 import binascii
 import random
+import urlparse
 
 import tarfile
 import zipfile
@@ -316,7 +317,7 @@ def get_url_root(request_uri):
     the website.'''
 
     # Compute the number of levels we would need to ascend.
-    path_depth = request_uri.count("/") - 1
+    path_depth = urlparse.urlparse(request_uri).path.count("/") - 1
 
     if path_depth > 0:
         return "/".join([".."] * path_depth)
