@@ -2,6 +2,9 @@
     "_help": "There is no way to put comments in a JSON file; the",
     "_help": "fields starting with '_' are meant to be comments.",
 
+    "_help": "Listening address for RankingWebServer.",
+    "bind_address": "",
+
     "_help": "Listening port for RankingWebServer.",
     "port": 8890,
 

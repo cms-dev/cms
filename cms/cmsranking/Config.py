@@ -31,7 +31,7 @@ class Config(object):
 
         """
         # Connection.
-        self.host = 'localhost'
+        self.bind_address = ''
         self.port = 8890
 
         # Authentication.
