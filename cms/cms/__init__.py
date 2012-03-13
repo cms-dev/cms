@@ -66,6 +66,7 @@ class Config:
         self.tornado_debug = False
 
         # ContestWebServer.
+        self.contest_listen_address = [""]
         self.contest_listen_port = [8888]
         self.cookie_duration = 1800
         self.submit_local_copy = True
@@ -78,6 +79,7 @@ class Config:
         self.stl_path = "/usr/share/doc/stl-manual/html/"
 
         # AdminWebServer.
+        self.admin_listen_address = ""
         self.admin_listen_port = 8889
 
         # ScoringService.

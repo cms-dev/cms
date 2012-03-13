@@ -64,8 +64,9 @@
 
     "_section": "ContestWebServer",
 
-    "_help": "Listening http ports for the CWS listed before in",
+    "_help": "Listening http address and ports for the CWS listed before in",
     "_help": "core_services.",
+    "contest_listen_port": [""],
     "contest_listen_port": [8888],
 
     "_help": "Login cookie duration in seconds. The duration is refreshed",
@@ -103,7 +104,8 @@
 
     "_section": "AdminWebServer",
 
-    "_help": "Listening http port for AdminWebServer.",
+    "_help": "Listening http address and port for AdminWebServer.",
+    "admin_listen_address": "",
     "admin_listen_port": 8889,
 
 
