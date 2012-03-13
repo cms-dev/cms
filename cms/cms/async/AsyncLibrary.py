@@ -820,7 +820,7 @@ class ListeningSocket(asyncore.dispatcher):
 
         self.create_socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.bind(("", self._address.port))
+        self.bind((self._address.ip, self._address.port))
         self.listen(5)
 
     def handle_accept(self):
