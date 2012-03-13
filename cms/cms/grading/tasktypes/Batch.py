@@ -20,7 +20,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from cms.grading import get_compilation_command
-from cms.grading.ParameterTypes import ParameterTypeChoice
+from cms.grading.ParameterTypes import ParameterTypeCollection, \
+     ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
 
@@ -35,9 +36,9 @@ class Batch(TaskType):
     case, the source file is to be compiled with a provided piece of
     software ('grader'); in the other by itself.
 
-    The second element is 'file' or 'nofile': in the former case, the
-    user program must read/write from/to the files 'input.txt' and
-    'output.txt', while in the latter from/to stdin and stdout.
+    The second element is a 2-tuple of the input file name and output file
+    name. The input file may be '' to denote stdin, and similarly the
+    output filename may be '' to denote stdout.
 
     The third element is 'diff' or 'comparator' and says whether the
     output is compared with a simple diff algorithm or using a
@@ -60,12 +61,14 @@ class Batch(TaskType):
         {"alone": "Submissions are self-sufficient",
          "grader": "Submissions are compiled with a grader"})
 
-    _USE_FILE = ParameterTypeChoice(
-        "I/O",
+    _USE_FILE = ParameterTypeCollection(
+        "I/O (blank for stdin/stdout)",
         "io",
         "",
-        {"file": "Use 'input.txt' and 'output.txt'",
-         "nofile": "Use standard I/O"})
+        [
+            ParameterTypeString("Input file", "inputfile", ""),
+            ParameterTypeString("Output file", "outputfile", ""),
+        ])
 
     _EVALUATION = ParameterTypeChoice(
         "Output evaluation",
@@ -136,15 +139,19 @@ class Batch(TaskType):
             executable_filename:
             self.submission.executables[executable_filename].digest
             }
-        files_to_get = {
-            "input.txt": self.submission.task.testcases[test_number].input
-            }
-        allow_path = ["input.txt", "output.txt"]
+        input_filename, output_filename = self.parameters[1]
         stdin_redirect = None
         stdout_redirect = None
-        if self.parameters[1] == "nofile":
-            stdin_redirect = "input.txt"
-            stdout_redirect = "output.txt"
+        if input_filename == "":
+            input_filename = "input.txt"
+            stdin_redirect = input_filename
+        if output_filename == "":
+            output_filename = "output.txt"
+            stdout_redirect = output_filename
+        files_to_get = {
+            input_filename: self.submission.task.testcases[test_number].input
+            }
+        allow_path = [input_filename, output_filename]
         success, outcome, text = self.evaluation_step(
             sandbox,
             command,
@@ -167,7 +174,7 @@ class Batch(TaskType):
             # We white_diff output.txt and res.txt.
             success, outcome, text = self.white_diff_step(
                 sandbox,
-                "output.txt", "res.txt",
+                output_filename, "res.txt",
                 {"res.txt":
                  self.submission.task.testcases[test_number].output})
         elif self.parameters[2] == "comparator":
@@ -176,12 +183,12 @@ class Batch(TaskType):
             success, outcome, text = self.evaluation_step(
                 sandbox,
                 ["./%s" % manager_filename,
-                 "input.txt", "res.txt", "output.txt"],
+                 input_filename, "res.txt", output_filename],
                 {manager_filename:
                  self.submission.task.managers[manager_filename].digest},
                 {"res.txt":
                  self.submission.task.testcases[test_number].output},
-                allow_path=["input.txt", "res.txt", "output.txt"],
+                allow_path=[input_filename, "res.txt", output_filename],
                 final=True)
         else:
             raise ValueError("Unrecognized third parameter `%s' in for Batch "

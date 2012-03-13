@@ -687,11 +687,10 @@ class TaskType:
         # Record the usage of the sandbox.
         self.sandbox_paths = append_path(self.sandbox_paths, sandbox.path)
 
-        # TODO: why we don't use *output_filename?
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
-        if sandbox.file_exists("output.txt"):
-            out_file = sandbox.get_file("output.txt")
+        if sandbox.file_exists(output_filename):
+            out_file = sandbox.get_file(output_filename)
             res_file = sandbox.get_file("res.txt")
             if white_diff(out_file, res_file):
                 outcome = 1.0
@@ -701,7 +700,7 @@ class TaskType:
                 text = "Output isn't correct"
         else:
             outcome = 0.0
-            text = "Evaluation didn't produce file output.txt"
+            text = "Evaluation didn't produce file %s" % (output_filename)
         return True, outcome, text
 
     def compile(self):
