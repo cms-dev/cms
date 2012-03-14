@@ -32,7 +32,8 @@ import codecs
 import netifaces
 from argparse import ArgumentParser
 
-from cms.async import ServiceCoord, Address, config as async_config
+from cms.async import ServiceCoord, Address, config as async_config, \
+    get_shard_from_addresses
 from cms.async.AsyncLibrary import RemoteService
 
 
@@ -461,7 +462,7 @@ def default_argument_parser(description, cls, ask_contest=None):
 
     """
     parser = ArgumentParser(description=description)
-    parser.add_argument("shard", type=int)
+    parser.add_argument("shard", nargs="?", type=int, default=-1)
 
     # We need to allow using the switch "-c" also for services that do
     # not need the contest_id because RS needs to be able to restart
@@ -472,6 +473,13 @@ def default_argument_parser(description, cls, ask_contest=None):
     parser.add_argument("-c", "--contest-id", help=contest_id_help,
                         nargs="?", type=int)
     args = parser.parse_args()
+
+    # If the shard is -1 (i.e., unspecified) we find it basing on the
+    # local IP addresses
+    if args.shard == -1:
+        addrs = find_local_addresses()
+        args.shard = get_shard_from_addresses(cls.__name__, addrs)
+
     if ask_contest is not None:
         if args.contest_id is not None:
             return cls(args.shard, args.contest_id)

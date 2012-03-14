@@ -90,8 +90,12 @@ def get_shard_from_addresses(service, addrs):
     while True:
         try:
             host, port = get_service_address(ServiceCoord(service, i))
-            if socket.gethostbyname(host) in addrs:
-                return i
+            try:
+                if socket.gethostbyname(host) in addrs:
+                    return i
+            except socket.gaierror:
+                # If the address can't be resolved, we simply skip it
+                pass
         except KeyError:
             return -1
         i += 1
