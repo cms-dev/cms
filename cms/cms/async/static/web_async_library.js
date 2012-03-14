@@ -62,6 +62,13 @@
                     {
                         this.__delete_request(rid);
                     }
+                    else
+                    {
+                        this.timeout_ids[rid] = setTimeout(
+                            this.__wait_for_answer.bind(this, cb, rid),
+                            1000);
+                    }
+
                     if (cb != undefined)
                     {
                         if (response['status'] == 'ok')
@@ -101,11 +108,7 @@
             else
             {
                 rid = this.utils.random_string(16);
-                this.timeout_ids[rid] = setInterval(
-                    this.__wait_for_answer.bind(this, cb, rid),
-                    1000);
-
-                var got_answer = this.__got_answer.bind(this, cb, rid);
+                got_answer = this.__got_answer.bind(this, cb, rid);
             }
 
             var args;
