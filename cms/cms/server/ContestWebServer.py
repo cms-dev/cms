@@ -872,6 +872,27 @@ class SubmissionStatusHandler(BaseHandler):
         self.render("submission_snippet.html", s=submission)
 
 
+class StaticFileGzHandler(tornado.web.StaticFileHandler):
+    """Handle files which may be gzip-compressed on the filesystem."""
+    def get(self, path, *args, **kwargs):
+        # Unless told otherwise, default to text/plain.
+        self.set_header("Content-Type", "text/plain")
+        try:
+            # Try an ordinary request.
+            tornado.web.StaticFileHandler.get(self, path, *args, **kwargs)
+        except tornado.web.HTTPError, e:
+            if e.status_code == 404:
+                # If that failed, try servicing it with a .gz extension.
+                path = "%s.gz" % path
+
+                tornado.web.StaticFileHandler.get(self, path, *args, **kwargs)
+
+                # If it succeeded, then mark the encoding as gzip.
+                self.set_header("Content-Encoding", "gzip")
+            else:
+                raise
+
+
 enc_alph = get_encryption_alphabet()
 _cws_handlers = [
     (r"/",       MainHandler),
@@ -888,7 +909,7 @@ _cws_handlers = [
     (r"/instructions",  InstructionHandler),
     (r"/notifications", NotificationsHandler),
     (r"/question",      QuestionHandler),
-    (r"/stl/(.*)", tornado.web.StaticFileHandler, {"path": config.stl_path}),
+    (r"/stl/(.*)", StaticFileGzHandler, {"path": config.stl_path}),
     ]
 
 
