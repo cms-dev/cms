@@ -19,13 +19,18 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, __version__ as sqlalchemy_version
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
 from sqlalchemy.orm import session as sessionlib
 
 from cms import config
+
+# We need version 0.7.3 because of the __abstract__ keyword.
+sqlalchemy_version = tuple(int(x) for x in sqlalchemy_version.split("."))
+assert sqlalchemy_version >= (0, 8, 3), \
+       "Please install SQLAlchemy >= 0.7.3."
 
 db_string = config.database.replace("%s", config.data_dir)
 db = create_engine(db_string, echo=config.database_debug,
