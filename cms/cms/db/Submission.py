@@ -227,25 +227,31 @@ class Submission(Base):
         """
         return self.score is not None
 
-    def invalid(self):
-        """Blank all compilation and evaluation outcomes, so that ES
-        will reschedule the submission for compilation.
+    def invalidate_compilation(self):
+        """Blank all compilation and evaluation outcomes, and the score.
 
         """
+        self.invalidate_evaluation()
         self.compilation_outcome = None
         self.compilation_text = None
-        self.compilation_tries = 0
         self.executables = {}
-        self.invalid_evaluation()
 
-    def invalid_evaluation(self):
-        """Blank only the evaluation outcomes, so ES will reschedule
-        the submission for evaluation.
+    def invalidate_evaluation(self):
+        """Blank the evaluation outcomes and the score.
 
         """
+        self.invalidate_scoring()
         self.evaluation_outcome = None
         self.evaluations = []
-        self.evaluation_tries = 0
+
+    def invalidate_scoring(self):
+        """Blank the score.
+
+        """
+        self.score = None
+        self.score_details = None
+        self.public_score = None
+        self.public_score_details = None
 
     def play_token(self, timestamp=None):
         """Tell the submission that a token has been used.

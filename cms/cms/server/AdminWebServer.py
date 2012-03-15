@@ -1144,7 +1144,7 @@ class SubmissionReevaluateHandler(BaseHandler):
         self.submission = submission
         self.contest = submission.task.contest
 
-        submission.invalid()
+        submission.invalidate_compilation()
         self.sql_session.commit()
         self.application.service.evaluation_service.new_submission(
             submission_id=submission.id)
@@ -1159,7 +1159,7 @@ class UserReevaluateHandler(BaseHandler):
 
         self.pending_requests = len(user.submissions)
         for submission in user.submissions:
-            submission.invalid()
+            submission.invalidate_compilation()
             self.sql_session.commit()
             self.application.service.evaluation_service.new_submission(
                 submission_id=submission.id)
@@ -1175,7 +1175,7 @@ class TaskReevaluateHandler(BaseHandler):
 
         self.pending_requests = len(task.submissions)
         for submission in task.submissions:
-            submission.invalid()
+            submission.invalidate_compilation()
             self.sql_session.commit()
             self.application.service.evaluation_service.new_submission(
                 submission_id=submission.id)
