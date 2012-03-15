@@ -31,6 +31,7 @@ import shutil
 import simplejson as json
 import tempfile
 
+import sqlalchemy.exc
 import tarfile
 import zipfile
 
@@ -117,8 +118,16 @@ class ContestImporter:
 
         if self.drop:
             logger.info("Dropping and recreating the database.")
-            metadata.drop_all()
-        metadata.create_all()
+            try:
+                metadata.drop_all()
+            except sqlalchemy.exc.OperationalError as error:
+                logger.critical("Unable to access DB.\n%r" % error)
+                return False
+        try:
+            metadata.create_all()
+        except sqlalchemy.exc.OperationalError as error:
+            logger.critical("Unable to access DB.\n%r" % error)
+            return False
 
         if not self.no_files:
             logger.info("Importing files.")

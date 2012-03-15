@@ -29,6 +29,8 @@ import os
 import codecs
 import argparse
 
+import sqlalchemy.exc
+
 from cms import logger
 from cms.db import analyze_all_tables
 from cms.db.FileCacher import FileCacher
@@ -281,11 +283,19 @@ class YamlImporter:
         """
         logger.info("Creating database structure.")
         if self.drop:
-            with SessionGen() as session:
-                FSObject.delete_all(session)
-                session.commit()
-            metadata.drop_all()
-        metadata.create_all()
+            try:
+                with SessionGen() as session:
+                    FSObject.delete_all(session)
+                    session.commit()
+                metadata.drop_all()
+            except sqlalchemy.exc.OperationalError as error:
+                logger.critical("Unable to access DB.\n%r" % error)
+                return False
+        try:
+            metadata.create_all()
+        except sqlalchemy.exc.OperationalError as error:
+            logger.critical("Unable to access DB.\n%r" % error)
+            return False
 
         contest = Contest.import_from_dict(
             self.loader.import_contest(self.path))

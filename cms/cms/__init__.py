@@ -286,7 +286,7 @@ def format_log(msg, coord, operation, severity, timestamp, colors=False):
     """
     _datetime = datetime.datetime.fromtimestamp(timestamp)
     if coord is None:
-        coord = ""
+        coord = "None"
 
     if colors:
         severity_color = ANSI_FG_COLORS[SEVERITY_COLORS[severity]]
@@ -302,7 +302,7 @@ def format_log(msg, coord, operation, severity, timestamp, colors=False):
                  ansi_color_string("%s", coord_color),
                  ansi_color_string("%s", operation_color))
     else:
-        if operation == "":
+        if operation == "" or coord == "":
             format_string = "%s - %s [%s] %s"
         else:
             format_string = "%s - %s [%s/%s] %s"
@@ -406,7 +406,9 @@ class Logger(object):
             timestamp = time.time()
         if operation is None:
             operation = self.operation
-        coord = repr(self._my_coord)
+        coord = None
+        if self._my_coord is not None:
+            coord = repr(self._my_coord)
 
         if severity in Logger.TO_DISPLAY:
             print format_log(msg, coord, operation, severity, timestamp,
@@ -514,7 +516,8 @@ def find_local_addresses():
 
     """
     addrs = []
-    # Based on http://stackoverflow.com/questions/166506/finding-local-ip-addresses-using-pythons-stdlib
+    # Based on http://stackoverflow.com/questions/166506/
+    # /finding-local-ip-addresses-using-pythons-stdlib
     for iface_name in netifaces.interfaces():
         addrs += [i['addr'] for i in netifaces.ifaddresses(iface_name). \
                       setdefault(netifaces.AF_INET, [])]
