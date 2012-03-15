@@ -29,7 +29,7 @@ from cms import config
 
 # We need version 0.7.3 because of the __abstract__ keyword.
 sqlalchemy_version = tuple(int(x) for x in sqlalchemy_version.split("."))
-assert sqlalchemy_version >= (0, 8, 3), \
+assert sqlalchemy_version >= (0, 7, 3), \
        "Please install SQLAlchemy >= 0.7.3."
 
 db_string = config.database.replace("%s", config.data_dir)
