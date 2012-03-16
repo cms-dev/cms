@@ -84,7 +84,7 @@ def get_task_type(submission=None, file_cacher=None, task=None,
         task = submission.task
     if task is not None:
         task_type_name = task.task_type
-        # TODO - Manage excepion when parameters cannot be decoded
+        # TODO - Manage exceptions when parameters cannot be decoded.
         task_type_parameters = json.loads(task.task_type_parameters)
 
     module = None

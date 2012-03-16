@@ -210,12 +210,13 @@ class ContestWebServer(WebService):
             "debug": config.tornado_debug,
             }
         parameters["is_proxy_used"] = config.is_proxy_used
-        WebService.__init__(self,
-                            config.contest_listen_port[shard],
-                            _cws_handlers,
-                            parameters,
-                            shard=shard,
-                            listen_address=config.contest_listen_address[shard])
+        WebService.__init__(
+            self,
+            config.contest_listen_port[shard],
+            _cws_handlers,
+            parameters,
+            shard=shard,
+            listen_address=config.contest_listen_address[shard])
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
             ServiceCoord("EvaluationService", 0))

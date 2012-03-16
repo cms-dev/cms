@@ -20,18 +20,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import sys
 import mechanize
-import threading
 import optparse
-import random
-import time
-import codecs
 
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
-from stresstesting.Requests import HomepageRequest, LoginRequest, SubmitRequest
+from stresstesting.Requests import LoginRequest, SubmitRequest
+
 
 def harvest_contest_data(contest_id):
     """Retrieve the couples username, password and the task list for a
@@ -53,6 +48,7 @@ def harvest_contest_data(contest_id):
             tasks.append((task.id, task.name))
     return users, tasks
 
+
 def submit_solution(username, password, task, files, base_url=None):
     def step(request):
         request.prepare()
@@ -64,8 +60,10 @@ def submit_solution(username, password, task, files, base_url=None):
     step(LoginRequest(browser, username, password, base_url=base_url))
     step(SubmitRequest(browser, task, base_url=base_url, filename=files[0]))
 
+
 def main():
-    parser = optparse.OptionParser(usage="usage: %prog [options] <user name> <task name> <files>")
+    parser = optparse.OptionParser(
+        usage="usage: %prog [options] <user name> <task name> <files>")
     parser.add_option("-c", "--contest",
                       help="contest ID to export", dest="contest_id",
                       action="store", type="int", default=None)
@@ -92,6 +90,7 @@ def main():
     password = users[username]['password']
 
     submit_solution(username, password, task, files, base_url=options.base_url)
+
 
 if __name__ == '__main__':
     main()

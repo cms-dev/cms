@@ -106,7 +106,10 @@ def browser_do_request(browser, url, data=None, files=None):
             response = browser.open(url, urllib.urlencode(data))
     else:
         f = files[0]
-        browser.form = HTMLForm(url, method='POST', enctype='multipart/form-data', attrs=data)
+        browser.form = HTMLForm(url,
+                                method='POST',
+                                enctype='multipart/form-data',
+                                attrs=data)
         browser.form.new_control('file', f[0], {'id': f[0]})
         filename = os.path.basename(f[1])
         browser.form.add_file(open(f[1]), 'text/plain', filename, id=f[0])
@@ -406,6 +409,7 @@ class SubmitRequest(GenericRequest):
         return 'Task: %s (ID %d)\nFile: %s\n' % \
             (self.task[1], self.task[0], self.filename) + \
             GenericRequest.specific_info(self)
+
 
 class SubmitRandomRequest(SubmitRequest):
     """Submit a solution in CWS.

@@ -713,7 +713,7 @@ class EvaluationService(Service):
             return
 
         job_type, submission_id = job
-        priority, timestamp = side_data
+        unused_priority, timestamp = side_data
 
         logger.info("Action %s for submission %s completed. "
                     "Success: %s" % (job_type, submission_id, data))

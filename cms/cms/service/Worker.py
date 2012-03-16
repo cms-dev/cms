@@ -136,14 +136,14 @@ class Worker(Service):
 
                 with SessionGen(commit=False) as self.session:
 
-                    # Retrieve submission and task_type
+                    # Retrieve submission and task_type.
                     unused_submission, task_type = \
                         self.get_submission_data(submission_id)
 
-                    # Store in the task type the shard number
+                    # Store in the task type the shard number.
                     task_type.worker_shard = self.shard
 
-                    # Do the actual work
+                    # Do the actual work.
                     if job_type == Worker.JOB_TYPE_COMPILATION:
                         task_type_action = task_type.compile
                     elif job_type == Worker.JOB_TYPE_EVALUATION:
