@@ -40,6 +40,31 @@ from cms.db.SQLAlchemyAll import Contest, Evaluation, Executable, \
      Submission, SessionGen
 
 
+def to_compile(submission):
+    """Return if ES is interested in compiling the submission.
+
+    submission (Submission): a submission.
+
+    return (bool): True if ES wants to compile the submission.
+
+    """
+    return not submission.compiled() and \
+        submission.compilation_tries < EvaluationService.MAX_COMPILATION_TRIES
+
+
+def to_evaluate(submission):
+    """Return if ES is interested in evaluating the submission.
+
+    submission (Submission): a submission.
+
+    return (bool): True if ES wants to evaluate the submission.
+
+    """
+    return submission.compilation_outcome == "ok" and \
+        not submission.evaluated() and \
+        submission.evaluation_tries < EvaluationService.MAX_EVALUATION_TRIES
+
+
 class JobQueue:
     """An instance of this class will contains the (unique) priority
     queue of jobs (compilations, evaluations, ...) that the ES needs
@@ -438,6 +463,9 @@ class EvaluationService(Service):
     MAX_COMPILATION_TRIES = 3
     MAX_EVALUATION_TRIES = 3
 
+    INVALIDATE_COMPILATION = 0
+    INVALIDATE_EVALUATION = 1
+
     # Seconds after which we declare a worker stale.
     WORKER_TIMEOUT = 600.0
     # How often we check for stale workers.
@@ -501,11 +529,7 @@ class EvaluationService(Service):
             # not yet reached the limit of tries.
             new_submission_ids_to_check = \
                 [x.id for x in contest.get_submissions()
-                 if (not x.compiled() and x.compilation_tries <
-                     EvaluationService.MAX_COMPILATION_TRIES)
-                    or (x.compilation_outcome == "ok" and
-                        not x.evaluated() and x.evaluation_tries <
-                        EvaluationService.MAX_EVALUATION_TRIES)]
+                 if to_compile(x) or to_evaluate(x)]
 
         new = len(new_submission_ids_to_check)
         old = len(self.submission_ids_to_check)
@@ -716,7 +740,7 @@ class EvaluationService(Service):
         unused_priority, timestamp = side_data
 
         logger.info("Action %s for submission %s completed. "
-                    "Success: %s" % (job_type, submission_id, data))
+                    "Success: %s" % (job_type, submission_id, data["success"]))
 
         # We get the submission from db.
         with SessionGen(commit=True) as session:
@@ -860,36 +884,61 @@ class EvaluationService(Service):
         """
         with SessionGen(commit=False) as session:
             submission = Submission.get_from_id(submission_id, session)
-            timestamp = submission.timestamp
-            compilation_tries = submission.compilation_tries
-            compilation_outcome = submission.compilation_outcome
-            evaluation_tries = submission.evaluation_tries
-            compiled = submission.compiled()
-            evaluated = submission.evaluated()
-            tokened = submission.tokened()
+            if submission is None:
+                logger.error("[new_submission] Couldn't find submission "
+                             "%s in the database." % submission_id)
+                return
 
-        if not compiled:
-            # If not compiled, I compile. Note that we give here a
-            # chance for submissions that already have too many
-            # compilation tries.
-            self.push_in_queue((EvaluationService.JOB_TYPE_COMPILATION,
-                                submission_id),
-                               EvaluationService.JOB_PRIORITY_HIGH,
-                               timestamp)
-        else:
-            if not evaluated:
-                self.compilation_ended(submission_id,
-                                       timestamp,
-                                       compilation_tries,
-                                       compilation_outcome,
-                                       tokened)
+            if to_compile(submission):
+                self.push_in_queue((EvaluationService.JOB_TYPE_COMPILATION,
+                                    submission_id),
+                                   EvaluationService.JOB_PRIORITY_HIGH,
+                                   submission.timestamp)
+            if to_evaluate(submission):
+                self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
+                                    submission_id),
+                                   EvaluationService.JOB_PRIORITY_MEDIUM,
+                                   submission.timestamp)
 
-            else:
-                self.evaluation_ended(submission_id,
-                                      timestamp,
-                                      evaluation_tries,
-                                      evaluated,
-                                      tokened)
+    @rpc_method
+    def invalidate_submission(self, submission_id,
+                              level=None):
+        """Request for invalidating some computed data in the
+        submission. The data are cleared, the jobs involving the
+        submission currently enqueued are deleted, and the one already
+        assigned to the workers are ignored. New appropriate jobs are
+        enqueued.
+
+        submission_id (int): id of the submission to invalidate.
+        level (int): one of the constant specifying what to
+                     invalidate.
+
+        """
+        logger.info("Invalidation request for submission %s received." %
+                    submission_id)
+        if level is None:
+            level = EvaluationService.INVALIDATE_COMPILATION
+
+        # TODO: remove jobs from the queue and mark jobs already
+        # assigned to a worker as ignored.
+
+        # We invalidate the appropriate data and queue the jobs to
+        # recompute those data.
+        with SessionGen(commit=True) as session:
+            submission = Submission.get_from_id(submission_id, session)
+
+            if level == EvaluationService.INVALIDATE_COMPILATION:
+                submission.invalidate_compilation()
+                self.push_in_queue((EvaluationService.JOB_TYPE_COMPILATION,
+                                    submission_id),
+                                   EvaluationService.JOB_PRIORITY_HIGH,
+                                   submission.timestamp)
+            elif level == EvaluationService.INVALIDATE_EVALUATION:
+                submission.invalidate_evaluation()
+                self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
+                                    submission_id),
+                                   EvaluationService.JOB_PRIORITY_MEDIUM,
+                                   submission.timestamp)
 
     @rpc_method
     def submission_tokened(self, submission_id):

@@ -234,6 +234,7 @@ class Submission(Base):
         self.invalidate_evaluation()
         self.compilation_outcome = None
         self.compilation_text = None
+        self.compilation_tries = 0
         self.executables = {}
 
     def invalidate_evaluation(self):
@@ -243,6 +244,7 @@ class Submission(Base):
         self.invalidate_scoring()
         self.evaluation_outcome = None
         self.evaluations = []
+        self.evaluation_tries = 0
 
     def invalidate_scoring(self):
         """Blank the score.
