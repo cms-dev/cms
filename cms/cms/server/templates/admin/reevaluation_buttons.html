@@ -1,0 +1,23 @@
+<button onclick="cmsrpc.request(
+                 'EvaluationService', 0,
+                 'invalidate_submission',
+                 {'{{ reevaluation_par_name }}': {{ reevaluation_par_value }},
+                  'level': 'compilation'},
+                 function(response)
+                 { location.href = '{{ url_root }}/{{ reevaluation_url }}/{{ reevaluation_par_value }}'; });"
+        title="Compilation" >C</button>
+<button onclick="cmsrpc.request(
+                 'EvaluationService', 0,
+                 'invalidate_submission',
+                 {'{{ reevaluation_par_name }}': {{ reevaluation_par_value }},
+                  'level': 'evaluation'},
+                 function(response)
+                 { location.href = '{{ url_root }}/{{ reevaluation_url }}/{{ reevaluation_par_value }}'; });"
+                 title="Evaluation" >E</button>
+<button onclick="cmsrpc.request(
+                 'ScoringService', 0,
+                 'invalidate_submission',
+                 {'{{ reevaluation_par_name }}': {{ reevaluation_par_value }}},
+                 function(response)
+                 { location.href = '{{ url_root }}/{{ reevaluation_url }}/{{ reevaluation_par_value }}'; });"
+        title="Score" >S</button>

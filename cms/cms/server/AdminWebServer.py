@@ -225,10 +225,14 @@ class AdminWebServer(WebService):
         if service == ServiceCoord("EvaluationService", 0):
             return method in ["submissions_status",
                               "queue_status",
-                              "workers_status"]
+                              "workers_status",
+                              "invalidate_submission"]
+
+        elif service == ServiceCoord("ScoringService", 0):
+            return method in ["last_messages"]
 
         elif service == ServiceCoord("LogService", 0):
-            return method in ["last_messages"]
+            return method in ["invalidate_submission"]
 
         elif service.name == "ResourceService":
             return method in ["get_resources",
@@ -566,7 +570,7 @@ class TaskViewHandler(BaseHandler):
         r_params["task"] = task
         r_params["submissions"] = self.sql_session.query(Submission)\
                                   .join(Task).filter(Task.id == task_id)\
-                                  .order_by(Submission.timestamp.desc())
+                                  .order_by(Submission.timestamp.desc()).all()
         self.render("task.html", **r_params)
 
     def post(self, task_id):
@@ -1134,55 +1138,6 @@ class MessageHandler(BaseHandler):
         self.redirect("/user/%s" % user_id)
 
 
-class SubmissionReevaluateHandler(BaseHandler):
-    """Ask EvaluationService to reevaluate the specific submission.
-
-    """
-
-    def get(self, submission_id):
-        submission = self.safe_get_item(Submission, submission_id)
-        self.submission = submission
-        self.contest = submission.task.contest
-
-        submission.invalidate_compilation()
-        self.sql_session.commit()
-        self.application.service.evaluation_service.new_submission(
-            submission_id=submission.id)
-        self.redirect("/submission/%s" % submission_id)
-
-
-class UserReevaluateHandler(BaseHandler):
-
-    def get(self, user_id):
-        user = self.safe_get_item(User, user_id)
-        self.contest = user.contest
-
-        self.pending_requests = len(user.submissions)
-        for submission in user.submissions:
-            submission.invalidate_compilation()
-            self.sql_session.commit()
-            self.application.service.evaluation_service.new_submission(
-                submission_id=submission.id)
-
-        self.redirect("/user/%s" % user_id)
-
-
-class TaskReevaluateHandler(BaseHandler):
-
-    def get(self, task_id):
-        task = self.safe_get_item(Task, task_id)
-        self.contest = task.contest
-
-        self.pending_requests = len(task.submissions)
-        for submission in task.submissions:
-            submission.invalidate_compilation()
-            self.sql_session.commit()
-            self.application.service.evaluation_service.new_submission(
-                submission_id=submission.id)
-
-        self.redirect("/task/%s" % task_id)
-
-
 class FileFromDigestHandler(FileHandler):
 
     @tornado.web.asynchronous
@@ -1244,9 +1199,6 @@ _aws_handlers = [
     (r"/delete_testcase/([0-9]+)",     DeleteTestcaseHandler),
     (r"/user/([a-zA-Z0-9_-]+)",   UserViewHandler),
     (r"/add_user/([0-9]+)",       AddUserHandler),
-    (r"/reevaluate/task/([0-9]+)",               TaskReevaluateHandler),
-    (r"/reevaluate/user/([0-9]+)",               UserReevaluateHandler),
-    (r"/reevaluate/submission/([a-zA-Z0-9_-]+)", SubmissionReevaluateHandler),
     (r"/add_announcement/([0-9]+)",    AddAnnouncementHandler),
     (r"/remove_announcement/([0-9]+)", RemoveAnnouncementHandler),
     (r"/submission/([0-9]+)",                SubmissionViewHandler),

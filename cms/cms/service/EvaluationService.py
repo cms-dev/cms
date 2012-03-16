@@ -37,7 +37,7 @@ from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback
 from cms.async import ServiceCoord, get_service_shards
 from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import Contest, Evaluation, Executable, \
-     Submission, SessionGen
+     Submission, SessionGen, Task, User
 
 
 def to_compile(submission):
@@ -901,23 +901,60 @@ class EvaluationService(Service):
                                    submission.timestamp)
 
     @rpc_method
-    def invalidate_submission(self, submission_id,
-                              level=None):
-        """Request for invalidating some computed data in the
-        submission. The data are cleared, the jobs involving the
-        submission currently enqueued are deleted, and the one already
-        assigned to the workers are ignored. New appropriate jobs are
-        enqueued.
+    def invalidate_submission(self,
+                              submission_id=None,
+                              user_id=None,
+                              task_id=None,
+                              level="compilation"):
+        """Request for invalidating some computed data.
 
-        submission_id (int): id of the submission to invalidate.
-        level (int): one of the constant specifying what to
-                     invalidate.
+        The data (compilations and evaluations, or evaluations only)
+        to be cleared are the one regarding 1) a submission or 2) all
+        submissions of a user or 3) all submissions of a task or 4)
+        all submission (if all parameters are None).
+
+        The data are cleared, the jobs involving the submissions
+        currently enqueued are deleted, and the one already assigned
+        to the workers are ignored. New appropriate jobs are enqueued.
+
+        submission_id (int): id of the submission to invalidate, or
+                             None.
+        user_id (int): id of the user we want to invalidate, or None.
+        task_id (int): id of the task we want to invalidate, or None.
+        level (string): 'compilation' or 'evaluation'
 
         """
-        logger.info("Invalidation request for submission %s received." %
-                    submission_id)
-        if level is None:
-            level = EvaluationService.INVALIDATE_COMPILATION
+        logger.info("Invalidation request received.")
+        if [x is not None
+            for x in [submission_id, user_id, task_id]].count(True) > 1:
+            err_msg = "Too many arguments for invalidate_submission."
+            logger.warning(err_msg)
+            raise ValueError(err_msg)
+        if level not in ["compilation", "evaluation"]:
+            err_msg = "Unexpected invalidation level `%s'." % level
+            logger.warning(err_msg)
+            raise ValueError(err_msg)
+
+        submission_ids = []
+        if submission_id is not None:
+            submission_ids = [submission_id]
+        elif user_id is not None:
+            with SessionGen(commit=False) as session:
+                user = User.get_from_id(user_id, session)
+                submission_ids = [x.id for x in user.submissions]
+        elif task_id is not None:
+            with SessionGen(commit=False) as session:
+                submissions = session.query(Submission)\
+                    .join(Task).filter(Task.id == task_id)
+                submission_ids = [x.id for x in submissions]
+        else:
+            with SessionGen(commit=False) as session:
+                contest = session.query(Contest).\
+                    filter_by(id=self.contest_id).first()
+                submission_ids = [x.id for x in contest.get_submissions()]
+
+        logger.info("Submissions to invalidate for %s: %s" %
+                    (level, len(submission_ids)))
 
         # TODO: remove jobs from the queue and mark jobs already
         # assigned to a worker as ignored.
@@ -925,20 +962,21 @@ class EvaluationService(Service):
         # We invalidate the appropriate data and queue the jobs to
         # recompute those data.
         with SessionGen(commit=True) as session:
-            submission = Submission.get_from_id(submission_id, session)
+            for submission_id in submission_ids:
+                submission = Submission.get_from_id(submission_id, session)
 
-            if level == EvaluationService.INVALIDATE_COMPILATION:
-                submission.invalidate_compilation()
-                self.push_in_queue((EvaluationService.JOB_TYPE_COMPILATION,
-                                    submission_id),
-                                   EvaluationService.JOB_PRIORITY_HIGH,
-                                   submission.timestamp)
-            elif level == EvaluationService.INVALIDATE_EVALUATION:
-                submission.invalidate_evaluation()
-                self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
-                                    submission_id),
-                                   EvaluationService.JOB_PRIORITY_MEDIUM,
-                                   submission.timestamp)
+                if level == "compilation":
+                    submission.invalidate_compilation()
+                    self.push_in_queue((EvaluationService.JOB_TYPE_COMPILATION,
+                                        submission_id),
+                                       EvaluationService.JOB_PRIORITY_HIGH,
+                                       submission.timestamp)
+                elif level == "evaluation":
+                    submission.invalidate_evaluation()
+                    self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
+                                        submission_id),
+                                       EvaluationService.JOB_PRIORITY_MEDIUM,
+                                       submission.timestamp)
 
     @rpc_method
     def submission_tokened(self, submission_id):

@@ -89,8 +89,13 @@
         <td>{{ s.evaluation_tries }}</td>
       </tr>
       <tr>
-        <td>Ops</td>
-        <td>[<a href="{{ url_root }}/reevaluate/submission/{{ s.id }}">Reevaluate</a>]</td>
+        <td>Reevaluate</td>
+        <td>
+          {% set reevaluation_url = "submission" %}
+          {% set reevaluation_par_name = "submission_id" %}
+          {% set reevaluation_par_value = s.id %}
+          {% include reevaluation_buttons.html %}
+        </td>
       </tr>
     </tbody>
   </table>

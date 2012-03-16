@@ -9,18 +9,23 @@
   <thead>
     <tr>
       <th style="width: 25%">First name</th>
-      <th style="width: 25%">Last name</th>
+      <th style="width: 27%">Last name</th>
       <th style="width: 30%">Username</th>
-      <th style="width: 20%">Operations</th>
+      <th style="width: 18%">Reevaluate</th>
     </tr>
   </thead>
   <tbody>
+    {% set reevaluation_url = "user" %}
+    {% set reevaluation_par_name = "user_id" %}
     {% for u in sorted(contest.users, cmp = lambda x, y: cmp(x.username, y.username)) %}
     <tr>
       <td>{{ u.first_name }}</td>
       <td>{{ u.last_name }}</td>
       <td><a href="{{ url_root }}/user/{{ u.id }}">{{ u.username }}</a></td>
-      <td>[<a href="{{ url_root }}/reevaluate/user/{{ u.id }}">Reevaluate</a>]</td>
+      <td>
+        {% set reevaluation_par_value = u.id %}
+        {% include reevaluation_buttons.html %}
+      </td>
     </tr>
     {% end %}
   </tbody>

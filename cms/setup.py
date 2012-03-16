@@ -61,16 +61,16 @@ def do_setup():
                   os.path.join("static", "*")
                   ],
               "cms.server": [
-                  os.path.join("static", "jq", "*"),
-                  os.path.join("static", "sh", "*"),
+                  os.path.join("static", "jq", "*.*"),
+                  os.path.join("static", "sh", "*.*"),
                   os.path.join("static", "*.*"),
                   os.path.join("templates", "contest", "*.*"),
                   os.path.join("templates", "admin", "*.*"),
                   os.path.join("templates", "ranking", "*.*"),
                   ],
           "cmsranking": [
-              os.path.join("static", "img", "*"),
-              os.path.join("static", "lib", "*"),
+              os.path.join("static", "img", "*.*"),
+              os.path.join("static", "lib", "*.*"),
               os.path.join("static", "*.*")
                   ]},
           entry_points={

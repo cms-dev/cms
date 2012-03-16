@@ -36,14 +36,16 @@ $("select[name=task_type]").change(showTaskTypeOption);
     <thead>
       <tr>
         <th style="width: 10%">Time</th>
-        <th style="width: 18%">User</th>
+        <th style="width: 14%">User</th>
         <th style="width: 35%">Status</th>
         <th style="width: 15%">Files</th>
-        <th style="width: 10%">Token</th>
-        <th style="width: 12%">Ops</th>
+        <th style="width: 8%">Token</th>
+        <th style="width: 18%">Reevaluate</th>
       </tr>
     </thead>
     <tbody>
+      {% set reevaluation_url = "submission" %}
+      {% set reevaluation_par_name = "submission_id" %}
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
         <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ format_time_or_date(s.timestamp) }}</a></td>
@@ -117,12 +119,20 @@ $("select[name=task_type]").change(showTaskTypeOption);
           {% end %}
         </td>
         <td>
-          [<a href="{{ url_root }}/reevaluate/submission/{{ s.id }}?ref={{ "/task/%s" % task.id }}">Reevaluate</a>]
+          {% set reevaluation_par_value = s.id %}
+          {% include reevaluation_buttons.html %}
         </td>
       </tr>
       {% end %}
     </tbody>
   </table>
+  <p>
+    Reevaluate all {{ len(submissions) }} submissions for this task:
+    {% set reevaluation_url = "task" %}
+    {% set reevaluation_par_name = "task_id" %}
+    {% set reevaluation_par_value = task.id %}
+    {% include reevaluation_buttons.html %}
+  </p>
   {% end %}
   <div class="hr"></div>
 </div>

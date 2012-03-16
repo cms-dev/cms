@@ -9,16 +9,21 @@
   <thead>
     <tr>
       <th style="width: 50%">Title</th>
-      <th style="width: 30%">Name</th>
-      <th style="width: 20%">Operations</th>
+      <th style="width: 32%">Name</th>
+      <th style="width: 18%">Reevaluate</th>
     </tr>
   </thead>
   <tbody>
+    {% set reevaluation_url = "task" %}
+    {% set reevaluation_par_name = "task_id" %}
     {% for t in contest.tasks %}
     <tr>
       <td>{{ t.title }}</td>
       <td><a href="{{ url_root }}/task/{{ t.id }}">{{ t.name }}</a></td>
-      <td>[<a href="{{ url_root }}/reevaluate/task/{{ t.id }}">Reevaluate</a>]</td>
+      <td>
+        {% set reevaluation_par_value = t.id %}
+        {% include reevaluation_buttons.html %}
+      </td>
     </tr>
     {% end %}
   </tbody>
