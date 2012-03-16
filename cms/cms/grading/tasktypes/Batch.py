@@ -19,7 +19,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from cms.db.SQLAlchemyAll import Evaluation
 from cms.grading import get_compilation_command
 from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading.TaskType import TaskType, \
@@ -78,11 +77,7 @@ class Batch(TaskType):
     ACCEPTED_PARAMETERS = [_COMPILATION, _USE_FILE, _EVALUATION]
 
     def compile(self):
-        """See TaskType.compile.
-
-        return (bool): success of operation.
-
-        """
+        """See TaskType.compile."""
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
@@ -100,9 +95,6 @@ class Batch(TaskType):
 
         # First and only one compilation.
         sandbox = create_sandbox(self)
-        self.submission.compilation_sandbox = sandbox.path
-        if "worker_shard" in self.__dict__:
-            self.submission.compilation_shard = self.worker_shard
         files_to_get = {}
         format_filename = self.submission.files.keys()[0]
         source_filenames = [format_filename.replace("%l", language)]
@@ -132,12 +124,8 @@ class Batch(TaskType):
                                        text)
 
     def evaluate_testcase(self, test_number):
+        """See TaskType.evaluate_testcase."""
         sandbox = create_sandbox(self)
-        self.submission.evaluations[test_number].evaluation_sandbox = \
-            sandbox.path
-        if "worker_shard" in self.__dict__:
-            self.submission.evaluations[test_number].evaluation_shard = \
-                self.worker_shard
 
         # First step: execute the contestant program. This is also the
         # final step if we have a grader, otherwise we need to run also
@@ -204,26 +192,13 @@ class Batch(TaskType):
                                                success, outcome, text)
 
     def evaluate(self):
-        """See TaskType.evaluate.
-
-        return (bool): success of operation.
-
-        """
+        """See TaskType.evaluate."""
         if len(self.submission.executables) != 1:
             log_msg = "Submission contains %d executables, expecting 1" % \
                       len(self.submission.executables)
             return self.finish_evaluation(False, to_log=log_msg)
 
         self.executable_filename = self.submission.executables.keys()[0]
-
-        for test_number in xrange(len(self.submission.evaluations),
-                                  len(self.submission.task.testcases)):
-            self.submission.get_session().add(
-                Evaluation(text=None,
-                           outcome=None,
-                           num=test_number,
-                           submission=self.submission))
-        self.submission.evaluation_outcome = "ok"
 
         for test_number in xrange(len(self.submission.task.testcases)):
             success = self.evaluate_testcase(test_number)

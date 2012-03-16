@@ -36,7 +36,8 @@ from cms import default_argument_parser, logger
 from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback
 from cms.async import ServiceCoord, get_service_shards
 from cms.db import ask_for_contest
-from cms.db.SQLAlchemyAll import Contest, Submission, SessionGen
+from cms.db.SQLAlchemyAll import Contest, Evaluation, Executable, \
+     Submission, SessionGen
 
 
 class JobQueue:
@@ -707,6 +708,10 @@ class EvaluationService(Service):
             logger.error("Received error from Worker: `%s'." % error)
             return
 
+        if not data["success"]:
+            logger.error("Worker %s signaled action not successful." % shard)
+            return
+
         job_type, submission_id = job
         priority, timestamp = side_data
 
@@ -714,7 +719,7 @@ class EvaluationService(Service):
                     "Success: %s" % (job_type, submission_id, data))
 
         # We get the submission from db.
-        with SessionGen(commit=False) as session:
+        with SessionGen(commit=True) as session:
             submission = Submission.get_from_id(submission_id, session)
             if submission is None:
                 logger.critical("[action_finished] Couldn't find submission "
@@ -723,14 +728,30 @@ class EvaluationService(Service):
 
             if job_type == EvaluationService.JOB_TYPE_COMPILATION:
                 submission.compilation_tries += 1
+                submission.compilation_outcome = data["compilation_outcome"]
+                submission.compilation_text = data["compilation_text"]
+                submission.compilation_shard = data["compilation_shard"]
+                submission.compilation_sandbox = data["compilation_sandbox"]
+                for filename, digest in data.get("executables", []):
+                    session.add(Executable(digest, filename, submission))
+
             if job_type == EvaluationService.JOB_TYPE_EVALUATION:
                 submission.evaluation_tries += 1
+                submission.evaluation_outcome = "ok"
+                for test_number, info in data["evaluations"].iteritems():
+                    session.add(Evaluation(
+                        text=info["text"],
+                        outcome=info["outcome"],
+                        num=test_number,
+                        evaluation_shard=info["evaluation_shard"],
+                        evaluation_sandbox=info["evaluation_sandbox"],
+                        submission=submission))
+
             compilation_tries = submission.compilation_tries
             compilation_outcome = submission.compilation_outcome
             evaluation_tries = submission.evaluation_tries
             tokened = submission.tokened()
             evaluated = submission.evaluated()
-            session.commit()
 
         # Compilation
         if job_type == EvaluationService.JOB_TYPE_COMPILATION:

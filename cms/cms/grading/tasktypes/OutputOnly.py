@@ -23,7 +23,6 @@
 
 """
 
-from cms.db.SQLAlchemyAll import Evaluation
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
 from cms.grading.ParameterTypes import ParameterTypeChoice
@@ -51,21 +50,13 @@ class OutputOnly(TaskType):
     ACCEPTED_PARAMETERS = [_EVALUATION]
 
     def compile(self):
-        """See TaskType.compile.
-
-        return (bool): success of operation.
-
-        """
+        """See TaskType.compile."""
         # No compilation needed.
         return self.finish_compilation(True, True, "No compilation needed.")
 
     def evaluate_testcase(self, test_number):
+        """See TaskType.evaluate_testcase."""
         sandbox = create_sandbox(self)
-        self.submission.evaluations[test_number].evaluation_sandbox = \
-            sandbox.path
-        if "worker_shard" in self.__dict__:
-            self.submission.evaluations[test_number].evaluation_shard = \
-                self.worker_shard
 
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
@@ -109,20 +100,7 @@ class OutputOnly(TaskType):
                                                success, outcome, text)
 
     def evaluate(self):
-        """See TaskType.evaluate.
-
-        return (bool): success of operation.
-
-        """
-        for test_number in xrange(len(self.submission.evaluations),
-                                  len(self.submission.task.testcases)):
-            self.submission.get_session().add(
-                Evaluation(text=None,
-                           outcome=None,
-                           num=test_number,
-                           submission=self.submission))
-        self.submission.evaluation_outcome = "ok"
-
+        """See TaskType.evaluate."""
         for test_number in xrange(len(self.submission.task.testcases)):
             success = self.evaluate_testcase(test_number)
             if not success:

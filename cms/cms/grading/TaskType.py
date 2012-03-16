@@ -34,7 +34,6 @@ import codecs
 import traceback
 
 from cms import config, logger
-from cms.db.SQLAlchemyAll import Executable
 from cms.grading import JobException
 from cms.grading.Sandbox import Sandbox
 
@@ -151,6 +150,23 @@ def delete_sandbox(sandbox):
                            traceback.format_exc())
 
 
+## Other stuff. ##
+
+def append_path(path_list, new_path):
+    """Append new_path to the path_list, inserting a colon inbetween.
+
+    path_list (string): colon-separated list of paths.
+    new_path (string): a new path to append to path_list.
+
+    return (string): the concatenation.
+
+    """
+    if path_list == "":
+        return new_path
+    else:
+        return "%s:%s" % (path_list, new_path)
+
+
 def filter_ansi_escape(string):
     """Filter out ANSI commands from the given string.
 
@@ -232,15 +248,17 @@ class TaskType:
 
         """
         self.submission = submission
+        self.result = {}
         self.parameters = parameters
         self.file_cacher = file_cacher
 
         self.worker_shard = None
+        self.sandbox_paths = ""
 
     def finish_compilation(self, success, compilation_success=False,
                            text="", to_log=None):
-        """Finalize the operation of compilation and write back in the
-        submission object the information (if success is True).
+        """Finalize the operation of compilation and build the
+        dictionary to return to ES.
 
         success (bool): if the operation was successful (i.e., if cms
                         did everything in the right way).
@@ -254,23 +272,31 @@ class TaskType:
         to_log (string): inform us that an unexpected event has
                          happened.
 
-        return (bool): success.
+        return (dict): result collected during the evaluation.
 
         """
         if to_log is not None:
             logger.warning(to_log)
-        if not success:
-            return False
-        if compilation_success:
-            self.submission.compilation_outcome = "ok"
-        else:
-            self.submission.compilation_outcome = "fail"
-        try:
-            self.submission.compilation_text = text.decode("utf-8")
-        except UnicodeDecodeError:
-            self.submission.compilation_text("Cannot decode compilation text.")
-            logger.error("Unable to decode UTF-8 for string %s." % text)
-        return True
+        self.result["success"] = success
+
+        if success:
+            if compilation_success:
+                self.result["compilation_outcome"] = "ok"
+            else:
+                self.result["compilation_outcome"] = "fail"
+
+            try:
+                self.result["compilation_text"] = text.decode("utf-8")
+            except UnicodeDecodeError:
+                self.result["compilation_text"] = \
+                    "Cannot decode compilation text."
+                logger.error("Unable to decode UTF-8 for string %s." % text)
+
+            self.result["compilation_shard"] = self.worker_shard
+            self.result["compilation_sandbox"] = self.sandbox_paths
+            self.sandbox_paths = ""
+
+        return self.result
 
     def finish_evaluation_testcase(self, test_number, success,
                                    outcome=0, text="", to_log=None):
@@ -291,14 +317,19 @@ class TaskType:
         """
         if to_log is not None:
             logger.warning(to_log)
-        if not success:
-            return False
-        self.submission.evaluations[test_number].text = text
-        self.submission.evaluations[test_number].outcome = outcome
-        return True
+        if "evaluations" not in self.result:
+            self.result["evaluations"] = {}
+        obj = self.result["evaluations"]
+        obj[test_number] = {"success": success}
+        if success:
+            obj[test_number]["text"] = text
+            obj[test_number]["outcome"] = outcome
+            obj[test_number]["evaluation_shard"] = self.worker_shard
+            obj[test_number]["evaluation_sandbox"] = self.sandbox_paths
+            self.sandbox_paths = ""
+        return success
 
-    @staticmethod
-    def finish_evaluation(success, to_log=None):
+    def finish_evaluation(self, success, to_log=None):
         """Finalize the operation of evaluating. Currently there is
         nothing to do.
 
@@ -306,14 +337,14 @@ class TaskType:
         to_log (string): inform us that an unexpected event has
                          happened.
 
-        return (bool): success.
+        return (dict): result collected during the evaluation.
 
         """
         if to_log is not None:
             logger.warning(to_log)
-        if not success:
-            return False
-        return True
+
+        self.result["success"] = success
+        return self.result
 
     def compilation_step(self, sandbox, command, files_to_get,
                          executables_to_store):
@@ -340,6 +371,9 @@ class TaskType:
                                      string.
 
         """
+        # Record the usage of the sandbox.
+        self.sandbox_paths = append_path(self.sandbox_paths, sandbox.path)
+
         # Copy all necessary files.
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
@@ -391,11 +425,10 @@ class TaskType:
         # Execution finished successfully and the submission was
         # correctly compiled.
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
+            self.result["executables"] = []
             for filename, digest in executables_to_store.iteritems():
                 digest = sandbox.get_file_to_storage(filename, digest)
-
-                self.submission.get_session().add(
-                    Executable(digest, filename, self.submission))
+                self.result["executables"].append((filename, digest))
 
             logger.info("Compilation successfully finished.")
 
@@ -504,6 +537,9 @@ class TaskType:
                 process if wait is False.
 
         """
+        # Record the usage of the sandbox.
+        self.sandbox_paths = ":".join([self.sandbox_paths, sandbox.path])
+
         # Copy all necessary files.
         for filename, digest in executables_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest, executable=True)
@@ -587,7 +623,8 @@ class TaskType:
         # Forbidden file access: returning the error to the user.
         if exit_status == Sandbox.EXIT_FILE_ACCESS:
             error_str = sandbox.get_forbidden_file_error()
-            logger.info("Execution killed because of forbidden file access: `%s'." % error_str)
+            logger.info("Execution killed because of forbidden file access: "
+                        "`%s'." % error_str)
             return True, 0.0, \
                    "Execution killed because of forbidden file access."
 
@@ -641,6 +678,9 @@ class TaskType:
         return (bool, float, string): see evaluation_step.
 
         """
+        # Record the usage of the sandbox.
+        self.sandbox_paths = append_path(self.sandbox_paths, sandbox.path)
+
         # TODO: why we don't use *output_filename?
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
@@ -668,6 +708,16 @@ class TaskType:
         environment should lead to returning True).
 
         return (bool): success of operation.
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
+    def evaluate_testcase(self, test_number):
+        """Perform the evaluation of a single testcase.
+
+        test_number (int): the number of the testcase to test.
+
+        return (bool): True if the evaluation was successful.
 
         """
         raise NotImplementedError("Please subclass this class.")

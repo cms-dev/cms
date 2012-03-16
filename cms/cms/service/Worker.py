@@ -144,7 +144,6 @@ class Worker(Service):
                     task_type.worker_shard = self.shard
 
                     # Do the actual work
-                    success = False
                     if job_type == Worker.JOB_TYPE_COMPILATION:
                         task_type_action = task_type.compile
                     elif job_type == Worker.JOB_TYPE_EVALUATION:
@@ -152,12 +151,8 @@ class Worker(Service):
                     else:
                         raise KeyError("Unexpected job type %s." % job_type)
 
-                    success = task_type_action()
-                    if success:
-                        self.session.commit()
-
                     logger.info("Request finished.")
-                    return success
+                    return task_type_action()
 
             except:
                 err_msg = "Worker failed on operation `%s'" % logger.operation

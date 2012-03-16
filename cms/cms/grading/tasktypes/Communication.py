@@ -22,7 +22,6 @@
 import os
 import tempfile
 
-from cms.db.SQLAlchemyAll import Evaluation
 from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_command
 from cms.grading.TaskType import TaskType, \
@@ -46,11 +45,7 @@ class Communication(TaskType):
     ALLOW_PARTIAL_SUBMISSION = False
 
     def compile(self):
-        """See TaskType.compile.
-
-        return (bool): success of operation.
-
-        """
+        """See TaskType.compile."""
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
@@ -68,9 +63,6 @@ class Communication(TaskType):
 
         # First and only one compilation.
         sandbox = create_sandbox(self)
-        self.submission.compilation_sandbox = sandbox.path
-        if "worker_shard" in self.__dict__:
-            self.submission.compilation_shard = self.worker_shard
         files_to_get = {}
         format_filename = self.submission.files.keys()[0]
         # User's submission.
@@ -99,6 +91,7 @@ class Communication(TaskType):
                                        text)
 
     def evaluate_testcase(self, test_number):
+        """See TaskType.evaluate_testcase."""
         sandbox_mgr = create_sandbox(self)
         sandbox_user = create_sandbox(self)
         fifo_dir = tempfile.mkdtemp()
@@ -106,12 +99,6 @@ class Communication(TaskType):
         fifo_out = os.path.join(fifo_dir, "out")
         os.mkfifo(fifo_in)
         os.mkfifo(fifo_out)
-
-        self.submission.evaluations[test_number].evaluation_sandbox = \
-            "%s:%s" % (sandbox_mgr.path, sandbox_user.path)
-        if "worker_shard" in self.__dict__:
-            self.submission.evaluations[test_number].evaluation_shard = \
-                self.worker_shard
 
         # First step: we start the manager.
         manager_filename = "manager"
@@ -179,26 +166,13 @@ class Communication(TaskType):
                                                success, outcome, text)
 
     def evaluate(self):
-        """See TaskType.evaluate.
-
-        return (bool): success of operation.
-
-        """
+        """See TaskType.evaluate."""
         if len(self.submission.executables) != 1:
             log_msg = "Submission contains %d executables, expecting 1" % \
                       len(self.submission.executables)
             return self.finish_evaluation(False, to_log=log_msg)
 
         self.executable_filename = self.submission.executables.keys()[0]
-
-        for test_number in xrange(len(self.submission.evaluations),
-                                  len(self.submission.task.testcases)):
-            self.submission.get_session().add(
-                Evaluation(text=None,
-                           outcome=None,
-                           num=test_number,
-                           submission=self.submission))
-        self.submission.evaluation_outcome = "ok"
 
         for test_number in xrange(len(self.submission.task.testcases)):
             success = self.evaluate_testcase(test_number)
