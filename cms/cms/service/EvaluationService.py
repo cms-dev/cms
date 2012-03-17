@@ -71,7 +71,7 @@ class JobQueue:
     queue of jobs (compilations, evaluations, ...) that the ES needs
     to process next.
 
-    A job is a couple (job_type, submission_id), where job_type is a
+    A job is a pair (job_type, submission_id), where job_type is a
     constant defined in EvaluationService.
 
     Elements of the queue are of the form (priority, timestamp, job),
@@ -89,9 +89,9 @@ class JobQueue:
         """Push a job in the queue. If timestamp is not specified,
         uses the current time.
 
-        job (job): a couple (job_type, submission_id)
-        priority (int): the priority of the job
-        timestamp (int): the time of the submission
+        job (job): a pair (job_type, submission_id).
+        priority (int): the priority of the job.
+        timestamp (int): the time of the submission.
 
         """
         if timestamp is None:
@@ -492,13 +492,6 @@ class EvaluationService(Service):
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))
 
-        # If for some reason (ES switched off for a while, or broken
-        # connection with CWS), submissions have been left with some
-        # jobs to do, this is the list where you want to pur their
-        # ids. Note that list != [] if and only if there is an alive
-        # timeout for the method "check_old_submission".
-        self.submission_ids_to_check = []
-
         for i in xrange(get_service_shards("Worker")):
             worker = ServiceCoord("Worker", i)
             self.pool.add_worker(worker)
@@ -522,49 +515,34 @@ class EvaluationService(Service):
         in the queue.
 
         """
+        new_jobs = 0
         with SessionGen(commit=False) as session:
             contest = session.query(Contest).\
                       filter_by(id=self.contest_id).first()
 
             # Only adding submission not compiled/evaluated that have
             # not yet reached the limit of tries.
-            new_submission_ids_to_check = \
-                [x.id for x in contest.get_submissions()
-                 if to_compile(x) or to_evaluate(x)]
+            for submission in contest.get_submissions():
+                if to_compile(submission):
+                    if self.push_in_queue(
+                        (EvaluationService.JOB_TYPE_COMPILATION,
+                         submission.id),
+                        EvaluationService.JOB_PRIORITY_HIGH,
+                        submission.timestamp):
+                        new_jobs += 1
+                elif to_evaluate(submission):
+                    if self.push_in_queue(
+                        (EvaluationService.JOB_TYPE_EVALUATION,
+                         submission.id),
+                        EvaluationService.JOB_PRIORITY_MEDIUM,
+                        submission.timestamp):
+                        new_jobs += 1
 
-        new = len(new_submission_ids_to_check)
-        old = len(self.submission_ids_to_check)
-        logger.info("Submissions found with jobs to do: %s." % new)
-        if new > 0:
-            self.submission_ids_to_check = new_submission_ids_to_check + \
-                                           self.submission_ids_to_check
-            if old == 0:
-                self.add_timeout(self.check_old_submissions, None,
-                                 0.1, immediately=False)
+        if new_jobs > 0:
+            logger.info("Found %s submissions with jobs to do." % new_jobs)
 
         # Run forever.
         return True
-
-    def check_old_submissions(self):
-        """The submissions in the submission_ids_to_check list are to
-        compile or evaluate, and this method starts one of this
-        operation at a time. This method keeps getting called while
-        the list is non-empty.
-
-        Note: doing this way (instead of putting everything in the
-        __init__ (prevent freezing the service at the beginning in
-        case of many old submissions.
-
-        """
-
-        if self.submission_ids_to_check == []:
-            logger.info("Finished loading old submissions.")
-        else:
-            self.new_submission(self.submission_ids_to_check[-1])
-            del self.submission_ids_to_check[-1]
-            if len(self.submission_ids_to_check) > 0:
-                return True
-        return False
 
     def dispatch_jobs(self):
         """Check if there are pending jobs, and tries to distribute as
@@ -701,11 +679,13 @@ class EvaluationService(Service):
         """Push a job in the job queue if the job is not already in
         the queue or assigned to a worker.
 
-        job (job): a couple (job_type, submission_id) to push.
+        job (job): a pair (job_type, submission_id) to push.
 
         return (bool): True if pushed, False if not.
 
         """
+        # TODO: two jobs referring to the same submission can end up
+        # in the queue.
         if job in self.queue or job in self.pool:
             return False
         else:
