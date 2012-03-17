@@ -37,7 +37,8 @@ from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback
 from cms.async import ServiceCoord, get_service_shards
 from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import Contest, Evaluation, Executable, \
-     Submission, SessionGen, Task, User
+     Submission, SessionGen
+from cms.service import get_submissions
 
 
 def to_compile(submission):
@@ -925,36 +926,19 @@ class EvaluationService(Service):
 
         """
         logger.info("Invalidation request received.")
-        if [x is not None
-            for x in [submission_id, user_id, task_id]].count(True) > 1:
-            err_msg = "Too many arguments for invalidate_submission."
-            logger.warning(err_msg)
-            raise ValueError(err_msg)
         if level not in ["compilation", "evaluation"]:
             err_msg = "Unexpected invalidation level `%s'." % level
             logger.warning(err_msg)
             raise ValueError(err_msg)
 
-        submission_ids = []
-        if submission_id is not None:
-            submission_ids = [submission_id]
-        elif user_id is not None:
-            with SessionGen(commit=False) as session:
-                user = User.get_from_id(user_id, session)
-                submission_ids = [x.id for x in user.submissions]
-        elif task_id is not None:
-            with SessionGen(commit=False) as session:
-                submissions = session.query(Submission)\
-                    .join(Task).filter(Task.id == task_id)
-                submission_ids = [x.id for x in submissions]
-        else:
-            with SessionGen(commit=False) as session:
-                contest = session.query(Contest).\
-                    filter_by(id=self.contest_id).first()
-                submission_ids = [x.id for x in contest.get_submissions()]
+        submission_ids = get_submissions(
+            self.contest_id,
+            submission_id, user_id, task_id)
 
         logger.info("Submissions to invalidate for %s: %s" %
                     (level, len(submission_ids)))
+        if len(submission_ids) == 0:
+            return
 
         # TODO: remove jobs from the queue and mark jobs already
         # assigned to a worker as ignored.
