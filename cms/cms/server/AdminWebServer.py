@@ -205,6 +205,8 @@ class AdminWebServer(WebService):
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
             ServiceCoord("EvaluationService", 0))
+        self.scoring_service = self.connect_to(
+            ServiceCoord("ScoringService", 0))
         self.resource_services = []
         for i in xrange(get_service_shards("ResourceService")):
             self.resource_services.append(self.connect_to(
@@ -229,10 +231,10 @@ class AdminWebServer(WebService):
                               "invalidate_submission"]
 
         elif service == ServiceCoord("ScoringService", 0):
-            return method in ["last_messages"]
+            return method in ["invalidate_submission"]
 
         elif service == ServiceCoord("LogService", 0):
-            return method in ["invalidate_submission"]
+            return method in ["last_messages"]
 
         elif service.name == "ResourceService":
             return method in ["get_resources",

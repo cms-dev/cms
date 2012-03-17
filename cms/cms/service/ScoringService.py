@@ -38,6 +38,7 @@ from cms.async.AsyncLibrary import Service, rpc_method
 from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
 from cms.grading.ScoreType import ScoreTypes
+from cms.service import get_submissions
 
 
 class CannotSendError(Exception):
@@ -516,6 +517,46 @@ class ScoringService(Service):
             self.operation_queue.append((send_change,
                                          [ranking, subchange_url,
                                           subchange_put_data]))
+
+    @rpc_method
+    def invalidate_submission(self,
+                              submission_id=None,
+                              user_id=None,
+                              task_id=None):
+        """Request for invalidating the scores of some submissions.
+
+        The scores to be cleared are the one regarding 1) a submission
+        or 2) all submissions of a user or 3) all submissions of a
+        task or 4) all submission (if all parameters are None).
+
+        submission_id (int): id of the submission to invalidate, or
+                             None.
+        user_id (int): id of the user we want to invalidate, or None.
+        task_id (int): id of the task we want to invalidate, or None.
+
+        """
+        logger.info("Invalidation request received.")
+
+        submission_ids = get_submissions(
+            self.contest_id,
+            submission_id, user_id, task_id)
+
+        logger.info("Submissions to invalidate: %s" % len(submission_ids))
+        if len(submission_ids) == 0:
+            return
+
+        with SessionGen(commit=True) as session:
+            for submission_id in submission_ids:
+                submission = Submission.get_from_id(submission_id, session)
+                submission.invalidate_score()
+
+        old_s = len(self.submission_ids_to_score)
+        old_t = len(self.submission_ids_to_token)
+        self.submission_ids_to_score = submission_ids + \
+                                       self.submission_ids_to_score
+        if old_s + old_t == 0:
+                self.add_timeout(self.score_old_submissions, None,
+                                 0.5, immediately=True)
 
 
 def main():

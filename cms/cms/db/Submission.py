@@ -241,12 +241,12 @@ class Submission(Base):
         """Blank the evaluation outcomes and the score.
 
         """
-        self.invalidate_scoring()
+        self.invalidate_score()
         self.evaluation_outcome = None
         self.evaluations = []
         self.evaluation_tries = 0
 
-    def invalidate_scoring(self):
+    def invalidate_score(self):
         """Blank the score.
 
         """
