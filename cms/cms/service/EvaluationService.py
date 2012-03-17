@@ -536,10 +536,11 @@ class EvaluationService(Service):
         old = len(self.submission_ids_to_check)
         logger.info("Submissions found with jobs to do: %s." % new)
         if new > 0:
-            self.submission_ids_to_check += new_submission_ids_to_check
+            self.submission_ids_to_check = new_submission_ids_to_check + \
+                                           self.submission_ids_to_check
             if old == 0:
                 self.add_timeout(self.check_old_submissions, None,
-                                 0.01, immediately=True)
+                                 0.1, immediately=False)
 
         # Run forever.
         return True
@@ -555,13 +556,15 @@ class EvaluationService(Service):
         case of many old submissions.
 
         """
+
         if self.submission_ids_to_check == []:
             logger.info("Finished loading old submissions.")
-            return False
         else:
-            self.new_submission(self.submission_ids_to_check[0])
-            self.submission_ids_to_check = self.submission_ids_to_check[1:]
-            return True
+            self.new_submission(self.submission_ids_to_check[-1])
+            del self.submission_ids_to_check[-1]
+            if len(self.submission_ids_to_check) > 0:
+                return True
+        return False
 
     def dispatch_jobs(self):
         """Check if there are pending jobs, and tries to distribute as

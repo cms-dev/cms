@@ -269,11 +269,13 @@ class ScoringService(Service):
         logger.info("Submissions found to score/token: %d, %d." %
                     (new_s, new_t))
         if new_s + new_t > 0:
-            self.submission_ids_to_score += new_submission_ids_to_score
-            self.submission_ids_to_token += new_submission_ids_to_token
+            self.submission_ids_to_score = new_submission_ids_to_score + \
+                                           self.submission_ids_to_score
+            self.submission_ids_to_token = new_submission_ids_to_token + \
+                                           self.submission_ids_to_token
             if old_s + old_t == 0:
                 self.add_timeout(self.score_old_submissions, None,
-                                 0.01, immediately=True)
+                                 0.5, immediately=False)
 
         # Run forever.
         return True
@@ -281,26 +283,33 @@ class ScoringService(Service):
     def score_old_submissions(self):
         """The submissions in the submission_ids_to_score list are
         evaluated submissions that we can assign a score to, and this
-        method scores one of these at a time. This method keeps
-        getting called while the list is non-empty.
+        method scores a bunch of these at a time. This method keeps
+        getting called while the list is non-empty. (Exactly the same
+        happens for the submissions to token.)
 
         Note: doing this way (instead of putting everything in the
-        __init__ (prevent freezing the service at the beginning in
+        __init__) prevent freezing the service at the beginning in the
         case of many old submissions.
 
         """
         to_score = len(self.submission_ids_to_score)
         to_token = len(self.submission_ids_to_token)
-        if to_score > 0:
-            logger.info("Old submission yet to score: %s." % to_score)
-            self.new_evaluation(self.submission_ids_to_score[0])
-            self.submission_ids_to_score = self.submission_ids_to_score[1:]
+        to_score_now = to_score if to_score < 4 else 4
+        to_token_now = to_token if to_token < 16 else 16
+        logger.info("Old submission yet to score/token: %s/%s." %
+                    (to_score, to_token))
+
+        for i in xrange(to_score_now):
+            self.new_evaluation(self.submission_ids_to_score[-1])
+            del self.submission_ids_to_score[-1]
+        if to_score - to_score_now > 0:
             return True
-        if to_token > 0:
-            logger.info("Old submission yet to token: %s." % to_token)
-            self.submission_tokened(self.submission_ids_to_token[0][0],
-                                    self.submission_ids_to_token[0][1])
-            self.submission_ids_to_token = self.submission_ids_to_token[1:]
+
+        for i in xrange(to_token_now):
+            self.submission_tokened(self.submission_ids_to_token[-1][0],
+                                    self.submission_ids_to_token[-1][1])
+            del self.submission_ids_to_token[-1]
+        if to_token - to_token_now > 0:
             return True
 
         logger.info("Finished loading old submissions.")
