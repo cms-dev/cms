@@ -1,23 +1,34 @@
+<script type="text/javascript">
+<!--
+function reevaluation_action(response)
+{
+  if (response['status'] == 'unconnected')
+    alert('Unable to invalidate (service not connected).');
+  else if (response['status'] != 'ok')
+    alert('Unable to invalidate (error: `' + response['error'] + '\').');
+  else
+    location.href = '{{ url_root }}/{{ reevaluation_url }}/{{ reevaluation_par_value }}';
+}
+//-->
+</script>
+
 <button onclick="cmsrpc.request(
                  'EvaluationService', 0,
                  'invalidate_submission',
                  {'{{ reevaluation_par_name }}': {{ reevaluation_par_value }},
                   'level': 'compilation'},
-                 function(response)
-                 { location.href = '{{ url_root }}/{{ reevaluation_url }}/{{ reevaluation_par_value }}'; });"
+                 reevaluation_action);"
         title="Compilation" >C</button>
 <button onclick="cmsrpc.request(
                  'EvaluationService', 0,
                  'invalidate_submission',
                  {'{{ reevaluation_par_name }}': {{ reevaluation_par_value }},
                   'level': 'evaluation'},
-                 function(response)
-                 { location.href = '{{ url_root }}/{{ reevaluation_url }}/{{ reevaluation_par_value }}'; });"
+                 reevaluation_action);"
                  title="Evaluation" >E</button>
 <button onclick="cmsrpc.request(
                  'ScoringService', 0,
                  'invalidate_submission',
                  {'{{ reevaluation_par_name }}': {{ reevaluation_par_value }}},
-                 function(response)
-                 { location.href = '{{ url_root }}/{{ reevaluation_url }}/{{ reevaluation_par_value }}'; });"
+                 reevaluation_action);"
         title="Score" >S</button>
