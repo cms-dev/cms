@@ -188,7 +188,7 @@ class JobQueue:
         if len(self._queue) > 0:
             return self._queue[0]
         else:
-            raise LookupError("Empty queue")
+            raise LookupError("Empty queue.")
 
     def pop(self):
         """Extracts (and returns) the first element in the queue.
@@ -310,9 +310,7 @@ class WorkerPool:
         return job in self._job.values()
 
     def add_worker(self, worker_coord):
-        """Add a new worker to the worker pool. This is for
-        non-foreseen worker that has no line in the configuration
-        file, hence we need to specify manually the address.
+        """Add a new worker to the worker pool.
 
         worker_coord (ServiceCoord): the coordinates of the worker.
 
@@ -324,7 +322,7 @@ class WorkerPool:
             on_connect=self.on_worker_connected)
 
         # And we fill all data.
-        self._job[shard] = self.WORKER_INACTIVE
+        self._job[shard] = WorkerPool.WORKER_INACTIVE
         self._start_time[shard] = None
         self._schedule_disabling[shard] = False
         self._side_data[shard] = None
@@ -344,8 +342,8 @@ class WorkerPool:
         self._worker[shard].precache_files(contest_id=self._service.contest_id)
         # If we know that the worker was doing some job, we requeue
         # the job.
-        if self._job[shard] not in [self.WORKER_DISABLED,
-                                    self.WORKER_INACTIVE]:
+        if self._job[shard] not in [WorkerPool.WORKER_DISABLED,
+                                    WorkerPool.WORKER_INACTIVE]:
             job = self._job[shard]
             logger.info("Job %s for submission %s put again in the queue "
                         "because of worker online again." % (job[0], job[1]))
@@ -367,7 +365,7 @@ class WorkerPool:
         """
         # We look for an available worker
         try:
-            shard = self.find_worker(self.WORKER_INACTIVE,
+            shard = self.find_worker(WorkerPool.WORKER_INACTIVE,
                                      require_connection=True,
                                      random_worker=True)
         except LookupError:
@@ -384,10 +382,8 @@ class WorkerPool:
         timestamp = side_data[1]
         queue_time = self._start_time[shard] - timestamp
         logger.info("Asking worker %s to %s submission %s "
-                    " (%s seconds after submission)" %
+                    " (%s seconds after submission)." %
                     (shard, action, submission_id, queue_time))
-        logger.debug("Still %s jobs in the queue." %
-                     self._service.queue.length())
         if action == EvaluationService.JOB_TYPE_COMPILATION:
             self._worker[shard].compile(
                 submission_id=submission_id,
@@ -413,20 +409,20 @@ class WorkerPool:
         returns (bool): if the worker is going to be disabled
 
         """
-        if self._job[shard] == self.WORKER_INACTIVE or \
-                self._job[shard] == self.WORKER_DISABLED:
+        if self._job[shard] == WorkerPool.WORKER_INACTIVE or \
+                self._job[shard] == WorkerPool.WORKER_DISABLED:
             err_msg = "Trying to release worker while it's inactive."
             logger.error(err_msg)
             raise ValueError(err_msg)
         self._start_time[shard] = None
         self._side_data[shard] = None
         if self._schedule_disabling[shard]:
-            self._job[shard] = self.WORKER_DISABLED
+            self._job[shard] = WorkerPool.WORKER_DISABLED
             self._schedule_disabling[shard] = False
             logger.info("Worker %s released and disabled." % shard)
             return True
         else:
-            self._job[shard] = self.WORKER_INACTIVE
+            self._job[shard] = WorkerPool.WORKER_INACTIVE
             logger.debug("Worker %s released." % shard)
             return False
 
@@ -435,15 +431,17 @@ class WorkerPool:
         there is a placeholder job to signal that the worker is not
         doing anything (or disabled).
 
-        job (job): the job we are looking for, or self.WORKER_*.
+        job (job): the job we are looking for, or WorkerPool.WORKER_*.
         require_connection (bool): True if we want to find a worker
                                    doing the job and that is actually
                                    connected to us (i.e., did not
                                    die).
         random_worker (bool): if True, choose uniformly amongst all
                        workers doing the job.
-        returns (int): the shard of the worker working on job, or
-                       LookupError if nothing has been found.
+
+        returns (int): the shard of the worker working on job.
+
+        raise: LookupError if nothing has been found.
 
         """
         pool = []
@@ -454,20 +452,9 @@ class WorkerPool:
                     if not random_worker:
                         return shard
         if pool == []:
-            raise LookupError("No such job")
+            raise LookupError("No such job.")
         else:
             return random.choice(pool)
-
-    def working_workers(self):
-        """Returns the number of workers doing an actual work in this
-        moment.
-
-        returns (int): that number
-
-        """
-        return len([x for x in self._job.values()
-                    if x != self.WORKER_INACTIVE and \
-                    x != self.WORKER_DISABLED])
 
     def get_status(self):
         """Returns a dict with info about the current status of all
@@ -507,8 +494,8 @@ class WorkerPool:
                                  "worker %d because of no reponse "
                                  "in %.2f seconds." %
                                  (shard, active_for))
-                    assert self._job[shard] != self.WORKER_INACTIVE \
-                        and self._job[shard] != self.WORKER_DISABLED
+                    assert self._job[shard] != WorkerPool.WORKER_INACTIVE \
+                        and self._job[shard] != WorkerPool.WORKER_DISABLED
 
                     # So we put again its current job in the queue.
                     job = self._job[shard]
@@ -521,7 +508,7 @@ class WorkerPool:
                     self._schedule_disabling[shard] = True
                     self.release_worker(shard)
                     self._worker[shard].quit("No response in %.2f "
-                                             "seconds" % active_for)
+                                             "seconds." % active_for)
 
         return lost_jobs
 
@@ -536,8 +523,8 @@ class WorkerPool:
         lost_jobs = []
         for shard in self._worker:
             if not self._worker[shard].connected and \
-                   self._job[shard] not in [self.WORKER_DISABLED,
-                                            self.WORKER_INACTIVE]:
+                   self._job[shard] not in [WorkerPool.WORKER_DISABLED,
+                                            WorkerPool.WORKER_INACTIVE]:
                 job = self._job[shard]
                 priority, timestamp = self._side_data[shard]
                 lost_jobs.append((priority, timestamp, job))
@@ -725,7 +712,7 @@ class EvaluationService(Service):
                             else:
                                 stats["evaluating"] += 1
                     else:
-                        # Should not happen
+                        # Should not happen.
                         stats["invalid"] += 1
         return stats
 
@@ -774,18 +761,25 @@ class EvaluationService(Service):
             self.push_in_queue(job, priority, timestamp)
         return True
 
+    def submission_busy(self, submission_id):
+        """Check if the submission has a related job in the queue or
+        assigned to a worker.
+
+        """
+        jobs = [(EvaluationService.JOB_TYPE_COMPILATION, submission_id),
+                (EvaluationService.JOB_TYPE_EVALUATION, submission_id)]
+        return any([job in self.queue or job in self.pool for job in jobs])
+
     def push_in_queue(self, job, priority, timestamp):
-        """Push a job in the job queue if the job is not already in
-        the queue or assigned to a worker.
+        """Push a job in the job queue if the submission is not
+        already in the queue or assigned to a worker.
 
         job (job): a pair (job_type, submission_id) to push.
 
         return (bool): True if pushed, False if not.
 
         """
-        # TODO: two jobs referring to the same submission can end up
-        # in the queue.
-        if job in self.queue or job in self.pool:
+        if self.submission_busy(job[1]):
             return False
         else:
             self.queue.push(job, priority, timestamp)
@@ -822,8 +816,8 @@ class EvaluationService(Service):
         job_type, submission_id = job
         unused_priority, timestamp = side_data
 
-        logger.info("Action %s for submission %s completed. "
-                    "Success: %s" % (job_type, submission_id, data["success"]))
+        logger.info("Action %s for submission %s completed. Success: %s." %
+                    (job_type, submission_id, data["success"]))
 
         # We get the submission from db.
         with SessionGen(commit=True) as session:
@@ -860,7 +854,7 @@ class EvaluationService(Service):
             tokened = submission.tokened()
             evaluated = submission.evaluated()
 
-        # Compilation
+        # Compilation.
         if job_type == EvaluationService.JOB_TYPE_COMPILATION:
             self.compilation_ended(submission_id,
                                    timestamp,
@@ -868,7 +862,7 @@ class EvaluationService(Service):
                                    compilation_outcome,
                                    tokened)
 
-        # Evaluation
+        # Evaluation.
         elif job_type == EvaluationService.JOB_TYPE_EVALUATION:
             self.evaluation_ended(submission_id,
                                   timestamp,
@@ -876,7 +870,7 @@ class EvaluationService(Service):
                                   evaluated,
                                   tokened)
 
-        # Other (i.e. error)
+        # Other (i.e. error).
         else:
             logger.error("Invalid job type %r." % job_type)
             return
@@ -961,8 +955,9 @@ class EvaluationService(Service):
         submission. ES takes the right countermeasures, i.e., it
         schedules it for compilation.
 
-        submission_id (string): the id of the new submission
-        returns (bool): True if everything went well
+        submission_id (string): the id of the new submission.
+
+        returns (bool): True if everything went well.
 
         """
         with SessionGen(commit=False) as session:
@@ -976,11 +971,6 @@ class EvaluationService(Service):
                 self.push_in_queue((EvaluationService.JOB_TYPE_COMPILATION,
                                     submission_id),
                                    EvaluationService.JOB_PRIORITY_HIGH,
-                                   submission.timestamp)
-            if to_evaluate(submission):
-                self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
-                                    submission_id),
-                                   EvaluationService.JOB_PRIORITY_MEDIUM,
                                    submission.timestamp)
 
     @rpc_method
@@ -1017,7 +1007,7 @@ class EvaluationService(Service):
             self.contest_id,
             submission_id, user_id, task_id)
 
-        logger.info("Submissions to invalidate for %s: %s" %
+        logger.info("Submissions to invalidate for %s: %s." %
                     (level, len(submission_ids)))
         if len(submission_ids) == 0:
             return
