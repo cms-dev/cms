@@ -409,8 +409,7 @@ class WorkerPool:
         returns (bool): if the result is to be ignored.
 
         """
-        if self._job[shard] == WorkerPool.WORKER_INACTIVE or \
-                self._job[shard] == WorkerPool.WORKER_DISABLED:
+        if self._job[shard] == WorkerPool.WORKER_INACTIVE:
             err_msg = "Trying to release worker while it's inactive."
             logger.error(err_msg)
             raise ValueError(err_msg)

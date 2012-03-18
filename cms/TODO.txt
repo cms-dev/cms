@@ -22,11 +22,6 @@
 
 ** Worker
 
-* MED: check before and after the job that the job isn't already
-  done. This might happen if we lose contact with a worker and we
-  reassign the job. We trust both workers' result, but we want that
-  the outcomes are refreshed only when the admins say so.
-
 * LOW: kill the worker thread when the main thread receives a signal
   to exit (Ctrl-C or from RS). Now the other thread stays alive.
 
@@ -60,18 +55,14 @@
 * MED: configurability of the presence of questions in the interface
   (some contests may prefer handling questions in a paper-y way).
 
-* MED: why we forgot the possibility of using ssl for CWS?
-  - Probably because it's better to support it via some proxy like
-    nginx.
-
 * LOW: think at giving CWS some caching capabilities w.r.t. to the
   database. Currently there are several queries per page load, even if
   the data is (supposedly) stable during the contest (start/stop
   times, ...) or the data hasn't change since last page view
   (submissions, ...).
 
-* LOW: allow signup via CWS (that asks for storing hashed
-  passwords instead of plain text...)
+* LOW: allow signup via CWS (that asks for storing hashed passwords
+  instead of plain text...)
 
 * LOW: some idea to improve the Web interface:
   - Ability to backup files.
@@ -81,9 +72,6 @@
 
 
 ** AdminWebServer
-
-* MED: when reevaluating, ask if we want to wipe everything, or only
-  the evaluation, or only the scoring.
 
 * MED: give possibility to see the output of an evaluation (storing
   them in the FS? cirumventing the yet-to-be-born TEST facility?).
@@ -107,9 +95,6 @@
 
 
 ** EvaluationService
-
-* MED: be generally more careful when adding things on the
-  queue. Check if there are race conditions.
 
 * MED: factor time since submission when deciding the priority of the
   job. (E.g.: when the queue is long, tokened evaluations are always
@@ -148,9 +133,6 @@
   user send a source and an input file and the system evaluates it and
   gives back the result). This might be useful also for admins ("CMS,
   please give me the output of submission X on testcase Y").
-
-* MED: Write in the sandbox a file with the commands executed in the
-  sandbox itself.
 
 * LOW: implement task versioning?
 
