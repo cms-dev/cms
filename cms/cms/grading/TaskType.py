@@ -255,6 +255,9 @@ class TaskType:
         self.worker_shard = None
         self.sandbox_paths = ""
 
+        # If ignore_job is True, we conclude as soon as possible.
+        self.ignore_job = False
+
     def finish_compilation(self, success, compilation_success=False,
                            text="", to_log=None):
         """Finalize the operation of compilation and build the
@@ -296,6 +299,7 @@ class TaskType:
             self.result["compilation_sandbox"] = self.sandbox_paths
             self.sandbox_paths = ""
 
+        self.ignore_job = False
         return self.result
 
     def finish_evaluation_testcase(self, test_number, success,
@@ -344,6 +348,8 @@ class TaskType:
             logger.warning(to_log)
 
         self.result["success"] = success
+
+        self.ignore_job = False
         return self.result
 
     def compilation_step(self, sandbox, command, files_to_get,

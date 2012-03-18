@@ -47,6 +47,7 @@ class Worker(Service):
         Service.__init__(self, shard, custom_logger=logger)
         self.file_cacher = FileCacher(self)
 
+        self.task_type = None
         self.work_lock = threading.Lock()
         self.session = None
 
@@ -78,6 +79,20 @@ class Worker(Service):
             raise JobException(err_msg)
 
         return (submission, task_type)
+
+    @rpc_method
+    def ignore_job(self):
+        """RPC that inform the worker that its result for the current
+        action will be discarded. The worker will try to return as
+        soon as possible even if this means that the result are
+        inconsistent.
+
+        """
+        # We inform the task_type to quit as soon as possible.
+        try:
+            self.task_type.ignore_job = True
+        except AttributeError:
+            pass  # Job concluded right under our nose, that's ok too.
 
     @rpc_method
     @rpc_threaded
@@ -137,17 +152,17 @@ class Worker(Service):
                 with SessionGen(commit=False) as self.session:
 
                     # Retrieve submission and task_type.
-                    unused_submission, task_type = \
+                    unused_submission, self.task_type = \
                         self.get_submission_data(submission_id)
 
                     # Store in the task type the shard number.
-                    task_type.worker_shard = self.shard
+                    self.task_type.worker_shard = self.shard
 
                     # Do the actual work.
                     if job_type == Worker.JOB_TYPE_COMPILATION:
-                        task_type_action = task_type.compile
+                        task_type_action = self.task_type.compile
                     elif job_type == Worker.JOB_TYPE_EVALUATION:
-                        task_type_action = task_type.evaluate
+                        task_type_action = self.task_type.evaluate
                     else:
                         raise KeyError("Unexpected job type %s." % job_type)
 
@@ -160,6 +175,7 @@ class Worker(Service):
                 raise JobException(err_msg)
 
             finally:
+                self.task_type = None
                 self.session = None
                 logger.operation = ""
                 self.work_lock.release()

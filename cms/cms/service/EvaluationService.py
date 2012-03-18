@@ -298,14 +298,20 @@ class WorkerPool:
         # attach to the worker. Schedule disabling to True means that
         # we are going to disable the worker as soon as possible (when
         # it finishes the current job). The current job is also
-        # discarded because we already re-assigned it.
+        # discarded because we already re-assigned it. Ignore is true
+        # if the next result coming from the worker should be
+        # discarded.
         self._job = {}
         self._start_time = {}
         self._side_data = {}
         self._schedule_disabling = {}
+        self._ignore = {}
 
     def __contains__(self, job):
-        return job in self._job.values()
+        for shard in self._worker:
+            if job == self._job[shard] and not self._ignore[shard]:
+                return True
+        return False
 
     def add_worker(self, worker_coord):
         """Add a new worker to the worker pool.
@@ -322,8 +328,9 @@ class WorkerPool:
         # And we fill all data.
         self._job[shard] = WorkerPool.WORKER_INACTIVE
         self._start_time[shard] = None
-        self._schedule_disabling[shard] = False
         self._side_data[shard] = None
+        self._schedule_disabling[shard] = False
+        self._ignore[shard] = False
         logger.debug("Worker %s added." % shard)
 
     def on_worker_connected(self, worker_coord):
@@ -338,16 +345,10 @@ class WorkerPool:
         shard = worker_coord.shard
         logger.info("Worker %s online again." % shard)
         self._worker[shard].precache_files(contest_id=self._service.contest_id)
-        # If we know that the worker was doing some job, we requeue
-        # the job.
-        if self._job[shard] not in [WorkerPool.WORKER_DISABLED,
-                                    WorkerPool.WORKER_INACTIVE]:
-            job = self._job[shard]
-            logger.info("Job %s for submission %s put again in the queue "
-                        "because of worker online again." % (job[0], job[1]))
-            priority, timestamp = self._side_data[shard]
-            self.release_worker(shard)
-            self._service.queue.push(job, priority, timestamp)
+        # We don't requeue the job, because a connection lost does not
+        # invalidate a potential result given by the worker (as the
+        # problem was the connection and not the machine on which the
+        # worker is).
 
     def acquire_worker(self, job, side_data=None):
         """Tries to assign a job to an available worker. If no workers
@@ -413,17 +414,18 @@ class WorkerPool:
             err_msg = "Trying to release worker while it's inactive."
             logger.error(err_msg)
             raise ValueError(err_msg)
+        ret = self._ignore[shard]
         self._start_time[shard] = None
         self._side_data[shard] = None
+        self._ignore[shard] = False
         if self._schedule_disabling[shard]:
             self._job[shard] = WorkerPool.WORKER_DISABLED
             self._schedule_disabling[shard] = False
             logger.info("Worker %s released and disabled." % shard)
-            return True
         else:
             self._job[shard] = WorkerPool.WORKER_INACTIVE
             logger.debug("Worker %s released." % shard)
-            return False
+        return ret
 
     def find_worker(self, job, require_connection=False, random_worker=False):
         """Return a worker whose assigned job is job. Remember that
@@ -454,6 +456,18 @@ class WorkerPool:
             raise LookupError("No such job.")
         else:
             return random.choice(pool)
+
+    def ignore_job(self, job):
+        """Mark the job to be ignored, and try to inform the worker.
+
+        job (job): the job to ignore.
+
+        raise: LookupError if job is not found.
+
+        """
+        shard = self.find_worker(job)
+        self._ignore[shard] = True
+        self._worker[shard].ignore_job()
 
     def get_status(self):
         """Returns a dict with info about the current status of all
@@ -496,15 +510,17 @@ class WorkerPool:
                     assert self._job[shard] != WorkerPool.WORKER_INACTIVE \
                         and self._job[shard] != WorkerPool.WORKER_DISABLED
 
-                    # So we put again its current job in the queue.
-                    job = self._job[shard]
-                    priority, timestamp = self._side_data[shard]
-                    lost_jobs.append((priority, timestamp, job))
+                    # We return the job so ES can do what it needs.
+                    if not self._ignore[shard]:
+                        job = self._job[shard]
+                        priority, timestamp = self._side_data[shard]
+                        lost_jobs.append((priority, timestamp, job))
 
                     # Also, we are not trusting it, so we are not
                     # assigning him new jobs even if it comes back to
                     # life.
                     self._schedule_disabling[shard] = True
+                    self._ignore[shard] = True
                     self.release_worker(shard)
                     self._worker[shard].quit("No response in %.2f "
                                              "seconds." % active_for)
@@ -524,9 +540,10 @@ class WorkerPool:
             if not self._worker[shard].connected and \
                    self._job[shard] not in [WorkerPool.WORKER_DISABLED,
                                             WorkerPool.WORKER_INACTIVE]:
-                job = self._job[shard]
-                priority, timestamp = self._side_data[shard]
-                lost_jobs.append((priority, timestamp, job))
+                if not self._ignore[shard]:
+                    job = self._job[shard]
+                    priority, timestamp = self._side_data[shard]
+                    lost_jobs.append((priority, timestamp, job))
                 self.release_worker(shard)
 
         return lost_jobs
@@ -1012,8 +1029,18 @@ class EvaluationService(Service):
         if len(submission_ids) == 0:
             return
 
-        # TODO: remove jobs from the queue and mark jobs already
-        # assigned to a worker as ignored.
+        for submission_id in submission_ids:
+            jobs = [(EvaluationService.JOB_TYPE_COMPILATION, submission_id),
+                    (EvaluationService.JOB_TYPE_EVALUATION, submission_id)]
+            for job in jobs:
+                try:
+                    self.queue.remove(job)
+                except KeyError:
+                    pass  # Ok, the job wasn't in the queue.
+                try:
+                    self.pool.ignore_job(job)
+                except LookupError:
+                    pass  # Ok, the job wasn't in the pool.
 
         # We invalidate the appropriate data and queue the jobs to
         # recompute those data.
@@ -1023,16 +1050,20 @@ class EvaluationService(Service):
 
                 if level == "compilation":
                     submission.invalidate_compilation()
-                    self.push_in_queue((EvaluationService.JOB_TYPE_COMPILATION,
-                                        submission_id),
-                                       EvaluationService.JOB_PRIORITY_HIGH,
-                                       submission.timestamp)
+                    if to_compile(submission):
+                        self.push_in_queue(
+                            (EvaluationService.JOB_TYPE_COMPILATION,
+                             submission_id),
+                            EvaluationService.JOB_PRIORITY_HIGH,
+                            submission.timestamp)
                 elif level == "evaluation":
                     submission.invalidate_evaluation()
-                    self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
-                                        submission_id),
-                                       EvaluationService.JOB_PRIORITY_MEDIUM,
-                                       submission.timestamp)
+                    if to_evaluate(submission):
+                        self.push_in_queue(
+                            (EvaluationService.JOB_TYPE_EVALUATION,
+                             submission_id),
+                            EvaluationService.JOB_PRIORITY_MEDIUM,
+                            submission.timestamp)
 
     @rpc_method
     def submission_tokened(self, submission_id):
