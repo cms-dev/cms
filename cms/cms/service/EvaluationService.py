@@ -199,15 +199,14 @@ class JobQueue:
 
         """
         top = self.top()
+        last = len(self._queue) - 1
+        self._swap(0, last)
+
         del self._reverse[top[2]]
-
-        if len(self._queue) == 1:
-            self._queue = []
-            return top
-
-        self._queue[0] = self._queue[-1]
-        del self._queue[-1]
-        self._down_heap(0)
+        del self._queue[last]
+        if last > 0:
+            self._down_heap(0)
+        return top
 
     def remove(self, job):
         """Remove a job from the queue. Return the attached data, or
@@ -221,13 +220,12 @@ class JobQueue:
 
         """
         pos = self._reverse[job]
-        del self._reverse[job]
+        last = len(self._queue) - 1
+        self._swap(pos, last)
 
-        if pos == len(self._queue) - 1:
-            del self._queue[-1]
-        else:
-            self._queue[pos] = self._queue[-1]
-            del self._queue[-1]
+        del self._reverse[job]
+        del self._queue[last]
+        if pos != last:
             self._updown_heap(pos)
 
     def set_priority(self, job, priority):
@@ -316,7 +314,7 @@ class WorkerPool:
 
         """
         shard = worker_coord.shard
-        # Instruct AsyncLibrary to connect ES to the Worker
+        # Instruct AsyncLibrary to connect ES to the Worker.
         self._worker[shard] = self._service.connect_to(
             worker_coord,
             on_connect=self.on_worker_connected)
@@ -405,8 +403,9 @@ class WorkerPool:
         disable it, and notify the ES to discard the outcome obtained
         by the worker.
 
-        shard (int): the worker to release
-        returns (bool): if the worker is going to be disabled
+        shard (int): the worker to release.
+
+        returns (bool): if the result is to be ignored.
 
         """
         if self._job[shard] == WorkerPool.WORKER_INACTIVE or \
@@ -801,8 +800,9 @@ class EvaluationService(Service):
         # worker, it's because it already assigned its job to someone
         # else, so we discard the data from the worker.
         job, side_data, shard = plus
-        disabled = self.pool.release_worker(shard)
-        if disabled:
+
+        # If worker was ignored, do nothing.
+        if self.pool.release_worker(shard):
             return
 
         if error is not None:
