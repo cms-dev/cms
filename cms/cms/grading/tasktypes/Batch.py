@@ -130,10 +130,11 @@ class Batch(TaskType):
         # First step: execute the contestant program. This is also the
         # final step if we have a grader, otherwise we need to run also
         # a white_diff or a comparator.
-        command = ["./%s" % self.executable_filename]
+        executable_filename = self.submission.executables.keys()[0]
+        command = ["./%s" % executable_filename]
         executables_to_get = {
-            self.executable_filename:
-            self.submission.executables[self.executable_filename].digest
+            executable_filename:
+            self.submission.executables[executable_filename].digest
             }
         files_to_get = {
             "input.txt": self.submission.task.testcases[test_number].input
@@ -190,18 +191,3 @@ class Batch(TaskType):
         delete_sandbox(sandbox)
         return self.finish_evaluation_testcase(test_number,
                                                success, outcome, text)
-
-    def evaluate(self):
-        """See TaskType.evaluate."""
-        if len(self.submission.executables) != 1:
-            log_msg = "Submission contains %d executables, expecting 1" % \
-                      len(self.submission.executables)
-            return self.finish_evaluation(False, to_log=log_msg)
-
-        self.executable_filename = self.submission.executables.keys()[0]
-
-        for test_number in xrange(len(self.submission.task.testcases)):
-            success = self.evaluate_testcase(test_number)
-            if not success or self.ignore_job:
-                return self.finish_evaluation(False)
-        return self.finish_evaluation(True)

@@ -98,11 +98,3 @@ class OutputOnly(TaskType):
         delete_sandbox(sandbox)
         return self.finish_evaluation_testcase(test_number,
                                                success, outcome, text)
-
-    def evaluate(self):
-        """See TaskType.evaluate."""
-        for test_number in xrange(len(self.submission.task.testcases)):
-            success = self.evaluate_testcase(test_number)
-            if not success or self.ignore_job:
-                return self.finish_evaluation(False)
-        return self.finish_evaluation(True)

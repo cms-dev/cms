@@ -737,7 +737,14 @@ class TaskType:
         again to compile the same submission in a sane environment
         should lead to returning True).
 
+        A default implementation which should suit most task types is
+        provided.
+
         return (bool): success of operation.
 
         """
-        raise NotImplementedError("Please subclass this class.")
+        for test_number in xrange(len(self.submission.task.testcases)):
+            success = self.evaluate_testcase(test_number)
+            if not success or self.ignore_job:
+                return self.finish_evaluation(False)
+        return self.finish_evaluation(True)

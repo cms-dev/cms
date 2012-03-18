@@ -89,6 +89,7 @@ class Worker(Service):
 
         """
         # We inform the task_type to quit as soon as possible.
+        logger.info("Trying to interrupt job as requested.")
         try:
             self.task_type.ignore_job = True
         except AttributeError:

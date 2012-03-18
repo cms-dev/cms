@@ -123,10 +123,11 @@ class Communication(TaskType):
 
         # First step: we start the user submission compiled with the
         # stub.
-        command = ["./%s" % self.executable_filename, fifo_out, fifo_in]
+        executable_filename = self.submission.executables.keys()[0]
+        command = ["./%s" % executable_filename, fifo_out, fifo_in]
         executables_to_get = {
-            self.executable_filename:
-            self.submission.executables[self.executable_filename].digest
+            executable_filename:
+            self.submission.executables[executable_filename].digest
             }
         allow_path = [fifo_in, fifo_out]
         process = self.evaluation_step_before_run(
@@ -164,18 +165,3 @@ class Communication(TaskType):
         delete_sandbox(sandbox_user)
         return self.finish_evaluation_testcase(test_number,
                                                success, outcome, text)
-
-    def evaluate(self):
-        """See TaskType.evaluate."""
-        if len(self.submission.executables) != 1:
-            log_msg = "Submission contains %d executables, expecting 1" % \
-                      len(self.submission.executables)
-            return self.finish_evaluation(False, to_log=log_msg)
-
-        self.executable_filename = self.submission.executables.keys()[0]
-
-        for test_number in xrange(len(self.submission.task.testcases)):
-            success = self.evaluate_testcase(test_number)
-            if not success or self.ignore_job:
-                return self.finish_evaluation(False)
-        return self.finish_evaluation(True)
