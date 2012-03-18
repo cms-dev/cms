@@ -84,7 +84,6 @@ function update_workers_status(response)
             connected = "No";
         strings.push('<tr><td style="text-align: center;">' + i + '</td>');
         strings.push('<td style="text-align: center;">' + connected + '</td>');
-        strings.push('<td style="text-align: center;">' + response['data'][i]['error_count'] + '</td>');
         strings.push('<td>' + job + '</td>');
         strings.push('<td>' + start_time + '</td></tr>');
     }
@@ -212,9 +211,8 @@ update_statuses();
       <tr>
         <th style="width:15%">Shard</th>
         <th style="width:15%">Connected</th>
-        <th style="width:15%">Errors</th>
-        <th style="width:40%">Current job</th>
-        <th style="width:15%">Since</th>
+        <th style="width:50%">Current job</th>
+        <th style="width:20%">Since</th>
       </tr>
     </thead>
     <tbody>

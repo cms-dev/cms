@@ -79,11 +79,11 @@ class JobQueue:
     def __init__(self):
         # The queue: a min-heap whose elements are of the form
         # (priority, timestamp, job), where job is the actual data.
-        self.queue = []
+        self._queue = []
 
         # Reverse lookup for the jobs in the queue: a dictionary
         # associating the index in the queue to each job.
-        self.reverse = {}
+        self._reverse = {}
 
     def __contains__(self, job):
         """Implement the 'in' operator for a job in the queue.
@@ -93,7 +93,7 @@ class JobQueue:
         return (bool): True if job is in the queue.
 
         """
-        return job in self.reverse
+        return job in self._reverse
 
     def _swap(self, idx1, idx2):
         """Swap two elements in the queue, keeping their reverse
@@ -103,9 +103,10 @@ class JobQueue:
         idx2 (int): the index of the second element.
 
         """
-        self.queue[idx1], self.queue[idx2] = self.queue[idx2], self.queue[idx1]
-        self.reverse[self.queue[idx1][2]] = idx1
-        self.reverse[self.queue[idx2][2]] = idx2
+        self._queue[idx1], self._queue[idx2] = \
+                           self._queue[idx2], self._queue[idx1]
+        self._reverse[self._queue[idx1][2]] = idx1
+        self._reverse[self._queue[idx2][2]] = idx2
 
     def _up_heap(self, idx):
         """Take the element in position idx up in the heap until its
@@ -118,7 +119,7 @@ class JobQueue:
         """
         while idx > 0:
             parent = (idx - 1) // 2
-            if self.queue[parent] > self.queue[idx]:
+            if self._queue[parent] > self._queue[idx]:
                 self._swap(parent, idx)
                 idx = parent
             else:
@@ -134,13 +135,13 @@ class JobQueue:
         return (int): the new index of the element.
 
         """
-        last = len(self.queue) - 1
+        last = len(self._queue) - 1
         while 2 * idx + 1 <= last:
             child = 2 * idx + 1
             if 2 * idx + 2 <= last and \
-                   self.queue[2 * idx + 2] < self.queue[child]:
+                   self._queue[2 * idx + 2] < self._queue[child]:
                 child = 2 * idx + 2
-            if self.queue[child] < self.queue[idx]:
+            if self._queue[child] < self._queue[idx]:
                 self._swap(child, idx)
                 idx = child
             else:
@@ -170,9 +171,9 @@ class JobQueue:
         """
         if timestamp is None:
             timestamp = int(time.time())
-        self.queue.append((priority, timestamp, job))
-        last = len(self.queue) - 1
-        self.reverse[job] = last
+        self._queue.append((priority, timestamp, job))
+        last = len(self._queue) - 1
+        self._reverse[job] = last
         self._up_heap(last)
 
     def top(self):
@@ -184,8 +185,8 @@ class JobQueue:
         raise: LookupError on empty queue.
 
         """
-        if len(self.queue) > 0:
-            return self.queue[0]
+        if len(self._queue) > 0:
+            return self._queue[0]
         else:
             raise LookupError("Empty queue")
 
@@ -198,14 +199,14 @@ class JobQueue:
 
         """
         top = self.top()
-        del self.reverse[top[2]]
+        del self._reverse[top[2]]
 
-        if len(self.queue) == 1:
-            self.queue = []
+        if len(self._queue) == 1:
+            self._queue = []
             return top
 
-        self.queue[0] = self.queue[-1]
-        del self.queue[-1]
+        self._queue[0] = self._queue[-1]
+        del self._queue[-1]
         self._down_heap(0)
 
     def remove(self, job):
@@ -219,14 +220,14 @@ class JobQueue:
         raise: KeyError if job not present.
 
         """
-        pos = self.reverse[job]
-        del self.reverse[job]
+        pos = self._reverse[job]
+        del self._reverse[job]
 
-        if pos == len(self.queue) - 1:
-            del self.queue[-1]
+        if pos == len(self._queue) - 1:
+            del self._queue[-1]
         else:
-            self.queue[pos] = self.queue[-1]
-            del self.queue[-1]
+            self._queue[pos] = self._queue[-1]
+            del self._queue[-1]
             self._updown_heap(pos)
 
     def set_priority(self, job, priority):
@@ -242,10 +243,10 @@ class JobQueue:
         raise: LookupError if job not present.
 
         """
-        pos = self.reverse[job]
-        self.queue[pos] = (priority,
-                           self.queue[pos][1],
-                           self.queue[pos][2])
+        pos = self._reverse[job]
+        self._queue[pos] = (priority,
+                            self._queue[pos][1],
+                            self._queue[pos][2])
         self._updown_heap(pos)
 
     def length(self):
@@ -253,7 +254,7 @@ class JobQueue:
 
         returns (int): length of the queue
         """
-        return len(self.queue)
+        return len(self._queue)
 
     def empty(self):
         """Returns if the queue is empty.
@@ -271,7 +272,7 @@ class JobQueue:
                         the timestamp.
         """
         ret = []
-        for data in self.queue:
+        for data in self._queue:
             ret.append({'job': data[2],
                         'priority': data[0],
                         'timestamp': data[1]})
@@ -292,22 +293,21 @@ class WorkerPool:
         WorkerPool.
 
         """
-        self.service = service
-        self.worker = {}
+        self._service = service
+        self._worker = {}
         # These dictionary stores data about the workers (identified
         # by their shard number). Side data is anything one want to
         # attach to the worker. Schedule disabling to True means that
         # we are going to disable the worker as soon as possible (when
         # it finishes the current job). The current job is also
         # discarded because we already re-assigned it.
-        self.job = {}
-        self.start_time = {}
-        self.error_count = {}
-        self.side_data = {}
-        self.schedule_disabling = {}
+        self._job = {}
+        self._start_time = {}
+        self._side_data = {}
+        self._schedule_disabling = {}
 
     def __contains__(self, job):
-        return job in self.job.values()
+        return job in self._job.values()
 
     def add_worker(self, worker_coord):
         """Add a new worker to the worker pool. This is for
@@ -319,16 +319,15 @@ class WorkerPool:
         """
         shard = worker_coord.shard
         # Instruct AsyncLibrary to connect ES to the Worker
-        self.worker[shard] = self.service.connect_to(
+        self._worker[shard] = self._service.connect_to(
             worker_coord,
             on_connect=self.on_worker_connected)
 
         # And we fill all data.
-        self.job[shard] = self.WORKER_INACTIVE
-        self.start_time[shard] = None
-        self.error_count[shard] = 0
-        self.schedule_disabling[shard] = False
-        self.side_data[shard] = None
+        self._job[shard] = self.WORKER_INACTIVE
+        self._start_time[shard] = None
+        self._schedule_disabling[shard] = False
+        self._side_data[shard] = None
         logger.debug("Worker %s added." % shard)
 
     def on_worker_connected(self, worker_coord):
@@ -342,17 +341,17 @@ class WorkerPool:
         """
         shard = worker_coord.shard
         logger.info("Worker %s online again." % shard)
-        self.worker[shard].precache_files(contest_id=self.service.contest_id)
+        self._worker[shard].precache_files(contest_id=self._service.contest_id)
         # If we know that the worker was doing some job, we requeue
         # the job.
-        if self.job[shard] not in [self.WORKER_DISABLED,
-                                   self.WORKER_INACTIVE]:
-            job = self.job[shard]
+        if self._job[shard] not in [self.WORKER_DISABLED,
+                                    self.WORKER_INACTIVE]:
+            job = self._job[shard]
             logger.info("Job %s for submission %s put again in the queue "
                         "because of worker online again." % (job[0], job[1]))
-            priority, timestamp = self.side_data[shard]
+            priority, timestamp = self._side_data[shard]
             self.release_worker(shard)
-            self.service.queue.push(job, priority, timestamp)
+            self._service.queue.push(job, priority, timestamp)
 
     def acquire_worker(self, job, side_data=None):
         """Tries to assign a job to an available worker. If no workers
@@ -375,29 +374,29 @@ class WorkerPool:
             return None
 
         # Then we fill the info for future memory
-        self.job[shard] = job
-        self.start_time[shard] = int(time.time())
-        self.side_data[shard] = side_data
+        self._job[shard] = job
+        self._start_time[shard] = int(time.time())
+        self._side_data[shard] = side_data
         logger.debug("Worker %s acquired." % shard)
 
         # And finally we ask the worker to do the job
         action, submission_id = job
         timestamp = side_data[1]
-        queue_time = self.start_time[shard] - timestamp
+        queue_time = self._start_time[shard] - timestamp
         logger.info("Asking worker %s to %s submission %s "
                     " (%s seconds after submission)" %
                     (shard, action, submission_id, queue_time))
         logger.debug("Still %s jobs in the queue." %
-                     self.service.queue.length())
+                     self._service.queue.length())
         if action == EvaluationService.JOB_TYPE_COMPILATION:
-            self.worker[shard].compile(
+            self._worker[shard].compile(
                 submission_id=submission_id,
-                callback=self.service.action_finished.im_func,
+                callback=self._service.action_finished.im_func,
                 plus=(job, side_data, shard))
         elif action == EvaluationService.JOB_TYPE_EVALUATION:
-            self.worker[shard].evaluate(
+            self._worker[shard].evaluate(
                 submission_id=submission_id,
-                callback=self.service.action_finished.im_func,
+                callback=self._service.action_finished.im_func,
                 plus=(job, side_data, shard))
 
         return shard
@@ -414,20 +413,20 @@ class WorkerPool:
         returns (bool): if the worker is going to be disabled
 
         """
-        if self.job[shard] == self.WORKER_INACTIVE or \
-                self.job[shard] == self.WORKER_DISABLED:
+        if self._job[shard] == self.WORKER_INACTIVE or \
+                self._job[shard] == self.WORKER_DISABLED:
             err_msg = "Trying to release worker while it's inactive."
             logger.error(err_msg)
             raise ValueError(err_msg)
-        self.start_time[shard] = None
-        self.side_data[shard] = None
-        if self.schedule_disabling[shard]:
-            self.job[shard] = self.WORKER_DISABLED
-            self.schedule_disabling[shard] = False
+        self._start_time[shard] = None
+        self._side_data[shard] = None
+        if self._schedule_disabling[shard]:
+            self._job[shard] = self.WORKER_DISABLED
+            self._schedule_disabling[shard] = False
             logger.info("Worker %s released and disabled." % shard)
             return True
         else:
-            self.job[shard] = self.WORKER_INACTIVE
+            self._job[shard] = self.WORKER_INACTIVE
             logger.debug("Worker %s released." % shard)
             return False
 
@@ -448,9 +447,9 @@ class WorkerPool:
 
         """
         pool = []
-        for shard, worker_job in self.job.iteritems():
+        for shard, worker_job in self._job.iteritems():
             if worker_job == job:
-                if not require_connection or self.worker[shard].connected:
+                if not require_connection or self._worker[shard].connected:
                     pool.append(shard)
                     if not random_worker:
                         return shard
@@ -466,7 +465,7 @@ class WorkerPool:
         returns (int): that number
 
         """
-        return len([x for x in self.job.values()
+        return len([x for x in self._job.values()
                     if x != self.WORKER_INACTIVE and \
                     x != self.WORKER_DISABLED])
 
@@ -480,12 +479,11 @@ class WorkerPool:
 
         """
         return dict([(str(shard), {
-            'connected': self.worker[shard].connected,
-            'job': self.job[shard],
-            'start_time': self.start_time[shard],
-            'error_count': self.error_count[shard],
-            'side_data': self.side_data[shard]})
-            for shard in self.worker.keys()])
+            'connected': self._worker[shard].connected,
+            'job': self._job[shard],
+            'start_time': self._start_time[shard],
+            'side_data': self._side_data[shard]})
+            for shard in self._worker.keys()])
 
     def check_timeouts(self):
         """Check if some worker is not responding in too much time. If
@@ -498,9 +496,9 @@ class WorkerPool:
         """
         now = int(time.time())
         lost_jobs = []
-        for shard in self.worker:
-            if self.start_time[shard] is not None:
-                active_for = now - self.start_time[shard]
+        for shard in self._worker:
+            if self._start_time[shard] is not None:
+                active_for = now - self._start_time[shard]
 
                 if active_for > EvaluationService.WORKER_TIMEOUT:
                     # Here shard is a working worker with no sign of
@@ -509,21 +507,21 @@ class WorkerPool:
                                  "worker %d because of no reponse "
                                  "in %.2f seconds." %
                                  (shard, active_for))
-                    assert self.job[shard] != self.WORKER_INACTIVE \
-                        and self.job[shard] != self.WORKER_DISABLED
+                    assert self._job[shard] != self.WORKER_INACTIVE \
+                        and self._job[shard] != self.WORKER_DISABLED
 
                     # So we put again its current job in the queue.
-                    job = self.job[shard]
-                    priority, timestamp = self.side_data[shard]
+                    job = self._job[shard]
+                    priority, timestamp = self._side_data[shard]
                     lost_jobs.append((priority, timestamp, job))
 
                     # Also, we are not trusting it, so we are not
                     # assigning him new jobs even if it comes back to
                     # life.
-                    self.schedule_disabling[shard] = True
+                    self._schedule_disabling[shard] = True
                     self.release_worker(shard)
-                    self.worker[shard].quit("No response in %.2f "
-                                            "seconds" % active_for)
+                    self._worker[shard].quit("No response in %.2f "
+                                             "seconds" % active_for)
 
         return lost_jobs
 
@@ -536,12 +534,12 @@ class WorkerPool:
 
         """
         lost_jobs = []
-        for shard in self.worker:
-            if not self.worker[shard].connected and \
-                   self.job[shard] not in [self.WORKER_DISABLED,
-                                           self.WORKER_INACTIVE]:
-                job = self.job[shard]
-                priority, timestamp = self.side_data[shard]
+        for shard in self._worker:
+            if not self._worker[shard].connected and \
+                   self._job[shard] not in [self.WORKER_DISABLED,
+                                            self.WORKER_INACTIVE]:
+                job = self._job[shard]
+                priority, timestamp = self._side_data[shard]
                 lost_jobs.append((priority, timestamp, job))
                 self.release_worker(shard)
 
