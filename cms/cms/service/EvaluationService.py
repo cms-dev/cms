@@ -209,8 +209,7 @@ class JobQueue:
         return top
 
     def remove(self, job):
-        """Remove a job from the queue. Return the attached data, or
-        raise a KeyError if not present.
+        """Remove a job from the queue. Raise a KeyError if not present.
 
         job (job): the job to remove
 
