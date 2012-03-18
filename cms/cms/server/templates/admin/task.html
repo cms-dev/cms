@@ -44,8 +44,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
       </tr>
     </thead>
     <tbody>
-      {% set reevaluation_url = "submission" %}
-      {% set reevaluation_par_name = "submission_id" %}
+      {% set reevaluation_par_name = "submission" %}
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
         <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ format_time_or_date(s.timestamp) }}</a></td>
@@ -128,8 +127,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
   </table>
   <p>
     Reevaluate all {{ len(submissions) }} submissions for this task:
-    {% set reevaluation_url = "task" %}
-    {% set reevaluation_par_name = "task_id" %}
+    {% set reevaluation_par_name = "task" %}
     {% set reevaluation_par_value = task.id %}
     {% include reevaluation_buttons.html %}
   </p>

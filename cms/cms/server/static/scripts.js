@@ -282,6 +282,22 @@
         },
 
         /**
+         * Check the status returned by an RPC call and display the
+         * error if necessary, otherwise redirect to another page.
+         *
+         * url (string): the destination page if response is ok.
+         * response (dict): the response returned by the RPC.
+         */
+        redirect_if_ok: function(url, response)
+        {
+            var msg = this.standard_response(response);
+            if (msg != "")
+                alert('Unable to invalidate (' + msg + ').');
+            else
+                location.href = url;
+        },
+
+        /**
          * Represent in a nice looking way a couple (job_type,
          * submission_id) coming from the backend.
          *
@@ -446,7 +462,7 @@
         {
             if (response['status'] != 'ok')
             {
-                var msg = "Unexpected reply. This should not happen.";
+                var msg = "Unexpected reply `" + response['status'] + "'. This should not happen.";
                 if (response['status'] == 'unconnected')
                     msg = 'Service not connected.'
                 else if (response['status'] == 'not authorized')

@@ -1,34 +1,24 @@
-<script type="text/javascript">
-<!--
-function reevaluation_action(response)
-{
-  if (response['status'] == 'unconnected')
-    alert('Unable to invalidate (service not connected).');
-  else if (response['status'] != 'ok')
-    alert('Unable to invalidate (error: `' + response['error'] + '\').');
-  else
-    location.href = '{{ url_root }}/{{ reevaluation_url }}/{{ reevaluation_par_value }}';
-}
-//-->
-</script>
-
+{% set url = "%s/%s/%s" % (url_root, reevaluation_par_name, reevaluation_par_value) %}
 <button onclick="cmsrpc.request(
                  'EvaluationService', 0,
                  'invalidate_submission',
-                 {'{{ reevaluation_par_name }}': {{ reevaluation_par_value }},
+                 {'{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }},
                   'level': 'compilation'},
-                 reevaluation_action);"
+                 function(response) { utils.redirect_if_ok('{{ url }}', response); }
+                 );"
         title="Compilation" >C</button>
 <button onclick="cmsrpc.request(
                  'EvaluationService', 0,
                  'invalidate_submission',
-                 {'{{ reevaluation_par_name }}': {{ reevaluation_par_value }},
+                 {'{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }},
                   'level': 'evaluation'},
-                 reevaluation_action);"
-                 title="Evaluation" >E</button>
+                 function(response) { utils.redirect_if_ok('{{ url }}', response); }
+                  );"
+        title="Evaluation" >E</button>
 <button onclick="cmsrpc.request(
                  'ScoringService', 0,
                  'invalidate_submission',
-                 {'{{ reevaluation_par_name }}': {{ reevaluation_par_value }}},
-                 reevaluation_action);"
+                 {'{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }}},
+                 function(response) { utils.redirect_if_ok('{{ url }}', response); }
+                 );"
         title="Score" >S</button>

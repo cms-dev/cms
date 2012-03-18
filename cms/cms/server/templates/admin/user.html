@@ -51,8 +51,7 @@ function update_additional_answer(element, invoker)
       </tr>
     </thead>
     <tbody>
-      {% set reevaluation_url = "submission" %}
-      {% set reevaluation_par_name = "submission_id" %}
+      {% set reevaluation_par_name = "submission" %}
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
         <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ format_time_or_date(s.timestamp) }}</a></td>
@@ -129,8 +128,7 @@ function update_additional_answer(element, invoker)
   </table>
   <p>
     Reevaluate all {{ len(submissions) }} submissions for this user:
-    {% set reevaluation_url = "user" %}
-    {% set reevaluation_par_name = "user_id" %}
+    {% set reevaluation_par_name = "user" %}
     {% set reevaluation_par_value = selected_user.id %}
     {% include reevaluation_buttons.html %}
   </p>
