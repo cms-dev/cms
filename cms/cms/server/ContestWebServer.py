@@ -880,8 +880,8 @@ class StaticFileGzHandler(tornado.web.StaticFileHandler):
         try:
             # Try an ordinary request.
             tornado.web.StaticFileHandler.get(self, path, *args, **kwargs)
-        except tornado.web.HTTPError, e:
-            if e.status_code == 404:
+        except tornado.web.HTTPError as error:
+            if error.status_code == 404:
                 # If that failed, try servicing it with a .gz extension.
                 path = "%s.gz" % path
 

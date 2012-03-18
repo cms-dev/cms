@@ -300,13 +300,13 @@ class ScoringService(Service):
         logger.info("Old submission yet to score/token: %s/%s." %
                     (to_score, to_token))
 
-        for i in xrange(to_score_now):
+        for unused_i in xrange(to_score_now):
             self.new_evaluation(self.submission_ids_to_score[-1])
             del self.submission_ids_to_score[-1]
         if to_score - to_score_now > 0:
             return True
 
-        for i in xrange(to_token_now):
+        for unused_i in xrange(to_token_now):
             self.submission_tokened(self.submission_ids_to_token[-1][0],
                                     self.submission_ids_to_token[-1][1])
             del self.submission_ids_to_token[-1]
@@ -555,8 +555,8 @@ class ScoringService(Service):
         self.submission_ids_to_score = submission_ids + \
                                        self.submission_ids_to_score
         if old_s + old_t == 0:
-                self.add_timeout(self.score_old_submissions, None,
-                                 0.5, immediately=True)
+            self.add_timeout(self.score_old_submissions, None,
+                             0.5, immediately=False)
 
 
 def main():
