@@ -30,8 +30,6 @@ current ranking.
 import time
 import random
 
-import heapq
-
 from cms import default_argument_parser, logger
 from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback
 from cms.async import ServiceCoord, get_service_shards
@@ -74,35 +72,116 @@ class JobQueue:
     A job is a pair (job_type, submission_id), where job_type is a
     constant defined in EvaluationService.
 
-    Elements of the queue are of the form (priority, timestamp, job),
-    where priority is a constant defined in EvaluationService.
+    The queue is implemented as a custom min-heap.
 
     """
 
     def __init__(self):
+        # The queue: a min-heap whose elements are of the form
+        # (priority, timestamp, job), where job is the actual data.
         self.queue = []
 
+        # Reverse lookup for the jobs in the queue: a dictionary
+        # associating the index in the queue to each job.
+        self.reverse = {}
+
     def __contains__(self, job):
-        return job in (x[2] for x in self.queue)
+        """Implement the 'in' operator for a job in the queue.
+
+        job (job): a job to search.
+
+        return (bool): True if job is in the queue.
+
+        """
+        return job in self.reverse
+
+    def _swap(self, idx1, idx2):
+        """Swap two elements in the queue, keeping their reverse
+        indices up to date.
+
+        idx1 (int): the index of the first element.
+        idx2 (int): the index of the second element.
+
+        """
+        self.queue[idx1], self.queue[idx2] = self.queue[idx2], self.queue[idx1]
+        self.reverse[self.queue[idx1][2]] = idx1
+        self.reverse[self.queue[idx2][2]] = idx2
+
+    def _up_heap(self, idx):
+        """Take the element in position idx up in the heap until its
+        position is the right one.
+
+        idx (int): the index of the element to lift.
+
+        return (int): the new index of the element.
+
+        """
+        while idx > 0:
+            parent = (idx - 1) // 2
+            if self.queue[parent] > self.queue[idx]:
+                self._swap(parent, idx)
+                idx = parent
+            else:
+                break
+        return idx
+
+    def _down_heap(self, idx):
+        """Take the element in position idx down in the heap until its
+        position is the right one.
+
+        idx (int): the index of the element to lower.
+
+        return (int): the new index of the element.
+
+        """
+        last = len(self.queue) - 1
+        while 2 * idx + 1 <= last:
+            child = 2 * idx + 1
+            if 2 * idx + 2 <= last and \
+                   self.queue[2 * idx + 2] < self.queue[child]:
+                child = 2 * idx + 2
+            if self.queue[child] < self.queue[idx]:
+                self._swap(child, idx)
+                idx = child
+            else:
+                break
+        return idx
+
+    def _updown_heap(self, idx):
+        """Perform both operations of up_heap and down_heap on an
+        element.
+
+        idx (int): the index of the element to lift.
+
+        return (int): the new index of the element.
+
+        """
+        idx = self._up_heap(idx)
+        return self._down_heap(idx)
 
     def push(self, job, priority, timestamp=None):
         """Push a job in the queue. If timestamp is not specified,
         uses the current time.
 
-        job (job): a pair (job_type, submission_id).
-        priority (int): the priority of the job.
-        timestamp (int): the time of the submission.
+        job (job): a couple (job_type, submission_id)
+        priority (int): the priority of the job
+        timestamp (int): the time of the submission
 
         """
         if timestamp is None:
             timestamp = int(time.time())
-        heapq.heappush(self.queue, (priority, timestamp, job))
+        self.queue.append((priority, timestamp, job))
+        last = len(self.queue) - 1
+        self.reverse[job] = last
+        self._up_heap(last)
 
     def top(self):
         """Returns the first element in the queue without extracting
         it. If the queue is empty raises an exception.
 
         returns (job): first element in the queue
+
+        raise: LookupError on empty queue.
 
         """
         if len(self.queue) > 0:
@@ -114,20 +193,41 @@ class JobQueue:
         """Extracts (and returns) the first element in the queue.
 
         returns (job): first element in the queue
-        """
-        return heapq.heappop(self.queue)
 
-    def search(self, job):
-        """Returns a specific job in the queue, if present. If not,
-        raises an exception.
+        raise: LookupError on empty queue.
 
-        returns (int, int, job): the data corresponding to job
-                                 (priority, timestamp, job)
         """
-        for i, element in enumerate(self.queue):
-            if element[2] == job:
-                return i
-        raise LookupError("Job not present in queue")
+        top = self.top()
+        del self.reverse[top[2]]
+
+        if len(self.queue) == 1:
+            self.queue = []
+            return top
+
+        self.queue[0] = self.queue[-1]
+        del self.queue[-1]
+        self._down_heap(0)
+
+    def remove(self, job):
+        """Remove a job from the queue. Return the attached data, or
+        raise a KeyError if not present.
+
+        job (job): the job to remove
+
+        return (int, int, job): priority, timestamp, and job.
+
+        raise: KeyError if job not present.
+
+        """
+        pos = self.reverse[job]
+        del self.reverse[job]
+
+        if pos == len(self.queue) - 1:
+            del self.queue[-1]
+        else:
+            self.queue[pos] = self.queue[-1]
+            del self.queue[-1]
+            self._updown_heap(pos)
 
     def set_priority(self, job, priority):
         """Change the priority of a job inside the queue. Raises an
@@ -139,12 +239,14 @@ class JobQueue:
         job (job): the job whose priority needs to change.
         priority (int): the new priority.
 
+        raise: LookupError if job not present.
+
         """
-        pos = self.search(job)
+        pos = self.reverse[job]
         self.queue[pos] = (priority,
                            self.queue[pos][1],
                            self.queue[pos][2])
-        heapq.heapify(self.queue)
+        self._updown_heap(pos)
 
     def length(self):
         """Returns the number of elements in the queue.
@@ -161,19 +263,18 @@ class JobQueue:
         return self.length() == 0
 
     def get_status(self):
-        """Returns the content of the queue.
+        """Returns the content of the queue. Note that the order may
+        be not correct, but the first element is the one at the top.
 
         returns (list): a list of dictionary containing the
                         representation of the job, the priority and
-                        the timestamp
+                        the timestamp.
         """
-        myqueue = self.queue[:]
         ret = []
-        while myqueue != []:
-            ext_job = heapq.heappop(myqueue)
-            ret.append({'job': ext_job[2],
-                        'priority': ext_job[0],
-                        'timestamp': ext_job[1]})
+        for data in self.queue:
+            ret.append({'job': data[2],
+                        'priority': data[0],
+                        'timestamp': data[1]})
         return ret
 
 
