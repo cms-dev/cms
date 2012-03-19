@@ -25,6 +25,7 @@
 
 import sys
 import datetime
+import struct
 import time
 
 import simplejson as json
@@ -47,18 +48,7 @@ def encode_length(length):
 
     """
     try:
-        string = ""
-        tmp = length / (1 << 24)
-        string += chr(tmp)
-        length -= tmp * (1 << 24)
-        tmp = length / (1 << 16)
-        string += chr(tmp)
-        length -= tmp * (1 << 16)
-        tmp = length / (1 << 8)
-        string += chr(tmp)
-        length -= tmp * (1 << 8)
-        string += chr(length)
-        return string
+        return struct.pack(">I", length)
     except Exception as error:
         print >> sys.stderr, "Can't encode length: %s %r" % (length, error)
         raise ValueError
@@ -72,10 +62,8 @@ def decode_length(string):
 
     """
     try:
-        return ord(string[0]) * (2 << 24) + \
-               ord(string[1]) * (2 << 16) + \
-               ord(string[2]) * (2 << 8) + \
-               ord(string[3])
+        val, = struct.unpack(">I", string[:4])
+        return val
     except:
         print >> sys.stderr, "Can't decode length"
         raise ValueError
