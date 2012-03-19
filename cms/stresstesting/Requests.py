@@ -37,56 +37,6 @@ from mechanize import HTMLForm
 utf8_decoder = codecs.getdecoder('utf-8')
 
 
-def format_multipart_formdata(data, files):
-    """Format some data and files so they can be sent inside a POST
-    request with Content-type multipart/form-data.
-
-    data (dict): a dictionary of parameters to pass as POST arguments.
-    files (list): a list of files to pass as POST arguments. Each
-                  entry is a tuple containing two strings: the field
-                  name and the file name to send.
-
-    """
-    formdata = email.mime.Multipart.MIMEMultipart('form-data')
-    for key, value in data.iteritems():
-        part = email.mime.Text.MIMEText(value)
-        part.add_header('Content-Disposition', 'form-data; name="%s"' % (key))
-        part._headers = filter(lambda (key, value):
-                                   key.lower() != 'mime-version',
-                               part._headers)
-        formdata.attach(part)
-
-    for key, filename in files:
-        type_, encoding = mimetypes.guess_type(filename)
-        if type_ is None:
-            type_ = 'application/octet-stream'
-        type2 = type_.split('/', 1)
-        if type2[0] == 'text':
-            with codecs.open(filename, 'r', encoding='utf-8') as fd:
-                part = email.mime.Text.MIMEText(fd.read(),
-                                                _subtype=type2[1],
-                                                _charset='UTF-8')
-        else:
-            part = email.mime.Base.MIMEBase(type2[0], type2[1])
-            with open(filename, 'rb') as fd:
-                part.set_payload(fd.read())
-            email.Encoders.encode_base64(part)
-        part.add_header('Content-Disposition',
-                        'form-data; name="%s"; filename="%s"' % \
-                            (key, filename))
-        part._headers = filter(lambda (key, value):
-                                   key.lower() != 'mime-version',
-                               part._headers)
-        formdata.attach(part)
-
-    # Unfortunately we have to remove the first header lines
-    lines = formdata.as_string(unixfrom=False).split('\n')
-    empty_idx = lines.index('')
-    lines = lines[empty_idx + 1:]
-
-    return '\r\n'.join(lines), formdata.get_boundary()
-
-
 def browser_do_request(browser, url, data=None, files=None):
     """Open an URL in a mechanize browser, optionally passing the
     specified data and files as POST arguments.
