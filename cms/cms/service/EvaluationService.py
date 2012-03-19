@@ -231,9 +231,6 @@ class JobQueue:
         """Change the priority of a job inside the queue. Raises an
         exception if the job is not in the queue.
 
-        Used (only?) when the user uses a token, to increase the
-        priority of the evaluation of its submission.
-
         job (job): the job whose priority needs to change.
         priority (int): the new priority.
 
@@ -866,7 +863,6 @@ class EvaluationService(Service):
             compilation_tries = submission.compilation_tries
             compilation_outcome = submission.compilation_outcome
             evaluation_tries = submission.evaluation_tries
-            tokened = submission.tokened()
             evaluated = submission.evaluated()
 
         # Compilation.
@@ -874,16 +870,14 @@ class EvaluationService(Service):
             self.compilation_ended(submission_id,
                                    timestamp,
                                    compilation_tries,
-                                   compilation_outcome,
-                                   tokened)
+                                   compilation_outcome)
 
         # Evaluation.
         elif job_type == EvaluationService.JOB_TYPE_EVALUATION:
             self.evaluation_ended(submission_id,
                                   timestamp,
                                   evaluation_tries,
-                                  evaluated,
-                                  tokened)
+                                  evaluated)
 
         # Other (i.e. error).
         else:
@@ -892,7 +886,7 @@ class EvaluationService(Service):
 
     def compilation_ended(self, submission_id,
                           timestamp, compilation_tries,
-                          compilation_outcome, tokened):
+                          compilation_outcome):
         """Actions to be performed when we have a submission that has
         ended compilation . In particular: we queue evaluation if
         compilation was ok; we requeue compilation if we fail.
@@ -901,16 +895,14 @@ class EvaluationService(Service):
         timestamp (int): time of submission.
         compilation_tries (int): # of tentative compilations.
         compilation_outcome (string): if submission compiled ok.
-        tokened (bool): if the user played a token on submission.
 
         """
         # Compilation was ok, so we evaluate.
         if compilation_outcome == "ok":
-            priority = EvaluationService.JOB_PRIORITY_LOW
-            if tokened:
-                priority = EvaluationService.JOB_PRIORITY_MEDIUM
             self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
-                                submission_id), priority, timestamp)
+                                submission_id),
+                               EvaluationService.JOB_PRIORITY_LOW,
+                               timestamp)
         # If instead submission failed compilation, we don't evaluate.
         elif compilation_outcome == "fail":
             logger.info("Submission %s did not compile. Not going "
@@ -923,7 +915,7 @@ class EvaluationService(Service):
                              "not try again." % submission_id)
             else:
                 # Note: lower priority (MEDIUM instead of HIGH) for
-                # compilation that are probably failing again.
+                # compilations that are probably failing again.
                 self.push_in_queue((EvaluationService.JOB_TYPE_COMPILATION,
                                     submission_id),
                                    EvaluationService.JOB_PRIORITY_MEDIUM,
@@ -935,7 +927,7 @@ class EvaluationService(Service):
 
     def evaluation_ended(self, submission_id,
                          timestamp, evaluation_tries,
-                         evaluated, tokened):
+                         evaluated):
         """Actions to be performed when we have a submission that has
         been evaluated. In particular: we inform ScoringService on
         success, we requeue on failure.
@@ -943,9 +935,7 @@ class EvaluationService(Service):
         submission_id (string): db id of the submission.
         timestamp (int): time of submission.
         compilation_tries (int): # of tentative evaluations.
-        evaluated (bool): if the submission has been evaluated
-                          successfully.
-        tokened (bool): if the user played a token on submission.
+        evaluated (bool): if the submission is successfully evaluated.
 
         """
         # Evaluation successful, we inform ScoringService so it can
@@ -953,16 +943,17 @@ class EvaluationService(Service):
         if evaluated:
             self.scoring_service.new_evaluation(submission_id=submission_id)
         # Evaluation unsuccessful, we requeue (or not).
-        elif evaluation_tries <= EvaluationService.MAX_EVALUATION_TRIES:
-            priority = EvaluationService.JOB_PRIORITY_LOW
-            if tokened:
-                priority = EvaluationService.JOB_PRIORITY_MEDIUM
-            self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
-                                submission_id), priority, timestamp)
-        else:
+        elif evaluation_tries > EvaluationService.MAX_EVALUATION_TRIES:
             logger.error("Maximum tries reached for the "
                          "evaluation of submission %s. I will "
                          "not try again." % submission_id)
+        else:
+            # Note: lower priority (LOW instead of MEDIUM) for
+            # evaluations that are probably failing again.
+            self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
+                                submission_id),
+                               EvaluationService.JOB_PRIORITY_LOW,
+                               timestamp)
 
     @rpc_method
     def new_submission(self, submission_id):
@@ -1062,24 +1053,6 @@ class EvaluationService(Service):
                              submission_id),
                             EvaluationService.JOB_PRIORITY_MEDIUM,
                             submission.timestamp)
-
-    @rpc_method
-    def submission_tokened(self, submission_id):
-        """This RPC inform EvaluationService that the user has played
-        the token on a submission.
-
-        submission_id (int): the id of the submission that changed.
-
-        """
-        try:
-            self.queue.set_priority((EvaluationService.JOB_TYPE_EVALUATION,
-                                     submission_id),
-                                    EvaluationService.JOB_PRIORITY_MEDIUM)
-            logger.info("Increased priority of evaluation of submission "
-                        "%s due to token." % submission_id)
-        except LookupError:
-            # The job is not in the queue, hence we already done it.
-            pass
 
 
 def main():
