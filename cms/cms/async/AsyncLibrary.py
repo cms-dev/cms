@@ -136,8 +136,8 @@ class RPCRequest:
         return self.message
 
     def complete(self, response):
-        """To be called when the response arrive. It deletes the
-        stored state and execute the callback.
+        """To be called when the response arrives. It deletes the
+        stored state and executes the callback.
 
         response (object): The response, already decoded from JSON.
         """
