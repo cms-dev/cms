@@ -18,27 +18,83 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cmstestsuite.tasks.batch_stdio as batch_stdio
-from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail
+import cmstestsuite.tasks.batch_fileio as batch_fileio
+from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
+     CheckTimeout, CheckForbiddenSyscall, CheckSignal
 
 
 all_languages = ('c', 'cpp', 'pas')
 
 ALL_TESTS = [
 
-Test('correct',
-    task=batch_stdio, filename='correct.%l', languages=all_languages,
-    checks=[CheckOverallScore(100, 100)]),
+Test('correct-stdio',
+     task=batch_stdio, filename='correct-stdio.%l',
+     languages=all_languages,
+     checks=[CheckOverallScore(100, 100)]),
 
-Test('incorrect',
-    task=batch_stdio, filename='incorrect.%l', languages=all_languages,
-    checks=[CheckOverallScore(0, 100)]),
+Test('incorrect-stdio',
+     task=batch_stdio, filename='incorrect-stdio.%l',
+     languages=all_languages,
+     checks=[CheckOverallScore(0, 100)]),
 
-Test('half-correct',
-    task=batch_stdio, filename='half-correct.%l', languages=all_languages,
-    checks=[CheckOverallScore(50, 100)]),
+Test('half-correct-stdio',
+     task=batch_stdio, filename='half-correct-stdio.%l',
+     languages=all_languages,
+     checks=[CheckOverallScore(50, 100)]),
+
+Test('correct-freopen',
+     task=batch_fileio, filename='correct-freopen.%l',
+     languages=('c',),
+     checks=[CheckOverallScore(100, 100)]),
+
+Test('correct-fileio',
+     task=batch_fileio, filename='correct-fileio.%l',
+     languages=all_languages,
+     checks=[CheckOverallScore(100, 100)]),
+
+Test('incorrect-fileio',
+     task=batch_fileio, filename='incorrect-fileio.%l',
+     languages=all_languages,
+     checks=[CheckOverallScore(0, 100)]),
+
+Test('half-correct-fileio',
+     task=batch_fileio, filename='half-correct-fileio.%l',
+     languages=all_languages,
+     checks=[CheckOverallScore(50, 100)]),
+
+Test('incorrect-readstdio',
+     task=batch_fileio, filename='correct-stdio.%l',
+     languages=all_languages,
+     checks=[CheckOverallScore(0, 100)]),
 
 Test('compile-fail',
-    task=batch_stdio, filename='compile-fail.%l', languages=all_languages,
-    checks=[CheckCompilationFail()]),
+     task=batch_fileio, filename='compile-fail.%l',
+     languages=all_languages,
+     checks=[CheckCompilationFail()]),
+
+Test('timeout-cputime',
+     task=batch_stdio, filename='timeout-cputime.%l',
+     languages=all_languages,
+     checks=[CheckOverallScore(0, 100), CheckTimeout()]),
+
+Test('timeout-pause',
+     task=batch_stdio, filename='timeout-pause.%l',
+     languages=('cpp',),
+     checks=[CheckOverallScore(0, 100), CheckForbiddenSyscall('pause')]),
+
+Test('timeout-sleep',
+     task=batch_stdio, filename='timeout-sleep.%l',
+     languages=('cpp',),
+     checks=[CheckOverallScore(0, 100), CheckForbiddenSyscall('nanosleep')]),
+
+Test('timeout-sigstop',
+     task=batch_stdio, filename='timeout-sigstop.%l',
+     languages=('cpp',),
+     checks=[CheckOverallScore(0, 100), CheckSignal(19)]),
+
+Test('timeout-select',
+     task=batch_stdio, filename='timeout-select.%l',
+     languages=('cpp',),
+     checks=[CheckOverallScore(0, 100), CheckForbiddenSyscall()]),
 
 ]
