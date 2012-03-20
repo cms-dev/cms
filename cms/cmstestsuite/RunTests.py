@@ -164,7 +164,7 @@ def run_testcases(contest_id, user_id, regexes, languages):
     results += "\n"
 
     if failures:
-        for _, test, lang_failures in results:
+        for _, test, lang_failures in failures:
             for lang, msg in lang_failures:
                 results += " %s (%s): %s\n" % (test.name, lang, msg)
 
