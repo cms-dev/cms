@@ -30,7 +30,7 @@ import codecs
 
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
-from stresstesting.Requests import HomepageRequest, \
+from stresstesting.CWSRequests import HomepageRequest, \
      LoginRequest, TaskRequest, TaskStatementRequest, \
      SubmitRandomRequest
 
