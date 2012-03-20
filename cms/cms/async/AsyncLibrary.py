@@ -462,8 +462,9 @@ class ThreadedRPC(threading.Thread):
         try:
             method_response = self.service.handle_message(self.message)
         except Exception, exception:
-            self.response["__error"] = "%s: %s" % \
-                (exception.__class__.__name__, exception)
+            self.response["__error"] = "%s: %s\n%s" % \
+                (exception.__class__.__name__, exception, \
+                traceback.format_exc())
             self.binary_response = False
             method_response = None
 
@@ -570,8 +571,9 @@ class RemoteService(asynchat.async_chat):
                 binary_response = method_info["binary_response"]
                 threaded = method_info["threaded"]
             except KeyError as exception:
-                response["__error"] = "%s: %s" % \
-                    (exception.__class__.__name__, exception)
+                response["__error"] = "%s: %s\n%s" % \
+                    (exception.__class__.__name__, exception, \
+                    traceback.format_exc())
                 binary_response = False
                 method_response = None
                 threaded = False
@@ -588,8 +590,9 @@ class RemoteService(asynchat.async_chat):
             try:
                 method_response = self.service.handle_message(message)
             except Exception as exception:
-                response["__error"] = "%s: %s" % \
-                    (exception.__class__.__name__, exception)
+                response["__error"] = "%s: %s\n%s" % \
+                    (exception.__class__.__name__, exception, \
+                    traceback.format_exc())
                 binary_response = False
                 method_response = None
             self.send_reply(response, method_response, binary_response)
