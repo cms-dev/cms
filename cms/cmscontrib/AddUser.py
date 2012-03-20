@@ -35,6 +35,7 @@ def add_user(contest_id, first_name, last_name, username,
                     last_name=last_name,
                     username=username,
                     password=password,
+                    email=email,
                     ip=ip_address,
                     hidden=hidden,
                     contest=contest)

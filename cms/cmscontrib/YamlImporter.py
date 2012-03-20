@@ -37,7 +37,6 @@ from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Manager, \
     Testcase, User, Contest, SubmissionFormatElement, FSObject, \
     Submission
-from cms.grading.ScoreType import ScoreTypes
 
 
 class YamlLoader:
@@ -176,7 +175,8 @@ class YamlLoader:
                     path=os.path.join(path, "cor", "correttore"),
                     description="Manager for task %s" % (name)),
                         "checker").export_to_dict()]
-            params["task_type_parameters"] = '["alone", ["input.txt", "output.txt"], "comparator"]'
+            params["task_type_parameters"] = \
+                '["alone", ["input.txt", "output.txt"], "comparator"]'
         elif os.path.exists(os.path.join(path, "cor", "manager")):
             params["task_type"] = "Communication"
             params["task_type_parameters"] = '[]'
@@ -198,9 +198,9 @@ class YamlLoader:
                     logger.warning("Stub for language %s not found." % lang)
         else:
             params["managers"] = {}
-            params["task_type_parameters"] = '["alone", ["input.txt", "output.txt"], "diff"]'
-        params["score_type"] = conf.get("score_type",
-                                        ScoreTypes.SCORE_TYPE_SUM)
+            params["task_type_parameters"] = \
+                '["alone", ["input.txt", "output.txt"], "diff"]'
+        params["score_type"] = conf.get("score_type", "Sum")
         params["score_parameters"] = conf.get(
             "score_parameters", str(100.0 / float(conf["n_input"])))
         public_testcases = conf.get("risultati", "").strip()
