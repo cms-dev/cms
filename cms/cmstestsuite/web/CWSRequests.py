@@ -25,7 +25,7 @@ import random
 import urlparse
 
 from cmscommon.Cryptographics import encrypt_number, decrypt_number
-from stresstesting import GenericRequest
+from cmstestsuite.web import GenericRequest
 
 
 class HomepageRequest(GenericRequest):

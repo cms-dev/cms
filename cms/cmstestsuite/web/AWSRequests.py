@@ -24,7 +24,7 @@ import re
 
 from BeautifulSoup import BeautifulSoup
 
-from stresstesting import GenericRequest
+from cmstestsuite.web import GenericRequest
 
 
 class AWSSubmissionViewRequest(GenericRequest):

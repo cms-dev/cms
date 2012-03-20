@@ -30,13 +30,13 @@ import codecs
 
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
-import stresstesting
-from stresstesting.CWSRequests import HomepageRequest, \
+import cmstestsuite.web
+from cmstestsuite.web.CWSRequests import HomepageRequest, \
      LoginRequest, TaskRequest, TaskStatementRequest, \
      SubmitRandomRequest
 
 
-stresstesting.debug = True
+cmstestsuite.web.debug = True
 
 
 class RequestLog:

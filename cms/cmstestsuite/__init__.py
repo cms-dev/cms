@@ -28,9 +28,9 @@ import subprocess
 import time
 import mechanize
 
-import stresstesting
-from stresstesting.CWSRequests import LoginRequest, SubmitRequest
-from stresstesting.AWSRequests import AWSSubmissionViewRequest
+import cmstestsuite.web
+from cmstestsuite.web.CWSRequests import LoginRequest, SubmitRequest
+from cmstestsuite.web.AWSRequests import AWSSubmissionViewRequest
 
 
 # CONFIG is populated by our test script.
@@ -336,7 +336,7 @@ def admin_req(path, multipart_post=False, args=None, files=None):
     if multipart_post and files is None:
         files = []
 
-    return stresstesting.browser_do_request(br, url, args, files)
+    return cmstestsuite.web.browser_do_request(br, url, args, files)
 
 
 def add_contest(**kwargs):

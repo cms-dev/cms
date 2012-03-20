@@ -25,7 +25,7 @@ import optparse
 
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
-from stresstesting.CWSRequests import LoginRequest, SubmitRequest
+from cmstestsuite.web.CWSRequests import LoginRequest, SubmitRequest
 
 
 def harvest_contest_data(contest_id):
