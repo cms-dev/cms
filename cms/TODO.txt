@@ -39,8 +39,6 @@
 
 * HIGH: double-check communication type for mistakes.
 
-* MED: make score types plugin-able.
-
 * LOW: ease the creation of new types.
 
 
@@ -91,14 +89,6 @@
 * LOW: change color of textboxes we changed but not saved in the
   DB. Ask before leaving the page if we are sure to discard our
   changes.
-
-
-
-** EvaluationService
-
-* MED: factor time since submission when deciding the priority of the
-  job. (E.g.: when the queue is long, tokened evaluations are always
-  before untokened ones, hence the latter could never be evaluated).
 
 
 

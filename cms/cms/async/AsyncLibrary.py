@@ -156,7 +156,13 @@ class RPCRequest:
             if response is not None:
                 error = response.get("__error", None)
             if error is not None:
-                logger.error("Error in a call without callback: %s" % error)
+                try:
+                    err_msg = "Error in the call without callback `%s': " \
+                              "%s." % (self.message["__method"], error)
+                except KeyError:
+                    err_msg = "Error in a call without callback: %s." % \
+                              error
+                logger.error(err_msg)
 
 
 class Service:
