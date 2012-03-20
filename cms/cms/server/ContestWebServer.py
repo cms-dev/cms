@@ -776,7 +776,12 @@ class SubmitHandler(BaseHandler):
             self._("Submission received"),
             self._("Your submission has been received "
                    "and is currently being evaluated."))
-        self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+        # The argument (encripted submission id) is not used by CWS
+        # (nor it discloses information to the user), but it is useful
+        # for automatic testing to obtain the submission id).
+        self.redirect("/tasks/%s?%s" % (
+            encrypt_number(self.task.id),
+            encrypt_number(submission.id)))
 
 
 class UseTokenHandler(BaseHandler):
