@@ -11,12 +11,10 @@ task_info = {
     "TaskTypeOptions_Batch_output_eval": "diff",
     "submission_format": "simple",
     "score_type": "Sum",
-    "score_parameters": "25",
+    "score_parameters": "50",
 }
 
 test_cases = [
     ("1.in", "1.out", True),
     ("2.in", "2.out", False),
-    ("3.in", "3.out", False),
-    ("4.in", "4.out", False),
 ]
