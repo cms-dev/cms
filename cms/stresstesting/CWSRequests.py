@@ -22,10 +22,10 @@
 import re
 import os
 import random
-import mimetypes
 
 from cms.server import encrypt_number
 from stresstesting import GenericRequest
+
 
 class HomepageRequest(GenericRequest):
     """Load the main page of CWS.

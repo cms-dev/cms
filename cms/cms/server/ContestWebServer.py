@@ -56,8 +56,10 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, Task, File, Attachment
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
-     valid_phase_required, encrypt_number, decrypt_number, decrypt_arguments, \
-     get_encryption_alphabet, get_url_root, CommonRequestHandler
+     valid_phase_required, get_url_root, decrypt_arguments, \
+     CommonRequestHandler
+from cmscommon.Cryptographics import encrypt_number, decrypt_number, \
+     get_encryption_alphabet
 
 
 class BaseHandler(CommonRequestHandler):
