@@ -22,8 +22,9 @@
 import re
 import os
 import random
+import urlparse
 
-from cms.server import encrypt_number
+from cmscommon.crypto import encrypt_number, decrypt_number
 from stresstesting import GenericRequest
 
 
@@ -140,6 +141,22 @@ class SubmitRequest(GenericRequest):
         return 'Task: %s (ID %d)\nFile: %s\n' % \
             (self.task[1], self.task[0], self.filename) + \
             GenericRequest.specific_info(self)
+
+    def test_success(self):
+        if not GenericRequest.test_success(self):
+            return False
+
+        return self.get_submission_id() is not None
+
+    def get_submission_id(self):
+        # Only valid after self.execute()
+        # Parse submission ID out of response.
+        p = urlparse.urlparse(self.browser.geturl())
+        try:
+            submission_id = decrypt_number(p.query)
+        except:
+            return None
+        return submission_id
 
 
 class SubmitRandomRequest(SubmitRequest):
