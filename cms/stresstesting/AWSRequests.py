@@ -20,13 +20,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
-import os
-import random
 from BeautifulSoup import BeautifulSoup
 
-from cmscommon.Cryptographics import encrypt_number, decrypt_number
 from stresstesting import GenericRequest
+
 
 class AWSSubmissionViewRequest(GenericRequest):
     """Load the view of a submission in AWS.

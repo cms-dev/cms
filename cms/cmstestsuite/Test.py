@@ -64,7 +64,8 @@ class CheckOverallScore(Check):
 
 
 class Test:
-    def __init__(self, task, filename, languages, checks):
+    def __init__(self, name, task, filename, languages, checks):
+        self.name = name
         self.task_module = task
         self.filename = filename
         self.languages = languages

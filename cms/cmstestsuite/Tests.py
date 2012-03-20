@@ -25,13 +25,16 @@ all_languages = ('c', 'cpp', 'pas')
 
 ALL_TESTS = [
 
-Test(task=batch_stdio, filename='correct.%l', languages=all_languages,
+Test('correct',
+    task=batch_stdio, filename='correct.%l', languages=all_languages,
     checks=[CheckOverallScore(100, 100)]),
 
-Test(task=batch_stdio, filename='incorrect.%l', languages=all_languages,
+Test('incorrect',
+    task=batch_stdio, filename='incorrect.%l', languages=all_languages,
     checks=[CheckOverallScore(0, 100)]),
 
-Test(task=batch_stdio, filename='half-correct.%l', languages=all_languages,
+Test('half-correct',
+    task=batch_stdio, filename='half-correct.%l', languages=all_languages,
     checks=[CheckOverallScore(50, 100)]),
 
 ]
