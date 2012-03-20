@@ -28,6 +28,7 @@ import sys
 import simplejson as json
 import time
 import datetime
+import imp
 import codecs
 import netifaces
 from argparse import ArgumentParser
@@ -446,6 +447,78 @@ class Logger(object):
 
 # Create a (unique) logger object.
 logger = Logger()
+
+
+## Plugin helpers. ##
+
+def _try_import(plugin_name, dir_name):
+    """Try to import a module called plugin_name from a directory
+    called dir_name.
+
+    plugin_name (string): name of the module (without extensions).
+    dir_name (string): name of the directory where to look.
+
+    return (module): the module if found, None if not found.
+
+    """
+    try:
+        file_, file_name, description = imp.find_module(plugin_name, dir_name)
+    except ImportError:
+        return None
+
+    try:
+        module = imp.load_module(plugin_name,
+                                 file_, file_name, description)
+    except ImportError as error:
+        logger.warning("Unable to use task type %s from plugin in "
+                       "directory %s.\n%r" % (plugin_name, dir_name, error))
+        return None
+    else:
+        return module
+    finally:
+        file_.close()
+
+
+def plugin_lookup(plugin_name, plugin_dir, plugin_family):
+    """Try to lookup a plugin in the standard positions.
+
+    plugin_name (string): the name of the plugin: it is both the name
+                          of the module and of a class inside that
+                          module.
+    plugin_dir (string): the place inside cms hierarchy where
+                         plugin_name is usually found (e.g.:
+                         cms.grading.tasktypes).
+    plugin_family (string): the name of the plugin type, as used in
+                            <system_plugins_directory>/<plugin_family>.
+
+    return (class): the correct plugin class.
+
+    raise: KeyError if either the module or the class is not found.
+
+    """
+    module = None
+
+    # Try first if the plugin is provided by CMS by default.
+    try:
+        module = __import__("%s.%s" % (plugin_dir, plugin_name),
+                            fromlist=plugin_name)
+    except ImportError:
+        pass
+
+    # If not found, try in all possible plugin directories.
+    if module is None:
+        module = _try_import(plugin_name,
+                             os.path.join(config.data_dir,
+                                          "plugins", plugin_family))
+
+    if module is None:
+        raise KeyError("Module %s not found." % plugin_name)
+
+    if plugin_name not in module.__dict__:
+        logger.warning("Unable to find class %s in the plugin." % plugin_name)
+        raise KeyError("Class %s not found." % plugin_name)
+
+    return module.__dict__[plugin_name]
 
 
 ## Other utilities. ##

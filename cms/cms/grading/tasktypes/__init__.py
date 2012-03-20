@@ -19,39 +19,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import imp
-import os
 import simplejson as json
 
-from cms import config, logger
-
-
-def _try_import(task_type, dir_name):
-    """Try to import a module called module_name from a directory
-    called dir_name.
-
-    task_type (string): name of the module (without extensions).
-    dir_name (string): name of the directory where to look.
-
-    return (module): the module if found, None if not found.
-
-    """
-    try:
-        file_, file_name, description = imp.find_module(task_type, dir_name)
-    except ImportError:
-        return None
-
-    try:
-        module = imp.load_module(task_type,
-                                 file_, file_name, description)
-    except ImportError as error:
-        logger.warning("Unable to use task type %s from plugin in "
-                       "directory %s.\n %r" % (task_type, dir_name, error))
-        return None
-    else:
-        return module
-    finally:
-        file_.close()
+from cms import plugin_lookup
 
 
 def get_task_type(submission=None, file_cacher=None, task=None,
@@ -84,33 +54,10 @@ def get_task_type(submission=None, file_cacher=None, task=None,
         task = submission.task
     if task is not None:
         task_type_name = task.task_type
-        # TODO - Manage exceptions when parameters cannot be decoded.
+        # TODO: manage exceptions when parameters cannot be decoded.
         task_type_parameters = json.loads(task.task_type_parameters)
 
-    module = None
+    cls = plugin_lookup(task_type_name,
+                        "cms.grading.tasktypes", "tasktypes")
 
-    # Try first if task_type_name is provided by CMS by default.
-    try:
-        module = __import__("cms.grading.tasktypes.%s" % task_type_name,
-                            fromlist=task_type_name)
-    except ImportError:
-        pass
-
-    # If not found, try in all possible plugin directories.
-    if module is None:
-        module = _try_import(task_type_name,
-                             os.path.join(config.data_dir,
-                                          "plugins", "tasktypes"))
-
-    if module is None:
-        raise KeyError("Module %s not found." % task_type_name)
-
-    if task_type_name not in module.__dict__:
-        logger.warning("Unable to find class %s in the plugin." %
-                       task_type_name)
-        raise KeyError("Class %s not found." % task_type_name)
-
-    return module.__dict__[task_type_name](
-        submission,
-        task_type_parameters,
-        file_cacher)
+    return cls(submission, task_type_parameters, file_cacher)
