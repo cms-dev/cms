@@ -63,6 +63,12 @@ class CheckOverallScore(Check):
                                score, total))
 
 
+class CheckCompilationFail(Check):
+    def check(self, status):
+        if 'Compilation failed' not in status:
+            raise TestFailure("Expected compilation to fail, got: %s" % status)
+
+
 class Test:
     def __init__(self, name, task, filename, languages, checks):
         self.name = name

@@ -18,7 +18,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import cmstestsuite.tasks.batch_stdio as batch_stdio
-from Test import Test, CheckOverallScore
+from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail
 
 
 all_languages = ('c', 'cpp', 'pas')
@@ -36,5 +36,9 @@ Test('incorrect',
 Test('half-correct',
     task=batch_stdio, filename='half-correct.%l', languages=all_languages,
     checks=[CheckOverallScore(50, 100)]),
+
+Test('compile-fail',
+    task=batch_stdio, filename='compile-fail.%l', languages=all_languages,
+    checks=[CheckCompilationFail()]),
 
 ]
