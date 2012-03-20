@@ -51,17 +51,21 @@ def browser_do_request(browser, url, data=None, files=None):
         else:
             response = browser.open(url, urllib.urlencode(data))
     else:
-        f = files[0]
         browser.form = HTMLForm(url,
                                 method='POST',
-                                enctype='multipart/form-data',
-                                attrs=data)
-        browser.form.new_control('file', f[0], {'id': f[0]})
-        filename = os.path.basename(f[1])
-        browser.form.add_file(open(f[1]), 'text/plain', filename, id=f[0])
+                                enctype='multipart/form-data')
+        for key in sorted(data.keys()):
+            browser.form.new_control('hidden', key, { 'value': data[key]})
+
+        for field_name, file_path in files:
+            browser.form.new_control('file', field_name, {'id': field_name})
+            filename = os.path.basename(file_path)
+            browser.form.add_file(open(file_path), 'text/plain', filename,
+                id=field_name)
+
         browser.form.set_all_readonly(False)
         browser.form.fixup()
-        response = browser.submit()
+        response = browser.open(browser.form.click())
     return response
 
 
