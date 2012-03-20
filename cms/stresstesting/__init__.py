@@ -32,6 +32,8 @@ from mechanize import HTMLForm
 
 utf8_decoder = codecs.getdecoder('utf-8')
 
+debug = False
+
 
 def browser_do_request(browser, url, data=None, files=None):
     """Open an URL in a mechanize browser, optionally passing the
@@ -123,19 +125,22 @@ class TestRequest:
 
             # Could not decide on the evaluation
             if success is None:
-                print >> sys.stderr, "Could not determine " \
-                    "status for request '%s'" % (description)
+                if debug:
+                    print >> sys.stderr, "Could not determine " \
+                        "status for request '%s'" % (description)
                 self.outcome = TestRequest.OUTCOME_UNDECIDED
 
             # Success
             elif success:
-                print >> sys.stderr, "Request '%s' successfully " \
-                    "completed" % (description)
+                if debug:
+                    print >> sys.stderr, "Request '%s' successfully " \
+                        "completed" % (description)
                 self.outcome = TestRequest.OUTCOME_SUCCESS
 
             # Failure
             elif not success:
-                print >> sys.stderr, "Request '%s' failed" % (description)
+                if debug:
+                    print >> sys.stderr, "Request '%s' failed" % (description)
                 self.outcome = TestRequest.OUTCOME_FAILURE
 
         # Otherwise report the exception
