@@ -25,6 +25,7 @@ from cmstestsuite.util import read_cms_config, CONFIG, info, sh
 from cmstestsuite.util import add_contest, add_user, add_task, add_testcase, \
      combine_coverage, start_service, start_server, start_ranking_web_server, \
      shutdown_services, restart_service
+from cmstestsuite.Test import TestFailure
 
 
 def start_generic_services():
@@ -89,7 +90,10 @@ def run_testcases(contest_id, user_id):
 
     import Tests
     task_id_map = {}
-    for test in Tests.ALL_TESTS:
+
+    failures = []
+
+    for i, test in enumerate(Tests.ALL_TESTS):
         # Create a task in the contest if we haven't already.
         if test.task_module not in task_id_map:
 
@@ -118,8 +122,30 @@ def run_testcases(contest_id, user_id):
         info("Creating task %s as id %d" % (
             test.task_module.task_info['name'], task_id))
 
-        # And run!
-        test.run(contest_id, task_id, user_id)
+        # For each language supported by the test, run it.
+        for lang in test.languages:
+            try:
+                test.run(contest_id, task_id, user_id, lang)
+            except TestFailure as f:
+                # Add this case to our list of failures, if we haven't already.
+                if not (failures and failures[-1][0] == i):
+                    failures.append((i, test, []))
+                # Mark that it failed for this language.
+                failures[-1][2].append((lang, f.message))
+
+    return failures
+
+
+def print_results(results):
+    print "\n\n"
+    if not results:
+        print "================== ALL TESTS PASSED! =================="
+    else:
+        print "------ TESTS FAILED: ------"
+        for _, test, lang_failures in results:
+            for lang, msg in lang_failures:
+                print " %s (%s): %s" % (test.name, lang, msg)
+    print "\n"
 
 
 if __name__ == "__main__":
@@ -144,8 +170,10 @@ if __name__ == "__main__":
     user_id = create_a_user(contest_id)
 
     # Run all of our test cases.
-    run_testcases(contest_id, user_id)
+    test_results = run_testcases(contest_id, user_id)
 
     # And good night!
     shutdown_services()
     combine_coverage()
+
+    print_results(test_results)

@@ -71,13 +71,10 @@ class Test:
         self.languages = languages
         self.checks = checks
 
-    def run(self, contest_id, task_id, user_id):
-        # For each language, run.
-        for lang in self.languages:
-            self.run_lang(contest_id, task_id, user_id, lang)
-
-    def run_lang(self, contest_id, task_id, user_id, language):
+    def run(self, contest_id, task_id, user_id, language):
+        # Source files are stored under cmstestsuite/code/.
         path = os.path.join(os.path.dirname(__file__), 'code')
+
         # Choose the correct file to submit.
         filename = self.filename.replace("%l", language)
 
@@ -95,6 +92,5 @@ class Test:
             try:
                 check.check(status)
             except TestFailure:
-                # TODO: Do something useful with these, like aggregating them.
-                # For now, just raise it and abort.
+                # Our caller can deal with these.
                 raise
