@@ -35,6 +35,7 @@ from stresstesting.AWSRequests import AWSSubmissionViewRequest
 
 # CONFIG is populated by our test script.
 CONFIG = {
+    'VERBOSITY': 0,
 }
 
 # cms_config holds the decoded-JSON of the cms.conf configuration file.
@@ -134,7 +135,10 @@ def sh(cmdline, ignore_failure=False):
     verbatim.  All quoting must be performed by the user.
 
     """
-    print '$', cmdline
+    if CONFIG["VERBOSITY"] >= 1:
+        print '$', cmdline
+    if CONFIG["VERBOSITY"] >= 3:
+        cmdline += ' > /dev/null 2>&1'
     ret = os.system(cmdline)
     if not ignore_failure and ret != 0:
         raise FrameworkException(
@@ -151,10 +155,19 @@ def spawn(cmdline):
         except OSError:
             pass
 
-    print '$', ' '.join(cmdline)
+    if CONFIG["VERBOSITY"] >= 1:
+        print '$', ' '.join(cmdline)
+
     cmdline = ['python-coverage', 'run', '-p'] + \
         cmdline
-    job = subprocess.Popen(cmdline)
+
+    if CONFIG["VERBOSITY"] >= 3:
+        stdout = None
+        stderr = None
+    else:
+        stdout = open('/dev/null', 'w')
+        stderr = stdout
+    job = subprocess.Popen(cmdline, stdout=stdout, stderr=stderr)
     atexit.register(lambda: kill(job))
     return job
 

@@ -97,14 +97,33 @@ def run_testcases(contest_id, user_id, regexes, languages):
     num_tests_executed = 0
     num_tests_failed = 0
 
+    def skip_test(test):
+        if not regexes:
+            return False
+        for regex in regexes:
+            if regex.search(test.name):
+                return False
+        return True
+
+    # Count the number of tests we will execute.
+    expected_num_tests_executed = 0
+    for test in Tests.ALL_TESTS:
+        # Is this a test we care about?
+        if skip_test(test):
+            continue
+
+        for lang in test.languages:
+            # Skip if we don't care about this language.
+            if languages and lang not in languages:
+                continue
+
+            expected_num_tests_executed += 1
+
+    # Now run the tests.
     for i, test in enumerate(Tests.ALL_TESTS):
         # Is this a test we care about?
-        if regexes:
-            for regex in regexes:
-                if regex.search(test.name):
-                    break
-            else:
-                continue
+        if skip_test(test):
+            continue
 
         # Create a task in the contest if we haven't already.
         if test.task_module not in task_id_map:
@@ -142,6 +161,10 @@ def run_testcases(contest_id, user_id, regexes, languages):
 
             num_tests_executed += 1
 
+            info("Running test %d/%d: %s (%s)" % (
+                num_tests_executed, expected_num_tests_executed,
+                test.name, lang))
+
             try:
                 test.run(contest_id, task_id, user_id, lang)
             except TestFailure as f:
@@ -151,7 +174,11 @@ def run_testcases(contest_id, user_id, regexes, languages):
                 # Mark that it failed for this language.
                 failures[-1][2].append((lang, f.message))
 
+                info("  (FAILED: %s)" % f.message)
+
                 num_tests_failed += 1
+
+    assert expected_num_tests_executed == num_tests_executed
 
     results = "\n\n"
     if not failures:
@@ -171,6 +198,15 @@ def run_testcases(contest_id, user_id, regexes, languages):
     return results
 
 
+def time_difference(start_time, end_time):
+    secs = int((end_time - start_time).total_seconds())
+    mins = secs / 60
+    secs = secs % 60
+    hrs = mins / 60
+    mins = mins % 60
+    return "Time elapsed: %02d:%02d:%02d" % (hrs, mins, secs)
+
+
 if __name__ == "__main__":
     parser = ArgumentParser(description="Runs the CMS test suite.")
     parser.add_argument("regex", metavar="regex",
@@ -179,7 +215,13 @@ if __name__ == "__main__":
     parser.add_argument("-l", "--languages",
         type=str, action="store", default="",
         help="a comma-separated list of languages to test")
+    parser.add_argument("-v", "--verbose", action="count",
+        help="print copious amount of debugging information")
     args = parser.parse_args()
+
+    CONFIG["VERBOSITY"] = args.verbose
+
+    start_time = datetime.datetime.now()
 
     # Load config from cms.conf.
     git_root = subprocess.check_output(
@@ -216,3 +258,6 @@ if __name__ == "__main__":
     combine_coverage()
 
     print test_results
+
+    end_time = datetime.datetime.now()
+    print time_difference(start_time, end_time)
