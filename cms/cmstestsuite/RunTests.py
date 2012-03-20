@@ -20,6 +20,8 @@
 import os
 import subprocess
 import datetime
+import re
+from argparse import ArgumentParser
 
 from cmstestsuite import read_cms_config, CONFIG, info, sh
 from cmstestsuite import add_contest, add_user, add_task, add_testcase, \
@@ -85,15 +87,25 @@ def create_a_user(contest_id):
     return user_id
 
 
-def run_testcases(contest_id, user_id):
+def run_testcases(contest_id, user_id, regexes, languages):
     info("Running test cases ...")
 
     import Tests
     task_id_map = {}
 
     failures = []
+    num_tests_executed = 0
+    num_tests_failed = 0
 
     for i, test in enumerate(Tests.ALL_TESTS):
+        # Is this a test we care about?
+        if regexes:
+            for regex in regexes:
+                if regex.search(test.name):
+                    break
+            else:
+                continue
+
         # Create a task in the contest if we haven't already.
         if test.task_module not in task_id_map:
 
@@ -113,17 +125,23 @@ def run_testcases(contest_id, user_id):
 
             task_id_map[test.task_module] = task_id
 
+            info("Creating task %s as id %d" % (
+                test.task_module.task_info['name'], task_id))
+
             # We need to restart ScoringService to ensure it has picked up the
             # new task.
             restart_service("ScoringService", contest=contest_id)
         else:
             task_id = task_id_map[test.task_module]
 
-        info("Creating task %s as id %d" % (
-            test.task_module.task_info['name'], task_id))
-
         # For each language supported by the test, run it.
         for lang in test.languages:
+            # Skip if we don't care about this language.
+            if languages and lang not in languages:
+                continue
+
+            num_tests_executed += 1
+
             try:
                 test.run(contest_id, task_id, user_id, lang)
             except TestFailure as f:
@@ -133,22 +151,36 @@ def run_testcases(contest_id, user_id):
                 # Mark that it failed for this language.
                 failures[-1][2].append((lang, f.message))
 
-    return failures
+                num_tests_failed += 1
 
-
-def print_results(results):
-    print "\n\n"
-    if not results:
-        print "================== ALL TESTS PASSED! =================="
+    results = "\n\n"
+    if not failures:
+        results += "================== ALL TESTS PASSED! ==================\n"
     else:
-        print "------ TESTS FAILED: ------"
+        results += "------ TESTS FAILED: ------\n"
+
+    results += " Executed: %d\n" % num_tests_executed
+    results += "   Failed: %d\n" % num_tests_failed
+    results += "\n"
+
+    if failures:
         for _, test, lang_failures in results:
             for lang, msg in lang_failures:
-                print " %s (%s): %s" % (test.name, lang, msg)
-    print "\n"
+                results += " %s (%s): %s\n" % (test.name, lang, msg)
+
+    return results
 
 
 if __name__ == "__main__":
+    parser = ArgumentParser(description="Runs the CMS test suite.")
+    parser.add_argument("regex", metavar="regex",
+        type=str, nargs='*',
+        help="a regex to match to run a subset of tests")
+    parser.add_argument("-l", "--languages",
+        type=str, action="store", default="",
+        help="a comma-separated list of languages to test")
+    args = parser.parse_args()
+
     # Load config from cms.conf.
     git_root = subprocess.check_output(
         "git rev-parse --show-toplevel", shell=True).strip()
@@ -169,11 +201,18 @@ if __name__ == "__main__":
     contest_id = create_contest()
     user_id = create_a_user(contest_id)
 
+    # Pre-process our command-line arugments
+    regexes = [re.compile(s) for s in args.regex]
+    if args.languages:
+        languages = frozenset(args.languages.split(','))
+    else:
+        languages = frozenset()
+
     # Run all of our test cases.
-    test_results = run_testcases(contest_id, user_id)
+    test_results = run_testcases(contest_id, user_id, regexes, languages)
 
     # And good night!
     shutdown_services()
     combine_coverage()
 
-    print_results(test_results)
+    print test_results
