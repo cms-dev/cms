@@ -21,9 +21,10 @@ import atexit
 import tempfile
 import subprocess
 import shutil
+import os
 from argparse import ArgumentParser
 
-from cmstestsuite.util import *
+from cmstestsuite.util import info, sh, configure_cms, read_cms_config, CONFIG
 
 # These settings are only used within this file.
 CONFIG.update({
