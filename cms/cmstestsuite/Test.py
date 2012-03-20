@@ -20,7 +20,7 @@
 import os
 import re
 
-from cmstestsuite.util import cws_submit, get_evaluation_result
+from cmstestsuite import cws_submit, get_evaluation_result
 
 
 class TestFailure(Exception):

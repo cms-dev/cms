@@ -24,7 +24,7 @@ import shutil
 import os
 from argparse import ArgumentParser
 
-from cmstestsuite.util import info, sh, configure_cms, read_cms_config, CONFIG
+from cmstestsuite import info, sh, configure_cms, read_cms_config, CONFIG
 
 # These settings are only used within this file.
 CONFIG.update({

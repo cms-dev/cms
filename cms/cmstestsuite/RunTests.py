@@ -21,8 +21,8 @@ import os
 import subprocess
 import datetime
 
-from cmstestsuite.util import read_cms_config, CONFIG, info, sh
-from cmstestsuite.util import add_contest, add_user, add_task, add_testcase, \
+from cmstestsuite import read_cms_config, CONFIG, info, sh
+from cmstestsuite import add_contest, add_user, add_task, add_testcase, \
      combine_coverage, start_service, start_server, start_ranking_web_server, \
      shutdown_services, restart_service
 from cmstestsuite.Test import TestFailure
