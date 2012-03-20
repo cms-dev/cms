@@ -52,6 +52,7 @@ def do_setup():
                     "cms.service",
                     "cms.async",
                     "cms.grading",
+                    "cms.grading.scoretypes",
                     "cms.grading.tasktypes",
                     "cmsranking",
                     "cmscontrib",

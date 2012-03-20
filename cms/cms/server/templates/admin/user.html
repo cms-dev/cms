@@ -28,7 +28,7 @@ function update_additional_answer(element, invoker)
 {% end %}
 
 {% block core %}
-{% from cms.grading.ScoreType import ScoreTypes %}
+{% from cms.grading.scoretypes import get_score_type %}
 
 <h1>{{ selected_user.first_name }} {{ selected_user.last_name }} ({{ selected_user.username }})</h1>
 
@@ -66,7 +66,7 @@ function update_additional_answer(element, invoker)
             {% elif not s.evaluated() %}
             Evaluating...
             {% elif s.scored() %}
-            Evaluated ({{ s.score }} / {{ ScoreTypes.get_score_type(submission=s).max_score }})
+            Evaluated ({{ s.score }} / {{ get_score_type(submission=s).max_score }})
               {% for detail in json.loads(s.score_details) %}
             <br/>{{ detail }}
               {% end %}

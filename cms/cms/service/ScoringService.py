@@ -37,7 +37,7 @@ from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_method
 from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
-from cms.grading.ScoreType import ScoreTypes
+from cms.grading.scoretypes import get_score_type
 from cms.service import get_submissions
 
 
@@ -205,7 +205,7 @@ class ScoringService(Service):
             logger.info("Loaded contest %s" % contest.name)
             contest.create_empty_ranking_view(timestamp=contest.start)
             for task in contest.tasks:
-                self.scorers[task.id] = ScoreTypes.get_score_type(task=task)
+                self.scorers[task.id] = get_score_type(task=task)
             session.commit()
 
         # If for some reason (SS switched off for a while, or broken

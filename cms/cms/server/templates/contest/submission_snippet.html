@@ -1,9 +1,9 @@
 {% import simplejson as json %}
-{% from cms.grading.ScoreType import ScoreTypes %}
+{% from cms.grading.scoretypes import get_score_type %}
 {% from cms.server import encrypt_number %}
 
 {% set encrypted_id = encrypt_number(s.id) %}
-{% set score_type = ScoreTypes.get_score_type(submission=s) %}
+{% set score_type = get_score_type(submission=s) %}
 <div id="submission_status_{{ encrypted_id }}" name="submission_status"
     {% if s.compilation_outcome is None or (s.compilation_outcome != "fail" and not s.evaluated()) %}
     class="submission_pending"

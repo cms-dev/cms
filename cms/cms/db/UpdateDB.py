@@ -47,11 +47,12 @@ class ScriptsContainer(object):
             ("20120221", "split_first_and_last_names"),
             ("20120223", "changed_batch_parameters"),
             ("20120313", "changed_batch_iofile_parameters"),
+            ("20120319", "change_scoretype_names"),
             ]
         self.list.sort()
 
     def __contains__(self, script):
-        """Implement the "script in sc" syntax.
+        """Implement the 'script in sc' syntax.
 
         script (string): name of a script.
         return (bool): True if script is in the collection.
@@ -335,6 +336,18 @@ class ScriptsContainer(object):
                                    "parameters": json.dumps(parameters),
                                    "task_id": task_id
                                 })
+
+    @staticmethod
+    def change_scoretype_names():
+        """Remove the ScoreType prefix from every score type name.
+
+        """
+        with SessionGen(commit=True) as session:
+            for score_type in ["Sum", "Relative",
+                               "GroupMin", "GroupMul"]:
+                session.execute("UPDATE tasks SET score_type = '%s' "
+                                "WHERE score_type = 'ScoreType%s';" %
+                                (score_type, score_type))
 
 
 def execute_single_script(scripts_container, script):
