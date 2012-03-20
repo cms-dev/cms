@@ -83,6 +83,8 @@ if __name__ == "__main__":
     parser.add_argument("-k", "--keep-working",
         default=False, action="store_true",
         help="Do not delete the working directory")
+    parser.add_argument("arguments", nargs="*",
+        help="All remaining arguments are passed to the test script.")
     args = parser.parse_args()
 
     CONFIG["TEST_DIR"] = tempfile.mkdtemp()
@@ -114,4 +116,5 @@ if __name__ == "__main__":
         read_cms_config()
 
     # Now run the tests from the checkout.
-    sh("./cmstestsuite/RunTests.py" % CONFIG)
+    exec_cmd = " ".join(["./cmstestsuite/RunTests.py"] + args.arguments)
+    sh(exec_cmd)
