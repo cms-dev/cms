@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
+
 from BeautifulSoup import BeautifulSoup
 
 from stresstesting import GenericRequest
@@ -41,14 +43,45 @@ class AWSSubmissionViewRequest(GenericRequest):
         if not GenericRequest.test_success(self):
             return False
         try:
-            self.get_submission_status()
+            self.get_submission_info()
             return True
         except:
             return False
 
-    def get_submission_status(self):
+    def get_submission_info(self):
         # Only valid after self.execute()
-        # Parse submission status out of response.
+        # Parse submission information out of response.
+
         soup = BeautifulSoup(self.res_data)
-        id_tag = soup.findAll(id="submission_status")[0]
-        return id_tag.text
+
+        info = {}
+
+        # Get submission status.
+        tag = soup.findAll(id="submission_status")[0]
+        info['status'] = tag.text.strip()
+
+        # Get compilation text.
+        tags = soup.findAll(id="compilation")
+        if tags:
+            content = tags[0]
+            info['compile_output'] = content.pre.text.strip()
+        else:
+            info['compile_output'] = None
+
+        # Get evaluation results.
+        evaluations = []
+        tags = soup.findAll(id=re.compile(r"^eval_outcome_"))
+        for outcome_tag in sorted(tags, key=lambda t: t['id']):
+            index = int(outcome_tag['id'][len("eval_outcome_"):])
+
+            # Get evaluation text also.
+            text_tag = soup.findAll(id="eval_text_%d" % index)[0]
+
+            evaluations.append({
+                'outcome': outcome_tag.text.strip(),
+                'text': text_tag.text.strip(),
+            })
+
+        info['evaluations'] = evaluations
+
+        return info

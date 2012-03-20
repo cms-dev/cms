@@ -117,15 +117,15 @@
       </tr>
     </thead>
     <tbody>
-      {% for ev in s.evaluations %}
+      {% for idx, ev in enumerate(s.evaluations) %}
       <tr>
-        <td>{{ ev.outcome }}</td>
+        <td id="eval_outcome_{{ idx }}">{{ ev.outcome }}</td>
         {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
         <td style="align: center;">&bullet;</td>
         {% else %}
         <td></td>
         {% end %}
-        <td>{{ ev.text }}</td>
+        <td id="eval_text_{{ idx }}">{{ ev.text }}</td>
         <td>{{ ev.evaluation_shard }}</td>
         <td>{{ ev.evaluation_sandbox }}</td>
       </tr>

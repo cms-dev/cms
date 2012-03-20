@@ -43,10 +43,11 @@ class CheckOverallScore(Check):
         self.expected_score = expected_score
         self.expected_total = expected_total
 
-    def check(self, status):
-        g = CheckOverallScore.score_re.match(status)
+    def check(self, result_info):
+        g = CheckOverallScore.score_re.match(result_info['status'])
         if not g:
-            raise TestFailure("Expected total score, got status: %s" % status)
+            raise TestFailure("Expected total score, got status: %s" %
+                              result_info['status'])
 
         score, total = g.groups()
         try:
@@ -64,9 +65,52 @@ class CheckOverallScore(Check):
 
 
 class CheckCompilationFail(Check):
-    def check(self, status):
-        if 'Compilation failed' not in status:
-            raise TestFailure("Expected compilation to fail, got: %s" % status)
+    def check(self, result_info):
+        if 'Compilation failed' not in result_info['status']:
+            raise TestFailure("Expected compilation to fail, got: %s" %
+                              result_info['status'])
+
+
+class CheckAbstractEvaluationFailure(Check):
+    def __init__(self, short_adjective, failure_string):
+        self.short_adjective = short_adjective
+        self.failure_string = failure_string
+
+    def check(self, result_info):
+        if 'Evaluated' not in result_info['status']:
+            raise TestFailure("Expected a successful evaluation, got: %s" %
+                              result_info['status'])
+        if not result_info['evaluations']:
+            raise TestFailure("No evaluations found.")
+        for evaluation in result_info['evaluations']:
+            score = float(evaluation['outcome'])
+            text = evaluation['text']
+            if score != 0.0:
+                raise TestFailure("Should have %s. Scored %g." %
+                                  (self.short_adjective, score))
+            if self.failure_string not in text:
+                raise TestFailure("Should have %s, got %s" %
+                                  (self.short_adjective, text))
+
+
+class CheckTimeout(CheckAbstractEvaluationFailure):
+    def __init__(self):
+        CheckAbstractEvaluationFailure.__init__(self,
+            "timed out", "Execution timed out")
+
+
+class CheckForbiddenSyscall(CheckAbstractEvaluationFailure):
+    def __init__(self, syscall_name=''):
+        CheckAbstractEvaluationFailure.__init__(self,
+            "executed a forbidden syscall",
+            "Execution killed because of forbidden syscall %s" % syscall_name)
+
+
+class CheckSignal(CheckAbstractEvaluationFailure):
+    def __init__(self, signal_number):
+        CheckAbstractEvaluationFailure.__init__(self,
+            "died on a signal",
+            "Execution killed with signal %d" % signal_number)
 
 
 class Test:
@@ -91,12 +135,12 @@ class Test:
                                    full_path, language)
 
         # Wait for evaluation to complete.
-        status = get_evaluation_result(contest_id, submission_id)
+        result_info = get_evaluation_result(contest_id, submission_id)
 
         # Run checks.
         for check in self.checks:
             try:
-                check.check(status)
+                check.check(result_info)
             except TestFailure:
                 # Our caller can deal with these.
                 raise

@@ -417,10 +417,11 @@ def get_evaluation_result(contest_id, submission_id, timeout=30):
         sr.prepare()
         sr.execute()
 
-        status = sr.get_submission_status().strip()
+        result = sr.get_submission_info()
+        status = result['status']
 
         if COMPLETED_STATUS.search(status):
-            return status
+            return result
 
         if WAITING_STATUSES.search(status):
             time.sleep(1)
