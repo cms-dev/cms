@@ -24,7 +24,7 @@ import os
 import random
 import urlparse
 
-from cmscommon.crypto import encrypt_number, decrypt_number
+from cmscommon.Cryptographics import encrypt_number, decrypt_number
 from stresstesting import GenericRequest
 
 
