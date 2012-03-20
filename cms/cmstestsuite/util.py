@@ -224,7 +224,7 @@ def start_service(service_name, shard=0, contest=None):
             if reply['__data'] == 'hello':
                 break
         except Exception:
-            time.sleep(0.2)
+            time.sleep(0.5)
             continue
     else:
         raise FrameworkException("Failed to bring up service %s/%d" %
@@ -260,7 +260,7 @@ def start_server(service_name, contest=None):
         try:
             sock.connect(('127.0.0.1', port))
         except:
-            time.sleep(0.2)
+            time.sleep(0.5)
             continue
 
         sock.close()
