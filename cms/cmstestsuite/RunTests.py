@@ -18,12 +18,13 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import sys
 import subprocess
 import datetime
 import re
 from argparse import ArgumentParser
 
-from cmstestsuite import read_cms_config, CONFIG, info, sh
+from cmstestsuite import get_cms_config, CONFIG, info, sh
 from cmstestsuite import add_contest, add_user, add_task, add_testcase, \
      combine_coverage, start_service, start_server, start_ranking_web_server, \
      shutdown_services, restart_service
@@ -207,7 +208,18 @@ def time_difference(start_time, end_time):
     return "Time elapsed: %02d:%02d:%02d" % (hrs, mins, secs)
 
 
-if __name__ == "__main__":
+def config_is_usable(cms_config):
+    """Determine if this configuration is suitable for testing."""
+
+    # Check that min_submission_interval is 0 - otherwise the tests will fail.
+    if cms_config['min_submission_interval'] != 0:
+        print "ERROR: min_submission_interval must be 0 for the test suite."
+        return False
+
+    return True
+
+
+def main():
     parser = ArgumentParser(description="Runs the CMS test suite.")
     parser.add_argument("regex", metavar="regex",
         type=str, nargs='*',
@@ -228,7 +240,10 @@ if __name__ == "__main__":
         "git rev-parse --show-toplevel", shell=True).strip()
     CONFIG["TEST_DIR"] = git_root
     CONFIG["CONFIG_PATH"] = "cms/examples/cms.conf"
-    read_cms_config()
+    cms_config = get_cms_config()
+
+    if not config_is_usable(cms_config):
+        return 1
 
     # Set up our expected environment.
     os.chdir("%(TEST_DIR)s/cms" % CONFIG)
@@ -261,3 +276,6 @@ if __name__ == "__main__":
 
     end_time = datetime.datetime.now()
     print time_difference(start_time, end_time)
+
+if __name__ == "__main__":
+    sys.exit(main())

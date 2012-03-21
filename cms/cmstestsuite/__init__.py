@@ -130,6 +130,12 @@ def read_cms_config():
     cms_config = json.load(open("%(TEST_DIR)s/%(CONFIG_PATH)s" % CONFIG))
 
 
+def get_cms_config():
+    if cms_config is None:
+        read_cms_config()
+    return cms_config
+
+
 def sh(cmdline, ignore_failure=False):
     """Execute a simple shell command. cmdline is passed to sh -c
     verbatim.  All quoting must be performed by the user.
