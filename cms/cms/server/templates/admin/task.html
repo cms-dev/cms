@@ -254,16 +254,16 @@ $("select[name=task_type]").change(showTaskTypeOption);
             TODO: Fetch the score types from ScoreType.
           -->
           <select name="score_type">
-            <option value="ScoreTypeSum"{% if task.score_type == "ScoreTypeSum" %} selected{% end %}>
+            <option value="Sum"{% if task.score_type == "Sum" %} selected{% end %}>
               Sum
             </option>
-            <option value="ScoreTypeGroupMin"{% if task.score_type == "ScoreTypeGroupMin" %} selected{% end %}>
+            <option value="GroupMin"{% if task.score_type == "GroupMin" %} selected{% end %}>
               Minimum
             </option>
-            <option value="ScoreTypeGroupMul"{% if task.score_type == "ScoreTypeGroupMul" %} selected{% end %}>
+            <option value="GroupMul"{% if task.score_type == "GroupMul" %} selected{% end %}>
               Multiply
             </option>
-            <option value="ScoreTypeRelative"{% if task.score_type == "ScoreTypeRelative" %}selected{% end %}>
+            <option value="Relative"{% if task.score_type == "Relative" %} selected{% end %}>
               Relative
             </option>
           </select>
