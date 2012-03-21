@@ -29,6 +29,13 @@ from cmstestsuite import add_contest, add_user, add_task, add_testcase, \
      combine_coverage, start_service, start_server, start_ranking_web_server, \
      shutdown_services, restart_service
 from cmstestsuite.Test import TestFailure
+import cmstestsuite.Tests
+
+
+FAILED_TEST_FILENAME = '.testfailures'
+
+# This stores a mapping from task module to task id.
+task_id_map = {}
 
 
 def start_generic_services():
@@ -88,98 +95,164 @@ def create_a_user(contest_id):
     return user_id
 
 
-def run_testcases(contest_id, user_id, regexes, languages):
-    info("Running test cases ...")
+def get_task_id(contest_id, user_id, task_module):
+    # Create a task in the contest if we haven't already.
+    if task_module not in task_id_map:
+        # add the task itself.
+        task_id = add_task(
+            contest_id=contest_id,
+            **task_module.task_info)
 
-    import Tests
-    task_id_map = {}
+        # add the task's test data.
+        data_path = os.path.join(
+            os.path.dirname(task_module.__file__),
+            "data")
+        for input_file, output_file, public in task_module.test_cases:
+            ipath = os.path.join(data_path, input_file)
+            opath = os.path.join(data_path, output_file)
+            add_testcase(task_id, ipath, opath, public)
 
-    failures = []
-    num_tests_executed = 0
-    num_tests_failed = 0
+        task_id_map[task_module] = task_id
 
-    def skip_test(test):
-        if not regexes:
-            return False
+        info("Creating task %s as id %d" % (
+            task_module.task_info['name'], task_id))
+
+        # We need to restart ScoringService to ensure it has picked up the
+        # new task.
+        restart_service("ScoringService", contest=contest_id)
+    else:
+        task_id = task_id_map[task_module]
+
+    return task_id
+
+
+def get_all_tests():
+    tests = []
+    for i, test in enumerate(cmstestsuite.Tests.ALL_TESTS):
+        for lang in test.languages:
+            tests.append((test, lang))
+
+    return tests
+
+
+def load_test_list_from_file(filename):
+    """Load a list of tests to execute from the given file. Each line of the
+    file should be of the format:
+
+    testname language1
+
+    """
+    try:
+        with open(filename) as f:
+            lines = f.readlines()
+    except (IOError, OSError) as e:
+        print "Failed to read test list. %s." % (e)
+        return None
+
+    errors = False
+
+    name_to_test_map = {}
+    for test in cmstestsuite.Tests.ALL_TESTS:
+        if test.name in name_to_test_map:
+            print "ERROR: Multiple tests with the same name `%s'." % test.name
+            errors = True
+        name_to_test_map[test.name] = test
+
+    tests = []
+    for i, line in enumerate(lines):
+        bits = [x.strip() for x in line.split()]
+        if len(bits) != 2:
+            print "ERROR: %s:%d invalid line: %s" % (filename, i + 1, line)
+            errors = True
+            continue
+
+        name, lang = bits
+
+        if name not in name_to_test_map:
+            print "ERROR: %s:%d invalid test case: %s" % (
+                filename, i + 1, name)
+            errors = True
+            continue
+
+        test = name_to_test_map[name]
+        if lang not in test.languages:
+            print "ERROR: %s:%d test `%s' does not have language `%s'" % (
+                filename, i + 1, name, lang)
+            errors = True
+            continue
+
+        tests.append((test, lang))
+
+    if errors:
+        sys.exit(1)
+
+    return tests
+
+
+def load_failed_tests():
+    list = load_test_list_from_file(FAILED_TEST_FILENAME)
+    if list == None:
+        sys.exit(1)
+
+    return list
+
+
+def filter_testcases(orig_test_list, regexes, languages):
+    """Filter out skipped test cases from a list."""
+    # Define a function that returns true if the given test case matches the
+    # criteria.
+    def use(test, lang):
+        # No regexes means no constraint on test names.
+        ok = not regexes
         for regex in regexes:
             if regex.search(test.name):
-                return False
-        return True
+                ok = True
+                break
+        if ok and languages:
+            ok = lang in languages
+        return ok
 
-    # Count the number of tests we will execute.
-    expected_num_tests_executed = 0
-    for test in Tests.ALL_TESTS:
-        # Is this a test we care about?
-        if skip_test(test):
-            continue
+    # Select only those (test, language) pairs that pass our checks.
+    return [(test, lang) for test, lang in orig_test_list if use(test, lang)]
 
-        for lang in test.languages:
-            # Skip if we don't care about this language.
-            if languages and lang not in languages:
-                continue
 
-            expected_num_tests_executed += 1
+def write_test_case_list(test_list, filename):
+    with open(filename, 'w') as f:
+        for test, lang in test_list:
+            f.write('%s %s\n' % (test.name, lang))
 
-    # Now run the tests.
-    for i, test in enumerate(Tests.ALL_TESTS):
-        # Is this a test we care about?
-        if skip_test(test):
-            continue
 
-        # Create a task in the contest if we haven't already.
-        if test.task_module not in task_id_map:
+def run_testcases(contest_id, user_id, test_list):
+    """Run all test cases specified by the Tests module.
 
-            # add the task itself.
-            task_id = add_task(
-                contest_id=contest_id,
-                **test.task_module.task_info)
+    contest_id and user_id must specify an already-created contest and user
+    under which the tests are submitted.
 
-            # add the task's test data.
-            data_path = os.path.join(
-                os.path.dirname(test.task_module.__file__),
-                "data")
-            for input_file, output_file, public in test.task_module.test_cases:
-                ipath = os.path.join(data_path, input_file)
-                opath = os.path.join(data_path, output_file)
-                add_testcase(task_id, ipath, opath, public)
+    test_list should be a list of 2-tuples, each representing a test. The first
+    element of each tuple is a Test object, and the second is the language for
+    which it should be executed.
+    """
+    info("Running test cases ...")
 
-            task_id_map[test.task_module] = task_id
+    failures = []
+    num_tests_to_execute = len(test_list)
 
-            info("Creating task %s as id %d" % (
-                test.task_module.task_info['name'], task_id))
+    # For all tests...
+    for i, (test, lang) in enumerate(test_list):
+        # This installs the task into the contest if we haven't already.
+        task_id = get_task_id(contest_id, user_id, test.task_module)
 
-            # We need to restart ScoringService to ensure it has picked up the
-            # new task.
-            restart_service("ScoringService", contest=contest_id)
-        else:
-            task_id = task_id_map[test.task_module]
+        info("Running test %d/%d: %s (%s)" % (
+            i + 1, num_tests_to_execute,
+            test.name, lang))
 
-        # For each language supported by the test, run it.
-        for lang in test.languages:
-            # Skip if we don't care about this language.
-            if languages and lang not in languages:
-                continue
+        try:
+            test.run(contest_id, task_id, user_id, lang)
+        except TestFailure as f:
+            info("  (FAILED: %s)" % f.message)
 
-            num_tests_executed += 1
-
-            info("Running test %d/%d: %s (%s)" % (
-                num_tests_executed, expected_num_tests_executed,
-                test.name, lang))
-
-            try:
-                test.run(contest_id, task_id, user_id, lang)
-            except TestFailure as f:
-                # Add this case to our list of failures, if we haven't already.
-                if not (failures and failures[-1][0] == i):
-                    failures.append((i, test, []))
-                # Mark that it failed for this language.
-                failures[-1][2].append((lang, f.message))
-
-                info("  (FAILED: %s)" % f.message)
-
-                num_tests_failed += 1
-
-    assert expected_num_tests_executed == num_tests_executed
+            # Add this case to our list of failures, if we haven't already.
+            failures.append((test, lang, f.message))
 
     results = "\n\n"
     if not failures:
@@ -187,14 +260,20 @@ def run_testcases(contest_id, user_id, regexes, languages):
     else:
         results += "------ TESTS FAILED: ------\n"
 
-    results += " Executed: %d\n" % num_tests_executed
-    results += "   Failed: %d\n" % num_tests_failed
+    results += " Executed: %d\n" % num_tests_to_execute
+    results += "   Failed: %d\n" % len(failures)
     results += "\n"
 
+    for test, lang, msg in failures:
+        results += " %s (%s): %s\n" % (test.name, lang, msg)
+
     if failures:
-        for _, test, lang_failures in failures:
-            for lang, msg in lang_failures:
-                results += " %s (%s): %s\n" % (test.name, lang, msg)
+        write_test_case_list(
+            [(test, lang) for test, lang, _ in failures],
+            FAILED_TEST_FILENAME)
+        results += "\n"
+        results += "Failed tests stored in %s.\n" % FAILED_TEST_FILENAME
+        results += "Run again with --retry-failed (or -r) to retry.\n"
 
     return results
 
@@ -227,13 +306,35 @@ def main():
     parser.add_argument("-l", "--languages",
         type=str, action="store", default="",
         help="a comma-separated list of languages to test")
+    parser.add_argument("-r", "--retry-failed", action="store_true",
+        help="only run failed tests from the previous run (stored in %s)" %
+        FAILED_TEST_FILENAME)
     parser.add_argument("-v", "--verbose", action="count",
-        help="print copious amount of debugging information")
+        help="print debug information (use multiple times for more)")
     args = parser.parse_args()
 
     CONFIG["VERBOSITY"] = args.verbose
 
     start_time = datetime.datetime.now()
+
+    # Pre-process our command-line arugments to figure out which tests to run.
+    regexes = [re.compile(s) for s in args.regex]
+    if args.languages:
+        languages = frozenset(args.languages.split(','))
+    else:
+        languages = frozenset()
+    if args.retry_failed:
+        test_list = load_failed_tests()
+    else:
+        test_list = get_all_tests()
+    test_list = filter_testcases(test_list, regexes, languages)
+
+    if not test_list:
+        info("There are no tests to run! (was your filter too restrictive?)")
+        return 0
+
+    if args.retry_failed:
+        info("Re-running %d failed tests from last run." % len(test_list))
 
     # Load config from cms.conf.
     git_root = subprocess.check_output(
@@ -258,15 +359,8 @@ def main():
     contest_id = create_contest()
     user_id = create_a_user(contest_id)
 
-    # Pre-process our command-line arugments
-    regexes = [re.compile(s) for s in args.regex]
-    if args.languages:
-        languages = frozenset(args.languages.split(','))
-    else:
-        languages = frozenset()
-
     # Run all of our test cases.
-    test_results = run_testcases(contest_id, user_id, regexes, languages)
+    test_results = run_testcases(contest_id, user_id, test_list)
 
     # And good night!
     shutdown_services()
@@ -276,6 +370,7 @@ def main():
 
     end_time = datetime.datetime.now()
     print time_difference(start_time, end_time)
+
 
 if __name__ == "__main__":
     sys.exit(main())
