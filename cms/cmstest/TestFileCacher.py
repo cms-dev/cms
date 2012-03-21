@@ -334,7 +334,7 @@ class TestFileCacher(TestService):
             self.test_end(False, "Error received: %r." % error)
         if rand_file.dim != 0:
             self.test_end(False, "The input file wasn't read completely.")
-        my_digest = rand_file.digest()
+        my_digest = rand_file.digest
         rand_file.close()
 
         if not os.path.exists(
@@ -362,7 +362,7 @@ class TestFileCacher(TestService):
             self.file_cacher.get_file(digest=self.digest, file_obj=hash_file)
         except Exception as error:
             self.test_end(False, "Error received: %r." % error)
-        my_digest = hash_file.digest()
+        my_digest = hash_file.digest
         hash_file.close()
 
         try:
