@@ -93,6 +93,11 @@ var Scoreboard = new function () {
         $("#Scoreboard_body tr").bind('animationend', function(event) {
             $(this).removeClass("score_up score_down");
         });
+
+        // Fuck, WebKit!!
+        $("#Scoreboard_body tr").bind('webkitAnimationEnd', function(event) {
+            $(this).removeClass("score_up score_down");
+        });
     };
 
 
