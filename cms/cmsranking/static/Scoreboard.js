@@ -88,6 +88,11 @@ var Scoreboard = new function () {
             row.children[2].addEventListener('click', self.user_callback_factory(u_id));
             row.children[3].addEventListener('click', self.user_callback_factory(u_id));
         }
+
+        // create callbacks for animation-end
+        $("#Scoreboard_body tr").bind('animationend', function(event) {
+            $(this).removeClass("score_up score_down");
+        });
     };
 
 
@@ -375,7 +380,7 @@ var Scoreboard = new function () {
     };
 
     // This callback is called by the DataStore when a user changes score.
-    self.score_handler = function (u_id, user) {
+    self.score_handler = function (u_id, user, delta) {
         var row = user["row"];
 
         $(row).children(".score").each(function (index) {
@@ -398,7 +403,11 @@ var Scoreboard = new function () {
         self.move_user(user);
 
         // Restart CSS animation
-        $(row).removeClass("updated").addClass("updated");
+        if (delta > 0) {
+            $(row).addClass("score_up");
+        } else {
+            $(row).addClass("score_down");
+        }
     };
 
     // This callback is called by the DataStore when a user changes rank.

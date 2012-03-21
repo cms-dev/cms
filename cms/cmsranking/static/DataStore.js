@@ -530,7 +530,7 @@ var DataStore = new function () {
 
         console.info("Changed score for user " + u_id + " and task " + t_id + ": " + old_score + " -> " + new_score);
 
-        self.score_events.fire(u_id, user);
+        self.score_events.fire(u_id, user, new_score - old_score);
     };
 
     self.get_score_t = function (u_id, t_id) {
@@ -627,7 +627,12 @@ var DataStore = new function () {
         }
 
         user["rank"] = new_rank;
-        self.rank_events.fire(u_id, user);
+
+        if (old_rank != new_rank) {
+            console.info("Changed rank for user " + u_id + ": " + old_rank + " -> " + new_rank);
+
+            self.rank_events.fire(u_id, user, new_rank - old_rank);
+        }
     };
 
 

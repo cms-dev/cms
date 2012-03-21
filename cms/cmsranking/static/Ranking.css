@@ -426,32 +426,6 @@ table.scoreboard tbody tr
     height: 2em;
 }
 
-/* FIXME: the following two rules are, at the moment, just a proof of concept!
-   The resulting style is neither beautiful (a dark gray fading color) nor
-   cross-browser compatible (it works only on the latest Firefox releases).
-   This needs to be improved!
- */
-
-table.scoreboard tbody tr.updated {
-    -moz-animation-duration: 10s;
-    -moz-animation-name: blink;
-    -moz-animation-timing-function: ease-in;
-}
-
-@-moz-keyframes blink {
-    from {
-        background-color: rgba(255,255,255,0);
-    }
-
-    5% {
-        background-color: rgba(122,122,122,1);
-    }
-
-    to {
-        background-color: rgba(255,255,255,0);
-    }
-}
-
 table.scoreboard thead tr th
 {
     background-color: #ECECEF;
@@ -478,6 +452,16 @@ table.scoreboard tbody tr td
     text-align: center;
 }
 
+table.scoreboard tbody tr td.sel,
+table.scoreboard tbody tr td.rank
+{
+    border-radius: 1em;
+    -webkit-border-radius: 1em;
+    -moz-border-radius: 1em;
+    -ms-border-radius: 1em;
+    -o-border-radius: 1em;
+}
+
 table.scoreboard tbody tr td.f_name,
 table.scoreboard tbody tr td.l_name
 {
@@ -491,14 +475,75 @@ table.scoreboard thead tr th.score
     cursor: pointer;
 }
 
-table.scoreboard tbody tr:hover td:not(.score)
+table.scoreboard tbody tr:hover td.f_name,
+table.scoreboard tbody tr:hover td.l_name,
+table.scoreboard tbody tr:hover td.team
 {
     background-color: rgba(200,200,200,0.35);
 }
 
-table.scoreboard tbody tr.selected td:not(.score)
+table.scoreboard tbody tr.selected td.sel
 {
     background-color: lightblue;
+}
+
+table.scoreboard tbody tr.selected td.f_name, table.scoreboard tbody tr.selected td.l_name
+{
+    font-weight: bold;
+}
+
+/* FIXME: the following two rules are, at the moment, just a proof of concept!
+   The resulting style is neither beautiful (a dark gray fading color) nor
+   cross-browser compatible (it works only on the latest Firefox releases).
+   This needs to be improved!
+ */
+
+table.scoreboard tbody tr.score_up td.rank {
+    -moz-animation-duration: 5s;
+    -moz-animation-name: score_up;
+    -moz-animation-timing-function: ease-in;
+}
+
+table.scoreboard tbody tr.score_down td.rank {
+    -moz-animation-duration: 5s;
+    -moz-animation-name: score_down;
+    -moz-animation-timing-function: ease-in;
+}
+
+@-moz-keyframes score_up {
+    from {background-color: rgba(138,226,52,0);}
+    10% {background-color: rgba(138,226,52,0.6);}
+    to {background-color: rgba(138,226,52,0);}
+}
+
+@-moz-keyframes score_down {
+    from {background-color: rgba(239,41,41,0);}
+    10% {background-color: rgba(239,41,41,0.6);}
+    to {background-color: rgba(239,41,41,0);}
+}
+
+table.scoreboard tbody tr.selected.score_up td.rank {
+    -moz-animation-duration: 10s;
+    -moz-animation-name: selected_score_up;
+    -moz-animation-timing-function: ease-in;
+}
+
+table.scoreboard tbody tr.selected.score_down td.rank {
+    -moz-animation-duration: 10s;
+    -moz-animation-name: selected_score_down;
+    -moz-animation-timing-function: ease-in;
+}
+
+@-moz-keyframes selected_score_up {
+    from {background-color: rgba(138,226,52,0);}
+    5% {background-color: rgba(138,226,52,1);}
+    to {background-color: rgba(138,226,52,0);}
+}
+
+@-moz-keyframes selected_score_down {
+    from {background-color: rgba(239,41,41,0);}
+    5% {background-color: rgba(239,41,41,1);}
+    to {background-color: rgba(239,41,41,0);}
 }
 
 table.scoreboard tbody tr td.score
