@@ -2,7 +2,7 @@
 task_info = {
     "name": "batchstdio",
     "title": "Test Batch Task with stdin/stdout",
-    "time_limit": "1",
+    "time_limit": "0.1",
     "memory_limit": "64",
     "task_type": "Batch",
     "TaskTypeOptions_Batch_compilation": "alone",

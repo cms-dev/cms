@@ -2,7 +2,7 @@
 task_info = {
     "name": "batchfileio",
     "title": "Test Batch Task with I/O via files",
-    "time_limit": "1",
+    "time_limit": "0.1",
     "memory_limit": "64",
     "task_type": "Batch",
     "TaskTypeOptions_Batch_compilation": "alone",
