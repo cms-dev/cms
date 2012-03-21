@@ -116,7 +116,7 @@ def create_handler(entity_store):
                 try:
                     entity_store.create(entity_id, self.request.body)
                 except InvalidData, exc:
-                    logger.error("%r\n%s" % (exc, self.request.full_url()),
+                    logger.error("%s\n%s" % (exc, self.request.full_url()),
                                  extra={'request_body': self.request.body})
                     raise tornado.web.HTTPError(400)
             else:
@@ -124,7 +124,7 @@ def create_handler(entity_store):
                 try:
                     entity_store.update(entity_id, self.request.body)
                 except InvalidData, exc:
-                    logger.error("%r\n%s" % (exc, self.request.full_url()),
+                    logger.error("%s\n%s" % (exc, self.request.full_url()),
                                  extra={'request_body': self.request.body})
                     raise tornado.web.HTTPError(400)
 
