@@ -155,6 +155,35 @@ def format_time_or_date(timestamp):
         return dt_ts.strftime("%H:%M:%S, %d/%m/%Y")
 
 
+def format_amount_of_time(seconds):
+    """Return the number of seconds formatted 'xxx days, yyy hours,
+    ...'.
+
+    seconds (int): the length of the amount of time in seconds.
+
+    return (string): seconds formatted as above.
+
+    """
+    ret = []
+    times = [("day", 60 * 60 * 24),
+             ("hour", 60 * 60),
+             ("minutes", 60),
+             ("seconds", 1)]
+
+    for time_ in times:
+        tmp = seconds // time_[1]
+        seconds %= time_[1]
+        if tmp > 1:
+            ret.append("%s %s" % (tmp, time_[0]))
+        elif tmp == 1:
+            ret.append("1 %s" % time_[0])
+
+    if ret == []:
+        ret = ["0 seconds"]
+
+    return ", ".join(ret)
+
+
 def file_handler_gen(BaseClass):
     """This generates an extension of the BaseHandler that allows us
     to send files to the user. This *Gen is needed because the code in
