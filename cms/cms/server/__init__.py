@@ -167,14 +167,14 @@ def format_amount_of_time(seconds):
     ret = []
     times = [("day", 60 * 60 * 24),
              ("hour", 60 * 60),
-             ("minutes", 60),
-             ("seconds", 1)]
+             ("minute", 60),
+             ("second", 1)]
 
     for time_ in times:
         tmp = seconds // time_[1]
         seconds %= time_[1]
         if tmp > 1:
-            ret.append("%s %s" % (tmp, time_[0]))
+            ret.append("%s %ss" % (tmp, time_[0]))
         elif tmp == 1:
             ret.append("1 %s" % time_[0])
 
