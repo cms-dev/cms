@@ -23,6 +23,52 @@ import logging
 import os.path
 import time
 
+from traceback import format_tb as formatTraceback
+
+## ANSI utilities. See for reference:
+# http://pueblo.sourceforge.net/doc/manual/ansi_color_codes.html
+# http://en.wikipedia.org/wiki/ANSI_escape_code
+# 
+
+ANSI_FG_COLORS = {'black': 30,
+                  'red': 31,
+                  'green': 32,
+                  'yellow': 33,
+                  'blue': 34,
+                  'magenta': 35,
+                  'cyan': 36,
+                  'white': 37}
+
+ANSI_BG_COLORS = {'black': 40,
+                  'red': 41,
+                  'green': 42,
+                  'yellow': 43,
+                  'blue': 44,
+                  'magenta': 45,
+                  'cyan': 46,
+                  'white': 47}
+
+ANSI_RESET_CMD = 0
+ANSI_FG_DEFAULT_CMD = 39
+ANSI_BG_DEFAULT_CMD = 49
+ANSI_BOLD_ON_CMD = 1
+ANSI_BOLD_OFF_CMD = 22
+ANSI_FAINT_ON_CMD = 2
+ANSI_FAINT_OFF_CMD = 22
+ANSI_ITALICS_ON_CMD = 3
+ANSI_ITALICS_OFF_CMD = 23
+ANSI_UNDERLINE_ON_CMD = 4
+ANSI_UNDERLINE_OFF_CMD = 24
+ANSI_STRIKETHROUGH_ON_CMD = 9
+ANSI_STRIKETHROUGH_OFF_CMD = 29
+ANSI_INVERSE_ON_CMD = 7
+ANSI_INVERSE_OFF_CMD = 27
+
+# TODO missing:
+# - distinction between single and double underline
+# - "slow blink on", "rapid blink on" and "blink off"
+# - "conceal on" and "conceal off" (also called reveal)
+
 
 class LogFormatter(logging.Formatter):
     """A custom Formatter for our logs.
@@ -36,18 +82,60 @@ class LogFormatter(logging.Formatter):
 
         """
         logging.Formatter.__init__(self, *args, **kwargs)
-        self.time_prefix = '\033[1m' if color else ''
-        self.time_suffix = '\033[22m' if color else ''
-        self.cri_prefix = '\033[1;37;41m' if color else ''
-        self.cri_suffix = '\033[22;39;49m' if color else ''
-        self.err_prefix = '\033[1;31m' if color else ''
-        self.err_suffix = '\033[22;39m' if color else ''
-        self.wrn_prefix = '\033[1;33m' if color else ''
-        self.wrn_suffix = '\033[22;39m' if color else ''
-        self.inf_prefix = '\033[1;32m' if color else ''
-        self.inf_suffix = '\033[22;39m' if color else ''
-        self.dbg_prefix = '\033[1;34m' if color else ''
-        self.dbg_suffix = '\033[22;39m' if color else ''
+
+        self.color = color
+
+        self.time_prefix = self.ansi_command(ANSI_BOLD_ON_CMD)
+        self.time_suffix = self.ansi_command(ANSI_BOLD_OFF_CMD)
+        self.cri_prefix = self.ansi_command(ANSI_BOLD_ON_CMD,
+                                            ANSI_FG_COLORS['white'],
+                                            ANSI_BG_COLORS['red'])
+        self.cri_suffix = self.ansi_command(ANSI_BOLD_OFF_CMD,
+                                            ANSI_FG_DEFAULT_CMD,
+                                            ANSI_BG_DEFAULT_CMD)
+        self.err_prefix = self.ansi_command(ANSI_BOLD_ON_CMD,
+                                            ANSI_FG_COLORS['red'])
+        self.err_suffix = self.ansi_command(ANSI_BOLD_OFF_CMD,
+                                            ANSI_FG_DEFAULT_CMD)
+        self.wrn_prefix = self.ansi_command(ANSI_BOLD_ON_CMD,
+                                            ANSI_FG_COLORS['yellow'])
+        self.wrn_suffix = self.ansi_command(ANSI_BOLD_OFF_CMD,
+                                            ANSI_FG_DEFAULT_CMD)
+        self.inf_prefix = self.ansi_command(ANSI_BOLD_ON_CMD,
+                                            ANSI_FG_COLORS['green'])
+        self.inf_suffix = self.ansi_command(ANSI_BOLD_OFF_CMD,
+                                            ANSI_FG_DEFAULT_CMD)
+        self.dbg_prefix = self.ansi_command(ANSI_BOLD_ON_CMD,
+                                            ANSI_FG_COLORS['blue'])
+        self.dbg_suffix = self.ansi_command(ANSI_BOLD_OFF_CMD,
+                                            ANSI_FG_DEFAULT_CMD)
+
+
+    def ansi_command(self, *args):
+        """Produce the escape string that corresponds to the given ANSI command.
+
+        """
+        return "\033[%sm" % ';'.join([str(x) for x in args]) if self.color else ''
+
+
+    def formatException(self, exc_info):
+        exc_type, exc_value, traceback = exc_info
+
+        result = "%sException%s %s.%s%s%s:\n\n    %s\n\n" % \
+                      (self.ansi_command(ANSI_BOLD_ON_CMD),
+                       self.ansi_command(ANSI_BOLD_OFF_CMD),
+                       exc_type.__module__,
+                       self.ansi_command(ANSI_BOLD_ON_CMD),
+                       exc_type.__name__,
+                       self.ansi_command(ANSI_BOLD_OFF_CMD),
+                       exc_value)
+        result += "%sTraceback (most recent call last):%s\n%s" % \
+                      (self.ansi_command(ANSI_FAINT_ON_CMD),
+                       self.ansi_command(ANSI_FAINT_OFF_CMD),
+                       '\n'.join(map(lambda a: self.ansi_command(ANSI_FAINT_ON_CMD) + a + self.ansi_command(ANSI_FAINT_OFF_CMD),
+                                     ''.join(formatTraceback(traceback)).strip().split('\n'))))
+
+        return result
 
     def format(self, record):
         """Do the actual formatting.
@@ -57,43 +145,38 @@ class LogFormatter(logging.Formatter):
         exception details (if present).
 
         """
-        try:
-            record.message = record.getMessage()
-        except Exception, exc:
-            record.message = 'Bad message (%r): %r' % (exc, record.__dict__)
-
-        prefix = '%s%s.%03d%s' % (self.time_prefix,
+        result = '%s%s.%03d%s' % (self.time_prefix,
             self.formatTime(record, '%Y-%m-%d %H:%M:%S'), record.msecs,
             self.time_suffix)
 
         if record.levelno == logging.CRITICAL:
-            prefix += ' %s CRI %s ' % (self.cri_prefix, self.cri_suffix)
+            result += ' %s CRI %s ' % (self.cri_prefix, self.cri_suffix)
         elif record.levelno == logging.ERROR:
-            prefix += ' %s ERR %s ' % (self.err_prefix, self.err_suffix)
+            result += ' %s ERR %s ' % (self.err_prefix, self.err_suffix)
         elif record.levelno == logging.WARNING:
-            prefix += ' %s WRN %s ' % (self.wrn_prefix, self.wrn_suffix)
+            result += ' %s WRN %s ' % (self.wrn_prefix, self.wrn_suffix)
         elif record.levelno == logging.INFO:
-            prefix += ' %s INF %s ' % (self.inf_prefix, self.inf_suffix)
+            result += ' %s INF %s ' % (self.inf_prefix, self.inf_suffix)
         else:  # DEBUG
-            prefix += ' %s DBG %s ' % (self.dbg_prefix, self.dbg_suffix)
+            result += ' %s DBG %s ' % (self.dbg_prefix, self.dbg_suffix)
 
-        formatted = prefix + record.message.rstrip()
+        try:
+            message = record.getMessage()
+        except Exception, exc:
+            message = 'Bad message (%r): %r' % (exc, record.__dict__)
 
-        if '\n' in formatted and not formatted[-1] == '\n':
-            formatted += '\n'
+        result += message.strip()
 
-        if 'request_body' in record.__dict__:
-            formatted = "%s\n\n%s\n" % (formatted.rstrip(),
-                                        record.request_body.rstrip())
+        if "location" in record.__dict__:
+            result += "\n%s" % record.location.strip()
+
+        if "details" in record.__dict__:
+            result += "\n\n%s" % record.details.strip()
 
         if record.exc_info:
-            if not record.exc_text:
-                record.exc_text = self.formatException(record.exc_info)
-        if record.exc_text:
-            formatted = "%s\n\n%s\n" % (formatted.rstrip(),
-                                        record.exc_text.rstrip())
+            result += "\n\n%s" % self.formatException(record.exc_info).strip()
 
-        return formatted.replace("\n", "\n    ")
+        return result.replace("\n", "\n    ") + '\n'
 
 
 # Create a global reference to the root logger.

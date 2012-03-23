@@ -48,7 +48,8 @@ def authenticated(method):
     @functools.wraps(method)
     def wrapper(self, *args, **kwargs):
         if 'Authorization' not in self.request.headers:
-            logger.error("Auth: Header is missing\n" + self.request.full_url())
+            logger.warning("Authentication: Header is missing",
+                           extra={'location': self.request.full_url()})
             raise tornado.web.HTTPError(401)
         header = self.request.headers['Authorization']
 
@@ -65,8 +66,9 @@ def authenticated(method):
             assert username == config.username, "Wrong username"
             assert password == config.password, "Wrong password"
         except Exception as exc:
-            logger.error("Auth: %r\n%s" % (exc, self.request.full_url()),
-                         extra={'request_body': header})
+            logger.warning("Authentication: %s" % exc, exc_info=False,
+                           extra={'location': self.request.full_url(),
+                                  'details': header})
             raise tornado.web.HTTPError(401)
 
         return method(self, *args, **kwargs)
@@ -107,25 +109,27 @@ def create_handler(entity_store):
         @authenticated
         def put(self, entity_id):
             if not entity_id:
-                logger.error("No entity ID specified\n%s" %
-                             self.request.full_url(),
-                             extra={'request_body': self.request.body})
+                logger.error("No entity ID specified", exc_info=False,
+                             extra={'location': self.request.full_url(),
+                                    'details': self.request.body})
                 raise tornado.web.HTTPError(404)
             if entity_id not in entity_store:
                 # create
                 try:
                     entity_store.create(entity_id, self.request.body)
                 except InvalidData, exc:
-                    logger.error("%s\n%s" % (exc, self.request.full_url()),
-                                 extra={'request_body': self.request.body})
+                    logger.error(str(exc), exc_info=False,
+                                 extra={'location': self.request.full_url(),
+                                        'details': self.request.body})
                     raise tornado.web.HTTPError(400)
             else:
                 # update
                 try:
                     entity_store.update(entity_id, self.request.body)
                 except InvalidData, exc:
-                    logger.error("%s\n%s" % (exc, self.request.full_url()),
-                                 extra={'request_body': self.request.body})
+                    logger.error(str(exc), exc_info=False,
+                                 extra={'location': self.request.full_url(),
+                                        'details': self.request.body})
                     raise tornado.web.HTTPError(400)
 
         @authenticated

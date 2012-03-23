@@ -77,11 +77,13 @@ class Store(object):
         except IOError:
             logger.error("IOError occured", exc_info=True)
         except ValueError:
-            logger.error("Invalid JSON\n" + os.path.join(self._path, name),
-                extra={'request_body': data})
+            logger.error("Invalid JSON", exc_info=False,
+                         extra={'location': os.path.join(self._path, name),
+                                'details': data})
         except InvalidData, exc:
-            logger.error(str(exc) + "\n" + os.path.join(self._path, name),
-                extra={'request_body': data})
+            logger.error(str(exc), exc_info=False,
+                         extra={'location': os.path.join(self._path, name),
+                                'details': data})
 
     def add_create_callback(self, callback):
         """Add a callback to be called when entities are created.
