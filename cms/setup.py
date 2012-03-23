@@ -54,9 +54,10 @@ def do_setup():
                     "cms.grading",
                     "cms.grading.scoretypes",
                     "cms.grading.tasktypes",
+                    "cmscommon",
                     "cmsranking",
                     "cmscontrib",
-                    "cmstest"],
+                    "cmstestsuite"],
           package_data={
               "cms.async": [
                   os.path.join("static", "*")

@@ -130,7 +130,7 @@ def ask_for_contest(skip=None):
         contest_number = raw_input("Insert the row number next to the contest "
                                    "you want to load (not the id): ")
         if contest_number == "":
-            contest_number = n_contests - 1
+            contest_number = n_contests
         try:
             contest_id = matches[int(contest_number)]
         except (ValueError, KeyError):
