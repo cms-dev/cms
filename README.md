@@ -118,6 +118,8 @@ work:
 
 - python-yaml >= 3.10 (only for YamlImporter);
 
+- python-beautifulsoup (only for running tests);
+
 - python-coverage (only for running tests).
 
 
@@ -139,7 +141,7 @@ sudo apt-get update
 sudo apt-get install postgresql postgresql-client python-setuptools \
      python-tornado python-psycopg2 python-psutil gettext \
      build-essential fpc stl-manual python-simplejson \
-     python-netifaces python-coverage
+     python-netifaces python-beautifulsoup python-coverage
 
 sudo dpkg -i python-sqlalchemy_0.7.4-1ubuntu1_all.deb \
      python-sqlalchemy-ext_0.7.4-1ubuntu1_all.deb
@@ -155,7 +157,8 @@ all dependencies:
 sudo apt-get install postgresql postgresql-client python-setuptools \
      python-tornado python-psycopg2 python-sqlalchemy \
      python-psutil gettext build-essential fpc stl-manual \
-     python-simplejson python-netifaces python-coverage
+     python-simplejson python-netifaces python-beautifulsoup \
+     python-coverage
 
 # Optional.
 # sudo apt-get install phppgadmin python-yaml
