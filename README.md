@@ -111,6 +111,8 @@ work:
 
 - python-netifaces;
 
+- python-crypto;
+
 - gettext >= 0.18;
 
 - build environment for the programming languages allowed in the
@@ -141,7 +143,8 @@ sudo apt-get update
 sudo apt-get install postgresql postgresql-client python-setuptools \
      python-tornado python-psycopg2 python-psutil gettext \
      build-essential fpc stl-manual python-simplejson \
-     python-netifaces python-beautifulsoup python-coverage
+     python-netifaces python-beautifulsoup python-coverage \
+     python-crypto
 
 sudo dpkg -i python-sqlalchemy_0.7.4-1ubuntu1_all.deb \
      python-sqlalchemy-ext_0.7.4-1ubuntu1_all.deb
@@ -158,7 +161,7 @@ sudo apt-get install postgresql postgresql-client python-setuptools \
      python-tornado python-psycopg2 python-sqlalchemy \
      python-psutil gettext build-essential fpc stl-manual \
      python-simplejson python-netifaces python-beautifulsoup \
-     python-coverage
+     python-coverage python-crypto
 
 # Optional.
 # sudo apt-get install phppgadmin python-yaml
