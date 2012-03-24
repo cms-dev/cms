@@ -290,6 +290,82 @@
   administrators' laptops. Of course it is expected that the firewall
   allows them to connect via SSH to contestants' computers.
 
+  \subsection{PostgreSQL set up}
+
+  As already pointed out above, the PostgreSQL \DB\ is a critical
+  component in \CMS, since it stores the whole state of the
+  contest. Nothing can operate without it, except perhaps the
+  \RWS\ (but, of course, its results don't get updated anyway). For
+  important contests it is suggested to implement some redundance
+  system, so that the \DB\ is distributed among more than one system
+  and can survive the loss of one of them. How to implement such a
+  system is not discussed here at the moment.
+
+  Under Debian and Ubuntu systems the is a nice management system that
+  makes a sysadmin able to keep at the same time many different
+  instances of different versions of PostgreSQL (called
+  ``clusters''). Each cluster is identified by the PostgreSQL version
+  is uses and by a name. You can take advantage of this system to
+  separate the instance you're using for \CMS\ from other databases
+  possibly running on the same machine. Please check
+  \file{/usr/share/doc/postgresql-common/README.Debian.gz} for more
+  information.
+
+  The Debian and Ubuntu packages for PostgreSQL also create a user
+  \id{postgres}, which is automatically given super user rights on
+  each database running on the machine. This means that to do
+  administrative stuff you just use \id{sudo} or \id{su} to became the
+  user \id{postgres}. Then you can give regular SQL commands calling
+  \file{psql}; to create a user you can use the command:
+\begin{verbatim}
+$ createuser cmsuser -P
+Enter password for new role:
+Enter it again:
+Shall the new role be a superuser? (y/n) n
+Shall the new role be allowed to create databases? (y/n) n
+Shall the new role be allowed to create more new roles? (y/n) n
+\end{verbatim}
+  where \id{-P} denotes that you're specifiying the password via the
+  terminal.
+
+  Instead, to create a database you just give:
+\begin{verbatim}
+$ createdb -O cmsuser cmsdb
+\end{verbatim}
+  where with \id{-O} you specify the owner of the database.
+
+  By default, a PostgreSQL instance allows connections only from
+  localhost. To modify this behaviour you have to do two things:
+  first, instruct it to listen also on some IP other than 127.0.0.1;
+  second, tweak its host-based authentication (HBA) configuration. The
+  first thing is easy: just search \id{listen\_addresses} in
+  \file{postgresql.conf} and set it to something appropriate, as for
+  instance:
+\begin{verbatim}
+listen_addresses = '127.0.0.1,192.168.0.x'
+\end{verbatim}
+  or even
+\begin{verbatim}
+listen_addresses = '*'
+\end{verbatim}
+  to listen on all interfaces. Anyway, this is not enough, because by
+  default HBA (which is a sort of Access Control List) enables only
+  localhost to login. HBA configuration is kept in file
+  \file{pg\_hba.conf} and for each combination of user, database and
+  connection type (local or remote, with or without SSL) lists which
+  hosts are allowed to access and using which authentication methods. You will probably need to add some row like:
+\begin{verbatim}
+host  cmsdb  cmsuser  192.168.0.0/24  md5
+\end{verbatim}
+  i.e., user \id{cmsuser} is allowed to login in database \id{cmsdb}
+  using remote connections with or without SSL (the \id{host}
+  keyword), from the hosts in subnet \id{192.168.0.0/24} and using
+  \id{md5} as autenthication method (which sends the password
+  encrypted with MD5; another interesting method is \id{ident}, that
+  in the case of a local connection is able to detect the user running
+  the program and log in with its name, which is just how things work
+  for user \id{postgres}).
+
   \subsection{Installing \CMS}
 
   At the moment the only supported way to install \CMS\ is cloning the
@@ -308,8 +384,8 @@ $ ./setup.py build
 $ sudo ./setup.py install
 \end{verbatim}
 
-  During install, sample configuration files for \CMS\ will be copied
-  in \file{/usr/local/etc/cms.conf} and
+  During installation, sample configuration files for \CMS\ will be
+  copied in \file{/usr/local/etc/cms.conf} and
   \file{/usr/local/etc/cms.ranking.conf}. You should edit them to suit
   your needs (and, particularly, your network configuration). However,
   take care: these two files will be overwritten with the sample
@@ -319,12 +395,17 @@ $ sudo ./setup.py install
   are present, the installer will copy them instead of their
   \file{.sample} counterpart.
 
+  The \file{setup.py} installer will also create on the system a user
+  \id{cmsuser} with number UID 999 and create some system directories
+  so they're writable by such user. Thus, it is suggested to run CMS
+  services with this UID.
+
   \subsection{Configuring \CMS}
 
   Once \CMS\ is installed in all computers you're going to use, you
   have to write a configuration file \file{cms.conf} and optionally a
   configuration file for the \CWS\ (\file{cms.ranking.conf}). Both
-  file are in YAML format and the samples are quite documented, so
+  file are in JSON format and the samples are quite documented, so
   adapting them to your needs should be rather easy. One particularly
   important section in \file{cms.conf} is the definition of shards to
   be used by \CMS\ services (you just need to set \id{core\_services},
@@ -348,15 +429,6 @@ $ sudo ./setup.py install
 
   Once the configuration files are complete, you have to replicate
   them on all the hosts you're going to use for your contest.
-
-  Then you also have to prepare the PostgreSQL database\todo{Merge
-    \file{postgresql\_howto.txt} here}: it is up to you to create a
-  database and a user with full access on it, and to set the
-  PostgreSQL engine to be reachable from all hosts involved in
-  \CMS\ (but, hopefully, not by the contestants or other untrusted
-  people). This will probably involve adding a proper line in
-  \file{pg\_hba.conf} and setting \id{listen\_addresses} in
-  \file{postgresql.conf} to somewhat appropriate.
 
   It is also up to you to configure a firewall so that \CMS\ is not
   reachable by unauthorized people (remember that \CMS\ services have
