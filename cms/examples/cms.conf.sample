@@ -4,6 +4,12 @@
 
 
 
+    "_section": "System-wide configuration",
+
+    "temp_dir": "/tmp",
+
+
+
     "_section": "AsyncLibrary",
 
     "core_services":

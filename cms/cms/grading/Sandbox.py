@@ -28,6 +28,7 @@ import select
 import re
 from functools import wraps
 
+from cms import config
 from cms import logger
 
 
@@ -142,6 +143,8 @@ class Sandbox:
         """
         self.file_cacher = file_cacher
 
+        if temp_dir is None:
+            temp_dir = config.temp_dir
         self.path = tempfile.mkdtemp(dir=temp_dir)
         self.exec_name = 'mo-box'
         self.box_exec = self.detect_box_executable()

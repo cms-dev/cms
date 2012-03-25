@@ -55,6 +55,9 @@ class Config:
         """
         self.async = async_config
 
+        # System-wide
+        self.temp_dir = "/tmp"
+
         # Database.
         self.database = "postgresql+psycopg2://cmsuser@localhost/cms"
         self.database_debug = False

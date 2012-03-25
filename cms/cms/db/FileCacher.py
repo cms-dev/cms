@@ -51,7 +51,7 @@ class FileCacher:
         """
         self.service = service
         if self.service is None:
-            self.base_dir = tempfile.mkdtemp()
+            self.base_dir = tempfile.mkdtemp(config.temp_dir)
         else:
             self.base_dir = os.path.join(
                 config.cache_dir,
