@@ -57,7 +57,11 @@ def do_setup():
                     "cmscommon",
                     "cmsranking",
                     "cmscontrib",
-                    "cmstestsuite"],
+                    "cmstestsuite",
+                    "cmstestsuite.web",
+                    "cmstestsuite.tasks",
+                    "cmstestsuite.tasks.batch_stdio",
+                    "cmstestsuite.tasks.batch_fileio"],
           package_data={
               "cms.async": [
                   os.path.join("static", "*")
