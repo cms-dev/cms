@@ -28,6 +28,8 @@ import random
 import time
 import codecs
 
+from cms import config
+from cms.async import ServiceCoord, get_service_address
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
 import cmstestsuite.web
@@ -259,10 +261,19 @@ def main():
             random.shuffle(user_items)
         users = dict(user_items[:options.actor_num])
 
+    # If the base URL is not specified, we try to guess it; anyway,
+    # the guess code isn't very smart...
+    if options.base_url is not None:
+        base_url = options.base_url
+    else:
+        base_url = "http://%s:%d/" % \
+            (get_service_address(ServiceCoord('ContestWebServer', 0))[0],
+             config.contest_listen_port[0])
+
     actors = [Actor(username, data['password'], DEFAULT_METRICS, tasks,
                     log=RequestLog(log_dir=os.path.join('./test_logs',
                                                         username)),
-                    base_url=options.base_url,
+                    base_url=base_url,
                     submissions_path=options.submissions_path)
               for username, data in users.iteritems()]
     for actor in actors:
