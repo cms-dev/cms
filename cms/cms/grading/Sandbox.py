@@ -28,8 +28,7 @@ import select
 import re
 from functools import wraps
 
-from cms import config
-from cms import logger
+from cms import config, logger
 
 
 class SandboxInterfaceException(Exception):
