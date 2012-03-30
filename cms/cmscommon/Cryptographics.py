@@ -21,12 +21,22 @@
 
 import base64
 import binascii
-import random
 
 from Crypto.Cipher import AES
 
+# Some older versions of pycrypto don't provide a Random module
+# If that's the case, fallback to weak standard library PRG
+try:
+    from Crypto import Random
+    _rndfile = Random.new()
+    get_random_bits = lambda x: _rndfile.read(x)
+except ImportError:
+    import random
+    get_random_bits = lambda x: binascii.unhexlify("%032x" %
+                                                   random.getrandbits(x * 8))
 
-def get_secret_key_unhex():
+
+def _get_secret_key_unhex():
     # Only import this if we need it. Otherwise, we would prefer to
     # remain independent of the rest of CMS.
     from cms import config
@@ -37,11 +47,7 @@ def get_random_key():
     """Generate 16 random bytes, safe to be used as AES key.
 
     """
-    # Bad hack: some older version of Crypto do not support Random
-    # (this also means that the generation isn't as sure as we wanted
-    # it to be...)
-    #return Random.get_random_bytes(16)
-    return binascii.unhexlify("%032x" % random.getrandbits(16 * 8))
+    return get_random_bits(16)
 
 
 def get_hex_random_key():
@@ -75,8 +81,7 @@ def encrypt_string(string, key=None):
 
     """
     if key is None:
-        key = get_secret_key_unhex()
-    # FIXME - This could easily deplete the server entropy pool.
+        key = _get_secret_key_unhex()
     iv2 = get_random_key()
     dec = iv2 + string
     dec += "\x00" * (16 - ((len(dec) - 1) % 16 + 1))
@@ -91,7 +96,7 @@ def decrypt_string(enc, key=None):
 
     """
     if key is None:
-        key = get_secret_key_unhex()
+        key = _get_secret_key_unhex()
     aes = AES.new(key, mode=AES.MODE_CBC)
     try:
         return aes.decrypt(base64.urlsafe_b64decode(
