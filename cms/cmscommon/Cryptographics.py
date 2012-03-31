@@ -30,10 +30,12 @@ try:
     from Crypto import Random
     _rndfile = Random.new()
     get_random_bits = lambda x: _rndfile.read(x)
+    is_random_secure = True
 except ImportError:
     import random
     get_random_bits = lambda x: binascii.unhexlify("%032x" %
                                                    random.getrandbits(x * 8))
+    is_random_secure = False
 
 
 def _get_secret_key_unhex():
