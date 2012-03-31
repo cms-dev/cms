@@ -175,8 +175,6 @@ class Actor(threading.Thread):
 
     def do_step(self, request):
         self.wait_next()
-        if self.die:
-            raise ActorDying()
         self.log.total += 1
         try:
             request.prepare()
@@ -201,10 +199,22 @@ class Actor(threading.Thread):
         exponentially distributed random variable, with parameter
         time_lambda in metrics.
 
+        The total waiting time is divided in lots of little sleep()
+        call each one of 0.1 seconds, so that the waiting gets
+        interrupted if a die signal arrives.
+
+        If a die signal is received, an ActorDying exception is
+        raised.
+
         """
+        SLEEP_PERIOD = 0.1
         time_to_wait = self.metric['time_coeff'] * \
                        random.expovariate(self.metric['time_lambda'])
-        time.sleep(time_to_wait)
+        sleep_num = int(time_to_wait / SLEEP_PERIOD)
+        for i in xrange(sleep_num):
+            time.sleep(SLEEP_PERIOD)
+            if self.die:
+                raise ActorDying()
 
 
 def harvest_contest_data(contest_id):
@@ -228,7 +238,7 @@ def harvest_contest_data(contest_id):
     return users, tasks
 
 
-DEFAULT_METRICS = {'time_coeff':  1.0,
+DEFAULT_METRICS = {'time_coeff':  10.0,
                    'time_lambda': 2.0}
 
 
