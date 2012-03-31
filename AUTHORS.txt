@@ -2,11 +2,12 @@
 We would like to acknowledge all the following people for contributing
 to CMS.
 
-MAIN AUTHORS
+MAIN AUTHORS (have push rights on GIT repository)
 
 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 Stefano Maggiolo <s.maggiolo@gmail.com>
 Matteo Boscariol <boscarim@hotmail.com>
+Luca Wehrstedt <lerks@users.sourceforge.net>
 
 OTHER REGULAR CONTRIBUTORS
 
