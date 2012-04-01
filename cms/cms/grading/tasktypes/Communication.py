@@ -95,7 +95,7 @@ class Communication(TaskType):
         """See TaskType.evaluate_testcase."""
         sandbox_mgr = create_sandbox(self)
         sandbox_user = create_sandbox(self)
-        fifo_dir = tempfile.mkdtemp(config.temp_dir)
+        fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
         fifo_in = os.path.join(fifo_dir, "in")
         fifo_out = os.path.join(fifo_dir, "out")
         os.mkfifo(fifo_in)
