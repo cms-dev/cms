@@ -244,6 +244,7 @@ class AdminWebServer(WebService):
         # Default fallback: don't authorize.
         return False
 
+    @catch_exceptions
     def add_notification(self, timestamp, subject, text):
         """Store a new notification to send at the first
         opportunity (i.e., at the first request for db notifications).
@@ -261,6 +262,7 @@ class MainHandler(BaseHandler):
 
     """
 
+    @catch_exceptions
     def get(self, contest_id=None):
         if contest_id is not None:
             self.contest = self.safe_get_item(Contest, contest_id)
@@ -271,7 +273,8 @@ class MainHandler(BaseHandler):
 
 def SimpleContestHandler(page):
     class Cls(BaseHandler):
-        def get(self, contest_id):
+        @catch_exceptions
+	def get(self, contest_id):
             self.contest = self.safe_get_item(Contest, contest_id)
             r_params = self.render_params()
             self.render(page, **r_params)
@@ -279,6 +282,7 @@ def SimpleContestHandler(page):
 
 
 class ResourcesHandler(BaseHandler):
+    @catch_exceptions
     def get(self, contest_id=None):
         if contest_id is not None:
             self.contest = self.safe_get_item(Contest, contest_id)
@@ -297,10 +301,12 @@ class AddContestHandler(BaseHandler):
     """Adds a new contest.
 
     """
+    @catch_exceptions
     def get(self):
         r_params = self.render_params()
         self.render("add_contest.html", **r_params)
 
+    @catch_exceptions
     def post(self):
         name = self.get_argument("name", "")
         if name == "":
@@ -368,6 +374,7 @@ class AddStatementHandler(BaseHandler):
     """Add a statement to a task.
 
     """
+    @catch_exceptions
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
@@ -375,6 +382,7 @@ class AddStatementHandler(BaseHandler):
         r_params["task"] = task
         self.render("add_statement.html", **r_params)
 
+    @catch_exceptions
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
@@ -410,6 +418,7 @@ class AddAttachmentHandler(BaseHandler):
     """Add an attachment to a task.
 
     """
+    @catch_exceptions
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
@@ -417,6 +426,7 @@ class AddAttachmentHandler(BaseHandler):
         r_params["task"] = task
         self.render("add_attachment.html", **r_params)
 
+    @catch_exceptions
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
@@ -446,6 +456,7 @@ class DeleteAttachmentHandler(BaseHandler):
     """Delete an attachment.
 
     """
+    @catch_exceptions
     def get(self, attachment_id):
         attachment = self.safe_get_item(Attachment, attachment_id)
         task = attachment.task
@@ -458,6 +469,7 @@ class AddManagerHandler(BaseHandler):
     """Add a manager to a task.
 
     """
+    @catch_exceptions
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
@@ -465,6 +477,7 @@ class AddManagerHandler(BaseHandler):
         r_params["task"] = task
         self.render("add_manager.html", **r_params)
 
+    @catch_exceptions
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
@@ -494,6 +507,7 @@ class DeleteManagerHandler(BaseHandler):
     """Delete a manager.
 
     """
+    @catch_exceptions
     def get(self, manager_id):
         manager = self.safe_get_item(Manager, manager_id)
         task = manager.task
@@ -507,6 +521,7 @@ class AddTestcaseHandler(BaseHandler):
     """Add a testcase to a task.
 
     """
+    @catch_exceptions
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
@@ -514,6 +529,7 @@ class AddTestcaseHandler(BaseHandler):
         r_params["task"] = task
         self.render("add_testcase.html", **r_params)
 
+    @catch_exceptions
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
@@ -550,6 +566,7 @@ class DeleteTestcaseHandler(BaseHandler):
     """Delete a testcase.
 
     """
+    @catch_exceptions
     def get(self, testcase_id):
         testcase = self.safe_get_item(Testcase, testcase_id)
         task = testcase.task
@@ -575,6 +592,7 @@ class TaskViewHandler(BaseHandler):
                                   .order_by(Submission.timestamp.desc()).all()
         self.render("task.html", **r_params)
 
+    @catch_exceptions
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
@@ -681,6 +699,7 @@ class TaskStatementViewHandler(FileHandler):
 
     """
     @tornado.web.asynchronous
+    @catch_exceptions
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
         statement = task.statement
@@ -690,6 +709,7 @@ class TaskStatementViewHandler(FileHandler):
 
 
 class AddTaskHandler(SimpleContestHandler("add_task.html")):
+    @catch_exceptions
     def post(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -788,6 +808,7 @@ class EditContestHandler(BaseHandler):
     """Called when managers edit the information of a contest.
 
     """
+    @catch_exceptions
     def post(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -875,6 +896,7 @@ class AddAnnouncementHandler(BaseHandler):
     """Called to actually add an announcement
 
     """
+    @catch_exceptions
     def post(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -891,6 +913,7 @@ class RemoveAnnouncementHandler(BaseHandler):
     """Called to remove an announcement.
 
     """
+    @catch_exceptions
     def get(self, ann_id):
         ann = self.safe_get_item(Announcement, ann_id)
         contest_id = ann.contest.id
@@ -904,6 +927,7 @@ class UserViewHandler(BaseHandler):
     messages), and allows to send the latters.
 
     """
+    @catch_exceptions
     def get(self, user_id):
         user = self.safe_get_item(User, user_id)
         self.contest = user.contest
@@ -912,6 +936,7 @@ class UserViewHandler(BaseHandler):
         r_params["submissions"] = user.submissions
         self.render("user.html", **r_params)
 
+    @catch_exceptions
     def post(self, user_id):
         user = self.safe_get_item(User, user_id)
         self.contest = user.contest
@@ -963,6 +988,7 @@ class UserViewHandler(BaseHandler):
 
 
 class AddUserHandler(SimpleContestHandler("add_user.html")):
+    @catch_exceptions
     def post(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -1022,6 +1048,7 @@ class SubmissionViewHandler(BaseHandler):
     compile please check'.
 
     """
+    @catch_exceptions
     def get(self, submission_id):
         submission = self.safe_get_item(Submission, submission_id)
         self.contest = submission.user.contest
@@ -1036,6 +1063,7 @@ class SubmissionFileHandler(FileHandler):
     """
     # FIXME: Replace with FileFromDigestHandler?
     @tornado.web.asynchronous
+    @catch_exceptions
     def get(self, file_id):
         sub_file = self.safe_get_item(File, file_id)
         submission = sub_file.submission
@@ -1052,6 +1080,7 @@ class QuestionsHandler(BaseHandler):
     """Page to see and send messages to all the contestants.
 
     """
+    @catch_exceptions
     def get(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
@@ -1067,6 +1096,7 @@ class QuestionReplyHandler(BaseHandler):
     """Called when the manager replies to a question made by a user.
 
     """
+    @catch_exceptions
     def post(self, question_id):
         ref = self.get_argument("ref", "/")
         question = self.safe_get_item(Question, question_id)
@@ -1099,6 +1129,7 @@ class QuestionIgnoreHandler(BaseHandler):
     question.
 
     """
+    @catch_exceptions
     def post(self, question_id):
         ref = self.get_argument("ref", "/")
 
@@ -1123,6 +1154,7 @@ class MessageHandler(BaseHandler):
 
     """
 
+    @catch_exceptions
     def post(self, user_id):
         user = self.safe_get_item(User, user_id)
         self.contest = user.contest
@@ -1143,6 +1175,7 @@ class MessageHandler(BaseHandler):
 class FileFromDigestHandler(FileHandler):
 
     @tornado.web.asynchronous
+    @catch_exceptions
     def get(self, digest, filename):
         #TODO: Accept a MIME type
         self.sql_session.close()
@@ -1153,6 +1186,7 @@ class NotificationsHandler(BaseHandler):
     """Displays notifications.
 
     """
+    @catch_exceptions
     def get(self):
         res = []
         last_notification = float(self.get_argument("last_notification", "0"))
