@@ -492,11 +492,11 @@ table.scoreboard tbody tr.selected td.l_name
    a set of keyframes. We use the unprefixed rules and the following prefixes:
     -webkit-...  -moz-...  -ms-...  -o-...
 
-   In addition, we have to cover many cases. A row that's being animated can
-   either be seleted or hovered (or both). Thus, we have the following cases:
-    {"selected_", ""} x {"hover_", ""} x {"score_"} x {"up", "down"}
+   In addition, we have to cover some particular cases. A row that's being
+   animated can seleted or unselected. Thus, we have the following cases:
+    ("selected_")? "score_" ("up"|"down")
 
-   Just to give some numbers: we would have 40 sets of keyframes in total.
+   Just to give some numbers: we have 20 sets of keyframes in total.
  */
 
 table.scoreboard tbody tr.score_up td.rank
