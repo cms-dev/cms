@@ -369,33 +369,30 @@ class ScoringService(Service):
                             "begin": contest.start,
                             "end": contest.stop}
 
-            users = [["/users/%s" % encode_id(user.username),
-                      {"f_name": user.first_name,
-                       "l_name": user.last_name,
-                       "team": None}]
-                     for user in contest.users
-                     if not user.hidden]
+            users = dict((encode_id(user.username),
+                          {"f_name": user.first_name,
+                           "l_name": user.last_name,
+                           "team": None})
+                         for user in contest.users
+                         if not user.hidden)
 
-            tasks = [["/tasks/%s" % encode_id(task.name),
-                      {"name": task.title,
-                       "contest": encode_id(contest.name),
-                       "max_score": 100.0,
-                       "extra_headers": [],
-                       "order": task.num,
-                       "short_name": encode_id(task.name)}]
-                     for task in contest.tasks]
+            tasks = dict((encode_id(task.name),
+                          {"name": task.title,
+                           "contest": encode_id(contest.name),
+                           "max_score": 100.0,
+                           "extra_headers": [],
+                           "order": task.num,
+                           "short_name": encode_id(task.name)})
+                         for task in contest.tasks)
 
         safe_put_data(connection, contest_url, contest_data, auth,
                       "sending contest %s" % contest_name)
 
-        for user in users:
-            safe_put_data(connection, user[0], user[1], auth,
-                          "sending user %s" % (user[1]["l_name"] + " " +
-                                                user[1]["f_name"]))
+        safe_put_data(connection, "/users/", users, auth,
+                      "sending users")
 
-        for task in tasks:
-            safe_put_data(connection, task[0], task[1], auth,
-                          "sending task %s" % task[1]["name"])
+        safe_put_data(connection, "/tasks/", tasks, auth,
+                      "sending tasks")
 
         return True
 
