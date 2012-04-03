@@ -60,7 +60,7 @@ class Submission(Entity):
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)
         except AssertionError as message:
-            raise InvalidData(message)
+            raise InvalidData(str(message))
 
     def set(self, data):
         self.validate(data)

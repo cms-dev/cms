@@ -103,6 +103,15 @@ class Store(object):
         """
         self._update_callbacks.append(callback)
 
+    def add_delete_callback(self, callback):
+        """Add a callback to be called when entities are deleted.
+
+        Callbacks can be any kind of callable objects. They must accept
+        a single argument: the key of the entity.
+
+        """
+        self._delete_callbacks.append(callback)
+
     def _verify_key(self, key, must_be_present=False):
         """Verify that the key has the correct type.
 
@@ -119,22 +128,13 @@ class Store(object):
                (key not in self._store and must_be_present):
             raise InvalidKey
 
-    def add_delete_callback(self, callback):
-        """Add a callback to be called when entities are deleted.
-
-        Callbacks can be any kind of callable objects. They must accept
-        a single argument: the key of the entity.
-
-        """
-        self._delete_callbacks.append(callback)
-
     def create(self, key, data):
         """Create a new entity.
 
         Create a new entity with the given key and the given data.
 
         key (str): the key with which the entity will be later accessed
-        data (dict): the properties of the entity
+        data (str): the properties of the entity (a dict encoded in JSON)
 
         Raise InvalidKey if key isn't a str or if an entity with the same
         key is already present in the store.
@@ -168,7 +168,7 @@ class Store(object):
         Update an existing entity with the given key and the given data.
 
         key (str): the key of the entity that has to be updated
-        data (dict): the new properties of the entity
+        data (str): the new properties of the entity (a dict encoded in JSON)
 
         Raise InvalidKey if key isn't a str or if no entity with that key
         is present in the store.
@@ -196,6 +196,51 @@ class Store(object):
         except IOError:
             logger.error("IOError occured", exc_info=True)
 
+    def merge_list(self, data):
+        """Merge a list of entities.
+
+        Take a dictionary of entites and, for each of them:
+         - if it's not present in the store, create it
+         - if it's present, update it
+
+        data (str): the dictionary of entities (a dict encoded in JSON)
+
+        Raise InvalidData if data cannot be parsed, if an entity is missing
+        some properties or if properties are of the wrong type.
+
+        """
+        try:
+            data_dict = json.loads(data)
+            assert type(data_dict) is dict, "Not a dictionary"
+            item_dict = dict()
+            for key, value in data_dict.iteritems():
+                try:
+                    item = self._entity()
+                    item.set(value)
+                    item.key = key
+                    item_dict[key] = item
+                except InvalidData as exc:
+                    exc.message = '[entity %s] %s' % (key, exc)
+                    exc.args = exc.message,
+                    raise exc
+        except ValueError:
+            raise InvalidData('Invalid JSON')
+        except AssertionError as message:
+            raise InvalidData(str(message))
+
+        for key, value in iter_dict.iteritems():
+            # insert entity
+            self._store[key] = value
+            # notify callbacks
+            for callback in self._update_callbacks:
+                callback(key)
+            # reflect changes on the persistent storage
+            try:
+                with open(os.path.join(self._path, key + '.json'), 'w') as rec:
+                    rec.write(json.dumps(value.dump()))
+            except IOError:
+                logger.error("IOError occured", exc_info=True)
+
     def delete(self, key):
         """Delete an entity.
 
@@ -220,6 +265,24 @@ class Store(object):
         except OSError:
             logger.error("OSError occured", exc_info=True)
 
+    def delete_list(self):
+        """Delete all entities.
+
+        Delete all existing entities from the store.
+
+        """
+        for key in list(self._store.iterkeys()):
+            # delete entity
+            del self._store[key]
+            # notify callbacks
+            for callback in self._delete_callbacks:
+                callback(key)
+            # reflect changes on the persistent storage
+            try:
+                os.remove(os.path.join(self._path, key + '.json'))
+            except OSError:
+                logger.error("OSError occured", exc_info=True)
+
     def retrieve(self, key):
         """Retrieve an entity.
 
@@ -237,7 +300,7 @@ class Store(object):
         # TODO remove "key" field from returned entity
         return json.dumps(self._store[key].get())
 
-    def list(self):
+    def retrieve_list(self):
         """List all entities."""
         result = dict()
         for key, value in self._store.iteritems():

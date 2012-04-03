@@ -96,9 +96,12 @@ def create_handler(entity_store):
 
     Return a RESTful Tornado RequestHandler to manage the given
     EntityStore. The HTTP methods are mapped to the CRUD actions
-    available on the store.  The returned handler is supposed to be
+    available on the store. The returned handler is supposed to be
     paired with an URL like:
-        /<root>/<entity>/(.+)   (the group matches the key of the entity)
+        /<root>/<entity>/(.*)   (the group matches the key of the entity)
+
+    When the key is an empty string, we assume the operation is targeted
+    on the entire collection of entities.
 
     """
     if not isinstance(entity_store, Store.Store):
@@ -109,15 +112,19 @@ def create_handler(entity_store):
         @authenticated
         def put(self, entity_id):
             if not entity_id:
-                logger.error("No entity ID specified", exc_info=False,
-                             extra={'location': self.request.full_url(),
-                                    'details': self.request.body})
-                raise tornado.web.HTTPError(404)
-            if entity_id not in entity_store:
+                # merge list
+                try:
+                    entity_store.merge_list(self.request.body)
+                except InvalidData as exc:
+                    logger.error(str(exc), exc_info=False,
+                                 extra={'location': self.request.full_url(),
+                                        'details': self.request.body})
+                    raise tornado.web.HTTPError(400)
+            elif entity_id not in entity_store:
                 # create
                 try:
                     entity_store.create(entity_id, self.request.body)
-                except InvalidData, exc:
+                except InvalidData as exc:
                     logger.error(str(exc), exc_info=False,
                                  extra={'location': self.request.full_url(),
                                         'details': self.request.body})
@@ -126,7 +133,7 @@ def create_handler(entity_store):
                 # update
                 try:
                     entity_store.update(entity_id, self.request.body)
-                except InvalidData, exc:
+                except InvalidData as exc:
                     logger.error(str(exc), exc_info=False,
                                  extra={'location': self.request.full_url(),
                                         'details': self.request.body})
@@ -134,21 +141,26 @@ def create_handler(entity_store):
 
         @authenticated
         def delete(self, entity_id):
-            # delete
-            try:
-                entity_store.delete(entity_id)
-            except InvalidKey:
-                raise tornado.web.HTTPError(404)
+            if not entity_id
+                # delete list
+                entity_store.delete_list()
+            elif entity_id in entity_store:
+                # delete
+                try:
+                    entity_store.delete(entity_id)
+                except InvalidKey:
+                    logger.error("Entity %s doesn't exist" % entity_id,
+                                 extra={'location': self.request.full_url()})
+                    raise tornado.web.HTTPError(404)
 
         def get(self, entity_id):
             if not entity_id:
-                # list
-                self.write(entity_store.list() + '\n')
+                # retrieve list
+                self.write(entity_store.retrieve_list() + '\n')
             else:
                 # retrieve
                 try:
-                    entity = entity_store.retrieve(entity_id)
-                    self.write(entity + '\n')
+                    self.write(entity_store.retrieve(entity_id) + '\n')
                 except InvalidKey:
                     raise tornado.web.HTTPError(404)
 
