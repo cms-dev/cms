@@ -141,7 +141,7 @@ def create_handler(entity_store):
 
         @authenticated
         def delete(self, entity_id):
-            if not entity_id
+            if not entity_id:
                 # delete list
                 entity_store.delete_list()
             elif entity_id in entity_store:
