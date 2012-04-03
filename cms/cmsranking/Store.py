@@ -228,7 +228,7 @@ class Store(object):
         except AssertionError as message:
             raise InvalidData(str(message))
 
-        for key, value in iter_dict.iteritems():
+        for key, value in item_dict.iteritems():
             # insert entity
             self._store[key] = value
             # notify callbacks
