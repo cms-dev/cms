@@ -655,7 +655,7 @@ var DataStore = new function () {
 
         self.init_contests();
         self.init_teams();
-    }
+    };
 
 
     ////// Event listeners
@@ -671,13 +671,30 @@ var DataStore = new function () {
        (without processing it) until the initial data is ready.
      */
 
-    self.es = new EventSource(Config.get_event_url());
-    self.es.addEventListener("contest", self.contest_listener);
-    self.es.addEventListener("task", self.task_listener);
-    self.es.addEventListener("team", self.team_listener);
-    self.es.addEventListener("user", self.user_listener);
-    self.es.addEventListener("score", self.score_listener);
+    self.create_event_source = function () {
+        self.es = new EventSource(Config.get_event_url());
+        self.es.addEventListener("contest", self.contest_listener);
+        self.es.addEventListener("task", self.task_listener);
+        self.es.addEventListener("team", self.team_listener);
+        self.es.addEventListener("user", self.user_listener);
+        self.es.addEventListener("score", self.score_listener);
+        self.es.addEventListener("error", self.connection_failed);
+    };
 
+    self.connection_failed = function() {
+        if (self.es.readyState != EventSource.CLOSED)
+            return;
+        if (self.reconnect_id)
+            return;
+
+        self.reconnect_id = window.setTimeout(function() {
+            delete self.es;
+            delete self.reconnect_id;
+            self.create_event_source();
+        }, 5000);
+    };
+
+    self.create_event_source();
 
     ////// Sorted contest and task list
 
