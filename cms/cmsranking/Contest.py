@@ -56,6 +56,8 @@ class Contest(Entity):
                 "Field 'begin' isn't an integer"
             assert type(data['end']) is int, \
                 "Field 'end' isn't an integer"
+            assert data['begin'] <= data['end'], \
+                "Field 'begin' is greater than 'end'"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)
         except AssertionError as message:

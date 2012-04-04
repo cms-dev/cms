@@ -75,8 +75,6 @@ class Task(Entity):
                     "Field 'extra_headers' isn't a list of strings"
             assert type(data['order']) is int, \
                 "Field 'order' isn't an integer"
-            assert data['order'] >= 0, \
-                "Field 'order' is negative"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)
         except AssertionError as message:
