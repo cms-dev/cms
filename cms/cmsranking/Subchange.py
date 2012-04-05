@@ -20,6 +20,8 @@
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
 
+import Submission
+
 
 class Subchange(Entity):
     """The entity representing a change in the status of a submission.
@@ -103,6 +105,9 @@ class Subchange(Entity):
             if result[field] is None:
                 del result[field]
         return result
+
+    def consistent(self):
+        return self.submission in Submission.store
 
 
 store = Store(Subchange, 'subchanges')

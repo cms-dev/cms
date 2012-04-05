@@ -36,7 +36,7 @@ class Store(object):
     when something changes by providing appropriate callbacks.
 
     """
-    def __init__(self, entity, dir_name):
+    def __init__(self, entity, dir_name, depends=[]):
         """Initialize an empty EntityStore.
 
         The entity definition given as argument will define what kind of
@@ -51,6 +51,7 @@ class Store(object):
                              "isn't a subclass of Entity")
         self._entity = entity
         self._path = os.path.join(config.lib_dir, dir_name)
+        self._depends = depends
         self._store = dict()
         self._create_callbacks = list()
         self._update_callbacks = list()
@@ -148,6 +149,8 @@ class Store(object):
         try:
             item = self._entity()
             item.set(json.loads(data))
+            if not item.consistent():
+                raise InvalidData('Inconsistent data')
             item.key = key
             self._store[key] = item
         except ValueError:
@@ -182,6 +185,8 @@ class Store(object):
         try:
             item = self._entity()
             item.set(json.loads(data))
+            if not item.consistent():
+                raise InvalidData('Inconsistent data')
             item.key = key
             self._store[key] = item
         except ValueError:
@@ -217,6 +222,8 @@ class Store(object):
                 try:
                     item = self._entity()
                     item.set(value)
+                    if not item.consistent():
+                        raise InvalidData('Inconsistent data')
                     item.key = key
                     item_dict[key] = item
                 except InvalidData as exc:
@@ -256,6 +263,11 @@ class Store(object):
 
         # delete entity
         del self._store[key]
+        # enforce consistency
+        for depend in self._depends:
+            for o_key, o_value in list(depend.store._store.iteritems()):
+                if not o_value.consistent():
+                    depend.store.delete(o_key)
         # notify callbacks
         for callback in self._delete_callbacks:
             callback(key)
@@ -272,16 +284,7 @@ class Store(object):
 
         """
         for key in list(self._store.iterkeys()):
-            # delete entity
-            del self._store[key]
-            # notify callbacks
-            for callback in self._delete_callbacks:
-                callback(key)
-            # reflect changes on the persistent storage
-            try:
-                os.remove(os.path.join(self._path, key + '.json'))
-            except OSError:
-                logger.error("OSError occured", exc_info=True)
+            self.delete(key)
 
     def retrieve(self, key):
         """Retrieve an entity.

@@ -20,6 +20,9 @@
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
 
+import Contest
+import Submission
+
 
 class Task(Entity):
     """The entity representing a task.
@@ -104,5 +107,8 @@ class Task(Entity):
     def dump(self):
         return self.__dict__
 
+    def consistent(self):
+        return self.contest in Contest.store
 
-store = Store(Task, 'tasks')
+
+store = Store(Task, 'tasks', [Submission])

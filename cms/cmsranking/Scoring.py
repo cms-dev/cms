@@ -171,9 +171,7 @@ class Score:
     def delete_subchange(self, key):
         # Delete the subchange from the (sorted) list and reset the
         # history.
-        for i in range(len(self._changes)):
-            if self._changes[i].key == key:
-                del self._changes[i]
+        self._changes = filter(lambda a: a.key != key, self._changes)
         self.reset_history()
         logger.info("Reset history after deleting subchange '" + key + "'")
 
@@ -196,8 +194,9 @@ class Score:
         # A deleted submission shouldn't cause any history changes
         # (because its associated subchanges are deleted before it)
         # but we reset it just to be sure...
-        del self._submissions[key]
-        self.reset_history()
+        if key in self._submissions:
+            del self._submissions[key]
+            self.reset_history()
 
 
 class ScoringStore:
@@ -275,8 +274,8 @@ class ScoringStore:
         # our own or we ask every Score to delete the submission
         # (would be very expensive) Since the deletion is very
         # unfrequent we choose the second option.
-        for u_id, user in self._scores.itervalues():
-            for t_id, task in user.itervalues():
+        for u_id, user in self._scores.iteritems():
+            for t_id, task in user.iteritems():
                 old_score = task.get_score()
                 task.delete_submission(key)
                 new_score = task.get_score()
@@ -308,8 +307,8 @@ class ScoringStore:
         # don't know which submission the subchange belongs to, we
         # don't know which Score to ask to delete it. So we ask it to
         # all of them.
-        for u_id, user in self._scores.itervalues():
-            for t_id, task in user.itervalues():
+        for u_id, user in self._scores.iteritems():
+            for t_id, task in user.iteritems():
                 old_score = task.get_score()
                 task.delete_subchange(key)
                 new_score = task.get_score()

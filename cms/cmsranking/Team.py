@@ -20,6 +20,8 @@
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
 
+import User
+
 
 class Team(Entity):
     """The entity representing a team.
@@ -68,4 +70,4 @@ class Team(Entity):
         return self.__dict__
 
 
-store = Store(Team, 'teams')
+store = Store(Team, 'teams', [User])

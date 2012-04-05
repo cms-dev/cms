@@ -20,6 +20,9 @@
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
 
+import Team
+import Submission
+
 
 class User(Entity):
     """The entity representing a user.
@@ -82,5 +85,8 @@ class User(Entity):
     def dump(self):
         return self.__dict__
 
+    def consistent(self):
+        return self.team is None or self.team in Team.store
 
-store = Store(User, 'users')
+
+store = Store(User, 'users', [Submission])

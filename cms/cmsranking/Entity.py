@@ -77,3 +77,14 @@ class Entity(object):
 
         """
         pass
+
+    def consistent(self):
+        """Check if the entity is consistent.
+
+        Verify that all references to other entities are correct (i.e. those
+        entities actually exist).
+
+        return (bool): the result of this check
+
+        """
+        return True
