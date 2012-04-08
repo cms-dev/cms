@@ -234,15 +234,15 @@ class ResourceService(Service):
         ram_cached = psutil.cached_phymem()
         ram_buffers = psutil.phymem_buffers()
         data["memory"] = {
-            "ram_total": psutil.TOTAL_PHYMEM / 1048576.0,
-            "ram_available": psutil.avail_phymem() / 1048576.0,
+            "ram_total": psutil.phymem_usage().total / 1048576.0,
+            "ram_available": psutil.phymem_usage().free / 1048576.0,
             "ram_cached": ram_cached / 1048576.0,
             "ram_buffers": ram_buffers / 1048576.0,
-            "ram_used": (psutil.used_phymem() - ram_cached - ram_buffers)
+            "ram_used": (psutil.phymem_usage().used - ram_cached - ram_buffers)
                               / 1048576.0,
-            "swap_total": psutil.total_virtmem() / 1048576.0,
-            "swap_available": psutil.avail_virtmem() / 1048576.0,
-            "swap_used": psutil.used_virtmem() / 1048576.0,
+            "swap_total": psutil.virtmem_usage().total / 1048576.0,
+            "swap_available": psutil.virtmem_usage().free / 1048576.0,
+            "swap_used": psutil.virtmem_usage().used / 1048576.0,
             }
 
         data["services"] = {}
