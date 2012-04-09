@@ -39,6 +39,16 @@ from cms.async.AsyncLibrary import Service, rpc_method, RemoteService
 from cms.db import ask_for_contest
 
 
+# We need to use one set of methods for versions < 0.3.0, and another
+# for versions >= 0.3.0. See
+# http://code.google.com/p/psutil/wiki/Documentation#Memory .
+psutil_version = tuple(int(x) for x in psutil.__version__.split("."))
+assert psutil_version >= (0, 2, 0), \
+       "Please install python-psutil >= 0.2.0."
+
+B_TO_MB = 1024.0 * 1024.0
+
+
 class ResourceService(Service):
     """This service looks at the resources usage (CPU, load, memory,
     network) every seconds, stores it locally, and offer (new) data
@@ -230,20 +240,36 @@ class ResourceService(Service):
         data["cpu"]["num_cpu"] = psutil.NUM_CPUS
         self._prev_cpu_times = cpu_times
 
-        # Memory
+        # Memory. We differentiate from old and deprecated (< 0.3.0)
+        # methods to the new ones. Remove the differentiation when we
+        # drop the support for Ubuntu 11.10 (which ships 0.2.1).
         ram_cached = psutil.cached_phymem()
         ram_buffers = psutil.phymem_buffers()
-        data["memory"] = {
-            "ram_total": psutil.TOTAL_PHYMEM / 1048576.0,
-            "ram_available": psutil.avail_phymem() / 1048576.0,
-            "ram_cached": ram_cached / 1048576.0,
-            "ram_buffers": ram_buffers / 1048576.0,
-            "ram_used": (psutil.used_phymem() - ram_cached - ram_buffers)
-                              / 1048576.0,
-            "swap_total": psutil.total_virtmem() / 1048576.0,
-            "swap_available": psutil.avail_virtmem() / 1048576.0,
-            "swap_used": psutil.used_virtmem() / 1048576.0,
-            }
+        if psutil_version < (0, 3, 0):
+            data["memory"] = {
+                "ram_total": psutil.TOTAL_PHYMEM / B_TO_MB,
+                "ram_available": psutil.avail_phymem() / B_TO_MB,
+                "ram_cached": ram_cached / B_TO_MB,
+                "ram_buffers": ram_buffers / B_TO_MB,
+                "ram_used": (psutil.used_phymem() - ram_cached - ram_buffers)
+                                  / B_TO_MB,
+                "swap_total": psutil.total_virtmem() / B_TO_MB,
+                "swap_available": psutil.avail_virtmem() / B_TO_MB,
+                "swap_used": psutil.used_virtmem() / B_TO_MB,
+                }
+        else:
+            phymem = psutil.phymem_usage()
+            virtmem = psutil.virtmem_usage()
+            data["memory"] = {
+                "ram_total": phymem.total / B_TO_MB,
+                "ram_available": phymem.free / B_TO_MB,
+                "ram_cached": ram_cached / B_TO_MB,
+                "ram_buffers": ram_buffers / B_TO_MB,
+                "ram_used": (phymem.used - ram_cached - ram_buffers) / B_TO_MB,
+                "swap_total": virtmem.total / B_TO_MB,
+                "swap_available": virtmem.free / B_TO_MB,
+                "swap_used": virtmem.used / B_TO_MB,
+                }
 
         data["services"] = {}
         # Details of our services
