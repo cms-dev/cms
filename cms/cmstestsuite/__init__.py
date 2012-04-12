@@ -224,7 +224,7 @@ def start_prog(path, shard=0, contest=None):
     return spawn(args)
 
 
-def start_service(service_name, shard=0, contest=None):
+def start_servicer(service_name, check, shard=0, contest=None):
     """Start a CMS service."""
 
     info("Starting %s." % service_name)
@@ -234,23 +234,35 @@ def start_service(service_name, shard=0, contest=None):
     prog = start_prog(executable, shard=shard, contest=contest)
 
     # Wait for service to come up - ping it!
-    addr, port = cms_config["core_services"][service_name][shard]
-
-    attempts = 10
-    while attempts > 0:
-        attempts -= 1
-        rs = RemoteService(service_name, shard)
+    attempts = 0
+    while attempts <= 12:
+        attempts += 1
         try:
-            reply = rs.call("echo", {"string": "hello"})
-            if reply['__data'] == 'hello':
-                break
+            check(service_name, shard, contest)
         except Exception:
-            time.sleep(0.5)
+            time.sleep(0.1 * (1.2 ** attempts))
             continue
+        break
     else:
         raise FrameworkException("Failed to bring up service %s/%d" %
                                  (service_name, shard))
 
+    return prog
+
+
+def start_service(service_name, shard=0, contest=None):
+    """Start a CMS service."""
+
+    def check(service_name, shard, contest):
+        rs = RemoteService(service_name, shard)
+        reply = rs.call("echo", {"string": "hello"})
+        if reply['__data'] == 'hello':
+            return True
+        else:
+            raise Exception("Strange response from service.")
+
+    prog = start_servicer(service_name, check, shard, contest)
+    rs = RemoteService(service_name, shard)
     running_services[(service_name, shard, contest)] = (rs, prog)
 
     return prog
@@ -261,38 +273,19 @@ def restart_service(service_name, shard=0, contest=None):
     return start_service(service_name, shard, contest)
 
 
-def start_server(service_name, contest=None):
+def start_server(service_name, shard=0, contest=None):
     """Start a CMS server."""
 
-    info("Starting %s." % service_name)
-    executable = 'cms/service/%s.py' % service_name
-    if CONFIG["TEST_DIR"] is None:
-        executable = 'cms%s' % service_name
-    prog = start_prog(executable, contest=contest)
-
-    # Wait for service to come up - ping it!
-    if service_name == 'AdminWebServer':
-        port = cms_config['admin_listen_port']
-    else:
-        port = cms_config['contest_listen_port'][0]
-
-    attempts = 10
-    while attempts > 0:
-        attempts -= 1
-
+    def check(service_name, shard, contest):
+        if service_name == 'AdminWebServer':
+            port = cms_config['admin_listen_port']
+        else:
+            port = cms_config['contest_listen_port'][shard]
         sock = socket.socket()
-        try:
-            sock.connect(('127.0.0.1', port))
-        except:
-            time.sleep(0.5)
-            continue
-
+        sock.connect(('127.0.0.1', port))
         sock.close()
-        break
-    else:
-        raise FrameworkException("Failed to bring up server %s" %
-                                 (service_name))
 
+    prog = start_servicer(service_name, check, shard, contest)
     running_servers[service_name] = prog
 
     return prog
