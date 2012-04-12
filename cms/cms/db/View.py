@@ -24,7 +24,8 @@ directly (import from SQLAlchemyAll).
 
 """
 
-from sqlalchemy import Column, ForeignKey, Integer, Float
+from sqlalchemy import Column, ForeignKey, UniqueConstraint, \
+     Integer, Float
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import mapped_collection
 
@@ -108,6 +109,10 @@ class Score(Base):
 
     """
     __tablename__ = 'scores'
+    __table_args__ = (
+        UniqueConstraint('rankingview_id', 'task_id', "user_id",
+                         name='cst_scores_rankingview_id_task_id_user_id'),
+        )
 
     rankingview_keyfunc = lambda s: (s.user.username, s.task.num)
 

@@ -26,7 +26,8 @@ used directly (import  from SQLAlchemyAll).
 
 import time
 
-from sqlalchemy import Column, ForeignKey, Integer, String, Float
+from sqlalchemy import Column, ForeignKey, UniqueConstraint, \
+     Integer, String, Float
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -270,6 +271,10 @@ class Token(Base):
 
     """
     __tablename__ = 'tokens'
+    __table_args__ = (
+        UniqueConstraint('submission_id',
+                         name='cst_tokens_submission_id'),
+        )
 
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)
@@ -311,6 +316,10 @@ class File(Base):
 
     """
     __tablename__ = 'files'
+    __table_args__ = (
+        UniqueConstraint('submission_id', 'filename',
+                         name='cst_files_submission_id_filename'),
+        )
 
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)
@@ -352,6 +361,10 @@ class Executable(Base):
 
     """
     __tablename__ = 'executables'
+    __table_args__ = (
+        UniqueConstraint('submission_id', 'filename',
+                         name='cst_executables_submission_id_filename'),
+        )
 
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)
@@ -393,6 +406,10 @@ class Evaluation(Base):
 
     """
     __tablename__ = 'evaluations'
+    __table_args__ = (
+        UniqueConstraint('submission_id', 'num',
+                         name='cst_evaluations_submission_id_num'),
+        )
 
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)

@@ -48,6 +48,7 @@ class ScriptsContainer(object):
             ("20120223", "changed_batch_parameters"),
             ("20120313", "changed_batch_iofile_parameters"),
             ("20120319", "change_scoretype_names"),
+            ("20120412", "add_unique_constraints"),
             ]
         self.list.sort()
 
@@ -348,6 +349,37 @@ class ScriptsContainer(object):
                 session.execute("UPDATE tasks SET score_type = '%s' "
                                 "WHERE score_type = 'ScoreType%s';" %
                                 (score_type, score_type))
+
+    @staticmethod
+    def add_unique_constraints():
+        """Add a bunch of constraints to the DB...
+
+        ...that we were too lazy to do right away. See code for the
+        constraints.
+
+        """
+        # First value of the pair is the table name, the second is the
+        # list of columns.
+        constraints = [["attachments", ["task_id", "filename"]],
+                       ["evaluations", ["submission_id", "num"]],
+                       ["executables", ["submission_id", "filename"]],
+                       ["files", ["submission_id", "filename"]],
+                       ["managers", ["task_id", "filename"]],
+                       ["scores", ["rankingview_id", "task_id", "user_id"]],
+                       ["task_testcases", ["task_id", "num"]],
+                       ["tasks", ["contest_id", "num"]],
+                       ["tokens", ["submission_id"]],
+                       ["users", ["contest_id", "username"]],
+                       ["tasks", ["contest_id", "name"]],
+                       ]
+
+        with SessionGen(commit=True) as session:
+            for table, columns in constraints:
+                name = "cst_" + table + "_" + "_".join(columns)
+                columns_list = "(" + ", ".join(columns) + ")"
+                session.execute("ALTER TABLE %s "
+                                "ADD CONSTRAINT %s "
+                                "UNIQUE %s;" % (table, name, columns_list))
 
 
 def execute_single_script(scripts_container, script):

@@ -24,7 +24,8 @@ directly (import it from SQLAlchemyAll).
 
 """
 
-from sqlalchemy import Column, ForeignKey, Boolean, Integer, Float, String
+from sqlalchemy import Column, ForeignKey, UniqueConstraint,\
+     Boolean, Integer, Float, String
 from sqlalchemy.orm import relationship, backref
 
 from cms.db.SQLAlchemyUtils import Base
@@ -39,6 +40,10 @@ class User(Base):
     # TODO: we really need to split this as a user (as in: not paired
     # with a contest) and a participation.
     __tablename__ = 'users'
+    __table_args__ = (
+        UniqueConstraint('contest_id', 'username',
+                         name='cst_user_contest_id_username'),
+        )
 
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)

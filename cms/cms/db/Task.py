@@ -24,8 +24,8 @@ directly (import it from SQLAlchemyAll).
 
 """
 
-from sqlalchemy import Column, ForeignKey, Boolean, Integer, String, Float, \
-     CheckConstraint
+from sqlalchemy import Column, ForeignKey, UniqueConstraint, CheckConstraint, \
+     Boolean, Integer, String, Float
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -40,6 +40,12 @@ class Task(Base):
 
     """
     __tablename__ = 'tasks'
+    __table_args__ = (
+        UniqueConstraint('contest_id', 'num',
+                         name='cst_task_contest_id_num'),
+        UniqueConstraint('contest_id', 'name',
+                         name='cst_task_contest_id_name'),
+        )
 
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)
@@ -206,6 +212,10 @@ class Testcase(Base):
 
     """
     __tablename__ = 'task_testcases'
+    __table_args__ = (
+        UniqueConstraint('task_id', 'num',
+                         name='cst_task_testcases_task_id_num'),
+        )
 
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)
@@ -257,7 +267,10 @@ class Attachment(Base):
 
     """
     __tablename__ = 'attachments'
-
+    __table_args__ = (
+        UniqueConstraint('task_id', 'filename',
+                         name='cst_attachments_task_id_filename'),
+        )
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)
 
@@ -298,6 +311,10 @@ class Manager(Base):
 
     """
     __tablename__ = 'managers'
+    __table_args__ = (
+        UniqueConstraint('task_id', 'filename',
+                         name='cst_managers_task_id_filename'),
+        )
 
     # Auto increment primary key.
     id = Column(Integer, primary_key=True)
