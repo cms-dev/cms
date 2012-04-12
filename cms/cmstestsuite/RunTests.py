@@ -337,22 +337,29 @@ def main():
         info("Re-running %d failed tests from last run." % len(test_list))
 
     # Load config from cms.conf.
-    git_root = subprocess.check_output(
-        "git rev-parse --show-toplevel", shell=True).strip()
+    try:
+        git_root = subprocess.check_output(
+            "git rev-parse --show-toplevel", shell=True,
+            stderr=open(os.devnull, "w")).strip()
+    except subprocess.CalledProcessError:
+        git_root = None
     CONFIG["TEST_DIR"] = git_root
-    CONFIG["CONFIG_PATH"] = "cms/examples/cms.conf"
+    CONFIG["CONFIG_PATH"] = "%s/cms/examples/cms.conf" % CONFIG["TEST_DIR"]
+    if CONFIG["TEST_DIR"] is None:
+        CONFIG["CONFIG_PATH"] = "/usr/local/etc/cms.conf"
     cms_config = get_cms_config()
 
     if not config_is_usable(cms_config):
         return 1
 
-    # Set up our expected environment.
-    os.chdir("%(TEST_DIR)s/cms" % CONFIG)
-    os.environ["PYTHONPATH"] = "%(TEST_DIR)s/cms" % CONFIG
+    if CONFIG["TEST_DIR"] is not None:
+        # Set up our expected environment.
+        os.chdir("%(TEST_DIR)s/cms" % CONFIG)
+        os.environ["PYTHONPATH"] = "%(TEST_DIR)s/cms" % CONFIG
 
-    # Clear out any old coverage data.
-    info("Clearing old coverage data.")
-    sh("python-coverage erase")
+        # Clear out any old coverage data.
+        info("Clearing old coverage data.")
+        sh("python-coverage erase")
 
     # Fire us up!
     start_generic_services()

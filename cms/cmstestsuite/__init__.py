@@ -127,7 +127,7 @@ class RemoteService:
 
 def read_cms_config():
     global cms_config
-    cms_config = json.load(open("%(TEST_DIR)s/%(CONFIG_PATH)s" % CONFIG))
+    cms_config = json.load(open("%(CONFIG_PATH)s" % CONFIG))
 
 
 def get_cms_config():
@@ -164,8 +164,9 @@ def spawn(cmdline):
     if CONFIG["VERBOSITY"] >= 1:
         print '$', ' '.join(cmdline)
 
-    cmdline = ['python-coverage', 'run', '-p'] + \
-        cmdline
+    if CONFIG["TEST_DIR"] is not None:
+        cmdline = ['python-coverage', 'run', '-p'] + \
+                  cmdline
 
     if CONFIG["VERBOSITY"] >= 3:
         stdout = None
@@ -202,7 +203,7 @@ def configure_cms(options):
                 lines[i] = '%s"%s": %s,\n' % (whitespace, key, options[key])
                 unset.remove(key)
 
-    out_file = open("%(TEST_DIR)s/%(CONFIG_PATH)s" % CONFIG, "w")
+    out_file = open("%(CONFIG_PATH)s" % CONFIG, "w")
     for l in lines:
         out_file.write(l)
     out_file.close()
@@ -227,9 +228,10 @@ def start_service(service_name, shard=0, contest=None):
     """Start a CMS service."""
 
     info("Starting %s." % service_name)
-    prog = start_prog('cms/service/%s.py' % service_name,
-                      shard=shard,
-                      contest=contest)
+    executable = 'cms/service/%s.py' % service_name
+    if CONFIG["TEST_DIR"] is None:
+        executable = 'cms%s' % service_name
+    prog = start_prog(executable, shard=shard, contest=contest)
 
     # Wait for service to come up - ping it!
     addr, port = cms_config["core_services"][service_name][shard]
@@ -263,7 +265,10 @@ def start_server(service_name, contest=None):
     """Start a CMS server."""
 
     info("Starting %s." % service_name)
-    prog = start_prog('cms/server/%s.py' % service_name, contest=contest)
+    executable = 'cms/service/%s.py' % service_name
+    if CONFIG["TEST_DIR"] is None:
+        executable = 'cms%s' % service_name
+    prog = start_prog(executable, contest=contest)
 
     # Wait for service to come up - ping it!
     if service_name == 'AdminWebServer':
@@ -299,7 +304,10 @@ def start_ranking_web_server():
 
     """
     info("Starting RankingWebServer.")
-    prog = spawn(["./cmsranking/RankingWebServer.py"])
+    executable = "./cmsranking/RankingWebServer.py"
+    if CONFIG["TEST_DIR"] is None:
+        executable = "cmsRankingWebServer"
+    prog = spawn([executable])
     running_servers['RankingWebServer'] = prog
     return prog
 
@@ -448,4 +456,4 @@ def get_evaluation_result(contest_id, submission_id, timeout=30):
 
         raise FrameworkException("Unknown submission status: %s" % status)
 
-    raise FrameworkException("Waited too long for result")
+    raise FrameworkException("Waited too long for result.")

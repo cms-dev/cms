@@ -64,7 +64,7 @@ def do_setup():
                     "cmstestsuite.tasks.batch_fileio"],
           package_data={
               "cms.async": [
-                  os.path.join("static", "*")
+                  os.path.join("static", "*"),
                   ],
               "cms.server": [
                   os.path.join("static", "jq", "*.*"),
@@ -74,11 +74,17 @@ def do_setup():
                   os.path.join("templates", "admin", "*.*"),
                   os.path.join("templates", "ranking", "*.*"),
                   ],
-          "cmsranking": [
-              os.path.join("static", "img", "*.*"),
-              os.path.join("static", "lib", "*.*"),
-              os.path.join("static", "*.*")
-                  ]},
+              "cmsranking": [
+                  os.path.join("static", "img", "*.*"),
+                  os.path.join("static", "lib", "*.*"),
+                  os.path.join("static", "*.*"),
+                  ],
+              "cmstestsuite": [
+                  os.path.join("code", "*.*"),
+                  os.path.join("tasks", "batch_stdio", "data", "*.*"),
+                  os.path.join("tasks", "batch_fileio", "data", "*.*"),
+                  ],
+              },
           entry_points={
               "console_scripts": [
                   "cmsLogService=cms.service.LogService:main",
@@ -92,7 +98,8 @@ def do_setup():
 
                   "cmsRankingWebServer=cmsranking.RankingWebServer:main",
 
-                  "cmsTestFileCacher=cmstest.TestFileCacher:main",
+                  "cmsRunTests=cmstestsuite.RunTests:main",
+                  "cmsTestFileCacher=cmstestsuite.TestFileCacher:main",
 
                   "cmsAddUser=cmscontrib.AddUser:main",
                   "cmsYamlImporter=cmscontrib.YamlImporter:main",

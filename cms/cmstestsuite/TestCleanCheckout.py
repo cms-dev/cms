@@ -88,7 +88,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     CONFIG["TEST_DIR"] = tempfile.mkdtemp()
-    CONFIG["CONFIG_PATH"] = "cms/examples/cms.conf"
+    CONFIG["CONFIG_PATH"] = "%s/cms/examples/cms.conf" % CONFIG["TEST_DIR"]
     CONFIG["GIT_ORIGIN"] = subprocess.check_output(
         "git rev-parse --show-toplevel", shell=True).strip()
     CONFIG["GIT_REVISION"] = args.revision
