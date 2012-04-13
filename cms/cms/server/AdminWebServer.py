@@ -28,6 +28,7 @@ import time
 
 import base64
 import simplejson as json
+from sqlalchemy.exc import IntegrityError
 import tornado.web
 import tornado.locale
 
@@ -41,6 +42,30 @@ from cms.db.SQLAlchemyAll import Session, \
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, catch_exceptions, get_url_root, \
      CommonRequestHandler
+
+
+def try_commit(session, handler):
+    """Try to commit the session, if not successful display a warning
+    in the webpage.
+
+    session (Session): the session to commit.
+    handler (BaseHandler): just to extract the information about AWS.
+
+    return (bool): True if commit was successful, False otherwise.
+
+    """
+    try:
+        session.commit()
+    except IntegrityError as error:
+        handler.application.service.add_notification(
+            int(time.time()),
+            "Operation failed.", str(error))
+        return False
+    else:
+        handler.application.service.add_notification(
+            int(time.time()),
+            "Operation successful.", "")
+        return True
 
 
 def valid_ip(ip_address):
@@ -274,7 +299,7 @@ class MainHandler(BaseHandler):
 def SimpleContestHandler(page):
     class Cls(BaseHandler):
         @catch_exceptions
-	def get(self, contest_id):
+        def get(self, contest_id):
             self.contest = self.safe_get_item(Contest, contest_id)
             r_params = self.render_params()
             self.render(page, **r_params)
@@ -366,7 +391,7 @@ class AddContestHandler(BaseHandler):
                           per_user_time)
 
         self.sql_session.add(contest)
-        self.sql_session.commit()
+        try_commit(self.sql_session, self)
         self.write(str(contest.id))
 
 
@@ -684,13 +709,14 @@ class TaskViewHandler(BaseHandler):
             except Exception as error:
                 self.sql_session.rollback()
                 logger.info(repr(error))
-                self.application.service.add_notification(int(time.time()),
-                "Invalid field",
-                "Submission format not recognized.")
+                self.application.service.add_notification(
+                    int(time.time()),
+                    "Invalid field",
+                    "Submission format not recognized.")
                 self.redirect("/task/%s" % task_id)
                 return
 
-        self.sql_session.commit()
+        try_commit(self.sql_session, self)
         self.redirect("/task/%s" % task_id)
 
 
@@ -800,7 +826,7 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
                  token_min_interval, token_gen_time, token_gen_number,
                  contest=self.contest, num=len(self.contest.tasks))
         self.sql_session.add(task)
-        self.sql_session.commit()
+        try_commit(self.sql_session, self)
         self.redirect("/task/%s" % task.id)
 
 
@@ -888,7 +914,7 @@ class EditContestHandler(BaseHandler):
         self.contest.stop = stop
         self.contest.per_user_time = per_user_time
 
-        self.sql_session.commit()
+        try_commit(self.sql_session, self)
         self.redirect("/contest/%s" % contest_id)
 
 
@@ -905,7 +931,7 @@ class AddAnnouncementHandler(BaseHandler):
         if subject != "":
             ann = Announcement(int(time.time()), subject, text, self.contest)
             self.sql_session.add(ann)
-            self.sql_session.commit()
+            try_commit(self.sql_session, self)
         self.redirect("/announcements/%s" % contest_id)
 
 
@@ -942,18 +968,7 @@ class UserViewHandler(BaseHandler):
         self.contest = user.contest
         user.first_name = self.get_argument("first_name", user.first_name)
         user.last_name = self.get_argument("last_name", user.last_name)
-        username = self.get_argument("username", user.username)
-
-        # Prevent duplicate usernames in the contest.
-        for other_user in self.contest.users:
-            if other_user.username != user.username and \
-                   other_user.username == username:
-                self.application.service.add_notification(int(time.time()),
-                    "Duplicate username",
-                    "The requested username already exists in the contest.")
-                self.redirect("/user/%s" % user_id)
-                return
-        user.username = username
+        user.username = self.get_argument("username", user.username)
 
         user.password = self.get_argument("password", user.password)
         user.email = self.get_argument("email", user.email)
@@ -981,9 +996,7 @@ class UserViewHandler(BaseHandler):
 
         user.hidden = bool(self.get_argument("hidden", False))
 
-        self.sql_session.commit()
-        self.application.service.add_notification(int(time.time()),
-            "User updated successfully.", "")
+        try_commit(self.sql_session, self)
         self.redirect("/user/%s" % user_id)
 
 
@@ -995,15 +1008,6 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
         first_name = self.get_argument("first_name", "")
         last_name = self.get_argument("last_name", "")
         username = self.get_argument("username", "")
-
-        # Prevent duplicate usernames in the contest.
-        for other_user in self.contest.users:
-            if other_user.username == username:
-                self.application.service.add_notification(int(time.time()),
-                    "Duplicate username",
-                    "The requested username already exists in the contest.")
-                self.redirect("/add_user/%s" % contest_id)
-                return
 
         password = self.get_argument("password", "")
         email = self.get_argument("email", "")
@@ -1034,10 +1038,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
                     email=email, ip=ip_address, hidden=hidden,
                     starting_time=starting_time, contest=self.contest)
         self.sql_session.add(user)
-        self.sql_session.commit()
-        self.application.service.add_notification(int(time.time()),
-            "User added successfully.",
-            "")
+        try_commit(self.sql_session, self)
         self.redirect("/user/%s" % user.id)
 
 
@@ -1116,10 +1117,9 @@ class QuestionReplyHandler(BaseHandler):
 
         question.reply_timestamp = int(time.time())
 
-        self.sql_session.commit()
-
-        logger.warning("Reply sent to user %s for question '%s'." %
-                       (question.user.username, question.subject))
+        if try_commit(self.sql_session, self):
+            logger.warning("Reply sent to user %s for question '%s'." %
+                           (question.user.username, question.subject))
 
         self.redirect(ref)
 
@@ -1140,11 +1140,10 @@ class QuestionIgnoreHandler(BaseHandler):
 
         # Commit the change.
         question.ignored = should_ignore
-        self.sql_session.commit()
-
-        logger.warning("Question '%s' by user %s %s" %
-                (question.subject, question.user.username,
-                    ["unignored", "ignored"][should_ignore]))
+        if try_commit(self.sql_session, self):
+            logger.warning("Question '%s' by user %s %s" %
+                           (question.subject, question.user.username,
+                            ["unignored", "ignored"][should_ignore]))
 
         self.redirect(ref)
 
@@ -1164,10 +1163,9 @@ class MessageHandler(BaseHandler):
                           self.get_argument("message_text", ""),
                           user=user)
         self.sql_session.add(message)
-        self.sql_session.commit()
-
-        logger.warning("Message submitted to user %s."
-                       % user.username)
+        if try_commit(self.sql_session, self):
+            logger.warning("Message submitted to user %s."
+                           % user.username)
 
         self.redirect("/user/%s" % user_id)
 
