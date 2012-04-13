@@ -4,10 +4,11 @@ Version: 0.1
 
 Release date: not yet released
 
-Dependencies: we use Tornado as a web server, SQLAlchemy to map Python
-objects to the database.
+Dependencies: see REQUIREMENTS.TXT - to install them:
+$ sudo pip install -r REQUIREMENTS.txt
 
-To install the package: easy_install cms.
+To install/uninstall the package:
+$ sudo pip install/uninstall cms
 
 Copyright © 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 Copyright © 2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>

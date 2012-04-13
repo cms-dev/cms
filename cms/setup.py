@@ -37,7 +37,40 @@ def do_setup():
     """Execute the setup thanks to setuptools.
 
     """
-    old_umask = os.umask(022)
+    old_umask = os.umask(0022)
+
+    package_data = {
+        "cms.async": [
+            os.path.join("static", "*"),
+            ],
+        "cms.server": [
+            os.path.join("static", "jq", "*.*"),
+            os.path.join("static", "sh", "*.*"),
+            os.path.join("static", "*.*"),
+            os.path.join("templates", "contest", "*.*"),
+            os.path.join("templates", "admin", "*.*"),
+            os.path.join("templates", "ranking", "*.*"),
+            ],
+        "cmsranking": [
+            os.path.join("static", "img", "*.*"),
+            os.path.join("static", "lib", "*.*"),
+            os.path.join("static", "*.*"),
+            ],
+        "cmstestsuite": [
+            os.path.join("code", "*.*"),
+            os.path.join("tasks", "batch_stdio", "data", "*.*"),
+            os.path.join("tasks", "batch_fileio", "data", "*.*"),
+            ],
+        }
+
+    # Apparently, pip installs package_data with the permissions they
+    # have on the source. We fix the source permissions here. (Though,
+    # pip works on a copy, so no changes happen.)
+    for package in package_data:
+        for path in package_data[package]:
+            for file_ in glob(os.path.join(package.replace(".", "/"), path)):
+                os.chmod(file_, 0644)
+
     setup(name="cms",
           version="0.1",
           author="Matteo Boscariol, Stefano Maggiolo, Giovanni Mascellani",
@@ -62,29 +95,7 @@ def do_setup():
                     "cmstestsuite.tasks",
                     "cmstestsuite.tasks.batch_stdio",
                     "cmstestsuite.tasks.batch_fileio"],
-          package_data={
-              "cms.async": [
-                  os.path.join("static", "*"),
-                  ],
-              "cms.server": [
-                  os.path.join("static", "jq", "*.*"),
-                  os.path.join("static", "sh", "*.*"),
-                  os.path.join("static", "*.*"),
-                  os.path.join("templates", "contest", "*.*"),
-                  os.path.join("templates", "admin", "*.*"),
-                  os.path.join("templates", "ranking", "*.*"),
-                  ],
-              "cmsranking": [
-                  os.path.join("static", "img", "*.*"),
-                  os.path.join("static", "lib", "*.*"),
-                  os.path.join("static", "*.*"),
-                  ],
-              "cmstestsuite": [
-                  os.path.join("code", "*.*"),
-                  os.path.join("tasks", "batch_stdio", "data", "*.*"),
-                  os.path.join("tasks", "batch_fileio", "data", "*.*"),
-                  ],
-              },
+          package_data=package_data,
           entry_points={
               "console_scripts": [
                   "cmsLogService=cms.service.LogService:main",
@@ -207,7 +218,7 @@ def install():
     """
     # We set permissions for each manually installed files, so we want
     # max liberty to change them.
-    old_umask = os.umask(000)
+    old_umask = os.umask(0000)
 
     print "creating user and group cmsuser."
     os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")

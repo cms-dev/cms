@@ -93,9 +93,14 @@ These are our requirements (in particular we highlight those that are
 not usually installed by default) - previous versions may or may not
 work:
 
-- python >= 2.7 (and < 3.0);
+- build environment for the programming languages allowed in the
+  competition;
 
 - postgreSQL >= 8.4;
+
+- gettext >= 0.18;
+
+- python >= 2.7 (and < 3.0);
 
 - python-setuptools >= 0.6;
 
@@ -103,26 +108,21 @@ work:
 
 - python-psycopg2 >= 2.4;
 
-- python-simplejson;
+- python-simplejson >= 2.1;
 
 - python-sqlalchemy >= 0.7;
 
 - python-psutil >= 0.2;
 
-- python-netifaces;
+- python-netifaces >= 0.5;
 
-- python-crypto;
-
-- gettext >= 0.18;
-
-- build environment for the programming languages allowed in the
-  competition;
+- python-crypto >= 2.3;
 
 - python-yaml >= 3.10 (only for YamlImporter);
 
-- python-beautifulsoup (only for running tests);
+- python-beautifulsoup >= 3.2 (only for running tests);
 
-- python-coverage (only for running tests).
+- python-coverage >= 3.4 (only for running tests).
 
 
 On Ubuntu 11.10, one will need to run the following script to satisfy
@@ -167,6 +167,13 @@ sudo apt-get install postgresql postgresql-client python-setuptools \
 # sudo apt-get install phppgadmin python-yaml
 ```
 
+If you prefer using Python Package Index, you can retrieve all Python
+dependencies with this line (see below for the meaning of $REPO):
+
+```bash
+sudo pip install -r $REPO/cms/REQUIREMENTS.txt
+```
+
 
 Obtaining CMS
 -------------
@@ -206,8 +213,7 @@ Once configured, we can proceed to install it using the commands:
 
 ```bash
 cd $REPO/cms/
-sudo ./setup.py build
-sudo ./setup.py install
+sudo pip install ./
 ```
 
 These will create a user and a group named "cmsuser". If you want to
@@ -227,8 +233,7 @@ To update CMS, run the following:
 ```bash
 cd $REPO/cms
 git pull
-sudo ./setup.py build
-sudo ./setup.py install
+sudo pip install -U ./
 ```
 
 Since CMS is still in heavy development, we are introducing many
@@ -279,3 +284,13 @@ system.
 In particular if there are more than one ContestWebServer, one may
 want to use a load balancer. We recommend to use nginx; a sample
 configuration is provided in $REPO/cms/example.
+
+
+Uninstalling CMS
+----------------
+
+In the unfortunate situation you would like to remove completely CMS from your system, just run the following:
+
+```bash
+sudo pip uninstall cms
+```
