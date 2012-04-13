@@ -196,17 +196,8 @@ class ScoringService(Service):
 
         self.contest_id = contest_id
 
-        # Initialize scorers, the ScoreType objects holding all
-        # submissions for a given task and deciding scores.
         self.scorers = {}
-        with SessionGen(commit=False) as session:
-            contest = session.query(Contest).\
-                      filter_by(id=contest_id).first()
-            logger.info("Loaded contest %s" % contest.name)
-            contest.create_empty_ranking_view(timestamp=contest.start)
-            for task in contest.tasks:
-                self.scorers[task.id] = get_score_type(task=task)
-            session.commit()
+        self._initialize_scorers()
 
         # If for some reason (SS switched off for a while, or broken
         # connection with ES), submissions have been left without
@@ -242,6 +233,22 @@ class ScoringService(Service):
         self.add_timeout(self.search_jobs_not_done, None,
                          ScoringService.JOBS_NOT_DONE_CHECK_TIME,
                          immediately=True)
+
+    def _initialize_scorers(self):
+        """Initialize scorers, the ScoreType objects holding all
+        submissions for a given task and deciding scores, and create
+        an empty ranking view for the contest.
+
+        """
+        with SessionGen(commit=False) as session:
+            contest = session.query(Contest).\
+                      filter_by(id=self.contest_id).first()
+            logger.info("(Re)creating ranking view for contest `%s'" %
+                        contest.name)
+            contest.create_empty_ranking_view(timestamp=contest.start)
+            for task in contest.tasks:
+                self.scorers[task.id] = get_score_type(task=task)
+            session.commit()
 
     def search_jobs_not_done(self):
         """Look in the database for submissions that have not been
@@ -395,6 +402,19 @@ class ScoringService(Service):
                       "sending tasks")
 
         return True
+
+    @rpc_method
+    def reinitialize(self):
+        """Inform the service that something in the data of the
+        contest has changed (users, tasks, the contest itself) and we
+        need to do it over again. This should be almost like
+        restarting the service.
+
+        """
+        logger.info("Reinitializing rankings.")
+        self._initialize_scorers()
+        for ranking in self.rankings:
+            self.operation_queue.append((self.initialize, [ranking]))
 
     @rpc_method
     def new_evaluation(self, submission_id):

@@ -716,7 +716,8 @@ class TaskViewHandler(BaseHandler):
                 self.redirect("/task/%s" % task_id)
                 return
 
-        try_commit(self.sql_session, self)
+        if try_commit(self.sql_session, self):
+            self.application.service.scoring_service.reinitialize()
         self.redirect("/task/%s" % task_id)
 
 
@@ -826,7 +827,8 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
                  token_min_interval, token_gen_time, token_gen_number,
                  contest=self.contest, num=len(self.contest.tasks))
         self.sql_session.add(task)
-        try_commit(self.sql_session, self)
+        if try_commit(self.sql_session, self):
+            self.application.service.scoring_service.reinitialize()
         self.redirect("/task/%s" % task.id)
 
 
@@ -914,7 +916,8 @@ class EditContestHandler(BaseHandler):
         self.contest.stop = stop
         self.contest.per_user_time = per_user_time
 
-        try_commit(self.sql_session, self)
+        if try_commit(self.sql_session, self):
+            self.application.service.scoring_service.reinitialize()
         self.redirect("/contest/%s" % contest_id)
 
 
@@ -996,7 +999,8 @@ class UserViewHandler(BaseHandler):
 
         user.hidden = bool(self.get_argument("hidden", False))
 
-        try_commit(self.sql_session, self)
+        if try_commit(self.sql_session, self):
+            self.application.service.scoring_service.reinitialize()
         self.redirect("/user/%s" % user_id)
 
 
@@ -1038,7 +1042,8 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
                     email=email, ip=ip_address, hidden=hidden,
                     starting_time=starting_time, contest=self.contest)
         self.sql_session.add(user)
-        try_commit(self.sql_session, self)
+        if try_commit(self.sql_session, self):
+            self.application.service.scoring_service.reinitialize()
         self.redirect("/user/%s" % user.id)
 
 
