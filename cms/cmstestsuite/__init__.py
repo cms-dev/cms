@@ -218,8 +218,10 @@ def configure_cms(options):
 
 def start_prog(path, shard=0, contest=None):
     """Execute a CMS process."""
-    args = [path, str(shard)]
-    if contest:
+    args = [path]
+    if shard is not None:
+        args.append(str(shard))
+    if contest is not None:
         args += ['-c', str(contest)]
     return spawn(args)
 
@@ -296,11 +298,13 @@ def start_ranking_web_server():
     others.
 
     """
-    info("Starting RankingWebServer.")
-    executable = "./cmsranking/RankingWebServer.py"
-    if CONFIG["TEST_DIR"] is None:
-        executable = "cmsRankingWebServer"
-    prog = spawn([executable])
+    def check(service_name, shard, contest):
+        addr, port = cms_config['rankings_address'][0]
+        sock = socket.socket()
+        sock.connect((addr, port))
+        sock.close()
+
+    prog = start_servicer("RankingWebServer", check, shard=None)
     running_servers['RankingWebServer'] = prog
     return prog
 
