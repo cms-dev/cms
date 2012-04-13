@@ -289,7 +289,8 @@ configuration is provided in $REPO/cms/example.
 Uninstalling CMS
 ----------------
 
-In the unfortunate situation you would like to remove completely CMS from your system, just run the following:
+In the unfortunate situation you would like to remove completely CMS
+from your system, just run the following:
 
 ```bash
 sudo pip uninstall cms

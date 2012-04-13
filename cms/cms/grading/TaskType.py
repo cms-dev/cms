@@ -348,6 +348,8 @@ class TaskType:
             logger.warning(to_log)
 
         self.result["success"] = success
+        if "evaluations" not in self.result:
+            self.result["evaluations"] = {}
 
         self.ignore_job = False
         return self.result
