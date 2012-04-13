@@ -118,7 +118,8 @@ class FileCacher:
                                 self.service._step()
                             buf = lobject.read(self.CHUNK_SIZE)
 
-            # And move it in the cache
+            # And move it in the cache. Warning: this is not atomic if
+            # the temp and the cache dir are on different filesystems.
             shutil.move(temp_filename, cache_path)
 
             logger.debug("File %s downloaded." % digest)

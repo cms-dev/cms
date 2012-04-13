@@ -118,20 +118,23 @@ class Worker(Service):
     # FIXME - rpc_threaded is disable because it makes the call fail:
     # we should investigate on this
     @rpc_method
-    #@rpc_threaded
+    @rpc_threaded
     def precache_files(self, contest_id):
         """RPC to ask the worker to precache of files in the contest.
 
         contest_id (int): the id of the contest
 
         """
-        # TODO - Check for lock
-        logger.info("Precaching files for contest %d" % contest_id)
+        # Lock is not needed if the admins correctly placed cache and
+        # temp directories in the same filesystem. This is what
+        # usually happens since they are children of the same,
+        # cms-created, directory.
+        logger.info("Precaching files for contest %d." % contest_id)
         with SessionGen(commit=False) as session:
             contest = Contest.get_from_id(contest_id, session)
-            for digest in contest.enumerate_files():
+            for digest in contest.enumerate_files(skip_submissions=True):
                 self.file_cacher.get_file(digest)
-        logger.info("Precaching finished")
+        logger.info("Precaching finished.")
 
     def action(self, submission_id, job_type):
         """The actual work - that can be compilation or evaluation
