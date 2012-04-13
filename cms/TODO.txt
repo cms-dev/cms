@@ -1,8 +1,5 @@
 ** Database
 
-* MED: define appropriate UNIQUE indexes in the database. (E.g.: (num,
-  submission_id) in evaluations).
-
 * LOW: it may be interesting to keep in the Contest not only the last
   scoring snapshot, but a snapshot for each moments in which the
   scorings change.
@@ -46,7 +43,7 @@
 ** ContestWebServer
 
 * MED: concurrency: if there are more than 1 CWS, there is a (very
-  slight) chance that feature such as - but not limited to - "partial
+  slight) chance that features such as - but not limited to - "partial
   submission filler" and "avoid frequent submissions" will not work as
   expected. (This may be fixed using ip_hash in nginx.)
 
@@ -74,8 +71,8 @@
 * MED: give possibility to see the output of an evaluation (storing
   them in the FS? cirumventing the yet-to-be-born TEST facility?).
 
-* LOW: when updating/adding contests, users, and so on, warn SS so
-  that it gives the new information to RWS.
+* LOW: when updating/adding contests, users, and so on, make RWS
+  delete the old data (when necessary).
 
 * LOW: auto updating submission statuses.
 
@@ -115,9 +112,6 @@
   (as it is for everything else).
 
 * MED: RunC interface.
-
-* MED: ditch RelativeScores and assume that a score depends only on
-  the outcome of the submission.
 
 * MED: implement the TEST facility mentioned in IOI rules (i.e., the
   user send a source and an input file and the system evaluates it and
