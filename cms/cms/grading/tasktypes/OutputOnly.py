@@ -63,7 +63,7 @@ class OutputOnly(TaskType):
         if "output_%03d.txt" % test_number not in self.submission.files:
             return self.finish_evaluation_testcase(
                 test_number,
-                True, 0.0, "File not submitted.")
+                True, 0.0, None, to_log="File not submitted.")
         # First and only one step: diffing (manual or with manager).
         output_digest = self.submission.files["output_%03d.txt" %
                                               test_number].digest
@@ -96,5 +96,5 @@ class OutputOnly(TaskType):
 
         # Whatever happened, we conclude.
         delete_sandbox(sandbox)
-        return self.finish_evaluation_testcase(test_number,
-                                               success, outcome, text)
+        return self.finish_evaluation_testcase(
+            test_number, success, outcome, text, None)

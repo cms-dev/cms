@@ -35,12 +35,12 @@ class Communication(TaskType):
     - a *manager* that reads the input file, work out the perfect
       solution on its own, and communicate the input (maybe with some
       modifications) on its standard output; it then reads the
-      responsed of the users' solutions from the standard input and
-      write the outcome on the output file;
+      response of the user's solution from the standard input and
+      write the outcome;
 
-    - a *stub* that compiles with the users' solutions, and reads from
-      standard input what the manager says, and write back the users'
-      solutions to the standard output.
+    - a *stub* that compiles with the user's source, reads from
+      standard input what the manager says, and write back the user's
+      solution to stdout.
 
     """
     ALLOW_PARTIAL_SUBMISSION = False
@@ -122,7 +122,7 @@ class Communication(TaskType):
             manager_allow_path,
             stdin_redirect="input.txt")
 
-        # First step: we start the user submission compiled with the
+        # Second step: we start the user submission compiled with the
         # stub.
         executable_filename = self.submission.executables.keys()[0]
         command = ["./%s" % executable_filename, fifo_out, fifo_in]
@@ -144,18 +144,18 @@ class Communication(TaskType):
         wait_without_std([process, manager])
         # TODO: check exit codes with translate_box_exitcode.
 
-        success_user, outcome_user, text_user = \
+        success_user, outcome_user, text_user, plus = \
                       self.evaluation_step_after_run(sandbox_user, final=False)
-        success_mgr, outcome_mgr, text_mgr = \
+        success_mgr, outcome_mgr, text_mgr, _ = \
                      self.evaluation_step_after_run(sandbox_mgr, final=True)
 
         # If at least one evaluation had problems, we report the
         # problems.
         if not success_user or not success_mgr:
             success, outcome, text = False, outcome_user, text_user
-        # If outcome_user is not None, it means that there has been
-        # some errors in the user solution, and outcome and text are
-        # meaningful, so we use them.
+        # If outcome_user is not None, it is 0.0 and it means that
+        # there has been some errors in the user solution, and outcome
+        # and text are meaningful, so we use them.
         elif outcome_user is not None:
             success, outcome, text = success_user, outcome_user, text_user
         # Otherwise, we use the manager to obtain the outcome.
@@ -164,5 +164,5 @@ class Communication(TaskType):
 
         delete_sandbox(sandbox_mgr)
         delete_sandbox(sandbox_user)
-        return self.finish_evaluation_testcase(test_number,
-                                               success, outcome, text)
+        return self.finish_evaluation_testcase(
+            test_number, success, outcome, text, plus)

@@ -152,7 +152,7 @@ class Batch(TaskType):
             input_filename: self.submission.task.testcases[test_number].input
             }
         allow_path = [input_filename, output_filename]
-        success, outcome, text = self.evaluation_step(
+        success, outcome, text, plus = self.evaluation_step(
             sandbox,
             command,
             executables_to_get,
@@ -166,8 +166,8 @@ class Batch(TaskType):
         # If an error occur (our or contestant's), return immediately.
         if not success or outcome is not None:
             delete_sandbox(sandbox)
-            return self.finish_evaluation_testcase(test_number,
-                                                   success, outcome, text)
+            return self.finish_evaluation_testcase(
+                test_number, success, outcome, text, plus)
 
         # Second step: diffing (manual or with comparator).
         if self.parameters[2] == "diff":
@@ -180,7 +180,7 @@ class Batch(TaskType):
         elif self.parameters[2] == "comparator":
             # Manager present: wonderful, it'll do all the job.
             manager_filename = self.submission.task.managers.keys()[0]
-            success, outcome, text = self.evaluation_step(
+            success, outcome, text, _ = self.evaluation_step(
                 sandbox,
                 ["./%s" % manager_filename,
                  input_filename, "res.txt", output_filename],
@@ -196,5 +196,5 @@ class Batch(TaskType):
 
         # Whatever happened, we conclude.
         delete_sandbox(sandbox)
-        return self.finish_evaluation_testcase(test_number,
-                                               success, outcome, text)
+        return self.finish_evaluation_testcase(
+            test_number, success, outcome, text, plus)

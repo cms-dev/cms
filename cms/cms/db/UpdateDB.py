@@ -49,6 +49,7 @@ class ScriptsContainer(object):
             ("20120313", "changed_batch_iofile_parameters"),
             ("20120319", "change_scoretype_names"),
             ("20120412", "add_unique_constraints"),
+            ("20120414", "add_evaluation_memory_time"),
             ]
         self.list.sort()
 
@@ -380,6 +381,22 @@ class ScriptsContainer(object):
                 session.execute("ALTER TABLE %s "
                                 "ADD CONSTRAINT %s "
                                 "UNIQUE %s;" % (table, name, columns_list))
+
+    @staticmethod
+    def add_evaluation_memory_time():
+        """Support for storing resource usage of submissions.
+
+        We allow an evaluation to store a memory usage, an evaluation
+        time and a wall clock time.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE evaluations "
+                            "ADD COLUMN memory_usage INTEGER;")
+            session.execute("ALTER TABLE evaluations "
+                            "ADD COLUMN execution_time FLOAT;")
+            session.execute("ALTER TABLE evaluations "
+                            "ADD COLUMN execution_wall_clock_time FLOAT;")
 
 
 def execute_single_script(scripts_container, script):

@@ -109,10 +109,11 @@
   <table class="bordered">
     <thead>
       <tr>
-        <th style="width: 13%">Outcome</th>
+        <th style="width: 10%">Outcome</th>
         <th style="width: 2%"></th>
-        <th style="width: 55%">Details</th>
-        <th style="width: 10%">Shard</th>
+        <th style="width: 45%">Details</th>
+        <th style="width: 8%">Shard</th>
+        <th style="width: 15%">Resources</th>
         <th style="width: 20%">Sandbox</th>
       </tr>
     </thead>
@@ -127,6 +128,17 @@
         {% end %}
         <td id="eval_text_{{ idx }}">{{ ev.text }}</td>
         <td>{{ ev.evaluation_shard }}</td>
+        <td>
+          {% if ev.memory_used is not None %}
+          ({{ (ev.memory_used // 1024) // 1024 }} MB)
+          {% end %}
+          {% if ev.execution_time is not None %}
+          ({{ ev.execution_time }} s)
+          {% end %}
+          {% if ev.execution_wall_clock_time is not None %}
+          ({{ ev.execution_wall_clock_time }} s)
+          {% end %}
+        </td>
         <td>{{ ev.evaluation_sandbox }}</td>
       </tr>
       {% end %}

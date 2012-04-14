@@ -153,24 +153,26 @@ class Submission(Base):
         """Return object data as a dictionary.
 
         """
-        res = {'task':                self.task.name,
-               'timestamp':           self.timestamp,
-               'files':               [_file.export_to_dict()
-                                       for _file in self.files.itervalues()],
-               'language':            self.language,
-               'compilation_outcome': self.compilation_outcome,
-               'compilation_tries':   self.compilation_tries,
-               'compilation_text':    self.compilation_text,
-               'compilation_shard':   self.compilation_shard,
-               'compilation_sandbox': self.compilation_sandbox,
-               'executables':         [executable.export_to_dict()
-                                       for executable
-                                       in self.executables.itervalues()],
-               'evaluation_outcome':  self.evaluation_outcome,
-               'evaluations':         [evaluation.export_to_dict()
-                                       for evaluation in self.evaluations],
-               'evaluation_tries':    self.evaluation_tries,
-               'token':               self.token}
+        res = {
+            'task': self.task.name,
+            'timestamp': self.timestamp,
+            'files': [_file.export_to_dict()
+                      for _file in self.files.itervalues()],
+            'language': self.language,
+            'compilation_outcome': self.compilation_outcome,
+            'compilation_tries': self.compilation_tries,
+            'compilation_text': self.compilation_text,
+            'compilation_shard': self.compilation_shard,
+            'compilation_sandbox': self.compilation_sandbox,
+            'executables': [executable.export_to_dict()
+                            for executable
+                            in self.executables.itervalues()],
+            'evaluation_outcome': self.evaluation_outcome,
+            'evaluations': [evaluation.export_to_dict()
+                            for evaluation in self.evaluations],
+            'evaluation_tries': self.evaluation_tries,
+            'token': self.token
+            }
         if self.token is not None:
             res['token'] = self.token.export_to_dict()
         return res
@@ -306,7 +308,9 @@ class Token(Base):
         """Return object data as a dictionary.
 
         """
-        return {'timestamp': self.timestamp}
+        return {
+            'timestamp': self.timestamp
+            }
 
 
 class File(Base):
@@ -350,8 +354,10 @@ class File(Base):
         """Return object data as a dictionary.
 
         """
-        return {'filename': self.filename,
-                'digest':   self.digest}
+        return {
+            'filename': self.filename,
+            'digest': self.digest
+            }
 
 
 class Executable(Base):
@@ -395,8 +401,10 @@ class Executable(Base):
         """Return object data as a dictionary.
 
         """
-        return {'filename': self.filename,
-                'digest':   self.digest}
+        return {
+            'filename': self.filename,
+            'digest': self.digest
+            }
 
 
 class Evaluation(Base):
@@ -440,16 +448,28 @@ class Evaluation(Base):
     # the scorer.
     outcome = Column(String, nullable=True)
 
+    # Memory used by the evaluation, in bytes.
+    memory_used = Column(Integer, nullable=True)
+
+    # Evaluation's time and wall-clock time, in s.
+    execution_time = Column(Float, nullable=True)
+    execution_wall_clock_time = Column(Float, nullable=True)
+
     # Worker shard and sanbox where the evaluation was performed
     evaluation_shard = Column(Integer, nullable=True)
     evaluation_sandbox = Column(String, nullable=True)
 
     def __init__(self, text, outcome, num=None, submission=None,
+                 memory_used=None, execution_time=None,
+                 execution_wall_clock_time=None,
                  evaluation_shard=None, evaluation_sandbox=None):
         self.text = text
         self.outcome = outcome
         self.num = num
         self.submission = submission
+        self.memory_used = memory_used
+        self.execution_time = execution_time
+        self.execution_wall_clock_time = execution_wall_clock_time
         self.evaluation_shard = evaluation_shard
         self.evaluation_sandbox = evaluation_sandbox
 
@@ -457,8 +477,13 @@ class Evaluation(Base):
         """Return object data as a dictionary.
 
         """
-        return {'text':               self.text,
-                'outcome':            self.outcome,
-                'num':                self.num,
-                'evaluation_shard':   self.evaluation_shard,
-                'evaluation_sandbox': self.evaluation_sandbox}
+        return {
+            'text': self.text,
+            'outcome': self.outcome,
+            'num': self.num,
+            'memory_used': self.memory_used,
+            'execution_time': self.execution_time,
+            'execution_wall_clock_time': self.execution_wall_clock_time,
+            'evaluation_shard': self.evaluation_shard,
+            'evaluation_sandbox': self.evaluation_sandbox
+            }

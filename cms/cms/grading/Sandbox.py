@@ -291,8 +291,8 @@ class Sandbox:
         return (float): total time the sandbox was alive.
 
         """
-        if 'wall-time' in self.log:
-            return float(self.log['wall-time'][0])
+        if 'time-wall' in self.log:
+            return float(self.log['time-wall'][0])
         return None
 
     @with_log

@@ -187,6 +187,41 @@ def filter_ansi_escape(string):
     return res
 
 
+def extract_outcome_and_text(stdout, stderr):
+    """Extract the outcome and the text from the two outputs of a
+    managet (stdout contains the outcome, and stderr the text).
+
+    stdout (string): filename of the standard output of the manager.
+    stderr (string): filename of the standard error of the manager.
+
+    return (float, string): outcome and text.
+    raise: valueError if cannot decode the data.
+
+    """
+    with codecs.open(stdout, "r", "utf-8") as stdout_file:
+        with codecs.open(stderr, "r", "utf-8") as stderr_file:
+            try:
+                outcome = stdout_file.readline().strip()
+            except UnicodeDecodeError as error:
+                logger.error("Unable to interpret manager stdout "
+                             "(outcome) as unicode. %r" % error)
+                raise ValueError("Cannot decode the outcome.")
+            try:
+                text = filter_ansi_escape(stderr_file.readline())
+            except UnicodeDecodeError as error:
+                logger.error("Unable to interpret manager stderr "
+                             "(text) as unicode. %r" % error)
+                raise ValueError("Cannot decode the text.")
+
+    try:
+        outcome = float(outcome)
+    except ValueError:
+        logger.error("Wrong outcome `%s' from manager." % outcome)
+        raise ValueError("Outcome is not a float.")
+
+    return outcome, text
+
+
 class TaskType:
     """Base class with common operation that (more or less) all task
     types must do sometimes.
@@ -303,7 +338,8 @@ class TaskType:
         return self.result
 
     def finish_evaluation_testcase(self, test_number, success,
-                                   outcome=0, text="", to_log=None):
+                                   outcome=0, text="", plus=None,
+                                   to_log=None):
         """Finalize the operation of evaluating the submission on a
         testcase. Fill the information in the submission.
 
@@ -313,6 +349,9 @@ class TaskType:
                          testcase.
         text (string): the reason of failure of the submission (if
                        any).
+        plus (dict): additional information extracted from the logs of
+                     the 'main' evaluation step - in particular,
+                     memory and time information.
         to_log (string): inform us that an unexpected event has
                          happened.
 
@@ -331,6 +370,11 @@ class TaskType:
             obj[test_number]["evaluation_shard"] = self.worker_shard
             obj[test_number]["evaluation_sandbox"] = self.sandbox_paths
             self.sandbox_paths = ""
+        if plus is not None:
+            for info in ["memory_used",
+                         "execution_time",
+                         "execution_wall_clock_time"]:
+                obj[test_number][info] = plus.get(info, None)
         return success
 
     def finish_evaluation(self, success, to_log=None):
@@ -373,10 +417,12 @@ class TaskType:
                                      *successful* compilation (i.e.,
                                      one where the files_to_get
                                      compiled correctly).
-        return (bool, bool, string): True if compilation was
-                                     successful; True if files
-                                     compiled correctly; explainatory
-                                     string.
+
+        return (bool, bool, string, dict): True if compilation was
+                                           successful; True if files
+                                           compiled correctly;
+                                           explainatory string;
+                                           additional data.
 
         """
         # Record the usage of the sandbox.
@@ -411,7 +457,7 @@ class TaskType:
         if not box_success:
             logger.error("Compilation aborted because of "
                          "sandbox error in `%s'." % sandbox.path)
-            return False, None, None
+            return False, None, None, None
 
         # Detect the outcome of the compilation.
         exit_status = sandbox.get_exit_status()
@@ -432,65 +478,69 @@ class TaskType:
 
         # Execution finished successfully and the submission was
         # correctly compiled.
+        success = False
+        compilation_success = None
+        text = None
+
         if exit_status == Sandbox.EXIT_OK and exit_code == 0:
             self.result["executables"] = []
             for filename, digest in executables_to_store.iteritems():
                 digest = sandbox.get_file_to_storage(filename, digest)
                 self.result["executables"].append((filename, digest))
-
             logger.info("Compilation successfully finished.")
-
-            return True, True, "OK %s\n%s" % (sandbox.get_stats(),
-                                              compiler_output)
+            success = True
+            compilation_success = True
+            text = "OK %s\n%s" % (sandbox.get_stats(), compiler_output)
 
         # Error in compilation: returning the error to the user.
-        if exit_status == Sandbox.EXIT_OK and exit_code != 0:
+        elif exit_status == Sandbox.EXIT_OK and exit_code != 0:
             logger.info("Compilation failed.")
-            return True, False, "Failed %s\n%s" % (sandbox.get_stats(),
-                                                   compiler_output)
+            success = True
+            compilation_success = False
+            text = "Failed %s\n%s" % (sandbox.get_stats(), compiler_output)
 
         # Timeout: returning the error to the user
-        if exit_status == Sandbox.EXIT_TIMEOUT:
+        elif exit_status == Sandbox.EXIT_TIMEOUT:
             logger.info("Compilation timed out.")
-            return True, False, "Time out %s\n%s" % (sandbox.get_stats(),
-                                                     compiler_output)
+            success = True
+            compilation_success = False
+            text = "Time out %s\n%s" % (sandbox.get_stats(), compiler_output)
 
         # Suicide with signal (probably memory limit): returning the
         # error to the user
-        if exit_status == Sandbox.EXIT_SIGNAL:
+        elif exit_status == Sandbox.EXIT_SIGNAL:
             signal = sandbox.get_killing_signal()
             logger.info("Compilation killed with signal %s." % (signal))
-            return True, False, \
-                   "Killed with signal %d %s\n" \
-                   "This could be triggered by " \
+            success = True
+            compilation_success = False
+            text = "Killed with signal %d %s.\nThis could be triggered by " \
                    "violating memory limits\n%s" % \
                    (signal, sandbox.get_stats(), compiler_output)
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment
-        if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
+        elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
             logger.error("Compilation aborted because of sandbox error.")
-            return False, None, None
 
         # Forbidden syscall: this shouldn't happen, probably the
         # administrator should relax the syscall constraints
-        if exit_status == Sandbox.EXIT_SYSCALL:
+        elif exit_status == Sandbox.EXIT_SYSCALL:
             syscall = sandbox.get_killing_syscall()
             logger.error("Compilation aborted "
                          "because of forbidden syscall %s." % syscall)
-            return False, None, None
 
         # Forbidden file access: this could be triggered by the user
         # including a forbidden file or too strict sandbox contraints;
         # the administrator should have a look at it
-        if exit_status == Sandbox.EXIT_FILE_ACCESS:
+        elif exit_status == Sandbox.EXIT_FILE_ACCESS:
             logger.error("Compilation aborted "
                          "because of forbidden file access.")
-            return False, None, None
 
         # Why the exit status hasn't been captured before?
-        logger.error("Shouldn't arrive here, failing.")
-        return False, None, None
+        else:
+            logger.error("Shouldn't arrive here, failing.")
+
+        return success, compilation_success, text
 
     def evaluation_step(self, sandbox, command,
                         executables_to_get, files_to_get,
@@ -516,12 +566,14 @@ class TaskType:
                            sandbox.
         final (bool): if True, return last stdout and stderr as
                       outcome and text, respectively.
-        return (bool, float, string): True if the evaluation was
-                                      succesfull, or False (in this
-                                      case we may stop the evaluation
-                                      process); then there is outcome
-                                      (or None) and explainatory text
-                                      (or None).
+
+        return (bool, float, string dict): True if the evaluation was
+                                           succesfull, or False (in
+                                           this case we may stop the
+                                           evaluation process); then
+                                           there is outcome (or None)
+                                           and explainatory text (or
+                                           None), and additional data.
 
         """
         success = self.evaluation_step_before_run(
@@ -529,7 +581,7 @@ class TaskType:
             time_limit, memory_limit, allow_path,
             stdin_redirect, stdout_redirect, wait=True)
         if not success:
-            return False, None, None
+            return False, None, None, None
         else:
             return self.evaluation_step_after_run(sandbox, final)
 
@@ -596,80 +648,84 @@ class TaskType:
         # Detect the outcome of the execution.
         exit_status = sandbox.get_exit_status()
 
+        # And retrieve some interesting data.
+        plus = {
+            "execution_time": sandbox.get_execution_time(),
+            "execution_wall_clock_time":
+                sandbox.get_execution_wall_clock_time(),
+            "memory_used": sandbox.get_memory_used(),
+            }
+
+        success = False
+        outcome = None
+        text = None
+
         # Timeout: returning the error to the user.
         if exit_status == Sandbox.EXIT_TIMEOUT:
             logger.info("Execution timed out.")
-            return True, 0.0, "Execution timed out."
+            success = True
+            outcome = 0.0
+            text = "Execution timed out."
 
         # Suicide with signal (memory limit, segfault, abort):
         # returning the error to the user.
-        if exit_status == Sandbox.EXIT_SIGNAL:
+        elif exit_status == Sandbox.EXIT_SIGNAL:
             signal = sandbox.get_killing_signal()
             logger.info("Execution killed with signal %d." % signal)
-            return True, 0.0, \
-                   "Execution killed with signal %d. " \
+            success = True
+            outcome = 0.0
+            text = "Execution killed with signal %d. " \
                    "This could be triggered by " \
                    "violating memory limits" % signal
 
         # Sandbox error: this isn't a user error, the administrator
         # needs to check the environment.
-        if exit_status == Sandbox.EXIT_SANDBOX_ERROR:
+        elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
             logger.error("Evaluation aborted because of sandbox error.")
-            return False, None, None
 
         # Forbidden syscall: returning the error to the user. Note:
         # this can be triggered also while allocating too much memory
         # dynamically (offensive syscall is mprotect).
-        # FIXME - Tell which syscall raised this error.
-        if exit_status == Sandbox.EXIT_SYSCALL:
-            syscall = sandbox.get_killing_syscall()
-            logger.info("Execution killed because of "
-                        "forbidden syscall %s." % syscall)
-            return True, 0.0, "Execution killed because of " \
-                "forbidden syscall %s." % syscall
+        elif exit_status == Sandbox.EXIT_SYSCALL:
+            msg = "Execution killed because of forbidden syscall %s." % \
+                  sandbox.get_killing_syscall()
+            logger.info(msg)
+            success = True
+            outcome = 0.0
+            text = msg
 
-        # Forbidden file access: returning the error to the user.
-        if exit_status == Sandbox.EXIT_FILE_ACCESS:
-            error_str = sandbox.get_forbidden_file_error()
-            logger.info("Execution killed because of forbidden file access: "
-                        "`%s'." % error_str)
-            return True, 0.0, \
-                   "Execution killed because of forbidden file access."
+        # Forbidden file access: returning the error to the user,
+        # without disclosing the offending file (can't we?).
+        elif exit_status == Sandbox.EXIT_FILE_ACCESS:
+            msg = "Execution killed because of forbidden file access."
+            logger.info("%s `%s'." % (msg, sandbox.get_forbidden_file_error()))
+            success = True
+            outcome = 0.0
+            text = msg
 
         # Last check before assuming that evaluation finished
         # successfully; we accept the evaluation even if the exit code
         # isn't 0.
-        if exit_status != Sandbox.EXIT_OK:
+        elif exit_status != Sandbox.EXIT_OK:
             logger.error("Shouldn't arrive here, failing.")
-            return False, None, None
 
         # If this isn't the last step of the evaluation, return that
         # the operation was successful, but neither an outcome nor an
         # explainatory text.
-        if not final:
-            return True, None, None
-        # Otherwise, the outcome is stdout and text is stderr.
-        with codecs.open(stdout_filename, "r", "utf-8") as stdout_file:
-            with codecs.open(stderr_filename, "r", "utf-8") as stderr_file:
-                try:
-                    outcome = stdout_file.readline().strip()
-                except UnicodeDecodeError as error:
-                    logger.error("Unable to interpret manager stdout "
-                                 "(outcome) as unicode. %r" % error)
-                    return False, None, None
-                try:
-                    text = filter_ansi_escape(stderr_file.readline())
-                except UnicodeDecodeError as error:
-                    logger.error("Unable to interpret manager stderr "
-                                 "(text) as unicode. %r" % error)
-                    return False, None, None
-        try:
-            outcome = float(outcome)
-        except ValueError:
-            logger.error("Wrong outcome `%s' from manager." % outcome)
-            return False, None, None
+        elif not final:
+            success = True
 
-        return True, outcome, text
+        # Otherwise, extract outcome and text from the manager.
+        else:
+            try:
+                outcome, text = extract_outcome_and_text(stdout_filename,
+                                                         stderr_filename)
+            except ValueError:
+                pass
+            else:
+                success = True
+
+        return success, outcome, text, plus
 
     def white_diff_step(self, sandbox, output_filename,
                         correct_output_filename, files_to_get):

@@ -852,10 +852,14 @@ class EvaluationService(Service):
                 submission.evaluation_tries += 1
                 submission.evaluation_outcome = "ok"
                 for test_number, info in data["evaluations"].iteritems():
+                    ewct = info["execution_wall_clock_time"]  # Too long... :(
                     session.add(Evaluation(
                         text=info["text"],
                         outcome=info["outcome"],
                         num=test_number,
+                        memory_used=info["memory_used"],
+                        execution_time=info["execution_time"],
+                        execution_wall_clock_time=ewct,
                         evaluation_shard=info["evaluation_shard"],
                         evaluation_sandbox=info["evaluation_sandbox"],
                         submission=submission))
