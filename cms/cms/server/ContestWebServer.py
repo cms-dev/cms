@@ -504,6 +504,9 @@ class QuestionHandler(BaseHandler):
     @catch_exceptions
     @tornado.web.authenticated
     def post(self):
+        # User can post only if we want.
+        if not config.allow_questions:
+            raise tornado.web.HTTPError(404)
 
         timestamp = int(time.time())
         question = Question(timestamp,
@@ -516,7 +519,7 @@ class QuestionHandler(BaseHandler):
         logger.warning("Question submitted by user %s."
                        % self.current_user.username)
 
-        # Add "All ok" notification
+        # Add "All ok" notification.
         self.application.service.add_notification(
             self.current_user.username,
             timestamp,

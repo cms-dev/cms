@@ -106,6 +106,9 @@
     "_help": "STL documentation path in the system (exposed in CWS).",
     "stl_path": "/usr/share/doc/stl-manual/html/",
 
+    "_help": "Whether questions and messages are enabled.",
+    "allow_communication": true,
+
 
 
     "_section": "AdminWebServer",

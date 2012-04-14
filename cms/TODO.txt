@@ -12,9 +12,6 @@
   SpoolExport). If we want to keep it, we at least need to change the
   indexing from task.num to something more sane, like task.id.
 
-* MED: Save evaluation results such as memory and time consumption in
-  the database and show them in the AWS.
-
 
 
 ** Worker
@@ -46,9 +43,6 @@
   slight) chance that features such as - but not limited to - "partial
   submission filler" and "avoid frequent submissions" will not work as
   expected. (This may be fixed using ip_hash in nginx.)
-
-* MED: configurability of the presence of questions in the interface
-  (some contests may prefer handling questions in a paper-y way).
 
 * LOW: think at giving CWS some caching capabilities w.r.t. to the
   database. Currently there are several queries per page load, even if

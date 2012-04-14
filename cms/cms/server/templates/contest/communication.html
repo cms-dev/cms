@@ -1,7 +1,9 @@
 {% extends base.html %}
 {% block core %}
+{% from cms import config %}
 <h1>{{ _("Communication") }}</h1>
 
+{% if config.allow_questions %}
 <h2 id="title_submit_questions" class="toggling_on">{{ _("Submit a question") }}</h2>
 <div id="submit_questions">
   <form action="{{ url_root }}/question" method="POST">
@@ -41,6 +43,7 @@
   {% end %}
   <div class="hr"></div>
 </div>
+{% end %}
 
 <h2 id="title_messages" class="toggling_on">{{ _("Messages") }}</h2>
 <div id="messages">

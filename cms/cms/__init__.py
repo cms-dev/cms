@@ -82,6 +82,7 @@ class Config:
         self.max_submission_length = 100000
         self.min_submission_interval = 60
         self.stl_path = "/usr/share/doc/stl-manual/html/"
+        self.allow_questions = True
 
         # AdminWebServer.
         self.admin_listen_address = ""
