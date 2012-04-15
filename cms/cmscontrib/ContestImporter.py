@@ -97,7 +97,9 @@ class ContestImporter:
                 self.import_dir = tempfile.mkdtemp()
                 archive.extractall(self.import_dir)
             elif self.import_source.endswith(".tar.gz") \
+                     or self.import_source.endswith(".tgz") \
                      or self.import_source.endswith(".tar.bz2") \
+                     or self.import_source.endswith(".tbz2") \
                      or self.import_source.endswith(".tar"):
                 archive = tarfile.open(name=self.import_source)
                 file_names = archive.getnames()
