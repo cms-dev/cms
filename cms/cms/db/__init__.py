@@ -25,8 +25,6 @@
 
 import sys
 
-import sqlalchemy.exc
-
 from cms.db.SQLAlchemyAll import metadata, Contest, SessionGen
 
 
@@ -93,14 +91,6 @@ def ask_for_contest(skip=None):
     return (int): a contest_id.
 
     """
-    # It seems nice to create the tables first if they do not exists.
-    try:
-        metadata.create_all()
-    except sqlalchemy.exc.OperationalError as error:
-        print "Unable to create DB.\n" \
-              "%r" % error
-        raise sqlalchemy.exc.OperationalError()
-
     if isinstance(skip, int) and len(sys.argv) > skip + 1:
         contest_id = int(sys.argv[skip + 1])
 

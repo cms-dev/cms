@@ -12,7 +12,7 @@ results we intend to obtain.
 1. Ability to have more than one version of a task, differing by
    test-cases (usually) but also managers, time/memory limit... One of
    these versions is the "live" version and behaves as the only one in
-   the current implementation. The other are "hidden" versions.
+   the current implementation. The others are "hidden" versions.
 
 2. Ability to evaluate the same set of submissions on a hidden version
    of the task (automatically?).

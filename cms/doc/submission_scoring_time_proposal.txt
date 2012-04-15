@@ -26,7 +26,7 @@ More precisely, ScoringService compute the score as in point 1, and
 transmit them to the rankings; moreover, it ask the contest object to
 update its ranking view. The ranking view is not used inside the
 system, as its only other appearance is in SpoolExporter. Besides,
-points 1 and 2 are handled by RWS alone.
+point 3 is handled only by RWS.
 
 In particular, passing from 1 to 2 consider every submission as valid
 - even if their time is outside the contest time slot.
@@ -69,16 +69,3 @@ From the point of view of a user, I propose that:
    additional_time can be added to the users to assign to them more
    time, and the algorithm will consider valid also submission whose
    time is less than contest_end + additional_time.
-
-
-
-*** Future work
-
-Yeah, we need to think again on how we handle that 1 to 2. We should
-have some way to compute it also inside the system (ScoringService?
-RankingView?), so we can show users' scores and not only the
-submission's scores. We should do it in such a way that the main
-algorithms are shared amongst RWS and the inside of CMS. We should do
-it in such a way that we can show contestants' their scores (that of
-course will be something like "score at least X and at most Y"
-depending on how they played tokens).

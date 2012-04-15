@@ -106,8 +106,9 @@ def get_tokens(self):
 User.get_tokens = get_tokens
 
 
+metadata.create_all()
+
+
 if __name__ == "__main__":
     if "redrop" in sys.argv[1:]:
         metadata.drop_all()
-    else:
-        metadata.create_all()
