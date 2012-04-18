@@ -22,6 +22,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import argparse
+import sys
 
 from cms.db.SQLAlchemyAll import SessionGen, User, Contest
 from cms.db import ask_for_contest
@@ -78,5 +79,8 @@ def main():
              email=args.email,
              hidden=args.hidden)
 
+    return 0
+
+
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

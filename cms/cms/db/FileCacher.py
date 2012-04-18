@@ -275,6 +275,17 @@ class FileCacher:
         except OSError:
             pass
 
+    def purge_cache(self):
+        """Delete all the content of the cache.
+
+        """
+        shutil.rmtree(self.base_dir)
+        if not mkdir(config.cache_dir) or \
+               not mkdir(self.base_dir) or \
+               not mkdir(self.tmp_dir) or \
+               not mkdir(self.obj_dir):
+            logger.error("Cannot create necessary directories.")
+
     @staticmethod
     def list(session=None):
         """List the files available in the storage.
