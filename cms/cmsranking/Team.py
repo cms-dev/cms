@@ -60,14 +60,18 @@ class Team(Entity):
         self.name = data['name']
 
     def get(self):
-        return self.__dict__
+        result = self.__dict__.copy()
+        del result["key"]
+        return result
 
     def load(self, data):
         self.validate(data)
         self.name = data['name']
 
     def dump(self):
-        return self.__dict__
+        result = self.__dict__.copy()
+        del result["key"]
+        return result
 
 
 store = Store(Team, 'teams', [User])

@@ -74,7 +74,9 @@ class User(Entity):
         self.team = data['team']
 
     def get(self):
-        return self.__dict__
+        result = self.__dict__.copy()
+        del result["key"]
+        return result
 
     def load(self, data):
         self.validate(data)
@@ -83,7 +85,9 @@ class User(Entity):
         self.team = data['team']
 
     def dump(self):
-        return self.__dict__
+        result = self.__dict__.copy()
+        del result["key"]
+        return result
 
     def consistent(self):
         return self.team is None or self.team in Team.store

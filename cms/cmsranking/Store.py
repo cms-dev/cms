@@ -300,15 +300,13 @@ class Store(object):
         self._verify_key(key, must_be_present=True)
 
         # retrieve entity
-        # TODO remove "key" field from returned entity
         return json.dumps(self._store[key].get())
 
     def retrieve_list(self):
-        """List all entities."""
+        """Retrieve a list of all entities."""
         result = dict()
         for key, value in self._store.iteritems():
             result[key] = value.get()
-        # TODO remove "key" field from returned entities
         return json.dumps(result)
 
     def __contains__(self, key):

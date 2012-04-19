@@ -85,7 +85,8 @@ class Subchange(Entity):
         self.extra = (data['extra'] if 'extra' in data else None)
 
     def get(self):
-        result = dict(self.__dict__)
+        result = self.__dict__.copy()
+        del result["key"]
         for field in ['score', 'token', 'extra']:
             if result[field] is None:
                 del result[field]
@@ -100,7 +101,8 @@ class Subchange(Entity):
         self.extra = (data['extra'] if 'extra' in data else None)
 
     def dump(self):
-        result = dict(self.__dict__)
+        result = self.__dict__.copy()
+        del result["key"]
         for field in ['score', 'token', 'extra']:
             if result[field] is None:
                 del result[field]

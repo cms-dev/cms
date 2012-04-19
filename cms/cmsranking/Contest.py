@@ -72,7 +72,9 @@ class Contest(Entity):
         self.end = data['end']
 
     def get(self):
-        return self.__dict__
+        result = self.__dict__.copy()
+        del result["key"]
+        return result
 
     def load(self, data):
         self.validate(data)
@@ -81,7 +83,9 @@ class Contest(Entity):
         self.end = data['end']
 
     def dump(self):
-        return self.__dict__
+        result = self.__dict__.copy()
+        del result["key"]
+        return result
 
 
 store = Store(Contest, 'contests', [Task])

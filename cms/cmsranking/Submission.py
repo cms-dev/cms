@@ -73,7 +73,12 @@ class Submission(Entity):
         self.time = data['time']
 
     def get(self):
-        return self.__dict__
+        result = self.__dict__.copy()
+        del result["key"]
+        del result["score"]
+        del result["token"]
+        del result["extra"]
+        return result
 
     def load(self, data):
         self.validate(data)
@@ -82,7 +87,12 @@ class Submission(Entity):
         self.time = data['time']
 
     def dump(self):
-        return self.__dict__
+        result = self.__dict__.copy()
+        del result["key"]
+        del result["score"]
+        del result["token"]
+        del result["extra"]
+        return result
 
     def consistent(self):
         return self.task in Task.store and self.user in User.store

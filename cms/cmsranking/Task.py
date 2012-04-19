@@ -93,7 +93,9 @@ class Task(Entity):
         self.order = data['order']
 
     def get(self):
-        return self.__dict__
+        result = self.__dict__.copy()
+        del result["key"]
+        return result
 
     def load(self, data):
         self.validate(data)
@@ -105,7 +107,9 @@ class Task(Entity):
         self.order = data['order']
 
     def dump(self):
-        return self.__dict__
+        result = self.__dict__.copy()
+        del result["key"]
+        return result
 
     def consistent(self):
         return self.contest in Contest.store
