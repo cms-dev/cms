@@ -212,7 +212,7 @@ class MessageProxy(object):
     def score_callback(self, user, task, score):
         msg = 'id: %s\n' \
               'event: score\n' \
-              'data: %s %s %s\n' \
+              'data: %s %s %0.2f\n' \
               '\n' % (int(time.time()), user, task, score)
         self.send(msg)
 
@@ -274,7 +274,7 @@ class ScoreHandler(DataHandler):
         for u_id, dic in Scoring.store._scores.iteritems():
             for t_id, score in dic.iteritems():
                 if score.get_score() > 0.0:
-                    self.write('%s %s %f\n' % (u_id, t_id, score.get_score()))
+                    self.write('%s %s %0.2f\n' % (u_id, t_id, score.get_score()))
 
 
 class ImageHandler(tornado.web.RequestHandler):

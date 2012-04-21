@@ -65,11 +65,11 @@ class Store(object):
 
         try:
             for name in os.listdir(self._path):
+                # TODO check that the key is '[A-Za-z0-9_]+'
                 if name[-5:] == '.json' and name[:-5] != '':
                     with open(os.path.join(self._path, name), 'r') as rec:
-                        data = rec.read()
                         item = self._entity()
-                        item.load(json.loads(data))
+                        item.load(json.load(rec))
                         item.key = name[:-5]
                         self._store[name[:-5]] = item
         except OSError:
