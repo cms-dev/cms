@@ -438,14 +438,6 @@ var DataStore = new function () {
     self.task_delete.add(function (key, old_data) {
         // Remove scores
         for (var u_id in self.users) {
-            /* Actually the next two lines aren't necessary because (in theory)
-               the server will delete all submissions and subchanges related to
-               this user/task before it deletes the task itself, so the score
-               should already have been set to zero. But since this isn't yet
-               implemented in the server, we keep this (for now).
-             */
-            self.users[u_id]["global"] -= self.users[u_id]["t_" + key];
-            self.users[u_id]["c_" + old_data["contest"]] -= self.users[u_id]["t_" + key];
             delete self.users[u_id]["t_" + key];
         }
         // Maximum score
@@ -518,9 +510,8 @@ var DataStore = new function () {
     };
 
     self.set_score = function (u_id, t_id, new_score) {
-        /* It may be "nice" (if not "useful") to check that the user and task
-           do actually exists! It should be the server to ensure that but since
-           it doesn't do it (yet) we cannot be sure about that.
+        /* It may be "nice" to check that the user and task do actually exists,
+           even if the server should already ensure it!
          */
         var user = self.users[u_id];
         var old_score = user["t_" + t_id];
@@ -581,6 +572,12 @@ var DataStore = new function () {
         self.score_events.add(self.update_rank);
 
         self.user_create.add(function (u_id, user) {
+            /* We're actually just counting how many users have a non-zero
+               global score and setting the rank of the new user to that number
+               plus one. An optimization could be to store that number and to
+               keep it up-to-date (instead of computing it every time). But
+               since user creation is a rare event we could keep it this way.
+             */
             var new_rank = 1;
 
             for (var u_id in self.users) {
@@ -594,15 +591,12 @@ var DataStore = new function () {
 
         self.user_update.add(function (u_id, old_user, user) {
             user["rank"] = old_user["rank"];
+            delete old_user["rank"];
         });
 
-        /* On deletion:
-           The score should already be zero, so the rank should aready be the
-           "last" (i.e. the "highest" possible). So deleting that user
-           shouldn't cause changes in other users' ranks. But we could add a
-           hanlder just to "delete" the rank, in order to return a "clean" user
-           object.
-         */
+        self.user_update.add(function (u_id, old_user) {
+            delete old_user["rank"];
+        });
 
         self.init_callback();
     };
@@ -646,7 +640,7 @@ var DataStore = new function () {
        - they also start an AJAX request and process its data
        - when BOTH requests finished init_scores() is called
        - it does again an AJAX request and process its data
-       - at the end it calls init_scores() which calls init_callback()
+       - at the end it calls init_ranks() which calls init_callback()
      */
 
     self.init = function (callback) {

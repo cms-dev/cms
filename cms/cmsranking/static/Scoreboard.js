@@ -195,17 +195,17 @@ var Scoreboard = new function () {
 
                 var score_class = self.get_score_class(user["t_" + t_id], task["max_score"]);
                 result += " \
-    <td class=\"score task " + score_class + "\">" + round_to_str(DataStore.get_score_t(u_id, t_id)) + "</td>";
+    <td class=\"score task " + score_class + "\">" + round_to_str(user["t_" + t_id]) + "</td>";
             }
 
             var score_class = self.get_score_class(user["c_" + c_id], contest["max_score"]);
             result += " \
-    <td class=\"score contest " + score_class + "\">" + round_to_str(DataStore.get_score_c(u_id, c_id)) + "</td>";
+    <td class=\"score contest " + score_class + "\">" + round_to_str(user["c_" + c_id]) + "</td>";
         }
 
         var score_class = self.get_score_class(user["global"], DataStore.global_max_score);
         result += " \
-    <td class=\"score global " + score_class + "\">" + round_to_str(DataStore.get_score(u_id)) + "</td> \
+    <td class=\"score global " + score_class + "\">" + round_to_str(user["global"]) + "</td> \
 </tr>";
 
         return result;
@@ -402,7 +402,7 @@ var Scoreboard = new function () {
             $(this).removeClass("score_0 score_0_10 score_10_20 score_20_30 score_30_40 score_40_50 score_50_60 score_60_70 score_70_80 score_80_90 score_90_100 score_100");
             $(this).addClass(score_class);
 
-            $(this).text(user[score_key]);
+            $(this).text(round_to_str(user[score_key]));
         });
 
         self.move_user(user);
