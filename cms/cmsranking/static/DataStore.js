@@ -690,13 +690,12 @@ var DataStore = new function () {
 
     self.create_event_source();
 
-    ////// Sorted contest and task list
+
+    ////// Sorted contest list
 
     self.contest_list = new Array();
 
-    self.contest_create.add(function (key, data) {
-        data["tasks"] = new Array();
-
+    self.contest_list_insert = function (key, data) {
         // Insert data in the sorted contest list
         var a = data;
         for (var i = 0; i < self.contest_list.length; i += 1) {
@@ -711,13 +710,9 @@ var DataStore = new function () {
             }
         }
         self.contest_list.push(a);
-    });
+    };
 
-    /* TODO: Add also a handler for the "update" event since we have to update
-       the contest list in that case too.
-     */
-
-    self.contest_delete.add(function (key, data) {
+    self.contest_list_remove = function (key, old_data) {
         // Remove data from the sorted contest list
         for (var i = 0; i < self.contest_list.length; i += 1) {
             var b = self.contest_list[i];
@@ -726,9 +721,27 @@ var DataStore = new function () {
                 return;
             }
         }
+    };
+
+    self.contest_create.add(function (key, data) {
+        data["tasks"] = new Array();
+        self.contest_list_insert(key, data);
+    });
+    self.contest_update.add(function (key, old_data, data) {
+        data["tasks"] = old_data["tasks"];
+        delete old_data["tasks"];
+        self.contest_list_remove(key, old_data);
+        self.contest_list_insert(key, data);
+    });
+    self.contest_delete.add(function (key, old_data) {
+        delete old_data["tasks"];
+        self.contest_list_remove(key, old_data);
     });
 
-    self.task_create.add(function (key, data) {
+
+    ////// Sorted task list
+
+    self.task_list_insert = function (key, data) {
         var task_list = self.contests[data["contest"]]["tasks"];
 
         // Insert data in the sorted task list of the contest
@@ -744,14 +757,10 @@ var DataStore = new function () {
             }
         }
         task_list.push(a);
-    });
+    };
 
-    /* TODO: Add also a handler for the "update" event since we have to update
-       the task list of the contest in that case too.
-     */
-
-    self.task_delete.add(function (key, data) {
-        var task_list = self.contests[self.tasks[key]["contest"]]["tasks"];
+    self.task_list_remove = function (key, old_data) {
+        var task_list = self.contests[old_data["contest"]]["tasks"];
 
         // Remove data from the sorted task list of the contest
         for (var i = 0; i < task_list.length; i += 1) {
@@ -761,14 +770,21 @@ var DataStore = new function () {
                 break;
             }
         }
+    };
+
+    self.task_create.add(self.task_list_insert);
+    self.task_update.add(function (key, old_data, data) {
+        self.task_list_remove(key, old_data);
+        self.task_list_insert(key, data);
     });
+    self.task_delete.add(self.task_list_remove);
 
 
     ////// Sorted team list
 
     self.team_list = new Array();
 
-    self.team_create.add(function (key, data) {
+    self.team_list_insert = function (key, data) {
         // Insert data in the sorted team list
         var a = data;
         for (var i = 0; i < self.team_list.length; i += 1) {
@@ -781,13 +797,9 @@ var DataStore = new function () {
             }
         }
         self.team_list.push(a);
-    });
+    };
 
-    /* TODO: Add also a handler for the "update" event since we have to update
-       the team list in that case too.
-     */
-
-    self.team_delete.add(function (key, data) {
+    self.team_list_remove = function (key, old_data) {
         // Remove data from the sorted team list
         for (var i = 0; i < self.team_list.length; i += 1) {
             var b = self.team_list[i];
@@ -796,7 +808,71 @@ var DataStore = new function () {
                 break;
             }
         }
+    }
+
+    self.team_create.add(function (key, data) {
+        data["users"] = new Array();
+        self.team_list_insert(key, data);
     });
+    self.team_update.add(function (key, old_data, data) {
+        data["users"] = old_data["users"];
+        delete old_data["users"];
+        self.team_list_remove(key, old_data);
+        self.team_list_insert(key, data);
+    });
+    self.team_delete.add(function (key, old_data) {
+        delete old_data["users"];
+        self.team_list_remove(key, old_data);
+    });
+
+
+    ////// Sorted user list
+
+    self.user_list_insert = function (key, data) {
+        if (data["team"] == null) {
+            return;
+        }
+
+        var user_list = self.teams[data["team"]]["users"];
+
+        // Insert data in the sorted user list of the team
+        var a = data;
+        for (var i = 0; i < user_list.length; i += 1) {
+            var b = user_list[i];
+            if ((a["l_name"] < b["l_name"]) || ((a["l_name"] == b["l_name"]) &&
+               ((a["f_name"] < b["f_name"]) || ((a["f_name"] == b["f_name"]) &&
+               (key < b["key"]))))) {
+                // We found the first element which is greater than a
+                user_list.splice(i, 0, a);
+                return;
+            }
+        }
+        user_list.push(a);
+    };
+
+    self.user_list_remove = function (key, old_data) {
+        if (old_data["team"] == null) {
+            return;
+        }
+
+        var user_list = self.teams[old_data["team"]]["users"];
+
+        // Remove data from the sorted user list of the team
+        for (var i = 0; i < user_list.length; i += 1) {
+            var b = user_list[i];
+            if (key == b["key"]) {
+                user_list.splice(i, 1);
+                break;
+            }
+        }
+    };
+
+    self.user_create.add(self.user_list_insert);
+    self.user_update.add(function (key, old_data, data) {
+        self.user_list_remove(key, old_data);
+        self.user_list_insert(key, data);
+    });
+    self.user_delete.add(self.user_list_remove);
 
 
     ////// Selection
