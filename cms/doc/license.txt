@@ -1,7 +1,7 @@
 Format: http://dep.debian.net/deps/dep5/
 Upstream-Name: cms
 Upstream-Contact: Stefano Maggiolo <s.maggiolo@gmail.com>
-Source: http://github.com/giomasce/cms
+Source: http://github.com/cms-dev/cms
 Copyright: 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
            2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
            2010-2012 Matteo Boscariol <boscarim@hotmail.com>
