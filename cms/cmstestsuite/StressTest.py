@@ -134,44 +134,18 @@ class Actor(threading.Thread):
     def run(self):
         try:
             print >> sys.stderr, "Starting actor for user %s" % (self.username)
-
-            # Start with logging in and checking to be logged in
-            self.do_step(HomepageRequest(self.browser,
-                                         self.username,
-                                         loggedin=False,
-                                         base_url=self.base_url))
-            self.do_step(LoginRequest(self.browser,
-                                      self.username,
-                                      self.password,
-                                      base_url=self.base_url))
-            self.do_step(HomepageRequest(self.browser,
-                                         self.username,
-                                         loggedin=True,
-                                         base_url=self.base_url))
-
-            # Then keep forever stumbling across user pages
-            while True:
-                choice = random.random()
-                if choice < 0.02 and self.submissions_path is not None:
-                    task = random.choice(self.tasks)
-                    self.do_step(SubmitRandomRequest(
-                            self.browser,
-                            task,
-                            base_url=self.base_url,
-                            submissions_path=self.submissions_path))
-                elif choice < 0.5:
-                    task = random.choice(self.tasks)
-                    self.do_step(TaskRequest(self.browser,
-                                             task[0],
-                                             base_url=self.base_url))
-                else:
-                    task = random.choice(self.tasks)
-                    self.do_step(TaskStatementRequest(self.browser,
-                                                      task[0],
-                                                      base_url=self.base_url))
+            self.act()
 
         except ActorDying:
             print >> sys.stderr, "Actor dying for user %s" % (self.username)
+
+    def act(self):
+        """Define the behaviour of the actor. Subclasses are expected
+        to overwrite this stub method properly.
+
+        """
+        raise Exception("Not implemented. Please subclass Action" \
+                            "and overwrite act()")
 
     def do_step(self, request):
         self.wait_next()
@@ -215,6 +189,45 @@ class Actor(threading.Thread):
             time.sleep(SLEEP_PERIOD)
             if self.die:
                 raise ActorDying()
+
+
+class RandomActor(Actor):
+
+    def act(self):
+        # Start with logging in and checking to be logged in
+        self.do_step(HomepageRequest(self.browser,
+                                     self.username,
+                                     loggedin=False,
+                                     base_url=self.base_url))
+        self.do_step(LoginRequest(self.browser,
+                                  self.username,
+                                  self.password,
+                                  base_url=self.base_url))
+        self.do_step(HomepageRequest(self.browser,
+                                     self.username,
+                                     loggedin=True,
+                                     base_url=self.base_url))
+
+        # Then keep forever stumbling across user pages
+        while True:
+            choice = random.random()
+            if choice < 0.1 and self.submissions_path is not None:
+                task = random.choice(self.tasks)
+                self.do_step(SubmitRandomRequest(
+                        self.browser,
+                        task,
+                        base_url=self.base_url,
+                        submissions_path=self.submissions_path))
+            elif choice < 0.5:
+                task = random.choice(self.tasks)
+                self.do_step(TaskRequest(self.browser,
+                                         task[0],
+                                         base_url=self.base_url))
+            else:
+                task = random.choice(self.tasks)
+                self.do_step(TaskStatementRequest(self.browser,
+                                                  task[0],
+                                                  base_url=self.base_url))
 
 
 def harvest_contest_data(contest_id):
@@ -280,11 +293,11 @@ def main():
             (get_service_address(ServiceCoord('ContestWebServer', 0))[0],
              config.contest_listen_port[0])
 
-    actors = [Actor(username, data['password'], DEFAULT_METRICS, tasks,
-                    log=RequestLog(log_dir=os.path.join('./test_logs',
-                                                        username)),
-                    base_url=base_url,
-                    submissions_path=options.submissions_path)
+    actors = [RandomActor(username, data['password'], DEFAULT_METRICS, tasks,
+                          log=RequestLog(log_dir=os.path.join('./test_logs',
+                                                              username)),
+                          base_url=base_url,
+                          submissions_path=options.submissions_path)
               for username, data in users.iteritems()]
     for actor in actors:
         actor.start()
