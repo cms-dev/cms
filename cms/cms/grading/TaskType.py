@@ -632,6 +632,8 @@ class TaskType:
                                   "ugetrlimit"]
         # This one seems to be used for a C++ executable.
         sandbox.allow_path += ["/proc/meminfo"]
+        # This is used by freopen in Ubuntu 12.04.
+        sandbox.allow_syscall += ["dup3"]
 
         # Actually run the evaluation command.
         logger.info("Starting evaluation step.")
