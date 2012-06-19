@@ -588,7 +588,7 @@ class SubmitHandler(BaseHandler):
 
             # Extract the files from the archive.
             temp_archive_file, temp_archive_filename = \
-                tempfile.mkstemp(config.temp_dir)
+                tempfile.mkstemp(dir=config.temp_dir)
             with os.fdopen(temp_archive_file, "w") as temp_archive_file:
                 temp_archive_file.write(archive_data["body"])
 
