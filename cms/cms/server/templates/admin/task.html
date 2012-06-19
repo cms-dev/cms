@@ -19,7 +19,8 @@ $("select[name=task_type]").change(showTaskTypeOption);
 {% from cms.grading.tasktypes.Batch import Batch %}
 {% from cms.grading.tasktypes.OutputOnly import OutputOnly %}
 {% from cms.grading.tasktypes.Communication import Communication %}
-{% set task_type_list = [Batch, OutputOnly, Communication] %}
+{% from cms.grading.tasktypes.TwoSteps import TwoSteps %}
+{% set task_type_list = [Batch, OutputOnly, Communication, TwoSteps] %}
 
 <div class="core_title">
   <h1>{{ task.title }} ({{ task.name }})</h1>
@@ -262,6 +263,9 @@ $("select[name=task_type]").change(showTaskTypeOption);
             </option>
             <option value="GroupMul"{% if task.score_type == "GroupMul" %} selected{% end %}>
               Multiply
+            </option>
+            <option value="GroupThreshold"{% if task.score_type == "GroupThreshold" %} selected{% end %}>
+              Threshold
             </option>
             <option value="Relative"{% if task.score_type == "Relative" %} selected{% end %}>
               Relative
