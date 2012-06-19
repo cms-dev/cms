@@ -23,8 +23,8 @@ from cms.grading.ScoreType import ScoreTypeAlone
 
 
 class GroupMul(ScoreTypeAlone):
-    """Similar to ScoreTypeGroupMin, but with the product instead of
-    the minimum.
+    """Similar to GroupMin, but with the product instead of the
+    minimum.
 
     """
     def max_scores(self):

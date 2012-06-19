@@ -26,9 +26,9 @@ class GroupMin(ScoreTypeAlone):
     """The score of a submission is the sum of the product of the
     minimum of the ranges with the multiplier of that range.
 
-    Parameters are [{'multiplier': m, 'testcases': t}, ... ] and this
-    means that the first group consists of the first t testcases and
-    the min will be multiplied by m.
+    Parameters are [[m, t], ... ] and this means that the first group
+    consists of the first t testcases and the min will be multiplied
+    by m.
 
     """
     def max_scores(self):
