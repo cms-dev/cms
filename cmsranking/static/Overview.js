@@ -35,7 +35,7 @@ var Overview = new function () {
 
         DataStore.score_events.add(self.score_handler);
         DataStore.rank_events.add(self.rank_handler);
-        DataStore.add_select_handler(self.update_select);
+        DataStore.select_events.add(self.update_select);
         self.update_score();
     };
 

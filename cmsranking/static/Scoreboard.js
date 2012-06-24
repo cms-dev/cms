@@ -30,7 +30,7 @@ var Scoreboard = new function () {
         self.thead_el = document.getElementById('Scoreboard_head');
         self.tbody_el = document.getElementById('Scoreboard_body');
 
-        DataStore.add_select_handler(self.select_handler);
+        DataStore.select_events.add(self.select_handler);
 
         self.generate();
 
@@ -78,8 +78,8 @@ var Scoreboard = new function () {
 
         // create callbacks for selection
         for (var u_id in DataStore.users) {
-            var check = document.getElementById(u_id).children[0].children[0];
-            check.addEventListener('change', self.select_factory(u_id));
+            var check = document.getElementById(u_id).children[0];
+            check.addEventListener('click', self.select_factory(u_id));
         }
 
         // create callbacks for UserPanel
@@ -168,9 +168,7 @@ var Scoreboard = new function () {
 
         var result = " \
 <tr id=\"" + u_id + '\"' + (DataStore.get_selected(u_id) ? " class=\"selected\"" : "") + "> \
-    <td class=\"sel\"> \
-        <input type=\"checkbox\"" + (DataStore.get_selected(u_id) ? "checked" : "") + " /> \
-    </td> \
+    <td class=\"sel\"></td> \
     <td class=\"rank\">" + rank + "</td> \
     <td class=\"f_name\">" + user["f_name"] + "</td> \
     <td class=\"l_name\">" + user["l_name"] + "</td>";
@@ -423,23 +421,19 @@ var Scoreboard = new function () {
     };
 
 
-    self.select_handler = function (u_id, flag) {
+    self.select_handler = function (u_id, color) {
         var row = document.getElementById(u_id);
-        if (flag) {
-            $(row).addClass("selected");
+        if (color != 0) {
+            $(row).addClass("selected color" + color);
         } else {
-            $(row).removeClass("selected");
+            $(row).removeClass("selected color1 color2 color3 color4 color5 color6 color7 color8");
         }
-        var check = row.children[0].children[0];
-        check.checked = flag;
     };
 
 
     self.select_factory = function (u_id) {
         var result = function () {
-            var row = document.getElementById(u_id);
-            var check = row.children[0].children[0];
-            DataStore.set_selected(u_id, check.checked);
+            DataStore.toggle_selected(u_id);
         }
         return result;
     };

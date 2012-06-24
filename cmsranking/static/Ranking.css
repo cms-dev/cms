@@ -474,17 +474,194 @@ table.scoreboard tbody tr:hover td.team
     border-radius: 5px;
 }
 
-table.scoreboard tbody tr.selected td.sel
-{
-    background-color: lightblue;
-    border-radius: 5px;
-}
-
 table.scoreboard tbody tr.selected td.f_name,
 table.scoreboard tbody tr.selected td.l_name
 {
     font-weight: bold;
 }
+
+/* What follows is the CSS needed to manage the "checkboxes" in the Scoreboard,
+   used to select users. We're simulating checkboxes using table cells, so we
+   have to define their appearence in "normal" status as well as during user
+   interaction. We did this so we can be more flexible on the style: we need
+   to be able to set the background color of the checkbox and to make them a
+   little bigger so that the color can be seen better.
+
+   We use eight colors, taken from the Tango Palette:
+   http://tango.freedesktop.org/Tango_Icon_Theme_Guidelines#Color_Palette
+ */
+
+table.scoreboard tbody tr td.sel
+{
+    background-color: transparent;
+    background-image: url('img/tick_black.png');
+    background-repeat: no-repeat;
+    background-position: center center;
+    opacity: 0;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+table.scoreboard tbody tr td.sel:hover
+{
+    opacity: 0.3;
+}
+
+table.scoreboard tbody tr td.sel:active
+{
+    opacity: 0.5;
+}
+
+table.scoreboard tbody tr.selected td.sel
+{
+    background-image: url('img/tick_white.png');
+    background-repeat: no-repeat;
+    background-position: center center;
+    border: 1px solid rgba(0,0,0,0.2);
+    border-radius: 4px;
+    opacity: 1;
+}
+
+/* Color 1: Blue */
+
+table.scoreboard tbody tr.color1 td.sel
+{
+    background-color: rgb(52,101,164);
+}
+
+table.scoreboard tbody tr.color1 td.sel:hover
+{
+    background-color: rgb(32,74,135);
+}
+
+table.scoreboard tbody tr.color1 td.sel:active
+{
+    background-color: rgb(26,59,108);
+}
+
+/* Color 2: Butter */
+
+table.scoreboard tbody tr.color2 td.sel
+{
+    background-color: rgb(237,212,0);
+}
+
+table.scoreboard tbody tr.color2 td.sel:hover
+{
+    background-color: rgb(196,160,0);
+}
+
+table.scoreboard tbody tr.color2 td.sel:active
+{
+    background-color: rgb(157,128,0);
+}
+
+/* Color 3: Red */
+
+table.scoreboard tbody tr.color3 td.sel
+{
+    background-color: rgb(204,0,0);
+}
+
+table.scoreboard tbody tr.color3 td.sel:hover
+{
+    background-color: rgb(164,0,0);
+}
+
+table.scoreboard tbody tr.color3 td.sel:active
+{
+    background-color: rgb(131,0,0);
+}
+
+/* Color 4: Chameleon */
+
+table.scoreboard tbody tr.color4 td.sel
+{
+    background-color: rgb(115,210,22);
+}
+
+table.scoreboard tbody tr.color4 td.sel:hover
+{
+    background-color: rgb(78,154,6);
+}
+
+table.scoreboard tbody tr.color4 td.sel:active
+{
+    background-color: rgb(62,123,5);
+}
+
+/* Color 5: Orange */
+
+table.scoreboard tbody tr.color5 td.sel
+{
+    background-color: rgb(245,121,0);
+}
+
+table.scoreboard tbody tr.color5 td.sel:hover
+{
+    background-color: rgb(206,92,0);
+}
+
+table.scoreboard tbody tr.color5 td.sel:active
+{
+    background-color: rgb(165,74,0);
+}
+
+/* Color 6: Plum */
+
+table.scoreboard tbody tr.color6 td.sel
+{
+    background-color: rgb(117,80,123);
+}
+
+table.scoreboard tbody tr.color6 td.sel:hover
+{
+    background-color: rgb(92,53,102);
+}
+
+table.scoreboard tbody tr.color6 td.sel:active
+{
+    background-color: rgb(74,42,82);
+}
+
+/* Color 7: Aluminium */
+
+table.scoreboard tbody tr.color7 td.sel
+{
+    background-color: rgb(136,138,133);
+}
+
+table.scoreboard tbody tr.color7 td.sel:hover
+{
+    background-color: rgb(85,87,83);
+}
+
+table.scoreboard tbody tr.color7 td.sel:active
+{
+    background-color: rgb(68,70,66);
+}
+
+/* Color 8: Chocolate */
+
+table.scoreboard tbody tr.color8 td.sel
+{
+    background-color: rgb(193,125,17);
+}
+
+table.scoreboard tbody tr.color8 td.sel:hover
+{
+    background-color: rgb(143,89,2);
+}
+
+table.scoreboard tbody tr.color8 td.sel:active
+{
+    background-color: rgb(114,71,2);
+}
+
+
 
 /* This animation stuff is quite huge: every brosers implements it using its
    own prefix and we have to handle them all. In particular: for each animation

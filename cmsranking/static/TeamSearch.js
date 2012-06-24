@@ -59,7 +59,7 @@ var TeamSearch = new function () {
         self.generate();
         self.update();
 
-        DataStore.add_select_handler(self.select_handler);
+        DataStore.select_events.add(self.select_handler);
     };
 
     self.generate = function () {

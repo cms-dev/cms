@@ -877,22 +877,60 @@ var DataStore = new function () {
 
     ////// Selection
 
-    self.select_handlers = new Array();
+    self.select_events = $.Callbacks();
 
-    self.set_selected = function (u_id, flag) {
-        if (self.users[u_id]["selected"] != flag) {
-            self.users[u_id]["selected"] = flag;
-            for (var idx in self.select_handlers) {
-                self.select_handlers[idx](u_id, flag);
+    /* We use eight different colors. We keep track of how many times each
+       color is in use and when we have to assign a new color to an user we
+       choose the one that has been used less times.
+     */
+
+    self.colors = [0,0,0,0,0,0,0,0]
+
+    self.choose_color = function () {
+        var min_idx = 0;
+        for (var i = 1; i < 8; i += 1)
+        {
+            if (self.colors[i] < self.colors[min_idx])
+            {
+                min_idx = i;
             }
         }
+        // Color indexes will be 1-based, so we add 1 to the result
+        return min_idx+1;
+    }
+
+    self.set_selected = function (u_id, flag) {
+        if (self.users[u_id]["selected"] == 0 && flag) {
+            // We have to assign a color
+            var color_idx = self.choose_color();
+            console.error(color_idx);
+            self.users[u_id]["selected"] = color_idx;
+            console.warn(self.colors[color_idx-1]);
+            self.colors[color_idx-1] += 1
+            self.select_events.fire(u_id, color_idx);
+        }
+        else if (self.users[u_id]["selected"] != 0 && !flag) {
+            // We have to remove the color
+            var color_idx = self.users[u_id]["selected"];
+            self.users[u_id]["selected"] = 0;
+            self.colors[color_idx-1] -= 1;
+            self.select_events.fire(u_id, 0);
+        }
+    };
+
+    self.toggle_selected = function (u_id) {
+        self.set_selected(u_id, self.users[u_id]["selected"] == 0);
     };
 
     self.get_selected = function (u_id) {
         return self.users[u_id]["selected"];
     };
 
-    self.add_select_handler = function (handler) {
-        self.select_handlers.push(handler);
-    };
+    self.user_create.add(function (key, data) {
+        data["selected"] = 0;
+    });
+    self.contest_delete.add(function (key, old_data) {
+        self.set_selected(key, false);
+        delete old_data["selected"];
+    });
 };
