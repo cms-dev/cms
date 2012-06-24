@@ -903,9 +903,7 @@ var DataStore = new function () {
         if (self.users[u_id]["selected"] == 0 && flag) {
             // We have to assign a color
             var color_idx = self.choose_color();
-            console.error(color_idx);
             self.users[u_id]["selected"] = color_idx;
-            console.warn(self.colors[color_idx-1]);
             self.colors[color_idx-1] += 1
             self.select_events.fire(u_id, color_idx);
         }
