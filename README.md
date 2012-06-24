@@ -184,7 +184,7 @@ repository:
 
 ```bash
 sudo apt-get install git
-git clone git://github.com/giomasce/cms.git
+git clone git://github.com/cms-dev/cms.git
 ```
 
 This will create a directory ./cms/ with the source code, that we will
