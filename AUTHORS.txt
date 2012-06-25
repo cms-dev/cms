@@ -17,6 +17,7 @@ MINOR PATCH CONTRIBUTORS
 
 David Greenaway <mail@davidgreenaway.com>
 Federico Scrinzi (aka volpino) <fox91@anche.no>
+Giovanni Campagna (aka gcampax) <scampa.giovanni@gmail.com>
 
 And many other people that didn't write code, but provided useful
 comments, suggestions and feedback. :-)
