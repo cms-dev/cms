@@ -5,8 +5,8 @@ if ("EventSource" in window) return;
 var reTrim = /^(\s|\u00A0)+|(\s|\u00A0)+$/g;
 
 var EventSource = function (url) {
-  var eventsource = this,  
-      interval = 500, // polling interval  
+  var eventsource = this,
+      interval = 500, // polling interval
       lastEventId = null,
       cache = '';
 
@@ -18,29 +18,29 @@ var EventSource = function (url) {
   this.readyState = this.CONNECTING;
   this._pollTimer = null;
   this._xhr = null;
-  
+
   function pollAgain() {
     eventsource._pollTimer = setTimeout(function () {
       poll.call(eventsource);
     }, interval);
   }
-  
+
   function poll() {
     try { // force hiding of the error message... insane?
       if (eventsource.readyState == eventsource.CLOSED) return;
-      
+
       var xhr = new XMLHttpRequest();
       xhr.open('GET', eventsource.URL, true);
       xhr.setRequestHeader('Accept', 'text/event-stream');
       xhr.setRequestHeader('Cache-Control', 'no-cache');
-    
-      // we must make use of this on the server side if we're working with Android - because they don't trigger 
+
+      // we must make use of this on the server side if we're working with Android - because they don't trigger
       // readychange until the server connection is closed
       xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
       if (lastEventId != null) xhr.setRequestHeader('Last-Event-ID', lastEventId);
       cache = '';
-    
+
       xhr.timeout = 50000;
       xhr.onreadystatechange = function () {
         if ((this.readyState == 3 || this.readyState == 4) && this.status == 200) {
@@ -49,15 +49,15 @@ var EventSource = function (url) {
             eventsource.readyState = eventsource.OPEN;
             eventsource.dispatchEvent('open', { type: 'open' });
           }
-        
+
           // process this.responseText
           var parts = this.responseText.substr(cache.length).split("\n"),
               data = [],
               i = 0,
               line = '';
-            
+
           cache = this.responseText;
-        
+
           // TODO handle 'event' (for buffer name), retry
           for (; i < parts.length; i++) {
             line = parts[i].replace(reTrim, '');
@@ -86,23 +86,23 @@ var EventSource = function (url) {
             pollAgain();
           } else if (this.readyState == 0) { // likely aborted
             pollAgain();
-          }          
+          }
         }
       };
-    
+
       xhr.send();
-    
+
       setTimeout(function () {
         if (true || xhr.readyState == 3) xhr.abort();
       }, xhr.timeout);
-      
+
       eventsource._xhr = xhr;
-    
+
     } catch (e) { // in an attempt to silence the errors
       eventsource.dispatchEvent('error', { type: 'error', data: e.message }); // ???
-    } 
+    }
   };
-  
+
   poll(); // init now
 };
 
@@ -121,9 +121,9 @@ EventSource.prototype = {
     if (handlers) {
       for (var i = 0; i < handlers.length; i++) {
         handlers.call(this, event);
-      }      
+      }
     }
-    
+
     if (this['on' + type]) {
       this['on' + type].call(this, event);
     }
@@ -132,7 +132,7 @@ EventSource.prototype = {
     if (!this['_' + type + 'Handlers']) {
       this['_' + type + 'Handlers'] = [];
     }
-    
+
     this['_' + type + 'Handlers'].push(handler);
   },
   removeEventListener: function () {
@@ -160,5 +160,5 @@ MessageEvent.prototype = {
 
 if ('module' in global) module.exports = EventSource;
 global.EventSource = EventSource;
- 
+
 })(this);

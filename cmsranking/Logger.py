@@ -28,7 +28,7 @@ from traceback import format_tb as formatTraceback
 ## ANSI utilities. See for reference:
 # http://pueblo.sourceforge.net/doc/manual/ansi_color_codes.html
 # http://en.wikipedia.org/wiki/ANSI_escape_code
-# 
+#
 
 ANSI_FG_COLORS = {'black': 30,
                   'red': 31,

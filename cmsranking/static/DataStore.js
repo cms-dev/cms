@@ -39,6 +39,7 @@ var DataStore = new function () {
     self.score_events = $.Callbacks();
     self.rank_events = $.Callbacks();
 
+
     ////// Contest
 
     self.init_contests = function () {

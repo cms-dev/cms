@@ -70,7 +70,7 @@ var UserDetail = new function () {
             dataType: "json",
             success: self.submits_callback,
             error: function () {
-                console.error("Error while getting the submissions for " + self.user_id); 
+                console.error("Error while getting the submissions for " + self.user_id);
             }
         });
     };

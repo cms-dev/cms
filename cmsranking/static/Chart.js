@@ -185,7 +185,7 @@ var Chart = new function () {
             close_group();
             i += 1;
         }
- 
+
         context.fillStyle = "rgba(" + color[0] + "," + color[1] + "," + color[2] + ",0.3)";
         context.beginPath();
         context.moveTo(get_x(tops[0][0]), get_y(tops[0][1]));
