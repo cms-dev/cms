@@ -68,41 +68,59 @@ def get_encryption_alphabet():
     return "a-zA-Z0-9._-"
 
 
-def encrypt_string(string, key=None):
-    """Encrypt the string s num with the 16-bytes key. Moreover, it
-    encrypts it using a random salt, so that encrypting repeatedly the
+def encrypt_string(pt, key=None):
+    """Encrypt the plaintext (pt) with the 16-bytes key. Moreover, it
+    encrypts it using a random IV, so that encrypting repeatedly the
     same string gives different outputs. This way no analisys can made
-    when the same number is used in different contexts.  The generated
+    when the same number is used in different contexts. The generated
     string uses the alphabet { 'a', ..., 'z', 'A', ..., 'Z', '0', ...,
     '9', '.', '-', '_' }, so it is safe to use in URLs.
 
-    This function pads the string s with NULL bytes, so any NULL byte
-    at the end of the string will be discarded by decryption function.
+    If key is not specified, it is obtained from the configuration.
+
+    """
+    if key is None:
+        key = _get_secret_key_unhex()
+    # Pad the plaintext to make its length become a multiple of the block size
+    # (that is, for AES, 16 bytes), using a byte 0x01 followed by as many bytes
+    # 0x00 as needed. If the length of the message is already a multiple of 16
+    # bytes, add a new block.
+    pt_pad = pt + '\01' + '\00' * (16 - (len(pt) + 1) % 16)
+    # The IV is a random block used to differentiate messages encrypted with
+    # the same key. An IV should never be used more than once in the lifetime
+    # of the key. In this way encrypting the same plaintext twice will produce
+    # different ciphertexts.
+    iv = get_random_key()
+    # Initialize the AES cipher with the given key and IV.
+    aes = AES.new(key, AES.MODE_CBC, iv)
+    ct = aes.encrypt(pt_pad)
+    # Convert the ciphertext in a URL-safe base64 encoding
+    ct_b64 = base64.urlsafe_b64encode(iv + ct).replace('=', '.')
+    return ct_b64
+
+
+def decrypt_string(ct_b64, key=None):
+    """Decrypt a ciphertext (ct_b64) encrypted with encrypt_string and
+    return the corresponding plaintext.
 
     If key is not specified, it is obtained from the configuration.
 
     """
     if key is None:
         key = _get_secret_key_unhex()
-    iv2 = get_random_key()
-    dec = iv2 + string
-    dec += "\x00" * (16 - ((len(dec) - 1) % 16 + 1))
-    aes = AES.new(key, mode=AES.MODE_CBC)
-    return base64.urlsafe_b64encode(aes.encrypt(dec)).replace('=', '.')
-
-
-def decrypt_string(enc, key=None):
-    """Decrypt a string encrypted with encrypt_string.
-
-    If key is not specified, it is obtained from the configuration.
-
-    """
-    if key is None:
-        key = _get_secret_key_unhex()
-    aes = AES.new(key, mode=AES.MODE_CBC)
     try:
-        return aes.decrypt(base64.urlsafe_b64decode(
-            str(enc).replace('.', '=')))[16:].rstrip('\x00')
+        # Convert the ciphertext from a URL-safe base64 encoding to a
+        # bytestring, which contains both the IV (the first 16 bytes) as well
+        # as the encrypted padded plaintext.
+        iv_ct = base64.urlsafe_b64decode(ct_b64.replace('.', '='))
+        aes = AES.new(key, AES.MODE_CBC, iv_ct[:16])
+        # Get the padded plaintext.
+        pt_pad = aes.decrypt(iv_ct[16:])
+        # Remove the padding.
+        # TODO check that the padding is correct, i.e. that it contains at most
+        # 15 bytes 0x00 preceded by a byte 0x01.
+        pt = pt_pad.rstrip('\x00')[:-1]
+        return pt
     except TypeError:
         raise ValueError('Could not decode from base64.')
     except ValueError:
