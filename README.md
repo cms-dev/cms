@@ -72,11 +72,9 @@ ScoringService, Checker, EvaluationService, AdminWebServer, and one or
 more of ContestWebServer and Worker. Again, if there are more than one
 worker, we recommend to run them on different servers.
 
-Our preferred distribution is Ubuntu >= 11.10. With Ubuntu 11.10 one
-will need to install some out-of-repository packages, and note that,
-as soon as it is deployed, we will target explicitly Ubuntu 12.04
-LTS. We will hopefully support Ubuntu 12.04.x out of the box for the
-length of Ubuntu's support duration, that is five years.
+Our preferred distribution is Ubuntu >= 12.04 LTS.  We will hopefully
+support Ubuntu 12.04.x out of the box for the length of Ubuntu's
+support duration, that is five years.
 
 Very important note: up to now, we support only 32 bit distributions.
 
@@ -124,34 +122,6 @@ work:
 
 - python-coverage >= 3.4 (only for running tests).
 
-
-On Ubuntu 11.10, one will need to run the following script to satisfy
-all dependencies:
-
-```bash
-# For add-apt-repository.
-sudo apt-get install python-software-properties
-
-sudo add-apt-repository ppa:chris-lea/python-tornado
-wget "https://launchpad.net/~neil-u/+archive/ppa/+build/3103042/"\
-     "+files/python-sqlalchemy_0.7.4-1ubuntu1_all.deb"
-wget "https://launchpad.net/~neil-u/+archive/ppa/+build/3103042/"\
-     "+files/python-sqlalchemy-ext_0.7.4-1ubuntu1_i386.deb"
-
-sudo apt-get update
-
-sudo apt-get install postgresql postgresql-client python-setuptools \
-     python-tornado python-psycopg2 python-psutil gettext \
-     build-essential fpc stl-manual python-simplejson \
-     python-netifaces python-beautifulsoup python-coverage \
-     python-crypto
-
-sudo dpkg -i python-sqlalchemy_0.7.4-1ubuntu1_all.deb \
-     python-sqlalchemy-ext_0.7.4-1ubuntu1_all.deb
-
-# Optional.
-# sudo apt-get install phppgadmin python-yaml
-```
 
 On Ubuntu 12.04, one will need to run the following script to satisfy
 all dependencies:
@@ -213,7 +183,8 @@ Once configured, we can proceed to install it using the commands:
 
 ```bash
 cd $REPO
-sudo pip install ./
+./setup.py build
+sudo ./setup.py install
 ```
 
 These will create a user and a group named "cmsuser". If you want to
@@ -222,6 +193,11 @@ log-in again before continuing:
 
 ```bash
 sudo usermod -a -G cmsuser
+```
+
+You can verify to actually be in the group issuing the command
+```bash
+groups
 ```
 
 
@@ -233,7 +209,7 @@ To update CMS, run the following:
 ```bash
 cd $REPO
 git pull
-sudo pip install -U ./
+sudo ./setup.py install
 ```
 
 Since CMS is still in heavy development, we are introducing many
@@ -284,14 +260,3 @@ system.
 In particular if there are more than one ContestWebServer, one may
 want to use a load balancer. We recommend to use nginx; a sample
 configuration is provided in $REPO/cms/example.
-
-
-Uninstalling CMS
-----------------
-
-In the unfortunate situation you would like to remove completely CMS
-from your system, just run the following:
-
-```bash
-sudo pip uninstall cms
-```
