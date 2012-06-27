@@ -209,6 +209,7 @@ To update CMS, run the following:
 ```bash
 cd $REPO
 git pull
+./setup.py build
 sudo ./setup.py install
 ```
 
