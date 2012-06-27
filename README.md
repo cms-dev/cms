@@ -171,7 +171,7 @@ If you prefer using Python Package Index, you can retrieve all Python
 dependencies with this line (see below for the meaning of $REPO):
 
 ```bash
-sudo pip install -r $REPO/cms/REQUIREMENTS.txt
+sudo pip install -r $REPO/REQUIREMENTS.txt
 ```
 
 
@@ -195,10 +195,10 @@ Configuring and installing CMS
 ------------------------------
 
 There are two configuration files, one for CMS itself and one for the
-rankings. Samples for both files are in $REPO/cms/examples. You want
+rankings. Samples for both files are in $REPO/examples. You want
 to copy them to the same file names but without the ".sample" suffix
-(that is, to $REPO/cms/example/cms.conf and
-$REPO/cms/example/cms.ranking.conf) before modifying them.
+(that is, to $REPO/examples/cms.conf and
+$REPO/examples/cms.ranking.conf) before modifying them.
 
 - cms.conf is intended to be the same in all servers; all
   configurations are explained in the file; of particular importance is
@@ -212,7 +212,7 @@ $REPO/cms/example/cms.ranking.conf) before modifying them.
 Once configured, we can proceed to install it using the commands:
 
 ```bash
-cd $REPO/cms/
+cd $REPO
 sudo pip install ./
 ```
 
@@ -231,7 +231,7 @@ Updating CMS
 To update CMS, run the following:
 
 ```bash
-cd $REPO/cms
+cd $REPO
 git pull
 sudo pip install -U ./
 ```
@@ -242,7 +242,7 @@ previous version, you may need to run UpdateDB.py to organize the data
 in the new structure:
 
 ```bash
-cd $REPO/cms/cms/db
+cd $REPO/cms/db
 python UpdateDB.py -l # To see which updating scripts are available.
 python UpdateDB.py -s YYYYMMDD # To update the DB, where YYYYMMDD is
                                # the last date in which you created or
