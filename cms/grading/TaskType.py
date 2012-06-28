@@ -370,11 +370,14 @@ class TaskType:
             obj[test_number]["evaluation_shard"] = self.worker_shard
             obj[test_number]["evaluation_sandbox"] = self.sandbox_paths
             self.sandbox_paths = ""
-        if plus is not None:
-            for info in ["memory_used",
-                         "execution_time",
-                         "execution_wall_clock_time"]:
-                obj[test_number][info] = plus.get(info, None)
+
+        if plus is None:
+            plus = {}
+        for info in ["memory_used",
+                     "execution_time",
+                     "execution_wall_clock_time"]:
+            obj[test_number][info] = plus.get(info, None)
+
         return success
 
     def finish_evaluation(self, success, to_log=None):
