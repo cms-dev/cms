@@ -107,6 +107,7 @@ ul.normal_list {
     text-shadow: white 0.0625em 0.0625em 0.0625em;
     height: 100%;
     border-right: 2px solid #E4E5E8;
+    overflow-y: auto;
 }
 
 #sidebar h1 {
