@@ -112,7 +112,7 @@ def decrypt_string(ct_b64, key=None):
         # Convert the ciphertext from a URL-safe base64 encoding to a
         # bytestring, which contains both the IV (the first 16 bytes) as well
         # as the encrypted padded plaintext.
-        iv_ct = base64.urlsafe_b64decode(ct_b64.replace('.', '='))
+        iv_ct = base64.urlsafe_b64decode(str(ct_b64).replace('.', '='))
         aes = AES.new(key, AES.MODE_CBC, iv_ct[:16])
         # Get the padded plaintext.
         pt_pad = aes.decrypt(iv_ct[16:])
