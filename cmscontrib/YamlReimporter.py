@@ -104,7 +104,7 @@ class YamlReimporter:
                 try:
                     cms_contest['tasks'][task_num] = yaml_tasks[task['name']]
                 except KeyError:
-                    logger.error("Task %d exists in old contest, "
+                    logger.error("Task %s exists in old contest, "
                                  "but not in the new one" % task['name'])
 
             # And add new tasks.
