@@ -41,9 +41,10 @@ class YamlReimporter:
     already in CMS.
 
     """
-    def __init__(self, path, contest_id):
+    def __init__(self, path, contest_id, force=False):
         self.path = path
         self.contest_id = contest_id
+        self.force = force
 
         self.file_cacher = FileCacher()
 
@@ -69,9 +70,8 @@ class YamlReimporter:
             # the database.
             contest = Contest.get_from_id(self.contest_id, session)
             cms_contest = contest.export_to_dict()
-            cms_users = dict(((x['username'], x)
-                              for x in cms_contest['users']))
-            cms_tasks = dict(((x['name'], x) for x in cms_contest['tasks']))
+            cms_users = dict((x['username'], x) for x in cms_contest['users'])
+            cms_tasks = dict((x['name'], x) for x in cms_contest['tasks'])
 
             # Delete the old contest from the database.
             session.delete(contest)
@@ -79,8 +79,10 @@ class YamlReimporter:
 
             # Do the actual merge: first of all update all users of
             # the old contest with the corresponding ones from the new
-            # contest; fail if some user is present in the old contest
-            # but not in the new one.
+            # contest; if some user is present in the old contest but
+            # not in the new one we check if we have to fail or remove
+            # it and, in the latter case, add it to a list
+            users_to_remove = []
             for user_num, user in enumerate(cms_contest['users']):
                 try:
                     user_submissions = \
@@ -90,8 +92,19 @@ class YamlReimporter:
                     cms_contest['users'][user_num]['submissions'] = \
                         user_submissions
                 except KeyError:
-                    logger.error("User %s exists in old contest, "
-                                 "but not in the new one" % user['username'])
+                    if self.force:
+                        logger.warning("User %s exists in old contest, but "
+                                       "not in the new one" % user['username'])
+                        users_to_remove.append(user_num)
+                        session.delete(contest.users[user_num])
+                    else:
+                        logger.error("User %s exists in old contest, but "
+                                     "not in the new one" % user['username'])
+                        return False
+
+            # Delete the users
+            for user_num in users_to_remove:
+                del cms_contest['users'][user_num]
 
             # The append the users in the new contest, not present in
             # the old one.
@@ -100,22 +113,42 @@ class YamlReimporter:
                     cms_contest['users'].append(user)
 
             # The same for tasks: update old tasks.
+            tasks_to_remove = []
             for task_num, task in enumerate(cms_contest['tasks']):
                 try:
                     cms_contest['tasks'][task_num] = yaml_tasks[task['name']]
                 except KeyError:
-                    logger.error("Task %s exists in old contest, "
-                                 "but not in the new one" % task['name'])
+                    if self.force:
+                        logger.warning("Task %s exists in old contest, but "
+                                       "not in the new one" % task['name'])
+                        tasks_to_remove.append(task_num)
+                        session.delete(contest.tasks[task_num])
+                    else:
+                        logger.error("Task %s exists in old contest, but "
+                                     "not in the new one" % task['name'])
+                        return False
+
+            # Delete the tasks
+            for task_num in tasks_to_remove:
+                del cms_contest['tasks'][task_num]
 
             # And add new tasks.
             for task in yaml_contest['tasks']:
                 if task['name'] not in cms_tasks.keys():
                     cms_contest['tasks'].append(task)
 
+            # Delete the RankingView: it may have become invalid and we
+            # have no way to compute it again right now. We create a new
+            # (empty) one and we hope that someone (SS?) will fill it
+            # again when needed.
+            cms_contest["ranking_view"] = None
+            session.delete(contest.ranking_view)
+
             # Reimport the contest in the database, with the previous
             # ID.
             contest = Contest.import_from_dict(cms_contest)
             contest.id = self.contest_id
+            contest.create_empty_ranking_view(timestamp=contest.start)
             session.add(contest)
             session.flush()
 
@@ -137,6 +170,9 @@ def main():
         "over an old one in CMS.")
     parser.add_argument("-c", "--contest-id", action="store", type=int,
                         help="id of contest to overwrite")
+    parser.add_argument("-f", "--force", action="store_true",
+                        help="force the reimport even if some users or tasks "
+                        "may get lost")
     parser.add_argument("import_directory",
                         help="source directory from where import")
 
@@ -146,7 +182,8 @@ def main():
         args.contest_id = ask_for_contest()
 
     YamlReimporter(path=args.import_directory,
-                   contest_id=args.contest_id).run()
+                   contest_id=args.contest_id,
+                   force=args.force).run()
 
 
 if __name__ == "__main__":
