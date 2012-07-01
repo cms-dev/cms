@@ -50,6 +50,7 @@ class ScriptsContainer(object):
             ("20120319", "change_scoretype_names"),
             ("20120412", "add_unique_constraints"),
             ("20120414", "add_evaluation_memory_time"),
+            ("20120701", "add_statements")
             ]
         self.list.sort()
 
@@ -397,6 +398,40 @@ class ScriptsContainer(object):
                             "ADD COLUMN execution_time FLOAT;")
             session.execute("ALTER TABLE evaluations "
                             "ADD COLUMN execution_wall_clock_time FLOAT;")
+
+    @staticmethod
+    def add_statements():
+        """Support for statement translations.
+
+        Add external Statement objects to support statement translations.
+        The "official" statement is identified by its language code.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("CREATE TABLE statements ("
+                            "    id SERIAL NOT NULL,"
+                            "    language VARCHAR NOT NULL,"
+                            "    digest VARCHAR NOT NULL,"
+                            "    task_id INTEGER NOT NULL,"
+                            "    PRIMARY KEY (id),"
+                            "    CONSTRAINT cst_statements_task_id_language UNIQUE (task_id, language),"
+                            "    FOREIGN KEY(task_id) REFERENCES tasks (id) ON DELETE CASCADE ON UPDATE CASCADE"
+                            ")")
+            session.execute("CREATE INDEX ix_statements_task_id "
+                            "ON statements (task_id)")
+            for task_id, digest in session.execute(
+                "SELECT id, statement FROM tasks;"):
+                session.execute("INSERT INTO statements "
+                                "(language, digest, task_id) "
+                                "VALUES ('', '%s', %s);" % (digest, task_id))
+            session.execute("ALTER TABLE tasks "
+                            "DROP COLUMN statement;")
+            session.execute("ALTER TABLE tasks "
+                            "ADD COLUMN official_language VARCHAR;")
+            session.execute("UPDATE tasks "
+                            "SET official_language = '';")
+            session.execute("ALTER TABLE tasks "
+                            "ALTER COLUMN official_language SET NOT NULL;")
 
 
 def execute_single_script(scripts_container, script):

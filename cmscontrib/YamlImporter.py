@@ -36,7 +36,7 @@ from cms.db import analyze_all_tables
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Manager, \
     Testcase, User, Contest, SubmissionFormatElement, FSObject, \
-    Submission
+    Submission, Statement
 
 
 class YamlLoader:
@@ -161,9 +161,13 @@ class YamlLoader:
         params["time_limit"] = conf["timeout"]
         params["memory_limit"] = conf["memlimit"]
         params["attachments"] = {}  # FIXME - Use auxiliary
-        params["statement"] = self.file_cacher.put_file(
-            path=os.path.join(path, "testo", "testo.pdf"),
-            description="PDF statement for task %s" % name)
+        params["statements"] = [
+            Statement(self.file_cacher.put_file(
+                path=os.path.join(path, "testo", "testo.pdf"),
+                description="Statement for task %s (lang: )" % name),
+                "").export_to_dict()]
+        params["official_language"] = ""
+
         params["task_type"] = "Batch"
 
         params["submission_format"] = [

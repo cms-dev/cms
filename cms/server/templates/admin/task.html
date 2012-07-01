@@ -155,14 +155,22 @@ $("select[name=task_type]").change(showTaskTypeOption);
       <tr>
         <td>Statement</td>
         <td>
-          {% if task.statement == "" %}
-          No statement uploaded yet
+          {% if len(task.statements) == 0 %}
+          No statements uploaded yet
           {% else %}
-          <a href="{{ url_root }}/task/{{ task.id }}/statement">Current statement</a>
+          <ul>
+            {% for statement in task.statements.values() %}
+            <li><a href="{{ url_root }}/file/{{ statement.digest }}/statement.pdf">Statement for language "{{ statement.language }}"</a>
+              - <a href="{{ url_root }}/delete_statement/{{ statement.id }}">Delete</a></li>
+            {% end %}
+          </ul>
           {% end %}
-          -
           <a href="{{ url_root }}/add_statement/{{ task.id }}">Upload a new statement</a><br/>
         </td>
+      </tr>
+      <tr>
+        <td>Language code for the official statement</td>
+        <td><input type="text" name="official_language" value="{{ task.official_language }}"/></td>
       </tr>
       <tr>
         <td>Attachments</td>

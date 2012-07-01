@@ -355,7 +355,8 @@ class TaskStatementViewHandler(FileHandler):
         task = Task.get_from_id(task_id, self.sql_session)
         if task is None or task.contest != self.contest:
             raise tornado.web.HTTPError(404)
-        statement, name = task.statement, task.name
+        official_statement = task.statements[task.official_language]
+        statement, name = official_statement.digest, task.name
         self.sql_session.close()
 
         self.fetch(statement, "application/pdf", "%s.pdf" % name)

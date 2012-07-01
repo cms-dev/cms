@@ -71,8 +71,9 @@ class Task(Base):
     name = Column(String, nullable=False)
     title = Column(String, nullable=False)
 
-    # Digest of the pdf statement.
-    statement = Column(String, nullable=False)
+    # A task may have multiple statements, each in a different language.
+    # This field is the language code of the official statement.
+    official_language = Column(String, nullable=False)
 
     # Time and memory limits for every testcase.
     time_limit = Column(Float, nullable=False)
@@ -114,14 +115,15 @@ class Task(Base):
     # testcases (list of Testcase objects)
     # attachments (dict of Attachment objects indexed by filename)
     # managers (dict of Manager objects indexed by filename)
+    # statements (dict of Statement objects indexed by language code)
 
     # This object (independent from SQLAlchemy) is the instance of the
     # ScoreType class with the given parameters, taking care of
     # building the scores of the submissions.
     scorer = None
 
-    def __init__(self, name, title, attachments, statement,
-                 time_limit, memory_limit,
+    def __init__(self, name, title, statements, attachments,
+                 time_limit, memory_limit, official_language,
                  task_type, task_type_parameters, submission_format, managers,
                  score_type, score_parameters, testcases,
                  token_initial=0, token_max=0, token_total=0,
@@ -131,14 +133,17 @@ class Task(Base):
             attachment.filename = filename
         for filename, manager in managers.iteritems():
             manager.filename = filename
+        for language, statement in statements.iteritems():
+            statement.language = language
 
         self.num = num
         self.name = name
         self.title = title
+        self.statements = statements
         self.attachments = attachments
-        self.statement = statement
         self.time_limit = time_limit
         self.memory_limit = memory_limit
+        self.official_language = official_language
         self.task_type = task_type
         self.task_type_parameters = task_type_parameters
         self.submission_format = submission_format
@@ -161,12 +166,15 @@ class Task(Base):
         return {'name':                 self.name,
                 'title':                self.title,
                 'num':                  self.num,
+                'statements':           [statement.export_to_dict()
+                                         for statement
+                                         in self.statements.itervalues()],
                 'attachments':          [attachment.export_to_dict()
                                          for attachment
                                          in self.attachments.itervalues()],
-                'statement':            self.statement,
                 'time_limit':           self.time_limit,
                 'memory_limit':         self.memory_limit,
+                'official_language':    self.official_language,
                 'task_type':            self.task_type,
                 'task_type_parameters': self.task_type_parameters,
                 'submission_format':    [element.export_to_dict()
@@ -203,6 +211,10 @@ class Task(Base):
                                  for manager in data['managers']])
         data['testcases'] = [Testcase.import_from_dict(testcase_data)
                              for testcase_data in data['testcases']]
+        data['statements'] = [Statement.import_from_dict(statement_data)
+                              for statement_data in data['statements']]
+        data['statements'] = dict([(statement.language, statement)
+                                   for statement in data['statements']])
         return cls(**data)
 
 
@@ -384,3 +396,53 @@ class SubmissionFormatElement(Base):
 
         """
         return {'filename': self.filename}
+
+
+class Statement(Base):
+    """Class to store a translation of the task statement. Not
+    to be used directly (import it from SQLAlchemyAll).
+
+    """
+    __tablename__ = 'statements'
+    __table_args__ = (
+        UniqueConstraint('task_id', 'language',
+                         name='cst_statements_task_id_language'),
+        )
+
+    # Auto increment primary key.
+    id = Column(Integer, primary_key=True)
+
+    # Code for the language the statement is written in.
+    # It can be an arbitrary string, but if it's in the form "en" or "en_US"
+    # it will be rendered appropriately on the interface (i.e. "English" and
+    # "English (United States of America)"). These codes need to be taken from
+    # ISO 639-1 and ISO 3166-1 respectively.
+    language = Column(String, nullable=False)
+
+    # Digest of the file.
+    digest = Column(String, nullable=False)
+
+    # Task (id and object) the statement is for.
+    task_id = Column(Integer,
+                     ForeignKey(Task.id,
+                                onupdate="CASCADE", ondelete="CASCADE"),
+                     nullable=False,
+                     index=True)
+    task = relationship(
+        Task,
+        backref=backref('statements',
+                        collection_class=column_mapped_collection(language),
+                        single_parent=True,
+                        cascade="all, delete, delete-orphan"))
+
+    def __init__(self, digest, language, task=None):
+        self.language = language
+        self.digest = digest
+        self.task = task
+
+    def export_to_dict(self):
+        """Return object data as a dictionary.
+
+        """
+        return {'language': self.language,
+                'digest':   self.digest}

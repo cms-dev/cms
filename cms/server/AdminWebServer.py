@@ -38,7 +38,7 @@ from cms.async import ServiceCoord, get_service_shards, get_service_address
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import Session, \
      Contest, User, Announcement, Question, Message, Submission, File, Task, \
-     Attachment, Manager, Testcase, SubmissionFormatElement
+     Attachment, Manager, Testcase, SubmissionFormatElement, Statement
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, catch_exceptions, get_url_root, \
      CommonRequestHandler
@@ -411,6 +411,13 @@ class AddStatementHandler(BaseHandler):
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
+        language = self.get_argument("language", None)
+        if language is None:
+            self.application.service.add_notification(int(time.time()),
+                "No language code specified",
+                "The language code can be any string.")
+            self.redirect("/add_statement/%s" % task_id)
+            return
         statement = self.request.files["statement"][0]
         if not statement["filename"].endswith(".pdf"):
             self.application.service.add_notification(int(time.time()),
@@ -424,7 +431,8 @@ class AddStatementHandler(BaseHandler):
         try:
             digest = self.application.service.file_cacher.put_file(
                 binary_data=statement["body"],
-                description="Task statement for %s" % task_name)
+                description="Statement for task %s (lang: %s)" % (task_name,
+                                                                  language))
         except Exception as error:
             self.application.service.add_notification(int(time.time()),
                 "Task statement storage failed",
@@ -432,11 +440,28 @@ class AddStatementHandler(BaseHandler):
             self.redirect("/add_statement/%s" % task_id)
             return
 
+        # TODO verify that there's no other Statement with that language
+        # otherwise we'd trigger an IntegrityError for constraint violation
+
         self.sql_session = Session()
         task = self.safe_get_item(Task, task_id)
-        task.statement = digest
+        statement = Statement(digest, language, task)
+        self.sql_session.add(statement)
         self.sql_session.commit()
         self.redirect("/task/%s" % task_id)
+
+
+class DeleteStatementHandler(BaseHandler):
+    """Delete a statement.
+
+    """
+    @catch_exceptions
+    def get(self, statement_id):
+        statement = self.safe_get_item(Statement, statement_id)
+        task = statement.task
+        self.sql_session.delete(statement)
+        self.sql_session.commit()
+        self.redirect("/task/%s" % task.id)
 
 
 class AddAttachmentHandler(BaseHandler):
@@ -469,6 +494,9 @@ class AddAttachmentHandler(BaseHandler):
                 repr(error))
             self.redirect("/add_attachment/%s" % task_id)
             return
+
+        # TODO verify that there's no other Attachment with that filename
+        # otherwise we'd trigger an IntegrityError for constraint violation
 
         self.sql_session = Session()
         task = self.safe_get_item(Task, task_id)
@@ -625,6 +653,9 @@ class TaskViewHandler(BaseHandler):
         task.title = self.get_argument("title", task.title)
         time_limit = self.get_argument("time_limit",
                                        repr(task.time_limit))
+        task.official_language = self.get_argument("official_language",
+                                                   task.official_language)
+
         try:
             time_limit = float(time_limit)
             if time_limit < 0 or time_limit >= float("+inf"):
@@ -744,6 +775,7 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         title = self.get_argument("title", "")
         time_limit = self.get_argument("time_limit", "")
         memory_limit = self.get_argument("memory_limit", "")
+        official_language = self.get_argument("official_language", "")
         task_type = self.get_argument("task_type", "")
 
         # Look for a task type with the specified name.
@@ -795,8 +827,8 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         score_type = self.get_argument("score_type", "")
         score_parameters = self.get_argument("score_parameters", "")
 
+        statements = {}
         attachments = {}
-        statement = ""
         managers = {}
         testcases = []
 
@@ -819,8 +851,8 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         token_gen_number = self.get_non_negative_int(
             "token_gen_number",
             None)
-        task = Task(name, title, attachments, statement,
-                 time_limit, memory_limit,
+        task = Task(name, title, statements, attachments,
+                 time_limit, memory_limit, official_language,
                  task_type, task_type_parameters, submission_format, managers,
                  score_type, score_parameters, testcases,
                  token_initial, token_max, token_total,
@@ -1230,6 +1262,7 @@ _aws_handlers = [
     (r"/task/([0-9]+)/statement", TaskStatementViewHandler),
     (r"/add_task/([0-9]+)",            AddTaskHandler),
     (r"/add_statement/([0-9]+)",       AddStatementHandler),
+    (r"/delete_statement/([0-9]+)",    DeleteStatementHandler),
     (r"/add_attachment/([0-9]+)",      AddAttachmentHandler),
     (r"/delete_attachment/([0-9]+)",   DeleteAttachmentHandler),
     (r"/add_manager/([0-9]+)",         AddManagerHandler),

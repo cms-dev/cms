@@ -33,7 +33,7 @@ from cms.db.Contest import Contest, Announcement
 from cms.db.View import RankingView, Score
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task, Manager, Testcase, Attachment, \
-     SubmissionFormatElement
+     SubmissionFormatElement, Statement
 from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 from cms.db.FSObject import FSObject
 import cms.db.ImportFromDict
