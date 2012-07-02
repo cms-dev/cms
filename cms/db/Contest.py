@@ -207,8 +207,10 @@ class Contest(Base):
                     files.add(testcase.input)
                     files.add(testcase.output)
 
-            # Emit statement
-            files.add(task.statement)
+            # Enumerate statements
+            for a,_file in task.statements.iteritems():
+	            files.add(_file.digest)
+            # FIXME It works, but I'm not sure if it does what it should do
 
         if not skip_submissions:
             for submission in self.get_submissions():
