@@ -57,3 +57,9 @@ Files: cms/server/static/jq/jquery.jqplot*
        cms/server/static/jq/jqplot*
 Copyright: 2009-2011 Chris Leonello
 License: Expat or GPL-2
+
+Files: cms/server/static/css/bootstrap.css
+       cms/server/static/js/bootstrap.js
+       cms/server/static/img/glyphicons-halflings*.png
+Copyright: 2012 Twitter, Inc.
+License: Apache-2.0
