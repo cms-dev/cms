@@ -175,9 +175,83 @@ class YamlLoader:
                 description="Statement for task %s (lang: )" % name),
                 "").export_to_dict()]
         params["official_language"] = ""
-
-        params["task_type"] = "Batch"
-
+        params["score_type"] = conf.get("score_type", "Sum")
+        
+        if params["score_type"]=="Multiply":
+            params["score_parameters"] = conf.get(
+                "score_parameters", "100.0")
+        else:
+            params["score_parameters"] = conf.get(
+                "score_parameters", str(100.0 / float(conf["n_input"])))
+        
+        public_testcases = conf.get("risultati", "").strip()
+        if public_testcases != "":
+            public_testcases = [int(x.strip())
+                                for x in public_testcases.split(",")]
+        else:
+            public_testcases = []
+        params["testcases"] = []
+        for i in xrange(int(conf["n_input"])):
+            _input = os.path.join(path, "input", "input%d.txt" % i)
+            output = os.path.join(path, "output", "output%d.txt" % i)
+            params["testcases"].append(Testcase(
+                self.file_cacher.put_file(
+                    path=_input,
+                    description="Input %d for task %s" % (i, name)),
+                self.file_cacher.put_file(
+                    path=output,
+                    description="Output %d for task %s" % (i, name)),
+                public=(i in public_testcases)).export_to_dict())
+        params["token_initial"] = conf.get("token_initial", 2)
+        params["token_max"] = conf.get("token_max", 10)
+        params["token_total"] = conf.get("token_total", None)
+        params["token_min_interval"] = conf.get("token_min_interval", None)
+        params["token_gen_time"] = conf.get("token_gen_time", 30)
+        params["token_gen_number"] = conf.get("token_gen_number", 2)
+        
+        params["task_type"] = conf.get("task_type","Batch");
+    
+        if params["task_type"]=="TwoSteps":
+            header_map={"cpp": "h", "c": "h", "pas": ".lib.pas"}
+            params["submission_format"] = conf["submission_format"];
+            params["managers"]= [ ]
+            for lang in Submission.LANGUAGES:
+                for f in params["submission_format"]:
+                    hname=f.replace("%%l",header_map[lang])
+                    if os.path.exists(os.path.join(path,"cor",hname)):
+                        params["managers"].append(
+                            Manager(self.file_cacher.put_file(
+                                path=os.path.join(path, "cor",hname),
+                                description="%s for task %s" % (hname,name)),
+                                hname).export_to_dict())
+                        params["attachments"].append(
+                            Attachment(self.file_cacher.put_file(
+                                path=os.path.join(path, "cor",hname),
+                                description="%s for task %s" % (hname,name)),
+                                hname).export_to_dict())
+                    else:
+                        logger.warning("%s not found." % hname)
+                fname="manager.%s" % lang 
+                if os.path.exists(os.path.join(path,"cor",fname)):
+                    params["managers"].append(
+                        Manager(self.file_cacher.put_file(
+                            path=os.path.join(path, "cor",fname),
+                            description="%s for task %s" % (fname,name)),
+                            fname).export_to_dict())
+                else:
+                   logger.warning("Manager for language %s not found." % lang)
+                fname="manager.%s" % header_map[lang] 
+                if os.path.exists(os.path.join(path,"cor",fname)):
+                    params["managers"].append(
+                        Manager(self.file_cacher.put_file(
+                            path=os.path.join(path, "cor",fname),
+                            description="%s for task %s" % (fname,name)),
+                            fname).export_to_dict())
+                else:
+                   logger.warning("Manager header for language %s not found."
+                       % lang)
+            return params;
+    
         params["submission_format"] = [
             SubmissionFormatElement("%s.%%l" % name).export_to_dict()]
 
@@ -228,39 +302,6 @@ class YamlLoader:
             else:
                 params["task_type_parameters"] = \
                     '["alone", ["input.txt", "output.txt"], "diff"]'
-        params["score_type"] = conf.get("score_type", "Sum")
-        
-        if params["score_type"]=="Multiply":
-            params["score_parameters"] = conf.get(
-                "score_parameters", "100.0")
-        else:
-            params["score_parameters"] = conf.get(
-                "score_parameters", str(100.0 / float(conf["n_input"])))
-        
-        public_testcases = conf.get("risultati", "").strip()
-        if public_testcases != "":
-            public_testcases = [int(x.strip())
-                                for x in public_testcases.split(",")]
-        else:
-            public_testcases = []
-        params["testcases"] = []
-        for i in xrange(int(conf["n_input"])):
-            _input = os.path.join(path, "input", "input%d.txt" % i)
-            output = os.path.join(path, "output", "output%d.txt" % i)
-            params["testcases"].append(Testcase(
-                self.file_cacher.put_file(
-                    path=_input,
-                    description="Input %d for task %s" % (i, name)),
-                self.file_cacher.put_file(
-                    path=output,
-                    description="Output %d for task %s" % (i, name)),
-                public=(i in public_testcases)).export_to_dict())
-        params["token_initial"] = conf.get("token_initial", 2)
-        params["token_max"] = conf.get("token_max", 10)
-        params["token_total"] = conf.get("token_total", None)
-        params["token_min_interval"] = conf.get("token_min_interval", None)
-        params["token_gen_time"] = conf.get("token_gen_time", 30)
-        params["token_gen_number"] = conf.get("token_gen_number", 2)
 
         logger.info("Task parameters loaded.")
 
