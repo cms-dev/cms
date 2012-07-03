@@ -193,6 +193,10 @@ class Contest(Base):
         files = set()
         for task in self.tasks:
 
+            # Enumerate statements
+            for _file in task.statements.values():
+                files.add(_file.digest)
+
             # Enumerate attachments
             for _file in task.attachments.values():
                 files.add(_file.digest)
@@ -206,11 +210,6 @@ class Contest(Base):
                 for testcase in task.testcases:
                     files.add(testcase.input)
                     files.add(testcase.output)
-
-            # Enumerate statements
-            for a,_file in task.statements.iteritems():
-	            files.add(_file.digest)
-            # FIXME It works, but I'm not sure if it does what it should do
 
         if not skip_submissions:
             for submission in self.get_submissions():
