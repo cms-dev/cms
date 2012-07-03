@@ -143,7 +143,7 @@ class TwoSteps(TaskType):
             first_executables_to_get,
             first_files_to_get,
             self.submission.task.time_limit,
-            0,
+            self.submission.task.memory_limit,
             first_allow_path,
             stdin_redirect="input.txt")
 
