@@ -217,7 +217,7 @@ class YamlLoader:
             params["managers"]= [ ]
             for lang in Submission.LANGUAGES:
                 for f in params["submission_format"]:
-                    hname=f.replace("%%l",header_map[lang])
+                    hname=f.replace("%l",header_map[lang])
                     if os.path.exists(os.path.join(path,"cor",hname)):
                         params["managers"].append(
                             Manager(self.file_cacher.put_file(
@@ -251,6 +251,9 @@ class YamlLoader:
                    logger.warning("Manager header for language %s not found."
                        % lang)
             params["task_type_parameters"]= '[]'
+            params["submission_format"]=[
+                SubmissionFormatElement(el).export_to_dict() 
+                for el in params["submission_format"] ]
             return params;
     
         params["submission_format"] = [
