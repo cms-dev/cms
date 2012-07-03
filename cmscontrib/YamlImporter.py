@@ -212,7 +212,7 @@ class YamlLoader:
         params["task_type"] = conf.get("task_type","Batch");
     
         if params["task_type"]=="TwoSteps":
-            header_map={"cpp": "h", "c": "h", "pas": ".lib.pas"}
+            header_map={"cpp": "h", "c": "h", "pas": "lib.pas"}
             params["submission_format"] = conf["submission_format"];
             params["managers"]= [ ]
             for lang in Submission.LANGUAGES:
