@@ -179,7 +179,9 @@ class Batch(TaskType):
                  self.submission.task.testcases[test_number].output})
         elif self.parameters[2] == "comparator":
             # Manager present: wonderful, it'll do all the job.
-            manager_filename = self.submission.task.managers.keys()[0]
+            manager_filename = "checker"
+            # I just assume that the comparator is called "checker", 
+            # still better then having it be the first manager in the list.
             success, outcome, text, _ = self.evaluation_step(
                 sandbox,
                 ["./%s" % manager_filename,
