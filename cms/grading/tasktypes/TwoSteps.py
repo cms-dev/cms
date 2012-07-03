@@ -154,10 +154,8 @@ class TwoSteps(TaskType):
             second_filename:
             self.submission.executables[second_filename].digest
             }
-        second_files_to_get = {
-            "input.txt": self.submission.task.testcases[test_number].input
-            }
-        second_allow_path = [fifo, "input.txt", "output.txt"]
+        second_files_to_get = { }
+        second_allow_path = [fifo, "output.txt"]
         second = self.evaluation_step_before_run(
             second_sandbox,
             second_command,
@@ -165,8 +163,7 @@ class TwoSteps(TaskType):
             second_files_to_get,
             self.submission.task.time_limit,
             self.submission.task.memory_limit,
-            second_allow_path,
-            stdin_redirect="input.txt")
+            second_allow_path)
 
         # Consume output.
         wait_without_std([second, first])
