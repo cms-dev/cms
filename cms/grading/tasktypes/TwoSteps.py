@@ -180,10 +180,15 @@ class TwoSteps(TaskType):
             success, outcome, text = False, outcome_first, text_first
         elif not success_second:
             success, outcome, text = False, outcome_second, text_second
-        # Otherwise, we use the second evaluation to obtain the
-        # outcome.
+        # Otherwise, compare the second output to the results
+        # (there is no comparator since the manager is expected to turn the
+        # output in diffable form)
         else:
-            success, outcome, text = success_second, outcome_second, text_second
+            success, outcome, text = self.white_diff_step(
+                second_sandbox,
+                "output.txt", "res.txt",
+                {"res.txt":
+                 self.submission.task.testcases[test_number].output})
 
         delete_sandbox(first_sandbox)
         delete_sandbox(second_sandbox)
