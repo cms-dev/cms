@@ -250,6 +250,7 @@ class YamlLoader:
                 else:
                    logger.warning("Manager header for language %s not found."
                        % lang)
+            params["task_type_parameters"]= '[]'
             return params;
     
         params["submission_format"] = [
