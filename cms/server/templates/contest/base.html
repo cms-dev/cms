@@ -92,12 +92,12 @@ $(document).ready(init);
         <form action="{{ url_root }}/login" method="POST">
           <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
           <div class="footer">
-            <div class="sidebar_left">{{ _("Username:") }}</div>
-            <div class="sidebar_right"><input type="text" name="username" size="12" /></div>
+            <div class="sidebar_left"><label for="l_username">{{ _("Username:") }}</label></div>
+            <div class="sidebar_right"><input type="text" name="username" size="12" id="l_username" /></div>
           </div>
           <div class="footer">
-            <div class="sidebar_left">{{ _("Password:") }}</div>
-            <div class="sidebar_right"><input type="password" name="password" size="12" /></div>
+            <div class="sidebar_left"><label for="l_password">{{ _("Password:") }}</label></div>
+            <div class="sidebar_right"><input type="password" name="password" size="12" id="l_password"/></div>
           </div>
           <div class="footer sidebar_right"><input type="submit" value="{{ _("Sign in") }}" /></div>{% comment _("Sign in") %}
         </form>
