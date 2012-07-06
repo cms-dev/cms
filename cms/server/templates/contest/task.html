@@ -72,7 +72,11 @@ setInterval(update_submission_status, 5000);
       <td width="50%">
         <form enctype="multipart/form-data" action="{{ url_root }}/submit/{{ encrypt_number(task.id) }}" method="post">
           {% for filename in [x.filename for x in task.submission_format] %}
-          <p>{{ filename.replace(".%l", "") }}:<br/><input type="file" name="{{ filename }}"></input></p>
+          <p>
+           <label for="{{ filename }}">{{ filename.replace(".%l", "") }}</label>
+           <br/>
+           <input type="file" name="{{ filename }}" id="{{ filename }}"></input>
+          </p>
           {% end %}
           <input type="submit" value="{{ _("Submit") }}"></input>{% comment _("Submit") %}
         </form>
@@ -80,7 +84,11 @@ setInterval(update_submission_status, 5000);
       {% if len(task.submission_format) > 1 %}
       <td width="50%">
         <form enctype="multipart/form-data" action="/submit/{{ encrypt_number(task.id) }}" method="post">
-          <p>submission.zip<br/><input type="file" name="submission"></input></p>
+          <p>
+           <label for="submission">submission.zip</label>
+           </br>
+           <input type="file" name="submission" id="submission"></input>
+          </p>
           <input type="submit" value="{{ _("Submit") }}"></input>{% comment _("Submit") %}
         </form>
       </td>
