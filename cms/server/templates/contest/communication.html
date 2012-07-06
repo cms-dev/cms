@@ -7,10 +7,10 @@
 <h2 id="title_submit_questions" class="toggling_on">{{ _("Submit a question") }}</h2>
 <div id="submit_questions">
   <form action="{{ url_root }}/question" method="POST">
-    <div class="footer">{{ _("Subject:") }}</div>
-    <input type="text" name="question_subject" size="35" />
-    <div class="footer">{{ _("Text:") }}</div>
-    <textarea name="question_text" cols="40" rows="5"></textarea>
+    <div class="footer"><label for="q_subject">{{ _("Subject:") }}</label></div>
+    <input type="text" name="question_subject" size="35" id="q_subject"/>
+    <div class="footer"><label for="q_text">{{ _("Text:") }}</label></div>
+    <textarea name="question_text" cols="40" rows="5" id="q_text"></textarea>
     <p><input type="submit" value="{{ _("Ask question") }}" /></p>{% comment _("Ask question") %}
   </form>
   <div class="hr"></div>
