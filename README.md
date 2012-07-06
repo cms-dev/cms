@@ -261,3 +261,24 @@ system.
 In particular if there are more than one ContestWebServer, one may
 want to use a load balancer. We recommend to use nginx; a sample
 configuration is provided in $REPO/cms/example.
+
+
+Testimonials
+------------
+
+CMS has been used in several official and unofficial contests. In
+particular we are aware of the following:
+
+- OII 2011 (Italian Olympiads in Informatics), September 2011;
+
+- AIIO 2012 (Australian Invitational Informatics Olympiad), February
+  2012;
+
+- FARIO 2012 (French-Australian Regional Informatics Olympiad), March
+  2012;
+
+- training camps for the selections of the national teams of Australia
+  and Italy;
+
+- laboratory exercises and exams of the course "Algorithms and data
+  structures" at University of Trento (year 2011-2012).
