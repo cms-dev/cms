@@ -148,8 +148,8 @@ ul.normal_list {
     clear: both;
 }
 
-.footer + .footer {
-    height: 40px;
+.footer:last-child {
+    height: 60px;
 }
 
 .unread {
