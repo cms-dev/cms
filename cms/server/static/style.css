@@ -148,8 +148,8 @@ ul.normal_list {
     clear: both;
 }
 
-.footer:last-of-type {
-    height: 60px;
+.footer + .footer, .admin .footer {
+    height: 55px;
 }
 
 .unread {
