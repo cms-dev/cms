@@ -148,7 +148,7 @@ ul.normal_list {
     clear: both;
 }
 
-.footer:last-child {
+.footer:last-of-type {
     height: 60px;
 }
 
