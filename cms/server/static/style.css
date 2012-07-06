@@ -148,6 +148,10 @@ ul.normal_list {
     clear: both;
 }
 
+.footer + .footer {
+    height: 40px;
+}
+
 .unread {
     display: inline-block;
     font-size: 0.75em;
@@ -162,7 +166,7 @@ ul.normal_list {
     font-size: 0.6em;
     line-height: 1.125em;
     text-align: center;
-    position: fixed;
+    position: relative;
     bottom: 1.5em;
     width: 200px;
     margin-left: 15px;
