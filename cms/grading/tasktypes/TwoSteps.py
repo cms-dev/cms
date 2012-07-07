@@ -143,7 +143,7 @@ class TwoSteps(TaskType):
             first_executables_to_get,
             first_files_to_get,
             self.submission.task.time_limit,
-            0,
+            self.submission.task.memory_limit,
             first_allow_path,
             stdin_redirect="input.txt")
 
@@ -154,10 +154,8 @@ class TwoSteps(TaskType):
             second_filename:
             self.submission.executables[second_filename].digest
             }
-        second_files_to_get = {
-            "input.txt": self.submission.task.testcases[test_number].input
-            }
-        second_allow_path = [fifo, "input.txt", "output.txt"]
+        second_files_to_get = { }
+        second_allow_path = [fifo, "output.txt"]
         second = self.evaluation_step_before_run(
             second_sandbox,
             second_command,
@@ -165,8 +163,7 @@ class TwoSteps(TaskType):
             second_files_to_get,
             self.submission.task.time_limit,
             self.submission.task.memory_limit,
-            second_allow_path,
-            stdin_redirect="input.txt")
+            second_allow_path)
 
         # Consume output.
         wait_without_std([second, first])
@@ -183,10 +180,15 @@ class TwoSteps(TaskType):
             success, outcome, text = False, outcome_first, text_first
         elif not success_second:
             success, outcome, text = False, outcome_second, text_second
-        # Otherwise, we use the second evaluation to obtain the
-        # outcome.
+        # Otherwise, compare the second output to the results
+        # (there is no comparator since the manager is expected to turn the
+        # output in diffable form)
         else:
-            success, outcome, text = success_second, outcome_second, text_second
+            success, outcome, text = self.white_diff_step(
+                second_sandbox,
+                "output.txt", "res.txt",
+                {"res.txt":
+                 self.submission.task.testcases[test_number].output})
 
         delete_sandbox(first_sandbox)
         delete_sandbox(second_sandbox)
