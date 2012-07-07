@@ -41,8 +41,10 @@ class ScoreType:
         """Initializer.
 
         parameters (object): format is specified in the subclasses.
-        public_testcases (list): list of booleans indicating if the
-                                 testcases are pulic or not
+        public_testcases (dict): associate to each testcase's num a
+                                 boolean indicating if the testcase is
+                                 public.
+
         """
         self.parameters = parameters
         self.public_testcases = public_testcases
@@ -79,7 +81,8 @@ class ScoreType:
         submission_id (int): id of the new submission.
         timestamp (int): time of submission.
         username (string): username of the owner of the submission.
-        evaluations (list): list of objects representing the evaluations.
+        evaluations (dict): associate to each evaluation's num its
+                            outcome.
         tokened (bool): if the user played a token on submission.
 
         """

@@ -438,8 +438,8 @@ class ScoringService(Service):
             scorer = self.scorers[submission.task_id]
             scorer.add_submission(submission_id, submission.timestamp,
                                   submission.user.username,
-                                  [float(ev.outcome)
-                                   for ev in submission.evaluations],
+                                  dict((ev.num, float(ev.outcome))
+                                       for ev in submission.evaluations),
                                   submission.tokened())
 
             # Mark submission as scored.

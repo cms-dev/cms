@@ -44,8 +44,8 @@ def get_score_type(submission=None, task=None):
     score_type_name = task.score_type
     # TODO: manage exceptions when parameters cannot be decoded.
     score_type_parameters = json.loads(task.score_parameters)
-    public_testcases = [testcase.public
-                        for testcase in task.testcases]
+    public_testcases = dict((testcase.num, testcase.public)
+                            for testcase in task.testcases)
 
     cls = plugin_lookup(score_type_name,
                         "cms.grading.scoretypes", "scoretypes")
