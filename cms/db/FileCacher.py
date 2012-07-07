@@ -66,6 +66,7 @@ class FileCacherBackend:
                               store, intended for human beings.
 
         """
+        raise NotImplementedError("Please subclass this class.")
 
 
 class DBBackend(FileCacherBackend):
