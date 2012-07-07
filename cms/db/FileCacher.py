@@ -33,15 +33,16 @@ from cms import config, logger, mkdir
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
 
 
-class FileCacherDBBackend:
-    """This class implements an actual backend for FileCacher that
-    stores the files as lobjects (encapsuled in a FSObject) into a
-    PostgreSQL database.
-
-    """
-    CHUNK_SIZE = 2 ** 20
+class FileCacherBackend:
 
     def __init__(self, service=None):
+        """Initialization.
+
+        service (Service): the service we are running in. If None, we
+                           simply avoid caching and allowing the
+                           service to step in once in a while.
+
+        """
         self.service = service
 
     def get_file(self, digest, dest):
@@ -51,6 +52,32 @@ class FileCacherDBBackend:
         dest (string): the location where to put the retrieved file;
                        it musn't exist and it will be created by
                        get_file().
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
+    def put_file(self, digest, origin, description=""):
+        """Put a file to the storage.
+
+        digest (string): the digest that the file will receive.
+        origin (string): the location from where to get the file to be
+                         sent to the storage.
+        description (string): the optional description of the file to
+                              store, intended for human beings.
+
+        """
+
+
+class DBBackend(FileCacherBackend):
+    """This class implements an actual backend for FileCacher that
+    stores the files as lobjects (encapsuled in a FSObject) into a
+    PostgreSQL database.
+
+    """
+    CHUNK_SIZE = 2 ** 20
+
+    def get_file(self, digest, dest):
+        """See FileCacherBackend.get_file().
 
         """
         with open(dest, 'wb') as temp_file:
@@ -68,12 +95,8 @@ class FileCacherDBBackend:
                             self.service._step()
                         buf = lobject.read(self.CHUNK_SIZE)
 
-    def put_file(self, digest, origin, description):
-        """Put a file to the storage.
-
-        digest (string): the digest that the file will receive.
-        origin (string): the location from where to get the file to be
-                         sent to the storage.
+    def put_file(self, digest, origin, description=""):
+        """See FileCacherBackend.put_file().
 
         """
         with SessionGen() as session:
@@ -122,7 +145,7 @@ class FileCacher:
 
         """
         self.service = service
-        self.backend = FileCacherDBBackend(self.service)
+        self.backend = DBBackend(self.service)
         if self.service is None:
             self.base_dir = tempfile.mkdtemp(dir=config.temp_dir)
         else:
