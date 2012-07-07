@@ -78,7 +78,8 @@ class Communication(TaskType):
         command = get_compilation_command(language,
                                           source_filenames,
                                           executable_filename)
-        operation_success, compilation_success, text = self.compilation_step(
+        operation_success, compilation_success, text, _ = \
+            self.compilation_step(
             sandbox,
             command,
             files_to_get,

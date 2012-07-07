@@ -476,6 +476,15 @@ class TaskType:
                           "Compiler standard error:\n" \
                           "%s" % (stdout, stderr)
 
+        # And retrieve some interesting data.
+        plus = {
+            "execution_time": sandbox.get_execution_time(),
+            "execution_wall_clock_time":
+                sandbox.get_execution_wall_clock_time(),
+            "memory_used": sandbox.get_memory_used(),
+            }
+
+
         # From now on, we test for the various possible outcomes and
         # act appropriately.
 
@@ -543,7 +552,7 @@ class TaskType:
         else:
             logger.error("Shouldn't arrive here, failing.")
 
-        return success, compilation_success, text
+        return success, compilation_success, text, plus
 
     def evaluation_step(self, sandbox, command,
                         executables_to_get, files_to_get,
