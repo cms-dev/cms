@@ -46,7 +46,8 @@ class FileCacherBackend:
         self.service = service
 
     def get_file(self, digest, dest):
-        """Retrieve a file from the storage.
+        """Retrieve a file from the storage. If the requested digest
+        isn't available in the storage, raise an exception.
 
         digest (string): the digest of the file to retrieve.
         dest (string): the location where to put the retrieved file;
@@ -61,12 +62,39 @@ class FileCacherBackend:
 
         digest (string): the digest that the file will receive.
         origin (string): the location from where to get the file to be
-                         sent to the storage.
+                         sent to the storage; it musn't be destroyed
+                         or modified by put_file().
         description (string): the optional description of the file to
                               store, intended for human beings.
 
         """
         raise NotImplementedError("Please subclass this class.")
+
+
+class FSBackend(FileCacherBackend):
+
+    def __init__(self, path, service=None):
+        FileCacherBackend.__init__(self, service)
+        self.path = path
+
+        # Create the directory if it doesn't exist
+        try:
+            os.makedirs(self.path)
+        except OSError:
+            pass
+
+    def get_file(self, digest, dest):
+        """See FileCacherBackend.get_file().
+
+        """
+        shutil.move(os.path.join(self.path, digest), dest)
+
+    def put_file(self, digest, origin, description=""):
+        """See FileCacherBackend.put_file().
+
+        """
+        if not os.path.exists(os.path.join(self.path, digest)):
+            shutil.copyfile(origin, os.path.join(self.path, digest))
 
 
 class DBBackend(FileCacherBackend):
@@ -147,6 +175,7 @@ class FileCacher:
         """
         self.service = service
         self.backend = DBBackend(self.service)
+        #self.backend = FSBackend('./fs-storage', self.service)
         if self.service is None:
             self.base_dir = tempfile.mkdtemp(dir=config.temp_dir)
         else:
