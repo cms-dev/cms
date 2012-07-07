@@ -33,12 +33,84 @@ from cms import config, logger, mkdir
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
 
 
+class FileCacherDBBackend:
+    """This class implements an actual backend for FileCacher that
+    stores the files as lobjects (encapsuled in a FSObject) into a
+    PostgreSQL database.
+
+    """
+    CHUNK_SIZE = 2 ** 20
+
+    def __init__(self, service=None):
+        self.service = service
+
+    def get_file(self, digest, dest):
+        """Retrieve a file from the storage.
+
+        digest (string): the digest of the file to retrieve.
+        dest (string): the location where to put the retrieved file;
+                       it musn't exist and it will be created by
+                       get_file().
+
+        """
+        with open(dest, 'wb') as temp_file:
+            # hasher = hashlib.sha1()
+            with SessionGen() as session:
+                fso = FSObject.get_from_digest(digest, session)
+
+                # Copy the file into the lobject
+                with fso.get_lobject(mode='rb') as lobject:
+                    buf = lobject.read(self.CHUNK_SIZE)
+                    while buf != '':
+                        # hasher.update(buf)
+                        temp_file.write(buf)
+                        if self.service is not None:
+                            self.service._step()
+                        buf = lobject.read(self.CHUNK_SIZE)
+
+    def put_file(self, digest, origin, description):
+        """Put a file to the storage.
+
+        digest (string): the digest that the file will receive.
+        origin (string): the location from where to get the file to be
+                         sent to the storage.
+
+        """
+        with SessionGen() as session:
+
+            # Check digest uniqueness
+            if FSObject.get_from_digest(digest, session) is not None:
+                logger.debug("File %s already on database, "
+                             "dropping this one." % digest)
+                session.rollback()
+
+            # If it is not already present, copy the file into the
+            # lobject
+            else:
+                fso = FSObject(description=description)
+                logger.debug("Sending file %s to the database." % digest)
+                with open(origin, 'rb') as temp_file:
+                    with fso.get_lobject(session, mode='wb') as lobject:
+                        logger.debug("Large object created.")
+                        buf = temp_file.read(self.CHUNK_SIZE)
+                        while buf != '':
+                            while len(buf) > 0:
+                                written = lobject.write(buf)
+                                buf = buf[written:]
+                                if self.service is not None:
+                                    self.service._step()
+                            buf = temp_file.read(self.CHUNK_SIZE)
+                fso.digest = digest
+                session.add(fso)
+                session.commit()
+                logger.debug("File %s sent to the database." % digest)
+
+
 class FileCacher:
     """This class implement a local cache for files stored as FSObject
     in the database.
 
     """
-
     CHUNK_SIZE = 2 ** 20
 
     def __init__(self, service=None):
@@ -50,6 +122,7 @@ class FileCacher:
 
         """
         self.service = service
+        self.backend = FileCacherDBBackend(self.service)
         if self.service is None:
             self.base_dir = tempfile.mkdtemp(dir=config.temp_dir)
         else:
@@ -99,24 +172,10 @@ class FileCacher:
             logger.debug("File %s not in cache, downloading "
                          "from database." % digest)
 
+            # Receives the file from the database
             temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
             temp_file = os.fdopen(temp_file, "wb")
-
-            # Receives the file from the database
-            with open(temp_filename, 'wb') as temp_file:
-                # hasher = hashlib.sha1()
-                with SessionGen() as session:
-                    fso = FSObject.get_from_digest(digest, session)
-
-                    # Copy the file into the lobject
-                    with fso.get_lobject(mode='rb') as lobject:
-                        buf = lobject.read(self.CHUNK_SIZE)
-                        while buf != '':
-                            # hasher.update(buf)
-                            temp_file.write(buf)
-                            if self.service is not None:
-                                self.service._step()
-                            buf = lobject.read(self.CHUNK_SIZE)
+            self.backend.get_file(digest, temp_filename)
 
             # And move it in the cache. Warning: this is not atomic if
             # the temp and the cache dir are on different filesystems.
@@ -192,7 +251,6 @@ class FileCacher:
                 shutil.copyfileobj(file_obj, temp_file)
 
         hasher = hashlib.sha1()
-        fso = FSObject(description=description)
 
         # Calculate the file SHA1 digest
         with open(temp_path, 'rb') as temp_file:
@@ -204,32 +262,7 @@ class FileCacher:
 
         logger.debug("File has digest %s." % digest)
 
-        # Check the digest uniqueness
-        with SessionGen() as session:
-            if FSObject.get_from_digest(digest, session) is not None:
-                logger.debug("File %s already on database, "
-                             "dropping this one." % digest)
-                session.rollback()
-
-            # If it is not already present, copy the file into the
-            # lobject
-            else:
-                logger.debug("Sending file %s to the database." % digest)
-                with open(temp_path, 'rb') as temp_file:
-                    with fso.get_lobject(session, mode='wb') as lobject:
-                        logger.debug("Large object created.")
-                        buf = temp_file.read(self.CHUNK_SIZE)
-                        while buf != '':
-                            while len(buf) > 0:
-                                written = lobject.write(buf)
-                                buf = buf[written:]
-                                if self.service is not None:
-                                    self.service._step()
-                            buf = temp_file.read(self.CHUNK_SIZE)
-                fso.digest = digest
-                session.add(fso)
-                session.commit()
-                logger.debug("File %s sent to the database." % digest)
+        self.backend.put_file(digest, temp_path, description=description)
 
         # Move the temporary file in the cache
         shutil.move(temp_path,
