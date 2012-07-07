@@ -71,7 +71,7 @@ def setup_cms():
     os.environ["PYTHONPATH"] = "%(TEST_DIR)s/cms" % CONFIG
 
     info("Creating tables.")
-    sh("python cms/db/SQLAlchemyAll.py")
+    sh("python db/SQLAlchemyAll.py")
 
 
 if __name__ == "__main__":
@@ -88,7 +88,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     CONFIG["TEST_DIR"] = tempfile.mkdtemp()
-    CONFIG["CONFIG_PATH"] = "%s/cms/examples/cms.conf" % CONFIG["TEST_DIR"]
+    CONFIG["CONFIG_PATH"] = "%s/examples/cms.conf" % CONFIG["TEST_DIR"]
     CONFIG["GIT_ORIGIN"] = subprocess.check_output(
         "git rev-parse --show-toplevel", shell=True).strip()
     CONFIG["GIT_REVISION"] = args.revision
