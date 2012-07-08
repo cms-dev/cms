@@ -105,10 +105,10 @@ class Submission(Base):
     # Score as computed by ScoreService. Null means not yet scored.
     score = Column(Float, nullable=True)
 
-    # Score details (e.g., for subtask information). Null means not
-    # yet scored. ScoreType is the only one with the power to
-    # interpret this field - ok, maybe also RWS). Usually this is
-    # JSON, and composed of a list of strings.
+    # Score details. It is a string containing *simple* HTML code that
+    # AWS (and CWS if the user used a token) uses to display the
+    # details of the submission. For example, results for each
+    # testcases, subtask, etc.
     score_details = Column(String, nullable=True)
 
     # The same as the last two fields, but from the point of view of

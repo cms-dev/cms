@@ -48,6 +48,10 @@ a {
     cursor: pointer;
 }
 
+strong {
+    font-weight: bold;
+}
+
 .login_error {
     color: #F31313;
 }

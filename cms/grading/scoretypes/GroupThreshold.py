@@ -19,68 +19,31 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from cms.grading.ScoreType import ScoreTypeAlone
+from cms.grading.ScoreType import ScoreTypeGroup
 
 
-class GroupThreshold(ScoreTypeAlone):
-    """The score of a submission is the sum of the multipliers for
-    every group for which all the outcomes are non-negative and less
-    or equal than the threshold.
+class GroupThreshold(ScoreTypeGroup):
+    """The score of a submission is the sum of: the multiplier of the
+    range if all outcomes are between 0.0 and the threshold, or 0.0.
 
-    Parameters are [(m, t, n), ...] and this means that the first
-    group consists of the first t testcases, its score is m and get
-    assigned iff all outcomes are 0 <= outcome <= n.
+    Parameters are [[m, t, T], ... ] (see ScoreTypeGroup), where T is
+    the threshold for the group.
 
     """
-    def max_scores(self):
-        """Compute the maximum score of a submission.
 
-        returns (float, float): maximum score overall and public.
+    def get_public_outcome(self, outcome, parameter):
+        """See ScoreTypeGroup."""
+        threshold = parameter[2]
+        if 0.0 <= outcome <= threshold:
+            return "Correct"
+        else:
+            return "Not correct"
 
-        """
-        indices = sorted(self.public_testcases.keys())
-        public_score = 0.0
-        score = 0.0
-        current = 0
-        for parameter in self.parameters:
-            next_ = current + parameter[1]
-            score += parameter[0]
-            if all(self.public_testcases[idx]
-                   for idx in indices[current:next_]):
-                public_score += parameter[0]
-            current = next_
-        return round(score, 2), round(public_score, 2)
-
-    def compute_score(self, submission_id):
-        """Compute the score of a submission.
-
-        submission_id (int): the submission to evaluate.
-        returns (float): the score
-
-        """
-        indices = sorted(self.public_testcases.keys())
-        evaluations = self.pool[submission_id]["evaluations"]
-        current = 0
-        scores = []
-        public_scores = []
-        public_index = []
-        for parameter in self.parameters:
-            next_ = current + parameter[1]
-            if all(0 <= evaluations[idx] <= parameter[2]
-                   for idx in indices[current:next_]):
-                scores.append(parameter[0])
-            else:
-                scores.append(0)
-            if all(self.public_testcases[idx]
-                   for idx in indices[current:next_]):
-                public_scores.append(scores[-1])
-                public_index.append(len(scores) - 1)
-            current = next_
-        details = ["Subtask %d: %lg" % (i + 1, round(score, 2))
-                   for i, score in enumerate(scores)]
-        public_details = ["Subtask %d: %lg" % (i + 1, round(score, 2))
-                          for i, score in zip(public_index, public_scores)]
-        score = sum(scores)
-        public_score = sum(public_scores)
-        return round(score, 2), details, \
-               round(public_score, 2), public_details
+    def reduce(self, outcomes, parameter):
+        """See ScoreTypeGroup."""
+        threshold = parameter[2]
+        if all(0 <= outcome <= threshold
+               for outcome in outcomes):
+            return 1.0
+        else:
+            return 0.0

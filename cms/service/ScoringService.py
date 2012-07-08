@@ -523,7 +523,9 @@ class ScoringService(Service):
             scorer = self.scorers[submission.task_id]
             scorer.add_submission(submission_id, submission.timestamp,
                                   submission.user.username,
-                                  dict((ev.num, float(ev.outcome))
+                                  dict((ev.num,
+                                        {"outcome": float(ev.outcome),
+                                         "text": ev.text})
                                        for ev in submission.evaluations),
                                   submission.tokened())
 
@@ -535,15 +537,10 @@ class ScoringService(Service):
             submission.public_score = \
                 scorer.pool[submission_id]["public_score"]
 
-            details = scorer.pool[submission_id]["details"]
-            if details is None:
-                details = []
-            submission.score_details = json.dumps(details)
-
-            public_details = scorer.pool[submission_id]["public_details"]
-            if public_details is None:
-                public_details = []
-            submission.public_score_details = json.dumps(public_details)
+            # And details.
+            submission.score_details = scorer.pool[submission_id]["details"]
+            submission.public_score_details = \
+                scorer.pool[submission_id]["public_details"]
 
             # Data to send to remote rankings.
             submission_url = "/submissions/%s" % encode_id(submission_id)
@@ -557,7 +554,7 @@ class ScoringService(Service):
                 "submission": encode_id(submission_id),
                 "time": int(make_timestamp(submission.timestamp)),
                 "score": submission.score,
-                "extra": details}
+                "extra": submission.score_details}
 
         # TODO: ScoreRelative here does not work with remote
         # rankings (it does in the ranking view) because we

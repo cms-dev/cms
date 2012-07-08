@@ -21,12 +21,32 @@
 
 from cms.grading.ScoreType import ScoreTypeAlone
 
+from tornado.template import Template
+
 
 class Sum(ScoreTypeAlone):
     """The score of a submission is the sum of the outcomes,
     multiplied by the integer parameter.
 
     """
+    TEMPLATE = """\
+<table>
+ <thead>
+  <tr>
+   <th>Outcome</th>
+   <th>Details</th>
+  </tr>
+ </thead>
+ <tbody>
+   {% for testcase in testcases %}
+   <tr>
+    <td>{{ testcase["outcome"] }}</td>
+    <td>{{ testcase["text"] }}</td>
+   </tr>
+   {% end %}
+ </tbody>
+</table>"""
+
     def max_scores(self):
         """Compute the maximum score of a submission.
 
@@ -48,11 +68,39 @@ class Sum(ScoreTypeAlone):
 
         """
         evaluations = self.pool[submission_id]["evaluations"]
+        testcases = []
+        public_testcases = []
         public_score = 0.0
         score = 0.0
-        for num in evaluations:
-            if self.public_testcases[num]:
-                public_score += evaluations[num]
-            score += evaluations[num]
-        return round(score * self.parameters, 2), None, \
-               round(public_score * self.parameters, 2), None
+        for idx in evaluations:
+            score += evaluations[idx]["outcome"]
+            testcases.append({
+                "outcome":
+                self.get_public_outcome(evaluations[idx]["outcome"]),
+                "text": evaluations[idx]["text"],
+                })
+            if self.public_testcases[idx]:
+                public_score += evaluations[idx]["outcome"]
+                public_testcases.append(testcases[-1])
+
+        details = Template(self.TEMPLATE).generate(testcases=testcases)
+        public_details = \
+            Template(self.TEMPLATE).generate(testcases=public_testcases)
+
+        return round(score * self.parameters, 2), details, \
+               round(public_score * self.parameters, 2), public_details
+
+    def get_public_outcome(self, outcome):
+        """Return a public outcome from an outcome.
+
+        outcome (float): the outcome of the submission.
+
+        return (float): the public output.
+
+        """
+        if outcome <= 0.0:
+            return "Not correct"
+        elif outcome >= 1.0:
+            return "Correct"
+        else:
+            return "Partially correct"

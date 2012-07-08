@@ -31,6 +31,8 @@ task.
 
 from cms import logger
 
+from tornado.template import Template
+
 
 class ScoreType:
     """Base class for all score types, that must implement all methods
@@ -81,8 +83,8 @@ class ScoreType:
         submission_id (int): id of the new submission.
         timestamp (int): time of submission.
         username (string): username of the owner of the submission.
-        evaluations (dict): associate to each evaluation's num its
-                            outcome.
+        evaluations (dict): associate to each evaluation's num a
+                            dictionary {'outcome': xxx, 'text': yyy}.
         tokened (bool): if the user played a token on submission.
 
         """
@@ -179,13 +181,14 @@ class ScoreType:
 
         submission_id (int): the submission to evaluate.
 
-        returns (float, list, float, list): respectively: the score,
-                                            the list of additional
-                                            information (e.g.
-                                            subtasks' score), and the
-                                            same information from the
-                                            point of view of a user
-                                            that did not play a token.
+        returns (float, str, float, str): respectively: the score, the
+                                          HTML string with additional
+                                          information (e.g.
+                                          testcases' and subtasks'
+                                          score), and the same
+                                          information from the point
+                                          of view of a user that did
+                                          not play a token.
 
         """
         logger.error("Unimplemented method compute_score.")
@@ -220,3 +223,153 @@ class ScoreTypeAlone(ScoreType):
 
         # Finally we update the score table.
         self.scores[username] = score
+
+
+class ScoreTypeGroup(ScoreTypeAlone):
+    """Intermediate class to manage tasks whose testcases are
+    subdivided in groups (or subtasks). The score type parameters must
+    be in the form [[m, t, ...]], where m is the maximum score for the
+    given subtask and t is the number of testcases comprising the
+    subtask (that are consumed from the first to the last, sorted by
+    num).
+
+    A subclass must implement the method 'get_public_outcome' and
+    'reduce'.
+
+    """
+    TEMPLATE = """\
+<table>
+ <thead>
+  <tr>
+   <th>Outcome</th>
+   <th>Details</th>
+  </tr>
+ </thead>
+ <tbody>
+   {% for subtask in subtasks %}
+   <tr>
+    <td colspan="2">
+     <strong>{{ subtask["title"] }}</strong>
+    </td>
+   </tr>
+     {% for testcase in subtask["testcases"] %}
+   <tr>
+    <td>{{ testcase["outcome"] }}</td>
+    <td>{{ testcase["text"] }}</td>
+   </tr>
+     {% end %}
+   {% end %}
+ </tbody>
+</table>"""
+
+    def max_scores(self):
+        """Compute the maximum score of a submission.
+
+        returns (float, float): maximum score overall and public.
+
+        """
+        indices = sorted(self.public_testcases.keys())
+        public_score = 0.0
+        score = 0.0
+        current = 0
+        for parameter in self.parameters:
+            next_ = current + parameter[1]
+            score += parameter[0]
+            if all(self.public_testcases[idx]
+                   for idx in indices[current:next_]):
+                public_score += parameter[0]
+            current = next_
+        return round(score, 2), round(public_score, 2)
+
+    def compute_score(self, submission_id):
+        """Compute the score of a submission.
+
+        submission_id (int): the submission to evaluate.
+        returns (float): the score
+
+        """
+        indices = sorted(self.public_testcases.keys())
+        evaluations = self.pool[submission_id]["evaluations"]
+        unowned_testcases = []
+        subtasks = []
+        public_subtasks = []
+        current = 0
+        scores = []
+        public_scores = []
+        for subtask_idx, parameter in enumerate(self.parameters):
+            next_ = current + parameter[1]
+            scores.append(self.reduce([evaluations[idx]["outcome"]
+                                       for idx in indices[current:next_]],
+                                      parameter)
+                          * parameter[0])
+            subtasks.append({
+                "title": "Subtask %d: %lg/%lg" % (subtask_idx + 1,
+                                                  scores[-1],
+                                                  parameter[0]),
+                "testcases": [{
+                    "outcome": self.get_public_outcome(
+                        evaluations[idx]["outcome"], parameter),
+                    "text": evaluations[idx]["text"],
+                    }
+                    for idx in indices[current:next_]],
+                })
+            if all(self.public_testcases[idx]
+                   for idx in indices[current:next_]):
+                public_subtasks.append(subtasks[-1])
+                public_scores.append(scores[-1])
+            else:
+                unowned_testcases += [{
+                    "outcome": self.get_public_outcome(
+                        evaluations[idx]["outcome"], parameter),
+                    "text": evaluations[idx]["text"],
+                    }
+                    for idx in indices[current:next_]
+                    if self.public_testcases[idx]]
+            current = next_
+
+        if unowned_testcases != []:
+            public_subtasks.append({
+                "title": "Additional public testcases",
+                "testcases": unowned_testcases,
+                })
+
+        score = sum(scores)
+        public_score = sum(public_scores)
+
+        details = Template(self.TEMPLATE).generate(subtasks=subtasks)
+        public_details = \
+            Template(self.TEMPLATE).generate(subtasks=public_subtasks)
+
+        return round(score, 2), details, \
+               round(public_score, 2), public_details
+
+    def get_public_outcome(self, outcome, parameter):
+        """Return a public outcome from an outcome.
+
+        The public outcome is shown to the user, and this method
+        return the public outcome associated to the outcome of a
+        submission in a testcase contained in the group identified by
+        parameter.
+
+        outcome (float): the outcome of the submission in the
+                         testcase.
+        parameter (list): the parameters of the current group.
+
+        return (float): the public output.
+
+        """
+        logger.error("Unimplemented method get_public_outcome.")
+        raise NotImplementedError
+
+    def reduce(self, outcomes, parameter):
+        """Return the score of a subtask given the outcomes.
+
+        outcomes ([float]): the outcomes of the submission in the
+                            testcases of the group.
+        parameter (list): the parameters of the group.
+
+        return (float): the public output.
+
+        """
+        logger.error("Unimplemented method reduce.")
+        raise NotImplementedError
