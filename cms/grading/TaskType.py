@@ -152,21 +152,6 @@ def delete_sandbox(sandbox):
 
 ## Other stuff. ##
 
-def append_path(path_list, new_path):
-    """Append new_path to the path_list, inserting a colon inbetween.
-
-    path_list (string): colon-separated list of paths.
-    new_path (string): a new path to append to path_list.
-
-    return (string): the concatenation.
-
-    """
-    if path_list == "":
-        return new_path
-    else:
-        return "%s:%s" % (path_list, new_path)
-
-
 def filter_ansi_escape(string):
     """Filter out ANSI commands from the given string.
 
@@ -292,6 +277,20 @@ class TaskType:
 
         # If ignore_job is True, we conclude as soon as possible.
         self.ignore_job = False
+
+    def _append_sandbox(self, path):
+        """Add path to self.sandbox_paths in the correct way.
+
+        path (str): the path of a new sandbox to record in the
+                    dabatase.
+
+        """
+        if self.sandbox_paths == "":
+            self.sandbox_paths = path
+        else:
+            paths = self.sandbox_paths.split(":")
+            if path not in paths:
+                self.sandbox_paths = ":".join(paths + [path])
 
     def finish_compilation(self, success, compilation_success=False,
                            text="", to_log=None):
@@ -429,7 +428,7 @@ class TaskType:
 
         """
         # Record the usage of the sandbox.
-        self.sandbox_paths = append_path(self.sandbox_paths, sandbox.path)
+        self._append_sandbox(sandbox.path)
 
         # Copy all necessary files.
         for filename, digest in files_to_get.iteritems():
@@ -610,7 +609,7 @@ class TaskType:
 
         """
         # Record the usage of the sandbox.
-        self.sandbox_paths = ":".join([self.sandbox_paths, sandbox.path])
+        self._append_sandbox(sandbox.path)
 
         # Copy all necessary files.
         for filename, digest in executables_to_get.iteritems():
@@ -757,7 +756,7 @@ class TaskType:
 
         """
         # Record the usage of the sandbox.
-        self.sandbox_paths = append_path(self.sandbox_paths, sandbox.path)
+        self._append_sandbox(sandbox.path)
 
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
