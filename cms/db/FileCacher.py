@@ -70,10 +70,43 @@ class FileCacherBackend:
         """
         raise NotImplementedError("Please subclass this class.")
 
+    def describe(self, digest):
+        """Return the description of a file given its digest.
+
+        digest (string): the digest to describe.
+
+        returns (string): the description associated.
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
+    def delete(self, digest):
+        """Delete a file from the storage.
+
+        digest (string): the file to delete.
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
+    def list(self):
+        """List the files available in the storage.
+
+        return (list): a list of tuples, each representing a file in
+                       the form (digest, description).
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
 
 class FSBackend(FileCacherBackend):
 
     def __init__(self, path, service=None):
+        """Initialization.
+
+        path (string): the base path for the storage.
+        service (Service): as in FileCacherBackend.__init__().
+
+        """
         FileCacherBackend.__init__(self, service)
         self.path = path
 
@@ -95,6 +128,28 @@ class FSBackend(FileCacherBackend):
         """
         if not os.path.exists(os.path.join(self.path, digest)):
             shutil.copyfile(origin, os.path.join(self.path, digest))
+
+    def describe(self, digest):
+        """See FileCacherBackend.describe(). This method returns
+        nothing, because FSBackend doesn't store the description.
+
+        """
+        return ''
+
+    def delete(self, digest):
+        """See FileCacherBackend.delete().
+
+        """
+        try:
+            os.unlink(os.path.join(self.path, digest))
+        except OSError:
+            pass
+
+    def list(self, digest):
+        """See FileCacherBackend.list().
+
+        """
+        return map(lambda x: (x, ''), os.listdir(self.path))
 
 
 class DBBackend(FileCacherBackend):
@@ -157,6 +212,47 @@ class DBBackend(FileCacherBackend):
                 session.commit()
                 logger.debug("File %s sent to the database." % digest)
 
+    def describe(self, digest):
+        """See FileCacherBackend.describe().
+
+        """
+        with SessionGen() as session:
+            fso = FSObject.get_from_digest(digest, session)
+            if fso is not None:
+                return fso.description
+            else:
+                return None
+
+    def delete(self, digest):
+        """See FileCacherBackend.delete().
+
+        """
+        with SessionGen() as session:
+            fso = FSObject.get_from_digest(digest, session)
+            fso.delete()
+            session.commit()
+
+    def list(self, session=None):
+        """See FileCacherBackend.list(). This implementation also
+        accept an additional session parameter.
+
+        session (Session): if specified, use that session instead of
+                           creating a new one.
+
+        """
+        def _list(session):
+            """Do the work assuming session is valid.
+
+            """
+            return map(lambda x: (x.digest, x.description),
+                       session.query(FSObject))
+
+        if session is not None:
+            return _list(session)
+        else:
+            with SessionGen() as session:
+                return _list(session)
+
 
 class FileCacher:
     """This class implement a local cache for files stored as FSObject
@@ -165,17 +261,24 @@ class FileCacher:
     """
     CHUNK_SIZE = 2 ** 20
 
-    def __init__(self, service=None):
+    def __init__(self, service=None, path=None):
         """Initialization.
 
         service (Service): the service we are running in. If None, we
                            simply avoid caching and allowing the
                            service to step in once in a while.
+        path (string): if specified, back the FileCacher with a file
+                       system-based storage instead that the default
+                       database-based one. The specified directory
+                       will be used as root for the storage and it
+                       will be created if it doesn't exist.
 
         """
         self.service = service
-        self.backend = DBBackend(self.service)
-        #self.backend = FSBackend('./fs-storage', self.service)
+        if path is None:
+            self.backend = DBBackend(self.service)
+        else:
+            self.backend = FSBackend(path, self.service)
         if self.service is None:
             self.base_dir = tempfile.mkdtemp(dir=config.temp_dir)
         else:
@@ -323,20 +426,15 @@ class FileCacher:
 
         return digest
 
-    @staticmethod
-    def describe(digest):
+    def describe(self, digest):
         """Return the description of a file given its digest.
 
         digest (string): the digest to describe.
-        return (string): the description associated.
+
+        returns (string): the description associated.
 
         """
-        with SessionGen() as session:
-            fso = FSObject.get_from_digest(digest, session)
-            if fso is not None:
-                return fso.description
-            else:
-                return None
+        return self.backend.describe(digest)
 
     def delete(self, digest):
         """Delete from cache and FS the file with that digest.
@@ -345,10 +443,7 @@ class FileCacher:
 
         """
         self.delete_from_cache(digest)
-        with SessionGen() as session:
-            fso = FSObject.get_from_digest(digest, session)
-            fso.delete()
-            session.commit()
+        self.backend.delete(digest)
 
     def delete_from_cache(self, digest):
         """Delete the specified file from the local cache.
@@ -372,20 +467,8 @@ class FileCacher:
                not mkdir(self.obj_dir):
             logger.error("Cannot create necessary directories.")
 
-    @staticmethod
-    def list(session=None):
+    def list(self):
         """List the files available in the storage.
 
         """
-        def _list(session):
-            """Do the work assuming session is valid.
-
-            """
-            return map(lambda x: (x.digest, x.description),
-                       session.query(FSObject))
-
-        if session is not None:
-            return _list(session)
-        else:
-            with SessionGen() as session:
-                return _list(session)
+        return self.backend.list()
