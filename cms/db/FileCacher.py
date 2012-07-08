@@ -99,7 +99,19 @@ class FileCacherBackend:
 
 
 class FSBackend(FileCacherBackend):
+    """This class implements a backend for FileCacher that keeps all
+    the files in a file system directory, named after their digest. Of
+    course this directory can be shared, for example with NFS, acting
+    as an actual remote file storage.
 
+    TODO: Actually store the descriptions, that get discarded at the
+    moment.
+
+    TODO: Use an additional level of directories, to alleviate the
+    work of the file system driver (e.g., 'ROOT/a/abcdef...' instead
+    of 'ROOT/abcdef...'.
+
+    """
     def __init__(self, path, service=None):
         """Initialization.
 
