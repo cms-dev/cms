@@ -132,7 +132,7 @@ class FSBackend(FileCacherBackend):
         """See FileCacherBackend.get_file().
 
         """
-        shutil.move(os.path.join(self.path, digest), dest)
+        shutil.copyfile(os.path.join(self.path, digest), dest)
 
     def put_file(self, digest, origin, description=""):
         """See FileCacherBackend.put_file().
