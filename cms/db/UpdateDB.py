@@ -50,7 +50,8 @@ class ScriptsContainer(object):
             ("20120319", "change_scoretype_names"),
             ("20120412", "add_unique_constraints"),
             ("20120414", "add_evaluation_memory_time"),
-            ("20120701", "add_statements")
+            ("20120701", "add_statements"),
+            ("20120701", "add_public_outcomes"),
             ]
         self.list.sort()
 
@@ -432,6 +433,26 @@ class ScriptsContainer(object):
                             "SET official_language = '';")
             session.execute("ALTER TABLE tasks "
                             "ALTER COLUMN official_language SET NOT NULL;")
+
+    @staticmethod
+    def add_public_outcomes():
+        """Adding the public outcome to each evaluation.
+
+        Outcome's meaning depends on the score type, and is not
+        restricted. Hence in some occasion outcomes are sensible and
+        cannot be shown to the user. Public outcomes are a simple way
+        to show the user how good was the solution in a testcase
+        without revealing internals of the task. In particular, public
+        outcomes are always floating number between 0.0 and 1.0. In
+        the visualization, though, only three values are extrapolated:
+        0.0 = 'Fail', 1.0 = 'Correct', all the rest = 'Partially
+        correct'.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE evaluations "
+                            "ADD COLUMN public_outcome FLOAT;")
+
 
 
 def execute_single_script(scripts_container, script):

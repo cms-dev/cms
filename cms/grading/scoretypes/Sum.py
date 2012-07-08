@@ -55,4 +55,5 @@ class Sum(ScoreTypeAlone):
                 public_score += evaluations[num]
             score += evaluations[num]
         return round(score * self.parameters, 2), None, \
-               round(public_score * self.parameters, 2), None
+               round(public_score * self.parameters, 2), None, \
+               dict((num, float(evaluations[num])) for num in evaluations)

@@ -94,14 +94,15 @@ class ScoreType:
             "score": None,
             "details": None,
             "public_score": None,
-            "public_details": None
+            "public_details": None,
+            "public_outcomes": None,
             }
-        (score, details, public_score, public_details) = \
+        self.pool[submission_id]["score"], \
+            self.pool[submission_id]["details"], \
+            self.pool[submission_id]["public_score"], \
+            self.pool[submission_id]["public_details"], \
+            self.pool[submission_id]["public_outcomes"] = \
                 self.compute_score(submission_id)
-        self.pool[submission_id]["score"] = score
-        self.pool[submission_id]["details"] = details
-        self.pool[submission_id]["public_score"] = public_score
-        self.pool[submission_id]["public_details"] = public_details
 
         if username not in self.submissions or \
             self.submissions[username] is None:
@@ -113,8 +114,8 @@ class ScoreType:
         # order, so we insert-sort the new one.
         i = len(self.submissions[username]) - 1
         while i > 0 and \
-            self.pool[self.submissions[username][i - 1]]["timestamp"] > \
-            self.pool[self.submissions[username][i]]["timestamp"]:
+                  self.pool[self.submissions[username][i - 1]]["timestamp"] > \
+                  self.pool[self.submissions[username][i]]["timestamp"]:
             self.submissions[username][i - 1], \
                 self.submissions[username][i] = \
                 self.submissions[username][i], \
@@ -175,18 +176,20 @@ class ScoreType:
         raise NotImplementedError
 
     def compute_score(self, submission_id):
-        """Computes a score of a single submission. We don't know here
-        how to do it, but our subclasses will.
+        """Computes a score of a single submission.
+
+        We don't know here how to do it, but our subclasses will.
 
         submission_id (int): the submission to evaluate.
 
-        returns (float, list, float, list): respectively: the score,
-                                            the list of additional
-                                            information (e.g.
-                                            subtasks' score), and the
-                                            same information from the
-                                            point of view of a user
-                                            that did not play a token.
+        returns (float, the total score
+                 list, the list of additional information (e.g.,
+                       subtasks' scores),
+                 float, the total public score without having used a
+                        token,
+                 list, additional information for who did not use a
+                       token,
+                 dict) associate to each testcase the public outcome.
 
         """
         logger.error("Unimplemented method compute_score.")

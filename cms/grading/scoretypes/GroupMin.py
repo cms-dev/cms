@@ -80,4 +80,5 @@ class GroupMin(ScoreTypeAlone):
         score = sum(scores)
         public_score = sum(public_scores)
         return round(score, 2), details, \
-               round(public_score, 2), public_details
+               round(public_score, 2), public_details, \
+               dict((num, float(evaluations[num])) for num in evaluations)

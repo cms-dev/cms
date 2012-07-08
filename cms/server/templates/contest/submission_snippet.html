@@ -57,7 +57,20 @@
     <tbody>
       {% for ev in s.evaluations %}
         {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
-      <tr><td>{{ ev.outcome }}</td><td>{{ ev.text }}</td></tr>
+      <tr>
+        <td>
+          {% if ev.public_outcome == 0.0 %}
+            {{ _("Not correct") }}
+          {% elif ev.public_outcome == 1.0 %}
+            {{ _("Correct") }}
+          {% else %}
+            {{ _("Partially correct") }}
+          {% end %}
+        </td>
+        <td>
+          {{ ev.text }}
+        </td>
+      </tr>
         {% end %}
       {% end %}
       {% if s.token is None and not any([testcase.public for testcase in s.task.testcases]) %}
