@@ -1155,8 +1155,8 @@ class QuestionReplyHandler(BaseHandler):
         question.reply_timestamp = int(time.time())
 
         if try_commit(self.sql_session, self):
-            logger.warning("Reply sent to user %s for question '%s'." %
-                           (question.user.username, question.subject))
+            logger.warning("Reply sent to user %s for question with id %s." %
+                           (question.user.username, question_id))
 
         self.redirect(ref)
 

@@ -192,7 +192,7 @@ def configure_cms(options):
     options (dict): mapping from parameter to textual JSON argument.
 
     """
-    f = open("%(TEST_DIR)s/cms/examples/cms.conf.sample" % CONFIG)
+    f = open("%(TEST_DIR)s/examples/cms.conf.sample" % CONFIG)
     lines = f.readlines()
     unset = set(options.keys())
     for i, line in enumerate(lines):
@@ -226,11 +226,11 @@ def start_prog(path, shard=0, contest=None):
     return spawn(args)
 
 
-def start_servicer(service_name, check, shard=0, contest=None):
+def start_servicer(service_name, check, shard=0, contest=None, prefix="service"):
     """Start a CMS service."""
 
     info("Starting %s." % service_name)
-    executable = 'cms/service/%s.py' % service_name
+    executable = '%s/%s.py' % (prefix, service_name)
     if CONFIG["TEST_DIR"] is None:
         executable = 'cms%s' % service_name
     prog = start_prog(executable, shard=shard, contest=contest)
@@ -246,8 +246,12 @@ def start_servicer(service_name, check, shard=0, contest=None):
             continue
         break
     else:
-        raise FrameworkException("Failed to bring up service %s/%d" %
-                                 (service_name, shard))
+        if shard is None:
+            raise FrameworkException("Failed to bring up service %s" %
+                                     service_name)
+        else:
+            raise FrameworkException("Failed to bring up service %s/%d" %
+                                     (service_name, shard))
 
     return prog
 
@@ -287,7 +291,8 @@ def start_server(service_name, shard=0, contest=None):
         sock.connect(('127.0.0.1', port))
         sock.close()
 
-    prog = start_servicer(service_name, check, shard, contest)
+    prog = start_servicer(service_name, check, shard, contest,
+                          prefix="server")
     running_servers[service_name] = prog
 
     return prog
@@ -304,7 +309,8 @@ def start_ranking_web_server():
         sock.connect((addr, port))
         sock.close()
 
-    prog = start_servicer("RankingWebServer", check, shard=None)
+    prog = start_servicer("RankingWebServer", check, shard=None,
+                          prefix="../cmsranking")
     running_servers['RankingWebServer'] = prog
     return prog
 

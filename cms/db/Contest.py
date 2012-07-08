@@ -459,7 +459,13 @@ class Contest(Base):
         # The available tokens are the minimum.
         res.append(min(res_contest[0], res_task[0]))
 
-        # Next token generation time
+        # Next token generation time. We need to see when the
+        # *minimum* between res_contest[0] and res_task[0] is
+        # increased by one, so if there is an actual minimum we need
+        # to consider only the next generation time for it. Otherwise,
+        # if they are equal, we need both to generate an additional
+        # token and we store the maximum between the two next times of
+        # generation.
         if res_contest[0] < res_task[0]:
             # In this case, we just need a contest-wise token to be
             # generated.
