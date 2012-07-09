@@ -448,12 +448,6 @@ class Evaluation(Base):
     # the score type.
     outcome = Column(String, nullable=True)
 
-    # Floating number measuring how good was the submission against
-    # the given testcase (towards the computation of the total
-    # score). Meaning: 0.0 = 'Fail, 1.0 = 'Correct', all the rest =
-    # 'Partially correct'. Assigned by the score type.
-    public_outcome = Column(Float, nullable=True)
-
     # Memory used by the evaluation, in bytes.
     memory_used = Column(Integer, nullable=True)
 
@@ -465,14 +459,12 @@ class Evaluation(Base):
     evaluation_shard = Column(Integer, nullable=True)
     evaluation_sandbox = Column(String, nullable=True)
 
-    def __init__(self, text, outcome, public_outcome = None,
-                 num=None, submission=None,
+    def __init__(self, text, outcome, num=None, submission=None,
                  memory_used=None, execution_time=None,
                  execution_wall_clock_time=None,
                  evaluation_shard=None, evaluation_sandbox=None):
         self.text = text
         self.outcome = outcome
-        self.public_outcome = public_outcome
         self.num = num
         self.submission = submission
         self.memory_used = memory_used
@@ -488,7 +480,6 @@ class Evaluation(Base):
         return {
             'text': self.text,
             'outcome': self.outcome,
-            'public_outcome': self.public_outcome,
             'num': self.num,
             'memory_used': self.memory_used,
             'execution_time': self.execution_time,

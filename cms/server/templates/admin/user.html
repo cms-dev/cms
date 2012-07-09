@@ -88,16 +88,7 @@ function update_additional_answer(element, invoker)
               <tbody>
                 {% for ev in s.evaluations %}
                 <tr>
-                  <td>
-                    {{ ev.outcome }} &mdash;
-                    {% if ev.public_outcome == 0.0 %}
-                      {{ _("Not correct") }}
-                    {% elif ev.public_outcome == 1.0 %}
-                      {{ _("Correct") }}
-                    {% else %}
-                      {{ _("Partially correct") }}
-                    {% end %}
-                  </td>
+                  <td>{{ ev.outcome }}</td>
                   {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
                   <td style="align: center;">&bullet;</td>
                   {% else %}

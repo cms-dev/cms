@@ -451,21 +451,15 @@ class ScoringService(Service):
             contest.update_ranking_view(self.scorers,
                                         task=submission.task)
 
-            # Filling submission's score info in the db...
+            # Filling submission's score info in the db.
             submission.score = scorer.pool[submission_id]["score"]
             submission.public_score = \
                 scorer.pool[submission_id]["public_score"]
 
-            # Details...
             details = scorer.pool[submission_id]["details"]
             if details is None:
                 details = []
             submission.score_details = json.dumps(details)
-
-            # And public outcomes...
-            public_outcomes = scorer.pool[submission_id]["public_outcomes"]
-            for ev in submission.evaluations:
-                ev.public_outcome = public_outcomes[ev.num]
 
             public_details = scorer.pool[submission_id]["public_details"]
             if public_details is None:

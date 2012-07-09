@@ -60,17 +60,12 @@ class GroupThreshold(ScoreTypeAlone):
         """
         indices = sorted(self.public_testcases.keys())
         evaluations = self.pool[submission_id]["evaluations"]
-        public_outcomes = {}
         current = 0
         scores = []
         public_scores = []
         public_index = []
         for parameter in self.parameters:
             next_ = current + parameter[1]
-            for idx in indices[current:next_]:
-                public_outcomes[idx] = 0.0
-                if 0 <= evaluations[idx] <= parameter[2]:
-                    public_outcomes[idx] = 0.0
             if all(0 <= evaluations[idx] <= parameter[2]
                    for idx in indices[current:next_]):
                 scores.append(parameter[0])
@@ -88,5 +83,4 @@ class GroupThreshold(ScoreTypeAlone):
         score = sum(scores)
         public_score = sum(public_scores)
         return round(score, 2), details, \
-               round(public_score, 2), public_details, \
-               public_outcomes
+               round(public_score, 2), public_details

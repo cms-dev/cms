@@ -94,15 +94,13 @@ class ScoreType:
             "score": None,
             "details": None,
             "public_score": None,
-            "public_details": None,
-            "public_outcomes": None,
+            "public_details": None
             }
         self.pool[submission_id]["score"], \
             self.pool[submission_id]["details"], \
             self.pool[submission_id]["public_score"], \
-            self.pool[submission_id]["public_details"], \
-            self.pool[submission_id]["public_outcomes"] = \
-                self.compute_score(submission_id)
+            self.pool[submission_id]["public_details"] = \
+            self.compute_score(submission_id)
 
         if username not in self.submissions or \
             self.submissions[username] is None:
@@ -176,20 +174,18 @@ class ScoreType:
         raise NotImplementedError
 
     def compute_score(self, submission_id):
-        """Computes a score of a single submission.
-
-        We don't know here how to do it, but our subclasses will.
+        """Computes a score of a single submission. We don't know here
+        how to do it, but our subclasses will.
 
         submission_id (int): the submission to evaluate.
 
-        returns (float, the total score
-                 list, the list of additional information (e.g.,
-                       subtasks' scores),
-                 float, the total public score without having used a
-                        token,
-                 list, additional information for who did not use a
-                       token,
-                 dict) associate to each testcase the public outcome.
+        returns (float, list, float, list): respectively: the score,
+                                            the list of additional
+                                            information (e.g.
+                                            subtasks' score), and the
+                                            same information from the
+                                            point of view of a user
+                                            that did not play a token.
 
         """
         logger.error("Unimplemented method compute_score.")
