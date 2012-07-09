@@ -247,7 +247,12 @@ class ScoringService(Service):
                         contest.name)
             contest.create_empty_ranking_view(timestamp=contest.start)
             for task in contest.tasks:
-                self.scorers[task.id] = get_score_type(task=task)
+                try:
+                    self.scorers[task.id] = get_score_type(task=task)
+                except Exception as error:
+                    logger.critical("Cannot get score type for task %s.\n%r" %
+                                    (task.name, error))
+                    self.exit()
             session.commit()
 
     def search_jobs_not_done(self):

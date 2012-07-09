@@ -21,7 +21,7 @@
 
 import simplejson as json
 
-from cms import plugin_lookup
+from cms import logger, plugin_lookup
 
 
 def get_task_type(submission=None, file_cacher=None, task=None,
@@ -54,8 +54,11 @@ def get_task_type(submission=None, file_cacher=None, task=None,
         task = submission.task
     if task is not None:
         task_type_name = task.task_type
-        # TODO: manage exceptions when parameters cannot be decoded.
-        task_type_parameters = json.loads(task.task_type_parameters)
+        try:
+            task_type_parameters = json.loads(task.task_type_parameters)
+        except json.decoder.JSONDecodeError as error:
+            logger.error("Cannot decode score type parameters.\n%r." % error)
+            raise
 
     cls = plugin_lookup(task_type_name,
                         "cms.grading.tasktypes", "tasktypes")

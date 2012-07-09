@@ -3,7 +3,11 @@
 {% from cmscommon.Cryptographics import encrypt_number %}
 
 {% set encrypted_id = encrypt_number(s.id) %}
-{% set score_type = get_score_type(submission=s) %}
+{% try %}
+  {% set score_type = get_score_type(submission=s) %}
+{% except %}
+  {% set score_type = None %}
+{% end %}
 <div id="submission_status_{{ encrypted_id }}" name="submission_status"
     {% if s.compilation_outcome is None or (s.compilation_outcome != "fail" and not s.evaluated()) %}
     class="submission_pending"
@@ -21,16 +25,20 @@
   {% elif s.scored() %}
     {% if s.token is not None %}
   Evaluated
-      {% if score_type.max_score != 0 %}
+      {% if score_type is not None and score_type.max_score != 0 %}
         ({{ s.score }} / {{ score_type.max_score }})
+      {% else %}
+        ({{ s.score }})
       {% end %}
       {% for detail in json.loads(s.score_details) %}
   <br/>{{ detail }}
       {% end %}
     {% else %}
   Evaluated
-      {% if score_type.max_public_score != 0 %}
+      {% if score_type is not None and score_type.max_public_score != 0 %}
         ({{ s.public_score }} / {{ score_type.max_public_score }})
+      {% else %}
+        ({{ s.public_score }})
       {% end %}
       {% for detail in json.loads(s.public_score_details) %}
   <br/>{{ detail }}

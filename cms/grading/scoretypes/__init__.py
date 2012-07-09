@@ -21,7 +21,7 @@
 
 import simplejson as json
 
-from cms import plugin_lookup
+from cms import logger, plugin_lookup
 
 
 def get_score_type(submission=None, task=None):
@@ -42,8 +42,11 @@ def get_score_type(submission=None, task=None):
         task = submission.task
 
     score_type_name = task.score_type
-    # TODO: manage exceptions when parameters cannot be decoded.
-    score_type_parameters = json.loads(task.score_parameters)
+    try:
+        score_type_parameters = json.loads(task.score_parameters)
+    except json.decoder.JSONDecodeError as error:
+        logger.error("Cannot decode score type parameters.\n%r." % error)
+        raise
     public_testcases = dict((testcase.num, testcase.public)
                             for testcase in task.testcases)
 
