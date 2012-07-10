@@ -74,7 +74,6 @@ class TwoSteps(TaskType):
         # First and only one compilation.
         sandbox = create_sandbox(self)
         files_to_get = {}
-        format_filenames = self.submission.files.keys()
 
         # User's submissions and headers.
         source_filenames = []
@@ -155,7 +154,7 @@ class TwoSteps(TaskType):
             second_filename:
             self.submission.executables[second_filename].digest
             }
-        second_files_to_get = { }
+        second_files_to_get = {}
         second_allow_path = [fifo, "output.txt"]
         second = self.evaluation_step_before_run(
             second_sandbox,
@@ -171,9 +170,9 @@ class TwoSteps(TaskType):
         # TODO: check exit codes with translate_box_exitcode.
 
         success_first, outcome_first, text_first, _ = \
-                      self.evaluation_step_after_run(first_sandbox, final=False)
+            self.evaluation_step_after_run(first_sandbox, final=False)
         success_second, outcome_second, text_second, plus = \
-                     self.evaluation_step_after_run(second_sandbox, final=True)
+            self.evaluation_step_after_run(second_sandbox, final=True)
 
         # If at least one evaluation had problems, we report the
         # problems.

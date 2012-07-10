@@ -483,7 +483,6 @@ class TaskType:
             "memory_used": sandbox.get_memory_used(),
             }
 
-
         # From now on, we test for the various possible outcomes and
         # act appropriately.
 

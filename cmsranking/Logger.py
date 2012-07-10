@@ -110,13 +110,13 @@ class LogFormatter(logging.Formatter):
         self.dbg_suffix = self.ansi_command(ANSI_BOLD_OFF_CMD,
                                             ANSI_FG_DEFAULT_CMD)
 
-
     def ansi_command(self, *args):
-        """Produce the escape string that corresponds to the given ANSI command.
+        """Produce the escape string that corresponds to the given
+        ANSI command.
 
         """
-        return "\033[%sm" % ';'.join([str(x) for x in args]) if self.color else ''
-
+        return "\033[%sm" % ';'.join([str(x)
+                                      for x in args]) if self.color else ''
 
     def formatException(self, exc_info):
         exc_type, exc_value, traceback = exc_info
@@ -132,8 +132,10 @@ class LogFormatter(logging.Formatter):
         result += "%sTraceback (most recent call last):%s\n%s" % \
                       (self.ansi_command(ANSI_FAINT_ON_CMD),
                        self.ansi_command(ANSI_FAINT_OFF_CMD),
-                       '\n'.join(map(lambda a: self.ansi_command(ANSI_FAINT_ON_CMD) + a + self.ansi_command(ANSI_FAINT_OFF_CMD),
-                                     ''.join(formatTraceback(traceback)).strip().split('\n'))))
+                       '\n'.join(
+            map(lambda a: self.ansi_command(ANSI_FAINT_ON_CMD) +
+                a + self.ansi_command(ANSI_FAINT_OFF_CMD),
+                ''.join(formatTraceback(traceback)).strip().split('\n'))))
 
         return result
 

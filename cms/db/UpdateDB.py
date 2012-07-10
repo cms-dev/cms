@@ -408,15 +408,17 @@ class ScriptsContainer(object):
 
         """
         with SessionGen(commit=True) as session:
-            session.execute("CREATE TABLE statements ("
-                            "    id SERIAL NOT NULL,"
-                            "    language VARCHAR NOT NULL,"
-                            "    digest VARCHAR NOT NULL,"
-                            "    task_id INTEGER NOT NULL,"
-                            "    PRIMARY KEY (id),"
-                            "    CONSTRAINT cst_statements_task_id_language UNIQUE (task_id, language),"
-                            "    FOREIGN KEY(task_id) REFERENCES tasks (id) ON DELETE CASCADE ON UPDATE CASCADE"
-                            ")")
+            session.execute("""\
+CREATE TABLE statements (
+    id SERIAL NOT NULL,
+    language VARCHAR NOT NULL,
+    digest VARCHAR NOT NULL,
+    task_id INTEGER NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT cst_statements_task_id_language UNIQUE (task_id, language),
+    FOREIGN KEY(task_id) REFERENCES tasks (id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+)""")
             session.execute("CREATE INDEX ix_statements_task_id "
                             "ON statements (task_id)")
             for task_id, digest in session.execute(
