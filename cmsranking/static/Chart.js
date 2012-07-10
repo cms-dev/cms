@@ -56,7 +56,7 @@ var Chart = new function () {
         };
 
         var get_y = function (y) {
-            return pad_t + (y_max - y) * (hei - pad_t - pad_b) / (y_max - y_min);
+            return pad_t + (y_max - y) * (hei - pad_t - pad_b) / (y_max - y_min == 0? 1: y_max - y_min);
         };
 
         // clear the canvas
@@ -92,7 +92,8 @@ var Chart = new function () {
         context.fillStyle = "#000000";
         context.textAlign = "right";
         context.textBaseline = "middle";
-        context.fillText(y_min.toString(), 18, hei - pad_b);
+        if (y_min != y_max)
+            context.fillText(y_min.toString(), 18, hei - pad_b);
         context.fillText(y_max.toString(), 18, pad_t);
         for (var i in marks) {
             context.fillText(marks[i].toString(), 18, get_y(marks[i]));
