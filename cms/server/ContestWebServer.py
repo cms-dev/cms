@@ -828,7 +828,7 @@ class UseTokenHandler(BaseHandler):
         timestamp = int(time.time())
         if self.contest.tokens_available(self.current_user.username,
                                          submission.task.name,
-                                         timestamp)[0] <= 0:
+                                         timestamp)[0] == 0:
             logger.warning("User %s tried to play a token "
                            "when it shouldn't."
                            % self.current_user.username)

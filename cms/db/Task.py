@@ -45,6 +45,7 @@ class Task(Base):
                          name='cst_task_contest_id_num'),
         UniqueConstraint('contest_id', 'name',
                          name='cst_task_contest_id_name'),
+        CheckConstraint("token_initial <= token_max"),
         )
 
     # Auto increment primary key.
@@ -99,15 +100,15 @@ class Task(Base):
     token_initial = Column(
         Integer, CheckConstraint("token_initial >= 0"), nullable=True)
     token_max = Column(
-        Integer, CheckConstraint("token_max >= 0"), nullable=True)
+        Integer, CheckConstraint("token_max > 0"), nullable=True)
     token_total = Column(
-        Integer, CheckConstraint("token_total >= 0"), nullable=True)
+        Integer, CheckConstraint("token_total > 0"), nullable=True)
     token_min_interval = Column(
-        Integer, CheckConstraint("token_min_interval >= 0"), nullable=True)
+        Integer, CheckConstraint("token_min_interval >= 0"), nullable=False)
     token_gen_time = Column(
-        Integer, CheckConstraint("token_gen_time > 0"), nullable=True)
+        Integer, CheckConstraint("token_gen_time >= 0"), nullable=False)
     token_gen_number = Column(
-        Integer, CheckConstraint("token_gen_number >= 0"), nullable=True)
+        Integer, CheckConstraint("token_gen_number >= 0"), nullable=False)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.

@@ -79,9 +79,13 @@ class YamlLoader:
         params["token_initial"] = conf.get("token_initial", 10000)
         params["token_max"] = conf.get("token_max", None)
         params["token_total"] = conf.get("token_total", None)
-        params["token_min_interval"] = conf.get("token_min_interval", None)
+        params["token_min_interval"] = conf.get("token_min_interval", 0)
         params["token_gen_time"] = conf.get("token_gen_time", None)
         params["token_gen_number"] = conf.get("token_gen_number", None)
+        if params["token_gen_time"] is None or
+            params["token_gen_number"] is None:
+            params["token_gen_time"] = 1
+            params["token_gen_number"] = 0
         if self.modif == 'zero_time':
             params["start"] = 0
             params["stop"] = 0
