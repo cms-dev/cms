@@ -1,127 +1,141 @@
+{% import re %}
 {% import time %}
 {% import simplejson as json %}
 {% from cms.server import format_time_or_date, format_amount_of_time %}
-{% from cmscommon.Cryptographics import encrypt_number %}
+{% from cmscommon.Cryptographics import encrypt_number, decrypt_number %}
+<!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <script type="text/javascript">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script type="text/javascript">
 <!--
 var url_root = "{{ url_root }}";
 -->
-    </script>
-    <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico" />
-    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/reset.css"/>
-    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/style.css"/>
-    <script type="text/javascript" src="{{ url_root }}/static/utils.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/web_async_library.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/scripts.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.7.1.min.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/sh/shCore.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/sh/shBrushCpp.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/sh/shBrushDelphi.js"></script>
-    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/sh/shCore.css"/>
-    <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/sh/shThemeDefault.css"/>
-
-    <title>{{ contest.description }}</title>
-
-    <script type="text/javascript">
-<!--
-function init()
-{
-    cmsrpc = new CMSAjaxRPC();
-    cmsutils = new CMSUtils();
-    utils = new Utils({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(valid_phase_end) }}, {{ phase }});
-
-    firstDate = new Date();
-    utils.get_time();
-    setInterval(cmsutils.bind_func(utils, utils.get_time), 1000);
-    utils.update_notifications();
-    setInterval(cmsutils.bind_func(utils, utils.update_notifications), 15000);
-
-    $(document).click(utils.hide_subpage);
-    // delegate() ensures that the event is fired even for elements
-    // that are added in the future.
-    $(document).delegate('.toggling_on', 'click', utils.toggle_visibility);
-    $(document).delegate('.toggling_off', 'click', utils.toggle_visibility);
+        </script>
+        <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico" />
+        <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.7.1.min.js"></script>
+        <script type="text/javascript" src="{{ url_root }}/static/js/bootstrap.js"></script>
+        <script type="text/javascript" src="{{ url_root }}/static/script_new.js"></script>
+        <link rel="stylesheet" href="{{ url_root }}/static/css/bootstrap.css">
+        <link rel="stylesheet" href="{{ url_root }}/static/style_new.css">
 
 
-    {% block js_init %}{% end %}
-}
+        <title>{{ contest.description }}</title>
+
+{% if current_user is not None %}
+        <script type="text/javascript">
+$(document).ready(function () {
+    Utils.init({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(valid_phase_end) }}, {{ phase }});
+
+    firstDate = new Date(); // FIXME very bad: global variable
+    Utils.get_time();
+    setInterval(Utils.get_time, 1000);
+    Utils.update_notifications();
+    setInterval(Utils.update_notifications, 15000);
+});
 
 {% block js %}{% end %}
+        </script>
+{% end%}
 
-$(document).ready(init);
-
-//-->
-    </script>
-  </head>
-  <body>
-    <div id="global">
-      <div id="sidebar">
-        <h1>{{ contest.description }}</h1>
-        <ul class="menu">
-          <li class="menu_entry">
-            <span id="unread_public" class="unread" style="display: none;">0</span>
-            <a class="menu_link" href="{{ url_root }}/">{{ _("Overview") }}</a>
-          </li>
-          <li class="menu_entry">
-            <a class="menu_link" href="{{ url_root }}/instructions">{{ _("Instructions") }}</a>
-          </li>
-          <li class="menu_entry">
-            <span id="unread_private" class="unread" style="display: none;">0</span>
-            <a class="menu_link" href="{{ url_root }}/communication">{{ _("Communication") }}</a>
-          </li>
-        </ul>
-        <div class="hr"></div>
-        {% if current_user is not None and phase == 0 %}
-        <div class="sidebar_left">{{ _("Tasks:") }}</div>
-        <div class="sidebar_right">
-          <ul class="menu">
-            {% for t_iter in contest.tasks %}
-            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/tasks/{{ encrypt_number(t_iter.id) }}">{{t_iter.name}}</a></li>
-            {% end %}
-          </ul>
+    </head>
+    <body id="body">
+        <div class="navbar navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <a class="brand" href="#">{{ contest.description }}</a>
+{% if current_user is not None %}
+                    <p class="navbar-text pull-right">
+                        Logged in as <strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong> <em>({{ current_user.username }})</em>
+                        <a class="btn btn-warning" href="{{ url_root }}/logout">Logout</a>
+                    </p>
+{% end %}
+                </div>
+            </div>
         </div>
-        <div class="hr"></div>
-        {% end %}
-        {% if current_user is None %}
-          {% if handler.get_argument("login_error", "") != "" %}
+{% if current_user is None %}
+    {% if handler.get_argument("login_error", "") != "" %}
         <div class="footer login_error">{{ _("Failed to log in.") }}</div>
-          {% end %}
-        <form action="{{ url_root }}/login" method="POST">
-          <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
-          <div class="footer">
-            <div class="sidebar_left">{{ _("Username:") }}</div>
-            <div class="sidebar_right"><input type="text" name="username" size="12" /></div>
-          </div>
-          <div class="footer">
-            <div class="sidebar_left">{{ _("Password:") }}</div>
-            <div class="sidebar_right"><input type="password" name="password" size="12" /></div>
-          </div>
-          <div class="footer sidebar_right"><input type="submit" value="{{ _("Sign in") }}" /></div>{% comment _("Sign in") %}
-        </form>
-        {% else %}
-          {% if phase != 1 %}
-        <div class="footer">{{ _("Time left:") }} <span id="remaining"></span></div>
-          {% end %}
-        <div class="footer">{{ current_user.first_name }} {{ current_user.last_name }} - {{ current_user.username }} (<a href="{{ url_root }}/logout">{{ _("logout") }}</a>)</div>
-        {% end %}
-        <div class="cr_notice">CMS <a href="http://github.com/cms-dev/cms/">codebase</a> is released under the<br/><a href="http://www.gnu.org/licenses/agpl.txt">GNU Affero General Public License</a>.</div>
-      </div>
-      <div id="border"></div>
-
-      <div id="core">
-        <div id="notifications" class="notifications"></div>
-        <div id="subpage" onclick="var event = arguments[0] || window.event; event.stopPropagation()">
-          <div id="subpage_border"></div>
-          <div id="subpage_background"></div>
-          <div id="subpage_content"></div>
+    {% end %}
+        <div class="login_container">
+            <div class="login_box hero-unit">
+                <h1>Welcome</h1>
+                <p>Please log in</p>
+                <form class="form-horizontal" action="{{ url_root }}/login" method="POST">
+                    <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
+                    <fieldset>
+                        <div class="control-group">
+                            <label class="control-label" for="input01">{{ _("Username") }}</label>
+                            <div class="controls">
+                                <input type="text" class="input-xlarge" name="username">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="input01">{{ _("Password") }}</label>
+                            <div class="controls">
+                                <input type="password" class="input-xlarge" name="password">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <div class="controls">
+                                <button type="submit" class="btn btn-primary btn-large" type="submit">{{ _("Login") }}</button>
+                                <button type="reset" class="btn btn-large" type="submit">{{ _("Reset") }}</button>
+                            </div>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
         </div>
-        {% block core %}{% end %}
-      </div>
+{% else %}
+        <div class="container">
+            <div id="notifications" class="notifications" style="height:0"></div>
+            <div class="row">
+                <div class="span3">
+                    <img src="{{ url_root }}/ioi2012.jpg" width="200" style="display: block; max-width: 200px; margin: auto; padding: 0 0 15px;"/>
+    {% if phase != 1 %}
+                    <h3 style="text-align: center; color: #333333; margin: 0 0 8px;"><span style="color: #999999;">Time left:</span> <span id="remaining">1:23:45</span></h3>
+    {% end %}
+    {% if phase == 0 %}
+                    <div class="well" style="padding: 8px 0;">
+                        <ul class="nav nav-list">
 
+                            <li{% if request.path == '/' %} class="active"{% end %}>
+                                <a href="{{ url_root }}/">Overview</a>
+                            </li>
+                            <li{% if request.path == '/communication' %} class="active"{% end %}>
+                                <a href="{{ url_root }}/communication">Communication <span id="unread_count" style="display:none;float:right;" class="label label-warning">0 unread</span></a>
+                            </li>
+        {% try %}
+            {% set task_url = re.findall("/tasks/(.*)/(description|submissions)", request.path) %}
+            {% set task_id = decrypt_number(task_url[0][0]) %}
+            {% set task_page = task_url[0][1] %}
+        {% except %}
+            {% set task_id = None %}
+        {% end %}
+        {% for t_iter in contest.tasks %}
+                            <li class="nav-header">
+                                {{ t_iter.name }}
+                            </li>
+                            <li{% if task_id == t_iter.id and task_page == 'description' %} class="active"{% end %}>
+                                <a href="{{ url_root }}/tasks/{{ encrypt_number(t_iter.id) }}/description">Statement</a>
+                            </li>
+                            <li{% if task_id == t_iter.id and task_page == 'submissions' %} class="active"{% end %}>
+                                <a href="{{ url_root }}/tasks/{{ encrypt_number(t_iter.id) }}/submissions">Submissions</a>
+                            </li>
+        {% end %}
+                            <li class="divider"></li>
+                            <li{% if request.path == '/instructions' %} class="active"{% end %}>
+                                <a href="{{ url_root }}/instructions">Documentation</a>
+                            </li>
+                        </ul>
+                    </div>
+    {% end %}
+                </div>
+    {% block core %}{% end %}
+            </div>
+        </div>
 
-    </div>
-  </body>
+{% end %}
+    </body>
 </html>

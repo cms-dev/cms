@@ -1,0 +1,39 @@
+{% extends base.html %}
+{% block core %}
+<div class="span9">
+
+{% from cms.grading import get_compilation_command %}
+
+<div class="page-header">
+    <h1>{{ _("Instructions") }}</h1>
+</div>
+
+
+<h2>{{ _("Compilation") }}</h2>
+
+<table class="table table-bordered" style="table-layout: fixed;">
+    <colgroup>
+        <col style="width: 20%"/>
+        <col style="width: 80%"/>
+    </colgroup>
+    <tr>
+        <th>{{ _("C") }}</th>
+        <td><code>{% raw " ".join(get_compilation_command("c", ["<i>task.c</i>"], "<i>task</i>")) %}</code></td>
+    </tr>
+    <tr>
+        <td><strong>{{ _("C++") }}</strong></td>
+        <td><code>{% raw " ".join(get_compilation_command("cpp", ["<i>task.cpp</i>"], "<i>task</i>")) %}</code></td>
+    </tr>
+    <tr>
+        <td><strong>{{ _("Pascal") }}</strong></td>
+        <td><code>{% raw " ".join(get_compilation_command("pas", ["<i>task.pas</i>"], "<i>task</i>")) %}</code></td>
+    </tr>
+</table>
+
+
+<h2>{{ _("Documentation") }}</h2>
+<a href="{{ url_root }}/stl/index.html">{{ _("Standard Template Library") }}</a>
+
+
+</div>
+{% end %}

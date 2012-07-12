@@ -33,6 +33,7 @@ import zipfile
 
 from functools import wraps
 from tornado.web import HTTPError, RequestHandler
+import tornado.locale
 
 from cms import logger
 from cms.db.FileCacher import FileCacher
@@ -160,6 +161,19 @@ def format_time_or_date(timestamp):
         return dt_ts.strftime("%H:%M:%S, %d/%m/%Y")
 
 
+def isoformat_datetime (timestamp, timezone=None):
+    """Return timestamp formatted as YYYY-MM-DD HH:MM:SS (ISO format)
+
+    timestamp (int): POSIX timestamp
+    timezone (float): a timezone, the same format as User.timezone
+
+    return (string): timestamp in ISO format (without timezone indicators)
+
+    """
+    # TODO what's the format of User.timezone?
+    return datetime.datetime.fromtimestamp(timestamp).isoformat(' ')
+
+
 def format_amount_of_time(seconds):
     """Return the number of seconds formatted 'xxx days, yyy hours,
     ...'.
@@ -187,6 +201,89 @@ def format_amount_of_time(seconds):
         ret = ["0 seconds"]
 
     return ", ".join(ret)
+
+
+def format_token_rules (tokens, locale=None):
+    """Return a human-readable string describing the given token rules
+
+    tokens (dict): all the token rules (as seen in Task or Contest),
+                   without the "token_" prefix.
+
+    return (string): localized string describing the rules.
+
+    """
+    if locale is None:
+        locale = tornado.locale.get()
+
+    result = ""
+
+    if tokens['initial'] is None:
+        result += "Tokens disabled."
+    else:
+        if tokens['initial'] == 0:
+            result += locale.translate("You start with no tokens.")
+        elif tokens['initial'] == 1:
+            result += locale.translate("You start with one token.")
+        else:
+            result += locale.translate("You start with %(initial)d tokens.") % tokens
+
+        result += " "
+
+        if tokens['gen_time'] is not None and tokens['gen_number'] is not None:
+            if tokens['max'] is not None:
+                if tokens['gen_time'] == 1 and tokens['gen_number'] == 1 and tokens['max'] == 1:
+                    result += locale.translate("Every minute you get another token, up to one token in total.")
+                elif tokens['gen_time'] == 1 and tokens['gen_number'] == 1:
+                    result += locale.translate("Every minute you get another token, up to %(max)d tokens in total.") % tokens
+                elif tokens['gen_time'] == 1 and tokens['max'] == 1:
+                    result += locale.translate("Every %(gen_time)d minutes you get another token, up to one token in total.") % tokens
+                elif tokens['gen_time'] == 1:
+                    result += locale.translate("Every %(gen_time)d minutes you get another token, up to %(max)d tokens in total.") % tokens
+                elif tokens['gen_number'] == 1 and tokens['max'] == 1:
+                    result += locale.translate("Every minute you get %(gen_number)d other tokens, up to one token in total.") % tokens
+                elif tokens['gen_number'] == 1:
+                    result += locale.translate("Every minute you get %(gen_number)d other tokens, up to %(max)d tokens in total.") % tokens
+                elif tokens['max'] == 1:
+                    result += locale.translate("Every %(gen_time)s minutes you get %(gen_number)d other tokens, up to one token in total.") % tokens
+                else:
+                    result += locale.translate("Every %(gen_time)s minutes you get %(gen_number)d other tokens, up to %(max)d tokens in total.") % tokens
+            else:
+                if tokens['gen_time'] == 1 and tokens['gen_number'] == 1:
+                    result += locale.translate("Every minute you get another token.")
+                elif tokens['gen_time'] == 1:
+                    result += locale.translate("Every %(gen_time)d minutes you get another token.") % tokens
+                elif tokens['gen_number'] == 1:
+                    result += locale.translate("Every minute you get %(gen_number)d other tokens.") % tokens
+                else:
+                    result += locale.translate("Every %(gen_time)d minutes you get %(gen_number)d other tokens.") % tokens
+        else:
+            result += locale.translate("You don't get other tokens.") % tokens
+
+        result += " "
+
+        if tokens['min_interval'] is not None and tokens['total'] is not None:
+            if tokens['min_interval'] == 1 and tokens['total'] == 1:
+                result += locale.translate("You can play a token every second and no more than one token in total.")
+            elif tokens['min_interval'] == 1:
+                result += locale.translate("You can play a token every second and no more than %(total)d tokens in total.") % tokens
+            elif tokens['total'] == 1:
+                result += locale.translate("You can play a token every %(min_interval)d seconds and no more than one token in total.") % tokens
+            else:
+                result += locale.translate("You can play a token every %(min_interval)d seconds and no more than %(total)d tokens in total.") % tokens
+        elif tokens['min_interval'] is not None:
+            if tokens['min_interval'] == 1:
+                result += locale.translate("You can play a token every second.")
+            else:
+                result += locale.translate("You can play a token every %(min_interval)d seconds.") % tokens
+        elif tokens['total'] is not None:
+            if tokens['total'] == 1:
+                result += locale.translate("You can play no more than one token in total.")
+            else:
+                result += locale.translate("You can play no more than %(total)d tokens in total.") % tokens
+        else:
+            result += locale.translate("You have no limitations on how you play them.")
+
+    return result
 
 
 def file_handler_gen(BaseClass):

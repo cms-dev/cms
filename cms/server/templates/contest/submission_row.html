@@ -1,0 +1,151 @@
+<tr>
+    <td>
+        <abbr title="{{ datetime.datetime.fromtimestamp(s.timestamp).isoformat(' ') }}">
+        {% set t = s.timestamp - task.contest.start %}
+        {{ "%d:%02d:%02d" % (t // 3600, t // 60 % 60, t % 60) }}
+        </abbr>
+    </td>
+{% if not s.compiled() %}
+    <td>Compiling...</td>
+    <td>N/A</td>
+    <td>N/A</td>
+{% elif s.compilation_outcome == "fail" %}
+    <td>Compilation failed</td>
+    <td>N/A</td>
+    <td>N/A</td>
+{% elif not s.evaluated() %}
+    <td>Evaluating...</td>
+    <td>N/A</td>
+    <td>N/A</td>
+{% elif not s.scored() %}
+    <td>Scoring...</td>
+    <td>N/A</td>
+    <td>N/A</td>
+{% else %}
+    {% try %}
+        {% set score_type = get_score_type(submission=s) %}
+    {% except %}
+        {% set score_type = None %}
+    {% end %}
+    <td>
+        Evaluated
+        <a style="float:right" data-toggle="modal" href="#submission_{{ s.timestamp }}" >details</a>
+
+<div class="modal fade hide" id="submission_{{ s.timestamp }}">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>Modal header</h3>
+    </div>
+    <div class="modal-body">
+    {% if s.scored() %}
+        {% if s.token is None %}
+        <h3>{{ _("Public testcases") }}</h3>
+        {% else %}
+        <h3>{{ _("Detailed feedback") }}</h3>
+        {% end %}
+        <table class="table table-bordered table-striped">
+            <colgroup>
+                <col style="width: 20%"/>
+                <col style="width: 80%"/>
+            </colgroup>
+            <thead>
+                <tr>
+                    <th>{{ _("Outcome") }}</th>
+                    <th>{{ _("Details") }}</th>
+                </tr>
+            </thead>
+            <tbody>
+        {% for ev in s.evaluations %}
+            {% if s.task.testcases[int(ev.num)].public or s.token is not None %}
+                <tr>
+                    <td>{{ ev.outcome }}</td>
+                    <td>{{ ev.text }}</td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="2">N/A</td>
+                </tr>
+            {% end %}
+        {% end %}
+            </tbody>
+        </table>
+    {% end %}
+
+        <h3>{{ _("Compilation output") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
+        <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
+    </div>
+</div>
+
+    </td>
+    <td>
+    {% if score_type is not None and score_type.max_public_score != 0 %}
+    {{ "%g" % s.public_score }} / {{ "%g" % score_type.max_public_score }}
+    {% else %}
+    {{ "%g" % s.public_score }}
+    {% end %}
+    {% for detail in json.loads(s.public_score_details) %}
+        {{ detail }}
+    {% end %}
+    </td>
+    <td>
+    {% if s.token is not None %}
+        {% if score_type is not None and score_type.max_score != 0 %}
+        {{ "%g" % s.score }} / {{ "%g" % score_type.max_score }}
+        {% else %}
+        {{ "%g" % s._score }}
+        {% end %}
+        {% for detail in json.loads(s.score_details) %}
+            {{ detail }}
+        {% end %}
+    {% else %}
+        N/A
+    {% end %}
+    </td>
+{% end %}
+    <td style="padding:4px">
+        {% set filtered_files = [x.filename for x in task.submission_format if x.filename in s.files] %}
+        {% if len(filtered_files) == 0 %}
+        No files available
+        {% elif len(filtered_files) == 1 %}
+            {% set filename = filtered_files[0] %}
+            {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
+        <a class="btn" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;" href="{{ url_root }}/submission_file/{{ encrypt_number(s.files[filename].id) }}">
+            Download
+        </a>
+        {% else %}
+        <div class="btn-group">
+            <a class="btn dropdown-toggle" data-toggle="dropdown" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;">
+                Download
+                <span class="caret" ></span>
+            </a>
+            <ul class="dropdown-menu">
+            {% for filename in filtered_files %}
+                {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
+                <li>
+                    <a href="{{ url_root }}/submission_file/{{ encrypt_number(s.files[filename].id) }}">
+                        {{ real_filename }}
+                    </a>
+                </li>
+            {% end %}
+            </ul>
+        </div>
+        {% end %}
+    </td>
+    <td style="padding:4px">
+        {% if s.token is not None %}
+        <a class="btn disabled" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;">Played</a>
+        {% else %}
+            {% if can_play_token %}
+        <form style="display: inline;" action="{{ url_root }}/usetoken" method="POST">
+            <input type="hidden" name="submission_id" value="{{ encrypt_number(s.id) }}" />
+            <input type="submit" class="btn btn-warning" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;" value="Play!"/>
+        </form>
+            {% else %}
+        <a class="btn btn-warning disabled" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;">Wait...</a>
+            {% end %}
+        {% end %}
+    </td>
+</tr>

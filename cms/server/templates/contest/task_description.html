@@ -1,0 +1,118 @@
+{% extends base.html %}
+{% block core %}
+
+{% from cms.server import format_token_rules %}
+
+<div class="span9 task_description">
+
+
+<div class="page-header">
+    <h1>Statement <small>for {{ task.title }} ({{ task.name }})</small></h1>
+</div>
+
+
+<h2>Statement</h2>
+
+<div class="row statement" style="margin-bottom: 20px;">
+{% if len(task.statements) == 0 %}
+    <div class="span9 no_statement">
+        no statement available
+    </div>
+{% elif len(task.statements) == 1 %}
+    <div class="span9 one_statement">
+    {% for lang_code in task.statements %}
+        <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ lang_code }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
+    {% end %}
+    </div>
+{% else %}
+    <div class="span5 main_statements">
+        The statement for this task is available in multiple versions, in different languages. You can see (and download) all of them using the list on the right.
+    </div>
+    <div class="span4 all_statements well">
+        <ul>
+    {% for lang_code in task.statements %}
+            <li><a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ lang_code }}">{{ lang_code }}</a></li>
+    {% end %}
+        </ul>
+    </div>
+{% end %}
+</div>
+
+
+<h2>Some details</h2>
+
+<table class="table table-bordered" style="table-layout: fixed">
+    <colgroup>
+        <col style="width: 20%"/>
+        <col style="width: 80%"/>
+    </colgroup>
+    <tbody>
+        <tr>
+            <th>{{ _("Type") }}</th>
+            <td>{{ re.sub("([A-Z])", " \g<1>", task.task_type).lower().lstrip() }}</td>
+        </tr>
+        <tr>
+            <th>{{ _("Time limit") }}</th>
+            <td>
+{% if task.time_limit == 1.0 %}
+    {{ _("%(seconds)g second") % {"seconds": task.time_limit} }}
+{% else %}
+    {{ _("%(seconds)g seconds") % {"seconds": task.time_limit} }}
+{% end %}
+            </td>
+        </tr>
+        <tr>
+            <th>{{ _("Memory limit") }}</th>
+            <td>{{ _("%(mb)d MiB") % {"mb": task.memory_limit} }}</td>
+        </tr>
+{% if task.contest.token_initial is not None %}
+        <tr>
+            <th>{{ _("Tokens") }}</th>
+            <td>
+    {% if task.token_initial is None %}
+        No
+    {% else %}
+        Yes - 
+        {% set tokens = {"initial": task.token_initial,
+                         "max": task.token_max,
+                         "total": task.token_total,
+                         "min_interval": task.token_min_interval,
+                         "gen_time": task.token_gen_time,
+                         "gen_number": task.token_gen_number} %}
+        {{ format_token_rules(tokens) }}
+    {% end %}
+            </td>
+        </tr>
+{% end %}
+    </tbody>
+</table>
+
+
+
+{% if task.attachments != {} %}
+    <div>
+        <h2>{{ _("Attachments") }}</h2>
+
+        <ul>
+    {% for filename, attachment in task.attachments.items() %}
+            <li>
+                <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/attachments/{{ filename }}">{{ filename }}</a>
+            </li>
+    {% end %}
+        </ul>
+    </div>
+{% end %}
+
+
+<h2 id="title_submit_solution"></h2>
+<div id="submit_solution">
+  <table>
+    <tr>
+
+    </tr>
+  </table>
+  <div class="hr"></div>
+</div>
+
+</div>
+{% end %}
