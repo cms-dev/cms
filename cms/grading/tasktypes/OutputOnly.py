@@ -49,6 +49,16 @@ class OutputOnly(TaskType):
 
     ACCEPTED_PARAMETERS = [_EVALUATION]
 
+    @property
+    def name(self):
+        """See TaskType.name."""
+        # TODO add some details if a comparator is used, etc...
+        return "Output only"
+
+    def get_compilation_commands(self, submission_format):
+        """See TaskType.get_compilation_commands."""
+        return None
+
     def compile(self):
         """See TaskType.compile."""
         # No compilation needed.

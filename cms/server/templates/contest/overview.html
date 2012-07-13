@@ -2,6 +2,7 @@
 {% block core %}
 
 {% from cms.server import format_token_rules %}
+{% from cms.grading.tasktypes import get_task_type %}
 
 <div class="span9">
 
@@ -83,7 +84,7 @@
     {% end %}
             <td>{{ _("%(mb)d MiB") % {"mb": t_iter.memory_limit} }}</td>
             <td>{{ len(t_iter.testcases) }} (public: {{ sum(map(lambda a: 1 if a.public else 0, t_iter.testcases)) }})</td>
-            <td>{{ re.sub("([A-Z])", " \g<1>", t_iter.task_type).lower().lstrip() }}</td>
+            <td>{{ get_task_type(task=t_iter).name }}</td>
             <td>{{ " ".join(a.filename.replace("%l", "[c|cpp|pas]") for a in t_iter.submission_format) }}</td>
     {% if contest.token_initial is not None %}
             <td>

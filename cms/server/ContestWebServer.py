@@ -263,7 +263,7 @@ class MainHandler(BaseHandler):
         self.render("overview.html", **self.r_params)
 
 
-class InstructionHandler(BaseHandler):
+class DocumentationHandler(BaseHandler):
     """Displays the instruction (compilation lines, documentation,
     ...) of the contest.
 
@@ -944,7 +944,7 @@ _cws_handlers = [
     (r"/submit/([%s]+)" % enc_alph,            SubmitHandler),
     (r"/usetoken",                             UseTokenHandler),
     (r"/communication", CommunicationHandler),
-    (r"/instructions",  InstructionHandler),
+    (r"/documentation", DocumentationHandler),
     (r"/notifications", NotificationsHandler),
     (r"/question",      QuestionHandler),
     (r"/stl/(.*)", StaticFileGzHandler, {"path": config.stl_path}),

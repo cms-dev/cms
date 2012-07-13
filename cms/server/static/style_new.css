@@ -16,6 +16,11 @@ body {
     }
 }
 
+/* Remove the on-hover coloring of rows in tables with table-nohover class */
+.table.table-nohover > tbody > tr:hover > td, .table.table-nohover > tbody > tr:hover > th {
+    background-color: transparent !important;
+}
+
 div.task_submissions table.previous_submissions colgroup col.time {
     width: 1%;
 }
@@ -286,4 +291,17 @@ div.question_submit textarea {
     text-align: center;
 }
 
+/*** Compilation commands */
+
+.compilation_command_cell {
+    padding: 5px !important;
+}
+
+.compilation_command {
+    display: block;
+}
+
+.compilation_command + .compilation_command {
+    margin-top: 5px;
+}
 

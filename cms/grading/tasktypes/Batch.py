@@ -24,6 +24,7 @@ from cms.grading.ParameterTypes import ParameterTypeCollection, \
      ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
+from cms.db.SQLAlchemyAll import Submission
 
 
 class Batch(TaskType):
@@ -78,6 +79,29 @@ class Batch(TaskType):
          "comparator": "Outputs are compared by a comparator"})
 
     ACCEPTED_PARAMETERS = [_COMPILATION, _USE_FILE, _EVALUATION]
+
+    @property
+    def name(self):
+        """See TaskType.name."""
+        # TODO add some details if a grader/comparator is used, etc...
+        return "Batch"
+
+    def get_compilation_commands(self, submission_format):
+        """See TaskType.get_compilation_commands."""
+        res = dict()
+        for language in Submission.LANGUAGES:
+            format_filename = submission_format[0]
+            source_filenames = [format_filename.replace("%l", language)]
+            # If a grader is specified, we add to the command line (and to
+            # the files to get) the corresponding manager.
+            if self.parameters[0] == "grader":
+                source_filenames.append("grader.%s" % language)
+            executable_filename = format_filename.replace(".%l", "")
+            command = " ".join(get_compilation_command(language,
+                                                       source_filenames,
+                                                       executable_filename))
+            res[language] = [command]
+        return res
 
     def compile(self):
         """See TaskType.compile."""
