@@ -103,8 +103,14 @@ $(document).ready(function () {
                             <li{% if request.path == '/' %} class="active"{% end %}>
                                 <a href="{{ url_root }}/">Overview</a>
                             </li>
-                            <li{% if request.path == '/communication' %} class="active"{% end %}>
-                                <a href="{{ url_root }}/communication">Communication <span id="unread_count" style="display:none;float:right;" class="label label-warning">0 unread</span></a>
+{% set unread_count = handler.get_secure_cookie("unread_count") %}
+                            <li{% if request.path == '/communication' %}{% set unread_count = 0 %} class="active"{% end %}>
+                                <a href="{{ url_root }}/communication">Communication
+{% if unread_count is None or int(unread_count) == 0 %}
+    <span id="unread_count" class="label label-warning no_unread">0 unread</span></a>
+{% else %}
+    <span id="unread_count" class="label label-warning">{{ unread_count }} unread</span></a>
+{% end %}
                             </li>
         {% try %}
             {% set task_url = re.findall("/tasks/(.*)/(description|submissions)", request.path) %}

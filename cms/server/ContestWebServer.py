@@ -459,6 +459,7 @@ class CommunicationHandler(BaseHandler):
     @catch_exceptions
     @tornado.web.authenticated
     def get(self):
+        self.set_secure_cookie("unread_count", "0")
         self.render("communication.html", **self.r_params)
 
 
@@ -522,6 +523,11 @@ class NotificationsHandler(BaseHandler):
                             "subject": notification[1],
                             "text": notification[2]})
             del notifications[username]
+
+        prev_unread_count = self.get_secure_cookie("unread_count")
+        next_unread_count = len(res) + (int(prev_unread_count) \
+                            if prev_unread_count is not None else 0)
+        self.set_secure_cookie("unread_count", str(next_unread_count))
 
         self.write(json.dumps(res))
 

@@ -305,3 +305,13 @@ div.question_submit textarea {
     margin-top: 5px;
 }
 
+/*** Unread count */
+
+#unread_count {
+    float: right;
+}
+
+#unread_count.no_unread {
+    display: none;
+}
+
