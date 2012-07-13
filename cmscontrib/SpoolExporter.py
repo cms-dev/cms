@@ -32,6 +32,7 @@ from cms import logger
 from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest
+from cms.grading.scoretypes import get_score_type
 
 
 class SpoolExporter:
@@ -44,6 +45,7 @@ class SpoolExporter:
         self.spool_dir = spool_dir
         self.upload_dir = os.path.join(self.spool_dir, "upload")
         self.contest = None
+        self.submissions = None
 
         self.file_cacher = FileCacher()
 
@@ -69,14 +71,23 @@ class SpoolExporter:
 
         with SessionGen(commit=False) as session:
             self.contest = Contest.get_from_id(self.contest_id, session)
+            self.submissions = sorted(
+                (submission
+                 for submission in self.contest.get_submissions()
+                 if not submission.user.hidden),
+                key=lambda submission: submission.timestamp)
 
             # Creating users' directory.
             for user in self.contest.users:
                 if not user.hidden:
                     os.mkdir(os.path.join(self.upload_dir, user.username))
 
-            self.export_submissions()
-            self.export_ranking()
+            try:
+                self.export_submissions()
+                self.export_ranking()
+            except Exception as error:
+                logger.error("Generic error. %r" % error)
+                return False
 
         logger.info("Export finished.")
         logger.operation = ""
@@ -91,10 +102,7 @@ class SpoolExporter:
 
         queue_file = codecs.open(os.path.join(self.spool_dir, "queue"), "w",
                                  encoding="utf-8")
-        # FIXME - The enumeration of submission should be time-increasing
-        for submission in self.contest.get_submissions():
-            if submission.user.hidden:
-                continue
+        for submission in self.submissions:
             logger.info("Exporting submission %s." % submission.id)
             username = submission.user.username
             task = submission.task.name
@@ -148,24 +156,61 @@ class SpoolExporter:
         """
         logger.info("Exporting ranking.")
 
-        # Create a list of (points, usernames, [task_points]) to write
-        # to the rankings.
-        users = {}
-        hidden_users = {}
-        for user in self.contest.users:
-            # Avoid hidden users.
-            if not user.hidden:
-                users[user.username] = [0.0, user.username,
-                                        [0.0] * len(self.contest.tasks)]
-            else:
-                hidden_users[user.username] = True
-        for (username, task_num), score in \
-                self.contest.ranking_view.scores.iteritems():
-            if username not in hidden_users:
-                users[username][0] += score.score
-                users[username][2][task_num] = score.score
-        users = users.values()
-        users.sort(reverse=True)
+        # Create the structure to store the scores.
+        scores = dict((user.username, 0.0)
+                      for user in self.contest.users
+                      if not user.hidden)
+        task_scores = dict((task.id, dict((user.username, 0.0)
+                                          for user in self.contest.users
+                                          if not user.hidden))
+                           for task in self.contest.tasks)
+        last_scores = dict((task.id, dict((user.username, 0.0)
+                                          for user in self.contest.users
+                                          if not user.hidden))
+                           for task in self.contest.tasks)
+
+        # Make the score type compute the scores.
+        scorers = {}
+        for task in self.contest.tasks:
+            scorers[task.id] = get_score_type(task=task)
+
+        for submission in self.submissions:
+            scorers[submission.task_id].add_submission(
+                submission.id, submission.timestamp,
+                submission.user.username,
+                dict((ev.num, float(ev.outcome))
+                     for ev in submission.evaluations),
+                submission.tokened())
+
+        # Put together all the scores.
+        for submission in self.submissions:
+            task_id = submission.task_id
+            username = submission.user.username
+            details = scorers[task_id].pool[submission.id]
+            last_scores[task_id][username] = details["score"]
+            if details["tokened"]:
+                task_scores[task_id][username] = max(
+                    task_scores[task_id][username],
+                    details["score"])
+
+        # Merge tokened and last submissions.
+        for username in scores:
+            for task_id in task_scores:
+                task_scores[task_id][username] = max(
+                    task_scores[task_id][username],
+                    last_scores[task_id][username]
+                    )
+            print username, [task_scores[task_id][username]
+                                    for task_id in task_scores]
+            scores[username] = sum(task_scores[task_id][username]
+                                   for task_id in task_scores)
+
+        sorted_usernames = sorted(scores.keys(),
+                                  key=lambda username: (scores[username],
+                                                        username),
+                                  reverse=True)
+        sorted_tasks = sorted(self.contest.tasks,
+                              key=lambda task: task.num)
 
         ranking_file = codecs.open(
             os.path.join(self.spool_dir, "classifica.txt"),
@@ -175,23 +220,28 @@ class SpoolExporter:
             "w", encoding="utf-8")
 
         # Write rankings' header.
+        n_tasks = len(sorted_tasks)
         print >> ranking_file, "Classifica finale del contest `%s'" % \
             self.contest.description
-        points_line = " %10s" * len(self.contest.tasks)
-        csv_points_line = ",%s" * len(self.contest.tasks)
+        points_line = " %10s" * n_tasks
+        csv_points_line = ",%s" * n_tasks
         print >> ranking_file, ("%20s %10s" % ("Utente", "Totale")) + \
-              (points_line % tuple([t.name for t in self.contest.tasks]))
+              (points_line % tuple([t.name for t in sorted_tasks]))
         print >> ranking_csv, ("%s,%s" % ("utente", "totale")) + \
-              (csv_points_line % tuple([t.name for t in self.contest.tasks]))
+              (csv_points_line % tuple([t.name for t in sorted_tasks]))
 
         # Write rankings' content.
-        points_line = " %10.3f" * len(self.contest.tasks)
-        csv_points_line = ",%.6f" * len(self.contest.tasks)
-        for total, user, problems in users:
-            print >> ranking_file, ("%20s %10.3f" % (user, total)) + \
-                  (points_line % tuple(problems))
-            print >> ranking_csv, ("%s,%.6f" % (user, total)) + \
-                  (csv_points_line % tuple(problems))
+        points_line = " %10.3f" * n_tasks
+        csv_points_line = ",%.6f" * n_tasks
+        for username in sorted_usernames:
+            user_scores = [task_scores[task.id][username]
+                           for task in sorted_tasks]
+            print >> ranking_file, ("%20s %10.3f" % (username,
+                                                     scores[username])) + \
+                  (points_line % tuple(user_scores))
+            print >> ranking_csv, ("%s,%.6f" % (username,
+                                                scores[username])) + \
+                  (csv_points_line % tuple(user_scores))
 
         ranking_file.close()
         ranking_csv.close()

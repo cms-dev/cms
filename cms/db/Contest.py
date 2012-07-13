@@ -91,20 +91,17 @@ class Contest(Base):
     # SQLAlchemy.
     # tasks (list of Task objects)
     # announcements (list of Announcement objects)
-    # ranking_view (RankingView object)
     # users (list of User objects)
 
-    # Moreover, we have the following methods.
+    # Moreover, we have the following method.
     # get_submissions (defined in SQLAlchemyAll)
-    # create_empty_ranking_view (defined in SQLAlchemyAll)
-    # update_ranking_view (defined in SQLAlchemyAll)
 
     def __init__(self, name, description, tasks, users,
                  token_initial=0, token_max=0, token_total=0,
                  token_min_interval=0,
                  token_gen_time=60, token_gen_number=1,
                  start=None, stop=None, per_user_time=None,
-                 announcements=None, ranking_view=None):
+                 announcements=None):
         self.name = name
         self.description = description
         self.tasks = tasks
@@ -119,7 +116,6 @@ class Contest(Base):
         self.stop = stop
         self.per_user_time = per_user_time
         self.announcements = announcements if announcements is not None else []
-        self.ranking_view = ranking_view
 
     def export_to_dict(self, skip_submissions=False):
         """Return object data as a dictionary.
@@ -142,7 +138,7 @@ class Contest(Base):
                 'per_user_time':      self.per_user_time,
                 'announcements':      [announcement.export_to_dict()
                                        for announcement in self.announcements],
-                'ranking_view':       self.ranking_view.export_to_dict()}
+                }
 
     # FIXME - Use SQL syntax
     def get_task(self, task_name):

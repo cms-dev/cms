@@ -896,7 +896,8 @@ class UseTokenHandler(BaseHandler):
             self._("Your request has been received "
                    "and applied to the submission."))
 
-        self.redirect("/tasks/%s/submissions" % encrypt_number(submission.task.id))
+        self.redirect("/tasks/%s/submissions" %
+                      encrypt_number(submission.task.id))
 
 
 class SubmissionStatusHandler(BaseHandler):

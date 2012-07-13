@@ -24,7 +24,6 @@
 """
 
 from cms.db.Contest import Contest, Announcement
-from cms.db.View import RankingView
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task
 from cms.db.Submission import Submission
@@ -43,11 +42,6 @@ def contest_import_from_dict(cls, data):
                      for user_data in data['users']]
     data['announcements'] = [Announcement.import_from_dict(ann_data)
                              for ann_data in data['announcements']]
-    if data['ranking_view'] is not None:
-        data['ranking_view'] = RankingView.import_from_dict(
-            data['ranking_view'],
-            tasks_by_name=tasks_by_name,
-            users=data['users'])
     return cls(**data)
 
 

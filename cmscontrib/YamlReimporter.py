@@ -137,18 +137,9 @@ class YamlReimporter:
                 if task['name'] not in cms_tasks.keys():
                     cms_contest['tasks'].append(task)
 
-            # Delete the RankingView: it may have become invalid and we
-            # have no way to compute it again right now. We create a new
-            # (empty) one and we hope that someone (SS?) will fill it
-            # again when needed.
-            cms_contest["ranking_view"] = None
-            session.delete(contest.ranking_view)
-
-            # Reimport the contest in the database, with the previous
-            # ID.
+            # Reimport the contest in the db, with the previous ID.
             contest = Contest.import_from_dict(cms_contest)
             contest.id = self.contest_id
-            contest.create_empty_ranking_view(timestamp=contest.start)
             session.add(contest)
             session.flush()
 

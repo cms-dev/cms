@@ -52,6 +52,7 @@ class ScriptsContainer(object):
             ("20120414", "add_evaluation_memory_time"),
             ("20120701", "add_statements"),
             ("20120712", "change_token_constraints"),
+            ("20120714", "drop_ranking_view"),
             ]
         self.list.sort()
 
@@ -494,6 +495,18 @@ ALTER COLUMN token_min_interval SET NOT NULL,
 ALTER COLUMN token_gen_time SET NOT NULL,
 ALTER COLUMN token_gen_number SET NOT NULL;
 """)
+
+    @staticmethod
+    def drop_rankingview():
+        """Remove the useless tables.
+
+        Ranking views and the accessory scores tables were intended to
+        be used, but this is not true anymore.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("DROP TABLE rankingviews;")
+            session.execute("DROP TABLE scores;")
 
 
 def execute_single_script(scripts_container, script):

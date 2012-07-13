@@ -24,7 +24,7 @@ directly (import it from SQLAlchemyAll).
 
 """
 
-from sqlalchemy import Column, ForeignKey, UniqueConstraint,\
+from sqlalchemy import Column, ForeignKey, UniqueConstraint, \
      Boolean, Integer, Float, String
 from sqlalchemy.orm import relationship, backref
 
