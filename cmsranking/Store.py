@@ -36,7 +36,7 @@ class Store(object):
     when something changes by providing appropriate callbacks.
 
     """
-    def __init__(self, entity, dir_name, depends=[]):
+    def __init__(self, entity, dir_name, depends=None):
         """Initialize an empty EntityStore.
 
         The entity definition given as argument will define what kind of
@@ -51,7 +51,7 @@ class Store(object):
                              "isn't a subclass of Entity")
         self._entity = entity
         self._path = os.path.join(config.lib_dir, dir_name)
-        self._depends = depends
+        self._depends = depends if depends is not None else []
         self._store = dict()
         self._create_callbacks = list()
         self._update_callbacks = list()
@@ -79,12 +79,10 @@ class Store(object):
             logger.error("IOError occured", exc_info=True)
         except ValueError:
             logger.error("Invalid JSON", exc_info=False,
-                         extra={'location': os.path.join(self._path, name),
-                                'details': data})
+                         extra={'location': os.path.join(self._path, name)})
         except InvalidData, exc:
             logger.error(str(exc), exc_info=False,
-                         extra={'location': os.path.join(self._path, name),
-                                'details': data})
+                         extra={'location': os.path.join(self._path, name)})
 
     def add_create_callback(self, callback):
         """Add a callback to be called when entities are created.
