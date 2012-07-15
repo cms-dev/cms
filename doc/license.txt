@@ -49,7 +49,7 @@ Files: cmsranking/static/lib/eventsource.js
 Copyright: 2010 Remy Sharp, http://remysharp.com
 License: Expat
 
-Files: cms/server/static/jq/jquery-1.6.4.min.js
+Files: cms/server/static/jq/jquery-1.7.1.min.js
 Copyright: 2011 John Resig, http://jquery.com/
 License: Expat or GPL-2
 
