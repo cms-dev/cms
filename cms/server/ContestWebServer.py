@@ -139,6 +139,22 @@ class BaseHandler(CommonRequestHandler):
 
         return user
 
+    @staticmethod
+    def _get_token_status (obj):
+        """Return the status of the tokens for the given object.
+
+        obj (Contest or Task): an object that has the token_* attributes.
+        return (int): one of 0 (disabled), 1 (enabled/finite) and 2
+                      (enabled/infinite).
+
+        """
+        if obj.token_initial is None:
+            return 0
+        elif obj.token_gen_time == 0 and obj.token_gen_number > 0:
+            return 2
+        else:
+            return 1
+
     def render_params(self):
         """Return the default render params used by almost all handlers.
 
@@ -167,6 +183,23 @@ class BaseHandler(CommonRequestHandler):
                     ret["valid_phase_end"] = user_end_time
         ret["contest_list"] = self.sql_session.query(Contest).all()
         ret["cookie"] = str(self.cookies)
+
+        # some information about token configuration
+        ret["tokens_contest"] = self._get_token_status(self.contest)
+        if ret["tokens_contest"] == 2 and self.contest.token_min_interval == 0:
+            ret["tokens_contest"] = 3  # infinite and no min_interval
+
+        t_tokens = sum(self._get_token_status(t) for t in self.contest.tasks)
+        if t_tokens == 0:
+            ret["tokens_tasks"] = 0  # all disabled
+        elif t_tokens == 2 * len(self.contest.tasks):
+            ret["tokens_tasks"] = 2  # all infinite
+        else:
+            ret["tokens_tasks"] = 1  # all finite or mixed
+        if ret["tokens_tasks"] == 2 and \
+            not any(t.token_min_interval for t in self.contest.tasks):
+            ret["tokens_tasks"] = 3  # all infinite and no min_intervals
+
         return ret
 
     def finish(self, *args, **kwds):

@@ -85,19 +85,93 @@
     {% end %}
 </tr>
 {% end %}
-{% if task.contest.token_initial is not None %}
-        <tr>
-            <th>{{ _("Tokens") }}</th>
-            <td colspan="2">
-    {% if task.token_initial is None %}
-        No
-    {% else %}
-        Yes -
+
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
+<tr>
+    <th>{{ _("Tokens") }}</th>
+    <td colspan="2" class="token_rules">
+    {% if tokens_contest >= 2 and tokens_tasks >= 2 %}
+        <p>
+        {{ _("You have an infinite set of tokens.") }}
+        </p>
+
+        {% if tokens_contest == 2 or tokens_tasks == 2 %}
+        <p>
+            {% comment Note that if task_min_interval <= contest_min_interval it "doesn't count" %}
+            {% if contest.token_min_interval != 0 and task.token_min_interval != 0 and task.token_min_interval > contest.token_min_interval %}
+                {% if task.token_min_interval == 1 %}
+                    {{ _("You can use at most one token every second for this task ") }}
+                {% else %}
+                    {{ _("You can use at most one token every %(min_interval)d seconds for this task ") % {"min_interval": task.token_min_interval} }}
+                {% end %}
+                {% if contest.token_min_interval == 1 %}
+                    {{ _("and at most one token every second among all tasks.") }}
+                {% else %}
+                    {{ _("and at most one token every %(min_interval)d seconds among all tasks.") % {"min_interval": contest.token_min_interval} }}
+                {% end %}
+            {% elif contest.token_min_interval != 0 %}
+                {% if contest.token_min_interval == 1 %}
+                    {{ _("You can use at most one token every second among all tasks.") }}
+                {% else %}
+                    {{ _("You can use at most one token every %(min_interval)d seconds among all tasks.") % {"min_interval": contest.token_min_interval} }}
+                {% end %}
+            {% elif task.token_min_interval != 0 %}
+                {% if task.token_min_interval == 1 %}
+                    {{ _("You can use at most one token every second for this task.") }}
+                {% else %}
+                    {{ _("You can use at most one token every %(min_interval)d seconds for this task.") % {"min_interval": task.token_min_interval} }}
+                {% end %}
+            {% else %}
+                    {{ _("On this task you don't have additional rules.") }}
+            {% end %}
+        </p>
+        {% end %}
+    {% elif tokens_contest >= 2 %}
+        <p>
         {% set tokens = {"initial": task.token_initial, "max": task.token_max, "total": task.token_total, "min_interval": task.token_min_interval, "gen_time": task.token_gen_time, "gen_number": task.token_gen_number} %}
         {{ format_token_rules(tokens) }}
+        </p>
+
+        <p>
+        {% if tokens_contest == 2 %}
+            {% if contest.token_min_interval == 1 %}
+        {{ _("In addition to these rules, you can use at most one token every second among all tasks.") }}
+            {% else %}
+        {{ _("In addition to these rules, you can use at most one token every %(min_interval)d seconds among all tasks.") % {"min_interval": contest.token_min_interval} }}
+            {% end %}
+        {% end %}
+        </p>
+    {% elif tokens_tasks >= 2 %}
+        <p>
+        You can find the rules for the tokens on the <a href="{{ url_root }}">contest overview page</a>.
+        </p>
+
+        <p>
+        {% if tokens_tasks == 2 %}
+            {% if task.token_min_interval != 0 %}
+                {% if task.token_min_interval == 1 %}
+        {{ _("In addition to those rules, you can use at most one token every second on this task.") }}
+                {% else %}
+        {{ _("In addition to those rules, you can use at most one token every %(min_interval)d seconds on this task.") % {"min_interval": task.token_min_interval} }}
+                {% end %}
+            {% else %}
+        {{ _("On this task you don't have additional rules.") }}
+            {% end %}
+        {% end %}
+        </p>
+    {% else %}
+        <p>
+        {{ _("Remeber that to see the detailed result of a submission you need to use both a contest-token and a task-token.") }}
+        </p>
+
+        <p>
+        {% set tokens = {"initial": task.token_initial, "max": task.token_max, "total": task.token_total, "min_interval": task.token_min_interval, "gen_time": task.token_gen_time, "gen_number": task.token_gen_number} %}
+        {{ format_token_rules(tokens, t_type="task") }}
+        You can find the rules for the contest-tokens on the <a href="{{ url_root }}">contest overview page</a>.
+        </p>
     {% end %}
-            </td>
-        </tr>
+    </td>
+</tr>
 {% end %}
     </tbody>
 </table>

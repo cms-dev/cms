@@ -315,3 +315,9 @@ div.question_submit textarea {
     display: none;
 }
 
+/*** Token rules */
+
+td.token_rules p:last-child {
+    margin-bottom: 0;
+}
+
