@@ -109,6 +109,7 @@ $(document).ready(function () {
 {% if unread_count is None or int(unread_count) == 0 %}
     <span id="unread_count" class="label label-warning no_unread">0 unread</span></a>
 {% else %}
+    <script>$(document).ready(function () {Utils.unread_count = {{ unread_count }};});</script>
     <span id="unread_count" class="label label-warning">{{ unread_count }} unread</span></a>
 {% end %}
                             </li>
