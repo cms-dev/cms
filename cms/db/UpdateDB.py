@@ -497,7 +497,7 @@ ALTER COLUMN token_gen_number SET NOT NULL;
 """)
 
     @staticmethod
-    def drop_rankingview():
+    def drop_ranking_view():
         """Remove the useless tables.
 
         Ranking views and the accessory scores tables were intended to
@@ -505,8 +505,8 @@ ALTER COLUMN token_gen_number SET NOT NULL;
 
         """
         with SessionGen(commit=True) as session:
-            session.execute("DROP TABLE rankingviews;")
             session.execute("DROP TABLE scores;")
+            session.execute("DROP TABLE rankingviews;")
 
 
 def execute_single_script(scripts_container, script):

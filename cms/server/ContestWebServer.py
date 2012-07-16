@@ -893,9 +893,11 @@ class UseTokenHandler(BaseHandler):
         # Don't trust the user, check again if (s)he can really play
         # the token.
         timestamp = int(time.time())
-        if self.contest.tokens_available(self.current_user.username,
-                                         submission.task.name,
-                                         timestamp)[0] == 0:
+        tokens_available = self.contest.tokens_available(
+                               self.current_user.username,
+                               submission.task.name,
+                               timestamp)
+        if tokens_available[0] == 0 or tokens_available[2] is not None:
             logger.warning("User %s tried to play a token "
                            "when it shouldn't."
                            % self.current_user.username)
@@ -906,7 +908,7 @@ class UseTokenHandler(BaseHandler):
                 self._("Token request discarded"),
                 self._("Your request has been discarded because you have no "
                        "tokens available."))
-            self.redirect("/tasks/%s" % encrypt_number(submission.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(submission.task.id))
             return
 
         token = Token(timestamp, submission)
