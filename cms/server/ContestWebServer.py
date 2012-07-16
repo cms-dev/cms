@@ -546,6 +546,13 @@ class NotificationsHandler(BaseHandler):
                                 "subject": subject,
                                 "text": text})
 
+        # Update the unread_count cookie before taking notifications
+        # into account because we don't want to count them.
+        prev_unread_count = self.get_secure_cookie("unread_count")
+        next_unread_count = len(res) + (int(prev_unread_count) \
+                            if prev_unread_count is not None else 0)
+        self.set_secure_cookie("unread_count", str(next_unread_count))
+
         # Simple notifications
         notifications = self.application.service.notifications
         username = self.current_user.username
@@ -556,11 +563,6 @@ class NotificationsHandler(BaseHandler):
                             "subject": notification[1],
                             "text": notification[2]})
             del notifications[username]
-
-        prev_unread_count = self.get_secure_cookie("unread_count")
-        next_unread_count = len(res) + (int(prev_unread_count) \
-                            if prev_unread_count is not None else 0)
-        self.set_secure_cookie("unread_count", str(next_unread_count))
 
         self.write(json.dumps(res))
 

@@ -321,3 +321,28 @@ td.token_rules p:last-child {
     margin-bottom: 0;
 }
 
+/*** Notifications */
+
+.notifications {
+    position: fixed;
+    top: 60px;
+    width: 0;
+    right: 0;
+    bottom: 0;
+    overflow: visible;
+    z-index: 1;
+}
+
+.notifications .notification {
+    width: 160px;
+    float: right;
+    margin-right: 20px;
+    clear: both;
+}
+
+/*** Submissions table */
+
+.no_submissions {
+    font-style: italic;
+    text-align: center !important;
+}

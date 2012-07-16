@@ -35,7 +35,7 @@ class Sum(ScoreTypeAlone):
         """
         public_score = 0.0
         score = 0.0
-        for public in self.public_testcases:
+        for public in self.public_testcases.itervalues():
             if public:
                 public_score += self.parameters
             score += self.parameters

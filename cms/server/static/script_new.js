@@ -27,7 +27,9 @@ var Utils = new function () {
                       data[i].timestamp,
                       data[i].subject,
                       data[i].text);
-                  counter += 1;
+                  if (data[i].type != "notification") {
+                      counter += 1;
+                  }
                 }
                 self.update_unread_counts(counter);
             }, "json");
@@ -39,7 +41,7 @@ var Utils = new function () {
 
         // TODO somehow display timestamp, subject and text
 
-        var alert = $('<div class="alert alert-block" style="position:absolute;right:20px;width:160px">' +
+        var alert = $('<div class="alert alert-block notification">' +
                       '<a class="close" data-dismiss="alert" href="#">×</a>' +
                       '<h4 class="alert-heading"></h4>' +
                       '</div>');
@@ -50,9 +52,12 @@ var Utils = new function () {
             alert.children("h4").text("New announcement");
         } else if (type == "question") {
             alert.children("h4").text("New answer");
+        } else if (type == "notification") {
+            alert.children("h4").text(subject);
+            alert.append($("<span>" + text + "</span>"));
         }
 
-        $("#notifications").append(alert);
+        $("#notifications").prepend(alert);
     };
 
     self.update_unread_counts = function (counter) {
