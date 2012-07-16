@@ -46,9 +46,9 @@ class Multiply(ScoreTypeAlone):
         evaluations = self.pool[submission_id]["evaluations"]
         public_score = 1.0
         score = 1.0
-        for evaluation, public in zip(evaluations, self.public_testcases):
-            if public:
-                public_score *= evaluation
-            score *= evaluation
+        for num in evaluations:
+            if self.public_testcases[num]:
+                public_score *= evaluations[num]
+            score *= evaluations[num]
         return round(score * self.parameters, 2), None, \
                round(public_score * self.parameters, 2), None
