@@ -132,9 +132,9 @@
     {% if len(submissions) == 0 %}
         <tr>
         {% if tokens_contest != 0 and tokens_tasks != 0 %}
-            <td colspan="6">{{ _("No submissions found.") }}</td>
+            <td colspan="6" class="no_submissions">{{ _("no submissions yet") }}</td>
         {% else %}
-            <td colspan="5">{{ _("No submissions found.") }}</td>
+            <td colspan="5" class="no_submissions">{{ _("no submissions yet") }}</td>
         {% end %}
         </tr>
     </tbody>

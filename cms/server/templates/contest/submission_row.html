@@ -109,7 +109,9 @@
     <td style="padding:3px">
         {% set filtered_files = [x.filename for x in task.submission_format if x.filename in s.files] %}
         {% if len(filtered_files) == 0 %}
-        No files available
+        <a class="btn disabled" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;">
+            None
+        </a>
         {% elif len(filtered_files) == 1 %}
             {% set filename = filtered_files[0] %}
             {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
@@ -118,7 +120,7 @@
         </a>
         {% else %}
         <div class="btn-group">
-            <a class="btn dropdown-toggle" data-toggle="dropdown" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;">
+            <a class="btn dropdown-toggle" data-toggle="dropdown" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;white-space:nowrap;">
                 Download
                 <span class="caret" ></span>
             </a>
