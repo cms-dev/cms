@@ -1,8 +1,8 @@
-{% import datetime %}
-{% import time %}
-
 {% extends base.html %}
 {% block core %}
+
+{% from cms.server import isoformat_time, isoformat_datetime, isoformat_datetime_smart %}
+
 <div class="span9 task_submissions">
 
 <div class="page-header">
@@ -58,38 +58,48 @@
 
 <h2 style="margin: 40px 0 10px">Previous submissions</h2>
 
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
 <div style="padding-bottom:10px">
     {% set tokens_info = contest.tokens_available(current_user.username, task.name, timestamp) %}
-    {% set can_play_token = (tokens_info[0] > 0 and tokens_info[2] is None) %}
-    {% if tokens_info[0] > 0 and tokens_info[2] is None %}
-        {{ _("Right now, you have %(tokens)s token(s) available on this task.") % { "tokens": tokens_info[0]} }}
-        {% if tokens_info[1] is not None %}
-            {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": format_time_or_date(tokens_info[1])} }}
+    {% set can_play_token = tokens_info[0] > 0 or tokens_info[0] == -1 %}
+    {% set need_to_wait = tokens_info[2] is not None %}
+    {% if can_play_token %}
+        {% if tokens_info[0] == -1 %}
+            {{ _("Right now, you have infinite tokens available on this task.") }}
+        {% elif tokens_info[0] == 1 %}
+            {{ _("Right now, you have one token available on this task.") }}
         {% else %}
-            {{ _("In the current situation, no more tokens will be generated.") }}
+            {{ _("Right now, you have %(tokens)s tokens available on this task.") % { "tokens": tokens_info[0]} }}
         {% end %}
-    {% elif tokens_info[0] > 0 %}
-        {{ _("Right now, you have %(tokens)s token(s) available on this task.") % { "tokens": tokens_info[0]} }}
-        {{ _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": format_time_or_date(tokens_info[2])} }}
+        {% if need_to_wait %}
+            {% set t = isoformat_datetime_smart(tokens_info[2]) %}
+            {% raw _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": t} %}
+        {% end %}
         {% if tokens_info[1] is not None %}
-            {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": format_time_or_date(tokens_info[1])} }}
+            {% set t = isoformat_datetime_smart(tokens_info[1]) %}
+            {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
         {% else %}
             {{ _("In the current situation, no more tokens will be generated.") }}
         {% end %}
     {% else %}
         {{ _("Right now, you do not have tokens available for this task.") }}
         {% if tokens_info[1] is not None %}
-            {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": format_time_or_date(tokens_info[1])} }}
+            {% set t = isoformat_datetime_smart(tokens_info[1]) %}
+            {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
             {% if tokens_info[2] is not None and tokens_info[2] > tokens_info[1] %}
-                {{ _("But you will have to wait until %(expiration_time)s to use it.") % {"expiration_time": format_time_or_date(tokens_info[2])} }}
+                {% set t = isoformat_datetime_smart(tokens_info[2]) %}
+                {{ _("But you will have to wait until %(expiration_time)s to use it.") % {"expiration_time": t} }}
             {% end %}
         {% else %}
             {{ _("In the current situation, no more tokens will be generated.") }}
         {% end %}
     {% end %}
 </div>
+{% end %}
 
 {% from cms.grading.scoretypes import get_score_type %}
+
+{% set show_date = any(datetime.datetime.fromtimestamp(s.timestamp).date() != datetime.date.today() for s in submissions) %}
 
 <table class="table table-bordered table-striped previous_submissions">
     <colgroup>
@@ -98,17 +108,34 @@
         <col class="public_score"/>
         <col class="total_score"/>
         <col class="files"/>
+    {% if tokens_contest != 0 and tokens_tasks != 0 %}
         <col class="token"/>
+    {% end %}
     </colgroup>
     <thead>
         <tr>
-            <th>Time</th><th>Status</th><th>Public score</th><th>Total score</th><th>Files</th><th>Token</th>
+{% if show_date %}
+            <th>Date and time</th>
+{% else %}
+            <th>Time</th>
+{% end %}
+            <th>Status</th>
+            <th>Public score</th>
+            <th>Total score</th>
+            <th>Files</th>
+    {% if tokens_contest != 0 and tokens_tasks != 0 %}
+            <th>Token</th>
+    {% end %}
         </tr>
     </thead>
     <tbody>
     {% if len(submissions) == 0 %}
         <tr>
+        {% if tokens_contest != 0 and tokens_tasks != 0 %}
             <td colspan="6">{{ _("No submissions found.") }}</td>
+        {% else %}
+            <td colspan="5">{{ _("No submissions found.") }}</td>
+        {% end %}
         </tr>
     </tbody>
     {% else %}

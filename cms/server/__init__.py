@@ -161,17 +161,55 @@ def format_time_or_date(timestamp):
         return dt_ts.strftime("%H:%M:%S, %d/%m/%Y")
 
 
-def isoformat_datetime (timestamp, timezone=None):
-    """Return timestamp formatted as YYYY-MM-DD HH:MM:SS (ISO format)
+def isoformat_datetime (timestamp):
+    """Return timestamp formatted as YYYY-MM-DD hh:mm:ss (ISO format)
 
     timestamp (int): POSIX timestamp
-    timezone (float): a timezone, the same format as User.timezone
 
     return (string): timestamp in ISO format (without timezone indicators)
 
     """
-    # TODO what's the format of User.timezone?
     return datetime.datetime.fromtimestamp(timestamp).isoformat(' ')
+
+
+def isoformat_date (timestamp):
+    """Return timestamp formatted as YYYY-MM-DD (ISO format)
+
+    timestamp (int): POSIX timestamp
+
+    return (string): timestamp in ISO format (without timezone indicators)
+
+    """
+    return datetime.datetime.fromtimestamp(timestamp).date().isoformat()
+
+
+def isoformat_time (timestamp):
+    """Return timestamp formatted as hh:mm:ss
+
+    timestamp (int): POSIX timestamp
+
+    return (string): timestamp in ISO format (without timezone indicators)
+
+    """
+    return datetime.datetime.fromtimestamp(timestamp).time().isoformat()
+
+
+def isoformat_datetime_smart (timestamp):
+    """Return timestamp formatted as [YYYY-MM-DD ]HH:MM:SS (ISO format)
+
+    If the day is the same as today, return only the time. Else return
+    both the date and the time.
+
+    timestamp (int): POSIX timestamp
+
+    return (string): timestamp in ISO format (without timezone indicators)
+
+    """
+    dt_ts = datetime.datetime.fromtimestamp(timestamp)
+    if dt_ts.date() == datetime.date.today():
+        return isoformat_time(timestamp)
+    else:
+        return isoformat_datetime(timestamp)
 
 
 def format_amount_of_time(seconds):

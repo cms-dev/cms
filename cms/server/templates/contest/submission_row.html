@@ -1,9 +1,10 @@
 <tr>
-    <td>
-        <abbr title="{{ datetime.datetime.fromtimestamp(s.timestamp).isoformat(' ') }}">
-        {% set t = s.timestamp - task.contest.start %}
-        {{ "%d:%02d:%02d" % (t // 3600, t // 60 % 60, t % 60) }}
-        </abbr>
+    <td style="white-space:nowrap">
+{% if show_date %}
+        {{ isoformat_datetime(s.timestamp) }}
+{% else %}
+        {{ isoformat_time(s.timestamp) }}
+{% end %}
     </td>
 {% if not s.compiled() %}
     <td>Compiling...</td>
@@ -105,7 +106,7 @@
     {% end %}
     </td>
 {% end %}
-    <td style="padding:4px">
+    <td style="padding:3px">
         {% set filtered_files = [x.filename for x in task.submission_format if x.filename in s.files] %}
         {% if len(filtered_files) == 0 %}
         No files available
@@ -134,18 +135,23 @@
         </div>
         {% end %}
     </td>
-    <td style="padding:4px">
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
+    <td style="padding:3px">
         {% if s.token is not None %}
-        <a class="btn disabled" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;">Played</a>
+        <a class="btn btn-success disabled" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;">Played</a>
         {% else %}
-            {% if can_play_token %}
+            {% comment TODO If the expiration or generation time are greater than valid_phase_end they "don't exist". It's useless to show "Wait..." in those cases. %}
+            {% if can_play_token and not need_to_wait %}
         <form style="display: inline;" action="{{ url_root }}/usetoken" method="POST">
             <input type="hidden" name="submission_id" value="{{ encrypt_number(s.id) }}" />
             <input type="submit" class="btn btn-warning" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;" value="Play!"/>
         </form>
-            {% else %}
+            {% elif (can_play_token and need_to_wait) or (not can_play_token and tokens_info[1] is not None) %}
         <a class="btn btn-warning disabled" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;">Wait...</a>
+            {% else %}
+        <a class="btn disabled" style="box-sizing: border-box;-moz-box-sizing: border-box;width: 100%;">No tokens</a>
             {% end %}
         {% end %}
     </td>
+{% end %}
 </tr>
