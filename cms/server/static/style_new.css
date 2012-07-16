@@ -326,10 +326,11 @@ td.token_rules p:last-child {
 .notifications {
     position: fixed;
     top: 60px;
-    left: 0;
+    width: 0;
     right: 0;
     bottom: 0;
-    z-index: -1;
+    overflow: visible;
+    z-index: 1;
 }
 
 .notifications .notification {
@@ -337,7 +338,6 @@ td.token_rules p:last-child {
     float: right;
     margin-right: 20px;
     clear: both;
-    z-index: 2;
 }
 
 /*** Submissions table */
