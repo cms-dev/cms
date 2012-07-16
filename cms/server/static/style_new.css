@@ -1,0 +1,323 @@
+/* Always show the scrollbar */
+
+body {
+    overflow-y: scroll;
+}
+
+/* Add some padding to the top of the page to avoid the static navbar from
+   covering the content on the top. Since (due to responsive CSS) the navbar
+   stops being static when the display is small enough, we have to add a
+   media-query rule
+ */
+
+@media (min-width: 980px) {
+    body {
+        padding-top: 60px;
+    }
+}
+
+/* Remove the on-hover coloring of rows in tables with table-nohover class */
+.table.table-nohover > tbody > tr:hover > td, .table.table-nohover > tbody > tr:hover > th {
+    background-color: transparent !important;
+}
+
+div.task_submissions table.previous_submissions colgroup col.time {
+    width: 1%;
+}
+
+div.task_submissions table.previous_submissions colgroup col.status {
+    width: 20%;
+}
+
+div.task_submissions table.previous_submissions colgroup col.public_score {
+    width: 20%;
+}
+
+div.task_submissions table.previous_submissions colgroup col.total_score {
+    width: 20%;
+}
+
+div.task_submissions table.previous_submissions colgroup col.files {
+    width: 10%;
+}
+
+div.task_submissions table.previous_submissions colgroup col.token {
+    width: 10%;
+}
+
+/** Announcements, questions, answers and messages **/
+
+/* Almost "copy" Bootstrap rules for alert-info */
+
+div.announcement_list div.announcement,
+div.question_list div.question,
+div.question_list div.answer,
+div.question_list div.no_answer,
+div.message_list div.message {
+    padding: 14px 18px 14px 14px;
+    border-radius: 4px;
+    min-height: 18px;
+    margin-bottom: 18px;
+    text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+    color: #3A87AD;
+    border: 1px solid #BCD8F1;
+    background-color: #D9EDF7;
+}
+
+div.question_list div.question {
+    margin-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+div.question_list div.answer,
+div.question_list div.no_answer {
+    margin-top: 0;
+    border-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+
+/* Display the timestamp on the top right corner of the box */
+
+div.announcement_list div.announcement h4.subject,
+div.question_list div.question h4.subject,
+div.question_list div.answer h4.subject,
+div.message_list div.message h4.subject {
+    display: inline;
+    margin-right: 5px;
+}
+
+div.announcement_list div.announcement span.timestamp,
+div.question_list div.question span.timestamp,
+div.question_list div.answer span.timestamp,
+div.message_list div.message span.timestamp {
+    float: right;
+    margin-left: 5px;
+}
+
+/* If the subject is missing, display a note in italic */
+
+div.announcement_list div.announcement h4.subject.empty,
+div.question_list div.question h4.subject.empty,
+div.question_list div.answer h4.subject.empty,
+div.message_list div.message h4.subject.empty {
+    font-style: italic;
+}
+
+/* Add some distance between the announcement header and its content */
+
+div.announcement_list div.announcement div.body,
+div.question_list div.question div.body,
+div.question_list div.answer div.body,
+div.message_list div.message div.body {
+    padding-top: 5px;
+    clear: both;
+}
+
+/* Give some style to the "no answer" placeholder */
+
+div.question_list div.no_answer {
+    font-size: 1.2em;
+    font-style: italic;
+    margin: 0 0 18px;
+    text-align: center;
+}
+
+/* Add some margins to the headers, except the ones after the page-header */
+
+h2 {
+    margin: 30px 0 15px;
+}
+
+div.page-header + h2 {
+    margin: 0 0 15px;
+}
+
+/* Enhancements to the question form */
+
+div.question_submit form {
+    width: 100%;
+    margin: 0;
+}
+
+div.question_submit div.control-group:last-child {
+    margin: 0;
+}
+
+@media (min-width: 768px) and (max-width: 979px) {
+    div.question_submit input,
+    div.question_submit textarea {
+        width: 328px;
+    }
+}
+
+@media (min-width: 980px) and (max-width: 1199px) {
+    div.question_submit input,
+    div.question_submit textarea {
+        width: 490px;
+    }
+}
+
+@media (min-width: 1200px) {
+    div.question_submit input,
+    div.question_submit textarea {
+        width: 660px;
+    }
+}
+
+div.question_submit textarea {
+    resize: vertical;
+    min-height: 75px;
+    max-height: 275px;
+}
+
+
+
+/** Login **/
+
+div.login_box {
+    margin-bottom: 20px;
+}
+
+div.login_box form {
+    margin-bottom: 0;
+}
+
+div.login_box form fieldset div.control-group:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-height: 467px) and (max-width: 609px) {
+    div.login_box {
+        /* The width of the box is 450px by definition, plus 60px of padding on
+           each side. Its total height is 2*60 (padding) + 60 (h2) + (27+9) (p)
+           + 2*(28+18) (inputs) + 40 (buttons) = 348px; */
+        width: 450px;
+        margin-bottom: 20px;
+    }
+
+    div.login_box fieldset div.control-group div.controls input {
+        width: 280px;
+    }
+}
+
+@media (min-height: 468px) and (min-width: 610px) {
+    div.login_container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+    }
+
+    div.login_box {
+        /* The width of the box is 450px by definition, plus 60px of padding on
+           each side. Its total height is 2*60 (padding) + 60 (h2) + (27+9) (p)
+           + 2*(28+18) (inputs) + 40 (buttons) = 348px; */
+        position: absolute;
+        width: 450px;
+        top: 50%;
+        margin-top: -174px;
+        left: 50%;
+        margin-left: -285px;
+    }
+
+    div.login_box form fieldset div.control-group div.controls input {
+        width: 280px;
+    }
+}
+
+div.question_submit textarea {
+    resize: vertical;
+    min-height: 75px;
+    max-height: 275px;
+}
+
+/* Some fixes and enhancements of Bootstrap */
+
+@media (max-width: 767px) {
+    .modal {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        width: auto;
+        margin: 0;
+    }
+
+    .modal.fade.in {
+        top: auto;
+    }
+
+    .modal-header .close {
+        padding: 10px;
+        margin: -10px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 979px) {
+    .modal.wide {
+        width: 600px;
+        margin-left: -300px;
+    }
+}
+
+@media (min-width: 980px) and (max-width: 1199px) {
+    .modal.wide {
+        width: 780px;
+        margin-left: -390px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .modal.wide {
+        width: 970px;
+        margin-left: -485px;
+    }
+}
+
+/*** Task statement */
+
+.task_description .statement .no_statement {
+    font-size: 1.2em;
+    font-style: italic;
+    text-align: center;
+}
+
+.task_description .statement .one_statement {
+    text-align: center;
+}
+
+/*** Compilation commands */
+
+.compilation_command_cell {
+    padding: 5px !important;
+}
+
+.compilation_command {
+    display: block;
+}
+
+.compilation_command + .compilation_command {
+    margin-top: 5px;
+}
+
+/*** Unread count */
+
+#unread_count {
+    float: right;
+}
+
+#unread_count.no_unread {
+    display: none;
+}
+
+/*** Token rules */
+
+td.token_rules p:last-child {
+    margin-bottom: 0;
+}
+

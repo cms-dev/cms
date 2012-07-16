@@ -226,7 +226,8 @@ def start_prog(path, shard=0, contest=None):
     return spawn(args)
 
 
-def start_servicer(service_name, check, shard=0, contest=None, prefix="service"):
+def start_servicer(service_name, check, shard=0, contest=None,
+                   prefix="service"):
     """Start a CMS service."""
 
     info("Starting %s." % service_name)

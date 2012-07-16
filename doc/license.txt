@@ -28,30 +28,38 @@ Copyright: 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
            2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 License: AGPL-3+
 
-Files: cms/cmsranking/*
+Files: cmsranking/*
 Copyright: 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: AGPL-3+
 
-Files: cms/cmsranking/images/* cms/ranking/static/img/*.png
+Files: cmsranking/images/*
+       cmsranking/static/img/*.png
 Copyright: 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: CC-BY-SA-3.0
 
-Files: cms/cmsranking/static/lib/jquery.js
+Files: cmsranking/static/lib/jquery.js
 Copyright: 2011 John Resig, http://jquery.com/
 License: Expat or GPL-2
 
-Files: cms/cmsranking/static/lib/explorercanvas.js
+Files: cmsranking/static/lib/explorercanvas.js
 Copyright: 2006 Google Inc., http://code.google.com/p/explorercanvas/
 License: Apache-2.0
 
-Files: cms/cmsranking/static/lib/eventsource.js
+Files: cmsranking/static/lib/eventsource.js
 Copyright: 2010 Remy Sharp, http://remysharp.com
 License: Expat
 
-Files: cms/cms/server/static/jq/jquery-1.6.4.min.js
+Files: cms/server/static/jq/jquery-1.7.1.min.js
 Copyright: 2011 John Resig, http://jquery.com/
 License: Expat or GPL-2
 
-Files: cms/cms/server/static/jq/jquery.jqplot* cms/cms/server/static/jq/jqplot*
+Files: cms/server/static/jq/jquery.jqplot*
+       cms/server/static/jq/jqplot*
 Copyright: 2009-2011 Chris Leonello
 License: Expat or GPL-2
+
+Files: cms/server/static/css/bootstrap.css
+       cms/server/static/js/bootstrap.js
+       cms/server/static/img/glyphicons-halflings*.png
+Copyright: 2012 Twitter, Inc.
+License: Apache-2.0

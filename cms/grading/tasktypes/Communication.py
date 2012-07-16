@@ -27,6 +27,7 @@ from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_command
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
+from cms.db.SQLAlchemyAll import Submission
 
 
 class Communication(TaskType):
@@ -44,6 +45,22 @@ class Communication(TaskType):
 
     """
     ALLOW_PARTIAL_SUBMISSION = False
+
+    name = "Communication"
+
+    def get_compilation_commands(self, submission_format):
+        """See TaskType.get_compilation_commands."""
+        res = dict()
+        for language in Submission.LANGUAGES:
+            format_filename = submission_format[0]
+            source_filenames = [format_filename.replace("%l", language)]
+            source_filenames.append("stub.%s" % language)
+            executable_filename = format_filename.replace(".%l", "")
+            command = " ".join(get_compilation_command(language,
+                                                       source_filenames,
+                                                       executable_filename))
+            res[language] = [command]
+        return res
 
     def compile(self):
         """See TaskType.compile."""

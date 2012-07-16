@@ -63,7 +63,12 @@
           {% elif not s.evaluated() %}
           Evaluating...
           {% elif s.scored() %}
-          Evaluated ({{ s.score }} / {{ get_score_type(submission=s).max_score }})
+            {% try %}
+              {% set max_score = get_score_type(submission=s).max_score %}
+            {% except %}
+              {% set max_score = "[Cannot get score type - see logs]" %}
+            {% end %}
+          Evaluated ({{ s.score }} / {{ max_score }})
             {% for detail in json.loads(s.score_details) %}
           <br/>{{ detail }}
             {% end %}

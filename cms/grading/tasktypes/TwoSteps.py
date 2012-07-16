@@ -27,6 +27,7 @@ from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_command
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
+from cms.db.SQLAlchemyAll import Submission
 
 
 HEADERS_MAP = {
@@ -53,6 +54,36 @@ class TwoSteps(TaskType):
     """
     ALLOW_PARTIAL_SUBMISSION = False
 
+    name = "Two steps"
+
+    def get_compilation_commands(self, submission_format):
+        """See TaskType.get_compilation_commands."""
+        res = dict()
+        for language in Submission.LANGUAGES:
+            header = HEADERS_MAP[language]
+            source_filenames = []
+            for filename in submission_format:
+                source_filename = filename.replace("%l", language)
+                source_filenames.append(source_filename)
+                # Headers.
+                header_filename = filename.replace("%l", header)
+                source_filenames.append(header_filename)
+
+            # Manager.
+            manager_source_filename = "manager.%s" % language
+            source_filenames.append(manager_source_filename)
+            # Manager's header.
+            manager_header_filename = "manager.%s" % header
+            source_filenames.append(manager_header_filename)
+
+            # Get compilation command and compile.
+            executable_filename = "manager"
+            command = " ".join(get_compilation_command(language,
+                                                       source_filenames,
+                                                       executable_filename))
+            res[language] = [command]
+        return res
+
     def compile(self):
         """See TaskType.compile."""
         # Detect the submission's language. The checks about the
@@ -74,7 +105,6 @@ class TwoSteps(TaskType):
         # First and only one compilation.
         sandbox = create_sandbox(self)
         files_to_get = {}
-        format_filenames = self.submission.files.keys()
 
         # User's submissions and headers.
         source_filenames = []
@@ -155,7 +185,7 @@ class TwoSteps(TaskType):
             second_filename:
             self.submission.executables[second_filename].digest
             }
-        second_files_to_get = { }
+        second_files_to_get = {}
         second_allow_path = [fifo, "output.txt"]
         second = self.evaluation_step_before_run(
             second_sandbox,
@@ -171,9 +201,9 @@ class TwoSteps(TaskType):
         # TODO: check exit codes with translate_box_exitcode.
 
         success_first, outcome_first, text_first, _ = \
-                      self.evaluation_step_after_run(first_sandbox, final=False)
+            self.evaluation_step_after_run(first_sandbox, final=False)
         success_second, outcome_second, text_second, plus = \
-                     self.evaluation_step_after_run(second_sandbox, final=True)
+            self.evaluation_step_after_run(second_sandbox, final=True)
 
         # If at least one evaluation had problems, we report the
         # problems.

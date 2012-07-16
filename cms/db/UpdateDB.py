@@ -50,7 +50,9 @@ class ScriptsContainer(object):
             ("20120319", "change_scoretype_names"),
             ("20120412", "add_unique_constraints"),
             ("20120414", "add_evaluation_memory_time"),
-            ("20120701", "add_statements")
+            ("20120701", "add_statements"),
+            ("20120712", "change_token_constraints"),
+            ("20120714", "drop_ranking_view"),
             ]
         self.list.sort()
 
@@ -408,15 +410,17 @@ class ScriptsContainer(object):
 
         """
         with SessionGen(commit=True) as session:
-            session.execute("CREATE TABLE statements ("
-                            "    id SERIAL NOT NULL,"
-                            "    language VARCHAR NOT NULL,"
-                            "    digest VARCHAR NOT NULL,"
-                            "    task_id INTEGER NOT NULL,"
-                            "    PRIMARY KEY (id),"
-                            "    CONSTRAINT cst_statements_task_id_language UNIQUE (task_id, language),"
-                            "    FOREIGN KEY(task_id) REFERENCES tasks (id) ON DELETE CASCADE ON UPDATE CASCADE"
-                            ")")
+            session.execute("""\
+CREATE TABLE statements (
+    id SERIAL NOT NULL,
+    language VARCHAR NOT NULL,
+    digest VARCHAR NOT NULL,
+    task_id INTEGER NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT cst_statements_task_id_language UNIQUE (task_id, language),
+    FOREIGN KEY(task_id) REFERENCES tasks (id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+)""")
             session.execute("CREATE INDEX ix_statements_task_id "
                             "ON statements (task_id)")
             for task_id, digest in session.execute(
@@ -432,6 +436,77 @@ class ScriptsContainer(object):
                             "SET official_language = '';")
             session.execute("ALTER TABLE tasks "
                             "ALTER COLUMN official_language SET NOT NULL;")
+
+    @staticmethod
+    def change_token_constraints():
+        """Fix token constraints to avoid ambiguos corner cases.
+
+        Set some token_* fields to != None or to != zero since these
+        values would cause a "behavior" (from the user-perspective)
+        that is identical to other, more "reasonable" and natural
+        value combinations.
+
+        """
+        with SessionGen(commit=True) as session:
+            for table in ["contests", "tasks"]:
+                session.execute("""
+UPDATE %s
+SET token_initial = token_max
+WHERE token_initial > token_max;
+""" % table)
+                session.execute("""
+UPDATE %s
+SET (token_initial, token_max, token_total) = (NULL, NULL, NULL)
+WHERE token_max = 0 OR token_total = 0;
+""" % table)
+                session.execute("""
+UPDATE %s
+SET token_min_interval = 0
+WHERE token_min_interval IS NULL;
+""" % table)
+                session.execute("""
+UPDATE %s
+SET (token_gen_time, token_gen_number) = (1, 0)
+WHERE token_gen_time IS NULL OR token_gen_number IS NULL;
+""" % table)
+            session.execute("""
+ALTER TABLE contests
+ADD CONSTRAINT contests_check CHECK (token_initial <= token_max),
+DROP CONSTRAINT contests_token_max_check,
+DROP CONSTRAINT contests_token_total_check,
+DROP CONSTRAINT contests_token_gen_time_check,
+ADD CONSTRAINT contests_token_max_check CHECK (token_max > 0),
+ADD CONSTRAINT contests_token_total_check CHECK (token_total > 0),
+ADD CONSTRAINT contests_token_gen_time_check CHECK (token_gen_time >= 0),
+ALTER COLUMN token_min_interval SET NOT NULL,
+ALTER COLUMN token_gen_time SET NOT NULL,
+ALTER COLUMN token_gen_number SET NOT NULL;
+""")
+            session.execute("""
+ALTER TABLE tasks
+ADD CONSTRAINT tasks_check CHECK (token_initial <= token_max),
+DROP CONSTRAINT tasks_token_max_check,
+DROP CONSTRAINT tasks_token_total_check,
+DROP CONSTRAINT tasks_token_gen_time_check,
+ADD CONSTRAINT tasks_token_max_check CHECK (token_max > 0),
+ADD CONSTRAINT tasks_token_total_check CHECK (token_total > 0),
+ADD CONSTRAINT tasks_token_gen_time_check CHECK (token_gen_time >= 0),
+ALTER COLUMN token_min_interval SET NOT NULL,
+ALTER COLUMN token_gen_time SET NOT NULL,
+ALTER COLUMN token_gen_number SET NOT NULL;
+""")
+
+    @staticmethod
+    def drop_rankingview():
+        """Remove the useless tables.
+
+        Ranking views and the accessory scores tables were intended to
+        be used, but this is not true anymore.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("DROP TABLE rankingviews;")
+            session.execute("DROP TABLE scores;")
 
 
 def execute_single_script(scripts_container, script):

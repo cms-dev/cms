@@ -243,11 +243,13 @@ class ScoringService(Service):
         with SessionGen(commit=False) as session:
             contest = session.query(Contest).\
                       filter_by(id=self.contest_id).first()
-            logger.info("(Re)creating ranking view for contest `%s'" %
-                        contest.name)
-            contest.create_empty_ranking_view(timestamp=contest.start)
             for task in contest.tasks:
-                self.scorers[task.id] = get_score_type(task=task)
+                try:
+                    self.scorers[task.id] = get_score_type(task=task)
+                except Exception as error:
+                    logger.critical("Cannot get score type for task %s.\n%r" %
+                                    (task.name, error))
+                    self.exit()
             session.commit()
 
     def search_jobs_not_done(self):
@@ -438,18 +440,12 @@ class ScoringService(Service):
             scorer = self.scorers[submission.task_id]
             scorer.add_submission(submission_id, submission.timestamp,
                                   submission.user.username,
-                                  [float(ev.outcome)
-                                   for ev in submission.evaluations],
+                                  dict((ev.num, float(ev.outcome))
+                                       for ev in submission.evaluations),
                                   submission.tokened())
 
             # Mark submission as scored.
             self.submission_ids_scored.add(submission_id)
-
-            # Update the ranking view.
-            contest = session.query(Contest).\
-                      filter_by(id=self.contest_id).first()
-            contest.update_ranking_view(self.scorers,
-                                        task=submission.task)
 
             # Filling submission's score info in the db.
             submission.score = scorer.pool[submission_id]["score"]

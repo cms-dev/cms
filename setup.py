@@ -46,6 +46,9 @@ def do_setup():
         "cms.server": [
             os.path.join("static", "jq", "*.*"),
             os.path.join("static", "sh", "*.*"),
+            os.path.join("static", "css", "*.*"),
+            os.path.join("static", "js", "*.*"),
+            os.path.join("static", "img", "*.*"),
             os.path.join("static", "*.*"),
             os.path.join("templates", "contest", "*.*"),
             os.path.join("templates", "admin", "*.*"),

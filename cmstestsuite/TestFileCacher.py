@@ -132,6 +132,7 @@ class TestFileCacher(TestService):
         self.digest = None
         self.file_obj = None
         self.file_cacher = FileCacher(self)
+        #self.file_cacher = FileCacher(self, path="fs-storage")
 
     def prepare(self):
         """Initialization for the test code - make sure that the cache

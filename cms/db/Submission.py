@@ -445,7 +445,7 @@ class Evaluation(Base):
 
     # String containing the outcome of the evaluation (usually 1.0,
     # ...) not necessary the points awarded, that will be computed by
-    # the scorer.
+    # the score type.
     outcome = Column(String, nullable=True)
 
     # Memory used by the evaluation, in bytes.

@@ -30,7 +30,6 @@ from cms.db.SQLAlchemyUtils import db, Base, metadata, Session, \
      ScopedSession, SessionGen
 
 from cms.db.Contest import Contest, Announcement
-from cms.db.View import RankingView, Score
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task, Manager, Testcase, Attachment, \
      SubmissionFormatElement, Statement
@@ -52,44 +51,6 @@ def get_submissions(self):
     return self.get_session().query(Submission).join(Task).\
            filter(Task.contest == self).all()
 Contest.get_submissions = get_submissions
-
-
-def create_empty_ranking_view(self, timestamp=0):
-    """Resets all scores to 0 at the given timestamp.
-
-    timestamp (int): the time to assign to the 0 score.
-
-    """
-    self.ranking_view = RankingView(self, timestamp=timestamp)
-    for user in self.users:
-        for task in self.tasks:
-            self.ranking_view.set_score(Score(0.0, user=user, task=task))
-Contest.create_empty_ranking_view = create_empty_ranking_view
-
-
-def update_ranking_view(self, scorers, task=None, user=None):
-    """Updates the ranking view with the scores coming from the
-    ScoreType instance of every task in the contest.
-
-    scorers (dict): a dictionary indexed by task.id.
-    task (Task): if not None, update only scores of given task.
-    user (User): if not None, update only scores of given user.
-
-    """
-    tasks = [task]
-    if task is None:
-        tasks = self.tasks
-
-    users = [user]
-    if user is None:
-        users = self.users
-
-    for task in tasks:
-        scorer = scorers[task.id]
-        for user in users:
-            score = scorer.scores.get(user.username, 0.0)
-            self.ranking_view.scores[(user.username, task.num)].score = score
-Contest.update_ranking_view = update_ranking_view
 
 
 # The following is a method of User that cannot be put in the right

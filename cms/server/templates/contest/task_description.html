@@ -1,0 +1,207 @@
+{% extends base.html %}
+{% block core %}
+
+{% from cms.server import format_token_rules %}
+{% from cms.grading.tasktypes import get_task_type %}
+
+<div class="span9 task_description">
+
+
+<div class="page-header">
+    <h1>Statement <small>for {{ task.title }} ({{ task.name }})</small></h1>
+</div>
+
+
+<h2>Statement</h2>
+
+<div class="row statement" style="margin-bottom: 20px;">
+{% if len(task.statements) == 0 %}
+    <div class="span9 no_statement">
+        no statement available
+    </div>
+{% elif len(task.statements) == 1 %}
+    <div class="span9 one_statement">
+    {% for lang_code in task.statements %}
+        <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ lang_code }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
+    {% end %}
+    </div>
+{% else %}
+    <div class="span5 main_statements">
+        The statement for this task is available in multiple versions, in different languages. You can see (and download) all of them using the list on the right.
+    </div>
+    <div class="span4 all_statements well">
+        <ul>
+    {% for lang_code in task.statements %}
+            <li><a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ lang_code }}">{{ lang_code }}</a></li>
+    {% end %}
+        </ul>
+    </div>
+{% end %}
+</div>
+
+
+<h2>Some details</h2>
+
+<table class="table table-bordered table-nohover" style="table-layout: fixed">
+    <colgroup>
+        <col style="width: 20%"/>
+        <col style="width: 20%"/>
+        <col style="width: 60%"/>
+    </colgroup>
+    <tbody>
+        <tr>
+            <th>{{ _("Type") }}</th>
+            <td colspan="2">{% set task_type = get_task_type(task=task) %}{{ task_type.name }}</td>
+        </tr>
+        <tr>
+            <th>{{ _("Time limit") }}</th>
+            <td colspan="2">
+{% if task.time_limit == 1.0 %}
+    {{ _("%(seconds)g second") % {"seconds": task.time_limit} }}
+{% else %}
+    {{ _("%(seconds)g seconds") % {"seconds": task.time_limit} }}
+{% end %}
+            </td>
+        </tr>
+        <tr>
+            <th>{{ _("Memory limit") }}</th>
+            <td colspan="2">{{ _("%(mb)d MiB") % {"mb": task.memory_limit} }}</td>
+        </tr>
+{% set compilation_commands = task_type.get_compilation_commands([x.filename for x in task.submission_format]) %}
+{% if compilation_commands is not None %}
+<tr>
+    <th rowspan="{{ len(compilation_commands) }}">Compilation commands</th>
+    {% for i, (l, c) in enumerate(sorted(compilation_commands.iteritems())) %}
+        {% if i > 0 %}
+</tr>
+<tr>
+        {% end %}
+    <td>{{ {"c": "C", "cpp": "C++", "pas": "Pascal"}[l] }}</td>
+    <td class="compilation_command_cell">
+{% for cmd in c %}
+        <code class="compilation_command">{{ cmd }}</code>
+{% end %}
+    </td>
+    {% end %}
+</tr>
+{% end %}
+
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
+<tr>
+    <th>{{ _("Tokens") }}</th>
+    <td colspan="2" class="token_rules">
+    {% if tokens_contest >= 2 and tokens_tasks >= 2 %}
+        <p>
+        {{ _("You have an infinite set of tokens.") }}
+        </p>
+
+        {% if tokens_contest == 2 or tokens_tasks == 2 %}
+        <p>
+            {% comment Note that if task_min_interval <= contest_min_interval it "doesn't count" %}
+            {% if contest.token_min_interval != 0 and task.token_min_interval != 0 and task.token_min_interval > contest.token_min_interval %}
+                {% if task.token_min_interval == 1 %}
+                    {{ _("You can use at most one token every second for this task ") }}
+                {% else %}
+                    {{ _("You can use at most one token every %(min_interval)d seconds for this task ") % {"min_interval": task.token_min_interval} }}
+                {% end %}
+                {% if contest.token_min_interval == 1 %}
+                    {{ _("and at most one token every second among all tasks.") }}
+                {% else %}
+                    {{ _("and at most one token every %(min_interval)d seconds among all tasks.") % {"min_interval": contest.token_min_interval} }}
+                {% end %}
+            {% elif contest.token_min_interval != 0 %}
+                {% if contest.token_min_interval == 1 %}
+                    {{ _("You can use at most one token every second among all tasks.") }}
+                {% else %}
+                    {{ _("You can use at most one token every %(min_interval)d seconds among all tasks.") % {"min_interval": contest.token_min_interval} }}
+                {% end %}
+            {% elif task.token_min_interval != 0 %}
+                {% if task.token_min_interval == 1 %}
+                    {{ _("You can use at most one token every second for this task.") }}
+                {% else %}
+                    {{ _("You can use at most one token every %(min_interval)d seconds for this task.") % {"min_interval": task.token_min_interval} }}
+                {% end %}
+            {% else %}
+                    {{ _("On this task you don't have additional rules.") }}
+            {% end %}
+        </p>
+        {% end %}
+    {% elif tokens_contest >= 2 %}
+        <p>
+        {% set tokens = {"initial": task.token_initial, "max": task.token_max, "total": task.token_total, "min_interval": task.token_min_interval, "gen_time": task.token_gen_time, "gen_number": task.token_gen_number} %}
+        {{ format_token_rules(tokens) }}
+        </p>
+
+        <p>
+        {% if tokens_contest == 2 %}
+            {% if contest.token_min_interval == 1 %}
+        {{ _("In addition to these rules, you can use at most one token every second among all tasks.") }}
+            {% else %}
+        {{ _("In addition to these rules, you can use at most one token every %(min_interval)d seconds among all tasks.") % {"min_interval": contest.token_min_interval} }}
+            {% end %}
+        {% end %}
+        </p>
+    {% elif tokens_tasks >= 2 %}
+        <p>
+        You can find the rules for the tokens on the <a href="{{ url_root }}">contest overview page</a>.
+        </p>
+
+        <p>
+        {% if tokens_tasks == 2 %}
+            {% if task.token_min_interval != 0 %}
+                {% if task.token_min_interval == 1 %}
+        {{ _("In addition to those rules, you can use at most one token every second on this task.") }}
+                {% else %}
+        {{ _("In addition to those rules, you can use at most one token every %(min_interval)d seconds on this task.") % {"min_interval": task.token_min_interval} }}
+                {% end %}
+            {% else %}
+        {{ _("On this task you don't have additional rules.") }}
+            {% end %}
+        {% end %}
+        </p>
+    {% else %}
+        <p>
+        {{ _("Remeber that to see the detailed result of a submission you need to use both a contest-token and a task-token.") }}
+        </p>
+
+        <p>
+        {% set tokens = {"initial": task.token_initial, "max": task.token_max, "total": task.token_total, "min_interval": task.token_min_interval, "gen_time": task.token_gen_time, "gen_number": task.token_gen_number} %}
+        {{ format_token_rules(tokens, t_type="task") }}
+        You can find the rules for the contest-tokens on the <a href="{{ url_root }}">contest overview page</a>.
+        </p>
+    {% end %}
+    </td>
+</tr>
+{% end %}
+    </tbody>
+</table>
+
+
+
+{% if task.attachments != {} %}
+    <div>
+        <h2>{{ _("Attachments") }}</h2>
+
+        <ul>
+    {% for filename, attachment in task.attachments.items() %}
+            <li>
+                <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/attachments/{{ filename }}">{{ filename }}</a>
+            </li>
+    {% end %}
+        </ul>
+    </div>
+{% end %}
+
+
+<h2 id="title_submit_solution"></h2>
+<div id="submit_solution">
+  <table>
+    <tr>
+
+    </tr>
+  </table>
+  <div class="hr"></div>
+</div>
+
+</div>
+{% end %}

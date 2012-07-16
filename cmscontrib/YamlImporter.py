@@ -79,9 +79,13 @@ class YamlLoader:
         params["token_initial"] = conf.get("token_initial", 10000)
         params["token_max"] = conf.get("token_max", None)
         params["token_total"] = conf.get("token_total", None)
-        params["token_min_interval"] = conf.get("token_min_interval", None)
+        params["token_min_interval"] = conf.get("token_min_interval", 0)
         params["token_gen_time"] = conf.get("token_gen_time", None)
         params["token_gen_number"] = conf.get("token_gen_number", None)
+        if params["token_gen_time"] is None or \
+               params["token_gen_number"] is None:
+            params["token_gen_time"] = 1
+            params["token_gen_number"] = 0
         if self.modif == 'zero_time':
             params["start"] = 0
             params["stop"] = 0
@@ -97,7 +101,6 @@ class YamlLoader:
         params["tasks"] = []
         params["users"] = []
         params["announcements"] = []
-        params["ranking_view"] = None
 
         return params, conf["problemi"], conf["utenti"]
 
@@ -380,11 +383,7 @@ class YamlImporter:
         logger.info("Creating contest on the database.")
         with SessionGen() as session:
             session.add(contest)
-            contest.create_empty_ranking_view()
-            session.flush()
-
             contest_id = contest.id
-
             logger.info("Analyzing database.")
             analyze_all_tables(session)
             session.commit()

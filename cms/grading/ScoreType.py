@@ -41,8 +41,10 @@ class ScoreType:
         """Initializer.
 
         parameters (object): format is specified in the subclasses.
-        public_testcases (list): list of booleans indicating if the
-                                 testcases are pulic or not
+        public_testcases (dict): associate to each testcase's num a
+                                 boolean indicating if the testcase is
+                                 public.
+
         """
         self.parameters = parameters
         self.public_testcases = public_testcases
@@ -79,7 +81,8 @@ class ScoreType:
         submission_id (int): id of the new submission.
         timestamp (int): time of submission.
         username (string): username of the owner of the submission.
-        evaluations (list): list of objects representing the evaluations.
+        evaluations (dict): associate to each evaluation's num its
+                            outcome.
         tokened (bool): if the user played a token on submission.
 
         """
@@ -93,12 +96,11 @@ class ScoreType:
             "public_score": None,
             "public_details": None
             }
-        (score, details, public_score, public_details) = \
-                self.compute_score(submission_id)
-        self.pool[submission_id]["score"] = score
-        self.pool[submission_id]["details"] = details
-        self.pool[submission_id]["public_score"] = public_score
-        self.pool[submission_id]["public_details"] = public_details
+        self.pool[submission_id]["score"], \
+            self.pool[submission_id]["details"], \
+            self.pool[submission_id]["public_score"], \
+            self.pool[submission_id]["public_details"] = \
+            self.compute_score(submission_id)
 
         if username not in self.submissions or \
             self.submissions[username] is None:
@@ -110,8 +112,8 @@ class ScoreType:
         # order, so we insert-sort the new one.
         i = len(self.submissions[username]) - 1
         while i > 0 and \
-            self.pool[self.submissions[username][i - 1]]["timestamp"] > \
-            self.pool[self.submissions[username][i]]["timestamp"]:
+                  self.pool[self.submissions[username][i - 1]]["timestamp"] > \
+                  self.pool[self.submissions[username][i]]["timestamp"]:
             self.submissions[username][i - 1], \
                 self.submissions[username][i] = \
                 self.submissions[username][i], \

@@ -1,69 +1,122 @@
+{% import datetime %}
+
 {% extends base.html %}
 {% block core %}
-{% from cms import config %}
-<h1>{{ _("Communication") }}</h1>
+<div class="span9">
 
-{% if config.allow_questions %}
-<h2 id="title_submit_questions" class="toggling_on">{{ _("Submit a question") }}</h2>
-<div id="submit_questions">
-  <form action="{{ url_root }}/question" method="POST">
-    <div class="footer"><label for="q_subject">{{ _("Subject:") }}</label></div>
-    <input type="text" name="question_subject" size="35" id="q_subject"/>
-    <div class="footer"><label for="q_text">{{ _("Text:") }}</label></div>
-    <textarea name="question_text" cols="40" rows="5" id="q_text"></textarea>
-    <p><input type="submit" value="{{ _("Ask question") }}" /></p>{% comment _("Ask question") %}
-  </form>
-  <div class="hr"></div>
+{% from cms import config %}
+
+<div class="page-header">
+    <h1>{{ _("Communication") }}</h1>
 </div>
 
-<h2 id="title_questions" class="toggling_on">{{ _("Questions") }}</h2>
-<div id="questions">
-  {% if current_user.questions != [] %}
-  <div class="notifications">
-    {% for msg in current_user.questions %}
-    <div class="notification communication">
-      <div class="notification_msg">
-        <div class="notification_timestamp">{{ format_time_or_date(msg.question_timestamp) }}</div>
-        <div class="notification_subject">{{ msg.subject }}</div>
-        <div class="notification_text">{{ msg.text }}</div>
-        {% if msg.reply_timestamp is not None %}
-        <div class="notification_subject">{{ _("Reply.") }} {{ msg.reply_subject }}</div>
-        <div class="notification_text">{{ msg.reply_text }}</div>
+{% if len (contest.announcements) > 0 %}
+<h2>{{ _("Announcements") }}</h2>
+<div class="announcement_list">
+    {% for msg in reversed(contest.announcements) %}
+    <div class="announcement">
+        {% if msg.subject %}
+        <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
-        <div class="notification_subject">{{ _("Please wait for reply.") }}</div>
+        <h4 class="subject empty">(no subject)</h4>
         {% end %}
-      </div>
+        <span class="timestamp">{{ datetime.datetime.fromtimestamp(msg.timestamp).isoformat(' ') }}</span>
+        {% if msg.text %}
+        <div class="body">{{ msg.text }}</div>
+        {% end %}
     </div>
     {% end %}
-  </div>
-
-  {% else %}
-  {{ _("No questions.") }}
-
-  {% end %}
-  <div class="hr"></div>
 </div>
 {% end %}
 
-<h2 id="title_messages" class="toggling_on">{{ _("Messages") }}</h2>
-<div id="messages">
-  {% if current_user.messages != [] %}
-  <div class="notifications">
-    {% for msg in current_user.messages %}
-    <div class="notification communication">
-      <div class="notification_msg">
-        <div class="notification_timestamp">{{ format_time_or_date(msg.timestamp) }}</div>
-        <div class="notification_subject">{{ msg.subject }}</div>
-        <div class="notification_text">{{ msg.text }}</div>
-      </div>
-    </div>
-    {% end %}
-  </div>
 
-  {% else %}
-  {{ _("No messages.") }}
 
-  {% end %}
+{% if config.allow_questions %}
+
+<h2>{{ _("Questions") }}</h2>
+<div class="well question_submit">
+    <form class="form-horizontal" action="{{ url_root }}/question" method="POST">
+        <fieldset>
+            <div class="control-group">
+                <label class="control-label" for="input_subject">{{ _("Subject") }}</label>
+                <div class="controls">
+                    <input type="text" class="input-xlarge" name="question_subject" id="input_subject"/>
+                </div>
+            </div>
+            <div class="control-group">
+                <label class="control-label" for="input_text">{{ _("Text") }}</label>
+                <div class="controls">
+                    <textarea id="input_text" class="input-xlarge" name="question_text" rows="5"></textarea>
+                </div>
+            </div>
+            <div class="control-group">
+                <div class="controls">
+                    <button type="submit" class="btn btn-primary" type="submit">{{ _("Ask question") }}</button>
+                    <button type="reset" class="btn" type="submit">{{ _("Reset") }}</button>
+                </div>
+            </div>
+        </fieldset>
+    </form>
 </div>
 
+
+{% if len (current_user.questions) > 0 %}
+<div class="question_list">
+    {% for msg in reversed(current_user.questions) %}
+    <div class="question">
+        {% if msg.subject %}
+        <h4 class="subject">{{ msg.subject }}</h4>
+        {% else %}
+        <h4 class="subject empty">(no subject)</h4>
+        {% end %}
+        <span class="timestamp">{{ datetime.datetime.fromtimestamp(msg.question_timestamp).isoformat(' ') }}</span>
+        {% if msg.text %}
+        <div class="body">{{ msg.text }}</div>
+        {% end %}
+    </div>
+        {% if msg.reply_timestamp is not None %}
+    <div class="answer">
+            {% if msg.reply_subject %}
+        <h4 class="subject">{{ msg.reply_subject }}</h4>
+            {% else %}
+        <h4 class="subject empty">(no subject)</h4>
+            {% end %}
+        <span class="timestamp">{{ datetime.datetime.fromtimestamp(msg.reply_timestamp).isoformat(' ') }}</span>
+            {% if msg.reply_text %}
+        <div class="body">{{ msg.reply_text }}</div>
+            {% end %}
+    </div>
+        {% else %}
+    <div class="no_answer">
+        {{ _("no answer yet") }}
+    </div>
+        {% end %}
+    {% end %}
+</div>
+{% end %}
+
+{% end %}
+
+
+{% if len (current_user.messages) > 0 %}
+<h2>{{ _("Messages") }}</h2>
+<div class="message_list">
+    {% for msg in reversed(current_user.messages) %}
+    <div class="message">
+        {% if msg.subject %}
+        <h4 class="subject">{{ msg.subject }}</h4>
+        {% else %}
+        <h4 class="subject empty">(no subject)</h4>
+        {% end %}
+        <span class="timestamp">{{ datetime.datetime.fromtimestamp(msg.timestamp).isoformat(' ') }}</span>
+        {% if msg.text %}
+        <div class="body">{{ msg.text }}</div>
+        {% end %}
+    </div>
+    {% end %}
+</div>
+{% end %}
+
+
+</div>
 {% end %}

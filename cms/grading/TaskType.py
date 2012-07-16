@@ -30,6 +30,7 @@ compilation and the evaluation are contained in the task type class.
 """
 
 import os
+import re
 import codecs
 import traceback
 
@@ -151,21 +152,6 @@ def delete_sandbox(sandbox):
 
 
 ## Other stuff. ##
-
-def append_path(path_list, new_path):
-    """Append new_path to the path_list, inserting a colon inbetween.
-
-    path_list (string): colon-separated list of paths.
-    new_path (string): a new path to append to path_list.
-
-    return (string): the concatenation.
-
-    """
-    if path_list == "":
-        return new_path
-    else:
-        return "%s:%s" % (path_list, new_path)
-
 
 def filter_ansi_escape(string):
     """Filter out ANSI commands from the given string.
@@ -292,6 +278,20 @@ class TaskType:
 
         # If ignore_job is True, we conclude as soon as possible.
         self.ignore_job = False
+
+    def _append_sandbox(self, path):
+        """Add path to self.sandbox_paths in the correct way.
+
+        path (str): the path of a new sandbox to record in the
+                    dabatase.
+
+        """
+        if self.sandbox_paths == "":
+            self.sandbox_paths = path
+        else:
+            paths = self.sandbox_paths.split(":")
+            if path not in paths:
+                self.sandbox_paths = ":".join(paths + [path])
 
     def finish_compilation(self, success, compilation_success=False,
                            text="", to_log=None):
@@ -429,7 +429,7 @@ class TaskType:
 
         """
         # Record the usage of the sandbox.
-        self.sandbox_paths = append_path(self.sandbox_paths, sandbox.path)
+        self._append_sandbox(sandbox.path)
 
         # Copy all necessary files.
         for filename, digest in files_to_get.iteritems():
@@ -483,7 +483,6 @@ class TaskType:
                 sandbox.get_execution_wall_clock_time(),
             "memory_used": sandbox.get_memory_used(),
             }
-
 
         # From now on, we test for the various possible outcomes and
         # act appropriately.
@@ -610,7 +609,7 @@ class TaskType:
 
         """
         # Record the usage of the sandbox.
-        self.sandbox_paths = ":".join([self.sandbox_paths, sandbox.path])
+        self._append_sandbox(sandbox.path)
 
         # Copy all necessary files.
         for filename, digest in executables_to_get.iteritems():
@@ -757,7 +756,7 @@ class TaskType:
 
         """
         # Record the usage of the sandbox.
-        self.sandbox_paths = append_path(self.sandbox_paths, sandbox.path)
+        self._append_sandbox(sandbox.path)
 
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
@@ -774,6 +773,36 @@ class TaskType:
             outcome = 0.0
             text = "Evaluation didn't produce file %s" % (output_filename)
         return True, outcome, text
+
+    @property
+    def name(self):
+        """Returns the name of the TaskType.
+
+        Returns a human-readable name that is shown to the user in CWS
+        to describe this TaskType.
+
+        return (str): the name
+
+        """
+        # de-CamelCase the name, capitalize it and return it
+        return re.sub("([A-Z])", " \g<1>",
+                      self.__class__.__name__).strip().capitalize()
+
+    def get_compilation_commands(self, submission_format):
+        """Return the compilation command for all supported languages
+
+        submission_format (list of str): the list of files provided by the
+            user that have to be compiled (the compilation command may
+            contain references to other files like graders, stubs, etc...);
+            they may contain the string "%l" as a language-wildcard.
+        return (dict of list of str): a dict whose keys are language codes
+            and whose values are lists of compilation commands for that
+            language (this is because the task type may require multiple
+            compilations, e.g. encoder and decoder); return None if no
+            compilation is required (e.g. output only).
+
+        """
+        raise NotImplementedError("Please subclass this class.")
 
     def compile(self):
         """Tries to compile the specified submission.

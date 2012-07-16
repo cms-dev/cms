@@ -28,8 +28,7 @@ class Sum(ScoreTypeAlone):
 
     """
     def max_scores(self):
-        """Compute the maximum score of a submission. FIXME: this
-        suppose that the outcomes are in [0, 1].
+        """Compute the maximum score of a submission.
 
         returns (float, float): maximum score overall and public.
 
@@ -45,16 +44,15 @@ class Sum(ScoreTypeAlone):
     def compute_score(self, submission_id):
         """Compute the score of a submission.
 
-        submission_id (int): the submission to evaluate.
-        returns (float): the score
+        See the same method in ScoreType for details.
 
         """
         evaluations = self.pool[submission_id]["evaluations"]
         public_score = 0.0
         score = 0.0
-        for evaluation, public in zip(evaluations, self.public_testcases):
-            if public:
-                public_score += evaluation
-            score += evaluation
+        for num in evaluations:
+            if self.public_testcases[num]:
+                public_score += evaluations[num]
+            score += evaluations[num]
         return round(score * self.parameters, 2), None, \
                round(public_score * self.parameters, 2), None

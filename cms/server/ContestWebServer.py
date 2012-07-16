@@ -139,6 +139,22 @@ class BaseHandler(CommonRequestHandler):
 
         return user
 
+    @staticmethod
+    def _get_token_status (obj):
+        """Return the status of the tokens for the given object.
+
+        obj (Contest or Task): an object that has the token_* attributes.
+        return (int): one of 0 (disabled), 1 (enabled/finite) and 2
+                      (enabled/infinite).
+
+        """
+        if obj.token_initial is None:
+            return 0
+        elif obj.token_gen_time == 0 and obj.token_gen_number > 0:
+            return 2
+        else:
+            return 1
+
     def render_params(self):
         """Return the default render params used by almost all handlers.
 
@@ -167,6 +183,23 @@ class BaseHandler(CommonRequestHandler):
                     ret["valid_phase_end"] = user_end_time
         ret["contest_list"] = self.sql_session.query(Contest).all()
         ret["cookie"] = str(self.cookies)
+
+        # some information about token configuration
+        ret["tokens_contest"] = self._get_token_status(self.contest)
+        if ret["tokens_contest"] == 2 and self.contest.token_min_interval == 0:
+            ret["tokens_contest"] = 3  # infinite and no min_interval
+
+        t_tokens = sum(self._get_token_status(t) for t in self.contest.tasks)
+        if t_tokens == 0:
+            ret["tokens_tasks"] = 0  # all disabled
+        elif t_tokens == 2 * len(self.contest.tasks):
+            ret["tokens_tasks"] = 2  # all infinite
+        else:
+            ret["tokens_tasks"] = 1  # all finite or mixed
+        if ret["tokens_tasks"] == 2 and \
+            not any(t.token_min_interval for t in self.contest.tasks):
+            ret["tokens_tasks"] = 3  # all infinite and no min_intervals
+
         return ret
 
     def finish(self, *args, **kwds):
@@ -263,14 +296,14 @@ class MainHandler(BaseHandler):
         self.render("overview.html", **self.r_params)
 
 
-class InstructionHandler(BaseHandler):
+class DocumentationHandler(BaseHandler):
     """Displays the instruction (compilation lines, documentation,
     ...) of the contest.
 
     """
     @catch_exceptions
     def get(self):
-        self.render("instructions.html", **self.r_params)
+        self.render("documentation.html", **self.r_params)
 
 
 class LoginHandler(BaseHandler):
@@ -319,7 +352,7 @@ class LogoutHandler(BaseHandler):
         self.redirect("/")
 
 
-class TaskViewHandler(BaseHandler):
+class TaskDescriptionHandler(BaseHandler):
     """Shows the data of a task in the contest.
 
     """
@@ -338,7 +371,29 @@ class TaskViewHandler(BaseHandler):
             .filter_by(user=self.current_user)\
             .filter_by(task=self.r_params["task"]).all()
 
-        self.render("task.html", **self.r_params)
+        self.render("task_description.html", **self.r_params)
+
+
+class TaskSubmissionsHandler(BaseHandler):
+    """Shows the data of a task in the contest.
+
+    """
+    @catch_exceptions
+    @decrypt_arguments
+    @valid_phase_required
+    @tornado.web.authenticated
+    def get(self, task_id):
+
+        self.r_params["task"] = Task.get_from_id(task_id, self.sql_session)
+        if self.r_params["task"] is None or \
+            self.r_params["task"].contest != self.contest:
+            raise tornado.web.HTTPError(404)
+
+        self.r_params["submissions"] = self.sql_session.query(Submission)\
+            .filter_by(user=self.current_user)\
+            .filter_by(task=self.r_params["task"]).all()
+
+        self.render("task_submissions.html", **self.r_params)
 
 
 class TaskStatementViewHandler(FileHandler):
@@ -346,20 +401,26 @@ class TaskStatementViewHandler(FileHandler):
 
     """
     @catch_exceptions
-    @decrypt_arguments
     @valid_phase_required
     @tornado.web.authenticated
     @tornado.web.asynchronous
-    def get(self, task_id):
+    def get(self, task_id, lang_code):
+        try:
+            task_id = decrypt_number(task_id)
+        except ValueError:
+            raise tornado.web.HTTPError(404)
 
         task = Task.get_from_id(task_id, self.sql_session)
         if task is None or task.contest != self.contest:
             raise tornado.web.HTTPError(404)
-        official_statement = task.statements[task.official_language]
-        statement, name = official_statement.digest, task.name
+
+        if lang_code not in task.statements:
+            raise tornado.web.HTTPError(404)
+
+        statement = task.statements[lang_code].digest
         self.sql_session.close()
 
-        self.fetch(statement, "application/pdf", "%s.pdf" % name)
+        self.fetch(statement, "application/pdf", "%s.pdf" % task.name)
 
 
 class TaskAttachmentViewHandler(FileHandler):
@@ -367,30 +428,30 @@ class TaskAttachmentViewHandler(FileHandler):
 
     """
     @catch_exceptions
-    @decrypt_arguments
     @valid_phase_required
     @tornado.web.authenticated
     @tornado.web.asynchronous
-    def get(self, file_id):
-
-        attachment = self.sql_session.query(Attachment).join(Task)\
-            .filter(Attachment.id == file_id)\
-            .filter(Task.contest_id == self.contest.id)\
-            .first()
-
-        if attachment is None:
+    def get(self, task_id, filename):
+        try:
+            task_id = decrypt_number(task_id)
+        except ValueError:
             raise tornado.web.HTTPError(404)
 
-        filename = attachment.filename
-        digest = attachment.digest
+        task = Task.get_from_id(task_id, self.sql_session)
+        if task is None or task.contest != self.contest:
+            raise tornado.web.HTTPError(404)
+
+        if filename not in task.attachments:
+            raise tornado.web.HTTPError(404)
+
+        attachment = task.attachments[filename].digest
+        self.sql_session.close()
 
         # FIXME: Returns (None, None) if it can't guess the type.
         # What shall we do in this situation?
         mimetype = mimetypes.guess_type(filename)[0]
 
-        self.sql_session.close()
-
-        self.fetch(digest, mimetype, filename)
+        self.fetch(attachment, mimetype, filename)
 
 
 class SubmissionFileHandler(FileHandler):
@@ -431,6 +492,7 @@ class CommunicationHandler(BaseHandler):
     @catch_exceptions
     @tornado.web.authenticated
     def get(self):
+        self.set_secure_cookie("unread_count", "0")
         self.render("communication.html", **self.r_params)
 
 
@@ -494,6 +556,11 @@ class NotificationsHandler(BaseHandler):
                             "subject": notification[1],
                             "text": notification[2]})
             del notifications[username]
+
+        prev_unread_count = self.get_secure_cookie("unread_count")
+        next_unread_count = len(res) + (int(prev_unread_count) \
+                            if prev_unread_count is not None else 0)
+        self.set_secure_cookie("unread_count", str(next_unread_count))
 
         self.write(json.dumps(res))
 
@@ -786,7 +853,7 @@ class SubmitHandler(BaseHandler):
         # The argument (encripted submission id) is not used by CWS
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the submission id).
-        self.redirect("/tasks/%s?%s" % (
+        self.redirect("/tasks/%s/submissions?%s" % (
             encrypt_number(self.task.id),
             encrypt_number(submission.id)))
 
@@ -828,7 +895,7 @@ class UseTokenHandler(BaseHandler):
         timestamp = int(time.time())
         if self.contest.tokens_available(self.current_user.username,
                                          submission.task.name,
-                                         timestamp)[0] <= 0:
+                                         timestamp)[0] == 0:
             logger.warning("User %s tried to play a token "
                            "when it shouldn't."
                            % self.current_user.username)
@@ -862,7 +929,8 @@ class UseTokenHandler(BaseHandler):
             self._("Your request has been received "
                    "and applied to the submission."))
 
-        self.redirect("/tasks/%s" % encrypt_number(submission.task.id))
+        self.redirect("/tasks/%s/submissions" %
+                      encrypt_number(submission.task.id))
 
 
 class SubmissionStatusHandler(BaseHandler):
@@ -907,15 +975,16 @@ _cws_handlers = [
     (r"/",       MainHandler),
     (r"/login",  LoginHandler),
     (r"/logout", LogoutHandler),
-    (r"/tasks/([%s]+)" % enc_alph,             TaskViewHandler),
-    (r"/tasks/([%s]+)/statement" % enc_alph,   TaskStatementViewHandler),
-    (r"/attachment/([%s]+)" % enc_alph,        TaskAttachmentViewHandler),
+    (r"/tasks/([%s]+)/description" % enc_alph, TaskDescriptionHandler),
+    (r"/tasks/([%s]+)/submissions" % enc_alph, TaskSubmissionsHandler),
+    (r"/tasks/([%s]+)/statements/(.*)" % enc_alph, TaskStatementViewHandler),
+    (r"/tasks/([%s]+)/attachments/(.*)" % enc_alph, TaskAttachmentViewHandler),
     (r"/submission_file/([%s]+)" % enc_alph,   SubmissionFileHandler),
     (r"/submission_status/([%s]+)" % enc_alph, SubmissionStatusHandler),
     (r"/submit/([%s]+)" % enc_alph,            SubmitHandler),
     (r"/usetoken",                             UseTokenHandler),
     (r"/communication", CommunicationHandler),
-    (r"/instructions",  InstructionHandler),
+    (r"/documentation", DocumentationHandler),
     (r"/notifications", NotificationsHandler),
     (r"/question",      QuestionHandler),
     (r"/stl/(.*)", StaticFileGzHandler, {"path": config.stl_path}),

@@ -32,19 +32,20 @@ class GroupMin(ScoreTypeAlone):
 
     """
     def max_scores(self):
-        """Compute the maximum score of a submission. FIXME: this
-        suppose that the outcomes are in [0, 1].
+        """Compute the maximum score of a submission.
 
         returns (float, float): maximum score overall and public.
 
         """
+        indices = sorted(self.public_testcases.keys())
         public_score = 0.0
         score = 0.0
         current = 0
         for parameter in self.parameters:
             next_ = current + parameter[1]
             score += parameter[0]
-            if all(self.public_testcases[current:next_]):
+            if all(self.public_testcases[idx]
+                   for idx in indices[current:next_]):
                 public_score += parameter[0]
             current = next_
         return round(score, 2), round(public_score, 2)
@@ -56,6 +57,7 @@ class GroupMin(ScoreTypeAlone):
         returns (float): the score
 
         """
+        indices = sorted(self.public_testcases.keys())
         evaluations = self.pool[submission_id]["evaluations"]
         current = 0
         scores = []
@@ -63,8 +65,11 @@ class GroupMin(ScoreTypeAlone):
         public_index = []
         for parameter in self.parameters:
             next_ = current + parameter[1]
-            scores.append(min(evaluations[current:next_]) * parameter[0])
-            if all(self.public_testcases[current:next_]):
+            scores.append(min(evaluations[idx]
+                              for idx in indices[current:next_])
+                          * parameter[0])
+            if all(self.public_testcases[idx]
+                   for idx in indices[current:next_]):
                 public_scores.append(scores[-1])
                 public_index.append(len(scores) - 1)
             current = next_

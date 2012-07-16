@@ -1,0 +1,150 @@
+{% extends base.html %}
+{% block core %}
+
+{% from cms.server import isoformat_time, isoformat_datetime, isoformat_datetime_smart %}
+
+<div class="span9 task_submissions">
+
+<div class="page-header">
+    <h1>Submissions <small>for {{ task.title }} ({{ task.name }})</small></h1>
+</div>
+
+
+<h2 style="margin-bottom: 10px">{{ _("Submit a solution") }}</h2>
+
+<div class="row" style="margin-bottom: 20px;">
+    <div class="span5" style="height: 175px; position: relative;">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/submit/{{ encrypt_number(task.id) }}" method="POST">
+            <fieldset>
+{% for idx, filename in enumerate(x.filename for x in task.submission_format) %}
+                <div class="control-group">
+                    <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", "") }}</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge" id="input{{ idx }}" name="{{ filename }}"/>
+                    </div>
+                </div>
+{% end %}
+                <div class="control-group">
+                    <div class="controls">
+                        <input class="btn btn-success" type="submit" value="{{ _("Submit") }}"></input>
+                        <input class="btn" type="reset" value="{{ _("Reset") }}"></input>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{% if len(task.submission_format) > 1 %}
+    <div class="span4">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/submit/{{ encrypt_number(task.id) }}" method="POST">
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="input_zip">submission.zip</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <input class="btn btn-success" type="submit" value="{{ _("Submit") }}"></input>
+                        <input class="btn" type="reset" value="{{ _("Reset") }}"></input>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+{% end %}
+</div>
+
+
+<h2 style="margin: 40px 0 10px">Previous submissions</h2>
+
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
+<div style="padding-bottom:10px">
+    {% set tokens_info = contest.tokens_available(current_user.username, task.name, timestamp) %}
+    {% set can_play_token = tokens_info[0] > 0 or tokens_info[0] == -1 %}
+    {% set need_to_wait = tokens_info[2] is not None %}
+    {% if can_play_token %}
+        {% if tokens_info[0] == -1 %}
+            {{ _("Right now, you have infinite tokens available on this task.") }}
+        {% elif tokens_info[0] == 1 %}
+            {{ _("Right now, you have one token available on this task.") }}
+        {% else %}
+            {{ _("Right now, you have %(tokens)s tokens available on this task.") % { "tokens": tokens_info[0]} }}
+        {% end %}
+        {% if need_to_wait %}
+            {% set t = isoformat_datetime_smart(tokens_info[2]) %}
+            {% raw _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": t} %}
+        {% end %}
+        {% if tokens_info[1] is not None %}
+            {% set t = isoformat_datetime_smart(tokens_info[1]) %}
+            {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
+        {% else %}
+            {{ _("In the current situation, no more tokens will be generated.") }}
+        {% end %}
+    {% else %}
+        {{ _("Right now, you do not have tokens available for this task.") }}
+        {% if tokens_info[1] is not None %}
+            {% set t = isoformat_datetime_smart(tokens_info[1]) %}
+            {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
+            {% if tokens_info[2] is not None and tokens_info[2] > tokens_info[1] %}
+                {% set t = isoformat_datetime_smart(tokens_info[2]) %}
+                {{ _("But you will have to wait until %(expiration_time)s to use it.") % {"expiration_time": t} }}
+            {% end %}
+        {% else %}
+            {{ _("In the current situation, no more tokens will be generated.") }}
+        {% end %}
+    {% end %}
+</div>
+{% end %}
+
+{% from cms.grading.scoretypes import get_score_type %}
+
+{% set show_date = any(datetime.datetime.fromtimestamp(s.timestamp).date() != datetime.date.today() for s in submissions) %}
+
+<table class="table table-bordered table-striped previous_submissions">
+    <colgroup>
+        <col class="time"/>
+        <col class="status"/>
+        <col class="public_score"/>
+        <col class="total_score"/>
+        <col class="files"/>
+    {% if tokens_contest != 0 and tokens_tasks != 0 %}
+        <col class="token"/>
+    {% end %}
+    </colgroup>
+    <thead>
+        <tr>
+{% if show_date %}
+            <th>Date and time</th>
+{% else %}
+            <th>Time</th>
+{% end %}
+            <th>Status</th>
+            <th>Public score</th>
+            <th>Total score</th>
+            <th>Files</th>
+    {% if tokens_contest != 0 and tokens_tasks != 0 %}
+            <th>Token</th>
+    {% end %}
+        </tr>
+    </thead>
+    <tbody>
+    {% if len(submissions) == 0 %}
+        <tr>
+        {% if tokens_contest != 0 and tokens_tasks != 0 %}
+            <td colspan="6">{{ _("No submissions found.") }}</td>
+        {% else %}
+            <td colspan="5">{{ _("No submissions found.") }}</td>
+        {% end %}
+        </tr>
+    </tbody>
+    {% else %}
+        {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
+            {% include submission_row.html %}
+        {% end %}
+    {% end %}
+    </tbody>
+</table>
+
+</div>
+{% end %}
