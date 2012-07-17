@@ -68,35 +68,35 @@ function validate_contest()
     </tr>
     <tr>
       <td>Initial number of tokens</td>
-      <td><input type="text" name="token_initial" size="3" value="0"/></td>
+      <td><input type="text" name="token_initial" size="3" value="" /></td>
     </tr>
     <tr>
       <td>Maximum accumulated tokens</td>
-      <td><input type="text" name="token_max" size="3" /></td>
+      <td><input type="text" name="token_max" size="3" value="" /></td>
     </tr>
     <tr>
       <td>Total number of tokens</td>
-      <td><input type="text" name="token_total" size="3" /></td>
+      <td><input type="text" name="token_total" size="3" value="" /></td>
     </tr>
     <tr>
       <td>Minimum interval between tokens</td>
-      <td><input type="text" name="token_min_interval" size="3" /></td>
+      <td><input type="text" name="token_min_interval" size="3" value="0" /></td>
     </tr>
     <tr>
       <td>Token generation period</td>
-      <td><input type="text" name="token_gen_time" size="3" /></td>
+      <td><input type="text" name="token_gen_time" size="3" value="0" /></td>
     </tr>
     <tr>
       <td>Token generation number</td>
-      <td><input type="text" name="token_gen_number" size="3" /></td>
+      <td><input type="text" name="token_gen_number" size="3" value="0" /></td>
     </tr>
     <tr>
       <td>Start</td>
-      <td><input type="text" name="start" value="{{ datetime.datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
+      <td><input type="text" name="start" value="{{ timestamp.strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
     </tr>
     <tr>
       <td>End</td>
-      <td><input type="text" name="end" value="{{ datetime.datetime.fromtimestamp(time.time()).strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
+      <td><input type="text" name="stop" value="{{ timestamp.strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
     </tr>
     <tr>
       <td>Maximum length of the contest for a user (seconds)</td>

@@ -1,6 +1,5 @@
 {% import time %}
 {% import simplejson as json %}
-{% import datetime %}
 {% from cms.server import format_time_or_date %}
 <html>
   <head>
@@ -40,9 +39,9 @@ function init()
     cmsrpc = new CMSAjaxRPC();
     cmsutils = new CMSUtils();
     {% if contest is None %}
-    utils = new Utils({{ timestamp }}, 0, 0, -1);
+    utils = new Utils({{ time.mktime(timestamp.timetuple()) }}, 0, 0, -1);
     {% else %}
-    utils = new Utils({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(contest.stop) }}, {{ phase }});
+    utils = new Utils({{ time.mktime(timestamp.timetuple()) }}, {{ time.mktime(contest.start.timetuple()) }}, {{ time.mktime(contest.stop.timetuple()) }}, {{ phase }});
 
     firstDate = new Date();
     utils.get_time();

@@ -28,6 +28,7 @@ current ranking.
 """
 
 import time
+from datetime import datetime
 import random
 
 from cms import default_argument_parser, logger
@@ -170,7 +171,7 @@ class JobQueue:
 
         """
         if timestamp is None:
-            timestamp = int(time.time())
+            timestamp = datetime.now()
         self._queue.append((priority, timestamp, job))
         last = len(self._queue) - 1
         self._reverse[job] = last
@@ -368,7 +369,7 @@ class WorkerPool:
 
         # Then we fill the info for future memory
         self._job[shard] = job
-        self._start_time[shard] = int(time.time())
+        self._start_time[shard] = datetime.now()
         self._side_data[shard] = side_data
         logger.debug("Worker %s acquired." % shard)
 
@@ -489,7 +490,7 @@ class WorkerPool:
                        jobs assigned to worker that timeout.
 
         """
-        now = int(time.time())
+        now = datetime.now()
         lost_jobs = []
         for shard in self._worker:
             if self._start_time[shard] is not None:

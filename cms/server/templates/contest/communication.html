@@ -1,5 +1,3 @@
-{% import datetime %}
-
 {% extends base.html %}
 {% block core %}
 <div class="span9">
@@ -20,7 +18,7 @@
         {% else %}
         <h4 class="subject empty">(no subject)</h4>
         {% end %}
-        <span class="timestamp">{{ datetime.datetime.fromtimestamp(msg.timestamp).isoformat(' ') }}</span>
+        <span class="timestamp">{{ str(msg.timestamp) }}</span>
         {% if msg.text %}
         <div class="body">{{ msg.text }}</div>
         {% end %}
@@ -69,7 +67,7 @@
         {% else %}
         <h4 class="subject empty">(no subject)</h4>
         {% end %}
-        <span class="timestamp">{{ datetime.datetime.fromtimestamp(msg.question_timestamp).isoformat(' ') }}</span>
+        <span class="timestamp">{{ str(msg.question_timestamp) }}</span>
         {% if msg.text %}
         <div class="body">{{ msg.text }}</div>
         {% end %}
@@ -81,7 +79,7 @@
             {% else %}
         <h4 class="subject empty">(no subject)</h4>
             {% end %}
-        <span class="timestamp">{{ datetime.datetime.fromtimestamp(msg.reply_timestamp).isoformat(' ') }}</span>
+        <span class="timestamp">{{ str(msg.reply_timestamp) }}</span>
             {% if msg.reply_text %}
         <div class="body">{{ msg.reply_text }}</div>
             {% end %}
@@ -108,7 +106,7 @@
         {% else %}
         <h4 class="subject empty">(no subject)</h4>
         {% end %}
-        <span class="timestamp">{{ datetime.datetime.fromtimestamp(msg.timestamp).isoformat(' ') }}</span>
+        <span class="timestamp">{{ str(msg.timestamp) }}</span>
         {% if msg.text %}
         <div class="body">{{ msg.text }}</div>
         {% end %}

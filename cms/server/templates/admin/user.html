@@ -173,11 +173,7 @@ function update_additional_answer(element, invoker)
       </tr>
       <tr>
         <td>First login time during contest</td>
-        {% if selected_user.starting_time is not None %}
-        <td><input type="text" name="starting_time" value="{{ datetime.datetime.fromtimestamp(selected_user.starting_time).strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
-        {% else %}
-        <td><input type="text" name="starting_time" value="None"></td>
-        {% end %}
+        <td><input type="text" name="starting_time" value="{{ selected_user.starting_time.strftime("%d/%m/%Y %H:%M:%S") if selected_user.starting_time is not None ele "" }}"></td>
       </tr>
       <tr>
         <td>Hidden?</td>

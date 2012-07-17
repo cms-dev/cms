@@ -43,6 +43,7 @@ import mimetypes
 import simplejson as json
 import tempfile
 import traceback
+from datetime import datetime, timedelta
 
 import tornado.web
 import tornado.locale
@@ -100,20 +101,20 @@ class BaseHandler(CommonRequestHandler):
         username specified in the cookie. Otherwise, return None.
 
         """
-        timestamp = time.time()
+        timestamp = datetime.now()
 
         if self.get_secure_cookie("login") is None:
             return None
         try:
             cookie = pickle.loads(self.get_secure_cookie("login"))
             username = str(cookie[0])
-            last_update = int(cookie[1])
+            last_update = datetime.fromtimestamp(cookie[1])
         except:
             self.clear_cookie("login")
             return None
 
         # Check if the cookie is expired.
-        if timestamp - last_update > config.cookie_duration:
+        if timestamp - last_update > timedelta(seconds=config.cookie_duration):
             self.clear_cookie("login")
             return None
 
@@ -162,7 +163,7 @@ class BaseHandler(CommonRequestHandler):
 
         """
         ret = {}
-        ret["timestamp"] = int(time.time())
+        ret["timestamp"] = datetime.now()
         ret["contest"] = self.contest
         ret["url_root"] = get_url_root(self.request.path)
         ret["valid_phase_end"] = self.contest.stop
@@ -507,9 +508,9 @@ class NotificationsHandler(BaseHandler):
     def get(self):
         if not self.current_user:
             raise tornado.web.HTTPError(403)
-        timestamp = int(time.time())
+        timestamp = datetime.now()
         res = []
-        last_notification = float(self.get_argument("last_notification", "0"))
+        last_notification = datetime.fromtimestamp(float(self.get_argument("last_notification", "0")))
 
         # Announcements
         for announcement in self.contest.announcements:
@@ -578,7 +579,7 @@ class QuestionHandler(BaseHandler):
         if not config.allow_questions:
             raise tornado.web.HTTPError(404)
 
-        timestamp = int(time.time())
+        timestamp = datetime.now()
         question = Question(timestamp,
                             self.get_argument("question_subject", ""),
                             self.get_argument("question_text", ""),
@@ -630,7 +631,7 @@ class SubmitHandler(BaseHandler):
                config.min_submission_interval:
             self.application.service.add_notification(
                 self.current_user.username,
-                int(time.time()),
+                datetime.now(),
                 self._("Submissions too frequent!"),
                 self._("For each task, you can submit "
                        "again after %s seconds from last submission.") %
@@ -643,7 +644,7 @@ class SubmitHandler(BaseHandler):
         if any(len(x) != 1 for x in self.request.files.values()):
             self.application.service.add_notification(
                 self.current_user.username,
-                int(time.time()),
+                datetime.now(),
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
@@ -668,7 +669,7 @@ class SubmitHandler(BaseHandler):
             if archive_contents is None:
                 self.application.service.add_notification(
                     self.current_user.username,
-                    int(time.time()),
+                    datetime.now(),
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."))
                 self.redirect("/tasks/%s" % encrypt_number(self.task.id))
@@ -687,7 +688,7 @@ class SubmitHandler(BaseHandler):
                                          and required.issuperset(provided))):
             self.application.service.add_notification(
                 self.current_user.username,
-                int(time.time()),
+                datetime.now(),
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
@@ -756,7 +757,7 @@ class SubmitHandler(BaseHandler):
         if error is not None:
             self.application.service.add_notification(
                 self.current_user.username,
-                int(time.time()),
+                datetime.now(),
                 self._("Invalid submission!"),
                 error)
             self.redirect("/tasks/%s" % encrypt_number(self.task.id))
@@ -767,7 +768,7 @@ class SubmitHandler(BaseHandler):
                 for f in self.files.values()]):
             self.application.service.add_notification(
                 self.current_user.username,
-                int(time.time()),
+                datetime.now(),
                 self._("Submission too big!"),
                 self._("Each files must be at most %d bytes long.") %
                     config.max_submission_length)
@@ -821,7 +822,7 @@ class SubmitHandler(BaseHandler):
                 message = "No local copy stored! Your submission was ignored."
             self.application.service.add_notification(
                 self.username,
-                int(time.time()),
+                datetime.now(),
                 self._("Submission storage failed!"),
                 self._(message))
             self.redirect("/tasks/%s" % encrypt_number(self.task_id))
@@ -848,7 +849,7 @@ class SubmitHandler(BaseHandler):
             submission_id=submission.id)
         self.application.service.add_notification(
             self.username,
-            int(time.time()),
+            datetime.now(),
             self._("Submission received"),
             self._("Your submission has been received "
                    "and is currently being evaluated."))
@@ -894,7 +895,7 @@ class UseTokenHandler(BaseHandler):
 
         # Don't trust the user, check again if (s)he can really play
         # the token.
-        timestamp = int(time.time())
+        timestamp = datetime.now()
         tokens_available = self.contest.tokens_available(
                                self.current_user.username,
                                submission.task.name,

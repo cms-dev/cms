@@ -31,6 +31,7 @@ services the scores, via http requests.
 import httplib
 import simplejson as json
 import base64
+import time
 
 from cms import config, default_argument_parser, logger
 from cms.async import ServiceCoord
@@ -374,9 +375,10 @@ class ScoringService(Service):
                 raise KeyError
             contest_name = contest.name
             contest_url = "/contests/%s" % encode_id(contest_name)
-            contest_data = {"name": contest.description,
-                            "begin": contest.start,
-                            "end": contest.stop}
+            contest_data = {
+                "name": contest.description,
+                "begin": int(time.mktime(contest.start.timetuple())),
+                "end": int(time.mktime(contest.stop.timetuple()))}
 
             users = dict((encode_id(user.username),
                           {"f_name": user.first_name,
@@ -467,14 +469,15 @@ class ScoringService(Service):
             submission_put_data = {
                 "user": encode_id(submission.user.username),
                 "task": encode_id(submission.task.name),
-                "time": submission.timestamp}
+                "time": int(time.mktime(submission.timestamp.timetuple()))}
             subchange_url = "/subchanges/%s" % encode_id("%s%ss" %
-                                                         (submission.timestamp,
-                                                          submission_id))
-            subchange_put_data = {"submission": encode_id(submission_id),
-                                  "time": submission.timestamp,
-                                  "score": submission.score,
-                                  "extra": details}
+                (int(time.mktime(submission.timestamp.timetuple())),
+                 submission_id))
+            subchange_put_data = {
+                "submission": encode_id(submission_id),
+                "time": int(time.mktime(submission.timestamp.timetuple())),
+                "score": submission.score,
+                "extra": details}
 
         # TODO: ScoreRelative here does not work with remote
         # rankings (it does in the ranking view) because we
@@ -512,15 +515,17 @@ class ScoringService(Service):
 
             # Data to send to remote rankings.
             submission_url = "/submissions/%s" % encode_id(submission_id)
-            submission_put_data = {"user": encode_id(submission.user.username),
-                            "task": encode_id(submission.task.name),
-                            "time": submission.timestamp}
+            submission_put_data = {
+                "user": encode_id(submission.user.username),
+                "task": encode_id(submission.task.name),
+                "time": int(time.mktime(submission.timestamp.timetuple()))}
             subchange_url = "/subchanges/%s" % encode_id("%s%st" %
-                                                         (timestamp,
-                                                          submission_id))
-            subchange_put_data = {"submission": encode_id(submission_id),
-                                  "time": timestamp,
-                                  "token": True}
+                (int(time.mktime(timestamp.timetuple())),
+                 submission_id))
+            subchange_put_data = {
+                "submission": encode_id(submission_id),
+                "time": int(time.mktime(timestamp.timetuple())),
+                "token": True}
 
         # Adding operations to the queue.
         for ranking in self.rankings:

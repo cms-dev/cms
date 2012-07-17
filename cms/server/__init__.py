@@ -24,9 +24,9 @@
 """
 
 import os
-import datetime
 import traceback
 import time
+from datetime import datetime, date, timedelta
 
 import tarfile
 import zipfile
@@ -154,11 +154,10 @@ def format_time_or_date(timestamp):
     return (string): timestamp formatted as above.
 
     """
-    dt_ts = datetime.datetime.fromtimestamp(timestamp)
-    if dt_ts.date() == datetime.date.today():
-        return dt_ts.strftime("%H:%M:%S")
+    if timestamp.date() == date.today():
+        return timestamp.strftime("%H:%M:%S")
     else:
-        return dt_ts.strftime("%H:%M:%S, %d/%m/%Y")
+        return timestamp.strftime("%H:%M:%S, %d/%m/%Y")
 
 
 def isoformat_datetime (timestamp):
@@ -169,7 +168,7 @@ def isoformat_datetime (timestamp):
     return (string): timestamp in ISO format (without timezone indicators)
 
     """
-    return datetime.datetime.fromtimestamp(timestamp).isoformat(' ')
+    return str(timestamp)
 
 
 def isoformat_date (timestamp):
@@ -180,7 +179,7 @@ def isoformat_date (timestamp):
     return (string): timestamp in ISO format (without timezone indicators)
 
     """
-    return datetime.datetime.fromtimestamp(timestamp).date().isoformat()
+    return str(timestamp.date())
 
 
 def isoformat_time (timestamp):
@@ -191,7 +190,7 @@ def isoformat_time (timestamp):
     return (string): timestamp in ISO format (without timezone indicators)
 
     """
-    return datetime.datetime.fromtimestamp(timestamp).time().isoformat()
+    return str(timestamp.time())
 
 
 def isoformat_datetime_smart (timestamp):
@@ -205,8 +204,7 @@ def isoformat_datetime_smart (timestamp):
     return (string): timestamp in ISO format (without timezone indicators)
 
     """
-    dt_ts = datetime.datetime.fromtimestamp(timestamp)
-    if dt_ts.date() == datetime.date.today():
+    if timestamp.date() == date.today():
         return isoformat_time(timestamp)
     else:
         return isoformat_datetime(timestamp)
@@ -269,6 +267,9 @@ def format_token_rules (tokens, t_type=None, locale=None):
         tokens["type_none"] = locale.translate("no tokens")
         tokens["type_s"] = locale.translate("token")
         tokens["type_pl"] = locale.translate("tokens")
+
+    tokens["min_interval"] = int(tokens["min_interval"].total_seconds())
+    tokens["gen_time"] = int(tokens["gen_time"].total_seconds() / 60)
 
     result = ""
 

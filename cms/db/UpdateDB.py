@@ -53,6 +53,7 @@ class ScriptsContainer(object):
             ("20120701", "add_statements"),
             ("20120712", "change_token_constraints"),
             ("20120714", "drop_ranking_view"),
+            ("20120717", "use_timestamps"),
             ]
         self.list.sort()
 
@@ -507,6 +508,48 @@ ALTER COLUMN token_gen_number SET NOT NULL;
         with SessionGen(commit=True) as session:
             session.execute("DROP TABLE scores;")
             session.execute("DROP TABLE rankingviews;")
+
+    @staticmethod
+    def use_timestamps():
+        """Use TIMESTAMP column type for columns that represent datetimes
+
+        And INTERVAL for columns that represent timedeltas.
+
+        """
+        with SessionGen(commit=True) as session:
+            for table, column in [("contests", "start"),
+                                  ("contests", "stop"),
+                                  ("announcements", "timestamp"),
+                                  ("submissions", "timestamp"),
+                                  ("tokens", "timestamp"),
+                                  ("users", "starting_time"),
+                                  ("messages", "timestamp"),
+                                  ("questions", "question_timestamp"),
+                                  ("questions", "reply_timestamp")]:
+                session.execute("""
+ALTER TABLE %(table)s
+ALTER %(column)s TYPE timestamp USING to_timestamp(%(column)s);
+""" % {"table": table, "column": column})
+
+            session.execute("""
+ALTER TABLE contests
+ALTER per_user_time TYPE interval USING per_user_time * '1 second'::interval,
+ALTER token_min_interval TYPE interval USING token_min_interval * '1 second'::interval,
+ALTER token_gen_time TYPE interval USING token_gen_time * '1 minute'::interval,
+DROP CONSTRAINT contests_token_min_interval_check,
+DROP CONSTRAINT contests_token_gen_time_check,
+ADD CONSTRAINT contests_token_min_interval_check CHECK (token_min_interval >= '0 seconds'),
+ADD CONSTRAINT contests_token_gen_time_check CHECK (token_gen_time >= '0 seconds');
+""")
+            session.execute("""
+ALTER TABLE tasks
+ALTER token_min_interval TYPE interval USING token_min_interval * '1 second'::interval,
+ALTER token_gen_time TYPE interval USING token_gen_time * '1 minute'::interval,
+DROP CONSTRAINT tasks_token_min_interval_check,
+DROP CONSTRAINT tasks_token_gen_time_check,
+ADD CONSTRAINT tasks_token_min_interval_check CHECK (token_min_interval >= '0 seconds'),
+ADD CONSTRAINT tasks_token_gen_time_check CHECK (token_gen_time >= '0 seconds');
+""")
 
 
 def execute_single_script(scripts_container, script):

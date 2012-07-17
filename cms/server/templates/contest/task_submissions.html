@@ -99,7 +99,7 @@
 
 {% from cms.grading.scoretypes import get_score_type %}
 
-{% set show_date = any(datetime.datetime.fromtimestamp(s.timestamp).date() != datetime.date.today() for s in submissions) %}
+{% set show_date = any(s.timestamp.date() != datetime.date.today() for s in submissions) %}
 
 <table class="table table-bordered table-striped previous_submissions">
     <colgroup>

@@ -23,6 +23,8 @@
 
 """
 
+from datetime import datetime, timedelta
+
 from cms.db.Contest import Contest, Announcement
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task
@@ -42,6 +44,14 @@ def contest_import_from_dict(cls, data):
                      for user_data in data['users']]
     data['announcements'] = [Announcement.import_from_dict(ann_data)
                              for ann_data in data['announcements']]
+    if data['start'] is not None:
+        data['start'] = datetime.fromtimestamp(data['start'])
+    if data['stop'] is not None:
+        data['stop'] = datetime.fromtimestamp(data['stop'])
+    data['token_min_interval'] = timedelta(seconds=data['token_min_interval'])
+    data['token_gen_time'] = timedelta(minutes=data['token_gen_time'])
+    if data['per_user_time'] is not None:
+        data['per_user_time'] = timedelta(seconds=data['per_user_time'])
     return cls(**data)
 
 
@@ -57,6 +67,8 @@ def user_import_from_dict(cls, data, tasks_by_name):
     data['submissions'] = [Submission.import_from_dict(
         submission_data, tasks_by_name=tasks_by_name)
                            for submission_data in data['submissions']]
+    if data['starting_time'] is not None:
+        data['starting_time'] = datetime.fromtimestamp(data['starting_time'])
     obj = cls(**data)
     for submission in obj.submissions:
         submission.user = obj

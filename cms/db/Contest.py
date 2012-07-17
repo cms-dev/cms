@@ -25,8 +25,10 @@ directly (import it from SQLAlchemyAll).
 """
 
 import time
+from datetime import datetime, timedelta
 
-from sqlalchemy import Column, ForeignKey, Integer, String, CheckConstraint
+from sqlalchemy import Column, ForeignKey, CheckConstraint, Integer, String, \
+     DateTime, Interval
 from sqlalchemy.orm import relationship, backref
 
 from cms.db.SQLAlchemyUtils import Base
@@ -69,23 +71,23 @@ class Contest(Base):
     # token_min_interval is the minimum interval in seconds between
     # two uses of a token (set it to 0 to not enforce any limitation).
     token_min_interval = Column(
-        Integer, CheckConstraint("token_min_interval >= 0"), nullable=False)
+        Interval, CheckConstraint("token_min_interval >= '0 seconds'"), nullable=False)
     # Every token_gen_time minutes from the beginning of the contest
     # we generate token_gen_number tokens. If _gen_number is 0 no tokens
     # will be generated, if _gen_number is > 0 and _gen_time is 0 tokens
     # will be infinite. In case of infinite tokens, the values of _initial,
     # _max and _total will be ignored (except when token_initial is None).
     token_gen_time = Column(
-        Integer, CheckConstraint("token_gen_time >= 0"), nullable=False)
+        Interval, CheckConstraint("token_gen_time >= '0 seconds'"), nullable=False)
     token_gen_number = Column(
         Integer, CheckConstraint("token_gen_number >= 0"), nullable=False)
 
     # Beginning and ending of the contest, unix times.
-    start = Column(Integer, nullable=True)
-    stop = Column(Integer, nullable=True)
+    start = Column(DateTime, nullable=True)
+    stop = Column(DateTime, nullable=True)
 
     # Max contest time for each user in seconds.
-    per_user_time = Column(Integer, nullable=True)
+    per_user_time = Column(Interval, nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
@@ -97,9 +99,9 @@ class Contest(Base):
     # get_submissions (defined in SQLAlchemyAll)
 
     def __init__(self, name, description, tasks, users,
-                 token_initial=0, token_max=0, token_total=0,
-                 token_min_interval=0,
-                 token_gen_time=60, token_gen_number=1,
+                 token_initial=None, token_max=None, token_total=None,
+                 token_min_interval=timedelta(),
+                 token_gen_time=timedelta(), token_gen_number=0,
                  start=None, stop=None, per_user_time=None,
                  announcements=None):
         self.name = name
@@ -130,12 +132,12 @@ class Contest(Base):
                 'token_initial':      self.token_initial,
                 'token_max':          self.token_max,
                 'token_total':        self.token_total,
-                'token_min_interval': self.token_min_interval,
-                'token_gen_time':     self.token_gen_time,
+                'token_min_interval': self.token_min_interval.total_seconds(),
+                'token_gen_time':     self.token_gen_time.total_seconds() / 60,
                 'token_gen_number':   self.token_gen_number,
-                'start':              self.start,
-                'stop':               self.stop,
-                'per_user_time':      self.per_user_time,
+                'start':              time.mktime(self.start.timetuple()) if self.start is not None else None,
+                'stop':               time.mktime(self.stop.timetuple()) if self.stop is not None else None,
+                'per_user_time':      self.per_user_time.total_seconds() if self.per_user_time is not None else None,
                 'announcements':      [announcement.export_to_dict()
                                        for announcement in self.announcements],
                 }
@@ -275,7 +277,7 @@ class Contest(Base):
         # If we have infinite tokens we don't need to simulate
         # anything, since nothing gets consumed or generated. We can
         # return immediately.
-        if token_gen_number > 0 and token_gen_time == 0:
+        if token_gen_number > 0 and token_gen_time == timedelta():
             return (-1, None, expiration if expiration > timestamp else None)
 
         # If we already played the total number allowed, we don't have
@@ -286,8 +288,8 @@ class Contest(Base):
 
         # If we're in the case "generate 0 tokens every 0 minutes" we
         # set the _gen_time to a non-zero value, to ease calculations.
-        if token_gen_time == 0:
-            token_gen_time = 1
+        if token_gen_time == timedelta():
+            token_gen_time = timedelta(seconds=1)
 
         # avail is the current number of available tokens. We are
         # going to rebuild all the history to know how many of them we
@@ -307,9 +309,9 @@ class Contest(Base):
             """
             # How many generation times we passed from start to
             # the previous considered time?
-            before_prev = int((prev_time - start) / (token_gen_time * 60))
+            before_prev = int((prev_time - start).total_seconds() / token_gen_time.total_seconds())
             # And from start to the current considered time?
-            before_next = int((next_time - start) / (token_gen_time * 60))
+            before_next = int((next_time - start).total_seconds() / token_gen_time.total_seconds())
             # So...
             return token_gen_number * (before_next - before_prev)
 
@@ -335,9 +337,9 @@ class Contest(Base):
         # Compute the time in which the next token will be generated.
         next_gen_time = None
         if token_gen_number > 0 and (token_max is None or avail < token_max):
-            next_gen_time = start + token_gen_time * 60 * \
-                            int((timestamp - start) /
-                                (token_gen_time * 60) + 1)
+            next_gen_time = start + token_gen_time * \
+                            int((timestamp - start).total_seconds() /
+                                token_gen_time.total_seconds() + 1)
 
         # If we have more tokens than how many we are allowed to play,
         # cap it, and note that no more will be generated.
@@ -486,7 +488,7 @@ class Announcement(Base):
     id = Column(Integer, primary_key=True)
 
     # Time, subject and text of the announcements.
-    timestamp = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
     subject = Column(String, nullable=False)
     text = Column(String, nullable=False)
 
@@ -514,6 +516,14 @@ class Announcement(Base):
         """Return object data as a dictionary.
 
         """
-        return {'timestamp': self.timestamp,
+        return {'timestamp': time.mktime(self.timestamp.timetuple()),
                 'subject':   self.subject,
                 'text':      self.text}
+
+    @classmethod
+    def import_from_dict(cls, data):
+        """Build the object using data from a dictionary.
+
+        """
+        data['timestamp'] = datetime.fromtimestamp(data['timestamp'])
+        return cls(**data)

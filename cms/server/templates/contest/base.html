@@ -26,7 +26,8 @@ var url_root = "{{ url_root }}";
 {% if current_user is not None %}
         <script type="text/javascript">
 $(document).ready(function () {
-    Utils.init({{ timestamp }}, {{ json_encode(contest.start) }}, {{ json_encode(valid_phase_end) }}, {{ phase }});
+    // FIXME use Date objects
+    Utils.init({{ time.mktime(timestamp.timetuple()) }}, {{ time.mktime(contest.start.timetuple()) }}, {{ time.mktime(valid_phase_end.timetuple()) }}, {{ phase }});
 
     firstDate = new Date(); // FIXME very bad: global variable
     Utils.get_time();
