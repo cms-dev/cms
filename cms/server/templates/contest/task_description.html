@@ -4,6 +4,8 @@
 {% from cms.server import format_token_rules %}
 {% from cms.grading.tasktypes import get_task_type %}
 
+{% if actual_phase == 0 %}
+
 <div class="span9 task_description">
 
 
@@ -204,4 +206,6 @@
 </div>
 
 </div>
+{% end %}
+
 {% end %}

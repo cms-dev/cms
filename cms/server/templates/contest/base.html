@@ -27,11 +27,15 @@ var url_root = "{{ url_root }}";
         <script type="text/javascript">
 $(document).ready(function () {
     // FIXME use Date objects
-    Utils.init({{ time.mktime(timestamp.timetuple()) }}, {{ time.mktime(contest.start.timetuple()) }}, {{ time.mktime(valid_phase_end.timetuple()) }}, {{ phase }});
+    Utils.init({{ time.mktime(timestamp.timetuple()) }},
+               {{ time.mktime(contest.start.timetuple()) }},
+               {{ time.mktime(contest.stop.timetuple()) }},
+               {{ time.mktime(valid_phase_end.timetuple()) }},
+               {{ actual_phase }});
 
     firstDate = new Date(); // FIXME very bad: global variable
-    Utils.get_time();
-    setInterval(Utils.get_time, 1000);
+    Utils.update_time();
+    setInterval(Utils.update_time, 1000);
     Utils.update_notifications();
     setInterval(Utils.update_notifications, 15000);
 });
@@ -93,27 +97,32 @@ $(document).ready(function () {
         <div class="container">
             <div class="row">
                 <div class="span3">
-                    <img src="{{ url_root }}/ioi2012.jpg" width="200" style="display: block; max-width: 200px; margin: auto; padding: 0 0 15px;"/>
-    {% if phase != 1 %}
-                    <h3 style="text-align: center; color: #333333; margin: 0 0 8px;"><span style="color: #999999;">Time left:</span> <span id="remaining">1:23:45</span></h3>
-    {% end %}
-    {% if phase == 0 %}
+                    <h3 id="server_time_box">
+                        <span id="server_time_label">Server time:</span>
+                        <span id="server_time"></span>
+                    </h3>
+                    <h3 id="countdown_box">
+                        <span id="countdown_label"></span>
+                        <span id="countdown"></span>
+                    </h3>
                     <div class="well" style="padding: 8px 0;">
                         <ul class="nav nav-list">
 
                             <li{% if request.path == '/' %} class="active"{% end %}>
                                 <a href="{{ url_root }}/">Overview</a>
                             </li>
-{% set unread_count = handler.get_secure_cookie("unread_count") %}
+    {% set unread_count = handler.get_secure_cookie("unread_count") %}
                             <li{% if request.path == '/communication' %}{% set unread_count = 0 %} class="active"{% end %}>
                                 <a href="{{ url_root }}/communication">Communication
-{% if unread_count is None or int(unread_count) == 0 %}
-    <span id="unread_count" class="label label-warning no_unread">0 unread</span></a>
-{% else %}
-    <script>$(document).ready(function () {Utils.unread_count = {{ unread_count }};});</script>
-    <span id="unread_count" class="label label-warning">{{ unread_count }} unread</span></a>
-{% end %}
+    {% if unread_count is None or int(unread_count) == 0 %}
+                                    <span id="unread_count" class="label label-warning no_unread">0 unread</span>
+    {% else %}
+                                    <script>$(document).ready(function () {Utils.unread_count = {{ unread_count }};});</script>
+                                    <span id="unread_count" class="label label-warning">{{ unread_count }} unread</span>
+    {% end %}
+                                    </a>
                             </li>
+    {% if actual_phase == 0 %}
         {% try %}
             {% set task_url = re.findall("/tasks/(.*)/(description|submissions)", request.path) %}
             {% set task_id = decrypt_number(task_url[0][0]) %}
@@ -132,13 +141,13 @@ $(document).ready(function () {
                                 <a href="{{ url_root }}/tasks/{{ encrypt_number(t_iter.id) }}/submissions">Submissions</a>
                             </li>
         {% end %}
+    {% end %}
                             <li class="divider"></li>
                             <li{% if request.path == '/documentation' %} class="active"{% end %}>
                                 <a href="{{ url_root }}/documentation">Documentation</a>
                             </li>
                         </ul>
                     </div>
-    {% end %}
                 </div>
     {% block core %}{% end %}
             </div>

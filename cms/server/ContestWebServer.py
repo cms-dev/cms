@@ -57,7 +57,7 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, Task, File, Attachment
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
-     valid_phase_required, get_url_root, decrypt_arguments, \
+     actual_phase_required, get_url_root, decrypt_arguments, \
      CommonRequestHandler
 from cmscommon.Cryptographics import encrypt_number, decrypt_number, \
      get_encryption_alphabet
@@ -129,15 +129,6 @@ class BaseHandler(CommonRequestHandler):
                                pickle.dumps((user.username, int(time.time()))),
                                expires_days=None)
 
-        # If this is the first time we see user during the active
-        # phase of the contest, we note that his/her time starts from
-        # now.
-        if self.contest.phase(timestamp) == 0 and \
-           user.starting_time is None:
-            logger.info("Starting now for user %s" % user.username)
-            user.starting_time = timestamp
-            self.sql_session.commit()
-
         return user
 
     @staticmethod
@@ -166,24 +157,27 @@ class BaseHandler(CommonRequestHandler):
         ret["timestamp"] = datetime.now()
         ret["contest"] = self.contest
         ret["url_root"] = get_url_root(self.request.path)
-        ret["valid_phase_end"] = self.contest.stop
-        if(self.contest is not None):
-            ret["phase"] = self.contest.phase(ret["timestamp"])
+        ret["cookie"] = str(self.cookies)  # FIXME really needed?
+
+        ret["phase"] = self.contest.phase(ret["timestamp"])
+
+        if self.current_user is not None:
+            # "correct" the phase, considering the per_user_time
+            ret["actual_phase"] = 2 * ret["phase"]
             # If we have a user logged in, the contest may be ended
             # before contest.stop if the user has finished the time
             # allocated for him/her.
-            if ret["phase"] == 0 and \
-                   self.current_user is not None and \
-                   self.contest.per_user_time is not None:
-                delta = ret["timestamp"] - self.current_user.starting_time
-                if delta >= self.contest.per_user_time:
-                    ret["phase"] = 1
-                user_end_time = (self.current_user.starting_time +
-                                 self.contest.per_user_time)
-                if user_end_time < self.contest.stop:
-                    ret["valid_phase_end"] = user_end_time
-        ret["contest_list"] = self.sql_session.query(Contest).all()
-        ret["cookie"] = str(self.cookies)
+            ret["valid_phase_end"] = self.contest.stop
+            if ret["phase"] == 0 and self.contest.per_user_time is not None:
+                if self.current_user.starting_time is None:
+                    ret["actual_phase"] = -1
+                else:
+                    user_end_time = (self.current_user.starting_time +
+                                     self.contest.per_user_time)
+                    if user_end_time < self.contest.stop:
+                        ret["valid_phase_end"] = user_end_time
+                    if user_end_time <= ret["timestamp"]:
+                        ret["actual_phase"] = 1
 
         # some information about token configuration
         ret["tokens_contest"] = self._get_token_status(self.contest)
@@ -303,6 +297,7 @@ class DocumentationHandler(BaseHandler):
 
     """
     @catch_exceptions
+    @tornado.web.authenticated
     def get(self):
         self.render("documentation.html", **self.r_params)
 
@@ -343,6 +338,26 @@ class LoginHandler(BaseHandler):
         self.redirect(next_page)
 
 
+class StartHandler(BaseHandler):
+    """Start handler.
+
+    Used by a user who wants to start his per_user_time.
+
+    """
+    @catch_exceptions
+    @tornado.web.authenticated
+    @actual_phase_required(-1)
+    def post(self):
+        user = self.get_current_user()
+        timestamp = datetime.now()
+
+        logger.info("Starting now for user %s" % user.username)
+        user.starting_time = timestamp
+        self.sql_session.commit()
+
+        self.redirect("/")
+
+
 class LogoutHandler(BaseHandler):
     """Logout handler.
 
@@ -359,8 +374,8 @@ class TaskDescriptionHandler(BaseHandler):
     """
     @catch_exceptions
     @decrypt_arguments
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     def get(self, task_id):
 
         self.r_params["task"] = Task.get_from_id(task_id, self.sql_session)
@@ -381,8 +396,8 @@ class TaskSubmissionsHandler(BaseHandler):
     """
     @catch_exceptions
     @decrypt_arguments
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     def get(self, task_id):
 
         self.r_params["task"] = Task.get_from_id(task_id, self.sql_session)
@@ -402,8 +417,8 @@ class TaskStatementViewHandler(FileHandler):
 
     """
     @catch_exceptions
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     @tornado.web.asynchronous
     def get(self, task_id, lang_code):
         try:
@@ -429,8 +444,8 @@ class TaskAttachmentViewHandler(FileHandler):
 
     """
     @catch_exceptions
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     @tornado.web.asynchronous
     def get(self, task_id, filename):
         try:
@@ -461,8 +476,8 @@ class SubmissionFileHandler(FileHandler):
     """
     @catch_exceptions
     @decrypt_arguments
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     @tornado.web.asynchronous
     def get(self, file_id):
 
@@ -505,6 +520,7 @@ class NotificationsHandler(BaseHandler):
     refresh_cookie = False
 
     @catch_exceptions
+    @tornado.web.authenticated
     def get(self):
         if not self.current_user:
             raise tornado.web.HTTPError(403)
@@ -606,8 +622,8 @@ class SubmitHandler(BaseHandler):
 
     """
     @decrypt_arguments
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     @tornado.web.asynchronous
     def post(self, task_id):
 
@@ -866,8 +882,8 @@ class UseTokenHandler(BaseHandler):
 
     """
     @catch_exceptions
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     def post(self):
 
         submission_id = self.get_argument("submission_id", "")
@@ -943,9 +959,9 @@ class SubmissionStatusHandler(BaseHandler):
     refresh_cookie = False
 
     @catch_exceptions
-    @tornado.web.authenticated
-    @valid_phase_required
     @decrypt_arguments
+    @tornado.web.authenticated
+    @actual_phase_required(0)
     def get(self, sub_id):
         submission = Submission.get_from_id(sub_id, self.sql_session)
         if submission.user.id != self.current_user.id or \
@@ -980,6 +996,7 @@ _cws_handlers = [
     (r"/",       MainHandler),
     (r"/login",  LoginHandler),
     (r"/logout", LogoutHandler),
+    (r"/start",  StartHandler),
     (r"/tasks/([%s]+)/description" % enc_alph, TaskDescriptionHandler),
     (r"/tasks/([%s]+)/submissions" % enc_alph, TaskSubmissionsHandler),
     (r"/tasks/([%s]+)/statements/(.*)" % enc_alph, TaskStatementViewHandler),

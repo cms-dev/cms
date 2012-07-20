@@ -40,17 +40,36 @@ from cms.db.FileCacher import FileCacher
 from cmscommon.Cryptographics import decrypt_number
 
 
-def valid_phase_required(func):
-    """Decorator that rejects requests outside the contest phase.
+def phase_required(phase):
+    """Return decorator that accepts requests iff contest is in the given phase
 
     """
-    @wraps(func)
-    def newfunc(self, *args, **kwargs):
-        if self.r_params["phase"] != 0:
-            self.redirect("/")
-        else:
-            return func(self, *args, **kwargs)
-    return newfunc
+    def decorator(func):
+        @wraps(func)
+        def wrapped(self, *args, **kwargs):
+            if self.r_params["phase"] != phase:
+                # TODO maybe return some error code?
+                self.redirect("/")
+            else:
+                return func(self, *args, **kwargs)
+        return wrapped
+    return decorator
+
+
+def actual_phase_required(actual_phase):
+    """Return decorator that accepts requests iff contest is in the given phase
+
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapped(self, *args, **kwargs):
+            if self.r_params["actual_phase"] != actual_phase:
+                # TODO maybe return some error code?
+                self.redirect("/")
+            else:
+                return func(self, *args, **kwargs)
+        return wrapped
+    return decorator
 
 
 def catch_exceptions(func):
@@ -168,7 +187,7 @@ def isoformat_datetime (timestamp):
     return (string): timestamp in ISO format (without timezone indicators)
 
     """
-    return str(timestamp)
+    return str(timestamp.replace(microsecond=0))
 
 
 def isoformat_date (timestamp):
@@ -190,7 +209,7 @@ def isoformat_time (timestamp):
     return (string): timestamp in ISO format (without timezone indicators)
 
     """
-    return str(timestamp.time())
+    return str(timestamp.replace(microsecond=0).time())
 
 
 def isoformat_datetime_smart (timestamp):
@@ -210,33 +229,56 @@ def isoformat_datetime_smart (timestamp):
         return isoformat_datetime(timestamp)
 
 
-def format_amount_of_time(seconds):
-    """Return the number of seconds formatted 'xxx days, yyy hours,
-    ...'.
+def format_amount_of_time(seconds, precision=2, locale=None):
+    """Return the number of seconds formatted 'X days, Y hours, ...'
+
+    The time units that will be used are days, hours, minutes, seconds.
+    Only the first "precision" units will be output. If they're not
+    enough, a "more than ..." will be prefixed (non-positive precision
+    means infinite).
 
     seconds (int): the length of the amount of time in seconds.
+    precision (int): see above
+    locale (tornado.locale.Locale): the locale to be used.
 
     return (string): seconds formatted as above.
 
     """
-    ret = []
-    times = [("day", 60 * 60 * 24),
+    seconds = abs(int(seconds))
+
+    if locale is None:
+        locale = tornado.locale.get()
+
+    if seconds == 0:
+        return locale.translate("0 seconds")
+
+    units = [("day", 60 * 60 * 24),
              ("hour", 60 * 60),
              ("minute", 60),
              ("second", 1)]
 
-    for time_ in times:
-        tmp = seconds // time_[1]
-        seconds %= time_[1]
-        if tmp > 1:
-            ret.append("%s %ss" % (tmp, time_[0]))
+    ret = list()
+    counter = 0
+
+    for name, length in units:
+        tmp = seconds // length
+        seconds %= length
+        if tmp == 0:
+            continue
         elif tmp == 1:
-            ret.append("1 %s" % time_[0])
+            ret.append(locale.translate("1 %s" % name))
+        else:
+            ret.append(locale.translate("%%d %ss" % name) % tmp)
+        counter += 1
+        if counter == precision:
+            break
 
-    if ret == []:
-        ret = ["0 seconds"]
+    ret = locale.list(ret)
 
-    return ", ".join(ret)
+    if seconds > 0:
+        ret = locale.translate("more than %s") % ret
+
+    return ret
 
 
 def format_token_rules (tokens, t_type=None, locale=None):
