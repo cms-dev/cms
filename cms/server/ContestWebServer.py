@@ -533,7 +533,7 @@ class NotificationsHandler(BaseHandler):
             if announcement.timestamp > last_notification \
                    and announcement.timestamp < timestamp:
                 res.append({"type": "announcement",
-                            "timestamp": announcement.timestamp,
+                            "timestamp": time.mktime(announcement.timestamp.timetuple()),
                             "subject": announcement.subject,
                             "text": announcement.text})
 
@@ -543,7 +543,7 @@ class NotificationsHandler(BaseHandler):
                 if message.timestamp > last_notification \
                        and message.timestamp < timestamp:
                     res.append({"type": "message",
-                                "timestamp": message.timestamp,
+                                "timestamp": time.mktime(message.timestamp.timetuple()),
                                 "subject": message.subject,
                                 "text": message.text})
 
@@ -559,7 +559,7 @@ class NotificationsHandler(BaseHandler):
                     elif question.reply_text is None:
                         text = ""
                     res.append({"type": "question",
-                                "timestamp": question.reply_timestamp,
+                                "timestamp": time.mktime(question.reply_timestamp.timetuple()),
                                 "subject": subject,
                                 "text": text})
 
@@ -576,7 +576,7 @@ class NotificationsHandler(BaseHandler):
         if username in notifications:
             for notification in notifications[username]:
                 res.append({"type": "notification",
-                            "timestamp": notification[0],
+                            "timestamp": time.mktime(notification[0].timetuple()),
                             "subject": notification[1],
                             "text": notification[2]})
             del notifications[username]
@@ -644,7 +644,7 @@ class SubmitHandler(BaseHandler):
             .order_by(Submission.timestamp.desc()).first()
         if last_submission is not None and \
                self.timestamp - last_submission.timestamp < \
-               config.min_submission_interval:
+               timedelta(seconds=config.min_submission_interval):
             self.application.service.add_notification(
                 self.current_user.username,
                 datetime.now(),
@@ -652,7 +652,7 @@ class SubmitHandler(BaseHandler):
                 self._("For each task, you can submit "
                        "again after %s seconds from last submission.") %
                 config.min_submission_interval)
-            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
         # Ensure that the user did not submit multiple files with the
@@ -663,7 +663,7 @@ class SubmitHandler(BaseHandler):
                 datetime.now(),
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
-            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
         # If the user submitted an archive, extract it and use content
@@ -688,7 +688,7 @@ class SubmitHandler(BaseHandler):
                     datetime.now(),
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."))
-                self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+                self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
                 return
 
             for item in archive_contents:
@@ -707,7 +707,7 @@ class SubmitHandler(BaseHandler):
                 datetime.now(),
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
-            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
         # Add submitted files. After this, self.files is a dictionary
@@ -776,7 +776,7 @@ class SubmitHandler(BaseHandler):
                 datetime.now(),
                 self._("Invalid submission!"),
                 error)
-            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
         # Check if submitted files are small enough.
@@ -788,7 +788,7 @@ class SubmitHandler(BaseHandler):
                 self._("Submission too big!"),
                 self._("Each files must be at most %d bytes long.") %
                     config.max_submission_length)
-            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
         # All checks done, submission accepted.
@@ -825,7 +825,7 @@ class SubmitHandler(BaseHandler):
                     description="Submission file %s sent by %s at %d." % (
                         filename,
                         self.username,
-                        self.timestamp),
+                        time.mktime(self.timestamp.timetuple())),
                     binary_data=self.files[filename][1])
                 self.file_digests[filename] = digest
 
@@ -841,7 +841,8 @@ class SubmitHandler(BaseHandler):
                 datetime.now(),
                 self._("Submission storage failed!"),
                 self._(message))
-            self.redirect("/tasks/%s" % encrypt_number(self.task_id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task_id))
+            return
 
         # All the files are stored, ready to submit!
         self.sql_session = Session()

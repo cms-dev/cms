@@ -381,9 +381,11 @@ class AddContestHandler(BaseHandler):
             return
 
         try:
-            per_user_time = timedelta(seconds=self.get_non_negative_int(
+            per_user_time = self.get_non_negative_int(
                 "per_user_time",
-                None))
+                None)
+            if per_user_time is not None:
+                per_user_time = timedelta(seconds=per_user_time)
         except Exception as error:
             self.write("Invalid per user time. %r" % error)
             return
@@ -951,9 +953,11 @@ class EditContestHandler(BaseHandler):
             return
 
         try:
-            per_user_time = timedelta(seconds=self.get_non_negative_int(
+            per_user_time = self.get_non_negative_int(
                 "per_user_time",
-                None))
+                None)
+            if per_user_time is not None:
+                per_user_time = timedelta(seconds=per_user_time)
         except Exception as error:
             self.write("Invalid per user time. %r" % error)
             self.redirect("/contest/%s" % contest_id)
