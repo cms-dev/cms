@@ -61,6 +61,7 @@ from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
      CommonRequestHandler
 from cmscommon.Cryptographics import encrypt_number, decrypt_number, \
      get_encryption_alphabet
+from cmscommon.DateTime import make_datetime, make_timestamp
 
 
 class BaseHandler(CommonRequestHandler):
@@ -101,14 +102,14 @@ class BaseHandler(CommonRequestHandler):
         username specified in the cookie. Otherwise, return None.
 
         """
-        timestamp = datetime.now()
+        timestamp = make_datetime()
 
         if self.get_secure_cookie("login") is None:
             return None
         try:
             cookie = pickle.loads(self.get_secure_cookie("login"))
             username = str(cookie[0])
-            last_update = datetime.fromtimestamp(cookie[1])
+            last_update = make_datetime(cookie[1])
         except:
             self.clear_cookie("login")
             return None
@@ -154,7 +155,7 @@ class BaseHandler(CommonRequestHandler):
 
         """
         ret = {}
-        ret["timestamp"] = datetime.now()
+        ret["timestamp"] = make_datetime()
         ret["contest"] = self.contest
         ret["url_root"] = get_url_root(self.request.path)
         ret["cookie"] = str(self.cookies)  # FIXME really needed?
@@ -349,7 +350,7 @@ class StartHandler(BaseHandler):
     @actual_phase_required(-1)
     def post(self):
         user = self.get_current_user()
-        timestamp = datetime.now()
+        timestamp = make_datetime()
 
         logger.info("Starting now for user %s" % user.username)
         user.starting_time = timestamp
@@ -524,16 +525,16 @@ class NotificationsHandler(BaseHandler):
     def get(self):
         if not self.current_user:
             raise tornado.web.HTTPError(403)
-        timestamp = datetime.now()
+        timestamp = make_datetime()
         res = []
-        last_notification = datetime.fromtimestamp(float(self.get_argument("last_notification", "0")))
+        last_notification = make_datetime(float(self.get_argument("last_notification", "0")))
 
         # Announcements
         for announcement in self.contest.announcements:
             if announcement.timestamp > last_notification \
                    and announcement.timestamp < timestamp:
                 res.append({"type": "announcement",
-                            "timestamp": time.mktime(announcement.timestamp.timetuple()),
+                            "timestamp": make_timestamp(announcement.timestamp),
                             "subject": announcement.subject,
                             "text": announcement.text})
 
@@ -543,7 +544,7 @@ class NotificationsHandler(BaseHandler):
                 if message.timestamp > last_notification \
                        and message.timestamp < timestamp:
                     res.append({"type": "message",
-                                "timestamp": time.mktime(message.timestamp.timetuple()),
+                                "timestamp": make_timestamp(message.timestamp),
                                 "subject": message.subject,
                                 "text": message.text})
 
@@ -559,7 +560,7 @@ class NotificationsHandler(BaseHandler):
                     elif question.reply_text is None:
                         text = ""
                     res.append({"type": "question",
-                                "timestamp": time.mktime(question.reply_timestamp.timetuple()),
+                                "timestamp": make_timestamp(question.reply_timestamp),
                                 "subject": subject,
                                 "text": text})
 
@@ -576,7 +577,7 @@ class NotificationsHandler(BaseHandler):
         if username in notifications:
             for notification in notifications[username]:
                 res.append({"type": "notification",
-                            "timestamp": time.mktime(notification[0].timetuple()),
+                            "timestamp": make_timestamp(notification[0]),
                             "subject": notification[1],
                             "text": notification[2]})
             del notifications[username]
@@ -595,7 +596,7 @@ class QuestionHandler(BaseHandler):
         if not config.allow_questions:
             raise tornado.web.HTTPError(404)
 
-        timestamp = datetime.now()
+        timestamp = make_datetime()
         question = Question(timestamp,
                             self.get_argument("question_subject", ""),
                             self.get_argument("question_text", ""),
@@ -647,7 +648,7 @@ class SubmitHandler(BaseHandler):
                timedelta(seconds=config.min_submission_interval):
             self.application.service.add_notification(
                 self.current_user.username,
-                datetime.now(),
+                make_datetime(),
                 self._("Submissions too frequent!"),
                 self._("For each task, you can submit "
                        "again after %s seconds from last submission.") %
@@ -660,7 +661,7 @@ class SubmitHandler(BaseHandler):
         if any(len(x) != 1 for x in self.request.files.values()):
             self.application.service.add_notification(
                 self.current_user.username,
-                datetime.now(),
+                make_datetime(),
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
@@ -685,7 +686,7 @@ class SubmitHandler(BaseHandler):
             if archive_contents is None:
                 self.application.service.add_notification(
                     self.current_user.username,
-                    datetime.now(),
+                    make_datetime(),
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."))
                 self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
@@ -704,7 +705,7 @@ class SubmitHandler(BaseHandler):
                                          and required.issuperset(provided))):
             self.application.service.add_notification(
                 self.current_user.username,
-                datetime.now(),
+                make_datetime(),
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
@@ -773,7 +774,7 @@ class SubmitHandler(BaseHandler):
         if error is not None:
             self.application.service.add_notification(
                 self.current_user.username,
-                datetime.now(),
+                make_datetime(),
                 self._("Invalid submission!"),
                 error)
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
@@ -784,7 +785,7 @@ class SubmitHandler(BaseHandler):
                 for f in self.files.values()]):
             self.application.service.add_notification(
                 self.current_user.username,
-                datetime.now(),
+                make_datetime(),
                 self._("Submission too big!"),
                 self._("Each files must be at most %d bytes long.") %
                     config.max_submission_length)
@@ -805,7 +806,7 @@ class SubmitHandler(BaseHandler):
                     self.current_user.username)
                 if not os.path.exists(path):
                     os.makedirs(path)
-                with codecs.open(os.path.join(path, str(self.timestamp)),
+                with codecs.open(os.path.join(path, str(int(make_timestamp(self.timestamp)))),
                                  "w", "utf-8") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
@@ -825,7 +826,7 @@ class SubmitHandler(BaseHandler):
                     description="Submission file %s sent by %s at %d." % (
                         filename,
                         self.username,
-                        time.mktime(self.timestamp.timetuple())),
+                        make_timestamp(self.timestamp)),
                     binary_data=self.files[filename][1])
                 self.file_digests[filename] = digest
 
@@ -838,7 +839,7 @@ class SubmitHandler(BaseHandler):
                 message = "No local copy stored! Your submission was ignored."
             self.application.service.add_notification(
                 self.username,
-                datetime.now(),
+                make_datetime(),
                 self._("Submission storage failed!"),
                 self._(message))
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task_id))
@@ -866,7 +867,7 @@ class SubmitHandler(BaseHandler):
             submission_id=submission.id)
         self.application.service.add_notification(
             self.username,
-            datetime.now(),
+            make_datetime(),
             self._("Submission received"),
             self._("Your submission has been received "
                    "and is currently being evaluated."))
@@ -912,7 +913,7 @@ class UseTokenHandler(BaseHandler):
 
         # Don't trust the user, check again if (s)he can really play
         # the token.
-        timestamp = datetime.now()
+        timestamp = make_datetime()
         tokens_available = self.contest.tokens_available(
                                self.current_user.username,
                                submission.task.name,

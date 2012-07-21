@@ -45,7 +45,7 @@ utils.show_page("questions", 1);
   {% for msg_i, msg in enumerate(questions) %}
   <div class="notification communication {{ ("answered" if msg.reply_timestamp is not None else ("ignored" if msg.ignored else "")) }}">
     <div class="notification_msg">
-      <div class="notification_timestamp"><a href="{{ url_root }}/user/{{ msg.user.id }}">{{ msg.user.username }}</a> - {{ format_time_or_date(msg.question_timestamp) }}</div>
+      <div class="notification_timestamp"><a href="{{ url_root }}/user/{{ msg.user.id }}">{{ msg.user.username }}</a> - {{ str(msg.question_timestamp) }}</div>
       <div class="notification_subject">{{ msg.subject }}</div>
       <div class="notification_text">{{ msg.text }}</div>
       {% if msg.reply_timestamp is not None %}

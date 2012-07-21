@@ -32,6 +32,7 @@ from sqlalchemy import Column, ForeignKey, CheckConstraint, Integer, String, \
 from sqlalchemy.orm import relationship, backref
 
 from cms.db.SQLAlchemyUtils import Base
+from cmscommon.DateTime import make_datetime, make_timestamp
 
 
 class Contest(Base):
@@ -135,8 +136,8 @@ class Contest(Base):
                 'token_min_interval': self.token_min_interval.total_seconds(),
                 'token_gen_time':     self.token_gen_time.total_seconds() / 60,
                 'token_gen_number':   self.token_gen_number,
-                'start':              time.mktime(self.start.timetuple()) if self.start is not None else None,
-                'stop':               time.mktime(self.stop.timetuple()) if self.stop is not None else None,
+                'start':              make_timestamp(self.start) if self.start is not None else None,
+                'stop':               make_timestamp(self.stop) if self.stop is not None else None,
                 'per_user_time':      self.per_user_time.total_seconds() if self.per_user_time is not None else None,
                 'announcements':      [announcement.export_to_dict()
                                        for announcement in self.announcements],
@@ -403,7 +404,7 @@ class Contest(Base):
 
         """
         if timestamp is None:
-            timestamp = int(time.time())
+            timestamp = make_datetime()
 
         user = self.get_user(username)
         task = self.get_task(task_name)
@@ -516,7 +517,7 @@ class Announcement(Base):
         """Return object data as a dictionary.
 
         """
-        return {'timestamp': time.mktime(self.timestamp.timetuple()),
+        return {'timestamp': make_timestamp(self.timestamp),
                 'subject':   self.subject,
                 'text':      self.text}
 
@@ -525,5 +526,5 @@ class Announcement(Base):
         """Build the object using data from a dictionary.
 
         """
-        data['timestamp'] = datetime.fromtimestamp(data['timestamp'])
+        data['timestamp'] = make_datetime(data['timestamp'])
         return cls(**data)

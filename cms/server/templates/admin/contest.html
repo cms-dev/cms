@@ -40,12 +40,12 @@
       <td><input type="text" name="token_gen_number" value="{{ contest.token_gen_number }}" size="3" /></td>
     </tr>
     <tr>
-      <td>Start</td>
-      <td><input type="text" name="start" value="{{ contest.start.strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
+      <td>Start (in UTC)</td>
+      <td><input type="text" name="start" value="{{ str(contest.start) }}"></td>
     </tr>
     <tr>
-      <td>End</td>
-      <td><input type="text" name="stop" value="{{ contest.stop.strftime("%d/%m/%Y %H:%M:%S")  }}"></td>
+      <td>End (in UTC)</td>
+      <td><input type="text" name="stop" value="{{ str(contest.stop) }}"></td>
     </tr>
     <tr>
       <td>Maximum length of the contest for a user (seconds)</td>

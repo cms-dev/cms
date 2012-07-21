@@ -38,6 +38,7 @@ import tornado.locale
 from cms import logger
 from cms.db.FileCacher import FileCacher
 from cmscommon.Cryptographics import decrypt_number
+from cmscommon.DateTime import make_datetime, utc, local
 
 
 def phase_required(phase):
@@ -163,70 +164,72 @@ def extract_archive(temp_name, original_filename):
     return file_list
 
 
-def format_time_or_date(timestamp):
-    """Return timestamp formatted as HH:MM:SS if the date is
-    the same date as today, as a complete date + time if the
-    date is different.
+def format_date (dt, locale=None):
+    """Return the date of dt formatted according to the given locale
 
-    timestamp (int): unix time.
-
-    return (string): timestamp formatted as above.
+    dt (datetime): a datetime object
+    return (str): the date of dt, formatted using the given locale
 
     """
-    if timestamp.date() == date.today():
-        return timestamp.strftime("%H:%M:%S")
+    if locale is None:
+        locale = tornado.locale.get()
+
+    # convert dt from UTC to local time
+    dt = dt.replace(tzinfo=utc).astimezone(local)
+
+    return dt.strftime(locale.translate("%Y-%m-%d"))
+
+
+def format_time (dt, locale=None):
+    """Return the time of dt formatted according to the given locale
+
+    dt (datetime): a datetime object
+    return (str): the time of dt, formatted using the given locale
+
+    """
+    if locale is None:
+        locale = tornado.locale.get()
+
+    # convert dt from UTC to local time
+    dt = dt.replace(tzinfo=utc).astimezone(local)
+
+    return dt.strftime(locale.translate("%H:%M:%S"))
+
+
+def format_datetime (dt, locale=None):
+    """Return the date and time of dt formatted according to the given locale
+
+    dt (datetime): a datetime object
+    return (str): the date and time of dt, formatted using the given locale
+
+    """
+    if locale is None:
+        locale = tornado.locale.get()
+
+    # convert dt from UTC to local time
+    dt = dt.replace(tzinfo=utc).astimezone(local)
+
+    return dt.strftime(locale.translate("%Y-%m-%d %H:%M:%S"))
+
+
+def format_datetime_smart (dt, locale=None):
+    """Return dt formatted as 'date & time' or, if date is today, just 'time'
+
+    dt (datetime): a datetime object
+    return (str): the [date and] time of dt, formatted using the given locale
+
+    """
+    if locale is None:
+        locale = tornado.locale.get()
+
+    # convert dt and 'now' from UTC to local time
+    dt = dt.replace(tzinfo=utc).astimezone(local)
+    now = make_datetime().replace(tzinfo=utc).astimezone(local)
+
+    if dt.date() == now.date():
+        return dt.strftime(locale.translate("%H:%M:%S"))
     else:
-        return timestamp.strftime("%H:%M:%S, %d/%m/%Y")
-
-
-def isoformat_datetime (timestamp):
-    """Return timestamp formatted as YYYY-MM-DD hh:mm:ss (ISO format)
-
-    timestamp (int): POSIX timestamp
-
-    return (string): timestamp in ISO format (without timezone indicators)
-
-    """
-    return str(timestamp.replace(microsecond=0))
-
-
-def isoformat_date (timestamp):
-    """Return timestamp formatted as YYYY-MM-DD (ISO format)
-
-    timestamp (int): POSIX timestamp
-
-    return (string): timestamp in ISO format (without timezone indicators)
-
-    """
-    return str(timestamp.date())
-
-
-def isoformat_time (timestamp):
-    """Return timestamp formatted as hh:mm:ss
-
-    timestamp (int): POSIX timestamp
-
-    return (string): timestamp in ISO format (without timezone indicators)
-
-    """
-    return str(timestamp.replace(microsecond=0).time())
-
-
-def isoformat_datetime_smart (timestamp):
-    """Return timestamp formatted as [YYYY-MM-DD ]HH:MM:SS (ISO format)
-
-    If the day is the same as today, return only the time. Else return
-    both the date and the time.
-
-    timestamp (int): POSIX timestamp
-
-    return (string): timestamp in ISO format (without timezone indicators)
-
-    """
-    if timestamp.date() == date.today():
-        return isoformat_time(timestamp)
-    else:
-        return isoformat_datetime(timestamp)
+        return dt.strftime(locale.translate("%Y-%m-%d %H:%M:%S"))
 
 
 def format_amount_of_time(seconds, precision=2, locale=None):

@@ -1,9 +1,9 @@
 <tr>
     <td style="white-space:nowrap">
 {% if show_date %}
-        {{ isoformat_datetime(s.timestamp) }}
+        {{ format_datetime(s.timestamp) }}
 {% else %}
-        {{ isoformat_time(s.timestamp) }}
+        {{ format_time(s.timestamp) }}
 {% end %}
     </td>
 {% if not s.compiled() %}
@@ -30,9 +30,9 @@
     {% end %}
     <td>
         Evaluated
-        <a style="float:right" data-toggle="modal" href="#submission_{{ s.timestamp }}" >details</a>
+        <a style="float:right" data-toggle="modal" href="#submission_{{ int(make_timestamp(s.timestamp)) }}" >details</a>
 
-<div class="modal fade hide" id="submission_{{ s.timestamp }}">
+<div class="modal fade hide" id="submission_{{ int(make_timestamp(s.timestamp)) }}">
     <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal">×</button>
         <h3>Modal header</h3>

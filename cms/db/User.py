@@ -33,6 +33,7 @@ from sqlalchemy.orm import relationship, backref
 
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Contest import Contest
+from cmscommon.DateTime import make_datetime, make_timestamp
 
 
 class User(Base):
@@ -138,7 +139,7 @@ class User(Base):
                 'timezone':      self.timezone,
                 'ip':            self.ip,
                 'hidden':        self.hidden,
-                'starting_time': time.mktime(self.starting_time.timetuple()) if self.starting_time is not None else None,
+                'starting_time': make_timestamp(self.starting_time) if self.starting_time is not None else None,
                 'messages':      [message.export_to_dict()
                                   for message in self.messages],
                 'questions':     [question.export_to_dict()
@@ -186,7 +187,7 @@ class Message(Base):
         """Return object data as a dictionary.
 
         """
-        return {'timestamp': time.mktime(self.timestamp.timetuple()),
+        return {'timestamp': make_timestamp(self.timestamp),
                 'subject':   self.subject,
                 'text':      self.text}
 
@@ -195,7 +196,7 @@ class Message(Base):
         """Build the object using data from a dictionary.
 
         """
-        data['timestamp'] = datetime.fromtimestamp(data['timestamp'])
+        data['timestamp'] = make_datetime(data['timestamp'])
         return cls(**data)
 
 
@@ -257,10 +258,10 @@ class Question(Base):
         """Return object data as a dictionary.
 
         """
-        return {'question_timestamp': time.mktime(self.question_timestamp.timetuple()),
+        return {'question_timestamp': make_timestamp(self.question_timestamp),
                 'subject':            self.subject,
                 'text':               self.text,
-                'reply_timestamp':    time.mktime(self.reply_timestamp.timetuple()) if self.reply_timestamp is not None else None,
+                'reply_timestamp':    make_timestamp(self.reply_timestamp) if self.reply_timestamp is not None else None,
                 'reply_subject':      self.reply_subject,
                 'reply_text':         self.reply_text,
                 'ignored':            self.ignored}
@@ -270,7 +271,7 @@ class Question(Base):
         """Build the object using data from a dictionary.
 
         """
-        data['question_timestamp'] = datetime.fromtimestamp(data['question_timestamp'])
+        data['question_timestamp'] = make_datetime(data['question_timestamp'])
         if data['reply_timestamp'] is not None:
-            data['reply_timestamp'] = datetime.fromtimestamp(data['reply_timestamp'])
+            data['reply_timestamp'] = make_datetime(data['reply_timestamp'])
         return cls(**data)

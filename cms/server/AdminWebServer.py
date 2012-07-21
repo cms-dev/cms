@@ -43,6 +43,7 @@ from cms.db.SQLAlchemyAll import Session, \
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, catch_exceptions, get_url_root, \
      CommonRequestHandler
+from cmscommon.DateTime import make_datetime, make_timestamp
 
 
 def try_commit(session, handler):
@@ -59,12 +60,12 @@ def try_commit(session, handler):
         session.commit()
     except IntegrityError as error:
         handler.application.service.add_notification(
-            int(time.time()),
+            make_datetime(),
             "Operation failed.", str(error))
         return False
     else:
         handler.application.service.add_notification(
-            int(time.time()),
+            make_datetime(),
             "Operation successful.", "")
         return True
 
@@ -140,7 +141,7 @@ class BaseHandler(CommonRequestHandler):
 
         """
         params = {}
-        params["timestamp"] = datetime.now()
+        params["timestamp"] = make_datetime()
         params["contest"] = self.contest
         params["url_root"] = get_url_root(self.request.path)
         if self.contest is not None:
@@ -368,10 +369,18 @@ class AddContestHandler(BaseHandler):
             return
 
         try:
-            start = datetime.strptime(self.get_argument("start", ""),
-                                      "%d/%m/%Y %H:%M:%S")
-            stop = datetime.strptime(self.get_argument("stop", ""),
-                                     "%d/%m/%Y %H:%M:%S")
+            try:
+                start = datetime.strptime(self.get_argument("start", ""),
+                                          "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                start = datetime.strptime(self.get_argument("start", ""),
+                                          "%Y-%m-%d %H:%M:%S.%f")
+            try:
+                stop = datetime.strptime(self.get_argument("stop", ""),
+                                         "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                stop = datetime.strptime(self.get_argument("stop", ""),
+                                         "%Y-%m-%d %H:%M:%S.%f")
         except Exception as error:
             self.write("Invalid date(s). %r" % error)
             return
@@ -419,7 +428,7 @@ class AddStatementHandler(BaseHandler):
         language = self.get_argument("language", None)
         if language is None:
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "No language code specified",
                 "The language code can be any string.")
             self.redirect("/add_statement/%s" % task_id)
@@ -427,7 +436,7 @@ class AddStatementHandler(BaseHandler):
         statement = self.request.files["statement"][0]
         if not statement["filename"].endswith(".pdf"):
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Invalid task statement",
                 "The task statement must be a .pdf file.")
             self.redirect("/add_statement/%s" % task_id)
@@ -442,7 +451,7 @@ class AddStatementHandler(BaseHandler):
                                                                   language))
         except Exception as error:
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Task statement storage failed",
                 repr(error))
             self.redirect("/add_statement/%s" % task_id)
@@ -498,7 +507,7 @@ class AddAttachmentHandler(BaseHandler):
                 description="Task attachment for %s" % task_name)
         except Exception as error:
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Attachment storage failed",
                 repr(error))
             self.redirect("/add_attachment/%s" % task_id)
@@ -553,7 +562,7 @@ class AddManagerHandler(BaseHandler):
                 description="Task manager for %s" % task_name)
         except Exception as error:
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Manager storage failed",
                 repr(error))
             self.redirect("/add_manager/%s" % task_id)
@@ -611,7 +620,7 @@ class AddTestcaseHandler(BaseHandler):
                 description="Testcase output for task %s" % task_name)
         except Exception as error:
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Testcase storage failed",
                 repr(error))
             self.redirect("/add_testcase/%s" % task_id)
@@ -722,7 +731,7 @@ class TaskViewHandler(BaseHandler):
         except KeyError:
             # Task type not found.
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Invalid field",
                 "Task type not recognized: %s." % task.task_type)
             self.redirect("/task/%s" % task_id)
@@ -754,7 +763,7 @@ class TaskViewHandler(BaseHandler):
                 self.sql_session.rollback()
                 logger.info(repr(error))
                 self.application.service.add_notification(
-                    datetime.now(),
+                    make_datetime(),
                     "Invalid field",
                     "Submission format not recognized.")
                 self.redirect("/task/%s" % task_id)
@@ -797,7 +806,7 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         except KeyError:
             # Task type not found.
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Invalid field",
                 "Task type not recognized: %s." % task_type)
             self.redirect("/add_task/%s" % contest_id)
@@ -826,14 +835,14 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
                     self.sql_session.rollback()
                     logger.info(repr(error))
                     self.application.service.add_notification(
-                        datetime.now(),
+                        make_datetime(),
                         "Invalid field",
                         "Submission format not recognized.")
                     self.redirect("/add_task/%s" % contest_id)
                     return
         else:
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Invalid field",
                 "Submission format not recognized.")
             self.redirect("/add_task/%s" % contest_id)
@@ -846,7 +855,6 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         attachments = {}
         managers = {}
         testcases = []
-
 
         token_initial = self.get_non_negative_int(
             "token_initial",
@@ -893,7 +901,7 @@ class EditContestHandler(BaseHandler):
         name = self.get_argument("name", "")
         if name == "":
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "No contest name specified",
                 "")
             self.redirect("/contest/%s" % contest_id)
@@ -925,20 +933,28 @@ class EditContestHandler(BaseHandler):
                 allow_empty=False)
         except Exception as error:
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Invalid token field(s).",
                 repr(error))
             self.redirect("/contest/%s" % contest_id)
             return
 
         try:
-            start = datetime.strptime(self.get_argument("start", ""),
-                                      "%d/%m/%Y %H:%M:%S")
-            stop = datetime.strptime(self.get_argument("stop", ""),
-                                     "%d/%m/%Y %H:%M:%S")
+            try:
+                start = datetime.strptime(self.get_argument("start", ""),
+                                          "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                start = datetime.strptime(self.get_argument("start", ""),
+                                          "%Y-%m-%d %H:%M:%S.%f")
+            try:
+                stop = datetime.strptime(self.get_argument("stop", ""),
+                                         "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                stop = datetime.strptime(self.get_argument("stop", ""),
+                                         "%Y-%m-%d %H:%M:%S.%f")
         except Exception as error:
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Invalid date(s).",
                 repr(error))
             self.redirect("/contest/%s" % contest_id)
@@ -946,7 +962,7 @@ class EditContestHandler(BaseHandler):
 
         if start > stop:
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Contest ends before it starts",
                 "Please check start and stop times.")
             self.redirect("/contest/%s" % contest_id)
@@ -991,7 +1007,7 @@ class AddAnnouncementHandler(BaseHandler):
         subject = self.get_argument("subject", "")
         text = self.get_argument("text", "")
         if subject != "":
-            ann = Announcement(datetime.now(), subject, text, self.contest)
+            ann = Announcement(make_datetime(), subject, text, self.contest)
             self.sql_session.add(ann)
             try_commit(self.sql_session, self)
         self.redirect("/announcements/%s" % contest_id)
@@ -1038,7 +1054,7 @@ class UserViewHandler(BaseHandler):
         user.ip = self.get_argument("ip", user.ip)
         if not valid_ip(user.ip):
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Invalid ip",
                 "")
             self.redirect("/user/%s" % user_id)
@@ -1047,12 +1063,17 @@ class UserViewHandler(BaseHandler):
         starting_time = None
         if self.get_argument("starting_time", "") not in ["", "None"]:
             try:
-                starting_time = datetime.strptime(
-                    self.get_argument("starting_time", ""),
-                    "%d/%m/%Y %H:%M:%S")
+                try:
+                    starting_time = datetime.strptime(
+                        self.get_argument("starting_time"),
+                        "%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    starting_time = datetime.strptime(
+                        self.get_argument("starting_time"),
+                        "%Y-%m-%d %H:%M:%S.%f")
             except Exception as error:
                 self.application.service.add_notification(
-                    datetime.now(),
+                    make_datetime(),
                     "Invalid starting time(s).",
                     repr(error))
                 self.redirect("/user/%s" % user_id)
@@ -1081,7 +1102,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
         ip_address = self.get_argument("ip", "0.0.0.0")
         if not valid_ip(ip_address):
             self.application.service.add_notification(
-                datetime.now(),
+                make_datetime(),
                 "Invalid ip",
                 "")
             self.redirect("/add_user/%s" % contest_id)
@@ -1090,12 +1111,17 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
         starting_time = None
         if self.get_argument("starting_time", "") not in ["", "None"]:
             try:
-                starting_time = datetime.strptime(
-                    self.get_argument("starting_time", ""),
-                    "%d/%m/%Y %H:%M:%S")
+                try:
+                    starting_time = datetime.strptime(
+                        self.get_argument("starting_time"),
+                        "%Y-%m-%d %H:%M:%S")
+                except ValueError:
+                    starting_time = datetime.strptime(
+                        self.get_argument("starting_time"),
+                        "%Y-%m-%d %H:%M:%S.%f")
             except Exception as error:
                 self.application.service.add_notification(
-                    datetime.now(),
+                    make_datetime(),
                     "Invalid starting time(s).",
                     repr(error))
                 self.redirect("/add_user/%s" % contest_id)
@@ -1185,7 +1211,7 @@ class QuestionReplyHandler(BaseHandler):
                 AdminWebServer.QUICK_ANSWERS[reply_subject_code]
             question.reply_text = ""
 
-        question.reply_timestamp = datetime.now()
+        question.reply_timestamp = make_datetime()
 
         if try_commit(self.sql_session, self):
             logger.warning("Reply sent to user %s for question with id %s." %
@@ -1228,7 +1254,7 @@ class MessageHandler(BaseHandler):
         user = self.safe_get_item(User, user_id)
         self.contest = user.contest
 
-        message = Message(datetime.now(),
+        message = Message(make_datetime(),
                           self.get_argument("message_subject", ""),
                           self.get_argument("message_text", ""),
                           user=user)
@@ -1257,7 +1283,7 @@ class NotificationsHandler(BaseHandler):
     @catch_exceptions
     def get(self):
         res = []
-        last_notification = datetime.fromtimestamp(float(self.get_argument("last_notification", "0")))
+        last_notification = make_datetime(float(self.get_argument("last_notification", "0")))
 
         # Keep "== None" in filter arguments
         questions = self.sql_session.query(Question)\
@@ -1267,14 +1293,14 @@ class NotificationsHandler(BaseHandler):
 
         for question in questions:
             res.append({"type": "new_question",
-                        "timestamp": question.question_timestamp,
+                        "timestamp": make_timestamp(question.question_timestamp),
                         "subject": question.subject,
                         "text": question.text})
 
         # Simple notifications
         for notification in self.application.service.notifications:
             res.append({"type": "notification",
-                        "timestamp": notification[0],
+                        "timestamp": make_timestamp(notification[0]),
                         "subject": notification[1],
                         "text": notification[2]})
         self.application.service.notifications = []

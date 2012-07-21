@@ -1,8 +1,9 @@
 {% import re %}
 {% import time %}
 {% import simplejson as json %}
-{% from cms.server import format_time_or_date, format_amount_of_time %}
+{% from cms.server import format_amount_of_time %}
 {% from cmscommon.Cryptographics import encrypt_number, decrypt_number %}
+{% from cmscommon.DateTime import make_timestamp %}
 <!DOCTYPE html>
 <html>
     <head>
@@ -27,10 +28,10 @@ var url_root = "{{ url_root }}";
         <script type="text/javascript">
 $(document).ready(function () {
     // FIXME use Date objects
-    Utils.init({{ time.mktime(timestamp.timetuple()) }},
-               {{ time.mktime(contest.start.timetuple()) }},
-               {{ time.mktime(contest.stop.timetuple()) }},
-               {{ time.mktime(valid_phase_end.timetuple()) }},
+    Utils.init({{ make_timestamp(timestamp) }},
+               {{ make_timestamp(contest.start) }},
+               {{ make_timestamp(contest.stop) }},
+               {{ make_timestamp(valid_phase_end) }},
                {{ actual_phase }});
 
     firstDate = new Date(); // FIXME very bad: global variable

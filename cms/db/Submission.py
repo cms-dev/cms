@@ -36,6 +36,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Task import Task
 from cms.db.User import User
+from cmscommon.DateTime import make_datetime, make_timestamp
 
 
 class Submission(Base):
@@ -156,7 +157,7 @@ class Submission(Base):
         """
         res = {
             'task': self.task.name,
-            'timestamp': time.mktime(self.timestamp.timetuple()),
+            'timestamp': make_timestamp(self.timestamp),
             'files': [_file.export_to_dict()
                       for _file in self.files.itervalues()],
             'language': self.language,
@@ -197,7 +198,7 @@ class Submission(Base):
             data['token'] = Token.import_from_dict(data['token'])
         data['task'] = tasks_by_name[data['task']]
         data['user'] = None
-        data['timestamp'] = datetime.fromtimestamp(data['timestamp'])
+        data['timestamp'] = make_datetime(data['timestamp'])
         return cls(**data)
 
     def tokened(self):
@@ -302,7 +303,7 @@ class Token(Base):
 
     def __init__(self, timestamp=None, submission=None):
         if timestamp is None:
-            timestamp = datetime.now()
+            timestamp = make_datetime()
         self.timestamp = timestamp
         self.submission = submission
 
@@ -311,7 +312,7 @@ class Token(Base):
 
         """
         return {
-            'timestamp': time.mktime(self.timestamp.timetuple())
+            'timestamp': make_timestamp(self.timestamp)
             }
 
     @classmethod
@@ -319,7 +320,7 @@ class Token(Base):
         """Build the object using data from a dictionary.
 
         """
-        data['timestamp'] = datetime.fromtimestamp(data['timestamp'])
+        data['timestamp'] = make_datetime(data['timestamp'])
         return cls(**data)
 
 

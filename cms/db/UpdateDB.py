@@ -54,6 +54,7 @@ class ScriptsContainer(object):
             ("20120712", "change_token_constraints"),
             ("20120714", "drop_ranking_view"),
             ("20120717", "use_timestamps"),
+            ("20120721", "use_UTC_timestamps"),
             ]
         self.list.sort()
 
@@ -550,6 +551,28 @@ DROP CONSTRAINT tasks_token_gen_time_check,
 ADD CONSTRAINT tasks_token_min_interval_check CHECK (token_min_interval >= '0 seconds'),
 ADD CONSTRAINT tasks_token_gen_time_check CHECK (token_gen_time >= '0 seconds');
 """)
+
+    @staticmethod
+    def use_UTC_timestamps():
+        """Convert TIMESTAMP columns to represent UTC times
+
+        Instead of using local time.
+
+        """
+        with SessionGen(commit=True) as session:
+            for table, column in [("contests", "start"),
+                                  ("contests", "stop"),
+                                  ("announcements", "timestamp"),
+                                  ("submissions", "timestamp"),
+                                  ("tokens", "timestamp"),
+                                  ("users", "starting_time"),
+                                  ("messages", "timestamp"),
+                                  ("questions", "question_timestamp"),
+                                  ("questions", "reply_timestamp")]:
+                session.execute("""
+UPDATE %(table)s
+SET %(column)s = CAST(%(column)s AS TIMESTAMP WITH TIME ZONE) AT TIME ZONE 'UTC';
+""" % {"table": table, "column": column})
 
 
 def execute_single_script(scripts_container, script):

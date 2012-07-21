@@ -40,6 +40,7 @@ from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submissions
+from cmscommon.DateTime import make_datetime, make_timestamp
 
 
 class CannotSendError(Exception):
@@ -377,8 +378,8 @@ class ScoringService(Service):
             contest_url = "/contests/%s" % encode_id(contest_name)
             contest_data = {
                 "name": contest.description,
-                "begin": int(time.mktime(contest.start.timetuple())),
-                "end": int(time.mktime(contest.stop.timetuple()))}
+                "begin": int(make_timestamp(contest.start)),
+                "end": int(make_timestamp(contest.stop))}
 
             users = dict((encode_id(user.username),
                           {"f_name": user.first_name,
@@ -469,13 +470,12 @@ class ScoringService(Service):
             submission_put_data = {
                 "user": encode_id(submission.user.username),
                 "task": encode_id(submission.task.name),
-                "time": int(time.mktime(submission.timestamp.timetuple()))}
+                "time": int(make_timestamp(submission.timestamp))}
             subchange_url = "/subchanges/%s" % encode_id("%s%ss" %
-                (int(time.mktime(submission.timestamp.timetuple())),
-                 submission_id))
+                (int(make_timestamp(submission.timestamp)), submission_id))
             subchange_put_data = {
                 "submission": encode_id(submission_id),
-                "time": int(time.mktime(submission.timestamp.timetuple())),
+                "time": int(make_timestamp(submission.timestamp)),
                 "score": submission.score,
                 "extra": details}
 
@@ -518,13 +518,12 @@ class ScoringService(Service):
             submission_put_data = {
                 "user": encode_id(submission.user.username),
                 "task": encode_id(submission.task.name),
-                "time": int(time.mktime(submission.timestamp.timetuple()))}
+                "time": int(make_timestamp(submission.timestamp))}
             subchange_url = "/subchanges/%s" % encode_id("%s%st" %
-                (int(time.mktime(timestamp.timetuple())),
-                 submission_id))
+                (int(make_timestamp(timestamp)), submission_id))
             subchange_put_data = {
                 "submission": encode_id(submission_id),
-                "time": int(time.mktime(timestamp.timetuple())),
+                "time": int(make_timestamp(timestamp)),
                 "token": True}
 
         # Adding operations to the queue.

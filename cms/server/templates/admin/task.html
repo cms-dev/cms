@@ -48,7 +48,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
       {% set reevaluation_par_name = "submission" %}
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
-        <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ format_time_or_date(s.timestamp) }}</a></td>
+        <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ str(s.timestamp) }}</a></td>
         <td><a href="{{ url_root }}/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
         <td>
           {% if s.compilation_outcome is None %}

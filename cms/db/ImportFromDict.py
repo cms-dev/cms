@@ -29,6 +29,7 @@ from cms.db.Contest import Contest, Announcement
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task
 from cms.db.Submission import Submission
+from cmscommon.DateTime import make_datetime, make_timestamp
 
 
 @classmethod
@@ -45,9 +46,9 @@ def contest_import_from_dict(cls, data):
     data['announcements'] = [Announcement.import_from_dict(ann_data)
                              for ann_data in data['announcements']]
     if data['start'] is not None:
-        data['start'] = datetime.fromtimestamp(data['start'])
+        data['start'] = make_datetime(data['start'])
     if data['stop'] is not None:
-        data['stop'] = datetime.fromtimestamp(data['stop'])
+        data['stop'] = make_datetime(data['stop'])
     data['token_min_interval'] = timedelta(seconds=data['token_min_interval'])
     data['token_gen_time'] = timedelta(minutes=data['token_gen_time'])
     if data['per_user_time'] is not None:
@@ -68,7 +69,7 @@ def user_import_from_dict(cls, data, tasks_by_name):
         submission_data, tasks_by_name=tasks_by_name)
                            for submission_data in data['submissions']]
     if data['starting_time'] is not None:
-        data['starting_time'] = datetime.fromtimestamp(data['starting_time'])
+        data['starting_time'] = make_datetime(data['starting_time'])
     obj = cls(**data)
     for submission in obj.submissions:
         submission.user = obj
