@@ -1,6 +1,6 @@
 Format: http://dep.debian.net/deps/dep5/
 Upstream-Name: cms
-Upstream-Contact: Stefano Maggiolo <s.maggiolo@gmail.com>
+Upstream-Contact: CMS Mailing List <contestms@freelists.org>
 Source: http://github.com/cms-dev/cms
 Copyright: 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
            2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
@@ -26,10 +26,7 @@ Files: *
 Copyright: 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
            2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
            2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-License: AGPL-3+
-
-Files: cmsranking/*
-Copyright: 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+           2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: AGPL-3+
 
 Files: cmsranking/images/*
