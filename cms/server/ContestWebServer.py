@@ -811,7 +811,7 @@ class SubmitHandler(BaseHandler):
                                  "w", "utf-8") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
-                                 self.task,
+                                 self.task.id,
                                  self.files), file_)
                 self.local_copy_saved = True
             except Exception as error:
