@@ -18,7 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
-import calendar
 from datetime import tzinfo, timedelta, datetime
 
 
@@ -36,6 +35,8 @@ def make_datetime(timestamp=None):
         return datetime.utcfromtimestamp(timestamp)
 
 
+EPOCH = datetime(1970, 1, 1)
+
 def make_timestamp(_datetime=None):
     """Return the timestamp associated with the given datetime object
 
@@ -48,7 +49,7 @@ def make_timestamp(_datetime=None):
     if _datetime is None:
         return time.time()
     else:
-        return calendar.timegm(_datetime.utctimetuple())
+        return (_datetime - EPOCH).total_seconds()
 
 
 # The following code provides some sample timezone implementations
