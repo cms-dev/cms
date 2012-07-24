@@ -1,9 +1,9 @@
 <tr>
     <td style="white-space:nowrap">
 {% if show_date %}
-        {{ format_datetime(s.timestamp) }}
+        {{ format_datetime(s.timestamp, timezone) }}
 {% else %}
-        {{ format_time(s.timestamp) }}
+        {{ format_time(s.timestamp, timezone) }}
 {% end %}
     </td>
 {% if not s.compiled() %}

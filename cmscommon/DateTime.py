@@ -19,6 +19,7 @@
 
 import time
 from datetime import tzinfo, timedelta, datetime
+from pytz import timezone, all_timezones
 
 
 def make_datetime(timestamp=None):
@@ -50,6 +51,17 @@ def make_timestamp(_datetime=None):
         return time.time()
     else:
         return (_datetime - EPOCH).total_seconds()
+
+
+def get_timezone(user, contest):
+    """Return the timezone for the given user and contest
+
+    """
+    if user.timezone is not None and user.timezone in all_timezones:
+        return timezone(user.timezone)
+    if contest.timezone is not None and contest.timezone in all_timezones:
+        return timezone(contest.timezone)
+    return local
 
 
 # The following code provides some sample timezone implementations

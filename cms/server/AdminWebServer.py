@@ -390,6 +390,8 @@ class AddContestHandler(BaseHandler):
             self.write("Contest ends before it starts")
             return
 
+        timezone = self.get_argument("timezone", None)
+
         try:
             per_user_time = self.get_non_negative_int(
                 "per_user_time",
@@ -403,7 +405,7 @@ class AddContestHandler(BaseHandler):
         contest = Contest(name, description, [], [], token_initial,
                           token_max, token_total, token_min_interval,
                           token_gen_time, token_gen_number, start, stop,
-                          per_user_time)
+                          timezone, per_user_time)
 
         self.sql_session.add(contest)
         try_commit(self.sql_session, self)
@@ -969,6 +971,8 @@ class EditContestHandler(BaseHandler):
             self.redirect("/contest/%s" % contest_id)
             return
 
+        timezone = self.get_argument("timezone", None)
+
         try:
             per_user_time = self.get_non_negative_int(
                 "per_user_time",
@@ -990,6 +994,7 @@ class EditContestHandler(BaseHandler):
         self.contest.token_gen_number = token_gen_number
         self.contest.start = start
         self.contest.stop = stop
+        self.contest.timezone = timezone
         self.contest.per_user_time = per_user_time
 
         if try_commit(self.sql_session, self):
@@ -1061,6 +1066,8 @@ class UserViewHandler(BaseHandler):
             self.redirect("/user/%s" % user_id)
             return
 
+        user.timezone = self.get_argument("timezone", None)
+
         starting_time = None
         if self.get_argument("starting_time", "") not in ["", "None"]:
             try:
@@ -1109,6 +1116,8 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
             self.redirect("/add_user/%s" % contest_id)
             return
 
+        timezone = self.get_argument("timezone", None)
+
         starting_time = None
         if self.get_argument("starting_time", "") not in ["", "None"]:
             try:
@@ -1132,7 +1141,8 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
 
         user = User(first_name, last_name, username, password=password,
                     email=email, ip=ip_address, hidden=hidden,
-                    starting_time=starting_time, contest=self.contest)
+                    timezone=timezone, starting_time=starting_time,
+                    contest=self.contest)
         self.sql_session.add(user)
         if try_commit(self.sql_session, self):
             self.application.service.scoring_service.reinitialize()

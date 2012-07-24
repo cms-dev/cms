@@ -62,7 +62,7 @@ from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
      CommonRequestHandler
 from cmscommon.Cryptographics import encrypt_number, decrypt_number, \
      get_encryption_alphabet
-from cmscommon.DateTime import make_datetime, make_timestamp
+from cmscommon.DateTime import make_datetime, make_timestamp, get_timezone
 
 
 class BaseHandler(CommonRequestHandler):
@@ -180,6 +180,8 @@ class BaseHandler(CommonRequestHandler):
                         ret["valid_phase_end"] = user_end_time
                     if user_end_time <= self.timestamp:
                         ret["actual_phase"] = 1
+            # set the timezone used to format timestamps
+            ret["timezone"] = get_timezone(self.current_user, self.contest)
 
         # some information about token configuration
         ret["tokens_contest"] = self._get_token_status(self.contest)
