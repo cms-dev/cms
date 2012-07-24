@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -53,6 +54,8 @@ class ScriptsContainer(object):
             ("20120701", "add_statements"),
             ("20120712", "change_token_constraints"),
             ("20120714", "drop_ranking_view"),
+            ("20120717", "use_timestamps"),
+            ("20120721", "use_UTC_timestamps"),
             ]
         self.list.sort()
 
@@ -507,6 +510,70 @@ ALTER COLUMN token_gen_number SET NOT NULL;
         with SessionGen(commit=True) as session:
             session.execute("DROP TABLE scores;")
             session.execute("DROP TABLE rankingviews;")
+
+    @staticmethod
+    def use_timestamps():
+        """Use TIMESTAMP column type for columns that represent datetimes
+
+        And INTERVAL for columns that represent timedeltas.
+
+        """
+        with SessionGen(commit=True) as session:
+            for table, column in [("contests", "start"),
+                                  ("contests", "stop"),
+                                  ("announcements", "timestamp"),
+                                  ("submissions", "timestamp"),
+                                  ("tokens", "timestamp"),
+                                  ("users", "starting_time"),
+                                  ("messages", "timestamp"),
+                                  ("questions", "question_timestamp"),
+                                  ("questions", "reply_timestamp")]:
+                session.execute("""
+ALTER TABLE %(table)s
+ALTER %(column)s TYPE timestamp USING to_timestamp(%(column)s);
+""" % {"table": table, "column": column})
+
+            session.execute("""
+ALTER TABLE contests
+ALTER per_user_time TYPE interval USING per_user_time * '1 second'::interval,
+ALTER token_min_interval TYPE interval USING token_min_interval * '1 second'::interval,
+ALTER token_gen_time TYPE interval USING token_gen_time * '1 minute'::interval,
+DROP CONSTRAINT contests_token_min_interval_check,
+DROP CONSTRAINT contests_token_gen_time_check,
+ADD CONSTRAINT contests_token_min_interval_check CHECK (token_min_interval >= '0 seconds'),
+ADD CONSTRAINT contests_token_gen_time_check CHECK (token_gen_time >= '0 seconds');
+""")
+            session.execute("""
+ALTER TABLE tasks
+ALTER token_min_interval TYPE interval USING token_min_interval * '1 second'::interval,
+ALTER token_gen_time TYPE interval USING token_gen_time * '1 minute'::interval,
+DROP CONSTRAINT tasks_token_min_interval_check,
+DROP CONSTRAINT tasks_token_gen_time_check,
+ADD CONSTRAINT tasks_token_min_interval_check CHECK (token_min_interval >= '0 seconds'),
+ADD CONSTRAINT tasks_token_gen_time_check CHECK (token_gen_time >= '0 seconds');
+""")
+
+    @staticmethod
+    def use_UTC_timestamps():
+        """Convert TIMESTAMP columns to represent UTC times
+
+        Instead of using local time.
+
+        """
+        with SessionGen(commit=True) as session:
+            for table, column in [("contests", "start"),
+                                  ("contests", "stop"),
+                                  ("announcements", "timestamp"),
+                                  ("submissions", "timestamp"),
+                                  ("tokens", "timestamp"),
+                                  ("users", "starting_time"),
+                                  ("messages", "timestamp"),
+                                  ("questions", "question_timestamp"),
+                                  ("questions", "reply_timestamp")]:
+                session.execute("""
+UPDATE %(table)s
+SET %(column)s = CAST(%(column)s AS TIMESTAMP WITH TIME ZONE) AT TIME ZONE 'UTC';
+""" % {"table": table, "column": column})
 
 
 def execute_single_script(scripts_container, script):

@@ -48,7 +48,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
       {% set reevaluation_par_name = "submission" %}
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
       <tr>
-        <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ format_time_or_date(s.timestamp) }}</a></td>
+        <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ str(s.timestamp) }}</a></td>
         <td><a href="{{ url_root }}/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
         <td>
           {% if s.compilation_outcome is None %}
@@ -347,15 +347,15 @@ $("select[name=task_type]").change(showTaskTypeOption);
       </tr>
       <tr>
         <td>Minimum interval between tokens</td>
-        <td><input type="text" name="token_min_interval" value="{{ task.token_min_interval if task.token_min_interval is not None else "" }}" /></td>
+        <td><input type="text" name="token_min_interval" value="{{ int(task.token_min_interval.total_seconds()) }}" /></td>
       </tr>
       <tr>
         <td>Token generation period</td>
-        <td><input type="text" name="token_gen_time" value="{{ task.token_gen_time if task.token_gen_time is not None else "" }}" /></td>
+        <td><input type="text" name="token_gen_time" value="{{ int(task.token_gen_time.total_seconds() / 60) }}" /></td>
       </tr>
       <tr>
         <td>Token generation number</td>
-        <td><input type="text" name="token_gen_number" value="{{ task.token_gen_number if task.token_gen_number is not None else "" }}" /></td>
+        <td><input type="text" name="token_gen_number" value="{{ task.token_gen_number }}" /></td>
       </tr>
     </table>
     <div class="hr"></div>

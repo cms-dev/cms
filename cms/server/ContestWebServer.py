@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -43,6 +44,7 @@ import mimetypes
 import simplejson as json
 import tempfile
 import traceback
+from datetime import datetime, timedelta
 
 import tornado.web
 import tornado.locale
@@ -56,10 +58,11 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, Task, File, Attachment
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
-     valid_phase_required, get_url_root, decrypt_arguments, \
+     actual_phase_required, get_url_root, decrypt_arguments, \
      CommonRequestHandler
 from cmscommon.Cryptographics import encrypt_number, decrypt_number, \
      get_encryption_alphabet
+from cmscommon.DateTime import make_datetime, make_timestamp
 
 
 class BaseHandler(CommonRequestHandler):
@@ -100,20 +103,20 @@ class BaseHandler(CommonRequestHandler):
         username specified in the cookie. Otherwise, return None.
 
         """
-        timestamp = time.time()
+        timestamp = make_datetime()
 
         if self.get_secure_cookie("login") is None:
             return None
         try:
             cookie = pickle.loads(self.get_secure_cookie("login"))
             username = str(cookie[0])
-            last_update = int(cookie[1])
+            last_update = make_datetime(cookie[1])
         except:
             self.clear_cookie("login")
             return None
 
         # Check if the cookie is expired.
-        if timestamp - last_update > config.cookie_duration:
+        if timestamp - last_update > timedelta(seconds=config.cookie_duration):
             self.clear_cookie("login")
             return None
 
@@ -127,15 +130,6 @@ class BaseHandler(CommonRequestHandler):
             self.set_secure_cookie("login",
                                pickle.dumps((user.username, int(time.time()))),
                                expires_days=None)
-
-        # If this is the first time we see user during the active
-        # phase of the contest, we note that his/her time starts from
-        # now.
-        if self.contest.phase(timestamp) == 0 and \
-           user.starting_time is None:
-            logger.info("Starting now for user %s" % user.username)
-            user.starting_time = timestamp
-            self.sql_session.commit()
 
         return user
 
@@ -162,27 +156,30 @@ class BaseHandler(CommonRequestHandler):
 
         """
         ret = {}
-        ret["timestamp"] = int(time.time())
+        ret["timestamp"] = make_datetime()
         ret["contest"] = self.contest
         ret["url_root"] = get_url_root(self.request.path)
-        ret["valid_phase_end"] = self.contest.stop
-        if(self.contest is not None):
-            ret["phase"] = self.contest.phase(ret["timestamp"])
+        ret["cookie"] = str(self.cookies)  # FIXME really needed?
+
+        ret["phase"] = self.contest.phase(ret["timestamp"])
+
+        if self.current_user is not None:
+            # "correct" the phase, considering the per_user_time
+            ret["actual_phase"] = 2 * ret["phase"]
             # If we have a user logged in, the contest may be ended
             # before contest.stop if the user has finished the time
             # allocated for him/her.
-            if ret["phase"] == 0 and \
-                   self.current_user is not None and \
-                   self.contest.per_user_time is not None:
-                delta = ret["timestamp"] - self.current_user.starting_time
-                if delta >= self.contest.per_user_time:
-                    ret["phase"] = 1
-                user_end_time = (self.current_user.starting_time +
-                                 self.contest.per_user_time)
-                if user_end_time < self.contest.stop:
-                    ret["valid_phase_end"] = user_end_time
-        ret["contest_list"] = self.sql_session.query(Contest).all()
-        ret["cookie"] = str(self.cookies)
+            ret["valid_phase_end"] = self.contest.stop
+            if ret["phase"] == 0 and self.contest.per_user_time is not None:
+                if self.current_user.starting_time is None:
+                    ret["actual_phase"] = -1
+                else:
+                    user_end_time = (self.current_user.starting_time +
+                                     self.contest.per_user_time)
+                    if user_end_time < self.contest.stop:
+                        ret["valid_phase_end"] = user_end_time
+                    if user_end_time <= ret["timestamp"]:
+                        ret["actual_phase"] = 1
 
         # some information about token configuration
         ret["tokens_contest"] = self._get_token_status(self.contest)
@@ -302,6 +299,7 @@ class DocumentationHandler(BaseHandler):
 
     """
     @catch_exceptions
+    @tornado.web.authenticated
     def get(self):
         self.render("documentation.html", **self.r_params)
 
@@ -342,6 +340,26 @@ class LoginHandler(BaseHandler):
         self.redirect(next_page)
 
 
+class StartHandler(BaseHandler):
+    """Start handler.
+
+    Used by a user who wants to start his per_user_time.
+
+    """
+    @catch_exceptions
+    @tornado.web.authenticated
+    @actual_phase_required(-1)
+    def post(self):
+        user = self.get_current_user()
+        timestamp = make_datetime()
+
+        logger.info("Starting now for user %s" % user.username)
+        user.starting_time = timestamp
+        self.sql_session.commit()
+
+        self.redirect("/")
+
+
 class LogoutHandler(BaseHandler):
     """Logout handler.
 
@@ -358,8 +376,8 @@ class TaskDescriptionHandler(BaseHandler):
     """
     @catch_exceptions
     @decrypt_arguments
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     def get(self, task_id):
 
         self.r_params["task"] = Task.get_from_id(task_id, self.sql_session)
@@ -380,8 +398,8 @@ class TaskSubmissionsHandler(BaseHandler):
     """
     @catch_exceptions
     @decrypt_arguments
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     def get(self, task_id):
 
         self.r_params["task"] = Task.get_from_id(task_id, self.sql_session)
@@ -401,8 +419,8 @@ class TaskStatementViewHandler(FileHandler):
 
     """
     @catch_exceptions
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     @tornado.web.asynchronous
     def get(self, task_id, lang_code):
         try:
@@ -428,8 +446,8 @@ class TaskAttachmentViewHandler(FileHandler):
 
     """
     @catch_exceptions
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     @tornado.web.asynchronous
     def get(self, task_id, filename):
         try:
@@ -460,8 +478,8 @@ class SubmissionFileHandler(FileHandler):
     """
     @catch_exceptions
     @decrypt_arguments
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     @tornado.web.asynchronous
     def get(self, file_id):
 
@@ -504,19 +522,20 @@ class NotificationsHandler(BaseHandler):
     refresh_cookie = False
 
     @catch_exceptions
+    @tornado.web.authenticated
     def get(self):
         if not self.current_user:
             raise tornado.web.HTTPError(403)
-        timestamp = int(time.time())
+        timestamp = make_datetime()
         res = []
-        last_notification = float(self.get_argument("last_notification", "0"))
+        last_notification = make_datetime(float(self.get_argument("last_notification", "0")))
 
         # Announcements
         for announcement in self.contest.announcements:
             if announcement.timestamp > last_notification \
                    and announcement.timestamp < timestamp:
                 res.append({"type": "announcement",
-                            "timestamp": announcement.timestamp,
+                            "timestamp": make_timestamp(announcement.timestamp),
                             "subject": announcement.subject,
                             "text": announcement.text})
 
@@ -526,7 +545,7 @@ class NotificationsHandler(BaseHandler):
                 if message.timestamp > last_notification \
                        and message.timestamp < timestamp:
                     res.append({"type": "message",
-                                "timestamp": message.timestamp,
+                                "timestamp": make_timestamp(message.timestamp),
                                 "subject": message.subject,
                                 "text": message.text})
 
@@ -542,7 +561,7 @@ class NotificationsHandler(BaseHandler):
                     elif question.reply_text is None:
                         text = ""
                     res.append({"type": "question",
-                                "timestamp": question.reply_timestamp,
+                                "timestamp": make_timestamp(question.reply_timestamp),
                                 "subject": subject,
                                 "text": text})
 
@@ -559,7 +578,7 @@ class NotificationsHandler(BaseHandler):
         if username in notifications:
             for notification in notifications[username]:
                 res.append({"type": "notification",
-                            "timestamp": notification[0],
+                            "timestamp": make_timestamp(notification[0]),
                             "subject": notification[1],
                             "text": notification[2]})
             del notifications[username]
@@ -578,7 +597,7 @@ class QuestionHandler(BaseHandler):
         if not config.allow_questions:
             raise tornado.web.HTTPError(404)
 
-        timestamp = int(time.time())
+        timestamp = make_datetime()
         question = Question(timestamp,
                             self.get_argument("question_subject", ""),
                             self.get_argument("question_text", ""),
@@ -605,8 +624,8 @@ class SubmitHandler(BaseHandler):
 
     """
     @decrypt_arguments
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     @tornado.web.asynchronous
     def post(self, task_id):
 
@@ -627,15 +646,15 @@ class SubmitHandler(BaseHandler):
             .order_by(Submission.timestamp.desc()).first()
         if last_submission is not None and \
                self.timestamp - last_submission.timestamp < \
-               config.min_submission_interval:
+               timedelta(seconds=config.min_submission_interval):
             self.application.service.add_notification(
                 self.current_user.username,
-                int(time.time()),
+                make_datetime(),
                 self._("Submissions too frequent!"),
                 self._("For each task, you can submit "
                        "again after %s seconds from last submission.") %
                 config.min_submission_interval)
-            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
         # Ensure that the user did not submit multiple files with the
@@ -643,10 +662,10 @@ class SubmitHandler(BaseHandler):
         if any(len(x) != 1 for x in self.request.files.values()):
             self.application.service.add_notification(
                 self.current_user.username,
-                int(time.time()),
+                make_datetime(),
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
-            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
         # If the user submitted an archive, extract it and use content
@@ -668,10 +687,10 @@ class SubmitHandler(BaseHandler):
             if archive_contents is None:
                 self.application.service.add_notification(
                     self.current_user.username,
-                    int(time.time()),
+                    make_datetime(),
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."))
-                self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+                self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
                 return
 
             for item in archive_contents:
@@ -687,10 +706,10 @@ class SubmitHandler(BaseHandler):
                                          and required.issuperset(provided))):
             self.application.service.add_notification(
                 self.current_user.username,
-                int(time.time()),
+                make_datetime(),
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
-            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
         # Add submitted files. After this, self.files is a dictionary
@@ -756,10 +775,10 @@ class SubmitHandler(BaseHandler):
         if error is not None:
             self.application.service.add_notification(
                 self.current_user.username,
-                int(time.time()),
+                make_datetime(),
                 self._("Invalid submission!"),
                 error)
-            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
         # Check if submitted files are small enough.
@@ -767,11 +786,11 @@ class SubmitHandler(BaseHandler):
                 for f in self.files.values()]):
             self.application.service.add_notification(
                 self.current_user.username,
-                int(time.time()),
+                make_datetime(),
                 self._("Submission too big!"),
                 self._("Each files must be at most %d bytes long.") %
                     config.max_submission_length)
-            self.redirect("/tasks/%s" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
         # All checks done, submission accepted.
@@ -788,11 +807,11 @@ class SubmitHandler(BaseHandler):
                     self.current_user.username)
                 if not os.path.exists(path):
                     os.makedirs(path)
-                with codecs.open(os.path.join(path, str(self.timestamp)),
+                with codecs.open(os.path.join(path, str(int(make_timestamp(self.timestamp)))),
                                  "w", "utf-8") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
-                                 self.task,
+                                 self.task.id,
                                  self.files), file_)
                 self.local_copy_saved = True
             except Exception as error:
@@ -808,7 +827,7 @@ class SubmitHandler(BaseHandler):
                     description="Submission file %s sent by %s at %d." % (
                         filename,
                         self.username,
-                        self.timestamp),
+                        make_timestamp(self.timestamp)),
                     binary_data=self.files[filename][1])
                 self.file_digests[filename] = digest
 
@@ -821,10 +840,11 @@ class SubmitHandler(BaseHandler):
                 message = "No local copy stored! Your submission was ignored."
             self.application.service.add_notification(
                 self.username,
-                int(time.time()),
+                make_datetime(),
                 self._("Submission storage failed!"),
                 self._(message))
-            self.redirect("/tasks/%s" % encrypt_number(self.task_id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task_id))
+            return
 
         # All the files are stored, ready to submit!
         self.sql_session = Session()
@@ -848,7 +868,7 @@ class SubmitHandler(BaseHandler):
             submission_id=submission.id)
         self.application.service.add_notification(
             self.username,
-            int(time.time()),
+            make_datetime(),
             self._("Submission received"),
             self._("Your submission has been received "
                    "and is currently being evaluated."))
@@ -865,8 +885,8 @@ class UseTokenHandler(BaseHandler):
 
     """
     @catch_exceptions
-    @valid_phase_required
     @tornado.web.authenticated
+    @actual_phase_required(0)
     def post(self):
 
         submission_id = self.get_argument("submission_id", "")
@@ -894,7 +914,7 @@ class UseTokenHandler(BaseHandler):
 
         # Don't trust the user, check again if (s)he can really play
         # the token.
-        timestamp = int(time.time())
+        timestamp = make_datetime()
         tokens_available = self.contest.tokens_available(
                                self.current_user.username,
                                submission.task.name,
@@ -942,9 +962,9 @@ class SubmissionStatusHandler(BaseHandler):
     refresh_cookie = False
 
     @catch_exceptions
-    @tornado.web.authenticated
-    @valid_phase_required
     @decrypt_arguments
+    @tornado.web.authenticated
+    @actual_phase_required(0)
     def get(self, sub_id):
         submission = Submission.get_from_id(sub_id, self.sql_session)
         if submission.user.id != self.current_user.id or \
@@ -979,6 +999,7 @@ _cws_handlers = [
     (r"/",       MainHandler),
     (r"/login",  LoginHandler),
     (r"/logout", LogoutHandler),
+    (r"/start",  StartHandler),
     (r"/tasks/([%s]+)/description" % enc_alph, TaskDescriptionHandler),
     (r"/tasks/([%s]+)/submissions" % enc_alph, TaskSubmissionsHandler),
     (r"/tasks/([%s]+)/statements/(.*)" % enc_alph, TaskStatementViewHandler),

@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,8 +25,10 @@ directly (import it from SQLAlchemyAll).
 
 """
 
+from datetime import timedelta
+
 from sqlalchemy import Column, ForeignKey, UniqueConstraint, CheckConstraint, \
-     Boolean, Integer, String, Float
+     Boolean, Integer, String, Float, Interval
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -104,9 +107,9 @@ class Task(Base):
     token_total = Column(
         Integer, CheckConstraint("token_total > 0"), nullable=True)
     token_min_interval = Column(
-        Integer, CheckConstraint("token_min_interval >= 0"), nullable=False)
+        Interval, CheckConstraint("token_min_interval >= '0 seconds'"), nullable=False)
     token_gen_time = Column(
-        Integer, CheckConstraint("token_gen_time >= 0"), nullable=False)
+        Interval, CheckConstraint("token_gen_time >= '0 seconds'"), nullable=False)
     token_gen_number = Column(
         Integer, CheckConstraint("token_gen_number >= 0"), nullable=False)
 
@@ -127,8 +130,9 @@ class Task(Base):
                  time_limit, memory_limit, official_language,
                  task_type, task_type_parameters, submission_format, managers,
                  score_type, score_parameters, testcases,
-                 token_initial=0, token_max=0, token_total=0,
-                 token_min_interval=0, token_gen_time=60, token_gen_number=1,
+                 token_initial=None, token_max=None, token_total=None,
+                 token_min_interval=timedelta(),
+                 token_gen_time=timedelta(), token_gen_number=0,
                  contest=None, num=0):
         for filename, attachment in attachments.iteritems():
             attachment.filename = filename
@@ -191,8 +195,8 @@ class Task(Base):
                 'token_initial':        self.token_initial,
                 'token_max':            self.token_max,
                 'token_total':          self.token_total,
-                'token_min_interval':   self.token_min_interval,
-                'token_gen_time':       self.token_gen_time,
+                'token_min_interval':   self.token_min_interval.total_seconds(),
+                'token_gen_time':       self.token_gen_time.total_seconds() / 60,
                 'token_gen_number':     self.token_gen_number}
 
     @classmethod
@@ -216,6 +220,8 @@ class Task(Base):
                               for statement_data in data['statements']]
         data['statements'] = dict([(statement.language, statement)
                                    for statement in data['statements']])
+        data['token_min_interval'] = timedelta(seconds=data['token_min_interval'])
+        data['token_gen_time'] = timedelta(minutes=data['token_gen_time'])
         return cls(**data)
 
 

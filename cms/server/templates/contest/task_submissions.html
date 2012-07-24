@@ -1,7 +1,9 @@
 {% extends base.html %}
 {% block core %}
 
-{% from cms.server import isoformat_time, isoformat_datetime, isoformat_datetime_smart %}
+{% from cms.server import format_time, format_datetime, format_datetime_smart %}
+
+{% if actual_phase == 0 %}
 
 <div class="span9 task_submissions">
 
@@ -72,11 +74,11 @@
             {{ _("Right now, you have %(tokens)s tokens available on this task.") % { "tokens": tokens_info[0]} }}
         {% end %}
         {% if need_to_wait %}
-            {% set t = isoformat_datetime_smart(tokens_info[2]) %}
+            {% set t = format_datetime_smart(tokens_info[2]) %}
             {% raw _("But you have to wait until %(expiration_time)s to use them.") % {"expiration_time": t} %}
         {% end %}
         {% if tokens_info[1] is not None %}
-            {% set t = isoformat_datetime_smart(tokens_info[1]) %}
+            {% set t = format_datetime_smart(tokens_info[1]) %}
             {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
         {% else %}
             {{ _("In the current situation, no more tokens will be generated.") }}
@@ -84,10 +86,10 @@
     {% else %}
         {{ _("Right now, you do not have tokens available for this task.") }}
         {% if tokens_info[1] is not None %}
-            {% set t = isoformat_datetime_smart(tokens_info[1]) %}
+            {% set t = format_datetime_smart(tokens_info[1]) %}
             {{ _("You will receive a new token at %(gen_time)s.") % {"gen_time": t} }}
             {% if tokens_info[2] is not None and tokens_info[2] > tokens_info[1] %}
-                {% set t = isoformat_datetime_smart(tokens_info[2]) %}
+                {% set t = format_datetime_smart(tokens_info[2]) %}
                 {{ _("But you will have to wait until %(expiration_time)s to use it.") % {"expiration_time": t} }}
             {% end %}
         {% else %}
@@ -99,7 +101,7 @@
 
 {% from cms.grading.scoretypes import get_score_type %}
 
-{% set show_date = any(datetime.datetime.fromtimestamp(s.timestamp).date() != datetime.date.today() for s in submissions) %}
+{% set show_date = any(s.timestamp.date() != datetime.date.today() for s in submissions) %}
 
 <table class="table table-bordered table-striped previous_submissions">
     <colgroup>
@@ -147,4 +149,6 @@
 </table>
 
 </div>
+{% end %}
+
 {% end %}

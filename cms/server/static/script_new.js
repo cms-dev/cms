@@ -5,11 +5,13 @@
 var Utils = new function () {
     var self = this;
 
-    self.init = function (timestamp, contest_start, contest_stop, phase) {
+    self.init = function (timestamp, contest_start, contest_stop, valid_phase_end, phase) {
         self.last_notification = timestamp;
-        self.timestamp = timestamp;
+        self.server_timestamp = timestamp;
+        self.client_timestamp = $.now() / 1000;
         self.contest_start = contest_start;
         self.contest_stop = contest_stop;
+        self.valid_phase_end = valid_phase_end;
         self.phase = phase;
         self.remaining_div = null;
         self.unread_count = 0;
@@ -70,63 +72,102 @@ var Utils = new function () {
 
     self.format_iso_date = function (timestamp) {
         var date = new Date(timestamp * 1000);
-        return date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+        var result = date.getFullYear() + "-";
+        if (date.getMonth() < 9)
+            result += "0";
+        result += (date.getMonth() + 1) + "-";
+        if (date.getDate() < 10)
+            result += "0";
+        result += date.getDate();
+        return result;
     };
 
-    self.format_iso_time = function (timestamp) {
+    self.format_time = function (timestamp) {
         var date = new Date(timestamp * 1000);
+        var result = "";
         if (date.getHours() < 10)
-            return "0" + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
-        else
-            return date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+            result += "0";
+        result += date.getHours() + ":"
+        if (date.getMinutes() < 10)
+            result += "0";
+        result += date.getMinutes() + ":"
+        if (date.getSeconds() < 10)
+            result += "0";
+        result += date.getSeconds();
+        return result;
     };
 
     self.format_iso_datetime = function (timestamp) {
         /* the result value differs from Date.toISOString() because if uses
            " " as a date/time separator (instead of "T") and because it stops
            at the seconds (and not at milliseconds) */
-        return self.format_iso_date(timestamp) + " " + self.format_iso_time(timestamp);
+        return self.format_iso_date(timestamp) + " " + self.format_time(timestamp);
     };
 
-    self.get_time = function () {
-        if (self.contest_stop != null)
-            var sec_to_end = self.contest_stop - self.timestamp ;
-        else
-            var sec_to_end = Infinity;
+    self.format_timedelta = function (timedelta) {
+        var hours = Math.floor(timedelta / 3600);
+        timedelta %= 3600;
+        var minutes = Math.floor(timedelta / 60);
+        timedelta %= 60;
+        var seconds = Math.floor(timedelta);
+        var result = "";
+        if (hours < 10)
+            result += "0";
+        result += hours + ":"
+        if (minutes < 10)
+            result += "0";
+        result += minutes + ":"
+        if (seconds < 10)
+            result += "0";
+        result += seconds;
+        return result;
+    }
 
-        if (self.contest_start != null)
-            var sec_to_start = self.contest_start - self.timestamp;
-        else
-            var sec_to_start = -Infinity;
+    self.update_time = function () {
+        var now = $.now() / 1000;
 
-        var now = new Date();
+        var server_time = now - self.client_timestamp + self.server_timestamp;
+        $("#server_time").text(self.format_time(server_time));
 
-        var nowsec_to_end = sec_to_end - (now - firstDate) / 1000;
-        var nowsec_to_start = sec_to_start - (now - firstDate) / 1000;
-        if ((nowsec_to_end <= 0 && self.phase == 0 ) ||
-            (nowsec_to_start <= 0 && self.phase == -1 ))
-            window.location.href = url_root + "/";
+        // TODO consider possible null values of contest.start and contest.stop (they mean -inf and +inf)
+        // FIXME use server_time instead of now
+        // FIXME localize strings
 
-        countdown = nowsec_to_end;
-
-        if (self.phase == -1)
-            countdown = nowsec_to_start;
-
-        var hours = countdown / 60 / 60;
-        var hoursR = Math.floor(hours);
-        var minutes = countdown / 60 - (60*hoursR);
-        var minutesR = Math.floor(minutes);
-        var seconds = countdown - (60*60*hoursR) - (60*minutesR);
-        var secondsR = Math.floor(seconds);
-        if (minutesR < 10) m = "0" + minutesR;
-        else m = minutesR;
-        if (secondsR < 10) s = "0" + secondsR;
-        else s = secondsR;
-
-        if (self.remaining_div == null)
-            self.remaining_div = $("#remaining");
-        if (self.remaining_div != null)
-            self.remaining_div.text(hoursR + ":" + m + ":" + s);
+        switch (self.phase) {
+        case -2:
+            // contest hasn't started yet
+            if (now >= self.contest_start) {
+                window.location.href = url_root + "/";
+            }
+            $("#countdown_label").text("Until contest starts:");
+            $("#countdown").text(self.format_timedelta(self.contest_start - now));
+            break;
+        case -1:
+            // contest has already started but user hasn't started its time yet
+            $("#countdown_label").text("Until contest ends:");
+            $("#countdown").text(self.format_timedelta(self.contest_stop - now));
+            break;
+        case 0:
+            // contest is currently running
+            if (now >= self.valid_phase_end) {
+                window.location.href = url_root + "/";
+            }
+            $("#countdown_label").text("Time left:");
+            $("#countdown").text(self.format_timedelta(self.valid_phase_end - now));
+            break;
+        case +1:
+            // user has already finished its time but contest hasn't finished yet
+            if (now >= self.contest_stop) {
+                window.location.href = url_root + "/";
+            }
+            $("#countdown_label").text("Until contest ends:");
+            $("#countdown").text(self.format_timedelta(self.contest_stop - now));
+            break;
+        case +2:
+            // contest has already finished
+            $("#countdown_box").addClass("hidden");
+            break;
+        }
     };
 };
 

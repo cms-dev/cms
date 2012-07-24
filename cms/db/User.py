@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,12 +25,16 @@ directly (import it from SQLAlchemyAll).
 
 """
 
+import time
+from datetime import datetime
+
 from sqlalchemy import Column, ForeignKey, UniqueConstraint, \
-     Boolean, Integer, Float, String
+     Boolean, Integer, Float, String, DateTime
 from sqlalchemy.orm import relationship, backref
 
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Contest import Contest
+from cmscommon.DateTime import make_datetime, make_timestamp
 
 
 class User(Base):
@@ -84,7 +89,7 @@ class User(Base):
     # Starting time: for contests where every user has at most x hours
     # of the y > x hours totally available. This is the first time the
     # user logged in while the contest was active.
-    starting_time = Column(Integer, nullable=True)
+    starting_time = Column(DateTime, nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
@@ -135,7 +140,7 @@ class User(Base):
                 'timezone':      self.timezone,
                 'ip':            self.ip,
                 'hidden':        self.hidden,
-                'starting_time': self.starting_time,
+                'starting_time': make_timestamp(self.starting_time) if self.starting_time is not None else None,
                 'messages':      [message.export_to_dict()
                                   for message in self.messages],
                 'questions':     [question.export_to_dict()
@@ -154,7 +159,7 @@ class Message(Base):
     id = Column(Integer, primary_key=True)
 
     # Time the message was sent.
-    timestamp = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
 
     # Subject and body of the message.
     subject = Column(String, nullable=False)
@@ -183,9 +188,17 @@ class Message(Base):
         """Return object data as a dictionary.
 
         """
-        return {'timestamp': self.timestamp,
+        return {'timestamp': make_timestamp(self.timestamp),
                 'subject':   self.subject,
                 'text':      self.text}
+
+    @classmethod
+    def import_from_dict(cls, data):
+        """Build the object using data from a dictionary.
+
+        """
+        data['timestamp'] = make_datetime(data['timestamp'])
+        return cls(**data)
 
 
 class Question(Base):
@@ -200,14 +213,14 @@ class Question(Base):
     id = Column(Integer, primary_key=True)
 
     # Time the question was made.
-    question_timestamp = Column(Integer, nullable=False)
+    question_timestamp = Column(DateTime, nullable=False)
 
     # Subject and body of the question.
     subject = Column(String, nullable=False)
     text = Column(String, nullable=False)
 
     # Time the reply was sent.
-    reply_timestamp = Column(Integer, nullable=True)
+    reply_timestamp = Column(DateTime, nullable=True)
 
     # Has this message been ignored by the admins?
     ignored = Column(Boolean, nullable=False)
@@ -246,10 +259,20 @@ class Question(Base):
         """Return object data as a dictionary.
 
         """
-        return {'question_timestamp': self.question_timestamp,
+        return {'question_timestamp': make_timestamp(self.question_timestamp),
                 'subject':            self.subject,
                 'text':               self.text,
-                'reply_timestamp':    self.reply_timestamp,
+                'reply_timestamp':    make_timestamp(self.reply_timestamp) if self.reply_timestamp is not None else None,
                 'reply_subject':      self.reply_subject,
                 'reply_text':         self.reply_text,
                 'ignored':            self.ignored}
+
+    @classmethod
+    def import_from_dict(cls, data):
+        """Build the object using data from a dictionary.
+
+        """
+        data['question_timestamp'] = make_datetime(data['question_timestamp'])
+        if data['reply_timestamp'] is not None:
+            data['reply_timestamp'] = make_datetime(data['reply_timestamp'])
+        return cls(**data)

@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -24,9 +25,9 @@
 """
 
 import os
-import datetime
 import traceback
 import time
+from datetime import datetime, date, timedelta
 
 import tarfile
 import zipfile
@@ -38,19 +39,39 @@ import tornado.locale
 from cms import logger
 from cms.db.FileCacher import FileCacher
 from cmscommon.Cryptographics import decrypt_number
+from cmscommon.DateTime import make_datetime, utc, local
 
 
-def valid_phase_required(func):
-    """Decorator that rejects requests outside the contest phase.
+def phase_required(phase):
+    """Return decorator that accepts requests iff contest is in the given phase
 
     """
-    @wraps(func)
-    def newfunc(self, *args, **kwargs):
-        if self.r_params["phase"] != 0:
-            self.redirect("/")
-        else:
-            return func(self, *args, **kwargs)
-    return newfunc
+    def decorator(func):
+        @wraps(func)
+        def wrapped(self, *args, **kwargs):
+            if self.r_params["phase"] != phase:
+                # TODO maybe return some error code?
+                self.redirect("/")
+            else:
+                return func(self, *args, **kwargs)
+        return wrapped
+    return decorator
+
+
+def actual_phase_required(actual_phase):
+    """Return decorator that accepts requests iff contest is in the given phase
+
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapped(self, *args, **kwargs):
+            if self.r_params["actual_phase"] != actual_phase:
+                # TODO maybe return some error code?
+                self.redirect("/")
+            else:
+                return func(self, *args, **kwargs)
+        return wrapped
+    return decorator
 
 
 def catch_exceptions(func):
@@ -144,101 +165,124 @@ def extract_archive(temp_name, original_filename):
     return file_list
 
 
-def format_time_or_date(timestamp):
-    """Return timestamp formatted as HH:MM:SS if the date is
-    the same date as today, as a complete date + time if the
-    date is different.
+def format_date (dt, locale=None):
+    """Return the date of dt formatted according to the given locale
 
-    timestamp (int): unix time.
-
-    return (string): timestamp formatted as above.
+    dt (datetime): a datetime object
+    return (str): the date of dt, formatted using the given locale
 
     """
-    dt_ts = datetime.datetime.fromtimestamp(timestamp)
-    if dt_ts.date() == datetime.date.today():
-        return dt_ts.strftime("%H:%M:%S")
+    if locale is None:
+        locale = tornado.locale.get()
+
+    # convert dt from UTC to local time
+    dt = dt.replace(tzinfo=utc).astimezone(local)
+
+    return dt.strftime(locale.translate("%Y-%m-%d"))
+
+
+def format_time (dt, locale=None):
+    """Return the time of dt formatted according to the given locale
+
+    dt (datetime): a datetime object
+    return (str): the time of dt, formatted using the given locale
+
+    """
+    if locale is None:
+        locale = tornado.locale.get()
+
+    # convert dt from UTC to local time
+    dt = dt.replace(tzinfo=utc).astimezone(local)
+
+    return dt.strftime(locale.translate("%H:%M:%S"))
+
+
+def format_datetime (dt, locale=None):
+    """Return the date and time of dt formatted according to the given locale
+
+    dt (datetime): a datetime object
+    return (str): the date and time of dt, formatted using the given locale
+
+    """
+    if locale is None:
+        locale = tornado.locale.get()
+
+    # convert dt from UTC to local time
+    dt = dt.replace(tzinfo=utc).astimezone(local)
+
+    return dt.strftime(locale.translate("%Y-%m-%d %H:%M:%S"))
+
+
+def format_datetime_smart (dt, locale=None):
+    """Return dt formatted as 'date & time' or, if date is today, just 'time'
+
+    dt (datetime): a datetime object
+    return (str): the [date and] time of dt, formatted using the given locale
+
+    """
+    if locale is None:
+        locale = tornado.locale.get()
+
+    # convert dt and 'now' from UTC to local time
+    dt = dt.replace(tzinfo=utc).astimezone(local)
+    now = make_datetime().replace(tzinfo=utc).astimezone(local)
+
+    if dt.date() == now.date():
+        return dt.strftime(locale.translate("%H:%M:%S"))
     else:
-        return dt_ts.strftime("%H:%M:%S, %d/%m/%Y")
+        return dt.strftime(locale.translate("%Y-%m-%d %H:%M:%S"))
 
 
-def isoformat_datetime (timestamp):
-    """Return timestamp formatted as YYYY-MM-DD hh:mm:ss (ISO format)
+def format_amount_of_time(seconds, precision=2, locale=None):
+    """Return the number of seconds formatted 'X days, Y hours, ...'
 
-    timestamp (int): POSIX timestamp
-
-    return (string): timestamp in ISO format (without timezone indicators)
-
-    """
-    return datetime.datetime.fromtimestamp(timestamp).isoformat(' ')
-
-
-def isoformat_date (timestamp):
-    """Return timestamp formatted as YYYY-MM-DD (ISO format)
-
-    timestamp (int): POSIX timestamp
-
-    return (string): timestamp in ISO format (without timezone indicators)
-
-    """
-    return datetime.datetime.fromtimestamp(timestamp).date().isoformat()
-
-
-def isoformat_time (timestamp):
-    """Return timestamp formatted as hh:mm:ss
-
-    timestamp (int): POSIX timestamp
-
-    return (string): timestamp in ISO format (without timezone indicators)
-
-    """
-    return datetime.datetime.fromtimestamp(timestamp).time().isoformat()
-
-
-def isoformat_datetime_smart (timestamp):
-    """Return timestamp formatted as [YYYY-MM-DD ]HH:MM:SS (ISO format)
-
-    If the day is the same as today, return only the time. Else return
-    both the date and the time.
-
-    timestamp (int): POSIX timestamp
-
-    return (string): timestamp in ISO format (without timezone indicators)
-
-    """
-    dt_ts = datetime.datetime.fromtimestamp(timestamp)
-    if dt_ts.date() == datetime.date.today():
-        return isoformat_time(timestamp)
-    else:
-        return isoformat_datetime(timestamp)
-
-
-def format_amount_of_time(seconds):
-    """Return the number of seconds formatted 'xxx days, yyy hours,
-    ...'.
+    The time units that will be used are days, hours, minutes, seconds.
+    Only the first "precision" units will be output. If they're not
+    enough, a "more than ..." will be prefixed (non-positive precision
+    means infinite).
 
     seconds (int): the length of the amount of time in seconds.
+    precision (int): see above
+    locale (tornado.locale.Locale): the locale to be used.
 
     return (string): seconds formatted as above.
 
     """
-    ret = []
-    times = [("day", 60 * 60 * 24),
+    seconds = abs(int(seconds))
+
+    if locale is None:
+        locale = tornado.locale.get()
+
+    if seconds == 0:
+        return locale.translate("0 seconds")
+
+    units = [("day", 60 * 60 * 24),
              ("hour", 60 * 60),
              ("minute", 60),
              ("second", 1)]
 
-    for time_ in times:
-        tmp = seconds // time_[1]
-        seconds %= time_[1]
-        if tmp > 1:
-            ret.append("%s %ss" % (tmp, time_[0]))
+    ret = list()
+    counter = 0
+
+    for name, length in units:
+        tmp = seconds // length
+        seconds %= length
+        if tmp == 0:
+            continue
         elif tmp == 1:
-            ret.append("1 %s" % time_[0])
+            ret.append(locale.translate("1 %s" % name))
+        else:
+            ret.append(locale.translate("%%d %ss" % name) % tmp)
+        counter += 1
+        if counter == precision:
+            break
 
-    if ret == []:
-        ret = ["0 seconds"]
+    ret = locale.list(ret)
 
-    return ", ".join(ret)
+    if seconds > 0:
+        ret = locale.translate("more than %s") % ret
+
+    return ret
 
 
 def format_token_rules (tokens, t_type=None, locale=None):
@@ -269,6 +313,9 @@ def format_token_rules (tokens, t_type=None, locale=None):
         tokens["type_none"] = locale.translate("no tokens")
         tokens["type_s"] = locale.translate("token")
         tokens["type_pl"] = locale.translate("tokens")
+
+    tokens["min_interval"] = int(tokens["min_interval"].total_seconds())
+    tokens["gen_time"] = int(tokens["gen_time"].total_seconds() / 60)
 
     result = ""
 

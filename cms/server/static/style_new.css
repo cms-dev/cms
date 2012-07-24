@@ -346,3 +346,38 @@ td.token_rules p:last-child {
     font-style: italic;
     text-align: center !important;
 }
+
+/*** per-user time box */
+
+.per_user_time p:last-child {
+    margin-bottom: 0;
+}
+
+/*** Countdown */
+
+#countdown_box {
+    text-align: center;
+    color: #333333;
+    margin: 0 0 8px;
+}
+
+#countdown_box.hidden {
+    display: none;
+}
+
+#countdown_label {
+    color: #999999;
+}
+
+/*** Server time */
+
+#server_time_box {
+    text-align: center;
+    color: #333333;
+    margin: 0 0 8px;
+}
+
+#server_time_label {
+    color: #999999;
+}
+

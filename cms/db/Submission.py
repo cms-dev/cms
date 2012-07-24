@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,9 +26,10 @@ used directly (import  from SQLAlchemyAll).
 """
 
 import time
+from datetime import datetime
 
 from sqlalchemy import Column, ForeignKey, UniqueConstraint, \
-     Integer, String, Float
+     Integer, String, Float, DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -35,6 +37,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Task import Task
 from cms.db.User import User
+from cmscommon.DateTime import make_datetime, make_timestamp
 
 
 class Submission(Base):
@@ -70,7 +73,7 @@ class Submission(Base):
                                         cascade="all, delete, delete-orphan"))
 
     # Time of the submission.
-    timestamp = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
 
     # Language of submission, or None if not applicable.
     language = Column(String, nullable=True)
@@ -155,7 +158,7 @@ class Submission(Base):
         """
         res = {
             'task': self.task.name,
-            'timestamp': self.timestamp,
+            'timestamp': make_timestamp(self.timestamp),
             'files': [_file.export_to_dict()
                       for _file in self.files.itervalues()],
             'language': self.language,
@@ -196,6 +199,7 @@ class Submission(Base):
             data['token'] = Token.import_from_dict(data['token'])
         data['task'] = tasks_by_name[data['task']]
         data['user'] = None
+        data['timestamp'] = make_datetime(data['timestamp'])
         return cls(**data)
 
     def tokened(self):
@@ -296,11 +300,11 @@ class Token(Base):
                               single_parent=True)
 
     # Time the token was played.
-    timestamp = Column(Integer, nullable=False)
+    timestamp = Column(DateTime, nullable=False)
 
     def __init__(self, timestamp=None, submission=None):
         if timestamp is None:
-            timestamp = int(time.time())
+            timestamp = make_datetime()
         self.timestamp = timestamp
         self.submission = submission
 
@@ -309,8 +313,16 @@ class Token(Base):
 
         """
         return {
-            'timestamp': self.timestamp
+            'timestamp': make_timestamp(self.timestamp)
             }
+
+    @classmethod
+    def import_from_dict(cls, data):
+        """Build the object using data from a dictionary.
+
+        """
+        data['timestamp'] = make_datetime(data['timestamp'])
+        return cls(**data)
 
 
 class File(Base):
