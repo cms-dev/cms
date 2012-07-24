@@ -178,7 +178,7 @@ class BaseHandler(CommonRequestHandler):
         non-negative integer.
 
         """
-        argument = self.get_argument(argument_name, repr(default))
+        argument = self.get_argument(argument_name, None)
         if allow_empty and \
                (argument is None or argument == "" or argument == "None"):
             return None
