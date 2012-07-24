@@ -8,4 +8,4 @@ pycrypto>=2.3
 pyyaml>=3.10
 BeautifulSoup>=3.2
 coverage>=3.4
-pytz >= ???
+pytz>=2011k
