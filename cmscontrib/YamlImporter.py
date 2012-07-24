@@ -36,7 +36,7 @@ from cms.db import analyze_all_tables
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Manager, \
     Testcase, User, Contest, SubmissionFormatElement, FSObject, \
-    Submission, Statement
+    Submission, Statement, Attachment
 
 
 class YamlLoader:
@@ -163,53 +163,30 @@ class YamlLoader:
         params["num"] = num
         params["time_limit"] = conf["timeout"]
         params["memory_limit"] = conf["memlimit"]
-        params["attachments"] = {}  # FIXME - Use auxiliary
+        
+        params["attachments"] = []
+        if os.path.isdir(os.path.join(path, "att")):
+            for filename in os.listdir(os.path.join(path,"att")):
+                params["attachments"].append(
+                    Attachment(self.file_cacher.put_file(
+                        path=os.path.join(path, "att", filename),
+                        description="Attachment %s for %s" % (filename, name)),
+                    filename).export_to_dict())
         params["statements"] = [
             Statement(self.file_cacher.put_file(
                 path=os.path.join(path, "testo", "testo.pdf"),
                 description="Statement for task %s (lang: )" % name),
                 "").export_to_dict()]
         params["official_language"] = ""
-
-        params["task_type"] = "Batch"
-
-        params["submission_format"] = [
-            SubmissionFormatElement("%s.%%l" % name).export_to_dict()]
-
-        if os.path.exists(os.path.join(path, "cor", "correttore")):
-            params["managers"] = [
-                Manager(self.file_cacher.put_file(
-                    path=os.path.join(path, "cor", "correttore"),
-                    description="Manager for task %s" % (name)),
-                        "checker").export_to_dict()]
-            params["task_type_parameters"] = \
-                '["alone", ["input.txt", "output.txt"], "comparator"]'
-        elif os.path.exists(os.path.join(path, "cor", "manager")):
-            params["task_type"] = "Communication"
-            params["task_type_parameters"] = '[]'
-            params["managers"] = [
-                Manager(self.file_cacher.put_file(
-                    path=os.path.join(path, "cor", "manager"),
-                    description="Manager for task %s" % (name)),
-                        "manager").export_to_dict()]
-            for lang in Submission.LANGUAGES:
-                stub_name = os.path.join(path, "sol", "stub.%s" % lang)
-                if os.path.exists(stub_name):
-                    params["managers"].append(
-                        Manager(self.file_cacher.put_file(
-                            path=stub_name,
-                            description="Stub for task %s and language %s" % \
-                            (name, lang)),
-                                "stub.%s" % lang).export_to_dict())
-                else:
-                    logger.warning("Stub for language %s not found." % lang)
-        else:
-            params["managers"] = {}
-            params["task_type_parameters"] = \
-                '["alone", ["input.txt", "output.txt"], "diff"]'
         params["score_type"] = conf.get("score_type", "Sum")
-        params["score_parameters"] = conf.get(
-            "score_parameters", str(100.0 / float(conf["n_input"])))
+        
+        if params["score_type"]=="Multiply":
+            params["score_parameters"] = conf.get(
+                "score_parameters", "100.0")
+        else:
+            params["score_parameters"] = conf.get(
+                "score_parameters", str(100.0 / float(conf["n_input"])))
+        
         public_testcases = conf.get("risultati", "").strip()
         if public_testcases != "":
             public_testcases = [int(x.strip())
@@ -231,13 +208,109 @@ class YamlLoader:
         params["token_initial"] = conf.get("token_initial", None)
         params["token_max"] = conf.get("token_max", None)
         params["token_total"] = conf.get("token_total", None)
-        params["token_min_interval"] = conf.get("token_min_interval", 0)
+        params["token_min_interval"] = conf.get("token_min_interval",0)
         params["token_gen_time"] = conf.get("token_gen_time", 0)
         params["token_gen_number"] = conf.get("token_gen_number", 0)
+        
+        params["task_type"] = conf.get("task_type","Batch");
+    
+        if params["task_type"]=="TwoSteps":
+            header_map={"cpp": "h", "c": "h", "pas": "lib.pas"}
+            params["submission_format"] = conf["submission_format"];
+            params["managers"]= [ ]
+            for lang in Submission.LANGUAGES:
+                for f in params["submission_format"]:
+                    hname=f.replace("%l",header_map[lang])
+                    if os.path.exists(os.path.join(path,"cor",hname)):
+                        params["managers"].append(
+                            Manager(self.file_cacher.put_file(
+                                path=os.path.join(path, "cor",hname),
+                                description="%s for task %s" % (hname,name)),
+                                hname).export_to_dict())
+                        params["attachments"].append(
+                            Attachment(self.file_cacher.put_file(
+                                path=os.path.join(path, "cor",hname),
+                                description="%s for task %s" % (hname,name)),
+                                hname).export_to_dict())
+                    else:
+                        logger.warning("%s not found." % hname)
+                fname="manager.%s" % lang 
+                if os.path.exists(os.path.join(path,"cor",fname)):
+                    params["managers"].append(
+                        Manager(self.file_cacher.put_file(
+                            path=os.path.join(path, "cor",fname),
+                            description="%s for task %s" % (fname,name)),
+                            fname).export_to_dict())
+                else:
+                   logger.warning("Manager for language %s not found." % lang)
+                fname="manager.%s" % header_map[lang] 
+                if os.path.exists(os.path.join(path,"cor",fname)):
+                    params["managers"].append(
+                        Manager(self.file_cacher.put_file(
+                            path=os.path.join(path, "cor",fname),
+                            description="%s for task %s" % (fname,name)),
+                            fname).export_to_dict())
+                else:
+                   logger.warning("Manager header for language %s not found."
+                       % lang)
+            params["task_type_parameters"]= '[]'
+            params["submission_format"]=[
+                SubmissionFormatElement(el).export_to_dict() 
+                for el in params["submission_format"] ]
+            return params;
+    
+        params["submission_format"] = [
+            SubmissionFormatElement("%s.%%l" % name).export_to_dict()]
+
+        params["managers"]= [ ]
+        use_grader=os.path.exists(os.path.join(path, "cor", "grader.cpp"));
+        if use_grader:
+            params["managers"].append(
+                Manager(self.file_cacher.put_file(
+                    path=os.path.join(path, "cor", "grader.cpp"),
+                    description="Grader for %s" % name),
+                "grader.cpp").export_to_dict())
+        
+        if os.path.exists(os.path.join(path, "cor", "correttore")):
+            params["managers"].append(
+                Manager(self.file_cacher.put_file(
+                    path=os.path.join(path, "cor", "correttore"),
+                    description="Manager for task %s" % (name)),
+                        "checker").export_to_dict())
+            if use_grader:
+                params["task_type_parameters"] = \
+                    '["grader", ["input.txt", "output.txt"], "comparator"]'
+            else:
+                params["task_type_parameters"] = \
+                    '["alone", ["input.txt", "output.txt"], "comparator"]'    
+        elif os.path.exists(os.path.join(path, "cor", "manager")):
+            params["task_type"] = "Communication"
+            params["task_type_parameters"] = '[]'
+            params["managers"].append(
+                Manager(self.file_cacher.put_file(
+                    path=os.path.join(path, "cor", "manager"),
+                    description="Manager for task %s" % (name)),
+                        "manager").export_to_dict())
+            for lang in Submission.LANGUAGES:
+                stub_name = os.path.join(path, "sol", "stub.%s" % lang)
+                if os.path.exists(stub_name):
+                    params["managers"].append(
+                        Manager(self.file_cacher.put_file(
+                            path=stub_name,
+                            description="Stub for task %s and language %s" % \
+                            (name, lang)),
+                                "stub.%s" % lang).export_to_dict())
+                else:
+                    logger.warning("Stub for language %s not found." % lang)
+        else:
+            if use_grader:
+                params["task_type_parameters"] = \
+                    '["grader", ["input.txt", "output.txt"], "diff"]'
+            else:
+                params["task_type_parameters"] = \
+                    '["alone", ["input.txt", "output.txt"], "diff"]'
 
         logger.info("Task parameters loaded.")
-
-        params["attachments"] = []
 
         return params
 
