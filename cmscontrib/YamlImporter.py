@@ -76,12 +76,12 @@ class YamlLoader:
         params["name"] = name
         assert name == conf["nome_breve"]
         params["description"] = conf["nome"]
-        params["token_initial"] = conf.get("token_initial", 10000)
+        params["token_initial"] = conf.get("token_initial", None)
         params["token_max"] = conf.get("token_max", None)
         params["token_total"] = conf.get("token_total", None)
         params["token_min_interval"] = conf.get("token_min_interval", 0)
-        params["token_gen_time"] = conf.get("token_gen_time", None)
-        params["token_gen_number"] = conf.get("token_gen_number", None)
+        params["token_gen_time"] = conf.get("token_gen_time", 0)
+        params["token_gen_number"] = conf.get("token_gen_number", 0)
         if params["token_gen_time"] is None or \
                params["token_gen_number"] is None:
             params["token_gen_time"] = 1
@@ -205,12 +205,12 @@ class YamlLoader:
                     path=output,
                     description="Output %d for task %s" % (i, name)),
                 public=(i in public_testcases)).export_to_dict())
-        params["token_initial"] = conf.get("token_initial", 2)
-        params["token_max"] = conf.get("token_max", 10)
+        params["token_initial"] = conf.get("token_initial", None)
+        params["token_max"] = conf.get("token_max", None)
         params["token_total"] = conf.get("token_total", None)
-        params["token_min_interval"] = conf.get("token_min_interval", None)
-        params["token_gen_time"] = conf.get("token_gen_time", 30)
-        params["token_gen_number"] = conf.get("token_gen_number", 2)
+        params["token_min_interval"] = conf.get("token_min_interval",0)
+        params["token_gen_time"] = conf.get("token_gen_time", 0)
+        params["token_gen_number"] = conf.get("token_gen_number", 0)
         
         params["task_type"] = conf.get("task_type","Batch");
     

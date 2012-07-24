@@ -67,10 +67,6 @@ class User(Base):
     # User can log in CWS only from this ip.
     ip = Column(String, nullable=True)
 
-    # For future use (read: APIO contest times depend on the timezone
-    # of the user).
-    timezone = Column(Float, nullable=False)
-
     # A hidden user is used only for debugging purpose.
     hidden = Column(Boolean, nullable=False)
 
@@ -85,6 +81,14 @@ class User(Base):
         backref=backref("users",
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
+
+    # Timezone for the user. All timestamps in CWS will be shown using the
+    # timezone associated to the logged-in user or (if it's None or an
+    # invalid string) the timezone associated to the contest or (if it's
+    # None or an invalid string) the local timezone of the server.
+    # This value has to be a string like "Europe/Rome", "Australia/Sydney",
+    # "America/New_York", etc...
+    timezone = Column(String, nullable=True)
 
     # Starting time: for contests where every user has at most x hours
     # of the y > x hours totally available. This is the first time the
@@ -101,8 +105,8 @@ class User(Base):
     # get_tokens (defined in SQLAlchemyAll)
 
     def __init__(self, first_name, last_name, username, password=None,
-                 email=None, ip=None, timezone=0.0, contest=None,
-                 hidden=False, starting_time=None, messages=None,
+                 email=None, ip=None, contest=None, hidden=False,
+                 timezone=None, starting_time=None, messages=None,
                  questions=None, submissions=None):
         if password is None:
             import random
@@ -114,10 +118,10 @@ class User(Base):
         self.last_name = last_name
         self.username = username
         self.password = password
-        self.timezone = timezone
         self.email = email if email is not None else ""
         self.ip = ip if ip is not None else "0.0.0.0"
         self.hidden = hidden
+        self.timezone = timezone
         self.starting_time = starting_time
         self.messages = messages if messages is not None else []
         self.questions = questions if questions is not None else []
@@ -137,9 +141,9 @@ class User(Base):
                 'username':      self.username,
                 'password':      self.password,
                 'email':         self.email,
-                'timezone':      self.timezone,
                 'ip':            self.ip,
                 'hidden':        self.hidden,
+                'timezone':      self.timezone,
                 'starting_time': make_timestamp(self.starting_time) if self.starting_time is not None else None,
                 'messages':      [message.export_to_dict()
                                   for message in self.messages],

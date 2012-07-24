@@ -39,7 +39,7 @@ import tornado.locale
 from cms import logger
 from cms.db.FileCacher import FileCacher
 from cmscommon.Cryptographics import decrypt_number
-from cmscommon.DateTime import make_datetime, utc, local
+from cmscommon.DateTime import make_datetime, utc
 
 
 def phase_required(phase):
@@ -165,10 +165,11 @@ def extract_archive(temp_name, original_filename):
     return file_list
 
 
-def format_date (dt, locale=None):
+def format_date (dt, timezone, locale=None):
     """Return the date of dt formatted according to the given locale
 
     dt (datetime): a datetime object
+    timezone (subclass of tzinfo): the timezone the output should be in
     return (str): the date of dt, formatted using the given locale
 
     """
@@ -176,15 +177,16 @@ def format_date (dt, locale=None):
         locale = tornado.locale.get()
 
     # convert dt from UTC to local time
-    dt = dt.replace(tzinfo=utc).astimezone(local)
+    dt = dt.replace(tzinfo=utc).astimezone(timezone)
 
     return dt.strftime(locale.translate("%Y-%m-%d"))
 
 
-def format_time (dt, locale=None):
+def format_time (dt, timezone, locale=None):
     """Return the time of dt formatted according to the given locale
 
     dt (datetime): a datetime object
+    timezone (subclass of tzinfo): the timezone the output should be in
     return (str): the time of dt, formatted using the given locale
 
     """
@@ -192,15 +194,16 @@ def format_time (dt, locale=None):
         locale = tornado.locale.get()
 
     # convert dt from UTC to local time
-    dt = dt.replace(tzinfo=utc).astimezone(local)
+    dt = dt.replace(tzinfo=utc).astimezone(timezone)
 
     return dt.strftime(locale.translate("%H:%M:%S"))
 
 
-def format_datetime (dt, locale=None):
+def format_datetime (dt, timezone, locale=None):
     """Return the date and time of dt formatted according to the given locale
 
     dt (datetime): a datetime object
+    timezone (subclass of tzinfo): the timezone the output should be in
     return (str): the date and time of dt, formatted using the given locale
 
     """
@@ -208,15 +211,16 @@ def format_datetime (dt, locale=None):
         locale = tornado.locale.get()
 
     # convert dt from UTC to local time
-    dt = dt.replace(tzinfo=utc).astimezone(local)
+    dt = dt.replace(tzinfo=utc).astimezone(timezone)
 
     return dt.strftime(locale.translate("%Y-%m-%d %H:%M:%S"))
 
 
-def format_datetime_smart (dt, locale=None):
+def format_datetime_smart (dt, timezone, locale=None):
     """Return dt formatted as 'date & time' or, if date is today, just 'time'
 
     dt (datetime): a datetime object
+    timezone (subclass of tzinfo): the timezone the output should be in
     return (str): the [date and] time of dt, formatted using the given locale
 
     """
@@ -224,8 +228,8 @@ def format_datetime_smart (dt, locale=None):
         locale = tornado.locale.get()
 
     # convert dt and 'now' from UTC to local time
-    dt = dt.replace(tzinfo=utc).astimezone(local)
-    now = make_datetime().replace(tzinfo=utc).astimezone(local)
+    dt = dt.replace(tzinfo=utc).astimezone(timezone)
+    now = make_datetime().replace(tzinfo=utc).astimezone(timezone)
 
     if dt.date() == now.date():
         return dt.strftime(locale.translate("%H:%M:%S"))

@@ -56,6 +56,7 @@ class ScriptsContainer(object):
             ("20120714", "drop_ranking_view"),
             ("20120717", "use_timestamps"),
             ("20120721", "use_UTC_timestamps"),
+            ("20120723", "add_timezones"),
             ]
         self.list.sort()
 
@@ -574,6 +575,20 @@ ADD CONSTRAINT tasks_token_gen_time_check CHECK (token_gen_time >= '0 seconds');
 UPDATE %(table)s
 SET %(column)s = CAST(%(column)s AS TIMESTAMP WITH TIME ZONE) AT TIME ZONE 'UTC';
 """ % {"table": table, "column": column})
+
+    @staticmethod
+    def add_timezones():
+        """Add support for per-contest and per-user timezones
+
+        By adding the Contest.timezone and User.timezone fields.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE contests "
+                            "ADD COLUMN timezone VARCHAR;")
+            session.execute("ALTER TABLE users "
+                            "ALTER timezone DROP NOT NULL,"
+                            "ALTER timezone TYPE VARCHAR USING NULL;")
 
 
 def execute_single_script(scripts_container, script):

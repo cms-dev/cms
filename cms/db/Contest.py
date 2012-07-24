@@ -88,6 +88,14 @@ class Contest(Base):
     start = Column(DateTime, nullable=True)
     stop = Column(DateTime, nullable=True)
 
+    # Timezone for the contest. All timestamps in CWS will be shown using
+    # the timezone associated to the logged-in user or (if it's None or an
+    # invalid string) the timezone associated to the contest or (if it's
+    # None or an invalid string) the local timezone of the server.
+    # This value has to be a string like "Europe/Rome", "Australia/Sydney",
+    # "America/New_York", etc...
+    timezone = Column(String, nullable=True)
+
     # Max contest time for each user in seconds.
     per_user_time = Column(Interval, nullable=True)
 
@@ -104,7 +112,7 @@ class Contest(Base):
                  token_initial=None, token_max=None, token_total=None,
                  token_min_interval=timedelta(),
                  token_gen_time=timedelta(), token_gen_number=0,
-                 start=None, stop=None, per_user_time=None,
+                 start=None, stop=None, timezone=None, per_user_time=None,
                  announcements=None):
         self.name = name
         self.description = description
@@ -118,6 +126,7 @@ class Contest(Base):
         self.token_gen_number = token_gen_number
         self.start = start
         self.stop = stop
+        self.timezone = timezone
         self.per_user_time = per_user_time
         self.announcements = announcements if announcements is not None else []
 
@@ -139,6 +148,7 @@ class Contest(Base):
                 'token_gen_number':   self.token_gen_number,
                 'start':              make_timestamp(self.start) if self.start is not None else None,
                 'stop':               make_timestamp(self.stop) if self.stop is not None else None,
+                'timezone':           self.timezone,
                 'per_user_time':      self.per_user_time.total_seconds() if self.per_user_time is not None else None,
                 'announcements':      [announcement.export_to_dict()
                                        for announcement in self.announcements],

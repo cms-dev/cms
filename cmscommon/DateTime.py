@@ -18,8 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import time
-import calendar
 from datetime import tzinfo, timedelta, datetime
+from pytz import timezone, all_timezones
 
 
 def make_datetime(timestamp=None):
@@ -36,6 +36,8 @@ def make_datetime(timestamp=None):
         return datetime.utcfromtimestamp(timestamp)
 
 
+EPOCH = datetime(1970, 1, 1)
+
 def make_timestamp(_datetime=None):
     """Return the timestamp associated with the given datetime object
 
@@ -48,7 +50,18 @@ def make_timestamp(_datetime=None):
     if _datetime is None:
         return time.time()
     else:
-        return calendar.timegm(_datetime.utctimetuple())
+        return (_datetime - EPOCH).total_seconds()
+
+
+def get_timezone(user, contest):
+    """Return the timezone for the given user and contest
+
+    """
+    if user.timezone is not None and user.timezone in all_timezones:
+        return timezone(user.timezone)
+    if contest.timezone is not None and contest.timezone in all_timezones:
+        return timezone(contest.timezone)
+    return local
 
 
 # The following code provides some sample timezone implementations

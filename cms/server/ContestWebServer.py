@@ -62,7 +62,7 @@ from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
      CommonRequestHandler
 from cmscommon.Cryptographics import encrypt_number, decrypt_number, \
      get_encryption_alphabet
-from cmscommon.DateTime import make_datetime, make_timestamp
+from cmscommon.DateTime import make_datetime, make_timestamp, get_timezone
 
 
 class BaseHandler(CommonRequestHandler):
@@ -83,6 +83,8 @@ class BaseHandler(CommonRequestHandler):
         """This method is executed at the beginning of each request.
 
         """
+        self.timestamp = make_datetime()
+
         self.set_header("Cache-Control", "no-cache, must-revalidate")
 
         self.sql_session = Session()
@@ -103,8 +105,6 @@ class BaseHandler(CommonRequestHandler):
         username specified in the cookie. Otherwise, return None.
 
         """
-        timestamp = make_datetime()
-
         if self.get_secure_cookie("login") is None:
             return None
         try:
@@ -116,7 +116,7 @@ class BaseHandler(CommonRequestHandler):
             return None
 
         # Check if the cookie is expired.
-        if timestamp - last_update > timedelta(seconds=config.cookie_duration):
+        if self.timestamp - last_update > timedelta(seconds=config.cookie_duration):
             self.clear_cookie("login")
             return None
 
@@ -156,12 +156,12 @@ class BaseHandler(CommonRequestHandler):
 
         """
         ret = {}
-        ret["timestamp"] = make_datetime()
+        ret["timestamp"] = self.timestamp
         ret["contest"] = self.contest
         ret["url_root"] = get_url_root(self.request.path)
         ret["cookie"] = str(self.cookies)  # FIXME really needed?
 
-        ret["phase"] = self.contest.phase(ret["timestamp"])
+        ret["phase"] = self.contest.phase(self.timestamp)
 
         if self.current_user is not None:
             # "correct" the phase, considering the per_user_time
@@ -178,8 +178,10 @@ class BaseHandler(CommonRequestHandler):
                                      self.contest.per_user_time)
                     if user_end_time < self.contest.stop:
                         ret["valid_phase_end"] = user_end_time
-                    if user_end_time <= ret["timestamp"]:
+                    if user_end_time <= self.timestamp:
                         ret["actual_phase"] = 1
+            # set the timezone used to format timestamps
+            ret["timezone"] = get_timezone(self.current_user, self.contest)
 
         # some information about token configuration
         ret["tokens_contest"] = self._get_token_status(self.contest)
@@ -351,10 +353,9 @@ class StartHandler(BaseHandler):
     @actual_phase_required(-1)
     def post(self):
         user = self.get_current_user()
-        timestamp = make_datetime()
 
         logger.info("Starting now for user %s" % user.username)
-        user.starting_time = timestamp
+        user.starting_time = self.timestamp
         self.sql_session.commit()
 
         self.redirect("/")
@@ -526,14 +527,13 @@ class NotificationsHandler(BaseHandler):
     def get(self):
         if not self.current_user:
             raise tornado.web.HTTPError(403)
-        timestamp = make_datetime()
         res = []
         last_notification = make_datetime(float(self.get_argument("last_notification", "0")))
 
         # Announcements
         for announcement in self.contest.announcements:
             if announcement.timestamp > last_notification \
-                   and announcement.timestamp < timestamp:
+                   and announcement.timestamp < self.timestamp:
                 res.append({"type": "announcement",
                             "timestamp": make_timestamp(announcement.timestamp),
                             "subject": announcement.subject,
@@ -543,7 +543,7 @@ class NotificationsHandler(BaseHandler):
             # Private messages
             for message in self.current_user.messages:
                 if message.timestamp > last_notification \
-                       and message.timestamp < timestamp:
+                       and message.timestamp < self.timestamp:
                     res.append({"type": "message",
                                 "timestamp": make_timestamp(message.timestamp),
                                 "subject": message.subject,
@@ -552,7 +552,7 @@ class NotificationsHandler(BaseHandler):
             # Answers to questions
             for question in self.current_user.questions:
                 if question.reply_timestamp > last_notification \
-                       and question.reply_timestamp < timestamp:
+                       and question.reply_timestamp < self.timestamp:
                     subject = question.reply_subject
                     text = question.reply_text
                     if question.reply_subject is None:
@@ -597,8 +597,7 @@ class QuestionHandler(BaseHandler):
         if not config.allow_questions:
             raise tornado.web.HTTPError(404)
 
-        timestamp = make_datetime()
-        question = Question(timestamp,
+        question = Question(self.timestamp,
                             self.get_argument("question_subject", ""),
                             self.get_argument("question_text", ""),
                             user=self.current_user)
@@ -611,7 +610,7 @@ class QuestionHandler(BaseHandler):
         # Add "All ok" notification.
         self.application.service.add_notification(
             self.current_user.username,
-            timestamp,
+            self.timestamp,
             self._("Question received"),
             self._("Your question has been received, you will be "
                    "notified when the it will be answered."))
@@ -628,8 +627,6 @@ class SubmitHandler(BaseHandler):
     @actual_phase_required(0)
     @tornado.web.asynchronous
     def post(self, task_id):
-
-        self.timestamp = self.r_params["timestamp"]
 
         self.task_id = task_id
         self.task = Task.get_from_id(task_id, self.sql_session)
@@ -649,7 +646,7 @@ class SubmitHandler(BaseHandler):
                timedelta(seconds=config.min_submission_interval):
             self.application.service.add_notification(
                 self.current_user.username,
-                make_datetime(),
+                self.timestamp,
                 self._("Submissions too frequent!"),
                 self._("For each task, you can submit "
                        "again after %s seconds from last submission.") %
@@ -662,7 +659,7 @@ class SubmitHandler(BaseHandler):
         if any(len(x) != 1 for x in self.request.files.values()):
             self.application.service.add_notification(
                 self.current_user.username,
-                make_datetime(),
+                self.timestamp,
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
@@ -687,7 +684,7 @@ class SubmitHandler(BaseHandler):
             if archive_contents is None:
                 self.application.service.add_notification(
                     self.current_user.username,
-                    make_datetime(),
+                    self.timestamp,
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."))
                 self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
@@ -706,7 +703,7 @@ class SubmitHandler(BaseHandler):
                                          and required.issuperset(provided))):
             self.application.service.add_notification(
                 self.current_user.username,
-                make_datetime(),
+                self.timestamp,
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."))
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
@@ -775,7 +772,7 @@ class SubmitHandler(BaseHandler):
         if error is not None:
             self.application.service.add_notification(
                 self.current_user.username,
-                make_datetime(),
+                self.timestamp,
                 self._("Invalid submission!"),
                 error)
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
@@ -786,7 +783,7 @@ class SubmitHandler(BaseHandler):
                 for f in self.files.values()]):
             self.application.service.add_notification(
                 self.current_user.username,
-                make_datetime(),
+                self.timestamp,
                 self._("Submission too big!"),
                 self._("Each files must be at most %d bytes long.") %
                     config.max_submission_length)
@@ -840,7 +837,7 @@ class SubmitHandler(BaseHandler):
                 message = "No local copy stored! Your submission was ignored."
             self.application.service.add_notification(
                 self.username,
-                make_datetime(),
+                self.timestamp,
                 self._("Submission storage failed!"),
                 self._(message))
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task_id))
@@ -868,7 +865,7 @@ class SubmitHandler(BaseHandler):
             submission_id=submission.id)
         self.application.service.add_notification(
             self.username,
-            make_datetime(),
+            self.timestamp,
             self._("Submission received"),
             self._("Your submission has been received "
                    "and is currently being evaluated."))
@@ -914,11 +911,10 @@ class UseTokenHandler(BaseHandler):
 
         # Don't trust the user, check again if (s)he can really play
         # the token.
-        timestamp = make_datetime()
         tokens_available = self.contest.tokens_available(
                                self.current_user.username,
                                submission.task.name,
-                               timestamp)
+                               self.timestamp)
         if tokens_available[0] == 0 or tokens_available[2] is not None:
             logger.warning("User %s tried to play a token "
                            "when it shouldn't."
@@ -926,21 +922,21 @@ class UseTokenHandler(BaseHandler):
             # Add "no luck" notification
             self.application.service.add_notification(
                 self.current_user.username,
-                timestamp,
+                self.timestamp,
                 self._("Token request discarded"),
                 self._("Your request has been discarded because you have no "
                        "tokens available."))
             self.redirect("/tasks/%s/submissions" % encrypt_number(submission.task.id))
             return
 
-        token = Token(timestamp, submission)
+        token = Token(self.timestamp, submission)
         self.sql_session.add(token)
         self.sql_session.commit()
 
         # Inform ScoringService and eventually the ranking that the
         # token has been played.
         self.application.service.scoring_service.submission_tokened(
-            submission_id=submission_id, timestamp=timestamp)
+            submission_id=submission_id, timestamp=self.timestamp)
 
         logger.info("Token played by user %s on task %s."
                     % (self.current_user.username, submission.task.name))
@@ -948,7 +944,7 @@ class UseTokenHandler(BaseHandler):
         # Add "All ok" notification
         self.application.service.add_notification(
             self.current_user.username,
-            timestamp,
+            self.timestamp,
             self._("Token request received"),
             self._("Your request has been received "
                    "and applied to the submission."))
