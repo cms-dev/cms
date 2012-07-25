@@ -399,7 +399,7 @@ class ScriptsContainer(object):
         """
         with SessionGen(commit=True) as session:
             session.execute("ALTER TABLE evaluations "
-                            "ADD COLUMN memory_usage INTEGER;")
+                            "ADD COLUMN memory_used INTEGER;")
             session.execute("ALTER TABLE evaluations "
                             "ADD COLUMN execution_time FLOAT;")
             session.execute("ALTER TABLE evaluations "
