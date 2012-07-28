@@ -28,7 +28,7 @@ current ranking.
 """
 
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import random
 
 from cms import default_argument_parser, logger
@@ -379,18 +379,19 @@ class WorkerPool:
         timestamp = side_data[1]
         queue_time = self._start_time[shard] - timestamp
         logger.info("Asking worker %s to %s submission %s "
-                    " (%s seconds after submission)." %
+                    " (%s after submission)." %
                     (shard, action, submission_id, queue_time))
+        plus_data = (job, (side_data[0], make_timestamp(side_data[1])), shard)
         if action == EvaluationService.JOB_TYPE_COMPILATION:
             self._worker[shard].compile(
                 submission_id=submission_id,
                 callback=self._service.action_finished.im_func,
-                plus=(job, side_data, shard))
+                plus=plus_data)
         elif action == EvaluationService.JOB_TYPE_EVALUATION:
             self._worker[shard].evaluate(
                 submission_id=submission_id,
                 callback=self._service.action_finished.im_func,
-                plus=(job, side_data, shard))
+                plus=plus_data)
 
         return shard
 
@@ -502,7 +503,7 @@ class WorkerPool:
                     # intelligent life for too much time.
                     logger.error("Disabling and shutting down "
                                  "worker %d because of no reponse "
-                                 "in %.2f seconds." %
+                                 "in %s." %
                                  (shard, active_for))
                     assert self._job[shard] != WorkerPool.WORKER_INACTIVE \
                         and self._job[shard] != WorkerPool.WORKER_DISABLED
@@ -519,8 +520,7 @@ class WorkerPool:
                     self._schedule_disabling[shard] = True
                     self._ignore[shard] = True
                     self.release_worker(shard)
-                    self._worker[shard].quit("No response in %.2f "
-                                             "seconds." % active_for)
+                    self._worker[shard].quit("No response in %s." % active_for)
 
         return lost_jobs
 
@@ -567,18 +567,18 @@ class EvaluationService(Service):
     INVALIDATE_EVALUATION = 1
 
     # Seconds after which we declare a worker stale.
-    WORKER_TIMEOUT = 600.0
+    WORKER_TIMEOUT = timedelta(seconds=600)
     # How often we check for stale workers.
-    WORKER_TIMEOUT_CHECK_TIME = 300.0
+    WORKER_TIMEOUT_CHECK_TIME = timedelta(seconds=300)
 
     # How often we check if a worker is connected.
-    WORKER_CONNECTION_CHECK_TIME = 10.0
+    WORKER_CONNECTION_CHECK_TIME = timedelta(seconds=10)
 
     # How often we check if we can assign a job to a worker.
-    CHECK_DISPATCH_TIME = 2.0
+    CHECK_DISPATCH_TIME = timedelta(seconds=2)
 
     # How often we look for submission not compiled/evaluated.
-    JOBS_NOT_DONE_CHECK_TIME = 117.0
+    JOBS_NOT_DONE_CHECK_TIME = timedelta(seconds=117)
 
     def __init__(self, shard, contest_id):
         logger.initialize(ServiceCoord("EvaluationService", shard))
@@ -596,16 +596,16 @@ class EvaluationService(Service):
             self.pool.add_worker(worker)
 
         self.add_timeout(self.dispatch_jobs, None,
-                         EvaluationService.CHECK_DISPATCH_TIME,
+                         EvaluationService.CHECK_DISPATCH_TIME.total_seconds(),
                          immediately=True)
         self.add_timeout(self.check_workers_timeout, None,
-                         EvaluationService.WORKER_TIMEOUT_CHECK_TIME,
+                         EvaluationService.WORKER_TIMEOUT_CHECK_TIME.total_seconds(),
                          immediately=False)
         self.add_timeout(self.check_workers_connection, None,
-                         EvaluationService.WORKER_CONNECTION_CHECK_TIME,
+                         EvaluationService.WORKER_CONNECTION_CHECK_TIME.total_seconds(),
                          immediately=False)
         self.add_timeout(self.search_jobs_not_done, None,
-                         EvaluationService.JOBS_NOT_DONE_CHECK_TIME,
+                         EvaluationService.JOBS_NOT_DONE_CHECK_TIME.total_seconds(),
                          immediately=True)
 
     def search_jobs_not_done(self):
@@ -829,6 +829,7 @@ class EvaluationService(Service):
 
         job_type, submission_id = job
         unused_priority, timestamp = side_data
+        timestamp = make_datetime(timestamp)
 
         logger.info("Action %s for submission %s completed. Success: %s." %
                     (job_type, submission_id, data["success"]))
