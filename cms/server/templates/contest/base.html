@@ -110,16 +110,16 @@ $(document).ready(function () {
                         <ul class="nav nav-list">
 
                             <li{% if request.path == '/' %} class="active"{% end %}>
-                                <a href="{{ url_root }}/">Overview</a>
+                                <a href="{{ url_root }}/">{{ _("Overview") }}</a>
                             </li>
     {% set unread_count = handler.get_secure_cookie("unread_count") %}
                             <li{% if request.path == '/communication' %}{% set unread_count = 0 %} class="active"{% end %}>
-                                <a href="{{ url_root }}/communication">Communication
+                                <a href="{{ url_root }}/communication">{{ _("Communication") }}
     {% if unread_count is None or int(unread_count) == 0 %}
-                                    <span id="unread_count" class="label label-warning no_unread">0 unread</span>
+                                    <span id="unread_count" class="label label-warning no_unread">{{ _("%d unread") % 0 }}</span>
     {% else %}
                                     <script>$(document).ready(function () {Utils.unread_count = {{ unread_count }};});</script>
-                                    <span id="unread_count" class="label label-warning">{{ unread_count }} unread</span>
+                                    <span id="unread_count" class="label label-warning">{{ _("%d unread") % unread_count }}</span>
     {% end %}
                                     </a>
                             </li>
@@ -136,16 +136,16 @@ $(document).ready(function () {
                                 {{ t_iter.name }}
                             </li>
                             <li{% if task_id == t_iter.id and task_page == 'description' %} class="active"{% end %}>
-                                <a href="{{ url_root }}/tasks/{{ encrypt_number(t_iter.id) }}/description">Statement</a>
+                                <a href="{{ url_root }}/tasks/{{ encrypt_number(t_iter.id) }}/description">{{ _("Statement") }}</a>
                             </li>
                             <li{% if task_id == t_iter.id and task_page == 'submissions' %} class="active"{% end %}>
-                                <a href="{{ url_root }}/tasks/{{ encrypt_number(t_iter.id) }}/submissions">Submissions</a>
+                                <a href="{{ url_root }}/tasks/{{ encrypt_number(t_iter.id) }}/submissions">{{ _("Submissions") }}</a>
                             </li>
         {% end %}
     {% end %}
                             <li class="divider"></li>
                             <li{% if request.path == '/documentation' %} class="active"{% end %}>
-                                <a href="{{ url_root }}/documentation">Documentation</a>
+                                <a href="{{ url_root }}/documentation">{{ _("Documentation") }}</a>
                             </li>
                         </ul>
                     </div>
