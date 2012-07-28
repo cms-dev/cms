@@ -82,12 +82,12 @@ class User(Base):
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
-    # Timezone for the user. All timestamps in CWS will be shown using the
-    # timezone associated to the logged-in user or (if it's None or an
-    # invalid string) the timezone associated to the contest or (if it's
-    # None or an invalid string) the local timezone of the server.
-    # This value has to be a string like "Europe/Rome", "Australia/Sydney",
-    # "America/New_York", etc...
+    # Timezone for the user. All timestamps in CWS will be shown using
+    # the timezone associated to the logged-in user or (if it's None
+    # or an invalid string) the timezone associated to the contest or
+    # (if it's None or an invalid string) the local timezone of the
+    # server. This value has to be a string like "Europe/Rome",
+    # "Australia/Sydney", "America/New_York", etc.
     timezone = Column(String, nullable=True)
 
     # Starting time: for contests where every user has at most x hours

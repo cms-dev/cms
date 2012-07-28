@@ -88,12 +88,12 @@ class Contest(Base):
     start = Column(DateTime, nullable=True)
     stop = Column(DateTime, nullable=True)
 
-    # Timezone for the contest. All timestamps in CWS will be shown using
-    # the timezone associated to the logged-in user or (if it's None or an
-    # invalid string) the timezone associated to the contest or (if it's
-    # None or an invalid string) the local timezone of the server.
-    # This value has to be a string like "Europe/Rome", "Australia/Sydney",
-    # "America/New_York", etc...
+    # Timezone for the contest. All timestamps in CWS will be shown
+    # using the timezone associated to the logged-in user or (if it's
+    # None or an invalid string) the timezone associated to the
+    # contest or (if it's None or an invalid string) the local
+    # timezone of the server. This value has to be a string like
+    # "Europe/Rome", "Australia/Sydney", "America/New_York", etc.
     timezone = Column(String, nullable=True)
 
     # Max contest time for each user in seconds.
