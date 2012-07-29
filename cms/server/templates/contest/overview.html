@@ -38,7 +38,7 @@
 
 
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
-    {% set contest_token_min_interval = int(contest.token_min_interval) %}
+    {% set contest_token_min_interval = int(contest.token_min_interval.total_seconds()) %}
     {% if tokens_contest >= 2 and tokens_tasks >= 2 %}
         <p>
         {{ _("You have an infinite set of tokens.") }}

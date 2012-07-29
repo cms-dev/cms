@@ -89,8 +89,8 @@
 {% end %}
 
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
-    {% set contest_token_min_interval = int(contest.token_min_interval) %}
-    {% set task_token_min_interval = int(task.token_min_interval) %}
+    {% set contest_token_min_interval = int(contest.token_min_interval.total_seconds()) %}
+    {% set task_token_min_interval = int(task.token_min_interval.total_seconds()) %}
 <tr>
     <th>{{ _("Tokens") }}</th>
     <td colspan="2" class="token_rules">
@@ -102,7 +102,7 @@
         {% if tokens_contest == 2 or tokens_tasks == 2 %}
         <p>
             {% comment Note that if task_min_interval <= contest_min_interval it "doesn't count" %}
-            {% if contest_token_min_interval != 0 and task_token_min_interval != 0 and task_token_min_interval > contest_token_min_interval %}
+            {% if contest_token_min_interval != 0 and task_token_min_interval > contest_token_min_interval %}
                 {% if task_token_min_interval == 1 %}
                     {{ _("You can use at most one token every second for this task ") }}
                 {% else %}
@@ -119,7 +119,7 @@
                 {% else %}
                     {{ _("You can use at most one token every %(min_interval)d seconds among all tasks.") % {"min_interval": contest_token_min_interval} }}
                 {% end %}
-            {% elif task_token_min_interval != 0 %}
+            {% elif task_token_min_interval > contest_token_min_interval %}
                 {% if task_token_min_interval == 1 %}
                     {{ _("You can use at most one token every second for this task.") }}
                 {% else %}
@@ -152,7 +152,7 @@
 
         {% if tokens_tasks == 2 %}
         <p>
-            {% if task_token_min_interval != 0 %}
+            {% if task_token_min_interval > contest_token_min_interval %}
                 {% if task_token_min_interval == 1 %}
         {{ _("In addition to those rules, you can use at most one token every second on this task.") }}
                 {% else %}
@@ -171,7 +171,7 @@
         <p>
         {% set tokens = {"initial": task.token_initial, "max": task.token_max, "total": task.token_total, "min_interval": task.token_min_interval, "gen_time": task.token_gen_time, "gen_number": task.token_gen_number} %}
         {{ format_token_rules(tokens, t_type="task") }}
-        {{ _("You can find the rules for the contest-tokens on the <a href="%(url_root)">contest overview page</a>.") % {"url_root": url_root} }}
+        {{ _("You can find the rules for the contest-tokens on the <a href=\"%(url_root)\">contest overview page</a>.") % {"url_root": url_root} }}
         </p>
     {% end %}
     </td>

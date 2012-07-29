@@ -199,7 +199,7 @@ class BaseHandler(CommonRequestHandler):
         else:
             ret["tokens_tasks"] = 1  # all finite or mixed
         if ret["tokens_tasks"] == 2 and \
-            all(not t.token_min_interval for t in self.contest.tasks):
+            all(t.token_min_interval <= self.contest.token_min_interval for t in self.contest.tasks):
             ret["tokens_tasks"] = 3  # all infinite and no min_intervals
 
         return ret
