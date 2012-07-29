@@ -24,13 +24,13 @@
 
 """
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 from cms.db.Contest import Contest, Announcement
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task
 from cms.db.Submission import Submission
-from cmscommon.DateTime import make_datetime, make_timestamp
+from cmscommon.DateTime import make_datetime
 
 
 @classmethod
@@ -46,13 +46,16 @@ def contest_import_from_dict(cls, data):
                      for user_data in data['users']]
     data['announcements'] = [Announcement.import_from_dict(ann_data)
                              for ann_data in data['announcements']]
-    if data['start'] is not None:
+    if 'start' in data and data['start'] is not None:
         data['start'] = make_datetime(data['start'])
-    if data['stop'] is not None:
+    if 'stop' in data and data['stop'] is not None:
         data['stop'] = make_datetime(data['stop'])
-    data['token_min_interval'] = timedelta(seconds=data['token_min_interval'])
-    data['token_gen_time'] = timedelta(minutes=data['token_gen_time'])
-    if data['per_user_time'] is not None:
+    if 'token_min_interval' in data:
+        data['token_min_interval'] = \
+            timedelta(seconds=data['token_min_interval'])
+    if 'token_gen_time' in data:
+        data['token_gen_time'] = timedelta(minutes=data['token_gen_time'])
+    if 'per_user_time' in data and data['per_user_time'] is not None:
         data['per_user_time'] = timedelta(seconds=data['per_user_time'])
     return cls(**data)
 
@@ -69,7 +72,7 @@ def user_import_from_dict(cls, data, tasks_by_name):
     data['submissions'] = [Submission.import_from_dict(
         submission_data, tasks_by_name=tasks_by_name)
                            for submission_data in data['submissions']]
-    if data['starting_time'] is not None:
+    if 'starting_time' in data and data['starting_time'] is not None:
         data['starting_time'] = make_datetime(data['starting_time'])
     obj = cls(**data)
     for submission in obj.submissions:
