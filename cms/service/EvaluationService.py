@@ -271,7 +271,7 @@ class JobQueue:
         for data in self._queue:
             ret.append({'job': data[2],
                         'priority': data[0],
-                        'timestamp': data[1]})
+                        'timestamp': make_timestamp(data[1])})
         return ret
 
 
@@ -476,12 +476,19 @@ class WorkerPool:
                        in the job.
 
         """
-        return dict([(str(shard), {
-            'connected': self._worker[shard].connected,
-            'job': self._job[shard],
-            'start_time': self._start_time[shard],
-            'side_data': self._side_data[shard]})
-            for shard in self._worker.keys()])
+        result = dict()
+        for shard in self._worker.keys():
+            s_time = self._start_time[shard]
+            s_time = make_timestamp(s_time) if s_time is not None else None
+            s_data = self._side_data[shard]
+            s_data = (s_data[0], make_timestamp(s_data[1])) if s_data is not None else None
+
+            result[str(shard)] = {
+                'connected': self._worker[shard].connected,
+                'job': self._job[shard],
+                'start_time': s_time,
+                'side_data': s_data}
+        return result
 
     def check_timeouts(self):
         """Check if some worker is not responding in too much time. If
