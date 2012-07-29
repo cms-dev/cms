@@ -381,17 +381,16 @@ class WorkerPool:
         logger.info("Asking worker %s to %s submission %s "
                     " (%s after submission)." %
                     (shard, action, submission_id, queue_time))
-        plus_data = (job, (side_data[0], make_timestamp(side_data[1])), shard)
         if action == EvaluationService.JOB_TYPE_COMPILATION:
             self._worker[shard].compile(
                 submission_id=submission_id,
                 callback=self._service.action_finished.im_func,
-                plus=plus_data)
+                plus=(job, side_data, shard))
         elif action == EvaluationService.JOB_TYPE_EVALUATION:
             self._worker[shard].evaluate(
                 submission_id=submission_id,
                 callback=self._service.action_finished.im_func,
-                plus=plus_data)
+                plus=(job, side_data, shard))
 
         return shard
 
@@ -836,7 +835,6 @@ class EvaluationService(Service):
 
         job_type, submission_id = job
         unused_priority, timestamp = side_data
-        timestamp = make_datetime(timestamp)
 
         logger.info("Action %s for submission %s completed. Success: %s." %
                     (job_type, submission_id, data["success"]))
