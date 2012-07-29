@@ -216,7 +216,13 @@ class BaseHandler(CommonRequestHandler):
                 self.sql_session.close()
             except Exception as error:
                 logger.warning("Couldn't close SQL connection: %r" % error)
-        tornado.web.RequestHandler.finish(self, *args, **kwds)
+        try:
+            tornado.web.RequestHandler.finish(self, *args, **kwds)
+        except IOError:
+            # When the client closes the connection before we reply,
+            # Tornado raises an IOError exception, that would pollute
+            # our log with unnecessarily critical messages
+            logger.debug("Connection closed before our reply.")
 
 
 FileHandler = file_handler_gen(BaseHandler)

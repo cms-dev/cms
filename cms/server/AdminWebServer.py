@@ -166,7 +166,13 @@ class BaseHandler(CommonRequestHandler):
         """
         logger.debug("Closing SQL connection.")
         self.sql_session.close()
-        tornado.web.RequestHandler.finish(self, *args, **kwds)
+        try:
+            tornado.web.RequestHandler.finish(self, *args, **kwds)
+        except IOError:
+            # When the client closes the connection before we reply,
+            # Tornado raises an IOError exception, that would pollute
+            # our log with unnecessarily critical messages
+            logger.debug("Connection closed before our reply.")
 
     def get_non_negative_int(self, argument_name, default, allow_empty=True):
         """ Get a non-negative integer from the arguments.
