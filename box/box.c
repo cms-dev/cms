@@ -426,6 +426,7 @@ static struct path_rule default_path_rules[] = {
   { "/proc/meminfo", A_YES },
   { "/proc/self/stat", A_YES },
   { "/proc/self/exe", A_YES },			// Needed by FPC 2.0.x runtime
+  { "/proc/self/maps", A_YES },			// Needed by glibc when it reports arena corruption
 };
 
 static struct path_rule *user_path_rules;
@@ -623,21 +624,30 @@ struct syscall_args {
   struct user user;
 };
 
+static int user_mem_fd;
+
 static int read_user_mem(arg_t addr, char *buf, int len)
 {
-  static int mem_fd;
-
-  if (!mem_fd)
+  if (!user_mem_fd)
     {
       char memname[64];
       sprintf(memname, "/proc/%d/mem", (int) box_pid);
-      mem_fd = open(memname, O_RDONLY);
-      if (mem_fd < 0)
+      user_mem_fd = open(memname, O_RDONLY);
+      if (user_mem_fd < 0)
 	die("open(%s): %m", memname);
     }
-  if (lseek64(mem_fd, addr, SEEK_SET) < 0)
+  if (lseek64(user_mem_fd, addr, SEEK_SET) < 0)
     die("lseek64(mem): %m");
-  return read(mem_fd, buf, len);
+  return read(user_mem_fd, buf, len);
+}
+
+static void close_user_mem(void)
+{
+  if (user_mem_fd)
+    {
+      close(user_mem_fd);
+      user_mem_fd = 0;
+    }
 }
 
 #ifdef CONFIG_BOX_KERNEL_AMD64
@@ -1149,7 +1159,10 @@ boxkeeper(void)
 		    {
 		      msg("[master] ");
 		      if (sys == NATIVE_NR_execve)
-			exec_seen = 1;
+			{
+			  exec_seen = 1;
+			  close_user_mem();
+			}
 		    }
 		  else if ((act = valid_syscall(&a)) >= 0)
 		    {
