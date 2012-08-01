@@ -131,7 +131,7 @@ class Sandbox:
        command number N.
 
     """
-    def __init__(self, file_cacher, temp_dir=None):
+    def __init__(self, file_cacher=None, temp_dir=None):
         """Initialization.
 
         file_cacher (FileCacher): an instance of the FileCacher class
