@@ -125,7 +125,7 @@ class BaseHandler(CommonRequestHandler):
 
         if self.refresh_cookie:
             self.set_secure_cookie("login",
-                               pickle.dumps((user.username, int(time.time()))),
+                               pickle.dumps((user.username, make_timestamp())),
                                expires_days=None)
 
         return user
@@ -378,7 +378,7 @@ class LoginHandler(BaseHandler):
             return
 
         self.set_secure_cookie("login",
-                               pickle.dumps((user.username, int(time.time()))),
+                               pickle.dumps((user.username, make_timestamp())),
                                expires_days=None)
         self.redirect(next_page)
 
