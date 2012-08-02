@@ -153,10 +153,11 @@ class Batch(TaskType):
 
         # Retrieve the compiled executables
         if operation_success and compilation_success:
-            digest = sandbox.get_file_to_storage(executable_filename,
-                                                 "Executable %s for submission %s" %
-                                                 (executable_filename, self.submission.id))
-            self.result["executables"] = [(filename, digest)]
+            digest = sandbox.get_file_to_storage(
+                executable_filename,
+                "Executable %s for submission %s" %
+                (executable_filename, self.submission.id))
+            self.result["executables"] = [(executable_filename, digest)]
 
         # Cleanup
         delete_sandbox(sandbox)
@@ -232,7 +233,8 @@ class Batch(TaskType):
             manager_filename = self.submission.task.managers.keys()[0]
             sandbox.create_file_from_storage(
                 manager_filename,
-                self.submission.task.managers[manager_filename].digest)
+                self.submission.task.managers[manager_filename].digest,
+                executable=True)
             success, _ = evaluation_step(
                 sandbox,
                 ["./%s" % manager_filename,

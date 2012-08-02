@@ -30,9 +30,7 @@ compilation and the evaluation are contained in the task type class.
 
 """
 
-import os
 import re
-import codecs
 import traceback
 
 from cms import config, logger
@@ -150,28 +148,6 @@ def delete_sandbox(sandbox):
         except (IOError, OSError):
             logger.warning("Couldn't delete sandbox.\n%s",
                            traceback.format_exc())
-
-
-## Other stuff. ##
-
-def filter_ansi_escape(string):
-    """Filter out ANSI commands from the given string.
-
-    string (string): string to process.
-
-    return (string): string with ANSI commands stripped.
-
-    """
-    ansi_mode = False
-    res = ''
-    for char in string:
-        if char == u'\033':
-            ansi_mode = True
-        if not ansi_mode:
-            res += char
-        if char == u'm':
-            ansi_mode = False
-    return res
 
 
 class TaskType:

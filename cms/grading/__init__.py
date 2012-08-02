@@ -20,6 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import codecs
 
 from cms import logger
 from cms.grading.Sandbox import Sandbox
@@ -80,6 +81,7 @@ def get_compilation_command(language, source_filenames, executable_filename,
         command += ["-XS", "-O2", "-o%s" % executable_filename]
         command += source_filenames
     return command
+
 
 def compilation_step(sandbox, command):
     """Execute a compilation command in the sandbox, setting up the
@@ -211,6 +213,7 @@ def compilation_step(sandbox, command):
 
     return success, compilation_success, text, plus
 
+
 def evaluation_step(sandbox, command,
                     time_limit=0, memory_limit=0,
                     allow_path=None,
@@ -238,6 +241,7 @@ def evaluation_step(sandbox, command,
         return False, None
     else:
         return evaluation_step_after_run(sandbox)
+
 
 def evaluation_step_before_run(sandbox, command,
                               time_limit=0, memory_limit=0,
@@ -281,6 +285,7 @@ def evaluation_step_before_run(sandbox, command,
     # Actually run the evaluation command.
     logger.info("Starting execution step.")
     return sandbox.execute_without_std(command, wait=wait)
+
 
 def evaluation_step_after_run(sandbox):
     """Second part of an evaluation step, after the running.
@@ -327,7 +332,6 @@ def evaluation_step_after_run(sandbox):
             syscall
         logger.info(msg)
         success = True
-        outcome = 0.0
         plus["syscall"] = syscall
 
     # Forbidden file access: returning the error to the user, without
@@ -337,7 +341,6 @@ def evaluation_step_after_run(sandbox):
         msg = "Execution killed because of forbidden file access."
         logger.info("%s `%s'." % (msg, filename))
         success = True
-        outcome = 0.0
         plus["filename"] = filename
 
     # Last check before assuming that evaluation finished
@@ -353,6 +356,7 @@ def evaluation_step_after_run(sandbox):
         success = True
 
     return success, plus
+
 
 def human_evaluation_message(plus):
     """Given the plus object returned by evaluation_step, builds a
@@ -382,8 +386,30 @@ def human_evaluation_message(plus):
     else:
         return None
 
+
 def is_evaluation_passed(plus):
     return plus['exit_status'] == Sandbox.EXIT_OK
+
+
+def filter_ansi_escape(string):
+    """Filter out ANSI commands from the given string.
+
+    string (string): string to process.
+
+    return (string): string with ANSI commands stripped.
+
+    """
+    ansi_mode = False
+    res = ''
+    for char in string:
+        if char == u'\033':
+            ansi_mode = True
+        if not ansi_mode:
+            res += char
+        if char == u'm':
+            ansi_mode = False
+    return res
+
 
 def extract_outcome_and_text(sandbox):
     """Extract the outcome and the text from the two outputs of a
@@ -396,8 +422,8 @@ def extract_outcome_and_text(sandbox):
     raise: ValueError if cannot decode the data.
 
     """
-    stdout_file = sandbox.stdout_file
-    stderr_file = sandbox.stderr_file
+    stdout = sandbox.stdout_file
+    stderr = sandbox.stderr_file
     with codecs.open(stdout, "r", "utf-8") as stdout_file:
         with codecs.open(stderr, "r", "utf-8") as stderr_file:
             try:
