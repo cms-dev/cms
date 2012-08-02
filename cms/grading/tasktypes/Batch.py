@@ -20,7 +20,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from cms.grading import get_compilation_command
+from cms.grading import get_compilation_command, compilation_step, \
+    evaluation_step, human_evaluation_message, is_evaluation_passed, \
+    extract_outcome_and_text
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
      ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
@@ -121,8 +123,10 @@ class Batch(TaskType):
                 to_log="Submission contains %d files, expecting 1" %
                 len(self.submission.files))
 
-        # First and only one compilation.
+        # Create the sandbox
         sandbox = create_sandbox(self)
+
+        # Prepare the source file in the sandbox
         files_to_get = {}
         format_filename = self.submission.files.keys()[0]
         source_filenames = [format_filename.replace("%l", language)]
@@ -134,17 +138,27 @@ class Batch(TaskType):
             source_filenames.append("grader.%s" % language)
             files_to_get[source_filenames[1]] = \
                 self.submission.task.managers["grader.%s" % language].digest
+        for filename, digest in files_to_get.iteritems():
+            sandbox.create_file_from_storage(filename, digest)
+
+        # Prepare the compilation command
         executable_filename = format_filename.replace(".%l", "")
         command = get_compilation_command(language,
                                           source_filenames,
                                           executable_filename)
+
+        # Run the compilation
         operation_success, compilation_success, text, _ = \
-            self.compilation_step(
-            sandbox,
-            command,
-            files_to_get,
-            {executable_filename: "Executable %s for submission %s" %
-             (executable_filename, self.submission.id)})
+            compilation_step(sandbox, command)
+
+        # Retrieve the compiled executables
+        if operation_success and compilation_success:
+            digest = sandbox.get_file_to_storage(executable_filename,
+                                                 "Executable %s for submission %s" %
+                                                 (executable_filename, self.submission.id))
+            self.result["executables"] = [(filename, digest)]
+
+        # Cleanup
         delete_sandbox(sandbox)
 
         # We had only one compilation, hence we pipe directly its
@@ -154,13 +168,12 @@ class Batch(TaskType):
 
     def evaluate_testcase(self, test_number):
         """See TaskType.evaluate_testcase."""
+        # Create the sandbox
         sandbox = create_sandbox(self)
 
-        # First step: execute the contestant program. This is also the
-        # final step if we have a grader, otherwise we need to run also
-        # a white_diff or a comparator.
+        # Prepare the execution
         executable_filename = self.submission.executables.keys()[0]
-        command = ["./%s" % executable_filename]
+        command = [sandbox.relative_path(executable_filename)]
         executables_to_get = {
             executable_filename:
             self.submission.executables[executable_filename].digest
@@ -178,44 +191,58 @@ class Batch(TaskType):
             input_filename: self.submission.task.testcases[test_number].input
             }
         allow_path = [input_filename, output_filename]
-        success, outcome, text, plus = self.evaluation_step(
+
+        # Put the required files into the sandbox
+        for filename, digest in executables_to_get.iteritems():
+            sandbox.create_file_from_storage(filename, digest, executable=True)
+        for filename, digest in files_to_get.iteritems():
+            sandbox.create_file_from_storage(filename, digest)
+
+        # Actually performs the execution
+        success, plus = evaluation_step(
             sandbox,
             command,
-            executables_to_get,
-            files_to_get,
             self.submission.task.time_limit,
             self.submission.task.memory_limit,
             allow_path,
             stdin_redirect=stdin_redirect,
-            stdout_redirect=stdout_redirect,
-            final=False)
+            stdout_redirect=stdout_redirect)
+
         # If an error occur (our or contestant's), return immediately.
-        if not success or outcome is not None:
+        if not success or not is_evaluation_passed(plus):
             delete_sandbox(sandbox)
+            if not success:
+                outcome = 0.0
+                text = human_evaluation_message(plus)
             return self.finish_evaluation_testcase(
                 test_number, success, outcome, text, plus)
 
-        # Second step: diffing (manual or with comparator).
+        # Put the reference solution into the sandbox
+        sandbox.create_file_from_storage(
+            "res.txt",
+            self.submission.task.testcases[test_number].output)
+
+        # Check the solution with white_diff
         if self.parameters[2] == "diff":
-            # We white_diff output.txt and res.txt.
             success, outcome, text = self.white_diff_step(
-                sandbox,
-                output_filename, "res.txt",
-                {"res.txt":
-                 self.submission.task.testcases[test_number].output})
+                sandbox, output_filename, "res.txt", {})
+
+        # Check the solution with a comparator
         elif self.parameters[2] == "comparator":
-            # Manager present: wonderful, it'll do all the job.
             manager_filename = self.submission.task.managers.keys()[0]
-            success, outcome, text, _ = self.evaluation_step(
+            sandbox.create_file_from_storage(
+                manager_filename,
+                self.submission.task.managers[manager_filename].digest)
+            success, _ = evaluation_step(
                 sandbox,
                 ["./%s" % manager_filename,
                  input_filename, "res.txt", output_filename],
-                {manager_filename:
-                 self.submission.task.managers[manager_filename].digest},
-                {"res.txt":
-                 self.submission.task.testcases[test_number].output},
-                allow_path=[input_filename, "res.txt", output_filename],
-                final=True)
+                allow_path=[input_filename, "res.txt", output_filename])
+            if success:
+                outcome, text = extract_outcome_and_text(sandbox)
+            else:
+                outcome = None
+                text = None
         else:
             raise ValueError("Unrecognized third parameter `%s' in for Batch "
                              "tasktype." % self.parameters[2])

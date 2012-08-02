@@ -174,41 +174,6 @@ def filter_ansi_escape(string):
     return res
 
 
-def extract_outcome_and_text(stdout, stderr):
-    """Extract the outcome and the text from the two outputs of a
-    managet (stdout contains the outcome, and stderr the text).
-
-    stdout (string): filename of the standard output of the manager.
-    stderr (string): filename of the standard error of the manager.
-
-    return (float, string): outcome and text.
-    raise: valueError if cannot decode the data.
-
-    """
-    with codecs.open(stdout, "r", "utf-8") as stdout_file:
-        with codecs.open(stderr, "r", "utf-8") as stderr_file:
-            try:
-                outcome = stdout_file.readline().strip()
-            except UnicodeDecodeError as error:
-                logger.error("Unable to interpret manager stdout "
-                             "(outcome) as unicode. %r" % error)
-                raise ValueError("Cannot decode the outcome.")
-            try:
-                text = filter_ansi_escape(stderr_file.readline())
-            except UnicodeDecodeError as error:
-                logger.error("Unable to interpret manager stderr "
-                             "(text) as unicode. %r" % error)
-                raise ValueError("Cannot decode the text.")
-
-    try:
-        outcome = float(outcome)
-    except ValueError:
-        logger.error("Wrong outcome `%s' from manager." % outcome)
-        raise ValueError("Outcome is not a float.")
-
-    return outcome, text
-
-
 class TaskType:
     """Base class with common operation that (more or less) all task
     types must do sometimes.

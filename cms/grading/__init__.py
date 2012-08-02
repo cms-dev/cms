@@ -353,3 +353,70 @@ def evaluation_step_after_run(sandbox):
         success = True
 
     return success, plus
+
+def human_evaluation_message(plus):
+    """Given the plus object returned by evaluation_step, builds a
+    human-readable message about what happened.
+
+    None is returned in cases when the contestant musn't receive any
+    message (for example, if the execution couldn't be performed) or
+    when the message will be computed somewhere else (for example, if
+    the execution was successfull, then the comparator is supposed to
+    write the message).
+
+    """
+    exit_status = plus['exit_status']
+    if exit_status == Sandbox.EXIT_TIMEOUT:
+        return "Execution timed out."
+    elif exit_status == Sandbox.EXIT_SIGNAL:
+        return "Execution killed with signal %d." % (plus['signal'])
+    elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
+        return None
+    elif exit_status == Sandbox.EXIT_SYSCALL:
+        return "Execution killed because of forbidden syscall %s." % \
+            (plus['syscall'])
+    elif exit_status == Sandbox.EXIT_FILE_ACCESS:
+        return "Execution killed because of forbidden file access."
+    elif exit_status == Sandbox.EXIT_OK:
+        return None
+    else:
+        return None
+
+def is_evaluation_passed(plus):
+    return plus['exit_status'] == Sandbox.EXIT_OK
+
+def extract_outcome_and_text(sandbox):
+    """Extract the outcome and the text from the two outputs of a
+    manager (stdout contains the outcome, and stderr the text).
+
+    stdout (Sandbox): the sandbox whose last execution was a
+                      comparator.
+
+    return (float, string): outcome and text.
+    raise: ValueError if cannot decode the data.
+
+    """
+    stdout_file = sandbox.stdout_file
+    stderr_file = sandbox.stderr_file
+    with codecs.open(stdout, "r", "utf-8") as stdout_file:
+        with codecs.open(stderr, "r", "utf-8") as stderr_file:
+            try:
+                outcome = stdout_file.readline().strip()
+            except UnicodeDecodeError as error:
+                logger.error("Unable to interpret manager stdout "
+                             "(outcome) as unicode. %r" % error)
+                raise ValueError("Cannot decode the outcome.")
+            try:
+                text = filter_ansi_escape(stderr_file.readline())
+            except UnicodeDecodeError as error:
+                logger.error("Unable to interpret manager stderr "
+                             "(text) as unicode. %r" % error)
+                raise ValueError("Cannot decode the text.")
+
+    try:
+        outcome = float(outcome)
+    except ValueError:
+        logger.error("Wrong outcome `%s' from manager." % outcome)
+        raise ValueError("Outcome is not a float.")
+
+    return outcome, text
