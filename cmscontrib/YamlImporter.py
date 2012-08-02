@@ -176,18 +176,52 @@ class YamlLoader:
         params["submission_format"] = [
             SubmissionFormatElement("%s.%%l" % name).export_to_dict()]
 
+        # Builds the parameters that depend on the task type
+        params["managers"] = []
+        infile_param = conf.get("infile", "input.txt")
+        outfile_param = conf.get("outfile", "output.txt")
+
+        # If there is cor/grader.%l for some language %l, then,
+        # presuming that the task type is Batch, we retrieve graders
+        # in the form cor/grader.%l
+        graders = False
+        for lang in Submission.LANGUAGES:
+            if os.path.exists(os.path.join(path, "cor", "grader.%s" % (lang))):
+                graders = True
+                break
+        if graders:
+            for lang in Submission.LANGUAGES:
+                grader_filename = os.path.join(path, "cor", "grader.%s" % (lang))
+                if os.path.exists(grader_filename):
+                    params["managers"].append(
+                        Manager(self.file_cacher.put_file(
+                                path=grader_filename,
+                                description="Grader for task %s and language %s" % \
+                                    (name, lang)),
+                                "grader.%s" % (lang)).export_to_dict())
+                else:
+                    logger.warning("Could not find grader for language %s" % (lang))
+            compilation_param = "grader"
+        else:
+            compilation_param = "alone"
+
+        # If there is cor/correttore, then the task type is Batch with
+        # comparator
         if os.path.exists(os.path.join(path, "cor", "correttore")):
-            params["managers"] = [
+            params["managers"] += [
                 Manager(self.file_cacher.put_file(
                     path=os.path.join(path, "cor", "correttore"),
                     description="Manager for task %s" % (name)),
                         "checker").export_to_dict()]
             params["task_type_parameters"] = \
-                '["alone", ["input.txt", "output.txt"], "comparator"]'
+                '["%s", ["%s", "%s"], "comparator"]' % \
+                (compilation_param, infile_param, outfile_param)
+
+        # If there is cor/manager, then the task type is Communication
         elif os.path.exists(os.path.join(path, "cor", "manager")):
             params["task_type"] = "Communication"
             params["task_type_parameters"] = '[]'
-            params["managers"] = [
+            params["managers"] += [
                 Manager(self.file_cacher.put_file(
                     path=os.path.join(path, "cor", "manager"),
                     description="Manager for task %s" % (name)),
@@ -199,14 +233,17 @@ class YamlLoader:
                         Manager(self.file_cacher.put_file(
                             path=stub_name,
                             description="Stub for task %s and language %s" % \
-                            (name, lang)),
+                                (name, lang)),
                                 "stub.%s" % lang).export_to_dict())
                 else:
                     logger.warning("Stub for language %s not found." % lang)
+
+        # Otherwise, the task type is Batch with diff
         else:
-            params["managers"] = {}
             params["task_type_parameters"] = \
-                '["alone", ["input.txt", "output.txt"], "diff"]'
+                '["%s", ["%s", "%s"], "diff"]' % \
+                (compilation_param, infile_param, outfile_param)
+
         params["score_type"] = conf.get("score_type", "Sum")
         params["score_parameters"] = conf.get(
             "score_parameters", str(100.0 / float(conf["n_input"])))
