@@ -1,7 +1,7 @@
 {% import re %}
 {% import time %}
 {% import simplejson as json %}
-{% from cms.server import format_amount_of_time %}
+{% from cms.server import format_amount_of_time, format_time, format_datetime, format_datetime_smart %}
 {% from cmscommon.Cryptographics import encrypt_number, decrypt_number %}
 {% from cmscommon.DateTime import make_timestamp %}
 <!DOCTYPE html>
@@ -20,7 +20,6 @@ var url_root = "{{ url_root }}";
         <script type="text/javascript" src="{{ url_root }}/static/script_new.js"></script>
         <link rel="stylesheet" href="{{ url_root }}/static/css/bootstrap.css">
         <link rel="stylesheet" href="{{ url_root }}/static/style_new.css">
-
 
         <title>{{ contest.description }}</title>
 

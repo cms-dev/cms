@@ -592,7 +592,8 @@ class NotificationsHandler(BaseHandler):
 
             # Answers to questions
             for question in self.current_user.questions:
-                if question.reply_timestamp > last_notification \
+                if question.reply_timestamp is not None \
+                       and question.reply_timestamp > last_notification \
                        and question.reply_timestamp < self.timestamp:
                     subject = question.reply_subject
                     text = question.reply_text
