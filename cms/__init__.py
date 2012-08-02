@@ -167,14 +167,20 @@ class Config:
         core_services and other_services that are sent to async
         config.
 
+        Services whose name begins with an underscore are ignored, so
+        they can be commented out in the configuration file.
+
         path (string): the path of the JSON config file.
 
         """
         # Load config file
         dic = json.load(open(path))
 
-        # Put core and test services in async_config
+        # Put core and test services in async_config, ignoring those
+        # whose name begins with "_"
         for service in dic["core_services"]:
+            if service.startswith("_"):
+                continue
             for shard_number, shard in \
                     enumerate(dic["core_services"][service]):
                 coord = ServiceCoord(service, shard_number)
@@ -182,6 +188,8 @@ class Config:
         del dic["core_services"]
 
         for service in dic["other_services"]:
+            if service.startswith("_"):
+                continue
             for shard_number, shard in \
                     enumerate(dic["other_services"][service]):
                 coord = ServiceCoord(service, shard_number)
