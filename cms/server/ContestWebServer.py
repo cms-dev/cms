@@ -45,9 +45,9 @@ import simplejson as json
 import tempfile
 import traceback
 from datetime import datetime, timedelta
+import gettext
 
 import tornado.web
-import tornado.locale
 
 from cms import config, default_argument_parser, logger
 from cms.async.WebAsyncLibrary import WebService
@@ -91,14 +91,8 @@ class BaseHandler(CommonRequestHandler):
         self.contest = Contest.get_from_id(self.application.service.contest,
                                            self.sql_session)
 
-        if config.installed:
-            localization_dir = os.path.join("/", "usr", "local", "share", "locale")
-        else:
-            localization_dir = os.path.join(os.path.dirname(__file__), "mo")
-        if os.path.exists(localization_dir):
-            tornado.locale.load_gettext_translations(localization_dir, "cms")
+        self._ = self.locale.translate
 
-        self._ = self.get_browser_locale().translate
         self.r_params = self.render_params()
 
     def get_current_user(self):
@@ -135,6 +129,44 @@ class BaseHandler(CommonRequestHandler):
                                expires_days=None)
 
         return user
+
+    def get_user_locale(self):
+        if config.installed:
+            localization_dir = os.path.join("/", "usr", "local", "share", "locale")
+        else:
+            localization_dir = os.path.join(os.path.dirname(__file__), "mo")
+
+        if self.current_user is not None:
+            iso_639_locale = gettext.translation(
+                "iso_639",
+                os.path.join(config.iso_codes_prefix, "share", "locale"),
+                self.current_user.languages,
+                fallback=True)
+            iso_3166_locale = gettext.translation(
+                "iso_3166",
+                os.path.join(config.iso_codes_prefix, "share", "locale"),
+                self.current_user.languages,
+                fallback=True)
+            cms_locale = gettext.translation(
+                "cms",
+                localization_dir,
+                self.current_user.languages,
+                fallback=True)
+            cms_locale.add_fallback(iso_639_locale)
+            cms_locale.add_fallback(iso_3166_locale)
+        else:
+            cms_locale = gettext.NullTranslations()
+
+        # Add translate method to simulare tornado.Locale's interface
+        def translate (message, plural_message=None, count=None):
+            if plural_message is not None:
+                assert count is not None
+                return cms_locale.ungettext(message, plural_message, count)
+            else:
+                return cms_locale.ugettext(message)
+        cms_locale.translate = translate
+
+        return cms_locale
 
     @staticmethod
     def _get_token_status (obj):

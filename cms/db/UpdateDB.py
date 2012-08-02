@@ -57,6 +57,7 @@ class ScriptsContainer(object):
             ("20120717", "use_timestamps"),
             ("20120721", "use_UTC_timestamps"),
             ("20120723", "add_timezones"),
+            ("20120724", "add_languages"),
             ]
         self.list.sort()
 
@@ -589,6 +590,21 @@ SET %(column)s = CAST(%(column)s AS TIMESTAMP WITH TIME ZONE) AT TIME ZONE 'UTC'
             session.execute("ALTER TABLE users "
                             "ALTER timezone DROP NOT NULL,"
                             "ALTER timezone TYPE VARCHAR USING NULL;")
+
+    @staticmethod
+    def add_languages():
+        """Add a list of languages to each user
+
+        Defaults to empty list.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE users "
+                            "ADD COLUMN languages VARCHAR[];")
+            session.execute("UPDATE users "
+                            "SET languages = '{}';")
+            session.execute("ALTER TABLE users "
+                            "ALTER COLUMN languages SET NOT NULL;")
 
 
 def execute_single_script(scripts_container, script):

@@ -3,6 +3,7 @@
 
 {% from cms.server import format_token_rules %}
 {% from cms.grading.tasktypes import get_task_type %}
+{% from cmscommon import ISOCodes %}
 
 {% if actual_phase == 0 %}
 
@@ -16,30 +17,68 @@
 
 <h2>Statement</h2>
 
-<div class="row statement" style="margin-bottom: 20px;">
 {% if len(task.statements) == 0 %}
-    <div class="span9 no_statement">
+<div class="row statement no_statements">
+    <div class="span9">
         no statement available
     </div>
+</div>
 {% elif len(task.statements) == 1 %}
-    <div class="span9 one_statement">
+<div class="row statement one_statement">
+    <div class="span9">
     {% for lang_code in task.statements %}
         <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ lang_code }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
     {% end %}
     </div>
-{% else %}
-    <div class="span5 main_statements">
-        The statement for this task is available in multiple versions, in different languages. You can see (and download) all of them using the list on the right.
-    </div>
-    <div class="span4 all_statements well">
-        <ul>
-    {% for lang_code in task.statements %}
-            <li><a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ lang_code }}">{{ lang_code }}</a></li>
-    {% end %}
-        </ul>
-    </div>
-{% end %}
 </div>
+{% else %}
+<div class="statement many_statements">
+    <div class="main_statements">
+    {% set suggested = len(set(task.statements) & set(current_user.languages + [task.official_language])) %}
+        <p>
+            The statement for this task is available in multiple versions, in different languages. You can see (and download) all of them using the list on the right.
+    {% if suggested > 0 %}
+            Some suggested translations follow.
+    {% end %}
+        </p>
+    {% if task.official_language in task.statements %}
+        <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ task.official_language }}" class="btn btn-large btn-success">{{ _("Official statement") }}</a>
+    {% end %}
+    {% for lang_code in current_user.languages %}
+        {% if lang_code in task.statements %}
+            {% if ISOCodes.is_language_country_code(lang_code) %}
+                {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_language_country_code(lang_code, locale)) %}
+            {% elif ISOCodes.is_language_code(lang_code) %}
+                {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_language_code(lang_code, locale)) %}
+            {% elif ISOCodes.is_country_code(lang_code) %}
+                {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_country_code(lang_code, locale)) %}
+            {% else %}
+                {% set lang_str = escape(lang_code) %}
+            {% end %}
+            <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ lang_code }}" class="btn btn-large">{% raw _("Statement in %s") % lang_str %}</a>
+        {% end %}
+    {% end %}
+    </div>
+    <div class="all_statements well">
+        <div>
+            <ul>
+    {% for lang_code in sorted(task.statements) %}
+        {% if ISOCodes.is_language_country_code(lang_code) %}
+            {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_language_country_code(lang_code, locale)) %}
+        {% elif ISOCodes.is_language_code(lang_code) %}
+            {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_language_code(lang_code, locale)) %}
+        {% elif ISOCodes.is_country_code(lang_code) %}
+            {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_country_code(lang_code, locale)) %}
+        {% else %}
+            {% set lang_str = escape(lang_code) %}
+        {% end %}
+                <li><a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ lang_code }}">{% raw lang_str %}</a></li>
+    {% end %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% end %}
 
 
 <h2>Some details</h2>

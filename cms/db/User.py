@@ -30,6 +30,7 @@ from datetime import datetime
 
 from sqlalchemy import Column, ForeignKey, UniqueConstraint, \
      Boolean, Integer, Float, String, DateTime
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship, backref
 
 from cms.db.SQLAlchemyUtils import Base
@@ -82,6 +83,13 @@ class User(Base):
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
+    # List of languages the user knows, in the form "it_IT", "en_US",
+    # etc. or simply "it", "en", etc. (the codes are taken from ISO
+    # 639 and 3166). The task statements in these languages will be
+    # highlighted to the user and the first of these languages will be
+    # used to translate the interface (i.e. CWS).
+    languages = Column(postgresql.ARRAY(String), nullable=False)
+
     # Timezone for the user. All timestamps in CWS will be shown using
     # the timezone associated to the logged-in user or (if it's None
     # or an invalid string) the timezone associated to the contest or
@@ -106,8 +114,8 @@ class User(Base):
 
     def __init__(self, first_name, last_name, username, password=None,
                  email=None, ip=None, contest=None, hidden=False,
-                 timezone=None, starting_time=None, messages=None,
-                 questions=None, submissions=None):
+                 languages=None, timezone=None, starting_time=None,
+                 messages=None, questions=None, submissions=None):
         if password is None:
             import random
             chars = "abcdefghijklmnopqrstuvwxyz"
@@ -121,6 +129,7 @@ class User(Base):
         self.email = email if email is not None else ""
         self.ip = ip if ip is not None else "0.0.0.0"
         self.hidden = hidden
+        self.languages = languages if languages is not None else []
         self.timezone = timezone
         self.starting_time = starting_time
         self.messages = messages if messages is not None else []
@@ -143,6 +152,7 @@ class User(Base):
                 'email':         self.email,
                 'ip':            self.ip,
                 'hidden':        self.hidden,
+                'languages':     self.languages,
                 'timezone':      self.timezone,
                 'starting_time': make_timestamp(self.starting_time) if self.starting_time is not None else None,
                 'messages':      [message.export_to_dict()

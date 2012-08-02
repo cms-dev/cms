@@ -281,14 +281,107 @@ div.question_submit textarea {
 
 /*** Task statement */
 
-.task_description .statement .no_statement {
+.task_description .statement.no_statement {
     font-size: 1.2em;
     font-style: italic;
     text-align: center;
 }
 
-.task_description .statement .one_statement {
+.task_description .statement.one_statement {
     text-align: center;
+}
+
+@media (max-width: 767px) {
+    .task_description .statement.many_statements .main_statements {
+        margin-bottom: 15px;
+    }
+
+    .task_description .statement.many_statements .all_statements div {
+        max-height: 280px;
+    }
+}
+
+@media (min-width: 768px) {
+    .task_description .statement.many_statements {
+        min-height: 238px;
+        position: relative;
+    }
+
+    .task_description .statement.many_statements .all_statements {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        margin: 0;
+    }
+
+    .task_description .statement.many_statements .all_statements div {
+        height: 100%;
+    }
+
+    @media (max-width: 979px) {
+        .task_description .statement.many_statements .main_statements {
+            width: 290px;
+        }
+
+        .task_description .statement.many_statements .all_statements {
+            width: 228px;
+        }
+    }
+
+    @media (min-width: 980px) and (max-width: 1199px) {
+        .task_description .statement.many_statements .main_statements {
+            width: 380px;
+        }
+
+        .task_description .statement.many_statements .all_statements {
+            width: 300px;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .task_description .statement.many_statements .main_statements {
+            width: 470px;
+        }
+
+        .task_description .statement.many_statements .all_statements {
+            width: 370px;
+        }
+    }
+}
+
+.task_description .statement.many_statements .main_statements {
+    text-align: center;
+}
+
+.task_description .statement.many_statements .main_statements p {
+    text-align: left;
+}
+
+.task_description .statement.many_statements .main_statements p:last-child {
+    margin-bottom: 5px;
+}
+
+.task_description .statement.many_statements .main_statements a.btn {
+    min-width: 50%;
+    margin: 5px;
+}
+
+.task_description .statement.many_statements .all_statements {
+    padding: 5px;
+}
+
+.task_description .statement.many_statements .all_statements div {
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.task_description .statement.many_statements .all_statements div ul {
+    margin: 5px 5px 5px 25px;
 }
 
 /*** Compilation commands */

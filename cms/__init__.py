@@ -83,6 +83,12 @@ class Config:
         self.min_submission_interval = 60
         self.stl_path = "/usr/share/doc/stl-manual/html/"
         self.allow_questions = True
+        # Prefix of 'iso-codes'[1] installation. It can be found out
+        # using `pkg-config --variable=prefix iso-codes`, but it's
+        # almost universally the same (i.e. '/usr') so it's hardly
+        # necessary to change it.
+        # [1] http://pkg-isocodes.alioth.debian.org/
+        self.iso_codes_prefix = "/usr"
 
         # AdminWebServer.
         self.admin_listen_address = ""
