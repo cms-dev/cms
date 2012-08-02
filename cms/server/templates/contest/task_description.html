@@ -210,7 +210,7 @@
         <p>
         {% set tokens = {"initial": task.token_initial, "max": task.token_max, "total": task.token_total, "min_interval": task.token_min_interval, "gen_time": task.token_gen_time, "gen_number": task.token_gen_number} %}
         {{ format_token_rules(tokens, t_type="task") }}
-        {{ _("You can find the rules for the contest-tokens on the <a href=\"%(url_root)\">contest overview page</a>.") % {"url_root": url_root} }}
+        {{ _("You can find the rules for the contest-tokens on the <a href=\"%(url_root)s\">contest overview page</a>.") % {"url_root": url_root} }}
         </p>
     {% end %}
     </td>
