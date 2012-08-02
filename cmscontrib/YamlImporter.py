@@ -310,10 +310,10 @@ class YamlImporter:
         logger.info("Creating contest on the database.")
         with SessionGen() as session:
             session.add(contest)
-            contest_id = contest.id
             logger.info("Analyzing database.")
             analyze_all_tables(session)
             session.commit()
+            contest_id = contest.id
 
         logger.info("Import finished (new contest id: %s)." % contest_id)
 
