@@ -49,7 +49,7 @@ $(document).ready(function () {
         <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
-                    <a class="brand" href="#">{{ contest.description }}</a>
+                    <a class="brand" href="{{ url_root }}">{{ contest.description }}</a>
 {% if current_user is not None %}
                     <p class="navbar-text pull-right">
                         Logged in as <strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong> <em>({{ current_user.username }})</em>
