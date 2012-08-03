@@ -359,9 +359,9 @@ class YamlImporter:
         with SessionGen() as session:
             session.add(contest)
             logger.info("Analyzing database.")
-            analyze_all_tables(session)
             session.commit()
             contest_id = contest.id
+            analyze_all_tables(session)
 
         logger.info("Import finished (new contest id: %s)." % contest_id)
 
