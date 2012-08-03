@@ -66,7 +66,7 @@ class YamlLoader:
         """
         path = os.path.realpath(path)
         name = os.path.split(path)[1]
-        conf = yaml.load(codecs.open(\
+        conf = yaml.load(codecs.open(
                 os.path.join(path, "contest.yaml"),
                 "r", "utf-8"))
 
@@ -161,8 +161,8 @@ class YamlLoader:
             logger.warning("Short name equals long name (title). "
                            "Is this intended?")
         params["num"] = num
-        params["time_limit"] = conf["timeout"]
-        params["memory_limit"] = conf["memlimit"]
+        params["time_limit"] = conf.get("timeout", None)
+        params["memory_limit"] = conf.get("memlimit", None)
         params["attachments"] = {}  # FIXME - Use auxiliary
         params["statements"] = [
             Statement(self.file_cacher.put_file(
@@ -170,8 +170,6 @@ class YamlLoader:
                 description="Statement for task %s (lang: )" % name),
                 "").export_to_dict()]
         params["official_language"] = ""
-
-        params["task_type"] = "Batch"
 
         params["submission_format"] = [
             SubmissionFormatElement("%s.%%l" % name).export_to_dict()]
@@ -191,31 +189,42 @@ class YamlLoader:
                 break
         if graders:
             for lang in Submission.LANGUAGES:
-                grader_filename = os.path.join(path, "cor", "grader.%s" % (lang))
+                grader_filename = os.path.join(path, "cor", "grader.%s" %
+                                               (lang))
                 if os.path.exists(grader_filename):
                     params["managers"].append(
                         Manager(self.file_cacher.put_file(
                                 path=grader_filename,
-                                description="Grader for task %s and language %s" % \
-                                    (name, lang)),
+                                description="Grader for task %s and "
+                                "language %s" % (name, lang)),
                                 "grader.%s" % (lang)).export_to_dict())
                 else:
-                    logger.warning("Could not find grader for language %s" % (lang))
+                    logger.warning("Could not find grader for "
+                                   "language %s" % (lang))
             compilation_param = "grader"
         else:
             compilation_param = "alone"
 
-        # If there is cor/correttore, then the task type is Batch with
-        # comparator
+        # If there is cor/correttore, then, presuming that the task
+        # type is Batch or OutputOnly, we retrieve the comparator
         if os.path.exists(os.path.join(path, "cor", "correttore")):
             params["managers"] += [
                 Manager(self.file_cacher.put_file(
                     path=os.path.join(path, "cor", "correttore"),
                     description="Manager for task %s" % (name)),
                         "checker").export_to_dict()]
-            params["task_type_parameters"] = \
-                '["%s", ["%s", "%s"], "comparator"]' % \
-                (compilation_param, infile_param, outfile_param)
+            evaluation_parameter = "comparator"
+        else:
+            evaluation_parameter = "diff"
+
+        # If there is no sol/ directory, the the task type is
+        # OutputOnly
+        if not os.path.exists(os.path.join(path, "sol")):
+            params["task_type"] = "OutputOnly"
+            params["task_type_parameters"] = '["%s"]' % (evaluation_parameter)
+            params["submission_format"] = [
+                SubmissionFormatElement("input%d.txt" % (i)).export_to_dict()
+                for i in xrange(int(conf["n_input"]))]
 
         # If there is cor/manager, then the task type is Communication
         elif os.path.exists(os.path.join(path, "cor", "manager")):
@@ -232,17 +241,19 @@ class YamlLoader:
                     params["managers"].append(
                         Manager(self.file_cacher.put_file(
                             path=stub_name,
-                            description="Stub for task %s and language %s" % \
-                                (name, lang)),
+                            description="Stub for task %s and language %s" %
+                            (name, lang)),
                                 "stub.%s" % lang).export_to_dict())
                 else:
                     logger.warning("Stub for language %s not found." % lang)
 
-        # Otherwise, the task type is Batch with diff
+        # Otherwise, the task type is Batch
         else:
+            params["task_type"] = "Batch"
             params["task_type_parameters"] = \
-                '["%s", ["%s", "%s"], "diff"]' % \
-                (compilation_param, infile_param, outfile_param)
+                '["%s", ["%s", "%s"], "%s"]' % \
+                (compilation_param, infile_param, outfile_param,
+                 evaluation_parameter)
 
         params["score_type"] = conf.get("score_type", "Sum")
         params["score_parameters"] = conf.get(

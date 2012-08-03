@@ -80,8 +80,8 @@ class Task(Base):
     official_language = Column(String, nullable=False)
 
     # Time and memory limits for every testcase.
-    time_limit = Column(Float, nullable=False)
-    memory_limit = Column(Integer, nullable=False)
+    time_limit = Column(Float, nullable=True)
+    memory_limit = Column(Integer, nullable=True)
 
     # Name of the TaskType child class suited for the task.
     task_type = Column(String, nullable=False)
@@ -107,9 +107,11 @@ class Task(Base):
     token_total = Column(
         Integer, CheckConstraint("token_total > 0"), nullable=True)
     token_min_interval = Column(
-        Interval, CheckConstraint("token_min_interval >= '0 seconds'"), nullable=False)
+        Interval, CheckConstraint("token_min_interval >= '0 seconds'"),
+        nullable=False)
     token_gen_time = Column(
-        Interval, CheckConstraint("token_gen_time >= '0 seconds'"), nullable=False)
+        Interval, CheckConstraint("token_gen_time >= '0 seconds'"),
+        nullable=False)
     token_gen_number = Column(
         Integer, CheckConstraint("token_gen_number >= 0"), nullable=False)
 
@@ -195,8 +197,10 @@ class Task(Base):
                 'token_initial':        self.token_initial,
                 'token_max':            self.token_max,
                 'token_total':          self.token_total,
-                'token_min_interval':   self.token_min_interval.total_seconds(),
-                'token_gen_time':       self.token_gen_time.total_seconds() / 60,
+                'token_min_interval':
+                    self.token_min_interval.total_seconds(),
+                'token_gen_time':
+                    self.token_gen_time.total_seconds() / 60,
                 'token_gen_number':     self.token_gen_number}
 
     @classmethod
@@ -220,7 +224,8 @@ class Task(Base):
                               for statement_data in data['statements']]
         data['statements'] = dict([(statement.language, statement)
                                    for statement in data['statements']])
-        data['token_min_interval'] = timedelta(seconds=data['token_min_interval'])
+        data['token_min_interval'] = \
+            timedelta(seconds=data['token_min_interval'])
         data['token_gen_time'] = timedelta(minutes=data['token_gen_time'])
         return cls(**data)
 
