@@ -320,35 +320,35 @@ div.question_submit textarea {
     .task_description .statement.many_statements .all_statements div {
         height: 100%;
     }
+}
 
-    @media (max-width: 979px) {
-        .task_description .statement.many_statements .main_statements {
-            width: 290px;
-        }
-
-        .task_description .statement.many_statements .all_statements {
-            width: 228px;
-        }
+@media (min-width: 768px) and (max-width: 979px) {
+    .task_description .statement.many_statements .main_statements {
+        width: 290px;
     }
 
-    @media (min-width: 980px) and (max-width: 1199px) {
-        .task_description .statement.many_statements .main_statements {
-            width: 380px;
-        }
+    .task_description .statement.many_statements .all_statements {
+        width: 228px;
+    }
+}
 
-        .task_description .statement.many_statements .all_statements {
-            width: 300px;
-        }
+@media (min-width: 980px) and (max-width: 1199px) {
+    .task_description .statement.many_statements .main_statements {
+        width: 380px;
     }
 
-    @media (min-width: 1200px) {
-        .task_description .statement.many_statements .main_statements {
-            width: 470px;
-        }
+    .task_description .statement.many_statements .all_statements {
+        width: 300px;
+    }
+}
 
-        .task_description .statement.many_statements .all_statements {
-            width: 370px;
-        }
+@media (min-width: 1200px) {
+    .task_description .statement.many_statements .main_statements {
+        width: 470px;
+    }
+
+    .task_description .statement.many_statements .all_statements {
+        width: 370px;
     }
 }
 
