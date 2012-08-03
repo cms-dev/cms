@@ -173,13 +173,7 @@ div.question_submit textarea {
     max-height: 275px;
 }
 
-
-
 /** Login **/
-
-div.login_box {
-    margin-bottom: 20px;
-}
 
 div.login_box form {
     margin-bottom: 0;
@@ -189,51 +183,61 @@ div.login_box form fieldset div.control-group:last-child {
     margin-bottom: 0;
 }
 
-@media (max-height: 467px) and (max-width: 609px) {
-    div.login_box {
-        /* The width of the box is 450px by definition, plus 60px of padding on
-           each side. Its total height is 2*60 (padding) + 60 (h2) + (27+9) (p)
-           + 2*(28+18) (inputs) + 40 (buttons) = 348px; */
-        width: 450px;
+div.login_container {
+    margin-bottom: 20px;
+}
+
+div.login_box {
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+@media (max-width: 979px) {
+    div.navbar.navbar-fixed-top {
         margin-bottom: 20px;
     }
+}
 
+@media (min-width: 768px) {
     div.login_box fieldset div.control-group div.controls input {
         width: 280px;
     }
 }
 
-@media (min-height: 468px) and (min-width: 610px) {
+@media (max-width: 979px) and (min-height: 488px) {
     div.login_container {
         position: fixed;
-        top: 0;
+        top: 50%;
         left: 0;
-        width: 100%;
-        height: 100%;
+        right: 0;
+        bottom: 0;
         margin: 0;
+        padding: 0 20px;
     }
 
     div.login_box {
-        /* The width of the box is 450px by definition, plus 60px of padding on
-           each side. Its total height is 2*60 (padding) + 60 (h2) + (27+9) (p)
-           + 2*(28+18) (inputs) + 40 (buttons) = 348px; */
-        position: absolute;
-        width: 450px;
-        top: 50%;
+        /* The total height of the box is 2*60 (padding) + 60 (h2) +
+           (27+9) (p) + 2*(28+18) (inputs) + 40 (buttons) = 348px; */
         margin-top: -174px;
-        left: 50%;
-        margin-left: -285px;
-    }
-
-    div.login_box form fieldset div.control-group div.controls input {
-        width: 280px;
     }
 }
 
-div.question_submit textarea {
-    resize: vertical;
-    min-height: 75px;
-    max-height: 275px;
+@media (min-width: 980px) and (min-height: 468px) {
+    div.login_container {
+        position: fixed;
+        top: 50%;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0;
+        padding: 0 20px;
+    }
+
+    div.login_box {
+        /* The total height of the box is 2*60 (padding) + 60 (h2) +
+           (27+9) (p) + 2*(28+18) (inputs) + 40 (buttons) = 348px; */
+        margin-top: -174px;
+    }
 }
 
 /* Some fixes and enhancements of Bootstrap */
