@@ -474,3 +474,12 @@ td.token_rules p:last-child {
     color: #999999;
 }
 
+/*** License notice */
+
+.license_notice {
+    display: block;
+    text-align: center;
+    padding: 0 6%;
+    font-size: 11px;
+}
+
