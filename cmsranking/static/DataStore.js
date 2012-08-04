@@ -46,7 +46,8 @@ var DataStore = new function () {
         $.ajax({
             url: Config.get_contest_list_url(),
             dataType: "json",
-            success: function (data) {
+            success: function (data, status, xhr) {
+                self.contest_init_time = parseFloat(xhr.getResponseHeader("Timestamp"));
                 for (var key in data) {
                     self.create_contest(key, data[key]);
                 }
@@ -128,7 +129,8 @@ var DataStore = new function () {
         $.ajax({
             url: Config.get_task_list_url(),
             dataType: "json",
-            success: function (data) {
+            success: function (data, status, xhr) {
+                self.task_init_time = parseFloat(xhr.getResponseHeader("Timestamp"));
                 for (var key in data) {
                     self.create_task(key, data[key]);
                 }
@@ -219,7 +221,8 @@ var DataStore = new function () {
         $.ajax({
             url: Config.get_team_list_url(),
             dataType: "json",
-            success: function (data) {
+            success: function (data, status, xhr) {
+                self.team_init_time = parseFloat(xhr.getResponseHeader("Timestamp"));
                 for (var key in data) {
                     self.create_team(key, data[key]);
                 }
@@ -301,7 +304,8 @@ var DataStore = new function () {
         $.ajax({
             url: Config.get_user_list_url(),
             dataType: "json",
-            success: function (data) {
+            success: function (data, status, xhr) {
+                self.user_init_time = parseFloat(xhr.getResponseHeader("Timestamp"));
                 for (var key in data) {
                     self.create_user(key, data[key]);
                 }
@@ -488,7 +492,8 @@ var DataStore = new function () {
     self.init_scores = function () {
         $.ajax({
             url: Config.get_score_url(),
-            success: function (data) {
+            success: function (data, status, xhr) {
+                self.score_init_time = parseFloat(xhr.getResponseHeader("Timestamp"));
                 data = data.split("\n");
                 for (var idx = 0; idx < data.length - 1; idx += 1) {
                     var line = data[idx].split(" ");
@@ -599,6 +604,7 @@ var DataStore = new function () {
             delete old_user["rank"];
         });
 
+        self.create_event_source();
         self.init_callback();
     };
 
@@ -655,41 +661,114 @@ var DataStore = new function () {
 
     ////// Event listeners
 
-    /* We set the listeners for Server Sent Events.
+    /* We set the listeners for Server Sent Events. */
 
-       This approach presents some issues: some data may be received from these
-       listeners (and then processed) while the initial data isn't ready yet.
-       This will cause some failures. We don't expect much data to be received
-       on the first four listeners, but the fifth (the score listener) is
-       supposed to be very active. We may want to change the approach, at least
-       on that case, so that we "remember" the data received on these channels
-       (without processing it) until the initial data is ready.
-     */
+    self.last_event_id = null;
 
     self.create_event_source = function () {
-        self.es = new EventSource(Config.get_event_url());
-        self.es.addEventListener("contest", self.contest_listener);
-        self.es.addEventListener("task", self.task_listener);
-        self.es.addEventListener("team", self.team_listener);
-        self.es.addEventListener("user", self.user_listener);
-        self.es.addEventListener("score", self.score_listener);
-        self.es.addEventListener("error", self.connection_failed);
-    };
+        if (self.last_event_id == null) {
+            self.last_event_id = Math.min(self.contest_init_time,
+                                          self.task_init_time,
+                                          self.team_init_time,
+                                          self.user_init_time,
+                                          self.score_init_time);
+        }
 
-    self.connection_failed = function() {
-        if (self.es.readyState != EventSource.CLOSED)
-            return;
-        if (self.reconnect_id)
-            return;
-
-        self.reconnect_id = window.setTimeout(function() {
+        if (self.es) {
             delete self.es;
-            delete self.reconnect_id;
-            self.create_event_source();
-        }, 5000);
+        }
+
+        self.es = new EventSource(Config.get_event_url(self.last_event_id));
+
+        self.es.addEventListener("open", self.es_open_handler);
+        self.es.addEventListener("error", self.es_error_handler);
+        self.es.addEventListener("reload", self.es_reload_handler);
+        self.es.addEventListener("contest", function (event) {
+            var event_id = parseFloat(event.lastEventId);
+            if (event_id > self.contest_init_time) {
+                self.contest_listener(event);
+            }
+            self.last_event_id = event_id;
+        });
+        self.es.addEventListener("task", function (event) {
+            var event_id = parseFloat(event.lastEventId);
+            if (event_id > self.task_init_time) {
+                self.task_listener(event);
+            }
+            self.last_event_id = event_id;
+        });
+        self.es.addEventListener("team", function (event) {
+            var event_id = parseFloat(event.lastEventId);
+            if (event_id > self.team_init_time) {
+                self.team_listener(event);
+            }
+            self.last_event_id = event_id;
+        });
+        self.es.addEventListener("user", function (event) {
+            var event_id = parseFloat(event.lastEventId);
+            if (event_id > self.user_init_time) {
+                self.user_listener(event);
+            }
+            self.last_event_id = event_id;
+        });
+        self.es.addEventListener("score", function (event) {
+            var event_id = parseFloat(event.lastEventId);
+            if (event_id > self.score_init_time) {
+                self.score_listener(event);
+            }
+            self.last_event_id = event_id;
+        });
     };
 
-    self.create_event_source();
+    self.update_network_status = function (state) {
+        if (state == 0) { // EventSource.CONNECTING
+            $("#network_status_box").attr("data-status", "reconnecting");
+            $("#network_status_text").text("You are disconnected from the server but your browser is trying to connect.");
+        } else if (state == 1) { // EventSource.OPEN
+            $("#network_status_box").attr("data-status", "connected");
+            $("#network_status_text").text("You are connected to the server and are receiving live updates.");
+        } else if (state == 2) { // EventSource.CLOSED
+            $("#network_status_box").attr("data-status", "disconnected");
+            $("#network_status_text").html("You are disconnected from the server but you can <a onclick=\"DataStore.create_event_source();\">try to connect</a>.");
+        } else { // state == 3: "reload" event received
+            $("#network_status_box").attr("data-status", "outdated");
+            $("#network_status_text").html("Your local data cannot be updated. Please <a onclick=\"window.location.reload();\">reload the page</a>.");
+        }
+    };
+
+    self.es_open_handler = function () {
+        if (self.es.readyState == EventSource.OPEN) {
+            console.info("EventSource connected");
+            self.update_network_status(1);
+        } else {
+            console.error("EventSource shouldn't be in state " + self.es.readyState + " during a 'open' event!");
+        }
+    };
+
+    self.es_error_handler = function () {
+        if (self.es.readyState == EventSource.CONNECTING) {
+            console.info("EventSource reconnecting");
+            self.update_network_status(0);
+        } else if (self.es.readyState == EventSource.CLOSED) {
+            console.info("EventSource disconnected");
+            self.update_network_status(2);
+        } else {
+            console.error("EventSource shouldn't be in state " + self.es.readyState + " during a 'error' event!");
+        }
+    };
+
+    self.es_reload_handler = function () {
+        if (self.es.readyState == EventSource.OPEN) {
+            self.es.close();
+            self.update_network_status(3);
+        } else {
+            console.error("EventSource shouldn't be in state " + self.es.readyState + " during a 'reload' event!");
+        }
+    };
+
+    $(document).ready(function () {
+        self.update_network_status(0);
+    });
 
 
     ////// Sorted contest list

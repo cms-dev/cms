@@ -39,6 +39,9 @@ class Config(object):
         self.username = 'usern4me'
         self.password = 'passw0rd'
 
+        # Buffers
+        self.buffer_size = 100  # Needs to be strictly positive.
+
         # Logging.
         self.log_color = True
 

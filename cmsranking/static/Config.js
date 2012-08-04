@@ -66,8 +66,8 @@ var Config = new function () {
         return "scores";
     };
 
-    self.get_event_url = function (c_key) {
-        return "events";
+    self.get_event_url = function (last_event_id) {
+        return "events?last_event_id=" + last_event_id;
     };
 
     self.get_history_url = function () {

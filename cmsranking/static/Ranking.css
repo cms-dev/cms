@@ -226,6 +226,10 @@ a
 \******************************************************************************/
 
 
+div.team_search {
+    display: inline-block;
+}
+
 div.team_search input.search_field
 {
     position: relative;
@@ -1241,4 +1245,80 @@ body:not(.user_panel) .UserPanel_bg
 {
     margin-top: 24px;
     width: 100%;
+}
+
+/* Style for the network status indicator */
+
+#network_status_box {
+    display: inline-block;
+    position: relative;
+    float: right;
+    margin: 0.5em;
+    text-align: right;
+    z-index: 2;
+}
+
+#network_status_label {
+    display: inline-block;
+    position: relative;
+    height: 1.5em;
+    padding: 0.25em 20px;
+    margin: -1px 0;
+    z-index: 2;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 4px;
+}
+
+#network_status_box:hover #network_status_label {
+    border-bottom-width: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+#network_status_text {
+    display: none;
+    position: absolute;
+    top: 2em;
+    right: 0;
+    width: 240px;
+    padding: 0.5em;
+    margin-top: -1px;
+    z-index: 1;
+    border-width: 1px;
+    border-style: solid;
+    border-radius: 4px 0 4px 4px;
+}
+
+#network_status_box:hover #network_status_text,
+#network_status_text:hover {
+    display: block;
+}
+
+#network_status_box[data-status="connected"] #network_status_label,
+#network_status_box[data-status="connected"] #network_status_text {
+    background-color: white;
+    color: green;
+    border-color: green;
+}
+
+#network_status_box[data-status="reconnecting"] #network_status_label,
+#network_status_box[data-status="reconnecting"] #network_status_text {
+    background-color: yellow;
+    color: black;
+    border-color: black;
+}
+
+#network_status_box[data-status="disconnected"] #network_status_label,
+#network_status_box[data-status="disconnected"] #network_status_text,
+#network_status_box[data-status="outdated"] #network_status_label,
+#network_status_box[data-status="outdated"] #network_status_text {
+    background-color: red;
+    color: white;
+    border-color: red;
+}
+
+#network_status_box a {
+    cursor: pointer;
+    text-decoration: underline;
 }

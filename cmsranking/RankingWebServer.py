@@ -84,6 +84,9 @@ class DataHandler(tornado.web.RequestHandler):
 
     def set_default_headers(self):
         self.set_header('Content-Type', 'text/plain; charset=UTF-8')
+        self.set_header('Date', datetime.utcnow())
+        # In case we need sub-second precision (and we do...).
+        self.set_header('Timestamp', "%0.6f" % time.time())
 
     def write_error(self, status_code, **kwargs):
         if status_code == 401:
@@ -172,6 +175,21 @@ class MessageProxy(object):
     def __init__(self):
         self.clients = list()
 
+        # We keep a buffer of sent messages, to send them to the clients
+        # that temporarily lose the connection, to avoid them missing
+        # any data. We push messages to the _new_buffer. When it fills
+        # up (i.e. reaches config.buffer_size messages) we drop the
+        # _old_buffer, make the _new_buffer become the _old_buffer and
+        # set up a new empty _new_buffer. In this way every push
+        # requires O(1) time and we keep at most 2 * config.buffer_size
+        # messages in the buffers.
+        self._new_buffer = list()
+        self._old_buffer = list()
+
+        # The "age" of the buffers is the minimum time such that we are
+        # sure to have all events that happened after that time.
+        self.age = time.time()
+
         Contest.store.add_create_callback(
             functools.partial(self.callback, "contest", "create"))
         Contest.store.add_update_callback(
@@ -203,22 +221,37 @@ class MessageProxy(object):
         Scoring.store.add_score_callback(self.score_callback)
 
     def callback(self, entity, event, key):
-        msg = 'id: %s\n' \
+        timestamp = time.time()
+        msg = 'id: %0.6f\n' \
               'event: %s\n' \
               'data: %s %s\n' \
-              '\n' % (int(time.time()), entity, event, key)
-        self.send(msg)
+              '\n' % (timestamp, entity, event, key)
+        self.send(msg, timestamp)
 
     def score_callback(self, user, task, score):
-        msg = 'id: %s\n' \
+        timestamp = time.time()
+        msg = 'id: %0.6f\n' \
               'event: score\n' \
               'data: %s %s %0.2f\n' \
-              '\n' % (int(time.time()), user, task, score)
-        self.send(msg)
+              '\n' % (timestamp, user, task, score)
+        self.send(msg, timestamp)
 
-    def send(self, message):
+    def send(self, message, timestamp):
         for client in self.clients:
             client(message)
+        if len(self._new_buffer) == config.buffer_size:
+            if self._old_buffer:
+                self.age = self._old_buffer[-1][0]
+            self._old_buffer = self._new_buffer
+            self._new_buffer = list()
+        self._new_buffer.append((timestamp, message))
+
+    @property
+    def buffer(self):
+        for msg in self._old_buffer:
+            yield msg
+        for msg in self._new_buffer:
+            yield msg
 
     def add_callback(self, callback):
         self.clients.append(callback)
@@ -238,16 +271,52 @@ class NotificationHandler(DataHandler):
         self.set_header('Content-Type', 'text/event-stream')
         self.set_header('Cache-Control', 'no-cache')
         self.flush()
-        self.write('retry: 0\n')
-        self.write('\n')
+
+        # This is only needed to make Firefox fire the 'open' event on
+        # the EventSource object.
+        self.write(':\n')
         self.flush()
+
+        # We get the ID of the last event the client received. We give
+        # priority to the HTTP header because it's more reliable: on the
+        # first connection the client won't use the header but will use
+        # the argument (set by us); if it disconnects, he will try to
+        # reconnect with the same argument (which is now outdated) but
+        # with the header correctly set (which is what we want).
+        if "Last-Event-ID" in self.request.headers:
+            last_id = float(self.request.headers.get_list("Last-Event-ID")[-1])
+        elif self.get_argument("last_event_id", None) != None:
+            last_id = float(self.get_argument("last_event_id", None))
+        else:
+            last_id = 2000000000  # this is a "+infty" value
+                                  # update it after 2033-05-18 03:33:20
+
+        self.outdated = False
+        if last_id < proxy.age:
+            self.outdated = True
+            # The reload event will tell the client that we can't update
+            # its data using buffered event and that it'll need to init
+            # it again from scratch (in pratice: reload the page).
+            self.write("event: reload\n")
+            self.write("data: _\n\n")
+            # We're keeping the connection open because we want the
+            # client to close it. If we'd close it the client (i.e. the
+            # browser) may automatically attempt to reconnect before
+            # having processed the event we sent it.
+            self.flush()
+            return
+
+        for t, msg in proxy.buffer:
+            if t > last_id:
+                self.send_event(msg)
 
         proxy.add_callback(self.send_event)
 
         # TODO: add automatic connection close after a certain timeout.
 
     def on_connection_close(self):
-        proxy.remove_callback(self.send_event)
+        if not self.outdated:
+            proxy.remove_callback(self.send_event)
 
     def send_event(self, message):
         self.write(message)
