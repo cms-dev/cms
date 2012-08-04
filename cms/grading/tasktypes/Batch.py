@@ -126,7 +126,7 @@ class Batch(TaskType):
         # Create the sandbox
         sandbox = create_sandbox(self)
 
-        # Prepare the source file in the sandbox
+        # Prepare the source files in the sandbox
         files_to_get = {}
         format_filename = self.submission.files.keys()[0]
         source_filenames = [format_filename.replace("%l", language)]
@@ -212,7 +212,7 @@ class Batch(TaskType):
         # If an error occur (our or contestant's), return immediately.
         if not success or not is_evaluation_passed(plus):
             delete_sandbox(sandbox)
-            if not success:
+            if success:
                 outcome = 0.0
                 text = human_evaluation_message(plus)
             return self.finish_evaluation_testcase(
