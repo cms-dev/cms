@@ -25,7 +25,10 @@ import tempfile
 
 from cms import config
 from cms.grading.Sandbox import wait_without_std
-from cms.grading import get_compilation_command
+from cms.grading import get_compilation_command, compilation_step, \
+    human_evaluation_message, is_evaluation_passed, \
+    extract_outcome_and_text, evaluation_step_before_run, \
+    evaluation_step_after_run
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
 from cms.db.SQLAlchemyAll import Submission
@@ -80,8 +83,10 @@ class Communication(TaskType):
                 to_log="Submission contains %d files, expecting 1" %
                 len(self.submission.files))
 
-        # First and only one compilation.
+        # Create the sandbox
         sandbox = create_sandbox(self)
+
+        # Prepare the source files in the sandbox
         files_to_get = {}
         format_filename = self.submission.files.keys()[0]
         # User's submission.
@@ -92,17 +97,28 @@ class Communication(TaskType):
         source_filenames.append("stub.%s" % language)
         files_to_get[source_filenames[1]] = \
                 self.submission.task.managers["stub.%s" % language].digest
+        for filename, digest in files_to_get.iteritems():
+            sandbox.create_file_from_storage(filename, digest)
+
+        # Prepare the compilation command
         executable_filename = format_filename.replace(".%l", "")
         command = get_compilation_command(language,
                                           source_filenames,
                                           executable_filename)
+
+        # Run the compilation
         operation_success, compilation_success, text, _ = \
-            self.compilation_step(
-            sandbox,
-            command,
-            files_to_get,
-            {executable_filename: "Executable %s for submission %s" %
-             (executable_filename, self.submission.id)})
+            compilation_step(sandbox, command)
+
+        # Retrieve the compiled executables
+        if operation_success and compilation_success:
+            digest = sandbox.get_file_to_storage(
+                executable_filename,
+                "Executable %s for submission %s" %
+                (executable_filename, self.submission.id))
+            self.result["executables"] = [(executable_filename, digest)]
+
+        # Cleanup
         delete_sandbox(sandbox)
 
         # We had only one compilation, hence we pipe directly its
@@ -112,6 +128,7 @@ class Communication(TaskType):
 
     def evaluate_testcase(self, test_number):
         """See TaskType.evaluate_testcase."""
+        # Create sandboxes and FIFOs
         sandbox_mgr = create_sandbox(self)
         sandbox_user = create_sandbox(self)
         fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
@@ -131,11 +148,14 @@ class Communication(TaskType):
             "input.txt": self.submission.task.testcases[test_number].input
             }
         manager_allow_path = ["input.txt", "output.txt", fifo_in, fifo_out]
-        manager = self.evaluation_step_before_run(
+        for filename, digest in manager_executables_to_get.iteritems():
+            sandbox_mgr.create_file_from_storage(
+                filename, digest, executable=True)
+        for filename, digest in manager_files_to_get.iteritems():
+            sandbox_mgr.create_file_from_storage(filename, digest)
+        manager = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,
-            manager_executables_to_get,
-            manager_files_to_get,
             self.submission.task.time_limit,
             0,
             manager_allow_path,
@@ -150,11 +170,12 @@ class Communication(TaskType):
             self.submission.executables[executable_filename].digest
             }
         allow_path = [fifo_in, fifo_out]
-        process = self.evaluation_step_before_run(
+        for filename, digest in executables_to_get.iteritems():
+            sandbox_user.create_file_from_storage(
+                filename, digest, executable=True)
+        process = evaluation_step_before_run(
             sandbox_user,
             command,
-            executables_to_get,
-            {},
             self.submission.task.time_limit,
             self.submission.task.memory_limit,
             allow_path)
@@ -163,25 +184,28 @@ class Communication(TaskType):
         wait_without_std([process, manager])
         # TODO: check exit codes with translate_box_exitcode.
 
-        success_user, outcome_user, text_user, plus = \
-                      self.evaluation_step_after_run(sandbox_user, final=False)
-        success_mgr, outcome_mgr, text_mgr, _ = \
-                     self.evaluation_step_after_run(sandbox_mgr, final=True)
+        success_user, plus_user = \
+            evaluation_step_after_run(sandbox_user)
+        success_mgr, plus_mgr = \
+            evaluation_step_after_run(sandbox_mgr)
 
         # If at least one evaluation had problems, we report the
-        # problems.
+        # problems. (TODO: shouldn't outcome and text better be None
+        # and None?)
         if not success_user or not success_mgr:
-            success, outcome, text = False, outcome_user, text_user
+            success, outcome, text = False, None, None
         # If outcome_user is not None, it is 0.0 and it means that
         # there has been some errors in the user solution, and outcome
         # and text are meaningful, so we use them.
-        elif outcome_user is not None:
-            success, outcome, text = success_user, outcome_user, text_user
+        elif not is_evaluation_passed(plus_user):
+            success = True
+            outcome, text = 0.0, human_evaluation_message(plus_user)
         # Otherwise, we use the manager to obtain the outcome.
         else:
-            success, outcome, text = success_mgr, outcome_mgr, text_mgr
+            success = True
+            outcome, text = extract_outcome_and_text(sandbox_mgr)
 
         delete_sandbox(sandbox_mgr)
         delete_sandbox(sandbox_user)
         return self.finish_evaluation_testcase(
-            test_number, success, outcome, text, plus)
+            test_number, success, outcome, text, plus_user)
