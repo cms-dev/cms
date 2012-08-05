@@ -36,6 +36,7 @@ import traceback
 from cms import config, logger
 from cms.grading import JobException
 from cms.grading.Sandbox import Sandbox
+from cms.grading.Job import CompilationJob, EvaluationJob
 
 
 ## Automatic white diff. ##
@@ -318,6 +319,53 @@ class TaskType:
 
         return success
 
+    def build_response(self):
+        """Build the `result' object to be returned back to
+        EvaluationService. This metod is temporary: definitively, the
+        Worker should return a reference to the Job itself, leaving to
+        EvaluationService the task of extracting interesting data and
+        pushing them to the Submission or wherever they belong to.
+
+        """
+        result = {}
+
+        # Compilation
+        if isinstance(self.job, CompilationJob):
+            result['success'] = self.job.success
+            if self.job.compilation_success:
+                result['compilation_outcome'] = 'ok'
+            else:
+                result['compilation_outcome'] = 'fail'
+            result['compilation_text'] = self.job.text
+            result['compilation_shard'] = self.job.shard
+            result['compilation_sandbox'] = ":".join(self.job.sandboxes)
+            result['executables'] = self.job.executables.items()
+
+        # Evaluation
+        elif isinstance(self.job, EvaluationJob):
+            result['success'] = self.job.success
+            result['evaluations'] = {}
+            for testcase in self.job.evaluations:
+                evaluation = {}
+                evaluation['text'] = \
+                    self.job.evaluations[testcase]['text']
+                evaluation['outcome'] = \
+                    self.job.evaluations[testcase]['outcome']
+                evaluation['evaluation_shard'] = self.job.shard
+                evaluation['evaluation_sandbox'] = ":".join(
+                    self.job.evaluations[testcase]['sandboxes'])
+                for info in ['memory_used',
+                             'execution_time',
+                             'execution_wall_clock_time']:
+                    evaluation[info] = \
+                        self.job.evaluations[testcase]['plus'].get(info, None)
+                result['evaluations'][testcase] = evaluation
+
+        else:
+            raise ValueError("The job isn't neither CompilationJob "
+                             "or EvaluationJob")
+        return result
+
     def finish_evaluation(self, success, to_log=None):
         """Finalize the operation of evaluating. Currently there is
         nothing to do.
@@ -445,5 +493,19 @@ class TaskType:
         for test_number in xrange(len(self.job.testcases)):
             success = self.evaluate_testcase(test_number)
             if not success or self.ignore_job:
-                return self.finish_evaluation(False)
-        return self.finish_evaluation(True)
+                self.job.success = False
+                return
+        self.job.success = True
+
+    def execute_job(self):
+        """Call compile() or execute() depending on the job passed
+        when constructing the TaskType.
+
+        """
+        if isinstance(self.job, CompilationJob):
+            return self.compile()
+        elif isinstance(self.job, EvaluationJob):
+            return self.evaluate()
+        else:
+            raise ValueError("The job isn't neither CompilationJob "
+                             "or EvaluationJob")

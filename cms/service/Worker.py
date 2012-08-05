@@ -29,6 +29,7 @@ from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import Submission, SessionGen, Contest
 from cms.grading import JobException
 from cms.grading.tasktypes import get_task_type
+from cms.grading.Job import CompilationJob, EvaluationJob
 
 
 class Worker(Service):
@@ -51,13 +52,15 @@ class Worker(Service):
         self.work_lock = threading.Lock()
         self.session = None
 
-    def get_submission_data(self, submission_id):
-        """Given the id, returns the submission object and a new task
-        type object of the correct type.
+    def get_submission_data(self, submission_id, job_type):
+        """Given the id and the job that we want to perform, returns
+        the Submission object, a proper Job object and a new task type
+        object of the correct type.
 
         submission_id (int): id of the submission.
+        job_type (string): the job to do.
 
-        return (Submission, TaskType): corresponding objects.
+        return (Submission, Job, TaskType): corresponding objects.
 
         raise: JobException if id or task type not found.
 
@@ -69,8 +72,19 @@ class Worker(Service):
             logger.critical(err_msg)
             raise JobException(err_msg)
 
+        if job_type == Worker.JOB_TYPE_COMPILATION:
+            job = CompilationJob.from_submission(submission)
+        elif job_type == Worker.JOB_TYPE_EVALUATION:
+            job = EvaluationJob.from_submission(submission)
+        else:
+            err_msg = "Job type `%s' not known for " \
+                "submission %s." % (
+                job_type, submission_id)
+            logger.error(err_msg)
+            raise JobException(err_msg)
+
         try:
-            task_type = get_task_type(submission, self.file_cacher)
+            task_type = get_task_type(job, self.file_cacher)
         except KeyError as error:
             err_msg = "Task type `%s' not known for " \
                 "submission %s (error: %s)." % (
@@ -78,7 +92,7 @@ class Worker(Service):
             logger.error(err_msg)
             raise JobException(err_msg)
 
-        return (submission, task_type)
+        return submission, job, task_type
 
     @rpc_method
     def ignore_job(self):
@@ -141,7 +155,7 @@ class Worker(Service):
         (the code is pretty much the same, the differencies are in
         what we ask TaskType to do).
 
-        submission_id (string): the submission to which act on.
+        submission_id (int): the submission to which act on.
         job_type (string): a constant JOB_TYPE_*.
 
         """
@@ -156,22 +170,18 @@ class Worker(Service):
                 with SessionGen(commit=False) as self.session:
 
                     # Retrieve submission and task_type.
-                    unused_submission, self.task_type = \
-                        self.get_submission_data(submission_id)
+                    unused_submission, job, self.task_type = \
+                        self.get_submission_data(submission_id, job_type)
 
                     # Store in the task type the shard number.
-                    self.task_type.worker_shard = self.shard
+                    job.shard = self.shard
 
                     # Do the actual work.
-                    if job_type == Worker.JOB_TYPE_COMPILATION:
-                        task_type_action = self.task_type.compile
-                    elif job_type == Worker.JOB_TYPE_EVALUATION:
-                        task_type_action = self.task_type.evaluate
-                    else:
-                        raise KeyError("Unexpected job type %s." % job_type)
-
+                    self.task_type.execute_job()
                     logger.info("Request finished.")
-                    return task_type_action()
+
+                    # Build and the response.
+                    return self.task_type.build_response()
 
             except:
                 err_msg = "Worker failed on operation `%s'" % logger.operation

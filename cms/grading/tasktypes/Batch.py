@@ -156,6 +156,7 @@ class Batch(TaskType):
         self.job.success = operation_success
         self.job.compilation_success = compilation_success
         self.job.plus = plus
+        self.job.text = text
         if operation_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
@@ -208,7 +209,8 @@ class Batch(TaskType):
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect)
 
-        self.job.evaluations[test_number] = {}
+        self.job.evaluations[test_number] = {'sandboxes': [sandbox.path],
+                                             'plus': plus}
         outcome = None
         text = None
         evaluation = self.job.evaluations[test_number]
