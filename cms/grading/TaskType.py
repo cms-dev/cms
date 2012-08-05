@@ -177,11 +177,13 @@ class TaskType:
                 evaluation['evaluation_shard'] = self.job.shard
                 evaluation['evaluation_sandbox'] = ":".join(
                     self.job.evaluations[testcase]['sandboxes'])
-                for info in ['memory_used',
-                             'execution_time',
-                             'execution_wall_clock_time']:
-                    evaluation[info] = \
-                        self.job.evaluations[testcase]['plus'].get(info, None)
+                if 'plus' in self.job.evaluations[testcase]:
+                    for info in ['memory_used',
+                                 'execution_time',
+                                 'execution_wall_clock_time']:
+                        evaluation[info] = \
+                            self.job.evaluations[testcase]['plus'] \
+                            .get(info, None)
                 result['evaluations'][testcase] = evaluation
 
         else:

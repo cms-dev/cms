@@ -27,6 +27,8 @@
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
 from cms.grading.ParameterTypes import ParameterTypeChoice
+from cms.grading import white_diff_step, evaluation_step, \
+    extract_outcome_and_text
 
 
 class OutputOnly(TaskType):
@@ -63,49 +65,67 @@ class OutputOnly(TaskType):
     def compile(self):
         """See TaskType.compile."""
         # No compilation needed.
-        return self.finish_compilation(True, True, "No compilation needed.")
+        self.job.success = True
+        self.job.compilation_success = True
+        self.job.text = "No compilation needed."
 
     def evaluate_testcase(self, test_number):
         """See TaskType.evaluate_testcase."""
         sandbox = create_sandbox(self)
+        self.job.sandboxes.append(sandbox.path)
+
+        # Immediately prepare the skeleton to return
+        self.job.evaluations[test_number] = {'sandboxes': [sandbox.path]}
+        evaluation = self.job.evaluations[test_number]
+        outcome = None
+        text = None
 
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
-        if "output_%03d.txt" % test_number not in self.submission.files:
-            return self.finish_evaluation_testcase(
-                test_number,
-                True, 0.0, None, to_log="File not submitted.")
+        if "output_%03d.txt" % test_number not in self.job.files:
+            evaluation['success'] = True
+            evaluation['outcome'] = 0.0
+            evaluation['text'] = "File not submitted."
+            return True
+
         # First and only one step: diffing (manual or with manager).
-        output_digest = self.submission.files["output_%03d.txt" %
-                                              test_number].digest
+        output_digest = self.job.files["output_%03d.txt" %
+                                       test_number].digest
+
+        # Put the files into the sandbox
+        sandbox.create_file_from_storage(
+            "res.txt",
+            self.job.testcases[test_number].output)
+        sandbox.create_file_from_storage(
+            "output.txt",
+            output_digest)
 
         # TODO: this should check self.parameters, not managers.
-        if len(self.submission.task.managers) == 0:
+        if len(self.job.managers) == 0:
             # No manager: I'll do a white_diff between the submission
             # file and the correct output res.txt.
-            success, outcome, text = self.white_diff_step(
-                sandbox,
-                "output.txt", "res.txt",
-                {"res.txt":
-                 self.submission.task.testcases[test_number].output,
-                 "output.txt": output_digest})
+            success = True
+            outcome, text = white_diff_step(
+                sandbox, "output.txt", "res.txt")
+
         else:
             # Manager present: wonderful, he'll do all the job.
-            manager_filename = self.submission.task.managers.keys()[0]
-            success, outcome, text = self.evaluation_step(
+            manager_filename = self.job.managers.keys()[0]
+            sandbox.create_file_from_storage(
+                manager_filename,
+                self.job.managers[manager_filename].digest,
+                executable=True)
+            success, _ = evaluation_step(
                 sandbox,
                 ["./%s" % manager_filename,
                  "input.txt", "res.txt", "output.txt"],
-                {manager_filename:
-                 self.submission.task.managers[manager_filename].digest},
-                {"output.txt": output_digest,
-                 "res.txt": self.submission.task.testcases[test_number].output,
-                 "input.txt":
-                 self.submission.task.testcases[test_number].input},
-                allow_path=["input.txt", "output.txt", "res.txt"],
-                final=True)
+                allow_path=["input.txt", "output.txt", "res.txt"])
+            if success:
+                outcome, text = extract_outcome_and_text(sandbox)
 
         # Whatever happened, we conclude.
+        evaluation['success'] = success
+        evaluation['outcome'] = outcome
+        evaluation['text'] = text
         delete_sandbox(sandbox)
-        return self.finish_evaluation_testcase(
-            test_number, success, outcome, text, None)
+        return success
