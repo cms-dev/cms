@@ -685,21 +685,23 @@ class TaskViewHandler(BaseHandler):
         task.official_language = self.get_argument("official_language",
                                                    task.official_language)
 
-        try:
-            time_limit = float(time_limit)
-            if time_limit < 0 or time_limit >= float("+inf"):
-                raise TypeError("Time limit out of range.")
-        except TypeError as error:
-            self.write("Invalid time limit.")
-            self.finish()
-            return
+        if time_limit in ["", "None"]:
+            time_limit = None
+        else:
+            try:
+                time_limit = float(time_limit)
+                if time_limit < 0 or time_limit >= float("+inf"):
+                    raise ValueError("Time limit out of range.")
+            except ValueError as error:
+                self.write("Invalid time limit.")
+                self.finish()
+                return
         task.time_limit = time_limit
 
         try:
             task.memory_limit = self.get_non_negative_int(
                 "memory_limit",
-                task.memory_limit,
-                allow_empty=False)
+                task.memory_limit)
             if task.memory_limit == 0:
                 raise ValueError("Memory limit is 0.")
             task.token_initial = self.get_non_negative_int(
@@ -808,6 +810,26 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         memory_limit = self.get_argument("memory_limit", "")
         official_language = self.get_argument("official_language", "")
         task_type = self.get_argument("task_type", "")
+
+        if time_limit in ["", "None"]:
+            time_limit = None
+        else:
+            try:
+                time_limit = float(time_limit)
+                if time_limit < 0 or time_limit >= float("+inf"):
+                    raise ValueError("Time limit out of range.")
+            except ValueError as error:
+                self.write("Invalid time limit.")
+                self.finish()
+                return
+
+        memory_limit = self.get_non_negative_int(
+            "memory_limit",
+            None)
+        if task.memory_limit == 0:
+                self.write("Invalid memory limit.")
+                self.finish()
+                return
 
         # Look for a task type with the specified name.
         try:

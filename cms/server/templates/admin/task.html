@@ -195,11 +195,11 @@ $("select[name=task_type]").change(showTaskTypeOption);
       </tr>
       <tr>
         <td>Time limit</td>
-        <td><input type="text" name="time_limit" value="{{ task.time_limit }}"/> second(s)</td>
+        <td><input type="text" name="time_limit" value="{{ task.time_limit if task.time_limit is not None else "" }}"/> second(s)</td>
       </tr>
       <tr>
         <td>Memory limit</td>
-        <td><input type="text" name="memory_limit" value="{{ task.memory_limit }}"/> MB</td>
+        <td><input type="text" name="memory_limit" value="{{ task.memory_limit if task.memory_limit is not None else "" }}"/> MiB</td>
       </tr>
     </table>
     <div class="hr"></div>

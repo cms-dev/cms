@@ -190,12 +190,23 @@
             <th>{{ t_iter.name }}</th>
             <td>{{ t_iter.title }}</td>
             <td>
-    {% if t_iter.time_limit == 1.0 %}
-        {{ _("%(seconds)g second") % {"seconds": t_iter.time_limit} }}
+    {% if t_iter.time_limit is not None %}
+        {% if t_iter.time_limit == 1.0 %}
+            {{ _("%(seconds)g second") % {"seconds": t_iter.time_limit} }}
+        {% else %}
+            {{ _("%(seconds)g seconds") % {"seconds": t_iter.time_limit} }}
+        {% end %}
     {% else %}
-        {{ _("%(seconds)g seconds") % {"seconds": t_iter.time_limit} }}
+        N/A
     {% end %}
-            <td>{{ _("%(mb)d MiB") % {"mb": t_iter.memory_limit} }}</td>
+            </td>
+            <td>
+    {% if t_iter.memory_limit is not None %}
+        {{ _("%(mb)d MiB") % {"mb": t_iter.memory_limit} }}
+    {% else %}
+        N/A
+    {% end %}
+            </td>
             <td>{{ len(t_iter.testcases) }} (public: {{ sum(map(lambda a: 1 if a.public else 0, t_iter.testcases)) }})</td>
             <td>{{ get_task_type(task=t_iter).name }}</td>
             <td>{{ " ".join(a.filename.replace("%l", "[c|cpp|pas]") for a in t_iter.submission_format) }}</td>
