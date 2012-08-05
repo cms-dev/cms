@@ -58,6 +58,7 @@ class ScriptsContainer(object):
             ("20120721", "use_UTC_timestamps"),
             ("20120723", "add_timezones"),
             ("20120724", "add_languages"),
+            ("20120805", "support_output_only"),
             ]
         self.list.sort()
 
@@ -605,6 +606,18 @@ SET %(column)s = CAST(%(column)s AS TIMESTAMP WITH TIME ZONE) AT TIME ZONE 'UTC'
                             "SET languages = '{}';")
             session.execute("ALTER TABLE users "
                             "ALTER COLUMN languages SET NOT NULL;")
+
+    @staticmethod
+    def support_output_only():
+        """Increase support for output only tasks
+
+        By allowing NULL time and memory limits
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE tasks "
+                            "ALTER COLUMN time_limit DROP NOT NULL,"
+                            "ALTER COLUMN memory_limit DROP NOT NULL;")
 
 
 def execute_single_script(scripts_container, script):
