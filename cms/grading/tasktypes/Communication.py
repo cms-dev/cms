@@ -23,7 +23,7 @@
 import os
 import tempfile
 
-from cms import config
+from cms import config, logger
 from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_command, compilation_step, \
     human_evaluation_message, is_evaluation_passed, \
@@ -71,32 +71,35 @@ class Communication(TaskType):
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = self.submission.language
+        language = self.job.language
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
         # here, but in the definition of the task, since this actually
         # checks that task's task type and submission format agree.
-        if len(self.submission.files) != 1:
-            return self.finish_compilation(
-                True, False, "Invalid files in submission",
-                to_log="Submission contains %d files, expecting 1" %
-                len(self.submission.files))
+        if len(self.job.files) != 1:
+            self.job.success = True
+            self.job.compilation_success = False
+            self.job.text = "Invalid files in submission"
+            logger.warning("Submission contains %d files, expecting 1" %
+                           len(self.job.files))
+            return True
 
         # Create the sandbox
         sandbox = create_sandbox(self)
+        self.job.sandboxes.append(sandbox.path)
 
         # Prepare the source files in the sandbox
         files_to_get = {}
-        format_filename = self.submission.files.keys()[0]
+        format_filename = self.job.files.keys()[0]
         # User's submission.
         source_filenames = [format_filename.replace("%l", language)]
         files_to_get[source_filenames[0]] = \
-            self.submission.files[format_filename].digest
+            self.job.files[format_filename].digest
         # Stub.
         source_filenames.append("stub.%s" % language)
         files_to_get[source_filenames[1]] = \
-                self.submission.task.managers["stub.%s" % language].digest
+                self.job.managers["stub.%s" % language].digest
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
 
@@ -107,24 +110,23 @@ class Communication(TaskType):
                                           executable_filename)
 
         # Run the compilation
-        operation_success, compilation_success, text, _ = \
+        operation_success, compilation_success, text, plus = \
             compilation_step(sandbox, command)
 
         # Retrieve the compiled executables
+        self.job.success = operation_success
+        self.job.compilation_success = compilation_success
+        self.job.plus = plus
+        self.job.text = text
         if operation_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
-                "Executable %s for submission %s" %
-                (executable_filename, self.submission.id))
-            self.result["executables"] = [(executable_filename, digest)]
+                "Executable %s for %s" %
+                (executable_filename, self.job.info))
+            self.job.executables = {executable_filename: digest}
 
         # Cleanup
         delete_sandbox(sandbox)
-
-        # We had only one compilation, hence we pipe directly its
-        # result to the finalization.
-        return self.finish_compilation(operation_success, compilation_success,
-                                       text)
 
     def evaluate_testcase(self, test_number):
         """See TaskType.evaluate_testcase."""
@@ -142,10 +144,10 @@ class Communication(TaskType):
         manager_command = ["./%s" % manager_filename, fifo_in, fifo_out]
         manager_executables_to_get = {
             manager_filename:
-            self.submission.task.managers[manager_filename].digest
+            self.job.managers[manager_filename].digest
             }
         manager_files_to_get = {
-            "input.txt": self.submission.task.testcases[test_number].input
+            "input.txt": self.job.testcases[test_number].input
             }
         manager_allow_path = ["input.txt", "output.txt", fifo_in, fifo_out]
         for filename, digest in manager_executables_to_get.iteritems():
@@ -156,18 +158,18 @@ class Communication(TaskType):
         manager = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,
-            self.submission.task.time_limit,
+            self.job.time_limit,
             0,
             manager_allow_path,
             stdin_redirect="input.txt")
 
         # Second step: we start the user submission compiled with the
         # stub.
-        executable_filename = self.submission.executables.keys()[0]
+        executable_filename = self.job.executables.keys()[0]
         command = ["./%s" % executable_filename, fifo_out, fifo_in]
         executables_to_get = {
             executable_filename:
-            self.submission.executables[executable_filename].digest
+            self.job.executables[executable_filename].digest
             }
         allow_path = [fifo_in, fifo_out]
         for filename, digest in executables_to_get.iteritems():
@@ -176,8 +178,8 @@ class Communication(TaskType):
         process = evaluation_step_before_run(
             sandbox_user,
             command,
-            self.submission.task.time_limit,
-            self.submission.task.memory_limit,
+            self.job.time_limit,
+            self.job.memory_limit,
             allow_path)
 
         # Consume output.
@@ -188,6 +190,12 @@ class Communication(TaskType):
             evaluation_step_after_run(sandbox_user)
         success_mgr, plus_mgr = \
             evaluation_step_after_run(sandbox_mgr)
+
+        self.job.evaluations[test_number] = \
+            {'sandboxes': [sandbox_user.path,
+                           sandbox_mgr.path],
+             'plus': plus_user}
+        evaluation = self.job.evaluations[test_number]
 
         # If at least one evaluation had problems, we report the
         # problems. (TODO: shouldn't outcome and text better be None
@@ -205,7 +213,10 @@ class Communication(TaskType):
             success = True
             outcome, text = extract_outcome_and_text(sandbox_mgr)
 
+        # Whatever happened, we conclude.
+        evaluation['success'] = success
+        evaluation['outcome'] = outcome
+        evaluation['text'] = text
         delete_sandbox(sandbox_mgr)
         delete_sandbox(sandbox_user)
-        return self.finish_evaluation_testcase(
-            test_number, success, outcome, text, plus_user)
+        return success
