@@ -117,7 +117,8 @@ def create_handler(entity_store):
             if not entity_id:
                 # merge list
                 try:
-                    entity_store.merge_list(self.request.body)
+                    entity_store.merge_list(self.request.body,
+                                            self.finish)
                 except InvalidData as exc:
                     logger.error(str(exc), exc_info=False,
                                  extra={'location': self.request.full_url(),
@@ -126,7 +127,8 @@ def create_handler(entity_store):
             elif entity_id not in entity_store:
                 # create
                 try:
-                    entity_store.create(entity_id, self.request.body)
+                    entity_store.create(entity_id, self.request.body,
+                                        self.finish)
                 except InvalidData as exc:
                     logger.error(str(exc), exc_info=False,
                                  extra={'location': self.request.full_url(),
@@ -135,7 +137,8 @@ def create_handler(entity_store):
             else:
                 # update
                 try:
-                    entity_store.update(entity_id, self.request.body)
+                    entity_store.update(entity_id, self.request.body,
+                                        self.finish)
                 except InvalidData as exc:
                     logger.error(str(exc), exc_info=False,
                                  extra={'location': self.request.full_url(),
@@ -146,11 +149,11 @@ def create_handler(entity_store):
         def delete(self, entity_id):
             if not entity_id:
                 # delete list
-                entity_store.delete_list()
+                entity_store.delete_list(self.finish)
             elif entity_id in entity_store:
                 # delete
                 try:
-                    entity_store.delete(entity_id)
+                    entity_store.delete(entity_id, self.finish)
                 except InvalidKey:
                     logger.error("Entity %s doesn't exist" % entity_id,
                                  extra={'location': self.request.full_url()})

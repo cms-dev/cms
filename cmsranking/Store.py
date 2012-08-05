@@ -127,13 +127,16 @@ class Store(object):
                (key not in self._store and must_be_present):
             raise InvalidKey
 
-    def create(self, key, data):
+    def create(self, key, data, confirm=None):
         """Create a new entity.
 
         Create a new entity with the given key and the given data.
 
         key (str): the key with which the entity will be later accessed
         data (str): the properties of the entity (a dict encoded in JSON)
+        confirm (callable): action to be performed as soon as we're sure
+                            that the action won't fail (in particular,
+                            before notifying the callbacks).
 
         Raise InvalidKey if key isn't a str or if an entity with the same
         key is already present in the store.
@@ -153,6 +156,9 @@ class Store(object):
             self._store[key] = item
         except ValueError:
             raise InvalidData('Invalid JSON')
+        # confirm the operation
+        if confirm is not None:
+            confirm()
         # notify callbacks
         for callback in self._create_callbacks:
             callback(key)
@@ -163,13 +169,16 @@ class Store(object):
         except IOError:
             logger.error("IOError occured", exc_info=True)
 
-    def update(self, key, data):
+    def update(self, key, data, confirm=None):
         """Update an entity.
 
         Update an existing entity with the given key and the given data.
 
         key (str): the key of the entity that has to be updated
         data (str): the new properties of the entity (a dict encoded in JSON)
+        confirm (callable): action to be performed as soon as we're sure
+                            that the action won't fail (in particular,
+                            before notifying the callbacks).
 
         Raise InvalidKey if key isn't a str or if no entity with that key
         is present in the store.
@@ -189,6 +198,9 @@ class Store(object):
             self._store[key] = item
         except ValueError:
             raise InvalidData('Invalid JSON')
+        # confirm the operation
+        if confirm is not None:
+            confirm()
         # notify callbacks
         for callback in self._update_callbacks:
             callback(key)
@@ -199,7 +211,7 @@ class Store(object):
         except IOError:
             logger.error("IOError occured", exc_info=True)
 
-    def merge_list(self, data):
+    def merge_list(self, data, confirm=None):
         """Merge a list of entities.
 
         Take a dictionary of entites and, for each of them:
@@ -207,6 +219,9 @@ class Store(object):
          - if it's present, update it
 
         data (str): the dictionary of entities (a dict encoded in JSON)
+        confirm (callable): action to be performed as soon as we're sure
+                            that the action won't fail (in particular,
+                            before notifying the callbacks).
 
         Raise InvalidData if data cannot be parsed, if an entity is missing
         some properties or if properties are of the wrong type.
@@ -232,6 +247,9 @@ class Store(object):
             raise InvalidData('Invalid JSON')
         except AssertionError as message:
             raise InvalidData(str(message))
+        # confirm the operation
+        if confirm is not None:
+            confirm()
 
         for key, value in item_dict.iteritems():
             # insert entity
@@ -246,12 +264,15 @@ class Store(object):
             except IOError:
                 logger.error("IOError occured", exc_info=True)
 
-    def delete(self, key):
+    def delete(self, key, confirm=None):
         """Delete an entity.
 
         Delete an existing entity from the store.
 
         key (str): the key of the entity that has to be deleted
+        confirm (callable): action to be performed as soon as we're sure
+                            that the action won't fail (in particular,
+                            before notifying the callbacks).
 
         Raise InvalidKey if key isn't a str or if no entity with that key
         is present in the store.
@@ -259,6 +280,9 @@ class Store(object):
         """
         self._verify_key(key, must_be_present=True)
 
+        # confirm the operation
+        if confirm is not None:
+            confirm()
         # delete entity
         del self._store[key]
         # enforce consistency
@@ -275,12 +299,20 @@ class Store(object):
         except OSError:
             logger.error("OSError occured", exc_info=True)
 
-    def delete_list(self):
+    def delete_list(self, confirm=None):
         """Delete all entities.
 
         Delete all existing entities from the store.
 
+        confirm (callable): action to be performed as soon as we're sure
+                            that the action won't fail (in particular,
+                            before notifying the callbacks).
+
         """
+        # confirm the operation
+        if confirm is not None:
+            confirm()
+        # delete all entities
         for key in list(self._store.iterkeys()):
             self.delete(key)
 
