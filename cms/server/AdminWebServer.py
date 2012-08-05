@@ -131,7 +131,10 @@ class BaseHandler(CommonRequestHandler):
         self.sql_session.expire_all()
         self.contest = None
 
-        localization_dir = os.path.join(os.path.dirname(__file__), "mo")
+        if config.installed:
+            localization_dir = os.path.join("/", "usr", "local", "share", "locale")
+        else:
+            localization_dir = os.path.join(os.path.dirname(__file__), "mo")
         if os.path.exists(localization_dir):
             tornado.locale.load_gettext_translations(localization_dir, "cms")
 
