@@ -20,6 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from cms import logger
 from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step, human_evaluation_message, is_evaluation_passed, \
     extract_outcome_and_text
@@ -97,7 +98,7 @@ class Batch(TaskType):
             source_filenames = [format_filename.replace("%l", language)]
             # If a grader is specified, we add to the command line (and to
             # the files to get) the corresponding manager.
-            if self.parameters[0] == "grader":
+            if self.job.task_type_parameters[0] == "grader":
                 source_filenames.append("grader.%s" % language)
             executable_filename = format_filename.replace(".%l", "")
             command = " ".join(get_compilation_command(language,
@@ -118,10 +119,12 @@ class Batch(TaskType):
         # here, but in the definition of the task, since this actually
         # checks that task's task type and submission format agree.
         if len(self.job.files) != 1:
-            return self.finish_compilation(
-                True, False, "Invalid files in submission",
-                to_log="Submission contains %d files, expecting 1" %
-                len(self.job.files))
+            self.job.success = True
+            self.job.compilation_success = False
+            self.job.text = "Invalid files in submission"
+            logger.warning("Submission contains %d files, expecting 1" %
+                           len(self.job.files))
+            return True
 
         # Create the sandbox
         sandbox = create_sandbox(self)
@@ -255,7 +258,8 @@ class Batch(TaskType):
             # Unknown evaluationg parameter!
             else:
                 raise ValueError("Unrecognized third parameter `%s' in "
-                                 "for Batch tasktype." % self.parameters[2])
+                                 "for Batch tasktype." %
+                                 self.job.task_type_parameters[2])
 
         # Whatever happened, we conclude.
         evaluation['success'] = success
