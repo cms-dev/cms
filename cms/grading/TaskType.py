@@ -218,107 +218,6 @@ class TaskType:
         # If ignore_job is True, we conclude as soon as possible.
         self.ignore_job = False
 
-    def _append_sandbox(self, path):
-        """Add path to self.sandbox_paths in the correct way.
-
-        path (str): the path of a new sandbox to record in the
-                    dabatase.
-
-        """
-        if self.sandbox_paths == "":
-            self.sandbox_paths = path
-        else:
-            paths = self.sandbox_paths.split(":")
-            if path not in paths:
-                self.sandbox_paths = ":".join(paths + [path])
-
-    def finish_compilation(self, success, compilation_success=False,
-                           text="", to_log=None):
-        """Finalize the operation of compilation and build the
-        dictionary to return to ES.
-
-        success (bool): if the operation was successful (i.e., if cms
-                        did everything in the right way).
-        compilation_success (bool): if success = True, this is whether
-                                    the compilation was successful
-                                    (i.e., if the submission managed
-                                    to compile).
-        text (string): if success is True, stdout and stderr of the
-                       compiler, or a message explaining why it
-                       compilation_success is False.
-        to_log (string): inform us that an unexpected event has
-                         happened.
-
-        return (dict): result collected during the evaluation.
-
-        """
-        if to_log is not None:
-            logger.warning(to_log)
-        self.result["success"] = success
-
-        if success:
-            if compilation_success:
-                self.result["compilation_outcome"] = "ok"
-            else:
-                self.result["compilation_outcome"] = "fail"
-
-            try:
-                self.result["compilation_text"] = text.decode("utf-8")
-            except UnicodeDecodeError:
-                self.result["compilation_text"] = \
-                    "Cannot decode compilation text."
-                logger.error("Unable to decode UTF-8 for string %s." % text)
-
-            self.result["compilation_shard"] = self.worker_shard
-            self.result["compilation_sandbox"] = self.sandbox_paths
-            self.sandbox_paths = ""
-
-        self.ignore_job = False
-        return self.result
-
-    def finish_evaluation_testcase(self, test_number, success,
-                                   outcome=0, text="", plus=None,
-                                   to_log=None):
-        """Finalize the operation of evaluating the submission on a
-        testcase. Fill the information in the submission.
-
-        test_number (int): number of testcase.
-        success (bool): if the operation was successful.
-        outcome (float): the outcome obtained by the submission on the
-                         testcase.
-        text (string): the reason of failure of the submission (if
-                       any).
-        plus (dict): additional information extracted from the logs of
-                     the 'main' evaluation step - in particular,
-                     memory and time information.
-        to_log (string): inform us that an unexpected event has
-                         happened.
-
-        return (bool): success.
-
-        """
-        if to_log is not None:
-            logger.warning(to_log)
-        if "evaluations" not in self.result:
-            self.result["evaluations"] = {}
-        obj = self.result["evaluations"]
-        obj[test_number] = {"success": success}
-        if success:
-            obj[test_number]["text"] = text
-            obj[test_number]["outcome"] = outcome
-            obj[test_number]["evaluation_shard"] = self.worker_shard
-            obj[test_number]["evaluation_sandbox"] = self.sandbox_paths
-            self.sandbox_paths = ""
-
-        if plus is None:
-            plus = {}
-        for info in ["memory_used",
-                     "execution_time",
-                     "execution_wall_clock_time"]:
-            obj[test_number][info] = plus.get(info, None)
-
-        return success
-
     def build_response(self):
         """Build the `result' object to be returned back to
         EvaluationService. This metod is temporary: definitively, the
@@ -365,27 +264,6 @@ class TaskType:
             raise ValueError("The job isn't neither CompilationJob "
                              "or EvaluationJob")
         return result
-
-    def finish_evaluation(self, success, to_log=None):
-        """Finalize the operation of evaluating. Currently there is
-        nothing to do.
-
-        success (bool): if the evaluation was successful.
-        to_log (string): inform us that an unexpected event has
-                         happened.
-
-        return (dict): result collected during the evaluation.
-
-        """
-        if to_log is not None:
-            logger.warning(to_log)
-
-        self.result["success"] = success
-        if "evaluations" not in self.result:
-            self.result["evaluations"] = {}
-
-        self.ignore_job = False
-        return self.result
 
     def white_diff_step(self, sandbox, output_filename,
                         correct_output_filename, files_to_get):
