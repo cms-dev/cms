@@ -39,82 +39,6 @@ from cms.grading.Sandbox import Sandbox
 from cms.grading.Job import CompilationJob, EvaluationJob
 
 
-## Automatic white diff. ##
-
-WHITES = " \t\n\r"
-
-
-def white_diff_canonicalize(string):
-    """Convert the input string to a canonical form for the white diff
-    algorithm; that is, the strings a and b are mapped to the same
-    string by white_diff_canonicalize() if and only if they have to be
-    considered equivalent for the purposes of the white_diff
-    algorithm.
-
-    More specifically, this function strips all the leading and
-    trailing whitespaces from s and collapse all the runs of
-    consecutive whitespaces into just one copy of one specific
-    whitespace.
-
-    string (string): the string to canonicalize.
-    return (string): the canonicalized string.
-
-    """
-    # Replace all the whitespaces with copies of " ", making the rest
-    # of the algorithm simpler
-    for char in WHITES[1:]:
-        string = string.replace(char, WHITES[0])
-
-    # Split the string according to " ", filter out empty tokens and
-    # join again the string using just one copy of the first
-    # whitespace; this way, runs of more than one whitespaces are
-    # collapsed into just one copy.
-    string = WHITES[0].join([x for x in string.split(WHITES[0])
-                             if x != ''])
-    return string
-
-
-def white_diff(output, res):
-    """Compare the two output files. Two files are equal if for every
-    integer i, line i of first file is equal to line i of second
-    file. Two lines are equal if they differ only by number or type of
-    whitespaces.
-
-    Note that trailing lines composed only of whitespaces don't change
-    the 'equality' of the two files. Note also that by line we mean
-    'sequence of characters ending with \n or EOF and beginning right
-    after BOF or \n'. In particular, every line has *at most* one \n.
-
-    output (file): the first file to compare.
-    res (file): the second file to compare.
-    return (bool): True if the two file are equal as explained above.
-
-    """
-
-    while True:
-        lout = output.readline()
-        lres = res.readline()
-
-        # Both files finished: comparison succeded
-        if lres == '' and lout == '':
-            return True
-
-        # Only one file finished: ok if the other contains only blanks
-        elif lres == '' or lout == '':
-            lout = lout.strip(WHITES)
-            lres = lres.strip(WHITES)
-            if lout != '' or lres != '':
-                return False
-
-        # Both file still have lines to go: ok if they agree except
-        # for the number of whitespaces
-        else:
-            lout = white_diff_canonicalize(lout)
-            lres = white_diff_canonicalize(lres)
-            if lout != lres:
-                return False
-
-
 ## Sandbox lifecycle. ##
 
 def create_sandbox(task_type):
@@ -264,40 +188,6 @@ class TaskType:
             raise ValueError("The job isn't neither CompilationJob "
                              "or EvaluationJob")
         return result
-
-    def white_diff_step(self, sandbox, output_filename,
-                        correct_output_filename, files_to_get):
-        """This is like an evaluation_step with final = True (i.e.,
-        returns an outcome and a text). The outcome is 1.0 if and only
-        if the two output files corresponds up to white_diff, 0.0
-        otherwise.
-
-        sandbox (Sandbox): the sandbox we consider.
-        output_filename (string): the filename of user's output in the
-                                  sandbox.
-        correct_output_filename (string): the same with admin output.
-        files_to_get (dict): files to get from storage.
-        return (bool, float, string): see evaluation_step.
-
-        """
-        # Record the usage of the sandbox.
-        self._append_sandbox(sandbox.path)
-
-        for filename, digest in files_to_get.iteritems():
-            sandbox.create_file_from_storage(filename, digest)
-        if sandbox.file_exists(output_filename):
-            out_file = sandbox.get_file(output_filename)
-            res_file = sandbox.get_file("res.txt")
-            if white_diff(out_file, res_file):
-                outcome = 1.0
-                text = "Output is correct"
-            else:
-                outcome = 0.0
-                text = "Output isn't correct"
-        else:
-            outcome = 0.0
-            text = "Evaluation didn't produce file %s" % (output_filename)
-        return True, outcome, text
 
     @property
     def name(self):

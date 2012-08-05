@@ -23,7 +23,7 @@
 from cms import logger
 from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step, human_evaluation_message, is_evaluation_passed, \
-    extract_outcome_and_text
+    extract_outcome_and_text, white_diff_step
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
      ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
@@ -237,8 +237,8 @@ class Batch(TaskType):
 
             # Check the solution with white_diff
             if self.job.task_type_parameters[2] == "diff":
-                success, outcome, text = self.white_diff_step(
-                    sandbox, output_filename, "res.txt", {})
+                outcome, text = white_diff_step(
+                    sandbox, output_filename, "res.txt")
 
             # Check the solution with a comparator
             elif self.job.task_type_parameters[2] == "comparator":
