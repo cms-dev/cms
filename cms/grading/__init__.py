@@ -229,9 +229,8 @@ def evaluation_step(sandbox, command,
     allow_path (list): list of relative paths accessible in the
                        sandbox.
 
-    return (bool, float, string dict): True if the evaluation was
-                                       successfull, or False; and
-                                       additional data.
+    return (bool, dict): True if the evaluation was successful, or
+                         False; and additional data.
 
     """
     success = evaluation_step_before_run(
@@ -349,9 +348,6 @@ def evaluation_step_after_run(sandbox):
     elif exit_status != Sandbox.EXIT_OK:
         logger.error("Shouldn't arrive here, failing.")
 
-    # If this isn't the last step of the evaluation, return that the
-    # operation was successful, but neither an outcome nor an
-    # explainatory text.
     else:
         success = True
 

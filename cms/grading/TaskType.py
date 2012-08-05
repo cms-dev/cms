@@ -162,9 +162,6 @@ class TaskType:
        and to ask it to do some operation. If the operation fails, the
        sandbox is deleted.
 
-    - (compilation, evaluation)_step: these execute one compilation or
-      evaluation command in the sandbox.
-
     - compile, evaluate_testcase, evaluate: these actually do the
       operations; must be overloaded.
 
@@ -201,19 +198,18 @@ class TaskType:
                                  % (parameter.name, error.message))
         return new_parameters
 
-    def __init__(self, submission, parameters, file_cacher):
+    def __init__(self, job, file_cacher):
         """
-        submission (Submission): the submission to grade.
-        parameters (dict): parameters coming from the task; their
-                           meaning depends on the specific TaskType.
+
+        job (CompilationJob or EvaluationJob): the job describing what
+                                               to do
         file_cacher (FileCacher): a FileCacher object to retrieve
                                   files from FS.
 
         """
-        self.submission = submission
-        self.result = {}
-        self.parameters = parameters
+        self.job = job
         self.file_cacher = file_cacher
+        self.result = {}
 
         self.worker_shard = None
         self.sandbox_paths = ""
@@ -446,7 +442,7 @@ class TaskType:
         return (bool): success of operation.
 
         """
-        for test_number in xrange(len(self.submission.task.testcases)):
+        for test_number in xrange(len(self.job.testcases)):
             success = self.evaluate_testcase(test_number)
             if not success or self.ignore_job:
                 return self.finish_evaluation(False)

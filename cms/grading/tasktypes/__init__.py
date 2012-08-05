@@ -22,14 +22,14 @@
 import simplejson as json
 
 from cms import logger, plugin_lookup
+from cms.grading.Job import Job
 
 
-def get_task_type(submission=None, file_cacher=None, task=None,
+def get_task_type(job=None, file_cacher=None, task=None,
                   task_type_name=None):
-    """Given a submission, istantiate the corresponding TaskType
-    class.
+    """Given a job, istantiate the corresponding TaskType class.
 
-    submission (Submission): the submission that needs the task type.
+    job (Job): the job to perform.
     file_cacher (FileCacher): a file cacher object.
     task (Task): if we don't want to grade, but just to get
                  information, we can provide only the
@@ -42,16 +42,16 @@ def get_task_type(submission=None, file_cacher=None, task=None,
     """
     # Validate arguments.
     if [x is not None
-        for x in [submission, task, task_type_name]].count(True) != 1:
-        raise ValueError("Need at most one way to get the task type.")
+        for x in [job, task, task_type_name]].count(True) != 1:
+        raise ValueError("Need exactly one way to get the task type.")
     elif [x is not None
-          for x in [submission, file_cacher]].count(True) not in [0, 2]:
-        raise ValueError("Need file cacher to grade a submission.")
+          for x in [job, file_cacher]].count(True) not in [0, 2]:
+        raise ValueError("Need file cacher to perform a job.")
 
     # Recover information from the arguments.
     task_type_parameters = None
-    if submission is not None:
-        task = submission.task
+    if job is not None:
+        task_type_name = job.task_type
     if task is not None:
         task_type_name = task.task_type
         try:
@@ -59,8 +59,11 @@ def get_task_type(submission=None, file_cacher=None, task=None,
         except json.decoder.JSONDecodeError as error:
             logger.error("Cannot decode score type parameters.\n%r." % error)
             raise
+        job = Job()
+        job.task_type = task_type_name
+        job.task_type_parameters = task_type_parameters
 
     cls = plugin_lookup(task_type_name,
                         "cms.grading.tasktypes", "tasktypes")
 
-    return cls(submission, task_type_parameters, file_cacher)
+    return cls(job, file_cacher)

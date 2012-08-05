@@ -111,33 +111,34 @@ class Batch(TaskType):
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = self.submission.language
+        language = self.job.language
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
         # here, but in the definition of the task, since this actually
         # checks that task's task type and submission format agree.
-        if len(self.submission.files) != 1:
+        if len(self.job.files) != 1:
             return self.finish_compilation(
                 True, False, "Invalid files in submission",
                 to_log="Submission contains %d files, expecting 1" %
-                len(self.submission.files))
+                len(self.job.files))
 
         # Create the sandbox
         sandbox = create_sandbox(self)
+        self.job.sandboxes.append(sandbox.path)
 
         # Prepare the source files in the sandbox
         files_to_get = {}
-        format_filename = self.submission.files.keys()[0]
+        format_filename = self.job.files.keys()[0]
         source_filenames = [format_filename.replace("%l", language)]
         files_to_get[source_filenames[0]] = \
-            self.submission.files[format_filename].digest
+            self.job.files[format_filename].digest
         # If a grader is specified, we add to the command line (and to
         # the files to get) the corresponding manager.
-        if self.parameters[0] == "grader":
+        if self.job.task_type_parameters[0] == "grader":
             source_filenames.append("grader.%s" % language)
             files_to_get[source_filenames[1]] = \
-                self.submission.task.managers["grader.%s" % language].digest
+                self.job.managers["grader.%s" % language].digest
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
 
@@ -148,24 +149,22 @@ class Batch(TaskType):
                                           executable_filename)
 
         # Run the compilation
-        operation_success, compilation_success, text, _ = \
+        operation_success, compilation_success, text, plus = \
             compilation_step(sandbox, command)
 
         # Retrieve the compiled executables
+        self.job.success = operation_success
+        self.job.compilation_success = compilation_success
+        self.job.plus = plus
         if operation_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
-                "Executable %s for submission %s" %
-                (executable_filename, self.submission.id))
-            self.result["executables"] = [(executable_filename, digest)]
+                "Executable %s for %s" %
+                (executable_filename, self.job.info))
+            self.job.executables[executable_filename] = digest
 
         # Cleanup
         delete_sandbox(sandbox)
-
-        # We had only one compilation, hence we pipe directly its
-        # result to the finalization.
-        return self.finish_compilation(operation_success, compilation_success,
-                                       text)
 
     def evaluate_testcase(self, test_number):
         """See TaskType.evaluate_testcase."""
@@ -173,13 +172,13 @@ class Batch(TaskType):
         sandbox = create_sandbox(self)
 
         # Prepare the execution
-        executable_filename = self.submission.executables.keys()[0]
+        executable_filename = self.job.executables.keys()[0]
         command = [sandbox.relative_path(executable_filename)]
         executables_to_get = {
             executable_filename:
-            self.submission.executables[executable_filename].digest
+            self.job.executables[executable_filename].digest
             }
-        input_filename, output_filename = self.parameters[1]
+        input_filename, output_filename = self.job.task_type_parameters[1]
         stdin_redirect = None
         stdout_redirect = None
         if input_filename == "":
@@ -189,7 +188,7 @@ class Batch(TaskType):
             output_filename = "output.txt"
             stdout_redirect = output_filename
         files_to_get = {
-            input_filename: self.submission.task.testcases[test_number].input
+            input_filename: self.job.testcases[test_number].input
             }
         allow_path = [input_filename, output_filename]
 
@@ -203,53 +202,62 @@ class Batch(TaskType):
         success, plus = evaluation_step(
             sandbox,
             command,
-            self.submission.task.time_limit,
-            self.submission.task.memory_limit,
+            self.job.time_limit,
+            self.job.memory_limit,
             allow_path,
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect)
 
-        # If an error occur (our or contestant's), return immediately.
-        if not success or not is_evaluation_passed(plus):
-            delete_sandbox(sandbox)
-            if success:
-                outcome = 0.0
-                text = human_evaluation_message(plus)
-            return self.finish_evaluation_testcase(
-                test_number, success, outcome, text, plus)
+        self.job.evaluations[test_number] = {}
+        outcome = None
+        text = None
+        evaluation = self.job.evaluations[test_number]
 
-        # Put the reference solution into the sandbox
-        sandbox.create_file_from_storage(
-            "res.txt",
-            self.submission.task.testcases[test_number].output)
+        # Error in the sandbox: nothing to do!
+        if not success:
+            pass
 
-        # Check the solution with white_diff
-        if self.parameters[2] == "diff":
-            success, outcome, text = self.white_diff_step(
-                sandbox, output_filename, "res.txt", {})
+        # Contestant's error: the marks won't be good
+        elif not is_evaluation_passed(plus):
+            outcome = 0.0
+            text = human_evaluation_message(plus)
 
-        # Check the solution with a comparator
-        elif self.parameters[2] == "comparator":
-            manager_filename = self.submission.task.managers.keys()[0]
-            sandbox.create_file_from_storage(
-                manager_filename,
-                self.submission.task.managers[manager_filename].digest,
-                executable=True)
-            success, _ = evaluation_step(
-                sandbox,
-                ["./%s" % manager_filename,
-                 input_filename, "res.txt", output_filename],
-                allow_path=[input_filename, "res.txt", output_filename])
-            if success:
-                outcome, text = extract_outcome_and_text(sandbox)
-            else:
-                outcome = None
-                text = None
+        # Otherwise, advance to checking the solution
         else:
-            raise ValueError("Unrecognized third parameter `%s' in for Batch "
-                             "tasktype." % self.parameters[2])
+
+            # Put the reference solution into the sandbox
+            sandbox.create_file_from_storage(
+                "res.txt",
+                self.job.testcases[test_number].output)
+
+            # Check the solution with white_diff
+            if self.job.task_type_parameters[2] == "diff":
+                success, outcome, text = self.white_diff_step(
+                    sandbox, output_filename, "res.txt", {})
+
+            # Check the solution with a comparator
+            elif self.job.task_type_parameters[2] == "comparator":
+                manager_filename = self.job.managers.keys()[0]
+                sandbox.create_file_from_storage(
+                    manager_filename,
+                    self.job.managers[manager_filename].digest,
+                    executable=True)
+                success, _ = evaluation_step(
+                    sandbox,
+                    ["./%s" % manager_filename,
+                     input_filename, "res.txt", output_filename],
+                    allow_path=[input_filename, "res.txt", output_filename])
+                if success:
+                    outcome, text = extract_outcome_and_text(sandbox)
+
+            # Unknown evaluationg parameter!
+            else:
+                raise ValueError("Unrecognized third parameter `%s' in "
+                                 "for Batch tasktype." % self.parameters[2])
 
         # Whatever happened, we conclude.
+        evaluation['success'] = success
+        evaluation['outcome'] = outcome
+        evaluation['text'] = text
         delete_sandbox(sandbox)
-        return self.finish_evaluation_testcase(
-            test_number, success, outcome, text, plus)
+        return success
