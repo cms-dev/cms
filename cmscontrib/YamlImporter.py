@@ -36,7 +36,7 @@ from cms.db import analyze_all_tables
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Manager, \
     Testcase, User, Contest, SubmissionFormatElement, FSObject, \
-    Submission, Statement
+    Submission, Statement, Attachment
 
 
 class YamlLoader:
@@ -163,7 +163,7 @@ class YamlLoader:
         params["num"] = num
         params["time_limit"] = conf.get("timeout", None)
         params["memory_limit"] = conf.get("memlimit", None)
-        params["attachments"] = {}  # FIXME - Use auxiliary
+        params["attachments"] = []  # FIXME - Use auxiliary
         params["statements"] = [
             Statement(self.file_cacher.put_file(
                 path=os.path.join(path, "testo", "testo.pdf"),
@@ -223,7 +223,8 @@ class YamlLoader:
             params["task_type"] = "OutputOnly"
             params["task_type_parameters"] = '["%s"]' % (evaluation_parameter)
             params["submission_format"] = [
-                SubmissionFormatElement("input%d.txt" % (i)).export_to_dict()
+                SubmissionFormatElement("output_%03d.txt" %
+                                        (i)).export_to_dict()
                 for i in xrange(int(conf["n_input"]))]
 
         # If there is cor/manager, then the task type is Communication
@@ -268,14 +269,20 @@ class YamlLoader:
         for i in xrange(int(conf["n_input"])):
             _input = os.path.join(path, "input", "input%d.txt" % i)
             output = os.path.join(path, "output", "output%d.txt" % i)
+            input_digest = self.file_cacher.put_file(
+                path=_input,
+                description="Input %d for task %s" % (i, name))
+            output_digest = self.file_cacher.put_file(
+                path=output,
+                description="Output %d for task %s" % (i, name))
             params["testcases"].append(Testcase(
-                self.file_cacher.put_file(
-                    path=_input,
-                    description="Input %d for task %s" % (i, name)),
-                self.file_cacher.put_file(
-                    path=output,
-                    description="Output %d for task %s" % (i, name)),
+                input_digest,
+                output_digest,
                 public=(i in public_testcases)).export_to_dict())
+            if params["task_type"] == "OutputOnly":
+                params["attachments"].append(Attachment(
+                        input_digest,
+                        "input_%03d.txt" % (i)).export_to_dict())
         params["token_initial"] = conf.get("token_initial", None)
         params["token_max"] = conf.get("token_max", None)
         params["token_total"] = conf.get("token_total", None)
@@ -284,8 +291,6 @@ class YamlLoader:
         params["token_gen_number"] = conf.get("token_gen_number", 0)
 
         logger.info("Task parameters loaded.")
-
-        params["attachments"] = []
 
         return params
 
