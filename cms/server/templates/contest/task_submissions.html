@@ -1,4 +1,18 @@
 {% extends base.html %}
+
+{% block js %}
+
+$(document).on("click", "#submission_list tbody tr td.status .details", function (event) {
+    var submission_id = $(this).parent().parent().attr("data-submission");
+    var modal = $("#submission_detail");
+    var modal_body = modal.children(".modal-body");
+    modal_body.html('<div class="loading"><img src="{{ url_root }}/static/loading.gif"/>loading...</div>');
+    modal_body.load("{{ url_root }}/submission_details/" + submission_id);
+    modal.modal("show");
+});
+
+{% end %}
+
 {% block core %}
 
 {% if actual_phase == 0 %}
@@ -97,35 +111,47 @@
 </div>
 {% end %}
 
-{% from cms.grading.scoretypes import get_score_type %}
 
+{% from cms.grading.scoretypes import get_score_type %}
+{% try %}
+    {% set score_type = get_score_type(task=task) %}
+{% except %}
+    {% set score_type = None %}
+{% end %}
+
+{% comment FIXME The following check doesn't take timezones into account. Correct it! %}
 {% set show_date = any(s.timestamp.date() != datetime.date.today() for s in submissions) %}
 
-<table class="table table-bordered table-striped previous_submissions">
+
+<table id="submission_list" class="table table-bordered table-striped">
     <colgroup>
+{% if show_date %}
+        <col class="datetime"/>
+{% else %}
         <col class="time"/>
+{% end %}
         <col class="status"/>
         <col class="public_score"/>
         <col class="total_score"/>
         <col class="files"/>
-    {% if tokens_contest != 0 and tokens_tasks != 0 %}
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
         <col class="token"/>
-    {% end %}
+{% end %}
     </colgroup>
     <thead>
         <tr>
 {% if show_date %}
-            <th>Date and time</th>
+            <th class="datetime">Date and time</th>
 {% else %}
-            <th>Time</th>
+            <th class="time">Time</th>
 {% end %}
-            <th>Status</th>
-            <th>Public score</th>
-            <th>Total score</th>
-            <th>Files</th>
-    {% if tokens_contest != 0 and tokens_tasks != 0 %}
-            <th>Token</th>
-    {% end %}
+            <th class="status">Status</th>
+            <th class="public_score">Public score</th>
+            <th class="total_score">Total score</th>
+            <th class="files">Files</th>
+{% if tokens_contest != 0 and tokens_tasks != 0 %}
+            <th class="token">Token</th>
+{% end %}
         </tr>
     </thead>
     <tbody>
@@ -137,7 +163,6 @@
             <td colspan="5" class="no_submissions">{{ _("no submissions yet") }}</td>
         {% end %}
         </tr>
-    </tbody>
     {% else %}
         {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
             {% include submission_row.html %}
@@ -145,6 +170,18 @@
     {% end %}
     </tbody>
 </table>
+
+<div class="modal fade hide" id="submission_detail">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>Submission details</h3>
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
+    </div>
+</div>
 
 </div>
 {% end %}

@@ -21,30 +21,6 @@ body {
     background-color: transparent !important;
 }
 
-div.task_submissions table.previous_submissions colgroup col.time {
-    width: 1%;
-}
-
-div.task_submissions table.previous_submissions colgroup col.status {
-    width: 20%;
-}
-
-div.task_submissions table.previous_submissions colgroup col.public_score {
-    width: 20%;
-}
-
-div.task_submissions table.previous_submissions colgroup col.total_score {
-    width: 20%;
-}
-
-div.task_submissions table.previous_submissions colgroup col.files {
-    width: 10%;
-}
-
-div.task_submissions table.previous_submissions colgroup col.token {
-    width: 10%;
-}
-
 /** Announcements, questions, answers and messages **/
 
 /* Almost "copy" Bootstrap rules for alert-info */
@@ -439,9 +415,86 @@ td.token_rules p:last-child {
 
 /*** Submissions table */
 
-.no_submissions {
+#submission_list colgroup col.time,
+#submission_list colgroup col.datetime {
+    width: 1%;
+}
+
+#submission_list colgroup col.status {
+    width: 20%;
+}
+
+#submission_list colgroup col.public_score {
+    width: 20%;
+}
+
+#submission_list colgroup col.total_score {
+    width: 20%;
+}
+
+#submission_list colgroup col.files {
+    width: 10%;
+}
+
+#submission_list colgroup col.token {
+    width: 10%;
+}
+
+#submission_list tbody tr td.no_submissions {
     font-style: italic;
     text-align: center !important;
+}
+
+#submission_list tbody tr td.time,
+#submission_list tbody tr td.datetime {
+    white-space: nowrap;
+}
+
+#submission_list tbody tr td.status .details {
+    float: right;
+    cursor: pointer;
+}
+
+#submission_list tbody tr td.files,
+#submission_list tbody tr td.token {
+    padding: 3px;
+}
+
+#submission_list tbody tr td.files .btn,
+#submission_list tbody tr td.token .btn {
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    white-space: nowrap;
+}
+
+#submission_list tbody tr td.token form {
+    display: inline;
+}
+
+/*** Submission details */
+
+#submission_detail .modal-body {
+    position: relative;
+    height: 400px;
+}
+
+#submission_detail .modal-body .loading {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 16px;
+    font-style: italic;
+    margin-top: -16px; /* half the height of the image */
+}
+
+#submission_detail .modal-body .loading img {
+    display: block;
+    height: 32px;
+    width: 32px;
+    margin: 0 auto 12px;
 }
 
 /*** per-user time box */

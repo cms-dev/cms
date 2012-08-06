@@ -1011,6 +1011,22 @@ class SubmissionStatusHandler(BaseHandler):
         self.render("submission_snippet.html", s=submission)
 
 
+class SubmissionDetailsHandler(BaseHandler):
+
+    refresh_cookie = False
+
+    @catch_exceptions
+    @decrypt_arguments
+    @tornado.web.authenticated
+    @actual_phase_required(0)
+    def get(self, sub_id):
+        submission = Submission.get_from_id(sub_id, self.sql_session)
+        if submission.user.id != self.current_user.id or \
+               submission.task.contest.id != self.contest.id:
+            raise tornado.web.HTTPError(403)
+        self.render("submission_details.html", s=submission)
+
+
 class StaticFileGzHandler(tornado.web.StaticFileHandler):
     """Handle files which may be gzip-compressed on the filesystem."""
     def get(self, path, *args, **kwargs):
@@ -1044,6 +1060,7 @@ _cws_handlers = [
     (r"/tasks/([%s]+)/attachments/(.*)" % enc_alph, TaskAttachmentViewHandler),
     (r"/submission_file/([%s]+)" % enc_alph,   SubmissionFileHandler),
     (r"/submission_status/([%s]+)" % enc_alph, SubmissionStatusHandler),
+    (r"/submission_details/([%s]+)" % enc_alph, SubmissionDetailsHandler),
     (r"/submit/([%s]+)" % enc_alph,            SubmitHandler),
     (r"/usetoken",                             UseTokenHandler),
     (r"/communication", CommunicationHandler),
