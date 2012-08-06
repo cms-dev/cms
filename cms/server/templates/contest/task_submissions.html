@@ -11,6 +11,51 @@ $(document).on("click", "#submission_list tbody tr td.status .details", function
     modal.modal("show");
 });
 
+update_submission_row = function (submission_id, data) {
+    var row = $("#submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
+    row.attr("data-status", data["status"]);
+    row.children("td.status").html(data["status_text"]);
+    if (data["status"] == 5) {
+        var public_score = "";
+        if (data["public_score"] != undefined) {
+            public_score += data["public_score"];
+            if (data["max_public_score"] != undefined) {
+                public_score += " / " + data["max_public_score"];
+            }
+            for (var i = 0; i < data["public_score_details"].length; i += 1) {
+                public_score += " " + data["public_score_details"][i];
+            }
+            row.children("td.public_score").html(public_score);
+        }
+        if (data["score"] != undefined) {
+            score += data["score"];
+            if (data["max_score"] != undefined) {
+                score += " / " + data["max_score"];
+            }
+            for (var i = 0; i < data["score_details"].length; i += 1) {
+                score += " " + data["score_details"][i];
+            }
+            row.children("td.total_score").html(score);
+        }
+    } else if (data["status"] != 2) {
+        schedule_update_submission_row(submission_id);
+    }
+}
+
+schedule_update_submission_row = function (submission_id) {
+    setTimeout(function () {
+        $.get("{{ url_root }}/submission_status/" + submission_id, function (data) {
+            update_submission_row(submission_id, data);
+        });
+    }, 2000);
+}
+
+$(document).ready(function () {
+    $('#submission_list tbody tr[data-status!="2"][data-status!="5"]').each(function (idx, elem) {
+        schedule_update_submission_row($(this).attr("data-submission"));
+    });
+});
+
 {% end %}
 
 {% block core %}

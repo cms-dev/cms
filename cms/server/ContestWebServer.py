@@ -57,6 +57,7 @@ from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, Task, File, Attachment
 from cms.grading.tasktypes import get_task_type
+from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
      actual_phase_required, get_url_root, decrypt_arguments, \
      CommonRequestHandler
@@ -1008,7 +1009,40 @@ class SubmissionStatusHandler(BaseHandler):
         if submission.user.id != self.current_user.id or \
                submission.task.contest.id != self.contest.id:
             raise tornado.web.HTTPError(403)
-        self.render("submission_snippet.html", s=submission)
+        score_type = get_score_type(submission=submission)
+
+        data = dict()
+        if not submission.compiled():
+            data["status"] = 1
+            data["status_text"] = "Compiling..."
+        elif submission.compilation_outcome == "fail":
+            data["status"] = 2
+            data["status_text"] = "Compilation failed <a class=\"details\">details</a>"
+        elif not submission.evaluated():
+            data["status"] = 3
+            data["status_text"] = "Evaluating..."
+        elif not submission.scored():
+            data["status"] = 4
+            data["status_text"] = "Scoring..."
+        else:
+            data["status"] = 5
+            data["status_text"] = "Evaluated <a class=\"details\">details</a>"
+
+            if score_type is not None and score_type.max_public_score != 0:
+                data["max_public_score"] = "%g" % score_type.max_public_score
+            data["public_score"] = "%g" % submission.public_score
+            data["public_score_details"] = list()
+            for detail in json.loads(submission.public_score_details):
+                data["public_score_details"].append(str(detail))
+            if submission.token is not None:
+                if score_type is not None and score_type.max_score != 0:
+                    data["max_score"] = "%g" % score_type.max_score
+                data["score"] = "%g" % submission.score
+                data["score_details"] = list()
+                for detail in json.loads(submission.score_details):
+                    data["score_details"].append(str(detail))
+
+        self.write(data)
 
 
 class SubmissionDetailsHandler(BaseHandler):

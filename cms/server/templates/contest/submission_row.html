@@ -1,20 +1,19 @@
-<tr data-submission="{{ encrypt_number(s.id) }}">
 {% if show_date %}
-    <td class="datetime">
-        {{ format_datetime(s.timestamp, timezone) }}
-    </td>
+    {% set col1 = "<td class=\"datetime\">%s</td>" % format_datetime(s.timestamp, timezone) %}
 {% else %}
-    <td class="time">
-        {{ format_time(s.timestamp, timezone) }}
-    </td>
+    {% set col1 = "<td class=\"time\">%s</td>" % format_time(s.timestamp, timezone) %}
 {% end %}
 {% if not s.compiled() %}
+<tr data-submission="{{ encrypt_number(s.id) }}" data-status="1">
+    {% raw col1 %}
     <td class="status">
         Compiling...
     </td>
     <td class="public_score">N/A</td>
     <td class="total_score">N/A</td>
 {% elif s.compilation_outcome == "fail" %}
+<tr data-submission="{{ encrypt_number(s.id) }}" data-status="2">
+    {% raw col1 %}
     <td class="status">
         Compilation failed
         <a class="details">details</a>
@@ -22,18 +21,24 @@
     <td class="public_score">N/A</td>
     <td class="total_score">N/A</td>
 {% elif not s.evaluated() %}
+<tr data-submission="{{ encrypt_number(s.id) }}" data-status="3">
+    {% raw col1 %}
     <td class="status">
         Evaluating...
     </td>
     <td class="public_score">N/A</td>
     <td class="total_score">N/A</td>
 {% elif not s.scored() %}
+<tr data-submission="{{ encrypt_number(s.id) }}" data-status="4">
+    {% raw col1 %}
     <td class="status">
         Scoring...
     </td>
     <td class="public_score">N/A</td>
     <td class="total_score">N/A</td>
 {% else %}
+<tr data-submission="{{ encrypt_number(s.id) }}" data-status="5">
+    {% raw col1 %}
     <td class="status">
         Evaluated
         <a class="details">details</a>
