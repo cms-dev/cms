@@ -27,7 +27,6 @@ usinc asynchat and JSON encoding.
 import socket
 import time
 import types
-import sys
 import signal
 import threading
 import traceback
@@ -463,8 +462,8 @@ class ThreadedRPC(threading.Thread):
             method_response = self.service.handle_message(self.message)
         except Exception, exception:
             self.response["__error"] = "%s: %s\n%s" % \
-                (exception.__class__.__name__, exception, \
-                traceback.format_exc())
+                (exception.__class__.__name__, exception,
+                 traceback.format_exc())
             self.binary_response = False
             method_response = None
 
@@ -572,8 +571,8 @@ class RemoteService(asynchat.async_chat):
                 threaded = method_info["threaded"]
             except KeyError as exception:
                 response["__error"] = "%s: %s\n%s" % \
-                    (exception.__class__.__name__, exception, \
-                    traceback.format_exc())
+                    (exception.__class__.__name__, exception,
+                     traceback.format_exc())
                 binary_response = False
                 method_response = None
                 threaded = False
@@ -591,8 +590,8 @@ class RemoteService(asynchat.async_chat):
                 method_response = self.service.handle_message(message)
             except Exception as exception:
                 response["__error"] = "%s: %s\n%s" % \
-                    (exception.__class__.__name__, exception, \
-                    traceback.format_exc())
+                    (exception.__class__.__name__, exception,
+                     traceback.format_exc())
                 binary_response = False
                 method_response = None
             self.send_reply(response, method_response, binary_response)
@@ -672,7 +671,7 @@ class RemoteService(asynchat.async_chat):
             raise ValueError("Cannot use both timeout and plus.")
 
         # Default timeout.
-        if type(timeout) == types.BooleanType:
+        if isinstance(timeout, types.BooleanType):
             if timeout:
                 timeout = 10
             else:
@@ -840,13 +839,14 @@ class ListeningSocket(asyncore.dispatcher):
         try:
             connection, address = self.accept()
         except socket.error:
-            logger.error("Error: %s %s" % (sys.exc_info()[:2]))
+            logger.error("Error: %s" % (traceback.format_exc()))
             return
         try:
-            ipaddr, port = socket.getnameinfo(address, socket.NI_NOFQDN)
-            address = Address(ipaddr, int(port))
+            ipaddr, port = address
+            ipaddr = socket.gethostbyname(ipaddr)
+            address = Address(ipaddr, port)
         except:
-            logger.error("Error: %s %s" % (sys.exc_info()[:2]))
+            logger.error("Error: %s" % (traceback.format_exc()))
             return
         remote_service = RemoteService(self._service,
                                        address=address)
