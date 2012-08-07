@@ -417,7 +417,7 @@ class ScriptsContainer(object):
         """
         with SessionGen(commit=True) as session:
             session.execute("""\
-CREATE TABLE statements (
+CREATE TABLE IF NOT EXISTS statements (
     id SERIAL NOT NULL,
     language VARCHAR NOT NULL,
     digest VARCHAR NOT NULL,
