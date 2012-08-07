@@ -427,6 +427,7 @@ CREATE TABLE IF NOT EXISTS statements (
     FOREIGN KEY(task_id) REFERENCES tasks (id)
     ON DELETE CASCADE ON UPDATE CASCADE
 )""")
+            session.execute("DROP INDEX IF EXISTS ix_statements_task_id;")
             session.execute("CREATE INDEX ix_statements_task_id "
                             "ON statements (task_id)")
             for task_id, digest in session.execute(
