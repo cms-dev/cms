@@ -413,6 +413,40 @@ td.token_rules p:last-child {
     clear: both;
 }
 
+/*** Submit a solution */
+
+#submit_solution {
+    margin-bottom: 20px;
+}
+
+#submit_solution form {
+    margin-bottom: 0;
+}
+
+#submit_solution .control-group {
+    margin-bottom: 0;
+}
+
+#submit_solution .control-group:last-of-type {
+    margin-top: 10px;
+}
+
+#submit_solution .control-label {
+    width: 100px;
+    padding-top: 4px;
+    margin-bottom: 4px;
+}
+
+#submit_solution .controls {
+    margin-left: 110px;
+}
+
+#submit_solution input[type="file"] {
+    height: auto;
+    line-height: 18px;
+}
+
+
 /*** Submissions table */
 
 #submission_list colgroup col.time,

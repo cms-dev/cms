@@ -71,8 +71,8 @@ $(document).ready(function () {
 
 <h2 style="margin-bottom: 10px">{{ _("Submit a solution") }}</h2>
 
-<div class="row" style="margin-bottom: 20px;">
-    <div class="span5" style="height: 175px; position: relative;">
+<div id="submit_solution" class="row">
+    <div class="span5">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/submit/{{ encrypt_number(task.id) }}" method="POST">
             <fieldset>
 {% for idx, filename in enumerate(x.filename for x in task.submission_format) %}
