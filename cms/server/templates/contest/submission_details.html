@@ -1,0 +1,36 @@
+{% if s.scored() %}
+    {% if s.token is None %}
+<h3>{{ _("Public testcases") }}</h3>
+    {% else %}
+<h3>{{ _("Detailed feedback") }}</h3>
+    {% end %}
+<table class="table table-bordered table-striped">
+    <colgroup>
+        <col style="width: 20%"/>
+        <col style="width: 80%"/>
+    </colgroup>
+    <thead>
+        <tr>
+            <th>{{ _("Outcome") }}</th>
+            <th>{{ _("Details") }}</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for ev in s.evaluations %}
+        {% if s.task.testcases[int(ev.num)].public or s.token is not None %}
+        <tr>
+            <td>{{ ev.outcome }}</td>
+            <td>{{ ev.text }}</td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="2">N/A</td>
+        </tr>
+        {% end %}
+    {% end %}
+    </tbody>
+</table>
+{% end %}
+
+<h3>{{ _("Compilation output") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
+<pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
