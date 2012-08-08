@@ -230,7 +230,7 @@
         <h2>{{ _("Attachments") }}</h2>
 
         <ul>
-    {% for filename, attachment in task.attachments.items() %}
+    {% for filename, attachment in sorted(task.attachments.items()) %}
             <li>
                 <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/attachments/{{ filename }}">{{ filename }}</a>
             </li>
