@@ -313,7 +313,11 @@ class ContestWebServer(WebService):
         # Default fallback: don't authorize.
         return False
 
-    def add_notification(self, username, timestamp, subject, text):
+    NOTIFICATION_ERROR = "error"
+    NOTIFICATION_WARNING = "warning"
+    NOTIFICATION_SUCCESS = "success"
+
+    def add_notification(self, username, timestamp, subject, text, level):
         """Store a new notification to send to a user at the first
         opportunity (i.e., at the first request fot db notifications).
 
@@ -321,11 +325,12 @@ class ContestWebServer(WebService):
         timestamp (int): the time of the notification.
         subject (string): subject of the notification.
         text (string): body of the notification.
+        level (string): one of NOTIFICATION_* (defined above)
 
         """
         if username not in self.notifications:
             self.notifications[username] = []
-        self.notifications[username].append((timestamp, subject, text))
+        self.notifications[username].append((timestamp, subject, text, level))
 
 
 class MainHandler(BaseHandler):
@@ -623,7 +628,8 @@ class NotificationsHandler(BaseHandler):
                 res.append({"type": "notification",
                             "timestamp": make_timestamp(notification[0]),
                             "subject": notification[1],
-                            "text": notification[2]})
+                            "text": notification[2],
+                            "level": notification[3]})
             del notifications[username]
 
         self.write(json.dumps(res))
@@ -656,7 +662,8 @@ class QuestionHandler(BaseHandler):
             self.timestamp,
             self._("Question received"),
             self._("Your question has been received, you will be "
-                   "notified when the it will be answered."))
+                   "notified when the it will be answered."),
+            ContestWebServer.NOTIFICATION_SUCCESS)
 
         self.redirect("/communication")
 
@@ -693,7 +700,8 @@ class SubmitHandler(BaseHandler):
                 self._("Submissions too frequent!"),
                 self._("For each task, you can submit "
                        "again after %s seconds from last submission.") %
-                config.min_submission_interval)
+                config.min_submission_interval,
+                ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
@@ -704,7 +712,8 @@ class SubmitHandler(BaseHandler):
                 self.current_user.username,
                 self.timestamp,
                 self._("Invalid submission format!"),
-                self._("Please select the correct files."))
+                self._("Please select the correct files."),
+                ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
@@ -729,7 +738,8 @@ class SubmitHandler(BaseHandler):
                     self.current_user.username,
                     self.timestamp,
                     self._("Invalid archive format!"),
-                    self._("The submitted archive could not be opened."))
+                    self._("The submitted archive could not be opened."),
+                    ContestWebServer.NOTIFICATION_ERROR)
                 self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
                 return
 
@@ -748,7 +758,8 @@ class SubmitHandler(BaseHandler):
                 self.current_user.username,
                 self.timestamp,
                 self._("Invalid submission format!"),
-                self._("Please select the correct files."))
+                self._("Please select the correct files."),
+                ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
@@ -817,7 +828,8 @@ class SubmitHandler(BaseHandler):
                 self.current_user.username,
                 self.timestamp,
                 self._("Invalid submission!"),
-                error)
+                error,
+                ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
@@ -829,7 +841,8 @@ class SubmitHandler(BaseHandler):
                 self.timestamp,
                 self._("Submission too big!"),
                 self._("Each files must be at most %d bytes long.") %
-                    config.max_submission_length)
+                    config.max_submission_length,
+                ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
             return
 
@@ -882,7 +895,8 @@ class SubmitHandler(BaseHandler):
                 self.username,
                 self.timestamp,
                 self._("Submission storage failed!"),
-                self._(message))
+                self._(message),
+                ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % encrypt_number(self.task_id))
             return
 
@@ -911,7 +925,8 @@ class SubmitHandler(BaseHandler):
             self.timestamp,
             self._("Submission received"),
             self._("Your submission has been received "
-                   "and is currently being evaluated."))
+                   "and is currently being evaluated."),
+            ContestWebServer.NOTIFICATION_SUCCESS)
         # The argument (encripted submission id) is not used by CWS
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the submission id).
@@ -968,7 +983,8 @@ class UseTokenHandler(BaseHandler):
                 self.timestamp,
                 self._("Token request discarded"),
                 self._("Your request has been discarded because you have no "
-                       "tokens available."))
+                       "tokens available."),
+                ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % encrypt_number(submission.task.id))
             return
 
@@ -990,7 +1006,8 @@ class UseTokenHandler(BaseHandler):
             self.timestamp,
             self._("Token request received"),
             self._("Your request has been received "
-                   "and applied to the submission."))
+                   "and applied to the submission."),
+            ContestWebServer.NOTIFICATION_SUCCESS)
 
         self.redirect("/tasks/%s/submissions" %
                       encrypt_number(submission.task.id))

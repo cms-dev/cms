@@ -28,7 +28,8 @@ var Utils = new function () {
                       data[i].type,
                       data[i].timestamp,
                       data[i].subject,
-                      data[i].text);
+                      data[i].text,
+                      data[i].level);
                   if (data[i].type != "notification") {
                       counter += 1;
                   }
@@ -37,7 +38,7 @@ var Utils = new function () {
             }, "json");
     };
 
-    self.display_notification = function (type, timestamp, subject, text) {
+    self.display_notification = function (type, timestamp, subject, text, level) {
         if (self.last_notification < timestamp)
             self.last_notification = timestamp;
 
@@ -57,6 +58,13 @@ var Utils = new function () {
         } else if (type == "notification") {
             alert.children("h4").text(subject);
             alert.append($("<span>" + text + "</span>"));
+        }
+
+        // the "warning" level is the default, so no check needed
+        if (level == "error") {
+            alert.addClass("alert-error");
+        } else if (level == "success") {
+            alert.addClass("alert-success");
         }
 
         $("#notifications").prepend(alert);
