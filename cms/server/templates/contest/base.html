@@ -61,7 +61,12 @@ $(document).ready(function () {
         </div>
 {% if current_user is None %}
     {% if handler.get_argument("login_error", "") != "" %}
-        <div class="footer login_error">{{ _("Failed to log in.") }}</div>
+        <div id="notifications" class="notifications">
+            <div class="alert alert-block alert-error notification">
+                <a class="close" data-dismiss="alert" href="#">×</a>
+                <h4 class="alert-heading">{{ _("Failed to log in.") }}</h4>
+            </div>
+        </div>
     {% end %}
         <div class="login_container">
             <div class="login_box hero-unit">
