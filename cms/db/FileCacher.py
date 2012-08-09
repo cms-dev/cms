@@ -80,6 +80,16 @@ class FileCacherBackend:
         """
         raise NotImplementedError("Please subclass this class.")
 
+    def get_size(self, digest):
+        """Return the size of a file given its digest.
+
+        digest (string): the digest of which to calculate the size.
+
+        returns (int): the size of the file.
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
     def delete(self, digest):
         """Delete a file from the storage.
 
@@ -147,6 +157,12 @@ class FSBackend(FileCacherBackend):
 
         """
         return ''
+
+    def get_size(self, digest):
+        """See FileCacherBackend.get_size().
+
+        """
+        return os.stat(os.path.join(self.path, digest)).st_size
 
     def delete(self, digest):
         """See FileCacherBackend.delete().
@@ -232,6 +248,18 @@ class DBBackend(FileCacherBackend):
             fso = FSObject.get_from_digest(digest, session)
             if fso is not None:
                 return fso.description
+            else:
+                return None
+
+    def get_size(self, digest):
+        """See FileCacherBackend.get_size().
+
+        """
+        with SessionGen() as session:
+            fso = FSObject.get_from_digest(digest, session)
+            if fso is not None:
+                with fso.get_lobject(session, mode='rb') as lobject:
+                    return lobject.seek(0, os.SEEK_END)
             else:
                 return None
 
@@ -447,6 +475,16 @@ class FileCacher:
 
         """
         return self.backend.describe(digest)
+
+    def get_size(self, digest):
+        """Return the size of a file given its digest.
+
+        digest (string): the digest of which to calculate the size.
+
+        returns (int): the size of the file.
+
+        """
+        return self.backend.get_size(digest)
 
     def delete(self, digest):
         """Delete from cache and FS the file with that digest.

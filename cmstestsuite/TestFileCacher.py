@@ -150,8 +150,9 @@ class TestFileCacher(TestService):
         locally.
 
         """
+        self.size = 100
         self.content = "".join(chr(random.randint(0, 255))
-                               for unused_i in xrange(100))
+                               for unused_i in xrange(self.size))
 
         logger.info("  I am sending the ~100B binary file to FileCacher")
         try:
@@ -203,6 +204,24 @@ class TestFileCacher(TestService):
 ### TEST 002 ###
 
     def test_002(self):
+        """Check the size of the file.
+
+        """
+        logger.info("  I am checking the size of the ~100B binary file")
+        try:
+            size = self.file_cacher.get_size(self.digest)
+        except Exception as error:
+            self.test_end(False, "Error received: %r." % error)
+
+        if size == self.size:
+            self.test_end(True, "The size is correct.")
+        else:
+            self.test_end(False, "The size is wrong: %d instead of %d" %
+                          (size, self.size))
+
+### TEST 003 ###
+
+    def test_003(self):
         """Get file from FileCacher.
 
         """
@@ -228,9 +247,9 @@ class TestFileCacher(TestService):
             self.test_end(True, "Content object received " +
                           "and cached correctly.")
 
-### TEST 003 ###
+### TEST 004 ###
 
-    def test_003(self):
+    def test_004(self):
         """Delete the file through FS and tries to get it again through FC.
 
         """
@@ -250,9 +269,9 @@ class TestFileCacher(TestService):
             else:
                 self.test_end(False, "Did not receive error.")
 
-### TEST 004 ###
+### TEST 005 ###
 
-    def test_004(self):
+    def test_005(self):
         """Get unexisting file from FileCacher.
 
         """
@@ -264,9 +283,9 @@ class TestFileCacher(TestService):
         else:
             self.test_end(False, "Did not receive error.")
 
-### TEST 005 ###
+### TEST 006 ###
 
-    def test_005(self):
+    def test_006(self):
         """Send a ~100B random binary file to the storage through
         FileCacher as a string. FC should cache the content locally.
 
@@ -294,9 +313,9 @@ class TestFileCacher(TestService):
             self.digest = data
             self.test_end(True, "Data sent and cached without error.")
 
-### TEST 006 ###
+### TEST 007 ###
 
-    def test_006(self):
+    def test_007(self):
         """Retrieve the file as a string.
 
         """
@@ -319,9 +338,9 @@ class TestFileCacher(TestService):
         else:
             self.test_end(True, "Data received correctly.")
 
-### TEST 007 ###
+### TEST 008 ###
 
-    def test_007(self):
+    def test_008(self):
         """Put a ~100MB file into the storage (using a specially
         crafted file-like object).
 
@@ -349,9 +368,9 @@ class TestFileCacher(TestService):
             self.digest = data
             self.test_end(True, "Data sent and cached without error.")
 
-### TEST 008 ###
+### TEST 009 ###
 
-    def test_008(self):
+    def test_009(self):
         """Get the ~100MB file from FileCacher.
 
         """
