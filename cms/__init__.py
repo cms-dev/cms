@@ -89,6 +89,12 @@ class Config:
         # necessary to change it.
         # [1] http://pkg-isocodes.alioth.debian.org/
         self.iso_codes_prefix = "/usr"
+        # Prefix of 'shared-mime-info'[2] installation. It can be found
+        # out using `pkg-config --variable=prefix shared-mime-info`, but
+        # it's almost universally the same (i.e. '/usr') so it's hardly
+        # necessary to change it.
+        # [2] http://freedesktop.org/wiki/Software/shared-mime-info
+        self.shared_mime_info_prefix = "/usr"
 
         # AdminWebServer.
         self.admin_listen_address = ""

@@ -574,3 +574,70 @@ td.token_rules p:last-child {
     font-size: 11px;
 }
 
+/*** Attachments */
+
+#attachments ul {
+    margin-left: 0;
+    list-style-type: none;
+    -webkit-column-count: 3;
+    -webkit-column-gap: 8px;
+    -moz-column-count: 3;
+    -moz-column-gap: 8px;
+    column-count: 3;
+    column-gap: 8px;
+}
+
+#attachments ul li a {
+    display: block;
+    height: 36px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    padding: 6px;
+    background-color: #EEEEEE;
+    color: black;
+    text-decoration: none;
+    -webkit-column-break-inside: avoid;
+    -webkit-break-inside: avoid;
+    -moz-break-inside: avoid;
+    break-inside: avoid;
+}
+
+#attachments ul li a:hover {
+    background-color: #E3E3E3;
+}
+
+#attachments ul li img {
+    float: left;
+    margin: 2px 8px 2px 2px;
+}
+
+#attachments ul li .first_line {
+    display: block;
+    height: 18px;
+    overflow: hidden;
+}
+
+#attachments ul li .name {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: bold;
+}
+
+#attachments ul li .size {
+    float: right;
+    font-style: italic;
+    /* the size floats on right of the first line if there's enough space.
+       otherwise (if the name is very long) it gets shifted down,
+       "disappearing" because the first line has overflow: hidden */
+}
+
+#attachments ul li .type {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+

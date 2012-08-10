@@ -60,3 +60,7 @@ Files: cms/server/static/css/bootstrap.css
        cms/server/static/img/glyphicons-halflings*.png
 Copyright: 2012 Twitter, Inc.
 License: Apache-2.0
+
+Files: cms/server/static/img/mimetypes/*.png
+Copyright: 2009 Tango Desktop Project, http://tango.freedesktop.org/
+License: public-domain

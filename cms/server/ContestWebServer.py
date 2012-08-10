@@ -148,6 +148,11 @@ class BaseHandler(CommonRequestHandler):
                 os.path.join(config.iso_codes_prefix, "share", "locale"),
                 self.current_user.languages,
                 fallback=True)
+            shared_mime_info_locale = gettext.translation(
+                "shared-mime-info",
+                os.path.join(config.shared_mime_info_prefix, "share", "locale"),
+                self.current_user.languages,
+                fallback=True)
             cms_locale = gettext.translation(
                 "cms",
                 localization_dir,
@@ -155,6 +160,7 @@ class BaseHandler(CommonRequestHandler):
                 fallback=True)
             cms_locale.add_fallback(iso_639_locale)
             cms_locale.add_fallback(iso_3166_locale)
+            cms_locale.add_fallback(shared_mime_info_locale)
         else:
             cms_locale = gettext.NullTranslations()
 

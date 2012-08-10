@@ -1,0 +1,109 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+# Programming contest management system
+# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import os.path
+from xml import sax
+from xml.sax.handler import ContentHandler
+from xml.dom import XML_NAMESPACE as _XML_NS
+
+_XDG_NS = "http://www.freedesktop.org/standards/shared-mime-info"
+
+# We need the config to access the shared_mime_info_prefix value. It
+# would be better not to depend on cms (i.e. be standalone). The best
+# solution would be to get the prefix at installation-time (using
+# pkgconfig), like many C libraries/applications do, and store it
+# somehow. Yet, I don't know what's the best way to do this in Python...
+from cms import config
+
+
+# FIXME the following code doesn't take comments into account.
+# FIXME the specification requires to look in XDG_DATA_HOME and
+# XDG_DATA_DIRS instead of the installation dir of shared-mime-info...
+# TODO use python-xdg (or similar libraries) instead of doing the
+# parsing ourselves. they also provide ways to find the MIME type.
+
+_aliases = dict(tuple(l.strip().split()) for l in
+                open(os.path.join(config.shared_mime_info_prefix,
+                                  "share", "mime", "aliases")).readlines())
+
+_icons = dict(tuple(l.strip().split(':')) for l in
+              open(os.path.join(config.shared_mime_info_prefix,
+                                "share", "mime", "generic-icons")).readlines())
+
+_types = list(l.strip() for l in
+              open(os.path.join(config.shared_mime_info_prefix,
+                                "share", "mime", "types")).readlines())
+
+_comments = dict()
+
+
+class _get_comment (ContentHandler):
+    def __init__ (self):
+        self.inside = False
+        self.result = None
+
+    def startElementNS (self, name, qname, attrs):
+        if name == (_XDG_NS, "comment") and ((_XML_NS, "lang") not in attrs or attrs[(_XML_NS, "lang")] in ["en", "en_US"]):
+            self.inside = True
+            self.result = ''
+
+    def endElementNS (self, name, qname):
+        self.inside = False
+
+    def characters (self, content):
+        if self.inside:
+            self.result += content
+
+
+def get_icon_for_type (name):
+    if name in _aliases:
+        name = _aliases[name]
+    if name not in _types:
+        return None
+
+    if name in _icons:
+        return _icons[name]
+    return name[:name.index('/')] + "-x-generic"
+
+
+def get_name_for_type (name):
+    if name in _aliases:
+        name = _aliases[name]
+    if name not in _types:
+        return None
+
+    if name not in _comments:
+        try:
+            media, subtype = name.split('/')
+            path = os.path.join(config.shared_mime_info_prefix,
+                               'share', 'mime', media, "%s.xml" % subtype)
+
+            handler = _get_comment()
+            parser = sax.make_parser()
+            parser.setContentHandler(handler)
+            parser.setFeature(sax.handler.feature_namespaces, 1)
+            parser.parse(path)
+
+            _comments[name] = handler.result
+        except:
+            pass
+
+    if name in _comments:
+        return _comments[name]
+

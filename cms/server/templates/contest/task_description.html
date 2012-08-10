@@ -226,29 +226,41 @@
 
 
 {% if task.attachments != {} %}
-    <div>
-        <h2>{{ _("Attachments") }}</h2>
-
+    <h2>{{ _("Attachments") }}</h2>
+    <div id="attachments">
         <ul>
+    {% import mimetypes %}
+    {% from cmscommon import MimeTypes %}
     {% for filename, attachment in sorted(task.attachments.items()) %}
+        {% set mime_type = mimetypes.guess_type(filename)[0] %}
+        {% if mime_type is not None %}
+            {% set type_name = MimeTypes.get_name_for_type(mime_type) %}
+            {% set type_icon = MimeTypes.get_icon_for_type(mime_type) %}
+        {% else %}
+            {% set type_name = None %}
+            {% set type_icon = None %}
+        {% end %}
+        {% set file_size = handler.application.service.file_cacher.get_size(attachment.digest) %}
             <li>
-                <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/attachments/{{ filename }}">{{ filename }}</a>
+                <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/attachments/{{ filename }}">
+            {% if type_icon is not None %}
+                    <img src="{{ url_root }}/static/img/mimetypes/{{ type_icon }}.png"/>
+            {% else %}
+                    <img src="{{ url_root }}/static/img/mimetypes/unknown.png"/>
+            {% end %}
+                    <span class="first_line">
+                        <span class="name">{{ filename }}</span>
+                        <span class="size">{{ _("(%d bytes)") % file_size }}</span>
+                    </span>
+            {% if type_icon is not None %}
+                    <span class="type">{{ _(type_name) }}</span>
+            {% end %}
+                </a>
             </li>
     {% end %}
         </ul>
     </div>
 {% end %}
-
-
-<h2 id="title_submit_solution"></h2>
-<div id="submit_solution">
-  <table>
-    <tr>
-
-    </tr>
-  </table>
-  <div class="hr"></div>
-</div>
 
 </div>
 {% end %}

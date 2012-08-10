@@ -131,7 +131,7 @@ sudo apt-get install postgresql postgresql-client python-setuptools \
      python-tornado python-psycopg2 python-sqlalchemy \
      python-psutil gettext build-essential fpc stl-manual \
      python-simplejson python-netifaces python-beautifulsoup \
-     python-coverage python-crypto python-tz iso-codes
+     python-coverage python-crypto python-tz iso-codes shared-mime-info
 
 # Optional.
 # sudo apt-get install phppgadmin python-yaml
