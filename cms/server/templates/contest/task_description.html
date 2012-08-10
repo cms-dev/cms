@@ -242,7 +242,7 @@
         {% end %}
         {% set file_size = handler.application.service.file_cacher.get_size(attachment.digest) %}
             <li>
-                <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/attachments/{{ filename }}">
+                <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/attachments/{{ filename }}" class="btn">
             {% if type_icon is not None %}
                     <img src="{{ url_root }}/static/img/mimetypes/{{ type_icon }}.png"/>
             {% else %}

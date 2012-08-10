@@ -587,19 +587,28 @@ td.token_rules p:last-child {
     column-gap: 8px;
 }
 
-#attachments ul li a {
-    display: block;
-    height: 36px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    padding: 6px;
-    background-color: #EEEEEE;
-    color: black;
-    text-decoration: none;
+#attachments ul li {
     -webkit-column-break-inside: avoid;
     -webkit-break-inside: avoid;
     -moz-break-inside: avoid;
     break-inside: avoid;
+}
+
+/* this is a really ugly hack to simulate the no-break behavior on firefox */
+@-moz-document url-prefix() {
+    #attachments ul li {
+        display: table;
+        table-layout: fixed;
+        width: 100%;
+    }
+}
+
+#attachments ul li a {
+    display: block;
+    height: 36px;
+    margin-bottom: 8px;
+    padding: 6px;
+    text-align: left;
 }
 
 #attachments ul li a:hover {
