@@ -429,8 +429,8 @@ class TaskDescriptionHandler(BaseHandler):
 
     """
     @catch_exceptions
-    @decrypt_arguments
     @tornado.web.authenticated
+    @decrypt_arguments
     @actual_phase_required(0)
     def get(self, task_id):
 
@@ -451,8 +451,8 @@ class TaskSubmissionsHandler(BaseHandler):
 
     """
     @catch_exceptions
-    @decrypt_arguments
     @tornado.web.authenticated
+    @decrypt_arguments
     @actual_phase_required(0)
     def get(self, task_id):
 
@@ -531,8 +531,8 @@ class SubmissionFileHandler(FileHandler):
 
     """
     @catch_exceptions
-    @decrypt_arguments
     @tornado.web.authenticated
+    @decrypt_arguments
     @actual_phase_required(0)
     @tornado.web.asynchronous
     def get(self, file_id):
@@ -678,8 +678,8 @@ class SubmitHandler(BaseHandler):
     """Handles the received submissions.
 
     """
-    @decrypt_arguments
     @tornado.web.authenticated
+    @decrypt_arguments
     @actual_phase_required(0)
     @tornado.web.asynchronous
     def post(self, task_id):
@@ -1024,8 +1024,8 @@ class SubmissionStatusHandler(BaseHandler):
     refresh_cookie = False
 
     @catch_exceptions
-    @decrypt_arguments
     @tornado.web.authenticated
+    @decrypt_arguments
     @actual_phase_required(0)
     def get(self, sub_id):
         submission = Submission.get_from_id(sub_id, self.sql_session)
@@ -1073,8 +1073,8 @@ class SubmissionDetailsHandler(BaseHandler):
     refresh_cookie = False
 
     @catch_exceptions
-    @decrypt_arguments
     @tornado.web.authenticated
+    @decrypt_arguments
     @actual_phase_required(0)
     def get(self, sub_id):
         submission = Submission.get_from_id(sub_id, self.sql_session)
