@@ -681,20 +681,18 @@ class SubmitHandler(BaseHandler):
     @tornado.web.authenticated
     @decrypt_arguments
     @actual_phase_required(0)
-    @tornado.web.asynchronous
     def post(self, task_id):
 
-        self.task_id = task_id
-        self.task = Task.get_from_id(task_id, self.sql_session)
+        task = Task.get_from_id(task_id, self.sql_session)
 
         if self.current_user is None or \
-            self.task is None or \
-            self.task.contest != self.contest:
+            task is None or \
+            task.contest != self.contest:
             raise tornado.web.HTTPError(404)
 
         # Enforce minimum time between submissions for the same task.
         last_submission = self.sql_session.query(Submission)\
-            .filter_by(task_id=self.task.id)\
+            .filter_by(task_id=task.id)\
             .filter_by(user_id=self.current_user.id)\
             .order_by(Submission.timestamp.desc()).first()
         if last_submission is not None and \
@@ -708,7 +706,7 @@ class SubmitHandler(BaseHandler):
                        "again after %s seconds from last submission.") %
                 config.min_submission_interval,
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
             return
 
         # Ensure that the user did not submit multiple files with the
@@ -720,7 +718,7 @@ class SubmitHandler(BaseHandler):
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."),
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
             return
 
         # If the user submitted an archive, extract it and use content
@@ -746,7 +744,7 @@ class SubmitHandler(BaseHandler):
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."),
                     ContestWebServer.NOTIFICATION_ERROR)
-                self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
+                self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
                 return
 
             for item in archive_contents:
@@ -755,8 +753,8 @@ class SubmitHandler(BaseHandler):
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
         # type says so.
-        task_type = get_task_type(task=self.task)
-        required = set([x.filename for x in self.task.submission_format])
+        task_type = get_task_type(task=task)
+        required = set([x.filename for x in task.submission_format])
         provided = set(self.request.files.keys())
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
@@ -766,24 +764,23 @@ class SubmitHandler(BaseHandler):
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."),
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
             return
 
-        # Add submitted files. After this, self.files is a dictionary
-        # indexed by *our* filenames (something like "output01.txt" or
+        # Add submitted files. After this, files is a dictionary indexed
+        # by *our* filenames (something like "output01.txt" or
         # "taskname.%l", and whose value is a couple
         # (user_assigned_filename, content).
-        self.files = {}
+        files = {}
         for uploaded, data in self.request.files.iteritems():
-            self.files[uploaded] = (data[0]["filename"], data[0]["body"])
+            files[uploaded] = (data[0]["filename"], data[0]["body"])
 
         # If we allow partial submissions, implicitly we recover the
-        # non-submitted files from the previous submission. And put
-        # them in self.file_digests (i.e., like they have already been
-        # sent to FS).
-        self.submission_lang = None
-        self.file_digests = {}
-        self.retrieved = 0
+        # non-submitted files from the previous submission. And put them
+        # in file_digests (i.e. like they have already been sent to FS).
+        submission_lang = None
+        file_digests = {}
+        retrieved = 0
         if task_type.ALLOW_PARTIAL_SUBMISSION and last_submission is not None:
             for filename in required.difference(provided):
                 if filename in last_submission.files:
@@ -791,10 +788,10 @@ class SubmitHandler(BaseHandler):
                     # last submission, we take not that language must
                     # be the same.
                     if "%l" in filename:
-                        self.submission_lang = last_submission.language
-                    self.file_digests[filename] = \
+                        submission_lang = last_submission.language
+                    file_digests[filename] = \
                         last_submission.files[filename].digest
-                    self.retrieved += 1
+                    retrieved += 1
 
         # We need to ensure that everytime we have a .%l in our
         # filenames, the user has one amongst ".cpp", ".c", or ".pas,
@@ -816,19 +813,19 @@ class SubmitHandler(BaseHandler):
                 return None
 
         error = None
-        for our_filename in self.files:
-            user_filename = self.files[our_filename][0]
+        for our_filename in files:
+            user_filename = files[our_filename][0]
             if our_filename.find(".%l") != -1:
                 lang = which_language(user_filename)
                 if lang is None:
                     error = self._("Cannot recognize submission's language.")
                     break
-                elif self.submission_lang is not None and \
-                        self.submission_lang != lang:
+                elif submission_lang is not None and \
+                        submission_lang != lang:
                     error = self._("All sources must be in the same language.")
                     break
                 else:
-                    self.submission_lang = lang
+                    submission_lang = lang
         if error is not None:
             self.application.service.add_notification(
                 self.current_user.username,
@@ -836,12 +833,12 @@ class SubmitHandler(BaseHandler):
                 self._("Invalid submission!"),
                 error,
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
             return
 
         # Check if submitted files are small enough.
         if any([len(f[1]) > config.max_submission_length
-                for f in self.files.values()]):
+                for f in files.values()]):
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
@@ -849,14 +846,14 @@ class SubmitHandler(BaseHandler):
                 self._("Each files must be at most %d bytes long.") %
                     config.max_submission_length,
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task.id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
             return
 
         # All checks done, submission accepted.
 
         # Attempt to store the submission locally to be able to
         # recover a failure.
-        self.local_copy_saved = False
+        local_copy_saved = False
 
         if config.submit_local_copy:
             try:
@@ -870,64 +867,57 @@ class SubmitHandler(BaseHandler):
                                  "w", "utf-8") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
-                                 self.task.id,
-                                 self.files), file_)
-                self.local_copy_saved = True
+                                 task.id,
+                                 files), file_)
+                local_copy_saved = True
             except Exception as error:
                 logger.error("Submission local copy failed - %s" %
                              traceback.format_exc())
-        self.username = self.current_user.username
-        self.sql_session.close()
 
         # We now have to send all the files to the destination...
         try:
-            for filename in self.files:
+            for filename in files:
                 digest = self.application.service.file_cacher.put_file(
                     description="Submission file %s sent by %s at %d." % (
                         filename,
-                        self.username,
+                        self.current_user.username,
                         make_timestamp(self.timestamp)),
-                    binary_data=self.files[filename][1])
-                self.file_digests[filename] = digest
+                    binary_data=files[filename][1])
+                file_digests[filename] = digest
 
         # In case of error, the server aborts the submission
         except Exception as error:
             logger.error("Storage failed! %s" % error)
-            if self.local_copy_saved:
+            if local_copy_saved:
                 message = "In case of emergency, this server has a local copy."
             else:
                 message = "No local copy stored! Your submission was ignored."
             self.application.service.add_notification(
-                self.username,
+                self.current_user.username,
                 self.timestamp,
                 self._("Submission storage failed!"),
                 self._(message),
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(self.task_id))
+            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
             return
 
         # All the files are stored, ready to submit!
-        self.sql_session = Session()
-        current_user = self.get_current_user()
-        self.task = Task.get_from_id(self.task_id, self.sql_session)
         logger.info("All files stored for submission sent by %s" %
-                    self.username)
+                    self.current_user.username)
         submission = Submission(user=current_user,
-                                task=self.task,
+                                task=task,
                                 timestamp=self.timestamp,
                                 files={},
-                                language=self.submission_lang)
+                                language=submission_lang)
 
-        for filename, digest in self.file_digests.items():
+        for filename, digest in file_digests.items():
             self.sql_session.add(File(digest, filename, submission))
         self.sql_session.add(submission)
         self.sql_session.commit()
-        self.r_params["submission"] = submission
-        self.r_params["warned"] = False
         self.application.service.evaluation_service.new_submission(
             submission_id=submission.id)
         self.application.service.add_notification(
-            self.username,
+            self.current_user.username,
             self.timestamp,
             self._("Submission received"),
             self._("Your submission has been received "
@@ -937,7 +927,7 @@ class SubmitHandler(BaseHandler):
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the submission id).
         self.redirect("/tasks/%s/submissions?%s" % (
-            encrypt_number(self.task.id),
+            encrypt_number(task.id),
             encrypt_number(submission.id)))
 
 
