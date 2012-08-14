@@ -37,14 +37,13 @@
 import os
 import re
 import pickle
-import time
 import codecs
 
 import base64
 import simplejson as json
 import tempfile
 import traceback
-from datetime import datetime, timedelta
+from datetime import timedelta
 from urllib import quote
 import gettext
 
@@ -56,7 +55,7 @@ from cms.async import ServiceCoord
 from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
-     Submission, Token, Task, File, Attachment
+     Submission, Token, File
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, catch_exceptions, extract_archive, \

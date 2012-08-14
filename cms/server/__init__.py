@@ -42,30 +42,14 @@ from cmscommon.Cryptographics import decrypt_number
 from cmscommon.DateTime import make_datetime, utc
 
 
-def phase_required(phase):
+def actual_phase_required(*actual_phases):
     """Return decorator that accepts requests iff contest is in the given phase
 
     """
     def decorator(func):
         @wraps(func)
         def wrapped(self, *args, **kwargs):
-            if self.r_params["phase"] != phase:
-                # TODO maybe return some error code?
-                self.redirect("/")
-            else:
-                return func(self, *args, **kwargs)
-        return wrapped
-    return decorator
-
-
-def actual_phase_required(actual_phase):
-    """Return decorator that accepts requests iff contest is in the given phase
-
-    """
-    def decorator(func):
-        @wraps(func)
-        def wrapped(self, *args, **kwargs):
-            if self.r_params["actual_phase"] != actual_phase:
+            if self.r_params["actual_phase"] not in actual_phases:
                 # TODO maybe return some error code?
                 self.redirect("/")
             else:
