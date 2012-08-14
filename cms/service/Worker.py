@@ -21,15 +21,16 @@
 
 import threading
 import traceback
+import simplejson as json
 
 from cms import default_argument_parser, logger
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_method, rpc_threaded
 from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import Submission, SessionGen, Contest
+from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.grading import JobException
 from cms.grading.tasktypes import get_task_type
-from cms.grading.Job import CompilationJob, EvaluationJob
+from cms.grading.Job import Job
 
 
 class Worker(Service):
@@ -52,48 +53,6 @@ class Worker(Service):
         self.work_lock = threading.Lock()
         self.session = None
 
-    def get_submission_data(self, submission_id, job_type):
-        """Given the id and the job that we want to perform, returns
-        the Submission object, a proper Job object and a new task type
-        object of the correct type.
-
-        submission_id (int): id of the submission.
-        job_type (string): the job to do.
-
-        return (Submission, Job, TaskType): corresponding objects.
-
-        raise: JobException if id or task type not found.
-
-        """
-        submission = Submission.get_from_id(submission_id, self.session)
-        if submission is None:
-            err_msg = "Couldn't find submission %s " \
-                      "in the database." % submission_id
-            logger.critical(err_msg)
-            raise JobException(err_msg)
-
-        if job_type == Worker.JOB_TYPE_COMPILATION:
-            job = CompilationJob.from_submission(submission)
-        elif job_type == Worker.JOB_TYPE_EVALUATION:
-            job = EvaluationJob.from_submission(submission)
-        else:
-            err_msg = "Job type `%s' not known for " \
-                "submission %s." % (
-                job_type, submission_id)
-            logger.error(err_msg)
-            raise JobException(err_msg)
-
-        try:
-            task_type = get_task_type(job, self.file_cacher)
-        except KeyError as error:
-            err_msg = "Task type `%s' not known for " \
-                "submission %s (error: %s)." % (
-                submission.task.task_type, submission_id, error)
-            logger.error(err_msg)
-            raise JobException(err_msg)
-
-        return submission, job, task_type
-
     @rpc_method
     def ignore_job(self):
         """RPC that inform the worker that its result for the current
@@ -108,26 +67,6 @@ class Worker(Service):
             self.task_type.ignore_job = True
         except AttributeError:
             pass  # Job concluded right under our nose, that's ok too.
-
-    @rpc_method
-    @rpc_threaded
-    def compile(self, submission_id):
-        """RPC to ask the worker to compile the submission.
-
-        submission_id (int): the id of the submission to compile.
-
-        """
-        return self.action(submission_id, Worker.JOB_TYPE_COMPILATION)
-
-    @rpc_method
-    @rpc_threaded
-    def evaluate(self, submission_id):
-        """RPC to ask the worker to evaluate the submission.
-
-        submission_id (int): the id of the submission to evaluate.
-
-        """
-        return self.action(submission_id, Worker.JOB_TYPE_EVALUATION)
 
     # FIXME - rpc_threaded is disable because it makes the call fail:
     # we should investigate on this
@@ -150,38 +89,24 @@ class Worker(Service):
                 self.file_cacher.get_file(digest)
         logger.info("Precaching finished.")
 
-    def action(self, submission_id, job_type):
-        """The actual work - that can be compilation or evaluation
-        (the code is pretty much the same, the differencies are in
-        what we ask TaskType to do).
+    @rpc_method
+    @rpc_threaded
+    def execute_job(self, job_json):
+        job_dict = json.loads(job_json)
+        job = Job.import_from_dict_with_type(job_dict)
 
-        submission_id (int): the submission to which act on.
-        job_type (string): a constant JOB_TYPE_*.
-
-        """
         if self.work_lock.acquire(False):
 
             try:
-                logger.operation = "%s of submission %s" % (job_type,
-                                                            submission_id)
-                logger.info("Request received: %s of submission %s." %
-                            (job_type, submission_id))
+                logger.operation = "job '%s'" % (job.info)
+                logger.info("Request received")
+                job.shard = self.shard
 
-                with SessionGen(commit=False) as self.session:
+                self.task_type = get_task_type(job, self.file_cacher)
+                self.task_type.execute_job()
+                logger.info("Request finished.")
 
-                    # Retrieve submission and task_type.
-                    unused_submission, job, self.task_type = \
-                        self.get_submission_data(submission_id, job_type)
-
-                    # Store in the task type the shard number.
-                    job.shard = self.shard
-
-                    # Do the actual work.
-                    self.task_type.execute_job()
-                    logger.info("Request finished.")
-
-                    # Build and the response.
-                    return self.task_type.build_response()
+                return self.task_type.build_response()
 
             except:
                 err_msg = "Worker failed on operation `%s'" % logger.operation
@@ -195,9 +120,9 @@ class Worker(Service):
                 self.work_lock.release()
 
         else:
-            logger.warning("Request of %s of submission %s received, "
+            logger.warning("Request '%s' received, "
                            "but declined because of acquired lock" %
-                           (job_type, submission_id))
+                           (job.info))
             return False
 
 

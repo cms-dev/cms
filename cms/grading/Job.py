@@ -19,6 +19,8 @@
 
 import simplejson as json
 
+from cms.db.SQLAlchemyAll import File, Manager
+
 
 class Job:
     # Input: task_type, task_type_parameters
@@ -45,23 +47,27 @@ class Job:
         res = {
             'task_type': self.task_type,
             'task_type_parameters': self.task_type_parameters,
-            'shard': self.shark,
+            'shard': self.shard,
             'sandboxes': self.sandboxes,
             'info': self.info,
             }
         return res
 
     @staticmethod
-    def import_from_dict(data):
+    def import_from_dict_with_type(data):
         type_ = data['type']
         del data['type']
         if type_ == 'compilation':
-            return CompilationJob(**data)
+            return CompilationJob.import_from_dict(data)
         elif type_ == 'evaluation':
-            return EvaluationJob(**data)
+            return EvaluationJob.import_from_dict(data)
         else:
             raise Exception("Couldn't import dictionary with type %s" %
                             (type_))
+
+    @classmethod
+    def import_from_dict(cls, data):
+        return cls(**data)
 
 
 class CompilationJob(Job):
@@ -117,14 +123,28 @@ class CompilationJob(Job):
         res.update({
                 'type': 'compilation',
                 'language': self.language,
-                'files': self.files,
-                'managers': self.managers,
+                'files': [file_.export_to_dict()
+                          for file_ in self.files.itervalues()],
+                'managers': [manager.export_to_dict()
+                             for manager in self.managers.itervalues()],
                 'success': self.success,
                 'compilation_success': self.compilation_success,
                 'text': self.text,
                 'plus': self.plus,
                 })
         return res
+
+    @classmethod
+    def import_from_dict(cls, data):
+        data['files'] = [File.import_from_dict(file_data)
+                         for file_data in data['files']]
+        data['files'] = dict([(file_.filename, file_)
+                              for file_ in data['files']])
+        data['managers'] = [Manager.import_from_dict(manager_data)
+                            for manager_data in data['managers']]
+        data['managers'] = dict([(manager.filename, manager)
+                                 for manager in data['managers']])
+        return cls(**data)
 
 
 class EvaluationJob(Job):

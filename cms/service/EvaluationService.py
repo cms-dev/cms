@@ -29,6 +29,7 @@ current ranking.
 
 from datetime import timedelta
 import random
+import simplejson as json
 
 from cms import default_argument_parser, logger
 from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback
@@ -38,6 +39,7 @@ from cms.db.SQLAlchemyAll import Contest, Evaluation, Executable, \
      Submission, SessionGen
 from cms.service import get_submissions
 from cmscommon.DateTime import make_datetime, make_timestamp
+from cms.grading.Job import CompilationJob, EvaluationJob
 
 
 def to_compile(submission):
@@ -380,14 +382,18 @@ class WorkerPool:
         logger.info("Asking worker %s to %s submission %s "
                     " (%s after submission)." %
                     (shard, action, submission_id, queue_time))
-        if action == EvaluationService.JOB_TYPE_COMPILATION:
-            self._worker[shard].compile(
-                submission_id=submission_id,
-                callback=self._service.action_finished.im_func,
-                plus=(job, side_data, shard))
-        elif action == EvaluationService.JOB_TYPE_EVALUATION:
-            self._worker[shard].evaluate(
-                submission_id=submission_id,
+
+        with SessionGen(commit=False) as session:
+            submission = Submission.get_from_id(submission_id,
+                                                session)
+            if action == EvaluationService.JOB_TYPE_COMPILATION:
+                job_ = CompilationJob.from_submission(submission)
+            elif action == EvaluationService.JOB_TYPE_EVALUATION:
+                job_ = EvaluationJob.from_submission(submission)
+            job_json = json.dumps(job_.export_to_dict())
+
+            self._worker[shard].execute_job(
+                job_json=job_json,
                 callback=self._service.action_finished.im_func,
                 plus=(job, side_data, shard))
 
