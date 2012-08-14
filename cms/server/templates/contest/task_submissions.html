@@ -51,7 +51,7 @@ schedule_update_submission_row = function (submission_id) {
 }
 
 $(document).ready(function () {
-    $('#submission_list tbody tr[data-status!="2"][data-status!="5"]').each(function (idx, elem) {
+    $('#submission_list tbody tr[data-status][data-status!="2"][data-status!="5"]').each(function (idx, elem) {
         schedule_update_submission_row($(this).attr("data-submission"));
     });
 });
