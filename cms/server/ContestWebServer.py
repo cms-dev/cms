@@ -1084,7 +1084,7 @@ class SubmissionDetailsHandler(BaseHandler):
         if submission is None:
             raise tornado.web.HTTPError(404)
 
-        self.render("submission_details.html", s=submission)
+        self.render("submission_details.html", task=task, s=submission)
 
 
 class StaticFileGzHandler(tornado.web.StaticFileHandler):

@@ -13,20 +13,45 @@
         <tr>
             <th>{{ _("Outcome") }}</th>
             <th>{{ _("Details") }}</th>
+{% set n_cols = 2 %}
+{% if task.time_limit is not None %}
+            <th>{{ _("Time") }}</th>
+    {% set n_cols = n_cols + 1 %}
+{% end %}
+{% if task.memory_limit is not None %}
+            <th>{{ _("Memory") }}</th>
+    {% set n_cols = n_cols + 1 %}
+{% end %}
         </tr>
     </thead>
     <tbody>
     {% for ev in s.evaluations %}
-        {% if s.task.testcases[int(ev.num)].public or s.token is not None %}
         <tr>
+        {% if s.task.testcases[ev.num].public or s.token is not None %}
             <td>{{ ev.outcome }}</td>
             <td>{{ ev.text }}</td>
-        </tr>
+            {% if task.time_limit is not None %}
+            <td>
+                {% if s.execution_time is not None %}
+                {{ _("%(seconds)g second", "%(seconds)g seconds", s.execution_time) % {'seconds': s.execution_time} }}
+                {% else %}
+                N/A
+                {% end %}
+            </td>
+            {% end %}
+            {% if task.memory_limit is not None %}
+            <td>
+                {% if s.memory_used is not None %}
+                {{ _("%(mb)d MiB", "%(mb)d MiB", s.memory_used) % {'mb': s.memory_used} }}
+                {% else %}
+                N/A
+                {% end %}
+            </td>
+            {% end %}
         {% else %}
-        <tr>
-            <td colspan="2">N/A</td>
-        </tr>
+            <td colspan="{{ n_cols }}">N/A</td>
         {% end %}
+        </tr>
     {% end %}
     </tbody>
 </table>
