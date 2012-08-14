@@ -19,7 +19,7 @@
 
 import simplejson as json
 
-from cms.db.SQLAlchemyAll import File, Manager
+from cms.db.SQLAlchemyAll import File, Manager, Executable, Testcase
 
 
 class Job:
@@ -114,7 +114,7 @@ class CompilationJob(Job):
         job.language = submission.language
         job.files = submission.files
         job.managers = submission.task.managers
-        job.info = "submission %d" % (submission.id)
+        job.info = "compile submission %d" % (submission.id)
 
         return job
 
@@ -197,6 +197,7 @@ class EvaluationJob(Job):
         job.memory_limit = submission.task.memory_limit
         job.managers = submission.task.managers
         job.files = submission.files
+        job.info = "evaluate submission %d" % (submission.id)
 
         return job
 
@@ -204,13 +205,36 @@ class EvaluationJob(Job):
         res = Job.export_to_dict(self)
         res.update({
                 'type': 'evaluation',
-                'executables': self.executables,
-                'testcases': self.testcases,
+                'executables': [executable.export_to_dict()
+                                for executable
+                                in self.executables.itervalues()],
+                'testcases': [testcase.export_to_dict()
+                              for testcase in self.testcases],
                 'time_limit': self.time_limit,
                 'memory_limit': self.memory_limit,
-                'managers': self.managers,
-                'files': self.files,
+                'managers': [manager.export_to_dict()
+                             for manager in self.managers.itervalues()],
+                'files': [file_.export_to_dict()
+                          for file_ in self.files.itervalues()],
                 'success': self.success,
                 'evaluations': self.evaluations,
                 })
         return res
+
+    @classmethod
+    def import_from_dict(cls, data):
+        data['executables'] = [Executable.import_from_dict(executable_data)
+                               for executable_data in data['executables']]
+        data['executables'] = dict([(executable.filename, executable)
+                                    for executable in data['executables']])
+        data['testcases'] = [Testcase.import_from_dict(testcase_data)
+                             for testcase_data in data['testcases']]
+        data['managers'] = [Manager.import_from_dict(manager_data)
+                            for manager_data in data['managers']]
+        data['managers'] = dict([(manager.filename, manager)
+                                 for manager in data['managers']])
+        data['files'] = [File.import_from_dict(file_data)
+                         for file_data in data['files']]
+        data['files'] = dict([(file_.filename, file_)
+                              for file_ in data['files']])
+        return cls(**data)
