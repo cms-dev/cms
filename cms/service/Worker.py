@@ -21,7 +21,6 @@
 
 import threading
 import traceback
-import simplejson as json
 
 from cms import default_argument_parser, logger
 from cms.async import ServiceCoord
@@ -91,8 +90,7 @@ class Worker(Service):
 
     @rpc_method
     @rpc_threaded
-    def execute_job(self, job_json):
-        job_dict = json.loads(job_json)
+    def execute_job(self, job_dict):
         job = Job.import_from_dict_with_type(job_dict)
 
         if self.work_lock.acquire(False):
@@ -106,7 +104,7 @@ class Worker(Service):
                 self.task_type.execute_job()
                 logger.info("Request finished.")
 
-                return self.task_type.build_response()
+                return job.export_to_dict()
 
             except:
                 err_msg = "Worker failed on operation `%s'" % logger.operation

@@ -75,7 +75,8 @@ class OutputOnly(TaskType):
         self.job.sandboxes.append(sandbox.path)
 
         # Immediately prepare the skeleton to return
-        self.job.evaluations[test_number] = {'sandboxes': [sandbox.path]}
+        self.job.evaluations[test_number] = {'sandboxes': [sandbox.path],
+                                             'plus': {}}
         evaluation = self.job.evaluations[test_number]
         outcome = None
         text = None

@@ -29,17 +29,16 @@ current ranking.
 
 from datetime import timedelta
 import random
-import simplejson as json
 
 from cms import default_argument_parser, logger
 from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback
 from cms.async import ServiceCoord, get_service_shards
 from cms.db import ask_for_contest
-from cms.db.SQLAlchemyAll import Contest, Evaluation, Executable, \
+from cms.db.SQLAlchemyAll import Contest, Evaluation, \
      Submission, SessionGen
 from cms.service import get_submissions
 from cmscommon.DateTime import make_datetime, make_timestamp
-from cms.grading.Job import CompilationJob, EvaluationJob
+from cms.grading.Job import Job, CompilationJob, EvaluationJob
 
 
 def to_compile(submission):
@@ -390,12 +389,11 @@ class WorkerPool:
                 job_ = CompilationJob.from_submission(submission)
             elif action == EvaluationService.JOB_TYPE_EVALUATION:
                 job_ = EvaluationJob.from_submission(submission)
-            job_json = json.dumps(job_.export_to_dict())
 
             self._worker[shard].execute_job(
-                job_json=job_json,
+                job_dict=job_.export_to_dict(),
                 callback=self._service.action_finished.im_func,
-                plus=(job, side_data, shard))
+                plus=(submission_id, side_data, shard))
 
         return shard
 
@@ -819,17 +817,20 @@ class EvaluationService(Service):
         """Callback from a worker, to signal that is finished some
         action (compilation or evaluation).
 
-        data (bool): report success of the action
-        plus (tuple): the tuple (job=(job_type, submission_id),
+        data (dict): a dictionary that describes a Job instance.
+        plus (tuple): the tuple (submission_id,
                                  side_data=(priority, timestamp),
                                  shard_of_worker)
 
         """
+        # TODO - The next two comments are in the wrong place and
+        # really little understandable anyway.
+
         # We notify the pool that the worker is free (even if it
-        # replied with ane error), but if the pool wants to disable the
+        # replied with an error), but if the pool wants to disable the
         # worker, it's because it already assigned its job to someone
         # else, so we discard the data from the worker.
-        job, side_data, shard = plus
+        submission_id, side_data, shard = plus
 
         # If worker was ignored, do nothing.
         if self.pool.release_worker(shard):
@@ -839,18 +840,22 @@ class EvaluationService(Service):
             logger.error("Received error from Worker: `%s'." % error)
             return
 
-        if not data["success"]:
+        job = Job.import_from_dict_with_type(data)
+
+        if not job.success:
             logger.error("Worker %s signaled action not successful." % shard)
             return
 
-        job_type, submission_id = job
-        unused_priority, timestamp = side_data
+        job_type = EvaluationService.JOB_TYPE_COMPILATION \
+            if isinstance(job, CompilationJob) else \
+            EvaluationService.JOB_TYPE_EVALUATION
+        _, timestamp = side_data
 
         logger.info("Action %s for submission %s completed. Success: %s." %
                     (job_type, submission_id, data["success"]))
 
-        # We get the submission from db.
-        with SessionGen(commit=True) as session:
+        # We get the submission from DB and update it.
+        with SessionGen(commit=False) as session:
             submission = Submission.get_from_id(submission_id, session)
             if submission is None:
                 logger.critical("[action_finished] Couldn't find submission "
@@ -859,33 +864,39 @@ class EvaluationService(Service):
 
             if job_type == EvaluationService.JOB_TYPE_COMPILATION:
                 submission.compilation_tries += 1
-                submission.compilation_outcome = data["compilation_outcome"]
-                submission.compilation_text = data["compilation_text"]
-                submission.compilation_shard = data["compilation_shard"]
-                submission.compilation_sandbox = data["compilation_sandbox"]
-                for filename, digest in data.get("executables", []):
-                    session.add(Executable(digest, filename, submission))
+                submission.compilation_outcome = 'ok' if job.success \
+                    else 'fail'
+                submission.compilation_text = job.text
+                submission.compilation_shard = job.shard
+                submission.compilation_sandbox = ":".join(job.sandboxes)
+                for executable in job.executables.itervalues():
+                    submission.executables[executable.filename] = executable
+                    session.add(executable)
 
             if job_type == EvaluationService.JOB_TYPE_EVALUATION:
                 submission.evaluation_tries += 1
                 submission.evaluation_outcome = "ok"
-                for test_number, info in data["evaluations"].iteritems():
-                    ewct = info["execution_wall_clock_time"]  # Too long... :(
-                    session.add(Evaluation(
-                        text=info["text"],
-                        outcome=info["outcome"],
+                for test_number, info in job.evaluations.iteritems():
+                    evaluation = Evaluation(
+                        text=info['text'],
+                        outcome=info['outcome'],
                         num=test_number,
-                        memory_used=info["memory_used"],
-                        execution_time=info["execution_time"],
-                        execution_wall_clock_time=ewct,
-                        evaluation_shard=info["evaluation_shard"],
-                        evaluation_sandbox=info["evaluation_sandbox"],
-                        submission=submission))
+                        memory_used=info['plus'].get('memory_used', None),
+                        execution_time=info['plus']
+                        .get('execution_time', None),
+                        execution_wall_clock_time=info['plus']
+                        .get('execution_wall_clock_time', None),
+                        evaluation_shard=job.shard,
+                        evaluation_sandbox=":".join(job.sandboxes),
+                        submission=submission)
+                    session.add(evaluation)
 
             compilation_tries = submission.compilation_tries
             compilation_outcome = submission.compilation_outcome
             evaluation_tries = submission.evaluation_tries
             evaluated = submission.evaluated()
+
+            session.commit()
 
         # Compilation.
         if job_type == EvaluationService.JOB_TYPE_COMPILATION:
