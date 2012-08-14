@@ -28,7 +28,7 @@ from cms.grading.ParameterTypes import ParameterTypeCollection, \
      ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
-from cms.db.SQLAlchemyAll import Submission
+from cms.db.SQLAlchemyAll import Submission, Executable
 
 
 class Batch(TaskType):
@@ -165,7 +165,8 @@ class Batch(TaskType):
                 executable_filename,
                 "Executable %s for %s" %
                 (executable_filename, self.job.info))
-            self.job.executables[executable_filename] = digest
+            self.job.executables[executable_filename] = \
+                Executable(digest, executable_filename)
 
         # Cleanup
         delete_sandbox(sandbox)

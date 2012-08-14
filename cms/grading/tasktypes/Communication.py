@@ -31,7 +31,7 @@ from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step_after_run
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
-from cms.db.SQLAlchemyAll import Submission
+from cms.db.SQLAlchemyAll import Submission, Executable
 
 
 class Communication(TaskType):
@@ -123,7 +123,8 @@ class Communication(TaskType):
                 executable_filename,
                 "Executable %s for %s" %
                 (executable_filename, self.job.info))
-            self.job.executables = {executable_filename: digest}
+            self.job.executables[executable_filename] = \
+                Executable(digest, executable_filename)
 
         # Cleanup
         delete_sandbox(sandbox)
