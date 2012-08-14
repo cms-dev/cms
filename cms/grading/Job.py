@@ -129,6 +129,9 @@ class CompilationJob(Job):
                              for manager in self.managers.itervalues()],
                 'success': self.success,
                 'compilation_success': self.compilation_success,
+                'executables': [executable.export_to_dict()
+                                for executable
+                                in self.executables.itervalues()],
                 'text': self.text,
                 'plus': self.plus,
                 })
@@ -144,6 +147,10 @@ class CompilationJob(Job):
                             for manager_data in data['managers']]
         data['managers'] = dict([(manager.filename, manager)
                                  for manager in data['managers']])
+        data['executables'] = [Executable.import_from_dict(executable_data)
+                               for executable_data in data['executables']]
+        data['executables'] = dict([(executable.filename, executable)
+                                    for executable in data['executables']])
         return cls(**data)
 
 
