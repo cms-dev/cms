@@ -27,8 +27,7 @@ current ranking.
 
 """
 
-import time
-from datetime import datetime, timedelta
+from datetime import timedelta
 import random
 
 from cms import default_argument_parser, logger
@@ -480,7 +479,8 @@ class WorkerPool:
             s_time = self._start_time[shard]
             s_time = make_timestamp(s_time) if s_time is not None else None
             s_data = self._side_data[shard]
-            s_data = (s_data[0], make_timestamp(s_data[1])) if s_data is not None else None
+            s_data = (s_data[0], make_timestamp(s_data[1])) \
+                if s_data is not None else None
 
             result[str(shard)] = {
                 'connected': self._worker[shard].connected,
@@ -602,16 +602,20 @@ class EvaluationService(Service):
             self.pool.add_worker(worker)
 
         self.add_timeout(self.dispatch_jobs, None,
-                         EvaluationService.CHECK_DISPATCH_TIME.total_seconds(),
+                         EvaluationService.CHECK_DISPATCH_TIME
+                         .total_seconds(),
                          immediately=True)
         self.add_timeout(self.check_workers_timeout, None,
-                         EvaluationService.WORKER_TIMEOUT_CHECK_TIME.total_seconds(),
+                         EvaluationService.WORKER_TIMEOUT_CHECK_TIME
+                         .total_seconds(),
                          immediately=False)
         self.add_timeout(self.check_workers_connection, None,
-                         EvaluationService.WORKER_CONNECTION_CHECK_TIME.total_seconds(),
+                         EvaluationService.WORKER_CONNECTION_CHECK_TIME
+                         .total_seconds(),
                          immediately=False)
         self.add_timeout(self.search_jobs_not_done, None,
-                         EvaluationService.JOBS_NOT_DONE_CHECK_TIME.total_seconds(),
+                         EvaluationService.JOBS_NOT_DONE_CHECK_TIME
+                         .total_seconds(),
                          immediately=True)
 
     def search_jobs_not_done(self):
