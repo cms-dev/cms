@@ -27,7 +27,7 @@
 <div class="row statement one_statement">
     <div class="span9">
     {% for lang_code in task.statements %}
-        <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ lang_code }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
+        <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(lang_code, safe='') }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
     {% end %}
     </div>
 </div>
@@ -42,7 +42,7 @@
     {% end %}
         </p>
     {% if task.official_language in task.statements %}
-        <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ task.official_language }}" class="btn btn-large btn-success">{{ _("Official statement") }}</a>
+        <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(task.official_language, safe='') }}" class="btn btn-large btn-success">{{ _("Official statement") }}</a>
     {% end %}
     {% for lang_code in current_user.languages %}
         {% if lang_code in task.statements %}
@@ -55,7 +55,7 @@
             {% else %}
                 {% set lang_str = escape(lang_code) %}
             {% end %}
-            <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ lang_code }}" class="btn btn-large">{% raw _("Statement in %s") % lang_str %}</a>
+            <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(lang_code, safe='') }}" class="btn btn-large">{% raw _("Statement in %s") % lang_str %}</a>
         {% end %}
     {% end %}
     </div>
@@ -72,7 +72,7 @@
         {% else %}
             {% set lang_str = escape(lang_code) %}
         {% end %}
-                <li><a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/statements/{{ lang_code }}">{% raw lang_str %}</a></li>
+                <li><a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(lang_code, safe='') }}">{% raw lang_str %}</a></li>
     {% end %}
             </ul>
         </div>
@@ -190,7 +190,7 @@
         {% end %}
     {% elif tokens_tasks >= 2 %}
         <p>
-        You can find the rules for the tokens on the <a href="{{ url_root }}">contest overview page</a>.
+        {% raw _("You can find the rules for the tokens on the <a href=\"%(url_root)s/\">contest overview page</a>.") % {"url_root": url_root} %}
         </p>
 
         {% if tokens_tasks == 2 %}
@@ -214,7 +214,7 @@
         <p>
         {% set tokens = {"initial": task.token_initial, "max": task.token_max, "total": task.token_total, "min_interval": task.token_min_interval, "gen_time": task.token_gen_time, "gen_number": task.token_gen_number} %}
         {{ format_token_rules(tokens, t_type="task") }}
-        {% raw _("You can find the rules for the contest-tokens on the <a href=\"%(url_root)s\">contest overview page</a>.") % {"url_root": url_root} %}
+        {% raw _("You can find the rules for the contest-tokens on the <a href=\"%(url_root)s/\">contest overview page</a>.") % {"url_root": url_root} %}
         </p>
     {% end %}
     </td>
@@ -242,7 +242,7 @@
         {% end %}
         {% set file_size = handler.application.service.file_cacher.get_size(attachment.digest) %}
             <li>
-                <a href="{{ url_root }}/tasks/{{ encrypt_number(task.id) }}/attachments/{{ filename }}" class="btn">
+                <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/attachments/{{ quote(filename, safe='') }}" class="btn">
             {% if type_icon is not None %}
                     <img src="{{ url_root }}/static/img/mimetypes/{{ type_icon }}.png"/>
             {% else %}

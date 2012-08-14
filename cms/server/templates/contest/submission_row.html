@@ -4,7 +4,7 @@
     {% set col1 = "<td class=\"time\">%s</td>" % format_time(s.timestamp, timezone) %}
 {% end %}
 {% if not s.compiled() %}
-<tr data-submission="{{ encrypt_number(s.id) }}" data-status="1">
+<tr data-submission="{{ s_idx }}" data-status="1">
     {% raw col1 %}
     <td class="status">
         Compiling...
@@ -12,7 +12,7 @@
     <td class="public_score">N/A</td>
     <td class="total_score">N/A</td>
 {% elif s.compilation_outcome == "fail" %}
-<tr data-submission="{{ encrypt_number(s.id) }}" data-status="2">
+<tr data-submission="{{ s_idx }}" data-status="2">
     {% raw col1 %}
     <td class="status">
         Compilation failed
@@ -21,7 +21,7 @@
     <td class="public_score">N/A</td>
     <td class="total_score">N/A</td>
 {% elif not s.evaluated() %}
-<tr data-submission="{{ encrypt_number(s.id) }}" data-status="3">
+<tr data-submission="{{ s_idx }}" data-status="3">
     {% raw col1 %}
     <td class="status">
         Evaluating...
@@ -29,7 +29,7 @@
     <td class="public_score">N/A</td>
     <td class="total_score">N/A</td>
 {% elif not s.scored() %}
-<tr data-submission="{{ encrypt_number(s.id) }}" data-status="4">
+<tr data-submission="{{ s_idx }}" data-status="4">
     {% raw col1 %}
     <td class="status">
         Scoring...
@@ -37,7 +37,7 @@
     <td class="public_score">N/A</td>
     <td class="total_score">N/A</td>
 {% else %}
-<tr data-submission="{{ encrypt_number(s.id) }}" data-status="5">
+<tr data-submission="{{ s_idx }}" data-status="5">
     {% raw col1 %}
     <td class="status">
         Evaluated
@@ -69,29 +69,38 @@
     </td>
 {% end %}
     <td class="files">
-        {% set filtered_files = [x.filename for x in task.submission_format if x.filename in s.files] %}
-        {% if len(filtered_files) == 0 %}
+        {% comment We replace '%l' with the actual language only when it occurs as an extension at the end of the string and only when %}
+        {% comment there isn't another file with that name. This allows to securily reverse the replacement and should work great in %}
+        {% comment the common case. Yet, it still allows the marginal case of both 'foo.%l' and 'foo.c' in the submission format. %}
+        {% if len(s.files) == 0 %}
         <a class="btn disabled">
-            None
+            {{ _("None") }}
         </a>
-        {% elif len(filtered_files) == 1 %}
-            {% set filename = filtered_files[0] %}
-            {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
-        <a class="btn" href="{{ url_root }}/submission_file/{{ encrypt_number(s.files[filename].id) }}">
-            Download
+        {% elif len(s.files) == 1 %}
+            {% set filename = s.files.keys()[0] %}
+            {% if s.language is not None %}
+                {% set filename = re.sub("\.%l$", ".%s" % s.language, filename) %}
+            {% end %}
+        <a class="btn" href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/submissions/{{ s_idx }}/files/{{ quote(filename, safe='') }}">
+            {{ _("Download") }}
         </a>
         {% else %}
         <div class="btn-group">
             <a class="btn dropdown-toggle" data-toggle="dropdown">
-                Download
-                <span class="caret" ></span>
+                {{ _("Download") }}
+                <span class="caret"></span>
             </a>
             <ul class="dropdown-menu">
-            {% for filename in filtered_files %}
-                {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
+            {% for filename in s.files %}
+                {% if s.language is not None %}
+                    {% set temp_filename = re.sub("\.%l$", ".%s" % s.language, filename) %}
+                    {% if temp_filename not in s.files %}
+                        {% set filename = temp_filename %}
+                    {% end %}
+                {% end %}
                 <li>
-                    <a href="{{ url_root }}/submission_file/{{ encrypt_number(s.files[filename].id) }}">
-                        {{ real_filename }}
+                    <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/submissions/{{ s_idx }}/files/{{ quote(filename, safe='') }}">
+                        {{ filename }}
                     </a>
                 </li>
             {% end %}
@@ -106,8 +115,7 @@
         {% else %}
             {% comment TODO If the expiration or generation time are greater than valid_phase_end they "don't exist". It's useless to show "Wait..." in those cases. %}
             {% if can_play_token and not need_to_wait %}
-        <form action="{{ url_root }}/usetoken" method="POST">
-            <input type="hidden" name="submission_id" value="{{ encrypt_number(s.id) }}" />
+        <form action="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/submissions/{{ s_idx }}/token" method="POST">
             <input type="submit" class="btn btn-warning" value="Play!"/>
         </form>
             {% elif (can_play_token and need_to_wait) or (not can_play_token and tokens_info[1] is not None) %}

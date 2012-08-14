@@ -35,6 +35,7 @@
 """
 
 import os
+import re
 import pickle
 import time
 import codecs
@@ -45,6 +46,7 @@ import simplejson as json
 import tempfile
 import traceback
 from datetime import datetime, timedelta
+from urllib import quote
 import gettext
 
 import tornado.web
@@ -59,10 +61,8 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
-     actual_phase_required, get_url_root, decrypt_arguments, \
-     CommonRequestHandler
-from cmscommon.Cryptographics import encrypt_number, decrypt_number, \
-     get_encryption_alphabet
+     actual_phase_required, get_url_root, CommonRequestHandler
+from cmscommon.Cryptographics import encrypt_number
 from cmscommon.DateTime import make_datetime, make_timestamp, get_timezone
 
 
@@ -118,8 +118,9 @@ class BaseHandler(CommonRequestHandler):
             self.clear_cookie("login")
             return None
 
-        user = self.sql_session.query(User).filter_by(contest=self.contest).\
-            filter_by(username=username).first()
+        user = self.sql_session.query(User)\
+            .filter(User.contest == self.contest)\
+            .filter(User.username == username).first()
         if user is None:
             self.clear_cookie("login")
             return None
@@ -368,8 +369,9 @@ class LoginHandler(BaseHandler):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
         next_page = self.get_argument("next", "/")
-        user = self.sql_session.query(User).filter_by(contest=self.contest).\
-               filter_by(username=username).first()
+        user = self.sql_session.query(User)\
+            .filter(User.contest == self.contest)\
+            .filter(User.username == username).first()
 
         if user is None or user.password != password:
             logger.info("Login error: user=%s pass=%s remote_ip=%s." %
@@ -430,20 +432,19 @@ class TaskDescriptionHandler(BaseHandler):
     """
     @catch_exceptions
     @tornado.web.authenticated
-    @decrypt_arguments
     @actual_phase_required(0)
-    def get(self, task_id):
-
-        self.r_params["task"] = Task.get_from_id(task_id, self.sql_session)
-        if self.r_params["task"] is None or \
-            self.r_params["task"].contest != self.contest:
+    def get(self, task_name):
+        try:
+            task = self.contest.get_task(task_name)
+        except KeyError:
             raise tornado.web.HTTPError(404)
 
-        self.r_params["submissions"] = self.sql_session.query(Submission)\
-            .filter_by(user=self.current_user)\
-            .filter_by(task=self.r_params["task"]).all()
+        # FIXME are submissions actually needed by this handler?
+        submissions = self.sql_session.query(Submission)\
+            .filter(Submission.user == self.current_user)\
+            .filter(Submission.task == task).all()
 
-        self.render("task_description.html", **self.r_params)
+        self.render("task_description.html", task=task, submissions=submissions, **self.r_params)
 
 
 class TaskSubmissionsHandler(BaseHandler):
@@ -452,20 +453,18 @@ class TaskSubmissionsHandler(BaseHandler):
     """
     @catch_exceptions
     @tornado.web.authenticated
-    @decrypt_arguments
     @actual_phase_required(0)
-    def get(self, task_id):
-
-        self.r_params["task"] = Task.get_from_id(task_id, self.sql_session)
-        if self.r_params["task"] is None or \
-            self.r_params["task"].contest != self.contest:
+    def get(self, task_name):
+        try:
+            task = self.contest.get_task(task_name)
+        except KeyError:
             raise tornado.web.HTTPError(404)
 
-        self.r_params["submissions"] = self.sql_session.query(Submission)\
-            .filter_by(user=self.current_user)\
-            .filter_by(task=self.r_params["task"]).all()
+        submissions = self.sql_session.query(Submission)\
+            .filter(Submission.user == self.current_user)\
+            .filter(Submission.task == task).all()
 
-        self.render("task_submissions.html", **self.r_params)
+        self.render("task_submissions.html", task=task, submissions=submissions, **self.r_params)
 
 
 class TaskStatementViewHandler(FileHandler):
@@ -476,14 +475,10 @@ class TaskStatementViewHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @tornado.web.asynchronous
-    def get(self, task_id, lang_code):
+    def get(self, task_name, lang_code):
         try:
-            task_id = decrypt_number(task_id)
-        except ValueError:
-            raise tornado.web.HTTPError(404)
-
-        task = Task.get_from_id(task_id, self.sql_session)
-        if task is None or task.contest != self.contest:
+            task = self.contest.get_task(task_name)
+        except KeyError:
             raise tornado.web.HTTPError(404)
 
         if lang_code not in task.statements:
@@ -503,14 +498,10 @@ class TaskAttachmentViewHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @tornado.web.asynchronous
-    def get(self, task_id, filename):
+    def get(self, task_name, filename):
         try:
-            task_id = decrypt_number(task_id)
-        except ValueError:
-            raise tornado.web.HTTPError(404)
-
-        task = Task.get_from_id(task_id, self.sql_session)
-        if task is None or task.contest != self.contest:
+            task = self.contest.get_task(task_name)
+        except KeyError:
             raise tornado.web.HTTPError(404)
 
         if filename not in task.attachments:
@@ -532,25 +523,42 @@ class SubmissionFileHandler(FileHandler):
     """
     @catch_exceptions
     @tornado.web.authenticated
-    @decrypt_arguments
     @actual_phase_required(0)
     @tornado.web.asynchronous
-    def get(self, file_id):
-
-        sub_file = self.sql_session.query(File).join(Submission).join(Task)\
-            .filter(File.id == file_id)\
-            .filter(Submission.user_id == self.current_user.id)\
-            .filter(Task.contest_id == self.contest.id)\
-            .first()
-
-        if sub_file is None:
+    def get(self, task_name, submission_num, filename):
+        try:
+            task = self.contest.get_task(task_name)
+        except KeyError:
             raise tornado.web.HTTPError(404)
 
-        submission = sub_file.submission
-        real_filename = sub_file.filename
+        submission = self.sql_session.query(Submission)\
+            .filter(Submission.user == self.current_user)\
+            .filter(Submission.task == task)\
+            .order_by(Submission.timestamp)\
+            .offset(int(submission_num) - 1).first()
+        if submission is None:
+            raise tornado.web.HTTPError(404)
+
+        # The following code assumes that submission.files is a subset
+        # of task.submission_format. CWS will always ensure that for new
+        # submissions, yet, if the submission_format changes during the
+        # competition, this may not hold anymore for old submissions.
+
+        # filename follows our convention (e.g. 'foo.%l'), real_filename
+        # follows the one we present to the user (e.g. 'foo.c').
+        real_filename = filename
         if submission.language is not None:
-            real_filename = real_filename.replace("%l", submission.language)
-        digest = sub_file.digest
+            if filename in submission.files:
+                real_filename = filename.replace("%l", submission.language)
+            else:
+                # We don't recognize this filename. Let's try to 'undo'
+                # the '%l' -> 'c|cpp|pas' replacement before giving up.
+                filename = re.sub('\.%s$' % submission.language, '.%l', filename)
+
+        if filename not in submission.files:
+            raise tornado.web.HTTPError(404)
+
+        digest = submission.files[filename].digest
         self.sql_session.close()
 
         self.fetch(digest, "text/plain", real_filename)
@@ -679,21 +687,17 @@ class SubmitHandler(BaseHandler):
 
     """
     @tornado.web.authenticated
-    @decrypt_arguments
     @actual_phase_required(0)
-    def post(self, task_id):
-
-        task = Task.get_from_id(task_id, self.sql_session)
-
-        if self.current_user is None or \
-            task is None or \
-            task.contest != self.contest:
+    def post(self, task_name):
+        try:
+            task = self.contest.get_task(task_name)
+        except KeyError:
             raise tornado.web.HTTPError(404)
 
         # Enforce minimum time between submissions for the same task.
         last_submission = self.sql_session.query(Submission)\
-            .filter_by(task_id=task.id)\
-            .filter_by(user_id=self.current_user.id)\
+            .filter(Submission.task == task)\
+            .filter(Submission.user == self.current_user)\
             .order_by(Submission.timestamp.desc()).first()
         if last_submission is not None and \
                self.timestamp - last_submission.timestamp < \
@@ -706,7 +710,7 @@ class SubmitHandler(BaseHandler):
                        "again after %s seconds from last submission.") %
                 config.min_submission_interval,
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
+            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
 
         # Ensure that the user did not submit multiple files with the
@@ -718,7 +722,7 @@ class SubmitHandler(BaseHandler):
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."),
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
+            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
 
         # If the user submitted an archive, extract it and use content
@@ -744,7 +748,7 @@ class SubmitHandler(BaseHandler):
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."),
                     ContestWebServer.NOTIFICATION_ERROR)
-                self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
+                self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
                 return
 
             for item in archive_contents:
@@ -764,7 +768,7 @@ class SubmitHandler(BaseHandler):
                 self._("Invalid submission format!"),
                 self._("Please select the correct files."),
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
+            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
 
         # Add submitted files. After this, files is a dictionary indexed
@@ -833,7 +837,7 @@ class SubmitHandler(BaseHandler):
                 self._("Invalid submission!"),
                 error,
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
+            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
 
         # Check if submitted files are small enough.
@@ -846,7 +850,7 @@ class SubmitHandler(BaseHandler):
                 self._("Each files must be at most %d bytes long.") %
                     config.max_submission_length,
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
+            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
 
         # All checks done, submission accepted.
@@ -898,13 +902,13 @@ class SubmitHandler(BaseHandler):
                 self._("Submission storage failed!"),
                 self._(message),
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(task.id))
+            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
 
         # All the files are stored, ready to submit!
         logger.info("All files stored for submission sent by %s" %
                     self.current_user.username)
-        submission = Submission(user=current_user,
+        submission = Submission(user=self.current_user,
                                 task=task,
                                 timestamp=self.timestamp,
                                 files={},
@@ -926,8 +930,9 @@ class SubmitHandler(BaseHandler):
         # The argument (encripted submission id) is not used by CWS
         # (nor it discloses information to the user), but it is useful
         # for automatic testing to obtain the submission id).
+        # FIXME is it actually used by something?
         self.redirect("/tasks/%s/submissions?%s" % (
-            encrypt_number(task.id),
+            quote(task.name, safe=''),
             encrypt_number(submission.id)))
 
 
@@ -938,36 +943,25 @@ class UseTokenHandler(BaseHandler):
     @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def post(self):
-
-        submission_id = self.get_argument("submission_id", "")
-
-        # Decrypt submission_id.
+    def post(self, task_name, submission_num):
         try:
-            submission_id = decrypt_number(submission_id)
-        except ValueError:
-            # We reply with Forbidden if the given ID cannot be
-            # decrypted.
-            logger.warning("User %s tried to play a token "
-                           "on an undecryptable submission_id."
-                           % self.current_user.username)
-            raise tornado.web.HTTPError(403)
+            task = self.contest.get_task(task_name)
+        except KeyError:
+            raise tornado.web.HTTPError(404)
 
-        # Find submission and check it is of the current user.
-        submission = Submission.get_from_id(submission_id,
-                                            self.sql_session)
-        if submission is None or \
-               submission.user != self.current_user:
-            logger.warning("User %s tried to play a token "
-                           "on an unexisting submission_id."
-                           % self.current_user.username)
+        submission = self.sql_session.query(Submission)\
+            .filter(Submission.user == self.current_user)\
+            .filter(Submission.task == task)\
+            .order_by(Submission.timestamp)\
+            .offset(int(submission_num) - 1).first()
+        if submission is None:
             raise tornado.web.HTTPError(404)
 
         # Don't trust the user, check again if (s)he can really play
         # the token.
         tokens_available = self.contest.tokens_available(
                                self.current_user.username,
-                               submission.task.name,
+                               task.name,
                                self.timestamp)
         if tokens_available[0] == 0 or tokens_available[2] is not None:
             logger.warning("User %s tried to play a token "
@@ -981,7 +975,7 @@ class UseTokenHandler(BaseHandler):
                 self._("Your request has been discarded because you have no "
                        "tokens available."),
                 ContestWebServer.NOTIFICATION_ERROR)
-            self.redirect("/tasks/%s/submissions" % encrypt_number(submission.task.id))
+            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
 
         token = Token(self.timestamp, submission)
@@ -991,10 +985,10 @@ class UseTokenHandler(BaseHandler):
         # Inform ScoringService and eventually the ranking that the
         # token has been played.
         self.application.service.scoring_service.submission_tokened(
-            submission_id=submission_id, timestamp=self.timestamp)
+            submission_id=submission.id, timestamp=self.timestamp)
 
         logger.info("Token played by user %s on task %s."
-                    % (self.current_user.username, submission.task.name))
+                    % (self.current_user.username, task.name))
 
         # Add "All ok" notification
         self.application.service.add_notification(
@@ -1005,8 +999,7 @@ class UseTokenHandler(BaseHandler):
                    "and applied to the submission."),
             ContestWebServer.NOTIFICATION_SUCCESS)
 
-        self.redirect("/tasks/%s/submissions" %
-                      encrypt_number(submission.task.id))
+        self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
 
 
 class SubmissionStatusHandler(BaseHandler):
@@ -1015,13 +1008,21 @@ class SubmissionStatusHandler(BaseHandler):
 
     @catch_exceptions
     @tornado.web.authenticated
-    @decrypt_arguments
     @actual_phase_required(0)
-    def get(self, sub_id):
-        submission = Submission.get_from_id(sub_id, self.sql_session)
-        if submission.user.id != self.current_user.id or \
-               submission.task.contest.id != self.contest.id:
-            raise tornado.web.HTTPError(403)
+    def get(self, task_name, submission_num):
+        try:
+            task = self.contest.get_task(task_name)
+        except KeyError:
+            raise tornado.web.HTTPError(404)
+
+        submission = self.sql_session.query(Submission)\
+            .filter(Submission.user == self.current_user)\
+            .filter(Submission.task == task)\
+            .order_by(Submission.timestamp)\
+            .offset(int(submission_num) - 1).first()
+        if submission is None:
+            raise tornado.web.HTTPError(404)
+
         score_type = get_score_type(submission=submission)
 
         data = dict()
@@ -1064,13 +1065,21 @@ class SubmissionDetailsHandler(BaseHandler):
 
     @catch_exceptions
     @tornado.web.authenticated
-    @decrypt_arguments
     @actual_phase_required(0)
-    def get(self, sub_id):
-        submission = Submission.get_from_id(sub_id, self.sql_session)
-        if submission.user.id != self.current_user.id or \
-               submission.task.contest.id != self.contest.id:
-            raise tornado.web.HTTPError(403)
+    def get(self, task_name, submission_num):
+        try:
+            task = self.contest.get_task(task_name)
+        except KeyError:
+            raise tornado.web.HTTPError(404)
+
+        submission = self.sql_session.query(Submission)\
+            .filter(Submission.user == self.current_user)\
+            .filter(Submission.task == task)\
+            .order_by(Submission.timestamp)\
+            .offset(int(submission_num) - 1).first()
+        if submission is None:
+            raise tornado.web.HTTPError(404)
+
         self.render("submission_details.html", s=submission)
 
 
@@ -1095,25 +1104,24 @@ class StaticFileGzHandler(tornado.web.StaticFileHandler):
                 raise
 
 
-enc_alph = get_encryption_alphabet()
 _cws_handlers = [
     (r"/",       MainHandler),
     (r"/login",  LoginHandler),
     (r"/logout", LogoutHandler),
     (r"/start",  StartHandler),
-    (r"/tasks/([%s]+)/description" % enc_alph, TaskDescriptionHandler),
-    (r"/tasks/([%s]+)/submissions" % enc_alph, TaskSubmissionsHandler),
-    (r"/tasks/([%s]+)/statements/(.*)" % enc_alph, TaskStatementViewHandler),
-    (r"/tasks/([%s]+)/attachments/(.*)" % enc_alph, TaskAttachmentViewHandler),
-    (r"/submission_file/([%s]+)" % enc_alph,   SubmissionFileHandler),
-    (r"/submission_status/([%s]+)" % enc_alph, SubmissionStatusHandler),
-    (r"/submission_details/([%s]+)" % enc_alph, SubmissionDetailsHandler),
-    (r"/submit/([%s]+)" % enc_alph,            SubmitHandler),
-    (r"/usetoken",                             UseTokenHandler),
+    (r"/tasks/(.*)/description", TaskDescriptionHandler),
+    (r"/tasks/(.*)/submissions", TaskSubmissionsHandler),
+    (r"/tasks/(.*)/statements/(.*)", TaskStatementViewHandler),
+    (r"/tasks/(.*)/attachments/(.*)", TaskAttachmentViewHandler),
+    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/files/(.*)", SubmissionFileHandler),
+    (r"/tasks/(.*)/submissions/([1-9][0-9]*)", SubmissionStatusHandler),
+    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/details", SubmissionDetailsHandler),
+    (r"/tasks/(.*)/submit", SubmitHandler),
+    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/token", UseTokenHandler),
     (r"/communication", CommunicationHandler),
     (r"/documentation", DocumentationHandler),
     (r"/notifications", NotificationsHandler),
-    (r"/question",      QuestionHandler),
+    (r"/question", QuestionHandler),
     (r"/stl/(.*)", StaticFileGzHandler, {"path": config.stl_path}),
     ]
 

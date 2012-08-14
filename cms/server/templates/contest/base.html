@@ -1,8 +1,8 @@
 {% import re %}
 {% import time %}
+{% from urllib import quote %}
 {% import simplejson as json %}
 {% from cms.server import format_amount_of_time, format_time, format_datetime, format_datetime_smart %}
-{% from cmscommon.Cryptographics import encrypt_number, decrypt_number %}
 {% from cmscommon.DateTime import make_timestamp %}
 <!DOCTYPE html>
 <html>
@@ -49,7 +49,7 @@ $(document).ready(function () {
         <div class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
-                    <a class="brand" href="{{ url_root }}">{{ contest.description }}</a>
+                    <a class="brand" href="{{ url_root }}/">{{ contest.description }}</a>
 {% if current_user is not None %}
                     <p class="navbar-text pull-right">
                         Logged in as <strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong> <em>({{ current_user.username }})</em>
@@ -128,22 +128,15 @@ $(document).ready(function () {
                                     </a>
                             </li>
     {% if actual_phase == 0 %}
-        {% try %}
-            {% set task_url = re.findall("/tasks/(.*)/(description|submissions)", request.path) %}
-            {% set task_id = decrypt_number(task_url[0][0]) %}
-            {% set task_page = task_url[0][1] %}
-        {% except %}
-            {% set task_id = None %}
-        {% end %}
         {% for t_iter in contest.tasks %}
                             <li class="nav-header">
                                 {{ t_iter.name }}
                             </li>
-                            <li{% if task_id == t_iter.id and task_page == 'description' %} class="active"{% end %}>
-                                <a href="{{ url_root }}/tasks/{{ encrypt_number(t_iter.id) }}/description">{{ _("Statement") }}</a>
+                            <li{% if request.path == '/tasks/%s/description' %  quote(t_iter.name, safe='') %} class="active"{% end %}>
+                                <a href="{{ url_root }}/tasks/{{ quote(t_iter.name, safe='') }}/description">{{ _("Statement") }}</a>
                             </li>
-                            <li{% if task_id == t_iter.id and task_page == 'submissions' %} class="active"{% end %}>
-                                <a href="{{ url_root }}/tasks/{{ encrypt_number(t_iter.id) }}/submissions">{{ _("Submissions") }}</a>
+                            <li{% if request.path == '/tasks/%s/submissions' %  quote(t_iter.name, safe='') %} class="active"{% end %}>
+                                <a href="{{ url_root }}/tasks/{{ quote(t_iter.name, safe='') }}/submissions">{{ _("Submissions") }}</a>
                             </li>
         {% end %}
     {% end %}

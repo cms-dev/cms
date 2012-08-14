@@ -96,33 +96,6 @@ def catch_exceptions(func):
     return newfunc
 
 
-def decrypt_arguments(func):
-    """Decorator that decrypts all arguments.
-
-    """
-    @wraps(func)
-    def newfunc(self, *args, **kwargs):
-        # We reply with Forbidden if the given ID cannot be decrypted.
-        new_args = []
-        for arg in args:
-            try:
-                new_args.append(decrypt_number(arg))
-            except ValueError:
-                logger.warning("User %s called with undecryptable argument." %
-                               self.current_user.username)
-                raise HTTPError(403)
-        new_kwargs = {}
-        for k in kwargs:
-            try:
-                new_kwargs[k] = decrypt_number(kwargs[k])
-            except ValueError:
-                logger.warning("User %s called with undecryptable argument." %
-                               self.current_user.username)
-                raise HTTPError(403)
-        return func(self, *new_args, **new_kwargs)
-    return newfunc
-
-
 def extract_archive(temp_name, original_filename):
     """Obtain a list of files inside the specified archive.
 
