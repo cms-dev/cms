@@ -41,7 +41,6 @@ import time
 import codecs
 
 import base64
-import mimetypes
 import simplejson as json
 import tempfile
 import traceback
@@ -64,6 +63,7 @@ from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
      actual_phase_required, get_url_root, CommonRequestHandler
 from cmscommon.Cryptographics import encrypt_number
 from cmscommon.DateTime import make_datetime, make_timestamp, get_timezone
+from cmscommon.MimeTypes import get_type_for_file_name
 
 
 class BaseHandler(CommonRequestHandler):
@@ -510,9 +510,9 @@ class TaskAttachmentViewHandler(FileHandler):
         attachment = task.attachments[filename].digest
         self.sql_session.close()
 
-        # FIXME: Returns (None, None) if it can't guess the type.
-        # What shall we do in this situation?
-        mimetype = mimetypes.guess_type(filename)[0]
+        mimetype = get_type_for_file_name(filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
 
         self.fetch(attachment, mimetype, filename)
 
@@ -561,7 +561,11 @@ class SubmissionFileHandler(FileHandler):
         digest = submission.files[filename].digest
         self.sql_session.close()
 
-        self.fetch(digest, "text/plain", real_filename)
+        mimetype = get_type_for_file_name(real_filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+
+        self.fetch(digest, mimetype, real_filename)
 
 
 class CommunicationHandler(BaseHandler):

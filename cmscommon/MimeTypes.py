@@ -18,6 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os.path
+import fnmatch
+import mimetypes
 from xml import sax
 from xml.sax.handler import ContentHandler
 from xml.dom import XML_NAMESPACE as _XML_NS
@@ -107,3 +109,18 @@ def get_name_for_type (name):
     if name in _comments:
         return _comments[name]
 
+
+def get_type_for_file_name (name):
+    # Provide support for some commonly used types and fallback on
+    # Python's mimetypes module. In the future we could be using a
+    # proper library here (i.e. an interface to shared-mime-info).
+    for glob, mime in [('*.tar.gz', 'application/x-compressed-tar'),
+                       ('*.tar.bz2', 'application/x-bzip-compressed-tar'),
+                       ('*.c', 'text/x-csrc'),
+                       ('*.h', 'text/x-chdr'),
+                       ('*.cpp', 'text/x-c++src'),
+                       ('*.hpp', 'text/x-c++hdr'),
+                       ('*.pas', 'text/x-pascal')]:
+        if fnmatch.fnmatchcase(name, glob):
+            return mime
+    return mimetypes.guess_type(name)[0]
