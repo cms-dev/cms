@@ -546,16 +546,19 @@ var DataStore = new function () {
     ////// Rank
 
     self.init_ranks = function () {
+        // Make a list of all users
         var list = new Array();
 
         for (var u_id in self.users) {
             list.push(self.users[u_id]);
         }
 
+        // Sort it by decreasing score
         list.sort(function (a, b) {
             return b["global"] - a["global"];
         });
 
+        // Assign ranks
         var prev_score = null;
         var rank = 0;
         var equal = 1;
@@ -601,6 +604,11 @@ var DataStore = new function () {
         });
 
         self.user_update.add(function (u_id, old_user) {
+            /* We're assuming that the user has its score set to zero and thus
+               has the highest possible rank (this is because the server should
+               have already deleted all its submissions and subchanges). So its
+              deletion won't cause changes in others' ranks.
+             */
             delete old_user["rank"];
         });
 
@@ -609,16 +617,38 @@ var DataStore = new function () {
     };
 
     self.update_rank = function (u_id, user) {
+        /* The rank of a user is defined as the number of other users that have
+           a score greater than his/hers, plus one. Note that:
+               a.score < b.score if and only if a.rank > b.rank
+               a.score = b.score if and only if a.rank = b.rank
+               a.score > b.score if and only if a.rank < b.rank
+           Thus it's the same to sort by ascending score or by descending rank,
+           and vice versa.
+           When a user's score is updated (e.g. it changes from old_score to
+           new_score with new_score > old_score) it can be shown that:
+             - all users whose score is >= new_score don't change their rank
+             - all users whose score is < old_score don't change their rank
+             - all other users have their rank increased by exactly one
+           A similar proposition holds when new_score < old_score.
+         */
+
+        // We don't know old_score but we'll see that it's not needed.
         var new_score = user["global"];
         var old_rank = user["rank"];
+        // The new rank is computed by strictly applying the definition:
+        //     new_rank = 1 + |{user2 in users, user2.score > user.score}|
         var new_rank = 1;
 
         for (var u2_id in self.users) {
             var user2 = self.users[u2_id];
-            if (user2["global"] < new_score && user2["rank"] <= old_rank) {
+            // this condition is equivalent to
+            //     old_score <= user2["global"] < new_score
+            if (old_rank >= user2["rank"] && user2["global"] < new_score) {
                 user2["rank"] += 1;
                 self.rank_events.fire(u2_id, user2);
-            } else if (user2["global"] >= new_score && user2["rank"] > old_rank) {
+            // this condition is equivalent to
+            //     new_score <= user2["global"] < old_score
+            } else if (new_score <= user2["global"] && user2["rank"] > old_rank) {
                 user2["rank"] -= 1;
                 self.rank_events.fire(u2_id, user2);
             }
