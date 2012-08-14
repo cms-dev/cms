@@ -21,29 +21,79 @@ import simplejson as json
 
 
 class Job:
-    # Input
-    task_type = ""
-    task_type_parameters = []
+    # Input: task_type, task_type_parameters
+    # Metadata: shard, sandboxes, info
 
-    # Metadata
-    shard = None
-    sandboxes = []
-    info = ""
+    def __init__(self, task_type=None, task_type_parameters=None,
+                 shard=None, sandboxes=None, info=None):
+        if task_type is None:
+            task_type = ""
+        if task_type_parameters is None:
+            task_type_parameters = []
+        if sandboxes is None:
+            sandboxes = []
+        if info is None:
+            info = ""
+
+        self.task_type = task_type
+        self.task_type_parameters = task_type_parameters
+        self.shard = shard
+        self.sandboxes = sandboxes
+        self.info = info
+
+    def export_to_dict(self):
+        res = {
+            'task_type': self.task_type,
+            'task_type_parameters': self.task_type_parameters,
+            'shard': self.shark,
+            'sandboxes': self.sandboxes,
+            'info': self.info,
+            }
+        return res
+
+    @staticmethod
+    def import_from_dict(data):
+        type_ = data['type']
+        del data['type']
+        if type_ == 'compilation':
+            return CompilationJob(**data)
+        elif type_ == 'evaluation':
+            return EvaluationJob(**data)
+        else:
+            raise Exception("Couldn't import dictionary with type %s" %
+                            (type_))
 
 
 class CompilationJob(Job):
+    # Input: langauge, files, managers
+    # Output: success, compilation_success, executables, text, plus
 
-    # Input
-    language = ""
-    files = {}
-    managers = {}
+    def __init__(self, task_type=None, task_type_parameters=None,
+                 shard=None, sandboxes=None, info=None,
+                 language=None, files=None,
+                 managers=None, success=None,
+                 compilation_success=None,
+                 executables=None,
+                 text=None, plus=None):
+        if language is None:
+            language = ""
+        if files is None:
+            files = {}
+        if managers is None:
+            managers = {}
+        if executables is None:
+            executables = {}
 
-    # Output
-    success = None
-    compilation_success = None
-    executables = {}
-    text = None
-    plus = None
+        Job.__init__(self, task_type, task_type_parameters,
+                     shard, sandboxes, info)
+        self.language = language
+        self.files = files
+        self.managers = managers
+        self.success = success
+        self.compilation_success = compilation_success
+        self.executables = executables
+        self.text = text
+        self.plus = plus
 
     @staticmethod
     def from_submission(submission):
@@ -62,20 +112,54 @@ class CompilationJob(Job):
 
         return job
 
+    def export_to_dict(self):
+        res = Job.export_to_dict(self)
+        res.update({
+                'type': 'compilation',
+                'language': self.language,
+                'files': self.files,
+                'managers': self.managers,
+                'success': self.success,
+                'compilation_success': self.compilation_success,
+                'text': self.text,
+                'plus': self.plus,
+                })
+        return res
+
 
 class EvaluationJob(Job):
 
-    # Input
-    executables = {}
-    testcases = {}
-    time_limit = None
-    memory_limit = None
-    managers = {}
-    files = {}
+    # Input: executables, testcases, time_limit, memory_limit,
+    # managers, files
+    # Output: success, evaluations
 
-    # Output
-    success = None
-    evaluations = {}
+    def __init__(self, task_type=None, task_type_parameters=None,
+                 shard=None, sandboxes=None, info=None,
+                 executables=None, testcases=None,
+                 time_limit=None, memory_limit=None,
+                 managers=None, files=None,
+                 success=None, evaluations=None):
+        if executables is None:
+            executables = {}
+        if testcases is None:
+            testcases = {}
+        if managers is None:
+            managers = {}
+        if files is None:
+            files = {}
+        if evaluations is None:
+            evaluations = {}
+
+        Job.__init__(self, task_type, task_type_parameters,
+                     shard, sandboxes, info)
+        self.executables = executables
+        self.testcases = testcases
+        self.time_limit = time_limit
+        self.memory_limit = memory_limit
+        self.managers = managers
+        self.files = files
+        self.success = success
+        self.evaluations = evaluations
 
     @staticmethod
     def from_submission(submission):
@@ -95,3 +179,18 @@ class EvaluationJob(Job):
         job.files = submission.files
 
         return job
+
+    def export_to_dict(self):
+        res = Job.export_to_dict(self)
+        res.update({
+                'type': 'evaluation',
+                'executables': self.executables,
+                'testcases': self.testcases,
+                'time_limit': self.time_limit,
+                'memory_limit': self.memory_limit,
+                'managers': self.managers,
+                'files': self.files,
+                'success': self.success,
+                'evaluations': self.evaluations,
+                })
+        return res
