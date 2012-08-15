@@ -588,7 +588,7 @@ if (!document.createElement('canvas').getContext) {
     this.canvas = canvasElement;
 
     var cssText = 'width:' + canvasElement.clientWidth + 'px;height:' +
-        canvasElement.clientHeight + 'px;overflow:hidden;position:absolute';
+        canvasElement.clientHeight + 'px;position:absolute';
     var el = canvasElement.ownerDocument.createElement('div');
     el.style.cssText = cssText;
     canvasElement.appendChild(el);
