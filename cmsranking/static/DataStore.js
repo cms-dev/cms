@@ -1061,7 +1061,8 @@ var DataStore = new function () {
     self.user_create.add(function (key, data) {
         data["selected"] = 0;
     });
-    self.contest_delete.add(function (key, old_data) {
+
+    self.user_delete.add(function (key, old_data) {
         self.set_selected(key, false);
         delete old_data["selected"];
     });
