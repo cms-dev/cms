@@ -1,6 +1,6 @@
 ;(function (global) {
 
-if ("EventSource" in window) return;
+if ("EventSource" in global) return;
 
 var reTrim = /^(\s|\u00A0)+|(\s|\u00A0)+$/g;
 
@@ -29,11 +29,11 @@ var EventSource = function (url) {
     try { // force hiding of the error message... insane?
       if (eventsource.readyState == eventsource.CLOSED) return;
 
+      // NOTE: IE7 and upwards support
       var xhr = new XMLHttpRequest();
       xhr.open('GET', eventsource.URL, true);
       xhr.setRequestHeader('Accept', 'text/event-stream');
       xhr.setRequestHeader('Cache-Control', 'no-cache');
-
       // we must make use of this on the server side if we're working with Android - because they don't trigger
       // readychange until the server connection is closed
       xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
@@ -50,18 +50,26 @@ var EventSource = function (url) {
             eventsource.dispatchEvent('open', { type: 'open' });
           }
 
+          var responseText = '';
+          try {
+            responseText = this.responseText || '';
+          } catch (e) {}
+
           // process this.responseText
-          var parts = this.responseText.substr(cache.length).split("\n"),
+          var parts = responseText.substr(cache.length).split("\n"),
+              eventType = 'message',
               data = [],
               i = 0,
               line = '';
 
-          cache = this.responseText;
+          cache = responseText;
 
           // TODO handle 'event' (for buffer name), retry
           for (; i < parts.length; i++) {
             line = parts[i].replace(reTrim, '');
-            if (line.indexOf('data') == 0) {
+            if (line.indexOf('event') == 0) {
+              eventType = line.replace(/event:?\s*/, '');
+            } else if (line.indexOf('data') == 0) {
               data.push(line.replace(/data:?\s*/, ''));
             } else if (line.indexOf('id:') == 0) {
               lastEventId = line.replace(/id:?\s*/, '');
@@ -70,8 +78,9 @@ var EventSource = function (url) {
             } else if (line == '') {
               if (data.length) {
                 var event = new MessageEvent(data.join('\n'), eventsource.url, lastEventId);
-                eventsource.dispatchEvent('message', event);
+                eventsource.dispatchEvent(eventType, event);
                 data = [];
+                eventType = 'message';
               }
             }
           }
@@ -86,6 +95,7 @@ var EventSource = function (url) {
             pollAgain();
           } else if (this.readyState == 0) { // likely aborted
             pollAgain();
+          } else {
           }
         }
       };
@@ -120,7 +130,7 @@ EventSource.prototype = {
     var handlers = this['_' + type + 'Handlers'];
     if (handlers) {
       for (var i = 0; i < handlers.length; i++) {
-        handlers.call(this, event);
+        handlers[i].call(this, event);
       }
     }
 

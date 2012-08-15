@@ -43,8 +43,9 @@ Copyright: 2006 Google Inc., http://code.google.com/p/explorercanvas/
 License: Apache-2.0
 
 Files: cmsranking/static/lib/eventsource.js
-Copyright: 2010 Remy Sharp, http://remysharp.com
+Copyright: 2012 Remy Sharp, http://remysharp.com
 License: Expat
+Comment: See http://rem.mit-license.org/
 
 Files: cms/server/static/jq/jquery-1.7.1.min.js
 Copyright: 2011 John Resig, http://jquery.com/
