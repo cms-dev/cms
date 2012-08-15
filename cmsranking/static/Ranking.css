@@ -1004,13 +1004,15 @@ table.scoreboard tbody tr.selected td.score
 \******************************************************************************/
 
 
-body:not(.user_panel) .UserPanel_bg
-{
+body .UserPanel_bg {
     display: none;
 }
 
-.UserPanel_bg
-{
+body.user_panel .UserPanel_bg {
+    display: block;
+}
+
+.UserPanel_bg {
     position: fixed;
     top: 0px;
     left: 0px;
@@ -1019,10 +1021,12 @@ body:not(.user_panel) .UserPanel_bg
     z-index: 1000;
     background-color: rgba(0,0,0,0.5);
     overflow: auto;
+    /* the following two lines are for IE */
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#80000000, endColorstr=#80000000)";
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#80000000, endColorstr=#80000000);
 }
 
-.UserPanel
-{
+.UserPanel {
     width: 940px;
     margin: 48px auto;
     background-color: white;
@@ -1031,8 +1035,7 @@ body:not(.user_panel) .UserPanel_bg
     position: relative;
 }
 
-.UserPanel .close
-{
+.UserPanel .close {
     position: absolute;
     top: -10px;
     right: -10px;
@@ -1041,8 +1044,7 @@ body:not(.user_panel) .UserPanel_bg
     cursor: pointer;
 }
 
-.UserPanel .header
-{
+.UserPanel .header {
     display: table;
     table-layout: fixed;
     width: 100%;
@@ -1050,8 +1052,7 @@ body:not(.user_panel) .UserPanel_bg
     vertical-align: top;
 }
 
-.UserPanel .summary
-{
+.UserPanel .summary {
     display: table-cell;
     width: 460px;
     height: 242px;
@@ -1060,19 +1061,16 @@ body:not(.user_panel) .UserPanel_bg
 
 .UserPanel .summary .f_name,
 .UserPanel .summary .l_name,
-.UserPanel .summary .team
-{
+.UserPanel .summary .team {
     font-size: 2em;
     line-height: 1.5em;
 }
 
-.UserPanel .summary .team
-{
+.UserPanel .summary .team {
     margin-top: 32px;
 }
 
-.UserPanel .summary .face
-{
+.UserPanel .summary .face {
     position: absolute;
     top: 21px;
     left: 21px;
@@ -1081,60 +1079,50 @@ body:not(.user_panel) .UserPanel_bg
     box-shadow: 0 0 2px 1px gray;
 }
 
-.UserPanel .summary .flag
-{
+.UserPanel .summary .flag {
     margin: 1px;
     box-shadow: 0 0 2px 1px gray;
 }
 
-.UserPanel .summary .flag.hidden
-{
+.UserPanel .summary .flag.hidden {
     display: none;
 }
 
-.UserPanel .scores
-{
+.UserPanel .scores {
     display: table-cell;
     width: 460px;
     padding-left: 20px;
 }
 
-.UserPanel .scores .score_table
-{
+.UserPanel .scores .score_table {
     width: 100%;
     table-layout: fixed;
     border-spacing: 2px;
 }
 
-.UserPanel .scores td
-{
+.UserPanel .scores td {
     height: 22px;
 }
 
-.UserPanel .scores col.name
-{
+.UserPanel .scores col.name {
     width: 60%;
 }
 
 .UserPanel .scores col.score,
-.UserPanel .scores col.rank
-{
+.UserPanel .scores col.rank {
     width: 12%;
 }
 
-.UserPanel .scores col.show
-{
+.UserPanel .scores col.show {
     width: 14%;
 }
 
-.UserPanel .scores tr td:nth-child(2),
-.UserPanel .scores tr td:nth-child(3)
-{
+.UserPanel .scores tr td.score,
+.UserPanel .scores tr td.rank {
     padding-left: 4px;
 }
 
-.UserPanel .scores tbody tr td:nth-child(4)
-{
+.UserPanel .scores tbody tr td.btn {
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
@@ -1148,101 +1136,82 @@ body:not(.user_panel) .UserPanel_bg
     cursor: pointer;
 }
 
-.UserPanel .scores tbody tr td:nth-child(4):hover:not(.active)
-{
-    text-align: center;
-    border: 1px solid gray;
-    box-shadow: 0 0 1px 0 black;
+.UserPanel .scores tbody tr td.btn:hover {
     background-color: #dddddd;
 }
 
-.UserPanel .scores tbody tr td:nth-child(4):active:not(.active)
-{
-    text-align: center;
-    border: 1px solid gray;
-    box-shadow: 0 0 1px 0 black;
+.UserPanel .scores tbody tr td.btn:active {
     background-color: #cccccc;
 }
 
-.UserPanel .scores tbody tr td:nth-child(4).active
-{
+.UserPanel .scores tbody tr td.btn.active {
+    background-color: #eeeeee;
     opacity: 0.4;
     cursor: default;
+    /* the following two lines are for IE */
+    -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=40)";
+    filter: alpha(opacity=40);
 }
 
-.UserPanel .scores tr.global
-{
+.UserPanel .scores tr.global {
     background-color: #dddddd;
 }
 
-.UserPanel .scores tr.contest
-{
+.UserPanel .scores tr.contest {
     background-color: #eeeeee;
 }
 
-.UserPanel .scores tr.task
-{
+.UserPanel .scores tr.task {
     background-color: #ffffff;
 }
 
-.UserPanel .scores tr.global td:first-child
-{
+.UserPanel .scores tr.global td:first-child {
     padding-left: 5px;
 }
 
-.UserPanel .scores tr.contest td:first-child
-{
+.UserPanel .scores tr.contest td:first-child {
     padding-left: 25px;
 }
 
-.UserPanel .scores tr.task td:first-child
-{
+.UserPanel .scores tr.task td:first-child {
     padding-left: 45px;
 }
 
-.UserPanel .title
-{
+.UserPanel .title {
     margin-top: 24px;
     font-size: 2em;
     line-height: 1.5em;
     text-align: center;
 }
 
-.UserPanel .submits
-{
+.UserPanel .submits {
     margin-top: 24px;
     width: 100%;
 }
 
-.UserPanel .submits table
-{
+.UserPanel .submits table {
     width: 100%;
     table-layout: fixed;
 }
 
-.UserPanel .submits td
-{
+.UserPanel .submits td {
     height: 22px;
     padding-left: 4px;
 }
 
-.UserPanel .submits thead
-{
+.UserPanel .submits thead {
     background-color: #dddddd;
 }
 
-.UserPanel .submits tbody tr:nth-child(even)
-{
+.UserPanel .submits tbody tr:nth-child(even) {
     background-color: #eeeeee;
 }
 
-.UserPanel .submits tbody tr:nth-child(odd)
-{
+.UserPanel .submits tbody tr:nth-child(odd) {
     background-color: #f8f8f8;
 }
 
-.UserPanel .charts
-{
+.UserPanel .charts {
     margin-top: 24px;
     width: 100%;
 }
