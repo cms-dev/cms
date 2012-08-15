@@ -136,7 +136,7 @@ var HistoryStore = new function () {
             d[u_id] = 0.0;
         }
         var above = 0;
-        var equal = Object.keys(DataStore.users).length;
+        var equal = DataStore.user_count;
 
         var result = new Array();
 
@@ -197,7 +197,7 @@ var HistoryStore = new function () {
             d[u_id] = 0.0;
         }
         var above = 0;
-        var equal = Object.keys(DataStore.users).length;
+        var equal = DataStore.user_count;
 
         var result = new Array();
 
@@ -258,7 +258,7 @@ var HistoryStore = new function () {
             d[u_id] = 0.0;
         }
         var above = 0;
-        var equal = Object.keys(DataStore.users).length;
+        var equal = DataStore.user_count;
 
         var result = new Array();
 

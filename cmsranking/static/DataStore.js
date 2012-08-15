@@ -42,6 +42,8 @@ var DataStore = new function () {
 
     ////// Contest
 
+    self.contest_count = 0;
+
     self.init_contests = function () {
         $.ajax({
             url: Config.get_contest_list_url(),
@@ -95,6 +97,8 @@ var DataStore = new function () {
         console.info("Created contest " + key);
         console.log(data);
 
+        self.contest_count += 1;
+
         self.contest_create.fire(key, data);
     };
 
@@ -119,11 +123,15 @@ var DataStore = new function () {
         console.info("Deleted contest " + key);
         console.log(old_data);
 
+        self.contest_count -= 1;
+
         self.contest_delete.fire(key, old_data);
     };
 
 
     ////// Task
+
+    self.task_count = 0;
 
     self.init_tasks = function () {
         $.ajax({
@@ -187,6 +195,8 @@ var DataStore = new function () {
         console.info("Created task " + key);
         console.log(data);
 
+        self.task_count += 1;
+
         self.task_create.fire(key, data);
     };
 
@@ -211,11 +221,15 @@ var DataStore = new function () {
         console.info("Deleted task " + key);
         console.log(old_data);
 
+        self.task_count -= 1;
+
         self.task_delete.fire(key, old_data);
     };
 
 
     ////// Team
+
+    self.team_count = 0;
 
     self.init_teams = function () {
         $.ajax({
@@ -270,6 +284,8 @@ var DataStore = new function () {
         console.info("Created team " + key);
         console.log(data);
 
+        self.team_count += 1;
+
         self.team_create.fire(key, data);
     };
 
@@ -294,11 +310,15 @@ var DataStore = new function () {
         console.info("Deleted team " + key);
         console.log(old_data);
 
+        self.team_count -= 1;
+
         self.team_delete.fire(key, old_data);
     };
 
 
     ////// User
+
+    self.user_count = 0;
 
     self.init_users = function () {
         $.ajax({
@@ -362,6 +382,8 @@ var DataStore = new function () {
         console.info("Created user " + key);
         console.log(data);
 
+        self.user_count += 1;
+
         self.user_create.fire(key, data);
     };
 
@@ -385,6 +407,8 @@ var DataStore = new function () {
 
         console.info("Deleted user " + key);
         console.log(old_data);
+
+        self.user_count -= 1;
 
         self.user_delete.fire(key, old_data);
     };

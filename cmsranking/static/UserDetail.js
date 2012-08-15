@@ -220,7 +220,7 @@ var UserDetail = new function () {
             }
 
             var score = DataStore.global_max_score;
-            var users = Object.keys(DataStore.users).length;
+            var users = DataStore.user_count;
 
             Chart.draw_chart(self.score_chart, // canvas object
                 0, score, 0, 0, // y_min, y_max, x_default, h_default
@@ -257,7 +257,7 @@ var UserDetail = new function () {
             var contest = DataStore.contests[task["contest"]];
 
             var score = task["max_score"];
-            var users = Object.keys(DataStore.users).length;
+            var users = DataStore.user_count;
 
             Chart.draw_chart(self.score_chart, // canvas object
                 0, score, 0, 0, // y_min, y_max, x_default, h_default
@@ -294,7 +294,7 @@ var UserDetail = new function () {
             var contest = DataStore.contests[contest_id];
 
             var score = contest["max_score"];
-            var users = Object.keys(DataStore.users).length
+            var users = DataStore.user_count;
 
             Chart.draw_chart(self.score_chart, // canvas object
                 0, score, 0, 0, // y_min, y_max, x_default, h_default

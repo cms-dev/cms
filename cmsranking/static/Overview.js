@@ -40,7 +40,7 @@ var Overview = new function () {
     };
 
     self.update_score = function () {
-        var users_l = Object.keys(DataStore.users).length;
+        var users_l = DataStore.user_count;
         for (var u_id in DataStore.users) {
             var user = DataStore.users[u_id];
 
@@ -64,7 +64,7 @@ var Overview = new function () {
     };
 
     self.rank_handler = function (u_id, user) {
-        var users_l = Object.keys(DataStore.users).length;
+        var users_l = DataStore.users_count;
         $("#" + u_id + "_rm").css("bottom", (100 - 100 * (user["rank"] - 1) / users_l).toString() + "%");
     };
 
