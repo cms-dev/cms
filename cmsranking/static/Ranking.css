@@ -371,67 +371,52 @@ div.team_search div.search_results div.body div.item label img
 \******************************************************************************/
 
 
-table.scoreboard
-{
+#Scoreboard {
     width: 100%;
     table-layout: fixed;
 }
 
-table.scoreboard colgroup col.sel
-{
+#Scoreboard_cols col.sel {
     width: 2em;
 }
 
-table.scoreboard colgroup col.rank
-{
+#Scoreboard_cols col.rank {
     width: 48px;
 }
 
-table.scoreboard colgroup col.f_name
-{
-    width: 160%;
+#Scoreboard_cols col.f_name {
+    width: auto;
 }
 
-table.scoreboard colgroup col.l_name
-{
-    width: 160%;
+#Scoreboard_cols col.l_name {
+    width: auto;
 }
 
-table.scoreboard colgroup col.team
-{
+#Scoreboard_cols col.team {
     width: 48px;
 }
 
-table.scoreboard colgroup col.score.task
-{
-    width: 36%;
-    min-width: 36px;
+#Scoreboard_cols col.score.task {
+    width: 4.50em;
 }
 
-table.scoreboard colgroup col.score.contest
-{
-    width: 54%;
-    min-width: 54px;
+#Scoreboard_cols col.score.contest {
+    width: 5.25em;
 }
 
-table.scoreboard colgroup col.score.global
-{
-    width: 72%;
-    min-width: 72px;
+#Scoreboard_cols col.score.global {
+    width: 6.00em;
 }
 
-table.scoreboard thead tr
-{
+#Scoreboard_head tr {
     height: 2.5em;
 }
 
-table.scoreboard tbody tr
-{
+#Scoreboard_body tr {
     height: 2em;
 }
 
-table.scoreboard thead tr th
-{
+#Scoreboard_head tr th {
     background-color: #ECECEF;
     border: 1px #D0D0D2 solid;
     border-radius: 4px;
@@ -444,43 +429,43 @@ table.scoreboard thead tr th
     white-space: nowrap;
 }
 
-table.scoreboard tbody tr td img
-{
+#Scoreboard_body tr td img {
     max-width: 42px;
     max-height: 18px;
     box-shadow: 0 0 2px 0 gray;
 }
 
-table.scoreboard thead tr th,
-table.scoreboard tbody tr td
-{
+#Scoreboard_head tr th,
+#Scoreboard_body tr td {
     text-align: center;
 }
 
-table.scoreboard tbody tr td.f_name,
-table.scoreboard tbody tr td.l_name
-{
+#Scoreboard_body tr td.f_name,
+#Scoreboard_body tr td.l_name {
     text-align: left;
     padding: 0 10px;
     cursor: pointer;
 }
 
-table.scoreboard thead tr th.score
-{
+#Scoreboard_head tr th.sel {
+    background-image: url('img/tick_black.png');
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+#Scoreboard_head tr th.score {
     cursor: pointer;
 }
 
-table.scoreboard tbody tr:hover td.f_name,
-table.scoreboard tbody tr:hover td.l_name,
-table.scoreboard tbody tr:hover td.team
-{
+#Scoreboard_body tr:hover td.f_name,
+#Scoreboard_body tr:hover td.l_name,
+#Scoreboard_body tr:hover td.team {
     background-color: rgba(200,200,200,0.35);
     border-radius: 5px;
 }
 
-table.scoreboard tbody tr.selected td.f_name,
-table.scoreboard tbody tr.selected td.l_name
-{
+#Scoreboard_body tr.selected td.f_name,
+#Scoreboard_body tr.selected td.l_name {
     font-weight: bold;
 }
 
@@ -495,8 +480,7 @@ table.scoreboard tbody tr.selected td.l_name
    http://tango.freedesktop.org/Tango_Icon_Theme_Guidelines#Color_Palette
  */
 
-table.scoreboard tbody tr td.sel
-{
+#Scoreboard_body tr td.sel {
     background-color: transparent;
     background-image: url('img/tick_black.png');
     background-repeat: no-repeat;
@@ -509,21 +493,18 @@ table.scoreboard tbody tr td.sel
     user-select: none;
 }
 
-table.scoreboard tbody tr td.sel:hover
-{
+#Scoreboard_body tr td.sel:hover {
     opacity: 0.3;
 }
 
-table.scoreboard tbody tr td.sel:active
-{
+#Scoreboard_body tr td.sel:active {
     opacity: 0.5;
 }
 
-table.scoreboard tbody tr.selected td.sel
-{
+#Scoreboard_body tr.selected td.sel {
     background-image: url('img/tick_white.png');
     background-repeat: no-repeat;
-    background-position: center center;
+    background-position: center;
     border: 1px solid rgba(0,0,0,0.2);
     border-radius: 4px;
     opacity: 1;
@@ -531,141 +512,115 @@ table.scoreboard tbody tr.selected td.sel
 
 /* Color 1: Blue */
 
-table.scoreboard tbody tr.color1 td.sel
-{
+#Scoreboard_body tr.color1 td.sel {
     background-color: rgb(52,101,164);
 }
 
-table.scoreboard tbody tr.color1 td.sel:hover
-{
+#Scoreboard_body tr.color1 td.sel:hover {
     background-color: rgb(32,74,135);
 }
 
-table.scoreboard tbody tr.color1 td.sel:active
-{
+#Scoreboard_body tr.color1 td.sel:active {
     background-color: rgb(26,59,108);
 }
 
 /* Color 2: Butter */
 
-table.scoreboard tbody tr.color2 td.sel
-{
+#Scoreboard_body tr.color2 td.sel {
     background-color: rgb(237,212,0);
 }
 
-table.scoreboard tbody tr.color2 td.sel:hover
-{
+#Scoreboard_body tr.color2 td.sel:hover {
     background-color: rgb(196,160,0);
 }
 
-table.scoreboard tbody tr.color2 td.sel:active
-{
+#Scoreboard_body tr.color2 td.sel:active {
     background-color: rgb(157,128,0);
 }
 
 /* Color 3: Red */
 
-table.scoreboard tbody tr.color3 td.sel
-{
+#Scoreboard_body tr.color3 td.sel {
     background-color: rgb(204,0,0);
 }
 
-table.scoreboard tbody tr.color3 td.sel:hover
-{
+#Scoreboard_body tr.color3 td.sel:hover {
     background-color: rgb(164,0,0);
 }
 
-table.scoreboard tbody tr.color3 td.sel:active
-{
+#Scoreboard_body tr.color3 td.sel:active {
     background-color: rgb(131,0,0);
 }
 
 /* Color 4: Chameleon */
 
-table.scoreboard tbody tr.color4 td.sel
-{
+#Scoreboard_body tr.color4 td.sel {
     background-color: rgb(115,210,22);
 }
 
-table.scoreboard tbody tr.color4 td.sel:hover
-{
+#Scoreboard_body tr.color4 td.sel:hover {
     background-color: rgb(78,154,6);
 }
 
-table.scoreboard tbody tr.color4 td.sel:active
-{
+#Scoreboard_body tr.color4 td.sel:active {
     background-color: rgb(62,123,5);
 }
 
 /* Color 5: Orange */
 
-table.scoreboard tbody tr.color5 td.sel
-{
+#Scoreboard_body tr.color5 td.sel {
     background-color: rgb(245,121,0);
 }
 
-table.scoreboard tbody tr.color5 td.sel:hover
-{
+#Scoreboard_body tr.color5 td.sel:hover {
     background-color: rgb(206,92,0);
 }
 
-table.scoreboard tbody tr.color5 td.sel:active
-{
+#Scoreboard_body tr.color5 td.sel:active {
     background-color: rgb(165,74,0);
 }
 
 /* Color 6: Plum */
 
-table.scoreboard tbody tr.color6 td.sel
-{
+#Scoreboard_body tr.color6 td.sel {
     background-color: rgb(117,80,123);
 }
 
-table.scoreboard tbody tr.color6 td.sel:hover
-{
+#Scoreboard_body tr.color6 td.sel:hover {
     background-color: rgb(92,53,102);
 }
 
-table.scoreboard tbody tr.color6 td.sel:active
-{
+#Scoreboard_body tr.color6 td.sel:active {
     background-color: rgb(74,42,82);
 }
 
 /* Color 7: Aluminium */
 
-table.scoreboard tbody tr.color7 td.sel
-{
+#Scoreboard_body tr.color7 td.sel {
     background-color: rgb(136,138,133);
 }
 
-table.scoreboard tbody tr.color7 td.sel:hover
-{
+#Scoreboard_body tr.color7 td.sel:hover {
     background-color: rgb(85,87,83);
 }
 
-table.scoreboard tbody tr.color7 td.sel:active
-{
+#Scoreboard_body tr.color7 td.sel:active {
     background-color: rgb(68,70,66);
 }
 
 /* Color 8: Chocolate */
 
-table.scoreboard tbody tr.color8 td.sel
-{
+#Scoreboard_body tr.color8 td.sel {
     background-color: rgb(193,125,17);
 }
 
-table.scoreboard tbody tr.color8 td.sel:hover
-{
+#Scoreboard_body tr.color8 td.sel:hover {
     background-color: rgb(143,89,2);
 }
 
-table.scoreboard tbody tr.color8 td.sel:active
-{
+#Scoreboard_body tr.color8 td.sel:active {
     background-color: rgb(114,71,2);
 }
-
-
 
 /* This animation stuff is quite huge: every brosers implements it using its
    own prefix and we have to handle them all. In particular: for each animation
@@ -680,8 +635,7 @@ table.scoreboard tbody tr.color8 td.sel:active
    Just to give some numbers: we have 20 sets of keyframes in total.
  */
 
-table.scoreboard tbody tr.score_up td.rank
-{
+#Scoreboard_body tr.score_up td.rank {
     border-radius: 5px;
     -webkit-animation-duration: 5s;
     -moz-animation-duration: 5s;
@@ -700,8 +654,7 @@ table.scoreboard tbody tr.score_up td.rank
     animation-timing-function: ease-in;
 }
 
-table.scoreboard tbody tr.score_down td.rank
-{
+#Scoreboard_body tr.score_down td.rank {
     border-radius: 5px;
     -webkit-animation-duration: 5s;
     -moz-animation-duration: 5s;
@@ -720,79 +673,68 @@ table.scoreboard tbody tr.score_down td.rank
     animation-timing-function: ease-in;
 }
 
-@-webkit-keyframes score_up
-{
+@-webkit-keyframes score_up {
     from {background-color: rgba(138,226,52,0);}
     10% {background-color: rgba(138,226,52,0.6);}
     to {background-color: rgba(138,226,52,0);}
 }
 
-@-moz-keyframes score_up
-{
+@-moz-keyframes score_up {
     from {background-color: rgba(138,226,52,0);}
     10% {background-color: rgba(138,226,52,0.6);}
     to {background-color: rgba(138,226,52,0);}
 }
 
-@-ms-keyframes score_up
-{
+@-ms-keyframes score_up {
     from {background-color: rgba(138,226,52,0);}
     10% {background-color: rgba(138,226,52,0.6);}
     to {background-color: rgba(138,226,52,0);}
 }
 
-@-o-keyframes score_up
-{
+@-o-keyframes score_up {
     from {background-color: rgba(138,226,52,0);}
     10% {background-color: rgba(138,226,52,0.6);}
     to {background-color: rgba(138,226,52,0);}
 }
 
-@keyframes score_up
-{
+@keyframes score_up {
     from {background-color: rgba(138,226,52,0);}
     10% {background-color: rgba(138,226,52,0.6);}
     to {background-color: rgba(138,226,52,0);}
 }
 
-@-webkit-keyframes score_down
-{
+@-webkit-keyframes score_down {
     from {background-color: rgba(239,41,41,0);}
     10% {background-color: rgba(239,41,41,0.6);}
     to {background-color: rgba(239,41,41,0);}
 }
 
-@-moz-keyframes score_down
-{
+@-moz-keyframes score_down {
     from {background-color: rgba(239,41,41,0);}
     10% {background-color: rgba(239,41,41,0.6);}
     to {background-color: rgba(239,41,41,0);}
 }
 
 
-@-ms-keyframes score_down
-{
+@-ms-keyframes score_down {
     from {background-color: rgba(239,41,41,0);}
     10% {background-color: rgba(239,41,41,0.6);}
     to {background-color: rgba(239,41,41,0);}
 }
 
-@-o-keyframes score_down
-{
+@-o-keyframes score_down {
     from {background-color: rgba(239,41,41,0);}
     10% {background-color: rgba(239,41,41,0.6);}
     to {background-color: rgba(239,41,41,0);}
 }
 
-@keyframes score_down
-{
+@keyframes score_down {
     from {background-color: rgba(239,41,41,0);}
     10% {background-color: rgba(239,41,41,0.6);}
     to {background-color: rgba(239,41,41,0);}
 }
 
-table.scoreboard tbody tr.selected.score_up td.rank
-{
+#Scoreboard_body tr.selected.score_up td.rank {
     border-radius: 5px;
     -webkit-animation-duration: 10s;
     -moz-animation-duration: 10s;
@@ -811,8 +753,7 @@ table.scoreboard tbody tr.selected.score_up td.rank
     animation-timing-function: ease-in;
 }
 
-table.scoreboard tbody tr.selected.score_down td.rank
-{
+#Scoreboard_body tr.selected.score_down td.rank {
     border-radius: 5px;
     -webkit-animation-duration: 10s;
     -moz-animation-duration: 10s;
@@ -831,71 +772,61 @@ table.scoreboard tbody tr.selected.score_down td.rank
     animation-timing-function: ease-in;
 }
 
-@-webkit-keyframes selected_score_up
-{
+@-webkit-keyframes selected_score_up {
     from {background-color: rgba(138,226,52,0);}
     5% {background-color: rgba(138,226,52,1);}
     to {background-color: rgba(138,226,52,0);}
 }
 
-@-moz-keyframes selected_score_up
-{
+@-moz-keyframes selected_score_up {
     from {background-color: rgba(138,226,52,0);}
     5% {background-color: rgba(138,226,52,1);}
     to {background-color: rgba(138,226,52,0);}
 }
 
-@-ms-keyframes selected_score_up
-{
+@-ms-keyframes selected_score_up {
     from {background-color: rgba(138,226,52,0);}
     5% {background-color: rgba(138,226,52,1);}
     to {background-color: rgba(138,226,52,0);}
 }
 
-@-o-keyframes selected_score_up
-{
+@-o-keyframes selected_score_up {
     from {background-color: rgba(138,226,52,0);}
     5% {background-color: rgba(138,226,52,1);}
     to {background-color: rgba(138,226,52,0);}
 }
 
-@keyframes selected_score_up
-{
+@keyframes selected_score_up {
     from {background-color: rgba(138,226,52,0);}
     5% {background-color: rgba(138,226,52,1);}
     to {background-color: rgba(138,226,52,0);}
 }
 
-@-webkit-keyframes selected_score_down
-{
+@-webkit-keyframes selected_score_down {
     from {background-color: rgba(239,41,41,0);}
     5% {background-color: rgba(239,41,41,1);}
     to {background-color: rgba(239,41,41,0);}
 }
 
-@-moz-keyframes selected_score_down
-{
+@-moz-keyframes selected_score_down {
     from {background-color: rgba(239,41,41,0);}
     5% {background-color: rgba(239,41,41,1);}
     to {background-color: rgba(239,41,41,0);}
 }
 
-@-ms-keyframes selected_score_down
-{
+@-ms-keyframes selected_score_down {
     from {background-color: rgba(239,41,41,0);}
     5% {background-color: rgba(239,41,41,1);}
     to {background-color: rgba(239,41,41,0);}
 }
 
-@-o-keyframes selected_score_down
-{
+@-o-keyframes selected_score_down {
     from {background-color: rgba(239,41,41,0);}
     5% {background-color: rgba(239,41,41,1);}
     to {background-color: rgba(239,41,41,0);}
 }
 
-@keyframes selected_score_down
-{
+@keyframes selected_score_down {
     from {background-color: rgba(239,41,41,0);}
     5% {background-color: rgba(239,41,41,1);}
     to {background-color: rgba(239,41,41,0);}
@@ -905,95 +836,80 @@ table.scoreboard tbody tr.selected.score_down td.rank
    The animation stuff ends here.
  */
 
-table.scoreboard tbody tr td.score
-{
+#Scoreboard_body tr td.score {
     opacity: 0.75;
     border-radius: 5px;
 }
 
-table.scoreboard tbody tr td.sort_key
-{
+#Scoreboard_body tr td.sort_key {
     opacity: 1;
     border: 1px solid #777777;
     box-shadow: 0 0 1px white inset;
 }
 
-table.scoreboard tbody tr:hover td.score,
-table.scoreboard tbody tr.selected td.score
-{
+#Scoreboard_body tr:hover td.score,
+#Scoreboard_body tr.selected td.score {
     opacity: 1;
 }
 
-.score_0
-{
+.score_0 {
     background-color: #F40000;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(204, 0, 0) 0%, rgb(244, 0, 0) 100%);*/
+    /*background-image: linear-gradient(rgb(204, 0, 0), rgb(244, 0, 0));*/
 }
 
-.score_0_10
-{
+.score_0_10 {
     background-color: #EB1D00;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(210, 38, 0) 0%, rgb(235, 29, 0) 100%);*/
+    /*background-image: linear-gradient(rgb(210, 38, 0), rgb(235, 29, 0));*/
 }
 
-.score_10_20
-{
+.score_10_20 {
     background-color: #E23A00;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(216, 77, 0) 0%, rgb(226, 58, 0) 100%);*/
+    /*background-image: linear-gradient(rgb(216, 77, 0), rgb(226, 58, 0));*/
 }
 
-.score_20_30
-{
+.score_20_30 {
     background-color: #D95700;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(222, 115, 0) 0%, rgb(217, 87, 0) 100%);*/
+    /*background-image: linear-gradient(rgb(222, 115, 0), rgb(217, 87, 0));*/
 }
 
-.score_30_40
-{
+.score_30_40 {
     background-color: #D17400;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(228, 154, 0) 0%, rgb(209, 116, 0) 100%);*/
+    /*background-image: linear-gradient(rgb(228, 154, 0), rgb(209, 116, 0));*/
 }
 
-.score_40_50
-{
+.score_40_50 {
     background-color: #C89100;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(234, 192, 0) 0%, rgb(200, 145, 0) 100%);*/
+    /*background-image: linear-gradient(rgb(234, 192, 0), rgb(200, 145, 0));*/
 }
 
-.score_50_60
-{
+.score_50_60 {
     background-color: #B99F00;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(225, 211, 2) 0%, rgb(185, 159, 0) 100%);*/
+    /*background-image: linear-gradient(rgb(225, 211, 2), rgb(185, 159, 0));*/
 }
 
-.score_60_70
-{
+.score_60_70 {
     background-color: #A39E01;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(203, 211, 6) 0%, rgb(163, 158, 1) 100%);*/
+    /*background-image: linear-gradient(rgb(203, 211, 6), rgb(163, 158, 1));*/
 }
 
-.score_70_80
-{
+.score_70_80 {
     background-color: #8E9D02;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(181, 211, 10) 0%, rgb(142, 157, 2) 100%);*/
+    /*background-image: linear-gradient(rgb(181, 211, 10), rgb(142, 157, 2));*/
 }
 
-.score_80_90
-{
+.score_80_90 {
     background-color: #789C03;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(159, 210, 14) 0%, rgb(120, 156, 3) 100%);*/
+    /*background-image: linear-gradient(rgb(159, 210, 14), rgb(120, 156, 3));*/
 }
 
-.score_90_100
-{
+.score_90_100 {
     background-color: #639B04;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(137, 210, 18) 0%, rgb(99, 155, 4) 100%);*/
+    /*background-image: linear-gradient(rgb(137, 210, 18), rgb(99, 155, 4));*/
 }
 
-.score_100
-{
+.score_100 {
     background-color: #4E9A05;
-    /*background-image: -moz-linear-gradient(center bottom, rgb(115, 210, 22) 0%, rgb(78, 154, 5) 100%);*/
+    /*background-image: linear-gradient(rgb(115, 210, 22), rgb(78, 154, 5));*/
 }
 
 

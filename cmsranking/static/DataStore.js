@@ -544,14 +544,15 @@ var DataStore = new function () {
            even if the server should already ensure it!
          */
         var user = self.users[u_id];
+        var task = self.tasks[t_id];
         var old_score = user["t_" + t_id];
         user["global"] += new_score - old_score;
-        user["c_" + self.tasks[t_id]["contest"]] += new_score - old_score;
+        user["c_" + task["contest"]] += new_score - old_score;
         user["t_" + t_id] = new_score;
 
         console.info("Changed score for user " + u_id + " and task " + t_id + ": " + old_score + " -> " + new_score);
 
-        self.score_events.fire(u_id, user, new_score - old_score);
+        self.score_events.fire(u_id, user, t_id, task, new_score - old_score);
     };
 
     self.get_score_t = function (u_id, t_id) {
