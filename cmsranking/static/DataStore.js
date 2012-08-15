@@ -93,7 +93,7 @@ var DataStore = new function () {
         self.contests[key] = data;
 
         console.info("Created contest " + key);
-        console.debug(data);
+        console.log(data);
 
         self.contest_create.fire(key, data);
     };
@@ -105,8 +105,8 @@ var DataStore = new function () {
         self.contests[key] = data;
 
         console.info("Updated contest " + key);
-        console.debug(old_data);
-        console.debug(data);
+        console.log(old_data);
+        console.log(data);
 
         self.contest_update.fire(key, old_data, data);
     };
@@ -117,7 +117,7 @@ var DataStore = new function () {
         delete self.contests[key];
 
         console.info("Deleted contest " + key);
-        console.debug(old_data);
+        console.log(old_data);
 
         self.contest_delete.fire(key, old_data);
     };
@@ -185,7 +185,7 @@ var DataStore = new function () {
         self.tasks[key] = data;
 
         console.info("Created task " + key);
-        console.debug(data);
+        console.log(data);
 
         self.task_create.fire(key, data);
     };
@@ -197,8 +197,8 @@ var DataStore = new function () {
         self.tasks[key] = data;
 
         console.info("Updated task " + key);
-        console.debug(old_data);
-        console.debug(data);
+        console.log(old_data);
+        console.log(data);
 
         self.task_update.fire(key, old_data, data);
     };
@@ -209,7 +209,7 @@ var DataStore = new function () {
         delete self.tasks[key];
 
         console.info("Deleted task " + key);
-        console.debug(old_data);
+        console.log(old_data);
 
         self.task_delete.fire(key, old_data);
     };
@@ -268,7 +268,7 @@ var DataStore = new function () {
         self.teams[key] = data;
 
         console.info("Created team " + key);
-        console.debug(data);
+        console.log(data);
 
         self.team_create.fire(key, data);
     };
@@ -280,8 +280,8 @@ var DataStore = new function () {
         self.teams[key] = data;
 
         console.info("Updated team " + key);
-        console.debug(old_data);
-        console.debug(data);
+        console.log(old_data);
+        console.log(data);
 
         self.team_update.fire(key, old_data, data);
     };
@@ -292,7 +292,7 @@ var DataStore = new function () {
         delete self.teams[key];
 
         console.info("Deleted team " + key);
-        console.debug(old_data);
+        console.log(old_data);
 
         self.team_delete.fire(key, old_data);
     };
@@ -360,7 +360,7 @@ var DataStore = new function () {
         self.users[key] = data;
 
         console.info("Created user " + key);
-        console.debug(data);
+        console.log(data);
 
         self.user_create.fire(key, data);
     };
@@ -372,8 +372,8 @@ var DataStore = new function () {
         self.users[key] = data;
 
         console.info("Updated user " + key);
-        console.debug(old_data);
-        console.debug(data);
+        console.log(old_data);
+        console.log(data);
 
         self.user_update.fire(key, old_data, data);
     };
@@ -384,7 +384,7 @@ var DataStore = new function () {
         delete self.users[key];
 
         console.info("Deleted user " + key);
-        console.debug(old_data);
+        console.log(old_data);
 
         self.user_delete.fire(key, old_data);
     };
