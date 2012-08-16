@@ -776,44 +776,45 @@ var DataStore = new function () {
     };
 
     self.update_network_status = function (state) {
-        if (state == 0) { // EventSource.CONNECTING
+        if (state == 0) { // self.es.CONNECTING
             $("#network_status_box").attr("data-status", "reconnecting");
             $("#network_status_text").text("You are disconnected from the server but your browser is trying to connect.");
-        } else if (state == 1) { // EventSource.OPEN
+        } else if (state == 1) { // self.es.OPEN
             $("#network_status_box").attr("data-status", "connected");
             $("#network_status_text").text("You are connected to the server and are receiving live updates.");
-        } else if (state == 2) { // EventSource.CLOSED
+        } else if (state == 2) { // self.es.CLOSED
             $("#network_status_box").attr("data-status", "disconnected");
             $("#network_status_text").html("You are disconnected from the server but you can <a onclick=\"DataStore.create_event_source();\">try to connect</a>.");
-        } else { // state == 3: "reload" event received
+        } else if (state == 3) { // "reload" event received
             $("#network_status_box").attr("data-status", "outdated");
             $("#network_status_text").html("Your local data cannot be updated. Please <a onclick=\"window.location.reload();\">reload the page</a>.");
         }
     };
 
     self.es_open_handler = function () {
-        if (self.es.readyState == EventSource.OPEN) {
+        if (self.es.readyState == self.es.OPEN) {
             console.info("EventSource connected");
-            self.update_network_status(1);
+            self.update_network_status(self.es.readyState);
         } else {
             console.error("EventSource shouldn't be in state " + self.es.readyState + " during a 'open' event!");
         }
     };
 
     self.es_error_handler = function () {
-        if (self.es.readyState == EventSource.CONNECTING) {
+        if (self.es.readyState == self.es.CONNECTING) {
             console.info("EventSource reconnecting");
-            self.update_network_status(0);
-        } else if (self.es.readyState == EventSource.CLOSED) {
+            self.update_network_status(self.es.readyState);
+        } else if (self.es.readyState == self.es.CLOSED) {
             console.info("EventSource disconnected");
-            self.update_network_status(2);
+            self.update_network_status(self.es.readyState);
         } else {
             console.error("EventSource shouldn't be in state " + self.es.readyState + " during a 'error' event!");
         }
     };
 
     self.es_reload_handler = function () {
-        if (self.es.readyState == EventSource.OPEN) {
+        if (self.es.readyState == self.es.OPEN) {
+            console.info("Received a 'reload' event");
             self.es.close();
             self.update_network_status(3);
         } else {
