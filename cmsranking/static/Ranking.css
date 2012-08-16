@@ -230,8 +230,7 @@ div.team_search {
     display: inline-block;
 }
 
-div.team_search input.search_field
-{
+div.team_search input.search_field {
     position: relative;
     font-size: 1em;
     line-height: 1.5em;
@@ -246,8 +245,7 @@ div.team_search input.search_field
     outline: 0;
 }
 
-div.team_search div.search_results
-{
+div.team_search div.search_results {
     position: fixed;
     top: 0;
     left: 0;
@@ -256,22 +254,22 @@ div.team_search div.search_results
     background-color: rgba(0,0,0,0.5);
     z-index: 10;
     display: none;
+    /* the following two lines are for IE */
+    -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#80000000, endColorstr=#80000000)";
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#80000000, endColorstr=#80000000);
 }
 
-body.team_search div.team_search input.search_field
-{
+body.team_search div.team_search input.search_field {
     border: 1px solid #555555;
     top: -1px;
     left: -1px;
 }
 
-body.team_search div.team_search div.search_results
-{
+body.team_search div.team_search div.search_results {
     display: block;
 }
 
-div.team_search div.search_results div.frame
-{
+div.team_search div.search_results div.frame {
     position: absolute;
     top: 64px;
     bottom: 48px;
@@ -283,8 +281,7 @@ div.team_search div.search_results div.frame
     background-color: white;
 }
 
-div.team_search div.search_results img.close
-{
+div.team_search div.search_results img.close {
     position: absolute;
     top: -10px;
     right: -10px;
@@ -293,8 +290,7 @@ div.team_search div.search_results img.close
     cursor: pointer;
 }
 
-div.team_search div.search_results div.body
-{
+div.team_search div.search_results div.body {
     position: absolute;
     top: 14px; /* 20px - 0.5em at a 12px font-size */
     bottom: 14px; /* 20px - 0.5em at a 12px font-size */
@@ -303,8 +299,7 @@ div.team_search div.search_results div.body
     overflow: auto;
 }
 
-div.team_search div.search_results div.body div.item
-{
+div.team_search div.search_results div.body div.item {
     float: left;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
@@ -312,41 +307,9 @@ div.team_search div.search_results div.body div.item
     height: 3em;
     border: solid white;
     border-width: 0.5em 10px;
-    padding: 0.25em 5px;
-    background-color: lightgray;
-    position: relative;
-}
-
-div.team_search div.search_results div.body div.item.hidden
-{
-    display: none;
-}
-
-div.team_search div.search_results div.body div.item input
-{
-    position: absolute;
-    top: 0.25em;
-    left: 0.25em;
-    width: 1.5em;
-    height: 1.5em;
-    margin: 0;
     padding: 0;
-    border: 0;
-    box-sizing: content-box;
-    font-size: 1em;
-}
+    background-color: lightgray;
 
-div.team_search div.search_results div.body div.item label
-{
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 2em;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-    padding: 0.25em 0.25em 0.25em 4em;
-    white-space: nowrap;
     -webkit-user-select: none;
     -khtml-user-select: none;
     -moz-user-select: none;
@@ -354,13 +317,33 @@ div.team_search div.search_results div.body div.item label
     user-select: none;
 }
 
-div.team_search div.search_results div.body div.item label img
-{
-    position: absolute;
-    left: 0.5em;
-    top: 0.25em;
-    max-width: 3em;
+div.team_search div.search_results div.body div.item.hidden {
+    display: none;
+}
+
+div.team_search div.search_results div.body div.item label {
+    display: block;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 0.25em 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+div.team_search div.search_results div.body div.item input {
+    position: relative;
+    top: -1px;
+    margin: auto 1px auto 0;
+    vertical-align: middle;
+}
+
+div.team_search div.search_results div.body div.item img {
+    display: inline-block;
     max-height: 1.5em;
+    vertical-align: bottom;
 }
 
 

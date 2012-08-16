@@ -23,24 +23,6 @@ var TeamSearch = new function () {
             self.show();
         });
 
-        /* This event is very problematic:
-           * the `input' event doesn't exists in IE (except in version 9, where
-             it's buggy: it doesn't get fired when characters are deleted);
-           * the `propertychange' event is the IE-equivalent event, but it's
-             also buggy in IE9 (in the same way);
-           * the `keypress' event provided by JQuery (which I suppose is
-             supported on all major browser) gets fired too early, when the
-             value of the input hasn't yet been updated (so we read the value
-             it has _before_ the change);
-           * The `change' event is a standard (and I think it's correctly
-             supported almost everywhere) but it gets fired only when the
-             element loses focus.
-           Suggestions are welcome.
-        */
-        $("#team_search_input").bind("input", function () {
-            self.update();
-        });
-
         $("#team_search_bg").click(function (event) {
             if (event.target == event.currentTarget) {
                 self.hide();
@@ -51,8 +33,67 @@ var TeamSearch = new function () {
             self.hide();
         });
 
-        self.t_head = document.getElementById('team_search_head');
-        self.t_body = document.getElementById('team_search_body');
+        /** Update the list when the value in the search box changes */
+
+        /* This event is very problematic:
+           * The `change' event is a standard (and I think it's correctly
+             supported almost everywhere) but it gets fired only when the
+             element loses focus.
+           * the `input' event does what we want but it doesn't exists in IE
+             (except in version 9, where it's buggy: it doesn't get fired when
+             characters are deleted);
+           * the `propertychange' event is the IE-equivalent event, but it's
+             also buggy in IE9 (in the same way);
+           * the `keypress' event provided by JQuery (which isn't standard and
+             thus may vary among browsers) seems to get fired too early, when
+             the value of the input hasn't yet been updated (so we read the
+             value _before_ it gets changed);
+           * the `keydown' event seems to be more standard, but it has the same
+             disadvantage as the `keypress': it's fired too early; in addition,
+             it gets fired only once when the key is held down (while keypress
+             is fire repeatedly, once for each new character).
+           * the `keyup' event should solve the first issue of `keydown' but
+             not the second: it's only fired at the end of a series of
+             `keypress' events.
+           * cutting text is another way to delete characters, thus we'll need
+             to listen to `cut' events in IE9 to workaround the buggy `input'.
+           Suggestions are welcome.
+        */
+
+        /* I decided to listen on `input' and `propertychange' since they
+           should work everywhere except IE9. On IE9 some (conditional) code
+           will also listen to the `keyup' and `cut' events and try to detect
+           when some text is deleted.
+         */
+
+        $("#team_search_input").on("input", function () {
+            self.update();
+        });
+
+        $("#team_search_input").on("propertychange", function () {
+            self.update();
+        });
+
+/*@cc_on
+    @if (@_jscript_version == 9)
+
+        $("#team_search_input").keyup(function (evt) {
+            switch (evt.which) {
+                case 8:  // backspace
+                case 46:  // delete
+                    self.update();
+            }
+        });
+
+        $("#team_search_input").on("cut", function () {
+            self.update();
+        });
+
+    @end
+@*/
+
+        self.t_head = $('#team_search_head');
+        self.t_body = $('#team_search_body');
 
         self.open = false;
 
@@ -68,60 +109,62 @@ var TeamSearch = new function () {
 
         for (var t_id in DataStore.teams) {
             self.sel[t_id] = 0;
-            self.cnt[t_id] = 0;
-        }
-
-        for (var u_id in DataStore.users) {
-            var user = DataStore.users[u_id];
-            if (user['team'] !== null) {
-                self.cnt[user['team']] += 1;
-            }
+            self.cnt[t_id] = DataStore.teams[t_id]["users"].length;
         }
 
         var inner_html = "";
 
+        // We're iterating on the team_list (instead of teams) to get the teams
+        // in lexicographic order of name
         for (var i in DataStore.team_list) {
             var team = DataStore.team_list[i];
             var t_id = team["key"];
             inner_html += " \
-<div class=\"item\" id=\"" + t_id + "\"> \
-    <input type=\"checkbox\" id=\"" + t_id + "_check\" /> \
-    <label for=\"" + t_id + "_check\"> \
-        <img class=\"flag\" src=\"" + Config.get_flag_url(t_id) + "\" />" + team['name'] + " \
+<div class=\"item\" data-team=\"" + t_id + "\"> \
+    <label> \
+        <input type=\"checkbox\"/> \
+        <img class=\"flag\" src=\"" + Config.get_flag_url(t_id) + "\" /> " + team['name'] + " \
     </label> \
 </div>";
         }
-        self.t_body.innerHTML = inner_html;
+        self.t_body.html(inner_html);
 
-        for (var t_id in DataStore.teams) {
-            var elem = document.getElementById(t_id + "_check");
-            $(elem).change(self.callback_factory(t_id, elem));
-        }
+        self.t_body.on("change", "input[type=checkbox]", function () {
+            var $this = $(this);
+
+            var users = DataStore.teams[$this.parent().parent().data("team")]["users"];
+            var status = $this.prop("checked");
+
+            for (var i in users) {
+                DataStore.set_selected(users[i]["key"], status);
+            }
+        });
     };
 
     self.select_handler = function (u_id, flag) {
         var user = DataStore.users[u_id];
+        var t_id = user['team'];
 
-        if (!user['team']) {
+        if (!t_id) {
             return;
         }
 
         if (flag) {
-            self.sel[user['team']] += 1;
+            self.sel[t_id] += 1;
         } else {
-            self.sel[user['team']] -= 1;
+            self.sel[t_id] -= 1;
         }
 
-        var elem = document.getElementById(user['team'] + '_check');
-        if (self.sel[user['team']] == self.cnt[user['team']]) {
-            elem.checked = true;
-            elem.indeterminate = false;
-        } else if (self.sel[user['team']] > 0) {
-            elem.checked = true;
-            elem.indeterminate = true;
+        var $elem = $("div.item[data-team=" + t_id + "] input[type=checkbox]"); // TODO add a context
+        if (self.sel[t_id] == self.cnt[t_id]) {
+            $elem.prop("checked", true);
+            $elem.prop("indeterminate", false);
+        } else if (self.sel[t_id] > 0) {
+            $elem.prop("checked", true);
+            $elem.prop("indeterminate", true);
         } else {
-            elem.checked = false;
-            elem.indeterminate = false;
+            $elem.prop("checked", false);
+            $elem.prop("indeterminate", false);
         }
     };
 
@@ -143,31 +186,20 @@ var TeamSearch = new function () {
         var search_text = $("#team_search_input").val();
 
         if (search_text == "") {
-            for (var t_id in DataStore.teams) {
-                $("#" + t_id).removeClass("hidden");
-            }
+            $('div.item', self.t_body).removeClass("hidden");
         } else {
+            // FIXME We could store the lowercased name of the team on the divs
+            // and then just use a query like [attribute*="value"] (with value
+            // set to the lowercased search_text) and add the class to that.
+            // (We would need another query to get the complementary set).
             for (var t_id in DataStore.teams) {
                 var team = DataStore.teams[t_id];
                 if (team["name"].toLowerCase().indexOf(search_text.toLowerCase()) == -1) {
-                    $("#" + t_id).addClass("hidden");
+                    $("div.item[data-team=" + t_id + "]").addClass("hidden"); // TODO add a context
                 } else {
-                    $("#" + t_id).removeClass("hidden");
+                    $("div.item[data-team=" + t_id + "]").removeClass("hidden");
                 }
             }
         }
-    };
-
-    self.callback_factory = function (t_id, elem) {
-        var result = function () {
-            var status = elem.checked;
-            for (var u_id in DataStore.users) {
-                var user = DataStore.users[u_id];
-                if (user['team'] == t_id) {
-                    DataStore.set_selected(u_id, status);
-                }
-            }
-        };
-        return result;
     };
 };
