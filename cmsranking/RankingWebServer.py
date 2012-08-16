@@ -87,6 +87,7 @@ class DataHandler(tornado.web.RequestHandler):
         self.set_header('Date', datetime.utcnow())
         # In case we need sub-second precision (and we do...).
         self.set_header('Timestamp', "%0.6f" % time.time())
+        self.set_header("Cache-Control", "no-cache, must-revalidate")
 
     def write_error(self, status_code, **kwargs):
         if status_code == 401:
@@ -280,6 +281,15 @@ class NotificationHandler(DataHandler):
         self.write(':\n')
         self.flush()
 
+        # The EventSource polyfill will only deliver events once the
+        # connection has been closed, so we have to finish the request
+        # right after the first message has been sent. This custom
+        # header allows us to identify the request from the polyfill.
+        self.one_shot = False
+        if 'X-Requested-With' in self.request.headers and \
+                self.request.headers['X-Requested-With'] == 'XMLHttpRequest':
+            self.one_shot = True
+
         # We get the ID of the last event the client received. We give
         # priority to the HTTP header because it's more reliable: on the
         # first connection the client won't use the header but will use
@@ -306,7 +316,10 @@ class NotificationHandler(DataHandler):
             # client to close it. If we'd close it the client (i.e. the
             # browser) may automatically attempt to reconnect before
             # having processed the event we sent it.
-            self.flush()
+            if self.one_shot:
+                self.finish()
+            else:
+                self.flush()
             return
 
         for t, msg in proxy.buffer:
@@ -317,13 +330,25 @@ class NotificationHandler(DataHandler):
 
         # TODO: add automatic connection close after a certain timeout.
 
+    # If the connection is closed by the client then the "on_connection_
+    # _close" callback is called. If we decide to finish the request (by
+    # calling the finish() method) then the "on_finish" callback gets
+    # called (and "on_connection_close" *won't* be called!).
+
     def on_connection_close(self):
+        if not self.outdated:
+            proxy.remove_callback(self.send_event)
+
+    def on_finish(self):
         if not self.outdated:
             proxy.remove_callback(self.send_event)
 
     def send_event(self, message):
         self.write(message)
-        self.flush()
+        if self.one_shot:
+            self.finish()
+        else:
+            self.flush()
 
 
 class SubListHandler(DataHandler):
