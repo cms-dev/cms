@@ -32,8 +32,8 @@
             <td>{{ ev.text }}</td>
             {% if task.time_limit is not None %}
             <td>
-                {% if s.execution_time is not None %}
-                {{ _("%(seconds)g second", "%(seconds)g seconds", s.execution_time) % {'seconds': s.execution_time} }}
+                {% if ev.execution_time is not None %}
+                {{ "%(seconds)0.3f s" % {'seconds': ev.execution_time} }}
                 {% else %}
                 N/A
                 {% end %}
@@ -41,8 +41,8 @@
             {% end %}
             {% if task.memory_limit is not None %}
             <td>
-                {% if s.memory_used is not None %}
-                {{ _("%(mb)d MiB", "%(mb)d MiB", s.memory_used) % {'mb': s.memory_used} }}
+                {% if ev.memory_used is not None %}
+                {{ "%(mb)0.2f MiB" % {'mb': ev.memory_used / 1024.0 / 1024.0} }}
                 {% else %}
                 N/A
                 {% end %}
