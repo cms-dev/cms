@@ -53,7 +53,7 @@ var TimeView = new function () {
             }
         }
 
-        var elem = document.getElementById('timer');
+        var elem = $('#timer');
 
         if (i != null) {
             var time_dlt = Math.abs(cur_time - DataStore.contests[i]['begin']);
@@ -64,11 +64,11 @@ var TimeView = new function () {
             var result = " \
 <div class=\"contest_name\">" + DataStore.contests[i]['name'] + "</div> \
 <div class=\"contest_time\">" + time_str + "</div>";
-            elem.innerHTML = result;
-            elem.classList.add("active");
+            elem.html(result);
+            elem.addClass("active");
         } else {
-            elem.innerHTML = 'No active contest';
-            elem.classList.remove("active");
+            elem.text('No active contest');
+            elem.removeClass("active");
         }
     };
 };
