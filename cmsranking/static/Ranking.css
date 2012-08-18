@@ -76,13 +76,13 @@ a
     left: -2px;
     top: 208px;
     bottom: 24px;
-    width: 190px;
+    width: 220px;
     border: 2px solid #FAFAFA;
     border-radius: 0 10px 10px 0;
     background-color: #EAEAEC;
     box-shadow: 0 0 2px 0 gray;
     z-index: 8;
-    padding: 20px 16px 16px;
+    padding: 0;
 }
 
 .inner_frame
@@ -159,63 +159,10 @@ a
 \******************************************************************************/
 
 
-.overview
-{
+#Overview {
     position: relative;
     height: 100%;
     width: 100%;
-}
-
-.overview .bar1
-{
-    position: absolute;
-    top: -2px;
-    left: 0;
-    width: 5px;
-    bottom: 0;
-    background-color: black;
-}
-
-.overview .bar2
-{
-    position: absolute;
-    top: -2px;
-    right: 0;
-    width: 5px;
-    bottom: 0;
-    background-color: black;
-}
-
-.overview .mark1
-{
-    position: absolute;
-    left: 5px;
-    right: 145px;
-    height: 2px;
-    background-color: rgba(0,0,0,0.5);
-}
-
-.overview .mark2
-{
-    position: absolute;
-    right: 5px;
-    left: 145px;
-    height: 2px;
-    background-color: rgba(0,0,0,0.5);
-}
-
-.overview .mark1.selected
-{
-    background-color: blue;
-    right: 125px;
-    height: 4px;
-}
-
-.overview .mark2.selected
-{
-    background-color: blue;
-    left: 125px;
-    height: 4px;
 }
 
 
