@@ -47,6 +47,12 @@ Copyright: 2012 Remy Sharp, http://remysharp.com
 License: Expat
 Comment: See http://rem.mit-license.org/
 
+Files: cmsranking/static/lib/raphael.js
+Copyright: 2008-2012 Dmitry Baranovskiy (http://raphaeljs.com)
+           2008-2012 Sencha Labs (http://sencha.com)
+License: Expat
+Comment: See http://raphaeljs.com/license.html
+
 Files: cms/server/static/jq/jquery-1.7.1.min.js
 Copyright: 2011 John Resig, http://jquery.com/
 License: Expat or GPL-2
