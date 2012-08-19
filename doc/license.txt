@@ -35,8 +35,9 @@ Copyright: 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 License: CC-BY-SA-3.0
 
 Files: cmsranking/static/lib/jquery.js
-Copyright: 2011 John Resig, http://jquery.com/
+Copyright: 2012 jQuery Foundation and other contributors, http://jquery.org/
 License: Expat or GPL-2
+Comment: See http://jquery.org/license
 
 Files: cmsranking/static/lib/explorercanvas.js
 Copyright: 2006 Google Inc., http://code.google.com/p/explorercanvas/
