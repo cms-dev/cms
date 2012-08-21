@@ -57,6 +57,7 @@ var DataStore = new function () {
             },
             error: function () {
                 console.error("Error while getting the list of contests");
+                self.update_network_status(4);
             }
         });
     }
@@ -72,6 +73,8 @@ var DataStore = new function () {
                 },
                 error: function () {
                     console.error("Error while getting contest " + cmd[1]);
+                    self.es.close();
+                    self.update_network_status(4);
                 }
             });
         } else if (cmd[0] == "update") {
@@ -83,6 +86,8 @@ var DataStore = new function () {
                 },
                 error: function () {
                     console.error("Error while getting contest " + cmd[1]);
+                    self.es.close();
+                    self.update_network_status(4);
                 }
             });
         } else if (cmd[0] == "delete") {
@@ -149,6 +154,7 @@ var DataStore = new function () {
             },
             error: function () {
                 console.error("Error while getting the list of tasks");
+                self.update_network_status(4);
             }
         });
     }
@@ -164,6 +170,8 @@ var DataStore = new function () {
                 },
                 error: function () {
                     console.error("Error while getting task " + cmd[1]);
+                    self.es.close();
+                    self.update_network_status(4);
                 }
             });
         } else if (cmd[0] == "update") {
@@ -175,6 +183,8 @@ var DataStore = new function () {
                 },
                 error: function () {
                     console.error("Error while getting task " + cmd[1]);
+                    self.es.close();
+                    self.update_network_status(4);
                 }
             });
         } else if (cmd[0] == "delete") {
@@ -186,6 +196,10 @@ var DataStore = new function () {
         if (self.contests[data["contest"]] === undefined)
         {
             console.error("Could not find contest " + data["contest"] + " for task " + key);
+            if (self.es) {
+                self.es.close();
+            }
+            self.update_network_status(4);
             return;
         }
 
@@ -244,6 +258,7 @@ var DataStore = new function () {
             },
             error: function () {
                 console.error("Error while getting the list of teams");
+                self.update_network_status(4);
             }
         });
     }
@@ -259,6 +274,8 @@ var DataStore = new function () {
                 },
                 error: function () {
                     console.error("Error while getting team " + cmd[1]);
+                    self.es.close();
+                    self.update_network_status(4);
                 }
             });
         } else if (cmd[0] == "update") {
@@ -270,6 +287,8 @@ var DataStore = new function () {
                 },
                 error: function () {
                     console.error("Error while getting team " + cmd[1]);
+                    self.es.close();
+                    self.update_network_status(4);
                 }
             });
         } else if (cmd[0] == "delete") {
@@ -336,6 +355,7 @@ var DataStore = new function () {
             },
             error: function () {
                 console.error("Error while getting the list of users");
+                self.update_network_status(4);
             }
         });
     }
@@ -351,6 +371,8 @@ var DataStore = new function () {
                 },
                 error: function () {
                     console.error("Error while getting user " + cmd[1]);
+                    self.es.close();
+                    self.update_network_status(4);
                 }
             });
         } else if (cmd[0] == "update") {
@@ -362,6 +384,8 @@ var DataStore = new function () {
                 },
                 error: function () {
                     console.error("Error while getting user " + cmd[1]);
+                    self.es.close();
+                    self.update_network_status(4);
                 }
             });
         } else if (cmd[0] == "delete") {
@@ -373,6 +397,10 @@ var DataStore = new function () {
         if (data["team"] !== null && self.teams[data["team"]] === undefined)
         {
             console.error("Could not find team " + data["team"] + " for user " + key);
+            if (self.es) {
+                self.es.close();
+            }
+            self.update_network_status(4);
             return;
         }
 
@@ -527,6 +555,7 @@ var DataStore = new function () {
             },
             error: function () {
                 console.error("Error while getting the scores");
+                self.update_network_status(4);
             }
         });
     };
@@ -788,6 +817,9 @@ var DataStore = new function () {
         } else if (state == 3) { // "reload" event received
             $("#network_status_box").attr("data-status", "outdated");
             $("#network_status_text").html("Your local data cannot be updated. Please <a onclick=\"window.location.reload();\">reload the page</a>.");
+        } else if (state == 4) { // an init failed
+            $("#network_status_box").attr("data-status", "init_error");
+            $("#network_status_text").html("An error occured while loading the data. Check your connection and <a onclick=\"window.location.reload();\">reload the page</a>.");
         }
     };
 
