@@ -122,6 +122,8 @@ class Task(Base):
     # attachments (dict of Attachment objects indexed by filename)
     # managers (dict of Manager objects indexed by filename)
     # statements (dict of Statement objects indexed by language code)
+    # submissions (list of Submission objects)
+    # user_tests (list of UserTest objects)
 
     # This object (independent from SQLAlchemy) is the instance of the
     # ScoreType class with the given parameters, taking care of

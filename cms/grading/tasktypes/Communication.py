@@ -66,6 +66,11 @@ class Communication(TaskType):
             res[language] = [command]
         return res
 
+    def get_user_managers(self):
+        """See TaskType.get_user_managers."""
+        return dict(map(lambda x: (x, ["stub.%s" % (x)]),
+                        Submission.LANGUAGES))
+
     def compile(self):
         """See TaskType.compile."""
         # Detect the submission's language. The checks about the

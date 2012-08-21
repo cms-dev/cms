@@ -107,6 +107,15 @@ class Batch(TaskType):
             res[language] = [command]
         return res
 
+    def get_user_managers(self):
+        """See TaskType.get_user_managers."""
+        if self.job.task_type_parameters[0] == "grader":
+            return dict(map(lambda x: (x, ["grader.%s" % (x)]),
+                            Submission.LANGUAGES))
+        else:
+            return dict(map(lambda x: (x, []),
+                            Submission.LANGUAGES))
+
     def compile(self):
         """See TaskType.compile."""
         # Detect the submission's language. The checks about the

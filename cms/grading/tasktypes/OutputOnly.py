@@ -29,6 +29,7 @@ from cms.grading.TaskType import TaskType, \
 from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading import white_diff_step, evaluation_step, \
     extract_outcome_and_text
+from cms.db.SQLAlchemyAll import Submission
 
 
 class OutputOnly(TaskType):
@@ -61,6 +62,10 @@ class OutputOnly(TaskType):
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         return None
+
+    def get_user_managers(self):
+        """See TaskType.get_user_managers."""
+        return dict(map(lambda x: (x, []), Submission.LANGUAGES))
 
     def compile(self):
         """See TaskType.compile."""
