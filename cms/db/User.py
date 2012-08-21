@@ -25,11 +25,8 @@ directly (import it from SQLAlchemyAll).
 
 """
 
-import time
-from datetime import datetime
-
 from sqlalchemy import Column, ForeignKey, UniqueConstraint, \
-     Boolean, Integer, Float, String, DateTime
+     Boolean, Integer, String, DateTime
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship, backref
 
@@ -154,7 +151,8 @@ class User(Base):
                 'hidden':        self.hidden,
                 'languages':     self.languages,
                 'timezone':      self.timezone,
-                'starting_time': make_timestamp(self.starting_time) if self.starting_time is not None else None,
+                'starting_time': make_timestamp(self.starting_time)
+                if self.starting_time is not None else None,
                 'messages':      [message.export_to_dict()
                                   for message in self.messages],
                 'questions':     [question.export_to_dict()
@@ -276,7 +274,8 @@ class Question(Base):
         return {'question_timestamp': make_timestamp(self.question_timestamp),
                 'subject':            self.subject,
                 'text':               self.text,
-                'reply_timestamp':    make_timestamp(self.reply_timestamp) if self.reply_timestamp is not None else None,
+                'reply_timestamp':    make_timestamp(self.reply_timestamp)
+                if self.reply_timestamp is not None else None,
                 'reply_subject':      self.reply_subject,
                 'reply_text':         self.reply_text,
                 'ignored':            self.ignored}
