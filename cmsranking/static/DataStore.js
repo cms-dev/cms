@@ -735,44 +735,44 @@ var DataStore = new function () {
 
         self.es = new EventSource(Config.get_event_url(self.last_event_id));
 
-        self.es.addEventListener("open", self.es_open_handler);
-        self.es.addEventListener("error", self.es_error_handler);
-        self.es.addEventListener("reload", self.es_reload_handler);
+        self.es.addEventListener("open", self.es_open_handler, false);
+        self.es.addEventListener("error", self.es_error_handler, false);
+        self.es.addEventListener("reload", self.es_reload_handler, false);
         self.es.addEventListener("contest", function (event) {
             var event_id = parseFloat(event.lastEventId);
             if (event_id > self.contest_init_time) {
                 self.contest_listener(event);
             }
             self.last_event_id = event_id;
-        });
+        }, false);
         self.es.addEventListener("task", function (event) {
             var event_id = parseFloat(event.lastEventId);
             if (event_id > self.task_init_time) {
                 self.task_listener(event);
             }
             self.last_event_id = event_id;
-        });
+        }, false);
         self.es.addEventListener("team", function (event) {
             var event_id = parseFloat(event.lastEventId);
             if (event_id > self.team_init_time) {
                 self.team_listener(event);
             }
             self.last_event_id = event_id;
-        });
+        }, false);
         self.es.addEventListener("user", function (event) {
             var event_id = parseFloat(event.lastEventId);
             if (event_id > self.user_init_time) {
                 self.user_listener(event);
             }
             self.last_event_id = event_id;
-        });
+        }, false);
         self.es.addEventListener("score", function (event) {
             var event_id = parseFloat(event.lastEventId);
             if (event_id > self.score_init_time) {
                 self.score_listener(event);
             }
             self.last_event_id = event_id;
-        });
+        }, false);
     };
 
     self.update_network_status = function (state) {
