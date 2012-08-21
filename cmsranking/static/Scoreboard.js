@@ -72,6 +72,11 @@ var Scoreboard = new function () {
         self.sort_key = "global";
         self.make_body();
 
+        // Set initial style
+        $("col[data-sort_key=" + self.sort_key + "]", self.tcols_el).addClass("sort_key");
+        $("tr td[data-sort_key=" + self.sort_key + "]", self.thead_el).addClass("sort_key");
+        $("tr td[data-sort_key=" + self.sort_key + "]", self.tbody_el).addClass("sort_key");
+
         // Create callbacks for selection
         self.tbody_el.on("click", "td.sel", function () {
             DataStore.toggle_selected($(this).parent().data("user"));
