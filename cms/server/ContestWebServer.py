@@ -58,7 +58,7 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
      Submission, Token, File, UserTest, UserTestFile, UserTestManager
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
-from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
+from cms.server import file_handler_gen, extract_archive, \
      actual_phase_required, get_url_root, CommonRequestHandler
 from cmscommon.Cryptographics import encrypt_number
 from cmscommon.DateTime import make_datetime, make_timestamp, get_timezone
@@ -78,7 +78,6 @@ class BaseHandler(CommonRequestHandler):
     # requests.
     refresh_cookie = True
 
-    @catch_exceptions
     def prepare(self):
         """This method is executed at the beginning of each request.
 
@@ -263,6 +262,24 @@ class BaseHandler(CommonRequestHandler):
             # our log with unnecessarily critical messages
             logger.debug("Connection closed before our reply.")
 
+    def write_error(self, status_code, **kwargs):
+        if "exc_info" in kwargs and \
+                kwargs["exc_info"][0] != tornado.web.HTTPError:
+            exc_info = kwargs["exc_info"]
+            logger.critical(
+                "Uncaught exception (%r) while processing a request: %s" %
+                (exc_info[1], ''.join(traceback.format_exception(*exc_info))))
+
+        # We assume that if r_params is defined then we have at least
+        # the data we need to display a basic template with the error
+        # information. If r_params is not defined (i.e. something went
+        # *really* bad) we simply return a basic textual error notice.
+        if hasattr(self, 'r_params'):
+            self.render("error.html", status_code=status_code, **self.r_params)
+        else:
+            self.write("A critical error has occurred :-(")
+            self.finish()
+
 
 FileHandler = file_handler_gen(BaseHandler)
 
@@ -343,7 +360,6 @@ class MainHandler(BaseHandler):
     """Home page handler.
 
     """
-    @catch_exceptions
     def get(self):
         self.render("overview.html", **self.r_params)
 
@@ -353,7 +369,6 @@ class DocumentationHandler(BaseHandler):
     ...) of the contest.
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     def get(self):
         self.render("documentation.html", **self.r_params)
@@ -363,7 +378,6 @@ class LoginHandler(BaseHandler):
     """Login handler.
 
     """
-    @catch_exceptions
     def post(self):
         username = self.get_argument("username", "")
         password = self.get_argument("password", "")
@@ -402,7 +416,6 @@ class StartHandler(BaseHandler):
     Used by a user who wants to start his per_user_time.
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(-1)
     def post(self):
@@ -419,7 +432,6 @@ class LogoutHandler(BaseHandler):
     """Logout handler.
 
     """
-    @catch_exceptions
     def get(self):
         self.clear_cookie("login")
         self.redirect("/")
@@ -429,7 +441,6 @@ class TaskDescriptionHandler(BaseHandler):
     """Shows the data of a task in the contest.
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name):
@@ -450,7 +461,6 @@ class TaskSubmissionsHandler(BaseHandler):
     """Shows the data of a task in the contest.
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name):
@@ -470,7 +480,6 @@ class TaskStatementViewHandler(FileHandler):
     """Shows the statement file of a task in the contest.
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     @tornado.web.asynchronous
@@ -493,7 +502,6 @@ class TaskAttachmentViewHandler(FileHandler):
     """Shows an attachment file of a task in the contest.
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     @tornado.web.asynchronous
@@ -520,7 +528,6 @@ class SubmissionFileHandler(FileHandler):
     """Send back a submission file.
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     @tornado.web.asynchronous
@@ -572,7 +579,6 @@ class CommunicationHandler(BaseHandler):
     and the contest managers..
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     def get(self):
         self.set_secure_cookie("unread_count", "0")
@@ -586,7 +592,6 @@ class NotificationsHandler(BaseHandler):
 
     refresh_cookie = False
 
-    @catch_exceptions
     @tornado.web.authenticated
     def get(self):
         if not self.current_user:
@@ -656,7 +661,6 @@ class QuestionHandler(BaseHandler):
     """Called when the user submits a question.
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     def post(self):
         # User can post only if we want.
@@ -943,7 +947,6 @@ class UseTokenHandler(BaseHandler):
     """Called when the user try to use a token on a submission.
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     def post(self, task_name, submission_num):
@@ -1009,7 +1012,6 @@ class SubmissionStatusHandler(BaseHandler):
 
     refresh_cookie = False
 
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, submission_num):
@@ -1066,7 +1068,6 @@ class SubmissionDetailsHandler(BaseHandler):
 
     refresh_cookie = False
 
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, submission_num):
@@ -1375,7 +1376,6 @@ class UserTestStatusHandler(BaseHandler):
 
     refresh_cookie = False
 
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, usertest_num):
@@ -1413,7 +1413,6 @@ class UserTestDetailsHandler(BaseHandler):
 
     refresh_cookie = False
 
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self, task_name, usertest_num):
@@ -1437,7 +1436,6 @@ class UserTestIOHandler(FileHandler):
     """Send back a submission file.
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     @tornado.web.asynchronous
@@ -1467,7 +1465,6 @@ class UserTestFileHandler(FileHandler):
     """Send back a submission file.
 
     """
-    @catch_exceptions
     @tornado.web.authenticated
     @actual_phase_required(0)
     @tornado.web.asynchronous
