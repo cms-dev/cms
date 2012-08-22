@@ -240,36 +240,57 @@ class Batch(TaskType):
         # Otherwise, advance to checking the solution
         else:
 
-            # Put the reference solution into the sandbox
-            sandbox.create_file_from_storage(
-                "res.txt",
-                self.job.testcases[test_number].output)
+            # Check that the output file was created
+            if not sandbox.file_exists(output_filename):
+                outcome = 0.0
+                text = "Execution didn't produce file %s" % \
+                    (output_filename)
+                if self.job.get_output:
+                    evaluation['output'] = None
 
-            # Check the solution with white_diff
-            if self.job.task_type_parameters[2] == "diff":
-                outcome, text = white_diff_step(
-                    sandbox, output_filename, "res.txt")
-
-            # Check the solution with a comparator
-            elif self.job.task_type_parameters[2] == "comparator":
-                manager_filename = self.job.managers.keys()[0]
-                sandbox.create_file_from_storage(
-                    manager_filename,
-                    self.job.managers[manager_filename].digest,
-                    executable=True)
-                success, _ = evaluation_step(
-                    sandbox,
-                    ["./%s" % manager_filename,
-                     input_filename, "res.txt", output_filename],
-                    allow_path=[input_filename, "res.txt", output_filename])
-                if success:
-                    outcome, text = extract_outcome_and_text(sandbox)
-
-            # Unknown evaluationg parameter!
             else:
-                raise ValueError("Unrecognized third parameter `%s' in "
-                                 "for Batch tasktype." %
-                                 self.job.task_type_parameters[2])
+                # If asked so, put the output file into the storage
+                if self.job.get_output:
+                    evaluation['output'] = sandbox.get_file_to_storage(
+                        output_filename,
+                        "Output file for testcase %d in job %s" %
+                        (test_number, self.job.info))
+
+                # If not asked otherwise, evaluate the output file
+                if not self.job.only_execution:
+
+                    # Put the reference solution into the sandbox
+                    sandbox.create_file_from_storage(
+                        "res.txt",
+                        self.job.testcases[test_number].output)
+
+                    # Check the solution with white_diff
+                    if self.job.task_type_parameters[2] == "diff":
+                        outcome, text = white_diff_step(
+                            sandbox, output_filename, "res.txt")
+
+                    # Check the solution with a comparator
+                    elif self.job.task_type_parameters[2] == "comparator":
+                        manager_filename = self.job.managers.keys()[0]
+                        sandbox.create_file_from_storage(
+                            manager_filename,
+                            self.job.managers[manager_filename].digest,
+                            executable=True)
+                        success, _ = evaluation_step(
+                            sandbox,
+                            ["./%s" % manager_filename,
+                             input_filename, "res.txt", output_filename],
+                            allow_path=[input_filename,
+                                        "res.txt",
+                                        output_filename])
+                        if success:
+                            outcome, text = extract_outcome_and_text(sandbox)
+
+                    # Unknown evaluationg parameter!
+                        else:
+                            raise ValueError("Unrecognized third parameter"
+                                             " `%s' for Batch tasktype." %
+                                             self.job.task_type_parameters[2])
 
         # Whatever happened, we conclude.
         evaluation['success'] = success

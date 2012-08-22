@@ -159,13 +159,15 @@ class EvaluationJob(Job):
     # Input: executables, testcases, time_limit, memory_limit,
     # managers, files
     # Output: success, evaluations
+    # Metadata: only_execution, get_output
 
     def __init__(self, task_type=None, task_type_parameters=None,
                  shard=None, sandboxes=None, info=None,
                  executables=None, testcases=None,
                  time_limit=None, memory_limit=None,
                  managers=None, files=None,
-                 success=None, evaluations=None):
+                 success=None, evaluations=None,
+                 only_execution=False, get_output=False):
         if executables is None:
             executables = {}
         if testcases is None:
@@ -187,6 +189,8 @@ class EvaluationJob(Job):
         self.files = files
         self.success = success
         self.evaluations = evaluations
+        self.only_execution = only_execution
+        self.get_output = get_output
 
     @staticmethod
     def from_submission(submission):
@@ -225,6 +229,8 @@ class EvaluationJob(Job):
                           for file_ in self.files.itervalues()],
                 'success': self.success,
                 'evaluations': self.evaluations,
+                'only_execution': self.only_execution,
+                'get_output': self.get_output,
                 })
         return res
 

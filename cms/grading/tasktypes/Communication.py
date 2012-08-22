@@ -219,6 +219,16 @@ class Communication(TaskType):
             success = True
             outcome, text = extract_outcome_and_text(sandbox_mgr)
 
+        # If asked so, save the output file, provided that it exists
+        if self.job.get_output:
+            if sandbox_mgr.file_exists("output.txt"):
+                evaluation['output'] = sandbox_mgr.get_file_to_storage(
+                    "output.txt",
+                    "Output file for testcase %d in job %s" %
+                    (test_number, self.job.info))
+            else:
+                evaluation['output'] = None
+
         # Whatever happened, we conclude.
         evaluation['success'] = success
         evaluation['outcome'] = outcome
