@@ -903,7 +903,7 @@ class EvaluationService(Service):
 
         data (dict): a dictionary that describes a Job instance.
         plus (tuple): the tuple (job_type,
-                                 submission_id,
+                                 object_id,
                                  side_data=(priority, timestamp),
                                  shard_of_worker)
 
@@ -915,7 +915,7 @@ class EvaluationService(Service):
         # replied with an error), but if the pool wants to disable the
         # worker, it's because it already assigned its job to someone
         # else, so we discard the data from the worker.
-        job_type, submission_id, side_data, shard = plus
+        job_type, object_id, side_data, shard = plus
 
         # If worker was ignored, do nothing.
         if self.pool.release_worker(shard):
@@ -931,23 +931,22 @@ class EvaluationService(Service):
             logger.error("Worker %s signaled action not successful." % shard)
             return
 
-        job_type = EvaluationService.JOB_TYPE_COMPILATION \
-            if isinstance(job, CompilationJob) else \
-            EvaluationService.JOB_TYPE_EVALUATION
         _, timestamp = side_data
 
         logger.info("Action %s for submission %s completed. Success: %s." %
-                    (job_type, submission_id, data["success"]))
+                    (job_type, object_id, data["success"]))
 
         # We get the submission from DB and update it.
         with SessionGen(commit=False) as session:
-            submission = Submission.get_from_id(submission_id, session)
-            if submission is None:
-                logger.critical("[action_finished] Couldn't find submission "
-                                "%s in the database." % submission_id)
-                return
 
             if job_type == EvaluationService.JOB_TYPE_COMPILATION:
+                submission = Submission.get_from_id(object_id, session)
+                if submission is None:
+                    logger.critical("[action_finished] Couldn't find "
+                                    "submission %s in the database." %
+                                    object_id)
+                    return
+
                 submission.compilation_tries += 1
                 submission.compilation_outcome = 'ok' if job.success \
                     else 'fail'
@@ -958,7 +957,14 @@ class EvaluationService(Service):
                     submission.executables[executable.filename] = executable
                     session.add(executable)
 
-            if job_type == EvaluationService.JOB_TYPE_EVALUATION:
+            elif job_type == EvaluationService.JOB_TYPE_EVALUATION:
+                submission = Submission.get_from_id(object_id, session)
+                if submission is None:
+                    logger.critical("[action_finished] Couldn't find "
+                                    "submission %s in the database." %
+                                    object_id)
+                    return
+
                 submission.evaluation_tries += 1
                 submission.evaluation_outcome = "ok"
                 for test_number, info in job.evaluations.iteritems():
@@ -976,6 +982,16 @@ class EvaluationService(Service):
                         submission=submission)
                     session.add(evaluation)
 
+            elif job_type == EvaluationService.JOB_TYPE_TEST_COMPILATION:
+                raise Exception("TODO")
+
+            elif job_type == EvaluationService.JOB_TYPE_TEST_EVALUATION:
+                raise Exception("TODO")
+
+            else:
+                logger.error("Invalid job type %r." % (job_type))
+                return
+
             compilation_tries = submission.compilation_tries
             compilation_outcome = submission.compilation_outcome
             evaluation_tries = submission.evaluation_tries
@@ -985,14 +1001,14 @@ class EvaluationService(Service):
 
         # Compilation.
         if job_type == EvaluationService.JOB_TYPE_COMPILATION:
-            self.compilation_ended(submission_id,
+            self.compilation_ended(object_id,
                                    timestamp,
                                    compilation_tries,
                                    compilation_outcome)
 
         # Evaluation.
         elif job_type == EvaluationService.JOB_TYPE_EVALUATION:
-            self.evaluation_ended(submission_id,
+            self.evaluation_ended(object_id,
                                   timestamp,
                                   evaluation_tries,
                                   evaluated)
