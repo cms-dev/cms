@@ -59,6 +59,7 @@ class ScriptsContainer(object):
             ("20120723", "add_timezones"),
             ("20120724", "add_languages"),
             ("20120805", "support_output_only"),
+            ("20120823", "add_user_tests"),
             ]
         self.list.sort()
 
@@ -619,6 +620,104 @@ SET %(column)s = CAST(%(column)s AS TIMESTAMP WITH TIME ZONE) AT TIME ZONE 'UTC'
             session.execute("ALTER TABLE tasks "
                             "ALTER COLUMN time_limit DROP NOT NULL,"
                             "ALTER COLUMN memory_limit DROP NOT NULL;")
+
+    @staticmethod
+    def add_user_tests():
+        """Add the table user_tests and related.
+
+        """
+        with SessionGen(commit=False) as session:
+            session.execute("""\
+CREATE TABLE IF NOT EXISTS user_tests (
+    id SERIAL NOT NULL,
+    user_id INTEGER NOT NULL,
+    task_id INTEGER NOT NULL,
+    timestamp TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    language VARCHAR,
+    input VARCHAR NOT NULL,
+    output VARCHAR,
+    compilation_outcome VARCHAR,
+    compilation_text VARCHAR,
+    compilation_tries INTEGER NOT NULL,
+    compilation_shard INTEGER,
+    compilation_sandbox VARCHAR,
+    evaluation_outcome VARCHAR,
+    evaluation_tries INTEGER NOT NULL,
+    evaluation_shard INTEGER,
+    evaluation_sandbox VARCHAR,
+    PRIMARY KEY (id),
+    FOREIGN KEY (task_id) REFERENCES tasks(id)
+    ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+);""")
+            session.execute("""\
+DROP INDEX IF EXISTS ix_user_tests_task_id;""")
+            session.execute("""\
+CREATE INDEX ix_user_tests_task_id ON user_tests (task_id);""")
+            session.execute("""\
+DROP INDEX IF EXISTS ix_user_tests_user_id;""")
+            session.execute("""\
+CREATE INDEX ix_user_tests_user_id ON user_tests (user_id);""")
+
+            session.execute("""\
+CREATE TABLE IF NOT EXISTS user_test_executables (
+    id SERIAL NOT NULL,
+    filename VARCHAR NOT NULL,
+    digest VARCHAR NOT NULL,
+    user_test_id INTEGER NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_test_id) REFERENCES user_tests(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+);""")
+            session.execute("""\
+DROP INDEX IF EXISTS cst_executables_user_test_id_filename;""")
+            session.execute("""\
+CREATE UNIQUE INDEX cst_executables_user_test_id_filename ON user_test_executables (user_test_id, filename);""")
+            session.execute("""\
+DROP INDEX IF EXISTS ix_user_test_executables_user_test_id;""")
+            session.execute("""\
+CREATE INDEX ix_user_test_executables_user_test_id ON user_test_executables (user_test_id);""")
+
+            session.execute("""\
+CREATE TABLE user_test_files (
+    id SERIAL NOT NULL,
+    filename VARCHAR NOT NULL,
+    digest VARCHAR NOT NULL,
+    user_test_id INTEGER NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_test_id) REFERENCES user_tests(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+);""")
+            session.execute("""\
+DROP INDEX IF EXISTS cst_files_user_test_id_filename;""")
+            session.execute("""\
+CREATE UNIQUE INDEX cst_files_user_test_id_filename ON user_test_files (user_test_id, filename);""")
+            session.execute("""\
+DROP INDEX IF EXISTS ix_user_test_files_user_test_id;""")
+            session.execute("""\
+CREATE INDEX ix_user_test_files_user_test_id ON user_test_files (user_test_id);""")
+
+            session.execute("""\
+CREATE TABLE user_test_managers (
+    id SERIAL NOT NULL,
+    filename VARCHAR NOT NULL,
+    digest VARCHAR NOT NULL,
+    user_test_id INTEGER NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (user_test_id) REFERENCES user_tests(id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+);""")
+            session.execute("""\
+DROP INDEX IF EXISTS cst_managers_user_test_id_filename;""")
+            session.execute("""\
+CREATE UNIQUE INDEX cst_managers_user_test_id_filename ON user_test_managers (user_test_id, filename);""")
+            session.execute("""\
+DROP INDEX IF EXISTS ix_user_test_managers_user_test_id;""")
+            session.execute("""\
+CREATE INDEX ix_user_test_managers_user_test_id ON user_test_managers (user_test_id);""")
+
+            session.commit()
 
 
 def execute_single_script(scripts_container, script):
