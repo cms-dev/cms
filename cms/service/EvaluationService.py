@@ -35,7 +35,7 @@ from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback
 from cms.async import ServiceCoord, get_service_shards
 from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import Contest, Evaluation, \
-     Submission, SessionGen
+     Submission, SessionGen, UserTest
 from cms.service import get_submissions
 from cmscommon.DateTime import make_datetime, make_timestamp
 from cms.grading.Job import Job, CompilationJob, EvaluationJob
@@ -1015,6 +1015,26 @@ class EvaluationService(Service):
                                     submission_id),
                                    EvaluationService.JOB_PRIORITY_HIGH,
                                    submission.timestamp)
+
+    @rpc_method
+    def new_user_test(self, user_test_id):
+        """This RPC prompts ES of the existence of a new user test. ES
+        takes takes the right countermeasures, i.e., it schedules it
+        for compilation.
+
+        user_test_id (int): the id of the new user test.
+
+        returns (bool): True if everything went well.
+
+        """
+        with SessionGen(commit=False) as session:
+            user_test = UserTest.get_from_id(user_test_id, session)
+            if user_test is None:
+                logger.error("[new_user_test] Couldn't find user test %d "
+                             "in the database." % (user_test_id))
+                return
+
+        # TODO - Fill this stub
 
     @rpc_method
     def invalidate_submission(self,
