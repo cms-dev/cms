@@ -34,7 +34,8 @@ from cms.db.User import User, Message, Question
 from cms.db.Task import Task, Manager, Testcase, Attachment, \
      SubmissionFormatElement, Statement
 from cms.db.Submission import Submission, Token, Evaluation, File, Executable
-from cms.db.UserTest import UserTest
+from cms.db.UserTest import UserTest, UserTestFile, UserTestExecutable, \
+    UserTestManager
 from cms.db.FSObject import FSObject
 import cms.db.ImportFromDict
 
