@@ -51,7 +51,20 @@ def get_submissions(self):
     """
     return self.get_session().query(Submission).join(Task).\
            filter(Task.contest == self).all()
+
+
+def get_user_tests(self):
+    """Returns a list of user tests (with the information about the
+    corresponding user) referring to the contest.
+
+    return (list): list of user tests.
+
+    """
+    return self.get_session().query(UserTest).join(User).\
+        filter(User.contest == self).all()
+
 Contest.get_submissions = get_submissions
+Contest.get_user_tests = get_user_tests
 
 
 # The following is a method of User that cannot be put in the right

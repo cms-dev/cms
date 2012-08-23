@@ -164,3 +164,19 @@ class UserTest(Base):
             'evaluation_sandbox': self.evaluation_sandbox,
             }
         return res
+
+    def compiled(self):
+        """Return if the user test has been compiled.
+
+        return (bool): True if compiled, False otherwise.
+
+        """
+        return self.compilation_outcome is not None
+
+    def evaluated(self):
+        """Return if the user test has been evaluated.
+
+        return (bool): True if evaluated, False otherwise.
+
+        """
+        return self.evaluation_outcome is not None

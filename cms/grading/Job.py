@@ -118,6 +118,25 @@ class CompilationJob(Job):
 
         return job
 
+    @staticmethod
+    def from_user_user(user_test):
+        job = CompilationJob()
+
+        # Job
+        job.task_type = user_test.task.task_type
+        job.task_type_parameters = json.loads(
+            user_test.task.task_type_parameters)
+
+        # CompilationJob
+        job.language = user_test.language
+        job.files = user_test.files
+        # TODO: maybe we have to merge managers from the user test and
+        # from the task
+        job.managers = user_test.managers
+        job.info = "compile user test %d" & (user_test.id)
+
+        return job
+
     def export_to_dict(self):
         res = Job.export_to_dict(self)
         res.update({
@@ -211,6 +230,27 @@ class EvaluationJob(Job):
         job.info = "evaluate submission %d" % (submission.id)
 
         return job
+
+    @staticmethod
+    def from_user_test(user_test):
+        job = EvaluationJob()
+
+        # Job
+        job.task_type = user_test.task.task_type
+        job.task_type_parameters = json.loads(
+            user_test.task.task_type_parameters)
+
+        # EvaluationJob
+        job.executables = user_test.executables
+        job.testcases = Testcase(input=user_test.input,
+                                 output=None)
+        job.time_limit = user_test.task.time_limit
+        job.memory_limit = user_test.task.memory_limit
+        # TODO: maybe we have to merge managers from the user test and
+        # from the task
+        job.managers = user_test.managers
+        job.files = user_test.files
+        job.info = "evaluate user test %d" % (user_test.id)
 
     def export_to_dict(self):
         res = Job.export_to_dict(self)

@@ -42,7 +42,7 @@ from cms.grading.Job import Job, CompilationJob, EvaluationJob
 
 
 def to_compile(submission):
-    """Return if ES is interested in compiling the submission.
+    """Return whether ES is interested in compiling the submission.
 
     submission (Submission): a submission.
 
@@ -54,7 +54,7 @@ def to_compile(submission):
 
 
 def to_evaluate(submission):
-    """Return if ES is interested in evaluating the submission.
+    """Return whether ES is interested in evaluating the submission.
 
     submission (Submission): a submission.
 
@@ -64,6 +64,33 @@ def to_evaluate(submission):
     return submission.compilation_outcome == "ok" and \
         not submission.evaluated() and \
         submission.evaluation_tries < EvaluationService.MAX_EVALUATION_TRIES
+
+
+def user_test_to_compile(user_test):
+    """Return whether ES is interested in compiling the user test.
+
+    user_test (UserTest): a user test.
+
+    return (bool): True if ES wants to compile the user test.
+
+    """
+    return not user_test.compiled() and \
+        user_test.compilation_tries < EvaluationService. \
+        MAX_TEST_COMPILATION_TRIES
+
+
+def user_test_to_evaluate(user_test):
+    """Return whether ES is interested in evaluating the user test.
+
+    user_test (UserTest): a user test.
+
+    return (bool): True if ES wants to evaluate the user test.
+
+    """
+    return user_test.compilation_outcome == "ok" and \
+        not user_test.evaluated() and \
+        user_test.evaluation_tries < EvaluationService. \
+        MAX_TEST_EVALUATION_TRIES
 
 
 class JobQueue:
@@ -375,25 +402,35 @@ class WorkerPool:
         logger.debug("Worker %s acquired." % shard)
 
         # And finally we ask the worker to do the job
-        action, submission_id = job
+        action, object_id = job
         timestamp = side_data[1]
         queue_time = self._start_time[shard] - timestamp
-        logger.info("Asking worker %s to %s submission %s "
+        logger.info("Asking worker %s to %s submission/user test %d "
                     " (%s after submission)." %
-                    (shard, action, submission_id, queue_time))
+                    (shard, action, object_id, queue_time))
 
         with SessionGen(commit=False) as session:
-            submission = Submission.get_from_id(submission_id,
-                                                session)
             if action == EvaluationService.JOB_TYPE_COMPILATION:
+                submission = Submission.get_from_id(object_id,
+                                                    session)
                 job_ = CompilationJob.from_submission(submission)
             elif action == EvaluationService.JOB_TYPE_EVALUATION:
+                submission = Submission.get_from_id(object_id,
+                                                    session)
                 job_ = EvaluationJob.from_submission(submission)
+            elif action == EvaluationService.JOB_TYPE_TEST_COMPILATION:
+                user_test = UserTest.get_from_it(object_id,
+                                                 session)
+                job_ = CompilationJob.from_user_test(user_test)
+            elif action == EvaluationService.JOB_TYPE_TEST_EVALUATION:
+                user_test = UserTest.get_from_it(object_id,
+                                                 session)
+                job_ = EvaluationJob.from_user_test(user_test)
 
             self._worker[shard].execute_job(
                 job_dict=job_.export_to_dict(),
                 callback=self._service.action_finished.im_func,
-                plus=(submission_id, side_data, shard))
+                plus=(action, object_id, side_data, shard))
 
         return shard
 
@@ -655,8 +692,26 @@ class EvaluationService(Service):
                         submission.timestamp):
                         new_jobs += 1
 
+            # The same for user tests
+            for user_test in contest.get_user_tests():
+                if user_test_to_compile(user_test):
+                    if self.push_in_queue(
+                        (EvaluationService.JOB_TYPE_TEST_COMPILATION,
+                         user_test.id),
+                        EvaluationService.JOB_PRIORITY_HIGH,
+                        user_test.timestamp):
+                        new_jobs += 1
+                elif user_test_to_evaluate(user_test):
+                    if self.push_in_queue(
+                        (EvaluationService.JOB_TYPE_TEST_EVALUATION,
+                         user_test.id),
+                        EvaluationService.JOB_PRIORITY_MEDIUM,
+                        user_test.timestamp):
+                        new_jobs += 1
+
         if new_jobs > 0:
-            logger.info("Found %s submissions with jobs to do." % new_jobs)
+            logger.info("Found %s submissions or user tests with "
+                        "jobs to do." % new_jobs)
 
         # Run forever.
         return True
@@ -775,8 +830,9 @@ class EvaluationService(Service):
         """
         lost_jobs = self.pool.check_timeouts()
         for priority, timestamp, job in lost_jobs:
-            logger.info("Job %s for submission %s put again in the queue "
-                        "because of timeout worker." % (job[0], job[1]))
+            logger.info("Job %s for submission/user test %d put again "
+                        "in the queue because of timeout worker."
+                        % (job[0], job[1]))
             self.push_in_queue(job, priority, timestamp)
         return True
 
@@ -787,8 +843,9 @@ class EvaluationService(Service):
         """
         lost_jobs = self.pool.check_connections()
         for priority, timestamp, job in lost_jobs:
-            logger.info("Job %s for submission %s put again in the queue "
-                        "because of disconnected worker." % (job[0], job[1]))
+            logger.info("Job %s for submission/user test %s put again "
+                        "in the queue because of disconnected worker."
+                        % (job[0], job[1]))
             self.push_in_queue(job, priority, timestamp)
         return True
 
@@ -801,6 +858,29 @@ class EvaluationService(Service):
                 (EvaluationService.JOB_TYPE_EVALUATION, submission_id)]
         return any([job in self.queue or job in self.pool for job in jobs])
 
+    def user_test_busy(self, user_test_id):
+        """Check if the user test has a related job in the queue or
+        assigned to a worker.
+
+        """
+        jobs = [(EvaluationService.JOB_TYPE_TEST_COMPILATION, user_test_id),
+                (EvaluationService.JOB_TYPE_TEST_EVALUATION, user_test_id)]
+        return any([job in self.queue or job in self.pool for job in jobs])
+
+    def job_busy(self, job):
+        """Check the entity (submission or user test) related to a job
+        has other related jobs in the queue or assigned to a worker.
+
+        """
+        if job[0] in [EvaluationService.JOB_TYPE_COMPILATION,
+                      EvaluationService.JOB_TYPE_EVALUATION]:
+            return self.submission_busy(job[1])
+        elif job[0] in [EvaluationService.JOB_TYPE_TEST_COMPILATION,
+                        EvaluationService.JOB_TYPE_TEST_EVALUATION]:
+            return self.user_test_busy(job[1])
+        else:
+            raise Exception("Wrong job type %s" % (job[0]))
+
     def push_in_queue(self, job, priority, timestamp):
         """Push a job in the job queue if the submission is not
         already in the queue or assigned to a worker.
@@ -810,7 +890,7 @@ class EvaluationService(Service):
         return (bool): True if pushed, False if not.
 
         """
-        if self.submission_busy(job[1]):
+        if self.job_busy(job):
             return False
         else:
             self.queue.push(job, priority, timestamp)
@@ -822,7 +902,8 @@ class EvaluationService(Service):
         action (compilation or evaluation).
 
         data (dict): a dictionary that describes a Job instance.
-        plus (tuple): the tuple (submission_id,
+        plus (tuple): the tuple (job_type,
+                                 submission_id,
                                  side_data=(priority, timestamp),
                                  shard_of_worker)
 
@@ -834,7 +915,7 @@ class EvaluationService(Service):
         # replied with an error), but if the pool wants to disable the
         # worker, it's because it already assigned its job to someone
         # else, so we discard the data from the worker.
-        submission_id, side_data, shard = plus
+        job_type, submission_id, side_data, shard = plus
 
         # If worker was ignored, do nothing.
         if self.pool.release_worker(shard):
@@ -1034,7 +1115,12 @@ class EvaluationService(Service):
                              "in the database." % (user_test_id))
                 return
 
-        # TODO - Fill this stub
+            if user_test_to_compile(user_test):
+                self.push_in_queue((EvaluationService.
+                                    JOB_TYPE_TEST_COMPILATION,
+                                    user_test_id),
+                                   EvaluationService.JOB_PRIORITY_HIGH,
+                                   user_test.timestap)
 
     @rpc_method
     def invalidate_submission(self,
