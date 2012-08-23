@@ -76,6 +76,8 @@ class Config:
         self.cookie_duration = 1800
         self.submit_local_copy = True
         self.submit_local_copy_path = "%s/submissions/"
+        self.tests_local_copy = True
+        self.tests_local_copy_path = "%s/tests/"
         self.ip_lock = True
         self.block_hidden_users = False
         self.is_proxy_used = False

@@ -650,3 +650,128 @@ td.token_rules p:last-child {
     white-space: nowrap;
 }
 
+
+/** Test interface */
+
+.test_interface .nav-tabs li {
+    display: block;
+    width: 33%;
+}
+
+.test_interface .nav-tabs li a {
+    display: block;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    text-align: center;
+}
+
+.test_interface .tab-content {
+    overflow-x: hidden;
+}
+
+.submit_test {
+    margin-bottom: 20px;
+}
+
+.submit_test form {
+    margin-bottom: 0;
+}
+
+.submit_test .control-group {
+    margin-bottom: 0;
+}
+
+.submit_test .control-group:last-of-type {
+    margin-top: 10px;
+}
+
+.submit_test .control-label {
+    width: 100px;
+    padding-top: 4px;
+    margin-bottom: 4px;
+}
+
+.submit_test .controls {
+    margin-left: 110px;
+}
+
+.submit_test input[type="file"] {
+    height: auto;
+    line-height: 18px;
+}
+
+.usertest_list colgroup col.time,
+.usertest_list colgroup col.datetime {
+    width: 1%;
+}
+
+.usertest_list colgroup col.status {
+    width: 20%;
+}
+
+.usertest_list colgroup col.input {
+    width: 20%;
+}
+
+.usertest_list colgroup col.output {
+    width: 20%;
+}
+
+.usertest_list colgroup col.files {
+    width: 10%;
+}
+
+.usertest_list tbody tr td.no_usertests {
+    font-style: italic;
+    text-align: center !important;
+}
+
+.usertest_list tbody tr td.time,
+.usertest_list tbody tr td.datetime {
+    white-space: nowrap;
+}
+
+.usertest_list tbody tr td.status .details {
+    float: right;
+    cursor: pointer;
+}
+
+.usertest_list tbody tr td.input,
+.usertest_list tbody tr td.output,
+.usertest_list tbody tr td.files {
+    padding: 3px;
+}
+
+.usertest_list tbody tr td.input .btn,
+.usertest_list tbody tr td.output .btn,
+.usertest_list tbody tr td.files .btn {
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+    white-space: nowrap;
+}
+
+#usertest_detail .modal-body {
+    position: relative;
+    height: 400px;
+}
+
+#usertest_detail .modal-body .loading {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 16px;
+    font-style: italic;
+    margin-top: -16px; /* half the height of the image */
+}
+
+#usertest_detail .modal-body .loading img {
+    display: block;
+    height: 32px;
+    width: 32px;
+    margin: 0 auto 12px;
+}
+

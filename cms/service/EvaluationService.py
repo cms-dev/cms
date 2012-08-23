@@ -419,11 +419,11 @@ class WorkerPool:
                                                     session)
                 job_ = EvaluationJob.from_submission(submission)
             elif action == EvaluationService.JOB_TYPE_TEST_COMPILATION:
-                user_test = UserTest.get_from_it(object_id,
+                user_test = UserTest.get_from_id(object_id,
                                                  session)
                 job_ = CompilationJob.from_user_test(user_test)
             elif action == EvaluationService.JOB_TYPE_TEST_EVALUATION:
-                user_test = UserTest.get_from_it(object_id,
+                user_test = UserTest.get_from_id(object_id,
                                                  session)
                 job_ = EvaluationJob.from_user_test(user_test)
 
@@ -1136,7 +1136,7 @@ class EvaluationService(Service):
                                     JOB_TYPE_TEST_COMPILATION,
                                     user_test_id),
                                    EvaluationService.JOB_PRIORITY_HIGH,
-                                   user_test.timestap)
+                                   user_test.timestamp)
 
     @rpc_method
     def invalidate_submission(self,

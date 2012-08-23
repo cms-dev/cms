@@ -116,7 +116,7 @@ class UserTest(Base):
                  compilation_text=None, compilation_tries=0,
                  executables=None,
                  compilation_shard=None, compilation_sandbox=None,
-                 evaluation_outcome=None, evaluation_tries=None,
+                 evaluation_outcome=None, evaluation_tries=0,
                  evaluation_shard=None, evaluation_sandbox=None):
         self.user = user
         self.task = task

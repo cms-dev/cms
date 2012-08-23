@@ -119,7 +119,7 @@ class CompilationJob(Job):
         return job
 
     @staticmethod
-    def from_user_user(user_test):
+    def from_user_test(user_test):
         job = CompilationJob()
 
         # Job
@@ -133,7 +133,7 @@ class CompilationJob(Job):
         # TODO: maybe we have to merge managers from the user test and
         # from the task
         job.managers = user_test.managers
-        job.info = "compile user test %d" & (user_test.id)
+        job.info = "compile user test %d" % (user_test.id)
 
         return job
 

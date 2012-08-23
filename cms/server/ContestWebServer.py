@@ -55,7 +55,7 @@ from cms.async import ServiceCoord
 from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
-     Submission, Token, File
+     Submission, Token, File, UserTest, UserTestFile, UserTestManager
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, catch_exceptions, extract_archive, \
@@ -1086,6 +1086,424 @@ class SubmissionDetailsHandler(BaseHandler):
         self.render("submission_details.html", task=task, s=submission)
 
 
+class UserTestInterfaceHandler(BaseHandler):
+    """Serve the interface to test programs.
+
+    """
+    @tornado.web.authenticated
+    @actual_phase_required(0)
+    def get(self):
+        usertests = dict()
+        default_task = None
+
+        for task in self.contest.tasks:
+            if self.request.query == task.name:
+                default_task = task
+            usertests[task.id] = self.sql_session.query(UserTest)\
+                .filter(UserTest.user == self.current_user)\
+                .filter(UserTest.task == task).all()
+
+        if default_task is None:
+            default_task = self.contest.tasks[0]
+
+        self.render("test_interface.html", default_task=default_task,
+                    usertests=usertests, **self.r_params)
+
+
+class UserTestHandler(BaseHandler):
+
+    refresh_cookie = False
+
+    # The following code has been taken from SubmitHandler and adapted
+    # for UserTests.
+
+    @tornado.web.authenticated
+    @actual_phase_required(0)
+    def post(self, task_name):
+        try:
+            task = self.contest.get_task(task_name)
+        except KeyError:
+            raise tornado.web.HTTPError(404)
+
+        # Enforce minimum time between submissions for the same task.
+        last_usertest = self.sql_session.query(UserTest)\
+            .filter(UserTest.task == task)\
+            .filter(UserTest.user == self.current_user)\
+            .order_by(UserTest.timestamp.desc()).first()
+        if last_usertest is not None and \
+               self.timestamp - last_usertest.timestamp < \
+               timedelta(seconds=config.min_submission_interval):
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Test too frequent!"),
+                self._("For each task, you can test "
+                       "again after %s seconds from last test.") %
+                config.min_submission_interval,
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            return
+
+        # Ensure that the user did not submit multiple files with the
+        # same name.
+        if any(len(x) != 1 for x in self.request.files.values()):
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Invalid test format!"),
+                self._("Please select the correct files."),
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            return
+
+        # If the user submitted an archive, extract it and use content
+        # as request.files.
+        if len(self.request.files) == 1 and \
+               self.request.files.keys()[0] == "submission":
+            archive_data = self.request.files["submission"][0]
+            del self.request.files["submission"]
+
+            # Extract the files from the archive.
+            temp_archive_file, temp_archive_filename = \
+                tempfile.mkstemp(dir=config.temp_dir)
+            with os.fdopen(temp_archive_file, "w") as temp_archive_file:
+                temp_archive_file.write(archive_data["body"])
+
+            archive_contents = extract_archive(temp_archive_filename,
+                archive_data["filename"])
+
+            if archive_contents is None:
+                self.application.service.add_notification(
+                    self.current_user.username,
+                    self.timestamp,
+                    self._("Invalid archive format!"),
+                    self._("The submitted archive could not be opened."),
+                    ContestWebServer.NOTIFICATION_ERROR)
+                self.redirect("/testing?%s" % quote(task.name, safe=''))
+                return
+
+            for item in archive_contents:
+                self.request.files[item["filename"]] = [item]
+
+        # This ensure that the user sent one file for every name in
+        # submission format and no more. Less is acceptable if task
+        # type says so.
+        task_type = get_task_type(task=task)
+        required = set([x.filename for x in task.submission_format] + task_type.get_user_managers() + ["input"])
+        provided = set(self.request.files.keys())
+        if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
+                                         and required.issuperset(provided))):
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Invalid test format!"),
+                self._("Please select the correct files."),
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            return
+
+        # Add submitted files. After this, files is a dictionary indexed
+        # by *our* filenames (something like "output01.txt" or
+        # "taskname.%l", and whose value is a couple
+        # (user_assigned_filename, content).
+        files = {}
+        for uploaded, data in self.request.files.iteritems():
+            files[uploaded] = (data[0]["filename"], data[0]["body"])
+
+        # If we allow partial submissions, implicitly we recover the
+        # non-submitted files from the previous submission. And put them
+        # in file_digests (i.e. like they have already been sent to FS).
+        submission_lang = None
+        file_digests = {}
+        retrieved = 0
+        if task_type.ALLOW_PARTIAL_SUBMISSION and last_submission is not None:
+            for filename in required.difference(provided):
+                if filename in last_usertest.files:
+                    # If we retrieve a language-dependent file from
+                    # last submission, we take not that language must
+                    # be the same.
+                    if "%l" in filename:
+                        submission_lang = last_usertest.language
+                    file_digests[filename] = \
+                        last_usertest.files[filename].digest
+                    retrieved += 1
+
+        # We need to ensure that everytime we have a .%l in our
+        # filenames, the user has one amongst ".cpp", ".c", or ".pas,
+        # and that all these are the same (i.e., no mixed-language
+        # submissions).
+        def which_language(user_filename):
+            """Determine the language of user_filename from its
+            extension.
+
+            user_filename (string): the file to test.
+            return (string): the extension of user_filename, or None
+                             if it is not a recognized language.
+
+            """
+            extension = os.path.splitext(user_filename)[1]
+            try:
+                return Submission.LANGUAGES_MAP[extension]
+            except KeyError:
+                return None
+
+        error = None
+        for our_filename in files:
+            user_filename = files[our_filename][0]
+            if our_filename.find(".%l") != -1:
+                lang = which_language(user_filename)
+                if lang is None:
+                    error = self._("Cannot recognize test's language.")
+                    break
+                elif submission_lang is not None and \
+                        submission_lang != lang:
+                    error = self._("All sources must be in the same language.")
+                    break
+                else:
+                    submission_lang = lang
+        if error is not None:
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Invalid test!"),
+                error,
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            return
+
+        # Check if submitted files are small enough.
+        if any([len(f[1]) > config.max_submission_length
+                for f in files.values()]):
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Submission too big!"),
+                self._("Each files must be at most %d bytes long.") %
+                    config.max_submission_length,
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            return
+
+        # All checks done, submission accepted.
+
+        # Attempt to store the submission locally to be able to
+        # recover a failure.
+        local_copy_saved = False
+
+        if config.tests_local_copy:
+            try:
+                path = os.path.join(
+                    config.tests_local_copy_path.replace("%s",
+                                                         config.data_dir),
+                    self.current_user.username)
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                with codecs.open(os.path.join(path, str(int(make_timestamp(self.timestamp)))),
+                                 "w", "utf-8") as file_:
+                    pickle.dump((self.contest.id,
+                                 self.current_user.id,
+                                 task.id,
+                                 files), file_)
+                local_copy_saved = True
+            except Exception as error:
+                logger.error("Test local copy failed - %s" %
+                             traceback.format_exc())
+
+        # We now have to send all the files to the destination...
+        try:
+            for filename in files:
+                digest = self.application.service.file_cacher.put_file(
+                    description="Test file %s sent by %s at %d." % (
+                        filename,
+                        self.current_user.username,
+                        make_timestamp(self.timestamp)),
+                    binary_data=files[filename][1])
+                file_digests[filename] = digest
+
+        # In case of error, the server aborts the submission
+        except Exception as error:
+            logger.error("Storage failed! %s" % error)
+            if local_copy_saved:
+                message = "In case of emergency, this server has a local copy."
+            else:
+                message = "No local copy stored! Your test was ignored."
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Test storage failed!"),
+                self._(message),
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            return
+
+        # All the files are stored, ready to submit!
+        logger.info("All files stored for test sent by %s" %
+                    self.current_user.username)
+        usertest = UserTest(user=self.current_user,
+                            task=task,
+                            timestamp=self.timestamp,
+                            files={},
+                            managers={},
+                            input=file_digests["input"],
+                            language=submission_lang)
+
+        for filename in [x.filename for x in task.submission_format]:
+            digest = file_digests[filename]
+            self.sql_session.add(UserTestFile(digest, filename, usertest))
+        for filename in task_type.get_user_managers():
+            digest = file_digests[filename]
+            if submission_lang is not None:
+                filename = filename.replace("%l", submission_lang)
+            self.sql_session.add(UserTestManager(digest, filename, usertest))
+
+        self.sql_session.add(usertest)
+        self.sql_session.commit()
+        self.application.service.evaluation_service.new_user_test(
+            user_test_id=usertest.id)
+        self.application.service.add_notification(
+            self.current_user.username,
+            self.timestamp,
+            self._("Test received"),
+            self._("Your test has been received "
+                   "and is currently being executed."),
+            ContestWebServer.NOTIFICATION_SUCCESS)
+        self.redirect("/testing?%s" % quote(task.name, safe=''))
+
+
+
+class UserTestStatusHandler(BaseHandler):
+
+    refresh_cookie = False
+
+    @catch_exceptions
+    @tornado.web.authenticated
+    @actual_phase_required(0)
+    def get(self, task_name, usertest_num):
+        try:
+            task = self.contest.get_task(task_name)
+        except KeyError:
+            raise tornado.web.HTTPError(404)
+
+        usertest = self.sql_session.query(UserTest)\
+            .filter(UserTest.user == self.current_user)\
+            .filter(UserTest.task == task)\
+            .order_by(UserTest.timestamp)\
+            .offset(int(usertest_num) - 1).first()
+        if usertest is None:
+            raise tornado.web.HTTPError(404)
+
+        data = dict()
+        if not submission.compiled():
+            data["status"] = 1
+            data["status_text"] = "Compiling..."
+        elif submission.compilation_outcome == "fail":
+            data["status"] = 2
+            data["status_text"] = "Compilation failed <a class=\"details\">details</a>"
+        elif not submission.evaluated():
+            data["status"] = 3
+            data["status_text"] = "Executing..."
+        else:
+            data["status"] = 4
+            data["status_text"] = "Executed <a class=\"details\">details</a>"
+
+        self.write(data)
+
+
+class UserTestDetailsHandler(BaseHandler):
+
+    refresh_cookie = False
+
+    @catch_exceptions
+    @tornado.web.authenticated
+    @actual_phase_required(0)
+    def get(self, task_name, usertest_num):
+        try:
+            task = self.contest.get_task(task_name)
+        except KeyError:
+            raise tornado.web.HTTPError(404)
+
+        usertest = self.sql_session.query(UserTest)\
+            .filter(UserTest.user == self.current_user)\
+            .filter(UserTest.task == task)\
+            .order_by(UserTest.timestamp)\
+            .offset(int(usertest_num) - 1).first()
+        if usertest is None:
+            raise tornado.web.HTTPError(404)
+
+        self.render("usertest_details.html", task=task, t=usertest)
+
+
+class UserTestIOHandler(FileHandler):
+    """Send back a submission file.
+
+    """
+    @catch_exceptions
+    @tornado.web.authenticated
+    @actual_phase_required(0)
+    @tornado.web.asynchronous
+    def get(self, task_name, usertest_num, io):
+        try:
+            task = self.contest.get_task(task_name)
+        except KeyError:
+            raise tornado.web.HTTPError(404)
+
+        usertest = self.sql_session.query(UserTest)\
+            .filter(UserTest.user == self.current_user)\
+            .filter(UserTest.task == task)\
+            .order_by(UserTest.timestamp)\
+            .offset(int(usertest_num) - 1).first()
+        if usertest is None:
+            raise tornado.web.HTTPError(404)
+
+        digest = getattr(usertest, io)
+        self.sql_session.close()
+
+        mimetype = 'text/plain'
+
+        self.fetch(digest, mimetype, io)
+
+
+class UserTestFileHandler(FileHandler):
+    """Send back a submission file.
+
+    """
+    @catch_exceptions
+    @tornado.web.authenticated
+    @actual_phase_required(0)
+    @tornado.web.asynchronous
+    def get(self, task_name, usertest_num, filename):
+        try:
+            task = self.contest.get_task(task_name)
+        except KeyError:
+            raise tornado.web.HTTPError(404)
+
+        usertest = self.sql_session.query(UserTest)\
+            .filter(UserTest.user == self.current_user)\
+            .filter(UserTest.task == task)\
+            .order_by(UserTest.timestamp)\
+            .offset(int(usertest_num) - 1).first()
+        if usertest is None:
+            raise tornado.web.HTTPError(404)
+
+        if filename not in usertest.files:
+            raise tornado.web.HTTPError(404)
+
+        # filename follows our convention (e.g. 'foo.%l'), real_filename
+        # follows the one we present to the user (e.g. 'foo.c').
+        real_filename = filename
+        if usertest.language is not None:
+            real_filename = filename.replace("%l", submission.language)
+
+        digest = usertest.files[filename].digest
+        self.sql_session.close()
+
+        mimetype = get_type_for_file_name(real_filename)
+        if mimetype is None:
+            mimetype = 'application/octet-stream'
+
+        self.fetch(digest, mimetype, real_filename)
+
+
 class StaticFileGzHandler(tornado.web.StaticFileHandler):
     """Handle files which may be gzip-compressed on the filesystem."""
     def get(self, path, *args, **kwargs):
@@ -1116,15 +1534,21 @@ _cws_handlers = [
     (r"/tasks/(.*)/submissions", TaskSubmissionsHandler),
     (r"/tasks/(.*)/statements/(.*)", TaskStatementViewHandler),
     (r"/tasks/(.*)/attachments/(.*)", TaskAttachmentViewHandler),
-    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/files/(.*)", SubmissionFileHandler),
+    (r"/tasks/(.*)/submit", SubmitHandler),
     (r"/tasks/(.*)/submissions/([1-9][0-9]*)", SubmissionStatusHandler),
     (r"/tasks/(.*)/submissions/([1-9][0-9]*)/details", SubmissionDetailsHandler),
-    (r"/tasks/(.*)/submit", SubmitHandler),
+    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/files/(.*)", SubmissionFileHandler),
     (r"/tasks/(.*)/submissions/([1-9][0-9]*)/token", UseTokenHandler),
+    (r"/tasks/(.*)/test", UserTestHandler),
+    (r"/tasks/(.*)/tests/([1-9][0-9]*)", UserTestStatusHandler),
+    (r"/tasks/(.*)/tests/([1-9][0-9]*)/details", UserTestDetailsHandler),
+    (r"/tasks/(.*)/tests/([1-9][0-9]*)/(input|output)", UserTestIOHandler),
+    (r"/tasks/(.*)/tests/([1-9][0-9]*)/files/(.*)", UserTestFileHandler),
     (r"/communication", CommunicationHandler),
     (r"/documentation", DocumentationHandler),
     (r"/notifications", NotificationsHandler),
     (r"/question", QuestionHandler),
+    (r"/testing", UserTestInterfaceHandler),
     (r"/stl/(.*)", StaticFileGzHandler, {"path": config.stl_path}),
     ]
 

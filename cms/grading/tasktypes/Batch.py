@@ -110,11 +110,9 @@ class Batch(TaskType):
     def get_user_managers(self):
         """See TaskType.get_user_managers."""
         if self.job.task_type_parameters[0] == "grader":
-            return dict(map(lambda x: (x, ["grader.%s" % (x)]),
-                            Submission.LANGUAGES))
+            return ["grader.%l"]
         else:
-            return dict(map(lambda x: (x, []),
-                            Submission.LANGUAGES))
+            return []
 
     def compile(self):
         """See TaskType.compile."""

@@ -1,0 +1,182 @@
+{% extends base.html %}
+
+{% block js %}
+
+$(document).on("click", ".usertest_list tbody tr td.status .details", function (event) {
+    var $this = $(this);
+    var task_id = $this.parent().parent().parent().parent().attr("data-task");
+    var submission_id = $this.parent().parent().attr("data-submission");
+    var modal = $("#usertest_detail");
+    var modal_body = modal.children(".modal-body");
+    modal_body.html('<div class="loading"><img src="{{ url_root }}/static/loading.gif"/>loading...</div>');
+    modal_body.load("{{ url_root }}/tasks/" + encodeURIComponent(task_id) + "/submissions/" + submission_id + "/details");
+    modal.modal("show");
+});
+
+update_usertest_row = function (task_id, submission_id, data) {
+    var row = $(".usertest_list[data-task=\"" + task_id + "\"] tbody tr[data-submission=\"" + submission_id + "\"]");
+    row.attr("data-status", data["status"]);
+    row.children("td.status").html(data["status_text"]);
+    if (data["status"] != 5 && data["status"] != 2) {
+        schedule_update_submission_row(submission_id);
+    }
+}
+
+schedule_update_usertest_row = function (task_id, usertest_id) {
+    setTimeout(function () {
+        $.get("{{ url_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + usertest_id, function (data) {
+            update_usertest_row(task_id, usertest_id, data);
+        });
+    }, 2000);
+}
+
+$(document).ready(function () {
+    $('.usertest_list tbody tr[data-status][data-status!="2"][data-status!="4"]').each(function (idx, elem) {
+        var $this = $(this);
+        schedule_update_usertest_row($this.parent().parent().attr("data-task"), $this.attr("data-usertest"));
+    });
+});
+
+{% end %}
+
+{% block core %}
+
+{% from cms.grading.tasktypes import get_task_type %}
+
+{% if actual_phase == 0 %}
+
+<div class="span9 test_interface">
+
+<div class="page-header">
+    <h1>Testing</h1>
+</div>
+
+
+<ul class="nav nav-tabs">
+{% for i, task in enumerate(contest.tasks) %}
+    {% if task.task_type != "OutputOnly" %}  {% comment FIXME Ugly hack... we should use something more flexible %}
+    <li{% if task == default_task %} class="active"{% end %}><a href="#test_{{ task.name }}" data-toggle="tab">{{ task.name }}</a></li>
+    {% end %}
+{% end %}
+</ul>
+
+<div class="tab-content">
+{% for i, task in enumerate(contest.tasks) %}
+    {% if task.task_type != "OutputOnly" %}  {% comment FIXME Ugly hack... we should use something more flexible %}
+        {% set task_type = get_task_type(task=task) %}
+<div class="tab-pane{% if task == default_task %} active{% end %}" id="test_{{ task.name }}">
+
+<h2 style="margin-bottom: 10px">{{ _("Submit a test") }}</h2>
+
+<div class="submit_test row">
+    <div class="span5">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/test" method="POST">
+            <fieldset>
+{% for idx, filename in enumerate([x.filename for x in task.submission_format] + task_type.get_user_managers() + ["input"]) %}
+                <div class="control-group">
+                    <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", "") }}</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge" id="input{{ idx }}" name="{{ filename }}"/>
+                    </div>
+                </div>
+{% end %}
+                <div class="control-group">
+                    <div class="controls">
+                        <input class="btn btn-success" type="submit" value="{{ _("Submit") }}"></input>
+                        <input class="btn" type="reset" value="{{ _("Reset") }}"></input>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+    <div class="span4">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/test" method="POST">
+            <fieldset>
+                <div class="control-group">
+                    <label class="control-label" for="input_zip">submission.zip</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="controls">
+                        <input class="btn btn-success" type="submit" value="{{ _("Submit") }}"></input>
+                        <input class="btn" type="reset" value="{{ _("Reset") }}"></input>
+                    </div>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+
+<h2 style="margin: 40px 0 10px">Previous tests</h2>
+
+
+{% comment FIXME The following check doesn't take timezones into account. Correct it! %}
+{% set show_date = any(t.timestamp.date() != datetime.date.today() for t in usertests[task.id]) %}
+
+
+<table class="usertest_list table table-bordered table-striped" data-task="{{ task.name }}">
+    <colgroup>
+{% if show_date %}
+        <col class="datetime"/>
+{% else %}
+        <col class="time"/>
+{% end %}
+        <col class="status"/>
+        <col class="input"/>
+        <col class="output"/>
+        <col class="files"/>
+    </colgroup>
+    <thead>
+        <tr>
+{% if show_date %}
+            <th class="datetime">Date and time</th>
+{% else %}
+            <th class="time">Time</th>
+{% end %}
+            <th class="status">Status</th>
+            <th class="input">Input</th>
+            <th class="output">Output</th>
+            <th class="files">Files</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% if len(usertests[task.id]) == 0 %}
+        <tr>
+            <td colspan="6" class="no_usertests">{{ _("no tests yet") }}</td>
+        </tr>
+    {% else %}
+        {% for t_idx, t in enumerate(sorted(usertests[task.id], key=lambda t: t.timestamp, reverse=True)) %}
+            {% set t_idx = len(usertests[task.id]) - t_idx %}
+            {% include usertest_row.html %}
+        {% end %}
+    {% end %}
+    </tbody>
+</table>
+
+
+
+
+</div>
+    {% end %}
+{% end %}
+</div>
+
+<div class="modal fade hide" id="usertest_detail">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">×</button>
+        <h3>Test details</h3>
+    </div>
+    <div class="modal-body">
+    </div>
+    <div class="modal-footer">
+        <a href="#" class="btn" data-dismiss="modal">Close</a>
+    </div>
+</div>
+
+</div>
+{% end %}
+
+{% end %}

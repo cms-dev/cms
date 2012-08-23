@@ -65,7 +65,7 @@ class OutputOnly(TaskType):
 
     def get_user_managers(self):
         """See TaskType.get_user_managers."""
-        return dict(map(lambda x: (x, []), Submission.LANGUAGES))
+        return []
 
     def compile(self):
         """See TaskType.compile."""

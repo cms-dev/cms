@@ -176,9 +176,9 @@ class TaskType:
         """Return the managers that must be provided by the user when
         requesting a user test.
 
-        return (dict of list of str): a dict whose keys are language
-        codes and whose values are lists of filename that must be
-        provided as managers when requesting a user test.
+        return (list of str): a list of filenames that must be provided
+        as managers when requesting a user test (they may include a '%l'
+        as a "language wildcard").
 
         """
         raise NotImplementedError("Please subclass this class.")

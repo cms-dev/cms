@@ -68,8 +68,7 @@ class Communication(TaskType):
 
     def get_user_managers(self):
         """See TaskType.get_user_managers."""
-        return dict(map(lambda x: (x, ["stub.%s" % (x)]),
-                        Submission.LANGUAGES))
+        return ["stub.%l"]
 
     def compile(self):
         """See TaskType.compile."""
