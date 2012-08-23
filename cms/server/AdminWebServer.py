@@ -829,10 +829,10 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
         memory_limit = self.get_non_negative_int(
             "memory_limit",
             None)
-        if task.memory_limit == 0:
-                self.write("Invalid memory limit.")
-                self.finish()
-                return
+        if memory_limit == 0:
+            self.write("Invalid memory limit.")
+            self.finish()
+            return
 
         # Look for a task type with the specified name.
         try:
