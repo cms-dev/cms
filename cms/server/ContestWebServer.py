@@ -495,7 +495,12 @@ class TaskStatementViewHandler(FileHandler):
         statement = task.statements[lang_code].digest
         self.sql_session.close()
 
-        self.fetch(statement, "application/pdf", "%s.pdf" % task.name)
+        if lang_code != '':
+            filename = "%s (%s).pdf" % (task.name, lang_code)
+        else:
+            filename = "%s.pdf" % task.name
+
+        self.fetch(statement, "application/pdf", filename)
 
 
 class TaskAttachmentViewHandler(FileHandler):
