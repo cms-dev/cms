@@ -998,7 +998,7 @@ class EvaluationService(Service):
         submission. ES takes the right countermeasures, i.e., it
         schedules it for compilation.
 
-        submission_id (string): the id of the new submission.
+        submission_id (int): the id of the new submission.
 
         returns (bool): True if everything went well.
 
@@ -1007,7 +1007,7 @@ class EvaluationService(Service):
             submission = Submission.get_from_id(submission_id, session)
             if submission is None:
                 logger.error("[new_submission] Couldn't find submission "
-                             "%s in the database." % submission_id)
+                             "%d in the database." % submission_id)
                 return
 
             if to_compile(submission):
