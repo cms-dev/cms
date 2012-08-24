@@ -60,6 +60,7 @@ class ScriptsContainer(object):
             ("20120724", "add_languages"),
             ("20120805", "support_output_only"),
             ("20120823", "add_user_tests"),
+            ("20120824", "add_evaluation_text_to_user_test"),
             ]
         self.list.sort()
 
@@ -718,6 +719,15 @@ DROP INDEX IF EXISTS ix_user_test_managers_user_test_id;""")
 CREATE INDEX ix_user_test_managers_user_test_id ON user_test_managers (user_test_id);""")
 
             session.commit()
+
+    @staticmethod
+    def add_evaluation_text_to_user_test():
+        """Add the evaluation_text column to table user tests.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE user_tests "
+                            "ADD COLUMN evaluation_text VARCHAR;")
 
 
 def execute_single_script(scripts_container, script):

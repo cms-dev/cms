@@ -1022,7 +1022,6 @@ class EvaluationService(Service):
                 user_test.evaluation_tries += 1
                 user_test.evaluation_outcome = 'ok'
                 user_test.evaluation_shard = job.shard
-                user_test.evaluation_sandbox = ":".join(job.sandboxes)
 
                 try:
                     [evaluation] = job.evaluations.values()
@@ -1034,6 +1033,9 @@ class EvaluationService(Service):
                     return
                 else:
                     user_test.output = evaluation['output']
+                    user_test.evaluation_text = evaluation['text']
+                    user_test.evaluation_sandbox = \
+                        ":".join(evaluation['sandboxes'])
 
                 self.user_test_evaluation_ended(user_test)
 

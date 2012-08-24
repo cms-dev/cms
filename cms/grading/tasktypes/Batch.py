@@ -238,6 +238,8 @@ class Batch(TaskType):
         elif not is_evaluation_passed(plus):
             outcome = 0.0
             text = human_evaluation_message(plus)
+            if self.job.get_output:
+                evaluation['output'] = None
 
         # Otherwise, advance to checking the solution
         else:

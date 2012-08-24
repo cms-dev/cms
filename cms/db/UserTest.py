@@ -95,6 +95,7 @@ class UserTest(Base):
     # Evaluation outcome (can be None = yet to evaluate, "ok" =
     # evaluation successful).
     evaluation_outcome = Column(String, nullable=True)
+    evaluation_text = Column(String, nullable=True)
 
     # Number of attempts of evaluation.
     evaluation_tries = Column(Integer, nullable=False)
@@ -115,8 +116,9 @@ class UserTest(Base):
                  compilation_text=None, compilation_tries=0,
                  executables=None,
                  compilation_shard=None, compilation_sandbox=None,
-                 evaluation_outcome=None, evaluation_tries=0,
-                 evaluation_shard=None, evaluation_sandbox=None):
+                 evaluation_outcome=None, evaluation_text=None,
+                 evaluation_tries=0, evaluation_shard=None,
+                 evaluation_sandbox=None):
         self.user = user
         self.task = task
         self.timestamp = timestamp
@@ -132,6 +134,7 @@ class UserTest(Base):
         self.compilation_shard = compilation_shard
         self.compilation_sandbox = compilation_sandbox
         self.evaluation_outcome = evaluation_outcome
+        self.evaluation_text = evaluation_text
         self.evaluation_tries = evaluation_tries
         self.evaluation_shard = evaluation_shard
         self.evaluation_sandbox = evaluation_sandbox
@@ -159,6 +162,7 @@ class UserTest(Base):
                             for executable
                             in self.executables.itervalues()],
             'evaluation_outcome': self.evaluation_outcome,
+            'evaluation_text': self.evaluation_text,
             'evaluation_tries': self.evaluation_tries,
             'evaluation_shard': self.evalution_shard,
             'evaluation_sandbox': self.evaluation_sandbox,
