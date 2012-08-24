@@ -127,13 +127,20 @@ class CompilationJob(Job):
         job.task_type_parameters = json.loads(
             user_test.task.task_type_parameters)
 
-        # CompilationJob
+        # CompilationJob; dict() is required to detach the dictionary
+        # that gets added to the Job from the control of SQLAlchemy
         job.language = user_test.language
-        job.files = user_test.files
-        # TODO: maybe we have to merge managers from the user test and
-        # from the task
-        job.managers = user_test.managers
+        job.files = dict(user_test.files)
+        job.managers = dict(user_test.managers)
         job.info = "compile user test %d" % (user_test.id)
+
+        # Add the managers to be got from the Task; get_task_type must
+        # be imported here to avoid circular dependencies
+        from cms.grading.tasktypes import get_task_type
+        task_type = get_task_type(task=user_test.task)
+        for manager_filename in task_type.get_auto_managers():
+            job.managers[manager_filename] = \
+                user_test.task.managers[manager_filename]
 
         return job
 
@@ -220,13 +227,14 @@ class EvaluationJob(Job):
         job.task_type_parameters = json.loads(
             submission.task.task_type_parameters)
 
-        # EvaluationJob
-        job.executables = submission.executables
+        # EvaluationJob; dict() is required to detach the dictionary
+        # that gets added to the Job from the control of SQLAlchemy
+        job.executables = dict(submission.executables)
         job.testcases = submission.task.testcases
         job.time_limit = submission.task.time_limit
         job.memory_limit = submission.task.memory_limit
-        job.managers = submission.task.managers
-        job.files = submission.files
+        job.managers = dict(submission.task.managers)
+        job.files = dict(submission.files)
         job.info = "evaluate submission %d" % (submission.id)
 
         return job
@@ -246,11 +254,17 @@ class EvaluationJob(Job):
                                   output=None)]
         job.time_limit = user_test.task.time_limit
         job.memory_limit = user_test.task.memory_limit
-        # TODO: maybe we have to merge managers from the user test and
-        # from the task
-        job.managers = user_test.managers
+        job.managers = dict(user_test.managers)
         job.files = user_test.files
         job.info = "evaluate user test %d" % (user_test.id)
+
+        # Add the managers to be got from the Task; get_task_type must
+        # be imported here to avoid circular dependencies
+        from cms.grading.tasktypes import get_task_type
+        task_type = get_task_type(task=user_test.task)
+        for manager_filename in task_type.get_auto_managers():
+            job.managers[manager_filename] = \
+                user_test.task.managers[manager_filename]
 
         return job
 

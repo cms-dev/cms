@@ -176,9 +176,19 @@ class TaskType:
         """Return the managers that must be provided by the user when
         requesting a user test.
 
-        return (list of str): a list of filenames that must be provided
-        as managers when requesting a user test (they may include a '%l'
-        as a "language wildcard").
+        return (list of str): a list of filenames (they may include a
+                              '%l' as a "language wildcard").
+
+        """
+        raise NotImplementedError("Please subclass this class.")
+
+    def get_auto_managers(self):
+        """Return the managers that must be provided by the
+        EvaluationService (picking them from the Task) when compiling
+        or evaluating a user test.
+
+        return (list of str): a list of filenames (they may include a
+                             '%l' as a "language wildcard").
 
         """
         raise NotImplementedError("Please subclass this class.")

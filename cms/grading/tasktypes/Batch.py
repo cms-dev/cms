@@ -114,6 +114,10 @@ class Batch(TaskType):
         else:
             return []
 
+    def get_auto_managers(self):
+        """See TaskType.get_auto_managers."""
+        return []
+
     def compile(self):
         """See TaskType.compile."""
         # Detect the submission's language. The checks about the
