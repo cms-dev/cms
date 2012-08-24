@@ -923,15 +923,16 @@ class EvaluationService(Service):
         if self.pool.release_worker(shard):
             return
 
+        job_success = True
         if error is not None:
             logger.error("Received error from Worker: `%s'." % error)
-            return
+            job_success = False
 
         job = Job.import_from_dict_with_type(data)
 
         if not job.success:
             logger.error("Worker %s signaled action not successful." % shard)
-            return
+            job_success = False
 
         _, timestamp = side_data
 
@@ -950,14 +951,17 @@ class EvaluationService(Service):
                     return
 
                 submission.compilation_tries += 1
-                submission.compilation_outcome = 'ok' \
-                    if job.compilation_success else 'fail'
-                submission.compilation_text = job.text
-                submission.compilation_shard = job.shard
-                submission.compilation_sandbox = ":".join(job.sandboxes)
-                for executable in job.executables.itervalues():
-                    submission.executables[executable.filename] = executable
-                    session.add(executable)
+
+                if job_success:
+                    submission.compilation_outcome = 'ok' \
+                        if job.compilation_success else 'fail'
+                    submission.compilation_text = job.text
+                    submission.compilation_shard = job.shard
+                    submission.compilation_sandbox = ":".join(job.sandboxes)
+                    for executable in job.executables.itervalues():
+                        submission.executables[executable.filename] = \
+                            executable
+                        session.add(executable)
 
                 self.compilation_ended(submission)
 
@@ -970,21 +974,23 @@ class EvaluationService(Service):
                     return
 
                 submission.evaluation_tries += 1
-                submission.evaluation_outcome = "ok"
-                for test_number, info in job.evaluations.iteritems():
-                    evaluation = Evaluation(
-                        text=info['text'],
-                        outcome=info['outcome'],
-                        num=test_number,
-                        memory_used=info['plus'].get('memory_used', None),
-                        execution_time=info['plus']
-                        .get('execution_time', None),
-                        execution_wall_clock_time=info['plus']
-                        .get('execution_wall_clock_time', None),
-                        evaluation_shard=job.shard,
-                        evaluation_sandbox=":".join(job.sandboxes),
-                        submission=submission)
-                    session.add(evaluation)
+
+                if job_success:
+                    submission.evaluation_outcome = "ok"
+                    for test_number, info in job.evaluations.iteritems():
+                        evaluation = Evaluation(
+                            text=info['text'],
+                            outcome=info['outcome'],
+                            num=test_number,
+                            memory_used=info['plus'].get('memory_used', None),
+                            execution_time=info['plus']
+                            .get('execution_time', None),
+                            execution_wall_clock_time=info['plus']
+                            .get('execution_wall_clock_time', None),
+                            evaluation_shard=job.shard,
+                            evaluation_sandbox=":".join(job.sandboxes),
+                            submission=submission)
+                        session.add(evaluation)
 
                 self.evaluation_ended(submission)
 
@@ -997,17 +1003,19 @@ class EvaluationService(Service):
                     return
 
                 user_test.compilation_tries += 1
-                user_test.compilation_outcome = 'ok' \
-                    if job.compilation_success else 'fail'
-                user_test.compilation_text = job.text
-                user_test.compilation_shard = job.shard
-                user_test.compilation_sandbox = ":".join(job.sandboxes)
-                for executable in job.executables.itervalues():
-                    ut_executable = UserTestExecutable.import_from_dict(
-                        executable.export_to_dict())
-                    user_test.executables[ut_executable.filename] = \
-                        ut_executable
-                    session.add(ut_executable)
+
+                if job_success:
+                    user_test.compilation_outcome = 'ok' \
+                        if job.compilation_success else 'fail'
+                    user_test.compilation_text = job.text
+                    user_test.compilation_shard = job.shard
+                    user_test.compilation_sandbox = ":".join(job.sandboxes)
+                    for executable in job.executables.itervalues():
+                        ut_executable = UserTestExecutable.import_from_dict(
+                            executable.export_to_dict())
+                        user_test.executables[ut_executable.filename] = \
+                            ut_executable
+                        session.add(ut_executable)
 
                 self.user_test_compilation_ended(user_test)
 
@@ -1020,18 +1028,18 @@ class EvaluationService(Service):
                     return
 
                 user_test.evaluation_tries += 1
-                user_test.evaluation_outcome = 'ok'
-                user_test.evaluation_shard = job.shard
 
-                try:
-                    [evaluation] = job.evaluations.values()
-                except ValueError:
-                    logger.error("[action_finished] I expected the job "
-                                 "for a user test to contain a single "
-                                 "evaluation, while instead it has %d."
-                                 % (len(job.evaluations.values())))
-                    return
-                else:
+                if job_success:
+                    try:
+                        [evaluation] = job.evaluations.values()
+                    except ValueError:
+                        logger.error("[action_finished] I expected the job "
+                                     "for a user test to contain a single "
+                                     "evaluation, while instead it has %d."
+                                     % (len(job.evaluations.values())))
+                        return
+                    user_test.evaluation_outcome = 'ok'
+                    user_test.evaluation_shard = job.shard
                     user_test.output = evaluation['output']
                     user_test.evaluation_text = evaluation['text']
                     user_test.evaluation_sandbox = \
