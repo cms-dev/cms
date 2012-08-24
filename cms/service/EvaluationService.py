@@ -35,7 +35,7 @@ from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback
 from cms.async import ServiceCoord, get_service_shards
 from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import Contest, Evaluation, \
-     Submission, SessionGen, UserTest
+     Submission, SessionGen, UserTest, UserTestExecutable
 from cms.service import get_submissions
 from cmscommon.DateTime import make_datetime, make_timestamp
 from cms.grading.Job import Job, CompilationJob, EvaluationJob
@@ -426,6 +426,8 @@ class WorkerPool:
                 user_test = UserTest.get_from_id(object_id,
                                                  session)
                 job_ = EvaluationJob.from_user_test(user_test)
+                job_.get_output = True
+                job_.only_execution = True
 
             self._worker[shard].execute_job(
                 job_dict=job_.export_to_dict(),
@@ -943,19 +945,21 @@ class EvaluationService(Service):
                 submission = Submission.get_from_id(object_id, session)
                 if submission is None:
                     logger.critical("[action_finished] Couldn't find "
-                                    "submission %s in the database." %
+                                    "submission %d in the database." %
                                     object_id)
                     return
 
                 submission.compilation_tries += 1
-                submission.compilation_outcome = 'ok' if job.success \
-                    else 'fail'
+                submission.compilation_outcome = 'ok' \
+                    if job.compilation_success else 'fail'
                 submission.compilation_text = job.text
                 submission.compilation_shard = job.shard
                 submission.compilation_sandbox = ":".join(job.sandboxes)
                 for executable in job.executables.itervalues():
                     submission.executables[executable.filename] = executable
                     session.add(executable)
+
+                self.compilation_ended(submission)
 
             elif job_type == EvaluationService.JOB_TYPE_EVALUATION:
                 submission = Submission.get_from_id(object_id, session)
@@ -982,112 +986,184 @@ class EvaluationService(Service):
                         submission=submission)
                     session.add(evaluation)
 
+                self.evaluation_ended(submission)
+
             elif job_type == EvaluationService.JOB_TYPE_TEST_COMPILATION:
-                raise Exception("TODO")
+                user_test = UserTest.get_from_id(object_id, session)
+                if user_test is None:
+                    logger.critical("[action_finished] Couldn't find "
+                                    "user test %d in the database." %
+                                    object_id)
+                    return
+
+                user_test.compilation_tries += 1
+                user_test.compilation_outcome = 'ok' \
+                    if job.compilation_success else 'fail'
+                user_test.compilation_text = job.text
+                user_test.compilation_shard = job.shard
+                user_test.compilation_sandbox = ":".join(job.sandboxes)
+                for executable in job.executables.itervalues():
+                    ut_executable = UserTestExecutable.import_from_dict(
+                        executable.export_to_dict())
+                    user_test.executables[ut_executable.filename] = \
+                        ut_executable
+                    session.add(ut_executable)
+
+                self.user_test_compilation_ended(user_test)
 
             elif job_type == EvaluationService.JOB_TYPE_TEST_EVALUATION:
-                raise Exception("TODO")
+                user_test = UserTest.get_from_id(object_id, session)
+                if user_test is None:
+                    logger.critical("[action_finished] Couldn't find "
+                                    "user test %d in the database." %
+                                    object_id)
+                    return
+
+                user_test.evaluation_tries += 1
+                user_test.evaluation_outcome = 'ok'
+                user_test.evaluation_shard = job.shard
+                user_test.evaluation_sandbox = ":".join(job.sandboxes)
+
+                try:
+                    [evaluation] = job.evaluations.values()
+                except ValueError:
+                    logger.error("[action_finished] I expected the job "
+                                 "for a user test to contain a single "
+                                 "evaluation, while instead it has %d."
+                                 % (len(job.evaluations.values())))
+                    return
+                else:
+                    user_test.output = evaluation['output']
+
+                self.user_test_evaluation_ended(user_test)
 
             else:
                 logger.error("Invalid job type %r." % (job_type))
                 return
 
-            compilation_tries = submission.compilation_tries
-            compilation_outcome = submission.compilation_outcome
-            evaluation_tries = submission.evaluation_tries
-            evaluated = submission.evaluated()
-
             session.commit()
 
-        # Compilation.
-        if job_type == EvaluationService.JOB_TYPE_COMPILATION:
-            self.compilation_ended(object_id,
-                                   timestamp,
-                                   compilation_tries,
-                                   compilation_outcome)
-
-        # Evaluation.
-        elif job_type == EvaluationService.JOB_TYPE_EVALUATION:
-            self.evaluation_ended(object_id,
-                                  timestamp,
-                                  evaluation_tries,
-                                  evaluated)
-
-        # Other (i.e. error).
-        else:
-            logger.error("Invalid job type %r." % job_type)
-            return
-
-    def compilation_ended(self, submission_id,
-                          timestamp, compilation_tries,
-                          compilation_outcome):
+    def compilation_ended(self, submission):
         """Actions to be performed when we have a submission that has
         ended compilation . In particular: we queue evaluation if
         compilation was ok; we requeue compilation if we fail.
 
-        submission_id (string): db id of the submission.
-        timestamp (int): time of submission.
-        compilation_tries (int): # of tentative compilations.
-        compilation_outcome (string): if submission compiled ok.
+        submission (Submission): the submission.
 
         """
         # Compilation was ok, so we evaluate.
-        if compilation_outcome == "ok":
+        if submission.compilation_outcome == "ok":
             self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
-                                submission_id),
+                                submission.id),
                                EvaluationService.JOB_PRIORITY_LOW,
-                               timestamp)
+                               submission.timestamp)
         # If instead submission failed compilation, we don't evaluate.
-        elif compilation_outcome == "fail":
-            logger.info("Submission %s did not compile. Not going "
-                        "to evaluate." % submission_id)
+        elif submission.compilation_outcome == "fail":
+            logger.info("Submission %d did not compile. Not going "
+                        "to evaluate." % submission.id)
         # If compilation failed for our fault, we requeue or not.
-        elif compilation_outcome is None:
-            if compilation_tries > EvaluationService.MAX_COMPILATION_TRIES:
+        elif submission.compilation_outcome is None:
+            if submission.compilation_tries > \
+                    EvaluationService.MAX_COMPILATION_TRIES:
                 logger.error("Maximum tries reached for the "
-                             "compilation of submission %s. I will "
-                             "not try again." % submission_id)
+                             "compilation of submission %d. I will "
+                             "not try again." % submission.id)
             else:
                 # Note: lower priority (MEDIUM instead of HIGH) for
                 # compilations that are probably failing again.
                 self.push_in_queue((EvaluationService.JOB_TYPE_COMPILATION,
-                                    submission_id),
+                                    submission.id),
                                    EvaluationService.JOB_PRIORITY_MEDIUM,
-                                   timestamp)
+                                   submission.timestamp)
         # Otherwise, error.
         else:
             logger.error("Compilation outcome %r not recognized." %
-                         compilation_outcome)
+                         submission.compilation_outcome)
 
-    def evaluation_ended(self, submission_id,
-                         timestamp, evaluation_tries,
-                         evaluated):
+    def evaluation_ended(self, submission):
         """Actions to be performed when we have a submission that has
         been evaluated. In particular: we inform ScoringService on
         success, we requeue on failure.
 
-        submission_id (string): db id of the submission.
-        timestamp (int): time of submission.
-        compilation_tries (int): # of tentative evaluations.
-        evaluated (bool): if the submission is successfully evaluated.
+        submission (Submission): the submission.
 
         """
         # Evaluation successful, we inform ScoringService so it can
-        # update the score.
-        if evaluated:
-            self.scoring_service.new_evaluation(submission_id=submission_id)
+        # update the score. We need to commit the session beforehand,
+        # otherwise the ScoringService wouldn't receive the updated
+        # submission.
+        if submission.evaluated():
+            submission.get_session().commit()
+            self.scoring_service.new_evaluation(submission_id=submission.id)
         # Evaluation unsuccessful, we requeue (or not).
-        elif evaluation_tries > EvaluationService.MAX_EVALUATION_TRIES:
+        elif submission.evaluation_tries > \
+                EvaluationService.MAX_EVALUATION_TRIES:
             logger.error("Maximum tries reached for the "
-                         "evaluation of submission %s. I will "
-                         "not try again." % submission_id)
+                         "evaluation of submission %d. I will "
+                         "not try again." % submission.id)
         else:
             # Note: lower priority (LOW instead of MEDIUM) for
             # evaluations that are probably failing again.
             self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
-                                submission_id),
+                                submission.id),
                                EvaluationService.JOB_PRIORITY_LOW,
-                               timestamp)
+                               submission.timestamp)
+
+    def user_test_compilation_ended(self, user_test):
+        """Actions to be performed when we have a user test that has
+        ended compilation. In particular: we queue evaluation if
+        compilation was ok; we requeue compilation if it failed.
+
+        user_test (UserTest): the user test.
+
+        """
+        # Compilation was ok, so we evaluate
+        if user_test.compilation_outcome == 'ok':
+            self.push_in_queue((EvaluationService.JOB_TYPE_TEST_EVALUATION,
+                                user_test.id),
+                               EvaluationService.JOB_PRIORITY_LOW,
+                               user_test.timestamp)
+        # If instead user test failed compilation, we don't evaluatate
+        elif user_test.compilation_outcome == 'fail':
+            logger.info("User test %d did not compile. Not going "
+                        "to evaluate." % user_test.id)
+        # If compilation failed for our fault, we requeue or not
+        elif user_test.compilation_outcome is None:
+            if user_test.compilation_tries > \
+                    EvaluationService.MAX_TEST_COMPILATION_TRIES:
+                logger.error("Maximum tries reached for the "
+                             "compilation of user test %d. I will "
+                             "not try again." % (user_test.id))
+            else:
+                # Note: lower priority (MEDIUM instead of HIGH) for
+                # compilations that are probably failing again
+                self.push_in_queue((EvaluationService.
+                                    JOB_TYPE_TEST_COMPILATION,
+                                    user_test.id),
+                                   EvaluationService.JOB_PRIORITY_MEDIUM,
+                                   user_test.timestamp)
+
+    def user_test_evaluation_ended(self, user_test):
+        """Actions to be performed when we have a user test that has
+        been evaluated. In particular: we do nothing on success, we
+        requeue on failure.
+
+        user_test (UserTest): the user test.
+
+        """
+        if not user_test.evaluated():
+            if user_test.evaluation_tries > \
+                    EvaluationService.MAX_TEST_EVALUATION_TRIES:
+                logger.error("Maximum tries reached for the "
+                             "evaluation of user test %d. I will "
+                             "no try again." % (user_test.id))
+            else:
+                # Note: lower priority (LOW instead of MEDIUM) for
+                # evaluations that are probably failing again.
+                self.push_in_queue((EvaluationService.JOB_TYPE_TEST_EVALUATION,
+                                    user_test.id),
+                                   EvaluationService.JOB_PRIORITY_LOW,
+                                   user_test.timestamp)
 
     @rpc_method
     def new_submission(self, submission_id):

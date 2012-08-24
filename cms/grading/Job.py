@@ -242,8 +242,8 @@ class EvaluationJob(Job):
 
         # EvaluationJob
         job.executables = user_test.executables
-        job.testcases = Testcase(input=user_test.input,
-                                 output=None)
+        job.testcases = [Testcase(input=user_test.input,
+                                  output=None)]
         job.time_limit = user_test.task.time_limit
         job.memory_limit = user_test.task.memory_limit
         # TODO: maybe we have to merge managers from the user test and
@@ -251,6 +251,8 @@ class EvaluationJob(Job):
         job.managers = user_test.managers
         job.files = user_test.files
         job.info = "evaluate user test %d" % (user_test.id)
+
+        return job
 
     def export_to_dict(self):
         res = Job.export_to_dict(self)

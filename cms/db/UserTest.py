@@ -93,8 +93,7 @@ class UserTest(Base):
     compilation_sandbox = Column(String, nullable=True)
 
     # Evaluation outcome (can be None = yet to evaluate, "ok" =
-    # evaluation successful). At any time, this should be equal to
-    # evaluations != [].
+    # evaluation successful).
     evaluation_outcome = Column(String, nullable=True)
 
     # Number of attempts of evaluation.
