@@ -27,6 +27,7 @@ import subprocess
 import copy
 import functools
 import shutil
+import tempfile
 
 from cms.grading import get_compilation_command
 
@@ -48,6 +49,7 @@ GEN_DIRNAME = 'gen'
 GEN_GEN = 'GEN'
 GEN_BASENAME = 'generatore'
 GEN_EXTS = ['.py', '.sh']
+GRAD_BASENAME = 'grader'
 INPUT_DIRNAME = 'input'
 OUTPUT_DIRNAME = 'output'
 RESULT_DIRNAME = 'result'
@@ -92,11 +94,48 @@ def call(base_dir, args, stdin=None, stdout=None, stderr=None, env=None):
         env = {}
     env2 = copy.copy(os.environ)
     env2.update(env)
-    return subprocess.call(args, stdin=stdin, stdout=stdout, stderr=stderr,
-                           cwd=base_dir, env=env2)
+    res = subprocess.call(args, stdin=stdin, stdout=stdout, stderr=stderr,
+                          cwd=base_dir, env=env2)
+    if res != 0:
+        print >> sys.stderr, "Subprocess returned with error"
+        sys.exit(1)
 
 
-def build_sols_list(base_dir):
+def detect_task_name(base_dir):
+    return os.path.split(os.path.realpath(base_dir))[1]
+
+
+def detect_task_type(base_dir):
+    grad_present = any(filter(lambda x: x.startswith(GRAD_BASENAME + '.'),
+                              os.listdir(SOL_DIRNAME)))
+    stub_present = any(filter(lambda x: x.startswith('stub.'),
+                              os.listdir(SOL_DIRNAME)))
+    cor_present = os.path.exists(CHECK_DIRNAME) and \
+        any(filter(lambda x: x.startswith('correttore.'),
+                   os.listdir(CHECK_DIRNAME)))
+    man_present = os.path.exists(CHECK_DIRNAME) and \
+        any(filter(lambda x: x.startswith('manager.'),
+                   os.listdir(CHECK_DIRNAME)))
+
+    if not (cor_present or man_present or stub_present or grad_present):
+        return ["Batch", "Diff"]  # TODO Could also be an OutputOnly
+    elif not (man_present or stub_present or grad_present) and cor_present:
+        return ["Batch", "Comp"]  # TODO Could also be an OutputOnly
+    elif not (cor_present or man_present or stub_present) and grad_present:
+        return ["Batch", "Grad"]
+    elif not (man_present or stub_present) and cor_present and grad_present:
+        return ["Batch", "GradComp"]
+    elif not (cor_present or grad_present) and man_present and stub_present:
+        return ["Communication", ""]
+    else:
+        return ["Invalid", ""]
+
+
+def noop():
+    pass
+
+
+def build_sols_list(base_dir, task_type):
     sol_dir = os.path.join(base_dir, SOL_DIRNAME)
     entries = map(lambda x: os.path.join(SOL_DIRNAME, x), os.listdir(sol_dir))
     sources = filter(lambda x: endswith2(x, SOL_EXTS), entries)
@@ -104,20 +143,51 @@ def build_sols_list(base_dir):
     actions = []
     for src in sources:
         exe, lang = basename2(src, SOL_EXTS)
+        if exe == os.path.join(SOL_DIRNAME, GRAD_BASENAME):
+            continue
         # Delete the dot
         lang = lang[1:]
 
-        def compile_src(src, exe):
-            call(base_dir, get_compilation_command(lang, [src], exe,
-                                                   for_evaluation=False))
+        srcs = []
+        # The grader, when present, must be in the first position of
+        # srcs; see docstring of get_compilation_command().
+        if task_type == ['Batch', 'Grad'] or \
+                task_type == ['Batch', 'GradCor']:
+            srcs.append(os.path.join(SOL_DIRNAME,
+                                     GRAD_BASENAME + '.%s' % (lang)))
+        srcs.append(src)
 
-        actions.append(([src], [exe], functools.partial(compile_src, src, exe),
+        def compile_src(srcs, exe, lang):
+            if lang != 'pas' or len(srcs) == 1:
+                call(base_dir, get_compilation_command(lang, srcs, exe,
+                                                       for_evaluation=False))
+
+            # When using Pascal with graders, file naming conventions
+            # require us to do a bit of trickery, i.e., performing the
+            # compilation in a separate temporary directory
+            else:
+                tempdir = tempfile.mkdtemp()
+                task_name = detect_task_name(base_dir)
+                new_srcs = [os.path.split(srcs[0])[1],
+                            '%s.pas' % (task_name)]
+                new_exe = os.path.split(srcs[1])[1][:-4]
+                shutil.copyfile(srcs[0], os.path.join(tempdir, new_srcs[0]))
+                shutil.copyfile(srcs[1], os.path.join(tempdir, new_srcs[1]))
+                call(tempdir, get_compilation_command(lang, new_srcs, new_exe,
+                                                      for_evaluation=False))
+                shutil.copyfile(os.path.join(tempdir, new_exe),
+                                os.path.join(SOL_DIRNAME, new_exe))
+                shutil.copymode(os.path.join(tempdir, new_exe),
+                                os.path.join(SOL_DIRNAME, new_exe))
+
+        actions.append((srcs, [exe],
+                        functools.partial(compile_src, srcs, exe, lang),
                         'compile solution'))
 
     return actions
 
 
-def build_checker_list(base_dir):
+def build_checker_list(base_dir, task_type):
     check_dir = os.path.join(base_dir, CHECK_DIRNAME)
     actions = []
 
@@ -140,7 +210,7 @@ def build_checker_list(base_dir):
     return actions
 
 
-def build_text_list(base_dir):
+def build_text_list(base_dir, task_type):
     text_xml = os.path.join(TEXT_DIRNAME, TEXT_XML)
     text_tex = os.path.join(TEXT_DIRNAME, TEXT_TEX)
     text_pdf = os.path.join(TEXT_DIRNAME, TEXT_PDF)
@@ -203,7 +273,7 @@ def iter_file(name):
             yield l
 
 
-def build_gen_list(base_dir):
+def build_gen_list(base_dir, task_type):
     input_dir = os.path.join(base_dir, INPUT_DIRNAME)
     output_dir = os.path.join(base_dir, OUTPUT_DIRNAME)
     gen_dir = os.path.join(base_dir, GEN_DIRNAME)
@@ -228,13 +298,11 @@ def build_gen_list(base_dir):
         testcase_num += 1
 
     def make_input():
-        n = 1
+        n = 0
         try:
             os.makedirs(input_dir)
         except OSError:
             pass
-        shutil.copy(os.path.join(base_dir, INPUT0_TXT),
-                    os.path.join(input_dir, 'input0.txt'))
         for line in iter_file(os.path.join(base_dir, gen_GEN)):
             print >> sys.stderr, "Generating input # %d" % (n)
             with open(os.path.join(input_dir,
@@ -249,59 +317,59 @@ def build_gen_list(base_dir):
             os.makedirs(output_dir)
         except OSError:
             pass
-        if n == 0:
-            shutil.copy(os.path.join(base_dir, OUTPUT0_TXT),
-                        os.path.join(output_dir, 'output0.txt'))
-        else:
-            print >> sys.stderr, "Generating output # %d" % (n)
-            with open(os.path.join(input_dir, 'input%d.txt' % (n))) as fin:
-                with open(os.path.join(output_dir,
-                                       'output%d.txt' % (n)), 'w') as fout:
-                    call(base_dir, [sol_exe], stdin=fin, stdout=fout)
+        print >> sys.stderr, "Generating output # %d" % (n)
+        with open(os.path.join(input_dir, 'input%d.txt' % (n))) as fin:
+            with open(os.path.join(output_dir,
+                                   'output%d.txt' % (n)), 'w') as fout:
+                call(base_dir, [sol_exe], stdin=fin, stdout=fout)
 
     actions = []
-    actions.append(([gen_GEN, gen_exe, INPUT0_TXT],
+    actions.append(([gen_GEN, gen_exe],
                     map(lambda x: os.path.join(INPUT_DIRNAME,
                                                'input%d.txt' % (x)),
-                        range(0, testcase_num + 1)),
+                        range(0, testcase_num)),
                     make_input,
                     "input generation"))
-    actions.append(([OUTPUT0_TXT],
-                    [os.path.join(OUTPUT_DIRNAME, 'output0.txt')],
-                    functools.partial(make_output, 0),
-                    "output generation"))
-    for n in range(1, testcase_num + 1):
-        actions.append(([os.path.join(INPUT_DIRNAME, 'input%d.txt' % (n))],
+    # actions.append((map(lambda x: os.path.join(INPUT_DIRNAME,
+    #                                            'input%d.txt' % (x)),
+    #                     range(0, testcase_num + 1)),
+    #                 [INPUT_DIRNAME],
+    #                 noop,
+    #                 'generation of all the inputs'))
+
+    for n in xrange(testcase_num):
+        actions.append(([os.path.join(INPUT_DIRNAME, 'input%d.txt' % (n)),
+                         sol_exe],
                         [os.path.join(OUTPUT_DIRNAME, 'output%d.txt' % (n))],
                         functools.partial(make_output, n),
                         "output generation"))
     return actions
 
 
-def build_action_list(base_dir):
+def build_action_list(base_dir, task_type):
     """Build a list of actions that cmsMake is able to do here. Each
     action is described by a tuple (infiles, outfiles, callable,
     description) where:
-    
+
     1) infiles is a list of files this action depends on;
-    
+
     2) outfiles is a list of files this action produces; it is
     intended that this action can be skipped if all the outfiles is
     newer than all the infiles; moreover, the outfiles get deleted
     when the action is cleaned;
-    
+
     3) callable is a callable Python object that, when called,
     performs the action;
-    
+
     4) description is a human-readable description of what this
     action does.
 
     """
     actions = []
-    actions += build_sols_list(base_dir)
-    actions += build_checker_list(base_dir)
-    actions += build_text_list(base_dir)
-    actions += build_gen_list(base_dir)
+    actions += build_sols_list(base_dir, task_type)
+    actions += build_checker_list(base_dir, task_type)
+    #actions += build_text_list(base_dir, task_type)
+    actions += build_gen_list(base_dir, task_type)
     return actions
 
 
@@ -333,16 +401,13 @@ def build_execution_tree(actions):
     build_action_list().
 
     """
-    def noop():
-        pass
-
     exec_tree = {}
     generated_list = []
     src_list = set()
     for action in actions:
         for exe in action[1]:
             if exe in exec_tree:
-                raise Exception("Targets not unique")
+                raise Exception("Target %s not unique" % (exe))
             exec_tree[exe] = (action[0], action[2])
             generated_list.append(exe)
         for src in action[0]:
@@ -354,8 +419,11 @@ def build_execution_tree(actions):
 
 
 def execute_target(base_dir, exec_tree, target,
-                   already_executed=None, stack=None):
+                   already_executed=None, stack=None,
+                   debug=False):
     # Initialization
+    if debug:
+        print ">> Target %s is requested" % (target)
     if already_executed is None:
         already_executed = set()
     if stack is None:
@@ -373,14 +441,20 @@ def execute_target(base_dir, exec_tree, target,
     # If the target was already made in another subtree, we have
     # nothing to do
     if target in already_executed:
+        if debug:
+            print ">> Target %s has already been built, ignoring..." % (target)
         return
 
     # Otherwise, do a step of the DFS to make dependencies
+    if debug:
+        print ">> Building dependencies for target %s" % (target)
     already_executed.add(target)
     stack.add(target)
     for dep in deps:
         execute_target(base_dir, exec_tree, dep, already_executed, stack)
     stack.remove(target)
+    if debug:
+        print ">> Dependencies built for target %s" % (target)
 
     # Check if the action really needs to be done (i.e., there is one
     # dependency more recent than the generated file)
@@ -391,16 +465,23 @@ def execute_target(base_dir, exec_tree, target,
     except OSError:
         gen_time = 0
     if gen_time >= dep_times:
+        if debug:
+            print ">> Target %s is already new enough, not building" % (target)
         return
 
     # At last: actually make the so long desired action :-)
+    if debug:
+        print ">> Acutally building target %s" % (target)
     action()
+    if debug:
+        print ">> Target %s finished to build" % (target)
 
 
-def execute_multiple_targets(base_dir, exec_tree, targets):
+def execute_multiple_targets(base_dir, exec_tree, targets, debug=False):
     already_executed = set()
     for target in targets:
-        execute_target(base_dir, exec_tree, target, already_executed)
+        execute_target(base_dir, exec_tree, target,
+                       already_executed, debug=debug)
 
 
 def main():
@@ -419,12 +500,16 @@ def main():
     parser.add_option("-a", "--all",
                       help="make all targets",
                       dest="all", action="store_true", default=False)
+    parser.add_option("-d", "--debug",
+                      help="enable debug messages",
+                      dest="debug", action="store_true", default=False)
     options, args = parser.parse_args()
 
     base_dir = options.base_dir
     if base_dir is None:
         base_dir = os.getcwd()
-    actions = build_action_list(base_dir)
+    task_type = detect_task_type(base_dir)
+    actions = build_action_list(base_dir, task_type)
     exec_tree, generated_list = build_execution_tree(actions)
 
     if [len(args) > 0, options.list, options.clean,
@@ -432,6 +517,8 @@ def main():
         parser.error("Too many commands")
 
     if options.list:
+        print "Task name: %s" % (detect_task_name(base_dir))
+        print "Task type: %s %s" % (task_type[0], task_type[1])
         print "Available operations:"
         for entry in actions:
             print "  %s: %s -> %s" % (entry[3], ", ".join(entry[0]),
@@ -443,10 +530,12 @@ def main():
 
     elif options.all:
         print "Making all targets"
-        execute_multiple_targets(base_dir, exec_tree, generated_list)
+        execute_multiple_targets(base_dir, exec_tree,
+                                 generated_list, debug=options.debug)
 
     else:
-        execute_multiple_targets(base_dir, exec_tree, args)
+        execute_multiple_targets(base_dir, exec_tree,
+                                 args, debug=options.debug)
 
 if __name__ == '__main__':
     main()
