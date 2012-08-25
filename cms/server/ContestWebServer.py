@@ -1462,6 +1462,9 @@ class UserTestIOHandler(FileHandler):
         digest = getattr(usertest, io)
         self.sql_session.close()
 
+        if digest is None:
+            raise tornado.web.HTTPError(404)
+
         mimetype = 'text/plain'
 
         self.fetch(digest, mimetype, io)
