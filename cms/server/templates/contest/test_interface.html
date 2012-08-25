@@ -5,20 +5,31 @@
 $(document).on("click", ".usertest_list tbody tr td.status .details", function (event) {
     var $this = $(this);
     var task_id = $this.parent().parent().parent().parent().attr("data-task");
-    var submission_id = $this.parent().parent().attr("data-submission");
+    var usertest_id = $this.parent().parent().attr("data-usertest");
     var modal = $("#usertest_detail");
     var modal_body = modal.children(".modal-body");
     modal_body.html('<div class="loading"><img src="{{ url_root }}/static/loading.gif"/>loading...</div>');
-    modal_body.load("{{ url_root }}/tasks/" + encodeURIComponent(task_id) + "/submissions/" + submission_id + "/details");
+    modal_body.load("{{ url_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + usertest_id + "/details");
     modal.modal("show");
 });
 
-update_usertest_row = function (task_id, submission_id, data) {
-    var row = $(".usertest_list[data-task=\"" + task_id + "\"] tbody tr[data-submission=\"" + submission_id + "\"]");
+update_usertest_row = function (task_id, usertest_id, data) {
+    var row = $(".usertest_list[data-task=\"" + task_id + "\"] tbody tr[data-usertest=\"" + usertest_id + "\"]");
     row.attr("data-status", data["status"]);
     row.children("td.status").html(data["status_text"]);
-    if (data["status"] != 5 && data["status"] != 2) {
-        schedule_update_submission_row(submission_id);
+    if (data["status"] == 4) {
+        if (data["output"]) {
+            var btn = row.children("td.output").children("a.btn");
+            btn.text("Download");
+            btn.removeClass("disabled");
+            btn.attr("href", "{{ url_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + usertest_id + "/output");
+        } else {
+            row.children("td.output a").text("N/A");
+        }
+    } else if (data["status"] == 2) {
+        row.children("td.output a").text("N/A");
+    } else {
+        schedule_update_usertest_row(task_id, usertest_id);
     }
 }
 

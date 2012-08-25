@@ -1398,18 +1398,19 @@ class UserTestStatusHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
 
         data = dict()
-        if not submission.compiled():
+        if not usertest.compiled():
             data["status"] = 1
             data["status_text"] = "Compiling..."
-        elif submission.compilation_outcome == "fail":
+        elif usertest.compilation_outcome == "fail":
             data["status"] = 2
             data["status_text"] = "Compilation failed <a class=\"details\">details</a>"
-        elif not submission.evaluated():
+        elif not usertest.evaluated():
             data["status"] = 3
             data["status_text"] = "Executing..."
         else:
             data["status"] = 4
             data["status_text"] = "Executed <a class=\"details\">details</a>"
+            data["output"] = usertest.output is not None
 
         self.write(data)
 
@@ -1487,16 +1488,18 @@ class UserTestFileHandler(FileHandler):
         if usertest is None:
             raise tornado.web.HTTPError(404)
 
-        if filename not in usertest.files:
-            raise tornado.web.HTTPError(404)
-
         # filename follows our convention (e.g. 'foo.%l'), real_filename
         # follows the one we present to the user (e.g. 'foo.c').
         real_filename = filename
         if usertest.language is not None:
-            real_filename = filename.replace("%l", submission.language)
+            real_filename = filename.replace("%l", usertest.language)
 
-        digest = usertest.files[filename].digest
+        if filename in usertest.files:
+            digest = usertest.files[filename].digest
+        elif filename in usertest.managers:
+            digest = usertest.managers[filename].digest
+        else:
+            raise tornado.web.HTTPError(404)
         self.sql_session.close()
 
         mimetype = get_type_for_file_name(real_filename)
