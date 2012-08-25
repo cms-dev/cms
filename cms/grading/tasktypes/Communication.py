@@ -57,8 +57,9 @@ class Communication(TaskType):
         res = dict()
         for language in Submission.LANGUAGES:
             format_filename = submission_format[0]
-            source_filenames = [format_filename.replace("%l", language)]
+            source_filenames = []
             source_filenames.append("stub.%s" % language)
+            source_filenames.append(format_filename.replace("%l", language))
             executable_filename = format_filename.replace(".%l", "")
             command = " ".join(get_compilation_command(language,
                                                        source_filenames,
@@ -100,14 +101,15 @@ class Communication(TaskType):
         # Prepare the source files in the sandbox
         files_to_get = {}
         format_filename = self.job.files.keys()[0]
-        # User's submission.
-        source_filenames = [format_filename.replace("%l", language)]
-        files_to_get[source_filenames[0]] = \
-            self.job.files[format_filename].digest
+        source_filenames = []
         # Stub.
         source_filenames.append("stub.%s" % language)
         files_to_get[source_filenames[1]] = \
                 self.job.managers["stub.%s" % language].digest
+        # User's submission.
+        source_filenames.append(format_filename.replace("%l", language))
+        files_to_get[source_filenames[0]] = \
+            self.job.files[format_filename].digest
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
 

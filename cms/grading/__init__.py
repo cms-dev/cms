@@ -49,7 +49,12 @@ def get_compilation_command(language, source_filenames, executable_filename,
 
     language (string): one of the recognized languages.
     source_filenames (list): a list of the string that are the
-                             filenames of the source files to compile.
+                             filenames of the source files to compile;
+                             the order is relevant: the first file
+                             must be the one that contains the program
+                             entry point (with some langages,
+                             e.g. Pascal, only the main file must be
+                             passed to the compiler).
     executable_filename (string): the output file.
     for_evaluation (bool): if True, define EVAL during the compilation;
                            defaults to True.
@@ -79,7 +84,7 @@ def get_compilation_command(language, source_filenames, executable_filename,
         if for_evaluation:
             command += ["-dEVAL"]
         command += ["-XS", "-O2", "-o%s" % executable_filename]
-        command += source_filenames
+        command += [source_filenames[0]]
     return command
 
 
