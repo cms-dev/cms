@@ -69,7 +69,7 @@ def endswith2(string, suffixes):
     """True if string ends with one of the given suffixes.
 
     """
-    return any(map(lambda x: string.endswith(x)), suffixes)
+    return any(filter(lambda x: string.endswith(x), suffixes))
 
 
 def basename2(string, suffixes):
@@ -279,22 +279,24 @@ def build_gen_list(base_dir):
 
 
 def build_action_list(base_dir):
-    # Build a list of actions that cmsMake is able to do here. Each
-    # action is described by a tuple (infiles, outfiles, callable,
-    # description) where:
-    #
-    # 1) infiles is a list of files this action depends on;
-    #
-    # 2) outfiles is a list of files this action produces; it is
-    # intended that this action can be skipped if any of the outfiles
-    # is newer than any of the infiles; moreover, the outfiles get
-    # deleted when the action is cleaned;
-    #
-    # 3) callable is a callable Python object that, when called,
-    # performs the action;
-    #
-    # 4) description is a human-readable description of what this
-    # action does.
+    """Build a list of actions that cmsMake is able to do here. Each
+    action is described by a tuple (infiles, outfiles, callable,
+    description) where:
+    
+    1) infiles is a list of files this action depends on;
+    
+    2) outfiles is a list of files this action produces; it is
+    intended that this action can be skipped if all the outfiles is
+    newer than all the infiles; moreover, the outfiles get deleted
+    when the action is cleaned;
+    
+    3) callable is a callable Python object that, when called,
+    performs the action;
+    
+    4) description is a human-readable description of what this
+    action does.
+
+    """
     actions = []
     actions += build_sols_list(base_dir)
     actions += build_checker_list(base_dir)
@@ -323,6 +325,14 @@ def clean(base_dir, generated_list):
 
 
 def build_execution_tree(actions):
+    """Given a set of actions as described in the docstring of
+    build_action_list(), builds an execution tree and the list of all
+    the buildable files. The execution tree is a dictionary that maps
+    each builable or source file to the tuple (infiles, callable),
+    where infiles and callable are as in the docstring of
+    build_action_list().
+
+    """
     def noop():
         pass
 
@@ -394,6 +404,7 @@ def execute_multiple_targets(base_dir, exec_tree, targets):
 
 
 def main():
+    # Parse command line options
     parser = optparse.OptionParser(usage="usage: %prog [options] [target]")
     parser.add_option("-D", "--base-dir",
                       help="base directory for problem to make "
@@ -408,7 +419,6 @@ def main():
     parser.add_option("-a", "--all",
                       help="make all targets",
                       dest="all", action="store_true", default=False)
-
     options, args = parser.parse_args()
 
     base_dir = options.base_dir
