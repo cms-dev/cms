@@ -12,13 +12,6 @@ body
     background-attachment: fixed;
 
     margin: 0;
-    overflow-y: scroll;
-}
-
-body.user_panel,
-body.team_search
-{
-    overflow: hidden;
 }
 
 /* TODO: the following two might be omitted */
@@ -41,16 +34,9 @@ a
 \******************************************************************************/
 
 
-.outer_frame
-{
-    width: 100%;
-    top: 0;
-    position: absolute;
-}
-
 .logo_panel
 {
-    position: fixed;
+    position: absolute;
     top: 24px;
     left: 24px;
     width: 200px;
@@ -58,12 +44,14 @@ a
 
 .upper_panel
 {
-    position: fixed;
-    top: -2px;
+    position: absolute;
+    top: 0;
     left: 248px;
-    right: -2px;
+    right: 0;
     height: 3em;
-    border: 2px solid #FAFAFA;
+    border-width: 0 0 2px 2px;
+    border-style: solid;
+    border-color: #FAFAFA;
     border-radius: 0 0 0 10px;
     background-color: #EAEAEC;
     box-shadow: 0 0 2px 0 gray;
@@ -72,12 +60,14 @@ a
 
 .right_panel
 {
-    position: fixed;
-    left: -2px;
+    position: absolute;
+    left: 0;
     top: 208px;
     bottom: 24px;
     width: 220px;
-    border: 2px solid #FAFAFA;
+    border-width: 2px 2px 2px 0;
+    border-style: solid;
+    border-color: #FAFAFA;
     border-radius: 0 10px 10px 0;
     background-color: #EAEAEC;
     box-shadow: 0 0 2px 0 gray;
@@ -87,8 +77,15 @@ a
 
 .inner_frame
 {
-    margin: 6em 36px 60px 260px;
-    padding: 2px 0 0;
+    position: absolute;
+    top: 3em;
+    left: 220px;
+    right: 0;
+    bottom: 0;
+    margin: 2px 0 0 2px;
+    padding: 0 3em;
+    overflow-y: scroll;
+    -ms-overflow-y : scroll;
 }
 
 
@@ -304,6 +301,7 @@ div.team_search div.search_results div.body div.item img {
 #Scoreboard {
     width: 100%;
     table-layout: fixed;
+    margin: 3em 0;
 }
 
 #Scoreboard_cols col.sel {
@@ -363,6 +361,7 @@ div.team_search div.search_results div.body div.item img {
     max-width: 42px;
     max-height: 18px;
     box-shadow: 0 0 2px 0 gray;
+    vertical-align: middle;
 }
 
 #Scoreboard_head tr th,

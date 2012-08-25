@@ -436,7 +436,8 @@ var Scoreboard = new function () {
 
     self.scroll_into_view = function (u_id) {
         var $row = $("tr.user[data-user=" + u_id + "]", self.tbody_el);
-        var scroll = $row.offset().top + $row.height() / 2 - $(window).height() / 2;
-        $(window).scrollTop(scroll);
+        var $frame = $(".inner_frame");
+        var scroll = $row.position().top + $frame.scrollTop() + $row.height() / 2 - $frame.height() / 2;
+        $frame.scrollTop(scroll);
     };
 };
