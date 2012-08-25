@@ -49,6 +49,7 @@ GEN_DIRNAME = 'gen'
 GEN_GEN = 'GEN'
 GEN_BASENAME = 'generatore'
 GEN_EXTS = ['.py', '.sh']
+VALIDATOR_BASENAME = 'valida'
 GRAD_BASENAME = 'grader'
 INPUT_DIRNAME = 'input'
 OUTPUT_DIRNAME = 'output'
@@ -135,12 +136,13 @@ def noop():
     pass
 
 
-def build_sols_list(base_dir, task_type):
+def build_sols_list(base_dir, task_type, in_out_files):
     sol_dir = os.path.join(base_dir, SOL_DIRNAME)
     entries = map(lambda x: os.path.join(SOL_DIRNAME, x), os.listdir(sol_dir))
     sources = filter(lambda x: endswith2(x, SOL_EXTS), entries)
 
     actions = []
+    test_actions = []
     for src in sources:
         exe, lang = basename2(src, SOL_EXTS)
         if exe == os.path.join(SOL_DIRNAME, GRAD_BASENAME):
@@ -180,11 +182,20 @@ def build_sols_list(base_dir, task_type):
                 shutil.copymode(os.path.join(tempdir, new_exe),
                                 os.path.join(SOL_DIRNAME, new_exe))
 
-        actions.append((srcs, [exe],
+        def test_src(exe):
+            # Not implemented
+            pass
+
+        actions.append((srcs,
+                        [exe],
                         functools.partial(compile_src, srcs, exe, lang),
                         'compile solution'))
+        test_actions.append(([exe] + in_out_files,
+                             ['test_%s' % (os.path.split(exe)[1])],
+                             functools.partial(test_src, exe),
+                             'test solution'))
 
-    return actions
+    return actions + test_actions
 
 
 def build_checker_list(base_dir, task_type):
@@ -280,14 +291,18 @@ def build_gen_list(base_dir, task_type):
     entries = os.listdir(gen_dir)
     sources = filter(lambda x: endswith2(x, GEN_EXTS), entries)
     gen_exe = None
+    validator_exe = None
 
     for src in sources:
         base, lang = basename2(src, GEN_EXTS)
         if base == GEN_BASENAME:
             gen_exe = os.path.join(GEN_DIRNAME, base + lang)
-            break
+        elif base == VALIDATOR_BASENAME:
+            validator_exe = os.path.join(GEN_DIRNAME, base + lang)
     if gen_exe is None:
         raise Exception("Couldn't find generator")
+    if validator_exe is None:
+        raise Exception("Couldn't find validator")
     gen_GEN = os.path.join(GEN_DIRNAME, GEN_GEN)
 
     sol_exe = os.path.join(SOL_DIRNAME, SOL_FILENAME)
@@ -310,6 +325,9 @@ def build_gen_list(base_dir, task_type):
                 call(base_dir,
                      [gen_exe] + line.split(),
                      stdout=fout)
+            call(base_dir,
+                 [validator_exe, os.path.join(input_dir,
+                                              'input%d.txt' % (n))])
             n += 1
 
     def make_output(n):
@@ -330,12 +348,6 @@ def build_gen_list(base_dir, task_type):
                         range(0, testcase_num)),
                     make_input,
                     "input generation"))
-    # actions.append((map(lambda x: os.path.join(INPUT_DIRNAME,
-    #                                            'input%d.txt' % (x)),
-    #                     range(0, testcase_num + 1)),
-    #                 [INPUT_DIRNAME],
-    #                 noop,
-    #                 'generation of all the inputs'))
 
     for n in xrange(testcase_num):
         actions.append(([os.path.join(INPUT_DIRNAME, 'input%d.txt' % (n)),
@@ -343,7 +355,11 @@ def build_gen_list(base_dir, task_type):
                         [os.path.join(OUTPUT_DIRNAME, 'output%d.txt' % (n))],
                         functools.partial(make_output, n),
                         "output generation"))
-    return actions
+    in_out_files = [os.path.join(INPUT_DIRNAME, 'input%d.txt' % (n))
+                    for n in xrange(testcase_num)] + \
+                    [os.path.join(OUTPUT_DIRNAME, 'output%d.txt' % (n))
+                     for n in xrange(testcase_num)]
+    return actions, in_out_files
 
 
 def build_action_list(base_dir, task_type):
@@ -366,10 +382,11 @@ def build_action_list(base_dir, task_type):
 
     """
     actions = []
-    actions += build_sols_list(base_dir, task_type)
+    gen_actions, in_out_files = build_gen_list(base_dir, task_type)
+    actions += gen_actions
+    actions += build_sols_list(base_dir, task_type, in_out_files)
     actions += build_checker_list(base_dir, task_type)
     #actions += build_text_list(base_dir, task_type)
-    actions += build_gen_list(base_dir, task_type)
     return actions
 
 
