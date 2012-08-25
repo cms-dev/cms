@@ -1127,7 +1127,9 @@ body.user_panel .UserPanel_bg {
 #network_status_box[data-status="disconnected"] #network_status_label,
 #network_status_box[data-status="disconnected"] #network_status_text,
 #network_status_box[data-status="outdated"] #network_status_label,
-#network_status_box[data-status="outdated"] #network_status_text {
+#network_status_box[data-status="outdated"] #network_status_text,
+#network_status_box[data-status="init_error"] #network_status_label,
+#network_status_box[data-status="init_error"] #network_status_text {
     background-color: red;
     color: white;
     border-color: red;
