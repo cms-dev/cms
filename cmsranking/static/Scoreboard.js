@@ -100,11 +100,50 @@ var Scoreboard = new function () {
 
 
     self.make_cols = function () {
+        // We want some columns to have a fixed, constant width at all screen
+        // sizes (i.e. the sel, rank and team columns) while having the other
+        // columns scale accoring to the available horizontal space. Yet, we
+        // also want these columns' widths to keep a certain ratio one to each
+        // other, for example the task score, contest score and global score
+        // columns should be in a 3:4:5 ratio. Since the number of columns is
+        // not known beforehand, this is quite difficult to achieve.
+        // We cannot specify all the widths using pixel sizes (or similar)
+        // because when there are many tasks the table may overflow, and when
+        // there are few tasks it may underflow (and, in such cases, the
+        // remaining width is divided proportionally among all columns, thus
+        // enlarging the constant width columns too). We cannot use relative
+        // widths (i.e. using precent values) because it seems that some
+        // versions of IE don't like it when the sum of the widths is greater
+        // than 100% (and this may happen when there are many tasks).
+        // We cannot use an 'auto' width on all columns because this would not
+        // preserve the ratio among widths.
+        // We cannot mix fixed/percent/auto widths because, depending on the
+        // way we do it, the solution may not scale well at high resolutions or
+        // it may again be difficult to keep the ratio that we want.
+        // Also, I would like not to use JS or strange HTML constructions to
+        // achieve this goal: it would be great if we could do this using just
+        // simple CSS rules.
+        // I couldn't find the perfect solution, so the one I'm implementing is
+        // a bit of a compromise, which tries to mess as little as possible
+        // with JS and HTML. So, at the moment, this is what we do: we set the
+        // columns with fixed width to their fixed width (via CSS). We don't
+        // define a width for all other columns, thus leaving them at their
+        // default value: auto. Yet, we don't create a single <col/> element
+        // for each column, but we create 3 for the task columns, 4 for the
+        // contest columns, 5 for the global column, etc. Then we set the
+        // colspan attribute of task cells to 3, of contest cells to 4, of
+        // global cells to 5, etc. This way, since all <col/>s with a width of
+        // 'auto' get the same computed width, we keep the 3:4:5 ratio and are
+        // able to scale well at each screen size, while keeping the constant
+        // width columns constant. (Note: we gave the first_ and last_name
+        // columns a "width" of 11 <col/> elements.)
+        // Suggestion on other solution that get the same result and don't mess
+        // this much with JS and HTML are extremely welcome!
         var result = " \
 <col class=\"sel\"/> \
 <col class=\"rank\"/> \
-<col class=\"f_name\"/> \
-<col class=\"l_name\"/> \
+<col class=\"f_name\"/> <col/><col/><col/><col/><col/><col/><col/><col/><col/><col/> \
+<col class=\"l_name\"/> <col/><col/><col/><col/><col/><col/><col/><col/><col/><col/> \
 <col class=\"team\"/>";
 
         var contests = DataStore.contest_list;
@@ -118,27 +157,28 @@ var Scoreboard = new function () {
                 var t_id = task["key"];
 
                 result += " \
-<col class=\"score task\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\"/>";
+<col class=\"score task\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\"/> <col/><col/>";
             }
 
             result += " \
-<col class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\"/>";
+<col class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\"/> <col/><col/><col/>";
         }
 
         result += " \
-<col class=\"score global\" data-sort_key=\"global\"/>";
+<col class=\"score global\" data-sort_key=\"global\"/> <col/><col/><col/><col/>";
 
         return result;
     };
 
 
     self.make_head = function () {
+        // See the comment in .make_cols() for the reason we use colspans.
         var result = " \
 <tr> \
     <th class=\"sel\"></th> \
     <th class=\"rank\">Rank</th> \
-    <th class=\"f_name\">First Name</th> \
-    <th class=\"l_name\">Last Name</th> \
+    <th colspan=\"11\" class=\"f_name\">First Name</th> \
+    <th colspan=\"11\" class=\"l_name\">Last Name</th> \
     <th class=\"team\">Team</th>";
 
         var contests = DataStore.contest_list;
@@ -152,15 +192,15 @@ var Scoreboard = new function () {
                 var t_id = task["key"];
 
                 result += " \
-    <th class=\"score task\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\"><abbr title=\"" + task["name"] + "\">" + task["short_name"] + "</abbr></th>";
+    <th colspan=\"3\" class=\"score task\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\"><abbr title=\"" + task["name"] + "\">" + task["short_name"] + "</abbr></th>";
             }
 
             result += " \
-    <th class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\">" + contest["name"] + "</th>";
+    <th colspan=\"4\" class=\"score contest\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\">" + contest["name"] + "</th>";
         }
 
         result += " \
-    <th class=\"score global\" data-sort_key=\"global\">Global</th> \
+    <th colspan=\"5\" class=\"score global\" data-sort_key=\"global\">Global</th> \
 </tr>";
 
         return result;
@@ -179,12 +219,13 @@ var Scoreboard = new function () {
 
 
     self.make_row = function (user) {
+        // See the comment in .make_cols() for the reason we use colspans.
         var result = " \
 <tr class=\"user\" data-user=\"" + user["key"] + "\"> \
     <td class=\"sel\"></td> \
     <td class=\"rank\">" + user["rank"] + "</td> \
-    <td class=\"f_name\">" + user["f_name"] + "</td> \
-    <td class=\"l_name\">" + user["l_name"] + "</td>";
+    <td colspan=\"11\" class=\"f_name\">" + user["f_name"] + "</td> \
+    <td colspan=\"11\" class=\"l_name\">" + user["l_name"] + "</td>";
 
         if (user['team']) {
             result += " \
@@ -206,17 +247,17 @@ var Scoreboard = new function () {
 
                 var score_class = self.get_score_class(user["t_" + t_id], task["max_score"]);
                 result += " \
-    <td class=\"score task " + score_class + "\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\">" + round_to_str(user["t_" + t_id]) + "</td>";
+    <td  colspan=\"3\" class=\"score task " + score_class + "\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\">" + round_to_str(user["t_" + t_id]) + "</td>";
             }
 
             var score_class = self.get_score_class(user["c_" + c_id], contest["max_score"]);
             result += " \
-    <td class=\"score contest " + score_class + "\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\">" + round_to_str(user["c_" + c_id]) + "</td>";
+    <td colspan=\"4\" class=\"score contest " + score_class + "\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\">" + round_to_str(user["c_" + c_id]) + "</td>";
         }
 
         var score_class = self.get_score_class(user["global"], DataStore.global_max_score);
         result += " \
-    <td class=\"score global " + score_class + "\" data-sort_key=\"global\">" + round_to_str(user["global"]) + "</td> \
+    <td colspan=\"5\" class=\"score global " + score_class + "\" data-sort_key=\"global\">" + round_to_str(user["global"]) + "</td> \
 </tr>";
 
         return result;

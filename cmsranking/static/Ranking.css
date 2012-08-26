@@ -312,28 +312,8 @@ div.team_search div.search_results div.body div.item img {
     width: 48px;
 }
 
-#Scoreboard_cols col.f_name {
-    width: auto;
-}
-
-#Scoreboard_cols col.l_name {
-    width: auto;
-}
-
 #Scoreboard_cols col.team {
     width: 48px;
-}
-
-#Scoreboard_cols col.score.task {
-    width: 4.50em;
-}
-
-#Scoreboard_cols col.score.contest {
-    width: 5.25em;
-}
-
-#Scoreboard_cols col.score.global {
-    width: 6.00em;
 }
 
 #Scoreboard_head tr {
