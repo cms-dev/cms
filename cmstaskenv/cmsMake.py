@@ -28,8 +28,11 @@ import copy
 import functools
 import shutil
 import tempfile
+import yaml
 
 from cms.grading import get_compilation_command
+from cms.grading.Sandbox import Sandbox
+from cmstaskenv.Test import test_testcases
 
 SOL_DIRNAME = 'sol'
 SOL_FILENAME = 'soluzione'
@@ -106,6 +109,16 @@ def detect_task_name(base_dir):
     return os.path.split(os.path.realpath(base_dir))[1]
 
 
+def parse_task_yaml(base_dir):
+    parent_dir = os.path.split(os.path.realpath(base_dir))[0]
+    yaml_path = os.path.join(parent_dir, "%s.yaml" %
+                             (detect_task_name(base_dir)))
+
+    with open(yaml_path) as yaml_file:
+        conf = yaml.load(yaml_file)
+    return conf
+
+
 def detect_task_type(base_dir):
     grad_present = any(filter(lambda x: x.startswith(GRAD_BASENAME + '.'),
                               os.listdir(SOL_DIRNAME)))
@@ -136,7 +149,7 @@ def noop():
     pass
 
 
-def build_sols_list(base_dir, task_type, in_out_files):
+def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
     sol_dir = os.path.join(base_dir, SOL_DIRNAME)
     entries = map(lambda x: os.path.join(SOL_DIRNAME, x), os.listdir(sol_dir))
     sources = filter(lambda x: endswith2(x, SOL_EXTS), entries)
@@ -158,6 +171,8 @@ def build_sols_list(base_dir, task_type, in_out_files):
             srcs.append(os.path.join(SOL_DIRNAME,
                                      GRAD_BASENAME + '.%s' % (lang)))
         srcs.append(src)
+
+        box_path = Sandbox().detect_box_executable()
 
         def compile_src(srcs, exe, lang):
             if lang != 'pas' or len(srcs) == 1:
@@ -182,17 +197,29 @@ def build_sols_list(base_dir, task_type, in_out_files):
                 shutil.copymode(os.path.join(tempdir, new_exe),
                                 os.path.join(SOL_DIRNAME, new_exe))
 
-        def test_src(exe):
-            # Not implemented
-            pass
+        def test_src(exe, input_num, task_type):
+            print "Testing solution %s" % (exe)
+            test_testcases(
+                input_num,
+                box_path,
+                exe,
+                yaml_conf['timeout'],
+                yaml_conf['memlimit'],
+                task_type[0],
+                task_type[1])
 
         actions.append((srcs,
                         [exe],
                         functools.partial(compile_src, srcs, exe, lang),
                         'compile solution'))
+
+        input_num = len(in_out_files) / 2
         test_actions.append(([exe] + in_out_files,
                              ['test_%s' % (os.path.split(exe)[1])],
-                             functools.partial(test_src, exe),
+                             functools.partial(test_src,
+                                               exe,
+                                               input_num,
+                                               task_type),
                              'test solution'))
 
     return actions + test_actions
@@ -362,7 +389,7 @@ def build_gen_list(base_dir, task_type):
     return actions, in_out_files
 
 
-def build_action_list(base_dir, task_type):
+def build_action_list(base_dir, task_type, yaml_conf):
     """Build a list of actions that cmsMake is able to do here. Each
     action is described by a tuple (infiles, outfiles, callable,
     description) where:
@@ -384,7 +411,7 @@ def build_action_list(base_dir, task_type):
     actions = []
     gen_actions, in_out_files = build_gen_list(base_dir, task_type)
     actions += gen_actions
-    actions += build_sols_list(base_dir, task_type, in_out_files)
+    actions += build_sols_list(base_dir, task_type, in_out_files, yaml_conf)
     actions += build_checker_list(base_dir, task_type)
     #actions += build_text_list(base_dir, task_type)
     return actions
@@ -526,7 +553,8 @@ def main():
     if base_dir is None:
         base_dir = os.getcwd()
     task_type = detect_task_type(base_dir)
-    actions = build_action_list(base_dir, task_type)
+    yaml_conf = parse_task_yaml(base_dir)
+    actions = build_action_list(base_dir, task_type, yaml_conf)
     exec_tree, generated_list = build_execution_tree(actions)
 
     if [len(args) > 0, options.list, options.clean,
