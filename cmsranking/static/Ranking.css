@@ -299,7 +299,13 @@ div.team_search div.search_results div.body div.item img {
 }
 
 #Scoreboard_cols col.team {
-    width: 48px;
+    /* This is the minimum width needed to contain a flag */
+    width: 42px;
+    /* These rules set the horizontal padding to the same value as the
+       vertical one (in presence of a flag with a 2:1 ratio) */
+    width: -webkit-calc(2em + 20px);
+    width:    -moz-calc(2em + 20px);
+    width:         calc(2em + 20px);
 }
 
 #Scoreboard_head tr {
@@ -323,11 +329,16 @@ div.team_search div.search_results div.body div.item img {
     white-space: nowrap;
 }
 
-#Scoreboard_body tr td img {
-    max-width: 42px;
-    max-height: 18px;
-    box-shadow: 0 0 2px 0 gray;
+#Scoreboard_body tr td.team {
     vertical-align: middle;
+}
+
+#Scoreboard_body tr td.team img {
+    display: block;
+    max-width: 40px;
+    max-height: 20px;
+    margin: 0 auto;
+    box-shadow: 0 0 2px 0 gray;
 }
 
 #Scoreboard_head tr th,
