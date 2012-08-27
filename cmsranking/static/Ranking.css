@@ -1,5 +1,4 @@
-body
-{
+body {
     /* FIXME: I'd suggest putting a 0.75em font-size */
     font: 1em/1.5em sans-serif;
 
@@ -16,13 +15,11 @@ body
 
 /* TODO: the following two might be omitted */
 
-td
-{
+td {
     padding: 0;
 }
 
-a
-{
+a {
     outline: none;
 }
 
@@ -34,16 +31,14 @@ a
 \******************************************************************************/
 
 
-.logo_panel
-{
+.logo_panel {
     position: absolute;
     top: 24px;
     left: 24px;
     width: 200px;
 }
 
-.upper_panel
-{
+.upper_panel {
     position: absolute;
     top: 0;
     left: 248px;
@@ -58,8 +53,7 @@ a
     z-index: 9;
 }
 
-.right_panel
-{
+.right_panel {
     position: absolute;
     left: 0;
     top: 208px;
@@ -75,8 +69,7 @@ a
     padding: 0;
 }
 
-.inner_frame
-{
+.inner_frame {
     position: absolute;
     top: 3em;
     left: 220px;
@@ -97,17 +90,14 @@ a
 
 /* CSS to put TimeView in top-right corner */
 /*
-#timer
-{
+#timer {
 }
 
-#timer .contest_name
-{
+#timer .contest_name {
     display: none;
 }
 
-#timer .contest_time
-{
+#timer .contest_time {
     position: fixed;
     top: 0;
     right: 2px;
@@ -120,8 +110,7 @@ a
 */
 
 /* CSS to put TimeView above the left panel */
-#timer
-{
+#timer {
     position: fixed;
     left: 0px;
     top: 208px;
@@ -129,20 +118,17 @@ a
     height: 48px;
 }
 
-#timer.active + .right_panel
-{
+#timer.active + .right_panel {
     top: 280px;
 }
 
-#timer .contest_name
-{
+#timer .contest_name {
     text-align: center;
     line-height: 16px;
     font-size: 12px;
 }
 
-#timer .contest_time
-{
+#timer .contest_time {
     text-align: center;
     line-height: 32px;
     font-size: 32px;
@@ -352,7 +338,7 @@ div.team_search div.search_results div.body div.item img {
 #Scoreboard_body tr td.f_name,
 #Scoreboard_body tr td.l_name {
     text-align: left;
-    padding: 0 10px;
+    padding: 0 0.5em;
     cursor: pointer;
 }
 
@@ -390,16 +376,13 @@ div.team_search div.search_results div.body div.item img {
  */
 
 #Scoreboard_body tr td.sel {
-    background-color: transparent;
-    background-image: url('img/tick_black.png');
-    background-repeat: no-repeat;
-    background-position: center center;
+    background: url('img/tick_black.png') no-repeat center transparent;
     opacity: 0;
     -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    -o-user-select: none;
-    user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+         -o-user-select: none;
+            user-select: none;
 }
 
 #Scoreboard_body tr td.sel:hover {
@@ -411,9 +394,7 @@ div.team_search div.search_results div.body div.item img {
 }
 
 #Scoreboard_body tr.selected td.sel {
-    background-image: url('img/tick_white.png');
-    background-repeat: no-repeat;
-    background-position: center;
+    background: url('img/tick_white.png') no-repeat center transparent;
     border: 1px solid rgba(0,0,0,0.2);
     border-radius: 4px;
     opacity: 1;
@@ -547,39 +528,39 @@ div.team_search div.search_results div.body div.item img {
 #Scoreboard_body tr.score_up td.rank {
     border-radius: 5px;
     -webkit-animation-duration: 5s;
-    -moz-animation-duration: 5s;
-    -ms-animation-duration: 5s;
-    -o-animation-duration: 5s;
-    animation-duration: 5s;
+       -moz-animation-duration: 5s;
+        -ms-animation-duration: 5s;
+         -o-animation-duration: 5s;
+            animation-duration: 5s;
     -webkit-animation-name: score_up;
-    -moz-animation-name: score_up;
-    -ms-animation-name: score_up;
-    -o-animation-name: score_up;
-    animation-name: score_up;
+       -moz-animation-name: score_up;
+        -ms-animation-name: score_up;
+         -o-animation-name: score_up;
+            animation-name: score_up;
     -webkit-animation-timing-function: ease-in;
-    -moz-animation-timing-function: ease-in;
-    -ms-animation-timing-function: ease-in;
-    -o-animation-timing-function: ease-in;
-    animation-timing-function: ease-in;
+       -moz-animation-timing-function: ease-in;
+        -ms-animation-timing-function: ease-in;
+         -o-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
 }
 
 #Scoreboard_body tr.score_down td.rank {
     border-radius: 5px;
     -webkit-animation-duration: 5s;
-    -moz-animation-duration: 5s;
-    -ms-animation-duration: 5s;
-    -o-animation-duration: 5s;
-    animation-duration: 5s;
+       -moz-animation-duration: 5s;
+        -ms-animation-duration: 5s;
+         -o-animation-duration: 5s;
+            animation-duration: 5s;
     -webkit-animation-name: score_down;
-    -moz-animation-name: score_down;
-    -ms-animation-name: score_down;
-    -o-animation-name: score_down;
-    animation-name: score_down;
+       -moz-animation-name: score_down;
+        -ms-animation-name: score_down;
+         -o-animation-name: score_down;
+            animation-name: score_down;
     -webkit-animation-timing-function: ease-in;
-    -moz-animation-timing-function: ease-in;
-    -ms-animation-timing-function: ease-in;
-    -o-animation-timing-function: ease-in;
-    animation-timing-function: ease-in;
+       -moz-animation-timing-function: ease-in;
+        -ms-animation-timing-function: ease-in;
+         -o-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
 }
 
 @-webkit-keyframes score_up {
@@ -624,7 +605,6 @@ div.team_search div.search_results div.body div.item img {
     to {background-color: rgba(239,41,41,0);}
 }
 
-
 @-ms-keyframes score_down {
     from {background-color: rgba(239,41,41,0);}
     10% {background-color: rgba(239,41,41,0.6);}
@@ -646,39 +626,39 @@ div.team_search div.search_results div.body div.item img {
 #Scoreboard_body tr.selected.score_up td.rank {
     border-radius: 5px;
     -webkit-animation-duration: 10s;
-    -moz-animation-duration: 10s;
-    -ms-animation-duration: 10s;
-    -o-animation-duration: 10s;
-    animation-duration: 10s;
+       -moz-animation-duration: 10s;
+        -ms-animation-duration: 10s;
+         -o-animation-duration: 10s;
+            animation-duration: 10s;
     -webkit-animation-name: selected_score_up;
-    -moz-animation-name: selected_score_up;
-    -ms-animation-name: selected_score_up;
-    -o-animation-name: selected_score_up;
-    animation-name: selected_score_up;
+       -moz-animation-name: selected_score_up;
+        -ms-animation-name: selected_score_up;
+         -o-animation-name: selected_score_up;
+            animation-name: selected_score_up;
     -webkit-animation-timing-function: ease-in;
-    -moz-animation-timing-function: ease-in;
-    -ms-animation-timing-function: ease-in;
-    -o-animation-timing-function: ease-in;
-    animation-timing-function: ease-in;
+       -moz-animation-timing-function: ease-in;
+        -ms-animation-timing-function: ease-in;
+         -o-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
 }
 
 #Scoreboard_body tr.selected.score_down td.rank {
     border-radius: 5px;
     -webkit-animation-duration: 10s;
-    -moz-animation-duration: 10s;
-    -ms-animation-duration: 10s;
-    -o-animation-duration: 10s;
-    animation-duration: 10s;
+       -moz-animation-duration: 10s;
+        -ms-animation-duration: 10s;
+         -o-animation-duration: 10s;
+            animation-duration: 10s;
     -webkit-animation-name: selected_score_down;
-    -moz-animation-name: selected_score_down;
-    -ms-animation-name: selected_score_down;
-    -o-animation-name: selected_score_down;
-    animation-name: selected_score_down;
+       -moz-animation-name: selected_score_down;
+        -ms-animation-name: selected_score_down;
+         -o-animation-name: selected_score_down;
+            animation-name: selected_score_down;
     -webkit-animation-timing-function: ease-in;
-    -moz-animation-timing-function: ease-in;
-    -ms-animation-timing-function: ease-in;
-    -o-animation-timing-function: ease-in;
-    animation-timing-function: ease-in;
+       -moz-animation-timing-function: ease-in;
+        -ms-animation-timing-function: ease-in;
+         -o-animation-timing-function: ease-in;
+            animation-timing-function: ease-in;
 }
 
 @-webkit-keyframes selected_score_up {
@@ -750,14 +730,14 @@ div.team_search div.search_results div.body div.item img {
     border-radius: 5px;
 }
 
-#Scoreboard_body tr td.sort_key {
-    opacity: 1;
+#Scoreboard_body tr td.score.sort_key {
     border: 1px solid #777777;
     box-shadow: 0 0 1px white inset;
 }
 
 #Scoreboard_body tr:hover td.score,
-#Scoreboard_body tr.selected td.score {
+#Scoreboard_body tr.selected td.score,
+#Scoreboard_body tr td.score.sort_key {
     opacity: 1;
 }
 
@@ -956,21 +936,21 @@ body.user_panel .UserPanel_bg {
     text-align: center;
     border: 1px solid #999999;
     box-shadow: 0 0 1px 0 gray;
-    background-color: #eeeeee;
+    background-color: #EEEEEE;
     border-radius: 3px;
     cursor: pointer;
 }
 
 .UserPanel .scores tbody tr td.btn:hover {
-    background-color: #dddddd;
+    background-color: #DDDDDD;
 }
 
 .UserPanel .scores tbody tr td.btn:active {
-    background-color: #cccccc;
+    background-color: #CCCCCC;
 }
 
 .UserPanel .scores tbody tr td.btn.active {
-    background-color: #eeeeee;
+    background-color: #EEEEEE;
     opacity: 0.4;
     cursor: default;
     /* the following two lines are for IE */
@@ -979,15 +959,15 @@ body.user_panel .UserPanel_bg {
 }
 
 .UserPanel .scores tr.global {
-    background-color: #dddddd;
+    background-color: #DDDDDD;
 }
 
 .UserPanel .scores tr.contest {
-    background-color: #eeeeee;
+    background-color: #EEEEEE;
 }
 
 .UserPanel .scores tr.task {
-    background-color: #ffffff;
+    background-color: #FFFFFF;
 }
 
 .UserPanel .scores tr.global td:first-child {
@@ -1025,15 +1005,15 @@ body.user_panel .UserPanel_bg {
 }
 
 .UserPanel .submits thead {
-    background-color: #dddddd;
+    background-color: #DDDDDD;
 }
 
 .UserPanel .submits tbody tr:nth-child(even) {
-    background-color: #eeeeee;
+    background-color: #EEEEEE;
 }
 
 .UserPanel .submits tbody tr:nth-child(odd) {
-    background-color: #f8f8f8;
+    background-color: #F8F8F8;
 }
 
 .UserPanel .charts {
