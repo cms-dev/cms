@@ -434,6 +434,14 @@ def clean(base_dir, generated_list):
         os.rmdir(os.path.join(base_dir, OUTPUT_DIRNAME))
     except OSError:
         pass
+    try:
+        shutil.rmtree(os.path.join(base_dir, RESULT_DIRNAME))
+    except OSError:
+        pass
+
+    # Delete backup files
+    os.system("find %s -name '*.pyc' -delete" % (base_dir))
+    os.system("find %s -name '*~' -delete" % (base_dir))
 
 
 def build_execution_tree(actions):
