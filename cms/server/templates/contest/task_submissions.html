@@ -27,6 +27,7 @@ update_submission_row = function (submission_id, data) {
             }
             row.children("td.public_score").html(public_score);
         }
+        var score = "";
         if (data["score"] != undefined) {
             score += data["score"];
             if (data["max_score"] != undefined) {
