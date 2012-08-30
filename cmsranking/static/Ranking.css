@@ -50,7 +50,7 @@ a {
     border-radius: 0 0 0 10px;
     background-color: #EAEAEC;
     box-shadow: 0 0 2px 0 gray;
-    z-index: 9;
+    z-index: 100;
 }
 
 .right_panel {
@@ -88,50 +88,131 @@ a {
 |                                    ---------                                 |
 \******************************************************************************/
 
-/* CSS to put TimeView in top-right corner */
-/*
-#timer {
+
+#TimeView {
+    position: absolute;
+    top: 208px;
+    left: 0;
+    width: 220px;
+    z-index: 10;
+    text-align: center;
 }
 
-#timer .contest_name {
+#TimeView_selector {
+    display: inline-block;
+    height: 28px;
+    padding: 0;
+    z-index: 10;
+    margin: 4px;
+    overflow: hidden;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+         -o-user-select: none;
+            user-select: none;
+}
+
+#TimeView:not(.post_cont) #TimeView_selector:hover,
+#TimeView_selector.open {
+    margin: 2px;
+    background-color: #EAEAEC;
+    border: 2px solid #FAFAFA;
+    border-radius: 4px;
+    box-shadow: 0 0 2px 0 gray;
+}
+
+#TimeView_selector.open {
+    height: auto;
+}
+
+#TimeView_time {
+    display: inline-block;
+    vertical-align: top;
+    text-align: center;
+    line-height: 28px;
+    font-size: 24px;
+    margin: 0 2px 0 16px;
+}
+
+#TimeView_expand {
+    display: inline-block;
+    position: relative;
+    width: 8px;
+    height: 28px;
+    vertical-align: top;
+    cursor: pointer;
+    margin: 0 4px 0 2px;
+}
+
+#TimeView_selector .caret {
+    position: absolute;
+    top: 12px;
+    width: 0;
+    height: 0;
+    vertical-align: middle;
+    border-top: 6px solid #AAAAAA;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+    border-bottom: 0;
+}
+
+#TimeView_selector:hover .caret {
+    border-top-color: #000000;
+}
+
+#TimeView_selector.open .caret {
+    top: 10px;
+    border-top: 0;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+    border-bottom: 6px solid #000000;
+}
+
+#TimeView.post_cont #TimeView_time {
+    margin-right: 16px;
+}
+
+#TimeView.post_cont #TimeView_expand {
     display: none;
 }
 
-#timer .contest_time {
-    position: fixed;
-    top: 0;
-    right: 2px;
-    height: 3em;
-    text-align: right;
-    line-height: 1.2em;
-    font-size: 2.5em;
-    z-index: 11;
-}
-*/
-
-/* CSS to put TimeView above the left panel */
-#timer {
-    position: fixed;
-    left: 0px;
-    top: 208px;
-    width: 224px;
-    height: 48px;
+#TimeView_selector_elapsed,
+#TimeView_selector_remaining,
+#TimeView_selector_current {
+    padding: 2px 4px;
+    font-size: 0.875em;
+    line-height: 1.4em;
+    color: #444444;
+    cursor: pointer;
 }
 
-#timer.active + .right_panel {
+#TimeView.pre_cont #TimeView_selector_elapsed,
+#TimeView.post_cont #TimeView_selector_elapsed,
+#TimeView.post_cont #TimeView_selector_remaining {
+    display: none;
+}
+
+#TimeView.elapsed #TimeView_selector_elapsed,
+#TimeView.remaining #TimeView_selector_remaining,
+#TimeView.current #TimeView_selector_current {
+    background-color: #F2F2F3;
+    color: #000000;
+}
+
+#TimeView_selector_elapsed:hover,
+#TimeView_selector_remaining:hover,
+#TimeView_selector_current:hover {
+    background-color: #FAFAFA !important;
+    color: #000000;
+}
+
+#TimeView + .right_panel {
+    top: 256px;
+}
+
+#TimeView.pre_cont + .right_panel,
+#TimeView.cont + .right_panel {
     top: 280px;
-}
-
-#timer .contest_name {
-    text-align: center;
-    line-height: 16px;
-    font-size: 12px;
-}
-
-#timer .contest_time {
-    text-align: center;
-    line-height: 32px;
-    font-size: 32px;
 }
 
 
@@ -170,7 +251,7 @@ div.team_search input.search_field {
     border: 0;
     border-radius: 0.5em;
     box-sizing: content-box;
-    z-index: 11;
+    z-index: 101;
     background-color: #FFFFFF;
     outline: 0;
 }
@@ -182,7 +263,7 @@ div.team_search div.search_results {
     right: 0;
     bottom: 0;
     background-color: rgba(0,0,0,0.5);
-    z-index: 10;
+    z-index: 100;
     display: none;
     /* the following two lines are for IE */
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#80000000, endColorstr=#80000000)";
