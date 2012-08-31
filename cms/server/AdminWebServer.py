@@ -30,7 +30,7 @@ from datetime import datetime, timedelta
 
 import base64
 import simplejson as json
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, DataError
 import tornado.web
 import tornado.locale
 
@@ -1247,7 +1247,9 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
         self.sql_session.add(user)
         if try_commit(self.sql_session, self):
             self.application.service.scoring_service.reinitialize()
-        self.redirect("/user/%s" % user.id)
+            self.redirect("/user/%s" % user.id)
+        else:
+            self.redirect("/add_user/%s" % contest_id)
 
 
 class SubmissionViewHandler(BaseHandler):
@@ -1441,16 +1443,16 @@ _aws_handlers = [
     (r"/delete_manager/([0-9]+)",      DeleteManagerHandler),
     (r"/add_testcase/([0-9]+)",        AddTestcaseHandler),
     (r"/delete_testcase/([0-9]+)",     DeleteTestcaseHandler),
-    (r"/user/([a-zA-Z0-9_-]+)",   UserViewHandler),
+    (r"/user/([0-9]+)",   UserViewHandler),
     (r"/add_user/([0-9]+)",       AddUserHandler),
     (r"/add_announcement/([0-9]+)",    AddAnnouncementHandler),
     (r"/remove_announcement/([0-9]+)", RemoveAnnouncementHandler),
     (r"/submission/([0-9]+)",                SubmissionViewHandler),
-    (r"/submission_file/([a-zA-Z0-9_.-]+)",  SubmissionFileHandler),
+    (r"/submission_file/([0-9]+)",  SubmissionFileHandler),
     (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
-    (r"/message/([a-zA-Z0-9_-]+)", MessageHandler),
-    (r"/question/([a-zA-Z0-9_-]+)",        QuestionReplyHandler),
-    (r"/ignore_question/([a-zA-Z0-9_-]+)", QuestionIgnoreHandler),
+    (r"/message/([0-9]+)", MessageHandler),
+    (r"/question/([0-9]+)",        QuestionReplyHandler),
+    (r"/ignore_question/([0-9]+)", QuestionIgnoreHandler),
     (r"/questions/([0-9]+)",               QuestionsHandler),
     (r"/resources",                 ResourcesHandler),
     (r"/resources/([0-9]+)",        ResourcesHandler),
