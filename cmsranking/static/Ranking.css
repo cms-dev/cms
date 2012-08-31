@@ -34,14 +34,14 @@ abbr {
 \******************************************************************************/
 
 
-.logo_panel {
+#LogoPanel {
     position: absolute;
     top: 24px;
     left: 24px;
     width: 200px;
 }
 
-.upper_panel {
+#UpperPanel {
     position: absolute;
     top: 0;
     left: 248px;
@@ -56,7 +56,7 @@ abbr {
     z-index: 100;
 }
 
-.right_panel {
+#SidePanel {
     position: absolute;
     left: 0;
     top: 208px;
@@ -72,7 +72,7 @@ abbr {
     padding: 0;
 }
 
-.inner_frame {
+#InnerFrame {
     position: absolute;
     top: 3em;
     left: 220px;
@@ -209,12 +209,12 @@ abbr {
     color: #000000;
 }
 
-#TimeView + .right_panel {
+#TimeView + #SidePanel {
     top: 256px;
 }
 
-#TimeView.pre_cont + .right_panel,
-#TimeView.cont + .right_panel {
+#TimeView.pre_cont + #SidePanel,
+#TimeView.cont + #SidePanel {
     top: 280px;
 }
 
@@ -1082,7 +1082,7 @@ body.user_panel .UserPanel_bg {
 
 /* Style for the network status indicator */
 
-#network_status_box {
+#ConnectionStatus_box {
     display: inline-block;
     position: relative;
     float: right;
@@ -1091,7 +1091,7 @@ body.user_panel .UserPanel_bg {
     z-index: 2;
 }
 
-#network_status_label {
+#ConnectionStatus_label {
     display: inline-block;
     position: relative;
     height: 1.5em;
@@ -1101,15 +1101,20 @@ body.user_panel .UserPanel_bg {
     border-width: 1px;
     border-style: solid;
     border-radius: 4px;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+         -o-user-select: none;
+            user-select: none;
 }
 
-#network_status_box:hover #network_status_label {
+#ConnectionStatus_box:hover #ConnectionStatus_label {
     border-bottom-width: 0;
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
 }
 
-#network_status_text {
+#ConnectionStatus_text {
     display: none;
     position: absolute;
     top: 2em;
@@ -1123,37 +1128,37 @@ body.user_panel .UserPanel_bg {
     border-radius: 4px 0 4px 4px;
 }
 
-#network_status_box:hover #network_status_text,
-#network_status_text:hover {
+#ConnectionStatus_box:hover #ConnectionStatus_text,
+#ConnectionStatus_text:hover {
     display: block;
 }
 
-#network_status_box[data-status="connected"] #network_status_label,
-#network_status_box[data-status="connected"] #network_status_text {
+#ConnectionStatus_box[data-status="connected"] #ConnectionStatus_label,
+#ConnectionStatus_box[data-status="connected"] #ConnectionStatus_text {
     background-color: white;
     color: green;
     border-color: green;
 }
 
-#network_status_box[data-status="reconnecting"] #network_status_label,
-#network_status_box[data-status="reconnecting"] #network_status_text {
+#ConnectionStatus_box[data-status="reconnecting"] #ConnectionStatus_label,
+#ConnectionStatus_box[data-status="reconnecting"] #ConnectionStatus_text {
     background-color: yellow;
     color: black;
     border-color: black;
 }
 
-#network_status_box[data-status="disconnected"] #network_status_label,
-#network_status_box[data-status="disconnected"] #network_status_text,
-#network_status_box[data-status="outdated"] #network_status_label,
-#network_status_box[data-status="outdated"] #network_status_text,
-#network_status_box[data-status="init_error"] #network_status_label,
-#network_status_box[data-status="init_error"] #network_status_text {
+#ConnectionStatus_box[data-status="disconnected"] #ConnectionStatus_label,
+#ConnectionStatus_box[data-status="disconnected"] #ConnectionStatus_text,
+#ConnectionStatus_box[data-status="outdated"] #ConnectionStatus_label,
+#ConnectionStatus_box[data-status="outdated"] #ConnectionStatus_text,
+#ConnectionStatus_box[data-status="init_error"] #ConnectionStatus_label,
+#ConnectionStatus_box[data-status="init_error"] #ConnectionStatus_text {
     background-color: red;
     color: white;
     border-color: red;
 }
 
-#network_status_box a {
+#ConnectionStatus_box a {
     cursor: pointer;
     text-decoration: underline;
 }

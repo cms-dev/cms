@@ -806,20 +806,20 @@ var DataStore = new function () {
 
     self.update_network_status = function (state) {
         if (state == 0) { // self.es.CONNECTING
-            $("#network_status_box").attr("data-status", "reconnecting");
-            $("#network_status_text").text("You are disconnected from the server but your browser is trying to connect.");
+            $("#ConnectionStatus_box").attr("data-status", "reconnecting");
+            $("#ConnectionStatus_text").text("You are disconnected from the server but your browser is trying to connect.");
         } else if (state == 1) { // self.es.OPEN
-            $("#network_status_box").attr("data-status", "connected");
-            $("#network_status_text").text("You are connected to the server and are receiving live updates.");
+            $("#ConnectionStatus_box").attr("data-status", "connected");
+            $("#ConnectionStatus_text").text("You are connected to the server and are receiving live updates.");
         } else if (state == 2) { // self.es.CLOSED
-            $("#network_status_box").attr("data-status", "disconnected");
-            $("#network_status_text").html("You are disconnected from the server but you can <a onclick=\"DataStore.create_event_source();\">try to connect</a>.");
+            $("#ConnectionStatus_box").attr("data-status", "disconnected");
+            $("#ConnectionStatus_text").html("You are disconnected from the server but you can <a onclick=\"DataStore.create_event_source();\">try to connect</a>.");
         } else if (state == 3) { // "reload" event received
-            $("#network_status_box").attr("data-status", "outdated");
-            $("#network_status_text").html("Your local data cannot be updated. Please <a onclick=\"window.location.reload();\">reload the page</a>.");
+            $("#ConnectionStatus_box").attr("data-status", "outdated");
+            $("#ConnectionStatus_text").html("Your local data cannot be updated. Please <a onclick=\"window.location.reload();\">reload the page</a>.");
         } else if (state == 4) { // an init failed
-            $("#network_status_box").attr("data-status", "init_error");
-            $("#network_status_text").html("An error occured while loading the data. Check your connection and <a onclick=\"window.location.reload();\">reload the page</a>.");
+            $("#ConnectionStatus_box").attr("data-status", "init_error");
+            $("#ConnectionStatus_text").html("An error occured while loading the data. Check your connection and <a onclick=\"window.location.reload();\">reload the page</a>.");
         }
     };
 

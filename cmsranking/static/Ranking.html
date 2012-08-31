@@ -26,12 +26,12 @@ if (typeof jQuery == 'undefined') {
         <script type="text/javascript" src="Ranking.js"></script>
         <title>Ranking</title>
     </head>
-    <body id="body">
-        <div class="outer_frame">
-            <div class="logo_panel">
+    <body>
+        <div id="OuterFrame">
+            <div id="LogoPanel">
                 <img src="logo" />
             </div>
-            <div class="upper_panel">
+            <div id="UpperPanel">
                 <div class="team_search">
                     <input id="team_search_input" placeholder="Search Team"
                      class="search_field" type="search" />
@@ -42,9 +42,9 @@ if (typeof jQuery == 'undefined') {
                         </div>
                     </div>
                 </div>
-                <div id="network_status_box">
-                    <div id="network_status_label">Status</div>
-                    <div id="network_status_text"></div>
+                <div id="ConnectionStatus_box">
+                    <div id="ConnectionStatus_label">Status</div>
+                    <div id="ConnectionStatus_text"></div>
                 </div>
             </div>
             <div id="TimeView">
@@ -56,10 +56,10 @@ if (typeof jQuery == 'undefined') {
                     <div id="TimeView_selector_current">Current time</div>
                 </div>
             </div>
-            <div class="right_panel">
+            <div id="SidePanel">
                 <div id="Overview"></div>
             </div>
-            <div class="inner_frame">
+            <div id="InnerFrame">
                 <table id="Scoreboard">
                     <colgroup id="Scoreboard_cols"></colgroup>
                     <thead id="Scoreboard_head"></thead>
