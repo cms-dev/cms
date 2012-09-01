@@ -19,17 +19,17 @@ var TeamSearch = new function () {
     var self = this;
 
     self.init = function () {
-        $("#team_search_input").focus(function () {
+        $("#TeamSearch_input").focus(function () {
             self.show();
         });
 
-        $("#team_search_bg").click(function (event) {
+        $("#TeamSearch_bg").click(function (event) {
             if (event.target == event.currentTarget) {
                 self.hide();
             }
         });
 
-        $("#team_search_close").click(function () {
+        $("#TeamSearch_close").click(function () {
             self.hide();
         });
 
@@ -66,36 +66,33 @@ var TeamSearch = new function () {
            when some text is deleted.
          */
 
-        $("#team_search_input").on("input", function () {
+        $("#TeamSearch_input").on("input", function () {
             self.update();
         });
 
-        $("#team_search_input").on("propertychange", function () {
+        $("#TeamSearch_input").on("propertychange", function () {
             self.update();
         });
 
 /*@cc_on
     @if (@_jscript_version == 9)
 
-        $("#team_search_input").keyup(function (evt) {
-            switch (evt.which) {
+        $("#TeamSearch_input").keyup(function (event) {
+            switch (event.which) {
                 case 8:  // backspace
                 case 46:  // delete
                     self.update();
             }
         });
 
-        $("#team_search_input").on("cut", function () {
+        $("#TeamSearch_input").on("cut", function () {
             self.update();
         });
 
     @end
 @*/
 
-        self.t_head = $('#team_search_head');
-        self.t_body = $('#team_search_body');
-
-        self.open = false;
+        self.body = $('#TeamSearch_body');
 
         self.generate();
         self.update();
@@ -127,9 +124,10 @@ var TeamSearch = new function () {
     </label> \
 </div>";
         }
-        self.t_body.html(inner_html);
 
-        self.t_body.on("change", "input[type=checkbox]", function () {
+        self.body.html(inner_html);
+
+        self.body.on("change", "input[type=checkbox]", function () {
             var $this = $(this);
 
             var users = DataStore.teams[$this.parent().parent().data("team")]["users"];
@@ -155,7 +153,7 @@ var TeamSearch = new function () {
             self.sel[t_id] -= 1;
         }
 
-        var $elem = $("div.item[data-team=" + t_id + "] input[type=checkbox]"); // TODO add a context
+        var $elem = $("div.item[data-team=" + t_id + "] input[type=checkbox]", self.body);
         if (self.sel[t_id] == self.cnt[t_id]) {
             $elem.prop("checked", true);
             $elem.prop("indeterminate", false);
@@ -169,21 +167,15 @@ var TeamSearch = new function () {
     };
 
     self.show = function () {
-        if (!self.open) {
-            $("body").addClass("team_search");
-            self.open = true;
-        }
+        $("#TeamSearch_bg").addClass("open");
     };
 
     self.hide = function () {
-        if (self.open) {
-            $("body").removeClass("team_search");
-            self.open = false;
-        }
+        $("#TeamSearch_bg").removeClass("open");
     };
 
     self.update = function () {
-        var search_text = $("#team_search_input").val();
+        var search_text = $("#TeamSearch_input").val();
 
         if (search_text == "") {
             $('div.item', self.t_body).removeClass("hidden");
@@ -195,9 +187,9 @@ var TeamSearch = new function () {
             for (var t_id in DataStore.teams) {
                 var team = DataStore.teams[t_id];
                 if (team["name"].toLowerCase().indexOf(search_text.toLowerCase()) == -1) {
-                    $("div.item[data-team=" + t_id + "]").addClass("hidden"); // TODO add a context
+                    $("div.item[data-team=" + t_id + "]", self.body).addClass("hidden");
                 } else {
-                    $("div.item[data-team=" + t_id + "]").removeClass("hidden");
+                    $("div.item[data-team=" + t_id + "]", self.body).removeClass("hidden");
                 }
             }
         }

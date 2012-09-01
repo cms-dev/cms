@@ -32,16 +32,6 @@ if (typeof jQuery == 'undefined') {
                 <img src="logo" />
             </div>
             <div id="UpperPanel">
-                <div class="team_search">
-                    <input id="team_search_input" placeholder="Search Team"
-                     class="search_field" type="search" />
-                    <div id="team_search_bg" class="search_results">
-                        <div class="frame">
-                            <img src="img/close.png" class="close" id="team_search_close" />
-                            <div class="body" id="team_search_body"></div>
-                        </div>
-                    </div>
-                </div>
                 <div id="ConnectionStatus_box">
                     <div id="ConnectionStatus_label">Status</div>
                     <div id="ConnectionStatus_text"></div>
@@ -65,6 +55,13 @@ if (typeof jQuery == 'undefined') {
                     <thead id="Scoreboard_head"></thead>
                     <tbody id="Scoreboard_body"></tbody>
                 </table>
+            </div>
+        </div>
+        <input id="TeamSearch_input" type="search" placeholder="Search Team"/>
+        <div id="TeamSearch_bg">
+            <div id="TeamSearch">
+                <img id="TeamSearch_close" src="img/close.png"/>
+                <div id="TeamSearch_body"></div>
             </div>
         </div>
         <div class="UserPanel_bg" id="user_detail_background">

@@ -240,62 +240,55 @@ abbr {
 \******************************************************************************/
 
 
-div.team_search {
-    display: inline-block;
-}
-
-div.team_search input.search_field {
-    position: relative;
-    font-size: 1em;
-    line-height: 1.5em;
+#TeamSearch_input {
+    position: absolute;
+    -moz-box-sizing: content-box;
+    box-sizing: content-box;
+    top: 0;
+    left: 250px;
     height: 1.5em;
-    padding: 0.25em;
     margin: 0.5em;
     border: 0;
+    padding: 0.25em;
+    z-index: 401;
     border-radius: 0.5em;
-    box-sizing: content-box;
-    z-index: 101;
+    /* Needed to override WebKit's default font size for inputs */
+    font: inherit;
     background-color: #FFFFFF;
     outline: 0;
 }
 
-div.team_search div.search_results {
-    position: fixed;
+#TeamSearch_bg {
+    display: none;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 400;
     background-color: rgba(0,0,0,0.5);
-    z-index: 100;
-    display: none;
     /* the following two lines are for IE */
     -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#80000000, endColorstr=#80000000)";
     filter: progid:DXImageTransform.Microsoft.gradient(startColorstr=#80000000, endColorstr=#80000000);
 }
 
-body.team_search div.team_search input.search_field {
-    border: 1px solid #555555;
-    top: -1px;
-    left: -1px;
-}
-
-body.team_search div.team_search div.search_results {
+#TeamSearch_bg.open {
     display: block;
 }
 
-div.team_search div.search_results div.frame {
+#TeamSearch {
     position: absolute;
-    top: 64px;
-    bottom: 48px;
+    top: 0;
     left: 0;
     right: 0;
-    margin: 0 auto;
+    bottom: 0;
     width: 940px;
+    margin: 64px auto 48px;
     border-radius: 12px;
     background-color: white;
 }
 
-div.team_search div.search_results img.close {
+#TeamSearch_close {
     position: absolute;
     top: -10px;
     right: -10px;
@@ -304,38 +297,44 @@ div.team_search div.search_results img.close {
     cursor: pointer;
 }
 
-div.team_search div.search_results div.body {
+#TeamSearch_body {
     position: absolute;
     top: 14px; /* 20px - 0.5em at a 12px font-size */
-    bottom: 14px; /* 20px - 0.5em at a 12px font-size */
+    top: -webkit-calc(20px - 0.5em);
+    top:    -moz-calc(20px - 0.5em);
+    top:         calc(20px - 0.5em);
     left: 10px;
     right: 10px;
+    bottom: 14px; /* 20px - 0.5em at a 12px font-size */
+    bottom: -webkit-calc(20px - 0.5em);
+    bottom:    -moz-calc(20px - 0.5em);
+    bottom:         calc(20px - 0.5em);
     overflow-y: auto;
 }
 
-div.team_search div.search_results div.body div.item {
+#TeamSearch_body div.item {
     float: left;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     width: 25%;
     height: 3em;
-    border: solid white;
-    border-width: 0.5em 10px;
     padding: 0;
-    background-color: lightgray;
+    border: 0 solid white;
+    border-width: 0.5em 10px;
+    background-color: #DDDDDD;
 
     -webkit-user-select: none;
-    -khtml-user-select: none;
-    -moz-user-select: none;
-    -o-user-select: none;
-    user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+         -o-user-select: none;
+            user-select: none;
 }
 
-div.team_search div.search_results div.body div.item.hidden {
+#TeamSearch_body div.item.hidden {
     display: none;
 }
 
-div.team_search div.search_results div.body div.item label {
+#TeamSearch_body div.item label {
     display: block;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
@@ -347,17 +346,19 @@ div.team_search div.search_results div.body div.item label {
     text-overflow: ellipsis;
 }
 
-div.team_search div.search_results div.body div.item input {
-    position: relative;
-    top: -1px;
+#TeamSearch_body div.item input {
     margin: auto 1px auto 0;
     vertical-align: middle;
 }
 
-div.team_search div.search_results div.body div.item img {
+#TeamSearch_body div.item img {
     display: inline-block;
-    max-height: 1.5em;
-    vertical-align: bottom;
+    max-height: 20px;
+    vertical-align: top;
+    margin-top: -1px; /* (1.5em - 20px) / 2 at a 12px font-size */
+    margin-top: -webkit-calc(0.75em - 10px);
+    margin-top:    -moz-calc(0.75em - 10px);
+    margin-top:         calc(0.75em - 10px);
 }
 
 
