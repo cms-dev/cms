@@ -277,10 +277,13 @@ def evaluation_step_before_run(sandbox, command,
     sandbox.stderr_file = stderr_filename
     # These syscalls and paths are used by executables generated
     # by fpc.
-    sandbox.allow_path += ["/proc/self/exe"]
+    sandbox.allow_path += ["/proc/self/exe",
+                           "/etc/timezone",
+                           "/usr/share/zoneinfo/"]
     sandbox.allow_syscall += ["getrlimit",
                               "rt_sigaction",
-                              "ugetrlimit"]
+                              "ugetrlimit",
+                              "time"]
     # This one seems to be used for a C++ executable.
     sandbox.allow_path += ["/proc/meminfo"]
     # This is used by freopen in Ubuntu 12.04.
