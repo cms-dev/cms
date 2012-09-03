@@ -71,8 +71,9 @@ def get_compilation_command(language, source_filenames, executable_filename,
         command = ["/usr/bin/gcc"]
         if for_evaluation:
             command += ["-DEVAL"]
-        command += ["-static", "-O2", "-lm", "-o", executable_filename]
+        command += ["-static", "-O2", "-o", executable_filename]
         command += source_filenames
+        command += ["-lm"]
     elif language == "cpp":
         command = ["/usr/bin/g++"]
         if for_evaluation:
