@@ -123,8 +123,7 @@ class SubmitRequest(GenericRequest):
     """
     def __init__(self, browser, task, filename, base_url=None):
         GenericRequest.__init__(self, browser, base_url)
-        self.url = "%ssubmit/%s" % (self.base_url,
-                                    encrypt_number(task[0]))
+        self.url = "%stasks/%s/submit" % (self.base_url, task[1])
         self.task = task
         self.filename = filename
         self.data = {}
@@ -151,7 +150,7 @@ class SubmitRequest(GenericRequest):
     def get_submission_id(self):
         # Only valid after self.execute()
         # Parse submission ID out of response.
-        p = self.browser.geturl().split("/")[-1]
+        p = self.browser.geturl().split("?")[-1]
         try:
             submission_id = decrypt_number(p)
         except Exception as error:
