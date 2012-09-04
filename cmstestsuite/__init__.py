@@ -360,7 +360,13 @@ def admin_req(path, multipart_post=False, args=None, files=None):
 def add_contest(**kwargs):
     resp = admin_req('/contest/add', multipart_post=True, args=kwargs)
     # Contest ID is returned as HTTP response.
-    return int(resp.read())
+    page = resp.read()
+    match = re.search(
+        r'<form name="edit_contest" action="../contest/edit/([0-9]+)',
+        page)
+    if match is None:
+        raise FrameworkException("Unable to create contest.")
+    return int(match.groups()[0])
 
 
 def add_task(contest_id, **kwargs):

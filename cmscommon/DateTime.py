@@ -64,6 +64,37 @@ def get_timezone(user, contest):
     return local
 
 
+def get_system_timezone():
+    """Return the timezone of the system.
+
+    See http://stackoverflow.com/questions/7669938/
+               get-the-olson-tz-name-for-the-local-timezone
+
+    return (string): one among the possible timezone description
+                     strings in the form Europe/Rome, or None if
+                     nothing is found.
+
+    """
+    if time.daylight:
+        local_offset = time.altzone
+        localtz = time.tzname[1]
+    else:
+        local_offset = time.timezone
+        localtz = time.tzname[0]
+
+    local_offset = timedelta(seconds=-local_offset)
+
+    for name in all_timezones:
+        tz = timezone(name)
+        if not hasattr(tz, '_tzinfos'):
+            continue
+        for (utcoffset, daylight, tzname), _ in tz._tzinfos.items():
+            if utcoffset == local_offset and tzname == localtz:
+                return name
+
+    return None
+
+
 # The following code provides some sample timezone implementations
 # (i.e. tzinfo subclasses). It has been copied (almost) verbatim
 # from the official datetime module documentation:

@@ -151,10 +151,10 @@ class SubmitRequest(GenericRequest):
     def get_submission_id(self):
         # Only valid after self.execute()
         # Parse submission ID out of response.
-        p = urlparse.urlparse(self.browser.geturl())
+        p = self.browser.geturl().split("/")[-1]
         try:
-            submission_id = decrypt_number(p.query)
-        except:
+            submission_id = decrypt_number(p)
+        except Exception as error:
             return None
         return submission_id
 

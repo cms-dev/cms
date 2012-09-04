@@ -30,6 +30,7 @@ from cmstestsuite import add_contest, add_user, add_task, add_testcase, \
      shutdown_services, restart_service
 from cmstestsuite.Test import TestFailure
 import cmstestsuite.Tests
+from cmscommon.DateTime import get_system_timezone
 
 
 FAILED_TEST_FILENAME = '.testfailures'
@@ -49,19 +50,20 @@ def start_generic_services():
 
 def create_contest():
     info("Creating contest.")
-    start_time = datetime.datetime.now()
-    end_time = start_time + datetime.timedelta(1, 0, 0)
+    start_time = datetime.datetime.utcnow()
+    stop_time = start_time + datetime.timedelta(1, 0, 0)
     contest_id = add_contest(
         name="testcontest1",
         description="A test contest #1.",
-        start=start_time.strftime("%d/%m/%Y %H:%M:%S"),
-        end=end_time.strftime("%d/%m/%Y %H:%M:%S"),
+        start=start_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
+        stop=stop_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
+        timezone=get_system_timezone(),
         token_initial="100",
-        #token_max="",
-        #token_total="",
-        #token_min_interval="",
-        #token_gen_time="",
-        #token_gen_number="",
+        token_max="100",
+        token_total="100",
+        token_min_interval="0",
+        token_gen_time="0",
+        token_gen_number="0",
         )
 
     start_service("ScoringService", contest=contest_id)
@@ -101,6 +103,12 @@ def get_task_id(contest_id, user_id, task_module):
         # add the task itself.
         task_id = add_task(
             contest_id=contest_id,
+            token_initial="100",
+            token_max="100",
+            token_total="100",
+            token_min_interval="0",
+            token_gen_time="0",
+            token_gen_number="0",
             **task_module.task_info)
 
         # add the task's test data.
