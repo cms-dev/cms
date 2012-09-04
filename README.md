@@ -1,4 +1,4 @@
-CMS - A Contest Management System
+CMS - Contest Management System
 =================================
 
 
