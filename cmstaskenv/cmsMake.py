@@ -150,6 +150,9 @@ def noop():
 
 
 def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
+    if yaml_conf.get('only_gen', False):
+        return []
+
     sol_dir = os.path.join(base_dir, SOL_DIRNAME)
     entries = map(lambda x: os.path.join(SOL_DIRNAME, x), os.listdir(sol_dir))
     sources = filter(lambda x: endswith2(x, SOL_EXTS), entries)
