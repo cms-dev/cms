@@ -35,43 +35,42 @@ var UserDetail = new function () {
     var self = this;
 
     self.init = function () {
-        $("#user_detail_background").click(function (event) {
+        $("#UserDetail_bg").click(function (event) {
             if (event.target == event.currentTarget) {
                 self.hide();
             }
         });
 
-        $("#user_detail_close").click(function () {
+        $("#UserDetail_close").click(function () {
             self.hide();
         });
 
-        self.f_name_label = $('#user_detail_f_name');
-        self.l_name_label = $('#user_detail_l_name');
-        self.team_label = $('#user_detail_team');
-        self.flag_image = $('#user_detail_flag');
-        self.face_image = $('#user_detail_face');
-        self.title_label = $('#user_detail_title');
+        self.f_name_label = $('#UserDetail_f_name');
+        self.l_name_label = $('#UserDetail_l_name');
+        self.team_label = $('#UserDetail_team');
+        self.flag_image = $('#UserDetail_flag');
+        self.face_image = $('#UserDetail_face');
+        self.title_label = $('#UserDetail_title');
 
-        self.scores = $('#user_detail_scores');
-        self.subm_table = $('#user_detail_submissions');
+        self.navigator = $('#UserDetail_navigator table tbody');
+        self.submission_table = $('#UserDetail_submissions');
 
-        self.score_chart = document.getElementById('user_detail_score_chart');
-        self.rank_chart = document.getElementById('user_detail_rank_chart');
+        self.score_chart = $('#UserDetail_score_chart')[0];
+        self.rank_chart = $('#UserDetail_rank_chart')[0];
 
-        self.scores.on("click", "td.btn", function () {
+        self.navigator.on("click", "td.btn", function () {
             if (self.active !== null) {
                 self.active.removeClass("active");
             }
-            self.active = $(this);
+            self.active = $(this).parent();
             self.active.addClass("active");
 
-            var row = self.active.parent();
-            if (row.hasClass('global')) {
+            if (self.active.hasClass('global')) {
                 self.show_global();
-            } else if (row.hasClass('contest')) {
-                self.show_contest(row.attr('data-contest'));
-            } else if (row.hasClass('task')) {
-                self.show_task(row.attr('data-task'));
+            } else if (self.active.hasClass('contest')) {
+                self.show_contest(self.active.attr('data-contest'));
+            } else if (self.active.hasClass('task')) {
+                self.show_task(self.active.attr('data-task'));
             }
         });
     };
@@ -85,7 +84,7 @@ var UserDetail = new function () {
         $.ajax({
             url: Config.get_submissions_url(self.user_id),
             dataType: "json",
-            success: self.submits_callback,
+            success: self.submissions_callback,
             error: function () {
                 console.error("Error while getting the submissions for " + self.user_id);
             }
@@ -114,7 +113,7 @@ var UserDetail = new function () {
         self.do_show();
     }
 
-    self.submits_callback = function (data) {
+    self.submissions_callback = function (data) {
         self.submissions = new Object();
         for (var t_id in DataStore.tasks) {
             self.submissions[t_id] = new Array();
@@ -176,19 +175,19 @@ var UserDetail = new function () {
                 }
             }
 
-            self.scores.html(s);
+            self.navigator.html(s);
 
             self.active = null;
 
-            $('tr.global td.btn', self.scores).click();
+            $('tr.global td.btn', self.navigator).click();
 
-            $("body").addClass("user_panel");
+            $("#UserDetail_bg").addClass("open");
         }
     };
 
     self.show_global = function () {
         self.title_label.text("Global");
-        self.subm_table.html("");
+        self.submission_table.html("");
 
         var intervals = new Array();
         var b = 0;
@@ -212,7 +211,7 @@ var UserDetail = new function () {
         var contest = DataStore.contests[contest_id];
 
         self.title_label.text(contest["name"]);
-        self.subm_table.html("");
+        self.submission_table.html("");
 
         self.draw_charts([[contest["begin"], contest["end"]]], contest["max_score"],
                          self.contest_s[contest_id], self.contest_r[contest_id]);
@@ -223,7 +222,7 @@ var UserDetail = new function () {
         var contest = DataStore.contests[task["contest"]];
 
         self.title_label.text(task["name"]);
-        self.subm_table.html(self.make_submission_table(task_id));
+        self.submission_table.html(self.make_submission_table(task_id));
 
         self.draw_charts([[contest["begin"], contest["end"]]], task["max_score"],
                          self.task_s[task_id], self.task_r[task_id]);
@@ -252,36 +251,43 @@ var UserDetail = new function () {
 
     self.make_submission_table = function (task_id) {
         var res = " \
-            <thead> \
-                <tr> \
-                    <td>Time</td> \
-                    <td>Score</td> \
-                    <td>Token</td> \
-                    " + (DataStore.tasks[task_id]['extra_headers'].length > 0 ? "<td>" + DataStore.tasks[task_id]['extra_headers'].join("</td><td>") + "</td>" : "") + " \
-                </tr> \
-            </thead><tbody>";
+<table> \
+    <thead> \
+        <tr> \
+            <td>Time</td> \
+            <td>Score</td> \
+            <td>Token</td> \
+            " + (DataStore.tasks[task_id]['extra_headers'].length > 0 ? "<td>" + DataStore.tasks[task_id]['extra_headers'].join("</td><td>") + "</td>" : "") + " \
+        </tr> \
+    </thead> \
+    <tbody>";
 
         if (self.submissions[task_id].length == 0) {
-            res += "<tr><td colspan=\"" + (3 + DataStore.tasks[task_id]['extra_headers'].length) + "\">No Submissions</td></tr>";
+            res += " \
+        <tr> \
+            <td colspan=\"" + (3 + DataStore.tasks[task_id]['extra_headers'].length) + "\">no submissions</td> \
+        </tr>";
         } else {
             for (var i in self.submissions[task_id]) {
                 var submission = self.submissions[task_id][i];
                 time = submission["time"] - DataStore.contests[DataStore.tasks[task_id]["contest"]]["begin"];
                 time = format_time(time);
                 res += " \
-                    <tr> \
-                        <td>" + time + "</td> \
-                        <td>" + round_to_str(submission['score']) + "</td> \
-                        <td>" + (submission["token"] ? 'Yes' : 'No') + "</td> \
-                        " + (submission["extra"].length > 0 ? "<td>" + submission["extra"].join("</td><td>") + "</td>" : "") + " \
-                    </tr>";
+        <tr> \
+            <td>" + time + "</td> \
+            <td>" + round_to_str(submission['score']) + "</td> \
+            <td>" + (submission["token"] ? 'Yes' : 'No') + "</td> \
+            " + (submission["extra"].length > 0 ? "<td>" + submission["extra"].join("</td><td>") + "</td>" : "") + " \
+        </tr>";
             }
         }
-        res += "</tbody>";
+        res += " \
+    </tbody> \
+</table>";
         return res;
     };
 
-    self.hide = function (widget) {
-        $("body").removeClass("user_panel");
+    self.hide = function () {
+        $("#UserDetail_bg").removeClass("open");
     };
 };

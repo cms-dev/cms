@@ -64,19 +64,19 @@ if (typeof jQuery == 'undefined') {
                 <div id="TeamSearch_body"></div>
             </div>
         </div>
-        <div class="UserPanel_bg" id="user_detail_background">
-            <div class="UserPanel" id="user_detail_panel">
-                <img src="img/close.png" class="close" id="user_detail_close" />
-                <div class="header">
-                    <div class="summary">
-                        <img id="user_detail_face" class="face" src=""/>
-                        <div id="user_detail_f_name" class="f_name"></div>
-                        <div id="user_detail_l_name" class="l_name"></div>
-                        <div id="user_detail_team" class="team"></div>
-                        <img id="user_detail_flag" class="flag" src=""/>
+        <div id="UserDetail_bg">
+            <div id="UserDetail">
+                <img id="UserDetail_close" src="img/close.png"/>
+                <div id="UserDetail_header">
+                    <div id="UserDetail_summary">
+                        <img id="UserDetail_face" src=""/>
+                        <div id="UserDetail_f_name"></div>
+                        <div id="UserDetail_l_name"></div>
+                        <div id="UserDetail_team"></div>
+                        <img id="UserDetail_flag" src=""/>
                     </div>
-                    <div class="scores">
-                        <table class="score_table">
+                    <div id="UserDetail_navigator">
+                        <table>
                             <col class="name"/>
                             <col class="score"/>
                             <col class="rank"/>
@@ -89,18 +89,17 @@ if (typeof jQuery == 'undefined') {
                                     <td></td>
                                 </tr>
                             </thead>
-                            <tbody id="user_detail_scores">
+                            <tbody id="UserDetail_scores">
                             </tbody>
                         </table>
                     </div>
                 </div>
-                <div id="user_detail_title" class="title"></div>
-                <div id="user_detail_charts" class="charts">
-                    <canvas id="user_detail_score_chart" width="940" height="250"></canvas>
-                    <canvas id="user_detail_rank_chart" width="940" height="250"></canvas>
+                <div id="UserDetail_title"></div>
+                <div id="UserDetail_charts">
+                    <canvas id="UserDetail_score_chart" width="920" height="250"></canvas>
+                    <canvas id="UserDetail_rank_chart" width="920" height="250"></canvas>
                 </div>
-                <div class="submits">
-                    <table id="user_detail_submissions"></table>
+                <div id="UserDetail_submissions">
                 </div>
             </div>
         </div>
