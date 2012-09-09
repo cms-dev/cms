@@ -179,17 +179,17 @@ class YamlLoader:
         infile_param = conf.get("infile", "input.txt")
         outfile_param = conf.get("outfile", "output.txt")
 
-        # If there is cor/grader.%l for some language %l, then,
+        # If there is sol/grader.%l for some language %l, then,
         # presuming that the task type is Batch, we retrieve graders
-        # in the form cor/grader.%l
+        # in the form sol/grader.%l
         graders = False
         for lang in Submission.LANGUAGES:
-            if os.path.exists(os.path.join(path, "cor", "grader.%s" % (lang))):
+            if os.path.exists(os.path.join(path, "sol", "grader.%s" % (lang))):
                 graders = True
                 break
         if graders:
             for lang in Submission.LANGUAGES:
-                grader_filename = os.path.join(path, "cor", "grader.%s" %
+                grader_filename = os.path.join(path, "sol", "grader.%s" %
                                                (lang))
                 if os.path.exists(grader_filename):
                     params["managers"].append(
