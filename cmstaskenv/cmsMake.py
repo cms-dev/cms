@@ -161,10 +161,14 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
     test_actions = []
     for src in sources:
         exe, lang = basename2(src, SOL_EXTS)
-        if exe == os.path.join(SOL_DIRNAME, GRAD_BASENAME):
-            continue
         # Delete the dot
         lang = lang[1:]
+
+        # Ignore things known to be auxiliary files
+        if exe == os.path.join(SOL_DIRNAME, GRAD_BASENAME):
+            continue
+        if lang == 'pas' and exe.endswith('lib'):
+            continue
 
         srcs = []
         # The grader, when present, must be in the first position of
@@ -193,12 +197,17 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 new_exe = os.path.split(srcs[1])[1][:-4]
                 shutil.copyfile(srcs[0], os.path.join(tempdir, new_srcs[0]))
                 shutil.copyfile(srcs[1], os.path.join(tempdir, new_srcs[1]))
+                lib_filename = '%slib.pas' % (task_name)
+                if os.path.exists(os.path.join(SOL_DIRNAME, lib_filename)):
+                    shutil.copyfile(os.path.join(SOL_DIRNAME, lib_filename),
+                                    os.path.join(tempdir, lib_filename))
                 call(tempdir, get_compilation_command(lang, new_srcs, new_exe,
                                                       for_evaluation=False))
                 shutil.copyfile(os.path.join(tempdir, new_exe),
                                 os.path.join(SOL_DIRNAME, new_exe))
                 shutil.copymode(os.path.join(tempdir, new_exe),
                                 os.path.join(SOL_DIRNAME, new_exe))
+                shutil.rmtree(tempdir)
 
         def test_src(exe, input_num, task_type):
             print "Testing solution %s" % (exe)
