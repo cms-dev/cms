@@ -188,6 +188,7 @@ class YamlLoader:
                 graders = True
                 break
         if graders:
+            # Read grader for each language
             for lang in Submission.LANGUAGES:
                 grader_filename = os.path.join(path, "sol", "grader.%s" %
                                                (lang))
@@ -201,6 +202,17 @@ class YamlLoader:
                 else:
                     logger.warning("Could not find grader for "
                                    "language %s" % (lang))
+            # Read managers with other known file extensions
+            for other_filename in os.listdir(os.path.join(path, "sol")):
+                if other_filename.endswith('.h') or \
+                        other_filename.endswith('lib.pas'):
+                    params["managers"].append(
+                        Manager(self.file_cacher.put_file(
+                                path=os.path.join(path, "sol",
+                                                  other_filename),
+                                description="Manager %s for task %s" %
+                                (other_filename, name)),
+                                other_filename).export_to_dict())
             compilation_param = "grader"
         else:
             compilation_param = "alone"
