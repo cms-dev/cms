@@ -257,8 +257,11 @@ class YamlLoader:
                  evaluation_parameter)
 
         params["score_type"] = conf.get("score_type", "Sum")
+        input_value = 0.0
+        if conf["n_input"] != 0:
+            input_value = 100.0 / float(conf["n_input"])
         params["score_parameters"] = conf.get(
-            "score_parameters", str(100.0 / float(conf["n_input"])))
+            "score_parameters", str(input_value))
         public_testcases = conf.get("risultati", "").strip()
         if public_testcases != "":
             public_testcases = [int(x.strip())
