@@ -146,15 +146,15 @@ class Batch(TaskType):
         files_to_get = {}
         format_filename = self.job.files.keys()[0]
         source_filenames = []
+        source_filenames.append(format_filename.replace("%l", language))
+        files_to_get[source_filenames[0]] = \
+            self.job.files[format_filename].digest
         # If a grader is specified, we add to the command line (and to
         # the files to get) the corresponding manager.
         if self.job.task_type_parameters[0] == "grader":
             source_filenames.append("grader.%s" % language)
             files_to_get[source_filenames[1]] = \
                 self.job.managers["grader.%s" % language].digest
-        source_filenames.append(format_filename.replace("%l", language))
-        files_to_get[source_filenames[0]] = \
-            self.job.files[format_filename].digest
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
 
