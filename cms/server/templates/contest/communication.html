@@ -13,14 +13,14 @@
 <div class="announcement_list">
     {% for msg in reversed(contest.announcements) %}
     <div class="announcement">
-        {% if msg.subject %}
+        {% if msg.subject != '' %}
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">(no subject)</h4>
         {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.timestamp, timezone) }}</span>
-        {% if msg.text %}
-        <div class="body">{{ msg.text }}</div>
+        {% if msg.text != '' %}
+        <div class="body">{{ msg.text.replace('\n', '<br/>') }}</div>
         {% end %}
     </div>
     {% end %}
@@ -62,26 +62,26 @@
 <div class="question_list">
     {% for msg in reversed(current_user.questions) %}
     <div class="question">
-        {% if msg.subject %}
+        {% if msg.subject != '' %}
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">(no subject)</h4>
         {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.question_timestamp, timezone) }}</span>
-        {% if msg.text %}
-        <div class="body">{{ msg.text }}</div>
+        {% if msg.text != '' %}
+        <div class="body">{{ msg.text.replace('\n', '<br/>') }}</div>
         {% end %}
     </div>
         {% if msg.reply_timestamp is not None %}
     <div class="answer">
-            {% if msg.reply_subject %}
+            {% if msg.reply_subject != '' %}
         <h4 class="subject">{{ msg.reply_subject }}</h4>
             {% else %}
         <h4 class="subject empty">(no subject)</h4>
             {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.reply_timestamp, timezone) }}</span>
-            {% if msg.reply_text %}
-        <div class="body">{{ msg.reply_text }}</div>
+            {% if msg.reply_text != '' %}
+        <div class="body">{{ msg.reply_text.replace('\n', '<br/>') }}</div>
             {% end %}
     </div>
         {% else %}
@@ -101,14 +101,14 @@
 <div class="message_list">
     {% for msg in reversed(current_user.messages) %}
     <div class="message">
-        {% if msg.subject %}
+        {% if msg.subject != '' %}
         <h4 class="subject">{{ msg.subject }}</h4>
         {% else %}
         <h4 class="subject empty">(no subject)</h4>
         {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.timestamp, timezone) }}</span>
-        {% if msg.text %}
-        <div class="body">{{ msg.text }}</div>
+        {% if msg.text != '' %}
+        <div class="body">{{ msg.text.replace('\n', '<br/>') }}</div>
         {% end %}
     </div>
     {% end %}

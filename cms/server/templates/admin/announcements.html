@@ -32,7 +32,7 @@
           </div>
           <div class="notification_timestamp">{{ str(msg.timestamp) }}</div>
           <div class="notification_subject">{{ msg.subject }}</div>
-          <div class="notification_text">{{ msg.text }}</div>
+          <div class="notification_text">{{ msg.text.replace('\n', '<br/>') }}</div>
 
         </div>
       </div>
