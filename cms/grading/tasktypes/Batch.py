@@ -293,10 +293,10 @@ class Batch(TaskType):
                             outcome, text = extract_outcome_and_text(sandbox)
 
                     # Unknown evaluationg parameter!
-                        else:
-                            raise ValueError("Unrecognized third parameter"
-                                             " `%s' for Batch tasktype." %
-                                             self.job.task_type_parameters[2])
+                    else:
+                        raise ValueError("Unrecognized third parameter"
+                                         " `%s' for Batch tasktype." %
+                                         self.job.task_type_parameters[2])
 
         # Whatever happened, we conclude.
         evaluation['success'] = success
