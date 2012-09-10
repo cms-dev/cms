@@ -277,8 +277,8 @@ particular we are aware of the following:
 - FARIO 2012 (French-Australian Regional Informatics Olympiad), March
   2012;
 
-- training camps for the selections of the national teams of Australia
-  and Italy;
+- training camps for the selections of the national teams of Australia,
+  Italy and Latvia.
 
 - laboratory exercises and exams of the course "Algorithms and data
   structures" at University of Trento (year 2011-2012).
