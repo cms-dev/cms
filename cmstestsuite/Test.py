@@ -113,6 +113,13 @@ class CheckSignal(CheckAbstractEvaluationFailure):
             "Execution killed with signal %d" % signal_number)
 
 
+class CheckNonzeroReturn(CheckAbstractEvaluationFailure):
+    def __init__(self):
+        CheckAbstractEvaluationFailure.__init__(self,
+            "nonzero return",
+            "Execution failed because the return code was nonzero")
+
+
 class Test:
     def __init__(self, name, task, filename, languages, checks):
         self.name = name

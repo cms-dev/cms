@@ -168,7 +168,8 @@ def compilation_step(sandbox, command):
         text = "OK %s\n%s" % (sandbox.get_stats(), compiler_output)
 
     # Error in compilation: returning the error to the user.
-    elif exit_status == Sandbox.EXIT_OK and exit_code != 0:
+    elif (exit_status == Sandbox.EXIT_OK and exit_code != 0) or \
+             exit_status == Sandbox.EXIT_NONZERO_RETURN:
         logger.info("Compilation failed.")
         success = True
         compilation_success = False
@@ -351,6 +352,12 @@ def evaluation_step_after_run(sandbox):
         success = True
         plus["filename"] = filename
 
+    # The exit code was nonzero: returning the error to the user.
+    elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
+        msg = "Execution failed because the return code was nonzero."
+        logger.info("%s" % msg)
+        success = True
+
     # Last check before assuming that evaluation finished
     # successfully; we accept the evaluation even if the exit code
     # isn't 0.
@@ -386,6 +393,8 @@ def human_evaluation_message(plus):
             (plus['syscall'])
     elif exit_status == Sandbox.EXIT_FILE_ACCESS:
         return "Execution killed because of forbidden file access."
+    elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
+        return "Execution failed because the return code was nonzero."
     elif exit_status == Sandbox.EXIT_OK:
         return None
     else:

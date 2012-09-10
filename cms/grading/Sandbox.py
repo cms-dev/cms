@@ -385,6 +385,7 @@ class Sandbox:
     EXIT_TIMEOUT = 'timeout'
     EXIT_FILE_ACCESS = 'file access'
     EXIT_SYSCALL = 'syscall'
+    EXIT_NONZERO_RETURN = 'nonzero return'
 
     def get_exit_status(self):
         """Get the list of statuses of the sandbox and return the most
@@ -407,6 +408,8 @@ class Sandbox:
             return self.EXIT_TIMEOUT
         elif 'SG' in status_list:
             return self.EXIT_SIGNAL
+        elif 'RE' in status_list:
+            return self.EXIT_NONZERO_RETURN
         return self.EXIT_OK
 
     def get_human_exit_description(self):
@@ -434,6 +437,8 @@ class Sandbox:
         elif status == self.EXIT_SIGNAL:
             return "Execution killed with signal %d" % \
                 self.get_killing_signal()
+        elif status == self.EXIT_NONZERO_RETURN:
+            return "Execution failed because the return code was nonzero"
 
     def get_stats(self):
         """Return a human-readable string representing execution time

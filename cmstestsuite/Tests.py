@@ -20,7 +20,7 @@
 import cmstestsuite.tasks.batch_stdio as batch_stdio
 import cmstestsuite.tasks.batch_fileio as batch_fileio
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
-     CheckTimeout, CheckForbiddenSyscall, CheckSignal
+     CheckTimeout, CheckForbiddenSyscall, CheckSignal, CheckNonzeroReturn
 
 
 all_languages = ('c', 'cpp', 'pas')
@@ -96,5 +96,15 @@ Test('timeout-select',
      task=batch_stdio, filename='timeout-select.%l',
      languages=('cpp',),
      checks=[CheckOverallScore(0, 100), CheckForbiddenSyscall()]),
+
+Test('nonzero-return-stdio',
+     task=batch_stdio, filename='nonzero-return-stdio.%l',
+     languages=all_languages,
+     checks=[CheckOverallScore(0, 100), CheckNonzeroReturn()]),
+
+Test('nonzero-return-fileio',
+     task=batch_fileio, filename='nonzero-return-fileio.%l',
+     languages=all_languages,
+     checks=[CheckOverallScore(0, 100), CheckNonzeroReturn()]),
 
 ]
