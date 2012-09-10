@@ -301,8 +301,7 @@ class NotificationHandler(DataHandler):
         elif self.get_argument("last_event_id", None) != None:
             last_id = float(self.get_argument("last_event_id", None))
         else:
-            last_id = 2000000000  # this is a "+infty" value
-                                  # update it after 2033-05-18 03:33:20
+            last_id = time.time()
 
         self.outdated = False
         if last_id < proxy.age:
