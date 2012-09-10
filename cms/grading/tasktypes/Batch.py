@@ -277,18 +277,25 @@ class Batch(TaskType):
 
                     # Check the solution with a comparator
                     elif self.job.task_type_parameters[2] == "comparator":
-                        manager_filename = self.job.managers.keys()[0]
-                        sandbox.create_file_from_storage(
-                            manager_filename,
-                            self.job.managers[manager_filename].digest,
-                            executable=True)
-                        success, _ = evaluation_step(
-                            sandbox,
-                            ["./%s" % manager_filename,
-                             input_filename, "res.txt", output_filename],
-                            allow_path=[input_filename,
-                                        "res.txt",
-                                        output_filename])
+                        manager_filename = "checker"
+
+                        if not manager_filename in self.job.managers:
+                            logger.error("Configuration error: missing or "
+                                         "invalid comparator (it must be named 'checker')")
+                            success = False
+
+                        else:
+                            sandbox.create_file_from_storage(
+                                manager_filename,
+                                self.job.managers[manager_filename].digest,
+                                executable=True)
+                            success, _ = evaluation_step(
+                                sandbox,
+                                ["./%s" % manager_filename,
+                                 input_filename, "res.txt", output_filename],
+                                allow_path=[input_filename,
+                                            "res.txt",
+                                            output_filename])
                         if success:
                             outcome, text = extract_outcome_and_text(sandbox)
 
