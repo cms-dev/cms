@@ -328,7 +328,8 @@ class NotificationHandler(DataHandler):
 
         proxy.add_callback(self.send_event)
 
-        # TODO: add automatic connection close after a certain timeout.
+        self.timeout = tornado.ioloop.IOLoop.instance().add_timeout(
+            time.time() + config.timeout, self.finish)
 
     # If the connection is closed by the client then the "on_connection_
     # _close" callback is called. If we decide to finish the request (by
@@ -338,10 +339,12 @@ class NotificationHandler(DataHandler):
     def on_connection_close(self):
         if not self.outdated:
             proxy.remove_callback(self.send_event)
+            tornado.ioloop.IOLoop.instance().remove_timeout(self.timeout)
 
     def on_finish(self):
         if not self.outdated:
             proxy.remove_callback(self.send_event)
+            tornado.ioloop.IOLoop.instance().remove_timeout(self.timeout)
 
     def send_event(self, message):
         self.write(message)
