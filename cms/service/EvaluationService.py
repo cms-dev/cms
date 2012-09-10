@@ -1065,7 +1065,7 @@ class EvaluationService(Service):
         if submission.compilation_outcome == "ok":
             self.push_in_queue((EvaluationService.JOB_TYPE_EVALUATION,
                                 submission.id),
-                               EvaluationService.JOB_PRIORITY_LOW,
+                               EvaluationService.JOB_PRIORITY_MEDIUM,
                                submission.timestamp)
         # If instead submission failed compilation, we don't evaluate.
         elif submission.compilation_outcome == "fail":
@@ -1131,7 +1131,7 @@ class EvaluationService(Service):
         if user_test.compilation_outcome == 'ok':
             self.push_in_queue((EvaluationService.JOB_TYPE_TEST_EVALUATION,
                                 user_test.id),
-                               EvaluationService.JOB_PRIORITY_LOW,
+                               EvaluationService.JOB_PRIORITY_MEDIUM,
                                user_test.timestamp)
         # If instead user test failed compilation, we don't evaluatate
         elif user_test.compilation_outcome == 'fail':
