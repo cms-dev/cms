@@ -231,7 +231,7 @@ def start_servicer(service_name, check, shard=0, contest=None,
     """Start a CMS service."""
 
     info("Starting %s." % service_name)
-    executable = '%s/%s.py' % (prefix, service_name)
+    executable = os.path.join('.', 'cms', prefix, '%s.py' % (service_name))
     if CONFIG["TEST_DIR"] is None:
         executable = 'cms%s' % service_name
     prog = start_prog(executable, shard=shard, contest=contest)

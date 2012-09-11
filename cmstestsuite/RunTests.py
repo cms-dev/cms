@@ -362,8 +362,8 @@ def main():
 
     if CONFIG["TEST_DIR"] is not None:
         # Set up our expected environment.
-        os.chdir("%(TEST_DIR)s/cms" % CONFIG)
-        os.environ["PYTHONPATH"] = "%(TEST_DIR)s/cms" % CONFIG
+        os.chdir("%(TEST_DIR)s" % CONFIG)
+        os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
         # Clear out any old coverage data.
         info("Clearing old coverage data.")
