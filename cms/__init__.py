@@ -103,9 +103,10 @@ class Config:
         self.admin_listen_port = 8889
 
         # ScoringService.
-        self.rankings_address = [["localhost", 8890]]
+        self.rankings_address = [["http", "localhost", 8890]]
         self.rankings_username = ["usern4me"]
         self.rankings_password = ["passw0rd"]
+        self.https_certfile = None
 
         # ResourceService.
         self.process_cmdline = ["/usr/bin/python", "./%s.py", "%d"]

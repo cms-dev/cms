@@ -121,9 +121,9 @@
 
     "_section": "ScoringService",
 
-    "_help": "Lists of addresses (ip, port), usernames and passwords",
-    "_help": "where the scores are to be sent.",
-    "rankings_address":        [["localhost", 8890]],
+    "_help": "Lists of addresses (protocol, ip, port), usernames and",
+    "_help": "passwords where the scores are to be sent.",
+    "rankings_address":        [["http", "localhost", 8890]],
     "rankings_username":       ["usern4me"],
     "rankings_password":       ["passw0rd"],
 

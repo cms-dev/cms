@@ -29,6 +29,7 @@ from datetime import datetime
 import os
 import re
 import base64
+import ssl
 
 from cmsranking.Config import config
 from cmsranking.Logger import logger
@@ -464,7 +465,13 @@ def main():
         (r"/", HomeHandler)
         ])
     # application.add_transform(tornado.web.ChunkedTransferEncoding)
-    application.listen(config.port, address=config.bind_address)
+    if config.http_port is not None:
+        application.listen(config.http_port, address=config.bind_address)
+    if config.https_port is not None:
+        application.listen(config.https_port, address=config.bind_address,
+                           ssl_options={"ssl_version": ssl.PROTOCOL_SSLv23,
+                                        "certfile": config.https_certfile,
+                                        "keyfile": config.https_keyfile})
 
     try:
         tornado.ioloop.IOLoop.instance().start()

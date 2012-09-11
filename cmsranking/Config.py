@@ -32,7 +32,10 @@ class Config(object):
         """
         # Connection.
         self.bind_address = ''
-        self.port = 8890
+        self.http_port = 8890
+        self.https_port = None
+        self.https_certfile = None
+        self.https_keyfile = None
 
         # Authentication.
         self.realm_name = 'Scoreboard'

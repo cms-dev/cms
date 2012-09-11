@@ -1,0 +1,25 @@
+[ ca ]
+default_ca      = CA
+
+[ CA ]
+
+dir             = .
+certificate     = ./root.crt
+private_key     = ./root.key
+new_certs_dir   = .
+database        = ./index.txt
+serial          = ./serial
+
+default_days    = 365
+default_md      = default
+
+policy          = policy
+
+[ policy ]
+countryName             = optional
+stateOrProvinceName     = optional
+localityName            = optional
+organizationName        = optional
+organizationalUnitName  = optional
+commonName              = supplied
+emailAddress            = optional
