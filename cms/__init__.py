@@ -82,7 +82,6 @@ class Config:
         self.block_hidden_users = False
         self.is_proxy_used = False
         self.max_submission_length = 100000
-        self.min_submission_interval = 60
         self.stl_path = "/usr/share/doc/stl-manual/html/"
         self.allow_questions = True
         # Prefix of 'iso-codes'[1] installation. It can be found out

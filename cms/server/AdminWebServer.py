@@ -394,6 +394,22 @@ class AddContestHandler(BaseHandler):
                 "token_gen_number",
                 0,
                 allow_empty=False)
+            max_submission_number = self.get_non_negative_int(
+                "max_submission_number",
+                None)
+            max_usertest_number = self.get_non_negative_int(
+                "max_usertest_number",
+                None)
+            min_submission_interval = self.get_non_negative_int(
+                "min_submission_interval",
+                None)
+            if min_submission_interval is not None:
+                min_submission_interval = timedelta(seconds=min_submission_interval)
+            min_usertest_interval = self.get_non_negative_int(
+                "min_usertest_interval",
+                None)
+            if min_usertest_interval is not None:
+                min_usertest_interval = timedelta(seconds=min_usertest_interval)
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(),
@@ -450,7 +466,9 @@ class AddContestHandler(BaseHandler):
         contest = Contest(name, description, [], [], token_initial,
                           token_max, token_total, token_min_interval,
                           token_gen_time, token_gen_number, start, stop,
-                          timezone, per_user_time)
+                          timezone, per_user_time,
+                          max_submission_number, max_usertest_number,
+                          min_submission_interval, min_usertest_interval)
 
         self.sql_session.add(contest)
         try_commit(self.sql_session, self)
@@ -763,6 +781,24 @@ class TaskViewHandler(BaseHandler):
                 "token_gen_number",
                 task.token_gen_number,
                 allow_empty=False)
+            task.max_submission_number = self.get_non_negative_int(
+                "max_submission_number",
+                task.max_submission_number)
+            task.max_usertest_number = self.get_non_negative_int(
+                "max_usertest_number",
+                task.max_usertest_number)
+            task.min_submission_interval = self.get_non_negative_int(
+                "min_submission_interval",
+                task.min_submission_interval.total_seconds() if \
+                    task.min_submission_interval is not None else None)
+            if task.min_submission_interval is not None:
+                task.min_submission_interval = timedelta(seconds=task.min_submission_interval)
+            task.min_usertest_interval = self.get_non_negative_int(
+                "min_usertest_interval",
+                task.min_usertest_interval.total_seconds() if \
+                    task.min_usertest_interval is not None else None)
+            if task.min_usertest_interval is not None:
+                task.min_usertest_interval = timedelta(seconds=task.min_usertest_interval)
         except ValueError as error:
             self.application.service.add_notification(
                 make_datetime(),
@@ -962,12 +998,30 @@ class AddTaskHandler(SimpleContestHandler("add_task.html")):
             "token_gen_number",
             0,
             allow_empty=False)
+        max_submission_number = self.get_non_negative_int(
+            "max_submission_number",
+            None)
+        max_usertest_number = self.get_non_negative_int(
+            "max_usertest_number",
+            None)
+        min_submission_interval = self.get_non_negative_int(
+            "min_submission_interval",
+            None)
+        if min_submission_interval is not None:
+            min_submission_interval = timedelta(seconds=min_submission_interval)
+        min_usertest_interval = self.get_non_negative_int(
+            "min_usertest_interval",
+            None)
+        if min_usertest_interval is not None:
+            min_usertest_interval = timedelta(seconds=min_usertest_interval)
         task = Task(name, title, statements, attachments,
                  time_limit, memory_limit, official_language,
                  task_type, task_type_parameters, submission_format, managers,
                  score_type, score_parameters, testcases,
                  token_initial, token_max, token_total,
                  token_min_interval, token_gen_time, token_gen_number,
+                 max_submission_number, max_usertest_number,
+                 min_submission_interval, min_usertest_interval,
                  contest=self.contest, num=len(self.contest.tasks))
         self.sql_session.add(task)
         if try_commit(self.sql_session, self):
@@ -1015,6 +1069,24 @@ class EditContestHandler(BaseHandler):
                 "token_gen_number",
                 self.contest.token_gen_number,
                 allow_empty=False)
+            max_submission_number = self.get_non_negative_int(
+                "max_submission_number",
+                self.contest.max_submission_number)
+            max_usertest_number = self.get_non_negative_int(
+                "max_usertest_number",
+                self.contest.max_usertest_number)
+            min_submission_interval = self.get_non_negative_int(
+                "min_submission_interval",
+                self.contest.min_submission_interval.total_seconds() if \
+                    self.contest.min_submission_interval is not None else None)
+            if min_submission_interval is not None:
+                min_submission_interval = timedelta(seconds=min_submission_interval)
+            min_usertest_interval = self.get_non_negative_int(
+                "min_usertest_interval",
+                self.contest.min_usertest_interval.total_seconds() if \
+                    self.contest.min_usertest_interval is not None else None)
+            if min_usertest_interval is not None:
+                min_usertest_interval = timedelta(seconds=min_usertest_interval)
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(),
@@ -1076,6 +1148,10 @@ class EditContestHandler(BaseHandler):
         self.contest.token_min_interval = token_min_interval
         self.contest.token_gen_time = token_gen_time
         self.contest.token_gen_number = token_gen_number
+        self.contest.max_submission_number = max_submission_number
+        self.contest.max_usertest_number = max_usertest_number
+        self.contest.min_submission_interval = min_submission_interval
+        self.contest.min_usertest_interval = min_usertest_interval
         self.contest.start = start
         self.contest.stop = stop
         self.contest.timezone = timezone

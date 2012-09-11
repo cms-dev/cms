@@ -115,6 +115,19 @@ class Task(Base):
     token_gen_number = Column(
         Integer, CheckConstraint("token_gen_number >= 0"), nullable=False)
 
+    # Maximum number of submissions or usertests allowed for each user
+    # on this task during the whole contest or None to not enforce
+    # this limitation.
+    # TODO Add some CheckConstraints.
+    max_submission_number = Column(Integer, nullable=True)
+    max_usertest_number = Column(Integer, nullable=True)
+
+    # Minimum interval between two submissions or usertests for this
+    # task, in seconds, or None to not enforce this limitation.
+    # TODO Add some CheckConstraints.
+    min_submission_interval = Column(Interval, nullable=True)
+    min_usertest_interval = Column(Interval, nullable=True)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # submission_format (list of SubmissionFormatElement objects)
@@ -137,6 +150,8 @@ class Task(Base):
                  token_initial=None, token_max=None, token_total=None,
                  token_min_interval=timedelta(),
                  token_gen_time=timedelta(), token_gen_number=0,
+                 max_submission_number=None, max_usertest_number=None,
+                 min_submission_interval=None, min_usertest_interval=None,
                  contest=None, num=0):
         for filename, attachment in attachments.iteritems():
             attachment.filename = filename
@@ -166,6 +181,10 @@ class Task(Base):
         self.token_min_interval = token_min_interval
         self.token_gen_time = token_gen_time
         self.token_gen_number = token_gen_number
+        self.max_submission_number = max_submission_number
+        self.max_usertest_number = max_usertest_number
+        self.min_submission_interval = min_submission_interval
+        self.min_usertest_interval = min_usertest_interval
         self.contest = contest
 
     def export_to_dict(self):
@@ -203,7 +222,12 @@ class Task(Base):
                     self.token_min_interval.total_seconds(),
                 'token_gen_time':
                     self.token_gen_time.total_seconds() / 60,
-                'token_gen_number':     self.token_gen_number}
+                'token_gen_number':     self.token_gen_number,
+                'max_submission_number': self.max_submission_number if self.max_submission_number is not None else None,
+                'max_usertest_number': self.max_usertest_number if self.max_usertest_number is not None else None,
+                'min_submission_interval': self.min_submission_interval.total_seconds() if self.min_submission_interval is not None else None,
+                'min_usertest_interval': self.min_usertest_interval.total_seconds() if self.min_usertest_interval is not None else None,
+                }
 
     @classmethod
     def import_from_dict(cls, data):
@@ -226,9 +250,19 @@ class Task(Base):
                               for statement_data in data['statements']]
         data['statements'] = dict([(statement.language, statement)
                                    for statement in data['statements']])
-        data['token_min_interval'] = \
-            timedelta(seconds=data['token_min_interval'])
-        data['token_gen_time'] = timedelta(minutes=data['token_gen_time'])
+        if 'token_min_interval' in data:
+            data['token_min_interval'] = \
+                timedelta(seconds=data['token_min_interval'])
+        if 'token_gen_time' in data:
+            data['token_gen_time'] = timedelta(minutes=data['token_gen_time'])
+        if 'min_submission_interval' in data and \
+                data['min_submission_interval'] is not None:
+            data['min_submission_interval'] = \
+                timedelta(seconds=data['min_submission_interval'])
+        if 'min_usertest_interval' in data and \
+                data['min_usertest_interval'] is not None:
+            data['min_usertest_interval'] = \
+                timedelta(seconds=data['min_usertest_interval'])
         return cls(**data)
 
 

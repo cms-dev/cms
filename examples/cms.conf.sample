@@ -98,10 +98,8 @@
     "_help": "one listed in the request headers.",
     "is_proxy_used": false,
 
-    "_help": "Maximum size of a submission in bytes and minimum",
-    "_help": "interval between two submission in seconds.",
+    "_help": "Maximum size of a submission in bytes.",
     "max_submission_length":   100000,
-    "min_submission_interval": 60,
 
     "_help": "STL documentation path in the system (exposed in CWS).",
     "stl_path": "/usr/share/doc/stl-manual/html/",

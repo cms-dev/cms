@@ -61,6 +61,7 @@ class ScriptsContainer(object):
             ("20120805", "support_output_only"),
             ("20120823", "add_user_tests"),
             ("20120824", "add_evaluation_text_to_user_test"),
+            ("20120911", "add_submission_and_usertest_limits"),
             ]
         self.list.sort()
 
@@ -728,6 +729,28 @@ CREATE INDEX ix_user_test_managers_user_test_id ON user_test_managers (user_test
         with SessionGen(commit=True) as session:
             session.execute("ALTER TABLE user_tests "
                             "ADD COLUMN evaluation_text VARCHAR;")
+
+    @staticmethod
+    def add_submission_and_usertest_limits():
+        """Add limits to the total number and the frequency of
+        submissions and usertests.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("""\
+ALTER TABLE contests
+ADD COLUMN max_submission_number INTEGER,
+ADD COLUMN max_usertest_number INTEGER,
+ADD COLUMN min_submission_interval INTERVAL,
+ADD COLUMN min_usertest_interval INTERVAL;""")
+            session.execute("""\
+ALTER TABLE tasks
+ADD COLUMN max_submission_number INTEGER,
+ADD COLUMN max_usertest_number INTEGER,
+ADD COLUMN min_submission_interval INTERVAL,
+ADD COLUMN min_usertest_interval INTERVAL;""")
+        print "Please remove 'min_submission_interval' from your configuration."
+        print "It is now possible to set it on a per-task and per-contest basis using AWS."
 
 
 def execute_single_script(scripts_container, script):

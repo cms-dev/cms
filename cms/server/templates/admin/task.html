@@ -357,6 +357,22 @@ $("select[name=task_type]").change(showTaskTypeOption);
         <td>Token generation number</td>
         <td><input type="text" name="token_gen_number" value="{{ task.token_gen_number }}" /></td>
       </tr>
+      <tr>
+        <td>Maximum number of submissions for each user (for this task)</td>
+        <td><input type="text" name="max_submission_number" value="{{ task.max_submission_number if task.max_submission_number is not None else "" }}"></td>
+      </tr>
+      <tr>
+        <td>Maximum number of usertests for each user (for this task)</td>
+        <td><input type="text" name="max_usertest_number" value="{{ task.max_usertest_number if task.max_usertest_number is not None else "" }}"></td>
+      </tr>
+      <tr>
+        <td>Minimum interval between two submissions of each user (for this task, in seconds)</td>
+        <td><input type="text" name="min_submission_interval" value="{{ int(task.min_submission_interval.total_seconds()) if task.min_submission_interval is not None else "" }}"></td>
+      </tr>
+      <tr>
+        <td>Minimum interval between two usertests of each user (for this task, in seconds)</td>
+        <td><input type="text" name="min_usertest_interval" value="{{ int(task.min_usertest_interval.total_seconds()) if task.min_usertest_interval is not None else "" }}"></td>
+      </tr>
     </table>
     <div class="hr"></div>
   </div>

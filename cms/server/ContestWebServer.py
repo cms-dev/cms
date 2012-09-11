@@ -49,13 +49,16 @@ import gettext
 
 import tornado.web
 
+from sqlalchemy import func
+
 from cms import config, default_argument_parser, logger
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import Session, Contest, User, Question, \
-     Submission, Token, File, UserTest, UserTestFile, UserTestManager
+from cms.db.SQLAlchemyAll import Session, Contest, User, Task, \
+     Question, Submission, Token, File, UserTest, UserTestFile, \
+     UserTestManager
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, extract_archive, \
@@ -706,21 +709,73 @@ class SubmitHandler(BaseHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        # Enforce minimum time between submissions for the same task.
-        last_submission = self.sql_session.query(Submission)\
-            .filter(Submission.task == task)\
-            .filter(Submission.user == self.current_user)\
-            .order_by(Submission.timestamp.desc()).first()
-        if last_submission is not None and \
-               self.timestamp - last_submission.timestamp < \
-               timedelta(seconds=config.min_submission_interval):
+        # Alias for easy access
+        contest = self.contest
+
+        # Enforce maximum number of submissions
+        try:
+            if contest.max_submission_number is not None:
+                submission_c = self.sql_session.query(func.count(Submission.id))\
+                    .join(Submission.task)\
+                    .filter(Task.contest == contest)\
+                    .filter(Submission.user == self.current_user).scalar()
+                if submission_c >= contest.max_submission_number:
+                    raise ValueError(
+                        self._("You have reached the maximum limit of "
+                               "at most %s submissions among all tasks.") %
+                        contest.max_submission_number)
+            if task.max_submission_number is not None:
+                submission_t = self.sql_session.query(func.count(Submission.id))\
+                    .filter(Submission.task == task)\
+                    .filter(Submission.user == self.current_user).scalar()
+                if submission_t >= task.max_submission_number:
+                    raise ValueError(
+                        self._("You have reached the maximum limit of "
+                               "at most %s submissions on this task.") %
+                        task.max_submission_number)
+        except ValueError as error:
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Too many submissions!"),
+                str(error),
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            return
+
+        # Enforce minimum time between submissions
+        try:
+            if contest.min_submission_interval is not None:
+                last_submission_c = self.sql_session.query(Submission)\
+                    .join(Submission.task)\
+                    .filter(Task.contest == contest)\
+                    .filter(Submission.user == self.current_user)\
+                    .order_by(Submission.timestamp.desc()).first()
+                if last_submission_c is not None and \
+                        self.timestamp - last_submission_c.timestamp < \
+                        contest.min_submission_interval:
+                    raise ValueError(
+                        self._("Among all tasks, you can submit again "
+                               "after %s seconds from last submission.") %
+                        contest.min_submission_interval)
+            if task.min_submission_interval is not None:
+                last_submission_t = self.sql_session.query(Submission)\
+                    .filter(Submission.task == task)\
+                    .filter(Submission.user == self.current_user)\
+                    .order_by(Submission.timestamp.desc()).first()
+                if last_submission_t is not None and \
+                        self.timestamp - last_submission_t.timestamp < \
+                        task.min_submission_interval:
+                    raise ValueError(
+                        self._("For this task, you can submit again "
+                               "after %s seconds from last submission.") %
+                        task.min_submission_interval)
+        except ValueError as error:
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
                 self._("Submissions too frequent!"),
-                self._("For each task, you can submit "
-                       "again after %s seconds from last submission.") %
-                config.min_submission_interval,
+                str(error),
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
@@ -1131,21 +1186,73 @@ class UserTestHandler(BaseHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        # Enforce minimum time between submissions for the same task.
-        last_usertest = self.sql_session.query(UserTest)\
-            .filter(UserTest.task == task)\
-            .filter(UserTest.user == self.current_user)\
-            .order_by(UserTest.timestamp.desc()).first()
-        if last_usertest is not None and \
-               self.timestamp - last_usertest.timestamp < \
-               timedelta(seconds=config.min_submission_interval):
+        # Alias for easy access
+        contest = self.contest
+
+        # Enforce maximum number of usertests
+        try:
+            if contest.max_usertest_number is not None:
+                usertest_c = self.sql_session.query(func.count(UserTest.id))\
+                    .join(UserTest.task)\
+                    .filter(Task.contest == contest)\
+                    .filter(UserTest.user == self.current_user).scalar()
+                if usertest_c >= contest.max_usertest_number:
+                    raise ValueError(
+                        self._("You have reached the maximum limit of "
+                               "at most %s tests among all tasks.") %
+                        contest.max_usertest_number)
+            if task.max_usertest_number is not None:
+                usertest_t = self.sql_session.query(func.count(UserTest.id))\
+                    .filter(UserTest.task == task)\
+                    .filter(UserTest.user == self.current_user).scalar()
+                if usertest_t >= task.max_usertest_number:
+                    raise ValueError(
+                        self._("You have reached the maximum limit of "
+                               "at most %s tests on this task.") %
+                        task.max_usertest_number)
+        except ValueError as error:
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
-                self._("Test too frequent!"),
-                self._("For each task, you can test "
-                       "again after %s seconds from last test.") %
-                config.min_submission_interval,
+                self._("Too many tests!"),
+                str(error),
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            return
+
+        # Enforce minimum time between usertests
+        try:
+            if contest.min_usertest_interval is not None:
+                last_usertest_c = self.sql_session.query(UserTest)\
+                    .join(UserTest.task)\
+                    .filter(Task.contest == contest)\
+                    .filter(UserTest.user == self.current_user)\
+                    .order_by(UserTest.timestamp.desc()).first()
+                if last_usertest_c is not None and \
+                        self.timestamp - last_usertest_c.timestamp < \
+                        contest.min_usertest_interval:
+                    raise ValueError(
+                        self._("Among all tasks, you can test again "
+                               "after %s seconds from last test.") %
+                        contest.min_usertest_interval)
+            if task.min_usertest_interval is not None:
+                last_usertest_t = self.sql_session.query(UserTest)\
+                    .filter(UserTest.task == task)\
+                    .filter(UserTest.user == self.current_user)\
+                    .order_by(UserTest.timestamp.desc()).first()
+                if last_usertest_t is not None and \
+                        self.timestamp - last_usertest_t.timestamp < \
+                        task.min_usertest_interval:
+                    raise ValueError(
+                        self._("For this task, you can test again "
+                               "after %s seconds from last test.") %
+                        task.min_usertest_interval)
+        except ValueError as error:
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Tests too frequent!"),
+                str(error),
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/testing?%s" % quote(task.name, safe=''))
             return
