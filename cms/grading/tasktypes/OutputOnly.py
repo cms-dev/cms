@@ -124,6 +124,10 @@ class OutputOnly(TaskType):
                 manager_filename,
                 self.job.managers[manager_filename].digest,
                 executable=True)
+            input_digest = self.job.testcases[test_number].input
+            sandbox.create_file_from_storage(
+                "input.txt",
+                input_digest)
             success, _ = evaluation_step(
                 sandbox,
                 ["./%s" % manager_filename,
