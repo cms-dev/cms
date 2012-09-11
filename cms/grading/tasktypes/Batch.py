@@ -297,7 +297,11 @@ class Batch(TaskType):
                                             "res.txt",
                                             output_filename])
                         if success:
-                            outcome, text = extract_outcome_and_text(sandbox)
+                            try:
+                                outcome, text = extract_outcome_and_text(sandbox)
+                            except ValueError, e:
+                                logger.error("Invalid output from comparator: %s" % (e.message,))
+                                success = False
 
                     # Unknown evaluationg parameter!
                     else:
