@@ -25,10 +25,12 @@ import tempfile
 
 from cms import config
 from cms.grading.Sandbox import wait_without_std
-from cms.grading import get_compilation_command
+from cms.grading import get_compilation_command, compilation_step, \
+    evaluation_step_before_run, evaluation_step_after_run, is_evaluation_passed, \
+    human_evaluation_message, white_diff_step
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
-from cms.db.SQLAlchemyAll import Submission
+from cms.db.SQLAlchemyAll import Submission, Executable
 
 
 HEADERS_MAP = {
@@ -90,26 +92,29 @@ class TwoSteps(TaskType):
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = self.submission.language
+        language = self.job.language
         header = HEADERS_MAP[language]
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
         # here, but in the definition of the task, since this actually
         # checks that task's task type and submission format agree.
-        if len(self.submission.files) != 2:
-            return self.finish_compilation(
-                True, False, "Invalid files in submission",
-                to_log="Submission contains %d files, expecting 2" %
-                len(self.submission.files))
+        if len(self.job.files) != 2:
+            self.job.success = True
+            self.job.compilation_success = False
+            self.job.text = "Invalid files in submission"
+            logger.warning("Submission contains %d files, expecting 2" %
+                           len(self.job.files))
+            return True
 
         # First and only one compilation.
         sandbox = create_sandbox(self)
+        self.job.sandboxes.append(sandbox.path)
         files_to_get = {}
 
         # User's submissions and headers.
         source_filenames = []
-        for filename, _file in self.submission.files.iteritems():
+        for filename, _file in self.job.files.iteritems():
             source_filename = filename.replace("%l", language)
             source_filenames.append(source_filename)
             files_to_get[source_filename] = _file.digest
@@ -117,37 +122,45 @@ class TwoSteps(TaskType):
             header_filename = filename.replace("%l", header)
             source_filenames.append(header_filename)
             files_to_get[header_filename] = \
-                self.submission.task.managers[header_filename].digest
+                self.job.managers[header_filename].digest
 
         # Manager.
         manager_filename = "manager.%s" % language
         source_filenames.append(manager_filename)
         files_to_get[manager_filename] = \
-                self.submission.task.managers[manager_filename].digest
+                self.job.managers[manager_filename].digest
         # Manager's header.
         manager_filename = "manager.%s" % header
         source_filenames.append(manager_filename)
         files_to_get[manager_filename] = \
-                self.submission.task.managers[manager_filename].digest
+                self.job.managers[manager_filename].digest
+
+        for filename, digest in files_to_get.iteritems():
+            sandbox.create_file_from_storage(filename, digest)
 
         # Get compilation command and compile.
         executable_filename = "manager"
         command = get_compilation_command(language,
                                           source_filenames,
                                           executable_filename)
-        operation_success, compilation_success, text, _ = \
-            self.compilation_step(
-            sandbox,
-            command,
-            files_to_get,
-            {executable_filename: "Executable %s for submission %s" %
-             (executable_filename, self.submission.id)})
-        delete_sandbox(sandbox)
+        operation_success, compilation_success, text, plus = \
+            compilation_step(sandbox, command)
 
-        # We had only one compilation, hence we pipe directly its
-        # result to the finalization.
-        return self.finish_compilation(operation_success, compilation_success,
-                                       text)
+        # Retrieve the compiled executables
+        self.job.success = operation_success
+        self.job.compilation_success = compilation_success
+        self.job.plus = plus
+        self.job.text = text
+        if operation_success and compilation_success:
+            digest = sandbox.get_file_to_storage(
+                executable_filename,
+                "Executable %s for %s" %
+                (executable_filename, self.job.info))
+            self.job.executables[executable_filename] = \
+                Executable(digest, executable_filename)
+
+        # Cleanup
+        delete_sandbox(sandbox)
 
     def evaluate_testcase(self, test_number):
         """See TaskType.evaluate_testcase."""
@@ -163,66 +176,119 @@ class TwoSteps(TaskType):
         first_command = ["./%s" % first_filename, "0", fifo]
         first_executables_to_get = {
             first_filename:
-            self.submission.executables[first_filename].digest
+            self.job.executables[first_filename].digest
             }
         first_files_to_get = {
-            "input.txt": self.submission.task.testcases[test_number].input
+            "input.txt": self.job.testcases[test_number].input
             }
         first_allow_path = ["input.txt", fifo]
-        first = self.evaluation_step_before_run(
+
+        # Put the required files into the sandbox
+        for filename, digest in first_executables_to_get.iteritems():
+            first_sandbox.create_file_from_storage(filename, digest, executable=True)
+        for filename, digest in first_files_to_get.iteritems():
+            first_sandbox.create_file_from_storage(filename, digest)
+
+        first = evaluation_step_before_run(
             first_sandbox,
             first_command,
-            first_executables_to_get,
-            first_files_to_get,
-            self.submission.task.time_limit,
-            self.submission.task.memory_limit,
+            self.job.time_limit,
+            self.job.memory_limit,
             first_allow_path,
-            stdin_redirect="input.txt")
+            stdin_redirect="input.txt",
+            wait=False)
 
         # Second step: we start the second manager.
         second_filename = "manager"
         second_command = ["./%s" % second_filename, "1", fifo]
         second_executables_to_get = {
             second_filename:
-            self.submission.executables[second_filename].digest
+            self.job.executables[second_filename].digest
             }
         second_files_to_get = {}
         second_allow_path = [fifo, "output.txt"]
-        second = self.evaluation_step_before_run(
+
+        # Put the required files into the second sandbox
+        for filename, digest in second_executables_to_get.iteritems():
+            second_sandbox.create_file_from_storage(filename, digest, executable=True)
+        for filename, digest in second_files_to_get.iteritems():
+            second_sandbox.create_file_from_storage(filename, digest)
+
+        second = evaluation_step_before_run(
             second_sandbox,
             second_command,
-            second_executables_to_get,
-            second_files_to_get,
-            self.submission.task.time_limit,
-            self.submission.task.memory_limit,
-            second_allow_path)
+            self.job.time_limit,
+            self.job.memory_limit,
+            second_allow_path,
+            stdout_redirect="output.txt",
+            wait=False)
 
         # Consume output.
         wait_without_std([second, first])
         # TODO: check exit codes with translate_box_exitcode.
 
-        success_first, outcome_first, text_first, _ = \
-            self.evaluation_step_after_run(first_sandbox, final=False)
-        success_second, outcome_second, text_second, plus = \
-            self.evaluation_step_after_run(second_sandbox, final=True)
+        success_first, first_plus = \
+            evaluation_step_after_run(first_sandbox)
+        success_second, second_plus = \
+            evaluation_step_after_run(second_sandbox)
 
-        # If at least one evaluation had problems, we report the
-        # problems.
-        if not success_first:
-            success, outcome, text = False, outcome_first, text_first
-        elif not success_second:
-            success, outcome, text = False, outcome_second, text_second
-        # Otherwise, compare the second output to the results
-        # (there is no comparator since the manager is expected to turn the
-        # output in diffable form)
+        self.job.evaluations[test_number] = {'sandboxes': [first_sandbox.path,
+                                                           second_sandbox.path],
+                                             'plus': second_plus}
+        outcome = None
+        text = None
+        evaluation = self.job.evaluations[test_number]
+        success = True
+
+        # Error in the sandbox: report failure!
+        if not success_first or not success_second:
+            success = False
+
+        # Contestant's error: the marks won't be good
+        elif not is_evaluation_passed(first_plus) or \
+                not is_evaluation_passed(second_plus):
+            outcome = 0.0
+            if not is_evaluation_passed(first_plus):
+                text = human_evaluation_message(first_plus)
+            else:
+                text = human_evaluation_message(second_plus)
+            if self.job.get_output:
+                evaluation['output'] = None
+
+        # Otherwise, advance to checking the solution
         else:
-            success, outcome, text = self.white_diff_step(
-                second_sandbox,
-                "output.txt", "res.txt",
-                {"res.txt":
-                 self.submission.task.testcases[test_number].output})
+
+            # Check that the output file was created
+            if not second_sandbox.file_exists('output.txt'):
+                outcome = 0.0
+                text = "Execution didn't produce file output.txt"
+                if self.job.get_output:
+                    evaluation['output'] = None
+
+            else:
+                # If asked so, put the output file into the storage
+                if self.job.get_output:
+                    evaluation['output'] = second_sandbox.get_file_to_storage(
+                        "output.txt",
+                        "Output file for testcase %d in job %s" %
+                        (test_number, self.job.info))
+
+                # If not asked otherwise, evaluate the output file
+                if not self.job.only_execution:
+                    # Put the reference solution into the sandbox
+                    second_sandbox.create_file_from_storage(
+                        "res.txt",
+                        self.job.testcases[test_number].output)
+
+                    outcome, text = white_diff_step(
+                        second_sandbox, "output.txt", "res.txt")
+
+        # Whatever happened, we conclude.
+        evaluation['success'] = success
+        evaluation['outcome'] = outcome
+        evaluation['text'] = text
 
         delete_sandbox(first_sandbox)
         delete_sandbox(second_sandbox)
-        return self.finish_evaluation_testcase(
-            test_number, success, outcome, text, plus)
+
+        return success
