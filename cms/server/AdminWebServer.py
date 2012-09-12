@@ -210,8 +210,9 @@ class BaseHandler(CommonRequestHandler):
 
         """
         argument = self.get_argument(argument_name, None)
-        if allow_empty and \
-               (argument is None or argument == "" or argument == "None"):
+        if argument is None:
+            return default
+        if allow_empty and argument == "":
             return None
         try:
             argument = int(argument)
@@ -361,18 +362,12 @@ class AddContestHandler(BaseHandler):
         self.render("add_contest.html", **self.r_params)
 
     def post(self):
-        name = self.get_argument("name", "")
-        if name == "":
-            self.application.service.add_notification(
-                make_datetime(),
-                "No contest name specified",
-                "")
-            self.redirect("/contest/add")
-            return
-
-        description = self.get_argument("description", "")
-
         try:
+            name = self.get_argument("name", "")
+            assert name != "", "No contest name specified."
+
+            description = self.get_argument("description", "")
+
             token_initial = self.get_non_negative_int(
                 "token_initial",
                 None)
@@ -382,18 +377,21 @@ class AddContestHandler(BaseHandler):
             token_total = self.get_non_negative_int(
                 "token_total",
                 None)
-            token_min_interval = timedelta(seconds=self.get_non_negative_int(
-                "token_min_interval",
-                0,
-                allow_empty=False))
-            token_gen_time = timedelta(minutes=self.get_non_negative_int(
-                "token_gen_time",
-                0,
-                allow_empty=False))
+            token_min_interval = timedelta(
+                seconds=self.get_non_negative_int(
+                    "token_min_interval",
+                    0,
+                    allow_empty=False))
+            token_gen_time = timedelta(
+                minutes=self.get_non_negative_int(
+                    "token_gen_time",
+                    0,
+                    allow_empty=False))
             token_gen_number = self.get_non_negative_int(
                 "token_gen_number",
                 0,
                 allow_empty=False)
+
             max_submission_number = self.get_non_negative_int(
                 "max_submission_number",
                 None)
@@ -404,62 +402,48 @@ class AddContestHandler(BaseHandler):
                 "min_submission_interval",
                 None)
             if min_submission_interval is not None:
-                min_submission_interval = timedelta(seconds=min_submission_interval)
+                min_submission_interval = \
+                    timedelta(seconds=min_submission_interval)
             min_usertest_interval = self.get_non_negative_int(
                 "min_usertest_interval",
                 None)
             if min_usertest_interval is not None:
-                min_usertest_interval = timedelta(seconds=min_usertest_interval)
-        except Exception as error:
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field(s)",
-                "Invalid token field(s). %r" % error)
-            self.redirect("/contest/add")
-            return
+                min_usertest_interval = \
+                    timedelta(seconds=min_usertest_interval)
 
-        try:
-            try:
-                start = datetime.strptime(self.get_argument("start", ""),
-                                          "%Y-%m-%d %H:%M:%S")
-            except ValueError:
-                start = datetime.strptime(self.get_argument("start", ""),
-                                          "%Y-%m-%d %H:%M:%S.%f")
-            try:
-                stop = datetime.strptime(self.get_argument("stop", ""),
-                                         "%Y-%m-%d %H:%M:%S")
-            except ValueError:
-                stop = datetime.strptime(self.get_argument("stop", ""),
-                                         "%Y-%m-%d %H:%M:%S.%f")
-        except Exception as error:
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field(s)",
-                "Invalid date(s). %r" % error)
-            self.redirect("/contest/add")
-            return
+            start = self.get_argument("start", "")
+            if start == "":
+                start = None
+            else:
+                if '.' not in start:
+                    start += ".0"
+                start = datetime.strptime(start, "%Y-%m-%d %H:%M:%S.%f")
 
-        if start > stop:
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field(s)",
-                "Contest ends before it starts.")
-            self.redirect("/contest/add")
-            return
+            stop = self.get_argument("stop", "")
+            if stop == "":
+                stop = None
+            else:
+                if '.' not in stop:
+                    stop += ".0"
+                stop = datetime.strptime(stop, "%Y-%m-%d %H:%M:%S.%f")
 
-        timezone = self.get_argument("timezone", None)
+            assert start <= stop, "Contest ends before it starts."
 
-        try:
+            timezone = self.get_argument("timezone", "")
+            if timezone == "":
+                timezone = None
+
             per_user_time = self.get_non_negative_int(
                 "per_user_time",
                 None)
             if per_user_time is not None:
                 per_user_time = timedelta(seconds=per_user_time)
+
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(),
                 "Invalid field(s)",
-                "Invalid per user time. %r" % error)
+                repr(error))
             self.redirect("/contest/add")
             return
 
@@ -469,10 +453,120 @@ class AddContestHandler(BaseHandler):
                           timezone, per_user_time,
                           max_submission_number, max_usertest_number,
                           min_submission_interval, min_usertest_interval)
-
         self.sql_session.add(contest)
-        try_commit(self.sql_session, self)
+
+        if try_commit(self.sql_session, self):
+            self.application.service.scoring_service.reinitialize()
         self.redirect("/contest/%s" % contest.id)
+
+
+class ContestHandler(BaseHandler):
+    def get(self, contest_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+        self.r_params = self.render_params()
+        self.render("contest.html", **self.r_params)
+
+    def post(self, contest_id):
+        contest = self.safe_get_item(Contest, contest_id)
+
+        try:
+            contest.name = self.get_argument("name", contest.name)
+            assert contest.name != "", "No contest name specified."
+
+            contest.description = self.get_argument("description", contest.description)
+
+            contest.token_initial = self.get_non_negative_int(
+                "token_initial",
+                contest.token_initial)
+            contest.token_max = self.get_non_negative_int(
+                "token_max",
+                contest.token_max)
+            contest.token_total = self.get_non_negative_int(
+                "token_total",
+                contest.token_total)
+            contest.token_min_interval = timedelta(
+                seconds=self.get_non_negative_int(
+                    "token_min_interval",
+                    contest.token_min_interval.total_seconds(),
+                    allow_empty=False))
+            contest.token_gen_time = timedelta(
+                minutes=self.get_non_negative_int(
+                    "token_gen_time",
+                    contest.token_gen_time.total_seconds(),
+                    allow_empty=False))
+            contest.token_gen_number = self.get_non_negative_int(
+                "token_gen_number",
+                contest.token_gen_number,
+                allow_empty=False)
+
+            contest.max_submission_number = self.get_non_negative_int(
+                "max_submission_number",
+                contest.max_submission_number)
+            contest.max_usertest_number = self.get_non_negative_int(
+                "max_usertest_number",
+                contest.max_usertest_number)
+            contest.min_submission_interval = self.get_non_negative_int(
+                "min_submission_interval",
+                contest.min_submission_interval.total_seconds() if \
+                    contest.min_submission_interval is not None else None)
+            if contest.min_submission_interval is not None:
+                contest.min_submission_interval = \
+                    timedelta(seconds=contest.min_submission_interval)
+            contest.min_usertest_interval = self.get_non_negative_int(
+                "min_usertest_interval",
+                contest.min_usertest_interval.total_seconds() if \
+                    contest.min_usertest_interval is not None else None)
+            if contest.min_usertest_interval is not None:
+                contest.min_usertest_interval = \
+                    timedelta(seconds=contest.min_usertest_interval)
+
+            contest.start = self.get_argument("start",
+                str(contest.start) if contest.start is not None else "")
+            if contest.start == "":
+                contest.start = None
+            else:
+                if '.' not in contest.start:
+                    contest.start += ".0"
+                contest.start = datetime.strptime(contest.start,
+                                                  "%Y-%m-%d %H:%M:%S.%f")
+
+            contest.stop = self.get_argument("stop",
+                str(contest.stop) if contest.stop is not None else "")
+            if contest.stop == "":
+                contest.stop = None
+            else:
+                if '.' not in contest.stop:
+                    contest.stop += ".0"
+                contest.stop = datetime.strptime(contest.stop,
+                                                 "%Y-%m-%d %H:%M:%S.%f")
+
+            assert contest.start <= contest.stop, "Contest ends before it starts."
+
+            contest.timezone = self.get_argument("timezone",
+                contest.timezone if contest.timezone is not None else "")
+            if contest.timezone == "":
+                contest.timezone = None
+
+            contest.per_user_time = self.get_non_negative_int(
+                "per_user_time",
+                contest.per_user_time.total_seconds() if \
+                    contest.per_user_time is not None else None)
+            if contest.per_user_time is not None:
+                contest.per_user_time = \
+                    timedelta(seconds=contest.per_user_time)
+
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Invalid field(s).",
+                repr(error))
+            self.redirect("/contest/%s" % contest_id)
+            return
+
+
+        if try_commit(self.sql_session, self):
+            self.application.service.scoring_service.reinitialize()
+        self.redirect("/contest/%s" % contest_id)
 
 
 class AddStatementHandler(BaseHandler):
@@ -703,7 +797,147 @@ class DeleteTestcaseHandler(BaseHandler):
         self.redirect("/task/%s" % task.id)
 
 
-class TaskViewHandler(BaseHandler):
+class AddTaskHandler(BaseHandler):
+    def get(self, contest_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+        self.r_params = self.render_params()
+        self.render("add_task.html", **self.r_params)
+
+    def post(self, contest_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        try:
+            name = self.get_argument("name", "")
+            assert name != "", "No task name specified."
+
+            title = self.get_argument("title", "")
+
+            official_language = self.get_argument("official_language", "")
+
+            time_limit = self.get_argument("time_limit", "")
+            if time_limit == "":
+                time_limit = None
+            else:
+                time_limit = float(time_limit)
+                assert 0 <= time_limit < float("+inf"), "Time limit out of range."
+
+            memory_limit = self.get_argument("memory_limit", "")
+            if memory_limit == "":
+                memory_limit = None
+            else:
+                memory_limit = int(memory_limit)
+                assert 0 < memory_limit, "Invalid memory limit."
+
+            task_type = self.get_argument("task_type", "")
+            # Look for a task type with the specified name.
+            try:
+                task_type_class = get_task_type(task_type_name=task_type)
+            except KeyError:
+                # Task type not found.
+                raise ValueError("Task type not recognized: %s." % task_type)
+
+            task_type_parameters = task_type_class.parse_handler(
+                self, "TaskTypeOptions_%s_" % task_type)
+
+            task_type_parameters = json.dumps(task_type_parameters)
+
+            submission_format_choice = self.get_argument("submission_format_choice", "")
+
+            if submission_format_choice == "simple":
+                submission_format = [SubmissionFormatElement("%s.%%l" % name)]
+            elif submission_format_choice == "other":
+                submission_format = self.get_argument("submission_format", "")
+                if submission_format not in ["", "[]"]:
+                    try:
+                        format_list = json.loads(submission_format)
+                        submission_format = []
+                        for element in format_list:
+                            submission_format.append(SubmissionFormatElement(
+                                str(element)))
+                    except Exception as error:
+                        # FIXME Are the following two commands really needed?
+                        self.sql_session.rollback()
+                        logger.info(repr(error))
+                        raise ValueError("Submission format not recognized.")
+            else:
+                raise ValueError("Submission format not recognized.")
+
+            score_type = self.get_argument("score_type", "")
+            score_parameters = self.get_argument("score_parameters", "")
+
+            token_initial = self.get_non_negative_int(
+                "token_initial",
+                None)
+            token_max = self.get_non_negative_int(
+                "token_max",
+                None)
+            token_total = self.get_non_negative_int(
+                "token_total",
+                None)
+            token_min_interval = timedelta(
+                seconds=self.get_non_negative_int(
+                    "token_min_interval",
+                    0,
+                    allow_empty=False))
+            token_gen_time = timedelta(
+                minutes=self.get_non_negative_int(
+                    "token_gen_time",
+                    0,
+                    allow_empty=False))
+            token_gen_number = self.get_non_negative_int(
+                "token_gen_number",
+                0,
+                allow_empty=False)
+
+            max_submission_number = self.get_non_negative_int(
+                "max_submission_number",
+                None)
+            max_usertest_number = self.get_non_negative_int(
+                "max_usertest_number",
+                None)
+            min_submission_interval = self.get_non_negative_int(
+                "min_submission_interval",
+                None)
+            if min_submission_interval is not None:
+                min_submission_interval = \
+                    timedelta(seconds=min_submission_interval)
+            min_usertest_interval = self.get_non_negative_int(
+                "min_usertest_interval",
+                None)
+            if min_usertest_interval is not None:
+                min_usertest_interval = \
+                    timedelta(seconds=min_usertest_interval)
+
+            statements = {}
+            attachments = {}
+            managers = {}
+            testcases = []
+
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Invalid field(s)",
+                repr(error))
+            self.redirect("/add_task/%s" % contest_id)
+            return
+
+        task = Task(name, title, statements, attachments,
+                 time_limit, memory_limit, official_language,
+                 task_type, task_type_parameters, submission_format, managers,
+                 score_type, score_parameters, testcases,
+                 token_initial, token_max, token_total,
+                 token_min_interval, token_gen_time, token_gen_number,
+                 max_submission_number, max_usertest_number,
+                 min_submission_interval, min_usertest_interval,
+                 contest=self.contest, num=len(self.contest.tasks))
+        self.sql_session.add(task)
+
+        if try_commit(self.sql_session, self):
+            self.application.service.scoring_service.reinitialize()
+        self.redirect("/task/%s" % task.id)
+
+
+class TaskHandler(BaseHandler):
     """Task handler, with a POST method to edit the task.
 
     """
@@ -721,44 +955,68 @@ class TaskViewHandler(BaseHandler):
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
-        task.name = self.get_argument("name", task.name)
-
-        if task.name == "":
-            self.application.service.add_notification(
-                make_datetime(),
-                "Task name not specified.",
-                "")
-            self.redirect("/task/%s" % task_id)
-            return
-
-        task.title = self.get_argument("title", task.title)
-        time_limit = self.get_argument("time_limit",
-                                       repr(task.time_limit))
-        task.official_language = self.get_argument("official_language",
-                                                   task.official_language)
-
-        if time_limit in ["", "None"]:
-            time_limit = None
-        else:
-            try:
-                time_limit = float(time_limit)
-                if time_limit < 0 or time_limit >= float("+inf"):
-                    raise ValueError("Time limit out of range.")
-            except ValueError as error:
-                self.application.service.add_notification(
-                    make_datetime(),
-                    "Invalid field(s)",
-                    "Invalid time limit. %r" % error)
-                self.redirect("/task/%s" % task_id)
-                return
-        task.time_limit = time_limit
 
         try:
-            task.memory_limit = self.get_non_negative_int(
-                "memory_limit",
-                task.memory_limit)
-            if task.memory_limit == 0:
-                raise ValueError("Memory limit is 0.")
+            task.name = self.get_argument("name", task.name)
+            assert task.name != "", "No task name specified."
+
+            task.title = self.get_argument("title", task.title)
+
+            task.official_language = self.get_argument("official_language",
+                                                       task.official_language)
+
+            task.time_limit = self.get_argument("time_limit",
+                str(task.time_limit) if task.time_limit is not None else "")
+            if task.time_limit == "":
+                task.time_limit = None
+            else:
+                task.time_limit = float(task.time_limit)
+                assert 0 <= task.time_limit < float("+inf"), "Time limit out of range."
+
+            task.memory_limit = self.get_argument("memory_limit",
+                str(task.memory_limit) if task.memory_limit is not None else "")
+            if task.memory_limit == "":
+                task.memory_limit = None
+            else:
+                task.memory_limit = int(task.memory_limit)
+                assert 0 < task.memory_limit, "Invalid memory limit."
+
+            task.task_type = self.get_argument("task_type", "")
+            # Look for a task type with the specified name.
+            try:
+                task_type_class = get_task_type(task_type_name=task.task_type)
+            except KeyError:
+                # Task type not found.
+                raise ValueError("Task type not recognized: %s." % task.task_type)
+
+            task.task_type_parameters = task_type_class.parse_handler(
+                self, "TaskTypeOptions_%s_" % task.task_type)
+
+            task.task_type_parameters = json.dumps(task.task_type_parameters)
+
+            # submission_format_choice == "other"
+            submission_format = self.get_argument("submission_format", "")
+            if submission_format not in ["", "[]"] and submission_format != \
+                    json.dumps([x.filename for x in task.submission_format]):
+                try:
+                    format_list = json.loads(submission_format)
+                    for element in task.submission_format:
+                        self.sql_session.delete(element)
+                    del task.submission_format[:]
+                    for element in format_list:
+                        self.sql_session.add(SubmissionFormatElement(str(element),
+                                                                     task))
+                except Exception as error:
+                    # FIXME Are the following two commands really needed?
+                    self.sql_session.rollback()
+                    logger.info(repr(error))
+                    raise ValueError("Submission format not recognized.")
+
+            task.score_type = self.get_argument("score_type",
+                                                task.score_type)
+            task.score_parameters = self.get_argument("score_parameters",
+                                                      task.score_parameters)
+
             task.token_initial = self.get_non_negative_int(
                 "token_initial",
                 task.token_initial)
@@ -770,17 +1028,19 @@ class TaskViewHandler(BaseHandler):
                 task.token_total)
             task.token_min_interval = timedelta(
                 seconds=self.get_non_negative_int(
-                "token_min_interval",
-                task.token_min_interval,
-                allow_empty=False))
-            task.token_gen_time = timedelta(minutes=self.get_non_negative_int(
-                "token_gen_time",
-                task.token_gen_time,
-                allow_empty=False))
+                    "token_min_interval",
+                    task.token_min_interval.total_seconds(),
+                    allow_empty=False))
+            task.token_gen_time = timedelta(
+                minutes=self.get_non_negative_int(
+                    "token_gen_time",
+                    task.token_gen_time.total_seconds(),
+                    allow_empty=False))
             task.token_gen_number = self.get_non_negative_int(
                 "token_gen_number",
                 task.token_gen_number,
                 allow_empty=False)
+
             task.max_submission_number = self.get_non_negative_int(
                 "max_submission_number",
                 task.max_submission_number)
@@ -792,70 +1052,27 @@ class TaskViewHandler(BaseHandler):
                 task.min_submission_interval.total_seconds() if \
                     task.min_submission_interval is not None else None)
             if task.min_submission_interval is not None:
-                task.min_submission_interval = timedelta(seconds=task.min_submission_interval)
+                task.min_submission_interval = \
+                    timedelta(seconds=task.min_submission_interval)
             task.min_usertest_interval = self.get_non_negative_int(
                 "min_usertest_interval",
                 task.min_usertest_interval.total_seconds() if \
                     task.min_usertest_interval is not None else None)
             if task.min_usertest_interval is not None:
-                task.min_usertest_interval = timedelta(seconds=task.min_usertest_interval)
-        except ValueError as error:
+                task.min_usertest_interval = \
+                    timedelta(seconds=task.min_usertest_interval)
+
+            for testcase in task.testcases:
+                testcase.public = bool(self.get_argument("testcase_%s_public" %
+                                                         testcase.num, False))
+
+        except Exception as error:
             self.application.service.add_notification(
                 make_datetime(),
                 "Invalid field(s)",
-                "%r" % error)
+                repr(error))
             self.redirect("/task/%s" % task_id)
             return
-
-        for testcase in task.testcases:
-            testcase.public = bool(self.get_argument("testcase_%s_public" %
-                                                     testcase.num, False))
-
-        task.task_type = self.get_argument("task_type", "")
-
-        # Look for a task type with the specified name.
-        try:
-            task_type_class = get_task_type(task=task)
-        except KeyError:
-            # Task type not found.
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field",
-                "Task type not recognized: %s." % task.task_type)
-            self.redirect("/task/%s" % task_id)
-            return
-
-        task_type_parameters = task_type_class.parse_handler(
-            self, "TaskTypeOptions_%s_" % task.task_type)
-
-        task.task_type_parameters = json.dumps(task_type_parameters)
-
-        task.score_type = self.get_argument("score_type", "")
-
-        task.score_parameters = self.get_argument("score_parameters", "")
-
-        submission_format = self.get_argument("submission_format", "")
-        if submission_format not in ["", "[]"] \
-            and submission_format != json.dumps(
-                [x.filename for x in task.submission_format]
-                ):
-            try:
-                format_list = json.loads(submission_format)
-                for element in task.submission_format:
-                    self.sql_session.delete(element)
-                del task.submission_format[:]
-                for element in format_list:
-                    self.sql_session.add(SubmissionFormatElement(str(element),
-                                                                 task))
-            except Exception as error:
-                self.sql_session.rollback()
-                logger.info(repr(error))
-                self.application.service.add_notification(
-                    make_datetime(),
-                    "Invalid field",
-                    "Submission format not recognized.")
-                self.redirect("/task/%s" % task_id)
-                return
 
         if try_commit(self.sql_session, self):
             self.application.service.scoring_service.reinitialize()
@@ -873,293 +1090,6 @@ class TaskStatementViewHandler(FileHandler):
         task_name = task.name
         self.sql_session.close()
         self.fetch(statement, "application/pdf", "%s.pdf" % task_name)
-
-
-class AddTaskHandler(SimpleContestHandler("add_task.html")):
-    def post(self, contest_id):
-        self.contest = self.safe_get_item(Contest, contest_id)
-
-        name = self.get_argument("name", "")
-
-        if name == "":
-            self.application.service.add_notification(
-                make_datetime(),
-                "Task name not specified.",
-                "")
-            self.redirect("/add_task/%s" % contest_id)
-            return
-
-        title = self.get_argument("title", "")
-        time_limit = self.get_argument("time_limit", "")
-        memory_limit = self.get_argument("memory_limit", "")
-        official_language = self.get_argument("official_language", "")
-        task_type = self.get_argument("task_type", "")
-
-        if time_limit in ["", "None"]:
-            time_limit = None
-        else:
-            try:
-                time_limit = float(time_limit)
-                if time_limit < 0 or time_limit >= float("+inf"):
-                    raise ValueError("Time limit out of range.")
-            except ValueError as error:
-                self.application.service.add_notification(
-                    make_datetime(),
-                    "Invalid field(s)",
-                    "Invalid time limit. %r" % error)
-                self.redirect("/add_task/%s" % contest_id)
-                return
-
-        memory_limit = self.get_non_negative_int(
-            "memory_limit",
-            None)
-        if memory_limit == 0:
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field(s)",
-                "Invalid memory limit.")
-            self.redirect("/add_task/%s" % contest_id)
-            return
-
-        # Look for a task type with the specified name.
-        try:
-            task_type_class = get_task_type(task_type_name=task_type)
-        except KeyError:
-            # Task type not found.
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field",
-                "Task type not recognized: %s." % task_type)
-            self.redirect("/add_task/%s" % contest_id)
-            return
-
-        task_type_parameters = task_type_class.parse_handler(
-            self, "TaskTypeOptions_%s_" % task_type)
-
-        task_type_parameters = json.dumps(task_type_parameters)
-
-        submission_format_choice = self.get_argument("submission_format", "")
-
-        if submission_format_choice == "simple":
-            submission_format = [SubmissionFormatElement("%s.%%l" % name)]
-        elif submission_format_choice == "other":
-            submission_format = self.get_argument("submission_format_other",
-                                                  "")
-            if submission_format not in ["", "[]"]:
-                try:
-                    format_list = json.loads(submission_format)
-                    submission_format = []
-                    for element in format_list:
-                        submission_format.append(SubmissionFormatElement(
-                            str(element)))
-                except Exception as error:
-                    self.sql_session.rollback()
-                    logger.info(repr(error))
-                    self.application.service.add_notification(
-                        make_datetime(),
-                        "Invalid field",
-                        "Submission format not recognized.")
-                    self.redirect("/add_task/%s" % contest_id)
-                    return
-        else:
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field",
-                "Submission format not recognized.")
-            self.redirect("/add_task/%s" % contest_id)
-            return
-
-        score_type = self.get_argument("score_type", "")
-        score_parameters = self.get_argument("score_parameters", "")
-
-        statements = {}
-        attachments = {}
-        managers = {}
-        testcases = []
-
-        token_initial = self.get_non_negative_int(
-            "token_initial",
-            None)
-        token_max = self.get_non_negative_int(
-            "token_max",
-            None)
-        token_total = self.get_non_negative_int(
-            "token_total",
-            None)
-        token_min_interval = timedelta(seconds=self.get_non_negative_int(
-            "token_min_interval",
-            0,
-            allow_empty=False))
-        token_gen_time = timedelta(minutes=self.get_non_negative_int(
-            "token_gen_time",
-            0,
-            allow_empty=False))
-        token_gen_number = self.get_non_negative_int(
-            "token_gen_number",
-            0,
-            allow_empty=False)
-        max_submission_number = self.get_non_negative_int(
-            "max_submission_number",
-            None)
-        max_usertest_number = self.get_non_negative_int(
-            "max_usertest_number",
-            None)
-        min_submission_interval = self.get_non_negative_int(
-            "min_submission_interval",
-            None)
-        if min_submission_interval is not None:
-            min_submission_interval = timedelta(seconds=min_submission_interval)
-        min_usertest_interval = self.get_non_negative_int(
-            "min_usertest_interval",
-            None)
-        if min_usertest_interval is not None:
-            min_usertest_interval = timedelta(seconds=min_usertest_interval)
-        task = Task(name, title, statements, attachments,
-                 time_limit, memory_limit, official_language,
-                 task_type, task_type_parameters, submission_format, managers,
-                 score_type, score_parameters, testcases,
-                 token_initial, token_max, token_total,
-                 token_min_interval, token_gen_time, token_gen_number,
-                 max_submission_number, max_usertest_number,
-                 min_submission_interval, min_usertest_interval,
-                 contest=self.contest, num=len(self.contest.tasks))
-        self.sql_session.add(task)
-        if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
-        self.redirect("/task/%s" % task.id)
-
-
-class EditContestHandler(BaseHandler):
-    """Called when managers edit the information of a contest.
-
-    """
-    def post(self, contest_id):
-        self.contest = self.safe_get_item(Contest, contest_id)
-
-        name = self.get_argument("name", "")
-        if name == "":
-            self.application.service.add_notification(
-                make_datetime(),
-                "No contest name specified",
-                "")
-            self.redirect("/contest/%s" % contest_id)
-            return
-
-        description = self.get_argument("description", "")
-
-        try:
-            token_initial = self.get_non_negative_int(
-                "token_initial",
-                self.contest.token_initial)
-            token_max = self.get_non_negative_int(
-                "token_max",
-                self.contest.token_max)
-            token_total = self.get_non_negative_int(
-                "token_total",
-                self.contest.token_total)
-            token_min_interval = timedelta(seconds=self.get_non_negative_int(
-                "token_min_interval",
-                self.contest.token_min_interval,
-                allow_empty=False))
-            token_gen_time = timedelta(minutes=self.get_non_negative_int(
-                "token_gen_time",
-                self.contest.token_gen_time,
-                allow_empty=False))
-            token_gen_number = self.get_non_negative_int(
-                "token_gen_number",
-                self.contest.token_gen_number,
-                allow_empty=False)
-            max_submission_number = self.get_non_negative_int(
-                "max_submission_number",
-                self.contest.max_submission_number)
-            max_usertest_number = self.get_non_negative_int(
-                "max_usertest_number",
-                self.contest.max_usertest_number)
-            min_submission_interval = self.get_non_negative_int(
-                "min_submission_interval",
-                self.contest.min_submission_interval.total_seconds() if \
-                    self.contest.min_submission_interval is not None else None)
-            if min_submission_interval is not None:
-                min_submission_interval = timedelta(seconds=min_submission_interval)
-            min_usertest_interval = self.get_non_negative_int(
-                "min_usertest_interval",
-                self.contest.min_usertest_interval.total_seconds() if \
-                    self.contest.min_usertest_interval is not None else None)
-            if min_usertest_interval is not None:
-                min_usertest_interval = timedelta(seconds=min_usertest_interval)
-        except Exception as error:
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid token field(s).",
-                repr(error))
-            self.redirect("/contest/%s" % contest_id)
-            return
-
-        try:
-            try:
-                start = datetime.strptime(self.get_argument("start", ""),
-                                          "%Y-%m-%d %H:%M:%S")
-            except ValueError:
-                start = datetime.strptime(self.get_argument("start", ""),
-                                          "%Y-%m-%d %H:%M:%S.%f")
-            try:
-                stop = datetime.strptime(self.get_argument("stop", ""),
-                                         "%Y-%m-%d %H:%M:%S")
-            except ValueError:
-                stop = datetime.strptime(self.get_argument("stop", ""),
-                                         "%Y-%m-%d %H:%M:%S.%f")
-        except Exception as error:
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid date(s).",
-                repr(error))
-            self.redirect("/contest/%s" % contest_id)
-            return
-
-        if start > stop:
-            self.application.service.add_notification(
-                make_datetime(),
-                "Contest ends before it starts",
-                "Please check start and stop times.")
-            self.redirect("/contest/%s" % contest_id)
-            return
-
-        timezone = self.get_argument("timezone", None)
-
-        try:
-            per_user_time = self.get_non_negative_int(
-                "per_user_time",
-                None)
-            if per_user_time is not None:
-                per_user_time = timedelta(seconds=per_user_time)
-        except Exception as error:
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field(s)",
-                "Invalid per user time. %r" % error)
-            self.redirect("/contest/%s" % contest_id)
-            return
-
-        self.contest.name = name
-        self.contest.description = description
-        self.contest.token_initial = token_initial
-        self.contest.token_max = token_max
-        self.contest.token_total = token_total
-        self.contest.token_min_interval = token_min_interval
-        self.contest.token_gen_time = token_gen_time
-        self.contest.token_gen_number = token_gen_number
-        self.contest.max_submission_number = max_submission_number
-        self.contest.max_usertest_number = max_usertest_number
-        self.contest.min_submission_interval = min_submission_interval
-        self.contest.min_usertest_interval = min_usertest_interval
-        self.contest.start = start
-        self.contest.stop = stop
-        self.contest.timezone = timezone
-        self.contest.per_user_time = per_user_time
-
-        if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
-        self.redirect("/contest/%s" % contest_id)
 
 
 class AddAnnouncementHandler(BaseHandler):
@@ -1488,13 +1418,12 @@ class NotificationsHandler(BaseHandler):
 _aws_handlers = [
     (r"/",         MainHandler),
     (r"/([0-9]+)", MainHandler),
-    (r"/contest/([0-9]+)",       SimpleContestHandler("contest.html")),
+    (r"/contest/([0-9]+)",       ContestHandler),
     (r"/announcements/([0-9]+)", SimpleContestHandler("announcements.html")),
     (r"/userlist/([0-9]+)",      SimpleContestHandler("userlist.html")),
     (r"/tasklist/([0-9]+)",      SimpleContestHandler("tasklist.html")),
     (r"/contest/add",           AddContestHandler),
-    (r"/contest/edit/([0-9]+)", EditContestHandler),
-    (r"/task/([0-9]+)",           TaskViewHandler),
+    (r"/task/([0-9]+)",           TaskHandler),
     (r"/task/([0-9]+)/statement", TaskStatementViewHandler),
     (r"/add_task/([0-9]+)",            AddTaskHandler),
     (r"/add_statement/([0-9]+)",       AddStatementHandler),

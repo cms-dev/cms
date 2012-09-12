@@ -62,6 +62,7 @@ class ScriptsContainer(object):
             ("20120823", "add_user_tests"),
             ("20120824", "add_evaluation_text_to_user_test"),
             ("20120911", "add_submission_and_usertest_limits"),
+            ("20120912", "make_contest_description_not_null"),
             ]
         self.list.sort()
 
@@ -751,6 +752,19 @@ ADD COLUMN min_submission_interval INTERVAL,
 ADD COLUMN min_usertest_interval INTERVAL;""")
         print "Please remove 'min_submission_interval' from your configuration."
         print "It is now possible to set it on a per-task and per-contest basis using AWS."
+
+    @staticmethod
+    def make_contest_description_not_null():
+        """Make the Contest.description field NOT NULL.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("""\
+UPDATE contests
+SET description = '' WHERE description IS NULL;""")
+            session.execute("""\
+ALTER TABLE contests
+ALTER COLUMN description SET NOT NULL;""")
 
 
 def execute_single_script(scripts_container, script):

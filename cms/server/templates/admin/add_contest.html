@@ -56,7 +56,7 @@ function validate_contest()
   <h1>New contest</h1>
 </div>
 
-<form name="add_contest" action="{{ url_root }}/contest/add" method="POST" onsubmit="return validate_contest();">
+<form enctype="multipart/form-data" action="{{ url_root }}/contest/add" method="POST" name="add_contest" onsubmit="return validate_contest();">
   <table class="sub_table">
     <tr>
       <td>Name</td>

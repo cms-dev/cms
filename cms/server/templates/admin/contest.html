@@ -5,7 +5,7 @@
   <h1>Contest information</h1>
 </div>
 
-<form name="edit_contest" action="{{ url_root }}/contest/edit/{{ contest.id }}" method="POST">
+<form enctype="multipart/form-data" action="{{ url_root }}/contest/{{ contest.id }}" method="POST" name="edit_contest">
   <table class="sub_table">
     <tr>
       <td>Name</td>

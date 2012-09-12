@@ -53,7 +53,7 @@ class Contest(Base):
     # Short name of the contest, and longer description. Both human
     # readable.
     name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
+    description = Column(String, nullable=False)
 
     # Follows the enforcement of token for any person, for all the
     # task. This enforcements add up to the ones defined task-wise.
