@@ -113,7 +113,7 @@ function update_additional_answer(element, invoker)
         </td>
         <td>
           {% for filename, sub_file in s.files.items() %}
-          <a href="#" onclick="utils.show_file('{{ filename.replace("%l", s.language) }}','{{ url_root }}/submission_file/{{ sub_file.id }}')">{{ filename.replace("%l", s.language) }}<br/>
+          <a href="#" onclick="utils.show_file('{{ filename.replace("%l", s.language) if s.language else filename }}','{{ url_root }}/submission_file/{{ sub_file.id }}')">{{ filename.replace("%l", s.language) if s.language else filename }}<br/>
           {% end %}
         </td>
         <td>
