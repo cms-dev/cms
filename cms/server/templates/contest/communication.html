@@ -20,7 +20,7 @@
         {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.timestamp, timezone) }}</span>
         {% if msg.text != '' %}
-        <div class="body">{{ msg.text.replace('\n', '<br/>') }}</div>
+        <div class="body">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
         {% end %}
     </div>
     {% end %}
@@ -69,7 +69,7 @@
         {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.question_timestamp, timezone) }}</span>
         {% if msg.text != '' %}
-        <div class="body">{{ msg.text.replace('\n', '<br/>') }}</div>
+        <div class="body">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
         {% end %}
     </div>
         {% if msg.reply_timestamp is not None %}
@@ -81,7 +81,7 @@
             {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.reply_timestamp, timezone) }}</span>
             {% if msg.reply_text != '' %}
-        <div class="body">{{ msg.reply_text.replace('\n', '<br/>') }}</div>
+        <div class="body">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
             {% end %}
     </div>
         {% else %}
@@ -108,7 +108,7 @@
         {% end %}
         <span class="timestamp">{{ format_datetime_smart(msg.timestamp, timezone) }}</span>
         {% if msg.text != '' %}
-        <div class="body">{{ msg.text.replace('\n', '<br/>') }}</div>
+        <div class="body">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
         {% end %}
     </div>
     {% end %}
