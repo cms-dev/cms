@@ -470,7 +470,7 @@ class ScoringService(Service):
                                "max_score": 100.0,
                                "extra_headers": [],
                                "order": task.num,
-                               "short_name": encode_id(task.name)})
+                               "short_name": task.name})
                              for task in contest.tasks)
 
             safe_put_data(connection, contest_url, contest_data, auth,
