@@ -174,10 +174,15 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
         # The grader, when present, must be in the first position of
         # srcs; see docstring of get_compilation_command().
         if task_type == ['Batch', 'Grad'] or \
-                task_type == ['Batch', 'GradCor']:
+                task_type == ['Batch', 'GradComp']:
             srcs.append(os.path.join(SOL_DIRNAME,
                                      GRAD_BASENAME + '.%s' % (lang)))
         srcs.append(src)
+
+        test_deps = [exe] + in_out_files
+        if task_type == ['Batch', 'Comp'] or \
+                task_type == ['Batch', 'GradComp']:
+            test_deps.append('cor/correttore')
 
         box_path = Sandbox().detect_box_executable()
 
@@ -211,6 +216,10 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
 
         def test_src(exe, input_num, task_type):
             print "Testing solution %s" % (exe)
+            cormgr = ''
+            if task_type == ['Batch', 'Comp'] or \
+                    task_type == ['Batch', 'GradComp']:
+                cormgr = 'cor/correttore'
             test_testcases(
                 input_num,
                 box_path,
@@ -218,7 +227,8 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 yaml_conf['timeout'],
                 yaml_conf['memlimit'],
                 task_type[0],
-                task_type[1])
+                task_type[1],
+                cormgr=cormgr)
 
         actions.append((srcs,
                         [exe],
@@ -226,7 +236,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                         'compile solution'))
 
         input_num = len(in_out_files) / 2
-        test_actions.append(([exe] + in_out_files,
+        test_actions.append((test_deps,
                              ['test_%s' % (os.path.split(exe)[1])],
                              functools.partial(test_src,
                                                exe,
