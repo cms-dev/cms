@@ -82,6 +82,8 @@ def user_import_from_dict(cls, data, tasks_by_name):
                            for submission_data in data['submissions']]
     if 'starting_time' in data and data['starting_time'] is not None:
         data['starting_time'] = make_datetime(data['starting_time'])
+    if 'extra_time' in data:
+        data['extra_time'] = timedelta(seconds=data['extra_time'])
     obj = cls(**data)
     for submission in obj.submissions:
         submission.user = obj

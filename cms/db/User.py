@@ -25,8 +25,10 @@ directly (import it from SQLAlchemyAll).
 
 """
 
+from datetime import timedelta
+
 from sqlalchemy import Column, ForeignKey, UniqueConstraint, \
-     Boolean, Integer, String, DateTime
+     Boolean, Integer, String, DateTime, Interval
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import relationship, backref
 
@@ -100,6 +102,9 @@ class User(Base):
     # user logged in while the contest was active.
     starting_time = Column(DateTime, nullable=True)
 
+    # An extra amount of time allocated for this user
+    extra_time = Column(Interval, nullable=False)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # messages (list of Message objects)
@@ -113,6 +118,7 @@ class User(Base):
     def __init__(self, first_name, last_name, username, password=None,
                  email=None, ip=None, contest=None, hidden=False,
                  languages=None, timezone=None, starting_time=None,
+                 extra_time=timedelta(),
                  messages=None, questions=None, submissions=None):
         if password is None:
             import random
@@ -130,6 +136,7 @@ class User(Base):
         self.languages = languages if languages is not None else []
         self.timezone = timezone
         self.starting_time = starting_time
+        self.extra_time = extra_time
         self.messages = messages if messages is not None else []
         self.questions = questions if questions is not None else []
         self.contest = contest
@@ -154,6 +161,7 @@ class User(Base):
                 'timezone':      self.timezone,
                 'starting_time': make_timestamp(self.starting_time)
                 if self.starting_time is not None else None,
+                'extra_time':    self.extra_time.total_seconds(),
                 'messages':      [message.export_to_dict()
                                   for message in self.messages],
                 'questions':     [question.export_to_dict()

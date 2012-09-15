@@ -1182,6 +1182,17 @@ class UserViewHandler(BaseHandler):
                 return
         user.starting_time = starting_time
 
+        user.extra_time = self.get_argument("extra_time", str(int(user.extra_time.total_seconds())))
+        try:
+            user.extra_time = timedelta(seconds=int(user.extra_time))
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Invalid extra time.",
+                repr(error))
+            self.redirect("/user/%s" % user_id)
+            return
+
         user.hidden = bool(self.get_argument("hidden", False))
 
         if try_commit(self.sql_session, self):
@@ -1238,11 +1249,23 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
                 self.redirect("/add_user/%s" % contest_id)
                 return
 
+        extra_time = self.get_argument("extra_time", 0)
+        try:
+            extra_time = timedelta(seconds=int(extra_time))
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Invalid extra time.",
+                repr(error))
+            self.redirect("/add_user/%s" % contest_id)
+            return
+
         hidden = bool(self.get_argument("hidden", False))
 
         user = User(first_name, last_name, username, password=password,
                     email=email, ip=ip_address, hidden=hidden,
                     timezone=timezone, starting_time=starting_time,
+                    extra_time=extra_time,
                     contest=self.contest)
         self.sql_session.add(user)
         if try_commit(self.sql_session, self):

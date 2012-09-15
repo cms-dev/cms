@@ -259,6 +259,15 @@ class BaseHandler(CommonRequestHandler):
                     self.current_user.starting_time + self.contest.per_user_time,
                     self.contest.stop)
 
+            # consider the extra time
+            if ret["valid_phase_end"] is not None:
+                ret["valid_phase_end"] += self.current_user.extra_time
+                if ret["valid_phase_begin"] <= self.timestamp <= ret["valid_phase_end"]:
+                    ret["phase"] = 0
+                    ret["actual_phase"] = 0
+                    ret["current_phase_begin"] = ret["valid_phase_begin"]
+                    ret["current_phase_end"] = ret["valid_phase_end"]
+
             # set the timezone used to format timestamps
             ret["timezone"] = get_timezone(self.current_user, self.contest)
 
