@@ -231,8 +231,10 @@ class YamlLoader:
 
         # If there is no sol/ directory, the the task type is
         # OutputOnly
-        if not os.path.exists(os.path.join(path, "sol")):
+        if conf.get('output_only', False):
             params["task_type"] = "OutputOnly"
+            params["time_limit"] = None
+            params["memory_limit"] = None
             params["task_type_parameters"] = '["%s"]' % (evaluation_parameter)
             params["submission_format"] = [
                 SubmissionFormatElement("output_%03d.txt" %
