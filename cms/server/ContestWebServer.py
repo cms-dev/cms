@@ -852,16 +852,16 @@ class SubmitHandler(BaseHandler):
         submission_lang = None
         file_digests = {}
         retrieved = 0
-        if task_type.ALLOW_PARTIAL_SUBMISSION and last_submission is not None:
+        if task_type.ALLOW_PARTIAL_SUBMISSION and last_submission_t is not None:
             for filename in required.difference(provided):
-                if filename in last_submission.files:
+                if filename in last_submission_t.files:
                     # If we retrieve a language-dependent file from
                     # last submission, we take not that language must
                     # be the same.
                     if "%l" in filename:
-                        submission_lang = last_submission.language
+                        submission_lang = last_submission_t.language
                     file_digests[filename] = \
-                        last_submission.files[filename].digest
+                        last_submission_t.files[filename].digest
                     retrieved += 1
 
         # We need to ensure that everytime we have a .%l in our
@@ -1329,16 +1329,16 @@ class UserTestHandler(BaseHandler):
         submission_lang = None
         file_digests = {}
         retrieved = 0
-        if task_type.ALLOW_PARTIAL_SUBMISSION and last_submission is not None:
+        if task_type.ALLOW_PARTIAL_SUBMISSION and last_usertest_t is not None:
             for filename in required.difference(provided):
-                if filename in last_usertest.files:
+                if filename in last_usertest_t.files:
                     # If we retrieve a language-dependent file from
                     # last submission, we take not that language must
                     # be the same.
                     if "%l" in filename:
-                        submission_lang = last_usertest.language
+                        submission_lang = last_usertest_t.language
                     file_digests[filename] = \
-                        last_usertest.files[filename].digest
+                        last_usertest_t.files[filename].digest
                     retrieved += 1
 
         # We need to ensure that everytime we have a .%l in our
