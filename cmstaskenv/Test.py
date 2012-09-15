@@ -116,7 +116,7 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
                 driver, mgr_sandbox, timeout, timeout*3, os.path.basename(cormgr), sandbox, sandbox)
             devnull = open("/dev/null")
             mgr = subprocess.Popen(mgr_command.split(), stderr=devnull)
-            command = "%s -a 1 -c %s -ff -m %lg " \
+            command = "%s -a 1 -c %s -ff -m %d " \
                       "-p in -p out -p /proc/self/exe -p /proc/meminfo " \
                       "-s getrlimit -s rt_sigaction -s ugetrlimit " \
                       "-t %lg -w %lg -M %s/run.log -- ./%s out in" % (
@@ -146,7 +146,7 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
 
         elif tt1 == "Batch":
             copy("input/input%s.txt" % i, "%s/input.txt" % sandbox)
-            command = "%s -a 1 -c %s -ff -m %lg -o %s/output.txt " \
+            command = "%s -a 1 -c %s -ff -m %d -o %s/output.txt " \
                       "-i %s/input.txt " \
                       "-p input.txt -p output.txt " \
                       "-p /proc/self/exe -p /proc/meminfo " \
@@ -194,6 +194,7 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
             else:
                 ask_again = False
 #        print sandbox
+#        print command
         rmtree(sandbox)
 
     print
