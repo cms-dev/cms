@@ -758,11 +758,14 @@ class SubmitHandler(BaseHandler):
                         self._("Among all tasks, you can submit again "
                                "after %s seconds from last submission.") %
                         contest.min_submission_interval)
+            # We get the last submission even if we may not need it
+            # for min_submission_interval because we may need it later,
+            # in case this is a ALLOW_PARTIAL_SUBMISSION task.
+            last_submission_t = self.sql_session.query(Submission)\
+                .filter(Submission.task == task)\
+                .filter(Submission.user == self.current_user)\
+                .order_by(Submission.timestamp.desc()).first()
             if task.min_submission_interval is not None:
-                last_submission_t = self.sql_session.query(Submission)\
-                    .filter(Submission.task == task)\
-                    .filter(Submission.user == self.current_user)\
-                    .order_by(Submission.timestamp.desc()).first()
                 if last_submission_t is not None and \
                         self.timestamp - last_submission_t.timestamp < \
                         task.min_submission_interval:
@@ -1235,11 +1238,14 @@ class UserTestHandler(BaseHandler):
                         self._("Among all tasks, you can test again "
                                "after %s seconds from last test.") %
                         contest.min_usertest_interval)
+            # We get the last usertest even if we may not need it
+            # for min_usertest_interval because we may need it later,
+            # in case this is a ALLOW_PARTIAL_SUBMISSION task.
+            last_usertest_t = self.sql_session.query(UserTest)\
+                .filter(UserTest.task == task)\
+                .filter(UserTest.user == self.current_user)\
+                .order_by(UserTest.timestamp.desc()).first()
             if task.min_usertest_interval is not None:
-                last_usertest_t = self.sql_session.query(UserTest)\
-                    .filter(UserTest.task == task)\
-                    .filter(UserTest.user == self.current_user)\
-                    .order_by(UserTest.timestamp.desc()).first()
                 if last_usertest_t is not None and \
                         self.timestamp - last_usertest_t.timestamp < \
                         task.min_usertest_interval:
