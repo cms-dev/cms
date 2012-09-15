@@ -326,8 +326,13 @@ class YamlLoader:
         else:
             logger.info("Generating %s random users." % self.user_number)
             for i in xrange(self.user_number):
-                params["users"].append(User("User %d" % (i),
-                                            "user%03d" % (i)).export_to_dict())
+                user = User("User %d" % (i),
+                            "Last name %d" % (i),
+                            "user%03d" % (i))
+                if self.modif == 'test':
+                    user.password = 'a'
+                params["users"].append(user.export_to_dict())
+
         return params
 
 
