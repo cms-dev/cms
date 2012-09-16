@@ -362,7 +362,8 @@ def add_contest(**kwargs):
     # Contest ID is returned as HTTP response.
     page = resp.read()
     match = re.search(
-        r'<form name="edit_contest" action="../contest/edit/([0-9]+)',
+        r'<form enctype="multipart/form-data" action="../contest/([0-9]+)" '
+        'method="POST" name="edit_contest">',
         page)
     if match is None:
         raise FrameworkException("Unable to create contest.")

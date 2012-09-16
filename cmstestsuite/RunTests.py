@@ -109,6 +109,10 @@ def get_task_id(contest_id, user_id, task_module):
             token_min_interval="0",
             token_gen_time="0",
             token_gen_number="0",
+            max_submission_number="100",
+            max_usertest_number="100",
+            min_submission_interval="0",
+            min_usertest_interval="0",
             **task_module.task_info)
 
         # add the task's test data.
