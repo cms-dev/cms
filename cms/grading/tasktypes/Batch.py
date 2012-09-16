@@ -150,11 +150,20 @@ class Batch(TaskType):
         files_to_get[source_filenames[0]] = \
             self.job.files[format_filename].digest
         # If a grader is specified, we add to the command line (and to
-        # the files to get) the corresponding manager.
+        # the files to get) the corresponding manager. The grader must
+        # be the first file in source_filenames.
         if self.job.task_type_parameters[0] == "grader":
-            source_filenames.append("grader.%s" % language)
-            files_to_get[source_filenames[1]] = \
+            source_filenames.insert(0, "grader.%s" % language)
+            files_to_get["grader.%s" % language] = \
                 self.job.managers["grader.%s" % language].digest
+
+        # Also copy all *.h and *lib.pas graders
+        for filename in self.job.managers.iterkeys():
+            if filename.endswith('.h') or \
+                    filename.endswith('lib.pas'):
+                files_to_get[filename] = \
+                    self.job.managers[filename].digest
+
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
 
