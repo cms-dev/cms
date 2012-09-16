@@ -485,19 +485,27 @@ class Contest(Base):
             res = (-1, None, expiration)
         # Else, "combine" them appropriately.
         else:
+            # Having infinite contest tokens, in this situation, is the
+            # same as having a finite number that is strictly greater
+            # than the task tokens. The same holds the other way, too.
+            if res_contest[0] == -1:
+                res_contest = (res_task[0] + 1, None, None)
+            if res_task[0] == -1:
+                res_task = (res_contest[0] + 1, None, None)
+
             # About next token generation time: we need to see when the
             # *minimum* between res_contest[0] and res_task[0] is
-            # increased by one, so if there is an actual minimum we need
-            # to consider only the next generation time for it. Otherwise,
-            # if they are equal, we need both to generate an additional
-            # token and we store the maximum between the two next times of
-            # generation.
-            if res_contest[0] < res_task[0] or res_task[0] == -1:
-                # In this case, we have more task-tokens than contest-tokens.
+            # increased by one, so if there is an actual minimum we
+            # need to consider only the next generation time for it.
+            # Otherwise, if they are equal, we need both to generate an
+            # additional token and we store the maximum between the two
+            # next times of generation.
+            if res_contest[0] < res_task[0]:
+                # We have more task-tokens than contest-tokens.
                 # We just need a contest-token to be generated.
                 res = (res_contest[0], res_contest[1], expiration)
-            elif res_task[0] < res_contest[0] or res_contest[0] == -1:
-                # In this case, we have more contest-tokens than task-tokens.
+            elif res_task[0] < res_contest[0]:
+                # We have more contest-tokens than task-tokens.
                 # We just need a task-token to be generated.
                 res = (res_task[0], res_task[1], expiration)
             else:
