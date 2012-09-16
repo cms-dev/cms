@@ -988,7 +988,7 @@ class EvaluationService(Service):
                             execution_wall_clock_time=info['plus']
                             .get('execution_wall_clock_time', None),
                             evaluation_shard=job.shard,
-                            evaluation_sandbox=":".join(job.sandboxes),
+                            evaluation_sandbox=":".join(info['sandboxes']),
                             submission=submission)
                         session.add(evaluation)
 
