@@ -305,7 +305,7 @@ def start_ranking_web_server():
 
     """
     def check(service_name, shard, contest):
-        addr, port = cms_config['rankings_address'][0]
+        proto, addr, port = cms_config['rankings_address'][0]
         sock = socket.socket()
         sock.connect((addr, port))
         sock.close()
