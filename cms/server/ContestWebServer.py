@@ -166,7 +166,7 @@ class BaseHandler(CommonRequestHandler):
         else:
             cms_locale = gettext.NullTranslations()
 
-        # Add translate method to simulare tornado.Locale's interface
+        # Add translate method to simulate tornado.Locale's interface
         def translate (message, plural_message=None, count=None):
             if plural_message is not None:
                 assert count is not None
