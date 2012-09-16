@@ -322,9 +322,14 @@ class NotificationHandler(DataHandler):
                 self.flush()
             return
 
+        sent = False
         for t, msg in proxy.buffer:
             if t > last_id:
-                self.send_event(msg)
+                self.write(msg)
+                sent = True
+        if sent and self.one_shot:
+            self.finish()
+            return
 
         proxy.add_callback(self.send_event)
 
