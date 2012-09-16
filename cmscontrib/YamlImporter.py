@@ -96,6 +96,15 @@ class YamlLoader:
             params["start"] = conf.get("inizio", 0)
             params["stop"] = conf.get("fine", 0)
 
+        params["max_submission_number"] = \
+            conf.get("max_submission_number", None)
+        params["max_usertest_number"] = \
+            conf.get("max_usertest_number", None)
+        params["min_submission_interval"] = \
+            conf.get("min_submission_interval", None)
+        params["min_usertest_interval"] = \
+            conf.get("min_usertest_interval", None)
+
         logger.info("Contest parameters loaded.")
 
         params["tasks"] = []
@@ -333,6 +342,46 @@ class YamlLoader:
                 params["score_type"] = "GroupMin"
                 params["score_parameters"] = str(subtasks)
 
+        # If output_only is set, then the task type is OutputOnly
+        if conf.get('output_only', False):
+            params["task_type"] = "OutputOnly"
+            params["time_limit"] = None
+            params["memory_limit"] = None
+            params["task_type_parameters"] = '["%s"]' % (evaluation_parameter)
+            params["submission_format"] = [
+                SubmissionFormatElement("output_%03d.txt" %
+                                        (i)).export_to_dict()
+                for i in xrange(int(conf["n_input"]))]
+
+        # If there is cor/manager, then the task type is Communication
+        elif os.path.exists(os.path.join(path, "cor", "manager")):
+            params["task_type"] = "Communication"
+            params["task_type_parameters"] = '[]'
+            params["managers"] += [
+                Manager(self.file_cacher.put_file(
+                    path=os.path.join(path, "cor", "manager"),
+                    description="Manager for task %s" % (name)),
+                        "manager").export_to_dict()]
+            for lang in Submission.LANGUAGES:
+                stub_name = os.path.join(path, "sol", "stub.%s" % lang)
+                if os.path.exists(stub_name):
+                    params["managers"].append(
+                        Manager(self.file_cacher.put_file(
+                            path=stub_name,
+                            description="Stub for task %s and language %s" %
+                            (name, lang)),
+                                "stub.%s" % lang).export_to_dict())
+                else:
+                    logger.warning("Stub for language %s not found." % lang)
+
+        # Otherwise, the task type is Batch
+        else:
+            params["task_type"] = "Batch"
+            params["task_type_parameters"] = \
+                '["%s", ["%s", "%s"], "%s"]' % \
+                (compilation_param, infile_param, outfile_param,
+                 evaluation_parameter)
+
         public_testcases = conf.get("risultati", "").strip()
         if public_testcases != "":
             public_testcases = [int(x.strip())
@@ -363,6 +412,15 @@ class YamlLoader:
         params["token_min_interval"] = conf.get("token_min_interval", 0)
         params["token_gen_time"] = conf.get("token_gen_time", 0)
         params["token_gen_number"] = conf.get("token_gen_number", 0)
+
+        params["max_submission_number"] = \
+            conf.get("max_submission_number", None)
+        params["max_usertest_number"] = \
+            conf.get("max_usertest_number", None)
+        params["min_submission_interval"] = \
+            conf.get("min_submission_interval", None)
+        params["min_usertest_interval"] = \
+            conf.get("min_usertest_interval", None)
 
         logger.info("Task parameters loaded.")
 
