@@ -298,11 +298,6 @@ def time_difference(start_time, end_time):
 def config_is_usable(cms_config):
     """Determine if this configuration is suitable for testing."""
 
-    # Check that min_submission_interval is 0 - otherwise the tests will fail.
-    if cms_config['min_submission_interval'] != 0:
-        print "ERROR: min_submission_interval must be 0 for the test suite."
-        return False
-
     return True
 
 
