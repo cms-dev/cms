@@ -285,7 +285,7 @@ class NotificationHandler(DataHandler):
         # The EventSource polyfill will only deliver events once the
         # connection has been closed, so we have to finish the request
         # right after the first message has been sent. This custom
-        # header allows us to identify the request from the polyfill.
+        # header allows us to identify the requests from the polyfill.
         self.one_shot = False
         if 'X-Requested-With' in self.request.headers and \
                 self.request.headers['X-Requested-With'] == 'XMLHttpRequest':
@@ -294,7 +294,7 @@ class NotificationHandler(DataHandler):
         # We get the ID of the last event the client received. We give
         # priority to the HTTP header because it's more reliable: on the
         # first connection the client won't use the header but will use
-        # the argument (set by us); if it disconnects, he will try to
+        # the argument (set by us); if it disconnects, it will try to
         # reconnect with the same argument (which is now outdated) but
         # with the header correctly set (which is what we want).
         if "Last-Event-ID" in self.request.headers:
