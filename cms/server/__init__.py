@@ -100,6 +100,32 @@ def extract_archive(temp_name, original_filename):
     return file_list
 
 
+UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
+DIMS = list(1024**x for x in xrange(9))
+
+def format_size(n):
+    """Format the given number of bytes
+
+    Return a size, given as a number of bytes, properly formatted
+    using the most appropriate size unit. Always use three
+    significant digits.
+
+    """
+    if n == 0:
+        return '0 B'
+
+    # Use the last unit that's smaller than n
+    unit = map(lambda x: n >= x, DIMS).index(False) - 1
+    n = float(n) / DIMS[unit]
+
+    if n < 10:
+        return "%g %s" % (round(n, 2), UNITS[unit])
+    elif n < 100:
+        return "%g %s" % (round(n, 1), UNITS[unit])
+    else:
+        return "%g %s" % (round(n, 0), UNITS[unit])
+
+
 def format_date(dt, timezone, locale=None):
     """Return the date of dt formatted according to the given locale
 

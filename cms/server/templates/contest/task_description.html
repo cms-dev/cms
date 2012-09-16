@@ -1,7 +1,7 @@
 {% extends base.html %}
 {% block core %}
 
-{% from cms.server import format_token_rules %}
+{% from cms.server import format_token_rules, format_size %}
 {% from cms.grading.tasktypes import get_task_type %}
 {% from cmscommon import ISOCodes %}
 
@@ -249,7 +249,7 @@
             {% end %}
                     <span class="first_line">
                         <span class="name">{{ filename }}</span>
-                        <span class="size">{{ _("(%d bytes)") % file_size }}</span>
+                        <span class="size">{{ format_size(file_size) }}</span>
                     </span>
             {% if type_icon is not None %}
                     <span class="type">{{ _(type_name) }}</span>
