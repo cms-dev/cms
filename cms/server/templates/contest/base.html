@@ -30,7 +30,7 @@ $(document).ready(function () {
     Utils.init({{ make_timestamp(timestamp) }},
                {{ make_timestamp(contest.start) }},
                {{ make_timestamp(contest.stop) }},
-               {{ make_timestamp(valid_phase_end) }},
+               {{ make_timestamp(current_phase_end) }},
                {{ actual_phase }});
 
     firstDate = new Date(); // FIXME very bad: global variable

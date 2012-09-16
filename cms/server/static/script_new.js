@@ -5,13 +5,13 @@
 var Utils = new function () {
     var self = this;
 
-    self.init = function (timestamp, contest_start, contest_stop, valid_phase_end, phase) {
+    self.init = function (timestamp, contest_start, contest_stop, current_phase_end, phase) {
         self.last_notification = timestamp;
         self.server_timestamp = timestamp;
         self.client_timestamp = $.now() / 1000;
         self.contest_start = contest_start;
         self.contest_stop = contest_stop;
-        self.valid_phase_end = valid_phase_end;
+        self.current_phase_end = current_phase_end;
         self.phase = phase;
         self.remaining_div = null;
         self.unread_count = 0;
@@ -144,32 +144,32 @@ var Utils = new function () {
         switch (self.phase) {
         case -2:
             // contest hasn't started yet
-            if (now >= self.contest_start) {
+            if (now >= self.current_phase_end) {
                 window.location.href = url_root + "/";
             }
             $("#countdown_label").text("Until contest starts:");
-            $("#countdown").text(self.format_timedelta(self.contest_start - now));
+            $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
             break;
         case -1:
             // contest has already started but user hasn't started its time yet
             $("#countdown_label").text("Until contest ends:");
-            $("#countdown").text(self.format_timedelta(self.contest_stop - now));
+            $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
             break;
         case 0:
             // contest is currently running
-            if (now >= self.valid_phase_end) {
+            if (now >= self.current_phase_end) {
                 window.location.href = url_root + "/";
             }
             $("#countdown_label").text("Time left:");
-            $("#countdown").text(self.format_timedelta(self.valid_phase_end - now));
+            $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
             break;
         case +1:
             // user has already finished its time but contest hasn't finished yet
-            if (now >= self.contest_stop) {
+            if (now >= self.current_phase_end) {
                 window.location.href = url_root + "/";
             }
             $("#countdown_label").text("Until contest ends:");
-            $("#countdown").text(self.format_timedelta(self.contest_stop - now));
+            $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
             break;
         case +2:
             // contest has already finished

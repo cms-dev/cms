@@ -208,22 +208,57 @@ class BaseHandler(CommonRequestHandler):
         ret["phase"] = self.contest.phase(self.timestamp)
 
         if self.current_user is not None:
-            # "correct" the phase, considering the per_user_time
+            # "adjust" the phase, considering the per_user_time
             ret["actual_phase"] = 2 * ret["phase"]
-            # If we have a user logged in, the contest may be ended
-            # before contest.stop if the user has finished the time
-            # allocated for him/her.
-            ret["valid_phase_end"] = self.contest.stop
-            if ret["phase"] == 0 and self.contest.per_user_time is not None:
-                if self.current_user.starting_time is None:
-                    ret["actual_phase"] = -1
+
+            if ret["phase"] == -1:
+                # pre-contest phase
+                ret["current_phase_begin"] = None
+                ret["current_phase_end"] = self.contest.start
+            elif ret["phase"] == 0:
+                # contest phase
+                if self.contest.per_user_time is None:
+                    # "traditional" contest: every user can compete for
+                    # the whole contest time
+                    ret["current_phase_begin"] = self.contest.start
+                    ret["current_phase_end"] = self.contest.stop
                 else:
-                    user_end_time = (self.current_user.starting_time +
-                                     self.contest.per_user_time)
-                    if user_end_time < self.contest.stop:
-                        ret["valid_phase_end"] = user_end_time
-                    if user_end_time <= self.timestamp:
-                        ret["actual_phase"] = 1
+                    # "USACO-like" contest: every user can compete only
+                    # for a limited time frame during the contest time
+                    if self.current_user.starting_time is None:
+                        ret["actual_phase"] = -1
+                        ret["current_phase_begin"] = self.contest.start
+                        ret["current_phase_end"] = self.contest.stop
+                    else:
+                        user_end_time = min(
+                            self.current_user.starting_time + self.contest.per_user_time,
+                            self.contest.stop)
+                        if self.timestamp <= user_end_time:
+                            ret["current_phase_begin"] = self.current_user.starting_time
+                            ret["current_phase_end"] = user_end_time
+                        else:
+                            ret["actual_phase"] = +1
+                            ret["current_phase_begin"] = user_end_time
+                            ret["current_phase_end"] = self.contest.stop
+            else:  # ret["phase"] == 1
+                # post-contest phase
+                ret["current_phase_begin"] = self.contest.stop
+                ret["current_phase_end"] = None
+
+            # compute valid_phase_begin and valid_phase_end (that is,
+            # the time at which actual_phase started/will start and
+            # stopped/will stop begin zero, or None if unknown).
+            ret["valid_phase_begin"] = None
+            ret["valid_phase_end"] = None
+            if self.contest.per_user_time is None:
+                ret["valid_phase_begin"] = self.contest.start
+                ret["valid_phase_end"] = self.contest.stop
+            elif self.current_user.starting_time is not None:
+                ret["valid_phase_begin"] = self.current_user.starting_time
+                ret["valid_phase_end"] = min(
+                    self.current_user.starting_time + self.contest.per_user_time,
+                    self.contest.stop)
+
             # set the timezone used to format timestamps
             ret["timezone"] = get_timezone(self.current_user, self.contest)
 
