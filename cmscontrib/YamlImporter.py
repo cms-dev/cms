@@ -270,12 +270,69 @@ class YamlLoader:
                 (compilation_param, infile_param, outfile_param,
                  evaluation_parameter)
 
-        params["score_type"] = conf.get("score_type", "Sum")
-        input_value = 0.0
-        if conf["n_input"] != 0:
-            input_value = 100.0 / float(conf["n_input"])
-        params["score_parameters"] = conf.get(
-            "score_parameters", str(input_value))
+        # Detect subtasks by checking GEN
+        gen_filename = os.path.join(path, 'gen', 'GEN')
+        with open(gen_filename) as gen_file:
+            subtasks = []
+            testcases = 0
+            points = None
+            for line in gen_file:
+                line = line.strip()
+                splitted = line.split('#', 1)
+
+                if len(splitted) == 1:
+                    # This line represents a testcase, otherwise it's
+                    # just a blank
+                    if splitted[0] != '':
+                        testcases += 1
+
+                else:
+                    testcase, comment = splitted
+                    testcase_detected = False
+                    subtask_detected = False
+                    if testcase.strip() != '':
+                        testcase_detected = True
+                    comment = comment.strip()
+                    if comment.startswith('ST:'):
+                        subtask_detected = True
+
+                    if testcase_detected and subtask_detected:
+                        raise Exception("No testcase and subtask in the"
+                                        " same line allowed")
+
+                    # This line represents a testcase and contains a
+                    # comment, but the comment doesn't start a new
+                    # subtask
+                    if testcase_detected:
+                        testcases += 1
+
+                    # This line starts a new subtask
+                    if subtask_detected:
+                        # Close the previous subtask
+                        if points is None:
+                            assert(testcases == 0)
+                        else:
+                            subtasks.append([points, testcases])
+                        # Open the new one
+                        testcases = 0
+                        points = int(comment[3:].strip())
+
+            # Close last subtask (if no subtasks were defined, just
+            # fallback to Sum)
+            if points is None:
+                params["score_type"] = "Sum"
+                input_value = 0.0
+                if testcases != 0:
+                    input_value = 100.0 / float(testcases)
+                params["score_parameters"] = str(input_value)
+            else:
+                subtasks.append([points, testcases])
+                assert(100 == sum([int(st[0]) for st in subtasks]))
+                assert(int(conf['n_input']) ==
+                       sum([int(st[1]) for st in subtasks]))
+                params["score_type"] = "GroupMin"
+                params["score_parameters"] = str(subtasks)
+
         public_testcases = conf.get("risultati", "").strip()
         if public_testcases != "":
             public_testcases = [int(x.strip())
