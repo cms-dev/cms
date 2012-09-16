@@ -294,7 +294,8 @@ class Batch(TaskType):
 
                         if not manager_filename in self.job.managers:
                             logger.error("Configuration error: missing or "
-                                         "invalid comparator (it must be named 'checker')")
+                                         "invalid comparator (it must be "
+                                         "named 'checker')")
                             success = False
 
                         else:
@@ -311,9 +312,11 @@ class Batch(TaskType):
                                             output_filename])
                         if success:
                             try:
-                                outcome, text = extract_outcome_and_text(sandbox)
+                                outcome, text = \
+                                    extract_outcome_and_text(sandbox)
                             except ValueError, e:
-                                logger.error("Invalid output from comparator: %s" % (e.message,))
+                                logger.error("Invalid output from "
+                                             "comparator: %s" % (e.message,))
                                 success = False
 
                     # Unknown evaluationg parameter!
