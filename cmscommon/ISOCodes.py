@@ -87,8 +87,8 @@ def translate_country_code(code, locale):
 def is_language_country_code(code):
     tokens = code.split('_')
     if len(tokens) != 2 or \
-        tokens[0] not in _language_codes or \
-        tokens[1] not in _country_codes:
+            tokens[0] not in _language_codes or \
+            tokens[1] not in _country_codes:
         return False
     return True
 
@@ -96,10 +96,9 @@ def is_language_country_code(code):
 def translate_language_country_code(code, locale):
     tokens = code.split('_')
     if len(tokens) != 2 or \
-        tokens[0] not in _language_codes or \
-        tokens[1] not in _country_codes:
+            tokens[0] not in _language_codes or \
+            tokens[1] not in _country_codes:
         raise ValueError
 
     return "%s (%s)" % (translate_language_code(tokens[0], locale),
                         translate_country_code(tokens[1], locale))
-
