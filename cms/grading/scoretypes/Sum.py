@@ -40,7 +40,7 @@ class Sum(ScoreTypeAlone):
  <tbody>
    {% for testcase in testcases %}
    <tr>
-    <td>{{ testcase["outcome"] }}</td>
+    <td>{% raw testcase["outcome"] %}</td>
     <td>{{ testcase["text"] }}</td>
    </tr>
    {% end %}
@@ -74,9 +74,14 @@ class Sum(ScoreTypeAlone):
         score = 0.0
         for idx in evaluations:
             score += evaluations[idx]["outcome"]
+            public_outcomes = dict((idx, self.get_public_outcome(
+                evaluations[idx]["outcome"],
+                parameter))
+                                   for idx in indices[current:next_])
             testcases.append({
-                "outcome":
-                self.get_public_outcome(evaluations[idx]["outcome"]),
+                "outcome": "<span class=\"%s\">%s</span>" % (
+                    class_score_testcase(public_outcomes[idx]),
+                    public_outcomes[idx]),
                 "text": evaluations[idx]["text"],
                 })
             if self.public_testcases[idx]:

@@ -49,9 +49,6 @@
     {% else %}
         {{ "%g" % s.public_score }}
     {% end %}
-    {% for detail in json.loads(s.public_score_details) %}
-        {{ detail }}
-    {% end %}
     </td>
     <td class="total_score">
     {% if s.token is not None %}
@@ -59,9 +56,6 @@
             {{ "%g" % s.score }} / {{ "%g" % score_type.max_score }}
         {% else %}
             {{ "%g" % s.score }}
-        {% end %}
-        {% for detail in json.loads(s.score_details) %}
-            {{ detail }}
         {% end %}
     {% else %}
         N/A

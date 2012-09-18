@@ -69,9 +69,6 @@
               {% set max_score = "[Cannot get score type - see logs]" %}
             {% end %}
           Evaluated ({{ s.score }} / {{ max_score }})
-            {% for detail in json.loads(s.score_details) %}
-          <br/>{{ detail }}
-            {% end %}
           {% else %}
           Evaluated
           {% end %}
@@ -108,8 +105,13 @@
 
   {% if s.evaluated() %}
 
+
 <h2 id="title_evaluation" class="toggling_on">Evaluation</h2>
 <div id="evaluation">
+
+  <div class="score_details" id="evaluation_{{ s.id }}">
+    {% raw s.score_details %}
+  </div>
 
   <table class="bordered">
     <thead>

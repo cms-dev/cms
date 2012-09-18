@@ -57,8 +57,10 @@ $("select[name=task_type]").change(showTaskTypeOption);
           <div id="title_evaluation_{{ s.id }}" class="toggling_off">
             {% if s.compilation_outcome == "fail" %}
             Compilation failed
+            <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
             {% elif not s.evaluated() %}
             Evaluating...
+            <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
             {% elif s.scored() %}
               {% try %}
                 {% set max_score = get_score_type(submission=s).max_score %}
@@ -66,41 +68,40 @@ $("select[name=task_type]").change(showTaskTypeOption);
                 {% set max_score = "[Cannot get score type - see logs]" %}
               {% end %}
             Evaluated ({{ s.score }} / {{ max_score }})
-              {% for detail in json.loads(s.score_details) %}
-            <br/>{{ detail }}
-              {% end %}
+            <div class="score_details" id="evaluation_{{ s.id }}" style="display: none;">
+              {% raw s.score_details %}
             {% else %}
             Evaluated
-            {% end %}
-          </div>
-          <div id="evaluation_{{ s.id }}" style="display: none;">
-            {% if s.evaluated() %}
-            <h3>Testcases</h3>
-            <table class="nested bordered">
-              <thead>
-                <tr>
-                  <th style="width: 20%">Outcome</th>
-                  <th style="width: 5%"></th>
-                  <th style="width: 75%">Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {% for ev in s.evaluations %}
-                <tr>
-                  <td>{{ ev.outcome }}</td>
-                  {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
-                  <td style="align: center;">&bullet;</td>
-                  {% else %}
-                  <td></td>
+            <div id="evaluation_{{ s.id }}" style="display: none;">
+              {% if s.evaluated() %}
+              <h3>Testcases</h3>
+              <table class="nested bordered">
+                <thead>
+                  <tr>
+                    <th style="width: 20%">Outcome</th>
+                    <th style="width: 5%"></th>
+                    <th style="width: 75%">Details</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for ev in s.evaluations %}
+                  <tr>
+                    <td>{{ ev.outcome }}</td>
+                    {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
+                    <td style="align: center;">&bullet;</td>
+                    {% else %}
+                    <td></td>
+                    {% end %}
+                    <td>{{ ev.text }}</td>
+                  </tr>
                   {% end %}
-                  <td>{{ ev.text }}</td>
-                </tr>
-                {% end %}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+              {% end %}
             {% end %}
-            <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
-            <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
+              <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
+              <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
+            </div>
           </div>
 
           {% end %}

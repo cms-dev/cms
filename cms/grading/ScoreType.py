@@ -249,12 +249,12 @@ class ScoreTypeGroup(ScoreTypeAlone):
    {% for subtask in subtasks %}
    <tr>
     <td colspan="2">
-     <strong>{{ subtask["title"] }}</strong>
+     <strong>{% raw subtask["title"] %}</strong>
     </td>
    </tr>
      {% for testcase in subtask["testcases"] %}
-   <tr>
-    <td>{{ testcase["outcome"] }}</td>
+   <tr class="collapsible">
+    <td>{% raw testcase["outcome"] %}</td>
     <td>{{ testcase["text"] }}</td>
    </tr>
      {% end %}
@@ -288,6 +288,22 @@ class ScoreTypeGroup(ScoreTypeAlone):
         returns (float): the score
 
         """
+        def class_score_subtask(score, max_score):
+            if score == max_score:
+                return "correct"
+            elif scores[-1] == 0:
+                return "notcorrect"
+            else:
+                return "partiallycorrect"
+
+        def class_score_testcase(word):
+            if word == "Correct":
+                return "correct"
+            elif word == "Not correct":
+                return "notcorrect"
+            else:
+                return "partiallycorrect"
+
         indices = sorted(self.public_testcases.keys())
         evaluations = self.pool[submission_id]["evaluations"]
         unowned_testcases = []
@@ -302,17 +318,26 @@ class ScoreTypeGroup(ScoreTypeAlone):
                                        for idx in indices[current:next_]],
                                       parameter)
                           * parameter[0])
+            title = "Subtask %d: <span class=\"%s\">%lg/%lg</span>" % (
+                subtask_idx + 1,
+                class_score_subtask(scores[-1], parameter[0]),
+                scores[-1],
+                parameter[0])
+            public_outcomes = dict((idx, self.get_public_outcome(
+                evaluations[idx]["outcome"],
+                parameter))
+                                   for idx in indices[current:next_])
             subtasks.append({
-                "title": "Subtask %d: %lg/%lg" % (subtask_idx + 1,
-                                                  scores[-1],
-                                                  parameter[0]),
+                "title": title,
                 "testcases": [{
-                    "outcome": self.get_public_outcome(
-                        evaluations[idx]["outcome"], parameter),
+                    "outcome": "<span class=\"%s\">%s</span>" % (
+                        class_score_testcase(public_outcomes[idx]),
+                        public_outcomes[idx]),
                     "text": evaluations[idx]["text"],
                     }
                     for idx in indices[current:next_]],
                 })
+
             if all(self.public_testcases[idx]
                    for idx in indices[current:next_]):
                 public_subtasks.append(subtasks[-1])

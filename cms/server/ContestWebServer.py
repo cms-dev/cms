@@ -1182,16 +1182,12 @@ class SubmissionStatusHandler(BaseHandler):
             if score_type is not None and score_type.max_public_score != 0:
                 data["max_public_score"] = "%g" % score_type.max_public_score
             data["public_score"] = "%g" % submission.public_score
-            data["public_score_details"] = list()
-            for detail in json.loads(submission.public_score_details):
-                data["public_score_details"].append(str(detail))
+            data["public_score_details"] = submission.public_score_details
             if submission.token is not None:
                 if score_type is not None and score_type.max_score != 0:
                     data["max_score"] = "%g" % score_type.max_score
                 data["score"] = "%g" % submission.score
-                data["score_details"] = list()
-                for detail in json.loads(submission.score_details):
-                    data["score_details"].append(str(detail))
+                data["score_details"] = submission.score_details
 
         self.write(data)
 
