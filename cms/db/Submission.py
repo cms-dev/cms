@@ -116,6 +116,11 @@ class Submission(Base):
     public_score = Column(Float, nullable=True)
     public_score_details = Column(String, nullable=True)
 
+    # Ranking score details. It is a list of strings that are going to
+    # be shown in a single row in the table of submission in RWS. JSON
+    # encoded.
+    ranking_score_details = Column(String, nullable=True)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # files (dict of File objects indexed by filename)

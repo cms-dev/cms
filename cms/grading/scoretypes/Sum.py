@@ -67,6 +67,14 @@ class Sum(ScoreTypeAlone):
         See the same method in ScoreType for details.
 
         """
+        def class_score_testcase(word):
+            if word == "Correct":
+                return "correct"
+            elif word == "Not correct":
+                return "notcorrect"
+            else:
+                return "partiallycorrect"
+
         evaluations = self.pool[submission_id]["evaluations"]
         testcases = []
         public_testcases = []
@@ -74,14 +82,12 @@ class Sum(ScoreTypeAlone):
         score = 0.0
         for idx in evaluations:
             score += evaluations[idx]["outcome"]
-            public_outcomes = dict((idx, self.get_public_outcome(
-                evaluations[idx]["outcome"],
-                parameter))
-                                   for idx in indices[current:next_])
+            public_outcome = self.get_public_outcome(
+                evaluations[idx]["outcome"])
             testcases.append({
                 "outcome": "<span class=\"%s\">%s</span>" % (
-                    class_score_testcase(public_outcomes[idx]),
-                    public_outcomes[idx]),
+                    class_score_testcase(public_outcome),
+                    public_outcome),
                 "text": evaluations[idx]["text"],
                 })
             if self.public_testcases[idx]:
@@ -93,7 +99,8 @@ class Sum(ScoreTypeAlone):
             Template(self.TEMPLATE).generate(testcases=public_testcases)
 
         return round(score * self.parameters, 2), details, \
-               round(public_score * self.parameters, 2), public_details
+               round(public_score * self.parameters, 2), public_details, \
+               []
 
     def get_public_outcome(self, outcome):
         """Return a public outcome from an outcome.

@@ -65,6 +65,7 @@ class ScriptsContainer(object):
             ("20120912", "make_contest_description_not_null"),
             ("20120915", "add_extra_time"),
             ("20120918", "use_statement_ids"),
+            ("20120919", "add_ranking_score_details"),
             ("20120923", "add_time_and_memory_on_tests"),
             ]
         self.list.sort()
@@ -802,6 +803,17 @@ SET statements = '{}'""")
             session.execute("""\
 ALTER TABLE users
 ALTER COLUMN statements SET NOT NULL;""")
+
+    @staticmethod
+    def add_ranking_score_details():
+        """Add a field with the score details to send to RWS
+
+        Please rescore solutions.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE submissions "
+                            "ADD COLUMN ranking_score_details VARCHAR;")
 
     @staticmethod
     def add_time_and_memory_on_tests():

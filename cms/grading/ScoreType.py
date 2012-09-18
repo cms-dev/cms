@@ -96,12 +96,14 @@ class ScoreType:
             "score": None,
             "details": None,
             "public_score": None,
-            "public_details": None
+            "public_details": None,
+            "ranking_details": None,
             }
         self.pool[submission_id]["score"], \
             self.pool[submission_id]["details"], \
             self.pool[submission_id]["public_score"], \
-            self.pool[submission_id]["public_details"] = \
+            self.pool[submission_id]["public_details"], \
+            self.pool[submission_id]["ranking_details"] = \
             self.compute_score(submission_id)
 
         if username not in self.submissions or \
@@ -181,14 +183,11 @@ class ScoreType:
 
         submission_id (int): the submission to evaluate.
 
-        returns (float, str, float, str): respectively: the score, the
-                                          HTML string with additional
-                                          information (e.g.
-                                          testcases' and subtasks'
-                                          score), and the same
-                                          information from the point
-                                          of view of a user that did
-                                          not play a token.
+        returns (float, str, float, str, [str]): respectively: the
+            score, the HTML string with additional information (e.g.
+            testcases' and subtasks' score), and the same information
+            from the point of view of a user that did not play a
+            token, the list of strings to send to RWS.
 
         """
         logger.error("Unimplemented method compute_score.")
@@ -309,6 +308,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         unowned_testcases = []
         subtasks = []
         public_subtasks = []
+        ranking_details = []
         current = 0
         scores = []
         public_scores = []
@@ -337,6 +337,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     }
                     for idx in indices[current:next_]],
                 })
+            ranking_details.append("%lg" % (scores[-1]))
 
             if all(self.public_testcases[idx]
                    for idx in indices[current:next_]):
@@ -366,7 +367,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
             Template(self.TEMPLATE).generate(subtasks=public_subtasks)
 
         return round(score, 2), details, \
-               round(public_score, 2), public_details
+               round(public_score, 2), public_details, \
+               ranking_details
 
     def get_public_outcome(self, outcome, parameter):
         """Return a public outcome from an outcome.

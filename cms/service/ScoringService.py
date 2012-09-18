@@ -541,6 +541,8 @@ class ScoringService(Service):
             submission.score_details = scorer.pool[submission_id]["details"]
             submission.public_score_details = \
                 scorer.pool[submission_id]["public_details"]
+            submission.ranking_score_details = \
+                scorer.pool[submission_id]["ranking_details"]
 
             # Data to send to remote rankings.
             submission_url = "/submissions/%s" % encode_id(submission_id)
@@ -554,7 +556,7 @@ class ScoringService(Service):
                 "submission": encode_id(submission_id),
                 "time": int(make_timestamp(submission.timestamp)),
                 "score": submission.score,
-                "extra": submission.score_details}
+                "extra": submission.ranking_score_details}
 
         # TODO: ScoreRelative here does not work with remote
         # rankings (it does in the ranking view) because we
