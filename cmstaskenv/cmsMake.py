@@ -120,10 +120,12 @@ def parse_task_yaml(base_dir):
 
 
 def detect_task_type(base_dir):
-    grad_present = any(filter(lambda x: x.startswith(GRAD_BASENAME + '.'),
-                              os.listdir(SOL_DIRNAME)))
-    stub_present = any(filter(lambda x: x.startswith('stub.'),
-                              os.listdir(SOL_DIRNAME)))
+    grad_present = os.path.exists(SOL_DIRNAME) and \
+        any(filter(lambda x: x.startswith(GRAD_BASENAME + '.'),
+                   os.listdir(SOL_DIRNAME)))
+    stub_present = os.path.exists(SOL_DIRNAME) and \
+        any(filter(lambda x: x.startswith('stub.'),
+                   os.listdir(SOL_DIRNAME)))
     cor_present = os.path.exists(CHECK_DIRNAME) and \
         any(filter(lambda x: x.startswith('correttore.'),
                    os.listdir(CHECK_DIRNAME)))
