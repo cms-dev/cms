@@ -178,7 +178,7 @@ class YamlLoader:
                 path=os.path.join(path, "testo", "testo.pdf"),
                 description="Statement for task %s (lang: )" % name),
                 "").export_to_dict()]
-        params["official_language"] = ""
+        params["official_language"] = conf.get("official_language", "")
 
         params["submission_format"] = [
             SubmissionFormatElement("%s.%%l" % name).export_to_dict()]
