@@ -94,6 +94,7 @@ def do_setup():
                     "cmscommon",
                     "cmsranking",
                     "cmscontrib",
+                    "cmstaskenv",
                     "cmstestsuite",
                     "cmstestsuite.web",
                     "cmstestsuite.tasks",
@@ -114,6 +115,8 @@ def do_setup():
                   "cmsRankingWebServer=cmsranking.RankingWebServer:main",
 
                   "cmsRunTests=cmstestsuite.RunTests:main",
+                  "cmsReplayContest=cmstestsuite.ReplayContest:main",
+                  "cmsAdaptContest=cmstestsuite.AdaptContest:main",
                   "cmsTestFileCacher=cmstestsuite.TestFileCacher:main",
 
                   "cmsAddUser=cmscontrib.AddUser:main",
@@ -123,6 +126,8 @@ def do_setup():
                   "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
                   "cmsContestExporter=cmscontrib.ContestExporter:main",
                   "cmsContestImporter=cmscontrib.ContestImporter:main",
+
+                  "cmsMake=cmstaskenv.cmsMake:main",
                   ]
               },
           keywords="ioi programming contest grader management system",

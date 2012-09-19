@@ -204,7 +204,8 @@ def main():
     parser.add_argument("address", type=str, help="http address of CWS",
                         default="http://127.0.0.1:8888")
     parser.add_argument("source", type=str, help="events file")
-    parser.add_argument("-r", "--resume", type=str, help="start from (%H:%M:%S)")
+    parser.add_argument("-r", "--resume", type=str,
+                        help="start from (%%H:%%M:%%S)")
     args = parser.parse_args()
     current = None
     if args.resume is not None:
