@@ -1254,6 +1254,13 @@ class UserTestHandler(BaseHandler):
         except KeyError:
             raise tornado.web.HTTPError(404)
 
+        # Check that the task is testable
+        task_type = get_task_type(task=task)
+        if not task_type.testable:
+            logger.warning("User %s tried to make test on task %s." %
+                           (current_user.username, task_name))
+            raise HTTPError(404)
+
         # Alias for easy access
         contest = self.contest
 
@@ -1372,7 +1379,6 @@ class UserTestHandler(BaseHandler):
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
         # type says so.
-        task_type = get_task_type(task=task)
         required = set([x.filename for x in task.submission_format] + task_type.get_user_managers() + ["input"])
         provided = set(self.request.files.keys())
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION

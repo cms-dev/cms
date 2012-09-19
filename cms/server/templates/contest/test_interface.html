@@ -73,7 +73,8 @@ $(document).ready(function () {
 
 <ul class="nav nav-tabs">
 {% for i, task in enumerate(contest.tasks) %}
-    {% if task.task_type != "OutputOnly" %}  {% comment FIXME Ugly hack... we should use something more flexible %}
+    {% set task_type = get_task_type(task=task) %}
+    {% if task_type.testable %}
     <li{% if task == default_task %} class="active"{% end %}><a href="#test_{{ task.name }}" data-toggle="tab">{{ task.name }}</a></li>
     {% end %}
 {% end %}
@@ -81,8 +82,8 @@ $(document).ready(function () {
 
 <div class="tab-content">
 {% for i, task in enumerate(contest.tasks) %}
-    {% if task.task_type != "OutputOnly" %}  {% comment FIXME Ugly hack... we should use something more flexible %}
-        {% set task_type = get_task_type(task=task) %}
+    {% set task_type = get_task_type(task=task) %}
+    {% if task_type.testable %}
 <div class="tab-pane{% if task == default_task %} active{% end %}" id="test_{{ task.name }}">
 
 <h2 style="margin-bottom: 10px">{{ _("Submit a test") }}</h2>

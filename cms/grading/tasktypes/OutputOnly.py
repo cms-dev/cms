@@ -58,6 +58,8 @@ class OutputOnly(TaskType):
         # TODO add some details if a comparator is used, etc...
         return "Output only"
 
+    testable = False
+
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         return None
