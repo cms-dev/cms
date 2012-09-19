@@ -220,21 +220,16 @@ div.login_box {
 
 @media (max-width: 767px) {
     .modal {
-        position: absolute;
-        top: 10px;
+        position: fixed;
+        top: 50%;
         left: 10px;
         right: 10px;
         width: auto;
-        margin: 0;
+        margin: -250px 0 0;
     }
 
     .modal.fade.in {
-        top: auto;
-    }
-
-    .modal-header .close {
-        padding: 10px;
-        margin: -10px;
+        top: 50%;
     }
 }
 
