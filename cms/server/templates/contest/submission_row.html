@@ -44,16 +44,20 @@
         <a class="details">details</a>
     </td>
     <td class="public_score">
-    {% if score_type is not None and score_type.max_public_score != 0 %}
-        {{ "%g" % s.public_score }} / {{ "%g" % score_type.max_public_score }}
+    {% if s.token is None %}
+      {% if score_type is not None and score_type.max_public_score != 0 %}
+          {% raw format_score_over_score(s.public_score, score_type.max_public_score) %}
+      {% else %}
+          {{ "%g" % s.public_score }}
+      {% end %}
     {% else %}
-        {{ "%g" % s.public_score }}
+      N/A
     {% end %}
     </td>
     <td class="total_score">
     {% if s.token is not None %}
         {% if score_type is not None and score_type.max_score != 0 %}
-            {{ "%g" % s.score }} / {{ "%g" % score_type.max_score }}
+            {% raw format_score_over_score(s.score, score_type.max_score) %}
         {% else %}
             {{ "%g" % s.score }}
         {% end %}

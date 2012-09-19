@@ -198,6 +198,28 @@ def format_datetime_smart(dt, timezone, locale=None):
         return dt.strftime(locale.translate("%Y-%m-%d %H:%M:%S"))
 
 
+def format_score_over_score(score, max_score):
+    """Return something of the form score/max_score, styled.
+
+    score (float): the score of the submission.
+    max_score (float): maximum score.
+    return (str): score/max_score formatted
+
+    """
+    def get_label(score, max_score):
+        if score == max_score:
+            return "success"
+        elif score == 0:
+            return "important"
+        else:
+            return "warning"
+
+    return '<span class="label label-%s">%lg/%lg</span>' % (
+        get_label(score, max_score),
+        score,
+        max_score)
+
+
 def format_amount_of_time(seconds, precision=2, locale=None):
     """Return the number of seconds formatted 'X days, Y hours, ...'
 
