@@ -108,12 +108,17 @@ class Batch(TaskType):
             res[language] = [command]
         return res
 
-    def get_user_managers(self):
+    def get_user_managers(self, submission_format):
         """See TaskType.get_user_managers."""
+        managers = []
         if self.job.task_type_parameters[0] == "grader":
-            return ["grader.%l"]
-        else:
-            return []
+            managers.append("grader.%l")
+        headers = filter(lambda x: x.filename.endswith('.h'),
+                         submission_format)
+        if any(headers):
+            file_h = headers[0]
+            managers.append(file_h.replace('.h', '.%h'))
+        return managers
 
     def get_auto_managers(self):
         """See TaskType.get_auto_managers."""

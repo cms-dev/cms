@@ -62,7 +62,7 @@ class OutputOnly(TaskType):
         """See TaskType.get_compilation_commands."""
         return None
 
-    def get_user_managers(self):
+    def get_user_managers(self, submission_format):
         """See TaskType.get_user_managers."""
         return []
 

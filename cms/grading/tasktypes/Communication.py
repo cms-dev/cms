@@ -67,7 +67,7 @@ class Communication(TaskType):
             res[language] = [command]
         return res
 
-    def get_user_managers(self):
+    def get_user_managers(self, submission_format):
         """See TaskType.get_user_managers."""
         return ["stub.%l"]
 
