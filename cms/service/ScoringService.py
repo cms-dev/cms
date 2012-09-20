@@ -525,7 +525,9 @@ class ScoringService(Service):
                                   submission.user.username,
                                   dict((ev.num,
                                         {"outcome": float(ev.outcome),
-                                         "text": ev.text})
+                                         "text": ev.text,
+                                         "time": ev.execution_time,
+                                         "memory": ev.memory_used})
                                        for ev in submission.evaluations),
                                   submission.tokened())
 

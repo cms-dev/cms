@@ -365,8 +365,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     "outcome": tc_outcomes[idx],
                     "class": class_score_testcase(tc_outcomes[idx]),
                     "text": evaluations[idx]["text"],
-                    "time": 0.123, #evaluations[idx].execution_time,
-                    "memory": 12.3, #evaluations[idx].memory_used,
+                    "time": evaluations[idx]["time"],
+                    "memory": evaluations[idx]["memory"],
                     })
             subtasks.append({
                 "idx": st_idx + 1,
