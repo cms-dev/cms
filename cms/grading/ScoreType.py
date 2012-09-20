@@ -227,39 +227,74 @@ class ScoreTypeAlone(ScoreType):
 class ScoreTypeGroup(ScoreTypeAlone):
     """Intermediate class to manage tasks whose testcases are
     subdivided in groups (or subtasks). The score type parameters must
-    be in the form [[m, t, ...]], where m is the maximum score for the
-    given subtask and t is the number of testcases comprising the
-    subtask (that are consumed from the first to the last, sorted by
-    num).
+    be in the form [[m, t, ...], [...], ...], where m is the maximum
+    score for the given subtask and t is the number of testcases
+    comprising the subtask (that are consumed from the first to the
+    last, sorted by num).
 
     A subclass must implement the method 'get_public_outcome' and
     'reduce'.
 
     """
     TEMPLATE = """\
-<table>
- <thead>
-  <tr>
-   <th>Outcome</th>
-   <th>Details</th>
-  </tr>
- </thead>
- <tbody>
-   {% for subtask in subtasks %}
-   <tr>
-    <td colspan="2">
-     <strong>{% raw subtask["title"] %}</strong>
-    </td>
-   </tr>
-     {% for testcase in subtask["testcases"] %}
-   <tr class="collapsible">
-    <td>{% raw testcase["outcome"] %}</td>
-    <td>{{ testcase["text"] }}</td>
-   </tr>
-     {% end %}
-   {% end %}
- </tbody>
-</table>"""
+{% for st in subtasks %}
+<div class="subtask {{ st["class"] if (st["public"] or show_private) else "undefined" }}">
+    <div class="subtask-head">
+        <span class="title">
+            Subtask {{ st["idx"] }}
+        </span>
+    {% if st["public"] or show_private %}
+        <span class="score">
+            {{ '%g' % st["score"] }} / {{ st["max_score"] }}
+        </span>
+    {% else %}
+        <span class="score">
+            N/A
+        </span>
+    {% end %}
+    </div>
+    <div class="subtask-body">
+        <table>
+            <thead>
+                <tr>
+                    <th>Outcome</th>
+                    <th>Details</th>
+                    <th>Time</th>
+                    <th>Memory</th>
+                </tr>
+            </thead>
+            <tbody>
+    {% for tc in st["testcases"] %}
+                <tr class="collapsible {{ tc["class"] if (tc["public"] or show_private) else "undefined" }}">
+        {% if tc["public"] or show_private %}
+                    <td>{{ tc["outcome"] }}</td>
+                    <td>{{ tc["text"] }}</td>
+                    <td>
+            {% if tc["time"] is not None %}
+                        {{ "%(seconds)0.3f s" % {'seconds': tc["time"]} }}
+            {% else %}
+                        N/A
+            {% end %}
+                    </td>
+                    <td>
+            {% if tc["memory"] is not None %}
+                        {{ "%(mb)0.2f MiB" % {'mb': tc["memory"] / 1024.0 / 1024.0} }}
+            {% else %}
+                        N/A
+            {% end %}
+                    </td>
+        {% else %}
+                    <td colspan="4">
+                        N/A
+                    </td>
+        {% end %}
+                </tr>
+    {% end %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% end %}"""
 
     def max_scores(self):
         """Compute the maximum score of a submission.
@@ -288,9 +323,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         """
         def class_score_subtask(score, max_score):
-            if score == max_score:
+            if score >= max_score:
                 return "correct"
-            elif scores[-1] == 0:
+            elif score <= 0:
                 return "notcorrect"
             else:
                 return "partiallycorrect"
@@ -305,66 +340,55 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         indices = sorted(self.public_testcases.keys())
         evaluations = self.pool[submission_id]["evaluations"]
-        unowned_testcases = []
         subtasks = []
-        public_subtasks = []
         ranking_details = []
-        current = 0
-        scores = []
-        public_scores = []
-        for subtask_idx, parameter in enumerate(self.parameters):
-            next_ = current + parameter[1]
-            scores.append(self.reduce([evaluations[idx]["outcome"]
-                                       for idx in indices[current:next_]],
-                                      parameter)
-                          * parameter[0])
-            title = "Subtask %d: <span class=\"%s\">%lg/%lg</span>" % (
-                subtask_idx + 1,
-                class_score_subtask(scores[-1], parameter[0]),
-                scores[-1],
-                parameter[0])
-            public_outcomes = dict((idx, self.get_public_outcome(
-                evaluations[idx]["outcome"],
-                parameter))
-                                   for idx in indices[current:next_])
+        tc_start = 0
+        tc_end = 0
+
+        for st_idx, parameter in enumerate(self.parameters):
+            tc_end = tc_start + parameter[1]
+            st_score = self.reduce([evaluations[idx]["outcome"]
+                                    for idx in indices[tc_start:tc_end]],
+                                   parameter) * parameter[0]
+            st_public = all(self.public_testcases[idx]
+                            for idx in indices[tc_start:tc_end])
+            tc_outcomes = dict((
+                idx,
+                self.get_public_outcome(evaluations[idx]["outcome"], parameter)
+                ) for idx in indices[tc_start:tc_end])
+
+            testcases = list()
+            for idx in indices[tc_start:tc_end]:
+                testcases.append({
+                    "idx": idx,
+                    "public": self.public_testcases[idx],
+                    "outcome": tc_outcomes[idx],
+                    "class": class_score_testcase(tc_outcomes[idx]),
+                    "text": evaluations[idx]["text"],
+                    "time": 0.123, #evaluations[idx].execution_time,
+                    "memory": 12.3, #evaluations[idx].memory_used,
+                    })
             subtasks.append({
-                "title": title,
-                "testcases": [{
-                    "outcome": "<span class=\"%s\">%s</span>" % (
-                        class_score_testcase(public_outcomes[idx]),
-                        public_outcomes[idx]),
-                    "text": evaluations[idx]["text"],
-                    }
-                    for idx in indices[current:next_]],
+                "idx": st_idx + 1,
+                "public": st_public,
+                "score": st_score,
+                "max_score": parameter[0],
+                "class": class_score_subtask(st_score, parameter[0]),
+                "testcases": testcases,
                 })
-            ranking_details.append("%lg" % (scores[-1]))
+            ranking_details.append("%lg" % st_score)
 
-            if all(self.public_testcases[idx]
-                   for idx in indices[current:next_]):
-                public_subtasks.append(subtasks[-1])
-                public_scores.append(scores[-1])
-            else:
-                unowned_testcases += [{
-                    "outcome": self.get_public_outcome(
-                        evaluations[idx]["outcome"], parameter),
-                    "text": evaluations[idx]["text"],
-                    }
-                    for idx in indices[current:next_]
-                    if self.public_testcases[idx]]
-            current = next_
+            tc_start = tc_end
 
-        if unowned_testcases != []:
-            public_subtasks.append({
-                "title": "Additional public testcases",
-                "testcases": unowned_testcases,
-                })
+        score = sum(st["score"] for st in subtasks)
+        public_score = sum(st["score"] for st in subtasks if st["public"])
 
-        score = sum(scores)
-        public_score = sum(public_scores)
-
-        details = Template(self.TEMPLATE).generate(subtasks=subtasks)
+        details = \
+            Template(self.TEMPLATE).generate(subtasks=subtasks,
+                                             show_private=True)
         public_details = \
-            Template(self.TEMPLATE).generate(subtasks=public_subtasks)
+            Template(self.TEMPLATE).generate(subtasks=subtasks,
+                                             show_private=False)
 
         return round(score, 2), details, \
                round(public_score, 2), public_details, \

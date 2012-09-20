@@ -7,46 +7,24 @@ $(document).on("click", "#submission_list tbody tr td.status .details", function
     var modal = $("#submission_detail");
     var modal_body = modal.children(".modal-body");
     modal_body.html('<div class="loading"><img src="{{ url_root }}/static/loading.gif"/>loading...</div>');
-    modal_body.load("{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/submissions/" + submission_id + "/details",
-                    function() {
-        $(".score_details table").addClass("table table-bordered table-striped");
-        $(".score_details .correct").addClass("label label-success");
-        $(".score_details .notcorrect").addClass("label label-important");
-        $(".score_details .partiallycorrect").addClass("label label-warning");
-        var rows = $(".score_details tr")
-        for (var idx = 0; idx < rows.length; idx++)
-        {
-            if (!$(rows[idx]).hasClass("collapsible"))
-            {
-                var start = idx + 1;
-                var end = idx + 1;
-                while (end < rows.length && $(rows[end]).hasClass("collapsible"))
-                {
-                    $(rows[end]).addClass("collapsed");
-                    $(rows[end]).hide();
-                    end++;
-                }
-                if (start < end)
-                {
-                    $(rows[idx]).css("cursor", "pointer");
-                    $(rows[idx]).click(function(start, end) { return function(){
-                        var collapsed = $(rows[start]).hasClass("collapsed");
-                        for (var i = start; i < end; ++i)
-                            if (collapsed)
-                        {
-                            $(rows[i]).removeClass("collapsed");
-                            $(rows[i]).fadeIn("fast");
-                            $(rows[i]).show();
-                        }
-                        else
-                        {
-                            $(rows[i]).addClass("collapsed");
-                            $(rows[i]).fadeOut("fast", function() { $(this).hide();} );
-                        }
-                    }}(start, end));
-                }
+    modal_body.load("{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/submissions/" + submission_id + "/details", function() {
+        $(".score_details .subtask .subtask-body table").addClass("table table-bordered table-striped");
+        $(".score_details .subtask .subtask-head").each(function () {
+            $(this).prepend("<i class=\"icon-chevron-right\"></i>");
+        });
+        $(".score_details .subtask .subtask-head").click(function () {
+            $(this).parent().toggleClass("open");
+            if ($(this).parent().hasClass("open")) {
+                console.log(this);
+                console.log($(this).children("i"));
+                $(this).children("i").removeClass("icon-chevron-right").addClass("icon-chevron-down");
+            } else {
+                $(this).children("i").removeClass("icon-chevron-down").addClass("icon-chevron-right");
             }
-        }
+        });
+        $(".score_details .subtask .subtask-body table tbody tr:not(.undefined) td:nth-child(1)").each(function () {
+            $(this).html("<span class=\"outcome\">" + $(this).text() + "</span>");
+        });
     });
     modal.modal("show");
 });

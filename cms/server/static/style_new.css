@@ -582,6 +582,120 @@ td.token_rules p:last-child {
     margin: 0 auto 12px;
 }
 
+#submission_detail .modal-body {
+    overflow-y: scroll;
+}
+
+#submission_detail .modal-body h3 {
+    margin-bottom: 15px;
+}
+
+#submission_detail .modal-body h3:not(:first-of-type) {
+    margin-top: 30px;
+}
+
+#submission_detail .subtask.open {
+    margin-bottom: 20px;
+}
+
+#submission_detail .subtask-head {
+    font-size: 16px;
+    line-height: 20px;
+    border: none;
+    border-radius: 5px;
+    background-color: #E0E0E0;
+    cursor: pointer;
+    height: 20px;
+    padding: 4px;
+    margin-bottom: 10px;
+    box-shadow: 0 0 2px 2px #D0D0D0 inset;
+}
+
+#submission_detail .subtask.open .subtask-head {
+    margin-bottom: 15px;
+}
+
+#submission_detail .subtask .subtask-head i {
+    margin: 2px;
+}
+
+#submission_detail .subtask .subtask-head .score {
+    float: right;
+    font-weight: bold;
+    display: inline-block;
+    border-radius: 5px;
+    width: 20%;
+    text-align: center;
+    height: 24px;
+    margin-top: -2px;
+    margin-right: -2px;
+    color: white;
+    line-height: 24px;
+}
+
+#submission_detail .subtask.undefined .subtask-head .score {
+    background-color: #babdb6;
+}
+
+#submission_detail .subtask.correct .subtask-head .score {
+    background-color: #4e9a06;
+}
+
+#submission_detail .subtask.notcorrect .subtask-head .score {
+    background-color: #cc0000;
+}
+
+#submission_detail .subtask.partiallycorrect .subtask-head .score {
+    background-color: #edd400;
+}
+
+#submission_detail .subtask:not(.open) .subtask-body {
+    display: none;
+}
+
+#submission_detail .subtask-body table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+#submission_detail .subtask-body table thead th:nth-child(1) {
+    width: 20%;
+}
+
+#submission_detail .subtask-body table thead th:nth-child(3),
+#submission_detail .subtask-body table thead th:nth-child(4) {
+    width: 100px;
+}
+
+#submission_detail .subtask-body table tbody tr:not(.undefined) td:nth-child(1) {
+    padding: 5px;
+}
+
+#submission_detail .subtask-body table tbody tr:not(.undefined) td:nth-child(1) .outcome {
+    display: inline-block;
+    width: 100%;
+    height: 24px;
+    line-height: 24px;
+    border-radius: 5px;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    color: white;
+    padding-left: 5px;
+}
+
+#submission_detail .subtask-body table tbody tr.correct td:nth-child(1) .outcome {
+    background-color: #4e9a06;
+}
+
+#submission_detail .subtask-body table tbody tr.notcorrect td:nth-child(1) .outcome {
+    background-color: #cc0000;
+}
+
+#submission_detail .subtask-body table tbody tr.partiallycorrect td:nth-child(1) .outcome {
+    background-color: #edd400;
+}
+
+
 /*** per-user time box */
 
 .per_user_time p:last-child {
