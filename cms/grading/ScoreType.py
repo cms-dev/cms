@@ -246,7 +246,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         </span>
     {% if st["public"] or show_private %}
         <span class="score">
-            {{ '%g' % st["score"] }} / {{ st["max_score"] }}
+            {{ '%g' % round(st["score"], 2) }} / {{ st["max_score"] }}
         </span>
     {% else %}
         <span class="score">
@@ -381,8 +381,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
             tc_start = tc_end
 
-        score = sum(st["score"] for st in subtasks)
-        public_score = sum(st["score"] for st in subtasks if st["public"])
+        score = int(round(sum(st["score"] for st in subtasks)))
+        public_score = int(round(sum(st["score"] for st in subtasks if st["public"])))
 
         details = \
             Template(self.TEMPLATE).generate(subtasks=subtasks,
