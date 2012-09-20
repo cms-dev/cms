@@ -92,7 +92,7 @@ $(document).ready(function () {
     <div class="span5">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/test" method="POST">
             <fieldset>
-{% for idx, filename in enumerate([x.filename for x in task.submission_format] + task_type.get_user_managers() + ["input"]) %}
+{% for idx, filename in enumerate([x.filename for x in task.submission_format] + task_type.get_user_managers(task.submission_format) + ["input"]) %}
                 <div class="control-group">
                     <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", "") }}</label>
                     <div class="controls">

@@ -1379,7 +1379,7 @@ class UserTestHandler(BaseHandler):
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
         # type says so.
-        required = set([x.filename for x in task.submission_format] + task_type.get_user_managers() + ["input"])
+        required = set([x.filename for x in task.submission_format] + task_type.get_user_managers(task.submission_format) + ["input"])
         provided = set(self.request.files.keys())
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
@@ -1550,7 +1550,7 @@ class UserTestHandler(BaseHandler):
         for filename in [x.filename for x in task.submission_format]:
             digest = file_digests[filename]
             self.sql_session.add(UserTestFile(digest, filename, usertest))
-        for filename in task_type.get_user_managers():
+        for filename in task_type.get_user_managers(task.submission_format):
             digest = file_digests[filename]
             if submission_lang is not None:
                 filename = filename.replace("%l", submission_lang)
