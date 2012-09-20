@@ -118,7 +118,7 @@
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
     <td class="token">
         {% if s.token is not None %}
-        <a class="btn btn-success disabled">Played</a>
+        <a class="btn disabled">Played</a>
         {% else %}
             {% comment TODO If the expiration or generation time are greater than valid_phase_end they "don't exist". It's useless to show "Wait..." in those cases. %}
             {% if can_play_token and not need_to_wait %}
