@@ -975,7 +975,7 @@ class SubmitHandler(BaseHandler):
                 self.current_user.username,
                 self.timestamp,
                 self._("Submission too big!"),
-                self._("Each files must be at most %d bytes long.") %
+                self._("Each source file must be at most %d bytes long.") %
                     config.max_submission_length,
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
@@ -1463,13 +1463,23 @@ class UserTestHandler(BaseHandler):
 
         # Check if submitted files are small enough.
         if any([len(f[1]) > config.max_submission_length
-                for f in files.values()]):
+                for n, f in files.items() if n != "input"]):
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
-                self._("Submission too big!"),
-                self._("Each files must be at most %d bytes long.") %
+                self._("Test too big!"),
+                self._("Each source file must be at most %d bytes long.") %
                     config.max_submission_length,
+                ContestWebServer.NOTIFICATION_ERROR)
+            self.redirect("/testing?%s" % quote(task.name, safe=''))
+            return
+        if len(files["input"][1]) > config.max_input_length:
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Input too big!"),
+                self._("The input file must be at most %d bytes long.") %
+                    config.max_input_length,
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/testing?%s" % quote(task.name, safe=''))
             return

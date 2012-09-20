@@ -99,7 +99,8 @@
     "is_proxy_used": false,
 
     "_help": "Maximum size of a submission in bytes.",
-    "max_submission_length":   100000,
+    "max_submission_length": 100000,
+    "max_input_length": 5000000,
 
     "_help": "STL documentation path in the system (exposed in CWS).",
     "stl_path": "/usr/share/doc/stl-manual/html/",
