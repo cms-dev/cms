@@ -9,8 +9,8 @@
     <td class="status">
         Compiling...
     </td>
-    <td class="public_score">N/A</td>
-    <td class="total_score">N/A</td>
+    <td class="public_score undefined">N/A</td>
+    <td class="total_score undefined">N/A</td>
 {% elif s.compilation_outcome == "fail" %}
 <tr data-submission="{{ s_idx }}" data-status="2">
     {% raw col1 %}
@@ -18,24 +18,24 @@
         Compilation failed
         <a class="details">details</a>
     </td>
-    <td class="public_score">N/A</td>
-    <td class="total_score">N/A</td>
+    <td class="public_score undefined">N/A</td>
+    <td class="total_score undefined">N/A</td>
 {% elif not s.evaluated() %}
 <tr data-submission="{{ s_idx }}" data-status="3">
     {% raw col1 %}
     <td class="status">
         Evaluating...
     </td>
-    <td class="public_score">N/A</td>
-    <td class="total_score">N/A</td>
+    <td class="public_score undefined">N/A</td>
+    <td class="total_score undefined">N/A</td>
 {% elif not s.scored() %}
 <tr data-submission="{{ s_idx }}" data-status="4">
     {% raw col1 %}
     <td class="status">
         Scoring...
     </td>
-    <td class="public_score">N/A</td>
-    <td class="total_score">N/A</td>
+    <td class="public_score undefined">N/A</td>
+    <td class="total_score undefined">N/A</td>
 {% else %}
 <tr data-submission="{{ s_idx }}" data-status="5">
     {% raw col1 %}
@@ -43,28 +43,37 @@
         Evaluated
         <a class="details">details</a>
     </td>
-    <td class="public_score">
-    {% if s.token is None %}
-      {% if score_type is not None and score_type.max_public_score != 0 %}
-          {% raw format_score_over_score(s.public_score, score_type.max_public_score) %}
-      {% else %}
-          {{ "%g" % s.public_score }}
-      {% end %}
-    {% else %}
-      N/A
-    {% end %}
+    {% comment FIXME decide if we want this or not %}
+    {% if s.token is not None and False %}
+    <td class="public_score undefined">
+        N/A
     </td>
-    <td class="total_score">
+    {% else %}
+        {% if score_type is not None and score_type.max_public_score != 0 %}
+    <td class="public_score {{ get_score_class(s.public_score, score_type.max_public_score) }}">
+            {{ "%g" % s.public_score }} / {{ "%g" % score_type.max_public_score }}
+    </td>
+        {% else %}
+    <td class="public_score">
+            {{ "%g" % s.public_score }}
+    </td>
+        {% end %}
+    {% end %}
     {% if s.token is not None %}
         {% if score_type is not None and score_type.max_score != 0 %}
-            {% raw format_score_over_score(s.score, score_type.max_score) %}
+    <td class="total_score {{ get_score_class(s.score, score_type.max_score) }}">
+            {{ "%g" % s.score }} / {{ "%g" % score_type.max_score }}
+    </td>
         {% else %}
+    <td class="total_score">
             {{ "%g" % s.score }}
+    </td>
         {% end %}
     {% else %}
+    <td class="total_score undefined">
         N/A
-    {% end %}
     </td>
+    {% end %}
 {% end %}
     <td class="files">
         {% comment We replace '%l' with the actual language only when it occurs as an extension at the end of the string and only when %}

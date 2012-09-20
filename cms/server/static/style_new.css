@@ -501,6 +501,62 @@ td.token_rules p:last-child {
     display: inline;
 }
 
+#submission_list td.public_score.undefined {
+    color: #AAA;
+}
+
+#submission_list td.public_score.score_0 {
+    background-color: hsla(0, 100%, 50%, 0.4);
+}
+
+#submission_list tr:hover td.public_score.score_0 {
+    background-color: hsla(0, 100%, 50%, 0.5);
+}
+
+#submission_list td.public_score.score_0_100 {
+    background-color: hsla(60, 100%, 50%, 0.4);
+}
+
+#submission_list tr:hover td.public_score.score_0_100 {
+    background-color: hsla(60, 100%, 50%, 0.5);
+}
+
+#submission_list td.public_score.score_100 {
+    background-color: hsla(120, 100%, 50%, 0.4);
+}
+
+#submission_list tr:hover td.public_score.score_100 {
+    background-color: hsla(120, 100%, 50%, 0.5);
+}
+
+#submission_list td.total_score.undefined {
+    color: #AAA;
+}
+
+#submission_list td.total_score.score_0 {
+    background-color: hsla(0, 100%, 50%, 0.7);
+}
+
+#submission_list tr:hover td.total_score.score_0 {
+    background-color: hsla(0, 100%, 50%, 0.8);
+}
+
+#submission_list td.total_score.score_0_100 {
+    background-color: hsla(60, 100%, 50%, 0.7);
+}
+
+#submission_list tr:hover td.total_score.score_0_100 {
+    background-color: hsla(60, 100%, 50%, 0.8);
+}
+
+#submission_list td.total_score.score_100 {
+    background-color: hsla(120, 100%, 50%, 0.7);
+}
+
+#submission_list tr:hover td.total_score.score_100 {
+    background-color: hsla(120, 100%, 50%, 0.8);
+}
+
 /*** Submission details */
 
 #submission_detail .modal-body {

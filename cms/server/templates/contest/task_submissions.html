@@ -51,6 +51,16 @@ $(document).on("click", "#submission_list tbody tr td.status .details", function
     modal.modal("show");
 });
 
+function get_score_class (score, max_score) {
+    if (score <= 0) {
+        return "score_0";
+    } else if (score >= max_score) {
+        return "score_100";
+    } else {
+        return "score_0_100";
+    }
+}
+
 update_submission_row = function (submission_id, data) {
     var row = $("#submission_list tbody tr[data-submission=\"" + submission_id + "\"]");
     row.attr("data-status", data["status"]);
@@ -60,23 +70,19 @@ update_submission_row = function (submission_id, data) {
         if (data["public_score"] != undefined) {
             public_score += data["public_score"];
             if (data["max_public_score"] != undefined) {
+                row.children("td.public_score").addClass(get_score_class(data["public_score"], data["max_public_score"]));
                 public_score += " / " + data["max_public_score"];
             }
-            for (var i = 0; i < data["public_score_details"].length; i += 1) {
-                public_score += " " + data["public_score_details"][i];
-            }
-            row.children("td.public_score").html(public_score);
+            row.children("td.public_score").removeClass("undefined").html(public_score);
         }
         var score = "";
         if (data["score"] != undefined) {
             score += data["score"];
             if (data["max_score"] != undefined) {
+                row.children("td.total_score").addClass(get_score_class(data["score"], data["max_score"]));
                 score += " / " + data["max_score"];
             }
-            for (var i = 0; i < data["score_details"].length; i += 1) {
-                score += " " + data["score_details"][i];
-            }
-            row.children("td.total_score").html(score);
+            row.children("td.total_score").removeClass("undefined").html(score);
         }
     } else if (data["status"] != 2) {
         schedule_update_submission_row(submission_id);
