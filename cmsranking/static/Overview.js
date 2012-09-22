@@ -493,7 +493,7 @@ var Overview = new function () {
         self.scores[self.get_score_class(old_score, max_score)] -= 1;
         self.scores[self.get_score_class(new_score, max_score)] += 1;
 
-        self.update_sidebar(1000);
+        self.update_score_chart(1000);
 
         if (user["selected"]) {
             self.user_list.sort(self.compare_users);
