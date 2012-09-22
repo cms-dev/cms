@@ -1105,9 +1105,20 @@ class UseTokenHandler(BaseHandler):
             self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
 
-        token = Token(self.timestamp, submission)
-        self.sql_session.add(token)
-        self.sql_session.commit()
+        if submission.token is None:
+            token = Token(self.timestamp, submission)
+            self.sql_session.add(token)
+            self.sql_session.commit()
+        else:
+            self.application.service.add_notification(
+                self.current_user.username,
+                self.timestamp,
+                self._("Token request discarded"),
+                self._("Your request has been discarded because you already "
+                       "used a token on that submission."),
+                ContestWebServer.NOTIFICATION_WARNING)
+            self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+            return
 
         # Inform ScoringService and eventually the ranking that the
         # token has been played.
@@ -1545,7 +1556,6 @@ class UserTestHandler(BaseHandler):
                    "and is currently being executed."),
             ContestWebServer.NOTIFICATION_SUCCESS)
         self.redirect("/testing?%s" % quote(task.name, safe=''))
-
 
 
 class UserTestStatusHandler(BaseHandler):
