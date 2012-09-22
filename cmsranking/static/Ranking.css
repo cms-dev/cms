@@ -2,6 +2,8 @@ body {
     /* FIXME: I'd suggest putting a 0.75em font-size */
     font: 1em/1.5em sans-serif;
 
+    color: black;
+
     background-color: #F6F6F6;
     background-image: -webkit-linear-gradient(#FFFFFF, #EDEDED);
     background-image:    -moz-linear-gradient(#FFFFFF, #EDEDED);
@@ -23,7 +25,7 @@ a {
 }
 
 abbr {
-    border-bottom: 1px dotted white;
+    border-bottom: 1px dotted black;
 }
 
 /******************************************************************************\
