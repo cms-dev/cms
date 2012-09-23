@@ -719,11 +719,11 @@ td.token_rules p:last-child {
 }
 
 .usertest_list colgroup col.input {
-    width: 20%;
+    width: 16%;
 }
 
 .usertest_list colgroup col.output {
-    width: 20%;
+    width: 16%;
 }
 
 .usertest_list colgroup col.files {
@@ -748,6 +748,7 @@ td.token_rules p:last-child {
 .usertest_list tbody tr td.time.undefined,
 .usertest_list tbody tr td.memory.undefined {
     color: #AAA;
+    white-space: nowrap;
 }
 
 .usertest_list tbody tr td.input,

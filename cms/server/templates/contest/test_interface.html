@@ -168,7 +168,7 @@ $(document).ready(function () {
     <tbody>
     {% if len(usertests[task.id]) == 0 %}
         <tr>
-            <td colspan="6" class="no_usertests">{{ _("no tests yet") }}</td>
+            <td colspan="7" class="no_usertests">{{ _("no tests yet") }}</td>
         </tr>
     {% else %}
         {% for t_idx, t in enumerate(sorted(usertests[task.id], key=lambda t: t.timestamp, reverse=True)) %}
