@@ -710,6 +710,14 @@ td.token_rules p:last-child {
     width: 20%;
 }
 
+.usertest_list colgroup col.time {
+    width: 3%;
+}
+
+.usertest_list colgroup col.memory {
+    width: 3%;
+}
+
 .usertest_list colgroup col.input {
     width: 20%;
 }
@@ -735,6 +743,11 @@ td.token_rules p:last-child {
 .usertest_list tbody tr td.status .details {
     float: right;
     cursor: pointer;
+}
+
+.usertest_list tbody tr td.time.undefined,
+.usertest_list tbody tr td.memory.undefined {
+    color: #AAA;
 }
 
 .usertest_list tbody tr td.input,

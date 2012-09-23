@@ -26,6 +26,14 @@ update_usertest_row = function (task_id, usertest_id, data) {
         } else {
             row.children("td.output a").text("N/A");
         }
+        if (data["time"] != null) {
+            row.children("td.time").removeClass("undefined");
+            row.children("td.time").text(data["time"]);
+        }
+        if (data["memory"] != null) {
+            row.children("td.memory").removeClass("undefined");
+            row.children("td.memory").text(data["memory"]);
+        }
     } else if (data["status"] == 2) {
         row.children("td.output a").text("N/A");
     } else {
@@ -136,6 +144,8 @@ $(document).ready(function () {
         <col class="time"/>
 {% end %}
         <col class="status"/>
+        <col class="time"/>
+        <col class="memory"/>
         <col class="input"/>
         <col class="output"/>
         <col class="files"/>
@@ -148,6 +158,8 @@ $(document).ready(function () {
             <th class="time">Time</th>
 {% end %}
             <th class="status">Status</th>
+            <th class="time">Time</th>
+            <th class="memory">Memory</th>
             <th class="input">Input</th>
             <th class="output">Output</th>
             <th class="files">Files</th>

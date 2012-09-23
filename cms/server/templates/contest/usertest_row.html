@@ -30,6 +30,24 @@
         <a class="details">details</a>
     </td>
 {% end %}
+{% if t.execution_time is None %}
+    <td class="time undefined">
+        N/A
+    </td>
+{% else %}
+    <td class="time">
+        {{ "%(seconds)0.3f s" % {'seconds': t.execution_time} }}
+    </td>
+{% end %}
+{% if t.memory_used is None %}
+    <td class="memory undefined">
+        N/A
+    </td>
+{% else %}
+    <td class="memory">
+        {{ "%(mb)0.2f MiB" % {'mb': t.memory_used / 1024. / 1024.} }}
+    </td>
+{% end %}
     <td class="input">
         <a class="btn" href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/tests/{{ t_idx }}/input">
             {{ _("Download") }}

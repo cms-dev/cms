@@ -1567,6 +1567,14 @@ class UserTestStatusHandler(BaseHandler):
         else:
             data["status"] = 4
             data["status_text"] = "Executed <a class=\"details\">details</a>"
+            if usertest.execution_time is not None:
+                data["time"] = "%(seconds)0.3f s" % {'seconds': usertest.execution_time}
+            else:
+                data["time"] = None
+            if usertest.memory_used is not None:
+                data["memory"] = "%(mb)0.2f MiB" % {'mb': usertest.memory_used / 1024. / 1024.}
+            else:
+                data["memory"] = None
             data["output"] = usertest.output is not None
 
         self.write(data)
