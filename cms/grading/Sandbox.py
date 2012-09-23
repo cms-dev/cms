@@ -115,6 +115,22 @@ def wait_without_std(procs):
     return [process.wait() for process in procs]
 
 
+def my_truncate(ff, size):
+    """Truncate file-like object ff at specified size. If file is
+    shorter than size, it is not modified (this is different from
+    using ff.truncate(), which doesn't mandate any specific behavior
+    in this case).
+
+    After truncations, the file position is reset to 0.
+
+    """
+    ff.seek(0, os.SEEK_END)
+    cur_size = ff.tell()
+    if cur_size > size:
+        ff.truncate(size)
+    ff.seek(0, os.SEEK_SET)
+
+
 class Sandbox:
     """This class creates, deletes and manages the interaction with a
     sandbox. The sandbox doesn't support concurrent operation, not
@@ -521,15 +537,22 @@ class Sandbox:
         dest.close()
 
     # TODO - Rewrite it as context manager
-    def get_file(self, path):
+    def get_file(self, path, trunc_len=None):
         """Open a file in the sandbox given its relative path.
 
         path (string): relative path of the file inside the sandbox.
+        trunc_len (int): if None, does nothing; otherwise, before
+                         returning truncate it at the specified length.
+
         return (file): the file opened in read binary mode.
 
         """
         logger.debug("Retrieving file %s from sandbox" % (path))
         real_path = self.relative_path(path)
+        if trunc_len is not None:
+            file_ = open(real_path, "ab")
+            my_truncate(file_, trunc_len)
+            file_.close()
         file_ = open(real_path, "rb")
         return file_
 
@@ -555,15 +578,18 @@ class Sandbox:
         file_.close()
         return content
 
-    def get_file_to_storage(self, path, description=""):
+    def get_file_to_storage(self, path, description="", trunc_len=None):
         """Put a sandbox file in FS and return its digest.
 
         path (string): relative path of the file inside the sandbox.
         description (string): the description for FS.
+        trunc_len (int): if None, does nothing; otherwise, before
+                         returning truncate it at the specified length.
+
         return (string): the digest of the file.
 
         """
-        file_ = self.get_file(path)
+        file_ = self.get_file(path, trunc_len=trunc_len)
         digest = self.file_cacher.put_file(file_obj=file_,
                                            description=description)
         file_.close()
