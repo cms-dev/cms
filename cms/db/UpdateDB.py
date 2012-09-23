@@ -64,6 +64,7 @@ class ScriptsContainer(object):
             ("20120911", "add_submission_and_usertest_limits"),
             ("20120912", "make_contest_description_not_null"),
             ("20120915", "add_extra_time"),
+            ("20120923", "add_time_and_memory_on_tests"),
             ]
         self.list.sort()
 
@@ -781,6 +782,16 @@ ALTER COLUMN description SET NOT NULL;""")
                             "SET extra_time = '0 seconds';")
             session.execute("ALTER TABLE users "
                             "ALTER COLUMN extra_time SET NOT NULL;")
+
+    @staticmethod
+    def add_time_and_memory_on_tests():
+        """Add memory_used and execution_time on UserTests.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("ALTER TABLE user_tests "
+                            "ADD COLUMN memory_used INTEGER, "
+                            "ADD COLUMN execution_time DOUBLE PRECISION;")
 
 
 def execute_single_script(scripts_container, script):
