@@ -138,9 +138,16 @@ class CompilationJob(Job):
         # be imported here to avoid circular dependencies
         from cms.grading.tasktypes import get_task_type
         task_type = get_task_type(task=user_test.task)
-        for manager_filename in task_type.get_auto_managers():
-            job.managers[manager_filename] = \
-                user_test.task.managers[manager_filename]
+        auto_managers = task_type.get_auto_managers()
+        if auto_managers is not None:
+            for manager_filename in auto_managers:
+                job.managers[manager_filename] = \
+                    user_test.task.managers[manager_filename]
+        else:
+            for manager_filename in user_test.task.managers:
+                if manager_filename not in job.managers:
+                    job.managers[manager_filename] = \
+                        user_test.task.managers[manager_filename]
 
         return job
 
@@ -262,9 +269,16 @@ class EvaluationJob(Job):
         # be imported here to avoid circular dependencies
         from cms.grading.tasktypes import get_task_type
         task_type = get_task_type(task=user_test.task)
-        for manager_filename in task_type.get_auto_managers():
-            job.managers[manager_filename] = \
-                user_test.task.managers[manager_filename]
+        auto_managers = task_type.get_auto_managers()
+        if auto_managers is not None:
+            for manager_filename in auto_managers:
+                job.managers[manager_filename] = \
+                    user_test.task.managers[manager_filename]
+        else:
+            for manager_filename in user_test.task.managers:
+                if manager_filename not in job.managers:
+                    job.managers[manager_filename] = \
+                        user_test.task.managers[manager_filename]
 
         return job
 
