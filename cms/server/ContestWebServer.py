@@ -780,7 +780,7 @@ class SubmitHandler(BaseHandler):
                 if submission_c >= contest.max_submission_number:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
-                               "at most %s submissions among all tasks.") %
+                               "at most %d submissions among all tasks.") %
                         contest.max_submission_number)
             if task.max_submission_number is not None:
                 submission_t = self.sql_session.query(func.count(Submission.id))\
@@ -789,7 +789,7 @@ class SubmitHandler(BaseHandler):
                 if submission_t >= task.max_submission_number:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
-                               "at most %s submissions on this task.") %
+                               "at most %d submissions on this task.") %
                         task.max_submission_number)
         except ValueError as error:
             self.application.service.add_notification(
@@ -814,8 +814,8 @@ class SubmitHandler(BaseHandler):
                         contest.min_submission_interval:
                     raise ValueError(
                         self._("Among all tasks, you can submit again "
-                               "after %s seconds from last submission.") %
-                        contest.min_submission_interval)
+                               "after %d seconds from last submission.") %
+                        contest.min_submission_interval.total_seconds())
             # We get the last submission even if we may not need it
             # for min_submission_interval because we may need it later,
             # in case this is a ALLOW_PARTIAL_SUBMISSION task.
@@ -829,8 +829,8 @@ class SubmitHandler(BaseHandler):
                         task.min_submission_interval:
                     raise ValueError(
                         self._("For this task, you can submit again "
-                               "after %s seconds from last submission.") %
-                        task.min_submission_interval)
+                               "after %d seconds from last submission.") %
+                        task.min_submission_interval.total_seconds())
         except ValueError as error:
             self.application.service.add_notification(
                 self.current_user.username,
@@ -1274,7 +1274,7 @@ class UserTestHandler(BaseHandler):
                 if usertest_c >= contest.max_usertest_number:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
-                               "at most %s tests among all tasks.") %
+                               "at most %d tests among all tasks.") %
                         contest.max_usertest_number)
             if task.max_usertest_number is not None:
                 usertest_t = self.sql_session.query(func.count(UserTest.id))\
@@ -1283,7 +1283,7 @@ class UserTestHandler(BaseHandler):
                 if usertest_t >= task.max_usertest_number:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
-                               "at most %s tests on this task.") %
+                               "at most %d tests on this task.") %
                         task.max_usertest_number)
         except ValueError as error:
             self.application.service.add_notification(
@@ -1308,8 +1308,8 @@ class UserTestHandler(BaseHandler):
                         contest.min_usertest_interval:
                     raise ValueError(
                         self._("Among all tasks, you can test again "
-                               "after %s seconds from last test.") %
-                        contest.min_usertest_interval)
+                               "after %d seconds from last test.") %
+                        contest.min_usertest_interval.total_seconds())
             # We get the last usertest even if we may not need it
             # for min_usertest_interval because we may need it later,
             # in case this is a ALLOW_PARTIAL_SUBMISSION task.
@@ -1323,8 +1323,8 @@ class UserTestHandler(BaseHandler):
                         task.min_usertest_interval:
                     raise ValueError(
                         self._("For this task, you can test again "
-                               "after %s seconds from last test.") %
-                        task.min_usertest_interval)
+                               "after %d seconds from last test.") %
+                        task.min_usertest_interval.total_seconds())
         except ValueError as error:
             self.application.service.add_notification(
                 self.current_user.username,
