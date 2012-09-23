@@ -214,7 +214,7 @@ def send_submission(ranking, submission_url, submission_put_data):
     submission_put_data (dict): dictionary to send to the ranking to
                                 send the submission.
 
-    return (bool): success of operation.
+    raise CannotSendError in case of communication errors.
 
     """
     logger.info("Posting new submission %s." % submission_url)
@@ -224,9 +224,10 @@ def send_submission(ranking, submission_url, submission_put_data):
                       submission_put_data, ranking[2],
                       "sending submission %s to ranking %s" %
                           (submission_url, ranking[1]))
-    except CannotSendError:
+    except CannotSendError as error:
         # Delete it to make get_connection try to create it again.
         del active_connections[ranking[1]]
+        raise error
 
 
 def send_change(ranking, subchange_url, subchange_put_data):
@@ -238,7 +239,7 @@ def send_change(ranking, subchange_url, subchange_put_data):
     subchange_put_data (dict): dictionary to send to the ranking to
                                update the submission.
 
-    return (bool): success of operation.
+    raise CannotSendError in case of communication errors.
 
     """
     logger.info("Posting change %s for submission %s." %
@@ -249,9 +250,10 @@ def send_change(ranking, subchange_url, subchange_put_data):
                       subchange_put_data, ranking[2],
                       "sending change %s to ranking %s" %
                           (subchange_url, ranking[1]))
-    except CannotSendError:
+    except CannotSendError as error:
         # Delete it to make get_connection try to create it again.
         del active_connections[ranking[1]]
+        raise error
 
 
 class ScoringService(Service):
@@ -435,7 +437,8 @@ class ScoringService(Service):
 
         ranking ((str, str, str)): protocol, address and authorization
                                    string of ranking server.
-        return (bool): success of operation
+
+        raise CannotSendError in case of communication errors.
 
         """
         logger.info("Initializing ranking %s." % ranking[1])
@@ -482,11 +485,10 @@ class ScoringService(Service):
             safe_put_data(connection, "/tasks/", tasks, auth,
                           "sending tasks")
 
-        except CannotSendError:
+        except CannotSendError as error:
             # Delete it to make get_connection try to create it again.
             del active_connections[ranking[1]]
-
-        return True
+            raise error
 
     @rpc_method
     def reinitialize(self):
