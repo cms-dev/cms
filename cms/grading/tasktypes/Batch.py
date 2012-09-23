@@ -260,7 +260,8 @@ class Batch(TaskType):
                     evaluation['output'] = sandbox.get_file_to_storage(
                         output_filename,
                         "Output file for testcase %d in job %s" %
-                        (test_number, self.job.info))
+                        (test_number, self.job.info),
+                        trunc_len=100 * 1024)
 
                 # If not asked otherwise, evaluate the output file
                 if not self.job.only_execution:
