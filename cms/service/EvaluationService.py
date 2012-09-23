@@ -1044,6 +1044,10 @@ class EvaluationService(Service):
                     user_test.evaluation_text = evaluation['text']
                     user_test.evaluation_sandbox = \
                         ":".join(evaluation['sandboxes'])
+                    user_test.memory_used = evaluation['plus']. \
+                        get('memory_used', None),
+                    user_test.execution_time = evaluation['plus'] \
+                        .get('execution_time', None),
 
                 self.user_test_evaluation_ended(user_test)
 
