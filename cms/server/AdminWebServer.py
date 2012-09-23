@@ -339,17 +339,46 @@ def SimpleContestHandler(page):
     return Cls
 
 
-class ResourcesHandler(BaseHandler):
+class ResourcesListHandler(BaseHandler):
     def get(self, contest_id=None):
         if contest_id is not None:
             self.contest = self.safe_get_item(Contest, contest_id)
 
         self.r_params = self.render_params()
-        self.r_params["resource_shards"] = get_service_shards("ResourceService")
         self.r_params["resource_addresses"] = {}
-        for i in xrange(self.r_params["resource_shards"]):
+        services = get_service_shards("ResourceService")
+        for i in xrange(services):
             self.r_params["resource_addresses"][i] = get_service_address(
                 ServiceCoord("ResourceService", i)).ip
+        self.render("resourceslist.html", **self.r_params)
+
+
+class ResourcesHandler(BaseHandler):
+    def get(self, shard=None, contest_id=None):
+        contest_address = ""
+        if contest_id is not None:
+            self.contest = self.safe_get_item(Contest, contest_id)
+            contest_address = "/%s" % contest_id
+
+        if shard is None:
+            shard = "all"
+
+        self.r_params = self.render_params()
+        self.r_params["resource_shards"] = get_service_shards("ResourceService")
+        self.r_params["resource_addresses"] = {}
+        if shard == "all":
+            for i in xrange(self.r_params["resource_shards"]):
+                self.r_params["resource_addresses"][i] = get_service_address(
+                    ServiceCoord("ResourceService", i)).ip
+        else:
+            shard = int(shard)
+            try:
+                address = get_service_address(
+                    ServiceCoord("ResourceService", shard))
+            except KeyError:
+                self.redirect("/resourceslist%s" % contest_address)
+                return
+            self.r_params["resource_addresses"][shard] = address.ip
 
         self.render("resources.html", **self.r_params)
 
@@ -1465,13 +1494,16 @@ _aws_handlers = [
     (r"/submission/([0-9]+)",                SubmissionViewHandler),
     (r"/submission_file/([0-9]+)",  SubmissionFileHandler),
     (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
-    (r"/message/([0-9]+)", MessageHandler),
+    (r"/message/([0-9]+)",         MessageHandler),
     (r"/question/([0-9]+)",        QuestionReplyHandler),
     (r"/ignore_question/([0-9]+)", QuestionIgnoreHandler),
-    (r"/questions/([0-9]+)",               QuestionsHandler),
-    (r"/resources",                 ResourcesHandler),
-    (r"/resources/([0-9]+)",        ResourcesHandler),
-    (r"/notifications",             NotificationsHandler),
+    (r"/questions/([0-9]+)",       QuestionsHandler),
+    (r"/resourceslist",                   ResourcesListHandler),
+    (r"/resourceslist/([0-9]+)",          ResourcesListHandler),
+    (r"/resources",                       ResourcesHandler),
+    (r"/resources/([0-9]+|all)",          ResourcesHandler),
+    (r"/resources/([0-9]+|all)/([0-9]+)", ResourcesHandler),
+    (r"/notifications",               NotificationsHandler),
     ]
 
 

@@ -273,7 +273,7 @@ for (var i = 0; i < {{ resource_shards }}; i++)
   <h1>Resource usage</h1>
 </div>
 
-{% for i in xrange(resource_shards) %}
+{% for i in resource_addresses %}
 
 <h2 id="title_machine_{{ i }}" class="toggling_on">Machine {{ i }} ({{ resource_addresses[i] }})</h2>
 <div id="machine_{{ i }}">

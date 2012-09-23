@@ -75,7 +75,7 @@ $(document).ready(init);
         <h1>Administration</h1>
         <ul class="menu">
           <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/{% if contest is not None %}{{ contest.id }}{% end %}">Overview</a></li>
-          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/resources{% if contest is not None %}/{{ contest.id }}{% end %}">Resource usage</a></li>
+          <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/resourceslist{% if contest is not None %}/{{ contest.id }}{% end %}">Resource usage</a></li>
         </ul>
         <div class="hr"></div>
         <select id="contest_selection_select" onchange="utils.switch_contest()">
