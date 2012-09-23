@@ -957,7 +957,7 @@ var DataStore = new function () {
         var a = data;
         for (var i = 0; i < self.team_list.length; i += 1) {
             var b = self.team_list[i];
-            if ((a["name"] < b["name"]) || ((a["name"] < b["name"]) &&
+            if ((a["name"] < b["name"]) || ((a["name"] == b["name"]) &&
                 (key < b["key"]))) {
                 // We found the first element which is greater than a
                 self.team_list.splice(i, 0, a);
