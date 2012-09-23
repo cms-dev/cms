@@ -23,7 +23,7 @@ directly (import from SQLAlchemyAll).
 """
 
 from sqlalchemy import Column, ForeignKey, \
-     Integer, String, DateTime, UniqueConstraint
+     Integer, String, DateTime, UniqueConstraint, Float
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 
@@ -104,6 +104,10 @@ class UserTest(Base):
     evaluation_shard = Column(Integer, nullable=True)
     evaluation_sandbox = Column(String, nullable=True)
 
+    # Other information about the execution
+    memory_used = Column(Integer, nullable=True)
+    execution_time = Column(Float, nullable=True)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # files (dict of UserTestFile objects indexed by filename)
@@ -118,7 +122,8 @@ class UserTest(Base):
                  compilation_shard=None, compilation_sandbox=None,
                  evaluation_outcome=None, evaluation_text=None,
                  evaluation_tries=0, evaluation_shard=None,
-                 evaluation_sandbox=None):
+                 evaluation_sandbox=None, memory_used=None,
+                 execution_time=None):
         self.user = user
         self.task = task
         self.timestamp = timestamp
@@ -138,6 +143,8 @@ class UserTest(Base):
         self.evaluation_tries = evaluation_tries
         self.evaluation_shard = evaluation_shard
         self.evaluation_sandbox = evaluation_sandbox
+        self.memory_used = memory_used
+        self.execution_time = execution_time
 
     def export_to_dict(self):
         """Return object data as a dictionary.
@@ -166,6 +173,8 @@ class UserTest(Base):
             'evaluation_tries': self.evaluation_tries,
             'evaluation_shard': self.evalution_shard,
             'evaluation_sandbox': self.evaluation_sandbox,
+            'memory_used': self.memory_used,
+            'execution_time': self.execution_time,
             }
         return res
 
