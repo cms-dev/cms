@@ -120,7 +120,7 @@ def compilation_step(sandbox, command):
     sandbox.stderr_file = sandbox.relative_path("compiler_stderr.txt")
 
     # Actually run the compilation command.
-    logger.info("Starting compilation step.")
+    logger.debug("Starting compilation step.")
     box_success = sandbox.execute_without_std(command, wait=True)
     if not box_success:
         logger.error("Compilation aborted because of "
@@ -162,7 +162,7 @@ def compilation_step(sandbox, command):
     text = None
 
     if exit_status == Sandbox.EXIT_OK and exit_code == 0:
-        logger.info("Compilation successfully finished.")
+        logger.debug("Compilation successfully finished.")
         success = True
         compilation_success = True
         text = "OK %s\n%s" % (sandbox.get_stats(), compiler_output)
@@ -170,14 +170,14 @@ def compilation_step(sandbox, command):
     # Error in compilation: returning the error to the user.
     elif (exit_status == Sandbox.EXIT_OK and exit_code != 0) or \
              exit_status == Sandbox.EXIT_NONZERO_RETURN:
-        logger.info("Compilation failed.")
+        logger.debug("Compilation failed.")
         success = True
         compilation_success = False
         text = "Failed %s\n%s" % (sandbox.get_stats(), compiler_output)
 
     # Timeout: returning the error to the user
     elif exit_status == Sandbox.EXIT_TIMEOUT:
-        logger.info("Compilation timed out.")
+        logger.debug("Compilation timed out.")
         success = True
         compilation_success = False
         text = "Time out %s\n%s" % (sandbox.get_stats(), compiler_output)
@@ -186,7 +186,7 @@ def compilation_step(sandbox, command):
     # to the user
     elif exit_status == Sandbox.EXIT_SIGNAL:
         signal = sandbox.get_killing_signal()
-        logger.info("Compilation killed with signal %s." % (signal))
+        logger.debug("Compilation killed with signal %s." % (signal))
         success = True
         compilation_success = False
         plus["signal"] = signal
@@ -292,7 +292,7 @@ def evaluation_step_before_run(sandbox, command,
     sandbox.allow_syscall += ["dup3"]
 
     # Actually run the evaluation command.
-    logger.info("Starting execution step.")
+    logger.debug("Starting execution step.")
     return sandbox.execute_without_std(command, wait=wait)
 
 
@@ -316,14 +316,14 @@ def evaluation_step_after_run(sandbox):
 
     # Timeout: returning the error to the user.
     if exit_status == Sandbox.EXIT_TIMEOUT:
-        logger.info("Execution timed out.")
+        logger.debug("Execution timed out.")
         success = True
 
     # Suicide with signal (memory limit, segfault, abort): returning
     # the error to the user.
     elif exit_status == Sandbox.EXIT_SIGNAL:
         signal = sandbox.get_killing_signal()
-        logger.info("Execution killed with signal %d." % signal)
+        logger.debug("Execution killed with signal %d." % signal)
         success = True
         plus["signal"] = signal
 
@@ -339,7 +339,7 @@ def evaluation_step_after_run(sandbox):
         syscall = sandbox.get_killing_syscall()
         msg = "Execution killed because of forbidden syscall %s." % \
             syscall
-        logger.info(msg)
+        logger.debug(msg)
         success = True
         plus["syscall"] = syscall
 
@@ -348,14 +348,14 @@ def evaluation_step_after_run(sandbox):
     elif exit_status == Sandbox.EXIT_FILE_ACCESS:
         filename = sandbox.get_forbidden_file_error()
         msg = "Execution killed because of forbidden file access."
-        logger.info("%s `%s'." % (msg, filename))
+        logger.debug("%s `%s'." % (msg, filename))
         success = True
         plus["filename"] = filename
 
     # The exit code was nonzero: returning the error to the user.
     elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
         msg = "Execution failed because the return code was nonzero."
-        logger.info("%s" % msg)
+        logger.debug("%s" % msg)
         success = True
 
     # Last check before assuming that evaluation finished
