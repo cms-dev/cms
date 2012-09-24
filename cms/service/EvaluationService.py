@@ -777,31 +777,30 @@ class EvaluationService(Service):
         with SessionGen(commit=False) as session:
             contest = session.query(Contest).\
                       filter_by(id=self.contest_id).first()
-            for user in contest.users:
-                for submission in user.submissions:
-                    if submission.compilation_outcome == "fail":
-                        stats["compilation_fail"] += 1
-                    elif submission.compilation_outcome is None:
-                        if submission.compilation_tries >= \
-                               EvaluationService.MAX_COMPILATION_TRIES:
-                            stats["max_compilations"] += 1
-                        else:
-                            stats["compiling"] += 1
-                    elif submission.compilation_outcome == "ok":
-                        if submission.evaluated():
-                            if submission.scored():
-                                stats["scored"] += 1
-                            else:
-                                stats["evaluated"] += 1
-                        else:
-                            if submission.evaluation_tries >= \
-                                   EvaluationService.MAX_EVALUATION_TRIES:
-                                stats["max_evaluations"] += 1
-                            else:
-                                stats["evaluating"] += 1
+            for submission in contest.get_submissions():
+                if submission.compilation_outcome == "fail":
+                    stats["compilation_fail"] += 1
+                elif submission.compilation_outcome is None:
+                    if submission.compilation_tries >= \
+                           EvaluationService.MAX_COMPILATION_TRIES:
+                        stats["max_compilations"] += 1
                     else:
-                        # Should not happen.
-                        stats["invalid"] += 1
+                        stats["compiling"] += 1
+                elif submission.compilation_outcome == "ok":
+                    if submission.evaluated():
+                        if submission.scored():
+                            stats["scored"] += 1
+                        else:
+                            stats["evaluated"] += 1
+                    else:
+                        if submission.evaluation_tries >= \
+                               EvaluationService.MAX_EVALUATION_TRIES:
+                            stats["max_evaluations"] += 1
+                        else:
+                            stats["evaluating"] += 1
+                else:
+                    # Should not happen.
+                    stats["invalid"] += 1
         return stats
 
     @rpc_method
