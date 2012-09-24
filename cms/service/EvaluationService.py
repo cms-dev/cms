@@ -928,11 +928,19 @@ class EvaluationService(Service):
             logger.error("Received error from Worker: `%s'." % error)
             job_success = False
 
-        job = Job.import_from_dict_with_type(data)
+        else:
+            try:
+                job = Job.import_from_dict_with_type(data)
+            except:
+                logger.critical("[action_finished] Couldn't build Job for data"
+                            " %s." % (data))
+                job_success = False
 
-        if not job.success:
-            logger.error("Worker %s signaled action not successful." % shard)
-            job_success = False
+            else:
+                if not job.success:
+                    logger.error("Worker %s signaled action "
+                                 "not successful." % shard)
+                    job_success = False
 
         _, timestamp = side_data
 
