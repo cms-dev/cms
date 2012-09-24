@@ -29,6 +29,7 @@ services the scores, via http requests.
 """
 
 from httplib import HTTPConnection
+import threading
 import simplejson as json
 import base64
 import time
@@ -267,16 +268,23 @@ class ScoringService(Service):
         self.initialize_queue = set()
         self.submission_queue = dict()
         self.subchange_queue = dict()
+        self.operation_queue_lock = threading.Lock()
 
         for ranking in self.rankings:
             self.initialize_queue.add(ranking)
 
-        self.add_timeout(self.dispatch_operations, None,
-                         ScoringService.CHECK_DISPATCH_TIME,
-                         immediately=True)
+        thread = threading.Thread(target=self.dispath_operations_thread)
+        thread.daemon = True
+        thread.start()
+
         self.add_timeout(self.search_jobs_not_done, None,
                          ScoringService.JOBS_NOT_DONE_CHECK_TIME,
                          immediately=True)
+
+    def dispath_operations_thread(self):
+        while True:
+            self.dispatch_operations()
+            time.sleep(ScoringService.CHECK_DISPATCH_TIME)
 
     def _initialize_scorers(self):
         """Initialize scorers, the ScoreType objects holding all
@@ -381,12 +389,13 @@ class ScoringService(Service):
         to dispatch them
 
         """
-        initialize_queue = self.initialize_queue
-        submission_queue = self.submission_queue
-        subchange_queue = self.subchange_queue
-        self.initialize_queue = set()
-        self.submission_queue = dict()
-        self.subchange_queue = dict()
+        with self.operation_queue_lock:
+            initialize_queue = self.initialize_queue
+            submission_queue = self.submission_queue
+            subchange_queue = self.subchange_queue
+            self.initialize_queue = set()
+            self.submission_queue = dict()
+            self.subchange_queue = dict()
         pending = len(initialize_queue) + len(submission_queue) + len(subchange_queue)
         if pending > 0:
             logger.info("%s operations still pending." % pending)
@@ -432,13 +441,14 @@ class ScoringService(Service):
                 new_subchange_queue[ranking] = data
                 failed_rankings.add(ranking)
 
-        self.initialize_queue |= new_initialize_queue
-        for r in set(self.submission_queue) | set(new_submission_queue):
-            new_submission_queue.setdefault(r, dict()).update(self.submission_queue.get(r, dict()))
-        self.submission_queue = new_submission_queue
-        for r in set(self.subchange_queue) | set(new_subchange_queue):
-            new_subchange_queue.setdefault(r, dict()).update(self.subchange_queue.get(r, dict()))
-        self.subchange_queue = new_subchange_queue
+        with self.operation_queue_lock:
+            self.initialize_queue |= new_initialize_queue
+            for r in set(self.submission_queue) | set(new_submission_queue):
+                new_submission_queue.setdefault(r, dict()).update(self.submission_queue.get(r, dict()))
+            self.submission_queue = new_submission_queue
+            for r in set(self.subchange_queue) | set(new_subchange_queue):
+                new_subchange_queue.setdefault(r, dict()).update(self.subchange_queue.get(r, dict()))
+            self.subchange_queue = new_subchange_queue
 
         # We want this to run forever.
         return True
@@ -513,8 +523,9 @@ class ScoringService(Service):
         """
         logger.info("Reinitializing rankings.")
         self._initialize_scorers()
-        for ranking in self.rankings:
-            self.initialize_queue.add(ranking)
+        with self.operation_queue_lock:
+            for ranking in self.rankings:
+                self.initialize_queue.add(ranking)
 
     @rpc_method
     def new_evaluation(self, submission_id):
@@ -578,9 +589,10 @@ class ScoringService(Service):
         # update only the user owning the submission.
 
         # Adding operations to the queue.
-        for ranking in self.rankings:
-            self.submission_queue.setdefault(ranking, dict())[encode_id(submission_id)] = submission_put_data
-            self.subchange_queue.setdefault(ranking, dict())[encode_id(subchange_id)] = subchange_put_data
+        with self.operation_queue_lock:
+            for ranking in self.rankings:
+                self.submission_queue.setdefault(ranking, dict())[encode_id(submission_id)] = submission_put_data
+                self.subchange_queue.setdefault(ranking, dict())[encode_id(subchange_id)] = subchange_put_data
 
     @rpc_method
     def submission_tokened(self, submission_id, timestamp):
@@ -615,9 +627,10 @@ class ScoringService(Service):
                 "token": True}
 
         # Adding operations to the queue.
-        for ranking in self.rankings:
-            self.submission_queue.setdefault(ranking, dict())[encode_id(submission_id)] = submission_put_data
-            self.subchange_queue.setdefault(ranking, dict())[encode_id(subchange_id)] = subchange_put_data
+        with self.operation_queue_lock:
+            for ranking in self.rankings:
+                self.submission_queue.setdefault(ranking, dict())[encode_id(submission_id)] = submission_put_data
+                self.subchange_queue.setdefault(ranking, dict())[encode_id(subchange_id)] = subchange_put_data
 
     @rpc_method
     def invalidate_submission(self,
