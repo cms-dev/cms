@@ -24,7 +24,7 @@ update_usertest_row = function (task_id, usertest_id, data) {
             btn.removeClass("disabled");
             btn.attr("href", "{{ url_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + usertest_id + "/output");
         } else {
-            row.children("td.output a").text("N/A");
+            row.children("td.output").children("a.btn").text("N/A");
         }
         if (data["time"] != null) {
             row.children("td.time").removeClass("undefined");
@@ -35,7 +35,7 @@ update_usertest_row = function (task_id, usertest_id, data) {
             row.children("td.memory").text(data["memory"]);
         }
     } else if (data["status"] == 2) {
-        row.children("td.output a").text("N/A");
+        row.children("td.output").children("a.btn").text("N/A");
     } else {
         schedule_update_usertest_row(task_id, usertest_id);
     }

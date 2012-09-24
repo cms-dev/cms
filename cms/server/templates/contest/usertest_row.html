@@ -54,7 +54,7 @@
         </a>
     </td>
     <td class="output">
-    {% if not t.evaluated() %}
+    {% if not t.compiled() or (t.compilation_outcome == 'ok' and not t.evaluated()) %}
         <a class="btn btn-primary disabled">
             {{ _("Wait...") }}
         </a>
