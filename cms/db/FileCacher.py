@@ -32,6 +32,8 @@ import hashlib
 from cms import config, logger, mkdir
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
 
+from sqlalchemy.exc import IntegrityError
+
 
 class FileCacherBackend:
 
@@ -211,34 +213,39 @@ class DBBackend(FileCacherBackend):
         """See FileCacherBackend.put_file().
 
         """
-        with SessionGen() as session:
+        try:
+            with SessionGen() as session:
 
-            # Check digest uniqueness
-            if FSObject.get_from_digest(digest, session) is not None:
-                logger.debug("File %s already on database, "
-                             "dropping this one." % digest)
-                session.rollback()
+                # Check digest uniqueness
+                if FSObject.get_from_digest(digest, session) is not None:
+                    logger.debug("File %s already on database, "
+                                 "dropping this one." % digest)
+                    session.rollback()
 
-            # If it is not already present, copy the file into the
-            # lobject
-            else:
-                fso = FSObject(description=description)
-                logger.debug("Sending file %s to the database." % digest)
-                with open(origin, 'rb') as temp_file:
-                    with fso.get_lobject(session, mode='wb') as lobject:
-                        logger.debug("Large object created.")
-                        buf = temp_file.read(self.CHUNK_SIZE)
-                        while buf != '':
-                            while len(buf) > 0:
-                                written = lobject.write(buf)
-                                buf = buf[written:]
-                                if self.service is not None:
-                                    self.service._step()
+                # If it is not already present, copy the file into the
+                # lobject
+                else:
+                    fso = FSObject(description=description)
+                    logger.debug("Sending file %s to the database." % digest)
+                    with open(origin, 'rb') as temp_file:
+                        with fso.get_lobject(session, mode='wb') as lobject:
+                            logger.debug("Large object created.")
                             buf = temp_file.read(self.CHUNK_SIZE)
-                fso.digest = digest
-                session.add(fso)
-                session.commit()
-                logger.debug("File %s sent to the database." % digest)
+                            while buf != '':
+                                while len(buf) > 0:
+                                    written = lobject.write(buf)
+                                    buf = buf[written:]
+                                    if self.service is not None:
+                                        self.service._step()
+                                buf = temp_file.read(self.CHUNK_SIZE)
+                    fso.digest = digest
+                    session.add(fso)
+                    session.commit()
+                    logger.debug("File %s sent to the database." % digest)
+
+        except IntegrityError:
+            logger.info("File %s caused an IntegrityError, ignoring..." % digest)
+
 
     def describe(self, digest):
         """See FileCacherBackend.describe().
