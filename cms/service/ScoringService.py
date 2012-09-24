@@ -283,6 +283,7 @@ class ScoringService(Service):
         # timeout for the method "score_old_submission".
         self.submission_ids_to_score = []
         self.submission_ids_to_token = []
+        self.scoring_old_submission = False
 
         # We need to load every submission at start, but we don't want
         # to invalidate every score so that we can simply load the
@@ -335,6 +336,11 @@ class ScoringService(Service):
         scored for no good reasons. Put the missing job in the queue.
 
         """
+        # Do this only if we are not still loading old submission
+        # (from the start of the service).
+        if self.scoring_old_submission:
+            return True
+
         with SessionGen(commit=False) as session:
             contest = session.query(Contest).\
                       filter_by(id=self.contest_id).first()
@@ -380,6 +386,7 @@ class ScoringService(Service):
         case of many old submissions.
 
         """
+        self.scoring_old_submission = True
         to_score = len(self.submission_ids_to_score)
         to_token = len(self.submission_ids_to_token)
         to_score_now = to_score if to_score < 4 else 4
@@ -401,6 +408,7 @@ class ScoringService(Service):
             return True
 
         logger.info("Finished loading old submissions.")
+        self.scoring_old_submission = False
         return False
 
     def dispatch_operations(self):
