@@ -118,10 +118,11 @@ class Worker(Service):
                 self.work_lock.release()
 
         else:
-            logger.warning("Request '%s' received, "
-                           "but declined because of acquired lock" %
-                           (job.info))
-            return False
+            err_msg = "Request '%s' received, " \
+                "but declined because of acquired lock" % \
+                (job.info)
+            logger.warning(err_msg)
+            raise JobException(err_msg)
 
 
 def main():
