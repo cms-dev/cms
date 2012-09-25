@@ -281,11 +281,14 @@ def evaluation_step_before_run(sandbox, command,
     # by fpc.
     sandbox.allow_path += ["/proc/self/exe",
                            "/etc/timezone",
-                           "/usr/share/zoneinfo/"]
+                           "/usr/share/zoneinfo/",
+                           "/proc/self/maps",
+                           "/sys/devices/system/cpu/online"]
     sandbox.allow_syscall += ["getrlimit",
                               "rt_sigaction",
                               "ugetrlimit",
-                              "time"]
+                              "time",
+                              "rt_sigprocmask"]
     # This one seems to be used for a C++ executable.
     sandbox.allow_path += ["/proc/meminfo"]
     # This is used by freopen in Ubuntu 12.04.
