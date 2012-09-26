@@ -150,7 +150,7 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
                       "-i %s/input.txt " \
                       "-p input.txt -p output.txt " \
                       "-p /proc/self/exe -p /proc/meminfo " \
-                      "-s getrlimit -s rt_sigaction -s rt_sigprocmask " \
+                      "-s getrlimit -s rt_sigaction -s rt_sigprocmask -s ugetrlimit " \
                       "-t %lg -w %lg -M %s/run.log -- ./%s" % (
                 driver, sandbox, memlimit * 1024, sandbox, sandbox, timeout, timeout*1.5, sandbox, os.path.basename(soluzione))
             box_out = open("%s/box_out.txt" % sandbox, "w")
