@@ -288,7 +288,8 @@ def evaluation_step_before_run(sandbox, command,
                               "rt_sigaction",
                               "ugetrlimit",
                               "time",
-                              "rt_sigprocmask"]
+                              "rt_sigprocmask",
+                              "mremap"]
     # This one seems to be used for a C++ executable.
     sandbox.allow_path += ["/proc/meminfo"]
     # This is used by freopen in Ubuntu 12.04.
