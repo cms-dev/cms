@@ -44,35 +44,31 @@
     {% if task.official_language in task.statements %}
         <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(task.official_language, safe='') }}" class="btn btn-large btn-success">{{ _("Official statement") }}</a>
     {% end %}
-    {% for lang_code in current_user.languages %}
-        {% if lang_code in task.statements %}
-            {% if ISOCodes.is_language_country_code(lang_code) %}
-                {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_language_country_code(lang_code, locale)) %}
-            {% elif ISOCodes.is_language_code(lang_code) %}
-                {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_language_code(lang_code, locale)) %}
-            {% elif ISOCodes.is_country_code(lang_code) %}
-                {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_country_code(lang_code, locale)) %}
+    {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
+        {% if statement.language in current_user.languages and statement.language != task.official_language %}
+        <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(statement.language, safe='') }}" class="btn btn-large">
+            {% if statement.language != statement.language_name %}
+                {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}
             {% else %}
-                {% set lang_str = escape(lang_code) %}
+                {% raw _("Statement in %s") % escape(statement.language_name) %}
             {% end %}
-            <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(lang_code, safe='') }}" class="btn btn-large">{% raw _("Statement in %s") % lang_str %}</a>
+        </a>
         {% end %}
     {% end %}
     </div>
     <div class="all_statements well">
         <div>
             <ul>
-    {% for lang_code in sorted(task.statements) %}
-        {% if ISOCodes.is_language_country_code(lang_code) %}
-            {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_language_country_code(lang_code, locale)) %}
-        {% elif ISOCodes.is_language_code(lang_code) %}
-            {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_language_code(lang_code, locale)) %}
-        {% elif ISOCodes.is_country_code(lang_code) %}
-            {% set lang_str = "<b>%s</b>" % escape(ISOCodes.translate_country_code(lang_code, locale)) %}
+    {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
+                <li>
+                    <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(statement.language, safe='') }}">
+        {% if statement.language != statement.language_name %}
+            {% raw _("<b>%s</b>") % escape(statement.language_name) %}
         {% else %}
-            {% set lang_str = escape(lang_code) %}
+            {% raw _("%s") % escape(statement.language_name) %}
         {% end %}
-                <li><a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(lang_code, safe='') }}">{% raw lang_str %}</a></li>
+                    </a>
+                </li>
     {% end %}
             </ul>
         </div>

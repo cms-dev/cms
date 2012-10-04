@@ -63,6 +63,7 @@ from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, extract_archive, \
      actual_phase_required, get_url_root, CommonRequestHandler
+from cmscommon import ISOCodes
 from cmscommon.Cryptographics import encrypt_number
 from cmscommon.DateTime import make_datetime, make_timestamp, get_timezone
 from cmscommon.MimeTypes import get_type_for_file_name
@@ -500,6 +501,17 @@ class TaskDescriptionHandler(BaseHandler):
         submissions = self.sql_session.query(Submission)\
             .filter(Submission.user == self.current_user)\
             .filter(Submission.task == task).all()
+
+        for statement in task.statements.itervalues():
+            language_code = statement.language
+            if ISOCodes.is_language_country_code(language_code):
+                statement.language_name = ISOCodes.translate_language_country_code(language_code, self.locale)
+            elif ISOCodes.is_language_code(language_code):
+                statement.language_name = ISOCodes.translate_language_code(language_code, self.locale)
+            elif ISOCodes.is_country_code(language_code):
+                statement.language_name = ISOCodes.translate_country_code(language_code, self.locale)
+            else:
+                statement.language_name = language_code
 
         self.render("task_description.html", task=task, submissions=submissions, **self.r_params)
 
