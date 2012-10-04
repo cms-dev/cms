@@ -25,7 +25,8 @@ import optparse
 
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
-from cmstestsuite.web.CWSRequests import LoginRequest, SubmitRequest
+from cmstestsuite.web.CWSRequests import \
+     LoginRequest, SubmitRequest, TokenRequest
 
 
 def harvest_contest_data(contest_id):
@@ -59,6 +60,18 @@ def submit_solution(username, password, task, files, base_url=None):
 
     step(LoginRequest(browser, username, password, base_url=base_url))
     step(SubmitRequest(browser, task, base_url=base_url, filename=files[0]))
+
+
+def release_test(username, password, task, submission_id, base_url=None):
+    def step(request):
+        request.prepare()
+        request.execute()
+
+    browser = mechanize.Browser()
+    browser.set_handle_robots(False)
+
+    step(LoginRequest(browser, username, password, base_url=base_url))
+    step(TokenRequest(browser, task, base_url=base_url, submission_num=submission_num))
 
 
 def main():

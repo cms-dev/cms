@@ -158,6 +158,38 @@ class SubmitRequest(GenericRequest):
         return submission_id
 
 
+class TokenRequest(GenericRequest):
+    """Release test a submission.
+
+    """
+    def __init__(self, browser, task, submission_num, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
+        self.url = "%stasks/%s/submissions/%s/token" % (self.base_url,
+                                                        task[1],
+                                                        submission_num)
+        self.task = task
+        self.submission_num = submission_num
+        self.data = {}
+
+    def prepare(self):
+        GenericRequest.prepare(self)
+
+    def describe(self):
+        return "release test the %s-th submission for task %s (ID %d)" % \
+            (self.submission_num, self.task[1], self.task[0])
+
+    def specific_info(self):
+        return 'Task: %s (ID %d)\nSubmission: %s\n' % \
+            (self.task[1], self.task[0], self.submission_num) + \
+            GenericRequest.specific_info(self)
+
+    def test_success(self):
+        if not GenericRequest.test_success(self):
+            return False
+
+        return True
+
+
 class SubmitRandomRequest(SubmitRequest):
     """Submit a solution in CWS.
 
