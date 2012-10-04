@@ -64,6 +64,7 @@ class ScriptsContainer(object):
             ("20120911", "add_submission_and_usertest_limits"),
             ("20120912", "make_contest_description_not_null"),
             ("20120915", "add_extra_time"),
+            ("20120918", "use_statement_ids"),
             ("20120923", "add_time_and_memory_on_tests"),
             ]
         self.list.sort()
@@ -782,6 +783,25 @@ ALTER COLUMN description SET NOT NULL;""")
                             "SET extra_time = '0 seconds';")
             session.execute("ALTER TABLE users "
                             "ALTER COLUMN extra_time SET NOT NULL;")
+
+    @staticmethod
+    def use_statement_ids():
+        """Move user.languages to user.statements
+
+        Use Statement IDs instead of language codes.
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("""\
+ALTER TABLE users
+DROP COLUMN languages,
+ADD COLUMN statements INTEGER[];""")
+            session.execute("""\
+UPDATE users
+SET statements = '{}'""")
+            session.execute("""\
+ALTER TABLE users
+ALTER COLUMN statements SET NOT NULL;""")
 
     @staticmethod
     def add_time_and_memory_on_tests():

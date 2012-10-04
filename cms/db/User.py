@@ -82,12 +82,8 @@ class User(Base):
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
-    # List of languages the user knows, in the form "it_IT", "en_US",
-    # etc. or simply "it", "en", etc. (the codes are taken from ISO
-    # 639 and 3166). The task statements in these languages will be
-    # highlighted to the user and the first of these languages will be
-    # used to translate the interface (i.e. CWS).
-    languages = Column(postgresql.ARRAY(String), nullable=False)
+    # List of statement IDs that will be highlighted to the user.
+    statements = Column(postgresql.ARRAY(Integer), nullable=False)
 
     # Timezone for the user. All timestamps in CWS will be shown using
     # the timezone associated to the logged-in user or (if it's None
@@ -117,7 +113,7 @@ class User(Base):
 
     def __init__(self, first_name, last_name, username, password=None,
                  email=None, ip=None, contest=None, hidden=False,
-                 languages=None, timezone=None, starting_time=None,
+                 statements=None, timezone=None, starting_time=None,
                  extra_time=timedelta(),
                  messages=None, questions=None, submissions=None):
         if password is None:
@@ -133,7 +129,7 @@ class User(Base):
         self.email = email if email is not None else ""
         self.ip = ip if ip is not None else "0.0.0.0"
         self.hidden = hidden
-        self.languages = languages if languages is not None else []
+        self.statements = statements if statements is not None else []
         self.timezone = timezone
         self.starting_time = starting_time
         self.extra_time = extra_time
@@ -157,7 +153,7 @@ class User(Base):
                 'email':         self.email,
                 'ip':            self.ip,
                 'hidden':        self.hidden,
-                'languages':     self.languages,
+                'statements':    self.statements,
                 'timezone':      self.timezone,
                 'starting_time': make_timestamp(self.starting_time)
                 if self.starting_time is not None else None,

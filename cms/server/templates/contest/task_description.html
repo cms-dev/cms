@@ -34,18 +34,15 @@
 {% else %}
 <div class="statement many_statements">
     <div class="main_statements">
-    {% set suggested = len(set(task.statements) & set(current_user.languages + [task.official_language])) %}
         <p>
             The statement for this task is available in multiple versions, in different languages. You can see (and download) all of them using the list on the right.
-    {% if suggested > 0 %}
             Some suggested translations follow.
-    {% end %}
         </p>
     {% if task.official_language in task.statements %}
         <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(task.official_language, safe='') }}" class="btn btn-large btn-success">{{ _("Official statement") }}</a>
     {% end %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
-        {% if statement.language in current_user.languages and statement.language != task.official_language %}
+        {% if statement.id in current_user.statements and statement.language != task.official_language %}
         <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(statement.language, safe='') }}" class="btn btn-large">
             {% if statement.language != statement.language_name %}
                 {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}

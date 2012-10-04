@@ -144,22 +144,22 @@ class BaseHandler(CommonRequestHandler):
             iso_639_locale = gettext.translation(
                 "iso_639",
                 os.path.join(config.iso_codes_prefix, "share", "locale"),
-                self.current_user.languages,
+                ['en_US'],
                 fallback=True)
             iso_3166_locale = gettext.translation(
                 "iso_3166",
                 os.path.join(config.iso_codes_prefix, "share", "locale"),
-                self.current_user.languages,
+                ['en_US'],
                 fallback=True)
             shared_mime_info_locale = gettext.translation(
                 "shared-mime-info",
                 os.path.join(config.shared_mime_info_prefix, "share", "locale"),
-                self.current_user.languages,
+                ['en_US'],
                 fallback=True)
             cms_locale = gettext.translation(
                 "cms",
                 localization_dir,
-                self.current_user.languages,
+                ['en_US'],
                 fallback=True)
             cms_locale.add_fallback(iso_639_locale)
             cms_locale.add_fallback(iso_3166_locale)
@@ -503,15 +503,15 @@ class TaskDescriptionHandler(BaseHandler):
             .filter(Submission.task == task).all()
 
         for statement in task.statements.itervalues():
-            language_code = statement.language
-            if ISOCodes.is_language_country_code(language_code):
-                statement.language_name = ISOCodes.translate_language_country_code(language_code, self.locale)
-            elif ISOCodes.is_language_code(language_code):
-                statement.language_name = ISOCodes.translate_language_code(language_code, self.locale)
-            elif ISOCodes.is_country_code(language_code):
-                statement.language_name = ISOCodes.translate_country_code(language_code, self.locale)
+            lang_code = statement.language
+            if ISOCodes.is_language_country_code(lang_code):
+                statement.language_name = ISOCodes.translate_language_country_code(lang_code, self.locale)
+            elif ISOCodes.is_language_code(lang_code):
+                statement.language_name = ISOCodes.translate_language_code(lang_code, self.locale)
+            elif ISOCodes.is_country_code(lang_code):
+                statement.language_name = ISOCodes.translate_country_code(lang_code, self.locale)
             else:
-                statement.language_name = language_code
+                statement.language_name = lang_code
 
         self.render("task_description.html", task=task, submissions=submissions, **self.r_params)
 
