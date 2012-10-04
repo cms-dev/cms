@@ -22,14 +22,7 @@ function round_to_str(value) {
     return value.toString();
 }
 
-function format_time(time) {
-    var h = Math.floor(time / 3600);
-    var m = Math.floor((time % 3600) / 60);
-    var s = time % 60;
-    m = m < 10 ? "0" + m : "" + m;
-    s = s < 10 ? "0" + s : "" + s;
-    return (h + ":" + m + ":" + s);
-};
+// format_time is defined in TimeView
 
 var UserDetail = new function () {
     var self = this;

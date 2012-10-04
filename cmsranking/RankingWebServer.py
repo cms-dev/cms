@@ -285,7 +285,7 @@ class NotificationHandler(DataHandler):
         # The EventSource polyfill will only deliver events once the
         # connection has been closed, so we have to finish the request
         # right after the first message has been sent. This custom
-        # header allows us to identify the request from the polyfill.
+        # header allows us to identify the requests from the polyfill.
         self.one_shot = False
         if 'X-Requested-With' in self.request.headers and \
                 self.request.headers['X-Requested-With'] == 'XMLHttpRequest':
@@ -294,7 +294,7 @@ class NotificationHandler(DataHandler):
         # We get the ID of the last event the client received. We give
         # priority to the HTTP header because it's more reliable: on the
         # first connection the client won't use the header but will use
-        # the argument (set by us); if it disconnects, he will try to
+        # the argument (set by us); if it disconnects, it will try to
         # reconnect with the same argument (which is now outdated) but
         # with the header correctly set (which is what we want).
         if "Last-Event-ID" in self.request.headers:
@@ -318,35 +318,55 @@ class NotificationHandler(DataHandler):
             # having processed the event we sent it.
             if self.one_shot:
                 self.finish()
+                # Not calling .clean() because there's nothing to be
+                # cleaned yet and because it would have no effect,
+                # since self.outdated == True.
             else:
                 self.flush()
             return
 
+        sent = False
         for t, msg in proxy.buffer:
             if t > last_id:
-                self.send_event(msg)
+                self.write(msg)
+                sent = True
+        if sent and self.one_shot:
+            self.finish()
+            # Not calling .clean() because there's nothing to be
+            # cleaned yet
+            return
 
         proxy.add_callback(self.send_event)
 
-        # TODO: add automatic connection close after a certain timeout.
+        def callback():
+            self.finish()
+            self.clean()
+
+        self.timeout = tornado.ioloop.IOLoop.instance().add_timeout(
+            time.time() + config.timeout, callback)
 
     # If the connection is closed by the client then the "on_connection_
     # _close" callback is called. If we decide to finish the request (by
     # calling the finish() method) then the "on_finish" callback gets
     # called (and "on_connection_close" *won't* be called!).
 
-    def on_connection_close(self):
+    def clean(self):
         if not self.outdated:
             proxy.remove_callback(self.send_event)
+            tornado.ioloop.IOLoop.instance().remove_timeout(self.timeout)
 
-    def on_finish(self):
-        if not self.outdated:
-            proxy.remove_callback(self.send_event)
+    def on_connection_close(self):
+        self.clean()
+
+    # TODO As soon as we start supporting only Tornado 2.2+ use the
+    # .on_finish() callback to call .clean() instead of doing it after
+    # every call to .finish().
 
     def send_event(self, message):
         self.write(message)
         if self.one_shot:
             self.finish()
+            self.clean()
         else:
             self.flush()
 

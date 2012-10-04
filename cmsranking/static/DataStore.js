@@ -819,7 +819,7 @@ var DataStore = new function () {
             $("#ConnectionStatus_text").html("Your local data cannot be updated. Please <a onclick=\"window.location.reload();\">reload the page</a>.");
         } else if (state == 4) { // an init failed
             $("#ConnectionStatus_box").attr("data-status", "init_error");
-            $("#ConnectionStatus_text").html("An error occured while loading the data. Check your connection and <a onclick=\"window.location.reload();\">reload the page</a>.");
+            $("#ConnectionStatus_text").html("An error occurred while loading the data. Check your connection and <a onclick=\"window.location.reload();\">reload the page</a>.");
         }
     };
 
@@ -957,7 +957,7 @@ var DataStore = new function () {
         var a = data;
         for (var i = 0; i < self.team_list.length; i += 1) {
             var b = self.team_list[i];
-            if ((a["name"] < b["name"]) || ((a["name"] < b["name"]) &&
+            if ((a["name"] < b["name"]) || ((a["name"] == b["name"]) &&
                 (key < b["key"]))) {
                 // We found the first element which is greater than a
                 self.team_list.splice(i, 0, a);

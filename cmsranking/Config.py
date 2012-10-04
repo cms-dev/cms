@@ -36,6 +36,7 @@ class Config(object):
         self.https_port = None
         self.https_certfile = None
         self.https_keyfile = None
+        self.timeout = 600  # 10 minutes (in seconds)
 
         # Authentication.
         self.realm_name = 'Scoreboard'

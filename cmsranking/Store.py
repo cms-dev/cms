@@ -252,11 +252,16 @@ class Store(object):
             confirm()
 
         for key, value in item_dict.iteritems():
+            is_new = key not in self._store
             # insert entity
             self._store[key] = value
             # notify callbacks
-            for callback in self._update_callbacks:
-                callback(key)
+            if is_new:
+                for callback in self._create_callbacks:
+                    callback(key)
+            else:
+                for callback in self._update_callbacks:
+                    callback(key)
             # reflect changes on the persistent storage
             try:
                 with open(os.path.join(self._path, key + '.json'), 'w') as rec:

@@ -16,9 +16,9 @@
  */
 
 function format_time(time, full) {
-    var h = parseInt(time / 3600);
-    var m = parseInt((time % 3600) / 60);
-    var s = parseInt(time % 60);
+    var h = Math.floor(time / 3600);
+    var m = Math.floor((time % 3600) / 60);
+    var s = Math.floor(time % 60);
     h = full && h < 10 ? "0" + h : "" + h;
     m = m < 10 ? "0" + m : "" + m;
     s = s < 10 ? "0" + s : "" + s;
@@ -142,7 +142,7 @@ var TimeView = new function () {
             }
         }
 
-        var time_str = format_time(Math.abs(time), full_time);
+        var time_str = format_time(Math.abs(Math.floor(time)), full_time);
         if (time < 0) {
             time_str = '-' + time_str;
         }
