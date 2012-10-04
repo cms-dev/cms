@@ -77,7 +77,11 @@ def main():
                          for x in content[1].strip().split()[1].split(":")])
 
                 z = zipfile.ZipFile("%s/%s.zip" % (userdir, sid))
-                filename = z.filelist[0].filename
+                try:
+                    [filename] = filter(lambda x: x.filename.startswith(t_short + "."), z.filelist)
+                except ValueError:
+                    filename = z.filelist[0]
+                filename = filename.filename
                 extracted = z.extract(filename, "/tmp/")
                 base, ext = os.path.splitext(extracted)
                 newname = "%s/%s%s" % (userdir, sid, ext)
