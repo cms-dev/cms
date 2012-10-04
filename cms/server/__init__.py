@@ -100,7 +100,7 @@ def extract_archive(temp_name, original_filename):
     return file_list
 
 
-def format_date (dt, timezone, locale=None):
+def format_date(dt, timezone, locale=None):
     """Return the date of dt formatted according to the given locale
 
     dt (datetime): a datetime object
@@ -117,7 +117,7 @@ def format_date (dt, timezone, locale=None):
     return dt.strftime(locale.translate("%Y-%m-%d"))
 
 
-def format_time (dt, timezone, locale=None):
+def format_time(dt, timezone, locale=None):
     """Return the time of dt formatted according to the given locale
 
     dt (datetime): a datetime object
@@ -134,7 +134,7 @@ def format_time (dt, timezone, locale=None):
     return dt.strftime(locale.translate("%H:%M:%S"))
 
 
-def format_datetime (dt, timezone, locale=None):
+def format_datetime(dt, timezone, locale=None):
     """Return the date and time of dt formatted according to the given locale
 
     dt (datetime): a datetime object
@@ -151,7 +151,7 @@ def format_datetime (dt, timezone, locale=None):
     return dt.strftime(locale.translate("%Y-%m-%d %H:%M:%S"))
 
 
-def format_datetime_smart (dt, timezone, locale=None):
+def format_datetime_smart(dt, timezone, locale=None):
     """Return dt formatted as 'date & time' or, if date is today, just 'time'
 
     dt (datetime): a datetime object
