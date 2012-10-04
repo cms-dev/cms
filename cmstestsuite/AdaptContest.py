@@ -17,19 +17,25 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Create a events file (almost) in the format of ReplayContest from a
+filesystem tree. Almost mean that the column containing the task_id is
+not included because there is no way this script is able to know
+that. Task ids must be filled by hand int the events file after being
+imported in CMS.
 
-# The file source has rows with these data, space separated:
-# timestamp (relative to the contest)
-# username
-# task_id
-# task_shortname
-# action (submit|release)
+Let / be the root of the tree in the filesystem, then there are:
+* directories /<task_short_name> (not starting with "test_")
+* directories /<task_short_name>/<username>
+* files /<task_short_name>/<username>/<s_id>.data
+* files /<task_short_name>/<username>/<s_id>.zip
 
-# Next, for submit:
-# comma-separated list of file paths
+In the data file, there are one or two lines. The first line is the
+timestamp of the submission in the format %H:%M:%S, the second line
+(if present) is the timestamp of the token used on that submission.
 
-# For token:
-# submission_num
+The zip file contains all files submitted.
+
+"""
 
 import os
 import shutil
@@ -40,10 +46,24 @@ from argparse import ArgumentParser
 from glob import glob
 
 
-def to_timestamp(l):
-    return l[2] + l[1] * 60 + l[0] * 3600
+def to_timestamp(time_tuple):
+    """Translate a tuple (H, M, S) in a timestamp.
+
+    time_tuple ((int)): time formatted as (H, M, S).
+
+    return (int): the corresponding timestamp.
+
+    """
+    return time_tuple[2] + \
+           time_tuple[1] * 60 + \
+           time_tuple[0] * 3600
+
 
 def main():
+    """Main routine for translating. Manage command line arguments and
+    walk around the filesystem building the events file.
+
+    """
     parser = ArgumentParser(
         description="Translate from a filesystem format to the Replay format.")
     parser.add_argument("source", type=str, help="source directory")
@@ -76,29 +96,38 @@ def main():
                         [int(x)
                          for x in content[1].strip().split()[1].split(":")])
 
-                z = zipfile.ZipFile("%s/%s.zip" % (userdir, sid))
+                zip_file = zipfile.ZipFile("%s/%s.zip" % (userdir, sid))
                 try:
-                    [filename] = filter(lambda x: x.filename.startswith(t_short + "."), z.filelist)
+                    [filename] = [x for x in zip_file.filelist
+                                  if x.filename.startswith(t_short + ".")]
                 except ValueError:
-                    filename = z.filelist[0]
+                    filename = zip_file.filelist[0]
                 filename = filename.filename
-                extracted = z.extract(filename, "/tmp/")
-                base, ext = os.path.splitext(extracted)
+                extracted = zip_file.extract(filename, "/tmp/")
+                _, ext = os.path.splitext(extracted)
                 newname = "%s/%s%s" % (userdir, sid, ext)
                 shutil.move("/tmp/%s" % filename, newname)
 
                 submission_nums.append((submit, sid, token, newname))
 
             submission_nums.sort()
-            for i, (timestamp, sid, token, filename) in enumerate(submission_nums):
-                all_events.append((timestamp, user, t_short, "submit", filename))
+            for i, (timestamp, sid, token, filename) \
+                    in enumerate(submission_nums):
+                all_events.append((timestamp,
+                                   user,
+                                   t_short,
+                                   "submit",
+                                   filename))
                 if token is not None:
-                    all_events.append((timestamp, user, t_short, "token", i + 1))
+                    all_events.append((timestamp,
+                                       user,
+                                       t_short,
+                                       "token",
+                                       i + 1))
 
     all_events.sort()
     for event in all_events:
         print " ".join([str(x) for x in event])
-
 
     return 0
 
