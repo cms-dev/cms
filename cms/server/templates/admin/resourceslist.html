@@ -1,0 +1,15 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1>Machine list</h1>
+</div>
+
+See resource usage of the machines:
+<ul>
+  {% for shard in resource_addresses %}
+  <li><a href="{{ url_root }}/resources/{{ shard }}{% if contest is not None %}/{{ contest.id }}{% end %}">{{ resource_addresses[shard] }}</a> ({{ shard }})</li>
+  {% end %}
+  <li><a href="{{ url_root }}/resources/all{% if contest is not None %}/{{ contest.id }}{% end %}">All</a></li>
+</ul>
+{% end %}
