@@ -62,7 +62,7 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Task, \
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, extract_archive, \
-     actual_phase_required, get_url_root, filter_ascii\
+     actual_phase_required, get_url_root, filter_ascii, \
      CommonRequestHandler
 from cmscommon import ISOCodes
 from cmscommon.Cryptographics import encrypt_number
