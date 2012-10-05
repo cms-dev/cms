@@ -168,7 +168,6 @@ class BaseHandler(CommonRequestHandler):
         We override this method in order to properly close the database.
 
         """
-        logger.debug("Closing SQL connection.")
         self.sql_session.close()
         try:
             tornado.web.RequestHandler.finish(self, *args, **kwds)

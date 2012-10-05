@@ -298,7 +298,6 @@ class BaseHandler(CommonRequestHandler):
 
         """
         if hasattr(self, "sql_session"):
-            logger.debug("Closing SQL connection.")
             try:
                 self.sql_session.close()
             except Exception as error:
