@@ -360,6 +360,24 @@ def format_token_rules (tokens, t_type=None, locale=None):
     return result
 
 
+def filter_ascii(string):
+    """Avoid problem with printing a string provided by a malicious
+    entity.
+
+    string (str): the input string.
+    return (str): string with non-printable chars substituted by *.
+
+    """
+    def filter_ascii_char(c):
+        """Return * if c is non-printable."""
+        if 32 <= ord(c) <= 127:
+            return c
+        else:
+            return '*'
+
+    return "".join(filter_ascii_char(c) for c in string)
+
+
 def file_handler_gen(BaseClass):
     """This generates an extension of the BaseHandler that allows us
     to send files to the user. This *Gen is needed because the code in

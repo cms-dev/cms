@@ -62,7 +62,8 @@ from cms.db.SQLAlchemyAll import Session, Contest, User, Task, \
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, extract_archive, \
-     actual_phase_required, get_url_root, CommonRequestHandler
+     actual_phase_required, get_url_root, filter_ascii\
+     CommonRequestHandler
 from cmscommon import ISOCodes
 from cmscommon.Cryptographics import encrypt_number
 from cmscommon.DateTime import make_datetime, make_timestamp, get_timezone
@@ -434,21 +435,23 @@ class LoginHandler(BaseHandler):
             .filter(User.contest == self.contest)\
             .filter(User.username == username).first()
 
+        filtered_user = filter_ascii(username)
+        filtered_pass = filter_ascii(password)
         if user is None or user.password != password:
             logger.info("Login error: user=%s pass=%s remote_ip=%s." %
-                      (username, password, self.request.remote_ip))
+                      (filtered_user, filtered_pass, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
         if config.ip_lock and user.ip != "0.0.0.0" \
                 and user.ip != self.request.remote_ip:
             logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s." %
-                      (username, password, self.request.remote_ip))
+                      (filtered_user, filtered_pass, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
         if user.hidden and config.block_hidden_users:
             logger.info("Hidden user login attempt: "
                         "user=%s pass=%s remote_ip=%s." %
-                        (username, password, self.request.remote_ip))
+                        (filtered_user, filtered_pass, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
 
