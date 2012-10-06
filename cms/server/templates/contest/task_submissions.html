@@ -8,7 +8,6 @@ $(document).on("click", "#submission_list tbody tr td.status .details", function
     var modal_body = modal.children(".modal-body");
     modal_body.html('<div class="loading"><img src="{{ url_root }}/static/loading.gif"/>loading...</div>');
     modal_body.load("{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/submissions/" + submission_id + "/details", function() {
-        $(".score_details .subtask .subtask-body table").addClass("table table-bordered table-striped");
         $(".score_details .subtask .subtask-head").each(function () {
             $(this).prepend("<i class=\"icon-chevron-right\"></i>");
         });
@@ -22,7 +21,8 @@ $(document).on("click", "#submission_list tbody tr td.status .details", function
                 $(this).children("i").removeClass("icon-chevron-down").addClass("icon-chevron-right");
             }
         });
-        $(".score_details .subtask .subtask-body table tbody tr:not(.undefined) td:nth-child(1)").each(function () {
+        $(".score_details table.testcase-list").addClass("table table-bordered table-striped");
+        $(".score_details table.testcase-list tbody tr:not(.undefined) td:nth-child(1)").each(function () {
             $(this).html("<span class=\"outcome\">" + $(this).text() + "</span>");
         });
     });

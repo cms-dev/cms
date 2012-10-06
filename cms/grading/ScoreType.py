@@ -254,7 +254,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
     {% end %}
     </div>
     <div class="subtask-body">
-        <table>
+        <table class="testcase-list">
             <thead>
                 <tr>
                     <th>Outcome</th>
@@ -265,7 +265,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             </thead>
             <tbody>
     {% for tc in st["testcases"] %}
-                <tr class="collapsible {{ tc["class"] if (tc["public"] or show_private) else "undefined" }}">
+                <tr class="{{ tc["class"] if (tc["public"] or show_private) else "undefined" }}">
         {% if tc["public"] or show_private %}
                     <td>{{ tc["outcome"] }}</td>
                     <td>{{ tc["text"] }}</td>

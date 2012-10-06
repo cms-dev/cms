@@ -30,21 +30,43 @@ class Sum(ScoreTypeAlone):
 
     """
     TEMPLATE = """\
-<table>
- <thead>
-  <tr>
-   <th>Outcome</th>
-   <th>Details</th>
-  </tr>
- </thead>
- <tbody>
-   {% for testcase in testcases %}
-   <tr>
-    <td>{% raw testcase["outcome"] %}</td>
-    <td>{{ testcase["text"] }}</td>
-   </tr>
-   {% end %}
- </tbody>
+<table class="testcase-list">
+    <thead>
+        <tr>
+            <th>Outcome</th>
+            <th>Details</th>
+            <th>Time</th>
+            <th>Memory</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for tc in testcases %}
+        <tr class="{{ tc["class"] if (tc["public"] or show_private) else "undefined" }}">
+        {% if tc["public"] or show_private %}
+            <td>{{ tc["outcome"] }}</td>
+            <td>{{ tc["text"] }}</td>
+            <td>
+            {% if tc["time"] is not None %}
+                {{ "%(seconds)0.3f s" % {'seconds': tc["time"]} }}
+            {% else %}
+                N/A
+            {% end %}
+            </td>
+            <td>
+            {% if tc["memory"] is not None %}
+                {{ "%(mb)0.2f MiB" % {'mb': tc["memory"] / 1024.0 / 1024.0} }}
+            {% else %}
+                N/A
+            {% end %}
+            </td>
+        {% else %}
+            <td colspan="4">
+                N/A
+            </td>
+        {% end %}
+        </tr>
+    {% end %}
+    </tbody>
 </table>"""
 
     def max_scores(self):
@@ -77,26 +99,30 @@ class Sum(ScoreTypeAlone):
 
         evaluations = self.pool[submission_id]["evaluations"]
         testcases = []
-        public_testcases = []
-        public_score = 0.0
-        score = 0.0
         for idx in evaluations:
-            score += evaluations[idx]["outcome"]
-            public_outcome = self.get_public_outcome(
+            tc_outcome = self.get_public_outcome(
                 evaluations[idx]["outcome"])
             testcases.append({
-                "outcome": "<span class=\"%s\">%s</span>" % (
-                    class_score_testcase(public_outcome),
-                    public_outcome),
+                "idx": idx,
+                "public": self.public_testcases[idx],
+                "score": evaluations[idx]["outcome"],
+                "max_score": 1.0,
+                "outcome": tc_outcome,
+                "class": class_score_testcase(tc_outcome),
                 "text": evaluations[idx]["text"],
+                "time": evaluations[idx]["time"],
+                "memory": evaluations[idx]["memory"],
                 })
-            if self.public_testcases[idx]:
-                public_score += evaluations[idx]["outcome"]
-                public_testcases.append(testcases[-1])
 
-        details = Template(self.TEMPLATE).generate(testcases=testcases)
+        score = sum(tc["score"] for tc in testcases)
+        public_score = sum(tc["score"] for tc in testcases if tc["public"])
+
+        details = \
+            Template(self.TEMPLATE).generate(testcases=testcases,
+                                             show_private=True)
         public_details = \
-            Template(self.TEMPLATE).generate(testcases=public_testcases)
+            Template(self.TEMPLATE).generate(testcases=testcases,
+                                             show_private=False)
 
         return round(score * self.parameters, 2), details, \
                round(public_score * self.parameters, 2), public_details, \
