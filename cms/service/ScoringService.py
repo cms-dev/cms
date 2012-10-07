@@ -129,7 +129,7 @@ def get_connection(ranking):
 
     Raise a CannotSendError if a new connection cannot be established.
     """
-    if ranking not in active_connections:
+    if ranking[1] not in active_connections:
         try:
             if ranking[0] == 'https':
                 active_connections[ranking[1]] = HTTPSConnection(ranking[1])
