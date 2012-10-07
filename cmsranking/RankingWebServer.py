@@ -457,6 +457,7 @@ def main():
         return
 
     application = tornado.web.Application([
+        # FIXME We should allow keys to be arbitrary unicode strings.
         (r"/contests/([A-Za-z0-9_]*)", create_handler(Contest.store)),
         (r"/tasks/([A-Za-z0-9_]*)", create_handler(Task.store)),
         (r"/teams/([A-Za-z0-9_]*)", create_handler(Team.store)),

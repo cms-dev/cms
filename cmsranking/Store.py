@@ -19,6 +19,7 @@
 
 import simplejson as json
 import os
+import re
 
 from cmsranking.Config import config
 from cmsranking.Logger import logger
@@ -233,6 +234,10 @@ class Store(object):
             item_dict = dict()
             for key, value in data_dict.iteritems():
                 try:
+                    # FIXME We should allow keys to be arbitrary unicode
+                    # strings, so this just needs to be a non-empty check.
+                    if not re.match("[A-Za-z0-9_]+", key):
+                        raise InvalidData('Invalid key')
                     item = self._entity()
                     item.set(value)
                     if not item.consistent():
