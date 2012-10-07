@@ -45,6 +45,10 @@ from cms.service import get_submissions
 from cmscommon.DateTime import make_datetime, make_timestamp
 
 
+class CannotSendError(Exception):
+    pass
+
+
 # Taken from [1], with removed client key and certificate and added
 # server certificate validation. Note: tunneling capabilities have been
 # removed, too.
@@ -73,8 +77,34 @@ class HTTPSConnection(HTTPConnection):
                                     ca_certs=config.https_certfile)
 
 
-class CannotSendError(Exception):
-    pass
+# Used to store active connections to ranking servers.
+active_connections = dict()
+
+
+def get_connection(ranking):
+    """Return a connection to a ranking server
+
+    If we already have an open connection return that one, otherwise
+    attempt to open a new one.
+
+    ranking ((str, str)): protocol and address of ranking server
+
+    raise a CannotSendError if a new connection cannot be established.
+
+    """
+    if ranking[1] not in active_connections:
+        try:
+            if ranking[0] == 'https':
+                active_connections[ranking[1]] = HTTPSConnection(ranking[1])
+            elif ranking[0] == 'http':
+                active_connections[ranking[1]] = HTTPConnection(ranking[1])
+            else:
+                raise ValueError("Unknown protocol '%s'." % ranking[0])
+        except Exception as error:
+            logger.info("Error %r while connecting to ranking %s." %
+                        (error, ranking[1]))
+            raise CannotSendError
+    return active_connections[ranking[1]]
 
 
 def get_authorization(username, password):
@@ -115,36 +145,7 @@ def encode_id(entity_id):
     return encoded_id
 
 
-# Used to store active connections to ranking servers.
-active_connections = dict()
-
-
-def get_connection(ranking):
-    """Return a connection to a ranking server
-
-    If we already have an open connection return that one, otherwise
-    attempt to open a new one.
-
-    ranking ((str, str)): protocol and address of ranking server
-
-    Raise a CannotSendError if a new connection cannot be established.
-    """
-    if ranking[1] not in active_connections:
-        try:
-            if ranking[0] == 'https':
-                active_connections[ranking[1]] = HTTPSConnection(ranking[1])
-            elif ranking[0] == 'http':
-                active_connections[ranking[1]] = HTTPConnection(ranking[1])
-            else:
-                raise ValueError("Unknown protocol '%s'." % ranking[0])
-        except Exception as error:
-            logger.info("Error %r while connecting to ranking %s." %
-                        (error, ranking[1]))
-            raise CannotSendError
-    return active_connections[ranking[1]]
-
-
-def post_data(connection, url, data, auth, method="POST"):
+def safe_put_data(connection, url, data, auth, operation):
     """Send some data to url through the connection using username and
     password specified in auth.
 
@@ -152,56 +153,23 @@ def post_data(connection, url, data, auth, method="POST"):
     url (string): the relative url.
     auth (string): the authorization as returned by get_authorization.
     data (dict): the data to json-encode and send.
-    return (int): status of the http request.
+    operation (str): a human-readable description of the operation
+                     we're performing (to produce log messages).
 
-    """
-    connection.request(method,
-                       url,
-                       json.dumps(data),
-                       {'Authorization': auth})
-    res = connection.getresponse()
-    res.read()
-    return res.status
-
-
-def put_data(connection, url, data, auth):
-    """See post_data.
-
-    """
-    return post_data(connection, url, data, auth, "PUT")
-
-
-def safe_post_data(connection, url, data, auth, operation):
-    """Call post_data issuing a warning if we get a status different
-    from 200 or 201. See post_data for parameters.
+    raise CannotSendError in case of communication errors.
 
     """
     try:
-        status = post_data(connection, url, data, auth)
+        connection.request("PUT", url,
+                           json.dumps(data),
+                           {'Authorization': auth})
+        res = connection.getresponse()
+        res.read()
     except Exception as error:
-        logger.info("Error %r while %s." %
-                    (error, operation))
+        logger.info("Error %r while %s." % (error, operation))
         raise CannotSendError
-    if status not in [200, 201]:
-        logger.info("Status %s while %s." %
-                    (status, operation))
-        raise CannotSendError
-
-
-def safe_put_data(connection, url, data, auth, operation):
-    """Call put_data issuing a warning if we get a status different
-    from 200 or 201. See post_data for parameters.
-
-    """
-    try:
-        status = put_data(connection, url, data, auth)
-    except Exception as error:
-        logger.info("Error %r while %s." %
-                    (error, operation))
-        raise CannotSendError
-    if status not in [200, 201]:
-        logger.info("Status %s while %s." %
-                    (status, operation))
+    if res.status not in [200, 201]:
+        logger.info("Status %s while %s." % (res.status, operation))
         raise CannotSendError
 
 
@@ -522,13 +490,13 @@ class ScoringService(Service):
                              for task in contest.tasks)
 
             safe_put_data(connection, contest_url, contest_data, auth,
-                          "sending contest %s" % contest_name)
+                          "sending contest %s to ranking %s" % (contest_name, ranking[1]))
 
             safe_put_data(connection, "/users/", users, auth,
-                          "sending users")
+                          "sending users to ranking %s" % ranking[1])
 
             safe_put_data(connection, "/tasks/", tasks, auth,
-                          "sending tasks")
+                          "sending tasks to ranking %s" % ranking[1])
 
         except CannotSendError as error:
             # Delete it to make get_connection try to create it again.
