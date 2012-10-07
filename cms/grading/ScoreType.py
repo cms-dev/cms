@@ -237,6 +237,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
     """
     TEMPLATE = """\
+{% from cms.server import format_size %}
 {% for st in subtasks %}
 <div class="subtask {{ st["class"] if (st["public"] or show_private) else "undefined" }}">
     <div class="subtask-head">
@@ -278,7 +279,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     </td>
                     <td>
             {% if tc["memory"] is not None %}
-                        {{ "%(mb)0.2f MiB" % {'mb': tc["memory"] / 1024.0 / 1024.0} }}
+                        {{ format_size(tc["memory"]) }}
             {% else %}
                         N/A
             {% end %}

@@ -30,6 +30,7 @@ class Sum(ScoreTypeAlone):
 
     """
     TEMPLATE = """\
+{% from cms.server import format_size %}
 <table class="testcase-list">
     <thead>
         <tr>
@@ -54,7 +55,7 @@ class Sum(ScoreTypeAlone):
             </td>
             <td>
             {% if tc["memory"] is not None %}
-                {{ "%(mb)0.2f MiB" % {'mb': tc["memory"] / 1024.0 / 1024.0} }}
+                {{ format_size(tc["memory"]) }}
             {% else %}
                 N/A
             {% end %}
