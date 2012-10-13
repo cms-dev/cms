@@ -120,6 +120,8 @@ work:
 
 - python-beautifulsoup >= 3.2 (only for running tests);
 
+- python-mechanize >= 0.2 (only for running tests);
+
 - python-coverage >= 3.4 (only for running tests).
 
 
