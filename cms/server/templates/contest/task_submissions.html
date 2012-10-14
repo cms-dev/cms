@@ -44,20 +44,18 @@ update_submission_row = function (submission_id, data) {
     row.attr("data-status", data["status"]);
     row.children("td.status").html(data["status_text"]);
     if (data["status"] == 5) {
-        var public_score = "";
         if (data["public_score"] != undefined) {
-            public_score += data["public_score"];
+            var public_score = data["public_score"];
             if (data["max_public_score"] != undefined) {
-                row.children("td.public_score").addClass(get_score_class(data["public_score"], data["max_public_score"]));
+                row.children("td.public_score").addClass(get_score_class(parseFloat(data["public_score"]), parseFloat(data["max_public_score"])));
                 public_score += " / " + data["max_public_score"];
             }
             row.children("td.public_score").removeClass("undefined").html(public_score);
         }
-        var score = "";
         if (data["score"] != undefined) {
-            score += data["score"];
+            var score = data["score"];
             if (data["max_score"] != undefined) {
-                row.children("td.total_score").addClass(get_score_class(data["score"], data["max_score"]));
+                row.children("td.total_score").addClass(get_score_class(parseFloat(data["score"]), parseFloat(data["max_score"])));
                 score += " / " + data["max_score"];
             }
             row.children("td.total_score").removeClass("undefined").html(score);
