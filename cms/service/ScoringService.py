@@ -320,11 +320,11 @@ class ScoringService(Service):
 
         # If for some reason (SS switched off for a while, or broken
         # connection with ES), submissions have been left without
-        # score, this is the list where you want to pur their
-        # ids. Note that list != [] if and only if there is an alive
-        # timeout for the method "score_old_submission".
-        self.submission_ids_to_score = []
-        self.submission_ids_to_token = []
+        # score, this is the set where you want to pur their ids. Note
+        # that sets != {} if and only if there is an alive timeout for
+        # the method "score_old_submission".
+        self.submission_ids_to_score = set([])
+        self.submission_ids_to_token = set([])
         self.scoring_old_submission = False
 
         # We need to load every submission at start, but we don't want
@@ -406,15 +406,15 @@ class ScoringService(Service):
             contest = session.query(Contest).\
                       filter_by(id=self.contest_id).first()
 
-            new_submission_ids_to_score = []
-            new_submission_ids_to_token = []
+            new_submission_ids_to_score = set([])
+            new_submission_ids_to_token = set([])
             for submission in contest.get_submissions():
                 if submission.evaluated() and \
                         submission.id not in self.submission_ids_scored:
-                    new_submission_ids_to_score.append(submission.id)
+                    new_submission_ids_to_score.add(submission.id)
                 if submission.tokened() and \
                         submission.id not in self.submission_ids_tokened:
-                    new_submission_ids_to_token.append(
+                    new_submission_ids_to_token.add(
                         (submission.id, submission.token.timestamp))
 
         new_s = len(new_submission_ids_to_score)
@@ -424,10 +424,8 @@ class ScoringService(Service):
         logger.info("Submissions found to score/token: %d, %d." %
                     (new_s, new_t))
         if new_s + new_t > 0:
-            self.submission_ids_to_score = new_submission_ids_to_score + \
-                                           self.submission_ids_to_score
-            self.submission_ids_to_token = new_submission_ids_to_token + \
-                                           self.submission_ids_to_token
+            self.submission_ids_to_score |= new_submission_ids_to_score
+            self.submission_ids_to_token |= new_submission_ids_to_token
             if old_s + old_t == 0:
                 self.add_timeout(self.score_old_submissions, None,
                                  0.5, immediately=False)
@@ -436,10 +434,10 @@ class ScoringService(Service):
         return True
 
     def score_old_submissions(self):
-        """The submissions in the submission_ids_to_score list are
+        """The submissions in the submission_ids_to_score set are
         evaluated submissions that we can assign a score to, and this
         method scores a bunch of these at a time. This method keeps
-        getting called while the list is non-empty. (Exactly the same
+        getting called while the set is non-empty. (Exactly the same
         happens for the submissions to token.)
 
         Note: doing this way (instead of putting everything in the
@@ -456,15 +454,13 @@ class ScoringService(Service):
                     (to_score, to_token))
 
         for unused_i in xrange(to_score_now):
-            self.new_evaluation(self.submission_ids_to_score[-1])
-            del self.submission_ids_to_score[-1]
+            self.new_evaluation(self.submission_ids_to_score.pop())
         if to_score - to_score_now > 0:
             return True
 
         for unused_i in xrange(to_token_now):
-            self.submission_tokened(self.submission_ids_to_token[-1][0],
-                                    self.submission_ids_to_token[-1][1])
-            del self.submission_ids_to_token[-1]
+            submission_id, timestamp = self.submission_ids_to_token.pop()
+            self.submission_tokened(submission_id, timestamp)
         if to_token - to_token_now > 0:
             return True
 
@@ -636,8 +632,13 @@ class ScoringService(Service):
         with SessionGen(commit=True) as session:
             submission = Submission.get_from_id(submission_id, session)
             if submission is None:
-                logger.critical("[action_finished] Couldn't find "
-                                " submission %d in the database" %
+                logger.error("[new_evaluation] Couldn't find "
+                             " submission %d in the database." %
+                             submission_id)
+                return
+            if not submission.evaluated():
+                logger.warning("[new_evaluation] Submission %d "
+                               "is not evaluated." %
                                 submission_id)
                 return
             if submission.user.hidden:
@@ -772,15 +773,21 @@ class ScoringService(Service):
         if len(submission_ids) == 0:
             return
 
+        new_submission_ids = []
         with SessionGen(commit=True) as session:
             for submission_id in submission_ids:
                 submission = Submission.get_from_id(submission_id, session)
-                submission.invalidate_score()
+                # If the submission is not evaluated, it does not have
+                # a score to invalidate, and, when evaluated,
+                # ScoringService will be prompted to score it. So in
+                # that case we do not have to do anything.
+                if submission.evaluated():
+                    submission.invalidate_score()
+                    new_submission_ids.append(submission_id)
 
         old_s = len(self.submission_ids_to_score)
         old_t = len(self.submission_ids_to_token)
-        self.submission_ids_to_score = submission_ids + \
-                                       self.submission_ids_to_score
+        self.submission_ids_to_score |= new_submission_ids
         if old_s + old_t == 0:
             self.add_timeout(self.score_old_submissions, None,
                              0.5, immediately=False)
