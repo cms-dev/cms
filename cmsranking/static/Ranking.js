@@ -42,6 +42,6 @@ $(document).ready(function() {
         TimeView.init();
         TeamSearch.init();
         Overview.init();
-        Scoreboard.init()
+        Scoreboard.init();
     });
 });

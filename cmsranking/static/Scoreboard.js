@@ -136,7 +136,7 @@ var Scoreboard = new function () {
         // 'auto' get the same computed width, we keep the 3:4:5 ratio and are
         // able to scale well at each screen size, while keeping the constant
         // width columns constant. (Note: we gave the first_ and last_name
-        // columns a "width" of 11 <col/> elements.)
+        // columns a "width" of 10 <col/> elements.)
         // Suggestion on other solution that get the same result and don't mess
         // this much with JS and HTML are extremely welcome!
         var result = " \
@@ -247,7 +247,7 @@ var Scoreboard = new function () {
 
                 var score_class = self.get_score_class(user["t_" + t_id], task["max_score"]);
                 result += " \
-    <td  colspan=\"3\" class=\"score task " + score_class + "\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\">" + round_to_str(user["t_" + t_id]) + "</td>";
+    <td colspan=\"3\" class=\"score task " + score_class + "\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\">" + round_to_str(user["t_" + t_id]) + "</td>";
             }
 
             var score_class = self.get_score_class(user["c_" + c_id], contest["max_score"]);
