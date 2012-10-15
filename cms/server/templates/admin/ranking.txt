@@ -1,0 +1,3 @@
+{% block core %}{% from cms.grading import task_score %}{{ "%20s" % "Username"}} {{ "%30s" % "User"}} {% for t in contest.tasks %}{{ "%14s" % t.name }} {% end %}{{ "%8s" % "Global" }}
+{% for u in sorted(contest.users, key=lambda u: u.username) %}{% if not u.hidden %}{% set score = 0.0 %}{% set partial = False %}{{ "%20s" % u.username }} {{ "%30s" % " ".join([u.first_name, u.last_name]) }} {% for t in contest.tasks %}{% set t_score, t_partial = task_score(u.username, t.id) %}{% set score += t_score %}{% set partial = partial or t_partial %}{{ "%13.2lf" % t_score }}{% if t_partial %}*{% else %} {% end %} {% end %}{{ "%7.2lf" % score }}{% if partial %}*{% else %} {% end %}
+{% end %}{% end %}{% end %}

@@ -23,6 +23,7 @@ import os
 import codecs
 
 from cms import logger
+from cms.db.SQLAlchemyAll import SessionGen, User, Submission, Task
 from cms.grading.Sandbox import Sandbox
 
 
@@ -573,3 +574,63 @@ def white_diff_step(sandbox, output_filename,
             outcome = 0.0
             text = "Evaluation didn't produce file %s" % (output_filename)
         return outcome, text
+
+
+## Computing global scores (for ranking). ##
+
+def task_score(username, task_id):
+    """Return the score of a user on a task.
+
+    username (string): the username for which to compute the score.
+    task_id (string): the task for which to compute the score.
+
+    return (float, bool): the score of username on task_id, and True
+                          if the score could change because of
+                          submission not yet scored.
+
+    """
+    def waits_for_score(submission):
+        """Return if submission could be scored but it currently is
+        not.
+
+        submission (Submission): the submission to check.
+
+        """
+        return submission.compilation_outcome != "fail" and \
+               not submission.scored()
+
+    # The score of the last submission (if valid, otherwise 0.0).
+    last_score = 0.0
+    # The maximum score amongst the tokened submissions (invalid
+    # scores count as 0.0).
+    max_tokened_score = 0.0
+    # If the score could change due to submission still being compiled
+    # / evaluated / scored.
+    partial = False
+
+    with SessionGen(commit=False) as session:
+        submissions = session.query(Submission).join(Task).join(User).\
+            filter(User.username == username).\
+            filter(Task.id == task_id).\
+            order_by(Submission.timestamp).all()
+
+        if submissions == []:
+            return 0.0, False
+
+        # Last score: if the last submission is scored we use that,
+        # otherwise we use 0.0 (and mark that the score is partial
+        # when the last submission could be scored).
+        if submissions[-1].scored():
+            last_score = submissions[-1].score
+        elif waits_for_score(submissions[-1]):
+            partial = True
+
+        for submission in submissions:
+            if submission.token is not None:
+                if submission.scored():
+                    max_tokened_score = max(max_tokened_score,
+                                            submission.score)
+                elif waits_for_score(submission):
+                    partial = True
+
+    return max(last_score, max_tokened_score), partial

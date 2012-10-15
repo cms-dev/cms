@@ -1121,6 +1121,28 @@ class TaskStatementViewHandler(FileHandler):
         self.fetch(statement, "application/pdf", "%s.pdf" % task_name)
 
 
+class RankingHandler(BaseHandler):
+    """Shows the ranking for a contest.
+
+    """
+    def get(self, contest_id, format="online"):
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        self.r_params = self.render_params()
+        if format == "txt":
+            self.set_header("Content-Type", "text/plain")
+            self.set_header("Content-Disposition",
+                            "attachment; filename=\"ranking.txt\"")
+            self.render("ranking.txt", **self.r_params)
+        elif format == "csv":
+            self.set_header("Content-Type", "text/csv")
+            self.set_header("Content-Disposition",
+                            "attachment; filename=\"ranking.csv\"")
+            self.render("ranking.csv", **self.r_params)
+        else:
+            self.render("ranking.html", **self.r_params)
+
+
 class AddAnnouncementHandler(BaseHandler):
     """Called to actually add an announcement
 
@@ -1478,6 +1500,8 @@ _aws_handlers = [
     (r"/userlist/([0-9]+)",      SimpleContestHandler("userlist.html")),
     (r"/tasklist/([0-9]+)",      SimpleContestHandler("tasklist.html")),
     (r"/contest/add",           AddContestHandler),
+    (r"/ranking/([0-9]+)",          RankingHandler),
+    (r"/ranking/([0-9]+)/([a-z]+)", RankingHandler),
     (r"/task/([0-9]+)",           TaskHandler),
     (r"/task/([0-9]+)/statement", TaskStatementViewHandler),
     (r"/add_task/([0-9]+)",            AddTaskHandler),

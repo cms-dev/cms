@@ -64,7 +64,7 @@ class FrameworkException(Exception):
 class RemoteService:
     """Class which implements the RPC protocol used by CMS.
 
-    This is deliberately a re-implmentation in order to catch or
+    This is deliberately a re-implementation in order to catch or
     trigger bugs in the CMS services.
 
     """
