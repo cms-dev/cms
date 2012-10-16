@@ -57,7 +57,7 @@ def get_task_type(job=None, file_cacher=None, task=None,
         try:
             task_type_parameters = json.loads(task.task_type_parameters)
         except json.decoder.JSONDecodeError as error:
-            logger.error("Cannot decode score type parameters.\n%r." % error)
+            logger.error("Cannot decode task type parameters.\n%r." % error)
             raise
         job = Job()
         job.task_type = task_type_name
