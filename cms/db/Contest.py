@@ -473,9 +473,9 @@ class Contest(Base):
         # Merge the results.
 
         # First, the "expiration".
-        if res_contest[2] == None:
+        if res_contest[2] is None:
             expiration = res_task[2]
-        elif res_task[2] == None:
+        elif res_task[2] is None:
             expiration = res_contest[2]
         else:
             expiration = max(res_task[2], res_contest[2])
