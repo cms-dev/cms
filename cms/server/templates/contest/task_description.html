@@ -3,6 +3,7 @@
 
 {% from cms.server import format_token_rules, format_size %}
 {% from cms.grading.tasktypes import get_task_type %}
+{% import json %}
 
 {% if actual_phase == 0 %}
 
@@ -37,11 +38,21 @@
             The statement for this task is available in multiple versions, in different languages. You can see (and download) all of them using the list on the right.
             Some suggested translations follow.
         </p>
-    {% if task.official_language in task.statements %}
-        <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(task.official_language, safe='') }}" class="btn btn-large btn-success">{{ _("Official statement") }}</a>
-    {% end %}
+    {% set task_primary = json.loads(task.primary_statements) %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
-        {% if statement.id in current_user.statements and statement.language != task.official_language %}
+        {% if statement.language in task_primary %}
+        <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(statement.language, safe='') }}" class="btn btn-large btn-success">
+            {% if statement.language != statement.language_name %}
+                {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}
+            {% else %}
+                {% raw _("Statement in %s") % escape(statement.language_name) %}
+            {% end %}
+        </a>
+        {% end %}
+    {% end %}
+    {% set user_primary = json.loads(current_user.primary_statements)[task.name] %}
+    {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
+        {% if statement.language in user_primary and statement.language not in task_primary %}
         <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(statement.language, safe='') }}" class="btn btn-large">
             {% if statement.language != statement.language_name %}
                 {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}

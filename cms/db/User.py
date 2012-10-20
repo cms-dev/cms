@@ -82,8 +82,10 @@ class User(Base):
                         single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
-    # List of statement IDs that will be highlighted to the user.
-    statements = Column(postgresql.ARRAY(Integer), nullable=False)
+    # A JSON-encoded dictionary of lists of strings: statements["a"]
+    # contains the language codes of the statments that will be
+    # highlighted to this user for task "a".
+    primary_statements = Column(String, nullable=False)
 
     # Timezone for the user. All timestamps in CWS will be shown using
     # the timezone associated to the logged-in user or (if it's None
@@ -113,8 +115,8 @@ class User(Base):
 
     def __init__(self, first_name, last_name, username, password=None,
                  email=None, ip=None, contest=None, hidden=False,
-                 statements=None, timezone=None, starting_time=None,
-                 extra_time=timedelta(),
+                 primary_statements=None, timezone=None,
+                 starting_time=None, extra_time=timedelta(),
                  messages=None, questions=None, submissions=None):
         if password is None:
             import random
@@ -129,7 +131,7 @@ class User(Base):
         self.email = email if email is not None else ""
         self.ip = ip if ip is not None else "0.0.0.0"
         self.hidden = hidden
-        self.statements = statements if statements is not None else []
+        self.primary_statements = primary_statements if primary_statements is not None else "{}"
         self.timezone = timezone
         self.starting_time = starting_time
         self.extra_time = extra_time
@@ -153,7 +155,7 @@ class User(Base):
                 'email':         self.email,
                 'ip':            self.ip,
                 'hidden':        self.hidden,
-                'statements':    self.statements,
+                'primary_statements': self.primary_statements,
                 'timezone':      self.timezone,
                 'starting_time': make_timestamp(self.starting_time)
                 if self.starting_time is not None else None,

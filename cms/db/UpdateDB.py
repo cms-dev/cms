@@ -27,6 +27,7 @@ definition when it changes.
 
 import sys
 import argparse
+import json
 
 from cms.db.SQLAlchemyAll import SessionGen
 
@@ -67,6 +68,7 @@ class ScriptsContainer(object):
             ("20120918", "use_statement_ids"),
             ("20120919", "add_ranking_score_details"),
             ("20120923", "add_time_and_memory_on_tests"),
+            ("20121107", "fix_primary_statements"),
             ]
         self.list.sort()
 
@@ -824,6 +826,63 @@ ALTER COLUMN statements SET NOT NULL;""")
             session.execute("ALTER TABLE user_tests "
                             "ADD COLUMN memory_used INTEGER, "
                             "ADD COLUMN execution_time DOUBLE PRECISION;")
+
+    @staticmethod
+    def fix_primary_statements():
+        """Change the way primary submissions are stored.
+
+        """
+        with SessionGen(commit=True) as session:
+            t_primary = dict()
+            for t_id, lang in session.execute(
+                "SELECT id, official_language "
+                "FROM tasks;"):
+                t_primary[t_id] = json.dumps([lang], sort_keys=True, separators=(',',':'))
+
+            u_primary = dict()
+            ids = dict()
+            for s_id, task, lang in session.execute(
+                "SELECT s.id, t.name, s.language "
+                "FROM statements AS s, tasks AS t "
+                "WHERE s.task_id = t.id;"):
+                ids[s_id] = (task, lang)
+
+            for u_id, statements in session.execute(
+                "SELECT id, statements FROM users;"):
+                data = dict()
+                for s_id in statements:
+                    task, lang = ids[s_id]
+                    data.setdefault(task, []).append(lang)
+                for v in data.itervalues():
+                    v.sort()
+                u_primary[u_id] = json.dumps(data, sort_keys=True, separators=(',',':'))
+
+            session.execute("""\
+ALTER TABLE tasks
+DROP COLUMN official_language,
+ADD COLUMN primary_statements VARCHAR;""")
+            session.execute("""\
+ALTER TABLE users
+DROP COLUMN statements,
+ADD COLUMN primary_statements VARCHAR;""")
+
+            for t_id, txt in t_primary.iteritems():
+                session.execute(
+                    "UPDATE tasks "
+                    "SET primary_statements = '%s' "
+                    "WHERE id = %d" % (txt, t_id))
+            for u_id, txt in u_primary.iteritems():
+                session.execute(
+                    "UPDATE users "
+                    "SET primary_statements = '%s' "
+                    "WHERE id = %d" % (txt, u_id))
+
+            session.execute("""\
+ALTER TABLE tasks
+ALTER COLUMN primary_statements SET NOT NULL;""")
+            session.execute("""\
+ALTER TABLE users
+ALTER COLUMN primary_statements SET NOT NULL;""")
 
 
 def execute_single_script(scripts_container, script):

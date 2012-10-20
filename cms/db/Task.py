@@ -75,9 +75,9 @@ class Task(Base):
     name = Column(String, nullable=False)
     title = Column(String, nullable=False)
 
-    # A task may have multiple statements, each in a different language.
-    # This field is the language code of the official statement.
-    official_language = Column(String, nullable=False)
+    # A JSON-encoded lists of strings: the language codes of the
+    # statments that will be highlighted to all users for this task.
+    primary_statements = Column(String, nullable=False)
 
     # Time and memory limits for every testcase.
     time_limit = Column(Float, nullable=True)
@@ -144,7 +144,7 @@ class Task(Base):
     scorer = None
 
     def __init__(self, name, title, statements, attachments,
-                 time_limit, memory_limit, official_language,
+                 time_limit, memory_limit, primary_statements,
                  task_type, task_type_parameters, submission_format, managers,
                  score_type, score_parameters, testcases,
                  token_initial=None, token_max=None, token_total=None,
@@ -167,7 +167,7 @@ class Task(Base):
         self.attachments = attachments
         self.time_limit = time_limit
         self.memory_limit = memory_limit
-        self.official_language = official_language
+        self.primary_statements = primary_statements if primary_statements is not None else "[]"
         self.task_type = task_type
         self.task_type_parameters = task_type_parameters
         self.submission_format = submission_format
@@ -202,7 +202,7 @@ class Task(Base):
                                          in self.attachments.itervalues()],
                 'time_limit':           self.time_limit,
                 'memory_limit':         self.memory_limit,
-                'official_language':    self.official_language,
+                'primary_statements':   self.primary_statements,
                 'task_type':            self.task_type,
                 'task_type_parameters': self.task_type_parameters,
                 'submission_format':    [element.export_to_dict()

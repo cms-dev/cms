@@ -188,6 +188,10 @@ function update_additional_answer(element, invoker)
         <td>Hidden?</td>
         <td><input type="checkbox" name="hidden" {% if selected_user.hidden %}checked{% end %}/></td>
       </tr>
+      <tr>
+        <td>Primary statements (JSON-encoded dict whose keys are task names and whose values are lists of language codes)</td>
+        <td><input type="text" name="primary_statements" value="{{ selected_user.primary_statements }}"></td>
+      </tr>
     </table>
     <input type="submit" value="Update" />
     <input type="reset" value="Reset" />

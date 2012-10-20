@@ -841,7 +841,7 @@ class AddTaskHandler(BaseHandler):
 
             title = self.get_argument("title", "")
 
-            official_language = self.get_argument("official_language", "")
+            primary_statements = self.get_argument("primary_statements", "[]")
 
             time_limit = self.get_argument("time_limit", "")
             if time_limit == "":
@@ -951,7 +951,7 @@ class AddTaskHandler(BaseHandler):
             return
 
         task = Task(name, title, statements, attachments,
-                 time_limit, memory_limit, official_language,
+                 time_limit, memory_limit, primary_statements,
                  task_type, task_type_parameters, submission_format, managers,
                  score_type, score_parameters, testcases,
                  token_initial, token_max, token_total,
@@ -991,8 +991,8 @@ class TaskHandler(BaseHandler):
 
             task.title = self.get_argument("title", task.title)
 
-            task.official_language = self.get_argument("official_language",
-                                                       task.official_language)
+            task.primary_statements = self.get_argument("primary_statements",
+                                                        task.primary_statements)
 
             task.time_limit = self.get_argument("time_limit",
                 str(task.time_limit) if task.time_limit is not None else "")
@@ -1223,6 +1223,7 @@ class UserViewHandler(BaseHandler):
             return
 
         user.hidden = bool(self.get_argument("hidden", False))
+        user.primary_statements = self.get_argument("primary_statements", user.primary_statements)
 
         if try_commit(self.sql_session, self):
             self.application.service.scoring_service.reinitialize()
@@ -1290,9 +1291,11 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
             return
 
         hidden = bool(self.get_argument("hidden", False))
+        primary_statements = self.get_argument("primary_statements", "{}")
 
         user = User(first_name, last_name, username, password=password,
                     email=email, ip=ip_address, hidden=hidden,
+                    primary_statements=primary_statements,
                     timezone=timezone, starting_time=starting_time,
                     extra_time=extra_time,
                     contest=self.contest)
