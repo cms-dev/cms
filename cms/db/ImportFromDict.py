@@ -54,7 +54,7 @@ def contest_import_from_dict(cls, data):
         data['token_min_interval'] = \
             timedelta(seconds=data['token_min_interval'])
     if 'token_gen_time' in data:
-        data['token_gen_time'] = timedelta(minutes=data['token_gen_time'])
+        data['token_gen_time'] = timedelta(seconds=data['token_gen_time'])
     if 'per_user_time' in data and data['per_user_time'] is not None:
         data['per_user_time'] = timedelta(seconds=data['per_user_time'])
     if 'min_submission_interval' in data and \

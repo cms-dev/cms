@@ -74,11 +74,11 @@ class Contest(Base):
     # two uses of a token (set it to 0 to not enforce any limitation).
     token_min_interval = Column(
         Interval, CheckConstraint("token_min_interval >= '0 seconds'"), nullable=False)
-    # Every token_gen_time minutes from the beginning of the contest
-    # we generate token_gen_number tokens. If _gen_number is 0 no tokens
-    # will be generated, if _gen_number is > 0 and _gen_time is 0 tokens
-    # will be infinite. In case of infinite tokens, the values of _initial,
-    # _max and _total will be ignored (except when token_initial is None).
+    # Every token_gen_time from the beginning of the contest we generate
+    # token_gen_number tokens. If _gen_number is 0 no tokens will be
+    # generated, if _gen_number is > 0 and _gen_time is 0 tokens will be
+    # infinite. In case of infinite tokens, the values of _initial, _max
+    # and _total will be ignored (except when token_initial is None).
     token_gen_time = Column(
         Interval, CheckConstraint("token_gen_time >= '0 seconds'"), nullable=False)
     token_gen_number = Column(
@@ -162,7 +162,7 @@ class Contest(Base):
                 'token_max':          self.token_max,
                 'token_total':        self.token_total,
                 'token_min_interval': self.token_min_interval.total_seconds(),
-                'token_gen_time':     self.token_gen_time.total_seconds() / 60,
+                'token_gen_time':     self.token_gen_time.total_seconds(),
                 'token_gen_number':   self.token_gen_number,
                 'start':              make_timestamp(self.start) if self.start is not None else None,
                 'stop':               make_timestamp(self.stop) if self.stop is not None else None,

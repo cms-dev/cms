@@ -221,7 +221,7 @@ class Task(Base):
                 'token_min_interval':
                     self.token_min_interval.total_seconds(),
                 'token_gen_time':
-                    self.token_gen_time.total_seconds() / 60,
+                    self.token_gen_time.total_seconds(),
                 'token_gen_number':     self.token_gen_number,
                 'max_submission_number': self.max_submission_number if self.max_submission_number is not None else None,
                 'max_usertest_number': self.max_usertest_number if self.max_usertest_number is not None else None,
@@ -254,7 +254,7 @@ class Task(Base):
             data['token_min_interval'] = \
                 timedelta(seconds=data['token_min_interval'])
         if 'token_gen_time' in data:
-            data['token_gen_time'] = timedelta(minutes=data['token_gen_time'])
+            data['token_gen_time'] = timedelta(seconds=data['token_gen_time'])
         if 'min_submission_interval' in data and \
                 data['min_submission_interval'] is not None:
             data['min_submission_interval'] = \
