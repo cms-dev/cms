@@ -58,7 +58,7 @@ class Submission(Base):
                      index=True)
     user = relationship(User,
                         backref=backref("submissions",
-                                        cascade="all, delete, delete-orphan"))
+                                        cascade="all, delete-orphan"))
 
     # Task (id and object) of the submission.
     task_id = Column(Integer,
@@ -68,7 +68,7 @@ class Submission(Base):
                      index=True)
     task = relationship(Task,
                         backref=backref("submissions",
-                                        cascade="all, delete, delete-orphan"))
+                                        cascade="all, delete-orphan"))
 
     # Time of the submission.
     timestamp = Column(DateTime, nullable=False)
@@ -298,7 +298,7 @@ class Token(Base):
                               backref=backref(
                                   "token",
                                   uselist=False,
-                                  cascade="all, delete, delete-orphan"),
+                                  cascade="all, delete-orphan"),
                               single_parent=True)
 
     # Time the token was played.
@@ -356,7 +356,7 @@ class File(Base):
         Submission,
         backref=backref('files',
                         collection_class=column_mapped_collection(filename),
-                        cascade="all, delete, delete-orphan"))
+                        cascade="all, delete-orphan"))
 
     def __init__(self, digest, filename=None, submission=None):
         self.filename = filename
@@ -402,7 +402,7 @@ class Executable(Base):
         Submission,
         backref=backref('executables',
                         collection_class=column_mapped_collection(filename),
-                        cascade="all, delete, delete-orphan"))
+                        cascade="all, delete-orphan"))
 
     def __init__(self, digest, filename=None, submission=None):
         self.filename = filename
@@ -448,7 +448,7 @@ class Evaluation(Base):
         backref=backref('evaluations',
                         collection_class=ordering_list('num'),
                         order_by=[num],
-                        cascade="all, delete, delete-orphan"))
+                        cascade="all, delete-orphan"))
 
     # String containing output from the grader (usually "Correct",
     # "Time limit", ...).

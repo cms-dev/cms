@@ -545,7 +545,7 @@ class Announcement(Base):
                            backref=backref(
                                'announcements',
                                order_by=[timestamp],
-                               cascade="all, delete, delete-orphan"))
+                               cascade="all, delete-orphan"))
 
     def __init__(self, timestamp, subject, text, contest=None):
         self.timestamp = timestamp

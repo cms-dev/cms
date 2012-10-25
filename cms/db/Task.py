@@ -68,7 +68,7 @@ class Task(Base):
         backref=backref('tasks',
                         collection_class=ordering_list('num'),
                         order_by=[num],
-                        cascade="all, delete, delete-orphan"))
+                        cascade="all, delete-orphan"))
 
     # Short name and long human readable title of the task.
     name = Column(String, nullable=False)
@@ -300,7 +300,7 @@ class Testcase(Base):
         Task,
         backref=backref('testcases',
                         collection_class=ordering_list('num'), order_by=[num],
-                        cascade="all, delete, delete-orphan"))
+                        cascade="all, delete-orphan"))
 
     def __init__(self, input, output, num=None, public=False, task=None):
         self.input = input
@@ -346,7 +346,7 @@ class Attachment(Base):
         Task,
         backref=backref('attachments',
                         collection_class=column_mapped_collection(filename),
-                        cascade="all, delete, delete-orphan"))
+                        cascade="all, delete-orphan"))
 
     def __init__(self, digest, filename=None, task=None):
         self.filename = filename
@@ -390,7 +390,7 @@ class Manager(Base):
         Task,
         backref=backref('managers',
                         collection_class=column_mapped_collection(filename),
-                        cascade="all, delete, delete-orphan"))
+                        cascade="all, delete-orphan"))
 
     def __init__(self, digest, filename=None, task=None):
         self.filename = filename
@@ -425,7 +425,7 @@ class SubmissionFormatElement(Base):
                      index=True)
     task = relationship(Task,
                         backref=backref('submission_format',
-                                        cascade="all, delete, delete-orphan"))
+                                        cascade="all, delete-orphan"))
 
     # Format of the given submission file.
     filename = Column(String)
@@ -475,7 +475,7 @@ class Statement(Base):
         Task,
         backref=backref('statements',
                         collection_class=column_mapped_collection(language),
-                        cascade="all, delete, delete-orphan"))
+                        cascade="all, delete-orphan"))
 
     def __init__(self, digest, language, task=None):
         self.language = language
