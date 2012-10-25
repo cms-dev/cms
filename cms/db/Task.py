@@ -124,7 +124,7 @@ class Task(Base):
     max_usertest_number = Column(Integer, nullable=True)
 
     # Minimum interval between two submissions or usertests for this
-    # task, in seconds, or None to not enforce this limitation.
+    # task, or None to not enforce this limitation.
     # TODO Add some CheckConstraints.
     min_submission_interval = Column(Interval, nullable=True)
     min_usertest_interval = Column(Interval, nullable=True)

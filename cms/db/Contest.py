@@ -104,8 +104,8 @@ class Contest(Base):
     max_submission_number = Column(Integer, nullable=True)
     max_usertest_number = Column(Integer, nullable=True)
 
-    # Minimum interval between two submissions or usertests, in seconds,
-    # or None to not enforce this limitation.
+    # Minimum interval between two submissions or usertests, or None to
+    # not enforce this limitation.
     # TODO Add some CheckConstraints.
     min_submission_interval = Column(Interval, nullable=True)
     min_usertest_interval = Column(Interval, nullable=True)
@@ -116,8 +116,9 @@ class Contest(Base):
     # announcements (list of Announcement objects)
     # users (list of User objects)
 
-    # Moreover, we have the following method.
+    # Moreover, we have the following methods.
     # get_submissions (defined in SQLAlchemyAll)
+    # get_user_tests (defined in SQLAlchemyAll)
 
     def __init__(self, name, description, tasks, users,
                  token_initial=None, token_max=None, token_total=None,
@@ -319,7 +320,7 @@ class Contest(Base):
         if token_total is not None and played_tokens >= token_total:
             return (0, None, None)
 
-        # If we're in the case "generate 0 tokens every 0 minutes" we
+        # If we're in the case "generate 0 tokens every 0 seconds" we
         # set the _gen_time to a non-zero value, to ease calculations.
         if token_gen_time == timedelta():
             token_gen_time = timedelta(seconds=1)
@@ -536,8 +537,7 @@ class Announcement(Base):
     # Contest for which the announcements are.
     contest_id = Column(Integer,
                         ForeignKey(Contest.id,
-                                   onupdate="CASCADE",
-                                   ondelete="CASCADE"),
+                                   onupdate="CASCADE", ondelete="CASCADE"),
                         nullable=False,
                         index=True)
     contest = relationship(
