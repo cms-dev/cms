@@ -58,7 +58,6 @@ class Submission(Base):
                      index=True)
     user = relationship(User,
                         backref=backref("submissions",
-                                        single_parent=True,
                                         cascade="all, delete, delete-orphan"))
 
     # Task (id and object) of the submission.
@@ -69,7 +68,6 @@ class Submission(Base):
                      index=True)
     task = relationship(Task,
                         backref=backref("submissions",
-                                        single_parent=True,
                                         cascade="all, delete, delete-orphan"))
 
     # Time of the submission.
@@ -300,7 +298,6 @@ class Token(Base):
                               backref=backref(
                                   "token",
                                   uselist=False,
-                                  single_parent=True,
                                   cascade="all, delete, delete-orphan"),
                               single_parent=True)
 
@@ -359,7 +356,6 @@ class File(Base):
         Submission,
         backref=backref('files',
                         collection_class=column_mapped_collection(filename),
-                        single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
     def __init__(self, digest, filename=None, submission=None):
@@ -406,7 +402,6 @@ class Executable(Base):
         Submission,
         backref=backref('executables',
                         collection_class=column_mapped_collection(filename),
-                        single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
     def __init__(self, digest, filename=None, submission=None):
@@ -453,7 +448,6 @@ class Evaluation(Base):
         backref=backref('evaluations',
                         collection_class=ordering_list('num'),
                         order_by=[num],
-                        single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
     # String containing output from the grader (usually "Correct",

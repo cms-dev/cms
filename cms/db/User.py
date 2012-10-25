@@ -79,7 +79,6 @@ class User(Base):
     contest = relationship(
         Contest,
         backref=backref("users",
-                        single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
     # A JSON-encoded dictionary of lists of strings: statements["a"]
@@ -193,7 +192,6 @@ class Message(Base):
     user = relationship(
         User,
         backref=backref('messages',
-                        single_parent=True,
                         order_by=[timestamp],
                         cascade="all, delete, delete-orphan"))
 
@@ -258,7 +256,6 @@ class Question(Base):
     user = relationship(
         User,
         backref=backref('questions',
-                        single_parent=True,
                         order_by=[question_timestamp, reply_timestamp],
                         cascade="all, delete, delete-orphan"))
 

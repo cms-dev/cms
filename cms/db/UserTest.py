@@ -51,7 +51,6 @@ class UserTest(Base):
                      index=True)
     user = relationship(User,
                         backref=backref("user_tests",
-                                        single_parent=True,
                                         cascade="all, delete, delete-orphan"))
 
     # Task (id and object) of the test.
@@ -62,7 +61,6 @@ class UserTest(Base):
                      index=True)
     task = relationship(Task,
                         backref=backref("user_tests",
-                                        single_parent=True,
                                         cascade="all, delete, delete-orphan"))
 
     # Time of the request.
@@ -223,7 +221,6 @@ class UserTestFile(Base):
         UserTest,
         backref=backref('files',
                         collection_class=column_mapped_collection(filename),
-                        single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
     def __init__(self, digest, filename=None, user_test=None):
@@ -270,7 +267,6 @@ class UserTestExecutable(Base):
         UserTest,
         backref=backref('executables',
                         collection_class=column_mapped_collection(filename),
-                        single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
     def __init__(self, digest, filename=None, user_test=None):
@@ -317,7 +313,6 @@ class UserTestManager(Base):
         UserTest,
         backref=backref('managers',
                         collection_class=column_mapped_collection(filename),
-                        single_parent=True,
                         cascade="all, delete, delete-orphan"))
 
     def __init__(self, digest, filename=None, user_test=None):
