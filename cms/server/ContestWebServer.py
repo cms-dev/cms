@@ -249,7 +249,7 @@ class BaseHandler(CommonRequestHandler):
 
             # compute valid_phase_begin and valid_phase_end (that is,
             # the time at which actual_phase started/will start and
-            # stopped/will stop begin zero, or None if unknown).
+            # stopped/will stop being zero, or None if unknown).
             ret["valid_phase_begin"] = None
             ret["valid_phase_end"] = None
             if self.contest.per_user_time is None:

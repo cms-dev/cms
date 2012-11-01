@@ -77,9 +77,10 @@ def do_setup():
 
     setup(name="cms",
           version="0.1",
-          author="Matteo Boscariol, Stefano Maggiolo, Giovanni Mascellani",
-          author_email="s.maggiolo@gmail.com",
-          url="",
+          author="Matteo Boscariol, Stefano Maggiolo, "
+                 "Giovanni Mascellani, Luca Wehrstedt",
+          author_email="contestms@freelists.org",
+          url="https://github.com/cms-dev/cms",
           download_url="",
           description="A contest management system and grader "
                       "for IOI-like programming competitions",

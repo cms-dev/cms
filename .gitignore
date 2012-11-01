@@ -1,8 +1,5 @@
 *~
 *.pyc
-fs
-fs-cache
-logs
-mo-box
-Configuration.py
-WebConfig.py
+build
+dist
+cms.egg-info
