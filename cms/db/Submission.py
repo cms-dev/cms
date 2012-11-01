@@ -56,10 +56,11 @@ class Submission(Base):
                                 onupdate="CASCADE", ondelete="CASCADE"),
                      nullable=False,
                      index=True)
-    user = relationship(User,
-                        backref=backref("submissions",
-                                        cascade="all, delete-orphan",
-                                        passive_deletes=True))
+    user = relationship(
+        User,
+        backref=backref("submissions",
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     # Task (id and object) of the submission.
     task_id = Column(Integer,
@@ -67,10 +68,11 @@ class Submission(Base):
                                 onupdate="CASCADE", ondelete="CASCADE"),
                      nullable=False,
                      index=True)
-    task = relationship(Task,
-                        backref=backref("submissions",
-                                        cascade="all, delete-orphan",
-                                        passive_deletes=True))
+    task = relationship(
+        Task,
+        backref=backref("submissions",
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     # Time of the submission.
     timestamp = Column(DateTime, nullable=False)
@@ -296,13 +298,14 @@ class Token(Base):
                                       onupdate="CASCADE", ondelete="CASCADE"),
                            nullable=False,
                            index=True)
-    submission = relationship(Submission,
-                              backref=backref(
-                                  "token",
-                                  uselist=False,
-                                  cascade="all, delete-orphan",
-                                  passive_deletes=True),
-                              single_parent=True)
+    submission = relationship(
+        Submission,
+        backref=backref(
+            "token",
+            uselist=False,
+            cascade="all, delete-orphan",
+            passive_deletes=True),
+        single_parent=True)
 
     # Time the token was played.
     timestamp = Column(DateTime, nullable=False)

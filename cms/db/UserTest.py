@@ -49,10 +49,11 @@ class UserTest(Base):
                                 onupdate="CASCADE", ondelete="CASCADE"),
                      nullable=False,
                      index=True)
-    user = relationship(User,
-                        backref=backref("user_tests",
-                                        cascade="all, delete-orphan",
-                                        passive_deletes=True))
+    user = relationship(
+        User,
+        backref=backref("user_tests",
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     # Task (id and object) of the test.
     task_id = Column(Integer,
@@ -60,10 +61,11 @@ class UserTest(Base):
                                 onupdate="CASCADE", ondelete="CASCADE"),
                      nullable=False,
                      index=True)
-    task = relationship(Task,
-                        backref=backref("user_tests",
-                                        cascade="all, delete-orphan",
-                                        passive_deletes=True))
+    task = relationship(
+        Task,
+        backref=backref("user_tests",
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     # Time of the request.
     timestamp = Column(DateTime, nullable=False)

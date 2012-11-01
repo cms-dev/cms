@@ -427,10 +427,11 @@ class SubmissionFormatElement(Base):
                                 onupdate="CASCADE", ondelete="CASCADE"),
                      nullable=False,
                      index=True)
-    task = relationship(Task,
-                        backref=backref('submission_format',
-                                        cascade="all, delete-orphan",
-                                        passive_deletes=True))
+    task = relationship(
+        Task,
+        backref=backref('submission_format',
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     # Format of the given submission file.
     filename = Column(String)

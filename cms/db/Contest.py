@@ -541,12 +541,13 @@ class Announcement(Base):
                                    ondelete="CASCADE"),
                         nullable=False,
                         index=True)
-    contest = relationship(Contest,
-                           backref=backref(
-                               'announcements',
-                               order_by=[timestamp],
-                               cascade="all, delete-orphan",
-                               passive_deletes=True))
+    contest = relationship(
+        Contest,
+        backref=backref(
+            'announcements',
+            order_by=[timestamp],
+            cascade="all, delete-orphan",
+            passive_deletes=True))
 
     def __init__(self, timestamp, subject, text, contest=None):
         self.timestamp = timestamp
