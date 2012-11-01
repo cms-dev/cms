@@ -79,7 +79,8 @@ class User(Base):
     contest = relationship(
         Contest,
         backref=backref("users",
-                        cascade="all, delete-orphan"))
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     # A JSON-encoded dictionary of lists of strings: statements["a"]
     # contains the language codes of the statments that will be
@@ -193,7 +194,8 @@ class Message(Base):
         User,
         backref=backref('messages',
                         order_by=[timestamp],
-                        cascade="all, delete-orphan"))
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     def __init__(self, timestamp, subject, text, user=None):
         self.timestamp = timestamp
@@ -257,7 +259,8 @@ class Question(Base):
         User,
         backref=backref('questions',
                         order_by=[question_timestamp, reply_timestamp],
-                        cascade="all, delete-orphan"))
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     def __init__(self, question_timestamp, subject, text,
                  reply_timestamp=None, reply_subject=None, reply_text=None,

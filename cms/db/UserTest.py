@@ -51,7 +51,8 @@ class UserTest(Base):
                      index=True)
     user = relationship(User,
                         backref=backref("user_tests",
-                                        cascade="all, delete-orphan"))
+                                        cascade="all, delete-orphan",
+                                        passive_deletes=True))
 
     # Task (id and object) of the test.
     task_id = Column(Integer,
@@ -61,7 +62,8 @@ class UserTest(Base):
                      index=True)
     task = relationship(Task,
                         backref=backref("user_tests",
-                                        cascade="all, delete-orphan"))
+                                        cascade="all, delete-orphan",
+                                        passive_deletes=True))
 
     # Time of the request.
     timestamp = Column(DateTime, nullable=False)
@@ -221,7 +223,8 @@ class UserTestFile(Base):
         UserTest,
         backref=backref('files',
                         collection_class=column_mapped_collection(filename),
-                        cascade="all, delete-orphan"))
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     def __init__(self, digest, filename=None, user_test=None):
         self.filename = filename
@@ -267,7 +270,8 @@ class UserTestExecutable(Base):
         UserTest,
         backref=backref('executables',
                         collection_class=column_mapped_collection(filename),
-                        cascade="all, delete-orphan"))
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     def __init__(self, digest, filename=None, user_test=None):
         self.filename = filename
@@ -313,7 +317,8 @@ class UserTestManager(Base):
         UserTest,
         backref=backref('managers',
                         collection_class=column_mapped_collection(filename),
-                        cascade="all, delete-orphan"))
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     def __init__(self, digest, filename=None, user_test=None):
         self.filename = filename
