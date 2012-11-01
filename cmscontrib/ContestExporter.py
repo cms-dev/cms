@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,24 +26,28 @@ idempotent.
 
 """
 
+import io
 import argparse
 import os
 import shutil
 import simplejson as json
 import tempfile
-import codecs
-
 import tarfile
+
+from sqlalchemy.types import \
+    Boolean, Integer, Float, String, DateTime, Interval
 
 from cms import logger
 from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import SessionGen, Contest
+from cms.db.SQLAlchemyAll import SessionGen, Contest, Submission, UserTest
 
 from cmscontrib import sha1sum
+from cmscommon.DateTime import make_timestamp
 
 
 def get_archive_info(file_name):
+
     """Return information about the archive name.
 
     file_name (string): the file name of the archive to analyze.
@@ -51,6 +56,9 @@ def get_archive_info(file_name):
                    "basename", "extension", "write_mode"
 
     """
+
+    # TODO - This method doesn't seem to be a masterpiece in terms of
+    # cleanness...
     ret = {"basename": "",
            "extension": "",
            "write_mode": "",
@@ -82,36 +90,37 @@ def get_archive_info(file_name):
 
 
 class ContestExporter:
+
     """This service exports every data about the contest that CMS
     knows. The process of exporting and importing again should be
     idempotent.
 
     """
+
     def __init__(self, contest_id, export_target,
-                 skip_submissions, skip_user_tests, light):
+                 dump_files, dump_model, light,
+                 skip_submissions, skip_user_tests):
         self.contest_id = contest_id
+        self.dump_files = dump_files
+        self.dump_model = dump_model
+        self.light = light
         self.skip_submissions = skip_submissions
         self.skip_user_tests = skip_user_tests
-        self.light = light
 
         # If target is not provided, we use the contest's name.
         if export_target == "":
             with SessionGen(commit=False) as session:
                 contest = Contest.get_from_id(self.contest_id, session)
                 self.export_target = "dump_%s.tar.gz" % contest.name
+                logger.warning("export_target not given, using \"%s\""
+                               % self.export_target)
         else:
             self.export_target = export_target
 
         self.file_cacher = FileCacher()
 
-    def run(self):
-        """Interface to make the class do its job."""
-        return self.do_export()
-
     def do_export(self):
-        """Run the actual export code.
-
-        """
+        """Run the actual export code."""
         logger.operation = "exporting contest %d" % self.contest_id
         logger.info("Starting export.")
 
@@ -145,23 +154,38 @@ class ContestExporter:
             contest = Contest.get_from_id(self.contest_id, session)
 
             # Export files.
-            logger.info("Exporting files.")
-            files = contest.enumerate_files(self.skip_submissions,
-                                            self.skip_user_tests,
-                                            light=self.light)
-            for _file in files:
-                if not self.safe_get_file(_file,
-                                          os.path.join(files_dir, _file),
-                                          os.path.join(descr_dir, _file)):
-                    return False
+            if self.dump_files:
+                logger.info("Exporting files.")
+                files = contest.enumerate_files(self.skip_submissions,
+                                                self.skip_user_tests,
+                                                self.light)
+                for file_ in files:
+                    if not self.safe_get_file(file_,
+                                              os.path.join(files_dir, file_),
+                                              os.path.join(descr_dir, file_)):
+                        return False
 
             # Export the contest in JSON format.
-            logger.info("Exporting the contest in JSON format.")
-            with open(os.path.join(export_dir, "contest.json"), 'w') as fout:
-                json.dump(contest.export_to_dict(
-                        self.skip_submissions,
-                        self.skip_user_tests),
-                          fout, indent=4)
+            if self.dump_model:
+                logger.info("Exporting the contest to a JSON file.")
+
+                # We use strings because they'll be the keys of a JSON
+                # object; the contest will have ID 0.
+                self.ids = {contest.sa_identity_key: "0"}
+                self.queue = [contest]
+
+                data = dict()
+                while len(self.queue) > 0:
+                    obj = self.queue.pop(0)
+                    data[self.ids[obj.sa_identity_key]] = self.export_object(obj)
+
+                # Specify the "root" of the data graph
+                data["_objects"] = ["0"]
+
+                with io.open(os.path.join(self.export_target,
+                                          "contest.json"), "wb") as fout:
+                    json.dump(data, fout, encoding="utf-8",
+                              indent=4, sort_keys=True)
 
         # If the admin requested export to file, we do that.
         if archive_info["write_mode"] != "":
@@ -176,7 +200,91 @@ class ContestExporter:
 
         return True
 
+    def get_id(self, obj):
+        obj_key = obj.sa_identity_key
+        if obj_key not in self.ids:
+            # We use strings because they'll be the keys of a JSON object
+            self.ids[obj_key] = str(len(self.ids))
+            self.queue.append(obj)
+
+        return self.ids[obj_key]
+
+    def export_object(self, obj):
+
+        """Export the given object, returning a JSON-encodable dict.
+
+        The returned dict will contain a "_class" item (the name of the
+        class of the given object), an item for each column property
+        (with a value properly translated to a JSON-compatible type)
+        and an item for each relationship property (which will be an ID
+        or a collection of IDs).
+
+        The IDs used in the exported dict aren't related to the ones
+        used in the DB: they are newly generated and their scope is
+        limited to the exported file only. They are shared among all
+        classes (that is, two objects can never share the same ID, even
+        if they are of different classes).
+
+        If, when exporting the relationship, we find an object without
+        an ID we generate a new ID, assign it to the object and append
+        the object to the queue of objects to export.
+
+        The self.skip_submissions flag controls wheter we export
+        submissions (and all other objects that can be reached only by
+        passing through a submission) or not.
+
+        """
+
+        cls = type(obj)
+
+        data = {"_class": cls.__name__}
+
+        for prp in cls._col_props:
+            col, = prp.columns
+            col_type = type(col.type)
+
+            val = getattr(obj, prp.key)
+            if col_type in [Boolean, Integer, Float, String]:
+                data[prp.key] = val
+            elif col_type is DateTime:
+                data[prp.key] = \
+                    make_timestamp(val) if val is not None else None
+            elif col_type is Interval:
+                data[prp.key] = \
+                    val.total_seconds() if val is not None else None
+            else:
+                raise RuntimeError("Unknown SQLAlchemy column type: %s"
+                                   % col_type)
+
+        for prp in cls._rel_props:
+            other_cls = prp.mapper.class_
+
+            # Skip submissions if requested
+            if self.skip_submissions and other_cls is Submission:
+                continue
+
+            # Skip user_tests if requested
+            if self.skip_user_tests and other_cls is UserTest:
+                continue
+
+            val = getattr(obj, prp.key)
+            if val is None:
+                data[prp.key] = None
+            elif isinstance(val, other_cls):
+                data[prp.key] = self.get_id(val)
+            elif isinstance(val, list):
+                data[prp.key] = list(self.get_id(i) for i in val)
+            elif isinstance(val, dict):
+                data[prp.key] = \
+                    dict((k, self.get_id(v)) for k, v in val.iteritems())
+            else:
+                raise RuntimeError("Unknown SQLAlchemy relationship type: %s"
+                                   % type(val))
+
+        return data
+
     def safe_get_file(self, digest, path, descr_path=None):
+
         """Get file from FileCacher ensuring that the digest is
         correct.
 
@@ -187,6 +295,9 @@ class ContestExporter:
         return (bool): True if all ok, False if something wrong.
 
         """
+
+        # TODO - Probably this method could be merged in FileCacher
+
         # First get the file
         try:
             self.file_cacher.get_file(digest, path=path)
@@ -204,26 +315,29 @@ class ContestExporter:
 
         # If applicable, retrieve also the description
         if descr_path is not None:
-            with codecs.open(descr_path, 'w', encoding='utf-8') as fout:
+            with io.open(descr_path, 'wt', encoding='utf-8') as fout:
                 fout.write(self.file_cacher.describe(digest))
 
         return True
 
 
 def main():
-    """Parse arguments and launch process.
-
-    """
+    """Parse arguments and launch process."""
     parser = argparse.ArgumentParser(description="Exporter of CMS contests.")
     parser.add_argument("-c", "--contest-id", action="store", type=int,
                         help="id of contest to export")
-    parser.add_argument("-s", "--skip-submissions", action="store_true",
-                        help="don't export submissions, only contest data")
-    parser.add_argument("-t", "--skip-user-tests", action="store_true",
-                        help="don't export user tests, only contest data")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("-f", "--files", action="store_true",
+                       help="only export files, ignore database structure")
+    group.add_argument("-F", "--no-files", action="store_true",
+                       help="only export database structure, ignore files")
     parser.add_argument("-l", "--light", action="store_true",
-                        help="light export (without executables and "
-                        "testcases)")
+                        help="light export (without testcases and "
+                        "automatically generated files)")
+    parser.add_argument("-S", "--no-submissions", action="store_true",
+                        help="don't export submissions")
+    parser.add_argument("-U", "--no-user-tests", action="store_true",
+                        help="don't export user tests")
     parser.add_argument("export_target", nargs='?', default="",
                         help="target directory or archive for export")
 
@@ -234,9 +348,11 @@ def main():
 
     ContestExporter(contest_id=args.contest_id,
                     export_target=args.export_target,
-                    skip_submissions=args.skip_submissions,
-                    skip_user_tests=args.skip_user_tests,
-                    light=args.light).run()
+                    dump_files=not args.no_files,
+                    dump_model=not args.files,
+                    light=args.light,
+                    skip_submissions=args.no_submissions,
+                    skip_user_tests=args.no_user_tests).do_export()
 
 
 if __name__ == "__main__":
