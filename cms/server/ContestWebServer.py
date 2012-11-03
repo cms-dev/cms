@@ -1078,14 +1078,13 @@ class SubmitHandler(BaseHandler):
         # All the files are stored, ready to submit!
         logger.info("All files stored for submission sent by %s" %
                     self.current_user.username)
-        submission = Submission(user=self.current_user,
-                                task=task,
-                                timestamp=self.timestamp,
-                                files={},
-                                language=submission_lang)
+        submission = Submission(self.timestamp,
+                                submission_lang,
+                                user=self.current_user,
+                                task=task)
 
         for filename, digest in file_digests.items():
-            self.sql_session.add(File(digest, filename, submission))
+            self.sql_session.add(File(filename, digest, submission=submission))
         self.sql_session.add(submission)
         self.sql_session.commit()
         self.application.service.evaluation_service.new_submission(
@@ -1148,7 +1147,7 @@ class UseTokenHandler(BaseHandler):
             return
 
         if submission.token is None:
-            token = Token(self.timestamp, submission)
+            token = Token(self.timestamp, submission=submission)
             self.sql_session.add(token)
             self.sql_session.commit()
         else:
@@ -1598,22 +1597,20 @@ class UserTestHandler(BaseHandler):
         # All the files are stored, ready to submit!
         logger.info("All files stored for test sent by %s" %
                     self.current_user.username)
-        user_test = UserTest(user=self.current_user,
-                             task=task,
-                             timestamp=self.timestamp,
-                             files={},
-                             managers={},
-                             input=file_digests["input"],
-                             language=submission_lang)
+        user_test = UserTest(self.timestamp,
+                             submission_lang,
+                             file_digests["input"],
+                             user=self.current_user,
+                             task=task)
 
         for filename in [x.filename for x in task.submission_format]:
             digest = file_digests[filename]
-            self.sql_session.add(UserTestFile(digest, filename, user_test))
+            self.sql_session.add(UserTestFile(filename, digest, user_test=user_test))
         for filename in task_type.get_user_managers(task.submission_format):
             digest = file_digests[filename]
             if submission_lang is not None:
                 filename = filename.replace("%l", submission_lang)
-            self.sql_session.add(UserTestManager(digest, filename, user_test))
+            self.sql_session.add(UserTestManager(filename, digest, user_test=user_test))
 
         self.sql_session.add(user_test)
         self.sql_session.commit()

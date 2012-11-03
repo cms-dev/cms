@@ -986,9 +986,9 @@ class EvaluationService(Service):
                     submission.evaluation_outcome = "ok"
                     for test_number, info in job.evaluations.iteritems():
                         evaluation = Evaluation(
+                            num=int(test_number),
                             text=info['text'],
                             outcome=info['outcome'],
-                            num=int(test_number),
                             memory_used=info['plus'].get('memory_used', None),
                             execution_time=info['plus']
                             .get('execution_time', None),

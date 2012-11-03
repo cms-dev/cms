@@ -157,7 +157,7 @@ class TwoSteps(TaskType):
                 "Executable %s for %s" %
                 (executable_filename, self.job.info))
             self.job.executables[executable_filename] = \
-                Executable(digest, executable_filename)
+                Executable(executable_filename, digest)
 
         # Cleanup
         delete_sandbox(sandbox)

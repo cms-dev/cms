@@ -482,7 +482,7 @@ class AddContestHandler(BaseHandler):
             self.redirect("/contest/add")
             return
 
-        contest = Contest(name, description, [], [], token_initial,
+        contest = Contest(name, description, token_initial,
                           token_max, token_total, token_min_interval,
                           token_gen_time, token_gen_number, start, stop,
                           timezone, per_user_time,
@@ -665,7 +665,7 @@ class AddStatementHandler(BaseHandler):
 
         self.sql_session = Session()
         task = self.safe_get_item(Task, task_id)
-        statement = Statement(digest, language, task)
+        statement = Statement(language, digest, task=task)
         self.sql_session.add(statement)
         self.sql_session.commit()
         self.redirect("/task/%s" % task_id)
@@ -718,7 +718,7 @@ class AddAttachmentHandler(BaseHandler):
 
         self.sql_session = Session()
         task = self.safe_get_item(Task, task_id)
-        self.sql_session.add(Attachment(digest, attachment["filename"], task))
+        self.sql_session.add(Attachment(attachment["filename"], digest, task=task))
         self.sql_session.commit()
         self.redirect("/task/%s" % task_id)
 
@@ -767,7 +767,7 @@ class AddManagerHandler(BaseHandler):
 
         self.sql_session = Session()
         task = self.safe_get_item(Task, task_id)
-        self.sql_session.add(Manager(digest, manager["filename"], task))
+        self.sql_session.add(Manager(manager["filename"], digest, task=task))
         self.sql_session.commit()
         self.redirect("/task/%s" % task_id)
 
@@ -843,7 +843,7 @@ class AddTestcaseHandler(BaseHandler):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
         self.sql_session.add(Testcase(
-            input_digest, output_digest, num, public, task))
+            num, public, input_digest, output_digest, task=task))
 
         try:
             self.sql_session.commit()
@@ -1003,16 +1003,19 @@ class AddTaskHandler(BaseHandler):
             self.redirect("/add_task/%s" % contest_id)
             return
 
-        task = Task(name, title, statements, attachments,
-                    time_limit, memory_limit, primary_statements,
-                    task_type, task_type_parameters, submission_format,
-                    managers, score_type, score_type_parameters, testcases,
+        task = Task(len(self.contest.tasks),
+                    name, title, primary_statements,
+                    time_limit, memory_limit,
+                    task_type, task_type_parameters,
+                    score_type, score_type_parameters,
                     token_initial, token_max, token_total,
                     token_min_interval, token_gen_time, token_gen_number,
                     max_submission_number, max_user_test_number,
                     min_submission_interval, min_user_test_interval,
-                    score_precision,
-                    contest=self.contest, num=len(self.contest.tasks))
+                    score_precision, contest=self.contest,
+                    statements=statements, attachments=attachments,
+                    submission_format=submission_format, managers=managers,
+                    testcases=testcases)
         self.sql_session.add(task)
 
         if try_commit(self.sql_session, self):
@@ -1094,7 +1097,7 @@ class TaskHandler(BaseHandler):
                     del task.submission_format[:]
                     for element in format_list:
                         self.sql_session.add(
-                            SubmissionFormatElement(str(element), task))
+                            SubmissionFormatElement(str(element), task=task))
                 except Exception as error:
                     # FIXME Are the following two commands really needed?
                     self.sql_session.rollback()
@@ -1218,7 +1221,8 @@ class AddAnnouncementHandler(BaseHandler):
         subject = self.get_argument("subject", "")
         text = self.get_argument("text", "")
         if subject != "":
-            ann = Announcement(make_datetime(), subject, text, self.contest)
+            ann = Announcement(make_datetime(), subject, text,
+                               contest=self.contest)
             self.sql_session.add(ann)
             try_commit(self.sql_session, self)
         self.redirect("/announcements/%s" % contest_id)

@@ -174,11 +174,12 @@ class YamlLoader:
         params["time_limit"] = conf.get("timeout", None)
         params["memory_limit"] = conf.get("memlimit", None)
         params["attachments"] = []  # FIXME - Use auxiliary
-        params["statements"] = [
-            Statement(self.file_cacher.put_file(
-                path=os.path.join(path, "testo", "testo.pdf"),
-                description="Statement for task %s (lang: )" % name),
-                "").export_to_dict()]
+        params["statements"] = [Statement(
+                "",
+                self.file_cacher.put_file(
+                    path=os.path.join(path, "testo", "testo.pdf"),
+                    description="Statement for task %s (lang: )" % name),
+                ).export_to_dict()]
 
         params["submission_format"] = [
             SubmissionFormatElement("%s.%%l" % name).export_to_dict()]
@@ -204,25 +205,27 @@ class YamlLoader:
                 grader_filename = os.path.join(path, "sol", "grader.%s" %
                                                (lang))
                 if os.path.exists(grader_filename):
-                    params["managers"].append(
-                        Manager(self.file_cacher.put_file(
-                                path=grader_filename,
-                                description="Grader for task %s and "
-                                "language %s" % (name, lang)),
-                                "grader.%s" % (lang)).export_to_dict())
+                    params["managers"].append(Manager(
+                        "grader.%s" % (lang),
+                        self.file_cacher.put_file(
+                            path=grader_filename,
+                            description="Grader for task %s and "
+                            "language %s" % (name, lang)),
+                        ).export_to_dict())
                 else:
                     logger.error("Grader for language %s not found " % lang)
             # Read managers with other known file extensions
             for other_filename in os.listdir(os.path.join(path, "sol")):
                 if other_filename.endswith('.h') or \
                         other_filename.endswith('lib.pas'):
-                    params["managers"].append(
-                        Manager(self.file_cacher.put_file(
-                                path=os.path.join(path, "sol",
-                                                  other_filename),
-                                description="Manager %s for task %s" %
-                                (other_filename, name)),
-                                other_filename).export_to_dict())
+                    params["managers"].append(Manager(
+                        other_filename,
+                        self.file_cacher.put_file(
+                            path=os.path.join(path, "sol",
+                                              other_filename),
+                            description="Manager %s for task %s" %
+                            (other_filename, name)),
+                        ).export_to_dict())
             compilation_param = "grader"
         else:
             compilation_param = "alone"
@@ -230,11 +233,12 @@ class YamlLoader:
         # If there is cor/correttore, then, presuming that the task
         # type is Batch or OutputOnly, we retrieve the comparator
         if os.path.exists(os.path.join(path, "cor", "correttore")):
-            params["managers"] += [
-                Manager(self.file_cacher.put_file(
+            params["managers"].append(Manager(
+                "checker",
+                self.file_cacher.put_file(
                     path=os.path.join(path, "cor", "correttore"),
                     description="Manager for task %s" % (name)),
-                        "checker").export_to_dict()]
+                ).export_to_dict())
             evaluation_parameter = "comparator"
         else:
             evaluation_parameter = "diff"
@@ -320,28 +324,29 @@ class YamlLoader:
             params["memory_limit"] = None
             params["task_type_parameters"] = '["%s"]' % (evaluation_parameter)
             params["submission_format"] = [
-                SubmissionFormatElement("output_%03d.txt" %
-                                        (i)).export_to_dict()
+                SubmissionFormatElement("output_%03d.txt" % i).export_to_dict()
                 for i in xrange(int(conf["n_input"]))]
 
         # If there is cor/manager, then the task type is Communication
         elif os.path.exists(os.path.join(path, "cor", "manager")):
             params["task_type"] = "Communication"
             params["task_type_parameters"] = '[]'
-            params["managers"] += [
-                Manager(self.file_cacher.put_file(
+            params["managers"].append(Manager(
+                "manager",
+                self.file_cacher.put_file(
                     path=os.path.join(path, "cor", "manager"),
                     description="Manager for task %s" % (name)),
-                        "manager").export_to_dict()]
+                ).export_to_dict())
             for lang in Submission.LANGUAGES:
                 stub_name = os.path.join(path, "sol", "stub.%s" % lang)
                 if os.path.exists(stub_name):
-                    params["managers"].append(
-                        Manager(self.file_cacher.put_file(
+                    params["managers"].append(Manager(
+                        "stub.%s" % lang,
+                        self.file_cacher.put_file(
                             path=stub_name,
                             description="Stub for task %s and language %s" %
                             (name, lang)),
-                                "stub.%s" % lang).export_to_dict())
+                        ).export_to_dict())
                 else:
                     logger.error("Stub for language %s not found." % lang)
 
@@ -375,8 +380,8 @@ class YamlLoader:
                 public=(i in public_testcases)).export_to_dict())
             if params["task_type"] == "OutputOnly":
                 params["attachments"].append(Attachment(
-                        input_digest,
-                        "input_%03d.txt" % (i)).export_to_dict())
+                        "input_%03d.txt" % (i),
+                        input_digest).export_to_dict())
         params["token_initial"] = conf.get("token_initial", None)
         params["token_max"] = conf.get("token_max", None)
         params["token_total"] = conf.get("token_total", None)
