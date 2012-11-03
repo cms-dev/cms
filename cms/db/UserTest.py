@@ -156,38 +156,6 @@ class UserTest(Base):
     # executables (dict of UserTestExecutable objects indexed by filename)
     # managers (dict of UserTestManager objects indexed by filename)
 
-    def __init__(self, user, task, timestamp, files, managers,
-                 input, output=None,
-                 language=None, compilation_outcome=None,
-                 compilation_text=None, compilation_tries=0,
-                 executables=None,
-                 compilation_shard=None, compilation_sandbox=None,
-                 evaluation_outcome=None, evaluation_text=None,
-                 evaluation_tries=0, evaluation_shard=None,
-                 evaluation_sandbox=None, memory_used=None,
-                 execution_time=None):
-        self.user = user
-        self.task = task
-        self.timestamp = timestamp
-        self.files = files
-        self.managers = managers
-        self.input = input
-        self.output = output
-        self.language = language
-        self.compilation_outcome = compilation_outcome
-        self.compilation_text = compilation_text
-        self.compilation_tries = compilation_tries
-        self.executables = executables if executables is not None else {}
-        self.compilation_shard = compilation_shard
-        self.compilation_sandbox = compilation_sandbox
-        self.evaluation_outcome = evaluation_outcome
-        self.evaluation_text = evaluation_text
-        self.evaluation_tries = evaluation_tries
-        self.evaluation_shard = evaluation_shard
-        self.evaluation_sandbox = evaluation_sandbox
-        self.memory_used = memory_used
-        self.execution_time = execution_time
-
     def export_to_dict(self):
         """Return object data as a dictionary.
 
@@ -298,11 +266,6 @@ class UserTestFile(Base):
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
-    def __init__(self, digest, filename=None, user_test=None):
-        self.filename = filename
-        self.digest = digest
-        self.user_test = user_test
-
     def export_to_dict(self):
         """Return object data as a dictionary.
 
@@ -352,11 +315,6 @@ class UserTestExecutable(Base):
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
-    def __init__(self, digest, filename=None, user_test=None):
-        self.filename = filename
-        self.digest = digest
-        self.user_test = user_test
-
     def export_to_dict(self):
         """Return object data as a dictionary.
 
@@ -405,11 +363,6 @@ class UserTestManager(Base):
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
                         passive_deletes=True))
-
-    def __init__(self, digest, filename=None, user_test=None):
-        self.filename = filename
-        self.digest = digest
-        self.user_test = user_test
 
     def export_to_dict(self):
         """Return object data as a dictionary.

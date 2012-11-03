@@ -169,28 +169,6 @@ class Submission(Base):
                      ".pas": "pas",
                      }
 
-    def __init__(self, user, task, timestamp, files, language=None,
-                 compilation_outcome=None, compilation_text=None,
-                 compilation_tries=0, executables=None,
-                 evaluation_outcome=None, evaluation_tries=0,
-                 evaluations=None, token=None, compilation_shard=None,
-                 compilation_sandbox=None):
-        self.user = user
-        self.task = task
-        self.timestamp = timestamp
-        self.files = files
-        self.language = language
-        self.compilation_outcome = compilation_outcome
-        self.executables = executables if executables is not None else {}
-        self.compilation_text = compilation_text
-        self.evaluation_outcome = evaluation_outcome
-        self.evaluations = evaluations if evaluations is not None else []
-        self.compilation_tries = compilation_tries
-        self.evaluation_tries = evaluation_tries
-        self.token = token
-        self.compilation_shard = compilation_shard
-        self.compilation_sandbox = compilation_sandbox
-
     def export_to_dict(self):
         """Return object data as a dictionary.
 
@@ -348,12 +326,6 @@ class Token(Base):
         nullable=False,
         default=make_datetime)
 
-    def __init__(self, timestamp=None, submission=None):
-        if timestamp is None:
-            timestamp = make_datetime()
-        self.timestamp = timestamp
-        self.submission = submission
-
     def export_to_dict(self):
         """Return object data as a dictionary.
 
@@ -410,11 +382,6 @@ class File(Base):
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
-    def __init__(self, digest, filename=None, submission=None):
-        self.filename = filename
-        self.digest = digest
-        self.submission = submission
-
     def export_to_dict(self):
         """Return object data as a dictionary.
 
@@ -463,11 +430,6 @@ class Executable(Base):
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
                         passive_deletes=True))
-
-    def __init__(self, digest, filename=None, submission=None):
-        self.filename = filename
-        self.digest = digest
-        self.submission = submission
 
     def export_to_dict(self):
         """Return object data as a dictionary.
@@ -549,20 +511,6 @@ class Evaluation(Base):
     evaluation_sandbox = Column(
         String,
         nullable=True)
-
-    def __init__(self, text, outcome, num=None, submission=None,
-                 memory_used=None, execution_time=None,
-                 execution_wall_clock_time=None,
-                 evaluation_shard=None, evaluation_sandbox=None):
-        self.text = text
-        self.outcome = outcome
-        self.num = num
-        self.submission = submission
-        self.memory_used = memory_used
-        self.execution_time = execution_time
-        self.execution_wall_clock_time = execution_wall_clock_time
-        self.evaluation_shard = evaluation_shard
-        self.evaluation_sandbox = evaluation_sandbox
 
     def export_to_dict(self):
         """Return object data as a dictionary.

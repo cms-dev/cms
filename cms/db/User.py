@@ -150,36 +150,6 @@ class User(Base):
     # Moreover, we have the following methods.
     # get_tokens (defined in SQLAlchemyAll)
 
-    def __init__(self, first_name, last_name, username, password=None,
-                 email=None, ip=None, contest=None, hidden=False,
-                 primary_statements=None, timezone=None,
-                 starting_time=None, extra_time=timedelta(),
-                 messages=None, questions=None, submissions=None,
-                 user_tests=None):
-        if password is None:
-            import random
-            chars = "abcdefghijklmnopqrstuvwxyz"
-            password = "".join([random.choice(chars)
-                                for unused_i in xrange(6)])
-
-        self.first_name = first_name
-        self.last_name = last_name
-        self.username = username
-        self.password = password
-        self.email = email if email is not None else ""
-        self.ip = ip if ip is not None else "0.0.0.0"
-        self.hidden = hidden
-        self.primary_statements = primary_statements \
-                                  if primary_statements is not None else "{}"
-        self.timezone = timezone
-        self.starting_time = starting_time
-        self.extra_time = extra_time
-        self.messages = messages if messages is not None else []
-        self.questions = questions if questions is not None else []
-        self.contest = contest
-        self.submissions = submissions if submissions is not None else []
-        self.user_tests = user_tests if user_tests is not None else []
-
     def export_to_dict(self, skip_submissions=False, skip_user_tests=False):
         """Return object data as a dictionary.
 
@@ -251,12 +221,6 @@ class Message(Base):
                         order_by=[timestamp],
                         cascade="all, delete-orphan",
                         passive_deletes=True))
-
-    def __init__(self, timestamp, subject, text, user=None):
-        self.timestamp = timestamp
-        self.subject = subject
-        self.text = text
-        self.user = user
 
     def export_to_dict(self):
         """Return object data as a dictionary.
@@ -334,18 +298,6 @@ class Question(Base):
                         order_by=[question_timestamp, reply_timestamp],
                         cascade="all, delete-orphan",
                         passive_deletes=True))
-
-    def __init__(self, question_timestamp, subject, text,
-                 reply_timestamp=None, reply_subject=None, reply_text=None,
-                 user=None, ignored=False):
-        self.question_timestamp = question_timestamp
-        self.subject = subject
-        self.text = text
-        self.reply_timestamp = reply_timestamp
-        self.ignored = ignored
-        self.reply_subject = reply_subject
-        self.reply_text = reply_text
-        self.user = user
 
     def export_to_dict(self):
         """Return object data as a dictionary.

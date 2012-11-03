@@ -167,35 +167,6 @@ class Contest(Base):
     # get_submissions (defined in SQLAlchemyAll)
     # get_user_tests (defined in SQLAlchemyAll)
 
-    def __init__(self, name, description, tasks, users,
-                 token_initial=None, token_max=None, token_total=None,
-                 token_min_interval=timedelta(),
-                 token_gen_time=timedelta(), token_gen_number=0,
-                 start=None, stop=None, timezone=None, per_user_time=None,
-                 max_submission_number=None, max_user_test_number=None,
-                 min_submission_interval=None, min_user_test_interval=None,
-                 score_precision=0, announcements=None):
-        self.name = name
-        self.description = description
-        self.tasks = tasks
-        self.users = users
-        self.token_initial = token_initial
-        self.token_max = token_max
-        self.token_total = token_total
-        self.token_min_interval = token_min_interval
-        self.token_gen_time = token_gen_time
-        self.token_gen_number = token_gen_number
-        self.start = start
-        self.stop = stop
-        self.timezone = timezone
-        self.per_user_time = per_user_time
-        self.max_submission_number = max_submission_number
-        self.max_user_test_number = max_user_test_number
-        self.min_submission_interval = min_submission_interval
-        self.min_user_test_interval = min_user_test_interval
-        self.score_precision = score_precision
-        self.announcements = announcements if announcements is not None else []
-
     def export_to_dict(self, skip_submissions=False, skip_user_tests=False):
         """Return object data as a dictionary.
 
@@ -640,12 +611,6 @@ class Announcement(Base):
             order_by=[timestamp],
             cascade="all, delete-orphan",
             passive_deletes=True))
-
-    def __init__(self, timestamp, subject, text, contest=None):
-        self.timestamp = timestamp
-        self.subject = subject
-        self.text = text
-        self.contest = contest
 
     def export_to_dict(self):
         """Return object data as a dictionary.
