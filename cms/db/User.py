@@ -25,16 +25,16 @@ directly (import it from SQLAlchemyAll).
 
 """
 
-from datetime import timedelta
-
-from sqlalchemy import Column, ForeignKey, UniqueConstraint, \
-     Boolean, Integer, String, DateTime, Interval
-from sqlalchemy.dialects import postgresql
+from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
+from sqlalchemy.types import Boolean, Integer, String, DateTime, \
+    Interval
 from sqlalchemy.orm import relationship, backref
 
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Contest import Contest
+
 from cmscommon.DateTime import make_datetime, make_timestamp
+from datetime import timedelta
 
 
 class User(Base):

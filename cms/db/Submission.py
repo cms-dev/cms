@@ -25,11 +25,8 @@ used directly (import  from SQLAlchemyAll).
 
 """
 
-import time
-from datetime import datetime
-
-from sqlalchemy import Column, ForeignKey, UniqueConstraint, \
-     Integer, String, Float, DateTime
+from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
+from sqlalchemy.types import Integer, Float, String, DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
@@ -37,6 +34,7 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Task import Task
 from cms.db.User import User
+
 from cmscommon.DateTime import make_datetime, make_timestamp
 
 

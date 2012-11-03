@@ -25,15 +25,14 @@ directly (import it from SQLAlchemyAll).
 
 """
 
-import time
-from datetime import datetime, timedelta
-
-from sqlalchemy import Column, ForeignKey, CheckConstraint, Integer, String, \
-     DateTime, Interval
+from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
+from sqlalchemy.types import Integer, String, DateTime, Interval
 from sqlalchemy.orm import relationship, backref
 
 from cms.db.SQLAlchemyUtils import Base
+
 from cmscommon.DateTime import make_datetime, make_timestamp
+from datetime import timedelta
 
 
 class Contest(Base):

@@ -25,16 +25,17 @@ directly (import it from SQLAlchemyAll).
 
 """
 
-from datetime import timedelta
-
-from sqlalchemy import Column, ForeignKey, UniqueConstraint, CheckConstraint, \
-     Boolean, Integer, String, Float, Interval
+from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
+    UniqueConstraint
+from sqlalchemy.types import Boolean, Integer, Float, String, Interval
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
 
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Contest import Contest
+
+from datetime import timedelta
 
 
 class Task(Base):
