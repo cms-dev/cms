@@ -166,16 +166,29 @@ refer to as $REPO in the following.
 Configuring and installing CMS
 ------------------------------
 
+The first thing to do is to create the user and the database. For
+PostgreSQL, this is obtained with the following commands (note that
+the user need not to be a superuser, nor to be able to create
+databases nor roles):
+
+```bash
+sudo su postgres
+createuser cmsuser -P
+createdb -O cmsuser cmsdb
+```
+
 There are two configuration files, one for CMS itself and one for the
-rankings. Samples for both files are in $REPO/examples. You want
-to copy them to the same file names but without the ".sample" suffix
+rankings. Samples for both files are in $REPO/examples. You want to
+copy them to the same file names but without the ".sample" suffix
 (that is, to $REPO/examples/cms.conf and
 $REPO/examples/cms.ranking.conf) before modifying them.
 
 - cms.conf is intended to be the same in all servers; all
-  configurations are explained in the file; of particular importance is
-  the definition of core_services, that specifies where the services
-  are going to be run, and how many of them.
+  configurations are explained in the file; of particular importance
+  is the definition of core_services, that specifies where the
+  services are going to be run, and how many of them, and the
+  connecting line for the database, in which you need to specify the
+  name of the user created above and its password.
 
 - cms.ranking.conf is intended to be different on each server that
   will host a ranking. The addresses and log-in information of each
@@ -273,13 +286,16 @@ particular we are aware of the following:
 
 - IOI 2012 (International Olympiad in Informatics), September 2012;
 
-- OII 2011 (Italian Olympiad in Informatics), September 2011;
+- OII 2011 (Italian Olympiad in Informatics), September 2011 and OII
+  2012, October 2012;
 
 - AIIO 2012 (Australian Invitational Informatics Olympiad), February
   2012;
 
 - FARIO 2012 (French-Australian Regional Informatics Olympiad), March
   2012;
+
+- Taipei High School Programming Contest, Taiwan, October 2012;
 
 - training camps for the selections of the national teams of Australia,
   Italy and Latvia.
