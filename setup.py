@@ -76,12 +76,12 @@ def do_setup():
                 os.chmod(file_, 0644)
 
     setup(name="cms",
-          version="0.9.0",
+          version="1.0.0pre",
           author="Matteo Boscariol, Stefano Maggiolo, "
                  "Giovanni Mascellani, Luca Wehrstedt",
           author_email="contestms@freelists.org",
           url="https://github.com/cms-dev/cms",
-          download_url="https://github.com/cms-dev/cms/archive/v0.9.0.tar.gz",
+          download_url="https://github.com/cms-dev/cms/archive/master.tar.gz",
           description="A contest management system and grader "
                       "for IOI-like programming competitions",
           packages=["cms",
