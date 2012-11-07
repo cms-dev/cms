@@ -46,14 +46,17 @@ class Submission(Base):
     __tablename__ = 'submissions'
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # User (id and object) that did the submission.
-    user_id = Column(Integer,
-                     ForeignKey(User.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False,
-                     index=True)
+    user_id = Column(
+        Integer,
+        ForeignKey(User.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     user = relationship(
         User,
         backref=backref("submissions",
@@ -61,11 +64,12 @@ class Submission(Base):
                         passive_deletes=True))
 
     # Task (id and object) of the submission.
-    task_id = Column(Integer,
-                     ForeignKey(Task.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False,
-                     index=True)
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     task = relationship(
         Task,
         backref=backref("submissions",
@@ -73,53 +77,81 @@ class Submission(Base):
                         passive_deletes=True))
 
     # Time of the submission.
-    timestamp = Column(DateTime, nullable=False)
+    timestamp = Column(
+        DateTime,
+        nullable=False)
 
     # Language of submission, or None if not applicable.
-    language = Column(String, nullable=True)
+    language = Column(
+        String,
+        nullable=True)
 
     # Compilation outcome (can be None = yet to compile, "ok" =
     # compilation successful and we can evaluate, "fail" =
     # compilation unsuccessful, throw it away).
-    compilation_outcome = Column(String, nullable=True)
+    compilation_outcome = Column(
+        String,
+        nullable=True)
 
     # String containing output from the sandbox, and the compiler
     # stdout and stderr.
-    compilation_text = Column(String, nullable=True)
+    compilation_text = Column(
+        String,
+        nullable=True)
 
     # Number of attempts of compilation.
-    compilation_tries = Column(Integer, nullable=False)
+    compilation_tries = Column(
+        Integer,
+        nullable=False)
 
     # Worker shard and sanbox where the compilation was performed
-    compilation_shard = Column(Integer, nullable=True)
-    compilation_sandbox = Column(String, nullable=True)
+    compilation_shard = Column(
+        Integer,
+        nullable=True)
+    compilation_sandbox = Column(
+        String,
+        nullable=True)
 
     # Evaluation outcome (can be None = yet to evaluate, "ok" =
     # evaluation successful). At any time, this should be equal to
     # evaluations != [].
-    evaluation_outcome = Column(String, nullable=True)
+    evaluation_outcome = Column(
+        String,
+        nullable=True)
 
     # Number of attempts of evaluation.
-    evaluation_tries = Column(Integer, nullable=False)
+    evaluation_tries = Column(
+        Integer,
+        nullable=False)
 
     # Score as computed by ScoreService. Null means not yet scored.
-    score = Column(Float, nullable=True)
+    score = Column(
+        Float,
+        nullable=True)
 
     # Score details. It is a string containing *simple* HTML code that
     # AWS (and CWS if the user used a token) uses to display the
     # details of the submission. For example, results for each
     # testcases, subtask, etc.
-    score_details = Column(String, nullable=True)
+    score_details = Column(
+        String,
+        nullable=True)
 
     # The same as the last two fields, but from the point of view of
     # the user (when he/she did not play a token).
-    public_score = Column(Float, nullable=True)
-    public_score_details = Column(String, nullable=True)
+    public_score = Column(
+        Float,
+        nullable=True)
+    public_score_details = Column(
+        String,
+        nullable=True)
 
     # Ranking score details. It is a list of strings that are going to
     # be shown in a single row in the table of submission in RWS. JSON
     # encoded.
-    ranking_score_details = Column(String, nullable=True)
+    ranking_score_details = Column(
+        String,
+        nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
@@ -288,14 +320,17 @@ class Token(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Submission (id and object) the token has been played against.
-    submission_id = Column(Integer,
-                           ForeignKey(Submission.id,
-                                      onupdate="CASCADE", ondelete="CASCADE"),
-                           nullable=False,
-                           index=True)
+    submission_id = Column(
+        Integer,
+        ForeignKey(Submission.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     submission = relationship(
         Submission,
         backref=backref(
@@ -306,7 +341,9 @@ class Token(Base):
         single_parent=True)
 
     # Time the token was played.
-    timestamp = Column(DateTime, nullable=False)
+    timestamp = Column(
+        DateTime,
+        nullable=False)
 
     def __init__(self, timestamp=None, submission=None):
         if timestamp is None:
@@ -344,18 +381,25 @@ class File(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Filename and digest of the submitted file.
-    filename = Column(String, nullable=False)
-    digest = Column(String, nullable=False)
+    filename = Column(
+        String,
+        nullable=False)
+    digest = Column(
+        String,
+        nullable=False)
 
     # Submission (id and object) of the submission.
-    submission_id = Column(Integer,
-                           ForeignKey(Submission.id,
-                                      onupdate="CASCADE", ondelete="CASCADE"),
-                           nullable=False,
-                           index=True)
+    submission_id = Column(
+        Integer,
+        ForeignKey(Submission.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     submission = relationship(
         Submission,
         backref=backref('files',
@@ -391,18 +435,25 @@ class Executable(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Filename and digest of the file.
-    filename = Column(String, nullable=False)
-    digest = Column(String, nullable=False)
+    filename = Column(
+        String,
+        nullable=False)
+    digest = Column(
+        String,
+        nullable=False)
 
     # Submission (id and object) of the submission.
-    submission_id = Column(Integer,
-                           ForeignKey(Submission.id,
-                                      onupdate="CASCADE", ondelete="CASCADE"),
-                           nullable=False,
-                           index=True)
+    submission_id = Column(
+        Integer,
+        ForeignKey(Submission.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     submission = relationship(
         Submission,
         backref=backref('executables',
@@ -438,17 +489,22 @@ class Evaluation(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Number of the testcase
-    num = Column(Integer, nullable=False)
+    num = Column(
+        Integer,
+        nullable=False)
 
     # Submission (id and object) of the submission.
-    submission_id = Column(Integer,
-                           ForeignKey(Submission.id,
-                                      onupdate="CASCADE", ondelete="CASCADE"),
-                           nullable=False,
-                           index=True)
+    submission_id = Column(
+        Integer,
+        ForeignKey(Submission.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     submission = relationship(
         Submission,
         backref=backref('evaluations',
@@ -459,23 +515,37 @@ class Evaluation(Base):
 
     # String containing output from the grader (usually "Correct",
     # "Time limit", ...).
-    text = Column(String, nullable=True)
+    text = Column(
+        String,
+        nullable=True)
 
     # String containing the outcome of the evaluation (usually 1.0,
     # ...) not necessary the points awarded, that will be computed by
     # the score type.
-    outcome = Column(String, nullable=True)
+    outcome = Column(
+        String,
+        nullable=True)
 
     # Memory used by the evaluation, in bytes.
-    memory_used = Column(Integer, nullable=True)
+    memory_used = Column(
+        Integer,
+        nullable=True)
 
     # Evaluation's time and wall-clock time, in s.
-    execution_time = Column(Float, nullable=True)
-    execution_wall_clock_time = Column(Float, nullable=True)
+    execution_time = Column(
+        Float,
+        nullable=True)
+    execution_wall_clock_time = Column(
+        Float,
+        nullable=True)
 
     # Worker shard and sanbox where the evaluation was performed
-    evaluation_shard = Column(Integer, nullable=True)
-    evaluation_sandbox = Column(String, nullable=True)
+    evaluation_shard = Column(
+        Integer,
+        nullable=True)
+    evaluation_sandbox = Column(
+        String,
+        nullable=True)
 
     def __init__(self, text, outcome, num=None, submission=None,
                  memory_used=None, execution_time=None,

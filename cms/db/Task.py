@@ -53,17 +53,22 @@ class Task(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Number of the task for sorting.
-    num = Column(Integer, nullable=False)
+    num = Column(
+        Integer,
+        nullable=False)
 
     # Contest (id and object) owning the task.
-    contest_id = Column(Integer,
-                        ForeignKey(Contest.id,
-                                   onupdate="CASCADE", ondelete="CASCADE"),
-                        nullable=False,
-                        index=True)
+    contest_id = Column(
+        Integer,
+        ForeignKey(Contest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     contest = relationship(
         Contest,
         backref=backref('tasks',
@@ -73,28 +78,46 @@ class Task(Base):
                         passive_deletes=True))
 
     # Short name and long human readable title of the task.
-    name = Column(String, nullable=False)
-    title = Column(String, nullable=False)
+    name = Column(
+        String,
+        nullable=False)
+    title = Column(
+        String,
+        nullable=False)
 
     # A JSON-encoded lists of strings: the language codes of the
     # statments that will be highlighted to all users for this task.
-    primary_statements = Column(String, nullable=False)
+    primary_statements = Column(
+        String,
+        nullable=False)
 
     # Time and memory limits for every testcase.
-    time_limit = Column(Float, nullable=True)
-    memory_limit = Column(Integer, nullable=True)
+    time_limit = Column(
+        Float,
+        nullable=True)
+    memory_limit = Column(
+        Integer,
+        nullable=True)
 
     # Name of the TaskType child class suited for the task.
-    task_type = Column(String, nullable=False)
+    task_type = Column(
+        String,
+        nullable=False)
 
     # Parameters for the task type class, JSON encoded.
-    task_type_parameters = Column(String, nullable=False)
+    task_type_parameters = Column(
+        String,
+        nullable=False)
 
     # Name of the ScoreType child class suited for the task.
-    score_type = Column(String, nullable=False)
+    score_type = Column(
+        String,
+        nullable=False)
 
     # Parameters for the scorer class, JSON encoded.
-    score_parameters = Column(String, nullable=False)
+    score_parameters = Column(
+        String,
+        nullable=False)
 
     # Parameter to define the token behaviour. See Contest.py for
     # details. The only change is that these parameters influence the
@@ -102,32 +125,50 @@ class Task(Base):
     # task, a user must satisfy the condition of the contest and the
     # one of the task.
     token_initial = Column(
-        Integer, CheckConstraint("token_initial >= 0"), nullable=True)
+        Integer,
+        CheckConstraint("token_initial >= 0"),
+        nullable=True)
     token_max = Column(
-        Integer, CheckConstraint("token_max > 0"), nullable=True)
+        Integer,
+        CheckConstraint("token_max > 0"),
+        nullable=True)
     token_total = Column(
-        Integer, CheckConstraint("token_total > 0"), nullable=True)
+        Integer,
+        CheckConstraint("token_total > 0"),
+        nullable=True)
     token_min_interval = Column(
-        Interval, CheckConstraint("token_min_interval >= '0 seconds'"),
+        Interval,
+        CheckConstraint("token_min_interval >= '0 seconds'"),
         nullable=False)
     token_gen_time = Column(
-        Interval, CheckConstraint("token_gen_time >= '0 seconds'"),
+        Interval,
+        CheckConstraint("token_gen_time >= '0 seconds'"),
         nullable=False)
     token_gen_number = Column(
-        Integer, CheckConstraint("token_gen_number >= 0"), nullable=False)
+        Integer,
+        CheckConstraint("token_gen_number >= 0"),
+        nullable=False)
 
     # Maximum number of submissions or usertests allowed for each user
     # on this task during the whole contest or None to not enforce
     # this limitation.
     # TODO Add some CheckConstraints.
-    max_submission_number = Column(Integer, nullable=True)
-    max_usertest_number = Column(Integer, nullable=True)
+    max_submission_number = Column(
+        Integer,
+        nullable=True)
+    max_usertest_number = Column(
+        Integer,
+        nullable=True)
 
     # Minimum interval between two submissions or usertests for this
     # task, or None to not enforce this limitation.
     # TODO Add some CheckConstraints.
-    min_submission_interval = Column(Interval, nullable=True)
-    min_usertest_interval = Column(Interval, nullable=True)
+    min_submission_interval = Column(
+        Interval,
+        nullable=True)
+    min_usertest_interval = Column(
+        Interval,
+        nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
@@ -279,25 +320,36 @@ class Testcase(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Number of the task for sorting.
-    num = Column(Integer, nullable=False)
+    num = Column(
+        Integer,
+        nullable=False)
 
     # If the testcase outcome is going to be showed to the user (even
     # without playing a token).
-    public = Column(Boolean, nullable=False)
+    public = Column(
+        Boolean,
+        nullable=False)
 
     # Digests of the input and output files.
-    input = Column(String, nullable=False)
-    output = Column(String, nullable=False)
+    input = Column(
+        String,
+        nullable=False)
+    output = Column(
+        String,
+        nullable=False)
 
     # Task (id and object) owning the testcase.
-    task_id = Column(Integer,
-                     ForeignKey(Task.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False,
-                     index=True)
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     task = relationship(
         Task,
         backref=backref('testcases',
@@ -333,18 +385,25 @@ class Attachment(Base):
                          name='cst_attachments_task_id_filename'),
         )
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Filename and digest of the manager.
-    filename = Column(String, nullable=False)
-    digest = Column(String, nullable=False)
+    filename = Column(
+        String,
+        nullable=False)
+    digest = Column(
+        String,
+        nullable=False)
 
     # Task (id and object) owning the attachment.
-    task_id = Column(Integer,
-                     ForeignKey(Task.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False,
-                     index=True)
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     task = relationship(
         Task,
         backref=backref('attachments',
@@ -378,18 +437,25 @@ class Manager(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Filename and digest of the manager.
-    filename = Column(String, nullable=False)
-    digest = Column(String, nullable=False)
+    filename = Column(
+        String,
+        nullable=False)
+    digest = Column(
+        String,
+        nullable=False)
 
     # Task (id and object) owning the manager.
-    task_id = Column(Integer,
-                     ForeignKey(Task.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False,
-                     index=True)
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     task = relationship(
         Task,
         backref=backref('managers',
@@ -420,14 +486,17 @@ class SubmissionFormatElement(Base):
     __tablename__ = 'submission_format_elements'
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Task (id and object) owning the submission format.
-    task_id = Column(Integer,
-                     ForeignKey(Task.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False,
-                     index=True)
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     task = relationship(
         Task,
         backref=backref('submission_format',
@@ -435,7 +504,9 @@ class SubmissionFormatElement(Base):
                         passive_deletes=True))
 
     # Format of the given submission file.
-    filename = Column(String)
+    filename = Column(
+        String,
+        nullable=False)
 
     def __init__(self, filename, task=None):
         self.filename = filename
@@ -460,24 +531,31 @@ class Statement(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Code for the language the statement is written in.
     # It can be an arbitrary string, but if it's in the form "en" or "en_US"
     # it will be rendered appropriately on the interface (i.e. "English" and
     # "English (United States of America)"). These codes need to be taken from
     # ISO 639-1 and ISO 3166-1 respectively.
-    language = Column(String, nullable=False)
+    language = Column(
+        String,
+        nullable=False)
 
     # Digest of the file.
-    digest = Column(String, nullable=False)
+    digest = Column(
+        String,
+        nullable=False)
 
     # Task (id and object) the statement is for.
-    task_id = Column(Integer,
-                     ForeignKey(Task.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False,
-                     index=True)
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     task = relationship(
         Task,
         backref=backref('statements',

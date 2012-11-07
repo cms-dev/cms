@@ -46,14 +46,20 @@ class FSObject(Base):
     # ideally al the columns that refer digests could be declared as
     # foreign keys against this column, but we intentiolally avoid
     # doing this to keep uncoupled the database and the file storage
-    digest = Column(String, primary_key=True)
+    digest = Column(
+        String,
+        primary_key=True)
 
     # OID of the large object in the database
-    loid = Column(Integer, nullable=False)
+    loid = Column(
+        Integer,
+        nullable=False)
 
     # Human-readable description, primarily meant for debugging (i.e,
     # should have no semantic value from the viewpoint of CMS)
-    description = Column(String, nullable=True)
+    description = Column(
+        String,
+        nullable=True)
 
     def __init__(self, digest=None, loid=0, description=None):
         self.digest = digest

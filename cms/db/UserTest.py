@@ -43,14 +43,17 @@ class UserTest(Base):
     __tablename__ = 'user_tests'
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # User (id and object) that requested the test.
-    user_id = Column(Integer,
-                     ForeignKey(User.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False,
-                     index=True)
+    user_id = Column(
+        Integer,
+        ForeignKey(User.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     user = relationship(
         User,
         backref=backref("user_tests",
@@ -58,11 +61,12 @@ class UserTest(Base):
                         passive_deletes=True))
 
     # Task (id and object) of the test.
-    task_id = Column(Integer,
-                     ForeignKey(Task.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False,
-                     index=True)
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     task = relationship(
         Task,
         backref=backref("user_tests",
@@ -70,47 +74,79 @@ class UserTest(Base):
                         passive_deletes=True))
 
     # Time of the request.
-    timestamp = Column(DateTime, nullable=False)
+    timestamp = Column(
+        DateTime,
+        nullable=False)
 
     # Language of test, or None if not applicable.
-    language = Column(String, nullable=True)
+    language = Column(
+        String,
+        nullable=True)
 
     # Input (provided by the user) and output files' digests for this
     # test
-    input = Column(String, nullable=False)
-    output = Column(String, nullable=True)
+    input = Column(
+        String,
+        nullable=False)
+    output = Column(
+        String,
+        nullable=True)
 
     # Compilation outcome (can be None = yet to compile, "ok" =
     # compilation successful and we can evaluate, "fail" =
     # compilation unsuccessful, throw it away).
-    compilation_outcome = Column(String, nullable=True)
+    compilation_outcome = Column(
+        String,
+        nullable=True)
 
     # String containing output from the sandbox, and the compiler
     # stdout and stderr.
-    compilation_text = Column(String, nullable=True)
+    compilation_text = Column(
+        String,
+        nullable=True)
 
     # Number of attempts of compilation.
-    compilation_tries = Column(Integer, nullable=False)
+    compilation_tries = Column(
+        Integer,
+        nullable=False)
 
     # Worker shard and sandbox where the compilation was performed
-    compilation_shard = Column(Integer, nullable=True)
-    compilation_sandbox = Column(String, nullable=True)
+    compilation_shard = Column(
+        Integer,
+        nullable=True)
+    compilation_sandbox = Column(
+        String,
+        nullable=True)
 
     # Evaluation outcome (can be None = yet to evaluate, "ok" =
     # evaluation successful).
-    evaluation_outcome = Column(String, nullable=True)
-    evaluation_text = Column(String, nullable=True)
+    evaluation_outcome = Column(
+        String,
+        nullable=True)
+    evaluation_text = Column(
+        String,
+        nullable=True)
 
     # Number of attempts of evaluation.
-    evaluation_tries = Column(Integer, nullable=False)
+    evaluation_tries = Column(
+        Integer,
+        nullable=False)
 
     # Worker shard and sandbox wgere the evaluation was performed
-    evaluation_shard = Column(Integer, nullable=True)
-    evaluation_sandbox = Column(String, nullable=True)
+    evaluation_shard = Column(
+        Integer,
+        nullable=True)
+    evaluation_sandbox = Column(
+        String,
+        nullable=True)
 
     # Other information about the execution
-    memory_used = Column(Integer, nullable=True)
-    execution_time = Column(Float, nullable=True)
+    memory_used = Column(
+        Integer,
+        nullable=True)
+    execution_time = Column(
+        Float,
+        nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
@@ -211,18 +247,25 @@ class UserTestFile(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Filename and digest of the submitted file.
-    filename = Column(String, nullable=False)
-    digest = Column(String, nullable=False)
+    filename = Column(
+        String,
+        nullable=False)
+    digest = Column(
+        String,
+        nullable=False)
 
     # Submission (id and object) of the submission.
-    user_test_id = Column(Integer,
-                          ForeignKey(UserTest.id,
-                                     onupdate="CASCADE", ondelete="CASCADE"),
-                          nullable=False,
-                          index=True)
+    user_test_id = Column(
+        Integer,
+        ForeignKey(UserTest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     user_test = relationship(
         UserTest,
         backref=backref('files',
@@ -258,18 +301,25 @@ class UserTestExecutable(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Filename and digest of the file.
-    filename = Column(String, nullable=False)
-    digest = Column(String, nullable=False)
+    filename = Column(
+        String,
+        nullable=False)
+    digest = Column(
+        String,
+        nullable=False)
 
     # Submission (id and object) of the submission.
-    user_test_id = Column(Integer,
-                          ForeignKey(UserTest.id,
-                                     onupdate="CASCADE", ondelete="CASCADE"),
-                          nullable=False,
-                          index=True)
+    user_test_id = Column(
+        Integer,
+        ForeignKey(UserTest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     user_test = relationship(
         UserTest,
         backref=backref('executables',
@@ -305,18 +355,25 @@ class UserTestManager(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Filename and digest of the manager.
-    filename = Column(String, nullable=False)
-    digest = Column(String, nullable=False)
+    filename = Column(
+        String,
+        nullable=False)
+    digest = Column(
+        String,
+        nullable=False)
 
     # Task (id and object) owning the manager.
-    user_test_id = Column(Integer,
-                          ForeignKey(UserTest.id,
-                                     onupdate="CASCADE", ondelete="CASCADE"),
-                          nullable=False,
-                          index=True)
+    user_test_id = Column(
+        Integer,
+        ForeignKey(UserTest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     user_test = relationship(
         UserTest,
         backref=backref('managers',

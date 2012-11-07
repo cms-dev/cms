@@ -47,12 +47,18 @@ class Contest(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Short name of the contest, and longer description. Both human
     # readable.
-    name = Column(String, nullable=False)
-    description = Column(String, nullable=False)
+    name = Column(
+        String,
+        nullable=False)
+    description = Column(
+        String,
+        nullable=False)
 
     # Follows the enforcement of token for any person, for all the
     # task. This enforcements add up to the ones defined task-wise.
@@ -60,32 +66,48 @@ class Contest(Base):
     # token_initial is the initial number of tokens available, or None
     # to disable completely the tokens.
     token_initial = Column(
-        Integer, CheckConstraint("token_initial >= 0"), nullable=True)
+        Integer,
+        CheckConstraint("token_initial >= 0"),
+        nullable=True)
     # token_max is the maximum number in any given time, or None not
     # to enforce this limitation.
     token_max = Column(
-        Integer, CheckConstraint("token_max > 0"), nullable=True)
+        Integer,
+        CheckConstraint("token_max > 0"),
+        nullable=True)
     # token_total is the maximum number that can be used in the whole
     # contest, or None not to enforce this limitation.
     token_total = Column(
-        Integer, CheckConstraint("token_total > 0"), nullable=True)
+        Integer,
+        CheckConstraint("token_total > 0"),
+        nullable=True)
     # token_min_interval is the minimum interval in seconds between
     # two uses of a token (set it to 0 to not enforce any limitation).
     token_min_interval = Column(
-        Interval, CheckConstraint("token_min_interval >= '0 seconds'"), nullable=False)
+        Interval,
+        CheckConstraint("token_min_interval >= '0 seconds'"),
+        nullable=False)
     # Every token_gen_time from the beginning of the contest we generate
     # token_gen_number tokens. If _gen_number is 0 no tokens will be
     # generated, if _gen_number is > 0 and _gen_time is 0 tokens will be
     # infinite. In case of infinite tokens, the values of _initial, _max
     # and _total will be ignored (except when token_initial is None).
     token_gen_time = Column(
-        Interval, CheckConstraint("token_gen_time >= '0 seconds'"), nullable=False)
+        Interval,
+        CheckConstraint("token_gen_time >= '0 seconds'"),
+        nullable=False)
     token_gen_number = Column(
-        Integer, CheckConstraint("token_gen_number >= 0"), nullable=False)
+        Integer,
+        CheckConstraint("token_gen_number >= 0"),
+        nullable=False)
 
     # Beginning and ending of the contest, unix times.
-    start = Column(DateTime, nullable=True)
-    stop = Column(DateTime, nullable=True)
+    start = Column(
+        DateTime,
+        nullable=True)
+    stop = Column(
+        DateTime,
+        nullable=True)
 
     # Timezone for the contest. All timestamps in CWS will be shown
     # using the timezone associated to the logged-in user or (if it's
@@ -93,22 +115,34 @@ class Contest(Base):
     # contest or (if it's None or an invalid string) the local
     # timezone of the server. This value has to be a string like
     # "Europe/Rome", "Australia/Sydney", "America/New_York", etc.
-    timezone = Column(String, nullable=True)
+    timezone = Column(
+        String,
+        nullable=True)
 
     # Max contest time for each user in seconds.
-    per_user_time = Column(Interval, nullable=True)
+    per_user_time = Column(
+        Interval,
+        nullable=True)
 
     # Maximum number of submissions or usertests allowed for each user
     # during the whole contest or None to not enforce this limitation.
     # TODO Add some CheckConstraints.
-    max_submission_number = Column(Integer, nullable=True)
-    max_usertest_number = Column(Integer, nullable=True)
+    max_submission_number = Column(
+        Integer,
+        nullable=True)
+    max_usertest_number = Column(
+        Integer,
+        nullable=True)
 
     # Minimum interval between two submissions or usertests, or None to
     # not enforce this limitation.
     # TODO Add some CheckConstraints.
-    min_submission_interval = Column(Interval, nullable=True)
-    min_usertest_interval = Column(Interval, nullable=True)
+    min_submission_interval = Column(
+        Interval,
+        nullable=True)
+    min_usertest_interval = Column(
+        Interval,
+        nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
@@ -527,19 +561,28 @@ class Announcement(Base):
     __tablename__ = 'announcements'
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Time, subject and text of the announcements.
-    timestamp = Column(DateTime, nullable=False)
-    subject = Column(String, nullable=False)
-    text = Column(String, nullable=False)
+    timestamp = Column(
+        DateTime,
+        nullable=False)
+    subject = Column(
+        String,
+        nullable=False)
+    text = Column(
+        String,
+        nullable=False)
 
     # Contest for which the announcements are.
-    contest_id = Column(Integer,
-                        ForeignKey(Contest.id,
-                                   onupdate="CASCADE", ondelete="CASCADE"),
-                        nullable=False,
-                        index=True)
+    contest_id = Column(
+        Integer,
+        ForeignKey(Contest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     contest = relationship(
         Contest,
         backref=backref(

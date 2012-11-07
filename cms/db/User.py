@@ -51,31 +51,48 @@ class User(Base):
         )
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Real name (human readable) of the user.
-    first_name = Column(String, nullable=False)
-    last_name = Column(String, nullable=False)
+    first_name = Column(
+        String,
+        nullable=False)
+    last_name = Column(
+        String,
+        nullable=False)
 
     # Username and password to log in the CWS.
-    username = Column(String, nullable=False)
-    password = Column(String, nullable=False)
+    username = Column(
+        String,
+        nullable=False)
+    password = Column(
+        String,
+        nullable=False)
 
     # Email for any communications in case of remote contest.
-    email = Column(String, nullable=False)
+    email = Column(
+        String,
+        nullable=False)
 
     # User can log in CWS only from this ip.
-    ip = Column(String, nullable=True)
+    ip = Column(
+        String,
+        nullable=True)
 
     # A hidden user is used only for debugging purpose.
-    hidden = Column(Boolean, nullable=False)
+    hidden = Column(
+        Boolean,
+        nullable=False)
 
     # Contest (id and object) to which the user is participating.
-    contest_id = Column(Integer,
-                        ForeignKey(Contest.id,
-                                   onupdate="CASCADE", ondelete="CASCADE"),
-                        nullable=False,
-                        index=True)
+    contest_id = Column(
+        Integer,
+        ForeignKey(Contest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     contest = relationship(
         Contest,
         backref=backref("users",
@@ -85,7 +102,9 @@ class User(Base):
     # A JSON-encoded dictionary of lists of strings: statements["a"]
     # contains the language codes of the statments that will be
     # highlighted to this user for task "a".
-    primary_statements = Column(String, nullable=False)
+    primary_statements = Column(
+        String,
+        nullable=False)
 
     # Timezone for the user. All timestamps in CWS will be shown using
     # the timezone associated to the logged-in user or (if it's None
@@ -93,15 +112,21 @@ class User(Base):
     # (if it's None or an invalid string) the local timezone of the
     # server. This value has to be a string like "Europe/Rome",
     # "Australia/Sydney", "America/New_York", etc.
-    timezone = Column(String, nullable=True)
+    timezone = Column(
+        String,
+        nullable=True)
 
     # Starting time: for contests where every user has at most x hours
     # of the y > x hours totally available. This is the first time the
     # user logged in while the contest was active.
-    starting_time = Column(DateTime, nullable=True)
+    starting_time = Column(
+        DateTime,
+        nullable=True)
 
     # An extra amount of time allocated for this user
-    extra_time = Column(Interval, nullable=False)
+    extra_time = Column(
+        Interval,
+        nullable=False)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
@@ -175,21 +200,30 @@ class Message(Base):
     __tablename__ = 'messages'
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Time the message was sent.
-    timestamp = Column(DateTime, nullable=False)
+    timestamp = Column(
+        DateTime,
+        nullable=False)
 
     # Subject and body of the message.
-    subject = Column(String, nullable=False)
-    text = Column(String, nullable=False)
+    subject = Column(
+        String,
+        nullable=False)
+    text = Column(
+        String,
+        nullable=False)
 
     # User (id and object) owning the message.
-    user_id = Column(Integer,
-                     ForeignKey(User.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False,
-                     index=True)
+    user_id = Column(
+        Integer,
+        ForeignKey(User.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     user = relationship(
         User,
         backref=backref('messages',
@@ -229,32 +263,49 @@ class Question(Base):
     __tablename__ = 'questions'
 
     # Auto increment primary key.
-    id = Column(Integer, primary_key=True)
+    id = Column(
+        Integer,
+        primary_key=True)
 
     # Time the question was made.
-    question_timestamp = Column(DateTime, nullable=False)
+    question_timestamp = Column(
+        DateTime,
+        nullable=False)
 
     # Subject and body of the question.
-    subject = Column(String, nullable=False)
-    text = Column(String, nullable=False)
+    subject = Column(
+        String,
+        nullable=False)
+    text = Column(
+        String,
+        nullable=False)
 
     # Time the reply was sent.
-    reply_timestamp = Column(DateTime, nullable=True)
+    reply_timestamp = Column(
+        DateTime,
+        nullable=True)
 
     # Has this message been ignored by the admins?
-    ignored = Column(Boolean, nullable=False)
+    ignored = Column(
+        Boolean,
+        nullable=False)
 
     # Short (as in 'chosen amongst some predetermined choices') and
     # long answer.
-    reply_subject = Column(String, nullable=True)
-    reply_text = Column(String, nullable=True)
+    reply_subject = Column(
+        String,
+        nullable=True)
+    reply_text = Column(
+        String,
+        nullable=True)
 
     # User (id and object) owning the question.
-    user_id = Column(Integer,
-                     ForeignKey(User.id,
-                                onupdate="CASCADE", ondelete="CASCADE"),
-                     nullable=False,
-                     index=True)
+    user_id = Column(
+        Integer,
+        ForeignKey(User.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
     user = relationship(
         User,
         backref=backref('questions',
