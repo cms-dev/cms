@@ -90,7 +90,6 @@ class ContestExporter:
     def __init__(self, contest_id, dump, export_target,
                  skip_submissions, skip_user_tests, light):
         self.contest_id = contest_id
-        self.dump = dump
         self.skip_submissions = skip_submissions
         self.skip_user_tests = skip_user_tests
         self.light = light
@@ -162,10 +161,6 @@ class ContestExporter:
                 json.dump(contest.export_to_dict(self.skip_submissions, self.skip_user_tests),
                           fout, indent=4)
 
-        if self.dump:
-            if not self.dump_database(export_dir):
-                return False
-
         # If the admin requested export to file, we do that.
         if archive_info["write_mode"] != "":
             archive = tarfile.open(self.export_target,
@@ -176,57 +171,6 @@ class ContestExporter:
 
         logger.info("Export finished.")
         logger.operation = ""
-
-        return True
-
-    def dump_database(self, export_dir):
-        """Dump the whole database. This is never used; however, this
-        part is retained for historical reasons.
-
-        """
-        # Warning: this part depends on the specific database used.
-        logger.info("Dumping SQL database.")
-        (engine, connection) = config.database.split(':', 1)
-        db_exportfile = os.path.join(export_dir, "database_dump.sql")
-
-        # Export procedure for PostgreSQL.
-        if engine == 'postgresql':
-            db_regex = re.compile('//(\w*):(\w*)@(\w*)/(\w*)')
-            db_match = db_regex.match(connection)
-            if db_match is not None:
-                username, password, host, database = db_match.groups()
-                os.environ['PGPASSWORD'] = password
-                export_res = os.system('pg_dump -h %s -U %s -w %s -x " \
-                    "--attribute-inserts > %s' % (host, username, database,
-                                                  db_exportfile))
-                del os.environ['PGPASSWORD']
-                if export_res != 0:
-                    logger.critical("Database export failed.")
-                    return False
-            else:
-                logger.critical("Cannot obtain parameters for "
-                                "database connection.")
-                return False
-
-        # Export procedure for SQLite.
-        elif engine == 'sqlite':
-            db_regex = re.compile('///(.*)')
-            db_match = db_regex.match(connection)
-            if db_match is not None:
-                dbfile, = db_match.groups()
-                export_res = os.system('sqlite3 %s .dump > %s' %
-                                       (dbfile, db_exportfile))
-                if export_res != 0:
-                    logger.critical("Database export failed.")
-                    return False
-            else:
-                logger.critical("Cannot obtain parameters for "
-                                "database connection.")
-                return False
-
-        else:
-            logger.critical("Database engine not supported. :-(")
-            return False
 
         return True
 
@@ -274,10 +218,6 @@ def main():
     parser = argparse.ArgumentParser(description="Exporter of CMS contests.")
     parser.add_argument("-c", "--contest-id", action="store", type=int,
                         help="id of contest to export")
-    parser.add_argument("-d", "--dump-database", action="store_true",
-                        help="include a SQL dump of the database (this will "
-                        "disclose data about other contests stored in the "
-                        "same database) - deprecated")
     parser.add_argument("-s", "--skip-submissions", action="store_true",
                         help="don't export submissions, only contest data")
     parser.add_argument("-t", "--skip-user-tests", action="store_true",
@@ -294,7 +234,6 @@ def main():
         args.contest_id = ask_for_contest()
 
     ContestExporter(contest_id=args.contest_id,
-                    dump=args.dump_database,
                     export_target=args.export_target,
                     skip_submissions=args.skip_submissions,
                     skip_user_tests=args.skip_user_tests,
