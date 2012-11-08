@@ -152,22 +152,24 @@ class Task(Base):
     # Maximum number of submissions or usertests allowed for each user
     # on this task during the whole contest or None to not enforce
     # this limitation.
-    # TODO Add some CheckConstraints.
     max_submission_number = Column(
         Integer,
+        CheckConstraint("max_submission_number > 0"),
         nullable=True)
     max_usertest_number = Column(
         Integer,
+        CheckConstraint("max_usertest_number > 0"),
         nullable=True)
 
     # Minimum interval between two submissions or usertests for this
     # task, or None to not enforce this limitation.
-    # TODO Add some CheckConstraints.
     min_submission_interval = Column(
         Interval,
+        CheckConstraint("max_submission_interval > '0 seconds'"),
         nullable=True)
     min_usertest_interval = Column(
         Interval,
+        CheckConstraint("max_usertest_interval > '0 seconds'"),
         nullable=True)
 
     # Follows the description of the fields automatically added by

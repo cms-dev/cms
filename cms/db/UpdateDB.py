@@ -69,6 +69,7 @@ class ScriptsContainer(object):
             ("20120919", "add_ranking_score_details"),
             ("20120923", "add_time_and_memory_on_tests"),
             ("20121107", "fix_primary_statements"),
+            ("20121108", "add_limit_constraints"),
             ]
         self.list.sort()
 
@@ -883,6 +884,23 @@ ALTER COLUMN primary_statements SET NOT NULL;""")
             session.execute("""\
 ALTER TABLE users
 ALTER COLUMN primary_statements SET NOT NULL;""")
+
+    @staticmethod
+    def add_limit_constraints():
+        """Add check constraints for min_*_interval and max_*_number.
+
+        """
+        with SessionGen(commit=True) as session:
+            for table in ["contests", "tasks"]:
+                for item in ["submission", "usertest"]:
+                    session.execute("ALTER TABLE %(table)s "
+                                    "ADD CONSTRAINT %(table)s_min_%(item)s_interval_check "
+                                    "CHECK (min_%(item)s_interval > '0 seconds');" %
+                                    {"table": table, "item": item})
+                    session.execute("ALTER TABLE %(table)s "
+                                    "ADD CONSTRAINT %(table)s_max_%(item)s_number_check "
+                                    "CHECK (max_%(item)s_number > 0);" %
+                                    {"table": table, "item": item})
 
 
 def execute_single_script(scripts_container, script):
