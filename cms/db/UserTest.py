@@ -108,7 +108,8 @@ class UserTest(Base):
     # Number of attempts of compilation.
     compilation_tries = Column(
         Integer,
-        nullable=False)
+        nullable=False,
+        default=0)
 
     # Worker shard and sandbox where the compilation was performed
     compilation_shard = Column(
@@ -130,7 +131,8 @@ class UserTest(Base):
     # Number of attempts of evaluation.
     evaluation_tries = Column(
         Integer,
-        nullable=False)
+        nullable=False,
+        default=0)
 
     # Worker shard and sandbox wgere the evaluation was performed
     evaluation_shard = Column(

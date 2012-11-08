@@ -86,7 +86,8 @@ class Contest(Base):
     token_min_interval = Column(
         Interval,
         CheckConstraint("token_min_interval >= '0 seconds'"),
-        nullable=False)
+        nullable=False,
+        default=timedelta())
     # Every token_gen_time from the beginning of the contest we generate
     # token_gen_number tokens. If _gen_number is 0 no tokens will be
     # generated, if _gen_number is > 0 and _gen_time is 0 tokens will be
@@ -95,11 +96,13 @@ class Contest(Base):
     token_gen_time = Column(
         Interval,
         CheckConstraint("token_gen_time >= '0 seconds'"),
-        nullable=False)
+        nullable=False,
+        default=timedelta())
     token_gen_number = Column(
         Integer,
         CheckConstraint("token_gen_number >= 0"),
-        nullable=False)
+        nullable=False,
+        default=0)
 
     # Beginning and ending of the contest, unix times.
     start = Column(

@@ -89,7 +89,8 @@ class Task(Base):
     # statments that will be highlighted to all users for this task.
     primary_statements = Column(
         String,
-        nullable=False)
+        nullable=False,
+        default="[]")
 
     # Time and memory limits for every testcase.
     time_limit = Column(
@@ -139,15 +140,18 @@ class Task(Base):
     token_min_interval = Column(
         Interval,
         CheckConstraint("token_min_interval >= '0 seconds'"),
-        nullable=False)
+        nullable=False,
+        default=timedelta())
     token_gen_time = Column(
         Interval,
         CheckConstraint("token_gen_time >= '0 seconds'"),
-        nullable=False)
+        nullable=False,
+        default=timedelta())
     token_gen_number = Column(
         Integer,
         CheckConstraint("token_gen_number >= 0"),
-        nullable=False)
+        nullable=False,
+        default=0)
 
     # Maximum number of submissions or user_tests allowed for each user
     # on this task during the whole contest or None to not enforce
@@ -350,7 +354,8 @@ class Testcase(Base):
     # without playing a token).
     public = Column(
         Boolean,
-        nullable=False)
+        nullable=False,
+        default=False)
 
     # Digests of the input and output files.
     input = Column(

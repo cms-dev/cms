@@ -37,6 +37,12 @@ from cmscommon.DateTime import make_datetime, make_timestamp
 from datetime import timedelta
 
 
+def generate_random_password():
+    import random
+    chars = "abcdefghijklmnopqrstuvwxyz"
+    return "".join([random.choice(chars) for unused_i in xrange(6)])
+
+
 class User(Base):
     """Class to store a 'user participating in a contest'. Not to be
     used directly (import it from SQLAlchemyAll).
@@ -69,22 +75,26 @@ class User(Base):
         nullable=False)
     password = Column(
         String,
-        nullable=False)
+        nullable=False,
+        default=generate_random_password)
 
     # Email for any communications in case of remote contest.
     email = Column(
         String,
-        nullable=False)
+        nullable=False,
+        default='')
 
     # User can log in CWS only from this ip.
     ip = Column(
         String,
-        nullable=True)
+        nullable=True,
+        default='0.0.0.0')
 
     # A hidden user is used only for debugging purpose.
     hidden = Column(
         Boolean,
-        nullable=False)
+        nullable=False,
+        default=False)
 
     # Contest (id and object) to which the user is participating.
     contest_id = Column(
@@ -104,7 +114,8 @@ class User(Base):
     # highlighted to this user for task "a".
     primary_statements = Column(
         String,
-        nullable=False)
+        nullable=False,
+        default="{}")
 
     # Timezone for the user. All timestamps in CWS will be shown using
     # the timezone associated to the logged-in user or (if it's None
@@ -126,7 +137,8 @@ class User(Base):
     # An extra amount of time allocated for this user
     extra_time = Column(
         Interval,
-        nullable=False)
+        nullable=False,
+        default=timedelta())
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
@@ -297,7 +309,8 @@ class Question(Base):
     # Has this message been ignored by the admins?
     ignored = Column(
         Boolean,
-        nullable=False)
+        nullable=False,
+        default=False)
 
     # Short (as in 'chosen amongst some predetermined choices') and
     # long answer.
