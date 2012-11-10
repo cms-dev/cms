@@ -97,7 +97,7 @@ class SessionGen:
         self.session.close()
 
 
-class Base(declarative_base(db)):
+class Base(object):
     """Base class for all classes managed by SQLAlchemy. Extending the
     base class given by SQLAlchemy.
 
@@ -151,6 +151,9 @@ class Base(declarative_base(db)):
 
         """
         return cls(**data)
+
+
+Base = declarative_base(db, cls=Base)
 
 
 metadata = Base.metadata
