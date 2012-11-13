@@ -243,5 +243,5 @@ class AbstractSubmissionFromDB:
                                            file_obj=file_obj)
         if filename in self.submission.executables:
             del self.submission.executables[filename]
-        self.submission.get_session().add(Executable(digest, filename,
-                                                     self.submission))
+        self.submission.sa_session.add(Executable(digest, filename,
+                                                  self.submission))

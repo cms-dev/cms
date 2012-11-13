@@ -83,7 +83,7 @@ class FSObject(Base):
         if mode is None:
             mode = 'rb'
         if session is None:
-            session = self.get_session()
+            session = self.sa_session
 
         # Here we relay on the fact that we're using psycopg2 as
         # PostgreSQL backend
@@ -103,7 +103,7 @@ class FSObject(Base):
 
         """
         try:
-            lo = lobject(self.get_session().connection().connection.connection,
+            lo = lobject(self.sa_session.connection().connection.connection,
                          self.loid)
             lo.close()
             return True
@@ -116,7 +116,7 @@ class FSObject(Base):
         """
         with self.get_lobject() as lo:
             lo.unlink()
-        self.get_session().delete(self)
+        self.sa_session.delete(self)
 
     @classmethod
     def get_from_digest(cls, digest, session):

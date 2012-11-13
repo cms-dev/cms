@@ -23,7 +23,8 @@ from sqlalchemy import create_engine, __version__ as sqlalchemy_version
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
-from sqlalchemy.orm import session as sessionlib
+from sqlalchemy.orm.session import object_session
+from sqlalchemy.orm import object_mapper
 
 from cms import config
 
@@ -106,6 +107,22 @@ class Base(object):
     # to a table.
     __abstract__ = True
 
+    @property
+    def sa_mapper(self):
+        return object_mapper(self)
+
+    @property
+    def sa_session(self):
+        return object_session(self)
+
+    @property
+    def sa_primary_key(self):
+        return self.sa_mapper.primary_key_from_instance(self)
+
+    @property
+    def sa_identity_key(self):
+        return self.sa_mapper.identity_key_from_instance(self)
+
     @classmethod
     def get_from_id(cls, _id, session):
         """Given a session and an id, this class method returns the object
@@ -123,15 +140,6 @@ class Base(object):
         except NoResultFound:
             return None
         except MultipleResultsFound:
-            return None
-
-    def get_session(self):
-        """Get the session to which this object is bound, possibly None.
-
-        """
-        try:
-            return sessionlib.object_session(self)
-        except:
             return None
 
     def export_to_dict(self):

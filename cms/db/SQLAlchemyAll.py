@@ -50,7 +50,7 @@ def get_submissions(self):
     returns (list): list of submissions.
 
     """
-    return self.get_session().query(Submission).join(Task).\
+    return self.sa_session.query(Submission).join(Task).\
            filter(Task.contest == self).all()
 
 
@@ -61,7 +61,7 @@ def get_user_tests(self):
     return (list): list of user tests.
 
     """
-    return self.get_session().query(UserTest).join(User).\
+    return self.sa_session.query(UserTest).join(User).\
         filter(User.contest == self).all()
 
 Contest.get_submissions = get_submissions
@@ -77,7 +77,7 @@ def get_tokens(self):
     returns (list): list of tokens.
 
     """
-    return self.get_session().query(Token).join(Submission).\
+    return self.sa_session.query(Token).join(Submission).\
            filter(Submission.user == self).all()
 User.get_tokens = get_tokens
 

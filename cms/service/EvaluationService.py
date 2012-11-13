@@ -1114,7 +1114,7 @@ class EvaluationService(Service):
         # otherwise the ScoringService wouldn't receive the updated
         # submission.
         if submission.evaluated():
-            submission.get_session().commit()
+            submission.sa_session.commit()
             self.scoring_service.new_evaluation(submission_id=submission.id)
         # Evaluation unsuccessful, we requeue (or not).
         elif submission.evaluation_tries > \
