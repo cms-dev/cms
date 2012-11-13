@@ -22,7 +22,7 @@
 from sqlalchemy import create_engine, __version__ as sqlalchemy_version
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.orm.exc import NoResultFound, MultipleResultsFound
+from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.orm import object_mapper
 
@@ -124,22 +124,25 @@ class Base(object):
         return self.sa_mapper.identity_key_from_instance(self)
 
     @classmethod
-    def get_from_id(cls, _id, session):
+    def get_from_id(cls, id_, session):
         """Given a session and an id, this class method returns the object
         corresponding to the class and id, if existing.
 
         cls (class): the class to which the method is attached
-        _id (string): the id of the object we want
+        id_ (string): the id of the object we want
         session (SQLAlchemy session): the session to query
 
         return (object): the wanted object, or None
 
         """
         try:
-            return session.query(cls).filter(cls.id == _id).one()
-        except NoResultFound:
-            return None
-        except MultipleResultsFound:
+            # This method returns None if the object isn't in the
+            # identity map of the session nor in the database, but
+            # raises ObjectDeletedError in case it was in the identity
+            # map, got marked as expired but couldn't be found in the
+            # database again.
+            return session.query(cls).get(id_)
+        except ObjectDeletedError:
             return None
 
     def export_to_dict(self):
