@@ -218,6 +218,28 @@ class UserTest(Base):
             }
         return res
 
+    @classmethod
+    def import_from_dict(cls, data, tasks_by_name):
+        """Build the object using data from a dictionary.
+
+        """
+        data['files'] = [UserTestFile.import_from_dict(file_data)
+                         for file_data in data['files']]
+        data['files'] = dict([(_file.filename, _file)
+                              for _file in data['files']])
+        data['executables'] = [UserTestExecutable.import_from_dict(executable_data)
+                               for executable_data in data['executables']]
+        data['executables'] = dict([(executable.filename, executable)
+                                    for executable in data['executables']])
+        data['managers'] = [UserTestManager.import_from_dict(eval_data)
+                            for manager_data in data['managers']]
+        data['managers'] = dict([(manager.filename, manager)
+                                 for manager in data['managers']])
+        data['task'] = tasks_by_name[data['task']]
+        data['user'] = None
+        data['timestamp'] = make_datetime(data['timestamp'])
+        return cls(**data)
+
     def compiled(self):
         """Return if the user test has been compiled.
 

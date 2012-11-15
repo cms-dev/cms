@@ -30,6 +30,7 @@ from cms.db.Contest import Contest, Announcement
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task
 from cms.db.Submission import Submission
+from cms.db.UserTest import UserTest
 from cmscommon.DateTime import make_datetime
 
 
@@ -80,6 +81,9 @@ def user_import_from_dict(cls, data, tasks_by_name):
     data['submissions'] = [Submission.import_from_dict(
         submission_data, tasks_by_name=tasks_by_name)
                            for submission_data in data['submissions']]
+    data['user_tests'] = [UserTest.import_from_dict(
+        user_test_data, tasks_by_name=tasks_by_name)
+                          for user_test_data in data['user_tests']]
     if 'starting_time' in data and data['starting_time'] is not None:
         data['starting_time'] = make_datetime(data['starting_time'])
     if 'extra_time' in data:

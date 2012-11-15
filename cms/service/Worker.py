@@ -84,7 +84,8 @@ class Worker(Service):
         logger.info("Precaching files for contest %d." % contest_id)
         with SessionGen(commit=False) as session:
             contest = Contest.get_from_id(contest_id, session)
-            for digest in contest.enumerate_files(skip_submissions=True):
+            for digest in contest.enumerate_files(skip_submissions=True,
+                                                  skip_user_tests=True):
                 self.file_cacher.get_file(digest)
         logger.info("Precaching finished.")
 

@@ -87,11 +87,12 @@ class ContestExporter:
     idempotent.
 
     """
-    def __init__(self, contest_id, dump, export_target, skip_submissions,
-                 light):
+    def __init__(self, contest_id, dump, export_target,
+                 skip_submissions, skip_user_tests, light):
         self.contest_id = contest_id
         self.dump = dump
         self.skip_submissions = skip_submissions
+        self.skip_user_tests = skip_user_tests
         self.light = light
 
         # If target is not provided, we use the contest's name.
@@ -147,6 +148,7 @@ class ContestExporter:
             # Export files.
             logger.info("Exporting files.")
             files = contest.enumerate_files(self.skip_submissions,
+                                            self.skip_user_tests,
                                             light=self.light)
             for _file in files:
                 if not self.safe_get_file(_file,
@@ -157,7 +159,7 @@ class ContestExporter:
             # Export the contest in JSON format.
             logger.info("Exporting the contest in JSON format.")
             with open(os.path.join(export_dir, "contest.json"), 'w') as fout:
-                json.dump(contest.export_to_dict(self.skip_submissions),
+                json.dump(contest.export_to_dict(self.skip_submissions, self.skip_user_tests),
                           fout, indent=4)
 
         if self.dump:
@@ -278,6 +280,8 @@ def main():
                         "same database) - deprecated")
     parser.add_argument("-s", "--skip-submissions", action="store_true",
                         help="don't export submissions, only contest data")
+    parser.add_argument("-t", "--skip-user-tests", action="store_true",
+                        help="don't export user tests, only contest data")
     parser.add_argument("-l", "--light", action="store_true",
                         help="light export (without executables and "
                         "testcases)")
@@ -293,6 +297,7 @@ def main():
                     dump=args.dump_database,
                     export_target=args.export_target,
                     skip_submissions=args.skip_submissions,
+                    skip_user_tests=args.skip_user_tests,
                     light=args.light).run()
 
 

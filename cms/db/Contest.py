@@ -184,7 +184,7 @@ class Contest(Base):
         self.min_usertest_interval = min_usertest_interval
         self.announcements = announcements if announcements is not None else []
 
-    def export_to_dict(self, skip_submissions=False):
+    def export_to_dict(self, skip_submissions=False, skip_user_tests=False):
         """Return object data as a dictionary.
 
         """
@@ -192,7 +192,7 @@ class Contest(Base):
                 'description':        self.description,
                 'tasks':              [task.export_to_dict()
                                        for task in self.tasks],
-                'users':              [user.export_to_dict(skip_submissions)
+                'users':              [user.export_to_dict(skip_submissions, skip_user_tests)
                                        for user in self.users],
                 'token_initial':      self.token_initial,
                 'token_max':          self.token_max,
@@ -253,7 +253,8 @@ class Contest(Base):
                 return user
         raise KeyError("User not found")
 
-    def enumerate_files(self, skip_submissions=False, light=False):
+    def enumerate_files(self, skip_submissions=False,
+                        skip_user_tests=False, light=False):
         """Enumerate all the files (by digest) referenced by the
         contest.
 
@@ -295,6 +296,28 @@ class Contest(Base):
                 if not light:
                     for _file in submission.executables.values():
                         files.add(_file.digest)
+
+        if not skip_user_tests:
+            for user_test in self.get_user_tests():
+
+                files.add(user_test.input)
+
+                if not light and user_test.output is not None:
+                    files.add(user_test.output)
+
+                # Enumerate files
+                for _file in user_test.files.values():
+                    files.add(_file.digest)
+
+                # Enumerate managers
+                for _file in user_test.managers.values():
+                    files.add(_file.digest)
+
+                # Enumerate executables
+                if not light:
+                    for _file in user_test.executables.values():
+                        files.add(_file.digest)
+
 
         return files
 

@@ -165,7 +165,7 @@ class User(Base):
         self.contest = contest
         self.submissions = submissions if submissions is not None else []
 
-    def export_to_dict(self, skip_submissions=False):
+    def export_to_dict(self, skip_submissions=False, skip_user_tests=False):
         """Return object data as a dictionary.
 
         """
@@ -173,6 +173,11 @@ class User(Base):
         if not skip_submissions:
             submissions = [submission.export_to_dict()
                            for submission in self.submissions]
+        user_tests = []
+        if not skip_user_tests:
+            user_tests = [user_test.export_to_dict()
+                          for user_test in self.user_tests]
+
         return {'first_name':    self.first_name,
                 'last_name':     self.last_name,
                 'username':      self.username,
@@ -189,7 +194,8 @@ class User(Base):
                                   for message in self.messages],
                 'questions':     [question.export_to_dict()
                                   for question in self.questions],
-                'submissions':   submissions}
+                'submissions':   submissions,
+                'user_tests':    user_tests}
 
 
 class Message(Base):
