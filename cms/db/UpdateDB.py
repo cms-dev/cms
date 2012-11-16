@@ -70,6 +70,7 @@ class ScriptsContainer(object):
             ("20120923", "add_time_and_memory_on_tests"),
             ("20121107", "fix_primary_statements"),
             ("20121108", "add_limit_constraints"),
+            ("20121116", "rename_user_test_limits"),
             ]
         self.list.sort()
 
@@ -901,6 +902,22 @@ ALTER COLUMN primary_statements SET NOT NULL;""")
                                     "ADD CONSTRAINT %(table)s_max_%(item)s_number_check "
                                     "CHECK (max_%(item)s_number > 0);" %
                                     {"table": table, "item": item})
+
+    @staticmethod
+    def rename_user_test_limits():
+        """Rename "usertest" to "user_tests".
+
+        In max_usertest_number and min_usertest_interval.
+
+        """
+        with SessionGen(commit=True) as session:
+            for table in ["contests", "tasks"]:
+                session.execute("ALTER TABLE %(table)s "
+                                "RENAME COLUMN max_usertest_number TO max_user_test_number;" %
+                                {"table": table})
+                session.execute("ALTER TABLE %(table)s "
+                                "RENAME COLUMN min_usertest_interval TO min_user_test_interval;" %
+                                {"table": table})
 
 
 def execute_single_script(scripts_container, script):

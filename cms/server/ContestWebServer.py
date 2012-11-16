@@ -1287,25 +1287,25 @@ class UserTestHandler(BaseHandler):
 
         # Enforce maximum number of usertests
         try:
-            if contest.max_usertest_number is not None:
+            if contest.max_user_test_number is not None:
                 usertest_c = self.sql_session.query(func.count(UserTest.id))\
                     .join(UserTest.task)\
                     .filter(Task.contest == contest)\
                     .filter(UserTest.user == self.current_user).scalar()
-                if usertest_c >= contest.max_usertest_number:
+                if usertest_c >= contest.max_user_test_number:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
                                "at most %d tests among all tasks.") %
-                        contest.max_usertest_number)
-            if task.max_usertest_number is not None:
+                        contest.max_user_test_number)
+            if task.max_user_test_number is not None:
                 usertest_t = self.sql_session.query(func.count(UserTest.id))\
                     .filter(UserTest.task == task)\
                     .filter(UserTest.user == self.current_user).scalar()
-                if usertest_t >= task.max_usertest_number:
+                if usertest_t >= task.max_user_test_number:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
                                "at most %d tests on this task.") %
-                        task.max_usertest_number)
+                        task.max_user_test_number)
         except ValueError as error:
             self.application.service.add_notification(
                 self.current_user.username,
@@ -1318,7 +1318,7 @@ class UserTestHandler(BaseHandler):
 
         # Enforce minimum time between usertests
         try:
-            if contest.min_usertest_interval is not None:
+            if contest.min_user_test_interval is not None:
                 last_usertest_c = self.sql_session.query(UserTest)\
                     .join(UserTest.task)\
                     .filter(Task.contest == contest)\
@@ -1326,26 +1326,26 @@ class UserTestHandler(BaseHandler):
                     .order_by(UserTest.timestamp.desc()).first()
                 if last_usertest_c is not None and \
                         self.timestamp - last_usertest_c.timestamp < \
-                        contest.min_usertest_interval:
+                        contest.min_user_test_interval:
                     raise ValueError(
                         self._("Among all tasks, you can test again "
                                "after %d seconds from last test.") %
-                        contest.min_usertest_interval.total_seconds())
+                        contest.min_user_test_interval.total_seconds())
             # We get the last usertest even if we may not need it
-            # for min_usertest_interval because we may need it later,
+            # for min_user_test_interval because we may need it later,
             # in case this is a ALLOW_PARTIAL_SUBMISSION task.
             last_usertest_t = self.sql_session.query(UserTest)\
                 .filter(UserTest.task == task)\
                 .filter(UserTest.user == self.current_user)\
                 .order_by(UserTest.timestamp.desc()).first()
-            if task.min_usertest_interval is not None:
+            if task.min_user_test_interval is not None:
                 if last_usertest_t is not None and \
                         self.timestamp - last_usertest_t.timestamp < \
-                        task.min_usertest_interval:
+                        task.min_user_test_interval:
                     raise ValueError(
                         self._("For this task, you can test again "
                                "after %d seconds from last test.") %
-                        task.min_usertest_interval.total_seconds())
+                        task.min_user_test_interval.total_seconds())
         except ValueError as error:
             self.application.service.add_notification(
                 self.current_user.username,

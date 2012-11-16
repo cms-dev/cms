@@ -149,27 +149,27 @@ class Task(Base):
         CheckConstraint("token_gen_number >= 0"),
         nullable=False)
 
-    # Maximum number of submissions or usertests allowed for each user
+    # Maximum number of submissions or user_tests allowed for each user
     # on this task during the whole contest or None to not enforce
     # this limitation.
     max_submission_number = Column(
         Integer,
         CheckConstraint("max_submission_number > 0"),
         nullable=True)
-    max_usertest_number = Column(
+    max_user_test_number = Column(
         Integer,
-        CheckConstraint("max_usertest_number > 0"),
+        CheckConstraint("max_user_test_number > 0"),
         nullable=True)
 
-    # Minimum interval between two submissions or usertests for this
+    # Minimum interval between two submissions or user_tests for this
     # task, or None to not enforce this limitation.
     min_submission_interval = Column(
         Interval,
         CheckConstraint("max_submission_interval > '0 seconds'"),
         nullable=True)
-    min_usertest_interval = Column(
+    min_user_test_interval = Column(
         Interval,
-        CheckConstraint("max_usertest_interval > '0 seconds'"),
+        CheckConstraint("max_user_test_interval > '0 seconds'"),
         nullable=True)
 
     # Follows the description of the fields automatically added by
@@ -194,8 +194,8 @@ class Task(Base):
                  token_initial=None, token_max=None, token_total=None,
                  token_min_interval=timedelta(),
                  token_gen_time=timedelta(), token_gen_number=0,
-                 max_submission_number=None, max_usertest_number=None,
-                 min_submission_interval=None, min_usertest_interval=None,
+                 max_submission_number=None, max_user_test_number=None,
+                 min_submission_interval=None, min_user_test_interval=None,
                  contest=None, num=0):
         for filename, attachment in attachments.iteritems():
             attachment.filename = filename
@@ -226,9 +226,9 @@ class Task(Base):
         self.token_gen_time = token_gen_time
         self.token_gen_number = token_gen_number
         self.max_submission_number = max_submission_number
-        self.max_usertest_number = max_usertest_number
+        self.max_user_test_number = max_user_test_number
         self.min_submission_interval = min_submission_interval
-        self.min_usertest_interval = min_usertest_interval
+        self.min_user_test_interval = min_user_test_interval
         self.contest = contest
 
     def export_to_dict(self):
@@ -267,10 +267,10 @@ class Task(Base):
                 'token_gen_time':
                     self.token_gen_time.total_seconds(),
                 'token_gen_number':     self.token_gen_number,
-                'max_submission_number': self.max_submission_number if self.max_submission_number is not None else None,
-                'max_usertest_number': self.max_usertest_number if self.max_usertest_number is not None else None,
+                'max_submission_number': self.max_submission_number,
+                'max_user_test_number': self.max_user_test_number,
                 'min_submission_interval': self.min_submission_interval.total_seconds() if self.min_submission_interval is not None else None,
-                'min_usertest_interval': self.min_usertest_interval.total_seconds() if self.min_usertest_interval is not None else None,
+                'min_user_test_interval': self.min_user_test_interval.total_seconds() if self.min_user_test_interval is not None else None,
                 }
 
     @classmethod
@@ -303,10 +303,10 @@ class Task(Base):
                 data['min_submission_interval'] is not None:
             data['min_submission_interval'] = \
                 timedelta(seconds=data['min_submission_interval'])
-        if 'min_usertest_interval' in data and \
-                data['min_usertest_interval'] is not None:
-            data['min_usertest_interval'] = \
-                timedelta(seconds=data['min_usertest_interval'])
+        if 'min_user_test_interval' in data and \
+                data['min_user_test_interval'] is not None:
+            data['min_user_test_interval'] = \
+                timedelta(seconds=data['min_user_test_interval'])
         return cls(**data)
 
 

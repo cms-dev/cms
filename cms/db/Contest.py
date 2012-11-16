@@ -124,26 +124,26 @@ class Contest(Base):
         Interval,
         nullable=True)
 
-    # Maximum number of submissions or usertests allowed for each user
+    # Maximum number of submissions or user_tests allowed for each user
     # during the whole contest or None to not enforce this limitation.
     max_submission_number = Column(
         Integer,
         CheckConstraint("max_submission_number > 0"),
         nullable=True)
-    max_usertest_number = Column(
+    max_user_test_number = Column(
         Integer,
-        CheckConstraint("max_usertest_number > 0"),
+        CheckConstraint("max_user_test_number > 0"),
         nullable=True)
 
-    # Minimum interval between two submissions or usertests, or None to
+    # Minimum interval between two submissions or user_tests, or None to
     # not enforce this limitation.
     min_submission_interval = Column(
         Interval,
         CheckConstraint("max_submission_interval > '0 seconds'"),
         nullable=True)
-    min_usertest_interval = Column(
+    min_user_test_interval = Column(
         Interval,
-        CheckConstraint("max_usertest_interval > '0 seconds'"),
+        CheckConstraint("max_user_test_interval > '0 seconds'"),
         nullable=True)
 
     # Follows the description of the fields automatically added by
@@ -161,8 +161,8 @@ class Contest(Base):
                  token_min_interval=timedelta(),
                  token_gen_time=timedelta(), token_gen_number=0,
                  start=None, stop=None, timezone=None, per_user_time=None,
-                 max_submission_number=None, max_usertest_number=None,
-                 min_submission_interval=None, min_usertest_interval=None,
+                 max_submission_number=None, max_user_test_number=None,
+                 min_submission_interval=None, min_user_test_interval=None,
                  announcements=None):
         self.name = name
         self.description = description
@@ -179,9 +179,9 @@ class Contest(Base):
         self.timezone = timezone
         self.per_user_time = per_user_time
         self.max_submission_number = max_submission_number
-        self.max_usertest_number = max_usertest_number
+        self.max_user_test_number = max_user_test_number
         self.min_submission_interval = min_submission_interval
-        self.min_usertest_interval = min_usertest_interval
+        self.min_user_test_interval = min_user_test_interval
         self.announcements = announcements if announcements is not None else []
 
     def export_to_dict(self, skip_submissions=False, skip_user_tests=False):
@@ -204,10 +204,10 @@ class Contest(Base):
                 'stop':               make_timestamp(self.stop) if self.stop is not None else None,
                 'timezone':           self.timezone,
                 'per_user_time':      self.per_user_time.total_seconds() if self.per_user_time is not None else None,
-                'max_submission_number': self.max_submission_number if self.max_submission_number is not None else None,
-                'max_usertest_number': self.max_usertest_number if self.max_usertest_number is not None else None,
+                'max_submission_number': self.max_submission_number,
+                'max_user_test_number': self.max_user_test_number,
                 'min_submission_interval': self.min_submission_interval.total_seconds() if self.min_submission_interval is not None else None,
-                'min_usertest_interval': self.min_usertest_interval.total_seconds() if self.min_usertest_interval is not None else None,
+                'min_user_test_interval': self.min_user_test_interval.total_seconds() if self.min_user_test_interval is not None else None,
                 'announcements':      [announcement.export_to_dict()
                                        for announcement in self.announcements],
                 }

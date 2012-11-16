@@ -424,8 +424,8 @@ class AddContestHandler(BaseHandler):
             max_submission_number = self.get_non_negative_int(
                 "max_submission_number",
                 None)
-            max_usertest_number = self.get_non_negative_int(
-                "max_usertest_number",
+            max_user_test_number = self.get_non_negative_int(
+                "max_user_test_number",
                 None)
             min_submission_interval = self.get_non_negative_int(
                 "min_submission_interval",
@@ -433,12 +433,12 @@ class AddContestHandler(BaseHandler):
             if min_submission_interval is not None:
                 min_submission_interval = \
                     timedelta(seconds=min_submission_interval)
-            min_usertest_interval = self.get_non_negative_int(
-                "min_usertest_interval",
+            min_user_test_interval = self.get_non_negative_int(
+                "min_user_test_interval",
                 None)
-            if min_usertest_interval is not None:
-                min_usertest_interval = \
-                    timedelta(seconds=min_usertest_interval)
+            if min_user_test_interval is not None:
+                min_user_test_interval = \
+                    timedelta(seconds=min_user_test_interval)
 
             start = self.get_argument("start", "")
             if start == "":
@@ -480,8 +480,8 @@ class AddContestHandler(BaseHandler):
                           token_max, token_total, token_min_interval,
                           token_gen_time, token_gen_number, start, stop,
                           timezone, per_user_time,
-                          max_submission_number, max_usertest_number,
-                          min_submission_interval, min_usertest_interval)
+                          max_submission_number, max_user_test_number,
+                          min_submission_interval, min_user_test_interval)
         self.sql_session.add(contest)
 
         if try_commit(self.sql_session, self):
@@ -531,9 +531,9 @@ class ContestHandler(BaseHandler):
             contest.max_submission_number = self.get_non_negative_int(
                 "max_submission_number",
                 contest.max_submission_number)
-            contest.max_usertest_number = self.get_non_negative_int(
-                "max_usertest_number",
-                contest.max_usertest_number)
+            contest.max_user_test_number = self.get_non_negative_int(
+                "max_user_test_number",
+                contest.max_user_test_number)
             contest.min_submission_interval = self.get_non_negative_int(
                 "min_submission_interval",
                 contest.min_submission_interval.total_seconds() if \
@@ -541,13 +541,13 @@ class ContestHandler(BaseHandler):
             if contest.min_submission_interval is not None:
                 contest.min_submission_interval = \
                     timedelta(seconds=contest.min_submission_interval)
-            contest.min_usertest_interval = self.get_non_negative_int(
-                "min_usertest_interval",
-                contest.min_usertest_interval.total_seconds() if \
-                    contest.min_usertest_interval is not None else None)
-            if contest.min_usertest_interval is not None:
-                contest.min_usertest_interval = \
-                    timedelta(seconds=contest.min_usertest_interval)
+            contest.min_user_test_interval = self.get_non_negative_int(
+                "min_user_test_interval",
+                contest.min_user_test_interval.total_seconds() if \
+                    contest.min_user_test_interval is not None else None)
+            if contest.min_user_test_interval is not None:
+                contest.min_user_test_interval = \
+                    timedelta(seconds=contest.min_user_test_interval)
 
             contest.start = self.get_argument("start",
                 str(contest.start) if contest.start is not None else "")
@@ -921,8 +921,8 @@ class AddTaskHandler(BaseHandler):
             max_submission_number = self.get_non_negative_int(
                 "max_submission_number",
                 None)
-            max_usertest_number = self.get_non_negative_int(
-                "max_usertest_number",
+            max_user_test_number = self.get_non_negative_int(
+                "max_user_test_number",
                 None)
             min_submission_interval = self.get_non_negative_int(
                 "min_submission_interval",
@@ -930,12 +930,12 @@ class AddTaskHandler(BaseHandler):
             if min_submission_interval is not None:
                 min_submission_interval = \
                     timedelta(seconds=min_submission_interval)
-            min_usertest_interval = self.get_non_negative_int(
-                "min_usertest_interval",
+            min_user_test_interval = self.get_non_negative_int(
+                "min_user_test_interval",
                 None)
-            if min_usertest_interval is not None:
-                min_usertest_interval = \
-                    timedelta(seconds=min_usertest_interval)
+            if min_user_test_interval is not None:
+                min_user_test_interval = \
+                    timedelta(seconds=min_user_test_interval)
 
             statements = {}
             attachments = {}
@@ -956,8 +956,8 @@ class AddTaskHandler(BaseHandler):
                  score_type, score_parameters, testcases,
                  token_initial, token_max, token_total,
                  token_min_interval, token_gen_time, token_gen_number,
-                 max_submission_number, max_usertest_number,
-                 min_submission_interval, min_usertest_interval,
+                 max_submission_number, max_user_test_number,
+                 min_submission_interval, min_user_test_interval,
                  contest=self.contest, num=len(self.contest.tasks))
         self.sql_session.add(task)
 
@@ -1073,9 +1073,9 @@ class TaskHandler(BaseHandler):
             task.max_submission_number = self.get_non_negative_int(
                 "max_submission_number",
                 task.max_submission_number)
-            task.max_usertest_number = self.get_non_negative_int(
-                "max_usertest_number",
-                task.max_usertest_number)
+            task.max_user_test_number = self.get_non_negative_int(
+                "max_user_test_number",
+                task.max_user_test_number)
             task.min_submission_interval = self.get_non_negative_int(
                 "min_submission_interval",
                 task.min_submission_interval.total_seconds() if \
@@ -1083,13 +1083,13 @@ class TaskHandler(BaseHandler):
             if task.min_submission_interval is not None:
                 task.min_submission_interval = \
                     timedelta(seconds=task.min_submission_interval)
-            task.min_usertest_interval = self.get_non_negative_int(
-                "min_usertest_interval",
-                task.min_usertest_interval.total_seconds() if \
-                    task.min_usertest_interval is not None else None)
-            if task.min_usertest_interval is not None:
-                task.min_usertest_interval = \
-                    timedelta(seconds=task.min_usertest_interval)
+            task.min_user_test_interval = self.get_non_negative_int(
+                "min_user_test_interval",
+                task.min_user_test_interval.total_seconds() if \
+                    task.min_user_test_interval is not None else None)
+            if task.min_user_test_interval is not None:
+                task.min_user_test_interval = \
+                    timedelta(seconds=task.min_user_test_interval)
 
             for testcase in task.testcases:
                 testcase.public = bool(self.get_argument("testcase_%s_public" %

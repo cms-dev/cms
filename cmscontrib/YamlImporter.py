@@ -98,12 +98,12 @@ class YamlLoader:
 
         params["max_submission_number"] = \
             conf.get("max_submission_number", None)
-        params["max_usertest_number"] = \
-            conf.get("max_usertest_number", None)
+        params["max_user_test_number"] = \
+            conf.get("max_user_test_number", None)
         params["min_submission_interval"] = \
             conf.get("min_submission_interval", None)
-        params["min_usertest_interval"] = \
-            conf.get("min_usertest_interval", None)
+        params["min_user_test_interval"] = \
+            conf.get("min_user_test_interval", None)
 
         logger.info("Contest parameters loaded.")
 
@@ -416,12 +416,12 @@ class YamlLoader:
 
         params["max_submission_number"] = \
             conf.get("max_submission_number", None)
-        params["max_usertest_number"] = \
-            conf.get("max_usertest_number", None)
+        params["max_user_test_number"] = \
+            conf.get("max_user_test_number", None)
         params["min_submission_interval"] = \
             conf.get("min_submission_interval", None)
-        params["min_usertest_interval"] = \
-            conf.get("min_usertest_interval", None)
+        params["min_user_test_interval"] = \
+            conf.get("min_user_test_interval", None)
 
         logger.info("Task parameters loaded.")
 

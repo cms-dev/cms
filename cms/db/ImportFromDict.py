@@ -62,10 +62,10 @@ def contest_import_from_dict(cls, data):
             data['min_submission_interval'] is not None:
         data['min_submission_interval'] = \
             timedelta(seconds=data['min_submission_interval'])
-    if 'min_usertest_interval' in data and \
-            data['min_usertest_interval'] is not None:
-        data['min_usertest_interval'] = \
-            timedelta(seconds=data['min_usertest_interval'])
+    if 'min_user_test_interval' in data and \
+            data['min_user_test_interval'] is not None:
+        data['min_user_test_interval'] = \
+            timedelta(seconds=data['min_user_test_interval'])
     return cls(**data)
 
 
