@@ -11,7 +11,7 @@
 
 
 <div class="page-header">
-    <h1>Statement <small>for {{ task.title }} ({{ task.name }})</small></h1>
+    <h1>{% raw _("Statement <small>for %(name)s (%(short_name)s)</small>") % {"name": task.title, "short_name": task.name} %}</h1>
 </div>
 
 
@@ -20,7 +20,7 @@
 {% if len(task.statements) == 0 %}
 <div class="row statement no_statements">
     <div class="span9">
-        no statement available
+        {{ _("no statement available") }}
     </div>
 </div>
 {% elif len(task.statements) == 1 %}
@@ -35,8 +35,9 @@
 <div class="statement many_statements">
     <div class="main_statements">
         <p>
-            The statement for this task is available in multiple versions, in different languages. You can see (and download) all of them using the list on the right.
-            Some suggested translations follow.
+            {{ _("The statement for this task is available in multiple versions, in different languages.") }}
+            {{ _("You can see (and download) all of them using the list on the right.") }}
+            {{ _("Some suggested translations follow.") }}
         </p>
     {% set task_primary = json.loads(task.primary_statements) %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
@@ -84,7 +85,7 @@
 {% end %}
 
 
-<h2>Some details</h2>
+<h2>{{ _("Some details") }}</h2>
 
 <table class="table table-bordered table-nohover" style="table-layout: fixed">
     <colgroup>
@@ -118,7 +119,7 @@
 {% set compilation_commands = task_type.get_compilation_commands([x.filename for x in task.submission_format]) %}
 {% if compilation_commands is not None %}
 <tr>
-    <th rowspan="{{ len(compilation_commands) }}">Compilation commands</th>
+    <th rowspan="{{ len(compilation_commands) }}">{{ _("Compilation commands") }}</th>
     {% for i, (l, c) in enumerate(sorted(compilation_commands.iteritems())) %}
         {% if i > 0 %}
 </tr>

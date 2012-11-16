@@ -67,7 +67,7 @@ $(document).ready(function () {
 <div class="span9 test_interface">
 
 <div class="page-header">
-    <h1>Testing</h1>
+    <h1>{{ _("Testing") }}</h1>
 </div>
 
 
@@ -130,7 +130,7 @@ $(document).ready(function () {
 </div>
 
 
-<h2 style="margin: 40px 0 10px">Previous tests</h2>
+<h2 style="margin: 40px 0 10px">{{ _("Previous tests") }}</h2>
 
 
 {% comment FIXME The following check doesn't take timezones into account. Correct it! %}
@@ -154,16 +154,16 @@ $(document).ready(function () {
     <thead>
         <tr>
 {% if show_date %}
-            <th class="datetime">Date and time</th>
+            <th class="datetime">{{ _("Date and time") }}</th>
 {% else %}
-            <th class="time">Time</th>
+            <th class="time">{{ _("Time") }}</th>
 {% end %}
-            <th class="status">Status</th>
-            <th class="time">Time</th>
-            <th class="memory">Memory</th>
-            <th class="input">Input</th>
-            <th class="output">Output</th>
-            <th class="files">Files</th>
+            <th class="status">{{ _("Status") }}</th>
+            <th class="time">{{ _("Time") }}</th>
+            <th class="memory">{{ _("Memory") }}</th>
+            <th class="input">{{ _("Input") }}</th>
+            <th class="output">{{ _("Output") }}</th>
+            <th class="files">{{ _("Files") }}</th>
         </tr>
     </thead>
     <tbody>
@@ -190,13 +190,13 @@ $(document).ready(function () {
 
 <div class="modal fade hide" id="usertest_detail">
     <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">×</button>
-        <h3>Test details</h3>
+        <button type="button" class="close" data-dismiss="modal">&#xD7;</button>
+        <h3>{{ _("Test details") }}</h3>
     </div>
     <div class="modal-body">
     </div>
     <div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">Close</a>
+        <a href="#" class="btn" data-dismiss="modal">{{ _("Close") }}</a>
     </div>
 </div>
 

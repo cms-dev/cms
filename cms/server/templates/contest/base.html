@@ -52,8 +52,8 @@ $(document).ready(function () {
                     <a class="brand" href="{{ url_root }}/">{{ contest.description }}</a>
 {% if current_user is not None %}
                     <p class="navbar-text pull-right">
-                        Logged in as <strong>{{ current_user.first_name }} {{ current_user.last_name }}</strong> <em>({{ current_user.username }})</em>
-                        <a class="btn btn-warning" href="{{ url_root }}/logout">Logout</a>
+                        {% raw _("Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>") % {"first_name": current_user.first_name, "last_name": current_user.last_name, "username": current_user.username} %}
+                        <a class="btn btn-warning" href="{{ url_root }}/logout">{{ _("Logout") }}</a>
                     </p>
 {% end %}
                 </div>
@@ -63,15 +63,15 @@ $(document).ready(function () {
     {% if handler.get_argument("login_error", "") != "" %}
         <div id="notifications" class="notifications">
             <div class="alert alert-block alert-error notification">
-                <a class="close" data-dismiss="alert" href="#">×</a>
+                <a class="close" data-dismiss="alert" href="#">&#xD7;</a>
                 <h4 class="alert-heading">{{ _("Failed to log in.") }}</h4>
             </div>
         </div>
     {% end %}
         <div class="login_container">
             <div class="login_box hero-unit">
-                <h1>Welcome</h1>
-                <p>Please log in</p>
+                <h1>{{ _("Welcome") }}</h1>
+                <p>{{ _("Please log in") }}</p>
                 <form class="form-horizontal" action="{{ url_root }}/login" method="POST">
                     <input type="hidden" name="next" value="{{ handler.get_argument("next", "/") }}">
                     <fieldset>
@@ -103,7 +103,7 @@ $(document).ready(function () {
             <div class="row">
                 <div class="span3">
                     <h3 id="server_time_box">
-                        <span id="server_time_label">Server time:</span>
+                        <span id="server_time_label">{{ _("Server time:") }}</span>
                         <span id="server_time"></span>
                     </h3>
                     <h3 id="countdown_box">
@@ -152,9 +152,9 @@ $(document).ready(function () {
                         </ul>
                     </div>
                     <span class="license_notice">
-                    <a href="http://github.com/cms-dev/cms/" rel="author noreferrer" target="_blank">Contest Management System</a>
-                    is released under the
-                    <a href="http://www.gnu.org/licenses/agpl" rel="license noreferrer" target="_blank">GNU Affero General Public License</a>
+                    <a href="http://github.com/cms-dev/cms/" rel="author noreferrer" target="_blank">{{ _("Contest Management System") }}</a>
+                    {{ _("is released under the") }}
+                    <a href="http://www.gnu.org/licenses/agpl" rel="license noreferrer" target="_blank">{{ _("GNU Affero General Public License") }}</a>
                     .
                     </span>
                 </div>

@@ -88,7 +88,7 @@ $(document).ready(function () {
 <div class="span9 task_submissions">
 
 <div class="page-header">
-    <h1>Submissions <small>for {{ task.title }} ({{ task.name }})</small></h1>
+    <h1>{% raw _("Submissions <small>for %(name)s (%(short_name)s)</small>") % {"name": task.title, "short_name": task.name} %}</small></h1>
 </div>
 
 
@@ -138,7 +138,7 @@ $(document).ready(function () {
 </div>
 
 
-<h2 style="margin: 40px 0 10px">Previous submissions</h2>
+<h2 style="margin: 40px 0 10px">{{ _("Previous submissions") }}</h2>
 
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
 <div style="padding-bottom:10px">
@@ -209,16 +209,16 @@ $(document).ready(function () {
     <thead>
         <tr>
 {% if show_date %}
-            <th class="datetime">Date and time</th>
+            <th class="datetime">{{ _("Date and time") }}</th>
 {% else %}
-            <th class="time">Time</th>
+            <th class="time">{{ _("Time") }}</th>
 {% end %}
-            <th class="status">Status</th>
-            <th class="public_score">Public score</th>
-            <th class="total_score">Total score</th>
-            <th class="files">Files</th>
+            <th class="status">{{ _("Status") }}</th>
+            <th class="public_score">{{ _("Public score") }}</th>
+            <th class="total_score">{{ _("Total score") }}</th>
+            <th class="files">{{ _("Files") }}</th>
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
-            <th class="token">Token</th>
+            <th class="token">{{ _("Token") }}</th>
 {% end %}
         </tr>
     </thead>
@@ -242,13 +242,13 @@ $(document).ready(function () {
 
 <div class="modal fade hide wide" id="submission_detail">
     <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">×</button>
-        <h3>Submission details</h3>
+        <button type="button" class="close" data-dismiss="modal">&#xD7;</button>
+        <h3>{{ _("Submission details") }}</h3>
     </div>
     <div class="modal-body">
     </div>
     <div class="modal-footer">
-        <a href="#" class="btn" data-dismiss="modal">Close</a>
+        <a href="#" class="btn" data-dismiss="modal">{{ _("Close") }}</a>
     </div>
 </div>
 

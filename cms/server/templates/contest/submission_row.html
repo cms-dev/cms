@@ -7,41 +7,41 @@
 <tr data-submission="{{ s_idx }}" data-status="1">
     {% raw col1 %}
     <td class="status">
-        Compiling...
+        {{ _("Compiling...") }}
     </td>
-    <td class="public_score undefined">N/A</td>
-    <td class="total_score undefined">N/A</td>
+    <td class="public_score undefined">{{ _("N/A") }}</td>
+    <td class="total_score undefined">{{ _("N/A") }}</td>
 {% elif s.compilation_outcome == "fail" %}
 <tr data-submission="{{ s_idx }}" data-status="2">
     {% raw col1 %}
     <td class="status">
-        Compilation failed
-        <a class="details">details</a>
+        {{ _("Compilation failed") }}
+        <a class="details">{{ _("details") }}</a>
     </td>
-    <td class="public_score undefined">N/A</td>
-    <td class="total_score undefined">N/A</td>
+    <td class="public_score undefined">{{ _("N/A") }}</td>
+    <td class="total_score undefined">{{ _("N/A") }}</td>
 {% elif not s.evaluated() %}
 <tr data-submission="{{ s_idx }}" data-status="3">
     {% raw col1 %}
     <td class="status">
-        Evaluating...
+        {{ _("Evaluating...") }}
     </td>
-    <td class="public_score undefined">N/A</td>
-    <td class="total_score undefined">N/A</td>
+    <td class="public_score undefined">{{ _("N/A") }}</td>
+    <td class="total_score undefined">{{ _("N/A") }}</td>
 {% elif not s.scored() %}
 <tr data-submission="{{ s_idx }}" data-status="4">
     {% raw col1 %}
     <td class="status">
-        Scoring...
+        {{ _("Scoring...") }}
     </td>
-    <td class="public_score undefined">N/A</td>
-    <td class="total_score undefined">N/A</td>
+    <td class="public_score undefined">{{ _("N/A") }}</td>
+    <td class="total_score undefined">{{ _("N/A") }}</td>
 {% else %}
 <tr data-submission="{{ s_idx }}" data-status="5">
     {% raw col1 %}
     <td class="status">
-        Evaluated
-        <a class="details">details</a>
+        {{ _("Evaluated") }}
+        <a class="details">{{ _("details") }}</a>
     </td>
     {% comment FIXME decide if we want this or not %}
     {% if s.token is not None and False %}
@@ -118,17 +118,17 @@
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
     <td class="token">
         {% if s.token is not None %}
-        <a class="btn disabled">Played</a>
+        <a class="btn disabled">{{ _("Played") }}</a>
         {% else %}
             {% comment TODO If the expiration or generation time are greater than valid_phase_end they "don't exist". It's useless to show "Wait..." in those cases. %}
             {% if can_play_token and not need_to_wait %}
         <form action="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/submissions/{{ s_idx }}/token" method="POST">
-            <input type="submit" class="btn btn-warning" value="Play!"/>
+            <input type="submit" class="btn btn-warning" value="{{ _("Play!") }}"/>
         </form>
             {% elif (can_play_token and need_to_wait) or (not can_play_token and tokens_info[1] is not None) %}
-        <a class="btn btn-warning disabled">Wait...</a>
+        <a class="btn btn-warning disabled">{{ _("Wait...") }}</a>
             {% else %}
-        <a class="btn disabled">No tokens</a>
+        <a class="btn disabled">{{ _("No tokens") }}</a>
             {% end %}
         {% end %}
     </td>

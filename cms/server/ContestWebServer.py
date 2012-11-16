@@ -141,26 +141,47 @@ class BaseHandler(CommonRequestHandler):
         else:
             localization_dir = os.path.join(os.path.dirname(__file__), "mo")
 
+        # Copied (and modified) from Tornado's get_browser_locale
+        locales = list()
+        if "Accept-Language" in self.request.headers:
+            languages = self.request.headers["Accept-Language"].split(",")
+            scores = dict()
+            for language in languages:
+                parts = language.strip().split(";")
+                if len(parts) > 1 and parts[1].startswith("q="):
+                    try:
+                        score = float(parts[1][2:])
+                    except (ValueError, TypeError):
+                        score = 0.0
+                else:
+                    score = 1.0
+                scores[parts[0]] = score
+                locales.append(parts[0])
+            locales.sort(key=lambda l: scores[l], reverse=True)
+        if not locales:
+            locales.append("en_US")
+        # End of copied code
+
         if self.current_user is not None:
             iso_639_locale = gettext.translation(
                 "iso_639",
                 os.path.join(config.iso_codes_prefix, "share", "locale"),
-                ['en_US'],
+                locales,
                 fallback=True)
             iso_3166_locale = gettext.translation(
                 "iso_3166",
                 os.path.join(config.iso_codes_prefix, "share", "locale"),
-                ['en_US'],
+                locales,
                 fallback=True)
             shared_mime_info_locale = gettext.translation(
                 "shared-mime-info",
                 os.path.join(config.shared_mime_info_prefix, "share", "locale"),
-                ['en_US'],
+                locales,
                 fallback=True)
             cms_locale = gettext.translation(
                 "cms",
                 localization_dir,
-                ['en_US'],
+                locales,
                 fallback=True)
             cms_locale.add_fallback(iso_639_locale)
             cms_locale.add_fallback(iso_3166_locale)
@@ -1165,19 +1186,19 @@ class SubmissionStatusHandler(BaseHandler):
         data = dict()
         if not submission.compiled():
             data["status"] = 1
-            data["status_text"] = "Compiling..."
+            data["status_text"] = self._("Compiling...")
         elif submission.compilation_outcome == "fail":
             data["status"] = 2
-            data["status_text"] = "Compilation failed <a class=\"details\">details</a>"
+            data["status_text"] = "%s <a class=\"details\">%s</a>" % (self._("Compilation failed"), self._("details"))
         elif not submission.evaluated():
             data["status"] = 3
-            data["status_text"] = "Evaluating..."
+            data["status_text"] = self._("Evaluating...")
         elif not submission.scored():
             data["status"] = 4
-            data["status_text"] = "Scoring..."
+            data["status_text"] = self._("Scoring...")
         else:
             data["status"] = 5
-            data["status_text"] = "Evaluated <a class=\"details\">details</a>"
+            data["status_text"] = "%s <a class=\"details\">%s</a>" % (self._("Evaluated"), self._("details"))
 
             if score_type is not None and score_type.max_public_score != 0:
                 data["max_public_score"] = "%g" % score_type.max_public_score

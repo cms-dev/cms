@@ -7,32 +7,32 @@
 <tr data-usertest="{{ t_idx }}" data-status="1">
     {% raw col1 %}
     <td class="status">
-        Compiling...
+        {{ _("Compiling...") }}
     </td>
 {% elif t.compilation_outcome == "fail" %}
 <tr data-usertest="{{ t_idx }}" data-status="2">
     {% raw col1 %}
     <td class="status">
-        Compilation failed
-        <a class="details">details</a>
+        {{ _("Compilation failed") }}
+        <a class="details">{{ _("details") }}</a>
     </td>
 {% elif not t.evaluated() %}
 <tr data-usertest="{{ t_idx }}" data-status="3">
     {% raw col1 %}
     <td class="status">
-        Executing...
+        {{ _("Executing...") }}
     </td>
 {% else %}
 <tr data-usertest="{{ t_idx }}" data-status="4">
     {% raw col1 %}
     <td class="status">
-        Executed
-        <a class="details">details</a>
+        {{ _("Executed") }}
+        <a class="details">{{ _("details") }}</a>
     </td>
 {% end %}
 {% if t.execution_time is None %}
     <td class="time undefined">
-        N/A
+        {{ _("N/A") }}
     </td>
 {% else %}
     <td class="time">
@@ -41,7 +41,7 @@
 {% end %}
 {% if t.memory_used is None %}
     <td class="memory undefined">
-        N/A
+        {{ _("N/A") }}
     </td>
 {% else %}
     <td class="memory">
