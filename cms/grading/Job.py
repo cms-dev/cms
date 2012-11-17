@@ -260,8 +260,11 @@ class EvaluationJob(Job):
 
         # EvaluationJob
         job.executables = user_test.executables
-        job.testcases = [Testcase(input=user_test.input,
-                                  output=None)]
+        # FIXME This is not a proper way to use Testcases!
+        testcase = Testcase(num=0, input=user_test.input, output='')
+        testcase.num = None
+        testcase.output = None
+        job.testcases = [testcase]
         job.time_limit = user_test.task.time_limit
         job.memory_limit = user_test.task.memory_limit
         job.managers = dict(user_test.managers)

@@ -342,6 +342,27 @@ class Testcase(Base):
                 'output': self.output,
                 'public': self.public}
 
+    @classmethod
+    def import_from_dict(cls, data):
+        """Build the object using data from a dictionary.
+
+        """
+        public = data.get('public', None)
+        input_ = data.get('input', None)
+        output = data.get('output', None)
+        res = cls(num=0,
+                  public=public if public is not None else True,
+                  input=input_ if input_ is not None else "",
+                  output=output if output is not None else "")
+        res.num = None
+        if public is None:
+            res.public = None
+        if input_ is None:
+            res.input = None
+        if output is None:
+            res.output = None
+        return res
+
 
 class Attachment(Base):
     """Class to store additional files to give to the user together
