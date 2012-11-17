@@ -140,7 +140,7 @@ class OutputOnly(TaskType):
 
         # Whatever happened, we conclude.
         evaluation['success'] = success
-        evaluation['outcome'] = outcome
+        evaluation['outcome'] = str(outcome) if outcome is not None else None
         evaluation['text'] = text
         delete_sandbox(sandbox)
         return success
