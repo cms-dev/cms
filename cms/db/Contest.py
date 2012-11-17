@@ -139,11 +139,11 @@ class Contest(Base):
     # not enforce this limitation.
     min_submission_interval = Column(
         Interval,
-        CheckConstraint("max_submission_interval > '0 seconds'"),
+        CheckConstraint("min_submission_interval > '0 seconds'"),
         nullable=True)
     min_user_test_interval = Column(
         Interval,
-        CheckConstraint("max_user_test_interval > '0 seconds'"),
+        CheckConstraint("min_user_test_interval > '0 seconds'"),
         nullable=True)
 
     # Follows the description of the fields automatically added by
