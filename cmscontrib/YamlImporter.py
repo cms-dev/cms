@@ -239,47 +239,6 @@ class YamlLoader:
         else:
             evaluation_parameter = "diff"
 
-        # If there is no sol/ directory, the the task type is
-        # OutputOnly
-        if conf.get('output_only', False):
-            params["task_type"] = "OutputOnly"
-            params["time_limit"] = None
-            params["memory_limit"] = None
-            params["task_type_parameters"] = '["%s"]' % (evaluation_parameter)
-            params["submission_format"] = [
-                SubmissionFormatElement("output_%03d.txt" %
-                                        (i)).export_to_dict()
-                for i in xrange(int(conf["n_input"]))]
-
-        # If there is cor/manager, then the task type is Communication
-        elif os.path.exists(os.path.join(path, "cor", "manager")):
-            params["task_type"] = "Communication"
-            params["task_type_parameters"] = '[]'
-            params["managers"] += [
-                Manager(self.file_cacher.put_file(
-                    path=os.path.join(path, "cor", "manager"),
-                    description="Manager for task %s" % (name)),
-                        "manager").export_to_dict()]
-            for lang in Submission.LANGUAGES:
-                stub_name = os.path.join(path, "sol", "stub.%s" % lang)
-                if os.path.exists(stub_name):
-                    params["managers"].append(
-                        Manager(self.file_cacher.put_file(
-                            path=stub_name,
-                            description="Stub for task %s and language %s" %
-                            (name, lang)),
-                                "stub.%s" % lang).export_to_dict())
-                else:
-                    logger.warning("Stub for language %s not found." % lang)
-
-        # Otherwise, the task type is Batch
-        else:
-            params["task_type"] = "Batch"
-            params["task_type_parameters"] = \
-                '["%s", ["%s", "%s"], "%s"]' % \
-                (compilation_param, infile_param, outfile_param,
-                 evaluation_parameter)
-
         # Detect subtasks by checking GEN
         gen_filename = os.path.join(path, 'gen', 'GEN')
         with open(gen_filename) as gen_file:
