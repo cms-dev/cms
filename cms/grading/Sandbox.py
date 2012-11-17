@@ -320,7 +320,7 @@ class Sandbox:
 
         """
         if 'mem' in self.log:
-            return float(self.log['mem'][0])
+            return int(self.log['mem'][0])
         return None
 
     @with_log
