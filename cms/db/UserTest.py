@@ -211,7 +211,7 @@ class UserTest(Base):
             'evaluation_outcome': self.evaluation_outcome,
             'evaluation_text': self.evaluation_text,
             'evaluation_tries': self.evaluation_tries,
-            'evaluation_shard': self.evalution_shard,
+            'evaluation_shard': self.evaluation_shard,
             'evaluation_sandbox': self.evaluation_sandbox,
             'memory_used': self.memory_used,
             'execution_time': self.execution_time,
