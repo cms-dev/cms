@@ -199,8 +199,12 @@ $(document).ready(function () {
         <col class="time"/>
 {% end %}
         <col class="status"/>
+{% if score_type is not None and score_type.max_public_score != 0 %}
         <col class="public_score"/>
         <col class="total_score"/>
+{% else %}
+        <col class="total_score"/>
+{% end %}
         <col class="files"/>
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
         <col class="token"/>
@@ -214,8 +218,12 @@ $(document).ready(function () {
             <th class="time">{{ _("Time") }}</th>
 {% end %}
             <th class="status">{{ _("Status") }}</th>
+{% if score_type is not None and score_type.max_public_score != 0 %}
             <th class="public_score">{{ _("Public score") }}</th>
             <th class="total_score">{{ _("Total score") }}</th>
+{% else %}
+            <th class="total_score">{{ _("Score") }}</th>
+{% end %}
             <th class="files">{{ _("Files") }}</th>
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
             <th class="token">{{ _("Token") }}</th>

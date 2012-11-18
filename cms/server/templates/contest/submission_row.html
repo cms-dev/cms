@@ -9,7 +9,9 @@
     <td class="status">
         {{ _("Compiling...") }}
     </td>
+    {% if score_type is not None and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{{ _("N/A") }}</td>
+    {% end %}
     <td class="total_score undefined">{{ _("N/A") }}</td>
 {% elif s.compilation_outcome == "fail" %}
 <tr data-submission="{{ s_idx }}" data-status="2">
@@ -18,7 +20,9 @@
         {{ _("Compilation failed") }}
         <a class="details">{{ _("details") }}</a>
     </td>
+    {% if score_type is not None and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{{ _("N/A") }}</td>
+    {% end %}
     <td class="total_score undefined">{{ _("N/A") }}</td>
 {% elif not s.evaluated() %}
 <tr data-submission="{{ s_idx }}" data-status="3">
@@ -26,7 +30,9 @@
     <td class="status">
         {{ _("Evaluating...") }}
     </td>
+    {% if score_type is not None and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{{ _("N/A") }}</td>
+    {% end %}
     <td class="total_score undefined">{{ _("N/A") }}</td>
 {% elif not s.scored() %}
 <tr data-submission="{{ s_idx }}" data-status="4">
@@ -34,7 +40,9 @@
     <td class="status">
         {{ _("Scoring...") }}
     </td>
+    {% if score_type is not None and score_type.max_public_score != 0 %}
     <td class="public_score undefined">{{ _("N/A") }}</td>
+    {% end %}
     <td class="total_score undefined">{{ _("N/A") }}</td>
 {% else %}
 <tr data-submission="{{ s_idx }}" data-status="5">
@@ -43,22 +51,13 @@
         {{ _("Evaluated") }}
         <a class="details">{{ _("details") }}</a>
     </td>
-    {% comment FIXME decide if we want this or not %}
-    {% if s.token is not None and False %}
-    <td class="public_score undefined">
-        N/A
-    </td>
-    {% else %}
-        {% if score_type is not None and score_type.max_public_score != 0 %}
+
+    {% if score_type is not None and score_type.max_public_score != 0 %}
     <td class="public_score {{ get_score_class(s.public_score, score_type.max_public_score) }}">
             {{ "%g" % s.public_score }} / {{ "%g" % score_type.max_public_score }}
     </td>
-        {% else %}
-    <td class="public_score">
-            {{ "%g" % s.public_score }}
-    </td>
-        {% end %}
     {% end %}
+
     {% if s.token is not None %}
         {% if score_type is not None and score_type.max_score != 0 %}
     <td class="total_score {{ get_score_class(s.score, score_type.max_score) }}">
