@@ -107,7 +107,6 @@ def get_connection(ranking, log_file):
             #            (error, ranking[1]))
             log_file.write("Error %r while connecting to ranking %s.\n" %
                            (error, ranking[1]))
-            log_file.flush()
             raise CannotSendError
     return active_connections[ranking[1]]
 
@@ -177,12 +176,10 @@ def safe_put_data(connection, url, data, auth, operation, log_file):
     except Exception as error:
         #logger.info("Error %r while %s." % (error, operation))
         log_file.write("Error %r while %s.\n" % (error, operation))
-        log_file.flush()
         raise CannotSendError
     if res.status not in [200, 201]:
         #logger.info("Status %s while %s." % (res.status, operation))
         log_file.write("Status %s while %s.\n" % (res.status, operation))
-        log_file.flush()
         raise CannotSendError
 
 
@@ -200,7 +197,6 @@ def send_submissions(ranking, submission_put_data, log_file):
     """
     #logger.info("Sending submissions to ranking %s." % ranking[1])
     log_file.write("Sending submissions to ranking %s.\n" % ranking[1])
-    log_file.flush()
 
     try:
         safe_put_data(get_connection(ranking[:2], log_file), "/submissions/",
@@ -227,7 +223,6 @@ def send_subchanges(ranking, subchange_put_data, log_file):
     """
     #logger.info("Sending subchanges to ranking %s." % ranking[1])
     log_file.write("Sending subchanges to ranking %s.\n" % ranking[1])
-    log_file.flush()
 
     try:
         safe_put_data(get_connection(ranking[:2], log_file), "/subchanges/",
@@ -240,6 +235,43 @@ def send_subchanges(ranking, subchange_put_data, log_file):
         raise error
 
 
+class LogBridge:
+    """Bad hack to overcome a few missing features of the async
+    framework. Specifically, async isn't thread-safe, so when you
+    start a new thread it can't call RPC via async. This means that it
+    can't even do logging.
+
+    This class is a bridge to transfer log requests from the working
+    thread of SS to the main one, that can forward it to the
+    LogServer.
+
+    It is meant to be removed as soon as a more powerful concurrency
+    framework is broght in use.
+
+    """
+
+    def __init__(self):
+        self.logs = []
+        self.log_lock = threading.Lock()
+
+    def write(self, line):
+        """Append a new line to the log.
+
+        """
+        with self.log_lock:
+            self.logs.append(line.strip('\n'))
+
+    def get_logs(self):
+        """Get all log lines written since the last call to
+        get_logs().
+
+        """
+        with self.log_lock:
+            tmp = self.logs
+            self.logs = []
+        return tmp
+
+
 class ScoringService(Service):
     """Scoring service.
 
@@ -250,6 +282,9 @@ class ScoringService(Service):
 
     # How often we look for submission not scored/tokened.
     JOBS_NOT_DONE_CHECK_TIME = 347.0
+
+    # How often we check for logs to be sent to LogServer
+    FORWARD_LOG_TIME = 1.0
 
     def __init__(self, shard, contest_id):
         logger.initialize(ServiceCoord("ScoringService", shard))
@@ -293,7 +328,8 @@ class ScoringService(Service):
         for ranking in self.rankings:
             self.initialize_queue.add(ranking)
 
-        thread = threading.Thread(target=self.dispath_operations_thread)
+        self.log_file = LogBridge()
+        thread = threading.Thread(target=self.dispath_operations_thread, args=(self.log_file,))
         thread.daemon = True
         thread.start()
 
@@ -301,14 +337,19 @@ class ScoringService(Service):
                          ScoringService.JOBS_NOT_DONE_CHECK_TIME,
                          immediately=True)
 
-    def dispath_operations_thread(self):
-        log_file = open('/var/local/log/cms/RWS_submitter.log', 'w')
-        log_file.write("Starting new log\n")
-        log_file.flush()
+        self.add_timeout(self.forward_logs, None,
+                         ScoringService.FORWARD_LOG_TIME,
+                         immediately=True)
 
+    def dispath_operations_thread(self, log_file):
         while True:
             self.dispatch_operations(log_file)
             time.sleep(ScoringService.CHECK_DISPATCH_TIME)
+
+    def forward_logs(self):
+        for line in self.log_file.get_logs():
+            logger.info(line)
+        return True
 
     def _initialize_scorers(self):
         """Initialize scorers, the ScoreType objects holding all
@@ -426,7 +467,6 @@ class ScoringService(Service):
         if pending > 0:
             #logger.info("%s operations still pending." % pending)
             log_file.write("%s operations still pending.\n" % pending)
-            log_file.flush()
 
         failed_rankings = set()
 
@@ -442,7 +482,6 @@ class ScoringService(Service):
                 #            ranking[1])
                 log_file.write("Ranking %s not connected or generic error.\n" %
                                ranking[1])
-                log_file.flush()
                 new_initialize_queue.add(ranking)
                 failed_rankings.add(ranking)
 
@@ -458,7 +497,6 @@ class ScoringService(Service):
                 #            ranking[1])
                 log_file.write("Ranking %s not connected or generic error.\n" %
                                ranking[1])
-                log_file.flush()
                 new_submission_queue[ranking] = data
                 failed_rankings.add(ranking)
 
@@ -474,7 +512,6 @@ class ScoringService(Service):
                 #            ranking[1])
                 log_file.write("Ranking %s not connected or generic error.\n" %
                                ranking[1])
-                log_file.flush()
                 new_subchange_queue[ranking] = data
                 failed_rankings.add(ranking)
 
@@ -504,7 +541,6 @@ class ScoringService(Service):
         """
         #logger.info("Initializing ranking %s." % ranking[1])
         log_file.write("Initializing ranking %s.\n" % ranking[1])
-        log_file.flush()
 
         try:
             connection = get_connection(ranking[:2], log_file)
@@ -517,7 +553,6 @@ class ScoringService(Service):
                     #             self.contest_id)
                     log_file.write("Received request for unexistent contest id %s.\n" %
                                    self.contest_id)
-                    log_file.flush()
                     raise KeyError
                 contest_name = contest.name
                 contest_url = "/contests/%s" % encode_id(contest_name)
