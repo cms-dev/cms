@@ -43,7 +43,7 @@ from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submissions
-from cmscommon.DateTime import make_datetime, make_timestamp
+from cmscommon.DateTime import make_timestamp
 
 
 class CannotSendError(Exception):
@@ -317,7 +317,7 @@ class ScoringService(Service):
             address = config.rankings_address[i]
             username = config.rankings_username[i]
             password = config.rankings_password[i]
-            self.rankings.append((address[0], # HTTP / HTTPS
+            self.rankings.append((address[0],  # HTTP / HTTPS
                                   "%s:%d" % tuple(address[1:]),
                                   get_authorization(username, password)))
         self.initialize_queue = set()
@@ -329,7 +329,8 @@ class ScoringService(Service):
             self.initialize_queue.add(ranking)
 
         self.log_file = LogBridge()
-        thread = threading.Thread(target=self.dispath_operations_thread, args=(self.log_file,))
+        thread = threading.Thread(target=self.dispath_operations_thread,
+                                  args=(self.log_file,))
         thread.daemon = True
         thread.start()
 
@@ -463,7 +464,9 @@ class ScoringService(Service):
             self.initialize_queue = set()
             self.submission_queue = dict()
             self.subchange_queue = dict()
-        pending = len(initialize_queue) + len(submission_queue) + len(subchange_queue)
+        pending = len(initialize_queue) + \
+            len(submission_queue) + \
+            len(subchange_queue)
         if pending > 0:
             #logger.info("%s operations still pending." % pending)
             log_file.write("%s operations still pending.\n" % pending)
@@ -518,10 +521,12 @@ class ScoringService(Service):
         with self.operation_queue_lock:
             self.initialize_queue |= new_initialize_queue
             for r in set(self.submission_queue) | set(new_submission_queue):
-                new_submission_queue.setdefault(r, dict()).update(self.submission_queue.get(r, dict()))
+                new_submission_queue.setdefault(r, dict()). \
+                    update(self.submission_queue.get(r, dict()))
             self.submission_queue = new_submission_queue
             for r in set(self.subchange_queue) | set(new_subchange_queue):
-                new_subchange_queue.setdefault(r, dict()).update(self.subchange_queue.get(r, dict()))
+                new_subchange_queue.setdefault(r, dict()). \
+                    update(self.subchange_queue.get(r, dict()))
             self.subchange_queue = new_subchange_queue
 
         # We want this to run forever.
@@ -549,10 +554,10 @@ class ScoringService(Service):
             with SessionGen(commit=False) as session:
                 contest = Contest.get_from_id(self.contest_id, session)
                 if contest is None:
-                    #logger.error("Received request for unexistent contest id %s." %
-                    #             self.contest_id)
-                    log_file.write("Received request for unexistent contest id %s.\n" %
-                                   self.contest_id)
+                    #logger.error("Received request for unexistent contest "
+                    #             "id %s." %self.contest_id)
+                    log_file.write("Received request for unexistent contest "
+                                   "id %s.\n" % self.contest_id)
                     raise KeyError
                 contest_name = contest.name
                 contest_url = "/contests/%s" % encode_id(contest_name)
@@ -578,8 +583,8 @@ class ScoringService(Service):
                              for task in contest.tasks)
 
             safe_put_data(connection, contest_url, contest_data, auth,
-                          "sending contest %s to ranking %s" % (contest_name, ranking[1]),
-                          log_file)
+                          "sending contest %s to ranking %s" %
+                          (contest_name, ranking[1]), log_file)
 
             safe_put_data(connection, "/users/", users, auth,
                           "sending users to ranking %s" % ranking[1],
@@ -658,7 +663,9 @@ class ScoringService(Service):
                 "user": encode_id(submission.user.username),
                 "task": encode_id(submission.task.name),
                 "time": int(make_timestamp(submission.timestamp))}
-            subchange_id = "%s%ss" % (int(make_timestamp(submission.timestamp)), submission_id)
+            subchange_id = "%s%ss" % \
+                (int(make_timestamp(submission.timestamp)),
+                 submission_id)
             subchange_put_data = {
                 "submission": encode_id(submission_id),
                 "time": int(make_timestamp(submission.timestamp)),
@@ -672,8 +679,14 @@ class ScoringService(Service):
         # Adding operations to the queue.
         with self.operation_queue_lock:
             for ranking in self.rankings:
-                self.submission_queue.setdefault(ranking, dict())[encode_id(submission_id)] = submission_put_data
-                self.subchange_queue.setdefault(ranking, dict())[encode_id(subchange_id)] = subchange_put_data
+                self.submission_queue.setdefault(
+                    ranking,
+                    dict())[encode_id(submission_id)] = \
+                    submission_put_data
+                self.subchange_queue.setdefault(
+                    ranking,
+                    dict())[encode_id(subchange_id)] = \
+                    subchange_put_data
 
     @rpc_method
     def submission_tokened(self, submission_id, timestamp):
@@ -701,7 +714,8 @@ class ScoringService(Service):
                 "user": encode_id(submission.user.username),
                 "task": encode_id(submission.task.name),
                 "time": int(make_timestamp(submission.timestamp))}
-            subchange_id = "%s%st" % (int(make_timestamp(timestamp)), submission_id)
+            subchange_id = "%s%st" % (int(make_timestamp(timestamp)),
+                                      submission_id)
             subchange_put_data = {
                 "submission": encode_id(submission_id),
                 "time": int(make_timestamp(timestamp)),
@@ -710,8 +724,14 @@ class ScoringService(Service):
         # Adding operations to the queue.
         with self.operation_queue_lock:
             for ranking in self.rankings:
-                self.submission_queue.setdefault(ranking, dict())[encode_id(submission_id)] = submission_put_data
-                self.subchange_queue.setdefault(ranking, dict())[encode_id(subchange_id)] = subchange_put_data
+                self.submission_queue.setdefault(
+                    ranking,
+                    dict())[encode_id(submission_id)] = \
+                    submission_put_data
+                self.subchange_queue.setdefault(
+                    ranking,
+                    dict())[encode_id(subchange_id)] = \
+                    subchange_put_data
 
     @rpc_method
     def invalidate_submission(self,
