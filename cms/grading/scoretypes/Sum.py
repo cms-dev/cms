@@ -102,11 +102,11 @@ class Sum(ScoreTypeAlone):
         testcases = []
         for idx in evaluations:
             tc_outcome = self.get_public_outcome(
-                evaluations[idx]["outcome"])
+                float(evaluations[idx]["outcome"]))
             testcases.append({
                 "idx": idx,
                 "public": self.public_testcases[idx],
-                "score": evaluations[idx]["outcome"],
+                "score": float(evaluations[idx]["outcome"]),
                 "max_score": 1.0,
                 "outcome": tc_outcome,
                 "class": class_score_testcase(tc_outcome),

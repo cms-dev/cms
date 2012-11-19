@@ -648,7 +648,7 @@ class ScoringService(Service):
             scorer.add_submission(submission_id, submission.timestamp,
                                   submission.user.username,
                                   dict((ev.num,
-                                        {"outcome": float(ev.outcome),
+                                        {"outcome": ev.outcome,
                                          "text": ev.text,
                                          "time": ev.execution_time,
                                          "memory": ev.memory_used})

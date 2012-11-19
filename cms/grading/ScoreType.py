@@ -348,14 +348,15 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         for st_idx, parameter in enumerate(self.parameters):
             tc_end = tc_start + parameter[1]
-            st_score = self.reduce([evaluations[idx]["outcome"]
+            st_score = self.reduce([float(evaluations[idx]["outcome"])
                                     for idx in indices[tc_start:tc_end]],
                                    parameter) * parameter[0]
             st_public = all(self.public_testcases[idx]
                             for idx in indices[tc_start:tc_end])
             tc_outcomes = dict((
                 idx,
-                self.get_public_outcome(evaluations[idx]["outcome"], parameter)
+                self.get_public_outcome(
+                    float(evaluations[idx]["outcome"]), parameter)
                 ) for idx in indices[tc_start:tc_end])
 
             testcases = list()
