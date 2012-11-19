@@ -82,14 +82,14 @@ class HTTPSConnection(HTTPConnection):
 active_connections = dict()
 
 
-def get_connection(ranking, log_file):
+def get_connection(ranking, log_bridge):
     """Return a connection to a ranking server
 
     If we already have an open connection return that one, otherwise
     attempt to open a new one.
 
     ranking ((str, str)): protocol and address of ranking server
-    log_file (writable file object): the file to use to write logs.
+    log_bridge (LogBridge): the bridge to use to write logs.
 
     raise a CannotSendError if a new connection cannot be established.
 
@@ -103,10 +103,8 @@ def get_connection(ranking, log_file):
             else:
                 raise ValueError("Unknown protocol '%s'." % ranking[0])
         except Exception as error:
-            #logger.info("Error %r while connecting to ranking %s." %
-            #            (error, ranking[1]))
-            log_file.write("Error %r while connecting to ranking %s.\n" %
-                           (error, ranking[1]))
+            log_bridge.info("Error %r while connecting to ranking %s." %
+                            (error, ranking[1]))
             raise CannotSendError
     return active_connections[ranking[1]]
 
@@ -141,7 +139,7 @@ def encode_id(entity_id):
             try:
                 encoded_id += "_" + hex(ord(char))[-2:]
             except TypeError:
-                # FIXME We should use log_file here too, but given how
+                # FIXME We should use log_bridge here too, but given how
                 # we create IDs it's unlikely this error will ever
                 # happen.
                 logger.error("Entity %s cannot be send correctly, "
@@ -152,7 +150,7 @@ def encode_id(entity_id):
     return encoded_id
 
 
-def safe_put_data(connection, url, data, auth, operation, log_file):
+def safe_put_data(connection, url, data, auth, operation, log_bridge):
     """Send some data to url through the connection using username and
     password specified in auth.
 
@@ -162,7 +160,7 @@ def safe_put_data(connection, url, data, auth, operation, log_file):
     data (dict): the data to json-encode and send.
     operation (str): a human-readable description of the operation
                      we're performing (to produce log messages).
-    log_file (writable file object): the file to use to write logs.
+    log_bridge (LogBridge): the bridge to use to write logs.
 
     raise CannotSendError in case of communication errors.
 
@@ -174,61 +172,57 @@ def safe_put_data(connection, url, data, auth, operation, log_file):
         res = connection.getresponse()
         res.read()
     except Exception as error:
-        #logger.info("Error %r while %s." % (error, operation))
-        log_file.write("Error %r while %s.\n" % (error, operation))
+        log_bridge.info("Error %r while %s." % (error, operation))
         raise CannotSendError
     if res.status not in [200, 201]:
-        #logger.info("Status %s while %s." % (res.status, operation))
-        log_file.write("Status %s while %s.\n" % (res.status, operation))
+        log_bridge.info("Status %s while %s." % (res.status, operation))
         raise CannotSendError
 
 
-def send_submissions(ranking, submission_put_data, log_file):
+def send_submissions(ranking, submission_put_data, log_bridge):
     """Send a submission to the remote ranking.
 
     ranking ((str, str, str)): protocol, address and authorization
                                string of ranking server.
     submission_put_data (dict): dictionary to send to the ranking to
                                 send the submission.
-    log_file (writable file object): the file to use to write logs.
+    log_bridge (LogBridge): the bridge to use to write logs.
 
     raise CannotSendError in case of communication errors.
 
     """
-    #logger.info("Sending submissions to ranking %s." % ranking[1])
-    log_file.write("Sending submissions to ranking %s.\n" % ranking[1])
+    log_bridge.info("Sending submissions to ranking %s." % ranking[1])
 
     try:
-        safe_put_data(get_connection(ranking[:2], log_file), "/submissions/",
+        safe_put_data(get_connection(ranking[:2], log_bridge), "/submissions/",
                       submission_put_data, ranking[2],
                       "sending submissions to ranking %s" % ranking[1],
-                      log_file)
+                      log_bridge)
     except CannotSendError as error:
         # Delete it to make get_connection try to create it again.
         del active_connections[ranking[1]]
         raise error
 
 
-def send_subchanges(ranking, subchange_put_data, log_file):
+def send_subchanges(ranking, subchange_put_data, log_bridge):
     """Send a change to a submission (token or score update).
 
     ranking ((str, str, str)): protocol, address and authorization
                                string of ranking server.
     subchange_put_data (dict): dictionary to send to the ranking to
                                update the submission.
-    log_file (writable file object): the file to use to write logs.
+    log_bridge (LogBridge): the bridge to use to write logs.
 
     raise CannotSendError in case of communication errors.
 
     """
-    #logger.info("Sending subchanges to ranking %s." % ranking[1])
-    log_file.write("Sending subchanges to ranking %s.\n" % ranking[1])
+    log_bridge.info("Sending subchanges to ranking %s." % ranking[1])
 
     try:
-        safe_put_data(get_connection(ranking[:2], log_file), "/subchanges/",
+        safe_put_data(get_connection(ranking[:2], log_bridge), "/subchanges/",
                       subchange_put_data, ranking[2],
                       "sending subchanges to ranking %s" % ranking[1],
-                      log_file)
+                      log_bridge)
     except CannotSendError as error:
         # Delete it to make get_connection try to create it again.
         del active_connections[ranking[1]]
@@ -254,22 +248,51 @@ class LogBridge:
         self.logs = []
         self.log_lock = threading.Lock()
 
-    def write(self, line):
+    def log(self, line, severity):
         """Append a new line to the log.
 
         """
         with self.log_lock:
-            self.logs.append(line.strip('\n'))
+            self.logs.append((line, severity))
 
-    def get_logs(self):
-        """Get all log lines written since the last call to
-        get_logs().
+    # The design of the following methods is by choice hackish, to
+    # remind everyone that this class is just a temporary workaround
+    # and has to be removed when a better solution is available
+
+    def debug(self, line):
+        self.log(line, 'debug')
+
+    def info(self, line):
+        self.log(line, 'info')
+
+    def warning(self, line):
+        self.log(line, 'warning')
+
+    def error(self, line):
+        self.log(line, 'error')
+
+    def critical(self, line):
+        self.log(line, 'critical')
+
+    def push_logs(self, logger):
+        """Push all log lines written since the last call to
+        get_logs() to the logger object.
 
         """
         with self.log_lock:
             tmp = self.logs
             self.logs = []
-        return tmp
+        for (line, severity) in tmp:
+            if severity == 'debug':
+                logger.debug(line)
+            elif severity == 'info':
+                logger.info(line)
+            elif severity == 'warning':
+                logger.warning(line)
+            elif severity == 'error':
+                logger.error(line)
+            elif severity == 'critical':
+                logger.critical(line)
 
 
 class ScoringService(Service):
@@ -328,9 +351,9 @@ class ScoringService(Service):
         for ranking in self.rankings:
             self.initialize_queue.add(ranking)
 
-        self.log_file = LogBridge()
+        self.log_bridge = LogBridge()
         thread = threading.Thread(target=self.dispath_operations_thread,
-                                  args=(self.log_file,))
+                                  args=(self.log_bridge,))
         thread.daemon = True
         thread.start()
 
@@ -342,14 +365,13 @@ class ScoringService(Service):
                          ScoringService.FORWARD_LOG_TIME,
                          immediately=True)
 
-    def dispath_operations_thread(self, log_file):
+    def dispath_operations_thread(self, log_bridge):
         while True:
-            self.dispatch_operations(log_file)
+            self.dispatch_operations(log_bridge)
             time.sleep(ScoringService.CHECK_DISPATCH_TIME)
 
     def forward_logs(self):
-        for line in self.log_file.get_logs():
-            logger.info(line)
+        self.log_bridge.push_logs(logger)
         return True
 
     def _initialize_scorers(self):
@@ -365,7 +387,7 @@ class ScoringService(Service):
                 try:
                     self.scorers[task.id] = get_score_type(task=task)
                 except Exception as error:
-                    logger.critical("Cannot get score type for task %s.\n%r" %
+                    logger.critical("Cannot get score type for task %s: %r" %
                                     (task.name, error))
                     self.exit()
             session.commit()
@@ -450,11 +472,11 @@ class ScoringService(Service):
         self.scoring_old_submission = False
         return False
 
-    def dispatch_operations(self, log_file):
+    def dispatch_operations(self, log_bridge):
         """Look at the operations still to do in the queue and tries
         to dispatch them
 
-        log_file (writable file object): the file to use to write logs.
+        log_bridge (LogBridge): the bridge to use to write logs.
 
         """
         with self.operation_queue_lock:
@@ -468,8 +490,7 @@ class ScoringService(Service):
             len(submission_queue) + \
             len(subchange_queue)
         if pending > 0:
-            #logger.info("%s operations still pending." % pending)
-            log_file.write("%s operations still pending.\n" % pending)
+            log_bridge.info("%s operations still pending." % pending)
 
         failed_rankings = set()
 
@@ -479,11 +500,9 @@ class ScoringService(Service):
                 new_initialize_queue.add(ranking)
                 continue
             try:
-                self.initialize(ranking, log_file)
+                self.initialize(ranking, log_bridge)
             except:
-                #logger.info("Ranking %s not connected or generic error." %
-                #            ranking[1])
-                log_file.write("Ranking %s not connected or generic error.\n" %
+                log_bridge.info("Ranking %s not connected or generic error." %
                                ranking[1])
                 new_initialize_queue.add(ranking)
                 failed_rankings.add(ranking)
@@ -494,11 +513,9 @@ class ScoringService(Service):
                 new_submission_queue[ranking] = data
                 continue
             try:
-                send_submissions(ranking, data, log_file)
+                send_submissions(ranking, data, log_bridge)
             except:
-                #logger.info("Ranking %s not connected or generic error." %
-                #            ranking[1])
-                log_file.write("Ranking %s not connected or generic error.\n" %
+                log_bridge.info("Ranking %s not connected or generic error." %
                                ranking[1])
                 new_submission_queue[ranking] = data
                 failed_rankings.add(ranking)
@@ -509,11 +526,9 @@ class ScoringService(Service):
                 new_subchange_queue[ranking] = data
                 continue
             try:
-                send_subchanges(ranking, data, log_file)
+                send_subchanges(ranking, data, log_bridge)
             except:
-                #logger.info("Ranking %s not connected or generic error." %
-                #            ranking[1])
-                log_file.write("Ranking %s not connected or generic error.\n" %
+                log_bridge.info("Ranking %s not connected or generic error." %
                                ranking[1])
                 new_subchange_queue[ranking] = data
                 failed_rankings.add(ranking)
@@ -532,32 +547,29 @@ class ScoringService(Service):
         # We want this to run forever.
         return True
 
-    def initialize(self, ranking, log_file):
+    def initialize(self, ranking, log_bridge):
         """Send to the ranking all the data that are supposed to be
         sent before the contest: contest, users, tasks. No support for
         teams, flags and faces.
 
         ranking ((str, str, str)): protocol, address and authorization
                                    string of ranking server.
-        log_file (writable file object): the file to use to write logs.
+        log_bridge (LogBridge): the bridge to use to write logs.
 
         raise CannotSendError in case of communication errors.
 
         """
-        #logger.info("Initializing ranking %s." % ranking[1])
-        log_file.write("Initializing ranking %s.\n" % ranking[1])
+        log_bridge.info("Initializing ranking %s." % ranking[1])
 
         try:
-            connection = get_connection(ranking[:2], log_file)
+            connection = get_connection(ranking[:2], log_bridge)
             auth = ranking[2]
 
             with SessionGen(commit=False) as session:
                 contest = Contest.get_from_id(self.contest_id, session)
                 if contest is None:
-                    #logger.error("Received request for unexistent contest "
-                    #             "id %s." %self.contest_id)
-                    log_file.write("Received request for unexistent contest "
-                                   "id %s.\n" % self.contest_id)
+                    log_bridge.error("Received request for unexistent contest "
+                                   "id %s." % self.contest_id)
                     raise KeyError
                 contest_name = contest.name
                 contest_url = "/contests/%s" % encode_id(contest_name)
@@ -584,15 +596,15 @@ class ScoringService(Service):
 
             safe_put_data(connection, contest_url, contest_data, auth,
                           "sending contest %s to ranking %s" %
-                          (contest_name, ranking[1]), log_file)
+                          (contest_name, ranking[1]), log_bridge)
 
             safe_put_data(connection, "/users/", users, auth,
                           "sending users to ranking %s" % ranking[1],
-                          log_file)
+                          log_bridge)
 
             safe_put_data(connection, "/tasks/", tasks, auth,
                           "sending tasks to ranking %s" % ranking[1],
-                          log_file)
+                          log_bridge)
 
         except CannotSendError as error:
             # Delete it to make get_connection try to create it again.
