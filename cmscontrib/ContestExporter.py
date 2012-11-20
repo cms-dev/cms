@@ -87,7 +87,7 @@ class ContestExporter:
     idempotent.
 
     """
-    def __init__(self, contest_id, dump, export_target,
+    def __init__(self, contest_id, export_target,
                  skip_submissions, skip_user_tests, light):
         self.contest_id = contest_id
         self.skip_submissions = skip_submissions
