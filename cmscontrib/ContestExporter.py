@@ -27,14 +27,13 @@ idempotent.
 
 import argparse
 import os
-import re
 import shutil
 import simplejson as json
 import tempfile
 
 import tarfile
 
-from cms import config, logger
+from cms import logger
 from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest
@@ -55,10 +54,10 @@ def get_archive_info(file_name):
            "extension": "",
            "write_mode": "",
            }
-    if not (file_name.endswith(".tar.gz") \
-           or file_name.endswith(".tar.bz2") \
-           or file_name.endswith(".tar") \
-           or file_name.endswith(".zip")):
+    if not (file_name.endswith(".tar.gz")
+            or file_name.endswith(".tar.bz2")
+            or file_name.endswith(".tar")
+            or file_name.endswith(".zip")):
         return ret
 
     if file_name.endswith(".tar"):
@@ -158,7 +157,9 @@ class ContestExporter:
             # Export the contest in JSON format.
             logger.info("Exporting the contest in JSON format.")
             with open(os.path.join(export_dir, "contest.json"), 'w') as fout:
-                json.dump(contest.export_to_dict(self.skip_submissions, self.skip_user_tests),
+                json.dump(contest.export_to_dict(
+                        self.skip_submissions,
+                        self.skip_user_tests),
                           fout, indent=4)
 
         # If the admin requested export to file, we do that.
