@@ -142,7 +142,8 @@ class User(Base):
                  email=None, ip=None, contest=None, hidden=False,
                  primary_statements=None, timezone=None,
                  starting_time=None, extra_time=timedelta(),
-                 messages=None, questions=None, submissions=None):
+                 messages=None, questions=None, submissions=None,
+                 user_tests=None):
         if password is None:
             import random
             chars = "abcdefghijklmnopqrstuvwxyz"
@@ -164,6 +165,7 @@ class User(Base):
         self.questions = questions if questions is not None else []
         self.contest = contest
         self.submissions = submissions if submissions is not None else []
+        self.user_tests = user_tests if user_tests is not None else []
 
     def export_to_dict(self, skip_submissions=False, skip_user_tests=False):
         """Return object data as a dictionary.
