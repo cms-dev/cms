@@ -30,6 +30,7 @@ import os
 import shutil
 import simplejson as json
 import tempfile
+import codecs
 
 import tarfile
 
@@ -202,12 +203,8 @@ class ContestExporter:
 
         # If applicable, retrieve also the description
         if descr_path is not None:
-            with open(descr_path, 'wb') as fout:
-                try:
-                    fout.write(self.file_cacher.describe(digest))
-                except UnicodeEncodeError:
-                    logger.warning("Caught a UnicodeDecodeError when writing "
-                                   "the description for file %s" % (digest))
+            with codecs.open(descr_path, 'w', encoding='utf-8') as fout:
+                fout.write(self.file_cacher.describe(digest))
 
         return True
 
