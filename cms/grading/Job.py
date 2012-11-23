@@ -194,6 +194,9 @@ class EvaluationJob(Job):
     # Output: success, evaluations
     # Metadata: only_execution, get_output
 
+    # Note that the 'evaluations' attribute isn't a list or a dict of
+    # Evaluation objects but just a dict of dicts.
+
     def __init__(self, task_type=None, task_type_parameters=None,
                  shard=None, sandboxes=None, info=None,
                  executables=None, testcases=None,
@@ -298,7 +301,10 @@ class EvaluationJob(Job):
                 'files': [file_.export_to_dict()
                           for file_ in self.files.itervalues()],
                 'success': self.success,
-                'evaluations': self.evaluations,
+                # XXX We convert the key from int to str because it'll
+                # be the key of a JSON object.
+                'evaluations': dict((str(k), v) for k, v
+                                    in self.evaluations.iteritems()),
                 'only_execution': self.only_execution,
                 'get_output': self.get_output,
                 })
@@ -320,4 +326,8 @@ class EvaluationJob(Job):
                          for file_data in data['files']]
         data['files'] = dict([(file_.filename, file_)
                               for file_ in data['files']])
+        # XXX We convert the key from str to int because it was the key
+        # of a JSON object.
+        data['evaluations'] = dict((int(k), v) for k, v
+                                   in data['evaluations'].iteritems())
         return cls(**data)
