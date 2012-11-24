@@ -36,7 +36,7 @@ import psutil
 from cms import config, logger, find_local_addresses
 from cms.async import ServiceCoord, get_shard_from_addresses
 from cms.async.AsyncLibrary import Service, rpc_method, RemoteService
-from cms.db import ask_for_contest
+from cms.db import ask_for_contest, is_contest_id
 
 
 # We need to use one set of methods for versions < 0.3.0, and another
@@ -421,7 +421,13 @@ def main():
             ResourceService(args.shard,
                             contest_id=ask_for_contest()).run()
         else:
-            ResourceService(args.shard, contest_id=args.autorestart).run()
+            if is_contest_id(args.autorestart):
+                ResourceService(args.shard, contest_id=args.autorestart).run()
+            else:
+                import sys
+                print >> sys.stderr, "There is no contest " \
+                      "with the specified id. Please try again."
+                sys.exit(1)
     else:
         ResourceService(args.shard).run()
 

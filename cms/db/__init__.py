@@ -81,6 +81,18 @@ def get_contest_list(session=None):
     return session.query(Contest).all()
 
 
+def is_contest_id(contest_id):
+    """Return if there is a contest with the given id in the database.
+
+    contest_id (int): the id to query.
+    return (boolean): True if there is such a contest.
+
+    """
+    with SessionGen(commit=False) as session:
+        contest = session.query(Contest).filter_by(id=contest_id).first()
+        return contest is not None
+
+
 def ask_for_contest(skip=None):
     """Print a greeter that ask the user for a contest, if there is
     not an indication of which contest to use in the command line.
