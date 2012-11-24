@@ -150,17 +150,20 @@ sudo pip install -r $REPO/REQUIREMENTS.txt
 Obtaining CMS
 -------------
 
-For every server, one needs to retrieve CMS. Since CMS does not yet
-have a release schedule, the fastest way to obtain it is via its git
-repository:
+The best way to obtain CMS is to download and unpack the last version
+from <https://github.com/cms-dev/cms/tags>. This is going to be a
+fairly tested version that may miss the last features but should work
+as intended. If you are a developer, or if you are interested in some
+feature yet to be released, or if you want help testing the next
+version, you can use instead the git repository:
 
 ```bash
 sudo apt-get install git
 git clone git://github.com/cms-dev/cms.git
 ```
 
-This will create a directory ./cms/ with the source code, that we will
-refer to as $REPO in the following.
+Either way, you will obtain a directory called cms/ with the source
+code, that we will refer to as $REPO in the following.
 
 
 Configuring and installing CMS
