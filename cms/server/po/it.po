@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-11-24 22:44+0100\n"
+"POT-Creation-Date: 2012-11-24 23:26+0100\n"
 "PO-Revision-Date: 2012-11-24 22:47+0100\n"
 "Last-Translator: Luca Wehrstedt <luca.wehrstedt@gmail.com>\n"
 "Language-Team: Italian <>\n"
@@ -323,7 +323,7 @@ msgstr "Panoramica"
 msgid "Communication"
 msgstr "Comunicazioni"
 
-#: templates/contest/base.html:159
+#: templates/contest/base.html:159 templates/contest/task_description.html:18
 msgid "Statement"
 msgstr "Descrizione"
 
