@@ -196,14 +196,14 @@
             {{ _("%(seconds)g seconds") % {"seconds": t_iter.time_limit} }}
         {% end %}
     {% else %}
-        N/A
+        {{ _("N/A") }}
     {% end %}
             </td>
             <td>
     {% if t_iter.memory_limit is not None %}
         {{ _("%(mb)d MiB") % {"mb": t_iter.memory_limit} }}
     {% else %}
-        N/A
+        {{ _("N/A") }}
     {% end %}
             </td>
             <td>{{ get_task_type(task=t_iter).name }}</td>
@@ -211,9 +211,9 @@
     {% if tokens_contest != 0 and tokens_tasks != 0 %}
             <td>
         {% if t_iter.token_initial is not None %}
-            Yes
+            {{ _("Yes") }}
         {% else %}
-            No
+            {{ _("No") }}
         {% end %}
             </td>
     {% end %}
