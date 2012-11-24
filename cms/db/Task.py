@@ -355,7 +355,8 @@ class Testcase(Base):
     task = relationship(
         Task,
         backref=backref('testcases',
-                        collection_class=ordering_list('num'), order_by=[num],
+                        collection_class=ordering_list('num'),
+                        order_by=[num],
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 

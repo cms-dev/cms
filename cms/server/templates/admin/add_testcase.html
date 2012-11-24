@@ -7,6 +7,12 @@
 <form enctype="multipart/form-data" action="{{ url_root }}/add_testcase/{{ task.id }}" method="POST">
   <table>
     <tr>
+      <td>Position:</td>
+      <td>
+        <input type="text" name="num"/>
+      </td>
+    </tr>
+    <tr>
       <td>Input:</td>
       <td>
         <input type="file" name="input"/>

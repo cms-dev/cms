@@ -783,6 +783,7 @@ class AddTestcaseHandler(BaseHandler):
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
+        num = int(self.get_argument("num"))
         _input = self.request.files["input"][0]
         output = self.request.files["output"][0]
         public = self.get_argument("public", None) is not None
@@ -808,7 +809,7 @@ class AddTestcaseHandler(BaseHandler):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
         self.sql_session.add(Testcase(
-            input_digest, output_digest, len(task.testcases), public, task))
+            input_digest, output_digest, num, public, task))
         self.sql_session.commit()
         self.redirect("/task/%s" % task_id)
 
