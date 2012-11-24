@@ -157,7 +157,8 @@ class User(Base):
         self.email = email if email is not None else ""
         self.ip = ip if ip is not None else "0.0.0.0"
         self.hidden = hidden
-        self.primary_statements = primary_statements if primary_statements is not None else "{}"
+        self.primary_statements = primary_statements \
+                                  if primary_statements is not None else "{}"
         self.timezone = timezone
         self.starting_time = starting_time
         self.extra_time = extra_time

@@ -244,8 +244,8 @@ class DBBackend(FileCacherBackend):
                     logger.debug("File %s sent to the database." % digest)
 
         except IntegrityError:
-            logger.info("File %s caused an IntegrityError, ignoring..." % digest)
-
+            logger.info("File %s caused an IntegrityError, ignoring..."
+                        % digest)
 
     def describe(self, digest):
         """See FileCacherBackend.describe().

@@ -30,22 +30,22 @@ from cms import config
 
 
 class _make_dict (ContentHandler):
-    def __init__ (self, path, key, value, result):
+    def __init__(self, path, key, value, result):
         self.path = path
         self.key = key
         self.value = value
         self.index = 0
         self.result = result
 
-    def startElement (self, name, attrs):
+    def startElement(self, name, attrs):
         if self.index < len(self.path) and name == self.path[self.index]:
             self.index += 1
         if self.index == len(self.path):
             if self.key in attrs and self.value in attrs:
                 self.result[attrs[self.key]] = attrs[self.value]
 
-    def endElement (self, name):
-        if self.index > 0 and name == self.path[self.index-1]:
+    def endElement(self, name):
+        if self.index > 0 and name == self.path[self.index - 1]:
             self.index -= 1
 
 

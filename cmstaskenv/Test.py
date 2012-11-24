@@ -26,16 +26,19 @@ import os
 from os.path import join
 from glob import glob
 
-def log(m, exitval = None):
+
+def log(m, exitval=None):
     if exitval == None:
         print >> sys.stderr, m
     else:
         print >> sys.stderr, "ERRORE: " + m
         sys.exit(exitval)
 
+
 def usage():
     log("%s mo-box soluzione timeout memlimit Batch|Communication Empty|Diff|Comp|Grad|GradComp [correttore] [manager]" % \
             os.path.basename(sys.argv[0]), exitval=1)
+
 
 def get_box_status(sandbox):
     _file = open("%s/run.log" % sandbox).readlines()
@@ -43,6 +46,7 @@ def get_box_status(sandbox):
         if f.split(":")[0] == "status":
             return f.split(":")[1].strip()
     return "OK"
+
 
 def get_points(file_):
     content = open(file_).read().strip()
@@ -52,6 +56,7 @@ def get_points(file_):
         print "WARNING: Unable to extract points from the string `%s'." \
               "Using 0.0." % content
         return 0
+
 
 def analyze_status(status):
     if status == "XX":
@@ -71,14 +76,16 @@ def analyze_status(status):
     else:
         log("Unrecognized sandbox status %s." % status, exitval=1)
 
+
 def diff(a, b):
     try:
         devnull = open("/dev/null", "w")
         subprocess.check_call(["diff", a, b, "-q", "-B", "-b"], stdout=devnull)
         devnull.close()
-    except Exception as e:
+    except Exception:
         return "0.0", "Not correct."
     return "1.0", "Correct."
+
 
 def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cormgr=""):
     points = []
@@ -113,14 +120,14 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
             mgr_command = "%s -c %s " \
                           "-i input.txt -o output.txt -r comment.txt " \
                           "-t %lg -w %lg -M run.log -- ./%s %s/in %s/out" % (
-                driver, mgr_sandbox, timeout, timeout*3, os.path.basename(cormgr), sandbox, sandbox)
+                driver, mgr_sandbox, timeout, timeout * 3, os.path.basename(cormgr), sandbox, sandbox)
             devnull = open("/dev/null")
             mgr = subprocess.Popen(mgr_command.split(), stderr=devnull)
             command = "%s -a 1 -c %s -ff -m %d " \
                       "-p in -p out -p /proc/self/exe -p /proc/meminfo " \
                       "-s getrlimit -s rt_sigaction -s ugetrlimit " \
                       "-t %lg -w %lg -M %s/run.log -- ./%s out in" % (
-                driver, sandbox, memlimit * 1024, timeout, timeout*3, sandbox, os.path.basename(soluzione))
+                driver, sandbox, memlimit * 1024, timeout, timeout * 3, sandbox, os.path.basename(soluzione))
             box_out = open("%s/box_out.txt" % sandbox, "w")
             sol = subprocess.Popen(command.split(), stderr=box_out)
             sol.wait()
@@ -130,7 +137,7 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
             box_out.close()
             try:
                 copy("%s/output.txt" % mgr_sandbox, "result/result%d.txt" % i)
-            except IOError: # output doesn't exist
+            except IOError:  # output doesn't exist
                 open("result/result%d.txt" % i, "wt").close()
             status = get_box_status(sandbox)
             statuses.append(status)
@@ -152,12 +159,12 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
                       "-p /proc/self/exe -p /proc/meminfo " \
                       "-s getrlimit -s rt_sigaction -s rt_sigprocmask -s ugetrlimit " \
                       "-t %lg -w %lg -M %s/run.log -- ./%s" % (
-                driver, sandbox, memlimit * 1024, sandbox, sandbox, timeout, timeout*1.5, sandbox, os.path.basename(soluzione))
+                driver, sandbox, memlimit * 1024, sandbox, sandbox, timeout, timeout * 1.5, sandbox, os.path.basename(soluzione))
             box_out = open("%s/box_out.txt" % sandbox, "w")
             subprocess.Popen(command.split(), stderr=box_out).wait()
             box_out.close()
             copy(soluzione, sandbox)
-            copy("%s/output.txt"% sandbox, "result/result%d.txt" % i)
+            copy("%s/output.txt" % sandbox, "result/result%d.txt" % i)
 
             status = get_box_status(sandbox)
             statuses.append(status)
@@ -203,6 +210,7 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
 
         print "%3d) %5.2lf   ---   %s   [%s]" % (i, p, c.ljust(maxlen), b)
     return zip(points, comments, box_outs, statuses)
+
 
 if __name__ == "__main__":
     correttore = manager = ""

@@ -25,13 +25,12 @@
 """
 
 import os
-import time
 from datetime import datetime, timedelta
 import traceback
 
 import base64
 import simplejson as json
-from sqlalchemy.exc import IntegrityError, DataError
+from sqlalchemy.exc import IntegrityError
 import tornado.web
 import tornado.locale
 
@@ -591,7 +590,6 @@ class ContestHandler(BaseHandler):
                 repr(error))
             self.redirect("/contest/%s" % contest_id)
             return
-
 
         if try_commit(self.sql_session, self):
             self.application.service.scoring_service.reinitialize()

@@ -23,11 +23,11 @@
 import os
 import tempfile
 
-from cms import config
+from cms import config, logger
 from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_command, compilation_step, \
-    evaluation_step_before_run, evaluation_step_after_run, is_evaluation_passed, \
-    human_evaluation_message, white_diff_step
+    evaluation_step_before_run, evaluation_step_after_run, \
+    is_evaluation_passed, human_evaluation_message, white_diff_step
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
 from cms.db.SQLAlchemyAll import Submission, Executable
@@ -185,7 +185,9 @@ class TwoSteps(TaskType):
 
         # Put the required files into the sandbox
         for filename, digest in first_executables_to_get.iteritems():
-            first_sandbox.create_file_from_storage(filename, digest, executable=True)
+            first_sandbox.create_file_from_storage(filename,
+                                                   digest,
+                                                   executable=True)
         for filename, digest in first_files_to_get.iteritems():
             first_sandbox.create_file_from_storage(filename, digest)
 
@@ -210,7 +212,9 @@ class TwoSteps(TaskType):
 
         # Put the required files into the second sandbox
         for filename, digest in second_executables_to_get.iteritems():
-            second_sandbox.create_file_from_storage(filename, digest, executable=True)
+            second_sandbox.create_file_from_storage(filename,
+                                                    digest,
+                                                    executable=True)
         for filename, digest in second_files_to_get.iteritems():
             second_sandbox.create_file_from_storage(filename, digest)
 
@@ -232,9 +236,10 @@ class TwoSteps(TaskType):
         success_second, second_plus = \
             evaluation_step_after_run(second_sandbox)
 
-        self.job.evaluations[test_number] = {'sandboxes': [first_sandbox.path,
-                                                           second_sandbox.path],
-                                             'plus': second_plus}
+        self.job.evaluations[test_number] = {
+            'sandboxes': [first_sandbox.path,
+                          second_sandbox.path],
+            'plus': second_plus}
         outcome = None
         text = None
         evaluation = self.job.evaluations[test_number]

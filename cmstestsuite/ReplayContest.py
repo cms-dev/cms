@@ -143,7 +143,7 @@ def token(timestamp, username, t_id, t_short, submission_num, base_url):
                       base_url=base_url))
 
 
-def replay(base_url, source="./source.txt"):
+def replay(base_url, source="./source.txt", start_from=None):
     """Start replaying the events in source on the CWS at the
     specified address.
 
@@ -156,10 +156,10 @@ def replay(base_url, source="./source.txt"):
     content = [x.strip().split() for x in open(source).readlines()]
     events = len(content)
     index = 0
-    if resume is not None:
-        while index < events and float(content[index][0]) < resume:
+    if start_from is not None:
+        while index < events and float(content[index][0]) < start_from:
             index += 1
-        start = time.time() - resume
+        start = time.time() - start_from
     else:
         start = time.time()
 
@@ -207,16 +207,16 @@ def main():
     parser.add_argument("-r", "--resume", type=str,
                         help="start from (%%H:%%M:%%S)")
     args = parser.parse_args()
-    current = None
+    start_from = None
     if args.resume is not None:
         try:
-            current = int(args.resume[6:8]) + \
-                      int(args.resume[3:5]) * 60 + \
-                      int(args.resume[0:2]) * 3600
+            start_from = int(args.resume[6:8]) + \
+                         int(args.resume[3:5]) * 60 + \
+                         int(args.resume[0:2]) * 3600
         except:
             print "Invalid resume time %s, format is %%H:%%M:%%S" % args.resume
 
-    thread = Thread(target=replay, args=(args.address, args.port, args.source, current))
+    thread = Thread(target=replay, args=(args.address, args.source, start_from))
     thread.start()
     print "Wait for data to load..."
     while start is None:

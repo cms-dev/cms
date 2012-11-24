@@ -117,7 +117,8 @@ class BaseHandler(CommonRequestHandler):
             return None
 
         # Check if the cookie is expired.
-        if self.timestamp - last_update > timedelta(seconds=config.cookie_duration):
+        if self.timestamp - last_update > \
+               timedelta(seconds=config.cookie_duration):
             self.clear_cookie("login")
             return None
 
@@ -137,7 +138,8 @@ class BaseHandler(CommonRequestHandler):
 
     def get_user_locale(self):
         if config.installed:
-            localization_dir = os.path.join("/", "usr", "local", "share", "locale")
+            localization_dir = os.path.join(
+                "/", "usr", "local", "share", "locale")
         else:
             localization_dir = os.path.join(os.path.dirname(__file__), "mo")
 
@@ -175,7 +177,8 @@ class BaseHandler(CommonRequestHandler):
                 fallback=True)
             shared_mime_info_locale = gettext.translation(
                 "shared-mime-info",
-                os.path.join(config.shared_mime_info_prefix, "share", "locale"),
+                os.path.join(
+                    config.shared_mime_info_prefix, "share", "locale"),
                 locales,
                 fallback=True)
             cms_locale = gettext.translation(
@@ -190,7 +193,7 @@ class BaseHandler(CommonRequestHandler):
             cms_locale = gettext.NullTranslations()
 
         # Add translate method to simulate tornado.Locale's interface
-        def translate (message, plural_message=None, count=None):
+        def translate(message, plural_message=None, count=None):
             if plural_message is not None:
                 assert count is not None
                 return cms_locale.ungettext(message, plural_message, count)
@@ -201,7 +204,7 @@ class BaseHandler(CommonRequestHandler):
         return cms_locale
 
     @staticmethod
-    def _get_token_status (obj):
+    def _get_token_status(obj):
         """Return the status of the tokens for the given object.
 
         obj (Contest or Task): an object that has the token_* attributes.
@@ -254,10 +257,12 @@ class BaseHandler(CommonRequestHandler):
                         ret["current_phase_end"] = self.contest.stop
                     else:
                         user_end_time = min(
-                            self.current_user.starting_time + self.contest.per_user_time,
+                            self.current_user.starting_time + \
+                                self.contest.per_user_time,
                             self.contest.stop)
                         if self.timestamp <= user_end_time:
-                            ret["current_phase_begin"] = self.current_user.starting_time
+                            ret["current_phase_begin"] = \
+                                self.current_user.starting_time
                             ret["current_phase_end"] = user_end_time
                         else:
                             ret["actual_phase"] = +1
@@ -279,13 +284,16 @@ class BaseHandler(CommonRequestHandler):
             elif self.current_user.starting_time is not None:
                 ret["valid_phase_begin"] = self.current_user.starting_time
                 ret["valid_phase_end"] = min(
-                    self.current_user.starting_time + self.contest.per_user_time,
+                    self.current_user.starting_time + \
+                        self.contest.per_user_time,
                     self.contest.stop)
 
             # consider the extra time
             if ret["valid_phase_end"] is not None:
                 ret["valid_phase_end"] += self.current_user.extra_time
-                if ret["valid_phase_begin"] <= self.timestamp <= ret["valid_phase_end"]:
+                if ret["valid_phase_begin"] <= \
+                       self.timestamp <= \
+                       ret["valid_phase_end"]:
                     ret["phase"] = 0
                     ret["actual_phase"] = 0
                     ret["current_phase_begin"] = ret["valid_phase_begin"]
@@ -307,7 +315,8 @@ class BaseHandler(CommonRequestHandler):
         else:
             ret["tokens_tasks"] = 1  # all finite or mixed
         if ret["tokens_tasks"] == 2 and \
-            all(t.token_min_interval <= self.contest.token_min_interval for t in self.contest.tasks):
+            all(t.token_min_interval <= self.contest.token_min_interval
+                for t in self.contest.tasks):
             ret["tokens_tasks"] = 3  # all infinite and no min_intervals
 
         return ret
@@ -528,15 +537,20 @@ class TaskDescriptionHandler(BaseHandler):
         for statement in task.statements.itervalues():
             lang_code = statement.language
             if ISOCodes.is_language_country_code(lang_code):
-                statement.language_name = ISOCodes.translate_language_country_code(lang_code, self.locale)
+                statement.language_name = \
+                    ISOCodes.translate_language_country_code(lang_code,
+                                                             self.locale)
             elif ISOCodes.is_language_code(lang_code):
-                statement.language_name = ISOCodes.translate_language_code(lang_code, self.locale)
+                statement.language_name = \
+                    ISOCodes.translate_language_code(lang_code, self.locale)
             elif ISOCodes.is_country_code(lang_code):
-                statement.language_name = ISOCodes.translate_country_code(lang_code, self.locale)
+                statement.language_name = \
+                    ISOCodes.translate_country_code(lang_code, self.locale)
             else:
                 statement.language_name = lang_code
 
-        self.render("task_description.html", task=task, submissions=submissions, **self.r_params)
+        self.render("task_description.html",
+                    task=task, submissions=submissions, **self.r_params)
 
 
 class TaskSubmissionsHandler(BaseHandler):
@@ -555,7 +569,8 @@ class TaskSubmissionsHandler(BaseHandler):
             .filter(Submission.user == self.current_user)\
             .filter(Submission.task == task).all()
 
-        self.render("task_submissions.html", task=task, submissions=submissions, **self.r_params)
+        self.render("task_submissions.html",
+                    task=task, submissions=submissions, **self.r_params)
 
 
 class TaskStatementViewHandler(FileHandler):
@@ -646,7 +661,8 @@ class SubmissionFileHandler(FileHandler):
             else:
                 # We don't recognize this filename. Let's try to 'undo'
                 # the '%l' -> 'c|cpp|pas' replacement before giving up.
-                filename = re.sub('\.%s$' % submission.language, '.%l', filename)
+                filename = re.sub('\.%s$' % submission.language, '.%l',
+                                  filename)
 
         if filename not in submission.files:
             raise tornado.web.HTTPError(404)
@@ -684,7 +700,8 @@ class NotificationsHandler(BaseHandler):
         if not self.current_user:
             raise tornado.web.HTTPError(403)
         res = []
-        last_notification = make_datetime(float(self.get_argument("last_notification", "0")))
+        last_notification = make_datetime(
+            float(self.get_argument("last_notification", "0")))
 
         # Announcements
         for announcement in self.contest.announcements:
@@ -718,7 +735,8 @@ class NotificationsHandler(BaseHandler):
                     elif question.reply_text is None:
                         text = ""
                     res.append({"type": "question",
-                                "timestamp": make_timestamp(question.reply_timestamp),
+                                "timestamp":
+                                    make_timestamp(question.reply_timestamp),
                                 "subject": subject,
                                 "text": text})
 
@@ -1016,8 +1034,10 @@ class SubmitHandler(BaseHandler):
                     self.current_user.username)
                 if not os.path.exists(path):
                     os.makedirs(path)
-                with codecs.open(os.path.join(path, str(int(make_timestamp(self.timestamp)))),
-                                 "w", "utf-8") as file_:
+                with codecs.open(
+                        os.path.join(path,
+                                     str(int(make_timestamp(self.timestamp)))),
+                        "w", "utf-8") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
                                  task.id,
@@ -1189,7 +1209,8 @@ class SubmissionStatusHandler(BaseHandler):
             data["status_text"] = self._("Compiling...")
         elif submission.compilation_outcome == "fail":
             data["status"] = 2
-            data["status_text"] = "%s <a class=\"details\">%s</a>" % (self._("Compilation failed"), self._("details"))
+            data["status_text"] = "%s <a class=\"details\">%s</a>" % (
+                self._("Compilation failed"), self._("details"))
         elif not submission.evaluated():
             data["status"] = 3
             data["status_text"] = self._("Evaluating...")
@@ -1198,7 +1219,8 @@ class SubmissionStatusHandler(BaseHandler):
             data["status_text"] = self._("Scoring...")
         else:
             data["status"] = 5
-            data["status_text"] = "%s <a class=\"details\">%s</a>" % (self._("Evaluated"), self._("details"))
+            data["status_text"] = "%s <a class=\"details\">%s</a>" % (
+                self._("Evaluated"), self._("details"))
 
             if score_type is not None and score_type.max_public_score != 0:
                 data["max_public_score"] = "%g" % score_type.max_public_score
@@ -1279,8 +1301,8 @@ class UserTestHandler(BaseHandler):
         task_type = get_task_type(task=task)
         if not task_type.testable:
             logger.warning("User %s tried to make test on task %s." %
-                           (current_user.username, task_name))
-            raise HTTPError(404)
+                           (self.current_user.username, task_name))
+            raise tornado.web.HTTPError(404)
 
         # Alias for easy access
         contest = self.contest
@@ -1400,7 +1422,9 @@ class UserTestHandler(BaseHandler):
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
         # type says so.
-        required = set([x.filename for x in task.submission_format] + task_type.get_user_managers(task.submission_format) + ["input"])
+        required = set([x.filename for x in task.submission_format] \
+                       + task_type.get_user_managers(task.submission_format) \
+                       + ["input"])
         provided = set(self.request.files.keys())
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
@@ -1519,8 +1543,10 @@ class UserTestHandler(BaseHandler):
                     self.current_user.username)
                 if not os.path.exists(path):
                     os.makedirs(path)
-                with codecs.open(os.path.join(path, str(int(make_timestamp(self.timestamp)))),
-                                 "w", "utf-8") as file_:
+                with codecs.open(
+                        os.path.join(path,
+                                     str(int(make_timestamp(self.timestamp)))),
+                    "w", "utf-8") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
                                  task.id,
@@ -1625,11 +1651,13 @@ class UserTestStatusHandler(BaseHandler):
             data["status"] = 4
             data["status_text"] = "Executed <a class=\"details\">details</a>"
             if usertest.execution_time is not None:
-                data["time"] = "%(seconds)0.3f s" % {'seconds': usertest.execution_time}
+                data["time"] = "%(seconds)0.3f s" % {
+                    'seconds': usertest.execution_time}
             else:
                 data["time"] = None
             if usertest.memory_used is not None:
-                data["memory"] = "%(mb)0.2f MiB" % {'mb': usertest.memory_used / 1024. / 1024.}
+                data["memory"] = "%(mb)0.2f MiB" % {
+                    'mb': usertest.memory_used / 1024. / 1024.}
             else:
                 data["memory"] = None
             data["output"] = usertest.output is not None

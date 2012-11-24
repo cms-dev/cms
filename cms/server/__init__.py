@@ -25,20 +25,17 @@
 """
 
 import os
-import traceback
 import time
-from datetime import datetime, date, timedelta
 
 import tarfile
 import zipfile
 
 from functools import wraps
-from tornado.web import HTTPError, RequestHandler
+from tornado.web import RequestHandler
 import tornado.locale
 
 from cms import logger
 from cms.db.FileCacher import FileCacher
-from cmscommon.Cryptographics import decrypt_number
 from cmscommon.DateTime import make_datetime, utc
 
 
@@ -101,7 +98,8 @@ def extract_archive(temp_name, original_filename):
 
 
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB']
-DIMS = list(1024**x for x in xrange(9))
+DIMS = list(1024 ** x for x in xrange(9))
+
 
 def format_size(n):
     """Format the given number of bytes
@@ -266,7 +264,7 @@ def format_amount_of_time(seconds, precision=2, locale=None):
     return ret
 
 
-def format_token_rules (tokens, t_type=None, locale=None):
+def format_token_rules(tokens, t_type=None, locale=None):
     """Return a human-readable string describing the given token rules
 
     tokens (dict): all the token rules (as seen in Task or Contest),

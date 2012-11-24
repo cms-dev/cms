@@ -192,7 +192,8 @@ class Contest(Base):
                 'description':        self.description,
                 'tasks':              [task.export_to_dict()
                                        for task in self.tasks],
-                'users':              [user.export_to_dict(skip_submissions, skip_user_tests)
+                'users':              [user.export_to_dict(skip_submissions,
+                                                           skip_user_tests)
                                        for user in self.users],
                 'token_initial':      self.token_initial,
                 'token_max':          self.token_max,
@@ -200,14 +201,24 @@ class Contest(Base):
                 'token_min_interval': self.token_min_interval.total_seconds(),
                 'token_gen_time':     self.token_gen_time.total_seconds(),
                 'token_gen_number':   self.token_gen_number,
-                'start':              make_timestamp(self.start) if self.start is not None else None,
-                'stop':               make_timestamp(self.stop) if self.stop is not None else None,
+                'start':
+                    make_timestamp(self.start)
+                    if self.start is not None else None,
+                'stop':
+                    make_timestamp(self.stop)
+                    if self.stop is not None else None,
                 'timezone':           self.timezone,
-                'per_user_time':      self.per_user_time.total_seconds() if self.per_user_time is not None else None,
+                'per_user_time':
+                    self.per_user_time.total_seconds()
+                    if self.per_user_time is not None else None,
                 'max_submission_number': self.max_submission_number,
                 'max_user_test_number': self.max_user_test_number,
-                'min_submission_interval': self.min_submission_interval.total_seconds() if self.min_submission_interval is not None else None,
-                'min_user_test_interval': self.min_user_test_interval.total_seconds() if self.min_user_test_interval is not None else None,
+                'min_submission_interval':
+                    self.min_submission_interval.total_seconds()
+                    if self.min_submission_interval is not None else None,
+                'min_user_test_interval':
+                    self.min_user_test_interval.total_seconds()
+                    if self.min_user_test_interval is not None else None,
                 'announcements':      [announcement.export_to_dict()
                                        for announcement in self.announcements],
                 }
@@ -318,7 +329,6 @@ class Contest(Base):
                     for _file in user_test.executables.values():
                         files.add(_file.digest)
 
-
         return files
 
     def phase(self, timestamp):
@@ -402,9 +412,11 @@ class Contest(Base):
             """
             # How many generation times we passed from start to
             # the previous considered time?
-            before_prev = int((prev_time - start).total_seconds() / token_gen_time.total_seconds())
+            before_prev = int((prev_time - start).total_seconds()
+                              / token_gen_time.total_seconds())
             # And from start to the current considered time?
-            before_next = int((next_time - start).total_seconds() / token_gen_time.total_seconds())
+            before_next = int((next_time - start).total_seconds()
+                              / token_gen_time.total_seconds())
             # So...
             return token_gen_number * (before_next - before_prev)
 

@@ -27,7 +27,6 @@ definition when it changes.
 
 import sys
 import argparse
-import json
 
 from cms.db.SQLAlchemyAll import SessionGen
 
@@ -551,22 +550,31 @@ ALTER %(column)s TYPE timestamp USING to_timestamp(%(column)s);
 
             session.execute("""
 ALTER TABLE contests
-ALTER per_user_time TYPE interval USING per_user_time * '1 second'::interval,
-ALTER token_min_interval TYPE interval USING token_min_interval * '1 second'::interval,
-ALTER token_gen_time TYPE interval USING token_gen_time * '1 minute'::interval,
+ALTER per_user_time TYPE interval
+    USING per_user_time * '1 second'::interval,
+ALTER token_min_interval TYPE interval
+    USING token_min_interval * '1 second'::interval,
+ALTER token_gen_time TYPE interval
+    USING token_gen_time * '1 minute'::interval,
 DROP CONSTRAINT contests_token_min_interval_check,
 DROP CONSTRAINT contests_token_gen_time_check,
-ADD CONSTRAINT contests_token_min_interval_check CHECK (token_min_interval >= '0 seconds'),
-ADD CONSTRAINT contests_token_gen_time_check CHECK (token_gen_time >= '0 seconds');
+ADD CONSTRAINT contests_token_min_interval_check
+    CHECK (token_min_interval >= '0 seconds'),
+ADD CONSTRAINT contests_token_gen_time_check
+    CHECK (token_gen_time >= '0 seconds');
 """)
             session.execute("""
 ALTER TABLE tasks
-ALTER token_min_interval TYPE interval USING token_min_interval * '1 second'::interval,
-ALTER token_gen_time TYPE interval USING token_gen_time * '1 minute'::interval,
+ALTER token_min_interval TYPE interval
+    USING token_min_interval * '1 second'::interval,
+ALTER token_gen_time TYPE interval
+    USING token_gen_time * '1 minute'::interval,
 DROP CONSTRAINT tasks_token_min_interval_check,
 DROP CONSTRAINT tasks_token_gen_time_check,
-ADD CONSTRAINT tasks_token_min_interval_check CHECK (token_min_interval >= '0 seconds'),
-ADD CONSTRAINT tasks_token_gen_time_check CHECK (token_gen_time >= '0 seconds');
+ADD CONSTRAINT tasks_token_min_interval_check
+    CHECK (token_min_interval >= '0 seconds'),
+ADD CONSTRAINT tasks_token_gen_time_check
+    CHECK (token_gen_time >= '0 seconds');
 """)
 
     @staticmethod
@@ -588,7 +596,8 @@ ADD CONSTRAINT tasks_token_gen_time_check CHECK (token_gen_time >= '0 seconds');
                                   ("questions", "reply_timestamp")]:
                 session.execute("""
 UPDATE %(table)s
-SET %(column)s = CAST(%(column)s AS TIMESTAMP WITH TIME ZONE) AT TIME ZONE 'UTC';
+SET %(column)s = CAST(%(column)s AS TIMESTAMP WITH TIME ZONE)
+    AT TIME ZONE 'UTC';
 """ % {"table": table, "column": column})
 
     @staticmethod
@@ -684,11 +693,13 @@ CREATE TABLE IF NOT EXISTS user_test_executables (
             session.execute("""\
 DROP INDEX IF EXISTS cst_executables_user_test_id_filename;""")
             session.execute("""\
-CREATE UNIQUE INDEX cst_executables_user_test_id_filename ON user_test_executables (user_test_id, filename);""")
+CREATE UNIQUE INDEX cst_executables_user_test_id_filename
+    ON user_test_executables (user_test_id, filename);""")
             session.execute("""\
 DROP INDEX IF EXISTS ix_user_test_executables_user_test_id;""")
             session.execute("""\
-CREATE INDEX ix_user_test_executables_user_test_id ON user_test_executables (user_test_id);""")
+CREATE INDEX ix_user_test_executables_user_test_id
+    ON user_test_executables (user_test_id);""")
 
             session.execute("""\
 CREATE TABLE user_test_files (
@@ -703,11 +714,13 @@ CREATE TABLE user_test_files (
             session.execute("""\
 DROP INDEX IF EXISTS cst_files_user_test_id_filename;""")
             session.execute("""\
-CREATE UNIQUE INDEX cst_files_user_test_id_filename ON user_test_files (user_test_id, filename);""")
+CREATE UNIQUE INDEX cst_files_user_test_id_filename
+    ON user_test_files (user_test_id, filename);""")
             session.execute("""\
 DROP INDEX IF EXISTS ix_user_test_files_user_test_id;""")
             session.execute("""\
-CREATE INDEX ix_user_test_files_user_test_id ON user_test_files (user_test_id);""")
+CREATE INDEX ix_user_test_files_user_test_id
+    ON user_test_files (user_test_id);""")
 
             session.execute("""\
 CREATE TABLE user_test_managers (
@@ -722,11 +735,13 @@ CREATE TABLE user_test_managers (
             session.execute("""\
 DROP INDEX IF EXISTS cst_managers_user_test_id_filename;""")
             session.execute("""\
-CREATE UNIQUE INDEX cst_managers_user_test_id_filename ON user_test_managers (user_test_id, filename);""")
+CREATE UNIQUE INDEX cst_managers_user_test_id_filename
+    ON user_test_managers (user_test_id, filename);""")
             session.execute("""\
 DROP INDEX IF EXISTS ix_user_test_managers_user_test_id;""")
             session.execute("""\
-CREATE INDEX ix_user_test_managers_user_test_id ON user_test_managers (user_test_id);""")
+CREATE INDEX ix_user_test_managers_user_test_id
+    ON user_test_managers (user_test_id);""")
 
             session.commit()
 
@@ -758,8 +773,9 @@ ADD COLUMN max_submission_number INTEGER,
 ADD COLUMN max_usertest_number INTEGER,
 ADD COLUMN min_submission_interval INTERVAL,
 ADD COLUMN min_usertest_interval INTERVAL;""")
-        print "Please remove 'min_submission_interval' from your configuration."
-        print "It is now possible to set it on a per-task and per-contest basis using AWS."
+        print "Please remove 'min_submission_interval' from your " \
+              "configuration. It is now possible to set it on a per-task " \
+              "and per-contest basis using AWS."
 
     @staticmethod
     def make_contest_description_not_null():
@@ -834,12 +850,15 @@ ALTER COLUMN statements SET NOT NULL;""")
         """Change the way primary submissions are stored.
 
         """
+        import simplejson as json
         with SessionGen(commit=True) as session:
             t_primary = dict()
             for t_id, lang in session.execute(
                 "SELECT id, official_language "
                 "FROM tasks;"):
-                t_primary[t_id] = json.dumps([lang], sort_keys=True, separators=(',',':'))
+                t_primary[t_id] = json.dumps([lang],
+                                             sort_keys=True,
+                                             separators=(',', ':'))
 
             u_primary = dict()
             ids = dict()
@@ -857,7 +876,9 @@ ALTER COLUMN statements SET NOT NULL;""")
                     data.setdefault(task, []).append(lang)
                 for v in data.itervalues():
                     v.sort()
-                u_primary[u_id] = json.dumps(data, sort_keys=True, separators=(',',':'))
+                u_primary[u_id] = json.dumps(data,
+                                             sort_keys=True,
+                                             separators=(',', ':'))
 
             session.execute("""\
 ALTER TABLE tasks
@@ -894,13 +915,15 @@ ALTER COLUMN primary_statements SET NOT NULL;""")
         with SessionGen(commit=True) as session:
             for table in ["contests", "tasks"]:
                 for item in ["submission", "usertest"]:
-                    session.execute("ALTER TABLE %(table)s "
-                                    "ADD CONSTRAINT %(table)s_min_%(item)s_interval_check "
-                                    "CHECK (min_%(item)s_interval > '0 seconds');" %
+                    session.execute("""\
+ALTER TABLE %(table)s
+ADD CONSTRAINT %(table)s_min_%(item)s_interval_check
+CHECK (min_%(item)s_interval > '0 seconds');""" %
                                     {"table": table, "item": item})
-                    session.execute("ALTER TABLE %(table)s "
-                                    "ADD CONSTRAINT %(table)s_max_%(item)s_number_check "
-                                    "CHECK (max_%(item)s_number > 0);" %
+                    session.execute("""\
+ALTER TABLE %(table)s
+ADD CONSTRAINT %(table)s_max_%(item)s_number_check
+CHECK (max_%(item)s_number > 0);""" %
                                     {"table": table, "item": item})
 
     @staticmethod
@@ -912,11 +935,13 @@ ALTER COLUMN primary_statements SET NOT NULL;""")
         """
         with SessionGen(commit=True) as session:
             for table in ["contests", "tasks"]:
-                session.execute("ALTER TABLE %(table)s "
-                                "RENAME COLUMN max_usertest_number TO max_user_test_number;" %
+                session.execute("""\
+ALTER TABLE %(table)s
+RENAME COLUMN max_usertest_number TO max_user_test_number;""" %
                                 {"table": table})
-                session.execute("ALTER TABLE %(table)s "
-                                "RENAME COLUMN min_usertest_interval TO min_user_test_interval;" %
+                session.execute("""\
+ALTER TABLE %(table)s
+RENAME COLUMN min_usertest_interval TO min_user_test_interval;""" %
                                 {"table": table})
 
 

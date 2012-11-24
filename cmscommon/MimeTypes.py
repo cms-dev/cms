@@ -56,24 +56,24 @@ _comments = dict()
 
 
 class _get_comment (ContentHandler):
-    def __init__ (self):
+    def __init__(self):
         self.inside = False
         self.result = None
 
-    def startElementNS (self, name, qname, attrs):
+    def startElementNS(self, name, qname, attrs):
         if name == (_XDG_NS, "comment") and ((_XML_NS, "lang") not in attrs or attrs[(_XML_NS, "lang")] in ["en", "en_US"]):
             self.inside = True
             self.result = ''
 
-    def endElementNS (self, name, qname):
+    def endElementNS(self, name, qname):
         self.inside = False
 
-    def characters (self, content):
+    def characters(self, content):
         if self.inside:
             self.result += content
 
 
-def get_icon_for_type (name):
+def get_icon_for_type(name):
     if name in _aliases:
         name = _aliases[name]
     if name not in _types:
@@ -84,7 +84,7 @@ def get_icon_for_type (name):
     return name[:name.index('/')] + "-x-generic"
 
 
-def get_name_for_type (name):
+def get_name_for_type(name):
     if name in _aliases:
         name = _aliases[name]
     if name not in _types:
@@ -110,7 +110,7 @@ def get_name_for_type (name):
         return _comments[name]
 
 
-def get_type_for_file_name (name):
+def get_type_for_file_name(name):
     # Provide support for some commonly used types and fallback on
     # Python's mimetypes module. In the future we could be using a
     # proper library here (i.e. an interface to shared-mime-info).

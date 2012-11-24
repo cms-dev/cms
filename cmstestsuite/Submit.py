@@ -62,7 +62,7 @@ def submit_solution(username, password, task, files, base_url=None):
     step(SubmitRequest(browser, task, base_url=base_url, filename=files[0]))
 
 
-def release_test(username, password, task, submission_id, base_url=None):
+def release_test(username, password, task, submission_num, base_url=None):
     def step(request):
         request.prepare()
         request.execute()

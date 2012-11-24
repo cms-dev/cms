@@ -38,6 +38,7 @@ def make_datetime(timestamp=None):
 
 EPOCH = datetime(1970, 1, 1)
 
+
 def make_timestamp(_datetime=None):
     """Return the timestamp associated with the given datetime object
 
@@ -103,6 +104,7 @@ def get_system_timezone():
 ZERO = timedelta(0)
 HOUR = timedelta(hours=1)
 
+
 # A UTC class.
 
 class UTC(tzinfo):
@@ -119,6 +121,7 @@ class UTC(tzinfo):
 
 utc = UTC()
 
+
 # A class building tzinfo objects for fixed-offset time zones.
 # Note that FixedOffset(0, "UTC") is a different way to build a
 # UTC tzinfo object.
@@ -127,7 +130,7 @@ class FixedOffset(tzinfo):
     """Fixed offset in minutes east from UTC."""
 
     def __init__(self, offset, name):
-        self.__offset = timedelta(minutes = offset)
+        self.__offset = timedelta(minutes=offset)
         self.__name = name
 
     def utcoffset(self, dt):
@@ -139,15 +142,17 @@ class FixedOffset(tzinfo):
     def dst(self, dt):
         return ZERO
 
+
 # A class capturing the platform's idea of local time.
 
-STDOFFSET = timedelta(seconds = -time.timezone)
+STDOFFSET = timedelta(seconds=-time.timezone)
 if time.daylight:
-    DSTOFFSET = timedelta(seconds = -time.altzone)
+    DSTOFFSET = timedelta(seconds=-time.altzone)
 else:
     DSTOFFSET = STDOFFSET
 
 DSTDIFF = DSTOFFSET - STDOFFSET
+
 
 class LocalTimezone(tzinfo):
 

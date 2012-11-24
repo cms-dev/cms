@@ -211,7 +211,8 @@ class Task(Base):
         self.attachments = attachments
         self.time_limit = time_limit
         self.memory_limit = memory_limit
-        self.primary_statements = primary_statements if primary_statements is not None else "[]"
+        self.primary_statements = primary_statements \
+                                  if primary_statements is not None else "[]"
         self.task_type = task_type
         self.task_type_parameters = task_type_parameters
         self.submission_format = submission_format
@@ -269,8 +270,12 @@ class Task(Base):
                 'token_gen_number':     self.token_gen_number,
                 'max_submission_number': self.max_submission_number,
                 'max_user_test_number': self.max_user_test_number,
-                'min_submission_interval': self.min_submission_interval.total_seconds() if self.min_submission_interval is not None else None,
-                'min_user_test_interval': self.min_user_test_interval.total_seconds() if self.min_user_test_interval is not None else None,
+                'min_submission_interval':
+                    self.min_submission_interval.total_seconds()
+                    if self.min_submission_interval is not None else None,
+                'min_user_test_interval':
+                    self.min_user_test_interval.total_seconds()
+                    if self.min_user_test_interval is not None else None,
                 }
 
     @classmethod

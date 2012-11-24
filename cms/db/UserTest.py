@@ -227,11 +227,12 @@ class UserTest(Base):
                          for file_data in data['files']]
         data['files'] = dict([(_file.filename, _file)
                               for _file in data['files']])
-        data['executables'] = [UserTestExecutable.import_from_dict(executable_data)
-                               for executable_data in data['executables']]
+        data['executables'] = [
+            UserTestExecutable.import_from_dict(executable_data)
+            for executable_data in data['executables']]
         data['executables'] = dict([(executable.filename, executable)
                                     for executable in data['executables']])
-        data['managers'] = [UserTestManager.import_from_dict(eval_data)
+        data['managers'] = [UserTestManager.import_from_dict(manager_data)
                             for manager_data in data['managers']]
         data['managers'] = dict([(manager.filename, manager)
                                  for manager in data['managers']])
