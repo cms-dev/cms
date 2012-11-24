@@ -89,8 +89,8 @@ $(document).ready(function () {
                         </div>
                         <div class="control-group">
                             <div class="controls">
-                                <button type="submit" class="btn btn-primary btn-large" type="submit">{{ _("Login") }}</button>
-                                <button type="reset" class="btn btn-large" type="submit">{{ _("Reset") }}</button>
+                                <button type="submit" class="btn btn-primary btn-large">{{ _("Login") }}</button>
+                                <button type="reset" class="btn btn-large">{{ _("Reset") }}</button>
                             </div>
                         </div>
                     </fieldset>
@@ -99,6 +99,29 @@ $(document).ready(function () {
         </div>
 {% else %}
         <div id="notifications" class="notifications"></div>
+        <!-- Some hidden divs to provide translations of strings used by JS -->
+        <div style="display: none" id="translation_new_message">
+            {{ _("New message") }}
+        </div>
+        <div style="display: none" id="translation_new_announcement">
+            {{ _("New announcement") }}
+        </div>
+        <div style="display: none" id="translation_new_answer">
+            {{ _("New answer") }}
+        </div>
+        <div style="display: none" id="translation_unread">
+            {{ _("%d unread") }}
+        </div>
+        <div style="display: none" id="translation_until_contest_starts">
+            {{ _("Until contest starts:") }}
+        </div>
+        <div style="display: none" id="translation_until_contest_ends">
+            {{ _("Until contest ends:") }}
+        </div>
+        <div style="display: none" id="translation_time_left">
+            {{ _("Time left:") }}
+        </div>
+        <!-- End -->
         <div class="container">
             <div class="row">
                 <div class="span3">

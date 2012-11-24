@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-11-17 12:55+0100\n"
+"POT-Creation-Date: 2012-11-24 22:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -63,16 +63,16 @@ msgstr ""
 msgid "Invalid submission format!"
 msgstr ""
 
-#: ContestWebServer.py:872 ContestWebServer.py:918 ContestWebServer.py:1365
-#: ContestWebServer.py:1410
+#: ContestWebServer.py:872 ContestWebServer.py:918 ContestWebServer.py:1366
+#: ContestWebServer.py:1411
 msgid "Please select the correct files."
 msgstr ""
 
-#: ContestWebServer.py:897 ContestWebServer.py:1390
+#: ContestWebServer.py:897 ContestWebServer.py:1391
 msgid "Invalid archive format!"
 msgstr ""
 
-#: ContestWebServer.py:898 ContestWebServer.py:1391
+#: ContestWebServer.py:898 ContestWebServer.py:1392
 msgid "The submitted archive could not be opened."
 msgstr ""
 
@@ -80,7 +80,7 @@ msgstr ""
 msgid "Cannot recognize submission's language."
 msgstr ""
 
-#: ContestWebServer.py:978 ContestWebServer.py:1470
+#: ContestWebServer.py:978 ContestWebServer.py:1471
 msgid "All sources must be in the same language."
 msgstr ""
 
@@ -92,7 +92,7 @@ msgstr ""
 msgid "Submission too big!"
 msgstr ""
 
-#: ContestWebServer.py:999 ContestWebServer.py:1491
+#: ContestWebServer.py:999 ContestWebServer.py:1492
 #, python-format
 msgid "Each source file must be at most %d bytes long."
 msgstr ""
@@ -101,128 +101,128 @@ msgstr ""
 msgid "Submission storage failed!"
 msgstr ""
 
-#: ContestWebServer.py:1074
+#: ContestWebServer.py:1075
 msgid "Submission received"
 msgstr ""
 
-#: ContestWebServer.py:1075
+#: ContestWebServer.py:1076
 msgid "Your submission has been received and is currently being evaluated."
 msgstr ""
 
-#: ContestWebServer.py:1121 ContestWebServer.py:1136
+#: ContestWebServer.py:1122 ContestWebServer.py:1137
 msgid "Token request discarded"
 msgstr ""
 
-#: ContestWebServer.py:1122
+#: ContestWebServer.py:1123
 msgid "Your request has been discarded because you have no tokens available."
 msgstr ""
 
-#: ContestWebServer.py:1137
+#: ContestWebServer.py:1138
 msgid ""
 "Your request has been discarded because you already used a token on that "
 "submission."
 msgstr ""
 
-#: ContestWebServer.py:1155
+#: ContestWebServer.py:1156
 msgid "Token request received"
 msgstr ""
 
-#: ContestWebServer.py:1156
+#: ContestWebServer.py:1157
 msgid "Your request has been received and applied to the submission."
 msgstr ""
 
-#: ContestWebServer.py:1188 templates/contest/submission_row.html:10
+#: ContestWebServer.py:1189 templates/contest/submission_row.html:10
 #: templates/contest/usertest_row.html:10
 msgid "Compiling..."
 msgstr ""
 
-#: ContestWebServer.py:1191 templates/contest/submission_row.html:18
+#: ContestWebServer.py:1192 templates/contest/submission_row.html:20
 #: templates/contest/usertest_row.html:16
 msgid "Compilation failed"
 msgstr ""
 
-#: ContestWebServer.py:1191 ContestWebServer.py:1200
-#: templates/contest/submission_row.html:19
-#: templates/contest/submission_row.html:44
+#: ContestWebServer.py:1192 ContestWebServer.py:1201
+#: templates/contest/submission_row.html:21
+#: templates/contest/submission_row.html:52
 #: templates/contest/usertest_row.html:17
 #: templates/contest/usertest_row.html:30
 msgid "details"
 msgstr ""
 
-#: ContestWebServer.py:1194 templates/contest/submission_row.html:27
+#: ContestWebServer.py:1195 templates/contest/submission_row.html:31
 msgid "Evaluating..."
 msgstr ""
 
-#: ContestWebServer.py:1197 templates/contest/submission_row.html:35
+#: ContestWebServer.py:1198 templates/contest/submission_row.html:41
 msgid "Scoring..."
 msgstr ""
 
-#: ContestWebServer.py:1200 templates/contest/submission_row.html:43
+#: ContestWebServer.py:1201 templates/contest/submission_row.html:51
 msgid "Evaluated"
 msgstr ""
 
-#: ContestWebServer.py:1296
+#: ContestWebServer.py:1297
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
 msgstr ""
 
-#: ContestWebServer.py:1305
+#: ContestWebServer.py:1306
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests on this task."
 msgstr ""
 
-#: ContestWebServer.py:1312
+#: ContestWebServer.py:1313
 msgid "Too many tests!"
 msgstr ""
 
-#: ContestWebServer.py:1330
+#: ContestWebServer.py:1331
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
 msgstr ""
 
-#: ContestWebServer.py:1345
+#: ContestWebServer.py:1346
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
 msgstr ""
 
-#: ContestWebServer.py:1352
+#: ContestWebServer.py:1353
 msgid "Tests too frequent!"
 msgstr ""
 
-#: ContestWebServer.py:1364 ContestWebServer.py:1409
+#: ContestWebServer.py:1365 ContestWebServer.py:1410
 msgid "Invalid test format!"
 msgstr ""
 
-#: ContestWebServer.py:1466
+#: ContestWebServer.py:1467
 msgid "Cannot recognize test's language."
 msgstr ""
 
-#: ContestWebServer.py:1478
+#: ContestWebServer.py:1479
 msgid "Invalid test!"
 msgstr ""
 
-#: ContestWebServer.py:1490
+#: ContestWebServer.py:1491
 msgid "Test too big!"
 msgstr ""
 
-#: ContestWebServer.py:1500
+#: ContestWebServer.py:1501
 msgid "Input too big!"
 msgstr ""
 
-#: ContestWebServer.py:1501
+#: ContestWebServer.py:1502
 #, python-format
 msgid "The input file must be at most %d bytes long."
 msgstr ""
 
-#: ContestWebServer.py:1553
+#: ContestWebServer.py:1554
 msgid "Test storage failed!"
 msgstr ""
 
-#: ContestWebServer.py:1584
+#: ContestWebServer.py:1587
 msgid "Test received"
 msgstr ""
 
-#: ContestWebServer.py:1585
+#: ContestWebServer.py:1588
 msgid "Your test has been received and is currently being executed."
 msgstr ""
 
@@ -262,51 +262,80 @@ msgid "Login"
 msgstr ""
 
 #: templates/contest/base.html:93 templates/contest/communication.html:53
+#: templates/contest/task_submissions.html:112
+#: templates/contest/task_submissions.html:131
+#: templates/contest/test_interface.html:106
+#: templates/contest/test_interface.html:124
 msgid "Reset"
 msgstr ""
 
-#: templates/contest/base.html:106
-msgid "Server time:"
+#: templates/contest/base.html:104
+msgid "New message"
 msgstr ""
 
-#: templates/contest/base.html:117 templates/contest/overview.html:10
-msgid "Overview"
+#: templates/contest/base.html:107
+msgid "New announcement"
 msgstr ""
 
-#: templates/contest/base.html:121 templates/contest/communication.html:8
-msgid "Communication"
+#: templates/contest/base.html:110
+msgid "New answer"
 msgstr ""
 
-#: templates/contest/base.html:123 templates/contest/base.html:126
+#: templates/contest/base.html:113 templates/contest/base.html:146
+#: templates/contest/base.html:149
 #, python-format
 msgid "%d unread"
 msgstr ""
 
-#: templates/contest/base.html:136
+#: templates/contest/base.html:116
+msgid "Until contest starts:"
+msgstr ""
+
+#: templates/contest/base.html:119
+msgid "Until contest ends:"
+msgstr ""
+
+#: templates/contest/base.html:122
+msgid "Time left:"
+msgstr ""
+
+#: templates/contest/base.html:129
+msgid "Server time:"
+msgstr ""
+
+#: templates/contest/base.html:140 templates/contest/overview.html:10
+msgid "Overview"
+msgstr ""
+
+#: templates/contest/base.html:144 templates/contest/communication.html:8
+msgid "Communication"
+msgstr ""
+
+#: templates/contest/base.html:159
 msgid "Statement"
 msgstr ""
 
-#: templates/contest/base.html:139
+#: templates/contest/base.html:162
 msgid "Submissions"
 msgstr ""
 
-#: templates/contest/base.html:145 templates/contest/documentation.html:8
+#: templates/contest/base.html:168 templates/contest/documentation.html:8
 msgid "Documentation"
 msgstr ""
 
-#: templates/contest/base.html:149 templates/contest/test_interface.html:70
+#: templates/contest/base.html:172 templates/contest/test_interface.html:70
 msgid "Testing"
 msgstr ""
 
-#: templates/contest/base.html:155
+#: templates/contest/base.html:178
 msgid "Contest Management System"
 msgstr ""
 
-#: templates/contest/base.html:156
+#: templates/contest/base.html:179
 msgid "is released under the"
 msgstr ""
 
-#: templates/contest/base.html:157
+#: templates/contest/base.html:180
 msgid "GNU Affero General Public License"
 msgstr ""
 
@@ -572,7 +601,7 @@ msgid "Type"
 msgstr ""
 
 #: templates/contest/overview.html:180
-#: templates/contest/task_submissions.html:219
+#: templates/contest/task_submissions.html:227
 #: templates/contest/test_interface.html:166
 msgid "Files"
 msgstr ""
@@ -613,27 +642,27 @@ msgstr ""
 msgid "Compilation output"
 msgstr ""
 
-#: templates/contest/submission_row.html:12
 #: templates/contest/submission_row.html:13
-#: templates/contest/submission_row.html:21
-#: templates/contest/submission_row.html:22
-#: templates/contest/submission_row.html:29
-#: templates/contest/submission_row.html:30
-#: templates/contest/submission_row.html:37
-#: templates/contest/submission_row.html:38
+#: templates/contest/submission_row.html:15
+#: templates/contest/submission_row.html:24
+#: templates/contest/submission_row.html:26
+#: templates/contest/submission_row.html:34
+#: templates/contest/submission_row.html:36
+#: templates/contest/submission_row.html:44
+#: templates/contest/submission_row.html:46
 #: templates/contest/usertest_row.html:35
 #: templates/contest/usertest_row.html:44
 #: templates/contest/usertest_row.html:64
 msgid "N/A"
 msgstr ""
 
-#: templates/contest/submission_row.html:84
+#: templates/contest/submission_row.html:83
 #: templates/contest/usertest_row.html:80
 msgid "None"
 msgstr ""
 
-#: templates/contest/submission_row.html:92
-#: templates/contest/submission_row.html:97
+#: templates/contest/submission_row.html:91
+#: templates/contest/submission_row.html:96
 #: templates/contest/usertest_row.html:53
 #: templates/contest/usertest_row.html:68
 #: templates/contest/usertest_row.html:85
@@ -641,16 +670,20 @@ msgstr ""
 msgid "Download"
 msgstr ""
 
-#: templates/contest/submission_row.html:121
+#: templates/contest/submission_row.html:120
 msgid "Played"
 msgstr ""
 
-#: templates/contest/submission_row.html:129
+#: templates/contest/submission_row.html:125
+msgid "Play!"
+msgstr ""
+
+#: templates/contest/submission_row.html:128
 #: templates/contest/usertest_row.html:59
 msgid "Wait..."
 msgstr ""
 
-#: templates/contest/submission_row.html:131
+#: templates/contest/submission_row.html:130
 msgid "No tokens"
 msgstr ""
 
@@ -804,6 +837,13 @@ msgstr ""
 msgid "Submit a solution"
 msgstr ""
 
+#: templates/contest/task_submissions.html:111
+#: templates/contest/task_submissions.html:130
+#: templates/contest/test_interface.html:105
+#: templates/contest/test_interface.html:123
+msgid "Submit"
+msgstr ""
+
 #: templates/contest/task_submissions.html:141
 msgid "Previous submissions"
 msgstr ""
@@ -846,44 +886,48 @@ msgstr ""
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr ""
 
-#: templates/contest/task_submissions.html:212
+#: templates/contest/task_submissions.html:216
 #: templates/contest/test_interface.html:157
 msgid "Date and time"
 msgstr ""
 
-#: templates/contest/task_submissions.html:214
+#: templates/contest/task_submissions.html:218
 #: templates/contest/test_interface.html:159
 #: templates/contest/test_interface.html:162
 msgid "Time"
 msgstr ""
 
-#: templates/contest/task_submissions.html:216
+#: templates/contest/task_submissions.html:220
 #: templates/contest/test_interface.html:161
 msgid "Status"
 msgstr ""
 
-#: templates/contest/task_submissions.html:217
+#: templates/contest/task_submissions.html:222
 msgid "Public score"
 msgstr ""
 
-#: templates/contest/task_submissions.html:218
+#: templates/contest/task_submissions.html:223
 msgid "Total score"
 msgstr ""
 
-#: templates/contest/task_submissions.html:221
-msgid "Token"
+#: templates/contest/task_submissions.html:225
+msgid "Score"
 msgstr ""
 
 #: templates/contest/task_submissions.html:229
-#: templates/contest/task_submissions.html:231
+msgid "Token"
+msgstr ""
+
+#: templates/contest/task_submissions.html:237
+#: templates/contest/task_submissions.html:239
 msgid "no submissions yet"
 msgstr ""
 
-#: templates/contest/task_submissions.html:246
+#: templates/contest/task_submissions.html:254
 msgid "Submission details"
 msgstr ""
 
-#: templates/contest/task_submissions.html:251
+#: templates/contest/task_submissions.html:259
 #: templates/contest/test_interface.html:199
 msgid "Close"
 msgstr ""

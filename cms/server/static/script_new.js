@@ -50,11 +50,11 @@ var Utils = new function () {
                       '</div>');
 
         if (type == "message") {
-            alert.children("h4").text("New message");
+            alert.children("h4").text($("#translation_new_message").text());
         } else if (type == "announcement") {
-            alert.children("h4").text("New announcement");
+            alert.children("h4").text($("#translation_new_announcement").text());
         } else if (type == "question") {
-            alert.children("h4").text("New answer");
+            alert.children("h4").text($("#translation_new_question").text());
         } else if (type == "notification") {
             alert.children("h4").text(subject);
             alert.append($("<span>" + text + "</span>"));
@@ -73,7 +73,7 @@ var Utils = new function () {
     self.update_unread_counts = function (counter) {
         if (counter > 0) {
             self.unread_count += counter;
-            $("#unread_count").text(self.unread_count + " unread");
+            $("#unread_count").text($("#translation_unread").text().replace("%d", self.unread_count));
             $("#unread_count").removeClass("no_unread");
         }
     };
@@ -147,12 +147,12 @@ var Utils = new function () {
             if (now >= self.current_phase_end) {
                 window.location.href = url_root + "/";
             }
-            $("#countdown_label").text("Until contest starts:");
+            $("#countdown_label").text($("#translation_until_contest_starts").text());
             $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
             break;
         case -1:
             // contest has already started but user hasn't started its time yet
-            $("#countdown_label").text("Until contest ends:");
+            $("#countdown_label").text($("#translation_until_contest_ends").text());
             $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
             break;
         case 0:
@@ -160,7 +160,7 @@ var Utils = new function () {
             if (now >= self.current_phase_end) {
                 window.location.href = url_root + "/";
             }
-            $("#countdown_label").text("Time left:");
+            $("#countdown_label").text($("#translation_time_left").text());
             $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
             break;
         case +1:
@@ -168,7 +168,7 @@ var Utils = new function () {
             if (now >= self.current_phase_end) {
                 window.location.href = url_root + "/";
             }
-            $("#countdown_label").text("Until contest ends:");
+            $("#countdown_label").text($("#translation_until_contest_ends").text());
             $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
             break;
         case +2:
