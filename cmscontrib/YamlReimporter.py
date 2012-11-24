@@ -84,18 +84,22 @@ class YamlReimporter:
             # it and, in the latter case, add it to a list
             users_to_remove = []
             for user_num, user in enumerate(cms_contest['users']):
-                try:
-                    user_submissions = \
-                        cms_contest['users'][user_num]['submissions']
-                    cms_contest['users'][user_num] = \
-                        yaml_users[user['username']]
-                    cms_contest['users'][user_num]['submissions'] = \
-                        user_submissions
-                except KeyError:
+                if user['username'] in yaml_users:
+                    yaml_user = yaml_users[user['username']]
+
+                    yaml_user['submissions'] = user['submissions']
+                    yaml_user['user_tests'] = user['user_tests']
+                    yaml_user['questions'] = user['questions']
+                    yaml_user['messages'] = user['messages']
+
+                    cms_contest['users'][user_num] = yaml_user
+                else:
                     if self.force:
                         logger.warning("User %s exists in old contest, but "
                                        "not in the new one" % user['username'])
                         users_to_remove.append(user_num)
+                        # FIXME Do we need really to do this, given that
+                        # we already deleted the whole contest?
                         session.delete(contest.users[user_num])
                     else:
                         logger.error("User %s exists in old contest, but "
@@ -115,13 +119,17 @@ class YamlReimporter:
             # The same for tasks: update old tasks.
             tasks_to_remove = []
             for task_num, task in enumerate(cms_contest['tasks']):
-                try:
-                    cms_contest['tasks'][task_num] = yaml_tasks[task['name']]
-                except KeyError:
+                if task['name'] in yaml_tasks:
+                    yaml_task = yaml_tasks[task['name']]
+
+                    cms_contest['tasks'][task_num] = yaml_task
+                else:
                     if self.force:
                         logger.warning("Task %s exists in old contest, but "
                                        "not in the new one" % task['name'])
                         tasks_to_remove.append(task_num)
+                        # FIXME Do we need really to do this, given that
+                        # we already deleted the whole contest?
                         session.delete(contest.tasks[task_num])
                     else:
                         logger.error("Task %s exists in old contest, but "
