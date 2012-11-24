@@ -17,8 +17,7 @@ command, from cms/server/.
 $ xgettext -o po/messages.pot --language=Python --keyword=_:1,2 \
   *.py \
   templates/admin/*.html \
-  templates/contest/*.html \
-  templates/ranking/*.html
+  templates/contest/*.html
 
 
      * To update the .mo when .po changes
