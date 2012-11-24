@@ -32,7 +32,7 @@ from cms.db.SQLAlchemyUtils import Base
 from cms.db.Task import Task
 from cms.db.User import User
 
-from cmscommon.DateTime import make_timestamp
+from cmscommon.DateTime import make_datetime, make_timestamp
 
 
 class UserTest(Base):
