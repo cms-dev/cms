@@ -293,7 +293,7 @@ class YamlLoader:
                 if points is None:
                     params["score_type"] = "Sum"
                     input_value = 0.0
-                    if testcases != 0:
+                    if int(conf['n_input']) != 0:
                         input_value = 100.0 / int(conf['n_input'])
                     params["score_parameters"] = str(input_value)
                 else:
