@@ -120,7 +120,7 @@ $(document).ready(function () {
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/submit" method="POST">
             <fieldset>
                 <div class="control-group">
-                    <label class="control-label" for="input_zip">submission.zip</label>
+                    <label class="control-label" for="input_zip">{{ _("submission.zip") }}</label>
                     <div class="controls">
                         <input type="file" class="input-xlarge" id="input_zip" name="submission"/>
                     </div>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-11-24 23:40+0000\n"
+"POT-Creation-Date: 2012-11-25 10:42+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -853,6 +853,11 @@ msgstr ""
 msgid "Submit"
 msgstr ""
 
+#: templates/contest/task_submissions.html:123
+#: templates/contest/test_interface.html:116
+msgid "submission.zip"
+msgstr ""
+
 #: templates/contest/task_submissions.html:141
 msgid "Previous submissions"
 msgstr ""
@@ -947,10 +952,6 @@ msgstr ""
 
 #: templates/contest/test_interface.html:95
 msgid "input"
-msgstr ""
-
-#: templates/contest/test_interface.html:116
-msgid "submission.zip"
 msgstr ""
 
 #: templates/contest/test_interface.html:133
