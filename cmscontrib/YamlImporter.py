@@ -292,9 +292,10 @@ class YamlLoader:
                 # fallback to Sum)
                 if points is None:
                     params["score_type"] = "Sum"
+                    total_value = float(conf.get("total_value", 100.0))
                     input_value = 0.0
                     if int(conf['n_input']) != 0:
-                        input_value = 100.0 / int(conf['n_input'])
+                        input_value = total_value / int(conf['n_input'])
                     params["score_parameters"] = str(input_value)
                 else:
                     subtasks.append([points, testcases])
@@ -307,9 +308,10 @@ class YamlLoader:
         # If gen/GEN doesn't exist, just fallback to Sum
         except IOError:
             params["score_type"] = "Sum"
+            total_value = float(conf.get("total_value", 100.0))
             input_value = 0.0
             if int(conf['n_input']) != 0:
-                input_value = 100.0 / int(conf['n_input'])
+                input_value = total_value / int(conf['n_input'])
             params["score_parameters"] = str(input_value)
 
         # If output_only is set, then the task type is OutputOnly
