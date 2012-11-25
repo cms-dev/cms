@@ -293,7 +293,7 @@ class YamlLoader:
                 params["score_type"] = "Sum"
                 input_value = 0.0
                 if testcases != 0:
-                    input_value = 100.0 / float(testcases)
+                    input_value = 100.0 / int(conf['n_input'])
                 params["score_parameters"] = str(input_value)
             else:
                 subtasks.append([points, testcases])
