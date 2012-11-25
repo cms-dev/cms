@@ -205,9 +205,6 @@ class Batch(TaskType):
         input_filename, output_filename = self.job.task_type_parameters[1]
         stdin_redirect = None
         stdout_redirect = None
-        # TODO - Bug if {input,outfile}_filename are not "":
-        # {input,output}_filename are not synced with
-        # {stdin,stdout}_redirect
         if input_filename == "":
             input_filename = "input.txt"
             stdin_redirect = input_filename
