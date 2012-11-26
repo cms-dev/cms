@@ -14,14 +14,37 @@ $("select[name=task_type]").change(showTaskTypeOption);
 {% end %}
 
 {% block core %}
+{% from cms import plugin_list %}
 {% from cms.grading.scoretypes import get_score_type %}
-{% comment TODO: Dynamic loading of task types %}
-{% from cms.grading.tasktypes.Batch import Batch %}
-{% from cms.grading.tasktypes.OutputOnly import OutputOnly %}
-{% from cms.grading.tasktypes.Communication import Communication %}
-{% from cms.grading.tasktypes.TwoSteps import TwoSteps %}
-{% set task_type_list = [Batch, OutputOnly, Communication, TwoSteps] %}
-{% set score_type = None %}
+{% set task_type_list = plugin_list("cms.grading.tasktypes", "tasktypes") %}
+{% set score_type_list = plugin_list("cms.grading.scoretypes", "scoretypes") %}
+{% set current_score_type = None %}
+
+{% if task.task_type not in [task_type.__name__ for task_type in task_type_list] %}
+<script type="text/javascript">
+  $(document).ready(function() {
+  utils.display_notification("notification",
+      0,
+      "Task type `{{ task.task_type }}' not found.",
+      "Please select another task type, " +
+      "or make the original one available and refresh the page " +
+      "without updating the task to avoid losing the parameters.");
+  });
+</script>
+{% end%}
+
+{% if task.score_type not in [score_type.__name__ for score_type in score_type_list] %}
+<script type="text/javascript">
+  $(document).ready(function() {
+  utils.display_notification("notification",
+      0,
+      "Score type `{{ task.score_type }}' not found.",
+      "Please select another score type, " +
+      "or make the original one available and refresh the page " +
+      "without updating the task to avoid losing the parameters.");
+  });
+</script>
+{% end%}
 
 <div class="core_title">
   <h1>{{ task.title }} ({{ task.name }})</h1>
@@ -48,8 +71,11 @@ $("select[name=task_type]").change(showTaskTypeOption);
     <tbody>
       {% set reevaluation_par_name = "submission" %}
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
-        {% if score_type is None %}
-          {% set score_type = get_score_type(submission=s) %}
+        {% if current_score_type is None %}
+          {% try %}
+            {% set current_score_type = get_score_type(submission=s) %}
+          {% except %}
+          {% end %}
         {% end %}
       <tr>
         <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ str(s.timestamp) }}</a></td>
@@ -67,13 +93,17 @@ $("select[name=task_type]").change(showTaskTypeOption);
             <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
             {% elif s.scored() %}
               {% try %}
-                {% set max_score = score_type.max_score %}
+                {% set max_score = current_score_type.max_score %}
               {% except %}
                 {% set max_score = "[Cannot get score type - see logs]" %}
               {% end %}
             Evaluated ({{ s.score }} / {{ max_score }})
             <div class="score_details" id="evaluation_{{ s.id }}" style="display: none;">
-              {% raw score_type.get_html_details(s.score_details) %}
+              {% try %}
+                {% raw current_score_type.get_html_details(s.score_details) %}
+              {% except %}
+              [Cannot get score type - see logs]
+              {% end %}
             {% else %}
             Evaluated
             <div id="evaluation_{{ s.id }}" style="display: none;">
@@ -269,25 +299,10 @@ $("select[name=task_type]").change(showTaskTypeOption);
       <tr>
         <td>Score Type</td>
         <td>
-          <!--
-            TODO: Fetch the score types from ScoreType.
-          -->
           <select name="score_type">
-            <option value="Sum"{% if task.score_type == "Sum" %} selected{% end %}>
-              Sum
-            </option>
-            <option value="GroupMin"{% if task.score_type == "GroupMin" %} selected{% end %}>
-              Minimum
-            </option>
-            <option value="GroupMul"{% if task.score_type == "GroupMul" %} selected{% end %}>
-              Multiply
-            </option>
-            <option value="GroupThreshold"{% if task.score_type == "GroupThreshold" %} selected{% end %}>
-              Threshold
-            </option>
-            <option value="Relative"{% if task.score_type == "Relative" %} selected{% end %}>
-              Relative
-            </option>
+            {% for score_type in score_type_list %}
+            <option value="{{ score_type.__name__}}" {% if task.score_type == score_type.__name__ %}selected{% end %}>{{ score_type.__name__ }}</option>
+            {% end %}
           </select>
         </td>
       </tr>

@@ -130,9 +130,10 @@
                 '<div class="notification_close" ' +
                 'onclick="utils.close_notification(this);">&times;' +
                 '</div><div class="notification_msg">' +
-                '<div class="notification_timestamp">' +
-                this.format_time_or_date(timestamp) +
-                '</div>';
+                '<div class="notification_timestamp">';
+            if (timestamp != 0)
+                s += this.format_time_or_date(timestamp);
+            s += '</div>';
 
             s += '<div class="notification_subject">'
             if (type == "message")

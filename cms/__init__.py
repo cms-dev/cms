@@ -29,6 +29,7 @@ import simplejson as json
 import time
 import datetime
 import imp
+import pkgutil
 import codecs
 import netifaces
 from argparse import ArgumentParser
@@ -489,7 +490,8 @@ def _try_import(plugin_name, dir_name):
 
     """
     try:
-        file_, file_name, description = imp.find_module(plugin_name, dir_name)
+        file_, file_name, description = imp.find_module(plugin_name,
+                                                        [dir_name])
     except ImportError:
         return None
 
@@ -546,6 +548,28 @@ def plugin_lookup(plugin_name, plugin_dir, plugin_family):
         raise KeyError("Class %s not found." % plugin_name)
 
     return module.__dict__[plugin_name]
+
+
+def plugin_list(plugin_dir, plugin_family):
+    """Return the list of plugins classes of the given family.
+
+    plugin_dir (string): the place inside cms hierarchy where
+                         plugin_name is usually found (e.g.:
+                         cms.grading.tasktypes).
+    plugin_family (string): the name of the plugin type, as used in
+                            <system_plugins_directory>/<plugin_family>.
+
+    return ([]): the correct plugin class.
+
+    raise: KeyError if either the module or the class is not found.
+
+    """
+    rets = pkgutil.iter_modules([plugin_dir.replace(".", "/"),
+                                 os.path.join(config.data_dir,
+                                              "plugins", plugin_family)])
+    modules = [ret[0].find_module(ret[1]).load_module(ret[1]) for ret in rets]
+    return [module.__dict__[module.__name__]
+            for module in modules if module.__name__ in module.__dict__]
 
 
 ## Other utilities. ##

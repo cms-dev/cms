@@ -15,12 +15,9 @@ $("select[name=task_type]").change(showTaskTypeOption);
 
 {% block core %}
 
-{% comment TODO: Dynamic loading of task types %}
-{% from cms.grading.tasktypes.Batch import Batch %}
-{% from cms.grading.tasktypes.OutputOnly import OutputOnly %}
-{% from cms.grading.tasktypes.Communication import Communication %}
-{% from cms.grading.tasktypes.TwoSteps import TwoSteps %}
-{% set task_type_list = [Batch, OutputOnly, Communication, TwoSteps] %}
+{% from cms import plugin_list %}
+{% set task_type_list = plugin_list("cms.grading.tasktypes", "tasktypes") %}
+{% set score_type_list = plugin_list("cms.grading.scoretypes", "scoretypes") %}
 
 <div class="core_title">
   <h1>New task</h1>
@@ -111,14 +108,10 @@ $("select[name=task_type]").change(showTaskTypeOption);
       <tr>
         <td>Score Type</td>
         <td>
-          {% comment TODO: Fetch the score types from ScoreType. %}
-
           <select name="score_type">
-            <option value="Sum">Sum</option>
-            <option value="GroupMin">Minimum</option>
-            <option value="GroupMul">Multiply</option>
-            <option value="GroupThreshold">Threshold</option>
-            <option value="Relative">Relative</option>
+            {% for score_type in score_type_list %}
+            <option value="{{ score_type.__name__}}">{{ score_type.__name__ }}</option>
+            {% end %}
           </select>
 
         </td>
