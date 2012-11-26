@@ -1223,19 +1223,12 @@ class SubmissionStatusHandler(BaseHandler):
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
                 self._("Evaluated"), self._("details"))
 
-            if score_type is not None:
-                data["public_score_details"] = score_type.get_html_details(
-                    submission.public_score_details, self._)
-                if score_type.max_public_score != 0:
-                    data["max_public_score"] = \
-                        "%g" % score_type.max_public_score
+            if score_type is not None and score_type.max_public_score != 0:
+                data["max_public_score"] = "%g" % score_type.max_public_score
             data["public_score"] = "%g" % submission.public_score
             if submission.token is not None:
-                if score_type is not None:
-                    data["score_details"] = score_type.get_html_details(
-                        submission.score_details, self._)
-                    if score_type.max_score != 0:
-                        data["max_score"] = "%g" % score_type.max_score
+                if score_type is not None and score_type.max_score != 0:
+                    data["max_score"] = "%g" % score_type.max_score
                 data["score"] = "%g" % submission.score
 
         self.write(data)
