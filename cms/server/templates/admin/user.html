@@ -29,6 +29,7 @@ function update_additional_answer(element, invoker)
 
 {% block core %}
 {% from cms.grading.scoretypes import get_score_type %}
+{% set score_types = {} %}
 
 <h1>{{ selected_user.first_name }} {{ selected_user.last_name }} ({{ selected_user.username }})</h1>
 
@@ -53,6 +54,12 @@ function update_additional_answer(element, invoker)
     <tbody>
       {% set reevaluation_par_name = "submission" %}
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
+        {% if s.task.name in score_types %}
+          {% set score_type = score_types[s.task.name] %}
+        {% else %}
+          {% set score_type = get_score_type(submission=s) %}
+          {% set score_types[s.task.name] = score_type %}
+        {% end %}
       <tr>
         <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ str(s.timestamp) }}</a></td>
         <td><a href="{{ url_root }}/task/{{ s.task.id }}">{{ s.task.name }}</a></td>
@@ -69,7 +76,7 @@ function update_additional_answer(element, invoker)
             <div id="evaluation_{{ s.id }}" style="display: none;">
             {% elif s.scored() %}
               {% try %}
-                {% set max_score = get_score_type(submission=s).max_score %}
+                {% set max_score = score_type.max_score %}
               {% except %}
                 {% set max_score = "[Cannot get score type - see logs]" %}
               {% end %}
