@@ -19,6 +19,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+# IMPORTANT: this score type is not up to date with the rest of CMS
+# because it turned out to be an implementation nightmare.
+
 from cms.grading.ScoreType import ScoreType
 
 

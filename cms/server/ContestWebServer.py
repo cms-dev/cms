@@ -30,7 +30,7 @@
 - submit solutions;
 - view the state and maybe the score of their submissions;
 - release submissions to see their full score;
-- query the test interface (to be implemented?).
+- query the test interface.
 
 """
 
@@ -1203,6 +1203,7 @@ class SubmissionStatusHandler(BaseHandler):
 
         score_type = get_score_type(submission=submission)
 
+        # TODO: use some kind of constants to refer to the status.
         data = dict()
         if not submission.compiled():
             data["status"] = 1
@@ -1222,15 +1223,20 @@ class SubmissionStatusHandler(BaseHandler):
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
                 self._("Evaluated"), self._("details"))
 
-            if score_type is not None and score_type.max_public_score != 0:
-                data["max_public_score"] = "%g" % score_type.max_public_score
+            if score_type is not None:
+                data["public_score_details"] = score_type.get_html_details(
+                    submission.public_score_details, self._)
+                if score_type.max_public_score != 0:
+                    data["max_public_score"] = \
+                        "%g" % score_type.max_public_score
             data["public_score"] = "%g" % submission.public_score
-            data["public_score_details"] = submission.public_score_details
             if submission.token is not None:
-                if score_type is not None and score_type.max_score != 0:
-                    data["max_score"] = "%g" % score_type.max_score
+                if score_type is not None:
+                    data["score_details"] = score_type.get_html_details(
+                        submission.score_details, self._)
+                    if score_type.max_score != 0:
+                        data["max_score"] = "%g" % score_type.max_score
                 data["score"] = "%g" % submission.score
-                data["score_details"] = submission.score_details
 
         self.write(data)
 
@@ -1255,7 +1261,16 @@ class SubmissionDetailsHandler(BaseHandler):
         if submission is None:
             raise tornado.web.HTTPError(404)
 
-        self.render("submission_details.html", task=task, s=submission)
+        score_type = get_score_type(submission=submission)
+        details = None
+        if submission.tokened():
+            details = submission.score_details
+        else:
+            details = submission.public_score_details
+
+        self.render("submission_details.html",
+                    s=submission,
+                    details=score_type.get_html_details(details, self._))
 
 
 class UserTestInterfaceHandler(BaseHandler):

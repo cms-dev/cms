@@ -29,6 +29,8 @@ task.
 
 """
 
+import simplejson as json
+
 from cms import logger
 
 from tornado.template import Template
@@ -39,6 +41,8 @@ class ScoreType:
     defined here.
 
     """
+    TEMPLATE = ""
+
     def __init__(self, parameters, public_testcases):
         """Initializer.
 
@@ -165,6 +169,29 @@ class ScoreType:
         logger.error("Unimplemented method update_scores.")
         raise NotImplementedError
 
+    def get_html_details(self, score_details, translator=None):
+        """Return an HTML string representing the score details of a
+        submission.
+
+        score_details (dict): the data saved by the score type itself
+                              in the database; can be public or
+                              private.
+        translator (function): the function to localize strings.
+        return (string): an HTML string representing score_details.
+
+        """
+        if translator is None:
+            translator = lambda string: string
+        try:
+            score_details = json.loads(score_details)
+        except json.decoder.JSONDecodeError:
+            logger.error("Found a non-JSON score details string. "
+                         "Need to rescore?")
+            return translator("Score details temporarily unavailable.")
+        else:
+            return Template(self.TEMPLATE).generate(details=score_details,
+                                                    _=translator)
+
     def max_scores(self):
         """Returns the maximum score that one could aim to in this
         problem. Also return the maximum score from the point of view
@@ -238,19 +265,29 @@ class ScoreTypeGroup(ScoreTypeAlone):
     """
     TEMPLATE = """\
 {% from cms.server import format_size %}
-{% for st in subtasks %}
-<div class="subtask {{ st["class"] if (st["public"] or show_private) else "undefined" }}">
+{% for st in details %}
+    {% if "score" in st and "max_score" in st %}
+        {% if st["score"] >= st["max_score"] %}
+<div class="subtask correct">
+        {% elif st["score"] <= 0.0 %}
+<div class="subtask notcorrect">
+        {% else %}
+<div class="subtask partiallycorrect">
+        {% end %}
+    {% else %}
+<div class="subtask undefined">
+    {% end %}
     <div class="subtask-head">
         <span class="title">
-            Subtask {{ st["idx"] }}
+            {{ _("Subtask %d") % st["idx"] }}
         </span>
-    {% if st["public"] or show_private %}
+    {% if "score" in st and "max_score" in st %}
         <span class="score">
             {{ '%g' % round(st["score"], 2) }} / {{ st["max_score"] }}
         </span>
     {% else %}
         <span class="score">
-            N/A
+            {{ _("N/A") }}
         </span>
     {% end %}
     </div>
@@ -258,38 +295,45 @@ class ScoreTypeGroup(ScoreTypeAlone):
         <table class="testcase-list">
             <thead>
                 <tr>
-                    <th>Outcome</th>
-                    <th>Details</th>
-                    <th>Time</th>
-                    <th>Memory</th>
+                    <th>{{ _("Outcome") }}</th>
+                    <th>{{ _("Details") }}</th>
+                    <th>{{ _("Time") }}</th>
+                    <th>{{ _("Memory") }}</th>
                 </tr>
             </thead>
             <tbody>
     {% for tc in st["testcases"] %}
-                <tr class="{{ tc["class"] if (tc["public"] or show_private) else "undefined" }}">
-        {% if tc["public"] or show_private %}
+        {% if "outcome" in tc and "text" in tc %}
+            {% if tc["outcome"] == "Correct" %}
+                <tr class="correct">
+            {% elif tc["outcome"] == "Not correct" %}
+                <tr class="notcorrect">
+            {% else %}
+                <tr class="partiallycorrect">
+            {% end %}
                     <td>{{ tc["outcome"] }}</td>
                     <td>{{ tc["text"] }}</td>
                     <td>
-            {% if tc["time"] is not None %}
+            {% if "time" in tc and tc["time"] is not None %}
                         {{ "%(seconds)0.3f s" % {'seconds': tc["time"]} }}
             {% else %}
-                        N/A
+                        {{ _("N/A") }}
             {% end %}
                     </td>
                     <td>
-            {% if tc["memory"] is not None %}
+            {% if "memory" in tc and tc["memory"] is not None %}
                         {{ format_size(tc["memory"]) }}
             {% else %}
-                        N/A
+                        {{ _("N/A") }}
             {% end %}
                     </td>
         {% else %}
+                <tr class="undefined">
                     <td colspan="4">
-                        N/A
+                        {{ _("N/A") }}
                     </td>
-        {% end %}
                 </tr>
+        {% end %}
     {% end %}
             </tbody>
         </table>
@@ -323,25 +367,10 @@ class ScoreTypeGroup(ScoreTypeAlone):
         returns (float): the score
 
         """
-        def class_score_subtask(score, max_score):
-            if score >= max_score:
-                return "correct"
-            elif score <= 0:
-                return "notcorrect"
-            else:
-                return "partiallycorrect"
-
-        def class_score_testcase(word):
-            if word == "Correct":
-                return "correct"
-            elif word == "Not correct":
-                return "notcorrect"
-            else:
-                return "partiallycorrect"
-
         indices = sorted(self.public_testcases.keys())
         evaluations = self.pool[submission_id]["evaluations"]
         subtasks = []
+        public_subtasks = []
         ranking_details = []
         tc_start = 0
         tc_end = 0
@@ -359,41 +388,46 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     float(evaluations[idx]["outcome"]), parameter)
                 ) for idx in indices[tc_start:tc_end])
 
-            testcases = list()
+            testcases = []
+            public_testcases = []
             for idx in indices[tc_start:tc_end]:
                 testcases.append({
                     "idx": idx,
-                    "public": self.public_testcases[idx],
                     "outcome": tc_outcomes[idx],
-                    "class": class_score_testcase(tc_outcomes[idx]),
                     "text": evaluations[idx]["text"],
                     "time": evaluations[idx]["time"],
                     "memory": evaluations[idx]["memory"],
                     })
+                if self.public_testcases[idx]:
+                    public_testcases.append(testcases[-1])
+                else:
+                    public_testcases.append({"idx": idx})
             subtasks.append({
                 "idx": st_idx + 1,
-                "public": st_public,
                 "score": st_score,
                 "max_score": parameter[0],
-                "class": class_score_subtask(st_score, parameter[0]),
                 "testcases": testcases,
                 })
+            if st_public:
+                public_subtasks.append(subtasks[-1])
+            else:
+                public_subtasks.append({
+                    "idx": st_idx + 1,
+                    "testcases": public_testcases,
+                    })
+
             ranking_details.append("%lg" % st_score)
 
             tc_start = tc_end
 
-        score = int(round(sum(st["score"] for st in subtasks)))
-        public_score = int(round(sum(st["score"] for st in subtasks if st["public"])))
+        score = int(round(sum(st["score"]
+                              for st in subtasks)))
+        public_score = int(round(sum(st["score"]
+                                     for st in public_subtasks
+                                     if "score" in st)))
 
-        details = \
-            Template(self.TEMPLATE).generate(subtasks=subtasks,
-                                             show_private=True)
-        public_details = \
-            Template(self.TEMPLATE).generate(subtasks=subtasks,
-                                             show_private=False)
-
-        return round(score, 2), details, \
-               round(public_score, 2), public_details, \
+        return round(score, 2), json.dumps(subtasks), \
+               round(public_score, 2), json.dumps(public_subtasks), \
                ranking_details
 
     def get_public_outcome(self, outcome, parameter):

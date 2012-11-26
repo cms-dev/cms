@@ -1,12 +1,6 @@
 <div class="score_details">
 {% if s.scored() %}
-    {% if s.token is None %}
-<h3>{{ _("Public testcases") }}</h3>
-{% raw s.public_score_details %}
-    {% else %}
-<h3>{{ _("Detailed feedback") }}</h3>
-{% raw s.score_details %}
-    {% end %}
+{% raw details %}
 {% end %}
 
 <h3>{{ _("Compilation output") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}

@@ -21,6 +21,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
 {% from cms.grading.tasktypes.Communication import Communication %}
 {% from cms.grading.tasktypes.TwoSteps import TwoSteps %}
 {% set task_type_list = [Batch, OutputOnly, Communication, TwoSteps] %}
+{% set score_type = None %}
 
 <div class="core_title">
   <h1>{{ task.title }} ({{ task.name }})</h1>
@@ -47,6 +48,9 @@ $("select[name=task_type]").change(showTaskTypeOption);
     <tbody>
       {% set reevaluation_par_name = "submission" %}
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
+        {% if score_type is None %}
+          {% set score_type = get_score_type(submission=s) %}
+        {% end %}
       <tr>
         <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ str(s.timestamp) }}</a></td>
         <td><a href="{{ url_root }}/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
@@ -63,13 +67,13 @@ $("select[name=task_type]").change(showTaskTypeOption);
             <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
             {% elif s.scored() %}
               {% try %}
-                {% set max_score = get_score_type(submission=s).max_score %}
+                {% set max_score = score_type.max_score %}
               {% except %}
                 {% set max_score = "[Cannot get score type - see logs]" %}
               {% end %}
             Evaluated ({{ s.score }} / {{ max_score }})
             <div class="score_details" id="evaluation_{{ s.id }}" style="display: none;">
-              {% raw s.score_details %}
+              {% raw score_type.get_html_details(s.score_details) %}
             {% else %}
             Evaluated
             <div id="evaluation_{{ s.id }}" style="display: none;">

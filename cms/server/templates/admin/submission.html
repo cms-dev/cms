@@ -2,6 +2,7 @@
 
 {% block core %}
 {% from cms.grading.scoretypes import get_score_type %}
+{% set st = get_score_type(submission=s) %}
 <div class="core_title">
   <h1>Submission {{ s.id }}</h1>
 </div>
@@ -64,7 +65,7 @@
           Evaluating...
           {% elif s.scored() %}
             {% try %}
-              {% set max_score = get_score_type(submission=s).max_score %}
+              {% set max_score = st.max_score %}
             {% except %}
               {% set max_score = "[Cannot get score type - see logs]" %}
             {% end %}
@@ -105,13 +106,20 @@
 
   {% if s.evaluated() %}
 
-
-<h2 id="title_evaluation" class="toggling_on">Evaluation</h2>
-<div id="evaluation">
+<h2 id="title_evaluation_user" class="toggling_on">Evaluation (as seen by the user)</h2>
+<div id="evaluation_user">
 
   <div class="score_details" id="evaluation_{{ s.id }}">
-    {% raw s.score_details %}
+    {% if s.tokened() %}
+      {% raw st.get_html_details(s.score_details) %}
+    {% else %}
+      {% raw st.get_html_details(s.public_score_details) %}
+    {% end %}
   </div>
+</div>
+
+<h2 id="title_evaluation_admin" class="toggling_on">Evaluation (as seen by the admin)</h2>
+<div id="evaluation_admin">
 
   <table class="bordered">
     <thead>

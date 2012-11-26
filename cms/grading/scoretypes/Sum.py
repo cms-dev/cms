@@ -19,9 +19,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from cms.grading.ScoreType import ScoreTypeAlone
+import simplejson as json
 
-from tornado.template import Template
+from cms.grading.ScoreType import ScoreTypeAlone
 
 
 class Sum(ScoreTypeAlone):
@@ -34,38 +34,45 @@ class Sum(ScoreTypeAlone):
 <table class="testcase-list">
     <thead>
         <tr>
-            <th>Outcome</th>
-            <th>Details</th>
-            <th>Time</th>
-            <th>Memory</th>
+            <th>{{ _("Outcome") }}</th>
+            <th>{{ _("Details") }}</th>
+            <th>{{ _("Time") }}</th>
+            <th>{{ _("Memory") }}</th>
         </tr>
     </thead>
     <tbody>
-    {% for tc in testcases %}
-        <tr class="{{ tc["class"] if (tc["public"] or show_private) else "undefined" }}">
-        {% if tc["public"] or show_private %}
+    {% for tc in details %}
+        {% if "outcome" in tc and "text" in tc %}
+            {% if tc["outcome"] == "Correct" %}
+        <tr class="correct">
+            {% elif tc["outcome"] == "Not correct" %}
+        <tr class="notcorrect">
+            {% else %}
+        <tr class="partiallycorrect">
+            {% end %}
             <td>{{ tc["outcome"] }}</td>
             <td>{{ tc["text"] }}</td>
             <td>
             {% if tc["time"] is not None %}
                 {{ "%(seconds)0.3f s" % {'seconds': tc["time"]} }}
             {% else %}
-                N/A
+                {{ _("N/A") }}
             {% end %}
             </td>
             <td>
             {% if tc["memory"] is not None %}
                 {{ format_size(tc["memory"]) }}
             {% else %}
-                N/A
+                {{ _("N/A") }}
             {% end %}
             </td>
         {% else %}
+        <tr class="undefined">
             <td colspan="4">
-                N/A
+                {{ _("N/A") }}
             </td>
-        {% end %}
         </tr>
+        {% end %}
     {% end %}
     </tbody>
 </table>"""
@@ -90,43 +97,31 @@ class Sum(ScoreTypeAlone):
         See the same method in ScoreType for details.
 
         """
-        def class_score_testcase(word):
-            if word == "Correct":
-                return "correct"
-            elif word == "Not correct":
-                return "notcorrect"
-            else:
-                return "partiallycorrect"
-
         evaluations = self.pool[submission_id]["evaluations"]
         testcases = []
+        public_testcases = []
+        score = 0.0
+        public_score = 0.0
+
         for idx in evaluations:
-            tc_outcome = self.get_public_outcome(
-                float(evaluations[idx]["outcome"]))
+            this_score = float(evaluations[idx]["outcome"]) * self.parameters
+            tc_outcome = self.get_public_outcome(this_score)
+            score += this_score
             testcases.append({
                 "idx": idx,
-                "public": self.public_testcases[idx],
-                "score": float(evaluations[idx]["outcome"]),
-                "max_score": 1.0,
                 "outcome": tc_outcome,
-                "class": class_score_testcase(tc_outcome),
                 "text": evaluations[idx]["text"],
                 "time": evaluations[idx]["time"],
                 "memory": evaluations[idx]["memory"],
                 })
+            if self.public_testcases[idx]:
+                public_score += this_score
+                public_testcases.append(testcases[-1])
+            else:
+                public_testcases.append({"idx": idx})
 
-        score = sum(tc["score"] for tc in testcases)
-        public_score = sum(tc["score"] for tc in testcases if tc["public"])
-
-        details = \
-            Template(self.TEMPLATE).generate(testcases=testcases,
-                                             show_private=True)
-        public_details = \
-            Template(self.TEMPLATE).generate(testcases=testcases,
-                                             show_private=False)
-
-        return round(score * self.parameters, 2), details, \
-               round(public_score * self.parameters, 2), public_details, \
+        return round(score, 2), json.dumps(testcases), \
+               round(public_score, 2), json.dumps(public_testcases), \
                []
 
     def get_public_outcome(self, outcome):
@@ -139,7 +134,7 @@ class Sum(ScoreTypeAlone):
         """
         if outcome <= 0.0:
             return "Not correct"
-        elif outcome >= 1.0:
+        elif outcome >= self.parameters:
             return "Correct"
         else:
             return "Partially correct"
