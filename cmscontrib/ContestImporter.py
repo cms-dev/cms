@@ -69,10 +69,12 @@ class ContestImporter:
     importing again should be idempotent.
 
     """
-    def __init__(self, drop, import_source, only_files, no_files):
+    def __init__(self, drop, import_source,
+                 only_files, no_files, no_submissions):
         self.drop = drop
         self.only_files = only_files
         self.no_files = no_files
+        self.no_submissions = no_submissions
         self.import_source = import_source
         self.import_dir = import_source
 
@@ -131,38 +133,44 @@ class ContestImporter:
             logger.critical("Unable to access DB.\n%r" % error)
             return False
 
-        if not self.no_files:
-            logger.info("Importing files.")
-            files_dir = os.path.join(self.import_dir, "files")
-            descr_dir = os.path.join(self.import_dir, "descriptions")
-            files = set(os.listdir(files_dir))
-            for _file in files:
-                if not self.safe_put_file(os.path.join(files_dir, _file),
-                                          os.path.join(descr_dir, _file)):
-                    return False
+        logger.info("Reading JSON file...")
+        with open(os.path.join(self.import_dir, "contest.json")) as fin:
+            contest_json = json.load(fin)
+        if self.no_submissions:
+            for user in contest_json["users"]:
+                user["submissions"] = []
+                user["user_tests"] = []
 
         if not self.only_files:
             with SessionGen(commit=False) as session:
 
                 # Import the contest in JSON format.
                 logger.info("Importing the contest from JSON file.")
-                with open(os.path.join(self.import_dir,
-                                       "contest.json")) as fin:
-                    contest = Contest.import_from_dict(json.load(fin))
-                    session.add(contest)
-
-                # Check that no files were missing (only if files were
-                # imported).
-                if not self.no_files:
-                    contest_files = contest.enumerate_files()
-                    missing_files = contest_files.difference(files)
-                    if len(missing_files) > 0:
-                        logger.warning("Some files needed to the contest "
-                                       "are missing in the import directory.")
+                contest = Contest.import_from_dict(contest_json)
+                session.add(contest)
 
                 session.flush()
                 contest_id = contest.id
+                contest_files = contest.enumerate_files()
                 session.commit()
+
+        if not self.no_files:
+            logger.info("Importing files.")
+            files_dir = os.path.join(self.import_dir, "files")
+            descr_dir = os.path.join(self.import_dir, "descriptions")
+            for digest in contest_files:
+                file_ = os.path.join(files_dir, digest)
+                desc = os.path.join(descr_dir, digest)
+                print open(desc).read()
+                if not os.path.exists(file_) or not os.path.exists(desc):
+                    logger.warning("Some files needed to the contest "
+                                   "are missing in the import directory. "
+                                   "The import will continue. Be aware.")
+                if not self.safe_put_file(file_, desc):
+                    logger.warning("Unable to put file `%s' in the database. "
+                                   "Aborting." % file_)
+                    # TODO: remove contest from the database.
+                    return False
 
         logger.info("Import finished (contest id: %s)." % contest_id)
         logger.operation = ""
@@ -219,6 +227,8 @@ def main():
                        help="only import files, ignore database structure")
     group.add_argument("-F", "--no-files", action="store_true",
                        help="only import database structure, ignore files")
+    group.add_argument("-S", "--no-submissions", action="store_true",
+                       help="discard submissions, tokens, user tests")
     parser.add_argument("-d", "--drop", action="store_true",
                         help="drop everything from the database "
                         "before importing")
@@ -227,10 +237,13 @@ def main():
 
     args = parser.parse_args()
 
-    ContestImporter(drop=args.drop,
-                    import_source=args.import_source,
-                    only_files=args.only_files,
-                    no_files=args.no_files).run()
+    ContestImporter(
+        drop=args.drop,
+        import_source=args.import_source,
+        only_files=args.only_files,
+        no_files=args.no_files,
+        no_submissions=args.no_submissions,
+        ).run()
 
 
 if __name__ == "__main__":
