@@ -111,18 +111,19 @@ def get_task_id(contest_id, user_id, task_module):
             token_gen_number="0",
             max_submission_number="100",
             max_user_test_number="100",
-            min_submission_interval="0",
-            min_user_test_interval="0",
+            min_submission_interval="1",
+            min_user_test_interval="1",
             **task_module.task_info)
 
         # add the task's test data.
         data_path = os.path.join(
             os.path.dirname(task_module.__file__),
             "data")
-        for input_file, output_file, public in task_module.test_cases:
+        for num, (input_file, output_file, public) \
+                in enumerate(task_module.test_cases):
             ipath = os.path.join(data_path, input_file)
             opath = os.path.join(data_path, output_file)
-            add_testcase(task_id, ipath, opath, public)
+            add_testcase(task_id, str(num), ipath, opath, public)
 
         task_id_map[task_module] = task_id
 

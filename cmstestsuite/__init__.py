@@ -387,12 +387,13 @@ def add_task(contest_id, **kwargs):
         raise FrameworkException("Unable to create task.")
 
 
-def add_testcase(task_id, input_file, output_file, public):
+def add_testcase(task_id, num, input_file, output_file, public):
     files = [
         ('input', input_file),
         ('output', output_file),
         ]
     args = {}
+    args["num"] = num
     if public:
         args['public'] = '1'
     admin_req('/add_testcase/%d' % task_id, multipart_post=True,
