@@ -18,41 +18,37 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """
-The file with the events has one row per event, with these format
-(space separated):
-timestamp (seconds relative to the contest)
-username
-task_id
-task_shortname
-action (submit|release)
+ReplayContest takes as input a contest exported with ContestExported
+(in the extracted form), and replays the contest, meaning that it asks
+CWS for all submissions and tokens asked by the contestants, at the
+right timing. The time can be increased in order to stress-test CMS.
 
-Next, for submit:
-comma-separated list of file paths
-
-For token:
-submission_num
-
-All users have empty passwords.
-
-TODO: currently only works with tasks with one file per submission
-(this is a limitation of SubmitRequest).
+TODO:
+- currently only works with tasks with one file per submission (this
+  is a limitation of SubmitRequest).
+- implement handling of user tests.
+- handle KeyboardInterrupt and notify of the correct commandline to
+  resume the contest.
+- set the correct parameters for the contest and tasks automatically.
+- use a nicer graphics (ncurses based?).
 
 """
 
+import os
+import shutil
+import simplejson as json
 import sys
+import tempfile
 import time
 
 from argparse import ArgumentParser
 from mechanize import Browser
-from threading import Thread
+from threading import Thread, RLock
 
+from cms import config, logger
+from cmscontrib.ContestImporter import ContestImporter
 from cmstestsuite.web.CWSRequests import \
      LoginRequest, SubmitRequest, TokenRequest
-
-
-start = None
-speed = 1
-old_speed = 1
 
 
 def to_time(seconds):
@@ -70,23 +66,6 @@ def to_time(seconds):
     return "%02d:%02d:%02d" % (hours, minutes, seconds)
 
 
-def recompute_start(start, speed, old_speed):
-    """Utility to recompute the start time of a contest passing from a
-    speed of old_speed to a speed of speed.
-
-    start (int): old start time of the contest with speed old_speed.
-    speed (int): new speed of the replayer.
-    old_speed (int): previous speed of the replayer.
-
-    return (int): new start time using the new speed.
-
-    """
-    if speed != old_speed:
-        start = start + (time.time() - start) * (speed - old_speed) * 1.0 / speed
-        old_speed = speed
-    return start, speed, old_speed
-
-
 def step(request):
     """Prepare and execute the request in a single instruction.
 
@@ -97,113 +76,238 @@ def step(request):
     request.execute()
 
 
-def submit(timestamp, username, t_id, t_short, files, base_url):
-    """Execute the request for a submission.
+class ContestReplayer:
 
-    timestamp (int): seconds from the start.
-    username (string): username issuing the submission.
-    t_id (string): id of the task.
-    t_short (string): short name of the task.
-    files ([string]): list of filenames of submitted files.
-    base_url (string): http address of CWS.
+    def __init__(self, import_source, cws_address, no_import=False,
+                 start_from=0):
+        self.import_source = import_source
+        self.cws_address = cws_address
+        self.no_import = no_import
+        self.start_from = start_from
 
-    """
-    print "\n%s - Submitting for %s on task %s" % (to_time(timestamp),
-                                              username,
-                                              t_short),
-    browser = Browser()
-    browser.set_handle_robots(False)
-    step(LoginRequest(browser, username, "", base_url=base_url))
-    step(SubmitRequest(browser,
-                       (int(t_id), t_short),
-                       filename=files[0],
-                       base_url=base_url))
+        self.start = None
+        self.speed = 1
+        self.speed_lock = RLock()
+        self.events = []
 
+        self.importer = ContestImporter(drop=False,
+                                        import_source=import_source,
+                                        only_files=False, no_files=False,
+                                        no_submissions=True)
 
-def token(timestamp, username, t_id, t_short, submission_num, base_url):
-    """Execute the request for releasing test a submission.
+    def run(self):
+        """Main routine for replaying a contest, handling arguments from
+        command line, and managing the speed of the replayer.
 
-    timestamp (int): seconds from the start.
-    username (string): username issuing the submission.
-    t_id (string): id of the task.
-    t_short (string): short name of the task.
-    submission_num (string): id of the submission to release test.
-    base_url (string): http address of CWS.
+        """
+        if not self.no_import:
+            logger.info("Importing contest...")
+            self.importer.run()
+            logger.info("Contest imported.")
 
-    """
-    print "\n%s - Playing token for %s on task %s" % (to_time(timestamp),
-                                                      username,
-                                                      t_short),
-    browser = Browser()
-    browser.set_handle_robots(False)
-    step(LoginRequest(browser, username, "", base_url=base_url))
-    step(TokenRequest(browser,
-                      (int(t_id), t_short),
-                      submission_num=submission_num,
-                      base_url=base_url))
+        logger.info("Please run CMS against the contest (with ip_lock=False).")
+        logger.info("Please ensure that:")
+        logger.info("- the contest is active (we are between start and stop);")
+        logger.info("- the minimum interval for submissions and usertests ")
+        logger.info("  (contest- and task-wise) is None.")
+        logger.info("Then press enter to start.")
+        raw_input()
 
+        with open(os.path.join(self.import_source,
+                               "contest.json")) as fin:
+            self.compute_events(json.load(fin))
 
-def replay(base_url, source="./source.txt", start_from=None):
-    """Start replaying the events in source on the CWS at the
-    specified address.
+        thread = Thread(target=self.replay)
+        thread.daemon = True
+        thread.start()
 
-    base_url (string): http address of CWS.
-    source (string): events file.
+        logger.info("Loading submission data...")
+        while self.start is None:
+            time.sleep(1)
+        while thread.isAlive():
+            new_speed = raw_input("Write the speed multiplier or q to quit "
+                                  "(time %s, multiplier %s):\n" % (
+                to_time((time.time() - self.start) * self.speed), self.speed))
+            if new_speed == "q":
+                return 0
+            elif new_speed != "":
+                try:
+                    new_speed = int(new_speed)
+                except ValueError:
+                    logger.error("Speed multiplier could not be parsed.")
+                else:
+                    self.recompute_start(new_speed)
+        return 0
 
-    """
-    global start, speed, old_speed
+    def compute_events(self, contest):
+        tasks = dict((task["name"], task["num"]) for task in contest["tasks"])
+        for user in contest["users"]:
+            tasks_num = dict((task["name"], 1) for task in contest["tasks"])
+            for submission in sorted(user["submissions"],
+                                     key=lambda x: x["timestamp"]):
+                num = tasks_num[submission["task"]]
+                tasks_num[submission["task"]] += 1
+                self.events.append([
+                    submission["timestamp"] - contest["start"],
+                    user["username"],
+                    user["password"],
+                    tasks[submission["task"]],
+                    submission["task"],
+                    "s",  # For submit events.
+                    (submission["files"], submission["language"]),
+                    ])
+                if submission["token"] is not None:
+                    self.events.append([
+                        submission["token"]["timestamp"] - contest["start"],
+                        user["username"],
+                        user["password"],
+                        tasks[submission["task"]],
+                        submission["task"],
+                        "t",  # For token events.
+                        num,
+                        ])
+        # TODO: add user test events.
+        self.events.sort()
 
-    content = [x.strip().split() for x in open(source).readlines()]
-    events = len(content)
-    index = 0
-    if start_from is not None:
-        while index < events and float(content[index][0]) < start_from:
+    def recompute_start(self, new_speed):
+        """Utility to recompute the start time of a contest passing
+        from a speed of self.speed to a speed of new_speed.
+
+        new_speed(int): the new speed for the contest replayer.
+
+        """
+        with self.speed_lock:
+            if self.speed != new_speed:
+                self.start = self.start \
+                    + (time.time() - self.start) * (new_speed - self.speed) \
+                    * 1.0 / new_speed
+                self.speed = new_speed
+
+    def submit(self, timestamp, username, password, t_id, t_short,
+               files, language):
+        """Execute the request for a submission.
+
+        timestamp (int): seconds from the start.
+        username (string): username issuing the submission.
+        password (string): password of username.
+        t_id (string): id of the task.
+        t_short (string): short name of the task.
+        files ([dict]): list of dictionaries with keys 'filename' and
+                        'digest'.
+        language (string): the extension the files should have.
+
+        """
+        logger.info("%s - Submitting for %s on task %s."
+                    % (to_time(timestamp), username, t_short))
+        if len(files) != 1:
+            logger.error("We cannot submit more than one file.")
+            return
+
+        # Copying submission files into a temporary directory with the
+        # correct name. Otherwise, SubmissionRequest does not know how
+        # to interpret the file (and which language are they in).
+        temp_dir = tempfile.mkdtemp(dir=config.temp_dir)
+        for file_ in files:
+            temp_filename = os.path.join(temp_dir,
+                                         file_["filename"].replace("%l",
+                                                                   language))
+            shutil.copy(
+                os.path.join(self.import_source, "files", files[0]["digest"]),
+                temp_filename
+                )
+            file_["filename"] = temp_filename
+
+        filename = os.path.join(files[0]["filename"])
+        browser = Browser()
+        browser.set_handle_robots(False)
+        step(LoginRequest(browser, username, password,
+                          base_url=self.cws_address))
+        step(SubmitRequest(browser,
+                           (int(t_id), t_short),
+                           filename=filename,
+                           base_url=self.cws_address))
+        shutil.rmtree(temp_dir)
+
+    def token(self, timestamp, username, password, t_id, t_short,
+              submission_num):
+        """Execute the request for releasing test a submission.
+
+        timestamp (int): seconds from the start.
+        username (string): username issuing the submission.
+        password (string): password of username.
+        t_id (string): id of the task.
+        t_short (string): short name of the task.
+        submission_num (string): id of the submission to release test.
+
+        """
+        logger.info("%s - Playing token for %s on task %s"
+                    % (to_time(timestamp), username, t_short))
+        browser = Browser()
+        browser.set_handle_robots(False)
+        step(LoginRequest(browser, username, password,
+                          base_url=self.cws_address))
+        step(TokenRequest(browser,
+                          (int(t_id), t_short),
+                          submission_num=submission_num,
+                          base_url=self.cws_address))
+
+    def replay(self):
+        """Start replaying the events in source on the CWS at the
+        specified address.
+
+        """
+        with self.speed_lock:
+            index = 0
+            if self.start_from is not None:
+                while index < len(self.events) \
+                        and float(self.events[index][0]) < self.start_from:
+                    index += 1
+                self.start = time.time() - self.start_from
+            else:
+                self.start = time.time()
+
+        while index < len(self.events):
+            timestamp, username, password, task_id, task_name, type_, data \
+                = self.events[index]
+            to_wait = (timestamp / self.speed - (time.time() - self.start))
+            while to_wait > .5:
+                if 0 < to_wait % 10 <= .5:
+                    logger.info("Next event in %d seconds." % int(to_wait))
+                time.sleep(.5)
+                to_wait = (timestamp / self.speed - (time.time() - self.start))
+            if to_wait > 0:
+                time.sleep(to_wait)
+
+            if type_ == "s":  # Submit.
+                files, language = data
+                self.submit(timestamp=timestamp,
+                            username=username,
+                            password=password,
+                            t_id=task_id,
+                            t_short=task_name,
+                            files=files,
+                            language=language)
+            elif type_ == "t":  # Token.
+                self.token(timestamp=timestamp,
+                           username=username,
+                           password=password,
+                           t_id=task_id,
+                           t_short=task_name,
+                           submission_num=data)
+            else:
+                logger.warning("Unexpected type `%s', ignoring." % type_)
+
             index += 1
-        start = time.time() - start_from
-    else:
-        start = time.time()
-
-    while index < events:
-        next_time = float(content[index][0])
-        start, speed, old_speed = recompute_start(start, speed, old_speed)
-        to_wait = (next_time / speed - (time.time() - start))
-        while to_wait > .5:
-            time.sleep(.5)
-            start, speed, old_speed = recompute_start(start, speed, old_speed)
-            to_wait = (next_time / speed - (time.time() - start))
-        if to_wait > 0:
-            time.sleep(to_wait)
-        start, speed, old_speed = recompute_start(start, speed, old_speed)
-
-        if content[index][4] == "submit":
-            submit(timestamp=next_time,
-                   username=content[index][1],
-                   t_id=content[index][2],
-                   t_short=content[index][3],
-                   files=content[index][5].split(","),
-                   base_url=base_url)
-        elif content[index][4] == "token":
-            token(timestamp=next_time,
-                  username=content[index][1],
-                  t_id=content[index][2],
-                  t_short=content[index][3],
-                  submission_num=int(content[index][5]),
-                  base_url=base_url)
-
-        index += 1
 
 
 def main():
-    """Main routine for replaying a contest, handling arguments from
-    command line, and managing the speed of the replayer.
-
-    """
-    global start, speed, old_speed
-
-    parser = ArgumentParser(description="Replay a contest.")
-    parser.add_argument("address", type=str, help="http address of CWS",
+    parser = ArgumentParser(description="Replayer of CMS contests.")
+    parser.add_argument("cws_address", type=str, help="http address of CWS",
                         default="http://127.0.0.1:8888")
-    parser.add_argument("source", type=str, help="events file")
+    parser.add_argument("import_source",
+                        help="source directory or compressed file")
+    parser.add_argument("-i", "--no-import", action="store_true",
+                        help="assume the contest is already in the database")
     parser.add_argument("-r", "--resume", type=str,
                         help="start from (%%H:%%M:%%S)")
     args = parser.parse_args()
@@ -214,23 +318,22 @@ def main():
                          int(args.resume[3:5]) * 60 + \
                          int(args.resume[0:2]) * 3600
         except:
-            print "Invalid resume time %s, format is %%H:%%M:%%S" % args.resume
+            logger.critical("Invalid resume time %s, format is %%H:%%M:%%S"
+                            % args.resume)
+            return 1
 
-    thread = Thread(target=replay, args=(args.address, args.source, start_from))
-    thread.start()
-    print "Wait for data to load..."
-    while start is None:
-        time.sleep(1)
-    while thread.isAlive():
-        command = raw_input("\nWrite the speed multiplier "
-                            "(time %s, multiplier %s): " % (
-            to_time((time.time() - start) * speed), speed))
-        try:
-            command = int(command)
-        except ValueError:
-            print "Speed multiplier could not be parsed."
-        else:
-            start, speed, old_speed = recompute_start(start, command, old_speed)
+    if not os.path.isdir(args.import_source):
+        logger.critical("Please extract the contest "
+                        "before using ReplayContest.")
+        return 1
+
+    ContestReplayer(
+        import_source=args.import_source,
+        no_import=args.no_import,
+        start_from=start_from,
+        cws_address=args.cws_address
+        ).run()
+
     return 0
 
 
