@@ -803,7 +803,7 @@ class ScoringService(Service):
 
         old_s = len(self.submission_ids_to_score)
         old_t = len(self.submission_ids_to_token)
-        self.submission_ids_to_score |= new_submission_ids
+        self.submission_ids_to_score |= set(new_submission_ids)
         if old_s + old_t == 0:
             self.add_timeout(self.score_old_submissions, None,
                              0.5, immediately=False)
