@@ -115,7 +115,7 @@ class Task(Base):
         nullable=False)
 
     # Parameters for the scorer class, JSON encoded.
-    score_parameters = Column(
+    score_type_parameters = Column(
         String,
         nullable=False)
 
@@ -190,7 +190,7 @@ class Task(Base):
     def __init__(self, name, title, statements, attachments,
                  time_limit, memory_limit, primary_statements,
                  task_type, task_type_parameters, submission_format, managers,
-                 score_type, score_parameters, testcases,
+                 score_type, score_type_parameters, testcases,
                  token_initial=None, token_max=None, token_total=None,
                  token_min_interval=timedelta(),
                  token_gen_time=timedelta(), token_gen_number=0,
@@ -218,7 +218,7 @@ class Task(Base):
         self.submission_format = submission_format
         self.managers = managers
         self.score_type = score_type
-        self.score_parameters = score_parameters
+        self.score_type_parameters = score_type_parameters
         self.testcases = testcases
         self.token_initial = token_initial
         self.token_max = token_max
@@ -257,7 +257,7 @@ class Task(Base):
                                          for manager
                                          in self.managers.itervalues()],
                 'score_type':           self.score_type,
-                'score_parameters':     self.score_parameters,
+                'score_type_parameters': self.score_type_parameters,
                 'testcases':            [testcase.export_to_dict()
                                          for testcase in self.testcases],
                 'token_initial':        self.token_initial,

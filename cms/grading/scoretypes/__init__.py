@@ -43,7 +43,7 @@ def get_score_type(submission=None, task=None):
 
     score_type_name = task.score_type
     try:
-        score_type_parameters = json.loads(task.score_parameters)
+        score_type_parameters = json.loads(task.score_type_parameters)
     except json.decoder.JSONDecodeError as error:
         logger.error("Cannot decode score type parameters.\n%r." % error)
         raise

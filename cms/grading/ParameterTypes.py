@@ -23,8 +23,8 @@
 
 These parameter types can be used to specify the accepted parameters
 of a task type or a score type. These types can cover 'basic' JSON
-values, as task_type_parameters and score_parameters are represented
-by JSON objects.
+values, as task_type_parameters and score_type_parameters are
+represented by JSON objects.
 
 """
 

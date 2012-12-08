@@ -891,7 +891,7 @@ class AddTaskHandler(BaseHandler):
                 raise ValueError("Submission format not recognized.")
 
             score_type = self.get_argument("score_type", "")
-            score_parameters = self.get_argument("score_parameters", "")
+            score_type_parameters = self.get_argument("score_type_parameters", "")
 
             token_initial = self.get_non_negative_int(
                 "token_initial",
@@ -952,7 +952,7 @@ class AddTaskHandler(BaseHandler):
         task = Task(name, title, statements, attachments,
                  time_limit, memory_limit, primary_statements,
                  task_type, task_type_parameters, submission_format, managers,
-                 score_type, score_parameters, testcases,
+                 score_type, score_type_parameters, testcases,
                  token_initial, token_max, token_total,
                  token_min_interval, token_gen_time, token_gen_number,
                  max_submission_number, max_user_test_number,
@@ -1042,8 +1042,8 @@ class TaskHandler(BaseHandler):
 
             task.score_type = self.get_argument("score_type",
                                                 task.score_type)
-            task.score_parameters = self.get_argument("score_parameters",
-                                                      task.score_parameters)
+            task.score_type_parameters = self.get_argument("score_type_parameters",
+                                                           task.score_type_parameters)
 
             task.token_initial = self.get_non_negative_int(
                 "token_initial",

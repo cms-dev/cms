@@ -296,14 +296,14 @@ class YamlLoader:
                     input_value = 0.0
                     if int(conf['n_input']) != 0:
                         input_value = total_value / int(conf['n_input'])
-                    params["score_parameters"] = str(input_value)
+                    params["score_type_parameters"] = str(input_value)
                 else:
                     subtasks.append([points, testcases])
                     assert(100 == sum([int(st[0]) for st in subtasks]))
                     assert(int(conf['n_input']) ==
                            sum([int(st[1]) for st in subtasks]))
                     params["score_type"] = "GroupMin"
-                    params["score_parameters"] = str(subtasks)
+                    params["score_type_parameters"] = str(subtasks)
 
         # If gen/GEN doesn't exist, just fallback to Sum
         except IOError:
@@ -312,7 +312,7 @@ class YamlLoader:
             input_value = 0.0
             if int(conf['n_input']) != 0:
                 input_value = total_value / int(conf['n_input'])
-            params["score_parameters"] = str(input_value)
+            params["score_type_parameters"] = str(input_value)
 
         # If output_only is set, then the task type is OutputOnly
         if conf.get('output_only', False):

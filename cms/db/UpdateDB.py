@@ -70,6 +70,7 @@ class ScriptsContainer(object):
             ("20121107", "fix_primary_statements"),
             ("20121108", "add_limit_constraints"),
             ("20121116", "rename_user_test_limits"),
+            ("20121207", "rename_score_parameters"),
             ]
         self.list.sort()
 
@@ -943,6 +944,16 @@ RENAME COLUMN max_usertest_number TO max_user_test_number;""" %
 ALTER TABLE %(table)s
 RENAME COLUMN min_usertest_interval TO min_user_test_interval;""" %
                                 {"table": table})
+
+    @staticmethod
+    def rename_score_parameters():
+        """Rename "score_parameters" to "score_type_parameters".
+
+        """
+        with SessionGen(commit=True) as session:
+            session.execute("""\
+ALTER TABLE tasks
+RENAME COLUMN score_parameters TO score_type_parameters;""")
 
 
 def execute_single_script(scripts_container, script):

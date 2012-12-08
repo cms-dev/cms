@@ -31,7 +31,7 @@ task_info = {
     "submission_format_choice": "simple",
     "submission_format": "",
     "score_type": "Sum",
-    "score_parameters": "50",
+    "score_type_parameters": "50",
 }
 
 test_cases = [
