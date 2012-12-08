@@ -578,15 +578,15 @@ def white_diff_step(sandbox, output_filename,
 
 ## Computing global scores (for ranking). ##
 
-def task_score(username, task_id):
+def task_score(user, task):
     """Return the score of a user on a task.
 
-    username (string): the username for which to compute the score.
-    task_id (string): the task for which to compute the score.
+    user (User): the user for which to compute the score.
+    task (Task): the task for which to compute the score.
 
-    return (float, bool): the score of username on task_id, and True
-                          if the score could change because of
-                          submission not yet scored.
+    return (float, bool): the score of user on task, and True if the
+                          score could change because of a submission
+                          yet to score.
 
     """
     def waits_for_score(submission):
@@ -609,9 +609,9 @@ def task_score(username, task_id):
     partial = False
 
     with SessionGen(commit=False) as session:
-        submissions = session.query(Submission).join(Task).join(User).\
-            filter(User.username == username).\
-            filter(Task.id == task_id).\
+        submissions = session.query(Submission).\
+            filter(Submission.user == user).\
+            filter(Submission.task == task).\
             order_by(Submission.timestamp).all()
 
         if submissions == []:

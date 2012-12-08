@@ -172,6 +172,14 @@ class Task(Base):
         CheckConstraint("min_user_test_interval > '0 seconds'"),
         nullable=True)
 
+    # The scores for this task will be rounded to this number of
+    # decimal places.
+    score_precision = Column(
+        Integer,
+        CheckConstraint("score_precision >= 0"),
+        nullable=False,
+        default=0)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # submission_format (list of SubmissionFormatElement objects)
@@ -196,7 +204,7 @@ class Task(Base):
                  token_gen_time=timedelta(), token_gen_number=0,
                  max_submission_number=None, max_user_test_number=None,
                  min_submission_interval=None, min_user_test_interval=None,
-                 contest=None, num=0):
+                 score_precision=0, contest=None, num=0):
         for filename, attachment in attachments.iteritems():
             attachment.filename = filename
         for filename, manager in managers.iteritems():
@@ -230,6 +238,7 @@ class Task(Base):
         self.max_user_test_number = max_user_test_number
         self.min_submission_interval = min_submission_interval
         self.min_user_test_interval = min_user_test_interval
+        self.score_precision = score_precision
         self.contest = contest
 
     def export_to_dict(self):
@@ -276,6 +285,7 @@ class Task(Base):
                 'min_user_test_interval':
                     self.min_user_test_interval.total_seconds()
                     if self.min_user_test_interval is not None else None,
+                'score_precision':      self.score_precision,
                 }
 
     @classmethod

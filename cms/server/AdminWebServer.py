@@ -467,6 +467,11 @@ class AddContestHandler(BaseHandler):
             if per_user_time is not None:
                 per_user_time = timedelta(seconds=per_user_time)
 
+            score_precision = self.get_non_negative_int(
+                "score_precision",
+                0,
+                allow_empty=False)
+
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(),
@@ -480,7 +485,8 @@ class AddContestHandler(BaseHandler):
                           token_gen_time, token_gen_number, start, stop,
                           timezone, per_user_time,
                           max_submission_number, max_user_test_number,
-                          min_submission_interval, min_user_test_interval)
+                          min_submission_interval, min_user_test_interval,
+                          score_precision)
         self.sql_session.add(contest)
 
         if try_commit(self.sql_session, self):
@@ -582,6 +588,11 @@ class ContestHandler(BaseHandler):
             if contest.per_user_time is not None:
                 contest.per_user_time = \
                     timedelta(seconds=contest.per_user_time)
+
+            contest.score_precision = self.get_non_negative_int(
+                "score_precision",
+                contest.score_precision,
+                allow_empty=False)
 
         except Exception as error:
             self.application.service.add_notification(
@@ -936,6 +947,11 @@ class AddTaskHandler(BaseHandler):
                 min_user_test_interval = \
                     timedelta(seconds=min_user_test_interval)
 
+            score_precision = self.get_non_negative_int(
+                "score_precision",
+                0,
+                allow_empty=False)
+
             statements = {}
             attachments = {}
             managers = {}
@@ -957,6 +973,7 @@ class AddTaskHandler(BaseHandler):
                  token_min_interval, token_gen_time, token_gen_number,
                  max_submission_number, max_user_test_number,
                  min_submission_interval, min_user_test_interval,
+                 score_precision,
                  contest=self.contest, num=len(self.contest.tasks))
         self.sql_session.add(task)
 
@@ -1089,6 +1106,11 @@ class TaskHandler(BaseHandler):
             if task.min_user_test_interval is not None:
                 task.min_user_test_interval = \
                     timedelta(seconds=task.min_user_test_interval)
+
+            task.score_precision = self.get_non_negative_int(
+                "score_precision",
+                task.score_precision,
+                allow_empty=False)
 
             for testcase in task.testcases:
                 testcase.public = bool(self.get_argument("testcase_%s_public" %

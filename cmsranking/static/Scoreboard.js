@@ -15,13 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-function round_to_str(value) {
-    value *= 100;
-    value = Math.round(value);
-    value /= 100;
-    return value.toString();
-}
-
 var Scoreboard = new function () {
     var self = this;
 
@@ -247,17 +240,17 @@ var Scoreboard = new function () {
 
                 var score_class = self.get_score_class(user["t_" + t_id], task["max_score"]);
                 result += " \
-    <td colspan=\"3\" class=\"score task " + score_class + "\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\">" + round_to_str(user["t_" + t_id]) + "</td>";
+    <td colspan=\"3\" class=\"score task " + score_class + "\" data-task=\"" + t_id + "\" data-sort_key=\"t_" + t_id + "\">" + round_to_str(user["t_" + t_id], task["score_precision"]) + "</td>";
             }
 
             var score_class = self.get_score_class(user["c_" + c_id], contest["max_score"]);
             result += " \
-    <td colspan=\"4\" class=\"score contest " + score_class + "\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\">" + round_to_str(user["c_" + c_id]) + "</td>";
+    <td colspan=\"4\" class=\"score contest " + score_class + "\" data-contest=\"" + c_id + "\" data-sort_key=\"c_" + c_id + "\">" + round_to_str(user["c_" + c_id], contest["score_precision"]) + "</td>";
         }
 
         var score_class = self.get_score_class(user["global"], DataStore.global_max_score);
         result += " \
-    <td colspan=\"5\" class=\"score global " + score_class + "\" data-sort_key=\"global\">" + round_to_str(user["global"]) + "</td> \
+    <td colspan=\"5\" class=\"score global " + score_class + "\" data-sort_key=\"global\">" + round_to_str(user["global"], DataStore.global_score_precision) + "</td> \
 </tr>";
 
         return result;
@@ -424,23 +417,26 @@ var Scoreboard = new function () {
         $row.children("td.score").each(function () {
             var $this = $(this);
 
+            var score = user[$this.data("sort_key")];
+
             if ($this.hasClass("global")) {
                 var max_score = DataStore.global_max_score;
+                $this.text(round_to_str(score, DataStore.global_score_precision));
             } else if ($this.hasClass("contest")) {
-                var max_score = DataStore.contests[$this.data("contest")]["max_score"];
+                var contest = DataStore.contests[$this.data("contest")];
+                var max_score = contest["max_score"];
+                $this.text(round_to_str(score, contest["score_precision"]));
             } else if ($this.hasClass("task")) {
-                var max_score = DataStore.tasks[$this.data("task")]["max_score"];
+                var task = DataStore.tasks[$this.data("task")];
+                var max_score = task["max_score"];
+                $this.text(round_to_str(score, task["score_precision"]));
             }
-
-            var score = user[$this.data("sort_key")];
 
             // TODO we could user a data-* attribute to store the score class
 
             var score_class = self.get_score_class(score, max_score);
             $this.removeClass("score_0 score_0_10 score_10_20 score_20_30 score_30_40 score_40_50 score_50_60 score_60_70 score_70_80 score_80_90 score_90_100 score_100");
             $this.addClass(score_class);
-
-            $this.text(round_to_str(score));
         });
 
         self.move_user(user);
@@ -449,7 +445,7 @@ var Scoreboard = new function () {
         $row.removeClass("score_up score_down");
         if (delta > 0) {
             $row.addClass("score_up");
-        } else {
+        } else if (delta < 0) {
             $row.addClass("score_down");
         }
     };

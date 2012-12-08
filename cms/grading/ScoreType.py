@@ -358,7 +358,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                    for idx in indices[current:next_]):
                 public_score += parameter[0]
             current = next_
-        return round(score, 2), round(public_score, 2)
+        return score, public_score
 
     def compute_score(self, submission_id):
         """Compute the score of a submission.
@@ -420,14 +420,12 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
             tc_start = tc_end
 
-        score = int(round(sum(st["score"]
-                              for st in subtasks)))
-        public_score = int(round(sum(st["score"]
-                                     for st in public_subtasks
-                                     if "score" in st)))
+        score = sum(st["score"] for st in subtasks)
+        public_score = sum(st["score"] for st in public_subtasks
+                                       if "score" in st)
 
-        return round(score, 2), json.dumps(subtasks), \
-               round(public_score, 2), json.dumps(public_subtasks), \
+        return score, json.dumps(subtasks), \
+               public_score, json.dumps(public_subtasks), \
                ranking_details
 
     def get_public_outcome(self, outcome, parameter):

@@ -11,27 +11,28 @@ Download as <a href="{{ url_root }}/ranking/{{ contest.id }}/csv">csv</a>, <a hr
     <tr>
       <th>Username</th>
       <th>User</th>
-      {% for t in contest.tasks %}
-      <th><a href="{{ url_root }}/task/{{ t.id }}">{{ t.name }}</a></th>
+      {% for task in contest.tasks %}
+      <th><a href="{{ url_root }}/task/{{ task.id }}">{{ task.name }}</a></th>
       {% end %}
       <th>Global</th>
     </tr>
   </thead>
   <tbody>
-    {% for u in sorted(contest.users, key=lambda u: u.username) %}
-      {% if not u.hidden %}
+    {% for user in sorted(contest.users, key=lambda u: u.username) %}
+      {% if not user.hidden %}
     <tr>
       {% set score = 0.0 %}
       {% set partial = False %}
-      <td><a href="{{ url_root }}/user/{{ u.id }}">{{ u.username }}</a></td>
-      <td>{{ " ".join([u.first_name, u.last_name]) }}</td>
-      {% for t in contest.tasks %}
-        {% set t_score, t_partial = task_score(u.username, t.id) %}
+      <td><a href="{{ url_root }}/user/{{ user.id }}">{{ user.username }}</a></td>
+      <td>{{ "%s %s" % (user.first_name, user.last_name) }}</td>
+      {% for task in contest.tasks %}
+        {% set t_score, t_partial = task_score(user, task) %}
+        {% set t_score = round(t_score, task.score_precision) %}
         {% set score += t_score %}
         {% set partial = partial or t_partial %}
       <td>{{ t_score }}{% if t_partial %}*{% end %}</td>
       {% end %}
-      <td>{{ score }}{% if partial %}*{% end %}</td>
+      <td>{{ round(score, contest.score_precision) }}{% if partial %}*{% end %}</td>
     </tr>
       {% end %}
     {% end %}

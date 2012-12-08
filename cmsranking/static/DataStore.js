@@ -15,6 +15,22 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+function round(value, ndigits) {
+    value *= Math.pow(10, ndigits);
+    value = Math.round(value);
+    value /= Math.pow(10, ndigits);
+    return value;
+}
+
+function round_to_str(value, ndigits) {
+    if (ndigits == 0) {
+        return value.toFixed(0);
+    } else {
+        // Remove trailing zeroes
+        return value.toFixed(ndigits).replace(/\.?0+$/, "");
+    }
+}
+
 var DataStore = new function () {
     var self = this;
 
@@ -445,6 +461,7 @@ var DataStore = new function () {
     ////// Default scores
 
     self.global_max_score = 0.0;
+    self.global_score_precision = 0;
 
     self.contest_create.add(function (key, data) {
         // Add scores
@@ -453,12 +470,22 @@ var DataStore = new function () {
         }
         // Maximum score
         data["max_score"] = 0.0;
+        // Global score precision
+        self.global_score_precision = 0;
+        for (var c_id in self.contests) {
+            self.global_score_precision = Math.max(self.global_score_precision, self.contests[c_id]["score_precision"]);
+        }
     });
 
     self.contest_update.add(function (key, old_data, data) {
         // Maximum score
         data["max_score"] = old_data["max_score"];
         delete old_data["max_score"];
+        // Global score precision
+        self.global_score_precision = 0;
+        for (var c_id in self.contests) {
+            self.global_score_precision = Math.max(self.global_score_precision, self.contests[c_id]["score_precision"]);
+        }
     });
 
     self.contest_delete.add(function (key, old_data) {
@@ -468,6 +495,11 @@ var DataStore = new function () {
         }
         // Maximum score
         delete old_data["max_score"];
+        // Global score precision
+        self.global_score_precision = 0;
+        for (var c_id in self.contests) {
+            self.global_score_precision = Math.max(self.global_score_precision, self.contests[c_id]["score_precision"]);
+        }
     });
 
     self.task_create.add(function (key, data) {
@@ -568,20 +600,42 @@ var DataStore = new function () {
         }
     };
 
-    self.set_score = function (u_id, t_id, new_score) {
+    self.set_score = function (u_id, t_id, new_t_score) {
         /* It may be "nice" to check that the user and task do actually exists,
            even if the server should already ensure it!
          */
         var user = self.users[u_id];
         var task = self.tasks[t_id];
-        var old_score = user["t_" + t_id];
-        user["global"] += new_score - old_score;
-        user["c_" + task["contest"]] += new_score - old_score;
-        user["t_" + t_id] = new_score;
 
-        console.info("Changed score for user " + u_id + " and task " + t_id + ": " + old_score + " -> " + new_score);
+        var c_id = task["contest"];
+        var contest = self.contests[c_id];
 
-        self.score_events.fire(u_id, user, t_id, task, new_score - old_score);
+        // Task
+        new_t_score = round(new_t_score, task["score_precision"]);
+        var old_t_score = user["t_" + t_id];
+        user["t_" + t_id] = new_t_score;
+
+        // Contest
+        var new_c_score = 0.0;  // = max(user's score on t for t in contest.tasks)
+        for (var i = 0; i < contest.tasks.length; i += 1) {
+            new_c_score += user["t_" + contest.tasks[i].key];
+        }
+        new_c_score = round(new_c_score, contest["score_precision"]);
+        var old_c_score = user["c_" + c_id];
+        user["c_" + c_id] = new_c_score;
+
+        // Global
+        var new_g_score = 0.0;  // = max(user's score on c for c in self.contest_list)
+        for (var i = 0; i < self.contest_list.length; i += 1) {
+            new_g_score += user["c_" + self.contest_list[i].key];
+        }
+        new_g_score = round(new_g_score, self.global_score_precision);
+        var old_g_score = user["global"];
+        user["global"] = new_g_score;
+
+        console.info("Changed score for user " + u_id + " and task " + t_id + ": " + old_t_score + " -> " + new_t_score);
+
+        self.score_events.fire(u_id, user, t_id, task, new_g_score - old_g_score);
     };
 
     self.get_score_t = function (u_id, t_id) {

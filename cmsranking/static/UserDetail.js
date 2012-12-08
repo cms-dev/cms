@@ -15,13 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-function round_to_str(value) {
-    value *= 100;
-    value = Math.round(value);
-    value /= 100;
-    return value.toString();
-}
-
 // format_time is defined in TimeView
 
 var UserDetail = new function () {
@@ -137,7 +130,7 @@ var UserDetail = new function () {
 
             var s = "<tr class=\"global\"> \
                         <td class=\"name\">Global</td> \
-                        <td class=\"score\">" + (self.global_s.length > 0 ? round_to_str(self.global_s[self.global_s.length-1][1]) : 0) + "</td> \
+                        <td class=\"score\">" + (self.global_s.length > 0 ? round_to_str(self.global_s[self.global_s.length-1][1], DataStore.global_score_precision) : 0) + "</td> \
                         <td class=\"rank\">" + (self.global_r.length > 0 ? self.global_r[self.global_r.length-1][1] : 1) + "</td> \
                         <td class=\"btn\"><a>Show</a></td> \
                     </tr>";
@@ -149,7 +142,7 @@ var UserDetail = new function () {
 
                 s += "<tr class=\"contest\" data-contest=\"" + c_id +"\"> \
                          <td class=\"name\">" + contest['name'] + "</td> \
-                         <td class=\"score\">" + (self.contest_s[c_id].length > 0 ? round_to_str(self.contest_s[c_id][self.contest_s[c_id].length-1][1]) : 0) + "</td> \
+                         <td class=\"score\">" + (self.contest_s[c_id].length > 0 ? round_to_str(self.contest_s[c_id][self.contest_s[c_id].length-1][1], contest["score_precision"]) : 0) + "</td> \
                          <td class=\"rank\">" + (self.contest_r[c_id].length > 0 ? self.contest_r[c_id][self.contest_r[c_id].length-1][1] : 1) + "</td> \
                          <td class=\"btn\"><a>Show</a></td> \
                       </tr>"
@@ -161,7 +154,7 @@ var UserDetail = new function () {
 
                     s += "<tr class=\"task\" data-task=\"" + t_id +"\"> \
                              <td class=\"name\">" + task['name'] + "</td> \
-                             <td class=\"score\">" + (self.task_s[t_id].length > 0 ? round_to_str(self.task_s[t_id][self.task_s[t_id].length-1][1]) : 0) + "</td> \
+                             <td class=\"score\">" + (self.task_s[t_id].length > 0 ? round_to_str(self.task_s[t_id][self.task_s[t_id].length-1][1], task["score_precision"]) : 0) + "</td> \
                              <td class=\"rank\">" + (self.task_r[t_id].length > 0 ? self.task_r[t_id][self.task_r[t_id].length-1][1] : 1) + "</td> \
                              <td class=\"btn\"><a>Show</a></td> \
                           </tr>"

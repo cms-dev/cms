@@ -146,6 +146,14 @@ class Contest(Base):
         CheckConstraint("min_user_test_interval > '0 seconds'"),
         nullable=True)
 
+    # The scores for this contest will be rounded to this number of
+    # decimal places.
+    score_precision = Column(
+        Integer,
+        CheckConstraint("score_precision >= 0"),
+        nullable=False,
+        default=0)
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # tasks (list of Task objects)
@@ -163,7 +171,7 @@ class Contest(Base):
                  start=None, stop=None, timezone=None, per_user_time=None,
                  max_submission_number=None, max_user_test_number=None,
                  min_submission_interval=None, min_user_test_interval=None,
-                 announcements=None):
+                 score_precision=0, announcements=None):
         self.name = name
         self.description = description
         self.tasks = tasks
@@ -182,6 +190,7 @@ class Contest(Base):
         self.max_user_test_number = max_user_test_number
         self.min_submission_interval = min_submission_interval
         self.min_user_test_interval = min_user_test_interval
+        self.score_precision = score_precision
         self.announcements = announcements if announcements is not None else []
 
     def export_to_dict(self, skip_submissions=False, skip_user_tests=False):
@@ -219,6 +228,7 @@ class Contest(Base):
                 'min_user_test_interval':
                     self.min_user_test_interval.total_seconds()
                     if self.min_user_test_interval is not None else None,
+                'score_precision':    self.score_precision,
                 'announcements':      [announcement.export_to_dict()
                                        for announcement in self.announcements],
                 }

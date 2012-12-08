@@ -572,7 +572,8 @@ class ScoringService(Service):
                 contest_data = {
                     "name": contest.description,
                     "begin": int(make_timestamp(contest.start)),
-                    "end": int(make_timestamp(contest.stop))}
+                    "end": int(make_timestamp(contest.stop)),
+                    "score_precision": contest.score_precision}
 
                 users = dict((encode_id(user.username),
                               {"f_name": user.first_name,
@@ -585,6 +586,7 @@ class ScoringService(Service):
                               {"name": task.title,
                                "contest": encode_id(contest.name),
                                "max_score": 100.0,
+                               "score_precision": task.score_precision,
                                "extra_headers": [],
                                "order": task.num,
                                "short_name": task.name})
@@ -682,6 +684,7 @@ class ScoringService(Service):
             subchange_put_data = {
                 "submission": encode_id(submission_id),
                 "time": int(make_timestamp(submission.timestamp)),
+                # We're sending the unrounded score to RWS
                 "score": submission.score,
                 "extra": submission.ranking_score_details}
 

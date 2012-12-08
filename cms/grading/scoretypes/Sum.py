@@ -89,7 +89,7 @@ class Sum(ScoreTypeAlone):
             if public:
                 public_score += self.parameters
             score += self.parameters
-        return round(score, 2), round(public_score, 2)
+        return score, public_score
 
     def compute_score(self, submission_id):
         """Compute the score of a submission.
@@ -120,8 +120,8 @@ class Sum(ScoreTypeAlone):
             else:
                 public_testcases.append({"idx": idx})
 
-        return round(score, 2), json.dumps(testcases), \
-               round(public_score, 2), json.dumps(public_testcases), \
+        return score, json.dumps(testcases), \
+               public_score, json.dumps(public_testcases), \
                []
 
     def get_public_outcome(self, outcome):

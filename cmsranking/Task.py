@@ -32,6 +32,7 @@ class Task(Entity):
     - short_name (str): a shorter name for the task, usually a code-name
     - contest (str): the id of the contest the task belongs to
     - max_score (float): the maximum achievable score for the task
+    - score_precision (int): how many decimal places to show in scores
     - data_headers (list of str): a list with the descriptions of the extra
         fields that will be provided with each submission for the task
     - order (int): the order of the tasks inside of the contest
@@ -70,6 +71,10 @@ class Task(Entity):
                 "Field 'contest' isn't a string"
             assert type(data['max_score']) is float, \
                 "Field 'max_score' isn't a float"
+            assert type(data['score_precision']) is int, \
+                "Field 'score_precision' isn't an integer"
+            assert data['score_precision'] >= 0, \
+                "Field 'score_precision' is negative"
             assert type(data['extra_headers']) is list, \
                 "Field 'extra_headers' isn't a list of strings"
             for i in data['extra_headers']:
@@ -89,6 +94,7 @@ class Task(Entity):
         self.short_name = data['short_name']
         self.contest = data['contest']
         self.max_score = data['max_score']
+        self.score_precision = data['score_precision']
         self.extra_headers = data['extra_headers']
         self.order = data['order']
 
@@ -103,6 +109,7 @@ class Task(Entity):
         self.short_name = data['short_name']
         self.contest = data['contest']
         self.max_score = data['max_score']
+        self.score_precision = data['score_precision']
         self.extra_headers = data['extra_headers']
         self.order = data['order']
 

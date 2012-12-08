@@ -30,6 +30,7 @@ class Contest(Entity):
     - name (str): the human-readable name of the contest
     - begin (int): the unix timestamp at which the contest begins
     - end (int): the unix timestamp at which the contest ends
+    - score_precision (int): how many decimal places to show in scores
 
     """
     def __init__(self):
@@ -40,6 +41,7 @@ class Contest(Entity):
         self.name = None
         self.begin = None
         self.end = None
+        self.score_precision = None
 
     @staticmethod
     def validate(data):
@@ -60,6 +62,10 @@ class Contest(Entity):
                 "Field 'end' isn't an integer"
             assert data['begin'] <= data['end'], \
                 "Field 'begin' is greater than 'end'"
+            assert type(data['score_precision']) is int, \
+                "Field 'score_precision' isn't an integer"
+            assert data['score_precision'] >= 0, \
+                "Field 'score_precision' is negative"
         except KeyError as field:
             raise InvalidData("Field %s is missing" % field)
         except AssertionError as message:
@@ -70,6 +76,7 @@ class Contest(Entity):
         self.name = data['name']
         self.begin = data['begin']
         self.end = data['end']
+        self.score_precision = data['score_precision']
 
     def get(self):
         result = self.__dict__.copy()
@@ -81,6 +88,7 @@ class Contest(Entity):
         self.name = data['name']
         self.begin = data['begin']
         self.end = data['end']
+        self.score_precision = data['score_precision']
 
     def dump(self):
         result = self.__dict__.copy()

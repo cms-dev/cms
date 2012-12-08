@@ -393,6 +393,10 @@ $("select[name=task_type]").change(showTaskTypeOption);
         <td>Minimum interval between two usertests of each user (for this task, in seconds)</td>
         <td><input type="text" name="min_user_test_interval" value="{{ int(task.min_user_test_interval.total_seconds()) if task.min_user_test_interval is not None else "" }}"></td>
       </tr>
+      <tr>
+        <td>The number of decimal places the scores will be rounded to</td>
+        <td><input type="text" name="score_precision" value="{{ task.score_precision }}"></td>
+      </tr>
     </table>
     <div class="hr"></div>
   </div>

@@ -71,6 +71,7 @@ class ScriptsContainer(object):
             ("20121108", "add_limit_constraints"),
             ("20121116", "rename_user_test_limits"),
             ("20121207", "rename_score_parameters"),
+            ("20121208", "add_score_precision"),
             ]
         self.list.sort()
 
@@ -954,6 +955,25 @@ RENAME COLUMN min_usertest_interval TO min_user_test_interval;""" %
             session.execute("""\
 ALTER TABLE tasks
 RENAME COLUMN score_parameters TO score_type_parameters;""")
+
+    @staticmethod
+    def add_score_precision():
+        """Add fields to specify how to round scores
+
+        They are Contest.score_precision and Task.score_precision.
+
+        """
+        with SessionGen(commit=True) as session:
+            for table in ["contests", "tasks"]:
+                session.execute("ALTER TABLE %(table)s "
+                                "ADD COLUMN score_precision INTEGER;" %
+                                {"table": table})
+                session.execute("UPDATE %(table)s "
+                                "SET score_precision = 0;" %
+                                {"table": table})
+                session.execute("ALTER TABLE %(table)s "
+                                "ALTER COLUMN score_precision SET NOT NULL;" %
+                                {"table": table})
 
 
 def execute_single_script(scripts_container, script):
