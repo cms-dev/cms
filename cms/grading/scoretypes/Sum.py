@@ -97,6 +97,9 @@ class Sum(ScoreTypeAlone):
         See the same method in ScoreType for details.
 
         """
+        if not self.pool[submission_id]["evaluated"]:
+            return 0.0, "[]", 0.0, "[]", []
+
         evaluations = self.pool[submission_id]["evaluations"]
         testcases = []
         public_testcases = []

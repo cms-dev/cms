@@ -409,11 +409,12 @@ class ScoringService(Service):
             new_submission_ids_to_score = set([])
             new_submission_ids_to_token = set([])
             for submission in contest.get_submissions():
-                if submission.evaluated() and \
-                        submission.id not in self.submission_ids_scored:
+                if (submission.evaluated()
+                    or submission.compilation_outcome == "fail") \
+                        and submission.id not in self.submission_ids_scored:
                     new_submission_ids_to_score.add(submission.id)
-                if submission.tokened() and \
-                        submission.id not in self.submission_ids_tokened:
+                if submission.tokened() \
+                        and submission.id not in self.submission_ids_tokened:
                     new_submission_ids_to_token.add(
                         (submission.id,
                          make_timestamp(submission.token.timestamp)))
@@ -626,8 +627,9 @@ class ScoringService(Service):
 
     @rpc_method
     def new_evaluation(self, submission_id):
-        """This RPC inform ScoringService that ES finished the
-        evaluation for a submission.
+        """This RPC inform ScoringService that ES finished the work on
+        a submission (either because it has been evaluated, or because
+        the compilation failed).
 
         submission_id (int): the id of the submission that changed.
 
@@ -638,19 +640,27 @@ class ScoringService(Service):
                 logger.error("[new_evaluation] Couldn't find "
                              " submission %d in the database." %
                              submission_id)
-                return
-            if not submission.evaluated():
+                raise KeyError
+            elif not submission.compiled():
                 logger.warning("[new_evaluation] Submission %d "
-                               "is not evaluated." %
-                                submission_id)
+                               "is not compiled." % submission_id)
                 return
-            if submission.user.hidden:
+            elif submission.compilation_outcome == "ok" \
+                    and not submission.evaluated():
+                logger.warning("[new_evaluation] Submission %d compiled "
+                               "correctly but is not evaluated."
+                               % submission_id)
+                return
+            elif submission.user.hidden:
+                logger.info("[new_evaluation] Submission %d not scored "
+                            "because user is hidden." % submission_id)
                 return
 
             # Assign score to the submission.
             scorer = self.scorers[submission.task_id]
             scorer.add_submission(submission_id, submission.timestamp,
                                   submission.user.username,
+                                  submission.evaluated(),
                                   dict((ev.num,
                                         {"outcome": ev.outcome,
                                          "text": ev.text,
@@ -717,10 +727,12 @@ class ScoringService(Service):
         with SessionGen(commit=False) as session:
             submission = Submission.get_from_id(submission_id, session)
             if submission is None:
-                logger.error("Received request for "
+                logger.error("[submission_tokened] Received token request for "
                              "unexistent submission id %s." % submission_id)
                 raise KeyError
-            if submission.user.hidden:
+            elif submission.user.hidden:
+                logger.info("[submission_tokened] Token for submission %d "
+                            "not sent because user is hidden." % submission_id)
                 return
 
             # Mark submission as tokened.

@@ -1067,7 +1067,9 @@ class EvaluationService(Service):
     def compilation_ended(self, submission):
         """Actions to be performed when we have a submission that has
         ended compilation . In particular: we queue evaluation if
-        compilation was ok; we requeue compilation if we fail.
+        compilation was ok, we inform ScoringService if the
+        compilation failed for an error in the submission, or we
+        requeue the compilation if there was an error in CMS.
 
         submission (Submission): the submission.
 
@@ -1078,10 +1080,14 @@ class EvaluationService(Service):
                                 submission.id),
                                EvaluationService.JOB_PRIORITY_MEDIUM,
                                submission.timestamp)
-        # If instead submission failed compilation, we don't evaluate.
+        # If instead submission failed compilation, we don't evaluate,
+        # but we inform ScoringService of the new submission. We need
+        # to commit before so it has up to date information.
         elif submission.compilation_outcome == "fail":
             logger.info("Submission %d did not compile. Not going "
                         "to evaluate." % submission.id)
+            submission.sa_session.commit()
+            self.scoring_service.new_evaluation(submission_id=submission.id)
         # If compilation failed for our fault, we requeue or not.
         elif submission.compilation_outcome is None:
             if submission.compilation_tries > \

@@ -79,7 +79,7 @@ class ScoreType:
         """
         pass
 
-    def add_submission(self, submission_id, timestamp, username,
+    def add_submission(self, submission_id, timestamp, username, evaluated,
                        evaluations, tokened):
         """To call in order to add a submission to the computation of
         all scores.
@@ -87,6 +87,7 @@ class ScoreType:
         submission_id (int): id of the new submission.
         timestamp (int): time of submission.
         username (string): username of the owner of the submission.
+        evaluated (bool): if the submission compiled correctly.
         evaluations (dict): associate to each evaluation's num a
                             dictionary {'outcome': xxx, 'text': yyy}.
         tokened (bool): if the user played a token on submission.
@@ -95,6 +96,7 @@ class ScoreType:
         self.pool[submission_id] = {
             "timestamp": timestamp,
             "username": username,
+            "evaluated": evaluated,
             "evaluations": evaluations,
             "tokened": tokened,
             "score": None,
@@ -116,8 +118,8 @@ class ScoreType:
         else:
             self.submissions[username].append(submission_id)
 
-        # We expect submissions to arrive more or less in the right
-        # order, so we insert-sort the new one.
+        # We expect submissions to arrive more or less ordered by
+        # timestamp, so we insert-sort the new one.
         i = len(self.submissions[username]) - 1
         while i > 0 and \
                   self.pool[self.submissions[username][i - 1]]["timestamp"] > \
@@ -367,6 +369,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
         returns (float): the score
 
         """
+        if not self.pool[submission_id]["evaluated"]:
+            return 0.0, "[]", 0.0, "[]", ["%lg" % 0.0 for _ in self.parameters]
+
         indices = sorted(self.public_testcases.keys())
         evaluations = self.pool[submission_id]["evaluations"]
         subtasks = []
