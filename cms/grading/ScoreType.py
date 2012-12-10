@@ -421,7 +421,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     "testcases": public_testcases,
                     })
 
-            ranking_details.append("%lg" % st_score)
+            ranking_details.append("%g" % round(st_score, 2))
 
             tc_start = tc_end
 
