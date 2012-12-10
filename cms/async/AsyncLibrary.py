@@ -139,6 +139,7 @@ class RPCRequest:
         stored state and executes the callback.
 
         response (object): The response, already decoded from JSON.
+
         """
         del RPCRequest.pending_requests[self.message["__id"]]
         if self.callback is not None:

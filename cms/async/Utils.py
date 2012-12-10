@@ -168,10 +168,10 @@ class Logger:
 
         """
         severities = {
-            "debug": "DEBUG",
-            "info": "INFO",
-            "warning": "WARNING",
-            "error": "ERROR",
+            "debug":    "DEBUG   ",
+            "info":     "INFO    ",
+            "warning":  "WARNING ",
+            "error":    "ERROR   ",
             "critical": "CRITICAL"
             }
         if method in severities:

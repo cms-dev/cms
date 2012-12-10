@@ -11,7 +11,7 @@ and (to some extent) organizing a programming contest.
 CMS has been designed to be general and to handle many different types
 of contests, tasks, scorings, etc. Nonetheless, CMS has been
 explicitly build to be used in the 2012 International Olympiad in
-Informatics, to be held in September 2012 in Italy.
+Informatics, held in September 2012 in Italy.
 
 
 Description
