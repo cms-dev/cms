@@ -1164,7 +1164,8 @@ class UseTokenHandler(BaseHandler):
         # Inform ScoringService and eventually the ranking that the
         # token has been played.
         self.application.service.scoring_service.submission_tokened(
-            submission_id=submission.id, timestamp=self.timestamp)
+            submission_id=submission.id,
+            timestamp=make_timestamp(self.timestamp))
 
         logger.info("Token played by user %s on task %s."
                     % (self.current_user.username, task.name))

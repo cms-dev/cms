@@ -415,7 +415,8 @@ class ScoringService(Service):
                 if submission.tokened() and \
                         submission.id not in self.submission_ids_tokened:
                     new_submission_ids_to_token.add(
-                        (submission.id, submission.token.timestamp))
+                        (submission.id,
+                         make_timestamp(submission.token.timestamp)))
 
         new_s = len(new_submission_ids_to_score)
         old_s = len(self.submission_ids_to_score)
@@ -730,11 +731,11 @@ class ScoringService(Service):
                 "user": encode_id(submission.user.username),
                 "task": encode_id(submission.task.name),
                 "time": int(make_timestamp(submission.timestamp))}
-            subchange_id = "%s%st" % (int(make_timestamp(timestamp)),
+            subchange_id = "%s%st" % (int(timestamp),
                                       submission_id)
             subchange_put_data = {
                 "submission": encode_id(submission_id),
-                "time": int(make_timestamp(timestamp)),
+                "time": int(timestamp),
                 "token": True}
 
         # Adding operations to the queue.
