@@ -792,9 +792,27 @@ class AddTestcaseHandler(BaseHandler):
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
-        num = int(self.get_argument("num"))
-        _input = self.request.files["input"][0]
-        output = self.request.files["output"][0]
+        try:
+            num = int(self.get_argument("num"))
+        except ValueError:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Invalid data",
+                "Please give a numerical value for the position.")
+            self.redirect("/add_testcase/%s" % task_id)
+            return
+
+        try:
+            _input = self.request.files["input"][0]
+            output = self.request.files["output"][0]
+        except KeyError:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Invalid data",
+                "Please fill both input and output.")
+            self.redirect("/add_testcase/%s" % task_id)
+            return
+
         public = self.get_argument("public", None) is not None
         task_name = task.name
         self.sql_session.close()
@@ -819,7 +837,17 @@ class AddTestcaseHandler(BaseHandler):
         self.contest = task.contest
         self.sql_session.add(Testcase(
             input_digest, output_digest, num, public, task))
-        self.sql_session.commit()
+
+        try:
+            self.sql_session.commit()
+        except IntegrityError as error:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Testcase storage failed",
+                repr(error))
+            self.redirect("/add_testcase/%s" % task_id)
+            return
+
         self.redirect("/task/%s" % task_id)
 
 
