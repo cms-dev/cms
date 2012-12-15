@@ -18,7 +18,7 @@
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% end %}
-        <span class="timestamp">{{ format_datetime_smart(msg.timestamp, timezone) }}</span>
+        <span class="timestamp">{{ format_datetime_smart(msg.timestamp, timezone, locale=locale) }}</span>
         {% if msg.text != '' %}
         <div class="body">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
         {% end %}
@@ -67,7 +67,7 @@
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% end %}
-        <span class="timestamp">{{ format_datetime_smart(msg.question_timestamp, timezone) }}</span>
+        <span class="timestamp">{{ format_datetime_smart(msg.question_timestamp, timezone, locale=locale) }}</span>
         {% if msg.text != '' %}
         <div class="body">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
         {% end %}
@@ -79,7 +79,7 @@
             {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
             {% end %}
-        <span class="timestamp">{{ format_datetime_smart(msg.reply_timestamp, timezone) }}</span>
+        <span class="timestamp">{{ format_datetime_smart(msg.reply_timestamp, timezone, locale=locale) }}</span>
             {% if msg.reply_text != '' %}
         <div class="body">{% raw xhtml_escape(msg.reply_text).replace('\n', '<br/>') %}</div>
             {% end %}
@@ -106,7 +106,7 @@
         {% else %}
         <h4 class="subject empty">{{ _("(no subject)") }}</h4>
         {% end %}
-        <span class="timestamp">{{ format_datetime_smart(msg.timestamp, timezone) }}</span>
+        <span class="timestamp">{{ format_datetime_smart(msg.timestamp, timezone, locale=locale) }}</span>
         {% if msg.text != '' %}
         <div class="body">{% raw xhtml_escape(msg.text).replace('\n', '<br/>') %}</div>
         {% end %}

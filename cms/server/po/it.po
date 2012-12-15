@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-11-25 10:42+0100\n"
-"PO-Revision-Date: 2012-11-25 10:45+0100\n"
+"POT-Creation-Date: 2012-12-15 19:36+0100\n"
+"PO-Revision-Date: 2012-12-15 19:54+0100\n"
 "Last-Translator: Luca Wehrstedt <luca.wehrstedt@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -71,16 +71,16 @@ msgstr "Sottoposizioni troppo frequenti!"
 msgid "Invalid submission format!"
 msgstr "Formato sottoposizione invalido!"
 
-#: ContestWebServer.py:890 ContestWebServer.py:936 ContestWebServer.py:1388
-#: ContestWebServer.py:1435
+#: ContestWebServer.py:890 ContestWebServer.py:936 ContestWebServer.py:1397
+#: ContestWebServer.py:1444
 msgid "Please select the correct files."
 msgstr "Seleziona i file corretti."
 
-#: ContestWebServer.py:915 ContestWebServer.py:1413
+#: ContestWebServer.py:915 ContestWebServer.py:1422
 msgid "Invalid archive format!"
 msgstr "Formato archivio invalido!"
 
-#: ContestWebServer.py:916 ContestWebServer.py:1414
+#: ContestWebServer.py:916 ContestWebServer.py:1423
 msgid "The submitted archive could not be opened."
 msgstr "Impossibile aprire l'archivio sottoposto."
 
@@ -88,7 +88,7 @@ msgstr "Impossibile aprire l'archivio sottoposto."
 msgid "Cannot recognize submission's language."
 msgstr "Impossibile riconoscere il linguaggio della sottoposizione"
 
-#: ContestWebServer.py:996 ContestWebServer.py:1495
+#: ContestWebServer.py:996 ContestWebServer.py:1504
 msgid "All sources must be in the same language."
 msgstr "Tutti i sorgenti devono essere nello stesso linguaggio."
 
@@ -100,7 +100,7 @@ msgstr "Sottoposizione invalida!"
 msgid "Submission too big!"
 msgstr "Sottoposizione troppo grande!"
 
-#: ContestWebServer.py:1017 ContestWebServer.py:1516
+#: ContestWebServer.py:1017 ContestWebServer.py:1525
 #, python-format
 msgid "Each source file must be at most %d bytes long."
 msgstr "Ogni file sorgente deve essere grande al massimo %d byte."
@@ -133,25 +133,25 @@ msgstr ""
 "La tua richiesta è stata rifiutata perché hai già usato un token su questa "
 "sottoposizione."
 
-#: ContestWebServer.py:1176
+#: ContestWebServer.py:1177
 msgid "Token request received"
 msgstr "Richiesta del token ricevuta"
 
-#: ContestWebServer.py:1177
+#: ContestWebServer.py:1178
 msgid "Your request has been received and applied to the submission."
 msgstr "La tua richiesta è stata ricevuta e applicata alla sottoposizione."
 
-#: ContestWebServer.py:1209 templates/contest/submission_row.html:10
+#: ContestWebServer.py:1211 templates/contest/submission_row.html:10
 #: templates/contest/usertest_row.html:10
 msgid "Compiling..."
 msgstr "Compilazione in corso..."
 
-#: ContestWebServer.py:1213 templates/contest/submission_row.html:20
+#: ContestWebServer.py:1215 templates/contest/submission_row.html:20
 #: templates/contest/usertest_row.html:16
 msgid "Compilation failed"
 msgstr "Compilazione fallita"
 
-#: ContestWebServer.py:1213 ContestWebServer.py:1223
+#: ContestWebServer.py:1215 ContestWebServer.py:1225
 #: templates/contest/submission_row.html:21
 #: templates/contest/submission_row.html:52
 #: templates/contest/usertest_row.html:17
@@ -159,82 +159,238 @@ msgstr "Compilazione fallita"
 msgid "details"
 msgstr "dettagli"
 
-#: ContestWebServer.py:1216 templates/contest/submission_row.html:31
+#: ContestWebServer.py:1218 templates/contest/submission_row.html:31
 msgid "Evaluating..."
 msgstr "Valutazione in corso..."
 
-#: ContestWebServer.py:1219 templates/contest/submission_row.html:41
+#: ContestWebServer.py:1221 templates/contest/submission_row.html:41
 msgid "Scoring..."
 msgstr "Assegnazione del punteggio in corso..."
 
-#: ContestWebServer.py:1223 templates/contest/submission_row.html:51
+#: ContestWebServer.py:1225 templates/contest/submission_row.html:51
 msgid "Evaluated"
 msgstr "Valutato"
 
-#: ContestWebServer.py:1319
+#: ContestWebServer.py:1328
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
 msgstr "Hai raggiunto il limite massimo di %d test tra tutti i problemi."
 
-#: ContestWebServer.py:1328
+#: ContestWebServer.py:1337
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests on this task."
 msgstr "Hai raggiunto il limite massimo di %d test su questo problema."
 
-#: ContestWebServer.py:1335
+#: ContestWebServer.py:1344
 msgid "Too many tests!"
 msgstr "Troppi test!"
 
-#: ContestWebServer.py:1353
+#: ContestWebServer.py:1362
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
 msgstr "Tra tutti i problemi, devi aspettare almeno %d secondi tra due test."
 
-#: ContestWebServer.py:1368
+#: ContestWebServer.py:1377
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
 msgstr "Su questo problema, devi aspettare almeno %d secondi tra due test."
 
-#: ContestWebServer.py:1375
+#: ContestWebServer.py:1384
 msgid "Tests too frequent!"
 msgstr "Test troppo frequenti!"
 
-#: ContestWebServer.py:1387 ContestWebServer.py:1434
+#: ContestWebServer.py:1396 ContestWebServer.py:1443
 msgid "Invalid test format!"
 msgstr "Formato test invalido!"
 
-#: ContestWebServer.py:1491
+#: ContestWebServer.py:1500
 msgid "Cannot recognize test's language."
 msgstr "Impossibile riconoscere il linguaggio del test"
 
-#: ContestWebServer.py:1503
+#: ContestWebServer.py:1512
 msgid "Invalid test!"
 msgstr "Test invalido!"
 
-#: ContestWebServer.py:1515
+#: ContestWebServer.py:1524
 msgid "Test too big!"
 msgstr "Test troppo grande!"
 
-#: ContestWebServer.py:1525
+#: ContestWebServer.py:1534
 msgid "Input too big!"
 msgstr "Input troppo grande!"
 
-#: ContestWebServer.py:1526
+#: ContestWebServer.py:1535
 #, python-format
 msgid "The input file must be at most %d bytes long."
 msgstr "Il file di input deve essere grande al massimo %d byte."
 
-#: ContestWebServer.py:1580
+#: ContestWebServer.py:1589
 msgid "Test storage failed!"
 msgstr "Errore nel salvataggio del test!"
 
-#: ContestWebServer.py:1613
+#: ContestWebServer.py:1622
 msgid "Test received"
 msgstr "Test ricevuto"
 
-#: ContestWebServer.py:1614
+#: ContestWebServer.py:1623
 msgid "Your test has been received and is currently being executed."
 msgstr "Il tuo test è stato ricevuto e verrà valutato."
+
+#: __init__.py:143
+msgid "%Y-%m-%d"
+msgstr "%d/%m/%Y"
+
+#: __init__.py:162 __init__.py:202
+msgid "%H:%M:%S"
+msgstr "%H:%M:%S"
+
+#: __init__.py:181 __init__.py:204
+msgid "%Y-%m-%d %H:%M:%S"
+msgstr "%H:%M:%S %d/%m/%Y"
+
+#: __init__.py:227 __init__.py:256
+#, python-format
+msgid "%d second"
+msgid_plural "%d seconds"
+msgstr[0] "%d secondo"
+msgstr[1] "%d secondi"
+
+#: __init__.py:228
+#, python-format
+msgid "%d minute"
+msgid_plural "%d minutes"
+msgstr[0] "%d minuto"
+msgstr[1] "%d minuti"
+
+#: __init__.py:229
+#, python-format
+msgid "%d hour"
+msgid_plural "%d hours"
+msgstr[0] "%d ora"
+msgstr[1] "%d ore"
+
+#: __init__.py:230
+#, python-format
+msgid "%d day"
+msgid_plural "%d days"
+msgstr[0] "%d giorno"
+msgstr[1] "%d giorni"
+
+#: __init__.py:280
+#, python-format
+msgid "more than %s"
+msgstr "più di %s"
+
+#: __init__.py:304
+msgid "contest-token"
+msgstr "contest-token"
+
+#: __init__.py:305
+msgid "contest-tokens"
+msgstr "contest-token"
+
+#: __init__.py:307
+msgid "task-token"
+msgstr "task-token"
+
+#: __init__.py:308
+msgid "task-tokens"
+msgstr "task-token"
+
+#: __init__.py:310
+msgid "token"
+msgstr "token"
+
+#: __init__.py:311
+msgid "tokens"
+msgstr "token"
+
+#: __init__.py:322
+#, python-format
+msgid "You don't have %(type_pl)s available for this task."
+msgstr "Non hai %(type_pl)s disponibili per questo problema."
+
+#: __init__.py:324
+#, python-format
+msgid "You have infinite %(type_pl)s."
+msgstr "Hai infiniti %(type_pl)s."
+
+#: __init__.py:329 __init__.py:372
+#, python-format
+msgid "You can use a %(type_s)s every second."
+msgid_plural "You can use a %(type_s)s every %(min_interval)d seconds."
+msgstr[0] "Puoi usare al massimo un %(type_s)s ogni secondo."
+msgstr[1] "Puoi usare al massimo un %(type_s)s ogni %(min_interval)d secondi."
+
+#: __init__.py:333 __init__.py:380
+msgid "You have no limitations on how you use them."
+msgstr "Non hai limitazioni sul loro utilizzo."
+
+#: __init__.py:336
+#, python-format
+msgid "You start with no %(type_pl)s."
+msgstr "All'inizio hai zero %(type_pl)s."
+
+#: __init__.py:338
+#, python-format
+msgid "You start with one %(type_s)s."
+msgid_plural "You start with %(initial)d %(type_pl)s."
+msgstr[0] "All'inizio hai un %(type_s)s."
+msgstr[1] "All'inizio hai %(initial)d %(type_pl)s."
+
+#: __init__.py:345
+#, python-format
+msgid "Every minute "
+msgid_plural "Every %(gen_time)d minutes "
+msgstr[0] "Ogni minuto "
+msgstr[1] "Ogni %(gen_time)d minuti "
+
+#: __init__.py:349
+#, python-format
+msgid "you get another %(type_s)s, "
+msgid_plural "you get %(gen_number)d other %(type_pl)s, "
+msgstr[0] "riceverai un altro %(type_s)s, "
+msgstr[1] "riceverai altri %(gen_number)d %(type_pl)s, "
+
+#: __init__.py:352
+#, python-format
+msgid "up to a maximum of one %(type_s)s."
+msgid_plural "up to a maximum of %(max)d %(type_pl)s."
+msgstr[0] "fino ad un massimo di un %(type_s)s."
+msgstr[1] "fino ad un massimo di %(max)d %(type_pl)s."
+
+#: __init__.py:356
+#, python-format
+msgid "you get another %(type_s)s."
+msgid_plural "you get %(gen_number)d other %(type_pl)s."
+msgstr[0] "riceverai un altro %(type_s)s."
+msgstr[1] "riceverai altri %(gen_number)d %(type_pl)s."
+
+#: __init__.py:360
+#, python-format
+msgid "You don't get other %(type_pl)s."
+msgstr "Non riceverai altri %(type_pl)s."
+
+#: __init__.py:365
+#, python-format
+msgid "You can use a %(type_s)s every second "
+msgid_plural "You can use a %(type_s)s every %(min_interval)d seconds "
+msgstr[0] "Puoi usare al massimo un %(type_s)s ogni secondo "
+msgstr[1] "Puoi usare al massimo un %(type_s)s ogni %(min_interval)s secondi "
+
+#: __init__.py:368
+#, python-format
+msgid "and no more than one %(type_s)s in total."
+msgid_plural "and no more than %(total)d %(type_pl)s in total."
+msgstr[0] "e non più di un %(type_s)s in totale."
+msgstr[1] "e non più di %(total)d %(type_pl)s in totale."
+
+#: __init__.py:376
+#, python-format
+msgid "You can use no more than one %(type_s)s in total."
+msgid_plural "You can use no more than %(total)d %(type_pl)s in total."
+msgstr[0] "Non puoi usare più di un %(type_s)s in totale."
+msgstr[1] "Non puoi usare più di %(total)d %(type_pl)s in totale."
 
 #: templates/contest/base.html:55
 #, python-format
@@ -710,15 +866,7 @@ msgstr "Sì"
 msgid "No"
 msgstr "No"
 
-#: templates/contest/submission_details.html:4
-msgid "Public testcases"
-msgstr "Casi di prova pubblici"
-
-#: templates/contest/submission_details.html:7
-msgid "Detailed feedback"
-msgstr "Informazioni dettagliate"
-
-#: templates/contest/submission_details.html:12
+#: templates/contest/submission_details.html:6
 #: templates/contest/usertest_details.html:7
 msgid "Compilation output"
 msgstr "Output della compilazione"
@@ -1069,62 +1217,3 @@ msgstr "Esecuzione in corso..."
 #: templates/contest/usertest_row.html:29
 msgid "Executed"
 msgstr "Eseguito"
-
-#~ msgid "."
-#~ msgstr "."
-
-#~ msgid "Official statement"
-#~ msgstr "Testo ufficiale"
-
-#~ msgid "Instructions"
-#~ msgstr "Istruzioni"
-
-#~ msgid "Sign in"
-#~ msgstr "Accedi"
-
-#~ msgid "Reply."
-#~ msgstr "Risposta."
-
-#~ msgid "Please wait for reply."
-#~ msgstr "Aspettare la risposta."
-
-#~ msgid "No questions."
-#~ msgstr "Nessuna domanda."
-
-#~ msgid "General"
-#~ msgstr "Generale"
-
-#~ msgid "A lot of instructions about the contest."
-#~ msgstr "Molte informazioni sulla gara."
-
-#~ msgid "Compilation"
-#~ msgstr "Compilazione"
-
-#~ msgid "C:"
-#~ msgstr "C:"
-
-#~ msgid "C++:"
-#~ msgstr "C++:"
-
-#~ msgid "Pascal:"
-#~ msgstr "Pascal:"
-
-#~ msgid "Authentication required"
-#~ msgstr "Accesso richiesto"
-
-#~ msgid "Task information"
-#~ msgstr "Informazioni sul problema"
-
-#~ msgid "Date"
-#~ msgstr "Data"
-
-#~ msgid "Outcome"
-#~ msgstr "Esito"
-
-#~ msgid "No specified testcases for partial feedback for this task."
-#~ msgstr ""
-#~ "Nessun caso di prova specificato per le informazioni parziali per questo "
-#~ "problema."
-
-#~ msgid "Use!"
-#~ msgstr "Usa!"

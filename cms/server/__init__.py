@@ -135,10 +135,12 @@ def format_date(dt, timezone, locale=None):
     if locale is None:
         locale = tornado.locale.get()
 
+    _ = locale.translate
+
     # convert dt from UTC to local time
     dt = dt.replace(tzinfo=utc).astimezone(timezone)
 
-    return dt.strftime(locale.translate("%Y-%m-%d"))
+    return dt.strftime(_("%Y-%m-%d"))
 
 
 def format_time(dt, timezone, locale=None):
@@ -152,10 +154,12 @@ def format_time(dt, timezone, locale=None):
     if locale is None:
         locale = tornado.locale.get()
 
+    _ = locale.translate
+
     # convert dt from UTC to local time
     dt = dt.replace(tzinfo=utc).astimezone(timezone)
 
-    return dt.strftime(locale.translate("%H:%M:%S"))
+    return dt.strftime(_("%H:%M:%S"))
 
 
 def format_datetime(dt, timezone, locale=None):
@@ -169,10 +173,12 @@ def format_datetime(dt, timezone, locale=None):
     if locale is None:
         locale = tornado.locale.get()
 
+    _ = locale.translate
+
     # convert dt from UTC to local time
     dt = dt.replace(tzinfo=utc).astimezone(timezone)
 
-    return dt.strftime(locale.translate("%Y-%m-%d %H:%M:%S"))
+    return dt.strftime(_("%Y-%m-%d %H:%M:%S"))
 
 
 def format_datetime_smart(dt, timezone, locale=None):
@@ -186,14 +192,16 @@ def format_datetime_smart(dt, timezone, locale=None):
     if locale is None:
         locale = tornado.locale.get()
 
+    _ = locale.translate
+
     # convert dt and 'now' from UTC to local time
     dt = dt.replace(tzinfo=utc).astimezone(timezone)
     now = make_datetime().replace(tzinfo=utc).astimezone(timezone)
 
     if dt.date() == now.date():
-        return dt.strftime(locale.translate("%H:%M:%S"))
+        return dt.strftime(_("%H:%M:%S"))
     else:
-        return dt.strftime(locale.translate("%Y-%m-%d %H:%M:%S"))
+        return dt.strftime(_("%Y-%m-%d %H:%M:%S"))
 
 
 def get_score_class(score, max_score):
@@ -210,6 +218,16 @@ def get_score_class(score, max_score):
         return "score_100"
     else:
         return "score_0_100"
+
+
+# Dummy function to mark strings for translation
+def _(*args, **kwargs):
+    pass
+
+_("%d second", "%d seconds", 0)
+_("%d minute", "%d minutes", 0)
+_("%d hour", "%d hours", 0)
+_("%d day", "%d days", 0)
 
 
 def format_amount_of_time(seconds, precision=2, locale=None):
@@ -232,13 +250,15 @@ def format_amount_of_time(seconds, precision=2, locale=None):
     if locale is None:
         locale = tornado.locale.get()
 
-    if seconds == 0:
-        return locale.translate("0 seconds")
+    _ = locale.translate
 
-    units = [("day", 60 * 60 * 24),
-             ("hour", 60 * 60),
-             ("minute", 60),
-             ("second", 1)]
+    if seconds == 0:
+        return _("%d second", "%d seconds", 0) % 0
+
+    units = [(("%d day", "%d days"), 60 * 60 * 24),
+             (("%d hour", "%d hours"), 60 * 60),
+             (("%d minute", "%d minutes"), 60),
+             (("%d second", "%d seconds"), 1)]
 
     ret = list()
     counter = 0
@@ -248,10 +268,8 @@ def format_amount_of_time(seconds, precision=2, locale=None):
         seconds %= length
         if tmp == 0:
             continue
-        elif tmp == 1:
-            ret.append(locale.translate("1 %s" % name))
         else:
-            ret.append(locale.translate("%%d %ss" % name) % tmp)
+            ret.append(_(name[0], name[1], tmp) % tmp)
         counter += 1
         if counter == precision:
             break
@@ -259,7 +277,7 @@ def format_amount_of_time(seconds, precision=2, locale=None):
     ret = locale.list(ret)
 
     if seconds > 0:
-        ret = locale.translate("more than %s") % ret
+        ret = _("more than %s") % ret
 
     return ret
 
@@ -280,18 +298,17 @@ def format_token_rules(tokens, t_type=None, locale=None):
     if locale is None:
         locale = tornado.locale.get()
 
+    _ = locale.translate
+
     if t_type == "contest":
-        tokens["type_none"] = locale.translate("no contest-tokens")
-        tokens["type_s"] = locale.translate("contest-token")
-        tokens["type_pl"] = locale.translate("contest-tokens")
+        tokens["type_s"] = _("contest-token")
+        tokens["type_pl"] = _("contest-tokens")
     elif t_type == "task":
-        tokens["type_none"] = locale.translate("no task-tokens")
-        tokens["type_s"] = locale.translate("task-token")
-        tokens["type_pl"] = locale.translate("task-tokens")
+        tokens["type_s"] = _("task-token")
+        tokens["type_pl"] = _("task-tokens")
     else:
-        tokens["type_none"] = locale.translate("no tokens")
-        tokens["type_s"] = locale.translate("token")
-        tokens["type_pl"] = locale.translate("tokens")
+        tokens["type_s"] = _("token")
+        tokens["type_pl"] = _("tokens")
 
     tokens["min_interval"] = int(tokens["min_interval"].total_seconds())
     tokens["gen_time"] = int(tokens["gen_time"].total_seconds() / 60)
@@ -302,74 +319,65 @@ def format_token_rules(tokens, t_type=None, locale=None):
         # note: we are sure that this text will only be displayed in task
         # pages because if tokens are disabled for the whole contest they
         # don't appear anywhere in CWS
-        result += locale.translate("You don't have %(type_pl)s available for this task.") % tokens
+        result += _("You don't have %(type_pl)s available for this task.") % tokens
     elif tokens['gen_time'] == 0 and tokens['gen_number'] > 0:
-        result += locale.translate("You have infinite %(type_pl)s.") % tokens
+        result += _("You have infinite %(type_pl)s.") % tokens
 
         result += " "
 
         if tokens['min_interval'] > 0:
-            if tokens['min_interval'] == 1:
-                result += locale.translate("You can use a %(type_s)s every second.") % tokens
-            else:
-                result += locale.translate("You can use a %(type_s)s every %(min_interval)d seconds.") % tokens
+            result += _("You can use a %(type_s)s every second.",
+                        "You can use a %(type_s)s every %(min_interval)d seconds.",
+                        tokens['min_interval']) % tokens
         else:
-            result += locale.translate("You have no limitations on how you use them.") % tokens
+            result += _("You have no limitations on how you use them.") % tokens
     else:
         if tokens['initial'] == 0:
-            result += locale.translate("You start with %(type_none)s.") % tokens
-        elif tokens['initial'] == 1:
-            result += locale.translate("You start with one %(type_s)s.") % tokens
+            result += _("You start with no %(type_pl)s.") % tokens
         else:
-            result += locale.translate("You start with %(initial)d %(type_pl)s.") % tokens
+            result += _("You start with one %(type_s)s.",
+                        "You start with %(initial)d %(type_pl)s.",
+                        tokens['initial'] == 1) % tokens
 
         result += " "
 
         if tokens['gen_time'] > 0 and tokens['gen_number'] > 0:
-            if tokens['gen_time'] == 1:
-                result += locale.translate("Every minute ") % tokens
-            else:
-                result += locale.translate("Every %(gen_time)d minutes ") % tokens
+            result += _("Every minute ",
+                        "Every %(gen_time)d minutes ",
+                        tokens['gen_time']) % tokens
             if tokens['max'] is not None:
-                if tokens['gen_number'] == 1:
-                    result += locale.translate("you get another %(type_s)s, ") % tokens
-                else:
-                    result += locale.translate("you get %(gen_number)d other %(type_pl)s, ") % tokens
-                if tokens['max'] == 1:
-                    result += locale.translate("up to a maximum of one %(type_s)s.") % tokens
-                else:
-                    result += locale.translate("up to a maximum of %(max)d %(type_pl)s.") % tokens
+                result += _("you get another %(type_s)s, ",
+                            "you get %(gen_number)d other %(type_pl)s, ",
+                            tokens['gen_number']) % tokens
+                result += _("up to a maximum of one %(type_s)s.",
+                            "up to a maximum of %(max)d %(type_pl)s.",
+                            tokens['max']) % tokens
             else:
-                if tokens['gen_number'] == 1:
-                    result += locale.translate("you get another %(type_s)s.") % tokens
-                else:
-                    result += locale.translate("you get %(gen_number)d other %(type_pl)s.") % tokens
+                result += _("you get another %(type_s)s.",
+                            "you get %(gen_number)d other %(type_pl)s.",
+                            tokens['gen_number']) % tokens
         else:
-            result += locale.translate("You don't get other %(type_pl)s.") % tokens
+            result += _("You don't get other %(type_pl)s.") % tokens
 
         result += " "
 
         if tokens['min_interval'] > 0 and tokens['total'] is not None:
-            if tokens['min_interval'] == 1:
-                result += locale.translate("You can use a %(type_s)s every second ") % tokens
-            else:
-                result += locale.translate("You can use a %(type_s)s every %(min_interval)d seconds ") % tokens
-            if tokens['total'] == 1:
-                result += locale.translate("and no more than one %(type_s)s in total.") % tokens
-            else:
-                result += locale.translate("and no more than %(total)d %(type_pl)s in total.") % tokens
+            result += _("You can use a %(type_s)s every second ",
+                        "You can use a %(type_s)s every %(min_interval)d seconds ",
+                        tokens['min_interval']) % tokens
+            result += _("and no more than one %(type_s)s in total.",
+                        "and no more than %(total)d %(type_pl)s in total.",
+                        tokens['total']) % tokens
         elif tokens['min_interval'] > 0:
-            if tokens['min_interval'] == 1:
-                result += locale.translate("You can use a %(type_s)s every second.") % tokens
-            else:
-                result += locale.translate("You can use a %(type_s)s every %(min_interval)d seconds.") % tokens
+            result += _("You can use a %(type_s)s every second.",
+                        "You can use a %(type_s)s every %(min_interval)d seconds.",
+                        tokens['min_interval']) % tokens
         elif tokens['total'] is not None:
-            if tokens['total'] == 1:
-                result += locale.translate("You can use no more than one %(type_s)s in total.") % tokens
-            else:
-                result += locale.translate("You can use no more than %(total)d %(type_pl)s in total.") % tokens
+            result += _("You can use no more than one %(type_s)s in total.",
+                        "You can use no more than %(total)d %(type_pl)s in total.",
+                        tokens['total']) % tokens
         else:
-            result += locale.translate("You have no limitations on how you use them.") % tokens
+            result += _("You have no limitations on how you use them.") % tokens
 
     return result
 
