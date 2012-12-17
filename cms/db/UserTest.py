@@ -26,11 +26,11 @@ directly (import from SQLAlchemyAll).
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import Integer, Float, String, DateTime
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.orm.collections import column_mapped_collection
 
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Task import Task
 from cms.db.User import User
+from cms.db.SmartMappedCollection import smart_mapped_collection
 
 from cmscommon.DateTime import make_datetime, make_timestamp
 
@@ -292,7 +292,7 @@ class UserTestFile(Base):
     user_test = relationship(
         UserTest,
         backref=backref('files',
-                        collection_class=column_mapped_collection(filename),
+                        collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
@@ -346,7 +346,7 @@ class UserTestExecutable(Base):
     user_test = relationship(
         UserTest,
         backref=backref('executables',
-                        collection_class=column_mapped_collection(filename),
+                        collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
@@ -400,7 +400,7 @@ class UserTestManager(Base):
     user_test = relationship(
         UserTest,
         backref=backref('managers',
-                        collection_class=column_mapped_collection(filename),
+                        collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 

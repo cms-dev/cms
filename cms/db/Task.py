@@ -29,11 +29,11 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint
 from sqlalchemy.types import Boolean, Integer, Float, String, Interval
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.orm.collections import column_mapped_collection
 from sqlalchemy.ext.orderinglist import ordering_list
 
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Contest import Contest
+from cms.db.SmartMappedCollection import smart_mapped_collection
 
 from datetime import timedelta
 
@@ -425,7 +425,7 @@ class Attachment(Base):
     task = relationship(
         Task,
         backref=backref('attachments',
-                        collection_class=column_mapped_collection(filename),
+                        collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
@@ -477,7 +477,7 @@ class Manager(Base):
     task = relationship(
         Task,
         backref=backref('managers',
-                        collection_class=column_mapped_collection(filename),
+                        collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
@@ -577,7 +577,7 @@ class Statement(Base):
     task = relationship(
         Task,
         backref=backref('statements',
-                        collection_class=column_mapped_collection(language),
+                        collection_class=smart_mapped_collection('language'),
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
