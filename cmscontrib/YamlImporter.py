@@ -169,7 +169,7 @@ class YamlLoader:
         params["title"] = conf["nome"]
         if name == params["title"]:
             logger.warning("Short name equals long name (title). "
-                           "Is this intended?")
+                           "Please check.")
         params["num"] = num
         params["time_limit"] = conf.get("timeout", None)
         params["memory_limit"] = conf.get("memlimit", None)
@@ -211,8 +211,7 @@ class YamlLoader:
                                 "language %s" % (name, lang)),
                                 "grader.%s" % (lang)).export_to_dict())
                 else:
-                    logger.warning("Could not find grader for "
-                                   "language %s" % (lang))
+                    logger.error("Grader for language %s not found " % lang)
             # Read managers with other known file extensions
             for other_filename in os.listdir(os.path.join(path, "sol")):
                 if other_filename.endswith('.h') or \
@@ -344,7 +343,7 @@ class YamlLoader:
                             (name, lang)),
                                 "stub.%s" % lang).export_to_dict())
                 else:
-                    logger.warning("Stub for language %s not found." % lang)
+                    logger.error("Stub for language %s not found." % lang)
 
         # Otherwise, the task type is Batch
         else:

@@ -134,7 +134,7 @@ class ContestReplayer:
                 try:
                     new_speed = int(new_speed)
                 except ValueError:
-                    logger.error("Speed multiplier could not be parsed.")
+                    logger.warning("Speed multiplier could not be parsed.")
                 else:
                     self.recompute_start(new_speed)
         return 0

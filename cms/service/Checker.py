@@ -80,12 +80,12 @@ class Checker(Service):
             shard = int(shard)
             service = ServiceCoord(name, shard)
             if service not in self.waiting_for or current - time_ > 10:
-                logger.info("Got late reply (%5.3lf s) from %s"
+                logger.warning("Got late reply (%5.3lf s) from %s."
                             % (current - time_, service))
             else:
                 if time_ - self.waiting_for[service] > 0.001:
-                    logger.error("Someone cheated on the timestamp?!")
-                logger.info("Got reply (%5.3lf s) from %s"
+                    logger.warning("Someone cheated on the timestamp?!")
+                logger.info("Got reply (%5.3lf s) from %s."
                             % (current - time_, service))
                 del self.waiting_for[service]
         except KeyError:

@@ -64,8 +64,8 @@ class SpoolExporter:
         try:
             os.mkdir(self.spool_dir)
         except OSError:
-            logger.error("The specified directory already exists, "
-                         "I won't overwrite it.")
+            logger.critical("The specified directory already exists, "
+                            "I won't overwrite it.")
             return False
         os.mkdir(self.upload_dir)
 
@@ -86,7 +86,7 @@ class SpoolExporter:
                 self.export_submissions()
                 self.export_ranking()
             except Exception as error:
-                logger.error("Generic error. %r" % error)
+                logger.critical("Generic error. %r" % error)
                 return False
 
         logger.info("Export finished.")

@@ -931,8 +931,8 @@ class EvaluationService(Service):
             try:
                 job = Job.import_from_dict_with_type(data)
             except:
-                logger.critical("[action_finished] Couldn't build Job for data"
-                            " %s." % (data))
+                logger.error("[action_finished] Couldn't build Job for data"
+                             " %s." % (data))
                 job_success = False
 
             else:
@@ -952,9 +952,9 @@ class EvaluationService(Service):
             if job_type == EvaluationService.JOB_TYPE_COMPILATION:
                 submission = Submission.get_from_id(object_id, session)
                 if submission is None:
-                    logger.critical("[action_finished] Couldn't find "
-                                    "submission %d in the database." %
-                                    object_id)
+                    logger.error("[action_finished] Couldn't find "
+                                 "submission %d in the database." %
+                                 object_id)
                     return
 
                 submission.compilation_tries += 1
@@ -975,9 +975,9 @@ class EvaluationService(Service):
             elif job_type == EvaluationService.JOB_TYPE_EVALUATION:
                 submission = Submission.get_from_id(object_id, session)
                 if submission is None:
-                    logger.critical("[action_finished] Couldn't find "
-                                    "submission %s in the database." %
-                                    object_id)
+                    logger.error("[action_finished] Couldn't find "
+                                 "submission %s in the database." %
+                                 object_id)
                     return
 
                 submission.evaluation_tries += 1
@@ -1004,9 +1004,9 @@ class EvaluationService(Service):
             elif job_type == EvaluationService.JOB_TYPE_TEST_COMPILATION:
                 user_test = UserTest.get_from_id(object_id, session)
                 if user_test is None:
-                    logger.critical("[action_finished] Couldn't find "
-                                    "user test %d in the database." %
-                                    object_id)
+                    logger.error("[action_finished] Couldn't find "
+                                 "user test %d in the database." %
+                                 object_id)
                     return
 
                 user_test.compilation_tries += 1
@@ -1029,9 +1029,9 @@ class EvaluationService(Service):
             elif job_type == EvaluationService.JOB_TYPE_TEST_EVALUATION:
                 user_test = UserTest.get_from_id(object_id, session)
                 if user_test is None:
-                    logger.critical("[action_finished] Couldn't find "
-                                    "user test %d in the database." %
-                                    object_id)
+                    logger.error("[action_finished] Couldn't find "
+                                 "user test %d in the database." %
+                                 object_id)
                     return
 
                 user_test.evaluation_tries += 1
@@ -1268,7 +1268,7 @@ class EvaluationService(Service):
         logger.info("Invalidation request received.")
         if level not in ["compilation", "evaluation"]:
             err_msg = "Unexpected invalidation level `%s'." % level
-            logger.warning(err_msg)
+            logger.error(err_msg)
             raise ValueError(err_msg)
 
         submission_ids = get_submissions(

@@ -368,8 +368,8 @@ class Service:
         reason (string): why, oh why, you want me down?
 
         """
-        logger.info("Trying to exit as asked by another service (%s)." %
-                    reason)
+        logger.info("Trying to exit as asked by another service (%s)."
+                    % reason)
         self.exit()
 
     def method_info(self, method_name):
@@ -553,7 +553,7 @@ class RemoteService(asynchat.async_chat):
                     message["__data"]["binary_data"] = \
                         decode_binary(data[json_length + 4:])
         except:
-            logger.error("Cannot understand incoming message, discarding.")
+            logger.warning("Cannot understand incoming message, discarding.")
             return
 
         # If __method is present, someone is calling an rpc of the
@@ -600,14 +600,14 @@ class RemoteService(asynchat.async_chat):
         # Otherwise, is a response to our rpc call.
         else:
             if "__id" not in message:
-                logger.error("Response without __id field, discarding.")
+                logger.warning("Response without __id field, discarding.")
                 return
             ident = message["__id"]
             if ident in RPCRequest.pending_requests:
                 rpc = RPCRequest.pending_requests[ident]
                 rpc.complete(message)
             else:
-                logger.error("No pending request with id %s found." % ident)
+                logger.warning("No pending request with id %s found." % ident)
 
     def send_reply(self, response, method_response, binary_response):
         """Send back a reply to an rpc call.
@@ -627,8 +627,8 @@ class RemoteService(asynchat.async_chat):
             json_message = encode_json(response)
             json_length = encode_length(len(json_message))
         except ValueError as error:
-            logger.error("Cannot send response because of " +
-                         "encoding error. %s" % repr(error))
+            logger.warning("Cannot send response because of " +
+                           "encoding error. %s" % repr(error))
             return
         self._push_right(json_length + json_message + binary_message)
 
@@ -777,7 +777,7 @@ class RemoteService(asynchat.async_chat):
             with async_lock:
                 self.push(to_push)
         except Exception as error:
-            logger.error("Push not ended correctly because of %r." % error)
+            logger.warning("Push not ended correctly because of %r." % error)
             return False
         return True
 
@@ -840,14 +840,14 @@ class ListeningSocket(asyncore.dispatcher):
         try:
             connection, address = self.accept()
         except socket.error:
-            logger.error("Error: %s" % (traceback.format_exc()))
+            logger.warning("Error: %s" % (traceback.format_exc()))
             return
         try:
             ipaddr, port = address
             ipaddr = socket.gethostbyname(ipaddr)
             address = Address(ipaddr, port)
         except:
-            logger.error("Error: %s" % (traceback.format_exc()))
+            logger.warning("Error: %s" % (traceback.format_exc()))
             return
         remote_service = RemoteService(self._service,
                                        address=address)

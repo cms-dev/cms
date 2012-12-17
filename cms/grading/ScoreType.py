@@ -188,7 +188,7 @@ class ScoreType:
             score_details = json.loads(score_details)
         except json.decoder.JSONDecodeError:
             logger.error("Found a non-JSON score details string. "
-                         "Need to rescore?")
+                         "Try invalidating scores.")
             return translator("Score details temporarily unavailable.")
         else:
             return Template(self.TEMPLATE).generate(details=score_details,

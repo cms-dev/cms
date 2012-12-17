@@ -95,15 +95,18 @@ class YamlReimporter:
                     cms_contest['users'][user_num] = yaml_user
                 else:
                     if self.force:
-                        logger.warning("User %s exists in old contest, but "
-                                       "not in the new one" % user['username'])
+                        logger.warning(
+                            "User %s exists in old contest, but "
+                            "not in the new one." % user['username'])
                         users_to_remove.append(user_num)
                         # FIXME Do we need really to do this, given that
                         # we already deleted the whole contest?
                         session.delete(contest.users[user_num])
                     else:
-                        logger.error("User %s exists in old contest, but "
-                                     "not in the new one" % user['username'])
+                        logger.critical(
+                            "User %s exists in old contest, but "
+                            "not in the new one. Use -f to force."
+                            % user['username'])
                         return False
 
             # Delete the users
@@ -126,14 +129,15 @@ class YamlReimporter:
                 else:
                     if self.force:
                         logger.warning("Task %s exists in old contest, but "
-                                       "not in the new one" % task['name'])
+                                       "not in the new one." % task['name'])
                         tasks_to_remove.append(task_num)
                         # FIXME Do we need really to do this, given that
                         # we already deleted the whole contest?
                         session.delete(contest.tasks[task_num])
                     else:
                         logger.error("Task %s exists in old contest, but "
-                                     "not in the new one" % task['name'])
+                                     "not in the new one. Use -f to force."
+                                     % task['name'])
                         return False
 
             # Delete the tasks

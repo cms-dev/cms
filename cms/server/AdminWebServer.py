@@ -180,7 +180,7 @@ class BaseHandler(CommonRequestHandler):
         if "exc_info" in kwargs and \
                 kwargs["exc_info"][0] != tornado.web.HTTPError:
             exc_info = kwargs["exc_info"]
-            logger.critical(
+            logger.error(
                 "Uncaught exception (%r) while processing a request: %s" %
                 (exc_info[1], ''.join(traceback.format_exception(*exc_info))))
 
@@ -1450,8 +1450,8 @@ class QuestionReplyHandler(BaseHandler):
         question.reply_timestamp = make_datetime()
 
         if try_commit(self.sql_session, self):
-            logger.warning("Reply sent to user %s for question with id %s." %
-                           (question.user.username, question_id))
+            logger.info("Reply sent to user %s for question with id %s." %
+                        (question.user.username, question_id))
 
         self.redirect(ref)
 
@@ -1472,9 +1472,9 @@ class QuestionIgnoreHandler(BaseHandler):
         # Commit the change.
         question.ignored = should_ignore
         if try_commit(self.sql_session, self):
-            logger.warning("Question '%s' by user %s %s" %
-                           (question.subject, question.user.username,
-                            ["unignored", "ignored"][should_ignore]))
+            logger.info("Question '%s' by user %s %s" %
+                        (question.subject, question.user.username,
+                         ["unignored", "ignored"][should_ignore]))
 
         self.redirect(ref)
 
@@ -1494,8 +1494,8 @@ class MessageHandler(BaseHandler):
                           user=user)
         self.sql_session.add(message)
         if try_commit(self.sql_session, self):
-            logger.warning("Message submitted to user %s."
-                           % user.username)
+            logger.info("Message submitted to user %s."
+                        % user.username)
 
         self.redirect("/user/%s" % user_id)
 

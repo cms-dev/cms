@@ -72,8 +72,8 @@ def extract_archive(temp_name, original_filename):
                     "filename": item.filename,
                     "body": zip_object.read(item)})
         except Exception as error:
-            logger.info("Exception while extracting zip file `%s'. %r" %
-                        (original_filename, error))
+            logger.warning("Exception while extracting zip file `%s'. %r" %
+                           (original_filename, error))
             return None
     elif original_filename.endswith(".tar.gz") \
         or original_filename.endswith(".tar.bz2") \
@@ -86,13 +86,14 @@ def extract_archive(temp_name, original_filename):
                         "filename": item.name,
                         "body": tar_object.extractfile(item).read()})
         except tarfile.TarError:
-            logger.info("Exception while extracting tar file `%s'. %r" %
-                        (original_filename, error))
+            logger.warning("Exception while extracting tar file `%s'. %r" %
+                           (original_filename, error))
             return None
         except IOError:
             return None
     else:
-        logger.info("Compressed file `%s' not recognized." % original_filename)
+        logger.warning("Compressed file `%s' not recognized."
+                       % original_filename)
         return None
     return file_list
 

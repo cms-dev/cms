@@ -103,8 +103,8 @@ class TwoSteps(TaskType):
             self.job.success = True
             self.job.compilation_success = False
             self.job.text = "Invalid files in submission"
-            logger.warning("Submission contains %d files, expecting 2" %
-                           len(self.job.files))
+            logger.error("Submission contains %d files, expecting 2" %
+                         len(self.job.files))
             return True
 
         # First and only one compilation.

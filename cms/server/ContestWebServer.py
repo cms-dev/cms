@@ -344,7 +344,7 @@ class BaseHandler(CommonRequestHandler):
         if "exc_info" in kwargs and \
                 kwargs["exc_info"][0] != tornado.web.HTTPError:
             exc_info = kwargs["exc_info"]
-            logger.critical(
+            logger.error(
                 "Uncaught exception (%r) while processing a request: %s" %
                 (exc_info[1], ''.join(traceback.format_exception(*exc_info))))
 
@@ -779,8 +779,8 @@ class QuestionHandler(BaseHandler):
         self.sql_session.add(question)
         self.sql_session.commit()
 
-        logger.warning("Question submitted by user %s."
-                       % self.current_user.username)
+        logger.info("Question submitted by user %s."
+                    % self.current_user.username)
 
         # Add "All ok" notification.
         self.application.service.add_notification(
@@ -1024,8 +1024,6 @@ class SubmitHandler(BaseHandler):
 
         # Attempt to store the submission locally to be able to
         # recover a failure.
-        local_copy_saved = False
-
         if config.submit_local_copy:
             try:
                 path = os.path.join(
@@ -1042,10 +1040,9 @@ class SubmitHandler(BaseHandler):
                                  self.current_user.id,
                                  task.id,
                                  files), file_)
-                local_copy_saved = True
             except Exception as error:
-                logger.error("Submission local copy failed - %s" %
-                             traceback.format_exc())
+                logger.warning("Submission local copy failed - %s" %
+                               traceback.format_exc())
 
         # We now have to send all the files to the destination...
         try:
@@ -1061,15 +1058,11 @@ class SubmitHandler(BaseHandler):
         # In case of error, the server aborts the submission
         except Exception as error:
             logger.error("Storage failed! %s" % error)
-            if local_copy_saved:
-                message = "In case of emergency, this server has a local copy."
-            else:
-                message = "No local copy stored! Your submission was ignored."
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
                 self._("Submission storage failed!"),
-                self._(message),
+                self._("Please try again."),
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
@@ -1542,8 +1535,6 @@ class UserTestHandler(BaseHandler):
 
         # Attempt to store the submission locally to be able to
         # recover a failure.
-        local_copy_saved = False
-
         if config.tests_local_copy:
             try:
                 path = os.path.join(
@@ -1560,7 +1551,6 @@ class UserTestHandler(BaseHandler):
                                  self.current_user.id,
                                  task.id,
                                  files), file_)
-                local_copy_saved = True
             except Exception as error:
                 logger.error("Test local copy failed - %s" %
                              traceback.format_exc())
@@ -1579,15 +1569,11 @@ class UserTestHandler(BaseHandler):
         # In case of error, the server aborts the submission
         except Exception as error:
             logger.error("Storage failed! %s" % error)
-            if local_copy_saved:
-                message = "In case of emergency, this server has a local copy."
-            else:
-                message = "No local copy stored! Your test was ignored."
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
                 self._("Test storage failed!"),
-                self._(message),
+                self._("Please try again."),
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/testing?%s" % quote(task.name, safe=''))
             return

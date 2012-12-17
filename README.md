@@ -280,6 +280,31 @@ In particular if there are more than one ContestWebServer, one may
 want to use a load balancer. We recommend to use nginx; a sample
 configuration is provided in $REPO/cms/example.
 
+When the services are running, log messages are streamed to the log
+service. This is the meaning of the log levels:
+
+- debug: you can ignore them (in the default configuration, the log
+  service does not show them);
+
+- info: they inform you on what is going on in the system and that
+  everything is fine;
+
+- warning: something went wrong or was slightly unexpected, but CMS
+  knew how to handle it, or someone fed inappropriate data to CMS (by
+  error or on purpose); you may want to check these as they may evolve
+  into errors or unexpected behaviors, or hint that a contestant is
+  trying to cheat;
+
+- error: an unexpected condition that should not have happened; you
+  are really encouraged to take actions to fix them, but the service
+  will continue to work (most of the time, ignoring the error and the
+  data connected to it);
+
+- critical: a condition so unexpected that the service is really
+  startled and refuses to continue working; you are forced to take
+  action because with high probability the service will continue
+  having the same problem upon restarting.
+
 
 Testimonials
 ------------
@@ -318,3 +343,7 @@ development and user support. The address is
 So far, it is an extremely low traffic mailing list. In the future, we
 may consider splitting it in different lists for more specific usage
 cases (user support, development, ...).
+
+To help with the troubleshooting, you can collect the complete log
+files that are placed in /var/local/log/cms/ (if CMS was running
+installed) or in ./log (if it was running from the local copy).

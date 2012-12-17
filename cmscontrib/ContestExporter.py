@@ -121,8 +121,8 @@ class ContestExporter:
         if archive_info["write_mode"] != "":
             # We are able to write to this archive.
             if os.path.exists(self.export_target):
-                logger.error("The specified file already exists, "
-                             "I won't overwrite it.")
+                logger.critical("The specified file already exists, "
+                                "I won't overwrite it.")
                 return False
             export_dir = os.path.join(tempfile.mkdtemp(),
                                       archive_info["basename"])
@@ -131,8 +131,8 @@ class ContestExporter:
         try:
             os.mkdir(export_dir)
         except OSError:
-            logger.error("The specified directory already exists, "
-                         "I won't overwrite it.")
+            logger.critical("The specified directory already exists, "
+                            "I won't overwrite it.")
             return False
 
         files_dir = os.path.join(export_dir, "files")
@@ -191,14 +191,15 @@ class ContestExporter:
         try:
             self.file_cacher.get_file(digest, path=path)
         except Exception as error:
-            logger.error("File %s could not retrieved from file server (%r)." %
-                         (digest, error))
+            logger.error("File %s could not retrieved from file server (%r)."
+                         % (digest, error))
             return False
 
         # Then check the digest
         calc_digest = sha1sum(path)
         if digest != calc_digest:
-            logger.error("File %s has wrong hash %s." % (digest, calc_digest))
+            logger.critical("File %s has wrong hash %s."
+                            % (digest, calc_digest))
             return False
 
         # If applicable, retrieve also the description

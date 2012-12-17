@@ -26,7 +26,7 @@ db objects must be imported from this module.
 
 import sys
 
-from cms.db.SQLAlchemyUtils import db, Base, metadata, Session, \
+from cms.db.SQLAlchemyUtils import Base, metadata, Session, \
      ScopedSession, SessionGen
 
 from cms.db.Contest import Contest, Announcement
@@ -37,7 +37,6 @@ from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 from cms.db.UserTest import UserTest, UserTestFile, UserTestExecutable, \
     UserTestManager
 from cms.db.FSObject import FSObject
-import cms.db.ImportFromDict
 
 
 # The following are methods of Contest that cannot be put in the right

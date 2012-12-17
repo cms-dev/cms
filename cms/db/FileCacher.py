@@ -244,8 +244,8 @@ class DBBackend(FileCacherBackend):
                     logger.debug("File %s sent to the database." % digest)
 
         except IntegrityError:
-            logger.info("File %s caused an IntegrityError, ignoring..."
-                        % digest)
+            logger.warning("File %s caused an IntegrityError, ignoring..."
+                           % digest)
 
     def describe(self, digest):
         """See FileCacherBackend.describe().
@@ -369,7 +369,7 @@ class FileCacher:
         cache_path = os.path.join(self.obj_dir, digest)
         cache_exists = os.path.exists(cache_path)
 
-        logger.debug("Getting file %s" % (digest))
+        logger.debug("Getting file %s." % (digest))
 
         if not cache_exists:
             logger.debug("File %s not in cache, downloading "

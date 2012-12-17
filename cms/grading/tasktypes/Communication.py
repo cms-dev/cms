@@ -90,8 +90,8 @@ class Communication(TaskType):
             self.job.success = True
             self.job.compilation_success = False
             self.job.text = "Invalid files in submission"
-            logger.warning("Submission contains %d files, expecting 1" %
-                           len(self.job.files))
+            logger.error("Submission contains %d files, expecting 1" %
+                         len(self.job.files))
             return True
 
         # Create the sandbox

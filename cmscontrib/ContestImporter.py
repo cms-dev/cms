@@ -163,12 +163,13 @@ class ContestImporter:
                 desc = os.path.join(descr_dir, digest)
                 print open(desc).read()
                 if not os.path.exists(file_) or not os.path.exists(desc):
-                    logger.warning("Some files needed to the contest "
-                                   "are missing in the import directory. "
-                                   "The import will continue. Be aware.")
+                    logger.error("Some files needed to the contest "
+                                 "are missing in the import directory. "
+                                 "The import will continue. Be aware.")
                 if not self.safe_put_file(file_, desc):
-                    logger.warning("Unable to put file `%s' in the database. "
-                                   "Aborting." % file_)
+                    logger.critical("Unable to put file `%s' in the database. "
+                                    "Aborting. Please remove the contest "
+                                    "from the database." % file_)
                     # TODO: remove contest from the database.
                     return False
 
@@ -203,15 +204,15 @@ class ContestImporter:
             digest = self.file_cacher.put_file(path=path,
                                                description=description)
         except Exception as error:
-            logger.error("File %s could not be put to file server (%r), "
-                         "aborting." % (path, error))
+            logger.critical("File %s could not be put to file server (%r), "
+                            "aborting." % (path, error))
             return False
 
         # Then check the digest.
         calc_digest = sha1sum(path)
         if digest != calc_digest:
-            logger.error("File %s has hash %s, but the server returned %s, "
-                         "aborting." % (path, calc_digest, digest))
+            logger.critical("File %s has hash %s, but the server returned %s, "
+                            "aborting." % (path, calc_digest, digest))
             return False
 
         return True

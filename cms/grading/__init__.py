@@ -23,7 +23,7 @@ import os
 import codecs
 
 from cms import logger
-from cms.db.SQLAlchemyAll import SessionGen, User, Submission, Task
+from cms.db.SQLAlchemyAll import SessionGen, Submission
 from cms.grading.Sandbox import Sandbox
 
 
@@ -205,7 +205,7 @@ def compilation_step(sandbox, command):
     elif exit_status == Sandbox.EXIT_SYSCALL:
         syscall = sandbox.get_killing_syscall()
         logger.error("Compilation aborted "
-                     "because of forbidden syscall '%s'." % syscall)
+                     "because of forbidden syscall `%s'." % syscall)
 
     # Forbidden file access: this could be triggered by the user
     # including a forbidden file or too strict sandbox contraints; the
@@ -213,7 +213,7 @@ def compilation_step(sandbox, command):
     elif exit_status == Sandbox.EXIT_FILE_ACCESS:
         filename = sandbox.get_forbidden_file_error()
         logger.error("Compilation aborted "
-                     "because of forbidden access to file '%s'." % filename)
+                     "because of forbidden access to file `%s'." % filename)
 
     # Why the exit status hasn't been captured before?
     else:

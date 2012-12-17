@@ -75,9 +75,10 @@ class Store(object):
                         self._store[name[:-5]] = item
         except OSError:
             # the path isn't a directory or is inaccessible
-            logger.error("OSError occured", exc_info=True)
+            logger.error("Path is not a directory or is not accessible",
+                         exc_info=True)
         except IOError:
-            logger.error("IOError occured", exc_info=True)
+            logger.error("I/O error occured", exc_info=True)
         except ValueError:
             logger.error("Invalid JSON", exc_info=False,
                          extra={'location': os.path.join(self._path, name)})
@@ -168,7 +169,8 @@ class Store(object):
             with open(os.path.join(self._path, key + '.json'), 'w') as rec:
                 rec.write(json.dumps(self._store[key].dump()))
         except IOError:
-            logger.error("IOError occured", exc_info=True)
+            logger.error("I/O error occured while creating entity",
+                         exc_info=True)
 
     def update(self, key, data, confirm=None):
         """Update an entity.
@@ -210,7 +212,8 @@ class Store(object):
             with open(os.path.join(self._path, key + '.json'), 'w') as rec:
                 rec.write(json.dumps(self._store[key].dump()))
         except IOError:
-            logger.error("IOError occured", exc_info=True)
+            logger.error("I/O error occured while updating entity",
+                         exc_info=True)
 
     def merge_list(self, data, confirm=None):
         """Merge a list of entities.
@@ -272,7 +275,8 @@ class Store(object):
                 with open(os.path.join(self._path, key + '.json'), 'w') as rec:
                     rec.write(json.dumps(value.dump()))
             except IOError:
-                logger.error("IOError occured", exc_info=True)
+                logger.error("I/O error occured while merging entity lists",
+                             exc_info=True)
 
     def delete(self, key, confirm=None):
         """Delete an entity.
@@ -307,7 +311,7 @@ class Store(object):
         try:
             os.remove(os.path.join(self._path, key + '.json'))
         except OSError:
-            logger.error("OSError occured", exc_info=True)
+            logger.error("Unable to delete entity", exc_info=True)
 
     def delete_list(self, confirm=None):
         """Delete all entities.
