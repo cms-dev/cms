@@ -55,6 +55,17 @@ class ResourceService(Service):
     upon request.
 
     """
+    # Path of the services in the local tree, used to restart the
+    # services when CMS is not installed.
+    SERVICE_PATH = {
+        "Checker": os.path.join("cms", "service"),
+        "EvaluationService": os.path.join("cms", "service"),
+        "ScoringService": os.path.join("cms", "service"),
+        "Worker": os.path.join("cms", "service"),
+        "AdminWebServer": os.path.join("cms", "server"),
+        "ContestWebServer": os.path.join("cms", "server"),
+        }
+
 
     def __init__(self, shard, contest_id=None):
         """If contest_id is not None, we assume the user wants the
@@ -147,12 +158,19 @@ class ResourceService(Service):
                 logger.info("Restarting (%s, %s)..." % (service.name,
                                                         service.shard))
                 devnull = os.open(os.devnull, os.O_WRONLY)
-                process = subprocess.Popen(["cms%s" % service.name,
+                command = "cms%s" % service.name
+                cwd = "."
+                if not config.installed:
+                    command = os.path.join(".", "%s.py" % service.name)
+                    cwd = ResourceService.SERVICE_PATH[service.name]
+                process = subprocess.Popen([command,
                                             str(service.shard),
                                             "-c",
                                             str(self.contest_id)],
                                            stdout=devnull,
-                                           stderr=subprocess.STDOUT)
+                                           stderr=subprocess.STDOUT,
+                                           cwd=cwd
+                                           )
                 self._launched_processes.add(process)
 
         # Run forever.
