@@ -39,11 +39,11 @@ from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord, get_service_shards, get_service_address
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import Session, \
-     Contest, User, Announcement, Question, Message, Submission, File, Task, \
-     Attachment, Manager, Testcase, SubmissionFormatElement, Statement
+    Contest, User, Announcement, Question, Message, Submission, File, Task, \
+    Attachment, Manager, Testcase, SubmissionFormatElement, Statement
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, get_url_root, \
-     CommonRequestHandler
+    CommonRequestHandler
 from cmscommon.DateTime import make_datetime, make_timestamp
 
 
@@ -132,7 +132,8 @@ class BaseHandler(CommonRequestHandler):
         self.contest = None
 
         if config.installed:
-            localization_dir = os.path.join("/", "usr", "local", "share", "locale")
+            localization_dir = os.path.join("/", "usr", "local", "share",
+                                            "locale")
         else:
             localization_dir = os.path.join(os.path.dirname(__file__), "mo")
         if os.path.exists(localization_dir):
@@ -237,7 +238,7 @@ class AdminWebServer(WebService):
         "answered": "Answered in task description",
         "invalid": "Invalid question",
         "nocomment": "No comment",
-        }
+    }
 
     def __init__(self, shard):
         logger.initialize(ServiceCoord("AdminWebServer", shard))
@@ -253,7 +254,7 @@ class AdminWebServer(WebService):
                                         "static"),
             "cookie_secret": base64.b64encode(config.secret_key),
             "debug": config.tornado_debug,
-            }
+        }
         WebService.__init__(self,
                             config.admin_listen_port,
                             _aws_handlers,
@@ -362,7 +363,8 @@ class ResourcesHandler(BaseHandler):
             shard = "all"
 
         self.r_params = self.render_params()
-        self.r_params["resource_shards"] = get_service_shards("ResourceService")
+        self.r_params["resource_shards"] = \
+            get_service_shards("ResourceService")
         self.r_params["resource_addresses"] = {}
         if shard == "all":
             for i in xrange(self.r_params["resource_shards"]):
@@ -507,7 +509,8 @@ class ContestHandler(BaseHandler):
             contest.name = self.get_argument("name", contest.name)
             assert contest.name != "", "No contest name specified."
 
-            contest.description = self.get_argument("description", contest.description)
+            contest.description = self.get_argument("description",
+                                                    contest.description)
 
             contest.token_initial = self.get_non_negative_int(
                 "token_initial",
@@ -541,20 +544,21 @@ class ContestHandler(BaseHandler):
                 contest.max_user_test_number)
             contest.min_submission_interval = self.get_non_negative_int(
                 "min_submission_interval",
-                contest.min_submission_interval.total_seconds() if \
-                    contest.min_submission_interval is not None else None)
+                contest.min_submission_interval.total_seconds() if
+                contest.min_submission_interval is not None else None)
             if contest.min_submission_interval is not None:
                 contest.min_submission_interval = \
                     timedelta(seconds=contest.min_submission_interval)
             contest.min_user_test_interval = self.get_non_negative_int(
                 "min_user_test_interval",
-                contest.min_user_test_interval.total_seconds() if \
-                    contest.min_user_test_interval is not None else None)
+                contest.min_user_test_interval.total_seconds() if
+                contest.min_user_test_interval is not None else None)
             if contest.min_user_test_interval is not None:
                 contest.min_user_test_interval = \
                     timedelta(seconds=contest.min_user_test_interval)
 
-            contest.start = self.get_argument("start",
+            contest.start = self.get_argument(
+                "start",
                 str(contest.start) if contest.start is not None else "")
             if contest.start == "":
                 contest.start = None
@@ -564,7 +568,8 @@ class ContestHandler(BaseHandler):
                 contest.start = datetime.strptime(contest.start,
                                                   "%Y-%m-%d %H:%M:%S.%f")
 
-            contest.stop = self.get_argument("stop",
+            contest.stop = self.get_argument(
+                "stop",
                 str(contest.stop) if contest.stop is not None else "")
             if contest.stop == "":
                 contest.stop = None
@@ -574,17 +579,19 @@ class ContestHandler(BaseHandler):
                 contest.stop = datetime.strptime(contest.stop,
                                                  "%Y-%m-%d %H:%M:%S.%f")
 
-            assert contest.start <= contest.stop, "Contest ends before it starts."
+            assert contest.start <= contest.stop, \
+                "Contest ends before it starts."
 
-            contest.timezone = self.get_argument("timezone",
+            contest.timezone = self.get_argument(
+                "timezone",
                 contest.timezone if contest.timezone is not None else "")
             if contest.timezone == "":
                 contest.timezone = None
 
             contest.per_user_time = self.get_non_negative_int(
                 "per_user_time",
-                contest.per_user_time.total_seconds() if \
-                    contest.per_user_time is not None else None)
+                contest.per_user_time.total_seconds() if
+                contest.per_user_time is not None else None)
             if contest.per_user_time is not None:
                 contest.per_user_time = \
                     timedelta(seconds=contest.per_user_time)
@@ -886,7 +893,8 @@ class AddTaskHandler(BaseHandler):
                 time_limit = None
             else:
                 time_limit = float(time_limit)
-                assert 0 <= time_limit < float("+inf"), "Time limit out of range."
+                assert 0 <= time_limit < float("+inf"), \
+                    "Time limit out of range."
 
             memory_limit = self.get_argument("memory_limit", "")
             if memory_limit == "":
@@ -908,7 +916,8 @@ class AddTaskHandler(BaseHandler):
 
             task_type_parameters = json.dumps(task_type_parameters)
 
-            submission_format_choice = self.get_argument("submission_format_choice", "")
+            submission_format_choice = self.get_argument(
+                "submission_format_choice", "")
 
             if submission_format_choice == "simple":
                 submission_format = [SubmissionFormatElement("%s.%%l" % name)]
@@ -930,7 +939,8 @@ class AddTaskHandler(BaseHandler):
                 raise ValueError("Submission format not recognized.")
 
             score_type = self.get_argument("score_type", "")
-            score_type_parameters = self.get_argument("score_type_parameters", "")
+            score_type_parameters = self.get_argument("score_type_parameters",
+                                                      "")
 
             token_initial = self.get_non_negative_int(
                 "token_initial",
@@ -994,15 +1004,15 @@ class AddTaskHandler(BaseHandler):
             return
 
         task = Task(name, title, statements, attachments,
-                 time_limit, memory_limit, primary_statements,
-                 task_type, task_type_parameters, submission_format, managers,
-                 score_type, score_type_parameters, testcases,
-                 token_initial, token_max, token_total,
-                 token_min_interval, token_gen_time, token_gen_number,
-                 max_submission_number, max_user_test_number,
-                 min_submission_interval, min_user_test_interval,
-                 score_precision,
-                 contest=self.contest, num=len(self.contest.tasks))
+                    time_limit, memory_limit, primary_statements,
+                    task_type, task_type_parameters, submission_format,
+                    managers, score_type, score_type_parameters, testcases,
+                    token_initial, token_max, token_total,
+                    token_min_interval, token_gen_time, token_gen_number,
+                    max_submission_number, max_user_test_number,
+                    min_submission_interval, min_user_test_interval,
+                    score_precision,
+                    contest=self.contest, num=len(self.contest.tasks))
         self.sql_session.add(task)
 
         if try_commit(self.sql_session, self):
@@ -1020,9 +1030,10 @@ class TaskHandler(BaseHandler):
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
-        self.r_params["submissions"] = self.sql_session.query(Submission)\
-                                  .join(Task).filter(Task.id == task_id)\
-                                  .order_by(Submission.timestamp.desc()).all()
+        self.r_params["submissions"] = \
+            self.sql_session.query(Submission)\
+                .join(Task).filter(Task.id == task_id)\
+                .order_by(Submission.timestamp.desc()).all()
         self.render("task.html", **self.r_params)
 
     def post(self, task_id):
@@ -1035,19 +1046,23 @@ class TaskHandler(BaseHandler):
 
             task.title = self.get_argument("title", task.title)
 
-            task.primary_statements = self.get_argument("primary_statements",
-                                                        task.primary_statements)
+            task.primary_statements = self.get_argument(
+                "primary_statements", task.primary_statements)
 
-            task.time_limit = self.get_argument("time_limit",
+            task.time_limit = self.get_argument(
+                "time_limit",
                 str(task.time_limit) if task.time_limit is not None else "")
             if task.time_limit == "":
                 task.time_limit = None
             else:
                 task.time_limit = float(task.time_limit)
-                assert 0 <= task.time_limit < float("+inf"), "Time limit out of range."
+                assert 0 <= task.time_limit < float("+inf"), \
+                    "Time limit out of range."
 
-            task.memory_limit = self.get_argument("memory_limit",
-                str(task.memory_limit) if task.memory_limit is not None else "")
+            task.memory_limit = self.get_argument(
+                "memory_limit",
+                str(task.memory_limit)
+                if task.memory_limit is not None else "")
             if task.memory_limit == "":
                 task.memory_limit = None
             else:
@@ -1060,7 +1075,8 @@ class TaskHandler(BaseHandler):
                 task_type_class = get_task_type(task_type_name=task.task_type)
             except KeyError:
                 # Task type not found.
-                raise ValueError("Task type not recognized: %s." % task.task_type)
+                raise ValueError("Task type not recognized: %s." %
+                                 task.task_type)
 
             task.task_type_parameters = task_type_class.parse_handler(
                 self, "TaskTypeOptions_%s_" % task.task_type)
@@ -1077,8 +1093,8 @@ class TaskHandler(BaseHandler):
                         self.sql_session.delete(element)
                     del task.submission_format[:]
                     for element in format_list:
-                        self.sql_session.add(SubmissionFormatElement(str(element),
-                                                                     task))
+                        self.sql_session.add(
+                            SubmissionFormatElement(str(element), task))
                 except Exception as error:
                     # FIXME Are the following two commands really needed?
                     self.sql_session.rollback()
@@ -1087,8 +1103,8 @@ class TaskHandler(BaseHandler):
 
             task.score_type = self.get_argument("score_type",
                                                 task.score_type)
-            task.score_type_parameters = self.get_argument("score_type_parameters",
-                                                           task.score_type_parameters)
+            task.score_type_parameters = self.get_argument(
+                "score_type_parameters", task.score_type_parameters)
 
             task.token_initial = self.get_non_negative_int(
                 "token_initial",
@@ -1122,15 +1138,15 @@ class TaskHandler(BaseHandler):
                 task.max_user_test_number)
             task.min_submission_interval = self.get_non_negative_int(
                 "min_submission_interval",
-                task.min_submission_interval.total_seconds() if \
-                    task.min_submission_interval is not None else None)
+                task.min_submission_interval.total_seconds() if
+                task.min_submission_interval is not None else None)
             if task.min_submission_interval is not None:
                 task.min_submission_interval = \
                     timedelta(seconds=task.min_submission_interval)
             task.min_user_test_interval = self.get_non_negative_int(
                 "min_user_test_interval",
-                task.min_user_test_interval.total_seconds() if \
-                    task.min_user_test_interval is not None else None)
+                task.min_user_test_interval.total_seconds() if
+                task.min_user_test_interval is not None else None)
             if task.min_user_test_interval is not None:
                 task.min_user_test_interval = \
                     timedelta(seconds=task.min_user_test_interval)
@@ -1282,7 +1298,9 @@ class UserViewHandler(BaseHandler):
                 return
         user.starting_time = starting_time
 
-        user.extra_time = self.get_argument("extra_time", str(int(user.extra_time.total_seconds())))
+        user.extra_time = self.get_argument(
+            "extra_time",
+            str(int(user.extra_time.total_seconds())))
         try:
             user.extra_time = timedelta(seconds=int(user.extra_time))
         except Exception as error:
@@ -1294,7 +1312,8 @@ class UserViewHandler(BaseHandler):
             return
 
         user.hidden = bool(self.get_argument("hidden", False))
-        user.primary_statements = self.get_argument("primary_statements", user.primary_statements)
+        user.primary_statements = self.get_argument("primary_statements",
+                                                    user.primary_statements)
 
         if try_commit(self.sql_session, self):
             self.application.service.scoring_service.reinitialize()
@@ -1526,7 +1545,8 @@ class NotificationsHandler(BaseHandler):
 
         for question in questions:
             res.append({"type": "new_question",
-                        "timestamp": make_timestamp(question.question_timestamp),
+                        "timestamp":
+                        make_timestamp(question.question_timestamp),
                         "subject": question.subject,
                         "text": question.text})
 
@@ -1579,7 +1599,7 @@ _aws_handlers = [
     (r"/resources/([0-9]+|all)",          ResourcesHandler),
     (r"/resources/([0-9]+|all)/([0-9]+)", ResourcesHandler),
     (r"/notifications",               NotificationsHandler),
-    ]
+]
 
 
 def main():

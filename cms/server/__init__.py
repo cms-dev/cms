@@ -76,8 +76,8 @@ def extract_archive(temp_name, original_filename):
                            (original_filename, error))
             return None
     elif original_filename.endswith(".tar.gz") \
-        or original_filename.endswith(".tar.bz2") \
-        or original_filename.endswith(".tar"):
+            or original_filename.endswith(".tar.bz2") \
+            or original_filename.endswith(".tar"):
         try:
             tar_object = tarfile.open(name=temp_name)
             for item in tar_object.getmembers():
@@ -427,7 +427,7 @@ def file_handler_gen(BaseClass):
             try:
                 self.temp_filename = \
                     self.application.service.file_cacher.get_file(
-                    digest, temp_path=True)
+                        digest, temp_path=True)
             except Exception as error:
                 logger.error("Exception while retrieving file `%s'. %r" %
                              (filename, error))

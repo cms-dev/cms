@@ -57,13 +57,13 @@ from cms.async import ServiceCoord
 from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import Session, Contest, User, Task, \
-     Question, Submission, Token, File, UserTest, UserTestFile, \
-     UserTestManager
+    Question, Submission, Token, File, UserTest, UserTestFile, \
+    UserTestManager
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, extract_archive, \
-     actual_phase_required, get_url_root, filter_ascii, \
-     CommonRequestHandler
+    actual_phase_required, get_url_root, filter_ascii, \
+    CommonRequestHandler
 from cmscommon import ISOCodes
 from cmscommon.Cryptographics import encrypt_number
 from cmscommon.DateTime import make_datetime, make_timestamp, get_timezone
@@ -118,7 +118,7 @@ class BaseHandler(CommonRequestHandler):
 
         # Check if the cookie is expired.
         if self.timestamp - last_update > \
-               timedelta(seconds=config.cookie_duration):
+                timedelta(seconds=config.cookie_duration):
             self.clear_cookie("login")
             return None
 
@@ -131,8 +131,9 @@ class BaseHandler(CommonRequestHandler):
 
         if self.refresh_cookie:
             self.set_secure_cookie("login",
-                               pickle.dumps((user.username, make_timestamp())),
-                               expires_days=None)
+                                   pickle.dumps((user.username,
+                                                 make_timestamp())),
+                                   expires_days=None)
 
         return user
 
@@ -257,8 +258,8 @@ class BaseHandler(CommonRequestHandler):
                         ret["current_phase_end"] = self.contest.stop
                     else:
                         user_end_time = min(
-                            self.current_user.starting_time + \
-                                self.contest.per_user_time,
+                            self.current_user.starting_time +
+                            self.contest.per_user_time,
                             self.contest.stop)
                         if self.timestamp <= user_end_time:
                             ret["current_phase_begin"] = \
@@ -284,16 +285,16 @@ class BaseHandler(CommonRequestHandler):
             elif self.current_user.starting_time is not None:
                 ret["valid_phase_begin"] = self.current_user.starting_time
                 ret["valid_phase_end"] = min(
-                    self.current_user.starting_time + \
-                        self.contest.per_user_time,
+                    self.current_user.starting_time +
+                    self.contest.per_user_time,
                     self.contest.stop)
 
             # consider the extra time
             if ret["valid_phase_end"] is not None:
                 ret["valid_phase_end"] += self.current_user.extra_time
                 if ret["valid_phase_begin"] <= \
-                       self.timestamp <= \
-                       ret["valid_phase_end"]:
+                        self.timestamp <= \
+                        ret["valid_phase_end"]:
                     ret["phase"] = 0
                     ret["actual_phase"] = 0
                     ret["current_phase_begin"] = ret["valid_phase_begin"]
@@ -385,7 +386,7 @@ class ContestWebServer(WebService):
                                         "static"),
             "cookie_secret": base64.b64encode(config.secret_key),
             "debug": config.tornado_debug,
-            }
+        }
         parameters["is_proxy_used"] = config.is_proxy_used
         WebService.__init__(
             self,
@@ -468,13 +469,13 @@ class LoginHandler(BaseHandler):
         filtered_pass = filter_ascii(password)
         if user is None or user.password != password:
             logger.info("Login error: user=%s pass=%s remote_ip=%s." %
-                      (filtered_user, filtered_pass, self.request.remote_ip))
+                        (filtered_user, filtered_pass, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
         if config.ip_lock and user.ip != "0.0.0.0" \
                 and user.ip != self.request.remote_ip:
             logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s." %
-                      (filtered_user, filtered_pass, self.request.remote_ip))
+                        (filtered_user, filtered_pass, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
         if user.hidden and config.block_hidden_users:
@@ -706,9 +707,10 @@ class NotificationsHandler(BaseHandler):
         # Announcements
         for announcement in self.contest.announcements:
             if announcement.timestamp > last_notification \
-                   and announcement.timestamp < self.timestamp:
+                    and announcement.timestamp < self.timestamp:
                 res.append({"type": "announcement",
-                            "timestamp": make_timestamp(announcement.timestamp),
+                            "timestamp":
+                            make_timestamp(announcement.timestamp),
                             "subject": announcement.subject,
                             "text": announcement.text})
 
@@ -716,7 +718,7 @@ class NotificationsHandler(BaseHandler):
             # Private messages
             for message in self.current_user.messages:
                 if message.timestamp > last_notification \
-                       and message.timestamp < self.timestamp:
+                        and message.timestamp < self.timestamp:
                     res.append({"type": "message",
                                 "timestamp": make_timestamp(message.timestamp),
                                 "subject": message.subject,
@@ -725,8 +727,8 @@ class NotificationsHandler(BaseHandler):
             # Answers to questions
             for question in self.current_user.questions:
                 if question.reply_timestamp is not None \
-                       and question.reply_timestamp > last_notification \
-                       and question.reply_timestamp < self.timestamp:
+                        and question.reply_timestamp > last_notification \
+                        and question.reply_timestamp < self.timestamp:
                     subject = question.reply_subject
                     text = question.reply_text
                     if question.reply_subject is None:
@@ -736,15 +738,15 @@ class NotificationsHandler(BaseHandler):
                         text = ""
                     res.append({"type": "question",
                                 "timestamp":
-                                    make_timestamp(question.reply_timestamp),
+                                make_timestamp(question.reply_timestamp),
                                 "subject": subject,
                                 "text": text})
 
         # Update the unread_count cookie before taking notifications
         # into account because we don't want to count them.
         prev_unread_count = self.get_secure_cookie("unread_count")
-        next_unread_count = len(res) + (int(prev_unread_count) \
-                            if prev_unread_count is not None else 0)
+        next_unread_count = len(res) + (
+            int(prev_unread_count) if prev_unread_count is not None else 0)
         self.set_secure_cookie("unread_count", str(next_unread_count))
 
         # Simple notifications
@@ -812,7 +814,8 @@ class SubmitHandler(BaseHandler):
         # Enforce maximum number of submissions
         try:
             if contest.max_submission_number is not None:
-                submission_c = self.sql_session.query(func.count(Submission.id))\
+                submission_c = self.sql_session\
+                    .query(func.count(Submission.id))\
                     .join(Submission.task)\
                     .filter(Task.contest == contest)\
                     .filter(Submission.user == self.current_user).scalar()
@@ -822,7 +825,8 @@ class SubmitHandler(BaseHandler):
                                "at most %d submissions among all tasks.") %
                         contest.max_submission_number)
             if task.max_submission_number is not None:
-                submission_t = self.sql_session.query(func.count(Submission.id))\
+                submission_t = self.sql_session\
+                    .query(func.count(Submission.id))\
                     .filter(Submission.task == task)\
                     .filter(Submission.user == self.current_user).scalar()
                 if submission_t >= task.max_submission_number:
@@ -895,7 +899,7 @@ class SubmitHandler(BaseHandler):
         # If the user submitted an archive, extract it and use content
         # as request.files.
         if len(self.request.files) == 1 and \
-               self.request.files.keys()[0] == "submission":
+                self.request.files.keys()[0] == "submission":
             archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
 
@@ -906,7 +910,7 @@ class SubmitHandler(BaseHandler):
                 temp_archive_file.write(archive_data["body"])
 
             archive_contents = extract_archive(temp_archive_filename,
-                archive_data["filename"])
+                                               archive_data["filename"])
 
             if archive_contents is None:
                 self.application.service.add_notification(
@@ -915,7 +919,8 @@ class SubmitHandler(BaseHandler):
                     self._("Invalid archive format!"),
                     self._("The submitted archive could not be opened."),
                     ContestWebServer.NOTIFICATION_ERROR)
-                self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
+                self.redirect("/tasks/%s/submissions" % quote(task.name,
+                                                              safe=''))
                 return
 
             for item in archive_contents:
@@ -952,7 +957,8 @@ class SubmitHandler(BaseHandler):
         submission_lang = None
         file_digests = {}
         retrieved = 0
-        if task_type.ALLOW_PARTIAL_SUBMISSION and last_submission_t is not None:
+        if task_type.ALLOW_PARTIAL_SUBMISSION and \
+                last_submission_t is not None:
             for filename in required.difference(provided):
                 if filename in last_submission_t.files:
                     # If we retrieve a language-dependent file from
@@ -1015,7 +1021,7 @@ class SubmitHandler(BaseHandler):
                 self.timestamp,
                 self._("Submission too big!"),
                 self._("Each source file must be at most %d bytes long.") %
-                    config.max_submission_length,
+                config.max_submission_length,
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
@@ -1121,9 +1127,9 @@ class UseTokenHandler(BaseHandler):
         # Don't trust the user, check again if (s)he can really play
         # the token.
         tokens_available = self.contest.tokens_available(
-                               self.current_user.username,
-                               task.name,
-                               self.timestamp)
+            self.current_user.username,
+            task.name,
+            self.timestamp)
         if tokens_available[0] == 0 or tokens_available[2] is not None:
             logger.warning("User %s tried to play a token "
                            "when it shouldn't."
@@ -1218,12 +1224,16 @@ class SubmissionStatusHandler(BaseHandler):
                 self._("Evaluated"), self._("details"))
 
             if score_type is not None and score_type.max_public_score != 0:
-                data["max_public_score"] = "%g" % round(score_type.max_public_score, task.score_precision)
-            data["public_score"] = "%g" % round(submission.public_score, task.score_precision)
+                data["max_public_score"] = "%g" % \
+                    round(score_type.max_public_score, task.score_precision)
+            data["public_score"] = "%g" % \
+                round(submission.public_score, task.score_precision)
             if submission.token is not None:
                 if score_type is not None and score_type.max_score != 0:
-                    data["max_score"] = "%g" % round(score_type.max_score, task.score_precision)
-                data["score"] = "%g" % round(submission.score, task.score_precision)
+                    data["max_score"] = "%g" % \
+                        round(score_type.max_score, task.score_precision)
+                data["score"] = "%g" % \
+                    round(submission.score, task.score_precision)
 
         self.write(data)
 
@@ -1395,7 +1405,7 @@ class UserTestHandler(BaseHandler):
         # If the user submitted an archive, extract it and use content
         # as request.files.
         if len(self.request.files) == 1 and \
-               self.request.files.keys()[0] == "submission":
+                self.request.files.keys()[0] == "submission":
             archive_data = self.request.files["submission"][0]
             del self.request.files["submission"]
 
@@ -1406,7 +1416,7 @@ class UserTestHandler(BaseHandler):
                 temp_archive_file.write(archive_data["body"])
 
             archive_contents = extract_archive(temp_archive_filename,
-                archive_data["filename"])
+                                               archive_data["filename"])
 
             if archive_contents is None:
                 self.application.service.add_notification(
@@ -1424,9 +1434,9 @@ class UserTestHandler(BaseHandler):
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
         # type says so.
-        required = set([x.filename for x in task.submission_format] \
-                       + task_type.get_user_managers(task.submission_format) \
-                       + ["input"])
+        required = set([x.filename for x in task.submission_format] +
+                       task_type.get_user_managers(task.submission_format) +
+                       ["input"])
         provided = set(self.request.files.keys())
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
@@ -1516,7 +1526,7 @@ class UserTestHandler(BaseHandler):
                 self.timestamp,
                 self._("Test too big!"),
                 self._("Each source file must be at most %d bytes long.") %
-                    config.max_submission_length,
+                config.max_submission_length,
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/testing?%s" % quote(task.name, safe=''))
             return
@@ -1526,7 +1536,7 @@ class UserTestHandler(BaseHandler):
                 self.timestamp,
                 self._("Input too big!"),
                 self._("The input file must be at most %d bytes long.") %
-                    config.max_input_length,
+                config.max_input_length,
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/testing?%s" % quote(task.name, safe=''))
             return
@@ -1546,7 +1556,7 @@ class UserTestHandler(BaseHandler):
                 with codecs.open(
                         os.path.join(path,
                                      str(int(make_timestamp(self.timestamp)))),
-                    "w", "utf-8") as file_:
+                        "w", "utf-8") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
                                  task.id,
@@ -1582,12 +1592,12 @@ class UserTestHandler(BaseHandler):
         logger.info("All files stored for test sent by %s" %
                     self.current_user.username)
         user_test = UserTest(user=self.current_user,
-                            task=task,
-                            timestamp=self.timestamp,
-                            files={},
-                            managers={},
-                            input=file_digests["input"],
-                            language=submission_lang)
+                             task=task,
+                             timestamp=self.timestamp,
+                             files={},
+                             managers={},
+                             input=file_digests["input"],
+                             language=submission_lang)
 
         for filename in [x.filename for x in task.submission_format]:
             digest = file_digests[filename]
@@ -1638,7 +1648,8 @@ class UserTestStatusHandler(BaseHandler):
             data["status_text"] = "Compiling..."
         elif user_test.compilation_outcome == "fail":
             data["status"] = 2
-            data["status_text"] = "Compilation failed <a class=\"details\">details</a>"
+            data["status_text"] = "Compilation failed " + \
+                                  "<a class=\"details\">details</a>"
         elif not user_test.evaluated():
             data["status"] = 3
             data["status_text"] = "Executing..."
@@ -1789,8 +1800,10 @@ _cws_handlers = [
     (r"/tasks/(.*)/attachments/(.*)", TaskAttachmentViewHandler),
     (r"/tasks/(.*)/submit", SubmitHandler),
     (r"/tasks/(.*)/submissions/([1-9][0-9]*)", SubmissionStatusHandler),
-    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/details", SubmissionDetailsHandler),
-    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/files/(.*)", SubmissionFileHandler),
+    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/details",
+     SubmissionDetailsHandler),
+    (r"/tasks/(.*)/submissions/([1-9][0-9]*)/files/(.*)",
+     SubmissionFileHandler),
     (r"/tasks/(.*)/submissions/([1-9][0-9]*)/token", UseTokenHandler),
     (r"/tasks/(.*)/test", UserTestHandler),
     (r"/tasks/(.*)/tests/([1-9][0-9]*)", UserTestStatusHandler),
@@ -1803,7 +1816,7 @@ _cws_handlers = [
     (r"/question", QuestionHandler),
     (r"/testing", UserTestInterfaceHandler),
     (r"/stl/(.*)", StaticFileGzHandler, {"path": config.stl_path}),
-    ]
+]
 
 
 def main():
