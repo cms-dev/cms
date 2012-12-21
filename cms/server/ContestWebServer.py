@@ -1267,13 +1267,13 @@ class UserTestInterfaceHandler(BaseHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     def get(self):
-        usertests = dict()
+        user_tests = dict()
         default_task = None
 
         for task in self.contest.tasks:
             if self.request.query == task.name:
                 default_task = task
-            usertests[task.id] = self.sql_session.query(UserTest)\
+            user_tests[task.id] = self.sql_session.query(UserTest)\
                 .filter(UserTest.user == self.current_user)\
                 .filter(UserTest.task == task).all()
 
@@ -1281,7 +1281,7 @@ class UserTestInterfaceHandler(BaseHandler):
             default_task = self.contest.tasks[0]
 
         self.render("test_interface.html", default_task=default_task,
-                    usertests=usertests, **self.r_params)
+                    user_tests=user_tests, **self.r_params)
 
 
 class UserTestHandler(BaseHandler):
@@ -1309,23 +1309,23 @@ class UserTestHandler(BaseHandler):
         # Alias for easy access
         contest = self.contest
 
-        # Enforce maximum number of usertests
+        # Enforce maximum number of user_tests
         try:
             if contest.max_user_test_number is not None:
-                usertest_c = self.sql_session.query(func.count(UserTest.id))\
+                user_test_c = self.sql_session.query(func.count(UserTest.id))\
                     .join(UserTest.task)\
                     .filter(Task.contest == contest)\
                     .filter(UserTest.user == self.current_user).scalar()
-                if usertest_c >= contest.max_user_test_number:
+                if user_test_c >= contest.max_user_test_number:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
                                "at most %d tests among all tasks.") %
                         contest.max_user_test_number)
             if task.max_user_test_number is not None:
-                usertest_t = self.sql_session.query(func.count(UserTest.id))\
+                user_test_t = self.sql_session.query(func.count(UserTest.id))\
                     .filter(UserTest.task == task)\
                     .filter(UserTest.user == self.current_user).scalar()
-                if usertest_t >= task.max_user_test_number:
+                if user_test_t >= task.max_user_test_number:
                     raise ValueError(
                         self._("You have reached the maximum limit of "
                                "at most %d tests on this task.") %
@@ -1340,31 +1340,31 @@ class UserTestHandler(BaseHandler):
             self.redirect("/testing?%s" % quote(task.name, safe=''))
             return
 
-        # Enforce minimum time between usertests
+        # Enforce minimum time between user_tests
         try:
             if contest.min_user_test_interval is not None:
-                last_usertest_c = self.sql_session.query(UserTest)\
+                last_user_test_c = self.sql_session.query(UserTest)\
                     .join(UserTest.task)\
                     .filter(Task.contest == contest)\
                     .filter(UserTest.user == self.current_user)\
                     .order_by(UserTest.timestamp.desc()).first()
-                if last_usertest_c is not None and \
-                        self.timestamp - last_usertest_c.timestamp < \
+                if last_user_test_c is not None and \
+                        self.timestamp - last_user_test_c.timestamp < \
                         contest.min_user_test_interval:
                     raise ValueError(
                         self._("Among all tasks, you can test again "
                                "after %d seconds from last test.") %
                         contest.min_user_test_interval.total_seconds())
-            # We get the last usertest even if we may not need it
+            # We get the last user_test even if we may not need it
             # for min_user_test_interval because we may need it later,
             # in case this is a ALLOW_PARTIAL_SUBMISSION task.
-            last_usertest_t = self.sql_session.query(UserTest)\
+            last_user_test_t = self.sql_session.query(UserTest)\
                 .filter(UserTest.task == task)\
                 .filter(UserTest.user == self.current_user)\
                 .order_by(UserTest.timestamp.desc()).first()
             if task.min_user_test_interval is not None:
-                if last_usertest_t is not None and \
-                        self.timestamp - last_usertest_t.timestamp < \
+                if last_user_test_t is not None and \
+                        self.timestamp - last_user_test_t.timestamp < \
                         task.min_user_test_interval:
                     raise ValueError(
                         self._("For this task, you can test again "
@@ -1453,16 +1453,16 @@ class UserTestHandler(BaseHandler):
         submission_lang = None
         file_digests = {}
         retrieved = 0
-        if task_type.ALLOW_PARTIAL_SUBMISSION and last_usertest_t is not None:
+        if task_type.ALLOW_PARTIAL_SUBMISSION and last_user_test_t is not None:
             for filename in required.difference(provided):
-                if filename in last_usertest_t.files:
+                if filename in last_user_test_t.files:
                     # If we retrieve a language-dependent file from
                     # last submission, we take not that language must
                     # be the same.
                     if "%l" in filename:
-                        submission_lang = last_usertest_t.language
+                        submission_lang = last_user_test_t.language
                     file_digests[filename] = \
-                        last_usertest_t.files[filename].digest
+                        last_user_test_t.files[filename].digest
                     retrieved += 1
 
         # We need to ensure that everytime we have a .%l in our
@@ -1581,7 +1581,7 @@ class UserTestHandler(BaseHandler):
         # All the files are stored, ready to submit!
         logger.info("All files stored for test sent by %s" %
                     self.current_user.username)
-        usertest = UserTest(user=self.current_user,
+        user_test = UserTest(user=self.current_user,
                             task=task,
                             timestamp=self.timestamp,
                             files={},
@@ -1591,17 +1591,17 @@ class UserTestHandler(BaseHandler):
 
         for filename in [x.filename for x in task.submission_format]:
             digest = file_digests[filename]
-            self.sql_session.add(UserTestFile(digest, filename, usertest))
+            self.sql_session.add(UserTestFile(digest, filename, user_test))
         for filename in task_type.get_user_managers(task.submission_format):
             digest = file_digests[filename]
             if submission_lang is not None:
                 filename = filename.replace("%l", submission_lang)
-            self.sql_session.add(UserTestManager(digest, filename, usertest))
+            self.sql_session.add(UserTestManager(digest, filename, user_test))
 
-        self.sql_session.add(usertest)
+        self.sql_session.add(user_test)
         self.sql_session.commit()
         self.application.service.evaluation_service.new_user_test(
-            user_test_id=usertest.id)
+            user_test_id=user_test.id)
         self.application.service.add_notification(
             self.current_user.username,
             self.timestamp,
@@ -1618,44 +1618,44 @@ class UserTestStatusHandler(BaseHandler):
 
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, usertest_num):
+    def get(self, task_name, user_test_num):
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        usertest = self.sql_session.query(UserTest)\
+        user_test = self.sql_session.query(UserTest)\
             .filter(UserTest.user == self.current_user)\
             .filter(UserTest.task == task)\
             .order_by(UserTest.timestamp)\
-            .offset(int(usertest_num) - 1).first()
-        if usertest is None:
+            .offset(int(user_test_num) - 1).first()
+        if user_test is None:
             raise tornado.web.HTTPError(404)
 
         data = dict()
-        if not usertest.compiled():
+        if not user_test.compiled():
             data["status"] = 1
             data["status_text"] = "Compiling..."
-        elif usertest.compilation_outcome == "fail":
+        elif user_test.compilation_outcome == "fail":
             data["status"] = 2
             data["status_text"] = "Compilation failed <a class=\"details\">details</a>"
-        elif not usertest.evaluated():
+        elif not user_test.evaluated():
             data["status"] = 3
             data["status_text"] = "Executing..."
         else:
             data["status"] = 4
             data["status_text"] = "Executed <a class=\"details\">details</a>"
-            if usertest.execution_time is not None:
+            if user_test.execution_time is not None:
                 data["time"] = "%(seconds)0.3f s" % {
-                    'seconds': usertest.execution_time}
+                    'seconds': user_test.execution_time}
             else:
                 data["time"] = None
-            if usertest.memory_used is not None:
+            if user_test.memory_used is not None:
                 data["memory"] = "%(mb)0.2f MiB" % {
-                    'mb': usertest.memory_used / 1024. / 1024.}
+                    'mb': user_test.memory_used / 1024. / 1024.}
             else:
                 data["memory"] = None
-            data["output"] = usertest.output is not None
+            data["output"] = user_test.output is not None
 
         self.write(data)
 
@@ -1666,21 +1666,21 @@ class UserTestDetailsHandler(BaseHandler):
 
     @tornado.web.authenticated
     @actual_phase_required(0)
-    def get(self, task_name, usertest_num):
+    def get(self, task_name, user_test_num):
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        usertest = self.sql_session.query(UserTest)\
+        user_test = self.sql_session.query(UserTest)\
             .filter(UserTest.user == self.current_user)\
             .filter(UserTest.task == task)\
             .order_by(UserTest.timestamp)\
-            .offset(int(usertest_num) - 1).first()
-        if usertest is None:
+            .offset(int(user_test_num) - 1).first()
+        if user_test is None:
             raise tornado.web.HTTPError(404)
 
-        self.render("usertest_details.html", task=task, t=usertest)
+        self.render("user_test_details.html", task=task, t=user_test)
 
 
 class UserTestIOHandler(FileHandler):
@@ -1690,21 +1690,21 @@ class UserTestIOHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @tornado.web.asynchronous
-    def get(self, task_name, usertest_num, io):
+    def get(self, task_name, user_test_num, io):
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        usertest = self.sql_session.query(UserTest)\
+        user_test = self.sql_session.query(UserTest)\
             .filter(UserTest.user == self.current_user)\
             .filter(UserTest.task == task)\
             .order_by(UserTest.timestamp)\
-            .offset(int(usertest_num) - 1).first()
-        if usertest is None:
+            .offset(int(user_test_num) - 1).first()
+        if user_test is None:
             raise tornado.web.HTTPError(404)
 
-        digest = getattr(usertest, io)
+        digest = getattr(user_test, io)
         self.sql_session.close()
 
         if digest is None:
@@ -1722,30 +1722,30 @@ class UserTestFileHandler(FileHandler):
     @tornado.web.authenticated
     @actual_phase_required(0)
     @tornado.web.asynchronous
-    def get(self, task_name, usertest_num, filename):
+    def get(self, task_name, user_test_num, filename):
         try:
             task = self.contest.get_task(task_name)
         except KeyError:
             raise tornado.web.HTTPError(404)
 
-        usertest = self.sql_session.query(UserTest)\
+        user_test = self.sql_session.query(UserTest)\
             .filter(UserTest.user == self.current_user)\
             .filter(UserTest.task == task)\
             .order_by(UserTest.timestamp)\
-            .offset(int(usertest_num) - 1).first()
-        if usertest is None:
+            .offset(int(user_test_num) - 1).first()
+        if user_test is None:
             raise tornado.web.HTTPError(404)
 
         # filename follows our convention (e.g. 'foo.%l'), real_filename
         # follows the one we present to the user (e.g. 'foo.c').
         real_filename = filename
-        if usertest.language is not None:
-            real_filename = filename.replace("%l", usertest.language)
+        if user_test.language is not None:
+            real_filename = filename.replace("%l", user_test.language)
 
-        if filename in usertest.files:
-            digest = usertest.files[filename].digest
-        elif filename in usertest.managers:
-            digest = usertest.managers[filename].digest
+        if filename in user_test.files:
+            digest = user_test.files[filename].digest
+        elif filename in user_test.managers:
+            digest = user_test.managers[filename].digest
         else:
             raise tornado.web.HTTPError(404)
         self.sql_session.close()

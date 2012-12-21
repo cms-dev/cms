@@ -866,77 +866,77 @@ td.token_rules p:last-child {
     line-height: 18px;
 }
 
-.usertest_list colgroup col.time,
-.usertest_list colgroup col.datetime {
+.user_test_list colgroup col.time,
+.user_test_list colgroup col.datetime {
     width: 1%;
 }
 
-.usertest_list colgroup col.status {
+.user_test_list colgroup col.status {
     width: 20%;
 }
 
-.usertest_list colgroup col.time {
+.user_test_list colgroup col.time {
     width: 3%;
 }
 
-.usertest_list colgroup col.memory {
+.user_test_list colgroup col.memory {
     width: 3%;
 }
 
-.usertest_list colgroup col.input {
+.user_test_list colgroup col.input {
     width: 16%;
 }
 
-.usertest_list colgroup col.output {
+.user_test_list colgroup col.output {
     width: 16%;
 }
 
-.usertest_list colgroup col.files {
+.user_test_list colgroup col.files {
     width: 10%;
 }
 
-.usertest_list tbody tr td.no_usertests {
+.user_test_list tbody tr td.no_user_tests {
     font-style: italic;
     text-align: center !important;
 }
 
-.usertest_list tbody tr td.time,
-.usertest_list tbody tr td.datetime {
+.user_test_list tbody tr td.time,
+.user_test_list tbody tr td.datetime {
     white-space: nowrap;
 }
 
-.usertest_list tbody tr td.status .details {
+.user_test_list tbody tr td.status .details {
     float: right;
     cursor: pointer;
 }
 
-.usertest_list tbody tr td.time.undefined,
-.usertest_list tbody tr td.memory.undefined {
+.user_test_list tbody tr td.time.undefined,
+.user_test_list tbody tr td.memory.undefined {
     color: #AAA;
     white-space: nowrap;
 }
 
-.usertest_list tbody tr td.input,
-.usertest_list tbody tr td.output,
-.usertest_list tbody tr td.files {
+.user_test_list tbody tr td.input,
+.user_test_list tbody tr td.output,
+.user_test_list tbody tr td.files {
     padding: 3px;
 }
 
-.usertest_list tbody tr td.input .btn,
-.usertest_list tbody tr td.output .btn,
-.usertest_list tbody tr td.files .btn {
+.user_test_list tbody tr td.input .btn,
+.user_test_list tbody tr td.output .btn,
+.user_test_list tbody tr td.files .btn {
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     width: 100%;
     white-space: nowrap;
 }
 
-#usertest_detail .modal-body {
+#user_test_detail .modal-body {
     position: relative;
     height: 400px;
 }
 
-#usertest_detail .modal-body .loading {
+#user_test_detail .modal-body .loading {
     position: absolute;
     top: 50%;
     left: 0;
@@ -947,7 +947,7 @@ td.token_rules p:last-child {
     margin-top: -16px; /* half the height of the image */
 }
 
-#usertest_detail .modal-body .loading img {
+#user_test_detail .modal-body .loading img {
     display: block;
     height: 32px;
     width: 32px;

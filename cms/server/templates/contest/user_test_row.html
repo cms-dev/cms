@@ -4,26 +4,26 @@
     {% set col1 = "<td class=\"time\">%s</td>" % format_time(t.timestamp, timezone, locale=locale) %}
 {% end %}
 {% if not t.compiled() %}
-<tr data-usertest="{{ t_idx }}" data-status="1">
+<tr data-user-test="{{ t_idx }}" data-status="1">
     {% raw col1 %}
     <td class="status">
         {{ _("Compiling...") }}
     </td>
 {% elif t.compilation_outcome == "fail" %}
-<tr data-usertest="{{ t_idx }}" data-status="2">
+<tr data-user-test="{{ t_idx }}" data-status="2">
     {% raw col1 %}
     <td class="status">
         {{ _("Compilation failed") }}
         <a class="details">{{ _("details") }}</a>
     </td>
 {% elif not t.evaluated() %}
-<tr data-usertest="{{ t_idx }}" data-status="3">
+<tr data-user-test="{{ t_idx }}" data-status="3">
     {% raw col1 %}
     <td class="status">
         {{ _("Executing...") }}
     </td>
 {% else %}
-<tr data-usertest="{{ t_idx }}" data-status="4">
+<tr data-user-test="{{ t_idx }}" data-status="4">
     {% raw col1 %}
     <td class="status">
         {{ _("Executed") }}
