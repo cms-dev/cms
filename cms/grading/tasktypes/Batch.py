@@ -313,7 +313,6 @@ class Batch(TaskType):
                                              "comparator: %s" % (e.message,))
                                 success = False
 
-                    # Unknown evaluationg parameter!
                     else:
                         raise ValueError("Unrecognized third parameter"
                                          " `%s' for Batch tasktype." %

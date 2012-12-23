@@ -24,6 +24,7 @@
 
 """
 
+from cms import logger
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
 from cms.grading.ParameterTypes import ParameterTypeChoice
@@ -111,32 +112,43 @@ class OutputOnly(TaskType):
             "output.txt",
             output_digest)
 
-        # TODO: this should check self.parameters, not managers.
-        if len(self.job.managers) == 0:
+        if self.job.task_type_parameters[0] == "diff":
             # No manager: I'll do a white_diff between the submission
             # file and the correct output res.txt.
             success = True
             outcome, text = white_diff_step(
                 sandbox, "output.txt", "res.txt")
 
-        else:
+        elif self.job.task_type_parameters[0] == "comparator":
             # Manager present: wonderful, he'll do all the job.
-            manager_filename = self.job.managers.keys()[0]
-            sandbox.create_file_from_storage(
-                manager_filename,
-                self.job.managers[manager_filename].digest,
-                executable=True)
-            input_digest = self.job.testcases[test_number].input
-            sandbox.create_file_from_storage(
-                "input.txt",
-                input_digest)
-            success, _ = evaluation_step(
-                sandbox,
-                ["./%s" % manager_filename,
-                 "input.txt", "res.txt", "output.txt"],
-                allow_path=["input.txt", "output.txt", "res.txt"])
-            if success:
-                outcome, text = extract_outcome_and_text(sandbox)
+            manager_filename = "checker"
+            if not manager_filename in self.job.managers:
+                logger.error("Configuration error: missing or "
+                             "invalid comparator (it must be "
+                             "named `checker')")
+                success = False
+            else:
+                sandbox.create_file_from_storage(
+                    manager_filename,
+                    self.job.managers[manager_filename].digest,
+                    executable=True)
+                input_digest = self.job.testcases[test_number].input
+                sandbox.create_file_from_storage(
+                    "input.txt",
+                    input_digest)
+                success, _ = evaluation_step(
+                    sandbox,
+                    ["./%s" % manager_filename,
+                     "input.txt", "res.txt", "output.txt"],
+                    allow_path=["input.txt", "output.txt", "res.txt"])
+                if success:
+                    outcome, text = extract_outcome_and_text(sandbox)
+
+        else:
+            raise ValueError("Unrecognized first parameter "
+                             "`%s' for OutputOnly tasktype. "
+                             "Should be `diff' or `comparator'." %
+                             self.job.task_type_parameters[0])
 
         # Whatever happened, we conclude.
         evaluation['success'] = success

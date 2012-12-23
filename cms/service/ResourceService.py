@@ -66,7 +66,6 @@ class ResourceService(Service):
         "ContestWebServer": os.path.join("cms", "server"),
         }
 
-
     def __init__(self, shard, contest_id=None):
         """If contest_id is not None, we assume the user wants the
         autorestart feature.
