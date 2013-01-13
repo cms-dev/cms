@@ -988,7 +988,7 @@ class EvaluationService(Service):
                         evaluation = Evaluation(
                             text=info['text'],
                             outcome=info['outcome'],
-                            num=test_number,
+                            num=int(test_number),
                             memory_used=info['plus'].get('memory_used', None),
                             execution_time=info['plus']
                             .get('execution_time', None),
