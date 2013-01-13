@@ -103,10 +103,6 @@ class Base(object):
     base class given by SQLAlchemy.
 
     """
-    # Needed so that SQLAlchemy does not think that this corresponds
-    # to a table.
-    __abstract__ = True
-
     @property
     def sa_mapper(self):
         return object_mapper(self)
