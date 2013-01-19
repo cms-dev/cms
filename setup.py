@@ -200,13 +200,13 @@ def copytree(src_path, dest_path, owner, perm_files, perm_dirs):
 
 def build():
     """This function builds the pieces of CMS that need a compilation
-    and are not handled by setuptools: mo-box, localization files,
+    and are not handled by setuptools: isolate, localization files,
     pyjamas code for the client of RWS.
 
 
     """
-    print "compiling mo-box..."
-    os.chdir("box")
+    print "compiling isolate..."
+    os.chdir("isolate")
     os.system(os.path.join(".", "compile.sh"))
     os.chdir("..")
 
@@ -224,7 +224,7 @@ def build():
 
 def install():
     """Manual installation of files not handled by setuptools: cmsuser
-    user, mo-box, configuration, localization files, static files for
+    user, isolate, configuration, localization files, static files for
     RWS.
 
     """
@@ -237,10 +237,10 @@ def install():
     cmsuser = pwd.getpwnam("cmsuser")
     root = pwd.getpwnam("root")
 
-    print "copying mo-box to /usr/local/bin/."
+    print "copying isolate to /usr/local/bin/."
     makedir(os.path.join("/", "usr", "local", "bin"), root, 0755)
-    copyfile(os.path.join(".", "box", "mo-box"),
-             os.path.join("/", "usr", "local", "bin", "mo-box"),
+    copyfile(os.path.join(".", "isolate", "isolate"),
+             os.path.join("/", "usr", "local", "bin", "isolate"),
              root, 0755)
 
     print "copying configuration to /usr/local/etc/."
