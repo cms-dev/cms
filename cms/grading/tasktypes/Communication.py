@@ -182,7 +182,6 @@ class Communication(TaskType):
             executable_filename:
             self.job.executables[executable_filename].digest
             }
-        allow_path = [fifo_in, fifo_out]
         for filename, digest in executables_to_get.iteritems():
             sandbox_user.create_file_from_storage(
                 filename, digest, executable=True)
@@ -190,8 +189,7 @@ class Communication(TaskType):
             sandbox_user,
             command,
             self.job.time_limit,
-            self.job.memory_limit,
-            allow_path)
+            self.job.memory_limit)
 
         # Consume output.
         wait_without_std([process, manager])

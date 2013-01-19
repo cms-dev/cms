@@ -143,7 +143,7 @@ class Sandbox:
      * commands.log: a text file with the commands ran into this
        Sandbox, one for each line;
 
-     * run.log.N: for each N, the log produced by mo-box when running
+     * run.log.N: for each N, the log produced by the sandbox when running
        command number N.
 
     """
@@ -158,10 +158,27 @@ class Sandbox:
         """
         self.file_cacher = file_cacher
 
+        # Get our shard number, to use as a unique identifier for the sandbox
+        # on this machine.
+        if file_cacher is not None and file_cacher.service is not None:
+            box_id = file_cacher.service._my_coord.shard
+        else:
+            box_id = 0
+
+        # We create a directory "tmp" inside the outer temporary directory,
+        # because the sandbox will bind-mount the inner one. The sandbox also
+        # runs code as a different user, and so we need to ensure that they can
+        # read and write to the directory. But we don't want everybody on the
+        # system to, which is why the outer directory exists with no read
+        # permissions.
         if temp_dir is None:
             temp_dir = config.temp_dir
-        self.path = tempfile.mkdtemp(dir=temp_dir)
-        self.exec_name = 'mo-box'
+        self.outer_temp_dir = tempfile.mkdtemp(dir=temp_dir)
+        self.path = os.path.join(self.outer_temp_dir, "tmp")
+        os.mkdir(self.path)
+        os.chmod(self.path, 0777)
+
+        self.exec_name = 'isolate'
         self.box_exec = self.detect_box_executable()
         self.info_basename = "run.log"   # Used for -M
         self.cmd_file = "commands.log"
@@ -170,38 +187,39 @@ class Sandbox:
         logger.debug("Sandbox in `%s' created, using box `%s'." %
                      (self.path, self.box_exec))
 
-        # Default parameters for mo-box
-        self.file_check = None         # -a
+        # Default parameters for isolate
+        self.box_id = box_id           # -b
+        self.cgroup = True             # --cg
         self.chdir = None              # -c
+        self.dirs = []                 # -d
         self.preserve_env = False      # -e
         self.inherit_env = []          # -E
         self.set_env = {}              # -E
-        self.filter_syscalls = None    # -f
-        self.allow_fork = False        # -F
         self.stdin_file = None         # -i
         self.stack_space = None        # -k
         self.address_space = None      # -m
         self.stdout_file = None        # -o
-        self.allow_path = []           # -p
-        self.set_path = {}             # -p
+        self.max_processes = 1         # -p
         self.stderr_file = None        # -r
-        self.allow_syscall = []        # -s
-        self.set_syscall = {}          # -s
-        self.deny_timing = False       # -S
         self.timeout = None            # -t
         self.verbosity = 0             # -v
         self.wallclock_timeout = None  # -w
         self.extra_timeout = None      # -x
 
-    def detect_box_executable(self):
-        """Try to find a mo-box executable. It looks before in the
-        local directory, then in ./box, then in the system paths.
+        # Tell isolate to get the sandbox ready.
+        box_cmd = [self.box_exec, "--cg", "-b", str(self.box_id)]
+        if subprocess.call(box_cmd + ["--init"]) != 0:
+            raise SandboxInterfaceException("Failed to initialize sandbox.")
 
-        return (string): the path to a valid (hopefully) mo-box.
+    def detect_box_executable(self):
+        """Try to find an isolate executable. It looks before in the
+        local directory, then in ./isolate, then in the system paths.
+
+        return (string): the path to a valid (hopefully) isolate.
 
         """
         paths = [os.path.join('.', self.exec_name),
-                 os.path.join('.', 'box', self.exec_name),
+                 os.path.join('.', 'isolate', self.exec_name),
                  self.exec_name]
         for path in paths:
             if os.path.exists(path):
@@ -219,20 +237,25 @@ class Sandbox:
 
         """
         res = list()
-        if self.file_check is not None:
-            res += ["-a", str(self.file_check)]
+        if self.box_id is not None:
+            res += ["-b", str(self.box_id)]
+        if self.cgroup:
+            res += ["--cg"]
         if self.chdir is not None:
             res += ["-c", self.chdir]
+        for in_name, out_name, options in self.dirs:
+            s = in_name
+            if out_name is not None:
+                s += "=" + out_name
+            if options is not None:
+                s += ":" + options
+            res += ["-d", s]
         if self.preserve_env:
             res += ["-e"]
         for var in self.inherit_env:
             res += ["-E", var]
         for var, value in self.set_env.items():
             res += ["-E", "%s=%s" % (var, value)]
-        if self.filter_syscalls is not None and self.filter_syscalls > 0:
-            res += ["-%s" % ("f" * self.filter_syscalls)]
-        if self.allow_fork:
-            res += ["-F"]
         if self.stdin_file is not None:
             res += ["-i", self.stdin_file]
         if self.stack_space is not None:
@@ -241,18 +264,12 @@ class Sandbox:
             res += ["-m", str(self.address_space)]
         if self.stdout_file is not None:
             res += ["-o", self.stdout_file]
-        for path in self.allow_path:
-            res += ["-p", path]
-        for path, action in self.set_path.items():
-            res += ["-p", "%s=%s" % (path, action)]
+        if self.max_processes is not None:
+            res += ["-p=%d" % self.max_processes]
+        else:
+            res += ["-p="]
         if self.stderr_file is not None:
             res += ["-r", self.stderr_file]
-        for syscall in self.allow_syscall:
-            res += ["-s", syscall]
-        for syscall, action in self.set_syscall.items():
-            res += ["-s", "%s=%s" % (syscall, action)]
-        if self.deny_timing:
-            res += ["-S"]
         if self.timeout is not None:
             res += ["-t", str(self.timeout)]
         res += ["-v"] * self.verbosity
@@ -262,6 +279,7 @@ class Sandbox:
             res += ["-x", str(self.extra_timeout)]
         res += ["-M", self.relative_path("%s.%d" %
                                          (self.info_basename, self.exec_num))]
+        res += ["--run"]
         return res
 
     def get_log(self):
@@ -319,8 +337,8 @@ class Sandbox:
         return (float): memory used by the sandbox (in bytes).
 
         """
-        if 'mem' in self.log:
-            return int(self.log['mem'][0])
+        if 'cg-mem' in self.log:
+            return int(self.log['cg-mem'][0]) * 1024
         return None
 
     @with_log
@@ -622,8 +640,7 @@ class Sandbox:
         os.remove(self.relative_path(path))
 
     def execute(self, command):
-        """Execute the given command in the sandbox using
-        subprocess.call.
+        """Execute the given command in the sandbox.
 
         command (list): executable filename and arguments of the
                         command.
@@ -663,13 +680,22 @@ class Sandbox:
                      " ".join(args))
         with open(self.relative_path(self.cmd_file), 'a') as commands:
             commands.write("%s\n" % (" ".join(args)))
-        return subprocess.Popen(args,
-                                stdin=stdin, stdout=stdout, stderr=stderr,
-                                close_fds=close_fds)
+        try:
+            p = subprocess.Popen(args,
+                                    stdin=stdin, stdout=stdout, stderr=stderr,
+                                    close_fds=close_fds)
+        except OSError, e:
+            logger.critical("Failed to execute program in sandbox with command: %s" %
+                        " ".join(args))
+            logger.critical("Exception: %r" % e)
+            raise
+
+        return p
+
 
     def execute_without_std(self, command, wait=False):
         """Execute the given command in the sandbox using
-        subprocess.Popen and discardind standard input, output and
+        subprocess.Popen and discarding standard input, output and
         error. More specifically, the standard input gets closed just
         after the execution has started; standard output and error are
         read until the end, in a way that prevents the execution from
@@ -682,8 +708,8 @@ class Sandbox:
 
         """
         popen = self.popen(command, stdin=subprocess.PIPE,
-                           stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                           close_fds=True)
+                        stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                        close_fds=True)
 
         # If the caller wants us to wait for completion, we also avoid
         # std*** to interfere with command. Otherwise we let the
@@ -694,8 +720,14 @@ class Sandbox:
             return popen
 
     def delete(self):
-        """Delete the directory where the sendbox operated.
+        """Delete the directory where the sandbox operated.
 
         """
         logger.debug("Deleting sandbox in %s" % self.path)
-        shutil.rmtree(self.path)
+
+        # Tell isolate to cleanup the sandbox.
+        box_cmd = [self.box_exec, "--cg", "-b", str(self.box_id)]
+        subprocess.call(box_cmd + ["--cleanup"])
+
+        # Delete the working directory.
+        shutil.rmtree(self.outer_temp_dir)

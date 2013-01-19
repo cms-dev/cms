@@ -20,6 +20,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+
 from cms import logger
 from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step, human_evaluation_message, is_evaluation_passed, \
@@ -197,7 +199,7 @@ class Batch(TaskType):
 
         # Prepare the execution
         executable_filename = self.job.executables.keys()[0]
-        command = [sandbox.relative_path(executable_filename)]
+        command = [os.path.join(".", executable_filename)]
         executables_to_get = {
             executable_filename:
             self.job.executables[executable_filename].digest
@@ -214,7 +216,6 @@ class Batch(TaskType):
         files_to_get = {
             input_filename: self.job.testcases[test_number].input
             }
-        allow_path = [input_filename, output_filename]
 
         # Put the required files into the sandbox
         for filename, digest in executables_to_get.iteritems():
@@ -228,7 +229,6 @@ class Batch(TaskType):
             command,
             self.job.time_limit,
             self.job.memory_limit,
-            allow_path,
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect)
 
@@ -300,10 +300,7 @@ class Batch(TaskType):
                             success, _ = evaluation_step(
                                 sandbox,
                                 ["./%s" % manager_filename,
-                                 input_filename, "res.txt", output_filename],
-                                allow_path=[input_filename,
-                                            "res.txt",
-                                            output_filename])
+                                 input_filename, "res.txt", output_filename])
                         if success:
                             try:
                                 outcome, text = \

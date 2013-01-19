@@ -102,23 +102,21 @@ def compilation_step(sandbox, command):
 
     """
     # Set sandbox parameters suitable for compilation.
-    sandbox.chdir = sandbox.path
+    sandbox.dirs += [("/etc", None, None)]
+    path_in_sandbox = "/tmp"
+    sandbox.dirs += [(path_in_sandbox, sandbox.path, "rw")]
+    sandbox.chdir = path_in_sandbox
+    sandbox.chdir = "/tmp"
     sandbox.preserve_env = True
-    sandbox.filter_syscalls = 1
-    sandbox.allow_syscall = ["waitpid", "prlimit64"]
-    sandbox.allow_fork = True
-    sandbox.file_check = 2
+    sandbox.max_processes = None
     # FIXME - File access limits are not enforced on children
     # processes (like ld).
-    sandbox.set_env['TMPDIR'] = sandbox.path
-    sandbox.allow_path = ['/etc/', '/lib/', '/usr/',
-                          '%s/' % (sandbox.path)]
-    sandbox.allow_path += ["/proc/self/exe"]
+    sandbox.set_env['TMPDIR'] = path_in_sandbox
     sandbox.timeout = 10
     sandbox.wallclock_timeout = 20
     sandbox.address_space = 256 * 1024
-    sandbox.stdout_file = sandbox.relative_path("compiler_stdout.txt")
-    sandbox.stderr_file = sandbox.relative_path("compiler_stderr.txt")
+    sandbox.stdout_file = os.path.join(path_in_sandbox, "compiler_stdout.txt")
+    sandbox.stderr_file = os.path.join(path_in_sandbox, "compiler_stderr.txt")
 
     # Actually run the compilation command.
     logger.debug("Starting compilation step.")
@@ -226,7 +224,6 @@ def compilation_step(sandbox, command):
 
 def evaluation_step(sandbox, command,
                     time_limit=0, memory_limit=0,
-                    allow_path=None,
                     stdin_redirect=None, stdout_redirect=None):
     """Execute an evaluation command in the sandbox. Note that in some
     task types, there may be more than one evaluation commands (per
@@ -236,25 +233,27 @@ def evaluation_step(sandbox, command,
     command (string): the actual evaluation line.
     time_limit (float): time limit in seconds.
     memory_limit (int): memory limit in MB.
-    allow_path (list): list of relative paths accessible in the
-                       sandbox.
 
     return (bool, dict): True if the evaluation was successful, or
                          False; and additional data.
 
     """
     success = evaluation_step_before_run(
-        sandbox, command, time_limit, memory_limit, allow_path,
+        sandbox, command, time_limit, memory_limit,
         stdin_redirect, stdout_redirect, wait=True)
     if not success:
+        logger.debug("Job failed in evaluation_step_before_run.")
         return False, None
-    else:
-        return evaluation_step_after_run(sandbox)
+
+    success, plus = evaluation_step_after_run(sandbox)
+    if not success:
+        logger.debug("Job failed in evaluation_step_after_run: %r" % plus)
+
+    return success, plus
 
 
 def evaluation_step_before_run(sandbox, command,
                               time_limit=0, memory_limit=0,
-                              allow_path=None,
                               stdin_redirect=None, stdout_redirect=None,
                               wait=False):
     """First part of an evaluation step, until the running.
@@ -264,39 +263,24 @@ def evaluation_step_before_run(sandbox, command,
 
     """
     # Set sandbox parameters suitable for evaluation.
-    sandbox.chdir = sandbox.path
-    sandbox.filter_syscalls = 2
+    path_in_sandbox = "/tmp"
+    sandbox.dirs += [(path_in_sandbox, sandbox.path, "rw")]
+    sandbox.chdir = path_in_sandbox
     sandbox.timeout = time_limit
     sandbox.wallclock_timeout = 2 * time_limit
     sandbox.address_space = memory_limit * 1024
-    sandbox.file_check = 1
-    if allow_path is None:
-        allow_path = []
-    sandbox.allow_path = allow_path
-    sandbox.stdin_file = stdin_redirect
-    sandbox.stdout_file = stdout_redirect
-    stdout_filename = os.path.join(sandbox.path, "stdout.txt")
-    stderr_filename = os.path.join(sandbox.path, "stderr.txt")
-    if sandbox.stdout_file is None:
-        sandbox.stdout_file = stdout_filename
-    sandbox.stderr_file = stderr_filename
-    # These syscalls and paths are used by executables generated
-    # by fpc.
-    sandbox.allow_path += ["/proc/self/exe",
-                           "/etc/timezone",
-                           "/usr/share/zoneinfo/",
-                           "/proc/self/maps",
-                           "/sys/devices/system/cpu/online"]
-    sandbox.allow_syscall += ["getrlimit",
-                              "rt_sigaction",
-                              "ugetrlimit",
-                              "time",
-                              "rt_sigprocmask",
-                              "mremap"]
-    # This one seems to be used for a C++ executable.
-    sandbox.allow_path += ["/proc/meminfo"]
-    # This is used by freopen in Ubuntu 12.04.
-    sandbox.allow_syscall += ["dup3"]
+
+    if stdin_redirect is not None:
+        sandbox.stdin_file = os.path.join(path_in_sandbox, stdin_redirect)
+    else:
+        sandbox.stdin_file = None
+
+    if stdout_redirect is not None:
+        sandbox.stdout_file = os.path.join(path_in_sandbox, stdout_redirect)
+    else:
+        sandbox.stdout_file = os.path.join(path_in_sandbox, "stdout.txt")
+
+    sandbox.stderr_file = os.path.join(path_in_sandbox, "stderr.txt")
 
     # Actually run the evaluation command.
     logger.debug("Starting execution step.")

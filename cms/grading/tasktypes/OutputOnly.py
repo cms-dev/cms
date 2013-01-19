@@ -139,8 +139,7 @@ class OutputOnly(TaskType):
                 success, _ = evaluation_step(
                     sandbox,
                     ["./%s" % manager_filename,
-                     "input.txt", "res.txt", "output.txt"],
-                    allow_path=["input.txt", "output.txt", "res.txt"])
+                     "input.txt", "res.txt", "output.txt"])
                 if success:
                     outcome, text = extract_outcome_and_text(sandbox)
 
