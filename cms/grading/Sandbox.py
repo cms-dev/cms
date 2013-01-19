@@ -481,9 +481,17 @@ class Sandbox:
         return (string): human-readable stats.
 
         """
-        return "[%.3f sec - %.2f MB]" % \
-               (self.get_execution_time(),
-                float(self.get_memory_used()) / (1024 * 1024))
+        execution_time = self.get_execution_time()
+        if execution_time is not None:
+            time_str = "%.3f sec" % (execution_time)
+        else:
+            time_str = "(time unknown)"
+        memory_used = self.get_memory_used()
+        if memory_used is not None:
+            mem_str = "%.2f MB" % (memory_used / (1024 * 1024))
+        else:
+            mem_str = "(memory usage unknown)"
+        return "[%s - %s]" % (time_str, mem_str)
 
     def relative_path(self, path):
         """Translate from a relative path inside the sandbox to a
