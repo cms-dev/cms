@@ -944,7 +944,7 @@ class EvaluationService(Service):
         _, timestamp = side_data
 
         logger.info("Action %s for submission %s completed. Success: %s." %
-                    (job_type, object_id, data["success"]))
+                    (job_type, object_id, job_success))
 
         # We get the submission from DB and update it.
         with SessionGen(commit=False) as session:
