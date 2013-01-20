@@ -212,14 +212,14 @@ class Sandbox:
             raise SandboxInterfaceException("Failed to initialize sandbox.")
 
     def detect_box_executable(self):
-        """Try to find an isolate executable. It looks before in the
-        local directory, then in ./isolate, then in the system paths.
+        """Try to find an isolate executable. It first looks in ./isolate/,
+        then the local directory, then in the system paths.
 
         return (string): the path to a valid (hopefully) isolate.
 
         """
-        paths = [os.path.join('.', self.exec_name),
-                 os.path.join('.', 'isolate', self.exec_name),
+        paths = [os.path.join('.', 'isolate', self.exec_name),
+                 os.path.join('.', self.exec_name),
                  self.exec_name]
         for path in paths:
             if os.path.exists(path):
