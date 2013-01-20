@@ -389,6 +389,26 @@ class Logger(object):
         self.operation = ""
         self._my_coord = None
 
+    def redirect_stdout_stderr(self):
+        """If stdout is not currently heading somewhere useful, then redirect
+        it to our logfile.
+
+        """
+
+        # At the moment we just do a Linux-specific test for /dev/null. We
+        # could do somethig like try a terminal ioctl on it.
+        try:
+            s = os.readlink("/proc/self/fd/1")
+        except:
+            s = None
+        if s == "/dev/null":
+            # Yes, redirect us!
+            fileno = self._log_file.fileno()
+            os.dup2(fileno, 1)
+            os.dup2(fileno, 2)
+            # Don't duplicate messages.
+            self.TO_DISPLAY = []
+
     def initialize(self, service):
         """To be set by the service we are currently running.
 
@@ -410,6 +430,7 @@ class Logger(object):
         self._log_file = codecs.open(
             os.path.join(log_dir, log_filename),
             "w", "utf-8")
+        self.redirect_stdout_stderr()
         try:
             os.remove(os.path.join(log_dir, "last.log"))
         except OSError:
@@ -439,16 +460,16 @@ class Logger(object):
         if self._my_coord is not None:
             coord = repr(self._my_coord)
 
-        if severity in Logger.TO_DISPLAY:
+        if severity in self.TO_DISPLAY:
             print format_log(msg, coord, operation, severity, timestamp,
                              colors=config.color_shell_log)
         if self._my_coord is not None:
-            if severity in Logger.TO_STORE:
+            if severity in self.TO_STORE:
                 print >> self._log_file, format_log(
                     msg, coord, operation,
                     severity, timestamp,
                     colors=config.color_file_log)
-            if severity in Logger.TO_SEND:
+            if severity in self.TO_SEND:
                 self._log_service.Log(
                     msg=msg, coord=coord, operation=operation,
                     severity=severity, timestamp=timestamp)
