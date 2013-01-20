@@ -141,6 +141,7 @@ class TestRequest:
             elif not success:
                 if debug:
                     print >> sys.stderr, "Request '%s' failed" % (description)
+                    print >> sys.stderr, self.exception_data
                 self.outcome = TestRequest.OUTCOME_FAILURE
 
         # Otherwise report the exception
