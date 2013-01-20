@@ -104,7 +104,7 @@
 
 </div>
 
-  {% if s.evaluated() %}
+  {% if s.scored() %}
 
 <h2 id="title_evaluation_user" class="toggling_on">Evaluation (as seen by the user)</h2>
 <div id="evaluation_user">
@@ -117,6 +117,10 @@
     {% end %}
   </div>
 </div>
+
+  {% end %}
+
+  {% if s.evaluated() %}
 
 <h2 id="title_evaluation_admin" class="toggling_on">Evaluation (as seen by the admin)</h2>
 <div id="evaluation_admin">
