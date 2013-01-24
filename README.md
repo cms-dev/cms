@@ -305,6 +305,9 @@ service. This is the meaning of the log levels:
   action because with high probability the service will continue
   having the same problem upon restarting.
 
+Warning, error, and critical logs are also displayed in the main page
+of AdminWebServer.
+
 
 Testimonials
 ------------

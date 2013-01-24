@@ -61,8 +61,8 @@
     ranking, etc.).
   \end{squishlist}
 
-  The aim of this project is to give a good answer to the third
-  problem. We aim to develop a contest management system that is
+  The aim of the \CMS\ project is to give a good answer to the third
+  problem. Our goal is to develop a contest management system that is
   secure, extendable, adaptable to different situations, and easy to
   use.
 
@@ -74,21 +74,21 @@
 
   The state of the contest is wholly kept on a PostgreSQL database
   (\DB). At the moment, there is no way to use other SQL databases,
-  because the Large Object (LO) feature of PostgreSQL is used. This
-  thing isn't changing in the near future, but could later.
+  because the Large Object (LO) feature of PostgreSQL is used. It is
+  unlikely that in the future we will target different databases.
 
   As long as the \DB\ is operating correctly, all other services can
   be started and stopped independently without problems. This means
   that if a machine goes down, then the administrator can quickly
-  replace it with another identical one, which will take its
-  responsibilities (without having to carry out information from the
-  broken machine). Of course, this also means that if the \DB\ goes
-  down, then the entire system is unable to work. In critical
-  contexts, it is the necessary to configure \DB\ redundantly and
-  being prepared to rapidly doing a fail-over in case something bad
-  happens. The choice of PostgreSQL as the database to use should ease
-  this part, since there are many different, mature and well-known
-  solutions to provide such redundance a fail-over procedures.
+  replace it with an identical one, which will take its roles (without
+  having to move information from the broken machine). Of course, this
+  also means that if the \DB\ goes down, the system is unable to
+  work. In critical contexts, it is the necessary to configure \DB\
+  redundantly and being prepared to rapidly doing a fail-over in case
+  something bad happens. The choice of PostgreSQL as the database to
+  use should ease this part, since there are many different, mature
+  and well-known solutions to provide such redundance a fail-over
+  procedures.
 
   \subsection{Services of the system}
 
@@ -102,32 +102,32 @@
     processes on the submissions in a safe and fair environment;
     arguably, this is the most delicate service, since it deals with
     untrusted code (submitted by users) and must do precise low-level
-    operation (such as estimating the memory and CPU time consumed by
+    operations (such as estimating the memory and CPU time consumed by
     an external program);
   \item Evaluation Service (\ES{}): builds a queue of jobs to do on the
     submissions and distribute them to the \WS{}'s;
   \item Scoring Service (\SS{}): transforms the output of the
     evaluation to an actual score of the submissions, and manages the
-    ranking;
+    external rankings;
   \item Contest Web Server (\CWS{}): interacts with the contestants,
-    allowing to submit, inspect previous submissions, look at
-    information about the contest, asking questions, etc.;
-  \item Admin Web Server (\AWS{}): exposes to the contest admins
-    everything about the contest, and gives the possibility to change
-    on the run configurations, and recover from some errors;
+    allowing to submit solutions and tests, to inspect previous
+    submissions, to look at information about the contest, to ask
+    questions, etc.;
+  \item Admin Web Server (\AWS{}): exposes to the contest admins all
+    the information about the contest, and gives the possibility to
+    change its data;
   \item Resource Service (\RS): monitors and manages all other
-    services running on the same machine (see also subsection
+    services running on the same machine (see subsection
     \ref{ssec:sharding}).
-  \item Ranking Web Server (\RWS{}): exposes in real time to the world
-    what we want the world to know about the contest; \RWS\ is rather
-    different from other services, because while other services are
-    designed to run on the same local network, \RWS\ need not to: you
-    can run it on a remote service and feed it contest data (there are
-    multiple reasons for this decision: one is that the contest venue
-    could have reduced bandwidth or lack public IPs to publish the
-    results to the Web; the second is that, from a security viewpoint,
-    it is not advisable to allow public access to the contest
-    network);
+  \item Ranking Web Server (\RWS{}): serve publicly the real time
+    ranking; \RWS\ is rather different from other services, because it
+    is allowed (and encouraged) to run on a different network: you can
+    run it on a remote server and the contest data will be streamed to
+    it (there are multiple reasons for this decision: one is that the
+    contest venue could have reduced bandwidth or lack a public IP to
+    publish the results to the Web; the second is that, from a
+    security viewpoint, it is not advisable to allow public access to
+    the contest network).
   \end{squishlist}
 
   One is not forced to run everything: the only mandatory component is
@@ -146,8 +146,7 @@
   \item Public: add a \RWS{}, in order to show the live ranking.
   \item Redundant: add several other \WS{}'s and some other \CWS{}'s
     to manage big contest without having a long evaluation queue and
-    without putting too much stress on the \CWS\ (which may lead to
-    reduced responsivity to the users).
+    high latency to access the contest web site.
   \end{squishlist}
 
   In case there are more \CWS\ services, the administrators should set
@@ -161,9 +160,9 @@
   though, is to keep each \WS\ on a dedicated machine, since the
   presence of other running programs can impact on the measured
   performance of the evaluated solutions. For the same motivation, it
-  is advised to check that \WS\ machines don't have cron jobs or
-  similars that step up at some point consuming computing
-  resources. Remember also that most IOI-style contests require the
+  is advised to check that \WS\ machines do not have, for example,
+  heavy cron jobs that may decrease the precision of the
+  measurements. Remember also that most IOI-style contests require the
   evaluation to be run on computers identical to those used by the
   contestants.
 
@@ -185,41 +184,39 @@
   computers can be confusing for an administrator, there is a
   \emph{sharding} mechanism that is used to distinguish between
   different instances of the same system. The \CMS\ configuration file
-  is unique for all the computers and all the services composing a
-  single execution of \CMS: inside it for each services are defined
-  multiple \emph{shards}, i.e., multiple instances of that
-  service. They are uniquely defined by their IP and listening port
-  number. Moreover, there is one special \CMS\ service called
-  ResourceService (\RS), which takes care of starting all other
-  services running on the same machine and restarting them in case
-  they crash. It also collects information about the resource usage on
-  that machine, reporting them for monitoring on the \AWS.
+  must be the same for all the services composing \CMS: the
+  configuration file specifies one or more \emph{shards}, or
+  instances, for every service. The shards are uniquely defined by
+  their listening IP and port number. Moreover, there is one special
+  \CMS\ service called ResourceService (\RS), which takes care of
+  starting all other services running on the same machine and
+  restarting them in case they crash. It also collects information
+  about the resource usage on that machine
+, reporting them for
+  monitoring on the \AWS.
 
   \subsection{Interaction with the task development}
 
-  The development of the tasks is completely detached from the
-  system. One can use some directory structure, ease the development
-  with the usage of makefiles, common libraries, or other
-  techniques. We believe that every contest admin has his own
-  preferred way on how to proceed in this stage, but we want him to
-  use our \CMS{} anyway.
+  The \AWS\ allows the modification of contest's and tasks'
+  parameters. Nonetheless, while developing the tasks, it is much
+  easier to work on the filesystem. We believe that every contest
+  admin has his own preferred way of developing the tasks, hence we do
+  not force any specific solution. Instead, we encourage the admins to
+  use an \emph{importer\/}, that is a program that reads the data of a
+  contest and of its tasks from the filesystem and create a
+  corresponding contest.
 
-  Therefore, there is only one point of contact between our \CMS{} and
-  the actual structure on the contest admin's file system: anytime
-  after the finalization of the tasks and before the start of the
-  contest, the contest admin has to run an \emph{importer\/} that
-  configures \CMS{}, filling \DB{} with the configuration and needed
-  files. With the same aim, the contest admin will run an
+  With the same goal in mind, the contest admin will run an
   \emph{exporter\/} at the end of the contest that will select the
   interesting data and write them in some format (e.g., suitable for
   the inclusion in a revision control system).
 
   We have currently two couples of importers/exporters (in the
   directory \file{cmscontrib}). The first one simply export and import
-  everything (so the composition of the two is more or less equivalent
-  to the identity) and are called \file{ContestImporter} and
-  \file{ContestExporter}. These are useful for having a quick way to
-  backup a contest and its state at some time.
+  everything (so the composition of the two is the identity) and are
+  called \file{ContestImporter} and \file{ContestExporter}. These are
+  useful for having a quick way to backup a contest and its state at
+  some time.
 
   The second couple works specifically with the structure used by the
   Italian IOI team and by no means the exporter is useful to do
@@ -252,16 +249,10 @@
   that the contestants have to implement two functions that cannot
   communicate between each other, the evaluation needs to ensure this.
 
-  These difference can be implemented \emph{inside} the system, as
+  These difference can be implemented \emph{inside\/} the system, as
   plugins. We believe that our internal structure of a task is
   flexible enough to manage most task types.
 
-  \section{Setting up the system}
-
-  The process of setting up a system is described here. It is assumed
-  that you're working in a IOI-like environment: in cases with less
-  available hardware or less performance or security requirements,
-  some aspects of this description can or have to change.
 
   \subsection{Network and computers set up}
 
@@ -276,7 +267,7 @@
   using the network improperly (i.e., anything that is not legal
   communication with the \CWS).
 
-  It is advised to install all contestants' machines and \WS-s in 32
+  It is advised to install all contestants' machines and \WS's in 32
   bits mode, because the system is especially tested in that
   configuration. Anyway, it is a requirement to install each
   \WS\ consistently, i.e., either all in 32 bits mode or all in 64
@@ -290,493 +281,6 @@
   administrators' laptops. Of course it is expected that the firewall
   allows them to connect via SSH to contestants' computers.
 
-  \subsection{PostgreSQL set up}
-
-  As already pointed out above, the PostgreSQL \DB\ is a critical
-  component in \CMS, since it stores the whole state of the
-  contest. Nothing can operate without it, except perhaps the
-  \RWS\ (but, of course, its results don't get updated anyway). For
-  important contests it is suggested to implement some redundance
-  system, so that the \DB\ is distributed among more than one system
-  and can survive the loss of one of them. How to implement such a
-  system is not discussed here at the moment.
-
-  Under Debian and Ubuntu systems the is a nice management system that
-  makes a sysadmin able to keep at the same time many different
-  instances of different versions of PostgreSQL (called
-  ``clusters''). Each cluster is identified by the PostgreSQL version
-  is uses and by a name. You can take advantage of this system to
-  separate the instance you're using for \CMS\ from other databases
-  possibly running on the same machine. Please check
-  \file{/usr/share/doc/postgresql-common/README.Debian.gz} for more
-  information.
-
-  The Debian and Ubuntu packages for PostgreSQL also create a user
-  \id{postgres}, which is automatically given super user rights on
-  each database running on the machine. This means that to do
-  administrative stuff you just use \id{sudo} or \id{su} to became the
-  user \id{postgres}. Then you can give regular SQL commands calling
-  \file{psql}; to create a user you can use the command:
-\begin{verbatim}
-$ createuser cmsuser -P
-Enter password for new role:
-Enter it again:
-Shall the new role be a superuser? (y/n) n
-Shall the new role be allowed to create databases? (y/n) n
-Shall the new role be allowed to create more new roles? (y/n) n
-\end{verbatim}
-  where \id{-P} denotes that you're specifiying the password via the
-  terminal.
-
-  Instead, to create a database you just give:
-\begin{verbatim}
-$ createdb -O cmsuser cmsdb
-\end{verbatim}
-  where with \id{-O} you specify the owner of the database.
-
-  By default, a PostgreSQL instance allows connections only from
-  localhost. To modify this behaviour you have to do two things:
-  first, instruct it to listen also on some IP other than 127.0.0.1;
-  second, tweak its host-based authentication (HBA) configuration. The
-  first thing is easy: just search \id{listen\_addresses} in
-  \file{postgresql.conf} and set it to something appropriate, as for
-  instance:
-\begin{verbatim}
-listen_addresses = '127.0.0.1,192.168.0.x'
-\end{verbatim}
-  or even
-\begin{verbatim}
-listen_addresses = '*'
-\end{verbatim}
-  to listen on all interfaces. Anyway, this is not enough, because by
-  default HBA (which is a sort of Access Control List) enables only
-  localhost to login. HBA configuration is kept in file
-  \file{pg\_hba.conf} and for each combination of user, database and
-  connection type (local or remote, with or without SSL) lists which
-  hosts are allowed to access and using which authentication methods. You will probably need to add some row like:
-\begin{verbatim}
-host  cmsdb  cmsuser  192.168.0.0/24  md5
-\end{verbatim}
-  i.e., user \id{cmsuser} is allowed to login in database \id{cmsdb}
-  using remote connections with or without SSL (the \id{host}
-  keyword), from the hosts in subnet \id{192.168.0.0/24} and using
-  \id{md5} as autenthication method (which sends the password
-  encrypted with MD5; another interesting method is \id{ident}, that
-  in the case of a local connection is able to detect the user running
-  the program and log in with its name, which is just how things work
-  for user \id{postgres}).
-
-  \subsection{Installing \CMS}
-
-  At the moment the only supported way to install \CMS\ is cloning the
-  GIT repository and running the \file{setup.py}. You also may want to
-  check out a specific version of \CMS: since there is no established
-  release cycle so far, the only indication about which GIT commits
-  are more ``stable'' than others are the tags that the Italian team
-  puts each time it uses a version of \CMS\ for one internal
-  contest. You may want to get in touch with the \CMS\ development
-  group to have more information.
-
-\begin{verbatim}
-$ git clone https://giomasce@github.com/giomasce/cms.git
-$ cd cms/cms
-$ ./setup.py build
-$ sudo ./setup.py install
-\end{verbatim}
-
-  During installation, sample configuration files for \CMS\ will be
-  copied in \file{/usr/local/etc/cms.conf} and
-  \file{/usr/local/etc/cms.ranking.conf}. You should edit them to suit
-  your needs (and, particularly, your network configuration). However,
-  take care: these two files will be overwritten with the sample
-  copies each time you reinstall the system. To avoid losing your
-  changes, you can put the same files (with the same names) in the
-  directory \file{cms/cms/examples} in the repository: if such files
-  are present, the installer will copy them instead of their
-  \file{.sample} counterpart.
-
-  The \file{setup.py} installer will also create on the system a user
-  \id{cmsuser} with number UID 999 and create some system directories
-  so they're writable by such user. Thus, it is suggested to run CMS
-  services with this UID.
-
-  \subsection{Configuring \CMS}
-
-  Once \CMS\ is installed in all computers you're going to use, you
-  have to write a configuration file \file{cms.conf} and optionally a
-  configuration file for the \CWS\ (\file{cms.ranking.conf}). Both
-  file are in JSON format and the samples are quite documented, so
-  adapting them to your needs should be rather easy. One particularly
-  important section in \file{cms.conf} is the definition of shards to
-  be used by \CMS\ services (you just need to set \id{core\_services},
-  since \id{other\_services} are used only for testing and debugging
-  purposes).
-
-  For each service you need to specify a list of couples, each one
-  representing a shard via the IP address and port it has to listen
-  on. Shards are numbered starting from zero according to their
-  position in the list. Attention: even if it is possible, there are
-  services (such \LS, \ES) for which it makes no sense to define more
-  than one shard.
-
-  Another important thing to do is to change the \id{secret\_key}
-  value, that will be used to reliably store cookies in clients' web
-  browsers and prevent them to see real tasks and submissions
-  numbers. That means that if a users know this number, he can log in
-  as any other user even without knowing the password (that doesn't
-  gives him access to the database, though). It must be a random 16
-  bytes number, encoded in a hexadecimal string.
-
-  Once the configuration files are complete, you have to replicate
-  them on all the hosts you're going to use for your contest.
-
-  It is also up to you to configure a firewall so that \CMS\ is not
-  reachable by unauthorized people (remember that \CMS\ services have
-  no mutual authentication process, so being able to connect to the
-  listening port is enough for a connection to be trusted by any
-  service).
-
-  \section{Description of the services}
-
-  We give here a detailed description of the capabilities and the role
-  of the services that compose \CMS{}.
-
-  \subsection{Generalities}
-
-  Amongst the functional parts listed earlier, there are two that are
-  in a class by themselves, namely \DB{} and \RWS{}. The other can be
-  sorted in two bins: services and web servers.
-
-  Both services and web servers have the capabilities of communicating
-  with other services via a general RPC system designed by us on top
-  of the asyncore/asynchat protocol. In addition, web servers have
-  also the capabilities of serving web pages using the Tornado
-  framework.
-
-  \subsection{Database}
-
-  As we said earlier, \DB{} is not a service in the sense that it is
-  actually the database. We communicate with it via the SQLAlchemy
-  library, hence we support any DBMS that SQLAlchemy supports. Main
-  part of our testing is done with PostgreSQL, which we suggest.
-
-  The structure of the tables in the database is reflected (and
-  documented) in the files inside the \file{cms/db} tree.
-
-  \subsection{Log Service}
-
-  All logging done in the services and in the web servers eventually
-  is received by \LS{}, that shows and stores it in a single place.
-
-  Again, usually we do not call \LS{} directly but using the
-  convenient \id{logger} object.
-
-  \subsubsection{RPC interface}
-
-  \begin{squishlist}
-  \item \id{Log}: send a log to \LS{};
-  \item \id{last\_messages}: retrieve the last 100 messages of warning
-    or error.
-  \end{squishlist}
-
-  \subsection{File Storage}
-
-  File Storage is a simple service, but is essential to any
-  contest. It is capable of accepting files, storing them and offering
-  them when asked to. It is therefore the only convenient way to
-  transfer files from a service to another, and to make these files
-  permanent in the system.
-
-  Internally, it stores files in the filesystem, assigning to them the
-  SHA1 sum of the file as a name. It also stores a description
-  associated to each file, useful only for logging and debugging
-  purpose.
-
-  Usually, \FS{} is not contacted directly but using a FileCacher
-  instance, that provides utility methods to send and retrieve files
-  in several ways, additionally storing the files in a local cache and
-  using this local cache whenever possible.
-
-  \subsubsection{RPC interface}
-
-  \begin{squishlist}
-  \item \id{put\_file}: insert a new file into \FS{};
-  \item \id{get\_file}: retrieve a file from \FS{};
-  \item \id{delete}: delete a file from \FS{};
-  \item \id{is\_file\_present}: inform the caller if a specific file is
-    in \FS{};
-  \item \id{describe}: return to the caller the description associated
-    to a file.
-  \end{squishlist}
-
-  \subsection{Worker}
-
-  Worker's aim is to do the low-level job of \ES{}. That is, it
-  has to take care of compiling the submissions and executing them
-  against the testcases, assigning to each of them their outcome.
-
-  The specific instructions on how to compile and evaluate a
-  submission are given in the TaskType class associated to the task.
-
-  Since we want the worker to be able to answer calls even when doing
-  a compilation or an evaluation, and these are potentially long jobs,
-  \WS{} performs these jobs in a different thread.
-
-  \subsubsection{RPC interface}
-
-  \begin{squishlist}
-  \item \id{compile}: compile a submission;
-  \item \id{evaluate}: evaluate a submission;
-  \item \id{precache\_files}: load from \FS{} to the local cache all
-    files needed to compile and evaluate submissions of a given
-    contest;
-  \item \id{shut\_down}: switch off the worker.
-  \end{squishlist}
-
-  \subsection{Evaluation Service}
-
-  Evaluation Service's goal is to transform submissions coming from the
-  contestants in evaluated submissions. It maintains a queue of jobs,
-  that can be compilations or evaluations of a submission, ranked by
-  priority (usually compilations have more priority, then evaluation
-  for which the contestant has played a token, then all the rest) and
-  timestamp. It also maintains a pool of workers, remembering the jobs
-  assigned to each of them.
-
-  When possible, it assigns a new job to a inactive worker, and when a
-  worker signals that it finished a job, it elaborate the
-  response. This usually means that it queues the evaluation if the
-  completed job was a compilation, or inform \SS{} if the completed
-  job was an evaluation.
-
-  \subsubsection{RPC interface}
-
-  \begin{squishlist}
-  \item \id{submissions\_status}: returns the number of submissions in
-    a given status;
-  \item \id{queue\_status}: returns the content of the job queue.
-  \item \id{worker\_status}: returns the information on what the
-    workers are doing;
-  \item \id{new\_submission}: this is called to inform \ES{} that a new
-    submission has been placed by a contestant;
-  \item \id{submission\_tokened}: this is called to inform \ES{} that
-    the contestant has played a token on a submission.
-  \end{squishlist}
-
-  \subsection{Scoring Service}
-
-  Scoring Service's goal is to transform evaluated submissions coming
-  from \ES{} to scores and rankings. The specific ways on how to
-  transform outcomes in scores is specified in the ScoreType class of
-  the task. \SS{} uses this class to get the ranking changes after a
-  submissions has been evaluated and to upgrade the ranking.
-
-  \SS{} has two ways to inform the world of the ranking. The first is
-  maintaining a ranking view in \DB{}, the second is sending out to
-  the \RWS{}'s the new ranking.
-
-  \subsubsection{RPC interface}
-
-  \begin{squishlist}
-  \item \id{new\_evaluation}: this is called to inform \SS{} that a
-    new submission has been evaluated by \ES{};
-  \item \id{submission\_tokened}: this is called to inform \ES{} that
-    the contestant has played a token on a submission.
-  \end{squishlist}
-
-  \subsection{Contest Web Server}
-
-  Contest Web Server is a Tornado application that serve (localized)
-  web pages to the contestants. Here are the main functionality
-  exposed to them.
-  \begin{squishlist}
-  \item Viewing the tasks' statement and the attachments (that usually
-    are example of implementations of the functions, or big example of
-    test data).
-  \item Submitting a (partial) solution for a task. If a task requires
-    more than one file (e.g., output-only tasks), \CWS{} can receive
-    also a zip-archive. If some files are missing, they can be
-    retrieved from the previous submission of the contestant on the
-    same task.
-  \item Viewing the state of submissions, in particular if they have
-    been compiled and evaluated on the public testcases that ensure
-    that the submission is syntactically correct. If they are not, a
-    message should explain in as much details as possible what is
-    wrong. The contestants can download all submitted files.
-  \item Giving the possibility to use a \emph{token\/} against a
-    particular submission (see next).
-  \item Viewing a detailed feedback of the evaluation of a submission
-    against which the contestant has played a token.
-  \item Interacting with the contest admins, in particular asking
-    questions concerning tasks' statements.
-  \end{squishlist}
-
-  Another important job of \CWS{} is to decide when to accept or
-  reject a submission or a token. \CWS{} performs the following checks
-  before accepting a submission:
-  \begin{squishlist}
-  \item that a minimum amount of time has passed since the last
-    submission on the same task from the same contestant;
-  \item that the submission format has been respected (maybe
-    retrieving some files from the previous submission if the task
-    allows it;
-  \item that when a file is required to be a source file, its language
-    can be recognized, and we have a single language for a submission;
-  \item that any file is no bigger than a certain amount of bytes.
-  \end{squishlist}
-
-  \subsection{Admin Web Server}
-
-  Admin Web Server is the interface between the system and the
-  contest admins. It shows the complete state of the contest,
-  including the state of all services (load, memory usage, length of
-  the queues, etc.). It gives some control over the other services;
-  for example, contest admins can ask \ES{} to evaluate again some
-  submissions.
-
-  \subsection{Ranking Web Server}
-
-  \RWS{} is not a service nor a web server because it is designed to
-  be as detached as possible from the system. The system sends data to
-  it via http requests, and does not receive other data than the
-  replies to these requests. It also uses Tornado as a web framework,
-  and the web pages are build using Pyjamas. \RWS{} has been written
-  by Luca Wehrstedt.
-
-  \section{Importing from YAML}
-
-  Currently this is the only supported method to load a contest into
-  the CouchDB database. It originates from the contest and tasks
-  descriptions used by the Italian trainer team, so some strings are
-  in Italian.
-
-  \subsection{Contest YAML description specifications}
-
-  A contest is represented as one directory with a few YAML files and
-  subdirectories that describe the contest properties. More
-  specifically it has:
-
-  \begin{squishlist}
-
-  \item A YAML file named \file{contest.yaml}, that describes the
-    general contest properties;
-
-  \item For each task \id{taskname}, a YAML file \file{taskname.yaml}
-    that describes the task and a directory \file{taskname} that
-    contains all the files needed to build the statement of the
-    problem, the input and output cases, the reference solution and
-    (when used) the solution checker.
-
-  \end{squishlist}
-
-  The exact structure of these files and directories is detailed
-  below.
-
-  \subsubsection{General contest description}
-
-  The \file{contest.yaml} file is a plain YAML file, with at least the
-  following keys:
-
-  \begin{squishlist}
-
-  \item \id{nome\_breve} (``short name'', string): the contest's short
-    name, used for internal reference (copied in the \id{name} field);
-    it has to match with the name of the directory that serves as
-    contest root;
-
-  \item \id{nome}: (``name'', string): the contest's real name, showed
-    in Web pages (copied in the \id{description} field);
-
-  \item \id{token\_*}: token parameters; still not implemented; % FIXME
-
-  \item \id{inizio} (``start'', integer): the UNIX timestamp of the
-    beginning of the contest (copied in the \id{start} field);
-    defaults to zero, meaning that contest times haven't yet been
-    decided;
-
-  \item \id{fine} (``stop'', integer): the UNIX timestamp of the end
-    of the contest (copied in the \id{stop} field); defaults to zero,
-    meaning that contest times haven't yet been decided;
-
-  \item \id{problemi} (``tasks'', list of strings): a list of the
-    tasks belonging to this contest; for each of these strings, say
-    \id{taskname}, a file named \file{taskname.yaml} is searched and
-    used to extract the description of that task;
-
-  \item \id{utenti} (``users'', list of associative arrays): each of
-    the elements of the list describes one user of the contest; the
-    exact structure of the record is described below.
-
-  \end{squishlist}
-
-  \subsubsection{User description}
-
-  As cleared above, each contest user is described in one element of
-  the \id{utenti} key in the \file{contest.yaml} file. Each record has
-  to contains the following keys:
-
-  \begin{squishlist}
-
-  \item \id{username} (string): obviously, the username;
-
-  \item \id{password} (string): obviusly as before, the user's
-    password;
-
-  \item \id{nome} (``name'', string): the user real first name;
-    defaults as the empty string;
-
-  \item \id{cognome} (``surname'', string): the user real last name;
-    default as the \id{username};
-
-  \item \id{ip} (string): the IP address from which incoming
-    connections for this user are accepted; default to
-    ``\id{0.0.0.0}'', meaning that no IP check is performed;
-
-  \item \id{fake} (string): when set to ``\id{True}'' (at the moment
-    this is case-sensitive) set the \id{hidden} flag in the
-    user; defaults to false.
-
-  \end{squishlist}
-
-  \subsubsection{Task description}
-
-  The task YAML files required the following keys:
-
-  \begin{squishlist}
-
-  \item \id{nome\_breve} (``short name'', string): the name used to
-    reference this task (copied in the \id{name} field);
-
-  \item \id{nome} (``name'', string): the long name used in the Web
-    interface (copied in the \id{title} field);
-
-  \item \id{timeout} (float): the timeout limit for this task in
-    seconds (copied in the \id{time\_limit} field);
-
-  \item \id{memlimit} (integer): the memory limit for this task in
-    megabytes (copied in the \id{time\_limit} field);
-
-  \item \id{score\_parameters} (list): copied in the
-    \id{score\_parameters} field; all task imported from YAML have
-    \id{score\_type} set to ``\id{ScoreTypeSum}'';
-
-  \item \id{n\_input} (integer): number of test cases to be evaluated
-    for this task; the actual test cases are fetched according to the
-    description of the task directory below;
-
-  \item \id{risultati} (``results'', string): a comma-separated list
-    of test cases (identified by their numbers, running from $0$ to
-    $\text{\id{n\_input}}-1$) that are available for live evaluation
-    to contestants during the contest (the unpacked list is copied in
-    the \id{public\_testcases} field);
-
-  \item \id{token\_*}: token parameters; still not implemented. % FIXME
-
-  \end{squishlist}
-
-  \subsubsection{Task directory structure}
-
-  % FIXME
 
   \section{Terms}
 

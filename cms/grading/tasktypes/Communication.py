@@ -209,13 +209,11 @@ class Communication(TaskType):
         evaluation = self.job.evaluations[test_number]
 
         # If at least one evaluation had problems, we report the
-        # problems. (TODO: shouldn't outcome and text better be None
-        # and None?)
+        # problems.
         if not success_user or not success_mgr:
             success, outcome, text = False, None, None
-        # If outcome_user is not None, it is 0.0 and it means that
-        # there has been some errors in the user solution, and outcome
-        # and text are meaningful, so we use them.
+        # If the user sandbox detected some problem (timeout, ...),
+        # the outcome is 0.0 and the text describes that problem.
         elif not is_evaluation_passed(plus_user):
             success = True
             outcome, text = 0.0, human_evaluation_message(plus_user)
