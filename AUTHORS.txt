@@ -1,4 +1,3 @@
-
 We would like to acknowledge all the following people for contributing
 to CMS.
 
@@ -15,9 +14,12 @@ Bernard Blackham <bernard@largestprime.net>
 
 MINOR PATCH CONTRIBUTORS
 
-David Greenaway <mail@davidgreenaway.com>
-Federico Scrinzi (aka volpino) <fox91@anche.no>
 Giovanni Campagna (aka gcampax) <scampa.giovanni@gmail.com>
+David Greenaway <mail@davidgreenaway.com>
+Evgeny Martynov <evgeny@epochfail.com>
+William Pettersson <william.pettersson@gmail.com>
+Federico Scrinzi (aka volpino) <fox91@anche.no>
+Kenneth Wong <kenneth@wong.pro>
 
 And many other people that didn't write code, but provided useful
 comments, suggestions and feedback. :-)
