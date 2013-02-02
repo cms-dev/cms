@@ -366,11 +366,11 @@ $("select[name=task_type]").change(showTaskTypeOption);
         <td><input type="text" name="token_total" value="{{ task.token_total if task.token_total is not None else "" }}" /></td>
       </tr>
       <tr>
-        <td>Minimum interval between tokens</td>
+        <td>Minimum interval between tokens (in seconds)</td>
         <td><input type="text" name="token_min_interval" value="{{ int(task.token_min_interval.total_seconds()) }}" /></td>
       </tr>
       <tr>
-        <td>Token generation period</td>
+        <td>Token generation period (in minutes)</td>
         <td><input type="text" name="token_gen_time" value="{{ int(task.token_gen_time.total_seconds() / 60) }}" /></td>
       </tr>
       <tr>

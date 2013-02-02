@@ -9,6 +9,7 @@ Contents:
    Installation
    Running CMS
    Creating a contest
+   Configuring a contest
    Task types
    Score types
    Importing formats

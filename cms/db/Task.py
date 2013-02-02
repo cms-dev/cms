@@ -114,7 +114,7 @@ class Task(Base):
         String,
         nullable=False)
 
-    # Parameters for the scorer class, JSON encoded.
+    # Parameters for the score type class, JSON encoded.
     score_type_parameters = Column(
         String,
         nullable=False)

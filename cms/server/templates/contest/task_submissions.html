@@ -187,8 +187,8 @@ $(document).ready(function () {
     {% set score_type = None %}
 {% end %}
 
-{% comment FIXME The following check doesn't take timezones into account. Correct it! %}
-{% set show_date = any(s.timestamp.date() != datetime.date.today() for s in submissions) %}
+{% from cmscommon.DateTime import utc %}
+{% set show_date = any(s.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != datetime.utcnow().replace(tzinfo=utc).astimezone(timezone).date() for s in submissions) %}
 
 
 <table id="submission_list" class="table table-bordered table-striped">

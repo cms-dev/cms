@@ -132,9 +132,8 @@ $(document).ready(function () {
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous tests") }}</h2>
 
-
-{% comment FIXME The following check doesn't take timezones into account. Correct it! %}
-{% set show_date = any(t.timestamp.date() != datetime.date.today() for t in user_tests[task.id]) %}
+{% from cmscommon.DateTime import utc %}
+{% set show_date = any(t.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != datetime.utcnow().replace(tzinfo=utc).astimezone(timezone).date() for t in user_tests[task.id]) %}
 
 
 <table class="user_test_list table table-bordered table-striped" data-task="{{ task.name }}">
