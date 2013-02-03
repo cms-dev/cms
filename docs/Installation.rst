@@ -62,7 +62,7 @@ If you prefer using Python Package Index, you can retrieve all Python dependenci
 Installing CMS
 ==============
 
-You can download CMS 0.9.0 from https://github.com/cms-dev/cms/archive/v0.9.0.tar.gz and extract in your filesystem. After that, you can install it (recommended, not necessary though):
+You can download CMS |release| from :gh_download:`GitHub` and extract in your filesystem. After that, you can install it (recommended, not necessary though):
 
 .. sourcecode:: bash
 
@@ -86,7 +86,7 @@ You can verify to be in the group issuing the command:
 Updating CMS
 ============
 
-If you were using CMS before the release of version 0.9.0, you can update the content of your database with:
+If you were using CMS before the release of version |release|, you can update the content of your database with:
 
 .. sourcecode:: bash
 

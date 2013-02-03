@@ -18,9 +18,9 @@ Creating a contest from the filesystem
 
 The idea we wanted to implement is that CMS does not get into the way you create your contest and your tasks (unless you want to). We think that every national IOI selection team and every contest administrator has a preferred way of developing the tasks, and of storing their data in the filesystem, and we do not want to change the way you work.
 
-Instead, you are encouraged to write an "importer", that is a piece of software that reads data from your filesystem structure and create the contest in the database. You can also write a "reimporter" if you want to change the contest details without losing the data (submissions, user tests, ...) already uploaded.
+Instead, you are encouraged to write an "importer", that is a piece of software that reads data from your filesystem structure and creates the contest in the database. You can also write a "reimporter" if you want to change the contest details without losing the data (submissions, user tests, ...) already uploaded.
 
-We provide examples of both importer and reimporter that target the format used by the Italian IOI selection team. You can either adapt them to the format you use, or decide to use the Italian format. Examples of contest written in this format are at https://github.com/cms-dev/con_test, while its explanation is :doc:`here <Importing formats>`.
+We provide examples of both importer and reimporter that target the format used by the Italian IOI selection team. You can either adapt them to the format you use, or decide to use the Italian format. Examples of contest written in this format are in `this GitHub repository <https://github.com/cms-dev/con_test>`_, while its explanation is :doc:`here <Importing formats>`.
 
 
 Creating a contest from an exported contest

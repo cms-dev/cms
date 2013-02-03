@@ -47,7 +47,7 @@ RWS doesn't use the PostgreSQL database. Instead, it stores its data in :file:`/
 
 The intended way to get data to RWS is to have the rest of CMS send it. The service responsible for that is ScoringService (SS for short). When SS is started for a certain contest, it'll send the data for that contest to all RWSs it knows about (i.e. those in its configuration). This data includes the contest itself (its name, its begin and end times, etc.), its tasks, its users and the submissions received so far. Then it'll continue to send new submissions as soon as they're scored and it'll update them as needed (for example when a users uses a token). Note that hidden users (and their submissions) won't be sent to RWS.
 
-There are also other ways to insert data into RWS: send custom HTTP requests or directly write JSON files. They're both discouraged but, at the moment, they're the only way to add team information to RWS (see `issue #65 <https://github.com/cms-dev/cms/issues/65>`_).
+There are also other ways to insert data into RWS: send custom HTTP requests or directly write JSON files. They're both discouraged but, at the moment, they're the only way to add team information to RWS (see :gh_issue:`65`).
 
 Logo, flags and faces
 ---------------------
@@ -132,7 +132,7 @@ As a security measure, we recommend not to run RWS as root but to run it as an u
 A reverse proxy is most commonly used to map RWS from a high port number (say 8080) to the default HTTP port (i.e. 80), hence we will assume this scenario throughout this section.
 
 With nginx it's also extremely easy to do some URL mapping. That is, you can make RWS "share" the URL space of port 80 with other servers by making it "live" inside a prefix. This means that you will access RWS using an URL like "http://myserver/prefix/".
-Note that, however, an "unprefixed" port has to be publicly available and that is the port that has to be written in the ``cms.conf`` file since it's needed by SS (because it's currently unable to use a prefixed RWS, see `issue #36 <https://github.com/cms-dev/cms/issues/36>`_).
+Note that, however, an "unprefixed" port has to be publicly available and that is the port that has to be written in the ``cms.conf`` file since it's needed by SS (because it's currently unable to use a prefixed RWS, see :gh_issue:`36`).
 
 We'll provide here an example configuration file for nginx. This is just the "core" of the file, but other options need to be added in order for it to be complete and usable by nginx. These bits are different on each distribution, so the best is for you to take the default configuration file provided by your distribution and adapt it to contain the following code:
 
