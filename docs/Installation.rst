@@ -8,49 +8,73 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * build environment for the programming languages allowed in the competition;
 
-* postgreSQL >= 8.4;
+* `PostgreSQL <http://www.postgresql.org/>`_ >= 8.4;
 
-* gettext >= 0.18;
+* `gettext <http://www.gnu.org/software/gettext/>`_ >= 0.18;
 
-* python >= 2.7 (and < 3.0);
+* `Python <http://www.python.org/>`_ >= 2.7, < 3.0;
 
-* python-setuptools >= 0.6;
+* `setuptools <http://pypi.python.org/pypi/setuptools>`_ >= 0.6;
 
-* python-tornado >= 2.0;
+* `Tornado <http://www.tornadoweb.org/>`_ >= 2.0;
 
-* python-psycopg2 >= 2.4;
+* `Psycopg <http://initd.org/psycopg/>`_ >= 2.4;
 
-* python-simplejson >= 2.1;
+* `simplejson <https://github.com/simplejson/simplejson>`_ >= 2.1;
 
-* python-sqlalchemy >= 0.7;
+* `SQLAlchemy <http://www.sqlalchemy.org/>`_ >= 0.7;
 
-* python-psutil >= 0.2;
+* `psutil <https://code.google.com/p/psutil/>`_ >= 0.2;
 
-* python-netifaces >= 0.5;
+* `netifaces <http://alastairs-place.net/projects/netifaces/>`_ >= 0.5;
 
-* python-crypto >= 2.3;
+* `PyCrypto <https://www.dlitz.net/software/pycrypto/>`_ >= 2.3;
 
-* python-yaml >= 3.10 (only for YamlImporter);
+* `pytz <http://pytz.sourceforge.net/>`_;
 
-* python-beautifulsoup >= 3.2 (only for running tests);
+* `iso-codes <http://pkg-isocodes.alioth.debian.org/>`_;
 
-* python-mechanize >= 0.2 (only for running tests);
+* `shared-mime-info <http://freedesktop.org/wiki/Software/shared-mime-info>`_;
 
-* python-coverage >= 3.4 (only for running tests).
+* `PyYAML <http://pyyaml.org/wiki/PyYAML>`_ >= 3.10 (only for YamlImporter);
 
+* `BeautifulSoup <http://www.crummy.com/software/BeautifulSoup/>`_ >= 3.2 (only for running tests);
+
+* `mechanize <http://wwwsearch.sourceforge.net/mechanize/>`_ >= 0.2 (only for running tests);
+
+* `coverage <http://nedbatchelder.com/code/coverage/>`_ >= 3.4 (only for running tests);
+
+* `Sphinx <http://sphinx-doc.org/>`_ (only for building documentation).
 
 On Ubuntu 12.04, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
 
-    sudo apt-get install postgresql postgresql-client python-setuptools \
-         python-tornado python-psycopg2 python-sqlalchemy \
-         python-psutil gettext build-essential fpc stl-manual \
-         python-simplejson python-netifaces python-beautifulsoup \
-         python-coverage python-crypto python-tz iso-codes shared-mime-info
+    sudo apt-get install build-essential fpc postgresql postgresql-client \
+         gettext python2.7 python-setuptools python-tornado python-psycopg2 \
+         python-simplejson python-sqlalchemy python-psutil python-netifaces \
+         python-crypto python-tz iso-codes shared-mime-info stl-manual \
+         python-beautifulsoup python-mechanize python-coverage
 
     # Optional.
-    # sudo apt-get install phppgadmin python-yaml
+    # sudo apt-get install phppgadmin python-yaml python-sphinx
+
+On Arch Linux, the following command will install almost all dependencies (two of them can be found in the AUR):
+
+.. sourcecode:: bash
+
+    sudo pacman -S base-devel fpc postgresql postgresql-client python2 \
+         setuptools python2-tornado python2-psycopg2 python2-simplejson \
+         python2-sqlalchemy python2-psutil python2-netifaces python2-crypto \
+         python2-pytz iso-codes shared-mime-info python2-beautifulsoup3 \
+         python2-mechanize
+
+    # Install the following from AUR.
+    # https://aur.archlinux.org/packages/sgi-stl-doc/
+    # https://aur.archlinux.org/packages/python2-coverage/
+
+    # Optional.
+    # sudo pacman -S phppgadmin python2-yaml python-sphinx
 
 If you prefer using Python Package Index, you can retrieve all Python dependencies with this line:
 
