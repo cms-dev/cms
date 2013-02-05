@@ -161,7 +161,6 @@ class ContestImporter:
             for digest in contest_files:
                 file_ = os.path.join(files_dir, digest)
                 desc = os.path.join(descr_dir, digest)
-                print open(desc).read()
                 if not os.path.exists(file_) or not os.path.exists(desc):
                     logger.error("Some files needed to the contest "
                                  "are missing in the import directory. "
