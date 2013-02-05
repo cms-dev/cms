@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
@@ -121,6 +121,7 @@ class Config:
         # Installed or from source?
         self.installed = sys.argv[0].startswith("/usr/") and \
             sys.argv[0] != '/usr/bin/ipython' and \
+            sys.argv[0] != '/usr/bin/python2' and \
             sys.argv[0] != '/usr/bin/python'
 
         if self.installed:

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
@@ -52,6 +52,7 @@ class Config(object):
         # File system.
         self.installed = sys.argv[0].startswith("/usr/") and \
             sys.argv[0] != '/usr/bin/ipython' and \
+            sys.argv[0] != '/usr/bin/python2' and \
             sys.argv[0] != '/usr/bin/python'
 
         self.web_dir = os.path.join(os.path.dirname(__file__), "static")
