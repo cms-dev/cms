@@ -93,43 +93,43 @@ work:
 
 - build environment for the programming languages allowed in the competition;
 
-- [PostgreSQL](http://www.postgresql.org/>) >= 8.4;
+- [PostgreSQL](http://www.postgresql.org/) >= 8.4;
 
-- [gettext](http://www.gnu.org/software/gettext/>) >= 0.18;
+- [gettext](http://www.gnu.org/software/gettext/) >= 0.18;
 
-- [Python](http://www.python.org/>) >= 2.7, < 3.0;
+- [Python](http://www.python.org/) >= 2.7, < 3.0;
 
-- [setuptools](http://pypi.python.org/pypi/setuptools>) >= 0.6;
+- [setuptools](http://pypi.python.org/pypi/setuptools) >= 0.6;
 
-- [Tornado](http://www.tornadoweb.org/>) >= 2.0;
+- [Tornado](http://www.tornadoweb.org/) >= 2.0;
 
-- [Psycopg](http://initd.org/psycopg/>) >= 2.4;
+- [Psycopg](http://initd.org/psycopg/) >= 2.4;
 
-- [simplejson](https://github.com/simplejson/simplejson>) >= 2.1;
+- [simplejson](https://github.com/simplejson/simplejson) >= 2.1;
 
-- [SQLAlchemy](http://www.sqlalchemy.org/>) >= 0.7;
+- [SQLAlchemy](http://www.sqlalchemy.org/) >= 0.7;
 
-- [psutil](https://code.google.com/p/psutil/>) >= 0.2;
+- [psutil](https://code.google.com/p/psutil/) >= 0.2;
 
-- [netifaces](http://alastairs-place.net/projects/netifaces/>) >= 0.5;
+- [netifaces](http://alastairs-place.net/projects/netifaces/) >= 0.5;
 
-- [PyCrypto](https://www.dlitz.net/software/pycrypto/>) >= 2.3;
+- [PyCrypto](https://www.dlitz.net/software/pycrypto/) >= 2.3;
 
-- [pytz](http://pytz.sourceforge.net/>);
+- [pytz](http://pytz.sourceforge.net/);
 
-- [iso-codes](http://pkg-isocodes.alioth.debian.org/>);
+- [iso-codes](http://pkg-isocodes.alioth.debian.org/);
 
-- [shared-mime-info](http://freedesktop.org/wiki/Software/shared-mime-info>);
+- [shared-mime-info](http://freedesktop.org/wiki/Software/shared-mime-info);
 
-- [PyYAML](http://pyyaml.org/wiki/PyYAML>) >= 3.10 (only for YamlImporter);
+- [PyYAML](http://pyyaml.org/wiki/PyYAML) >= 3.10 (only for YamlImporter);
 
-- [BeautifulSoup](http://www.crummy.com/software/BeautifulSoup/>) >= 3.2 (only for running tests);
+- [BeautifulSoup](http://www.crummy.com/software/BeautifulSoup/) >= 3.2 (only for running tests);
 
-- [mechanize](http://wwwsearch.sourceforge.net/mechanize/>) >= 0.2 (only for running tests);
+- [mechanize](http://wwwsearch.sourceforge.net/mechanize/) >= 0.2 (only for running tests);
 
-- [coverage](http://nedbatchelder.com/code/coverage/>) >= 3.4 (only for running tests);
+- [coverage](http://nedbatchelder.com/code/coverage/) >= 3.4 (only for running tests);
 
-- [Sphinx](http://sphinx-doc.org/>) (only for building documentation).
+- [Sphinx](http://sphinx-doc.org/) (only for building documentation).
 
 On Ubuntu 12.04, one will need to run the following script to satisfy
 all dependencies:
