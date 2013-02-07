@@ -188,7 +188,7 @@ $(document).ready(function () {
 {% end %}
 
 {% from cmscommon.DateTime import utc %}
-{% set show_date = any(s.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != datetime.utcnow().replace(tzinfo=utc).astimezone(timezone).date() for s in submissions) %}
+{% set show_date = any(s.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != datetime.datetime.utcnow().replace(tzinfo=utc).astimezone(timezone).date() for s in submissions) %}
 
 
 <table id="submission_list" class="table table-bordered table-striped">
