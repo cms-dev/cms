@@ -19,6 +19,8 @@ CMS ships with four task types: Batch, OutputOnly, Communication, TwoSteps. The 
 You can configure, for each task, the behavior of these task types going on the task's page in AdminWebServer.
 
 
+.. _tasktypes_batch:
+
 Batch
 -----
 
@@ -35,6 +37,8 @@ If the output is compared with a diff, the outcome will be a float, 0.0 if the o
 The submission format must contain one filename ending with .%l. If there are additional files, the contestants are forced to submit them, the admins can inspect them, but they are not used towards the evaluation.
 
 
+.. _tasktypes_outputonly:
+
 OutputOnly
 ----------
 
@@ -46,6 +50,8 @@ OutputOnly tasks usually have many uncorrelated files to be submitted. Contestan
 
 The submission format must contain all the filenames of the form output_XXX.txt where XXX is a three digit decimal number (padded with zeroes, and goes from 0 to the number of testcases minus one. Again, you can add other files that are stored but ignored. For example, a valid submission format for an OutputOnly task with three testcases is ["output_000.txt", "output_001.txt", "output_002.txt"].
 
+
+.. _tasktypes_communication:
 
 Communication
 -------------

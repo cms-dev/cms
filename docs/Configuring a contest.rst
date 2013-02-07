@@ -24,6 +24,8 @@ The limits can be set both on individual tasks and on the whole contest. For a s
 Each of these fields can be left unset to prevent the corresponding limitation from being enforced.
 
 
+.. _configuringacontest_tokens:
+
 Tokens
 ======
 

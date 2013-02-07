@@ -17,6 +17,8 @@ The first of the four well-tested score types, Sum, is the simplest you can imag
 As for task types, the behavior of score types is configurable from the task's page in AdminWebServer.
 
 
+.. _scoretypes_sum:
+
 Sum
 ---
 
@@ -24,6 +26,8 @@ This score type interpreters the outcome for each testcase as a floating number 
 
 For example, if there are 20 testcases, 2 of which are public, and the parameter string is "5" (without quotes), a correct solution will score 100 points (20 times 5) out of 100, and its public score will be 10 points (2 times 5) out of 10.
 
+
+.. _scoretypes_groupmin:
 
 GroupMin
 --------

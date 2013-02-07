@@ -12,6 +12,6 @@ Contents:
    Configuring a contest
    Task types
    Score types
-   Importing formats
+   External contest formats
    RankingWebServer
 
