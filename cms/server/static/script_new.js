@@ -113,6 +113,8 @@ var Utils = new function () {
     };
 
     self.format_timedelta = function (timedelta) {
+        // negative time delta does not make sense, let's show zero to the user
+        if (timedelta < 0) timedelta = 0;
         var hours = Math.floor(timedelta / 3600);
         timedelta %= 3600;
         var minutes = Math.floor(timedelta / 60);
@@ -137,39 +139,38 @@ var Utils = new function () {
         var server_time = now - self.client_timestamp + self.server_timestamp;
         $("#server_time").text(self.format_time(server_time));
 
-        // TODO consider possible null values of contest.start and contest.stop (they mean -inf and +inf)
-        // FIXME use server_time instead of now
+        // TODO consider possible null values of contest.current_phase_end in phases -2 and 2 (they mean -inf and +inf)
         // FIXME localize strings
 
         switch (self.phase) {
         case -2:
             // contest hasn't started yet
-            if (now >= self.current_phase_end) {
+            if (server_time >= self.current_phase_end) {
                 window.location.href = url_root + "/";
             }
             $("#countdown_label").text($("#translation_until_contest_starts").text());
-            $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
+            $("#countdown").text(self.format_timedelta(self.current_phase_end - server_time));
             break;
         case -1:
             // contest has already started but user hasn't started its time yet
             $("#countdown_label").text($("#translation_until_contest_ends").text());
-            $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
+            $("#countdown").text(self.format_timedelta(self.current_phase_end - server_time));
             break;
         case 0:
             // contest is currently running
-            if (now >= self.current_phase_end) {
+            if (server_time >= self.current_phase_end) {
                 window.location.href = url_root + "/";
             }
             $("#countdown_label").text($("#translation_time_left").text());
-            $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
+            $("#countdown").text(self.format_timedelta(self.current_phase_end - server_time));
             break;
         case +1:
             // user has already finished its time but contest hasn't finished yet
-            if (now >= self.current_phase_end) {
+            if (server_time >= self.current_phase_end) {
                 window.location.href = url_root + "/";
             }
             $("#countdown_label").text($("#translation_until_contest_ends").text());
-            $("#countdown").text(self.format_timedelta(self.current_phase_end - now));
+            $("#countdown").text(self.format_timedelta(self.current_phase_end - server_time));
             break;
         case +2:
             // contest has already finished
