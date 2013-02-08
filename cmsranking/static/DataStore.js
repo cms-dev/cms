@@ -23,11 +23,11 @@ function round(value, ndigits) {
 }
 
 function round_to_str(value, ndigits) {
-    if (ndigits == 0) {
-        return value.toFixed(0);
-    } else {
+    if (ndigits > 0) {
         // Remove trailing zeroes
         return value.toFixed(ndigits).replace(/\.?0+$/, "");
+    } else {
+        return value.toFixed(0);
     }
 }
 
