@@ -40,8 +40,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'cms'
-copyright = u'2013, Matteo Boscariol, Stefano Maggiolo, Giovanni Mascellani, Luca Wehrstedt'
+project = u'CMS'
+copyright = u'2013, The CMS development team'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -171,7 +171,7 @@ htmlhelp_basename = 'cmsdoc'
 
 latex_elements = {
 # The paper size ('letterpaper' or 'a4paper').
-#'papersize': 'letterpaper',
+'papersize': 'a4paper',
 
 # The font size ('10pt', '11pt' or '12pt').
 #'pointsize': '10pt',
@@ -183,8 +183,8 @@ latex_elements = {
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'cms.tex', u'cms Documentation',
-   u'Matteo Boscariol, Stefano Maggiolo, Giovanni Mascellani, Luca Wehrstedt', 'manual'),
+  ('index', 'cms.tex', u'CMS Documentation',
+   u'The CMS development team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -213,8 +213,8 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'cms', u'cms Documentation',
-     [u'Matteo Boscariol, Stefano Maggiolo, Giovanni Mascellani, Luca Wehrstedt'], 1)
+    ('index', 'CMS', u'CMS Documentation',
+     [u'The CMS development team'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -227,8 +227,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-  ('index', 'cms', u'cms Documentation',
-   u'Matteo Boscariol, Stefano Maggiolo, Giovanni Mascellani, Luca Wehrstedt', 'cms', 'One line description of project.',
+  ('index', 'CMS', u'CMS Documentation',
+   u'The CMS development team', 'CMS', 'Contest Management System.',
    'Miscellaneous'),
 ]
 

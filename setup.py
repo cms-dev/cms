@@ -77,8 +77,7 @@ def do_setup():
 
     setup(name="cms",
           version="1.0.0pre",
-          author="Matteo Boscariol, Stefano Maggiolo, "
-                 "Giovanni Mascellani, Luca Wehrstedt",
+          author="The CMS development team",
           author_email="contestms@freelists.org",
           url="https://github.com/cms-dev/cms",
           download_url="https://github.com/cms-dev/cms/archive/master.tar.gz",

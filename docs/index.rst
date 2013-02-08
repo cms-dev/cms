@@ -1,4 +1,4 @@
-Welcome to cms's documentation!
+Welcome to CMS's documentation!
 ===============================
 
 Contents:

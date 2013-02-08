@@ -3,17 +3,14 @@ to CMS.
 
 MAIN AUTHORS (have push rights on GIT repository)
 
-Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-Stefano Maggiolo <s.maggiolo@gmail.com>
 Matteo Boscariol <boscarim@hotmail.com>
+Stefano Maggiolo <s.maggiolo@gmail.com>
+Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 
-OTHER REGULAR CONTRIBUTORS
+OTHER CONTRIBUTORS
 
 Bernard Blackham <bernard@largestprime.net>
-
-MINOR PATCH CONTRIBUTORS
-
 Giovanni Campagna (aka gcampax) <scampa.giovanni@gmail.com>
 David Greenaway <mail@davidgreenaway.com>
 Evgeny Martynov <evgeny@epochfail.com>
