@@ -1,6 +1,8 @@
 Installation
 ************
 
+.. _installation_dependencies:
+
 Dependencies
 ============
 
@@ -106,6 +108,8 @@ You can verify to be in the group issuing the command:
 
     groups
 
+
+.. _installation_updatingcms:
 
 Updating CMS
 ============

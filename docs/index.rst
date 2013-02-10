@@ -14,4 +14,5 @@ Contents:
    Score types
    External contest formats
    RankingWebServer
+   Troubleshooting
 
