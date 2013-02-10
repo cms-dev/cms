@@ -13,4 +13,5 @@ Welcome to CMS's documentation!
    Score types
    External contest formats
    RankingWebServer
+   Localization
    Troubleshooting
