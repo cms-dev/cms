@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -186,8 +186,9 @@ class ScoreType:
             translator = lambda string: string
         try:
             score_details = json.loads(score_details)
-        except json.decoder.JSONDecodeError:
-            logger.error("Found a non-JSON score details string. "
+        except (json.decoder.JSONDecodeError, TypeError):
+            # TypeError raised if score_details is None
+            logger.error("Found a null or non-JSON score details string. "
                          "Try invalidating scores.")
             return translator("Score details temporarily unavailable.")
         else:

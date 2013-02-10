@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -1265,9 +1265,14 @@ class SubmissionDetailsHandler(BaseHandler):
         else:
             details = submission.public_score_details
 
+        if submission.scored():
+            details = score_type.get_html_details(details, self._)
+        else:
+            details = None
+
         self.render("submission_details.html",
                     s=submission,
-                    details=score_type.get_html_details(details, self._))
+                    details=details)
 
 
 class UserTestInterfaceHandler(BaseHandler):
