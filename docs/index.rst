@@ -1,11 +1,10 @@
 Welcome to CMS's documentation!
 ===============================
 
-Contents:
-
 .. toctree::
    :maxdepth: 2
 
+   Introduction
    Installation
    Running CMS
    Creating a contest
@@ -15,4 +14,3 @@ Contents:
    External contest formats
    RankingWebServer
    Troubleshooting
-

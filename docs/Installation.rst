@@ -95,7 +95,6 @@ You can download CMS |release| from :gh_download:`GitHub` and extract in your fi
     ./setup.py build
     sudo ./setup.py install
 
-
 If you install CMS, you also need to add your user to the ``cmsuser`` group and logout to make the change effective:
 
 .. sourcecode:: bash

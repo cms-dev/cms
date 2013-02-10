@@ -76,3 +76,37 @@ The flag ``-a`` informs ResourceService that it has to start all other services,
 
 Note that it is your duty to keep CMS's configuration synchronized among the machines.
 
+
+Recommended setup
+=================
+
+Of course, the number of servers one needs to run a contest depends on many factors (number of participants, length of the contest, economical issues, more technical matters...). We recommend that, for fairness, there is at least one server associated only to a worker.
+
+As for the distribution of services, usually there is one ResourceService for each server, one copy each of LogService, ScoringService, Checker, EvaluationService, AdminWebServer, and one or more of ContestWebServer and Worker. Again, if there are more than one worker, we recommend to run them on different servers.
+
+Our preferred distribution is Ubuntu >= 12.04 LTS.  We will hopefully support Ubuntu 12.04.x out of the box for the length of Ubuntu's support duration, that is five years.
+
+Very important note: up to now, we support only 32 bit distributions.
+
+Saying that, one is not forced to follow the previous rules, and it should not be very hard to successfully run CMS on different distributions or even on 64 bit installations (see the howto about setting up a 32 bits chroot for more information on this).
+
+You can replicate the service handling the contestant-facing web server, :file:`cmsContestWebServer`; in this case, you need to configure a load balanced in front of them. We provide a sample configuration for nginx at :file:`cms/example/nginx.conf.sample`.
+
+
+Logs
+====
+
+When the services are running, log messages are streamed to the log
+service. This is the meaning of the log levels:
+
+- debug: you can ignore them (in the default configuration, the log service does not show them);
+
+- info: they inform you on what is going on in the system and that everything is fine;
+
+- warning: something went wrong or was slightly unexpected, but CMS knew how to handle it, or someone fed inappropriate data to CMS (by error or on purpose); you may want to check these as they may evolve into errors or unexpected behaviors, or hint that a contestant is trying to cheat;
+
+- error: an unexpected condition that should not have happened; you are really encouraged to take actions to fix them, but the service will continue to work (most of the time, ignoring the error and the data connected to it);
+
+- critical: a condition so unexpected that the service is really startled and refuses to continue working; you are forced to take action because with high probability the service will continue having the same problem upon restarting.
+
+Warning, error, and critical logs are also displayed in the main page of AdminWebServer.
