@@ -527,6 +527,12 @@ body.admin table.bordered tbody tr:nth-child(odd) {
     background-color: #EEF3EA;
 }
 
+body.admin div.task_dataset {
+    padding-left: 1em;
+    padding-right: 1em;
+    border: 1px solid #CED3CA;
+}
+
 body.admin #notifications .notification {
     background-color: #F7CBFE;
     border: 0.143em solid #E475FF;

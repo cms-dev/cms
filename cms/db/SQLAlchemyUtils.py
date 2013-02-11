@@ -307,6 +307,20 @@ class Base(object):
         except ObjectDeletedError:
             return None
 
+    def clone(self):
+        """Copy all the column properties into a new object
+
+        Create a new object of this same type and set the values of all
+        its column properties to the ones of this "old" object. Leave
+        the relationship properties unset.
+
+        return (object): a clone of this object
+
+        """
+        cls = type(self)
+        args = list(getattr(self, prp.key) for prp in cls._col_props)
+        return cls(*args)
+
 
 Base = declarative_base(db, cls=Base, constructor=None)
 

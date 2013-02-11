@@ -386,6 +386,22 @@ def format_token_rules(tokens, t_type=None, locale=None):
     return result
 
 
+def format_dataset_attrs(dataset):
+    """Construct a printable string containing the attributes of a given
+    dataset (e.g. live, autojudge enabled, etc.)
+
+    dataset (Dataset): the dataset in question
+    return (str): printable string of relevant attributes
+
+    """
+    if dataset is dataset.task.active_dataset:
+        return " (Live)"
+    elif dataset.autojudge:
+        return " (Background judging)"
+    else:
+        return ""
+
+
 def filter_ascii(string):
     """Avoid problem with printing a string provided by a malicious
     entity.

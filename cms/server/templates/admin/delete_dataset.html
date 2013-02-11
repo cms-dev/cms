@@ -1,0 +1,15 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1><a href="{{ url_root }}/task/{{ task.id }}">{{ task.title }} ({{ task.name }})</a> - Delete dataset</h1>
+</div>
+
+<form action="{{ url_root }}/delete_dataset/{{ dataset.id }}" method="POST">
+
+    Are you sure you want to delete the dataset "{{ dataset.description }}" and all associated test cases?<br/>
+
+    <input type="submit" value="Delete">
+    <input type="button" value="Cancel" onclick="javascript:history.back();">
+</form>
+{% end %}

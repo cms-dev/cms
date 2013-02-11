@@ -2,49 +2,28 @@
 
 {% block js_init %}
 
-function showTaskTypeOption() {
-    var selector = $("select[name=task_type]")[0];
-    $(".TaskTypeOptions:visible").hide("fast");
-    $("#TaskType" + selector.options[selector.selectedIndex].value + "Options").show("fast")
+function showTaskTypeOption(dataset_id) {
+    var selector = $("select[name=task_type_" + dataset_id + "]")[0];
+    $(".TaskTypeOptions_" + dataset_id + ":visible").hide("fast");
+    $("#TaskType" + selector.options[selector.selectedIndex].value + "Options_" + dataset_id).show("fast")
 };
 
-showTaskTypeOption();
-$("select[name=task_type]").change(showTaskTypeOption);
+{% for dataset in task.datasets %}
+showTaskTypeOption({{ dataset.id }});
+$("select[name=task_type_{{ dataset.id }}]").change(function() {
+    showTaskTypeOption({{ dataset.id }});
+});
+{% end %}
 
 {% end %}
 
 {% block core %}
+{% from cms.server import format_dataset_attrs %}
 {% from cms import plugin_list %}
 {% from cms.grading.scoretypes import get_score_type %}
 {% set task_type_list = plugin_list("cms.grading.tasktypes", "tasktypes") %}
 {% set score_type_list = plugin_list("cms.grading.scoretypes", "scoretypes") %}
 {% set current_score_type = None %}
-
-{% if task.task_type not in [task_type.__name__ for task_type in task_type_list] %}
-<script type="text/javascript">
-  $(document).ready(function() {
-  utils.display_notification("notification",
-      0,
-      "Task type `{{ task.task_type }}' not found.",
-      "Please select another task type, " +
-      "or make the original one available and refresh the page " +
-      "without updating the task to avoid losing the parameters.");
-  });
-</script>
-{% end%}
-
-{% if task.score_type not in [score_type.__name__ for score_type in score_type_list] %}
-<script type="text/javascript">
-  $(document).ready(function() {
-  utils.display_notification("notification",
-      0,
-      "Score type `{{ task.score_type }}' not found.",
-      "Please select another score type, " +
-      "or make the original one available and refresh the page " +
-      "without updating the task to avoid losing the parameters.");
-  });
-</script>
-{% end%}
 
 <div class="core_title">
   <h1>{{ task.title }} ({{ task.name }})</h1>
@@ -229,125 +208,192 @@ $("select[name=task_type]").change(showTaskTypeOption);
         </td>
       </tr>
       <tr>
-        <td>Time limit</td>
-        <td><input type="text" name="time_limit" value="{{ task.time_limit if task.time_limit is not None else "" }}"/> second(s)</td>
-      </tr>
-      <tr>
-        <td>Memory limit</td>
-        <td><input type="text" name="memory_limit" value="{{ task.memory_limit if task.memory_limit is not None else "" }}"/> MiB</td>
-      </tr>
-    </table>
-    <div class="hr"></div>
-  </div>
-
-<!-- Task type and score type settings -->
-
-  <h2 id="title_task_type" class="toggling_on">Task type and score type settings</h2>
-
-  <div id="task_type">
-    <table>
-      <tr>
-        <td>Task type</td>
-        <td>
-
-          <select name="task_type">
-            {% for task_type in task_type_list %}
-            <option value="{{ task_type.__name__}}" {% if task.task_type == task_type.__name__ %}selected{% end %}>{{ task_type.__name__ }}</option>
-            {% end %}
-          </select>
-        {% set parameters = json.loads(task.task_type_parameters) if task.task_type_parameters != '' else None %}
-
-        {% for task_type in task_type_list %}
-        <table class="TaskTypeOptions bordered" id="TaskType{{ task_type.__name__ }}Options" style="display: none;">
-          {% for i in range(len(task_type.ACCEPTED_PARAMETERS)) %}
-            {% set param_def = task_type.ACCEPTED_PARAMETERS[i] %}
-            {% set parameter_value = parameters[i] if task.task_type == task_type.__name__ and parameters is not None and i < len(parameters) else None %}
-            <tr>
-                <td>{{ param_def.name }}</td>
-                <td>
-                    {% raw param_def.render( "TaskTypeOptions_%s_" % task_type.__name__ , parameter_value) %}
-                </td>
-            </tr>
-          {% end %}
-        </table>
-        {% end %}
-
-        </td>
-      </tr>
-      <tr>
         <td>Submission format</td>
         <td>
           <input type="text" name="submission_format" value="{{ json.dumps([x.filename for x in task.submission_format]) }}"/>
         </td>
       </tr>
-      <tr>
-        <td>Managers</td>
-        <td>
-          <a href="{{ url_root }}/add_manager/{{ task.id }}">Add a manager</a></br>
-          {% if len(task.managers) == 0 %}
-            No managers.
-          {% else %}
-            {% for manager in task.managers.values() %}
-              <div class="manager">
-                <a href="{{ url_root }}/file/{{ manager.digest }}/{{ manager.filename }}">{{ manager.filename }}</a>
-                - <a href="{{ url_root }}/delete_manager/{{ manager.id }}">Delete</a>
-              </div>
-            {% end %}
-          {% end %}
-        </td>
-      </tr>
-      <tr>
-        <td>Score Type</td>
-        <td>
-          <select name="score_type">
-            {% for score_type in score_type_list %}
-            <option value="{{ score_type.__name__}}" {% if task.score_type == score_type.__name__ %}selected{% end %}>{{ score_type.__name__ }}</option>
-            {% end %}
-          </select>
-        </td>
-      </tr>
-      <tr>
-        <td>Score Parameters</td>
-        <td><input type="text" name="score_type_parameters" value="{{ task.score_type_parameters }}"/></td>
-      </tr>
     </table>
     <div class="hr"></div>
   </div>
 
-  <h2 id="title_testcases" class="toggling_on">Testcases</h2>
-  <div id="testcases">
-    <a href="{{ url_root }}/add_testcase/{{ task.id }}">Add a testcase</a>
-    <table class="bordered" style="text-align:center">
-      <thead>
+<!-- Datasets -->
+
+  <h2 id="title_datasets" class="toggling_on">Datasets</h2>
+  <div id="datasets">
+    <p>
+{% if len(task.datasets) == 0 %}
+    No datasets have been created for this task.<br/>
+{% end %}
+    <a href="{{ url_root }}/add_dataset/{{ task.id }}/-">Create a new dataset</a><br/>
+    </p>
+
+{% for dataset in sorted(task.datasets, key=lambda d: d.description) %}
+
+  <h3 id="title_dataset_{{ dataset.id }}" class="toggling_on">Dataset: {{ dataset.description }}{{ format_dataset_attrs(dataset) }}</h3>
+  <div id="dataset_{{ dataset.id }}" class="task_dataset">
+
+    <p>
+      {% if dataset is task.active_dataset %}
+      [Make Live]
+      {% else %}
+      <a href="{{ url_root }}/activate_dataset/{{ dataset.id }}">[Make Live]</a>
+      {% end %}
+      <a href="{{ url_root }}/add_dataset/{{ task.id }}/{{ dataset.id }}">[Clone]</a>
+      <a href="{{ url_root }}/rename_dataset/{{ dataset.id }}">[Rename]</a>
+      {% if dataset is task.active_dataset %}
+      [Delete]
+      {% else %}
+      <a href="{{ url_root }}/delete_dataset/{{ dataset.id }}">[Delete]</a>
+      {% end %}
+      {% if dataset is not task.active_dataset %}
+        <a href="{{ url_root }}/autojudge_dataset/{{ dataset.id }}">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
+      {% end %}
+    </p>
+
+  <!-- Task type and score type settings -->
+
+    <h4 id="title_task_type_{{ dataset.id }}" class="toggling_on">Task and scoring parameters</h4>
+
+    {% if dataset.task_type not in [task_type.__name__ for task_type in task_type_list] %}
+    <script type="text/javascript">
+      $(document).ready(function() {
+      utils.display_notification("notification",
+          0,
+          "Task type `{{ dataset.task_type }}' not found.",
+          "Please select another task type, " +
+          "or make the original one available and refresh the page " +
+          "without updating the task to avoid losing the parameters.");
+      });
+    </script>
+    {% end %}
+
+    {% if dataset.score_type not in [score_type.__name__ for score_type in score_type_list] %}
+    <script type="text/javascript">
+      $(document).ready(function() {
+      utils.display_notification("notification",
+          0,
+          "Score type `{{ dataset.score_type }}' not found.",
+          "Please select another score type, " +
+          "or make the original one available and refresh the page " +
+          "without updating the task to avoid losing the parameters.");
+      });
+    </script>
+    {% end %}
+
+    <div id="task_type_{{ dataset.id }}" class="task_dataset_params">
+      <table>
+
         <tr>
-          <th>Position</th>
-          <th>Public</th>
-          <th>Input</th>
-          <th>Output</th>
-          <th>Ops</th>
+          <td>Time limit</td>
+          <td><input type="text" name="time_limit_{{ dataset.id }}" value="{{ dataset.time_limit if dataset.time_limit is not None else "" }}"/> second(s)</td>
         </tr>
-      </thead>
-      <tbody>
-        {% for testcase in task.testcases %}
         <tr>
-          <td style="font-weight:bold;">{{ testcase.num }}</td>
-          <td style="font-weight:bold;">
-            <input type="checkbox" name="testcase_{{ testcase.num }}_public" {% if testcase.public %}checked{% end %} />
-          </td>
+          <td>Memory limit</td>
+          <td><input type="text" name="memory_limit_{{ dataset.id }}" value="{{ dataset.memory_limit if dataset.memory_limit is not None else "" }}"/> MiB</td>
+        </tr>
+
+        <tr>
+          <td>Task type</td>
           <td>
-            <a href="#" onclick="utils.show_file('input{{ testcase.num }}','{{ url_root }}/file/{{ testcase.input }}/input{{ testcase.num }}')">Show input</a>
-          </td>
-          <td>
-            <a href="#" onclick="utils.show_file('output{{ testcase.num }}','{{ url_root }}/file/{{ testcase.output }}/output{{ testcase.num }}')">Show output</a>
-          </td>
-          <td>
-            <a href="{{ url_root }}/delete_testcase/{{ testcase.id }}">Delete</a>
+
+            <select name="task_type_{{ dataset.id }}">
+              {% for task_type in task_type_list %}
+              <option value="{{ task_type.__name__ }}" {% if dataset.task_type == task_type.__name__ %}selected{% end %}>{{ task_type.__name__ }}</option>
+              {% end %}
+            </select>
+          {% set parameters = json.loads(dataset.task_type_parameters) if dataset.task_type_parameters != '' else None %}
+
+          {% for task_type in task_type_list %}
+          <table class="TaskTypeOptions TaskTypeOptions_{{ dataset.id }} bordered" id="TaskType{{ task_type.__name__ }}Options_{{ dataset.id }}" style="display: none;">
+            {% for i in range(len(task_type.ACCEPTED_PARAMETERS)) %}
+              {% set param_def = task_type.ACCEPTED_PARAMETERS[i] %}
+              {% set parameter_value = parameters[i] if dataset.task_type == task_type.__name__ and parameters is not None and i < len(parameters) else None %}
+              <tr>
+                  <td>{{ param_def.name }}</td>
+                  <td>
+                      {% raw param_def.render( "TaskTypeOptions_%s_%s_" % (task_type.__name__, dataset.id), parameter_value) %}
+                  </td>
+              </tr>
+            {% end %}
+          </table>
+          {% end %}
+
           </td>
         </tr>
-        {% end %}
-      </tbody>
-    </table>
-    <div class="hr"></div>
+        <tr>
+          <td>Managers</td>
+          <td>
+            <a href="{{ url_root }}/add_manager/{{ task.id }}">Add a manager</a></br>
+            {% if len(dataset.managers) == 0 %}
+              No managers.
+            {% else %}
+              {% for manager in dataset.managers.values() %}
+                <div class="manager">
+                  <a href="{{ url_root }}/file/{{ manager.digest }}/{{ manager.filename }}">{{ manager.filename }}</a>
+                  - <a href="{{ url_root }}/delete_manager/{{ manager.id }}">Delete</a>
+                </div>
+              {% end %}
+            {% end %}
+          </td>
+        </tr>
+        <tr>
+          <td>Score Type</td>
+          <td>
+            <select name="score_type_{{ dataset.id }}">
+              {% for score_type in score_type_list %}
+              <option value="{{ score_type.__name__}}" {% if dataset.score_type == score_type.__name__ %}selected{% end %}>{{ score_type.__name__ }}</option>
+              {% end %}
+            </select>
+          </td>
+        </tr>
+        <tr>
+          <td>Score Parameters</td>
+          <td><input type="text" name="score_type_parameters_{{ dataset.id }}" value="{{ dataset.score_type_parameters }}"/></td>
+        </tr>
+      </table>
+      <div class="hr"></div>
+    </div>
+
+  <!-- Test cases for this dataset -->
+
+  <h4 id="title_testcases_{{ dataset.id }}" class="toggling_on">Test cases</h4>
+    <div id="testcases_{{ dataset.id }}" class="task_dataset_testcases">
+      <a href="{{ url_root }}/add_testcase/{{ task.id }}">Add a testcase</a>
+      <table class="bordered" style="text-align:center">
+        <thead>
+          <tr>
+            <th>Position</th>
+            <th>Public</th>
+            <th>Input</th>
+            <th>Output</th>
+            <th>Ops</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for testcase in dataset.testcases %}
+          <tr>
+            <td style="font-weight:bold;">{{ testcase.num }}</td>
+            <td style="font-weight:bold;">
+              <input type="checkbox" name="testcase_{{ dataset.id }}_{{ testcase.num }}_public" {% if testcase.public %}checked{% end %} />
+            </td>
+            <td>
+              <a href="#" onclick="utils.show_file('input{{ testcase.num }}','{{ url_root }}/file/{{ testcase.input }}/input{{ testcase.num }}')">Show input</a>
+            </td>
+            <td>
+              <a href="#" onclick="utils.show_file('output{{ testcase.num }}','{{ url_root }}/file/{{ testcase.output }}/output{{ testcase.num }}')">Show output</a>
+            </td>
+            <td>
+              <a href="{{ url_root }}/delete_testcase/{{ testcase.id }}">Delete</a>
+            </td>
+          </tr>
+          {% end %}
+        </tbody>
+      </table>
+      <div class="hr"></div>
+    </div>
+  </div>
+  {% end %}
   </div>
 
   <h2 id="title_token_options" class="toggling_on">Token Options</h2>

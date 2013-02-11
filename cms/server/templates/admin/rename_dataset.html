@@ -1,0 +1,19 @@
+{% extends base.html %}
+
+{% block core %}
+<div class="core_title">
+  <h1><a href="{{ url_root }}/task/{{ task.id }}">{{ task.title }} ({{ task.name }})</a> - Rename dataset</h1>
+</div>
+
+<form action="{{ url_root }}/rename_dataset/{{ dataset.id }}" method="POST">
+  <table>
+    <tr>
+      <td>Edit description (each dataset must have a unique description):</td>
+      <td>
+        <input type="text" name="description" value="{{ dataset.description }}"/>
+      </td>
+    </tr>
+  </table>
+  <input type="submit" value="Rename">
+</form>
+{% end %}

@@ -14,7 +14,6 @@ $("select[name=task_type]").change(showTaskTypeOption);
 {% end %}
 
 {% block core %}
-
 {% from cms import plugin_list %}
 {% set task_type_list = plugin_list("cms.grading.tasktypes", "tasktypes") %}
 {% set score_type_list = plugin_list("cms.grading.scoretypes", "scoretypes") %}
@@ -37,6 +36,29 @@ $("select[name=task_type]").change(showTaskTypeOption);
         <td><input type="text" name="title"/></td>
       </tr>
       <tr>
+        <td>Primary statements (JSON-encoded list of language codes)</td>
+        <td><input type="text" name="primary_statements" value="[]"/></td>
+      </tr>
+      <tr>
+        <td>Submission format</td>
+        <td>
+          <table>
+            <tr>
+              <td>
+                <input type="radio" name="submission_format_choice" value="simple" checked/>
+              </td>
+              <td>task_name.%l</td>
+            </tr>
+            <tr>
+              <td><input type="radio" name="submission_format_choice" value="other">
+              </td>
+              <td>
+                Other: <input type="text" name="submission_format"/></td>
+              </td>
+            </tr>
+          </table>
+      </tr>
+      <tr>
         <td>Time limit</td>
         <td><input type="text" name="time_limit" value="1"/> second(s)</td>
       </tr>
@@ -44,10 +66,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
         <td>Memory limit</td>
         <td><input type="text" name="memory_limit" value="512"/> MiB</td>
       </tr>
-      <tr>
-        <td>Primary statements (JSON-encoded list of language codes)</td>
-        <td><input type="text" name="primary_statements" value="[]"/></td>
-      </tr>
+
     </table>
     <div class="hr"></div>
   </div>
@@ -85,25 +104,6 @@ $("select[name=task_type]").change(showTaskTypeOption);
 
         </td>
       </tr>
-      <tr>
-        <td>Submission format</td>
-        <td>
-          <table>
-            <tr>
-              <td>
-                <input type="radio" name="submission_format_choice" value="simple"/>
-              </td>
-              <td>task_name.%l</td>
-            </tr>
-            <tr>
-              <td><input type="radio" name="submission_format_choice" value="other">
-              </td>
-              <td>
-                Other: <input type="text" name="submission_format"/></td>
-              </td>
-            </tr>
-          </table>
-      </tr>
 
       <tr>
         <td>Score Type</td>
@@ -123,6 +123,9 @@ $("select[name=task_type]").change(showTaskTypeOption);
     </table>
     <div class="hr"></div>
   </div>
+
+<!-- Token settings -->
+
   <h2 id="title_tokens" class="toggling_on">Tokens</h2>
 
   <div id="tokens">
@@ -173,7 +176,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
     </table>
     <div class="hr"></div>
   </div>
-  <input type="submit"/><input type="reset">
+  <input type="submit"/><input type="reset"/>
 </form>
 {% end %}
 
