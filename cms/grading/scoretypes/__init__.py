@@ -25,7 +25,7 @@ from cms import logger, plugin_lookup
 
 
 def get_score_type(submission=None, task=None):
-    """Given a task, istantiate the corresponding ScoreType class.
+    """Given a task, instantiate the corresponding ScoreType class.
 
     submission (Submission): the submission that needs the task type.
     task (Task): the task we want to score.
