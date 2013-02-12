@@ -20,10 +20,8 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 {% block core %}
 {% from cms.server import format_dataset_attrs %}
 {% from cms import plugin_list %}
-{% from cms.grading.scoretypes import get_score_type %}
 {% set task_type_list = plugin_list("cms.grading.tasktypes", "tasktypes") %}
 {% set score_type_list = plugin_list("cms.grading.scoretypes", "scoretypes") %}
-{% set current_score_type = None %}
 
 <div class="core_title">
   <h1>{{ task.title }} ({{ task.name }})</h1>
@@ -32,126 +30,16 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
 <h2 id="title_submissions" class="toggling_on">Submissions</h2>
 <div id="submissions">
 
-  {% if submissions == [] %}
-  <p>No submissions found.</p>
-
+  {% if len(submissions) == 0 %}
+  <p>No submissions for this task yet.</p>
   {% else %}
-  <table class="bordered">
-    <thead>
-      <tr>
-        <th style="width: 10%">Time</th>
-        <th style="width: 14%">User</th>
-        <th style="width: 35%">Status</th>
-        <th style="width: 15%">Files</th>
-        <th style="width: 8%">Token</th>
-        <th style="width: 18%">Reevaluate</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
-        {% if current_score_type is None %}
-          {% try %}
-            {% set current_score_type = get_score_type(submission=s) %}
-          {% except %}
-          {% end %}
-        {% end %}
-      <tr>
-        <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ str(s.timestamp) }}</a></td>
-        <td><a href="{{ url_root }}/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
-        <td>
-          {% set sr = s.get_result(s.task.active_dataset) %}
-          {% if sr is None or sr.compilation_outcome is None %}
-          Compiling...
-          {% else %}
-          <div id="title_evaluation_{{ s.id }}" class="toggling_off">
-            {% if sr.compilation_outcome == "fail" %}
-            Compilation failed
-            <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
-            {% elif not sr.evaluated() %}
-            Evaluating...
-            <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
-            {% elif sr.scored() %}
-              {% try %}
-                {% set max_score = current_score_type.max_score %}
-              {% except %}
-                {% set max_score = "[Cannot get score type - see logs]" %}
-              {% end %}
-            Evaluated ({{ sr.score }} / {{ max_score }})
-            <div class="score_details" id="evaluation_{{ s.id }}" style="display: none;">
-              {% try %}
-                {% raw current_score_type.get_html_details(sr.score_details) %}
-              {% except %}
-              [Cannot get score type - see logs]
-              {% end %}
-            {% else %}
-            Evaluated
-            <div id="evaluation_{{ s.id }}" style="display: none;">
-              {% if sr.evaluated() %}
-              <h3>Testcases</h3>
-              <table class="nested bordered">
-                <thead>
-                  <tr>
-                    <th style="width: 20%">Outcome</th>
-                    <th style="width: 5%"></th>
-                    <th style="width: 75%">Details</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {% for ev in sr.evaluations %}
-                  <tr>
-                    <td>{{ ev.outcome }}</td>
-                    {% if s.token is not None or s.task.active_dataset.testcases[int(ev.num)].public %}
-                    <td style="align: center;">&bullet;</td>
-                    {% else %}
-                    <td></td>
-                    {% end %}
-                    <td>{{ ev.text }}</td>
-                  </tr>
-                  {% end %}
-                </tbody>
-              </table>
-              {% end %}
-            {% end %}
-              <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
-              <pre>{% if sr.compilation_text is not None %}{{ sr.compilation_text }}{% end %}</pre>
-            </div>
-          </div>
-
-          {% end %}
-        </td>
-        <td>
-          {% for filename in [x.filename for x in task.submission_format] %}
-            {% if filename in s.files %}
-              {% set real_filename = filename if s.language is None else filename.replace("%l", s.language) %}
-          <a href="#" onclick="utils.show_file('{{ real_filename }}','{{ url_root }}/submission_file/{{ s.files[filename].id }}')">
-            {{ real_filename }}
-          </a>
-          <br/>
-            {% end %}
-          {% end %}
-        </td>
-        <td>
-          {% if s.token is None %}
-          No
-          {% else %}
-          Yes
-          {% end %}
-        </td>
-        <td>
-          {% set reevaluation_par_name = "submission" %}
-          {% set reevaluation_par_value = s.id %}
-          {% include reevaluation_buttons.html %}
-        </td>
-      </tr>
+    <a href="{{ url_root }}/dataset/{{ task.active_dataset_id }}">
+      {% if len(submissions) == 1 %}
+      1 submission
+      {% else %}
+      {{ len(submissions) }} submissions
       {% end %}
-    </tbody>
-  </table>
-  <p>
-    Reevaluate all {{ len(submissions) }} submissions for this task:
-    {% set reevaluation_par_name = "task" %}
-    {% set reevaluation_par_value = task.id %}
-    {% include reevaluation_buttons.html %}
-  </p>
+    </a>
   {% end %}
   <div class="hr"></div>
 </div>

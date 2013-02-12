@@ -135,6 +135,7 @@ function update_additional_answer(element, invoker)
         <td>
           {% set reevaluation_par_name = "submission" %}
           {% set reevaluation_par_value = s.id %}
+          {% set reevaluation_par_dataset_id = None %}
           {% include reevaluation_buttons.html %}
         </td>
       </tr>
@@ -145,6 +146,7 @@ function update_additional_answer(element, invoker)
     Reevaluate all {{ len(submissions) }} submissions for this user:
     {% set reevaluation_par_name = "user" %}
     {% set reevaluation_par_value = selected_user.id %}
+    {% set reevaluation_par_dataset_id = None %}
     {% include reevaluation_buttons.html %}
   </p>
   {% end %}

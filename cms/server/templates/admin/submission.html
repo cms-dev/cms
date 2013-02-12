@@ -2,11 +2,14 @@
 
 {% block core %}
 {% from cms.grading.scoretypes import get_score_type %}
-{% set st = get_score_type(submission=s) %}
-{% set sr = s.get_result(s.task.active_dataset) %}
+{% set st = get_score_type(dataset=shown_dataset) %}
+{% set sr = s.get_result(shown_dataset) %}
 <div class="core_title">
   <h1>Submission {{ s.id }}</h1>
 </div>
+
+{% set dataset_selector_par_url = "%s/submission/%s" % (url_root, s.id) %}
+{% include dataset_selector.html %}
 
 <h2 id="title_details" class="toggling_on">Submission details</h2>
 <div id="details">
@@ -99,6 +102,7 @@
         <td>
           {% set reevaluation_par_name = "submission" %}
           {% set reevaluation_par_value = s.id %}
+          {% set reevaluation_par_dataset_id = shown_dataset.id %}
           {% include reevaluation_buttons.html %}
         </td>
       </tr>
@@ -143,7 +147,7 @@
       {% for idx, ev in enumerate(sr.evaluations) %}
       <tr>
         <td id="eval_outcome_{{ idx }}">{{ ev.outcome }}</td>
-        {% if s.token is not None or s.task.active_dataset.testcases[int(ev.num)].public %}
+        {% if s.token is not None or shown_dataset.testcases[int(ev.num)].public %}
         <td style="align: center;">&bullet;</td>
         {% else %}
         <td></td>

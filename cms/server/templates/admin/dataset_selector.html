@@ -1,0 +1,34 @@
+{% from cms.server import format_dataset_attrs %}
+
+<h2 id="title_datasets" class="toggling_off">Dataset: {{ shown_dataset.description + format_dataset_attrs(shown_dataset) }}</h2>
+<div id="datasets" style="display: none;">
+
+{% if len(datasets) == 0 %}
+    No datasets exist for this task.
+{% else %}
+  <p>Current dataset: "<strong>{{ shown_dataset.description }}</strong>".<br/>
+  {% if len(datasets) > 1 %}
+  Click on one of the following items to view the results under a
+  different dataset.</p>
+  <table>
+  {% for dataset in sorted(datasets, key=lambda d: d.description) %}
+    <tr><td>
+    {% if dataset is shown_dataset %}
+      <strong>
+    {% else %}
+      <a href="{{ dataset_selector_par_url }}/{{ dataset.id }}">
+    {% end %}
+    {{ dataset.description }}
+    {% if dataset is shown_dataset %}
+      </strong>
+    {% else %}
+      </a>
+    {% end %}
+    {{ format_dataset_attrs(dataset) }}
+    </td></tr>
+  {% end %}
+  </table>
+  {% end %}
+{% end %}
+</div>
+

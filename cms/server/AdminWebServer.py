@@ -1480,6 +1480,31 @@ class TaskHandler(BaseHandler):
         self.redirect("/task/%s" % task_id)
 
 
+class DatasetSubmissionsHandler(BaseHandler):
+    """Shows all submissions for this dataset, allowing the admin to
+    view the results under different datasets.
+
+    """
+    def get(self, dataset_id):
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
+        self.contest = task.contest
+
+        self.r_params = self.render_params()
+        self.r_params["task"] = task
+        self.r_params["active_dataset"] = task.active_dataset
+        self.r_params["shown_dataset"] = dataset
+        self.r_params["datasets"] = \
+            self.sql_session.query(Dataset)\
+                            .filter(Dataset.task == task)\
+                            .order_by(Dataset.description).all()
+        self.r_params["submissions"] = \
+            self.sql_session.query(Submission)\
+                            .filter(Submission.task == task)\
+                            .order_by(Submission.timestamp.desc()).all()
+        self.render("submissionlist.html", **self.r_params)
+
+
 class RankingHandler(BaseHandler):
     """Shows the ranking for a contest.
 
@@ -1708,12 +1733,25 @@ class SubmissionViewHandler(BaseHandler):
     compile please check'.
 
     """
-    def get(self, submission_id):
+    def get(self, submission_id, dataset_id=None):
         submission = self.safe_get_item(Submission, submission_id)
-        self.contest = submission.user.contest
+        task = submission.task
+        self.contest = task.contest
+
+        if dataset_id is not None:
+            dataset = self.safe_get_item(Dataset, dataset_id)
+        else:
+            dataset = task.active_dataset
+        assert dataset.task is task
 
         self.r_params = self.render_params()
         self.r_params["s"] = submission
+        self.r_params["active_dataset"] = task.active_dataset
+        self.r_params["shown_dataset"] = dataset
+        self.r_params["datasets"] = \
+            self.sql_session.query(Dataset)\
+                            .filter(Dataset.task == task)\
+                            .order_by(Dataset.description).all()
         self.render("submission.html", **self.r_params)
 
 
@@ -1882,6 +1920,7 @@ _aws_handlers = [
     (r"/ranking/([0-9]+)", RankingHandler),
     (r"/ranking/([0-9]+)/([a-z]+)", RankingHandler),
     (r"/task/([0-9]+)", TaskHandler),
+    (r"/dataset/([0-9]+)", DatasetSubmissionsHandler),
     (r"/add_task/([0-9]+)", AddTaskHandler),
     (r"/add_statement/([0-9]+)", AddStatementHandler),
     (r"/delete_statement/([0-9]+)", DeleteStatementHandler),
@@ -1900,7 +1939,7 @@ _aws_handlers = [
     (r"/add_user/([0-9]+)", AddUserHandler),
     (r"/add_announcement/([0-9]+)", AddAnnouncementHandler),
     (r"/remove_announcement/([0-9]+)", RemoveAnnouncementHandler),
-    (r"/submission/([0-9]+)", SubmissionViewHandler),
+    (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionViewHandler),
     (r"/submission_file/([0-9]+)", SubmissionFileHandler),
     (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
     (r"/message/([0-9]+)", MessageHandler),
