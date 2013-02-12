@@ -446,8 +446,21 @@ def add_manager(task_id, manager):
     files = [
         ( 'manager', manager ),
     ]
-    admin_req('/add_manager/%d' % task_id, multipart_post=True,
-              files=files, args=args)
+    dataset_id = get_task_active_dataset_id(task_id)
+    admin_req('/add_manager/%d' % (dataset_id),
+              multipart_post=True, files=files, args=args)
+
+
+def get_task_active_dataset_id(task_id):
+    resp = admin_req('/task/%d' % task_id)
+    page = resp.read()
+    match = re.search(
+        r'id="title_dataset_([0-9]+).* \(Live\)</',
+        page)
+    if match is None:
+        raise FrameworkException("Unable to create contest.")
+    dataset_id = int(match.groups()[0])
+    return dataset_id
 
 
 def add_testcase(task_id, num, input_file, output_file, public):
@@ -459,8 +472,9 @@ def add_testcase(task_id, num, input_file, output_file, public):
     args["num"] = num
     if public:
         args['public'] = '1'
-    admin_req('/add_testcase/%d' % task_id, multipart_post=True,
-              files=files, args=args)
+    dataset_id = get_task_active_dataset_id(task_id)
+    admin_req('/add_testcase/%d' % (dataset_id),
+              multipart_post=True, files=files, args=args)
 
 
 def add_user(contest_id, **kwargs):
