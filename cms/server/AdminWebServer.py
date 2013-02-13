@@ -779,7 +779,7 @@ class DeleteManagerHandler(BaseHandler):
     def get(self, manager_id):
         manager = self.safe_get_item(Manager, manager_id)
         task = manager.task
-        self.contest = task
+        self.contest = task.contest
         self.sql_session.delete(manager)
         self.sql_session.commit()
         self.redirect("/task/%s" % task.id)
