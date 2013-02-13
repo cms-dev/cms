@@ -30,7 +30,7 @@ There are two configuration files, one for CMS itself and one for the rankings. 
 
 * :file:`cms.ranking.conf` is intended to be different on each server that will host a ranking. The addresses and log-in information of each ranking must be the same as the ones found in :file:`cms.conf`.
 
-These files are pretty good starting point if you want to try CMS. There are some mandatory changes to do though:
+These files are a pretty good starting point if you want to try CMS. There are some mandatory changes to do though:
 
 * you must change the connection string given in ``database``; this usually means to change username and password with the one you choose before;
 
@@ -38,7 +38,7 @@ These files are pretty good starting point if you want to try CMS. There are som
 
 * if you want to run CMS without installing it, you need to change ``process_cmdline`` to reflect that.
 
-If you are organizing a real contest, you must change ``secret_key`` from the default, and also you are supposed to think about how to distribute your services and change accordingly ``core_services``. Finally, you should change the ranking section of :file:`cms.conf`, and :file:`cms.ranking.conf`, to use a non-trivial username and password.
+If you are organizing a real contest, you must change ``secret_key`` from the default, and also you will need to think about how to distribute your services and change accordingly ``core_services``. Finally, you should change the ranking section of :file:`cms.conf`, and :file:`cms.ranking.conf`, to use a non-trivial username and password.
 
 After having modified :file:`cms.conf` and :file:`cms.ranking.conf` in :file:`examples/`, you can reinstall CMS in order to make these changes effective, with
 

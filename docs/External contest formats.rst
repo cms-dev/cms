@@ -7,12 +7,12 @@ There are two different sets of needs that external contest formats strive to sa
 
 - The second is that of contest creators, that want an environment that helps them design tasks, testcases, and insert the contest data (contestant names and so on). The format needs to be easy to write, understand and modify, and should provide tools to help developing and testing the tasks (automatic generation of testcases, testing of solutions, ...). CMS must be able to import it as a new contest, but also to import over an already created contest (after updating some data).
 
-CMS provides an exporter :file:`cmsContestExporter` and an importer :file:`cmsContestImporter` working with a format suitable for the first set of needs. This format comprises a dump of all serializable data regarding the contest in a JSON file, together with the file needed by the contest (testcases, statements, submissions, user tests, ...). The exporter and importer understand also compressed versions of this format (i.e., in a zip or tar file). For more information run
+CMS provides an exporter :file:`cmsContestExporter` and an importer :file:`cmsContestImporter` working with a format suitable for the first set of needs. This format comprises a dump of all serializable data regarding the contest in a JSON file, together with the files needed by the contest (testcases, statements, submissions, user tests, ...). The exporter and importer understand also compressed versions of this format (i.e., in a zip or tar file). For more information run
 
 .. sourcecode:: bash
 
-    cmsContesExporter -h
-    cmsContesImporter -h
+    cmsContestExporter -h
+    cmsContestImporter -h
 
 As for the second set of needs, the philosophy is that CMS should not force upon contest creators a particular environment to write contests and tasks. Therefore, we encourage you to write importer and reimporter scripts, modeled upon those we wrote for the environment used in the Italian Olympiads, that can be run with the commands :file:`cmsYamlImporter` and :file:`cmsYamlReimporter` and inspected at :file:`../cmscontrib/YamlImporter.py` and :file:`../cmscontrib/YamlReimporter.py`. If you want to use the Italian environment there is a description in the next section, but please be aware that it has severe limitations: for example, many handles are in Italian and the support for complex task types is a bit cumbersome.
 
