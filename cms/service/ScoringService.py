@@ -156,8 +156,8 @@ def safe_put_data(connection, url, data, auth, operation, log_bridge):
 
     connection (httplib.HTTPConnection): the connection.
     url (string): the relative url.
-    auth (string): the authorization as returned by get_authorization.
     data (dict): the data to json-encode and send.
+    auth (string): the authorization as returned by get_authorization.
     operation (str): a human-readable description of the operation
                      we're performing (to produce log messages).
     log_bridge (LogBridge): the bridge to use to write logs.
