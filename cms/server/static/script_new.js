@@ -54,7 +54,7 @@ var Utils = new function () {
         } else if (type == "announcement") {
             alert.children("h4").text($("#translation_new_announcement").text());
         } else if (type == "question") {
-            alert.children("h4").text($("#translation_new_question").text());
+            alert.children("h4").text($("#translation_new_answer").text());
         } else if (type == "notification") {
             alert.children("h4").text(subject);
             alert.append($("<span>" + text + "</span>"));
