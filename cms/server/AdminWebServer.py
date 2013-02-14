@@ -1120,6 +1120,7 @@ class ActivateDatasetHandler(BaseHandler):
 
         if try_commit(self.sql_session, self):
             self.application.service.scoring_service.reinitialize()
+            self.application.service.scoring_service.dataset_updated(task_id=task.id)
 
             # This kicks off judging of any submissions which were previously
             # unloved, but are now part of an autojudged taskset.

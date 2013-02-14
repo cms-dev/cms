@@ -717,6 +717,18 @@ class ScoringService(Service):
             submission_result.ranking_score_details = \
                 scorer.pool[submission_id]["ranking_details"]
 
+            try:
+                ranking_score_details = json.loads(
+                        submission_result.ranking_score_details)
+            except (TypeError, ValueError):
+                # It may be blank.
+                ranking_score_details = None
+
+            # If we are not a live dataset then we can bail out here,
+            # and avoid updating RWS.
+            if dataset is not submission.task.active_dataset:
+                return
+
             # Data to send to remote rankings.
             submission_put_data = {
                 "user": encode_id(submission.user.username),
@@ -729,8 +741,9 @@ class ScoringService(Service):
                 "submission": encode_id(submission_id),
                 "time": int(make_timestamp(submission.timestamp)),
                 # We're sending the unrounded score to RWS
-                "score": submission_result.score,
-                "extra": submission_result.ranking_score_details}
+                "score": submission_result.score}
+            if ranking_score_details is not None:
+                subchange_put_data["extra"] = ranking_score_details
 
         # TODO: ScoreRelative here does not work with remote
         # rankings (it does in the ranking view) because we
@@ -856,6 +869,60 @@ class ScoringService(Service):
         if old_s + old_t == 0:
             self.add_timeout(self.score_old_submissions, None,
                              0.5, immediately=False)
+
+    @rpc_method
+    def dataset_updated(self, task_id):
+        """This function updates RWS with new data about a task. It should be
+        called after the live dataset of a task is changed.
+
+        task_id (int): id of the task whose dataset has changed.
+
+        """
+        with SessionGen(commit=False) as session:
+            task = Task.get_from_id(task_id, session)
+            dataset = task.active_dataset
+
+            logger.info("Dataset update for task %d (dataset now is %d)." % (
+                task.id, dataset.id))
+
+            subchanges = []
+            for submission in task.submissions:
+                submission_result = submission.get_result(dataset)
+
+                if submission_result is None:
+                    # Not yet compiled, evaluated or scored.
+                    score = None
+                    ranking_score_details = None
+                else:
+                    score = submission_result.score
+                    try:
+                        ranking_score_details = json.loads(
+                                submission_result.ranking_score_details)
+                    except (TypeError, ValueError):
+                        # It may be blank.
+                        ranking_score_details = None
+
+                # Data to send to remote rankings.
+                subchange_id = "%s%ss" % \
+                    (int(make_timestamp(submission.timestamp)),
+                     submission.id)
+                subchange_put_data = {
+                    "submission": encode_id(submission.id),
+                    "time": int(make_timestamp(submission.timestamp))}
+                if score is not None:
+                    # We're sending the unrounded score to RWS
+                    subchange_put_data["score"] = score
+                if ranking_score_details is not None:
+                    subchange_put_data["extra"] = ranking_score_details
+                subchanges.append((subchange_id, subchange_put_data))
+
+        # Adding operations to the queue.
+        with self.operation_queue_lock:
+            for ranking in self.rankings:
+                for subchange_id, data in subchanges:
+                    self.subchange_queue.setdefault(
+                        ranking,
+                        dict())[encode_id(subchange_id)] = data
 
 
 def main():
