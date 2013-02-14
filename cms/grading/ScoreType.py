@@ -146,19 +146,6 @@ class ScoreType:
 
         self.update_scores(submission_id)
 
-    def compute_all_scores(self):
-        """Recompute all scores, usually needed only in case of
-        problems.
-
-        """
-        for submissions in self.submissions.itervalues():
-            # We recompute score for all submissions of user...
-            for submission_id in submissions:
-                self.compute_score(submission_id)
-            # and update the score of the user (only once).
-            if submissions != []:
-                self.update_scores(submissions[-1])
-
     def update_scores(self, new_submission_id):
         """Update the scores of the users assuming that only this
         submission appeared or was modified (i.e., tokened). The way
