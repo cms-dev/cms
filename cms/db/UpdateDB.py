@@ -874,6 +874,11 @@ ALTER COLUMN statements SET NOT NULL;""")
                 "SELECT id, statements FROM users;"):
                 data = dict()
                 for s_id in statements:
+                    # For some reason, some older dumps didn't have all
+                    # statements in them. Prefer to push on than error out.
+                    if s_id not in ids:
+                        print "WARNING: Cannot find statement %d" % s_id
+                        continue
                     task, lang = ids[s_id]
                     data.setdefault(task, []).append(lang)
                 for v in data.itervalues():
