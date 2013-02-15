@@ -12,6 +12,7 @@ OTHER CONTRIBUTORS
 
 Bernard Blackham <bernard@largestprime.net>
 Giovanni Campagna (aka gcampax) <scampa.giovanni@gmail.com>
+Vittorio Gambaletta (aka VittGam) <VittGam@VittGam.net>
 David Greenaway <mail@davidgreenaway.com>
 Evgeny Martynov <evgeny@epochfail.com>
 William Pettersson <william.pettersson@gmail.com>

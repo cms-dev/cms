@@ -113,13 +113,16 @@ var Utils = new function () {
     };
 
     self.format_timedelta = function (timedelta) {
-        // negative time delta does not make sense, let's show zero to the user
-        if (timedelta < 0) timedelta = 0;
+        // a negative time delta does not make sense, let's show zero to the user
+        if (timedelta < 0)
+            timedelta = 0;
+
         var hours = Math.floor(timedelta / 3600);
         timedelta %= 3600;
         var minutes = Math.floor(timedelta / 60);
         timedelta %= 60;
         var seconds = Math.floor(timedelta);
+
         var result = "";
         if (hours < 10)
             result += "0";
@@ -139,8 +142,7 @@ var Utils = new function () {
         var server_time = now - self.client_timestamp + self.server_timestamp;
         $("#server_time").text(self.format_time(server_time));
 
-        // TODO consider possible null values of contest.current_phase_end in phases -2 and 2 (they mean -inf and +inf)
-        // FIXME localize strings
+        // TODO consider possible null values of self.current_phase_begin and self.current_phase_end (they mean -inf and +inf respectively)
 
         switch (self.phase) {
         case -2:

@@ -261,7 +261,7 @@ var UserDetail = new function () {
                 res += " \
         <tr> \
             <td>" + time + "</td> \
-            <td>" + round_to_str(submission['score']) + "</td> \
+            <td>" + round_to_str(submission['score'], DataStore.tasks[task_id]['score_precision']) + "</td> \
             <td>" + (submission["token"] ? 'Yes' : 'No') + "</td> \
             " + (submission["extra"].length > 0 ? "<td>" + submission["extra"].join("</td><td>") + "</td>" : "") + " \
         </tr>";
