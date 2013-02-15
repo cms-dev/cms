@@ -134,9 +134,11 @@ def compilation_step(sandbox, command):
     stdout = sandbox.get_file_to_string("compiler_stdout.txt")
     if stdout.strip() == "":
         stdout = "(empty)\n"
+    stdout = unicode(stdout, errors='ignore')
     stderr = sandbox.get_file_to_string("compiler_stderr.txt")
     if stderr.strip() == "":
         stderr = "(empty)\n"
+    stderr = unicode(stderr, errors='ignore')
     compiler_output = "Compiler standard output:\n" \
         "%s\n" \
         "Compiler standard error:\n" \
@@ -148,8 +150,8 @@ def compilation_step(sandbox, command):
         "execution_wall_clock_time":
             sandbox.get_execution_wall_clock_time(),
         "memory_used": sandbox.get_memory_used(),
-        "stdout": sandbox.get_file_to_string("compiler_stdout.txt"),
-        "stderr": sandbox.get_file_to_string("compiler_stderr.txt"),
+        "stdout": stdout,
+        "stderr": stderr,
         "exit_status": exit_status,
         }
 
