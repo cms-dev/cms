@@ -27,7 +27,7 @@ from cms.grading.Job import Job
 
 def get_task_type(job=None, file_cacher=None, task=None,
                   task_type_name=None):
-    """Given a job, istantiate the corresponding TaskType class.
+    """Given a job, instantiate the corresponding TaskType class.
 
     job (Job): the job to perform.
     file_cacher (FileCacher): a file cacher object.
