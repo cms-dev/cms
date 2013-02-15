@@ -39,9 +39,9 @@ There are two types of tokens: contest-tokens and task-tokens. When a contestant
 
 A token set can be disabled (i.e. there will never be tokens available for use), infinite (i.e. there will always be tokens tokens available for use) or finite.
 
-Rules consist of six parameters: ``token_initial``, ``token_gen_number``, ``token_gen_time``, ``token_max``, ``token_total`` and ``token_min_interval``. For a set to be disabled, the ``token_initial`` field has to be unset. For a set to be infinite, ``token_initial`` needs to be a non-negative integer, ``token_gen_number`` need to be a positive integer and ``token_gen_time`` needs to be zero.
+Rules consist of six parameters: ``token_initial``, ``token_gen_number``, ``token_gen_time``, ``token_max``, ``token_total`` and ``token_min_interval``. For a set to be disabled, the ``token_initial`` field has to be unset. For a set to be infinite, ``token_initial`` needs to be a non-negative integer, ``token_gen_number`` needs to be a positive integer and ``token_gen_time`` needs to be zero.
 
-Otherwise the token set is finite. This means that the token set can be effectively represented by a non-negative integer counter: its cardinality. When the contest starts (or when the user starts its per-user time-frame) the set will be filled with ``token_initial`` tokens (i.e. the counter is set to ``token_initial``). If the set is not empty (i.e. the counter is not zero) the user can use a token. After that, the token is discarded (i.e. the counter is decremented by one). New tokens can be generated during the contest: ``token_gen_number`` new tokens will be given to the user after every ``token_gen_time`` minutes from the start (note that ``token_gen_number`` can be zero, thus disabling token generation). If ``token_max`` is set to a positive integer, the set cannot contain more than ``token_max`` tokens, therefore generation of new tokens will stop at that value (unset ``token_max`` to disable this limit).
+Otherwise the token set is finite. This means that the token set can be effectively represented by a non-negative integer counter: its cardinality. When the contest starts (or when the user starts its per-user time-frame, see :ref:`configuringacontest_usaco-like-contests`) the set will be filled with ``token_initial`` tokens (i.e. the counter is set to ``token_initial``). If the set is not empty (i.e. the counter is not zero) the user can use a token. After that, the token is discarded (i.e. the counter is decremented by one). New tokens can be generated during the contest: ``token_gen_number`` new tokens will be given to the user after every ``token_gen_time`` minutes from the start (note that ``token_gen_number`` can be zero, thus disabling token generation). If ``token_max`` is set to a positive integer, the set cannot contain more than ``token_max`` tokens, therefore generation of new tokens will stop at that value (unset ``token_max`` to disable this limit).
 
 The use of tokens can be limited with ``token_min_interval`` and ``token_total``: users have to wait at least ``token_min_interval`` seconds after they used a token before they can use another one (this parameter can be zero), and they cannot use more that ``token_total`` tokens in total (this parameter can be unset). Note that ``token_total`` has no effect if the token set is infinite.
 
@@ -63,7 +63,7 @@ The score of a user on a certain task is the maximum among the scores of the "to
 
 Note that some "internal" scores used by ScoreTypes (for example the subtask score) are not rounded using this procedure. At the moment the subtask scores are always rounded at two decimal places and there's no way to configure that (note that the score of the submission is the sum of the *unrounded* scores of the subtasks). That will be changed soon. See :gh_issue:`33`.
 
-The unrounded score is stored in the database so you can change the ``score_precision`` at any time without having to reevaluate any submissions.
+The unrounded score is stored in the database (and it's rounded only at presentation level) so you can change the ``score_precision`` at any time without having to rescore any submissions. Yet, you have to make sure that these values are also updated on the RankingWebServers. To do that you can either restart ScoringService or update the data manually (see :doc:`RankingWebServer` for further information).
 
 
 Primary statements
@@ -93,6 +93,8 @@ In fact, there are other reasons that can cause the login to fail. If the ``ip_l
 
 The login can also fail if ``block_hidden_users`` (in :file:`cms.conf`) is ``true`` and the user one wants to login as has the ``hidden`` field set.
 
+
+.. _configuringacontest_usaco-like-contests:
 
 USACO-like contests
 ===================
