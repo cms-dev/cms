@@ -24,6 +24,8 @@ import os
 import codecs
 from collections import namedtuple
 
+from sqlalchemy.orm import joinedload
+
 from cms import logger
 from cms.db.SQLAlchemyAll import SessionGen, Submission, SubmissionResult
 from cms.grading.Sandbox import Sandbox
@@ -596,8 +598,16 @@ def compute_changes_for_dataset(old_dataset, new_dataset,
         else:
             return True, (a, b)
 
+    # Construct query with all relevant fields to avoid roundtrips to the DB.
+    submissions = \
+        task.sa_session.query(Submission)\
+            .filter(Submission.task == task)\
+            .options(joinedload(Submission.user))\
+            .options(joinedload(Submission.token))\
+            .options(joinedload(Submission.results)).all()
+
     ret = []
-    for s in task.submissions:
+    for s in submissions:
         old = s.get_result(old_dataset)
         new = s.get_result(new_dataset)
 

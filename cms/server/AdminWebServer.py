@@ -1564,6 +1564,11 @@ class DatasetSubmissionsHandler(BaseHandler):
         self.r_params["submissions"] = \
             self.sql_session.query(Submission)\
                             .filter(Submission.task == task)\
+                            .options(joinedload(Submission.task))\
+                            .options(joinedload(Submission.user))\
+                            .options(joinedload(Submission.files))\
+                            .options(joinedload(Submission.token))\
+                            .options(joinedload(Submission.results))\
                             .order_by(Submission.timestamp.desc()).all()
         self.render("submissionlist.html", **self.r_params)
 
