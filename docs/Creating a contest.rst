@@ -20,7 +20,7 @@ The idea we wanted to implement is that CMS does not get in the way of how you c
 
 Instead, you are encouraged to write an "importer", that is a piece of software that reads data from your filesystem structure and creates the contest in the database. You can also write a "reimporter" if you want to change the contest details without losing the data (submissions, user tests, ...) already uploaded.
 
-We provide examples of both importer and reimporter that target the format used by the Italian IOI selection team. You can either adapt them to the format you use, or decide to use the Italian format. Examples of contest written in this format are in `this GitHub repository <https://github.com/cms-dev/con_test>`_, while its explanation is :doc:`here <External contest formats>`.
+We provide examples of both importer and reimporter that target the format used by the Italian IOI selection team. You can either adapt them to the format you use, or decide to use the Italian format. An example of a contest written in this format is in `this GitHub repository <https://github.com/cms-dev/con_test>`_, while its explanation is :doc:`here <External contest formats>`.
 
 
 Creating a contest from an exported contest

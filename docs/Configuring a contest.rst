@@ -6,6 +6,8 @@ In the following text "user" and "contestant" are used interchangeably.
 Configuration parameters will be referred to using their internal name, but it should always be easy to infer what fields control them in the AWS interface by using their label.
 
 
+.. _configuringacontest_limitations:
+
 Limitations
 ===========
 
@@ -19,7 +21,7 @@ Contest administrators can limit the ability of users to submit submissions and 
 
   These set, respectively, the minimum amount of time the user is required to wait after a submission/user_test has been submitted before he's allowed to send in new ones. Any attempt to submit a submission/user_test before this timeout has expired will fail.
 
-The limits can be set both on individual tasks and on the whole contest. For a submission to be accepted it has to verify the conditions on both the task *and* the contest. This means that a submission/user_test will be accepted only if the number of submissions/user_tests received so far for that task is strictly less that the task's "max_number" *and* the number of submissions/user_tests received so far for the whole contest (i.e. in all tasks) is less than the contest's "max_number". The same holds for "min_interval" too: a submission/user_test will be accepted only if the time passed since the last submission/user_test for that task is greater than the task's "min_interval" *and* the time passed since the last submission/user_test received for the whole contest (i.e. in any of the tasks) is greater than the contest's "min_interval".
+The limits can be set both on individual tasks and on the whole contest. For a submission to be accepted it has to verify the conditions on both the task *and* the contest. This means that a submission/user_test will be accepted only if the number of submissions/user_tests received so far for that task is strictly less that the task's "max_number" *and* the number of submissions/user_tests received so far for the whole contest (i.e. in all tasks) is strictly less than the contest's "max_number". The same holds for "min_interval" too: a submission/user_test will be accepted only if the time passed since the last submission/user_test for that task is greater than the task's "min_interval" *and* the time passed since the last submission/user_test received for the whole contest (i.e. in any of the tasks) is greater than the contest's "min_interval".
 
 Each of these fields can be left unset to prevent the corresponding limitation from being enforced.
 
@@ -84,6 +86,8 @@ CMS stores all times as UTC timestamps and converts them to an appropriate timez
 When CWS needs to show a timestamp to the user it first tries to show it according to the user's timezone. If the string defining the timezone is unrecognized (for example it is the empty string), CWS will fallback to the contest's timezone. If it is again unable to interpret that string it will use the local time of the server.
 
 
+.. _configuringacontest_login:
+
 User login
 ==========
 
@@ -99,7 +103,7 @@ The login can also fail if ``block_hidden_users`` (in :file:`cms.conf`) is ``tru
 USACO-like contests
 ===================
 
-The most peculiar trait of the `USACO <http://usaco.org/>`_ contests is that the contests themselves are many days long but each user is only able to compete for a few hours after their first login (after that he/she is not able to send any more submissions). This can be done in CMS too, using the ``per_user_time`` fields of contests. If it is unset the contest will behave "normally", that is all users will be able to submit solutions from the contest's ``start`` until the contest's ``stop``. If, instead, ``per_user_time`` is set to a positive integer value then an use will only have a limited amount of time. In particular, after he/she logs in, he/she will be presented with an interface similar to the pre-contest one, with one addition: a "start" button. Clicking on this button starts the time-frame in which the user can compete (i.e. read statements, download attachments, submit solutions, use tokens, send user_tests, etc.). This time-frame ends after ``per_user_time`` seconds or when the contest ``stop`` time is reached, whichever comes first. After that the interface will be identical to the post-contest one: the user won't be able to do anything. See :gh_issue:`61`.
+The most peculiar trait of the `USACO <http://usaco.org/>`_ contests is that the contests themselves are many days long but each user is only able to compete for a few hours after their first login (after that he/she is not able to send any more submissions). This can be done in CMS too, using the ``per_user_time`` field of contests. If it is unset the contest will behave "normally", that is all users will be able to submit solutions from the contest's ``start`` until the contest's ``stop``. If, instead, ``per_user_time`` is set to a positive integer value then an use will only have a limited amount of time. In particular, after he/she logs in, he/she will be presented with an interface similar to the pre-contest one, with one addition: a "start" button. Clicking on this button starts the time-frame in which the user can compete (i.e. read statements, download attachments, submit solutions, use tokens, send user_tests, etc.). This time-frame ends after ``per_user_time`` seconds or when the contest ``stop`` time is reached, whichever comes first. After that the interface will be identical to the post-contest one: the user won't be able to do anything. See :gh_issue:`61`.
 
 The time at which the user clicks the "start" button is recorded in the ``starting_time`` field of the user. You can change that to shift the user's time-frame (but we suggest to use ``extra_time`` for that, explained in :ref:`configuringacontest_extra-time`) or unset it to make the user able to start its time-frame again. Do so at your own risk!
 

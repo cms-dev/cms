@@ -88,7 +88,7 @@ If you prefer using Python Package Index, you can retrieve all Python dependenci
 Installing CMS
 ==============
 
-You can download CMS |release| from :gh_download:`GitHub` and extract in your filesystem. After that, you can install it (recommended, not necessary though):
+You can download CMS |release| from :gh_download:`GitHub` and extract it on your filesystem. After that, you can install it (recommended, not necessary though):
 
 .. sourcecode:: bash
 
@@ -101,7 +101,7 @@ If you install CMS, you also need to add your user to the ``cmsuser`` group and 
 
     sudo usermod -a -G cmsuser
 
-You can verify to be in the group issuing the command:
+You can verify to be in the group by issuing the command:
 
 .. sourcecode:: bash
 

@@ -73,7 +73,7 @@ SS is only able to create or update data on RWS, but not to delete it. This mean
 
 * You can keep RWS running and send a hand-crafted HTTP request to it and it'll, all by itself, delete the objects you want to remove and all the ones that depend on it.
 
-Note that when you change the username of an user, the name of a task or the name of a contest in CMS and then restart SS, that user or task will be duplicated in RWS and you will need to delete the old copy using this procedure.
+Note that when you change the username of an user, the name of a task or the name of a contest in CMS and then restart SS, that user, task or contest will be duplicated in RWS and you will need to delete the old copy using this procedure.
 
 Multiple contests
 -----------------

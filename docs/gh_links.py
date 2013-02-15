@@ -22,28 +22,58 @@ from docutils import nodes, utils
 
 from sphinx.util.nodes import split_explicit_title
 
-def gh_issue(role, rawtext, text, lineno, inliner, options={}, content=[]):
+def gh_issue(typ, rawtext, text, lineno, inliner, options={}, content=[]):
     text = utils.unescape(text)
     has_explicit_title, title, part = split_explicit_title(text)
     if not has_explicit_title:
         title = 'issue #%s' % part
     full_url = 'https://github.com/cms-dev/cms/issues/%s' % part
 
-    pnode = nodes.reference(title, title, internal=False, refuri=full_url, **options)
-    return [pnode], []
+    retnode = nodes.reference(title, title, internal=False, refuri=full_url, **options)
+    return [retnode], []
 
 def make_gh_download(app):
-    def gh_download(role, rawtext, text, lineno, inliner, options={}, content=[]):
+    def gh_download(typ, rawtext, text, lineno, inliner, options={}, content=[]):
         title = utils.unescape(text)
         full_url = 'https://github.com/cms-dev/cms/archive/v%s.tar.gz' % app.config.release
 
-        pnode = nodes.reference(title, title, internal=False, refuri=full_url, **options)
-        return [pnode], []
+        retnode = nodes.reference(title, title, internal=False, refuri=full_url, **options)
+        return [retnode], []
     return gh_download
+
+def make_gh_tree(app):
+    def gh_tree(typ, rawtext, text, lineno, inliner, options={}, content=[]):
+        text = utils.unescape(text)
+        has_explicit_title, title, part = split_explicit_title(text)
+        if not has_explicit_title:
+            title = part
+        full_url = 'https://github.com/cms-dev/cms/tree/v%s/%s' % (app.config.release, part)
+
+        refnode = nodes.reference(title, title, internal=False, refuri=full_url, **options)
+        retnode = nodes.literal(role=typ.lower(), classes=[typ])
+        retnode += refnode
+        return [retnode], []
+    return gh_tree
+
+def make_gh_blob(app):
+    def gh_blob(typ, rawtext, text, lineno, inliner, options={}, content=[]):
+        text = utils.unescape(text)
+        has_explicit_title, title, part = split_explicit_title(text)
+        if not has_explicit_title:
+            title = part
+        full_url = 'https://github.com/cms-dev/cms/blob/v%s/%s' % (app.config.release, part)
+
+        refnode = nodes.reference(title, title, internal=False, refuri=full_url, **options)
+        retnode = nodes.literal(role=typ.lower(), classes=[typ])
+        retnode += refnode
+        return [retnode], []
+    return gh_blob
 
 def setup_roles(app):
     app.add_role("gh_issue", gh_issue)
     app.add_role("gh_download", make_gh_download(app))
+    app.add_role("gh_tree", make_gh_tree(app))
+    app.add_role("gh_blob", make_gh_blob(app))
 
 def setup(app):
     app.connect('builder-inited', setup_roles)

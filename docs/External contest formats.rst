@@ -5,7 +5,7 @@ There are two different sets of needs that external contest formats strive to sa
 
 - The first is that of contest admins, that for several reasons (storage of old contests, backup, distribution of data) want to export the contest original data (tasks, contestants, ...) together with all data generated during the contest (from the contestants, submissions, user tests, ... and from the system, evaluations, scores, ...). Once a contest has been exported in this format, CMS must be able to reimport it in such a way that the new instance is indistinguishable from the original.
 
-- The second is that of contest creators, that want an environment that helps them design tasks, testcases, and insert the contest data (contestant names and so on). The format needs to be easy to write, understand and modify, and should provide tools to help developing and testing the tasks (automatic generation of testcases, testing of solutions, ...). CMS must be able to import it as a new contest, but also to import over an already created contest (after updating some data).
+- The second is that of contest creators, that want an environment that helps them design tasks, testcases, and insert the contest data (contestant names and so on). The format needs to be easy to write, understand and modify, and should provide tools to help developing and testing the tasks (automatic generation of testcases, testing of solutions, ...). CMS must be able to import it as a new contest, but also to import it over an already created contest (after updating some data).
 
 CMS provides an exporter :file:`cmsContestExporter` and an importer :file:`cmsContestImporter` working with a format suitable for the first set of needs. This format comprises a dump of all serializable data regarding the contest in a JSON file, together with the files needed by the contest (testcases, statements, submissions, user tests, ...). The exporter and importer understand also compressed versions of this format (i.e., in a zip or tar file). For more information run
 
@@ -14,7 +14,7 @@ CMS provides an exporter :file:`cmsContestExporter` and an importer :file:`cmsCo
     cmsContestExporter -h
     cmsContestImporter -h
 
-As for the second set of needs, the philosophy is that CMS should not force upon contest creators a particular environment to write contests and tasks. Therefore, we encourage you to write importer and reimporter scripts, modeled upon those we wrote for the environment used in the Italian Olympiads, that can be run with the commands :file:`cmsYamlImporter` and :file:`cmsYamlReimporter` and inspected at :file:`../cmscontrib/YamlImporter.py` and :file:`../cmscontrib/YamlReimporter.py`. If you want to use the Italian environment there is a description in the next section, but please be aware that it has severe limitations: for example, many handles are in Italian and the support for complex task types is a bit cumbersome.
+As for the second set of needs, the philosophy is that CMS should not force upon contest creators a particular environment to write contests and tasks. Therefore, we encourage you to write importer and reimporter scripts, modeled upon those we wrote for the environment used in the Italian Olympiads, that can be run with the commands :file:`cmsYamlImporter` and :file:`cmsYamlReimporter` and inspected at :gh_blob:`cmscontrib/YamlImporter.py` and :gh_blob:`cmscontrib/YamlReimporter.py`. If you want to use the Italian environment there is a description in the next section, but please be aware that it has severe limitations: for example, many handles are in Italian and the support for complex task types is a bit cumbersome.
 
 
 Italian import format
@@ -24,9 +24,9 @@ You can follow this description looking at `this example <https://github.com/cms
 
 - a YAML file named :file:`contest.yaml`, that describes the general contest properties;
 
-- for each task :samp:`taskname`, a YAML file :file:`taskname.yaml` that describes the task and a directory :file:`taskname` that contains all the files needed to build the statement of the problem, the input and output cases, the reference solution and (when used) the solution checker.
+- for each task :samp:`{task_name}`, a YAML file :file:`{task_name}.yaml` that describes the task and a directory :file:`{task_name}` that contains all the files needed to build the statement of the problem, the input and output cases, the reference solution and (when used) the solution checker.
 
-The exact structure of these files and directories is detailed below. Note that providing confusing input to :file:`cmsYamlImporter` can, unexpectedly, confuse it and create inconsistent tasks and/or strange errors. For confusing input we mean parameters and/or files from which it can infer no or multiple task types or score types)
+The exact structure of these files and directories is detailed below. Note that providing confusing input to ``cmsYamlImporter`` can, unexpectedly, confuse it and create inconsistent tasks and/or strange errors. For confusing input we mean parameters and/or files from which it can infer no or multiple task types or score types.
 
 
 General contest description
@@ -34,51 +34,45 @@ General contest description
 
 The :file:`contest.yaml` file is a plain YAML file, with at least the following keys.
 
-- :samp:`nome_breve` ("short name", string): the contest's short name, used for internal reference (and exposed in the URLs); it has to match with the name of the directory that serves as contest root.
+- ``nome_breve`` ("short name", string): the contest's short name, used for internal reference (and exposed in the URLs); it has to match the name of the directory that serves as contest root.
 
-- :samp:`nome`: ("name", string): the contest's name (description), shown to contestants in the web interface.
+- ``nome`` ("name", string): the contest's name (description), shown to contestants in the web interface.
 
-- :samp:`problemi` ("tasks", list of strings): a list of the tasks belonging to this contest; for each of these strings, say :samp:`taskname`, there must be in the contest directory a file named :file:`taskname.yaml` and a directory called :file:`taskname`, used to extract information about that task; the order in this list will be the order of the tasks in the web interface.
+- ``problemi`` ("tasks", list of strings): a list of the tasks belonging to this contest; for each of these strings, say :samp:`{task_name}`, there must be a file named :file:`{task_name}.yaml` in the contest directory and a directory called :file:`{task_name}`, used to extract information about that task; the order in this list will be the order of the tasks in the web interface.
 
-- :samp:`utenti` ("users", list of associative arrays): each of the elements of the list describes one user of the contest; the exact structure of the record is described :ref:`below <externalcontestformats_userdescription>`.
+- ``utenti`` ("users", list of associative arrays): each of the elements of the list describes one user of the contest; the exact structure of the record is described :ref:`below <externalcontestformats_user-description>`.
 
 The following are optional keys.
 
-- :samp:`token_*`: token parameters, see :ref:`configuringacontest_tokens` (the names of the parameters and their default are the same as the internal names described there).
+- ``inizio`` ("start", integer): the UNIX timestamp of the beginning of the contest (copied in the ``start`` field); defaults to zero, meaning that contest times haven't yet been decided.
 
-- :samp:`inizio` ("start", integer): the UNIX timestamp of the beginning of the contest (copied in the :samp:`start` field); defaults to zero, meaning that contest times haven't yet been decided.
+- ``fine`` ("stop", integer): the UNIX timestamp of the end of the contest (copied in the ``stop`` field); defaults to zero, meaning that contest times haven't yet been decided.
 
-- :samp:`fine` ("stop", integer): the UNIX timestamp of the end of the contest (copied in the :samp:`stop` field); defaults to zero, meaning that contest times haven't yet been decided.
+- ``token_*``: token parameters for the contest, see :ref:`configuringacontest_tokens` (the names of the parameters are the same as the internal names described there); by default tokens are disabled.
 
-- :samp:`max_submission_number` (integer): maximum number of submissions for each contestant, for the whole contest (defaults to no limitations).
-
-- :samp:`max_user_test_number` (integer): maximum number of user tests for each contestant, for the whole contest (defaults to no limitations).
-
-- :samp:`min_submission_interval` (integer): minimum number of seconds to pass from the last contestant's submission before the contestant is able to submit again (defaults to no limitations).
-
-- :samp:`min_user_test_interval` (integer): minimum number of seconds to pass from the last contestant's user test before the contestant is able to submit another user test (defaults to no limitations).
+- ``max_*_number`` and ``min_*_interval`` (integers): limitations for the whole contest, see :ref:`configuringacontest_limitations` (the names of the parameters are the same as the internal names described there); by default they're all unset.
 
 
-.. _externalcontestformats_userdescription:
+.. _externalcontestformats_user-description:
 
 User description
 ----------------
 
-Each contest user (contestant) is described in one element of the :samp:`utenti` key in the :file:`contest.yaml` file. Each record has to contains the following keys.
+Each contest user (contestant) is described in one element of the ``utenti`` key in the :file:`contest.yaml` file. Each record has to contains the following keys.
 
-- :samp:`username` (string): obviously, the username.
+- ``username`` (string): obviously, the username.
 
-- :samp:`password` (string): obviusly as before, the user's password.
+- ``password`` (string): obviusly as before, the user's password.
 
 The following are optional keys.
 
-- :samp:`nome` ("name", string): the user real first name; defaults as the empty string.
+- ``nome`` ("name", string): the user real first name; defaults to the empty string.
 
-- :samp:`cognome` ("surname", string): the user real last name; default as the :samp:`username`.
+- ``cognome`` ("surname", string): the user real last name; defaults to the value of ``username``.
 
-- :samp:`ip` (string): the IP address from which incoming connections for this user are accepted; default to ":samp:`0.0.0.0`", meaning that no IP check is performed.
+- ``ip`` (string): the IP address from which incoming connections for this user are accepted, see :ref:`configuringacontest_login`; defaults to ``0.0.0.0``.
 
-- :samp:`fake` (string): when set to :samp:`True` (case-sensitive) set the :samp:`hidden` flag in the user; defaults to :samp:`False`.
+- ``fake`` (string): when set to ``True`` (case-sensitive _string_) set the ``hidden`` flag in the user, see :ref:`configuringacontest_login`; defaults to ``False``.
 
 
 Task description
@@ -86,62 +80,56 @@ Task description
 
 The task YAML files requires the following keys.
 
-- :samp:`nome_breve` ("short name", string): the name used to reference internally to this task; it is exposed in the URLs.
+- ``nome_breve`` ("short name", string): the name used to reference internally to this task; it is exposed in the URLs.
 
-- :samp:`nome` ("name", string): the long name (title) used in the web interface.
+- ``nome`` ("name", string): the long name (title) used in the web interface.
 
-- :samp:`n_input` (integer): number of test cases to be evaluated for this task; the actual test cases are retrieved from the :ref:`task directory <externalcontestformats_taskdirectory>`).
+- ``n_input`` (integer): number of test cases to be evaluated for this task; the actual test cases are retrieved from the :ref:`task directory <externalcontestformats_task-directory>`.
 
 The following are optional keys.
 
-- :samp:`timeout` (float): the timeout limit for this task in seconds (defaults to no limitations).
+- ``timeout`` (float): the timeout limit for this task in seconds; defaults to no limitations.
 
-- :samp:`memlimit` (integer): the memory limit for this task in megabytes (defaults to no limitations).
+- ``memlimit`` (integer): the memory limit for this task in megabytes; defaults to no limitations.
 
-- :samp:`risultati` ("results", string): a comma-separated list of test cases (identified by their numbers, starting from 0) that are marked as public, hence their results are available to contestants even without using tokens.
+- ``risultati`` ("results", string): a comma-separated list of test cases (identified by their numbers, starting from 0) that are marked as public, hence their results are available to contestants even without using tokens.
 
-- :samp:`token_*`: token parameters for the task, see :ref:`configuringacontest_tokens` (the names of the parameters and their default are the same as the internal names described there).
+- ``token_*``: token parameters for the task, see :ref:`configuringacontest_tokens` (the names of the parameters are the same as the internal names described there); by default tokens are disabled.
 
-- :samp:`max_submission_number` (integer): maximum number of submissions for each contestant, for this task (defaults to no limitations).
+- ``max_*_number`` and ``min_*_interval`` (integers): limitations for the task, see :ref:`configuringacontest_limitations` (the names of the parameters are the same as the internal names described there); by default they're all unset.
 
-- :samp:`max_user_test_number` (integer): maximum number of user tests for each contestant, for this task (defaults to no limitations).
-
-- :samp:`min_submission_interval` (integer): minimum number of seconds to pass from the last contestant's submission before the contestant is able to submit again for this task (defaults to no limitations).
-
-- :samp:`min_user_test_interval` (integer): minimum number of seconds to pass from the last contestant's user test before the contestant is able to submit another user test for this task (defaults to no limitations).
-
-- :samp:`outputonly` (boolean): if set to True, the task is created with the :ref:`tasktypes_outputonly` type (defaults to False).
+- ``outputonly`` (boolean): if set to True, the task is created with the :ref:`tasktypes_outputonly` type; defaults to False.
 
 The following are optional keys that must be present for some task type or score type.
 
-- :samp:`total_value` (float): for task using the :ref:`scoretypes_sum` score type, this is the maximum score for this task (defaults to 100.0); for other score types, the maximum score is computer from the :ref:`task directory <externalcontestformats_taskdirectory>`.
+- ``total_value`` (float): for tasks using the :ref:`scoretypes_sum` score type, this is the maximum score for the task and defaults to 100.0; for other score types, the maximum score is computed from the :ref:`task directory <externalcontestformats_task-directory>`.
 
-- :samp:`infile` and :samp:`infile` (strings): for :ref:`tasktypes_batch` task, these are the file names for the input and output files (defaults to :file:`input.txt` and :file:`output.txt`).
+- ``infile`` and ``outfile`` (strings): for :ref:`tasktypes_batch` tasks, these are the file names for the input and output files; default to :file:`input.txt` and :file:`output.txt`.
 
 
-.. _externalcontestformats_taskdirectory:
+.. _externalcontestformats_task-directory:
 
 Task directory
 --------------
 
-The content of the task directory is used both for retrieving the task data, and to infer the type of the task.
+The content of the task directory is used both to retrieve the task data and to infer the type of the task.
 
 These are the required files.
 
 - :file:`testo/testo.pdf` ("statement"): the main statement of the problem. It is not yet possible to import several statement associated to different languages.
 
-- :file:`input/input%d.txt` and :file:`output/output%d.txt` for all integers :samp:`%d` between 0 and :samp:`n_input` excluded: these are of course the input and (one of) the correct output files.
+- :file:`input/input{%d}.txt` and :file:`output/output{%d}.txt` for all integers :samp:`{%d}` between 0 (included) and ``n_input`` (excluded): these are of course the input and (one of) the correct output files.
 
 The following are optional files, that must be present for certain task types or score types.
 
-- :file:`gen/GEN`: in the Italian environment, this file describes the parameters for the input generator: each line not composed entirely by white spaces or comments (comments start with # and end with the end of the line) represents an input file. Here, it is used, in case it contains specially formatted comments, to signal that the score type is :ref:`scoretypes_groupmin`. If a line contains only a comment of the form :samp:`# ST: <score>` then it marks the beginning of a new group assigning at most :samp:`<score>` points, containing all subsequent testcases until the next special comment. If the file does not exists, or does not contain any special comments, the task is given the :ref:`scoretypes_sum` score type.
+- :file:`gen/GEN`: in the Italian environment, this file describes the parameters for the input generator: each line not composed entirely by white spaces or comments (comments start with ``#`` and end with the end of the line) represents an input file. Here, it is used, in case it contains specially formatted comments, to signal that the score type is :ref:`scoretypes_groupmin`. If a line contains only a comment of the form :samp:`# ST: {score}` then it marks the beginning of a new group assigning at most :samp:`{score}` points, containing all subsequent testcases until the next special comment. If the file does not exists, or does not contain any special comments, the task is given the :ref:`scoretypes_sum` score type.
 
-- :file:`sol/grader.%l` (where :samp:`%l` here and after means a supported language extension): for task of type :ref:`tasktypes_batch`, it is the piece of code that gets compiled together with the submitted solution, and usually takes care of reading the input and writing the output. If one grader is present, the graders for all supported languages must be provided.
+- :file:`sol/grader.{%l}` (where :samp:`{%l}` here and after means a supported language extension): for tasks of type :ref:`tasktypes_batch`, it is the piece of code that gets compiled together with the submitted solution, and usually takes care of reading the input and writing the output. If one grader is present, the graders for all supported languages must be provided.
 
-- :file:`sol/*.{h,lib.pas}`: if a grader is present, all other files in the :file:`sol` directory with extension :samp:`h` or :samp:`lib.pas` are treated as auxiliary files needed by the compilation of the graded with the submitted solution.
+- :file:`sol/*.h` and :file:`sol/*lib.pas`: if a grader is present, all other files in the :file:`sol` directory that end with ``.h`` or ``lib.pas`` are treated as auxiliary files needed by the compilation of the grader with the submitted solution.
 
-- :file:`cor/correttore` (checker): for task of types :ref:`tasktypes_batch` or :ref:`tasktypes_outputonly`, if this file is present, it must be the executable that examines the input and both correct and contestant's output files and assign the outcome. If the file is not present, a simple diff is used to compare the correct and the contestant's output files.
+- :file:`cor/correttore` (checker): for tasks of types :ref:`tasktypes_batch` or :ref:`tasktypes_outputonly`, if this file is present, it must be the executable that examines the input and both the correct and the contestant's output files and assigns the outcome. If the file is not present, a simple diff is used to compare the correct and the contestant's output files.
 
-- :file:`cor/manager`: for task of type :ref:`tasktypes_communication`, this executable is the program that reads the input and communicate with the user solution.
+- :file:`cor/manager`: for tasks of type :ref:`tasktypes_communication`, this executable is the program that reads the input and communicates with the user solution.
 
-- :file:`sol/stub.%l`: for task of type :ref:`tasktypes_communication`, this is the piece of code that is compiled together with the user submitted code, and is usually used to manage the communication with :file:`manager`. Again, all supported languages must be present.
+- :file:`sol/stub.%l`: for tasks of type :ref:`tasktypes_communication`, this is the piece of code that is compiled together with the user submitted code, and is usually used to manage the communication with :file:`manager`. Again, all supported languages must be present.

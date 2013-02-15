@@ -43,13 +43,13 @@ Sandbox
 
 - *Symptom.* The freopen test fails.
 
-  *Possible cause.* Add the ```dup3``` syscall to the allowed list.
+  *Possible cause.* Add the ``dup3`` syscall to the allowed list.
 
 
 Importers
 =========
 
-- *Symptom.* Importing a contest with ContestImport fails.
+- *Symptom.* Importing a contest with ContestImporter fails.
 
   *Possible cause.* The contest was imported with a previous version of CMS. Wait for us to provide update scripts for exports, or contact us for the fast solution.
 

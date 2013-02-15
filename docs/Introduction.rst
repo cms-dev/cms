@@ -9,7 +9,7 @@ When organizing a programming contest, there are three main stages:
 
 - the third is to manage the actual contest (accepting and grading submissions, give feedback on them, display a live ranking, etc.).
 
-The aim of the \CMS\ project is to give a good answer to the third problem. Our goal is to develop a contest management system that is secure, extendable, adaptable to different situations, and easy to use.
+The aim of the CMS project is to give a good answer to the third problem. Our goal is to develop a contest management system that is secure, extendable, adaptable to different situations, and easy to use.
 
 
 General structure
@@ -36,7 +36,7 @@ CMS is composed of several services, that can be run on a single or on many serv
 
 - Worker: actually runs the jobs in a sandboxed environment;
 
-- ScoringService: collects the outcomes of the submissions and compute the score; also sends these scores to the rankings;
+- ScoringService: collects the outcomes of the submissions and computes the score; also sends these scores to the rankings;
 
 - ContestWebServer: the webserver that the contestants will be interacting with;
 
@@ -48,7 +48,7 @@ There are also other services for testing, importing and exporting contests.
 
 Each of the core services is designed to be able to be killed and reactivated in a way that keeps the consistency of data, and does not block the functionalities provided by the other services.
 
-Some of the services can be replicated on several machine: these are ResourceService (designed to be run on every machine), ContestWebServer, Worker.
+Some of the services can be replicated on several machine: these are ResourceService (designed to be run on every machine), ContestWebServer and Worker.
 
 Security considerations
 =======================
