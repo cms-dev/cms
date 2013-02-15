@@ -28,8 +28,7 @@ var url_root = "{{ url_root }}";
 $(document).ready(function () {
     // FIXME use Date objects
     Utils.init({{ make_timestamp(timestamp) }},
-               {{ make_timestamp(contest.start) }},
-               {{ make_timestamp(contest.stop) }},
+               {{ make_timestamp(current_phase_begin) }},
                {{ make_timestamp(current_phase_end) }},
                {{ actual_phase }});
 
