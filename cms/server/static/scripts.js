@@ -121,7 +121,7 @@
          * subject (string): subject.
          * text (string): body of notification.
          */
-        display_notification: function(type, timestamp, subject, text)
+        display_notification: function(type, timestamp, subject, text, contest_id)
         {
             if (this.last_notification < timestamp)
                 this.last_notification = timestamp;
@@ -143,7 +143,7 @@
             else if (type == "question")
                 s += 'Reply to your question. ';
             else if (type == "new_question")
-                s += '<a href="' + url_root + '/questions/1">New question</a>: ';
+                s += '<a href="' + url_root + '/questions/' + contest_id + '">New question</a>: ';
 
             s += utils.escape_html(subject) + '</div>';
             s += '<div class="notification_text">';
@@ -213,7 +213,8 @@
                                                   response[i].type,
                                                   parseInt(response[i].timestamp),
                                                   response[i].subject,
-                                                  response[i].text);
+                                                  response[i].text,
+                                                  response[i].contest_id);
                                               if (response[i].type == "announcement")
                                                   msgs_public++;
                                               else if (response[i].type == "question" || response[i].type == "message")

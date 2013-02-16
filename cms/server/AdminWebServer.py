@@ -1548,7 +1548,8 @@ class NotificationsHandler(BaseHandler):
                         "timestamp":
                         make_timestamp(question.question_timestamp),
                         "subject": question.subject,
-                        "text": question.text})
+                        "text": question.text,
+                        "contest_id": question.user.contest_id})
 
         # Simple notifications
         for notification in self.application.service.notifications:
