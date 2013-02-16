@@ -70,6 +70,9 @@ def setup_cms():
     info("Setting environment.")
     os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
+    info("Building cms.")
+    sh("./setup.py build")
+
     info("Creating tables.")
     sh("python cms/db/SQLAlchemyAll.py")
 
