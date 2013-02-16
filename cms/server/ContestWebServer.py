@@ -485,6 +485,8 @@ class LoginHandler(BaseHandler):
             self.redirect("/?login_error=true")
             return
 
+        logger.info("User logged in: user=%s remote_ip=%s." %
+                    (filtered_user, self.request.remote_ip))
         self.set_secure_cookie("login",
                                pickle.dumps((user.username, make_timestamp())),
                                expires_days=None)
