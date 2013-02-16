@@ -52,7 +52,7 @@ def setup_cms():
 
     info("Checking out code.")
     sh("git clone %(GIT_ORIGIN)s %(TEST_DIR)s" % CONFIG)
-    os.chdir("%(TEST_DIR)s/cms" % CONFIG)
+    os.chdir("%(TEST_DIR)s" % CONFIG)
     sh("git checkout %(GIT_REVISION)s" % CONFIG)
 
     info("Configuring CMS.")
@@ -68,10 +68,10 @@ def setup_cms():
         })
 
     info("Setting environment.")
-    os.environ["PYTHONPATH"] = "%(TEST_DIR)s/cms" % CONFIG
+    os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
 
     info("Creating tables.")
-    sh("python db/SQLAlchemyAll.py")
+    sh("python cms/db/SQLAlchemyAll.py")
 
 
 if __name__ == "__main__":
