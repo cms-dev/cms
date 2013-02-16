@@ -85,8 +85,8 @@
     "submit_local_copy_path": "%s/submissions/",
 
     "_help": "If we allow users to log in only from their specified IP",
-    "_help": "address. Users with IP = 0.0.0.0 are anyway allowed to",
-    "_help": "log in from anywhere.",
+    "_help": "address. Users with no IP set are anyway allowed to log in",
+    "_help": "from anywhere.",
     "ip_lock": true,
 
     "_help": "Whether hidden users are allowed to log in.",

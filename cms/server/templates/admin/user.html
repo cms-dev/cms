@@ -177,7 +177,7 @@ function update_additional_answer(element, invoker)
       </tr>
       <tr>
         <td>IP</td>
-        <td><input type="text" name="ip" value="{{ selected_user.ip }}"/></td>
+        <td><input type="text" name="ip" value="{{ selected_user.ip if selected_user.ip is not None else "" }}"/></td>
       </tr>
       <tr>
         <td>Timezone (like "Europe/Rome", "America/New_York", ...)</td>

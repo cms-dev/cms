@@ -472,7 +472,7 @@ class LoginHandler(BaseHandler):
                         (filtered_user, filtered_pass, self.request.remote_ip))
             self.redirect("/?login_error=true")
             return
-        if config.ip_lock and user.ip != "0.0.0.0" \
+        if config.ip_lock and user.ip is not None \
                 and user.ip != self.request.remote_ip:
             logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s." %
                         (filtered_user, filtered_pass, self.request.remote_ip))
