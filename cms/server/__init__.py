@@ -275,7 +275,10 @@ def format_amount_of_time(seconds, precision=2, locale=None):
         if counter == precision:
             break
 
-    ret = locale.list(ret)
+    if len(ret) == 1:
+        ret = ret[0]
+    else:
+        ret = _("%s and %s") % (", ".join(ret[:-1]), ret[-1])
 
     if seconds > 0:
         ret = _("more than %s") % ret

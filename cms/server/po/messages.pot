@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-12-21 10:21+0100\n"
+"POT-Creation-Date: 2013-02-16 01:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,135 +18,135 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: ContestWebServer.py:789
+#: ContestWebServer.py:791
 msgid "Question received"
 msgstr ""
 
-#: ContestWebServer.py:790
+#: ContestWebServer.py:792
 msgid ""
 "Your question has been received, you will be notified when the it will be "
 "answered."
 msgstr ""
 
-#: ContestWebServer.py:821
+#: ContestWebServer.py:824
 #, python-format
 msgid ""
 "You have reached the maximum limit of at most %d submissions among all tasks."
 msgstr ""
 
-#: ContestWebServer.py:830
+#: ContestWebServer.py:834
 #, python-format
 msgid ""
 "You have reached the maximum limit of at most %d submissions on this task."
 msgstr ""
 
-#: ContestWebServer.py:837
+#: ContestWebServer.py:841
 msgid "Too many submissions!"
 msgstr ""
 
-#: ContestWebServer.py:855
+#: ContestWebServer.py:859
 #, python-format
 msgid ""
 "Among all tasks, you can submit again after %d seconds from last submission."
 msgstr ""
 
-#: ContestWebServer.py:870
+#: ContestWebServer.py:874
 #, python-format
 msgid ""
 "For this task, you can submit again after %d seconds from last submission."
 msgstr ""
 
-#: ContestWebServer.py:877
+#: ContestWebServer.py:881
 msgid "Submissions too frequent!"
 msgstr ""
 
-#: ContestWebServer.py:889 ContestWebServer.py:935
+#: ContestWebServer.py:893 ContestWebServer.py:940
 msgid "Invalid submission format!"
 msgstr ""
 
-#: ContestWebServer.py:890 ContestWebServer.py:936 ContestWebServer.py:1390
-#: ContestWebServer.py:1437
+#: ContestWebServer.py:894 ContestWebServer.py:941 ContestWebServer.py:1405
+#: ContestWebServer.py:1452
 msgid "Please select the correct files."
 msgstr ""
 
-#: ContestWebServer.py:915 ContestWebServer.py:1415
+#: ContestWebServer.py:919 ContestWebServer.py:1430
 msgid "Invalid archive format!"
 msgstr ""
 
-#: ContestWebServer.py:916 ContestWebServer.py:1416
+#: ContestWebServer.py:920 ContestWebServer.py:1431
 msgid "The submitted archive could not be opened."
 msgstr ""
 
-#: ContestWebServer.py:992
+#: ContestWebServer.py:998
 msgid "Cannot recognize submission's language."
 msgstr ""
 
-#: ContestWebServer.py:996 ContestWebServer.py:1497
+#: ContestWebServer.py:1002 ContestWebServer.py:1512
 msgid "All sources must be in the same language."
 msgstr ""
 
-#: ContestWebServer.py:1004
+#: ContestWebServer.py:1010
 msgid "Invalid submission!"
 msgstr ""
 
-#: ContestWebServer.py:1016
+#: ContestWebServer.py:1022
 msgid "Submission too big!"
 msgstr ""
 
-#: ContestWebServer.py:1017 ContestWebServer.py:1518
+#: ContestWebServer.py:1023 ContestWebServer.py:1533
 #, python-format
 msgid "Each source file must be at most %d bytes long."
 msgstr ""
 
-#: ContestWebServer.py:1064
+#: ContestWebServer.py:1070
 msgid "Submission storage failed!"
 msgstr ""
 
-#: ContestWebServer.py:1065 ContestWebServer.py:1576
+#: ContestWebServer.py:1071 ContestWebServer.py:1591
 msgid "Please try again."
 msgstr ""
 
-#: ContestWebServer.py:1088
+#: ContestWebServer.py:1094
 msgid "Submission received"
 msgstr ""
 
-#: ContestWebServer.py:1089
+#: ContestWebServer.py:1095
 msgid "Your submission has been received and is currently being evaluated."
 msgstr ""
 
-#: ContestWebServer.py:1135 ContestWebServer.py:1150
+#: ContestWebServer.py:1141 ContestWebServer.py:1156
 msgid "Token request discarded"
 msgstr ""
 
-#: ContestWebServer.py:1136
+#: ContestWebServer.py:1142
 msgid "Your request has been discarded because you have no tokens available."
 msgstr ""
 
-#: ContestWebServer.py:1151
+#: ContestWebServer.py:1157
 msgid ""
 "Your request has been discarded because you already used a token on that "
 "submission."
 msgstr ""
 
-#: ContestWebServer.py:1170
+#: ContestWebServer.py:1176
 msgid "Token request received"
 msgstr ""
 
-#: ContestWebServer.py:1171
+#: ContestWebServer.py:1177
 msgid "Your request has been received and applied to the submission."
 msgstr ""
 
-#: ContestWebServer.py:1204 templates/contest/submission_row.html:10
+#: ContestWebServer.py:1210 templates/contest/submission_row.html:10
 #: templates/contest/user_test_row.html:10
 msgid "Compiling..."
 msgstr ""
 
-#: ContestWebServer.py:1208 templates/contest/submission_row.html:20
+#: ContestWebServer.py:1214 templates/contest/submission_row.html:20
 #: templates/contest/user_test_row.html:16
 msgid "Compilation failed"
 msgstr ""
 
-#: ContestWebServer.py:1208 ContestWebServer.py:1218
+#: ContestWebServer.py:1214 ContestWebServer.py:1224
 #: templates/contest/submission_row.html:21
 #: templates/contest/submission_row.html:52
 #: templates/contest/user_test_row.html:17
@@ -154,80 +154,80 @@ msgstr ""
 msgid "details"
 msgstr ""
 
-#: ContestWebServer.py:1211 templates/contest/submission_row.html:31
+#: ContestWebServer.py:1217 templates/contest/submission_row.html:31
 msgid "Evaluating..."
 msgstr ""
 
-#: ContestWebServer.py:1214 templates/contest/submission_row.html:41
+#: ContestWebServer.py:1220 templates/contest/submission_row.html:41
 msgid "Scoring..."
 msgstr ""
 
-#: ContestWebServer.py:1218 templates/contest/submission_row.html:51
+#: ContestWebServer.py:1224 templates/contest/submission_row.html:51
 msgid "Evaluated"
 msgstr ""
 
-#: ContestWebServer.py:1321
+#: ContestWebServer.py:1336
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
 msgstr ""
 
-#: ContestWebServer.py:1330
+#: ContestWebServer.py:1345
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests on this task."
 msgstr ""
 
-#: ContestWebServer.py:1337
+#: ContestWebServer.py:1352
 msgid "Too many tests!"
-msgstr ""
-
-#: ContestWebServer.py:1355
-#, python-format
-msgid "Among all tasks, you can test again after %d seconds from last test."
 msgstr ""
 
 #: ContestWebServer.py:1370
 #, python-format
+msgid "Among all tasks, you can test again after %d seconds from last test."
+msgstr ""
+
+#: ContestWebServer.py:1385
+#, python-format
 msgid "For this task, you can test again after %d seconds from last test."
 msgstr ""
 
-#: ContestWebServer.py:1377
+#: ContestWebServer.py:1392
 msgid "Tests too frequent!"
 msgstr ""
 
-#: ContestWebServer.py:1389 ContestWebServer.py:1436
+#: ContestWebServer.py:1404 ContestWebServer.py:1451
 msgid "Invalid test format!"
 msgstr ""
 
-#: ContestWebServer.py:1493
+#: ContestWebServer.py:1508
 msgid "Cannot recognize test's language."
 msgstr ""
 
-#: ContestWebServer.py:1505
+#: ContestWebServer.py:1520
 msgid "Invalid test!"
 msgstr ""
 
-#: ContestWebServer.py:1517
+#: ContestWebServer.py:1532
 msgid "Test too big!"
 msgstr ""
 
-#: ContestWebServer.py:1527
+#: ContestWebServer.py:1542
 msgid "Input too big!"
 msgstr ""
 
-#: ContestWebServer.py:1528
+#: ContestWebServer.py:1543
 #, python-format
 msgid "The input file must be at most %d bytes long."
 msgstr ""
 
-#: ContestWebServer.py:1575
+#: ContestWebServer.py:1590
 msgid "Test storage failed!"
 msgstr ""
 
-#: ContestWebServer.py:1608
+#: ContestWebServer.py:1623
 msgid "Test received"
 msgstr ""
 
-#: ContestWebServer.py:1609
+#: ContestWebServer.py:1624
 msgid "Your test has been received and is currently being executed."
 msgstr ""
 
@@ -273,156 +273,161 @@ msgstr[1] ""
 
 #: __init__.py:281
 #, python-format
+msgid "%s and %s"
+msgstr ""
+
+#: __init__.py:284
+#, python-format
 msgid "more than %s"
 msgstr ""
 
-#: __init__.py:305
+#: __init__.py:308
 msgid "contest-token"
 msgstr ""
 
-#: __init__.py:306
+#: __init__.py:309
 msgid "contest-tokens"
 msgstr ""
 
-#: __init__.py:308
+#: __init__.py:311
 msgid "task-token"
 msgstr ""
 
-#: __init__.py:309
+#: __init__.py:312
 msgid "task-tokens"
 msgstr ""
 
-#: __init__.py:311
+#: __init__.py:314
 msgid "token"
 msgstr ""
 
-#: __init__.py:312
+#: __init__.py:315
 msgid "tokens"
 msgstr ""
 
-#: __init__.py:323
+#: __init__.py:326
 #, python-format
 msgid "You don't have %(type_pl)s available for this task."
 msgstr ""
 
-#: __init__.py:325
+#: __init__.py:328
 #, python-format
 msgid "You have infinite %(type_pl)s."
 msgstr ""
 
-#: __init__.py:330 __init__.py:373
+#: __init__.py:333 __init__.py:376
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)d seconds."
 msgstr[0] ""
 msgstr[1] ""
 
-#: __init__.py:334 __init__.py:381
+#: __init__.py:337 __init__.py:384
 msgid "You have no limitations on how you use them."
 msgstr ""
 
-#: __init__.py:337
+#: __init__.py:340
 #, python-format
 msgid "You start with no %(type_pl)s."
 msgstr ""
 
-#: __init__.py:339
+#: __init__.py:342
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(initial)d %(type_pl)s."
 msgstr[0] ""
 msgstr[1] ""
 
-#: __init__.py:346
+#: __init__.py:349
 #, python-format
 msgid "Every minute "
 msgid_plural "Every %(gen_time)d minutes "
 msgstr[0] ""
 msgstr[1] ""
 
-#: __init__.py:350
+#: __init__.py:353
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
 msgstr[0] ""
 msgstr[1] ""
 
-#: __init__.py:353
+#: __init__.py:356
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(max)d %(type_pl)s."
 msgstr[0] ""
 msgstr[1] ""
 
-#: __init__.py:357
+#: __init__.py:360
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] ""
 msgstr[1] ""
 
-#: __init__.py:361
+#: __init__.py:364
 #, python-format
 msgid "You don't get other %(type_pl)s."
 msgstr ""
 
-#: __init__.py:366
+#: __init__.py:369
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)d seconds "
 msgstr[0] ""
 msgstr[1] ""
 
-#: __init__.py:369
+#: __init__.py:372
 #, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(total)d %(type_pl)s in total."
 msgstr[0] ""
 msgstr[1] ""
 
-#: __init__.py:377
+#: __init__.py:380
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(total)d %(type_pl)s in total."
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/contest/base.html:55
+#: templates/contest/base.html:54
 #, python-format
 msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)"
-"</em>"
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
 msgstr ""
 
-#: templates/contest/base.html:56
+#: templates/contest/base.html:55
 msgid "Logout"
 msgstr ""
 
-#: templates/contest/base.html:67
+#: templates/contest/base.html:66
 msgid "Failed to log in."
 msgstr ""
 
-#: templates/contest/base.html:73
+#: templates/contest/base.html:72
 msgid "Welcome"
 msgstr ""
 
-#: templates/contest/base.html:74
+#: templates/contest/base.html:73
 msgid "Please log in"
 msgstr ""
 
-#: templates/contest/base.html:79
+#: templates/contest/base.html:78
 msgid "Username"
 msgstr ""
 
-#: templates/contest/base.html:85
+#: templates/contest/base.html:84
 msgid "Password"
 msgstr ""
 
-#: templates/contest/base.html:92
+#: templates/contest/base.html:91
 msgid "Login"
 msgstr ""
 
-#: templates/contest/base.html:93 templates/contest/communication.html:53
+#: templates/contest/base.html:92 templates/contest/communication.html:53
 #: templates/contest/task_submissions.html:112
 #: templates/contest/task_submissions.html:131
 #: templates/contest/test_interface.html:106
@@ -430,73 +435,73 @@ msgstr ""
 msgid "Reset"
 msgstr ""
 
-#: templates/contest/base.html:104
+#: templates/contest/base.html:103
 msgid "New message"
 msgstr ""
 
-#: templates/contest/base.html:107
+#: templates/contest/base.html:106
 msgid "New announcement"
 msgstr ""
 
-#: templates/contest/base.html:110
+#: templates/contest/base.html:109
 msgid "New answer"
 msgstr ""
 
-#: templates/contest/base.html:113 templates/contest/base.html:146
-#: templates/contest/base.html:149
+#: templates/contest/base.html:112 templates/contest/base.html:145
+#: templates/contest/base.html:148
 #, python-format
 msgid "%d unread"
 msgstr ""
 
-#: templates/contest/base.html:116
+#: templates/contest/base.html:115
 msgid "Until contest starts:"
 msgstr ""
 
-#: templates/contest/base.html:119
+#: templates/contest/base.html:118
 msgid "Until contest ends:"
 msgstr ""
 
-#: templates/contest/base.html:122
+#: templates/contest/base.html:121
 msgid "Time left:"
 msgstr ""
 
-#: templates/contest/base.html:129
+#: templates/contest/base.html:128
 msgid "Server time:"
 msgstr ""
 
-#: templates/contest/base.html:140 templates/contest/overview.html:10
+#: templates/contest/base.html:139 templates/contest/overview.html:10
 msgid "Overview"
 msgstr ""
 
-#: templates/contest/base.html:144 templates/contest/communication.html:8
+#: templates/contest/base.html:143 templates/contest/communication.html:8
 msgid "Communication"
 msgstr ""
 
-#: templates/contest/base.html:159 templates/contest/task_description.html:18
+#: templates/contest/base.html:158 templates/contest/task_description.html:18
 msgid "Statement"
 msgstr ""
 
-#: templates/contest/base.html:162
+#: templates/contest/base.html:161
 msgid "Submissions"
 msgstr ""
 
-#: templates/contest/base.html:168 templates/contest/documentation.html:8
+#: templates/contest/base.html:167 templates/contest/documentation.html:8
 msgid "Documentation"
 msgstr ""
 
-#: templates/contest/base.html:172 templates/contest/test_interface.html:70
+#: templates/contest/base.html:171 templates/contest/test_interface.html:70
 msgid "Testing"
 msgstr ""
 
-#: templates/contest/base.html:178
+#: templates/contest/base.html:177
 msgid "Contest Management System"
 msgstr ""
 
-#: templates/contest/base.html:179
+#: templates/contest/base.html:178
 msgid "is released under the"
 msgstr ""
 
-#: templates/contest/base.html:180
+#: templates/contest/base.html:179
 msgid "GNU Affero General Public License"
 msgstr ""
 
@@ -763,7 +768,7 @@ msgstr ""
 
 #: templates/contest/overview.html:180
 #: templates/contest/task_submissions.html:227
-#: templates/contest/test_interface.html:166
+#: templates/contest/test_interface.html:165
 msgid "Files"
 msgstr ""
 
@@ -1054,18 +1059,18 @@ msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr ""
 
 #: templates/contest/task_submissions.html:216
-#: templates/contest/test_interface.html:157
+#: templates/contest/test_interface.html:156
 msgid "Date and time"
 msgstr ""
 
 #: templates/contest/task_submissions.html:218
-#: templates/contest/test_interface.html:159
-#: templates/contest/test_interface.html:162
+#: templates/contest/test_interface.html:158
+#: templates/contest/test_interface.html:161
 msgid "Time"
 msgstr ""
 
 #: templates/contest/task_submissions.html:220
-#: templates/contest/test_interface.html:161
+#: templates/contest/test_interface.html:160
 msgid "Status"
 msgstr ""
 
@@ -1095,7 +1100,7 @@ msgid "Submission details"
 msgstr ""
 
 #: templates/contest/task_submissions.html:259
-#: templates/contest/test_interface.html:199
+#: templates/contest/test_interface.html:198
 msgid "Close"
 msgstr ""
 
@@ -1111,23 +1116,23 @@ msgstr ""
 msgid "Previous tests"
 msgstr ""
 
-#: templates/contest/test_interface.html:163
+#: templates/contest/test_interface.html:162
 msgid "Memory"
 msgstr ""
 
-#: templates/contest/test_interface.html:164
+#: templates/contest/test_interface.html:163
 msgid "Input"
 msgstr ""
 
-#: templates/contest/test_interface.html:165
+#: templates/contest/test_interface.html:164
 msgid "Output"
 msgstr ""
 
-#: templates/contest/test_interface.html:172
+#: templates/contest/test_interface.html:171
 msgid "no tests yet"
 msgstr ""
 
-#: templates/contest/test_interface.html:194
+#: templates/contest/test_interface.html:193
 msgid "Test details"
 msgstr ""
 
