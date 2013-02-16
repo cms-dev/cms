@@ -121,3 +121,7 @@ if __name__ == "__main__":
     # Now run the tests from the checkout.
     exec_cmd = " ".join(["./cmstestsuite/RunTests.py"] + args.arguments)
     sh(exec_cmd)
+
+    # Export coverage results.
+    sh("python -m coverage xml --include 'cms*'")
+    shutil.copyfile("coverage.xml", "%(GIT_ORIGIN)s/coverage.xml" % CONFIG)
