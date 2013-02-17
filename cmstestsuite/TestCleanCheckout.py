@@ -81,11 +81,11 @@ if __name__ == "__main__":
     parser = ArgumentParser(
         description="This utility tests a clean checkout of CMS.")
     parser.add_argument("-r", "--revision",
-        type=str, default="master", action="store",
-        help="Which git revision to test")
+        type=str, default=None, action="store",
+        help="Test a specific git revision.")
     parser.add_argument("-k", "--keep-working",
         default=False, action="store_true",
-        help="Do not delete the working directory")
+        help="Do not delete the working directory.")
     parser.add_argument("arguments", nargs="*",
         help="All remaining arguments are passed to the test script.")
     args = parser.parse_args()
@@ -94,7 +94,11 @@ if __name__ == "__main__":
     CONFIG["CONFIG_PATH"] = "%s/examples/cms.conf" % CONFIG["TEST_DIR"]
     CONFIG["GIT_ORIGIN"] = subprocess.check_output(
         "git rev-parse --show-toplevel", shell=True).strip()
-    CONFIG["GIT_REVISION"] = args.revision
+    if args.revision is None:
+        CONFIG["GIT_REVISION"] = \
+            subprocess.check_output("git rev-parse HEAD", shell=True).strip()
+    else:
+        CONFIG["GIT_REVISION"] = args.revision
 
     if not args.keep_working:
         def _cleanup():
