@@ -51,9 +51,9 @@ def setup_cms():
     sh("sudo -u postgres createdb %(DB_NAME)s -O %(DB_USER)s" % CONFIG)
 
     info("Checking out code.")
-    sh("git clone %(GIT_ORIGIN)s %(TEST_DIR)s" % CONFIG)
+    sh(["git", "clone", CONFIG["GIT_ORIGIN"], CONFIG["TEST_DIR"]])
     os.chdir("%(TEST_DIR)s" % CONFIG)
-    sh("git checkout %(GIT_REVISION)s" % CONFIG)
+    sh(["git", "checkout", CONFIG["GIT_REVISION"]])
 
     info("Configuring CMS.")
     configure_cms(
@@ -119,7 +119,7 @@ if __name__ == "__main__":
         read_cms_config()
 
     # Now run the tests from the checkout.
-    exec_cmd = " ".join(["./cmstestsuite/RunTests.py"] + args.arguments)
+    exec_cmd = ["./cmstestsuite/RunTests.py"] + args.arguments
     sh(exec_cmd)
 
     # Export coverage results.

@@ -137,15 +137,21 @@ def get_cms_config():
 
 
 def sh(cmdline, ignore_failure=False):
-    """Execute a simple shell command. cmdline is passed to sh -c
-    verbatim.  All quoting must be performed by the user.
+    """Execute a simple shell command.
+
+    If cmdline is a string, it is passed to sh -c verbatim.  All escaping must
+    be performed by the user.  If cmdline is an array, then no escaping is
+    required.
 
     """
     if CONFIG["VERBOSITY"] >= 1:
         print '$', cmdline
     if CONFIG["VERBOSITY"] >= 3:
         cmdline += ' > /dev/null 2>&1'
-    ret = os.system(cmdline)
+    if isinstance(cmdline, list):
+        ret = subprocess.call(cmdline)
+    else:
+        ret = os.system(cmdline)
     if not ignore_failure and ret != 0:
         raise FrameworkException(
             "Execution failed with %d/%d. Tried to execute:\n%s\n" % (
