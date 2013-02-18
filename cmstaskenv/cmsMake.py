@@ -70,6 +70,7 @@ def detect_data_dir():
 
 DATA_DIR = detect_data_dir()
 
+assume = None
 
 def endswith2(string, suffixes):
     """True if string ends with one of the given suffixes.
@@ -233,7 +234,8 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 yaml_conf['memlimit'],
                 task_type[0],
                 task_type[1],
-                cormgr=cormgr)
+                cormgr=cormgr,
+                assume=assume)
 
         actions.append((srcs,
                         [exe],
@@ -579,6 +581,12 @@ def main():
     parser.add_option("-a", "--all",
                       help="make all targets",
                       dest="all", action="store_true", default=False)
+    parser.add_option("-y", "--yes",
+                      help="answer yes to all questions",
+                      dest="yes", action="store_true", default=False)
+    parser.add_option("-n", "--no",
+                      help="answer no to all questions",
+                      dest="no", action="store_true", default=False)
     parser.add_option("-d", "--debug",
                       help="enable debug messages",
                       dest="debug", action="store_true", default=False)
@@ -590,6 +598,14 @@ def main():
     else:
         base_dir = os.path.abspath(base_dir)
 
+    global assume
+    if options.yes and options.no:
+        parser.error("You specified both -y and -n")
+    if options.yes:
+        assume = 'y'
+    if options.no:
+        assume = 'n'
+    
     task_type = detect_task_type(base_dir)
     yaml_conf = parse_task_yaml(base_dir)
     actions = build_action_list(base_dir, task_type, yaml_conf)
