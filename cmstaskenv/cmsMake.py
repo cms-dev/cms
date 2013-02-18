@@ -51,7 +51,7 @@ OUTPUT0_TXT = 'output0.txt'
 GEN_DIRNAME = 'gen'
 GEN_GEN = 'GEN'
 GEN_BASENAME = 'generatore'
-GEN_EXTS = ['.py', '.sh']
+GEN_EXTS = ['.py', '.sh', '.cpp', '.c', '.pas']
 VALIDATOR_BASENAME = 'valida'
 GRAD_BASENAME = 'grader'
 INPUT_DIRNAME = 'input'
@@ -355,9 +355,13 @@ def build_gen_list(base_dir, task_type):
     for src in sources:
         base, lang = basename2(src, GEN_EXTS)
         if base == GEN_BASENAME:
-            gen_exe = os.path.join(GEN_DIRNAME, base + lang)
+            gen_exe = os.path.join(GEN_DIRNAME, base)
+            gen_src = os.path.join(GEN_DIRNAME, base + lang)
+            gen_lang = lang[1:]
         elif base == VALIDATOR_BASENAME:
-            validator_exe = os.path.join(GEN_DIRNAME, base + lang)
+            validator_exe = os.path.join(GEN_DIRNAME, base)
+            validator_src = os.path.join(GEN_DIRNAME, base + lang)
+            validator_lang = lang[1:]
     if gen_exe is None:
         raise Exception("Couldn't find generator")
     if validator_exe is None:
@@ -370,6 +374,15 @@ def build_gen_list(base_dir, task_type):
     testcase_num = 0
     for line in iter_file(os.path.join(base_dir, gen_GEN)):
         testcase_num += 1
+
+    def compile_src(src, exe, lang):
+        if lang in ['cpp', 'c', 'pas']:
+            call(base_dir, get_compilation_command(lang, [src], exe,
+                                                   for_evaluation=False))
+        elif lang in ['py', 'sh']:
+            os.symlink(os.path.basename(src), exe)
+        else:
+            raise Exception("Wrong generator/validator language!")
 
     def make_input(assume=None):
         n = 0
@@ -401,7 +414,16 @@ def build_gen_list(base_dir, task_type):
                 call(base_dir, [sol_exe], stdin=fin, stdout=fout)
 
     actions = []
-    actions.append(([gen_GEN, gen_exe],
+    actions.append(([gen_src],
+                    [gen_exe],
+                    functools.partial(compile_src, gen_src, gen_exe, gen_lang),
+                    "compile the generator"))
+    actions.append(([validator_src],
+                    [validator_exe],
+                    functools.partial(compile_src, validator_src,
+                                      validator_exe, validator_lang),
+                    "compile the generator"))
+    actions.append(([gen_GEN, gen_exe, validator_exe],
                     map(lambda x: os.path.join(INPUT_DIRNAME,
                                                'input%d.txt' % (x)),
                         range(0, testcase_num)),
