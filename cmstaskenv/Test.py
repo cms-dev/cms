@@ -125,7 +125,7 @@ def test_testcases(base_dir, numinput, driver, soluzione, timeout, memlimit, tt1
             mgr = subprocess.Popen(mgr_command.split(), stderr=devnull)
             command = "%s -a 1 -c %s -ff -m %d " \
                       "-p in -p out -p /proc/self/exe -p /proc/meminfo " \
-                      "-s getrlimit -s rt_sigaction -s ugetrlimit " \
+                      "-s getrlimit -s rt_sigaction -s ugetrlimit -s dup3 " \
                       "-t %lg -w %lg -M %s/run.log -- ./%s out in" % (
                 driver, sandbox, memlimit * 1024, timeout, timeout * 3, sandbox, os.path.basename(soluzione))
             box_out = open("%s/box_out.txt" % sandbox, "w")
@@ -157,7 +157,7 @@ def test_testcases(base_dir, numinput, driver, soluzione, timeout, memlimit, tt1
                       "-i %s/input.txt " \
                       "-p input.txt -p output.txt " \
                       "-p /proc/self/exe -p /proc/meminfo " \
-                      "-s getrlimit -s rt_sigaction -s rt_sigprocmask -s ugetrlimit " \
+                      "-s getrlimit -s rt_sigaction -s rt_sigprocmask -s ugetrlimit -s dup3 " \
                       "-t %lg -w %lg -M %s/run.log -- ./%s" % (
                 driver, sandbox, memlimit * 1024, sandbox, sandbox, timeout, timeout * 1.5, sandbox, os.path.basename(soluzione))
             box_out = open("%s/box_out.txt" % sandbox, "w")
