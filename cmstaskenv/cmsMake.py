@@ -166,7 +166,8 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
         exe, lang = basename2(src, SOL_EXTS)
         # Delete the dot
         lang = lang[1:]
-
+        exe_EVAL = "%s_EVAL" % (exe)
+        
         # Ignore things known to be auxiliary files
         if exe == os.path.join(SOL_DIRNAME, GRAD_BASENAME):
             continue
@@ -182,7 +183,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                                      GRAD_BASENAME + '.%s' % (lang)))
         srcs.append(src)
 
-        test_deps = [exe] + in_out_files
+        test_deps = [exe_EVAL] + in_out_files
         if task_type == ['Batch', 'Comp'] or \
                 task_type == ['Batch', 'GradComp']:
             test_deps.append('cor/correttore')
@@ -190,9 +191,13 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
         box_path = Sandbox().detect_box_executable()
 
         def compile_src(srcs, exe, lang, assume=None):
+            if exe.endswith('_EVAL'):
+                EVAL=True
+            else:
+                EVAL=False
             if lang != 'pas' or len(srcs) == 1:
                 call(base_dir, get_compilation_command(lang, srcs, exe,
-                                                       for_evaluation=False))
+                                                       for_evaluation=EVAL))
 
             # When using Pascal with graders, file naming conventions
             # require us to do a bit of trickery, i.e., performing the
@@ -210,7 +215,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                     shutil.copyfile(os.path.join(SOL_DIRNAME, lib_filename),
                                     os.path.join(tempdir, lib_filename))
                 call(tempdir, get_compilation_command(lang, new_srcs, new_exe,
-                                                      for_evaluation=False))
+                                                      for_evaluation=EVAL))
                 shutil.copyfile(os.path.join(tempdir, new_exe),
                                 os.path.join(base_dir, SOL_DIRNAME, new_exe))
                 shutil.copymode(os.path.join(tempdir, new_exe),
@@ -239,15 +244,19 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                         [exe],
                         functools.partial(compile_src, srcs, exe, lang),
                         'compile solution'))
+        actions.append((srcs,
+                        [exe_EVAL],
+                        functools.partial(compile_src, srcs, exe_EVAL, lang),
+                        'compile solution with -DEVAL'))
 
         input_num = len(in_out_files) / 2
         test_actions.append((test_deps,
                              ['test_%s' % (os.path.split(exe)[1])],
                              functools.partial(test_src,
-                                               exe,
+                                               exe_EVAL,
                                                input_num,
                                                task_type),
-                             'test solution'))
+                             'test solution (compiled with -DEVAL)'))
 
     return actions + test_actions
 
