@@ -640,6 +640,14 @@ def task_score(user, task):
                           yet to score.
 
     """
+    # As this function is primarily used when generating a rankings table
+    # (AWS's RankingHandler), we optimize for the case where we are generating
+    # results for all users and all tasks. As such, for the following code to
+    # be more efficient, the query that generated task and user should have
+    # come from a joinedload with the submissions, tokens and
+    # submission_results table.  Doing so means that this function should incur
+    # no exta database queries.
+
     def waits_for_score(submission_result):
         """Return if submission could be scored but it currently is
         not.
@@ -660,32 +668,29 @@ def task_score(user, task):
     # / evaluated / scored.
     partial = False
 
-    with SessionGen(commit=False) as session:
-        submissions = session.query(Submission).\
-            filter(Submission.user == user).\
-            filter(Submission.task == task).\
-            order_by(Submission.timestamp).all()
+    submissions = [s for s in user.submissions if s.task is task]
+    submissions.sort(key=lambda s: s.timestamp)
 
-        if submissions == []:
-            return 0.0, False
+    if submissions == []:
+        return 0.0, False
 
-        # Last score: if the last submission is scored we use that,
-        # otherwise we use 0.0 (and mark that the score is partial
-        # when the last submission could be scored).
-        last_s = submissions[-1]
-        last_sr = last_s.get_result(task.active_dataset)
+    # Last score: if the last submission is scored we use that,
+    # otherwise we use 0.0 (and mark that the score is partial
+    # when the last submission could be scored).
+    last_s = submissions[-1]
+    last_sr = last_s.get_result(task.active_dataset)
 
-        if last_sr is not None and last_sr.scored():
-            last_score = last_sr.score
-        elif waits_for_score(last_sr):
-            partial = True
+    if last_sr is not None and last_sr.scored():
+        last_score = last_sr.score
+    elif waits_for_score(last_sr):
+        partial = True
 
-        for s in submissions:
-            sr = s.get_result(task.active_dataset)
-            if s.tokened():
-                if sr is not None and sr.scored():
-                    max_tokened_score = max(max_tokened_score, sr.score)
-                elif waits_for_score(sr):
-                    partial = True
+    for s in submissions:
+        sr = s.get_result(task.active_dataset)
+        if s.tokened():
+            if sr is not None and sr.scored():
+                max_tokened_score = max(max_tokened_score, sr.score)
+            elif waits_for_score(sr):
+                partial = True
 
     return max(last_score, max_tokened_score), partial

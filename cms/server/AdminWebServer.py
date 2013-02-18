@@ -1578,7 +1578,18 @@ class RankingHandler(BaseHandler):
 
     """
     def get(self, contest_id, format="online"):
-        self.contest = self.safe_get_item(Contest, contest_id)
+        # This validates the contest id.
+        self.safe_get_item(Contest, contest_id)
+
+        # This massive joined load gets all the information which we will need
+        # to generating the rankings.
+        self.contest = self.sql_session.query(Contest)\
+            .filter(Contest.id == contest_id)\
+            .options(joinedload('users'))\
+            .options(joinedload('users.submissions'))\
+            .options(joinedload('users.submissions.token'))\
+            .options(joinedload('users.submissions.results'))\
+            .first()
 
         self.r_params = self.render_params()
         if format == "txt":
