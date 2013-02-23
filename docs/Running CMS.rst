@@ -88,7 +88,7 @@ Our preferred distribution is Ubuntu >= 12.04 LTS.  We will hopefully support Ub
 
 Very important note: up to now, we support only 32 bit distributions.
 
-Saying that, one is not forced to follow the previous rules, and it should not be very hard to successfully run CMS on different distributions or even on 64 bit installations.
+Saying that, one is not forced to follow the previous rules, and it should not be very hard to successfully run CMS on different distributions or even on 64 bit installations (see :gh_blob:`docs/32bits_sandbox_howto.txt` to read how to set up a 32 bits chroot).
 
 You can replicate the service handling the contestant-facing web server, :file:`cmsContestWebServer`; in this case, you need to configure a load balanced in front of them. We provide a sample configuration for nginx at :gh_blob:`cms/example/nginx.conf.sample`.
 
