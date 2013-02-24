@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import optparse
+import argparse
 import os
 import sys
 import subprocess
@@ -593,30 +593,33 @@ def execute_multiple_targets(base_dir, exec_tree, targets, debug=False, assume=N
 
 def main():
     # Parse command line options
-    parser = optparse.OptionParser(usage="usage: %prog [options] [target]")
-    parser.add_option("-D", "--base-dir",
+    parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group()
+    parser.add_argument("-D", "--base-dir",
                       help="base directory for problem to make "
                       "(CWD by default)",
                       dest="base_dir", action="store", default=None)
-    parser.add_option("-l", "--list",
+    parser.add_argument("-l", "--list",
                       help="list actions that cmsMake is aware of",
                       dest="list", action="store_true", default=False)
-    parser.add_option("-c", "--clean",
+    parser.add_argument("-c", "--clean",
                       help="clean all generated files",
                       dest="clean", action="store_true", default=False)
-    parser.add_option("-a", "--all",
+    parser.add_argument("-a", "--all",
                       help="make all targets",
                       dest="all", action="store_true", default=False)
-    parser.add_option("-y", "--yes",
-                      help="answer yes to all questions",
-                      dest="yes", action="store_true", default=False)
-    parser.add_option("-n", "--no",
-                      help="answer no to all questions",
-                      dest="no", action="store_true", default=False)
-    parser.add_option("-d", "--debug",
+    group.add_argument("-y", "--yes",
+                      help="answer yes to all questions", const='y',
+                      dest="assume", action="store_const", default=None)
+    group.add_argument("-n", "--no",
+                      help="answer no to all questions", const='n',
+                      dest="assume", action="store_const")
+    parser.add_argument("-d", "--debug",
                       help="enable debug messages",
                       dest="debug", action="store_true", default=False)
-    options, args = parser.parse_args()
+    parser.add_argument("targets", metavar="target", nargs="*",
+                      help="target to build", type=str)
+    options = parser.parse_args()
 
     base_dir = options.base_dir
     if base_dir is None:
@@ -624,20 +627,14 @@ def main():
     else:
         base_dir = os.path.abspath(base_dir)
 
-    assume = None
-    if options.yes and options.no:
-        parser.error("You specified both -y and -n")
-    if options.yes:
-        assume = 'y'
-    if options.no:
-        assume = 'n'
-    
+    assume=options.assume
+
     task_type = detect_task_type(base_dir)
     yaml_conf = parse_task_yaml(base_dir)
     actions = build_action_list(base_dir, task_type, yaml_conf)
     exec_tree, generated_list = build_execution_tree(actions)
 
-    if [len(args) > 0, options.list, options.clean,
+    if [len(options.targets) > 0, options.list, options.clean,
         options.all].count(True) > 1:
         parser.error("Too many commands")
 
@@ -661,7 +658,7 @@ def main():
 
     else:
         execute_multiple_targets(base_dir, exec_tree,
-                                 args, debug=options.debug,
+                                 options.targets, debug=options.debug,
                                  assume=assume)
 
 if __name__ == '__main__':
