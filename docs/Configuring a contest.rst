@@ -116,3 +116,5 @@ Extra time
 Contest administrators may want to give some users a short additional amount of time in which they can compete to compensate for an incident (e.g. a hardware failure) that made them unable to compete for a while during the "intended" time-frame. That's what the ``extra_time`` field of the users is for. The time-frame in which the user is allowed to submit solutions is expanded by its ``extra_time``, even if this would lead the user to be able to submit after the end of the contest.
 
 Note that in its extra time the user will continue to receive newly generated tokens. If you don't want him/her to have more tokens that other contestants set the ``token_total`` parameter described above to the number of tokens you expect a user to have at his/her disposal during the whole contest (if it doesn't already have a value less than or equal to this). See also :gh_issue:`29`.
+
+Note also that submissions sent during the extra time will continue to be considered when computing the score, even if the ``extra_time`` field of the user is later reset to zero (for example in case the user loses the appeal): you need to completely delete them from the database.
