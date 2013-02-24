@@ -87,7 +87,7 @@ def diff(a, b):
     return "1.0", "Correct."
 
 
-def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cormgr=""):
+def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cormgr="", assume=None):
     points = []
     comments = []
     box_outs = []
@@ -125,7 +125,7 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
             mgr = subprocess.Popen(mgr_command.split(), stderr=devnull)
             command = "%s -a 1 -c %s -ff -m %d " \
                       "-p in -p out -p /proc/self/exe -p /proc/meminfo " \
-                      "-s getrlimit -s rt_sigaction -s ugetrlimit " \
+                      "-s getrlimit -s rt_sigaction -s ugetrlimit -s dup3 " \
                       "-t %lg -w %lg -M %s/run.log -- ./%s out in" % (
                 driver, sandbox, memlimit * 1024, timeout, timeout * 3, sandbox, os.path.basename(soluzione))
             box_out = open("%s/box_out.txt" % sandbox, "w")
@@ -157,7 +157,7 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
                       "-i %s/input.txt " \
                       "-p input.txt -p output.txt " \
                       "-p /proc/self/exe -p /proc/meminfo " \
-                      "-s getrlimit -s rt_sigaction -s rt_sigprocmask -s ugetrlimit " \
+                      "-s getrlimit -s rt_sigaction -s rt_sigprocmask -s ugetrlimit -s dup3 " \
                       "-t %lg -w %lg -M %s/run.log -- ./%s" % (
                 driver, sandbox, memlimit * 1024, sandbox, sandbox, timeout, timeout * 1.5, sandbox, os.path.basename(soluzione))
             box_out = open("%s/box_out.txt" % sandbox, "w")
@@ -193,9 +193,12 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
                     comments.append(open("%s/comment.txt" % sandbox).read().strip())
 
         if ask_again and status == "TO" and prev_status == "TO":
-            print
-            print "Want to stop and consider everything to timeout? [y/N]",
-            tmp = raw_input().lower()
+            if assume is not None:
+                tmp=assume
+            else:
+                print
+                print "Want to stop and consider everything to timeout? [y/N]",
+                tmp = raw_input().lower()
             if tmp in ['y', 'yes']:
                 stop = True
             else:

@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import optparse
+import argparse
 import os
 import sys
 import subprocess
@@ -51,7 +51,7 @@ OUTPUT0_TXT = 'output0.txt'
 GEN_DIRNAME = 'gen'
 GEN_GEN = 'GEN'
 GEN_BASENAME = 'generatore'
-GEN_EXTS = ['.py', '.sh']
+GEN_EXTS = ['.py', '.sh', '.cpp', '.c', '.pas']
 VALIDATOR_BASENAME = 'valida'
 GRAD_BASENAME = 'grader'
 INPUT_DIRNAME = 'input'
@@ -70,6 +70,7 @@ def detect_data_dir():
 
 DATA_DIR = detect_data_dir()
 
+assume = None
 
 def endswith2(string, suffixes):
     """True if string ends with one of the given suffixes.
@@ -165,7 +166,8 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
         exe, lang = basename2(src, SOL_EXTS)
         # Delete the dot
         lang = lang[1:]
-
+        exe_EVAL=exe+"_EVAL"
+        
         # Ignore things known to be auxiliary files
         if exe == os.path.join(SOL_DIRNAME, GRAD_BASENAME):
             continue
@@ -181,7 +183,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                                      GRAD_BASENAME + '.%s' % (lang)))
         srcs.append(src)
 
-        test_deps = [exe] + in_out_files
+        test_deps = [exe_EVAL] + in_out_files
         if task_type == ['Batch', 'Comp'] or \
                 task_type == ['Batch', 'GradComp']:
             test_deps.append('cor/correttore')
@@ -189,9 +191,13 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
         box_path = Sandbox().detect_box_executable()
 
         def compile_src(srcs, exe, lang):
+            if exe.endswith('_EVAL'):
+                EVAL=True
+            else:
+                EVAL=False
             if lang != 'pas' or len(srcs) == 1:
                 call(base_dir, get_compilation_command(lang, srcs, exe,
-                                                       for_evaluation=False))
+                                                       for_evaluation=EVAL))
 
             # When using Pascal with graders, file naming conventions
             # require us to do a bit of trickery, i.e., performing the
@@ -209,7 +215,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                     shutil.copyfile(os.path.join(SOL_DIRNAME, lib_filename),
                                     os.path.join(tempdir, lib_filename))
                 call(tempdir, get_compilation_command(lang, new_srcs, new_exe,
-                                                      for_evaluation=False))
+                                                      for_evaluation=EVAL))
                 shutil.copyfile(os.path.join(tempdir, new_exe),
                                 os.path.join(SOL_DIRNAME, new_exe))
                 shutil.copymode(os.path.join(tempdir, new_exe),
@@ -230,21 +236,26 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 yaml_conf['memlimit'],
                 task_type[0],
                 task_type[1],
-                cormgr=cormgr)
+                cormgr=cormgr,
+                assume=assume)
 
         actions.append((srcs,
                         [exe],
                         functools.partial(compile_src, srcs, exe, lang),
                         'compile solution'))
+        actions.append((srcs,
+                        [exe_EVAL],
+                        functools.partial(compile_src, srcs, exe_EVAL, lang),
+                        'compile solution with -DEVAL'))
 
         input_num = len(in_out_files) / 2
         test_actions.append((test_deps,
                              ['test_%s' % (os.path.split(exe)[1])],
                              functools.partial(test_src,
-                                               exe,
+                                               exe_EVAL,
                                                input_num,
                                                task_type),
-                             'test solution'))
+                             'test solution (compiled with -DEVAL)'))
 
     return actions + test_actions
 
@@ -347,9 +358,13 @@ def build_gen_list(base_dir, task_type):
     for src in sources:
         base, lang = basename2(src, GEN_EXTS)
         if base == GEN_BASENAME:
-            gen_exe = os.path.join(GEN_DIRNAME, base + lang)
+            gen_exe = os.path.join(GEN_DIRNAME, base)
+            gen_src = os.path.join(GEN_DIRNAME, base + lang)
+            gen_lang = lang[1:]
         elif base == VALIDATOR_BASENAME:
-            validator_exe = os.path.join(GEN_DIRNAME, base + lang)
+            validator_exe = os.path.join(GEN_DIRNAME, base)
+            validator_src = os.path.join(GEN_DIRNAME, base + lang)
+            validator_lang = lang[1:]
     if gen_exe is None:
         raise Exception("Couldn't find generator")
     if validator_exe is None:
@@ -362,7 +377,16 @@ def build_gen_list(base_dir, task_type):
     testcase_num = 0
     for line in iter_file(os.path.join(base_dir, gen_GEN)):
         testcase_num += 1
-
+    
+    def compile_src(src, exe, lang):
+        if lang in ['cpp', 'c', 'pas']:
+            call(base_dir, get_compilation_command(lang, [src], exe,
+                                                       for_evaluation=False))
+        elif lang in ['py', 'sh']:
+            os.symlink(os.path.basename(src), exe)
+        else:
+            raise Exception("Wrong generator/validator language!")
+    
     def make_input():
         n = 0
         try:
@@ -391,9 +415,18 @@ def build_gen_list(base_dir, task_type):
             with open(os.path.join(output_dir,
                                    'output%d.txt' % (n)), 'w') as fout:
                 call(base_dir, [sol_exe], stdin=fin, stdout=fout)
-
+    
     actions = []
-    actions.append(([gen_GEN, gen_exe],
+    actions.append(([gen_src],
+                    [gen_exe],
+                    functools.partial(compile_src, gen_src, gen_exe, gen_lang),
+                    "compile the generator"))
+    actions.append(([validator_src],
+                    [validator_exe],
+                    functools.partial(compile_src, validator_src, 
+                                            validator_exe, validator_lang),
+                    "compile the generator"))
+    actions.append(([gen_GEN, gen_exe, validator_exe],
                     map(lambda x: os.path.join(INPUT_DIRNAME,
                                                'input%d.txt' % (x)),
                         range(0, testcase_num)),
@@ -562,34 +595,47 @@ def execute_multiple_targets(base_dir, exec_tree, targets, debug=False):
 
 def main():
     # Parse command line options
-    parser = optparse.OptionParser(usage="usage: %prog [options] [target]")
-    parser.add_option("-D", "--base-dir",
+    parser = argparse.ArgumentParser()
+    group = parser.add_mutually_exclusive_group()
+    parser.add_argument("-D", "--base-dir",
                       help="base directory for problem to make "
                       "(CWD by default)",
                       dest="base_dir", action="store", default=None)
-    parser.add_option("-l", "--list",
+    parser.add_argument("-l", "--list",
                       help="list actions that cmsMake is aware of",
                       dest="list", action="store_true", default=False)
-    parser.add_option("-c", "--clean",
+    parser.add_argument("-c", "--clean",
                       help="clean all generated files",
                       dest="clean", action="store_true", default=False)
-    parser.add_option("-a", "--all",
+    parser.add_argument("-a", "--all",
                       help="make all targets",
                       dest="all", action="store_true", default=False)
-    parser.add_option("-d", "--debug",
+    group.add_argument("-y", "--yes",
+                      help="answer yes to all questions", const='y',
+                      dest="assume", action="store_const", default=None)
+    group.add_argument("-n", "--no",
+                      help="answer no to all questions", const='n',
+                      dest="assume", action="store_const")
+    parser.add_argument("-d", "--debug",
                       help="enable debug messages",
                       dest="debug", action="store_true", default=False)
-    options, args = parser.parse_args()
+    parser.add_argument("targets", metavar="target", nargs="*",
+                      help="target to build", type=str)
+    options = parser.parse_args()
 
     base_dir = options.base_dir
     if base_dir is None:
         base_dir = os.getcwd()
+    
+    global assume
+    assume=options.assume
+
     task_type = detect_task_type(base_dir)
     yaml_conf = parse_task_yaml(base_dir)
     actions = build_action_list(base_dir, task_type, yaml_conf)
     exec_tree, generated_list = build_execution_tree(actions)
 
-    if [len(args) > 0, options.list, options.clean,
+    if [len(options.targets) > 0, options.list, options.clean,
         options.all].count(True) > 1:
         parser.error("Too many commands")
 
@@ -612,7 +658,7 @@ def main():
 
     else:
         execute_multiple_targets(base_dir, exec_tree,
-                                 args, debug=options.debug)
+                                 options.targets, debug=options.debug)
 
 if __name__ == '__main__':
     main()
