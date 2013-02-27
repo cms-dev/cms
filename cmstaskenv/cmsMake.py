@@ -584,6 +584,9 @@ def main():
     base_dir = options.base_dir
     if base_dir is None:
         base_dir = os.getcwd()
+    else:
+        base_dir = os.path.abspath(base_dir)
+
     task_type = detect_task_type(base_dir)
     yaml_conf = parse_task_yaml(base_dir)
     actions = build_action_list(base_dir, task_type, yaml_conf)
