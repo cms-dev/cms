@@ -120,18 +120,20 @@ def parse_task_yaml(base_dir):
 
 
 def detect_task_type(base_dir):
-    grad_present = os.path.exists(SOL_DIRNAME) and \
+    sol_dir = os.path.join(base_dir, SOL_DIRNAME)
+    check_dir = os.path.join(base_dir, CHECK_DIRNAME)
+    grad_present = os.path.exists(sol_dir) and \
         any(filter(lambda x: x.startswith(GRAD_BASENAME + '.'),
-                   os.listdir(SOL_DIRNAME)))
-    stub_present = os.path.exists(SOL_DIRNAME) and \
+                   os.listdir(sol_dir)))
+    stub_present = os.path.exists(sol_dir) and \
         any(filter(lambda x: x.startswith('stub.'),
-                   os.listdir(SOL_DIRNAME)))
-    cor_present = os.path.exists(CHECK_DIRNAME) and \
+                   os.listdir(sol_dir)))
+    cor_present = os.path.exists(check_dir) and \
         any(filter(lambda x: x.startswith('correttore.'),
-                   os.listdir(CHECK_DIRNAME)))
-    man_present = os.path.exists(CHECK_DIRNAME) and \
+                   os.listdir(check_dir)))
+    man_present = os.path.exists(check_dir) and \
         any(filter(lambda x: x.startswith('manager.'),
-                   os.listdir(CHECK_DIRNAME)))
+                   os.listdir(check_dir)))
 
     if not (cor_present or man_present or stub_present or grad_present):
         return ["Batch", "Diff"]  # TODO Could also be an OutputOnly
@@ -202,8 +204,8 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 new_srcs = [os.path.split(srcs[0])[1],
                             '%s.pas' % (task_name)]
                 new_exe = os.path.split(srcs[1])[1][:-4]
-                shutil.copyfile(srcs[0], os.path.join(tempdir, new_srcs[0]))
-                shutil.copyfile(srcs[1], os.path.join(tempdir, new_srcs[1]))
+                shutil.copyfile(os.path.join(base_dir, srcs[0]), os.path.join(tempdir, new_srcs[0]))
+                shutil.copyfile(os.path.join(base_dir, srcs[1]), os.path.join(tempdir, new_srcs[1]))
                 lib_filename = '%slib.pas' % (task_name)
                 if os.path.exists(os.path.join(SOL_DIRNAME, lib_filename)):
                     shutil.copyfile(os.path.join(SOL_DIRNAME, lib_filename),
@@ -211,9 +213,9 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 call(tempdir, get_compilation_command(lang, new_srcs, new_exe,
                                                       for_evaluation=False))
                 shutil.copyfile(os.path.join(tempdir, new_exe),
-                                os.path.join(SOL_DIRNAME, new_exe))
+                                os.path.join(base_dir, SOL_DIRNAME, new_exe))
                 shutil.copymode(os.path.join(tempdir, new_exe),
-                                os.path.join(SOL_DIRNAME, new_exe))
+                                os.path.join(base_dir, SOL_DIRNAME, new_exe))
                 shutil.rmtree(tempdir)
 
         def test_src(exe, input_num, task_type):
