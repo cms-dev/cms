@@ -87,7 +87,7 @@ def diff(a, b):
     return "1.0", "Correct."
 
 
-def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cormgr=""):
+def test_testcases(base_dir, numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cormgr=""):
     points = []
     comments = []
     box_outs = []
@@ -97,8 +97,8 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
     prev_status = "OK"
     stop = False
     ask_again = True
-    if not os.path.exists("result"):
-        os.mkdir("result")
+    if not os.path.exists(os.path.join(base_dir, "result")):
+        os.mkdir(os.path.join(base_dir, "result"))
     for i in xrange(numinput):
         print i,
         if stop:
@@ -110,11 +110,11 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
         prev_status = status
         sys.stdout.flush()
         sandbox = tempfile.mkdtemp()
-        copy(soluzione, sandbox)
+        copy(os.path.join(base_dir, soluzione), sandbox)
         if tt1 == "Communication":
             mgr_sandbox = tempfile.mkdtemp()
-            copy(cormgr, mgr_sandbox)
-            copy("input/input%s.txt" % i, "%s/input.txt" % mgr_sandbox)
+            copy(os.path.join(base_dir, cormgr), mgr_sandbox)
+            copy(os.path.join(base_dir, "input/input%s.txt" % i), "%s/input.txt" % mgr_sandbox)
             os.mkfifo("%s/in" % sandbox)
             os.mkfifo("%s/out" % sandbox)
             mgr_command = "%s -c %s " \
@@ -136,7 +136,7 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
             devnull.close()
             box_out.close()
             try:
-                copy("%s/output.txt" % mgr_sandbox, "result/result%d.txt" % i)
+                copy("%s/output.txt" % mgr_sandbox, os.path.join("result/result%d.txt" % i))
             except IOError:  # output doesn't exist
                 open("result/result%d.txt" % i, "wt").close()
             status = get_box_status(sandbox)
@@ -152,7 +152,7 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
             rmtree(mgr_sandbox)
 
         elif tt1 == "Batch":
-            copy("input/input%s.txt" % i, "%s/input.txt" % sandbox)
+            copy(os.path.join(base_dir, "input/input%s.txt" % i), "%s/input.txt" % sandbox)
             command = "%s -a 1 -c %s -ff -m %d -o %s/output.txt " \
                       "-i %s/input.txt " \
                       "-p input.txt -p output.txt " \
@@ -163,8 +163,8 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
             box_out = open("%s/box_out.txt" % sandbox, "w")
             subprocess.Popen(command.split(), stderr=box_out).wait()
             box_out.close()
-            copy(soluzione, sandbox)
-            copy("%s/output.txt" % sandbox, "result/result%d.txt" % i)
+            copy(os.path.join(base_dir, soluzione), sandbox)
+            copy("%s/output.txt" % sandbox, os.path.join(base_dir, "result/result%d.txt" % i))
 
             status = get_box_status(sandbox)
             statuses.append(status)
@@ -181,8 +181,8 @@ def test_testcases(numinput, driver, soluzione, timeout, memlimit, tt1, tt2, cor
                     comments.append(tmp[1].strip())
 
                 elif tt2 == "Comp" or tt2 == "GradComp":
-                    copy(cormgr, sandbox)
-                    copy("output/output%s.txt" % i, "%s/correct.txt" % sandbox)
+                    copy(os.path.join(base_dir, cormgr), sandbox)
+                    copy(os.path.join(base_dir, "output/output%s.txt" % i), "%s/correct.txt" % sandbox)
                     command = "%s -c %s -o corout.txt -r comment.txt " \
                               "-M %s/run.log -- ./%s input.txt correct.txt output.txt" % (
                         driver, sandbox, sandbox, os.path.basename(cormgr))
@@ -241,4 +241,4 @@ if __name__ == "__main__":
     os.mkdir("result")
 
     numinput = len(glob(join("input", "input*.txt")))
-    test_testcases(numinput, driver, soluzione, timeout, memlimit, tasktype[0], tasktype[1], correttore if correttore != "" else manager)
+    test_testcases(".", numinput, driver, soluzione, timeout, memlimit, tasktype[0], tasktype[1], correttore if correttore != "" else manager)

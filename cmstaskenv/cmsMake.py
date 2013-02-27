@@ -225,6 +225,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                     task_type == ['Batch', 'GradComp']:
                 cormgr = 'cor/correttore'
             test_testcases(
+                base_dir,
                 input_num,
                 box_path,
                 exe,
