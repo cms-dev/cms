@@ -70,8 +70,6 @@ def detect_data_dir():
 
 DATA_DIR = detect_data_dir()
 
-assume = None
-
 def endswith2(string, suffixes):
     """True if string ends with one of the given suffixes.
 
@@ -191,7 +189,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
 
         box_path = Sandbox().detect_box_executable()
 
-        def compile_src(srcs, exe, lang):
+        def compile_src(srcs, exe, lang, assume=None):
             if lang != 'pas' or len(srcs) == 1:
                 call(base_dir, get_compilation_command(lang, srcs, exe,
                                                        for_evaluation=False))
@@ -219,7 +217,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                                 os.path.join(base_dir, SOL_DIRNAME, new_exe))
                 shutil.rmtree(tempdir)
 
-        def test_src(exe, input_num, task_type):
+        def test_src(exe, input_num, task_type, assume=None):
             print "Testing solution %s" % (exe)
             cormgr = ''
             if task_type == ['Batch', 'Comp'] or \
@@ -267,7 +265,7 @@ def build_checker_list(base_dir, task_type):
             # Delete the dot
             lang = lang[1:]
 
-            def compile_check(src, exe):
+            def compile_check(src, exe, assume=None):
                 call(base_dir, get_compilation_command(lang, [src], exe))
 
             actions.append(([src], [exe],
@@ -285,34 +283,34 @@ def build_text_list(base_dir, task_type):
     text_log = os.path.join(TEXT_DIRNAME, TEXT_LOG)
     text_html = os.path.join(TEXT_DIRNAME, TEXT_HTML)
 
-    def make_html():
+    def make_html(assume=None):
         with open(os.path.join(base_dir, text_html), 'w') as fout:
             call(base_dir,
                  ['xsltproc',
                   os.path.join(DATA_DIR, 'problem_layout.xslt'), text_xml],
                  stdout=fout)
 
-    def make_tex():
+    def make_tex(assume=None):
         with open(os.path.join(base_dir, text_tex), 'w') as fout:
             call(base_dir,
                  ['xsltproc',
                   os.path.join(DATA_DIR, 'problem_layout_tex.xslt'), text_xml],
                  stdout=fout)
 
-    def make_pdf():
+    def make_pdf(assume=None):
         call(base_dir,
              ['pdflatex', '-output-directory', TEXT_DIRNAME,
               '-interaction', 'batchmode', text_tex],
              env={'TEXINPUTS': '.:%s:%s/file:' % (TEXT_DIRNAME, TEXT_DIRNAME)})
 
-    def make_input0():
+    def make_input0(assume=None):
         with open(os.path.join(base_dir, INPUT0_TXT), 'w') as fout:
             call(base_dir,
                  ['xsltproc',
                   os.path.join(DATA_DIR, 'estrai_input.xslt'), text_xml],
                  stdout=fout)
 
-    def make_output0():
+    def make_output0(assume=None):
         with open(os.path.join(base_dir, OUTPUT0_TXT), 'w') as fout:
             call(base_dir,
                  ['xsltproc',
@@ -368,7 +366,7 @@ def build_gen_list(base_dir, task_type):
     for line in iter_file(os.path.join(base_dir, gen_GEN)):
         testcase_num += 1
 
-    def make_input():
+    def make_input(assume=None):
         n = 0
         try:
             os.makedirs(input_dir)
@@ -386,7 +384,7 @@ def build_gen_list(base_dir, task_type):
                                               'input%d.txt' % (n))])
             n += 1
 
-    def make_output(n):
+    def make_output(n, assume=None):
         try:
             os.makedirs(output_dir)
         except OSError:
@@ -501,7 +499,7 @@ def build_execution_tree(actions):
 
 def execute_target(base_dir, exec_tree, target,
                    already_executed=None, stack=None,
-                   debug=False):
+                   debug=False, assume=None):
     # Initialization
     if debug:
         print ">> Target %s is requested" % (target)
@@ -532,7 +530,8 @@ def execute_target(base_dir, exec_tree, target,
     already_executed.add(target)
     stack.add(target)
     for dep in deps:
-        execute_target(base_dir, exec_tree, dep, already_executed, stack)
+        execute_target(base_dir, exec_tree, dep,
+                       already_executed, stack, assume=assume)
     stack.remove(target)
     if debug:
         print ">> Dependencies built for target %s" % (target)
@@ -553,16 +552,16 @@ def execute_target(base_dir, exec_tree, target,
     # At last: actually make the so long desired action :-)
     if debug:
         print ">> Acutally building target %s" % (target)
-    action()
+    action(assume=assume)
     if debug:
         print ">> Target %s finished to build" % (target)
 
 
-def execute_multiple_targets(base_dir, exec_tree, targets, debug=False):
+def execute_multiple_targets(base_dir, exec_tree, targets, debug=False, assume=None):
     already_executed = set()
     for target in targets:
         execute_target(base_dir, exec_tree, target,
-                       already_executed, debug=debug)
+                       already_executed, debug=debug, assume=assume)
 
 
 def main():
@@ -598,7 +597,7 @@ def main():
     else:
         base_dir = os.path.abspath(base_dir)
 
-    global assume
+    assume = None
     if options.yes and options.no:
         parser.error("You specified both -y and -n")
     if options.yes:
@@ -630,11 +629,13 @@ def main():
     elif options.all:
         print "Making all targets"
         execute_multiple_targets(base_dir, exec_tree,
-                                 generated_list, debug=options.debug)
+                                 generated_list, debug=options.debug,
+                                 assume=assume)
 
     else:
         execute_multiple_targets(base_dir, exec_tree,
-                                 args, debug=options.debug)
+                                 args, debug=options.debug,
+                                 assume=assume)
 
 if __name__ == '__main__':
     main()
