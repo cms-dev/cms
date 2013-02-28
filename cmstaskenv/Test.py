@@ -193,11 +193,12 @@ def test_testcases(base_dir, numinput, driver, soluzione, timeout, memlimit, tt1
                     comments.append(open("%s/comment.txt" % sandbox).read().strip())
 
         if ask_again and status == "TO" and prev_status == "TO":
+            print
+            print "Want to stop and consider everything to timeout? [y/N]",
             if assume is not None:
+                print assume
                 tmp = assume
             else:
-                print
-                print "Want to stop and consider everything to timeout? [y/N]",
                 tmp = raw_input().lower()
             if tmp in ['y', 'yes']:
                 stop = True
