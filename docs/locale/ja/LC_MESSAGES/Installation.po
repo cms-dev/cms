@@ -182,12 +182,12 @@ msgstr "CMS |release| を :gh_download:`GitHub` からダウンロードでき�
 msgid ""
 "If you install CMS, you also need to add your user to the ``cmsuser`` group "
 "and logout to make the change effective:"
-msgstr "CMSをインストールして使うときは、ユーザーを``cmsuser``グループに追加し、変更を反映するためにいったんログアウトする必要があります："
+msgstr "CMSをインストールして使うときは、ユーザーを ``cmsuser`` グループに追加し、変更を反映するためにいったんログアウトする必要があります："
 
 # 584312c0d273476d9a11dc83843dccb3
 #: ..\..\Installation.rst:104
 msgid "You can verify to be in the group by issuing the command:"
-msgstr "自分のユーザーが``cmsuser``グループに追加されたことを確認するには、以下のコマンドを実行します："
+msgstr "自分のユーザーが ``cmsuser`` グループに追加されたことを確認するには、以下のコマンドを実行します："
 
 # 60572a03a0944b1bb211335d7cf95b32
 #: ..\..\Installation.rst:114
