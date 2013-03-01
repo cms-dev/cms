@@ -1,0 +1,23 @@
+# Japanese translations for CMS package.
+# Copyright (C) 2013, The CMS development team
+# This file is distributed under the same license as the CMS package.
+# U-QNIGHY-TOUKA\qnighy <ackie.h.gmai@gmail.com>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CMS 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-03-01 08:16\n"
+"PO-Revision-Date: 2013-03-01 17:38+0900\n"
+"Last-Translator: U-QNIGHY-TOUKA\\qnighy <ackie.h.gmai@gmail.com>\n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+# a0d79e5dfc21405aa079ab159569f53c
+#: ..\..\index.rst:2
+msgid "Welcome to CMS's documentation!"
+msgstr "CMSのドキュメントへようこそ！"

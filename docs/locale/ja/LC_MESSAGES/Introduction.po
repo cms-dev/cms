@@ -1,0 +1,207 @@
+# Japanese translations for CMS package.
+# Copyright (C) 2013, The CMS development team
+# This file is distributed under the same license as the CMS package.
+# U-QNIGHY-TOUKA\qnighy <ackie.h.gmai@gmail.com>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: CMS 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2013-03-01 08:16\n"
+"PO-Revision-Date: 2013-03-01 17:36+0900\n"
+"Last-Translator: U-QNIGHY-TOUKA\\qnighy <ackie.h.gmai@gmail.com>\n"
+"Language-Team: Japanese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+# d8964675533e44e6a3a408fe5bb149bc
+#: ..\..\Introduction.rst:2
+msgid "Introduction"
+msgstr "はじめに"
+
+# 39b7f05943ca4840b9a0ac0ec645060c
+#: ..\..\Introduction.rst:4
+msgid "When organizing a programming contest, there are three main stages:"
+msgstr "プログラミングコンテストを開催するにあたって、主に次の3つの段階を踏む必要があります："
+
+# caa5a3302e694e71a1682d2195c125ab
+#: ..\..\Introduction.rst:6
+msgid ""
+"the first is to develop all the data that the assigned tasks need (i.e., "
+"statements, solutions, testcases, information on how to grade submissions, "
+"etc.);"
+msgstr "1つ目は、出題する課題が必要とするデータ(つまり、問題文、解答、テストデータ、提出物をどのような基準で採点するかの情報)を全て用意することです。"
+
+# 5e5fd41d6e5b4dbbb3f601198e703641
+#: ..\..\Introduction.rst:8
+msgid ""
+"the second, that happens when the contest is onsite, is to properly "
+"configure the machines that the contestants are going to use during the "
+"contest, in particular with respect to network security;"
+msgstr "コンテストがオンサイトで開催される時には、参加者がコンテスト中に使用するマシンを適切に設定すること、特にネットワークセキュリティー上の問題に気をつけることが必要になります。"
+
+# e67ab787dfaf4d828684e96be8ef3dcb
+#: ..\..\Introduction.rst:10
+msgid ""
+"the third is to manage the actual contest (accepting and grading "
+"submissions, give feedback on them, display a live ranking, etc.)."
+msgstr "3つ目は、コンテスト開催中の管理です。(提出物を受け取り点をつけること、採点結果のフィードバックを参加者に与えること、リアルタイムの順位表を表示すること、など)"
+
+# 858bbe2dda174bc38a3f7f8bcd40d5f7
+#: ..\..\Introduction.rst:12
+msgid ""
+"The aim of the CMS project is to give a good answer to the third problem. "
+"Our goal is to develop a contest management system that is secure, "
+"extendable, adaptable to different situations, and easy to use."
+msgstr "CMSプロジェクトは、この3番目の問題への良い解決方法を与えることを目的としています。私たちのゴールは、セキュアで、拡張可能で、コンテストごとに異なる状況に適応できて、そして使いやすいコンテスト管理システムを開発することです。"
+
+# 1313808bfab84f8fadedb94adc8f250a
+#: ..\..\Introduction.rst:16
+msgid "General structure"
+msgstr "全体的な構造"
+
+# 6d6ed3bf74c94a33af812790533189f3
+#: ..\..\Introduction.rst:17
+msgid ""
+"The system is organized in a modular way, with different services running "
+"(potentially) on different machines, and providing extendability via service "
+"replications on several machines."
+msgstr "このシステムはモジュール化によって管理されています。異なるサービスが(場合によっては)異なるマシン上で動いており、いくつかのマシンにサービスを複製することによりスケールできるようになっています。"
+
+# e7c83023c1fd4f40aa1fd7c5906eaad7
+#: ..\..\Introduction.rst:19
+msgid ""
+"The state of the contest is wholly kept on a PostgreSQL database. At the "
+"moment, there is no way to use other SQL databases, because the Large Object "
+"(LO) feature of PostgreSQL is used. It is unlikely that in the future we "
+"will target different databases."
+msgstr "コンテストの状態は全て、PostgeSQLのデータベースに保存されます。今のところCMSはPostgreSQLのラージオブジェクト(LO)機能に依存しているため、他のSQLデータベースを使うことはできません。また、将来的に他のデータベースに対応するとはあまり考えられないでしょう。"
+
+# e0c78402a2ac4848b96a2becdc77817b
+#: ..\..\Introduction.rst:21
+msgid ""
+"As long as the database is operating correctly, all other services can be "
+"started and stopped independently without problems. This means that if a "
+"machine goes down, then the administrator can quickly replace it with an "
+"identical one, which will take its roles (without having to move information "
+"from the broken machine). Of course, this also means that if the database "
+"goes down, the system is unable to work. In critical contexts, it is the "
+"necessary to configure the database redundantly and be prepared to rapidly "
+"do a fail-over in case something bad happens. The choice of PostgreSQL as "
+"the database to use should ease this part, since there are many different, "
+"mature and well-known solutions to provide such redundance and fail-over "
+"procedures."
+msgstr "データベースが正しく動作している限り、他の全てのサービスは互いに独立して開始および停止することができます。つまり、もしマシンがダウンしても、それと同等なものを管理者が起動すれば、その役割を適切に引き継ぐことができます(このとき、壊れたマシンから情報を吸い出す必要はありません)。もちろん、データベースがダウンすれば、システム全体が動作できなくなります。したがって、失敗が許されない状況では、データベースに冗長性を持たせ、何かしらの障害が起こっても素早く復旧できるよう準備する必要があります。CMSが採用しているPostgreSQLにおいては、そのような冗長性と復旧手順を提供してくれる使い古された解決方法が多数知られているので、その対策はそれほど難しくはないでしょう。"
+
+# 2bb52b03fb4649f2b8938afe3e5eae29
+#: ..\..\Introduction.rst:25
+msgid "Services"
+msgstr "サービス"
+
+# 4b1648824f9741e69c2dd53a4e4d7ff4
+#: ..\..\Introduction.rst:27
+msgid ""
+"CMS is composed of several services, that can be run on a single or on many "
+"servers. The core services are:"
+msgstr "CMSは複数のサービスから成り立っていて、それらは単一のあるいは多数のサーバー上で動かすことができます。コアとなるサービスは："
+
+# d6d3a42bc2554c6894d237db81737cc4
+#: ..\..\Introduction.rst:29
+msgid "LogService: collects all log messages in a single place;"
+msgstr "LogService: 全てのログを一箇所に集めるサービス。"
+
+# 08723feffc8b47878fcee15c2e2ab039
+#: ..\..\Introduction.rst:31
+msgid ""
+"ResourceService: collects data about the services running on the same "
+"server, and takes care of starting all of them with a single command;"
+msgstr "ResourceService: 同じサーバー上で他のどのサービスが動いているかを調べ、それらのサービスの開始を単一のコマンドで行えるサービス。"
+
+# 3162e21de8284917b762addd856024e3
+#: ..\..\Introduction.rst:33
+msgid "Checker: simple heartbeat monitor for all services;"
+msgstr "Checker: 全てのサービスの生存確認をする簡単なサービス。"
+
+# 4d044e9db18b4522b8cde59ab6d408da
+#: ..\..\Introduction.rst:35
+msgid ""
+"EvaluationService: organizes the queue of the submissions to compile or "
+"evaluate on the testcases, and dispatches these jobs to the workers;"
+msgstr "EvaluationService: 提出物のコンパイルやテストケースに対する評価のジョブキューを管理し、それらのジョブをワーカー(Worker)に投げるサービス。"
+
+# 714c21e0c5aa4b0ea99c168a8218c32d
+#: ..\..\Introduction.rst:37
+msgid "Worker: actually runs the jobs in a sandboxed environment;"
+msgstr "Worker: サンドボックス環境上で実際に各ジョブを実行するサービス。"
+
+# 33a016f4c6054bbe82fcaaa335b6ba85
+#: ..\..\Introduction.rst:39
+msgid ""
+"ScoringService: collects the outcomes of the submissions and computes the "
+"score; also sends these scores to the rankings;"
+msgstr "ScoringService: 提出物の実行結果を集め、点数を計算したのち、ランキングサーバー(Ranking)に送信するサービス。"
+
+# 54b8dd959a6c450bae584a701192ca92
+#: ..\..\Introduction.rst:41
+msgid ""
+"ContestWebServer: the webserver that the contestants will be interacting "
+"with;"
+msgstr "ContestWebServer: 参加者とやりとりをするWebサーバー。"
+
+# 209b54c0dc9149bcac7e115baca1cd9a
+#: ..\..\Introduction.rst:43
+msgid ""
+"AdminWebServer: the webserver to control and modify the parameters of the "
+"contests."
+msgstr "AdminWebServer: コンテストの管理と、パラメーターの変更を行うためのWebサーバー。"
+
+# eb2a524c257e49018a63c6b1ec30ed70
+#: ..\..\Introduction.rst:45
+msgid ""
+"Finally, RankingWebServer, whose duty is of course to show the ranking. This "
+"webserver is - on purpose - separated from the inner core of CMS in order to "
+"ease the creation of mirrors and restrict the number of people that can "
+"access services that are directly connected to the database."
+msgstr "そして最後に、RankingWebServer: もちろんこれは、ランキングを表示をするためのWebサーバーです。このサーバーは、わざとCMSの内部コアから分離されています。ミラーサーバーの作成を簡単にできるようにするため、またデータベースに直接つながっているサービスにアクセスできる人の数を制限できるようにするために、このような仕様になっています。"
+
+# f0f3e792f394492789514f0bd36a06e4
+#: ..\..\Introduction.rst:47
+msgid ""
+"There are also other services for testing, importing and exporting contests."
+msgstr "その他、テストのためのサービスや、コンテストをインポートしたりエクスポートしたりするためのサービスなどがあります。"
+
+# ff11d3b6b63c41b68e053d65af9ce40b
+#: ..\..\Introduction.rst:49
+msgid ""
+"Each of the core services is designed to be able to be killed and "
+"reactivated in a way that keeps the consistency of data, and does not block "
+"the functionalities provided by the other services."
+msgstr "それぞれのコアサービスは、データの整合性を損なわずにサービスを殺したり、再起動したりできて、他のサービスが提供する機能をブロックしないようにデザインされています。"
+
+# c5ec69a66d89441790db72c641f645ba
+#: ..\..\Introduction.rst:51
+msgid ""
+"Some of the services can be replicated on several machine: these are "
+"ResourceService (designed to be run on every machine), ContestWebServer and "
+"Worker."
+msgstr "これらのサービスのうちのいくつかは、複数のマシンへ複製することができます。複製できるサービスは、ResourceService (それぞれのマシンで動かすことが想定されている)、ContestWebServer、そしてWorkerです。"
+
+# 36eca8cb455945b281477d0b4138ed83
+#: ..\..\Introduction.rst:54
+msgid "Security considerations"
+msgstr "セキュリティー上の注意"
+
+# 726e3dd967204258883aba3976234b40
+#: ..\..\Introduction.rst:56
+msgid ""
+"With the exception of RWS, there are no cryptographic or authentication "
+"schemes between the various services or between the services and the "
+"database. Thus, it is mandatory to keep the services on a dedicated network, "
+"properly isolating it via firewalls from contestants or other people's "
+"computers. This sort of operations, like also preventing contestants from "
+"communicating and cheating, is responsibility of the administrator and is "
+"not managed by CMS itself."
+msgstr "RankingWebServerを除くどのサービスも、サービス間およびサービスとデータベース間の通信の暗号化や認証を行う仕組みを持っていません。よって、それらのサービスは必ず専用のネットワークの中に置き、参加者や第三者のコンピューターからアクセスできないようファイヤウォールで隔離する必要があります。参加者同士の相談や参加者の不正を防止しなければいけないのと同様に、こういった運用もまた管理者の責任をもって行われるものであり、CMS自体によって管理されるものではありません。"
