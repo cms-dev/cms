@@ -99,7 +99,7 @@ msgstr "このサンプルファイルは、CMSを試すにあたってはよい
 msgid ""
 "you must change the connection string given in ``database``; this usually "
 "means to change username and password with the ones you chose before;"
-msgstr " ``database`` で指定されている接続情報を変更する必要があります。これは普通、ユーザー名とパスワードを、先ほど設定したものに変更することになります。"
+msgstr "``database`` で指定されている接続情報を変更する必要があります。これは普通、ユーザー名とパスワードを、先ほど設定したものに変更することになります。"
 
 # 3eae937f8c9c418c9119cc56a8993f39
 #: ..\..\Running CMS.rst:37
