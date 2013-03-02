@@ -1,8 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system - importer for Australian judge spec
-# files.
+# Programming contest management system - utility to add a user to a contest.
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
@@ -55,16 +54,17 @@ def main():
                         help="last name of the user")
     parser.add_argument("username",
                         help="username of the user")
-    parser.add_argument("-c", "--contest-id", help="id of contest to export",
-                      action="store", type=int)
+    parser.add_argument("-c", "--contest-id",
+                        help="id of contest where to add the user",
+                        action="store", type=int)
     parser.add_argument("-p", "--password", help="password of the user",
-                      action="store")
+                        action="store")
     parser.add_argument("-i", "--ip-address", help="ip address of the user",
-                      action="store")
+                        action="store")
     parser.add_argument("-e", "--email", help="email address of the user",
-                      action="store")
+                        action="store")
     parser.add_argument("-H", "--hidden", help="if the user is hidden",
-                      action="store_true")
+                        action="store_true")
     args = parser.parse_args()
 
     if args.contest_id is None:
