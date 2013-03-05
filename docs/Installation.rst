@@ -36,6 +36,8 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `pytz <http://pytz.sourceforge.net/>`_;
 
+* `six <http://pythonhosted.org/six/>`_ >= 1.1;
+
 * `iso-codes <http://pkg-isocodes.alioth.debian.org/>`_;
 
 * `shared-mime-info <http://freedesktop.org/wiki/Software/shared-mime-info>`_;
@@ -59,8 +61,9 @@ On Ubuntu 12.04, one will need to run the following script to satisfy all depend
     sudo apt-get install build-essential fpc postgresql postgresql-client \
          gettext python2.7 python-setuptools python-tornado python-psycopg2 \
          python-simplejson python-sqlalchemy python-psutil python-netifaces \
-         python-crypto python-tz iso-codes shared-mime-info stl-manual \
-         python-beautifulsoup python-mechanize python-coverage cgroup-lite
+         python-crypto python-tz python-six iso-codes shared-mime-info \
+         stl-manual python-beautifulsoup python-mechanize python-coverage \
+         cgroup-lite
 
     # Optional.
     # sudo apt-get install phppgadmin python-yaml python-sphinx
@@ -72,8 +75,8 @@ On Arch Linux, the following command will install almost all dependencies (three
     sudo pacman -S base-devel fpc postgresql postgresql-client python2 \
          setuptools python2-tornado python2-psycopg2 python2-simplejson \
          python2-sqlalchemy python2-psutil python2-netifaces python2-crypto \
-         python2-pytz iso-codes shared-mime-info python2-beautifulsoup3 \
-         python2-mechanize
+         python2-pytz python2-six iso-codes shared-mime-info \
+         python2-beautifulsoup3 python2-mechanize
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/libcgroup/
