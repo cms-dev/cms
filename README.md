@@ -51,8 +51,12 @@ particular we are aware of the following:
 
 - Taipei High School Programming Contest, Taiwan, October 2012;
 
-- training camps for the selections of the national teams of Australia,
-  Italy and Latvia.
+- training camps for the selections of the national IOI teams of Australia,
+  India, Italy and Latvia.
 
 - laboratory exercises and exams of the course "Algorithms and data
   structures" at University of Trento (year 2011-2012).
+
+If you used CMS for a contest, selection, or a similar event, and want
+to publicize this information, we would be more than happy to hear
+from you and add it to this list.
