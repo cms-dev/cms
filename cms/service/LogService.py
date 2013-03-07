@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -39,6 +39,8 @@ class LogService(Service):
 
     """
 
+    LAST_MESSAGES_COUNT = 100
+
     def __init__(self, shard):
         logger.initialize(ServiceCoord("LogService", shard))
         Service.__init__(self, shard, custom_logger=logger)
@@ -67,6 +69,7 @@ class LogService(Service):
         """Log a message.
 
         msg (string): the message to log
+        coord (string): a string representing the caller service
         operation (string): a high-level description of the long-term
                             operation that is going on in the service
         severity (string): a constant defined in Logger
@@ -84,7 +87,7 @@ class LogService(Service):
                                         "operation": operation,
                                         "severity": severity,
                                         "timestamp": timestamp})
-            if len(self._last_messages) > 100:
+            while len(self._last_messages) > LogService.LAST_MESSAGES_COUNT:
                 del self._last_messages[0]
 
         print >> self._log_file, format_log(
