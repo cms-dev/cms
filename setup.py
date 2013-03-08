@@ -156,8 +156,8 @@ def copyfile(src, dest, owner, perm):
 
     """
     shutil.copy(src, dest)
-    os.chmod(dest, perm)
     os.chown(dest, owner.pw_uid, owner.pw_gid)
+    os.chmod(dest, perm)
 
 
 def makedir(dir_path, owner=None, perm=None):
@@ -241,7 +241,7 @@ def install():
     makedir(os.path.join("/", "usr", "local", "bin"), root, 0755)
     copyfile(os.path.join(".", "isolate", "isolate"),
              os.path.join("/", "usr", "local", "bin", "isolate"),
-             root, 0755)
+             root, 04755)
 
     print "copying configuration to /usr/local/etc/."
     makedir(os.path.join("/", "usr", "local", "etc"), root, 0755)
