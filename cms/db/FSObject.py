@@ -28,7 +28,6 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.exc import NoResultFound
 
 from psycopg2 import OperationalError
-from psycopg2.extensions import lobject
 
 from cms.db.SQLAlchemyUtils import Base
 
@@ -85,9 +84,9 @@ class FSObject(Base):
         if session is None:
             session = self.sa_session
 
-        # Here we relay on the fact that we're using psycopg2 as
+        # Here we rely on the fact that we're using psycopg2 as
         # PostgreSQL backend
-        lo = lobject(session.connection().connection.connection, self.loid)
+        lo = session.connection().connection.lobject(self.loid, mode)
 
         if self.loid == 0:
             self.loid = lo.oid
@@ -103,8 +102,7 @@ class FSObject(Base):
 
         """
         try:
-            lo = lobject(self.sa_session.connection().connection.connection,
-                         self.loid)
+            lo = self.sa_session.connection().connection.lobject(self.loid)
             lo.close()
             return True
         except OperationalError:
