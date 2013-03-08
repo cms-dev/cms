@@ -20,6 +20,7 @@
 #include <getopt.h>
 #include <sched.h>
 #include <time.h>
+#include <ftw.h>
 #include <grp.h>
 #include <mntent.h>
 #include <limits.h>
@@ -63,7 +64,7 @@ static uid_t orig_uid;
 static gid_t orig_gid;
 
 static int partial_line;
-static char cleanup_cmd[256];
+static int cleanup_ownership;
 
 static struct timeval start_time;
 static int ticks_per_sec;
@@ -78,6 +79,8 @@ static void die(char *msg, ...) NONRET;
 static void cg_stats(void);
 static int get_wall_time_ms(void);
 static int get_run_time_ms(struct rusage *rus);
+
+static void chowntree(char *path, uid_t uid, gid_t gid);
 
 /*** Meta-files ***/
 
@@ -132,16 +135,6 @@ final_stats(struct rusage *rus)
 
 /*** Messages and exits ***/
 
-static void
-xsystem(const char *cmd)
-{
-  int ret = system(cmd);
-  if (ret < 0)
-    die("system(\"%s\"): %m", cmd);
-  if (!WIFEXITED(ret) || WEXITSTATUS(ret))
-    die("system(\"%s\"): Exited with status %d", cmd, ret);
-}
-
 static void NONRET
 box_exit(int rc)
 {
@@ -162,8 +155,10 @@ box_exit(int rc)
 	final_stats(&rus);
     }
 
-  if (rc < 2 && cleanup_cmd[0])
-    xsystem(cleanup_cmd);
+  if (rc < 2 && cleanup_ownership)
+    {
+      chowntree("box", orig_uid, orig_gid);
+    }
 
   meta_close();
   exit(rc);
@@ -263,6 +258,47 @@ static int dir_exists(char *path)
 {
   struct stat st;
   return (stat(path, &st) >= 0 && S_ISDIR(st.st_mode));
+}
+
+static int rmtree_helper(const char *fpath, const struct stat *sb,
+    int typeflag, struct FTW *ftwbuf)
+{
+  if (S_ISDIR(sb->st_mode))
+    {
+      if (rmdir(fpath) < 0)
+	die("Cannot rmdir %s: %m", fpath);
+    }
+  else
+    {
+      if (unlink(fpath) < 0)
+	die("Cannot unlink %s: %m", fpath);
+    }
+  return FTW_CONTINUE;
+}
+
+static void
+rmtree(char *path)
+{
+  nftw(path, rmtree_helper, 32, FTW_MOUNT | FTW_PHYS | FTW_DEPTH);
+}
+
+static uid_t chown_uid;
+static gid_t chown_gid;
+static int chowntree_helper(const char *fpath, const struct stat *sb,
+    int typeflag, struct FTW *ftwbuf)
+{
+  if (lchown(fpath, chown_uid, chown_gid) < 0)
+    die("Cannot chown %s: %m", fpath);
+  else
+    return FTW_CONTINUE;
+}
+
+static void
+chowntree(char *path, uid_t uid, gid_t gid)
+{
+  chown_uid = uid;
+  chown_gid = gid;
+  nftw(path, chowntree_helper, 32, FTW_MOUNT | FTW_PHYS);
 }
 
 /*** Environment rules ***/
@@ -591,22 +627,24 @@ typedef enum {
   CG_CPUSET,
   CG_NUM_CONTROLLERS,
 } cg_controller;
+
 static const struct cg_controller_desc cg_controllers[CG_NUM_CONTROLLERS+1] = {
   [CG_MEMORY]  = { "memory",  0 },
   [CG_CPUACCT] = { "cpuacct", 0 },
   [CG_CPUSET]  = { "cpuset",  1 },
   [CG_NUM_CONTROLLERS] = { NULL, 0 },
 };
+
 #define FOREACH_CG_CONTROLLER(_controller) \
   for (cg_controller (_controller) = 0; \
       (_controller) < CG_NUM_CONTROLLERS; (_controller)++)
 
-const char *cg_controller_name(cg_controller c)
+static const char *cg_controller_name(cg_controller c)
 {
   return cg_controllers[c].name;
 }
 
-const int cg_controller_optional(cg_controller c)
+static const int cg_controller_optional(cg_controller c)
 {
   return cg_controllers[c].optional;
 }
@@ -645,7 +683,11 @@ cg_read(cg_controller controller, const char *attr, char *buf)
 
   int n = read(fd, buf, CG_BUFSIZE);
   if (n < 0)
-    die("Cannot read %s: %m", path);
+    {
+      if (maybe)
+	return 0;
+      die("Cannot read %s: %m", path);
+    }
   if (n >= CG_BUFSIZE - 1)
     die("Attribute %s too long", path);
   if (n > 0 && buf[n-1] == '\n')
@@ -771,7 +813,7 @@ cg_enter(void)
   if (cg_memory_limit)
     {
       cg_write(CG_MEMORY, "memory.limit_in_bytes", "%lld\n", (long long) cg_memory_limit << 10);
-      cg_write(CG_MEMORY, "memory.memsw.limit_in_bytes", "%lld\n", (long long) cg_memory_limit << 10);
+      cg_write(CG_MEMORY, "?memory.memsw.limit_in_bytes", "%lld\n", (long long) cg_memory_limit << 10);
     }
 
   if (cg_timing)
@@ -861,7 +903,7 @@ find_device(char *path)
   struct mntent *me;
   int best_len = 0;
   char *best_dev = NULL;
-  while ((me = getmntent(f)) != NULL)
+  while (me = getmntent(f))
     {
       if (!path_begins_with(me->mnt_fsname, "/dev"))
 	continue;
@@ -1236,7 +1278,7 @@ static void
 init(void)
 {
   msg("Preparing sandbox directory\n");
-  xsystem("rm -rf box");
+  rmtree("box");
   if (mkdir("box", 0700) < 0)
     die("Cannot create box: %m");
   if (chown("box", orig_uid, orig_gid) < 0)
@@ -1255,9 +1297,7 @@ cleanup(void)
     die("Box directory not found, there isn't anything to clean up");
 
   msg("Deleting sandbox directory\n");
-  xsystem("rm -rf *");
-  if (rmdir(box_dir) < 0)
-    die("Cannot remove %s: %m", box_dir);
+  rmtree(box_dir);
   cg_remove();
 }
 
@@ -1267,10 +1307,8 @@ run(char **argv)
   if (!dir_exists("box"))
     die("Box directory not found, did you run `isolate --init'?");
 
-  char cmd[256];
-  snprintf(cmd, sizeof(cmd), "chown -R %d.%d box", box_uid, box_gid);
-  xsystem(cmd);
-  snprintf(cleanup_cmd, sizeof(cleanup_cmd), "chown -R %d.%d box", orig_uid, orig_gid);
+  chowntree("box", box_uid, box_gid);
+  cleanup_ownership = 1;
 
   if (pipe(error_pipes) < 0)
     die("pipe: %m");
@@ -1307,9 +1345,16 @@ show_version(void)
 
 /*** Options ***/
 
-static void
-usage(void)
+static void __attribute__((format(printf,1,2)))
+usage(const char *msg, ...)
 {
+  if (msg != NULL)
+    {
+      va_list args;
+      va_start(args, msg);
+      vfprintf(stderr, msg, args);
+      va_end(args);
+    }
   printf("\
 Usage: isolate [<options>] <command>\n\
 \n\
@@ -1416,20 +1461,14 @@ main(int argc, char **argv)
 	break;
       case 'd':
 	if (!set_dir_action(optarg))
-	  {
-	    fprintf(stderr, "Invalid directory specified: %s\n", optarg);
-	    usage();
-	  }
+	  usage("Invalid directory specified: %s\n", optarg);
 	break;
       case 'e':
 	pass_environ = 1;
 	break;
       case 'E':
 	if (!set_env_action(optarg))
-	  {
-	    fprintf(stderr, "Invalid environment specified: %s\n", optarg);
-	    usage();
-	  }
+	  usage("Invalid environment specified: %s\n", optarg);
 	break;
       case 'k':
 	stack_limit = atoi(optarg);
@@ -1455,10 +1494,7 @@ main(int argc, char **argv)
       case 'q':
 	sep = strchr(optarg, ',');
 	if (!sep)
-	  {
-	    fprintf(stderr, "Invalid quota specified: %s\n", optarg);
-	    usage();
-	  }
+	  usage("Invalid quota specified: %s\n", optarg);
 	block_quota = atoi(optarg);
 	inode_quota = atoi(sep+1);
 	break;
@@ -1484,10 +1520,7 @@ main(int argc, char **argv)
 	if (!mode || mode == c)
 	  mode = c;
 	else
-	  {
-	    fprintf(stderr, "Only one command is allowed.\n");
-	    usage();
-	  }
+	  usage("Only one command is allowed.\n");
 	break;
       case OPT_CG_MEM:
 	cg_memory_limit = atoi(optarg);
@@ -1496,14 +1529,11 @@ main(int argc, char **argv)
 	cg_timing = 1;
 	break;
       default:
-	usage();
+	usage(NULL);
       }
 
   if (!mode)
-    {
-      fprintf(stderr, "Please specify an isolate command (e.g. --init, --run).\n");
-      usage();
-    }
+    usage("Please specify an isolate command (e.g. --init, --run).\n");
   if (mode == OPT_VERSION)
     {
       show_version();
@@ -1523,26 +1553,17 @@ main(int argc, char **argv)
     {
     case OPT_INIT:
       if (optind < argc)
-	  {
-	    fprintf(stderr, "--init mode takes no parameters\n");
-	    usage();
-	  }
+	usage("--init mode takes no parameters\n");
       init();
       break;
     case OPT_RUN:
       if (optind >= argc)
-	{
-	  fprintf(stderr, "--run mode requires a command to run\n");
-	  usage();
-	}
+	usage("--run mode requires a command to run\n");
       run(argv+optind);
       break;
     case OPT_CLEANUP:
       if (optind < argc)
-	{
-	  fprintf(stderr, "--cleanup mode takes no parameters\n");
-	  usage();
-	}
+	usage("--cleanup mode takes no parameters\n");
       cleanup();
       break;
     default:
