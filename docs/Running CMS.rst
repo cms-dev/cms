@@ -86,9 +86,7 @@ As for the distribution of services, usually there is one ResourceService for ea
 
 Our preferred distribution is Ubuntu >= 12.04 LTS.  We will hopefully support Ubuntu 12.04.x out of the box for the length of Ubuntu's support duration, that is five years.
 
-Very important note: up to now, we support only 32 bit distributions.
-
-Saying that, one is not forced to follow the previous rules, and it should not be very hard to successfully run CMS on different distributions or even on 64 bit installations (see :gh_blob:`docs/32bits_sandbox_howto.txt` to read how to set up a 32 bits chroot).
+Saying that, one is not forced to follow the previous rules, and it should not be very hard to successfully run CMS on different distributions.
 
 You can replicate the service handling the contestant-facing web server, :file:`cmsContestWebServer`; in this case, you need to configure a load balancer in front of them. We suggest to use nginx for that, and provide a sample configuration for it at :gh_blob:`examples/nginx.conf.sample` (this file also configures nginx to act as a HTTPS endpoint and to force secure connections, by redirecting HTTP to HTTPS). This file probably needs to be adapted to your distribution if it's not Ubuntu: try to merge it with the file you find installed by default. For additional information see the official nginx `documentation <http://wiki.nginx.org/HttpUpstreamModule>`_ and `examples <http://wiki.nginx.org/LoadBalanceExample>`_. Note that without the ``ip_hash`` option some features might not always work as expected.
 

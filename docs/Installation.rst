@@ -65,7 +65,7 @@ On Ubuntu 12.04, one will need to run the following script to satisfy all depend
     # Optional.
     # sudo apt-get install phppgadmin python-yaml python-sphinx
 
-On Arch Linux, the following command will install almost all dependencies (two of them can be found in the AUR):
+On Arch Linux, the following command will install almost all dependencies (three of them can be found in the AUR):
 
 .. sourcecode:: bash
 
@@ -76,6 +76,7 @@ On Arch Linux, the following command will install almost all dependencies (two o
          python2-mechanize
 
     # Install the following from AUR.
+    # https://aur.archlinux.org/packages/libcgroup/
     # https://aur.archlinux.org/packages/sgi-stl-doc/
     # https://aur.archlinux.org/packages/python2-coverage/
 
