@@ -1,0 +1,46 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
+# Programming contest management system
+# Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+task_info = {
+    "name": "batchfileiomanaged",
+    "title": "Test Batch Task using manager with I/O via files",
+    "time_limit": "0.1",
+    "memory_limit": "64",
+    "official_language": "",
+    "task_type": "Batch",
+    "TaskTypeOptions_Batch_compilation": "grader",
+    "TaskTypeOptions_Batch_io_0_inputfile": "input.txt",
+    "TaskTypeOptions_Batch_io_1_outputfile": "output.txt",
+    "TaskTypeOptions_Batch_output_eval": "comparator",
+    "submission_format_choice": "simple",
+    "submission_format": "",
+    "score_type": "Sum",
+    "score_type_parameters": "50",
+}
+
+managers = [
+    "grader.c",
+    "grader.cpp",
+    "checker",
+]
+
+test_cases = [
+    ("1.in", "1.out", True),
+    ("2.in", "2.out", False),
+]

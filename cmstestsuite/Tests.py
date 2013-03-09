@@ -19,6 +19,7 @@
 
 import cmstestsuite.tasks.batch_stdio as batch_stdio
 import cmstestsuite.tasks.batch_fileio as batch_fileio
+import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
      CheckTimeout, CheckSignal, CheckNonzeroReturn
 
@@ -61,6 +62,16 @@ Test('half-correct-fileio',
      task=batch_fileio, filename='half-correct-fileio.%l',
      languages=all_languages,
      checks=[CheckOverallScore(50, 100)]),
+
+Test('incorrect-fileio-nooutput',
+     task=batch_fileio, filename='incorrect-fileio-nooutput.%l',
+     languages=('c',),
+     checks=[CheckOverallScore(0, 100)]),
+
+Test('incorrect-fileio-emptyoutput',
+     task=batch_fileio, filename='incorrect-fileio-emptyoutput.%l',
+     languages=('c',),
+     checks=[CheckOverallScore(0, 100)]),
 
 Test('incorrect-readstdio',
      task=batch_fileio, filename='correct-stdio.%l',
@@ -106,5 +117,15 @@ Test('nonzero-return-fileio',
      task=batch_fileio, filename='nonzero-return-fileio.%l',
      languages=all_languages,
      checks=[CheckOverallScore(0, 100), CheckNonzeroReturn()]),
+
+Test('managed-correct',
+     task=batch_fileio_managed, filename='managed-correct.%l',
+     languages=('c', 'cpp'), # TODO: Pascal.
+     checks=[CheckOverallScore(100, 100)]),
+
+Test('managed-incorrect',
+     task=batch_fileio_managed, filename='managed-incorrect.%l',
+     languages=('c', 'cpp'), # TODO: Pascal.
+     checks=[CheckOverallScore(0, 100)]),
 
 ]

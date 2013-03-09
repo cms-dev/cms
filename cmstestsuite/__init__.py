@@ -393,6 +393,15 @@ def add_task(contest_id, **kwargs):
         raise FrameworkException("Unable to create task.")
 
 
+def add_manager(task_id, manager):
+    args = {}
+    files = [
+        ( 'manager', manager ),
+    ]
+    admin_req('/add_manager/%d' % task_id, multipart_post=True,
+              files=files, args=args)
+
+
 def add_testcase(task_id, num, input_file, output_file, public):
     files = [
         ('input', input_file),

@@ -26,8 +26,8 @@ from argparse import ArgumentParser
 
 from cmstestsuite import get_cms_config, CONFIG, info, sh
 from cmstestsuite import add_contest, add_user, add_task, add_testcase, \
-     combine_coverage, start_service, start_server, start_ranking_web_server, \
-     shutdown_services, restart_service
+     add_manager, combine_coverage, start_service, start_server, \
+     start_ranking_web_server, shutdown_services, restart_service
 from cmstestsuite.Test import TestFailure
 import cmstestsuite.Tests
 from cmscommon.DateTime import get_system_timezone
@@ -114,6 +114,15 @@ def get_task_id(contest_id, user_id, task_module):
             min_submission_interval=None,
             min_user_test_interval=None,
             **task_module.task_info)
+
+        # add any managers
+        code_path = os.path.join(
+            os.path.dirname(task_module.__file__),
+            "code")
+        if hasattr(task_module, 'managers'):
+            for manager in task_module.managers:
+                mpath = os.path.join(code_path, manager)
+                add_manager(task_id, mpath)
 
         # add the task's test data.
         data_path = os.path.join(
@@ -317,6 +326,8 @@ def main():
     parser.add_argument("-r", "--retry-failed", action="store_true",
         help="only run failed tests from the previous run (stored in %s)" %
         FAILED_TEST_FILENAME)
+    parser.add_argument("-n", "--dry-run", action="store_true",
+        help="show what tests would be run, but do not run them")
     parser.add_argument("-v", "--verbose", action="count",
         help="print debug information (use multiple times for more)")
     args = parser.parse_args()
@@ -339,6 +350,11 @@ def main():
 
     if not test_list:
         info("There are no tests to run! (was your filter too restrictive?)")
+        return 0
+
+    if args.dry_run:
+        for t in test_list:
+            print t[0].name, t[1]
         return 0
 
     if args.retry_failed:
