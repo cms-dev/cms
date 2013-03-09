@@ -70,7 +70,7 @@ The following are optional keys.
 
 - ``cognome`` ("surname", string): the user real last name; defaults to the value of ``username``.
 
-- ``ip`` (string): the IP address from which incoming connections for this user are accepted, see :ref:`configuringacontest_login`; defaults to ``0.0.0.0``.
+- ``ip`` (string): the IP address from which incoming connections for this user are accepted, see :ref:`configuringacontest_login`.
 
 - ``fake`` (string): when set to ``True`` (case-sensitive _string_) set the ``hidden`` flag in the user, see :ref:`configuringacontest_login`; defaults to ``False``.
 

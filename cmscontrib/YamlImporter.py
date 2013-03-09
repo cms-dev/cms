@@ -126,10 +126,10 @@ class YamlLoader:
 
         if self.modif == 'test':
             params["password"] = 'a'
-            params["ip"] = '0.0.0.0'
+            params["ip"] = None
         else:
             params["password"] = user_dict["password"]
-            params["ip"] = user_dict.get("ip", "0.0.0.0")
+            params["ip"] = user_dict.get("ip", None)
         name = user_dict.get("nome", "")
         surname = user_dict.get("cognome", user_dict["username"])
         params["first_name"] = name
@@ -497,7 +497,7 @@ def main():
                        help="set to zero contest start and stop time")
     group.add_argument("-t", "--test", action="store_true",
                        help="setup a contest for testing "
-                       "(times: 0, 2*10^9; ips: 0.0.0.0, passwords: a)")
+                       "(times: 0, 2*10^9; ips: unset, passwords: a)")
     parser.add_argument("-d", "--drop", action="store_true",
                         help="drop everything from the database "
                         "before importing")
