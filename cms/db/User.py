@@ -81,8 +81,7 @@ class User(Base):
     # Email for any communications in case of remote contest.
     email = Column(
         String,
-        nullable=False,
-        default='')
+        nullable=True)
 
     # User can log in CWS only from this ip.
     ip = Column(

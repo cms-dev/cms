@@ -1341,7 +1341,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
             return
 
         password = self.get_argument("password", "")
-        email = self.get_argument("email", "")
+        email = self.get_argument("email", None)
 
         ip_address = self.get_argument("ip", None)
         if ip_address is not None and not valid_ip(ip_address):
