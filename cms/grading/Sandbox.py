@@ -171,10 +171,13 @@ class Sandbox:
         # read and write to the directory. But we don't want everybody on the
         # system to, which is why the outer directory exists with no read
         # permissions.
+        self.inner_temp_dir = "/tmp"
         if temp_dir is None:
             temp_dir = config.temp_dir
         self.outer_temp_dir = tempfile.mkdtemp(dir=temp_dir)
-        self.path = os.path.join(self.outer_temp_dir, "tmp")
+        # Don't use os.path.join here, because the absoluteness of /tmp will
+        # bite you.
+        self.path = self.outer_temp_dir + self.inner_temp_dir
         os.mkdir(self.path)
         os.chmod(self.path, 0777)
 
@@ -190,8 +193,9 @@ class Sandbox:
         # Default parameters for isolate
         self.box_id = box_id           # -b
         self.cgroup = True             # --cg
-        self.chdir = None              # -c
+        self.chdir = self.inner_temp_dir # -c
         self.dirs = []                 # -d
+        self.dirs += [(self.inner_temp_dir, self.path, "rw")]
         self.preserve_env = False      # -e
         self.inherit_env = []          # -E
         self.set_env = {}              # -E
@@ -257,19 +261,19 @@ class Sandbox:
         for var, value in self.set_env.items():
             res += ["-E", "%s=%s" % (var, value)]
         if self.stdin_file is not None:
-            res += ["-i", self.stdin_file]
+            res += ["-i", self.inner_absolute_path(self.stdin_file)]
         if self.stack_space is not None:
             res += ["-k", str(self.stack_space)]
         if self.address_space is not None:
             res += ["-m", str(self.address_space)]
         if self.stdout_file is not None:
-            res += ["-o", self.stdout_file]
+            res += ["-o", self.inner_absolute_path(self.stdout_file)]
         if self.max_processes is not None:
             res += ["-p=%d" % self.max_processes]
         else:
             res += ["-p="]
         if self.stderr_file is not None:
-            res += ["-r", self.stderr_file]
+            res += ["-r", self.inner_absolute_path(self.stderr_file)]
         if self.timeout is not None:
             res += ["-t", str(self.timeout)]
         res += ["-v"] * self.verbosity
@@ -502,6 +506,16 @@ class Sandbox:
 
         """
         return os.path.join(self.path, path)
+
+    def inner_absolute_path(self, path):
+        """Translate from a relative path inside the sandbox to an
+        absolute path inside the sandbox.
+
+        path (string): relative path of the file inside the sandbox.
+        return (string): the absolute path of the file inside the sandbox.
+
+        """
+        return os.path.join(self.inner_temp_dir, path)
 
     # TODO - Rewrite it as context manager
     def create_file(self, path, executable=False):

@@ -103,20 +103,15 @@ def compilation_step(sandbox, command):
     """
     # Set sandbox parameters suitable for compilation.
     sandbox.dirs += [("/etc", None, None)]
-    path_in_sandbox = "/tmp"
-    sandbox.dirs += [(path_in_sandbox, sandbox.path, "rw")]
-    sandbox.chdir = path_in_sandbox
-    sandbox.chdir = "/tmp"
     sandbox.preserve_env = True
     sandbox.max_processes = None
     # FIXME - File access limits are not enforced on children
     # processes (like ld).
-    sandbox.set_env['TMPDIR'] = path_in_sandbox
     sandbox.timeout = 10
     sandbox.wallclock_timeout = 20
     sandbox.address_space = 256 * 1024
-    sandbox.stdout_file = os.path.join(path_in_sandbox, "compiler_stdout.txt")
-    sandbox.stderr_file = os.path.join(path_in_sandbox, "compiler_stderr.txt")
+    sandbox.stdout_file = "compiler_stdout.txt"
+    sandbox.stderr_file = "compiler_stderr.txt"
 
     # Actually run the compilation command.
     logger.debug("Starting compilation step.")
@@ -263,24 +258,21 @@ def evaluation_step_before_run(sandbox, command,
 
     """
     # Set sandbox parameters suitable for evaluation.
-    path_in_sandbox = "/tmp"
-    sandbox.dirs += [(path_in_sandbox, sandbox.path, "rw")]
-    sandbox.chdir = path_in_sandbox
     sandbox.timeout = time_limit
     sandbox.wallclock_timeout = 2 * time_limit
     sandbox.address_space = memory_limit * 1024
 
     if stdin_redirect is not None:
-        sandbox.stdin_file = os.path.join(path_in_sandbox, stdin_redirect)
+        sandbox.stdin_file = stdin_redirect
     else:
         sandbox.stdin_file = None
 
     if stdout_redirect is not None:
-        sandbox.stdout_file = os.path.join(path_in_sandbox, stdout_redirect)
+        sandbox.stdout_file = stdout_redirect
     else:
-        sandbox.stdout_file = os.path.join(path_in_sandbox, "stdout.txt")
+        sandbox.stdout_file = "stdout.txt"
 
-    sandbox.stderr_file = os.path.join(path_in_sandbox, "stderr.txt")
+    sandbox.stderr_file = "stderr.txt"
 
     # Actually run the evaluation command.
     logger.debug("Starting execution step.")
@@ -427,8 +419,8 @@ def extract_outcome_and_text(sandbox):
     raise: ValueError if cannot decode the data.
 
     """
-    stdout = sandbox.stdout_file
-    stderr = sandbox.stderr_file
+    stdout = sandbox.relative_path(sandbox.stdout_file)
+    stderr = sandbox.relative_path(sandbox.stderr_file)
     with codecs.open(stdout, "r", "utf-8") as stdout_file:
         with codecs.open(stderr, "r", "utf-8") as stderr_file:
             try:
