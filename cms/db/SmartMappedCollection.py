@@ -227,6 +227,11 @@ class SmartMappedCollection(MappedCollection):
     # When dropping support for SQLAlchemy pre-0.8, remove this.
     _sa_converter = _convert
 
+    def __iadd__(self, collection):
+        for value in self._convert(collection):
+            self.set(value)
+        return self
+
 
 def smart_mapped_collection(column):
     return lambda: SmartMappedCollection(column)
