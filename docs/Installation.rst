@@ -26,6 +26,8 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `SQLAlchemy <http://www.sqlalchemy.org/>`_ >= 0.7;
 
+* `libcg <http://libcg.sourceforge.net/>`_;
+
 * `psutil <https://code.google.com/p/psutil/>`_ >= 0.2;
 
 * `netifaces <http://alastairs-place.net/projects/netifaces/>`_ >= 0.5;
@@ -48,6 +50,8 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `Sphinx <http://sphinx-doc.org/>`_ (only for building documentation).
 
+You will also require a Linux kernel with support for control groups and namespaces. Support has been in the Linux kernel since 2.6.32, and is provided by Ubuntu 12.04 and later. Other distributions, or systems with custom kernels, may not have support enabled. At a minimum, you will need to enable the following Linux kernel options: ``CONFIG_CGROUPS``, ``CONFIG_CGROUP_CPUACCT``, ``CONFIG_MEMCG`` (previously called as ``CONFIG_CGROUP_MEM_RES_CTLR``), ``CONFIG_CPUSETS``, ``CONFIG_PID_NS``, ``CONFIG_IPC_NS``, ``CONFIG_NET_NS``.
+
 On Ubuntu 12.04, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
@@ -56,7 +60,7 @@ On Ubuntu 12.04, one will need to run the following script to satisfy all depend
          gettext python2.7 python-setuptools python-tornado python-psycopg2 \
          python-simplejson python-sqlalchemy python-psutil python-netifaces \
          python-crypto python-tz iso-codes shared-mime-info stl-manual \
-         python-beautifulsoup python-mechanize python-coverage
+         python-beautifulsoup python-mechanize python-coverage cgroup-lite
 
     # Optional.
     # sudo apt-get install phppgadmin python-yaml python-sphinx
