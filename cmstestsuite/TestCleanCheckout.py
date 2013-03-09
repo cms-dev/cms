@@ -72,6 +72,9 @@ def setup_cms():
 
     info("Building cms.")
     sh("./setup.py build")
+    # Add permission bits to isolate.
+    sh("sudo chown root:root isolate/isolate")
+    sh("sudo chmod 4755 isolate/isolate")
 
     info("Creating tables.")
     sh("python cms/db/SQLAlchemyAll.py")
