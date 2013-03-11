@@ -212,8 +212,10 @@ class Sandbox:
 
         # Tell isolate to get the sandbox ready.
         box_cmd = [self.box_exec, "--cg", "-b", str(self.box_id)]
-        if subprocess.call(box_cmd + ["--init"]) != 0:
-            raise SandboxInterfaceException("Failed to initialize sandbox.")
+        ret = subprocess.call(box_cmd + ["--init"])
+        if ret != 0:
+            raise SandboxInterfaceException(
+                "Failed to initialize sandbox (error %d)" % ret)
 
     def detect_box_executable(self):
         """Try to find an isolate executable. It first looks in ./isolate/,
