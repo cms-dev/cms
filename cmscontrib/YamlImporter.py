@@ -136,7 +136,7 @@ class YamlLoader:
         params["last_name"] = surname
         params["hidden"] = "True" == user_dict.get("fake", "False")
 
-        params["timezone"] = 0.0
+        params["timezone"] = None
         params["messages"] = []
         params["questions"] = []
         params["submissions"] = []
@@ -172,6 +172,8 @@ class YamlLoader:
                            "Please check.")
         params["num"] = num
         params["time_limit"] = conf.get("timeout", None)
+        params["time_limit"] = float(params["time_limit"]) \
+                if params["time_limit"] is not None else None
         params["memory_limit"] = conf.get("memlimit", None)
         params["attachments"] = []  # FIXME - Use auxiliary
         params["statements"] = [Statement(
@@ -375,9 +377,10 @@ class YamlLoader:
                 path=output,
                 description="Output %d for task %s" % (i, name))
             params["testcases"].append(Testcase(
-                input_digest,
-                output_digest,
-                public=(i in public_testcases)).export_to_dict())
+                num=i,
+                public=(i in public_testcases),
+                input=input_digest,
+                output=output_digest).export_to_dict())
             if params["task_type"] == "OutputOnly":
                 params["attachments"].append(Attachment(
                         "input_%03d.txt" % (i),
