@@ -28,7 +28,9 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `libcg <http://libcg.sourceforge.net/>`_;
 
-* `psutil <https://code.google.com/p/psutil/>`_ >= 0.2;
+.. We need 0.6 because of the new memory API (https://code.google.com/p/psutil/wiki/Documentation#Memory).
+
+* `psutil <https://code.google.com/p/psutil/>`_ >= 0.6;
 
 * `netifaces <http://alastairs-place.net/projects/netifaces/>`_ >= 0.5;
 

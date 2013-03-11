@@ -84,7 +84,7 @@ Of course, the number of servers one needs to run a contest depends on many fact
 
 As for the distribution of services, usually there is one ResourceService for each server, one copy each of LogService, ScoringService, Checker, EvaluationService, AdminWebServer, and one or more of ContestWebServer and Worker. Again, if there are more than one Worker, we recommend to run them on different servers.
 
-Our preferred distribution is Ubuntu >= 12.04 LTS.  We will hopefully support Ubuntu 12.04.x out of the box for the length of Ubuntu's support duration, that is five years.
+Our preferred distribution is Ubuntu >= 13.04, and support it out of the box.
 
 Saying that, one is not forced to follow the previous rules, and it should not be very hard to successfully run CMS on different distributions.
 

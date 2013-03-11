@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,8 +21,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """Service to be run once for each machine the system is running on,
-that saves the resources usage in that machine. We require psutil >=
-0.2.0.
+that saves the resources usage in that machine.
 
 """
 
@@ -38,13 +38,6 @@ from cms.async import ServiceCoord, get_shard_from_addresses
 from cms.async.AsyncLibrary import Service, rpc_method, RemoteService
 from cms.db import ask_for_contest, is_contest_id
 
-
-# We need to use one set of methods for versions < 0.3.0, and another
-# for versions >= 0.3.0. See
-# http://code.google.com/p/psutil/wiki/Documentation#Memory .
-psutil_version = tuple(int(x) for x in psutil.__version__.split("."))
-assert psutil_version >= (0, 2, 0), \
-       "Please install python-psutil >= 0.2.0."
 
 B_TO_MB = 1024.0 * 1024.0
 
@@ -257,36 +250,25 @@ class ResourceService(Service):
         data["cpu"]["num_cpu"] = psutil.NUM_CPUS
         self._prev_cpu_times = cpu_times
 
-        # Memory. We differentiate from old and deprecated (< 0.3.0)
-        # methods to the new ones. Remove the differentiation when we
-        # drop the support for Ubuntu 11.10 (which ships 0.2.1).
-        ram_cached = psutil.cached_phymem()
-        ram_buffers = psutil.phymem_buffers()
-        if psutil_version < (0, 3, 0):
-            data["memory"] = {
-                "ram_total": psutil.TOTAL_PHYMEM / B_TO_MB,
-                "ram_available": psutil.avail_phymem() / B_TO_MB,
-                "ram_cached": ram_cached / B_TO_MB,
-                "ram_buffers": ram_buffers / B_TO_MB,
-                "ram_used": (psutil.used_phymem() - ram_cached - ram_buffers)
-                                  / B_TO_MB,
-                "swap_total": psutil.total_virtmem() / B_TO_MB,
-                "swap_available": psutil.avail_virtmem() / B_TO_MB,
-                "swap_used": psutil.used_virtmem() / B_TO_MB,
-                }
-        else:
-            phymem = psutil.phymem_usage()
-            virtmem = psutil.virtmem_usage()
-            data["memory"] = {
-                "ram_total": phymem.total / B_TO_MB,
-                "ram_available": phymem.free / B_TO_MB,
-                "ram_cached": ram_cached / B_TO_MB,
-                "ram_buffers": ram_buffers / B_TO_MB,
-                "ram_used": (phymem.used - ram_cached - ram_buffers) / B_TO_MB,
-                "swap_total": virtmem.total / B_TO_MB,
-                "swap_available": virtmem.free / B_TO_MB,
-                "swap_used": virtmem.used / B_TO_MB,
-                }
+        # Memory. The following relations hold (I think... I only
+        # verified them experimentally on a swap-less system):
+        # * vmem.free == vmem.available - vmem.cached - vmem.buffers
+        # * vmem.total == vmem.used + vmem.free
+        # That means that cache & buffers are counted both in .used
+        # and in .available. We want to partition the memory into
+        # types that sum up to vmem.total.
+        vmem = psutil.virtual_memory()
+        swap = psutil.swap_memory()
+        data["memory"] = {
+            "ram_total": vmem.total / B_TO_MB,
+            "ram_available": vmem.free / B_TO_MB,
+            "ram_cached": vmem.cached / B_TO_MB,
+            "ram_buffers": vmem.buffers / B_TO_MB,
+            "ram_used": (vmem.used - vmem.cached - vmem.buffers) / B_TO_MB,
+            "swap_total": swap.total / B_TO_MB,
+            "swap_available": swap.free / B_TO_MB,
+            "swap_used": swap.used / B_TO_MB,
+            }
 
         data["services"] = {}
         # Details of our services
