@@ -104,11 +104,11 @@ class Communication(TaskType):
         source_filenames = []
         # Stub.
         source_filenames.append("stub.%s" % language)
-        files_to_get[source_filenames[1]] = \
+        files_to_get[source_filenames[0]] = \
                 self.job.managers["stub.%s" % language].digest
         # User's submission.
         source_filenames.append(format_filename.replace("%l", language))
-        files_to_get[source_filenames[0]] = \
+        files_to_get[source_filenames[1]] = \
             self.job.files[format_filename].digest
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
@@ -149,6 +149,9 @@ class Communication(TaskType):
         fifo_out = os.path.join(fifo_dir, "out")
         os.mkfifo(fifo_in)
         os.mkfifo(fifo_out)
+        os.chmod(fifo_dir, 0o755)
+        os.chmod(fifo_in, 0o666)
+        os.chmod(fifo_out, 0o666)
 
         # First step: we start the manager.
         manager_filename = "manager"
@@ -160,7 +163,7 @@ class Communication(TaskType):
         manager_files_to_get = {
             "input.txt": self.job.testcases[test_number].input
             }
-        manager_allow_path = ["input.txt", "output.txt", fifo_in, fifo_out]
+        manager_allow_dirs = [fifo_dir]
         for filename, digest in manager_executables_to_get.iteritems():
             sandbox_mgr.create_file_from_storage(
                 filename, digest, executable=True)
@@ -171,7 +174,7 @@ class Communication(TaskType):
             manager_command,
             self.job.time_limit,
             0,
-            manager_allow_path,
+            allow_dirs=manager_allow_dirs,
             stdin_redirect="input.txt")
 
         # Second step: we start the user submission compiled with the
@@ -182,6 +185,7 @@ class Communication(TaskType):
             executable_filename:
             self.job.executables[executable_filename].digest
             }
+        user_allow_dirs = [fifo_dir]
         for filename, digest in executables_to_get.iteritems():
             sandbox_user.create_file_from_storage(
                 filename, digest, executable=True)
@@ -189,7 +193,12 @@ class Communication(TaskType):
             sandbox_user,
             command,
             self.job.time_limit,
-            self.job.memory_limit)
+            self.job.memory_limit,
+            allow_dirs=user_allow_dirs)
+
+        # We need this to start communication properly.
+        open(fifo_in, 'a+').close()
+        open(fifo_out, 'a+').close()
 
         # Consume output.
         wait_without_std([process, manager])
