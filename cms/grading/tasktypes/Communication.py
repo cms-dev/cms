@@ -22,6 +22,7 @@
 
 import os
 import tempfile
+import shutil
 
 from cms import config, logger
 from cms.grading.Sandbox import wait_without_std
@@ -241,4 +242,5 @@ class Communication(TaskType):
         evaluation['text'] = text
         delete_sandbox(sandbox_mgr)
         delete_sandbox(sandbox_user)
+        shutil.rmtree(fifo_dir)
         return success
