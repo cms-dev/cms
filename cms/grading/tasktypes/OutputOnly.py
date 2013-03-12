@@ -96,7 +96,7 @@ class OutputOnly(TaskType):
         # present we report that the outcome is 0.
         if "output_%03d.txt" % test_number not in self.job.files:
             evaluation['success'] = True
-            evaluation['outcome'] = 0.0
+            evaluation['outcome'] = "0.0"
             evaluation['text'] = "File not submitted."
             return True
 
