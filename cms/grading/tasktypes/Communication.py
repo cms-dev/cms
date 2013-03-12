@@ -104,11 +104,11 @@ class Communication(TaskType):
         source_filenames = []
         # Stub.
         source_filenames.append("stub.%s" % language)
-        files_to_get[source_filenames[1]] = \
+        files_to_get[source_filenames[-1]] = \
                 self.job.managers["stub.%s" % language].digest
         # User's submission.
         source_filenames.append(format_filename.replace("%l", language))
-        files_to_get[source_filenames[0]] = \
+        files_to_get[source_filenames[-1]] = \
             self.job.files[format_filename].digest
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
