@@ -76,6 +76,11 @@ def setup_cms():
     sh("sudo chown root:root isolate/isolate")
     sh("sudo chmod 4755 isolate/isolate")
 
+    # Ensure our logs get preserved. Point them into the checkout instead of
+    # the tempdir that we blow away.
+    sh(["mkdir", "-p", "%(GIT_ORIGIN)s/log" % CONFIG])
+    sh(["ln", "-s", "%(GIT_ORIGIN)s/log" % CONFIG, "log"])
+
     info("Creating tables.")
     sh("python cms/db/SQLAlchemyAll.py")
 
