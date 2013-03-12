@@ -219,6 +219,7 @@ def compilation_step(sandbox, command):
 
 def evaluation_step(sandbox, command,
                     time_limit=0, memory_limit=0,
+                    allow_dirs=None,
                     stdin_redirect=None, stdout_redirect=None):
     """Execute an evaluation command in the sandbox. Note that in some
     task types, there may be more than one evaluation commands (per
@@ -234,7 +235,7 @@ def evaluation_step(sandbox, command,
 
     """
     success = evaluation_step_before_run(
-        sandbox, command, time_limit, memory_limit,
+        sandbox, command, time_limit, memory_limit, allow_dirs,
         stdin_redirect, stdout_redirect, wait=True)
     if not success:
         logger.debug("Job failed in evaluation_step_before_run.")
@@ -249,6 +250,7 @@ def evaluation_step(sandbox, command,
 
 def evaluation_step_before_run(sandbox, command,
                               time_limit=0, memory_limit=0,
+                              allow_dirs=None,
                               stdin_redirect=None, stdout_redirect=None,
                               wait=False):
     """First part of an evaluation step, until the running.
@@ -273,6 +275,10 @@ def evaluation_step_before_run(sandbox, command,
         sandbox.stdout_file = "stdout.txt"
 
     sandbox.stderr_file = "stderr.txt"
+
+    if allow_dirs is not None:
+        for allow_dir in allow_dirs:
+            sandbox.dirs += [(allow_dir, None, "rw")]
 
     # Actually run the evaluation command.
     logger.debug("Starting execution step.")
