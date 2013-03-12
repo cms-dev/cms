@@ -20,6 +20,7 @@
 import cmstestsuite.tasks.batch_stdio as batch_stdio
 import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
+import cmstestsuite.tasks.communication as communication
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
      CheckTimeout, CheckSignal, CheckNonzeroReturn
 
@@ -125,6 +126,16 @@ Test('managed-correct',
 
 Test('managed-incorrect',
      task=batch_fileio_managed, filename='managed-incorrect.%l',
+     languages=('c', 'cpp'), # TODO: Pascal.
+     checks=[CheckOverallScore(0, 100)]),
+
+Test('communication-correct',
+     task=communication, filename='managed-correct.%l',
+     languages=('c', 'cpp'), # TODO: Pascal.
+     checks=[CheckOverallScore(100, 100)]),
+
+Test('communication-incorrect',
+     task=communication, filename='managed-incorrect.%l',
      languages=('c', 'cpp'), # TODO: Pascal.
      checks=[CheckOverallScore(0, 100)]),
 
