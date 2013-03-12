@@ -29,6 +29,7 @@ from datetime import datetime, timedelta
 import traceback
 
 import base64
+import re
 import simplejson as json
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
@@ -43,6 +44,7 @@ from cms.db.SQLAlchemyAll import Session, \
     Contest, User, Announcement, Question, Message, Submission, \
     SubmissionResult, Evaluation, Executable, File, Task, Dataset, \
     Attachment, Manager, Testcase, SubmissionFormatElement, Statement
+from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type
 from cms.server import file_handler_gen, get_url_root, \
     CommonRequestHandler
@@ -1087,9 +1089,57 @@ class ActivateDatasetHandler(BaseHandler):
         task = dataset.task
         self.contest = task.contest
 
+        changes = compute_changes_for_dataset(task.active_dataset, dataset)
+        notify_users = set()
+
+        # By default, we will notify users who's public scores have changed, or
+        # their non-public scores have changed but they have used a token.
+        for c in changes:
+            score_changed = c.old_score is not None or c.new_score is not None
+            public_score_changed = c.old_public_score is not None or \
+                c.new_public_score is not None
+            if public_score_changed or \
+                    (c.submission.tokened() and score_changed):
+                notify_users.add(c.submission.user.id)
+
+        self.r_params = self.render_params()
+        self.r_params["task"] = task
+        self.r_params["dataset"] = dataset
+        self.r_params["changes"] = changes
+        self.r_params["default_notify_users"] = notify_users
+        self.render("activate_dataset.html", **self.r_params)
+
+    def post(self, dataset_id):
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
+        self.contest = task.contest
+
         task.active_dataset = dataset
 
         try_commit(self.sql_session, self)
+
+        # Now send notifications to contestants.
+        datetime = make_datetime()
+
+        r = re.compile('notify_([0-9]+)$')
+        count = 0
+        for k, v in self.request.arguments.iteritems():
+            m = r.match(k)
+            if not m:
+                continue
+            user = self.safe_get_item(User, m.group(1))
+            message = Message(datetime,
+                              self.get_argument("message_subject", ""),
+                              self.get_argument("message_text", ""),
+                              user=user)
+            self.sql_session.add(message)
+            count += 1
+
+        if try_commit(self.sql_session, self):
+            self.application.service.add_notification(
+                make_datetime(),
+                "Messages sent to %d users." % count, "")
+
         self.redirect("/task/%s" % task.id)
 
 

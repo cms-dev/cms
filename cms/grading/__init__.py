@@ -22,10 +22,17 @@
 
 import os
 import codecs
+from collections import namedtuple
 
 from cms import logger
 from cms.db.SQLAlchemyAll import SessionGen, Submission, SubmissionResult
 from cms.grading.Sandbox import Sandbox
+
+
+SubmissionScoreDelta = namedtuple('SubmissionScoreDelta',
+    ['submission', 'old_score', 'new_score',
+     'old_public_score', 'new_public_score',
+     'old_ranking_score_details', 'new_ranking_score_details'])
 
 
 class JobException(Exception):
@@ -557,6 +564,57 @@ def white_diff_step(sandbox, output_filename,
             outcome = 0.0
             text = "Evaluation didn't produce file %s" % (output_filename)
         return outcome, text
+
+
+def compute_changes_for_dataset(old_dataset, new_dataset,
+            look_at_score=True, look_at_public_score=True,
+            look_at_ranking_score_details=True):
+    """This function will compute the differences expected when changing from
+    one dataset to another.
+
+    old_dataset (Dataset): the original dataset, typically the active one.
+    new_dataset (Dataset): the dataset to compare against.
+    look_at_score (bool): compare the score of a submission
+    look_at_public_score (bool): compare the public_score of a submission
+    look_at_ranking_score_details (bool): compare the ranking_score_details of
+    a submission
+
+    returns (list): a list of tuples of SubmissionScoreDelta tuples where they
+    differ. Those entries that do not differ will have None in the pair of
+    respective tuple entries.
+
+    """
+    # If we are switching tasks, something has gone seriously wrong.
+    if old_dataset.task is not new_dataset.task:
+        raise ValueError("Cannot compare datasets referring to different tasks.")
+
+    task = old_dataset.task
+
+    def compare(a, b):
+        if a == b:
+            return False, (None, None)
+        else:
+            return True, (a, b)
+
+    ret = []
+    for s in task.submissions:
+        old = s.get_result(old_dataset)
+        new = s.get_result(new_dataset)
+
+        diff1, pair1 = compare(
+            old.score if old is not None else None,
+            new.score if new is not None else None)
+        diff2, pair2 = compare(
+            old.public_score if old is not None else None,
+            new.public_score if new is not None else None)
+        diff3, pair3 = compare(
+            old.ranking_score_details if old is not None else None,
+            new.ranking_score_details if new is not None else None)
+
+        if diff1 or diff2 or diff3:
+            ret.append(SubmissionScoreDelta(*(s,) + pair1 + pair2 + pair3))
+
+    return ret
 
 
 ## Computing global scores (for ranking). ##

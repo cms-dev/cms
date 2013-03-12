@@ -1,0 +1,147 @@
+{% extends base.html %}
+
+{% block js_init %}
+setAllNotifyCheckboxes = function(state) {
+    var boxes = $(".notify_user_box");
+    for (i = 0; i < boxes.length; i++) {
+        boxes[i].checked = state;
+    }
+};
+setDefaultNotifyCheckboxes = function() {
+    var boxes = $(".default_notify_on");
+    for (i = 0; i < boxes.length; i++) {
+        boxes[i].checked = true;
+    }
+    var boxes = $(".default_notify_off");
+    for (i = 0; i < boxes.length; i++) {
+        boxes[i].checked = false;
+    }
+};
+setDefaultNotifyCheckboxes();
+{% end %}
+
+{% block core %}
+{% from cms import plugin_list %}
+{% from cms.grading.scoretypes import get_score_type %}
+{% set current_score_type = None %}
+
+<div class="core_title">
+  <h1>Preview dataset change for {{ task.title }} (<a href="{{ url_root }}/task/{{ task.id }}">{{ task.name }}</a>)</h1>
+</div>
+
+<table style="width: auto;">
+<tr>
+  <td>Current dataset:</td>
+  <td><strong>{{ task.active_dataset.description }}</strong></td>
+  <td><a href="{{ url_root }}/dataset/{{ task.active_dataset_id }}">[View results]</td>
+</tr>
+<tr>
+  <td>New dataset:</td>
+  <td><strong>{{ dataset.description }}</strong></td>
+  <td><a href="{{ url_root }}/dataset/{{ dataset.id }}">[View results]</td>
+</tr>
+</table>
+
+<p>
+<b>NOTE</b>: The preview on this page uses the existing scoring information
+for both datasets. If you have made modifications to a dataset, you need to
+ensure that the scores are up to date. This may require re-compiling,
+re-evaluating or just re-scoring the entire dataset. To do so, use the buttons
+below, and wait for it to complete.
+</p>
+
+<p>
+    Reevaluate all submissions using the dataset "{{ dataset.description }}":
+    {% set reevaluation_par_name = "dataset" %}
+    {% set reevaluation_par_value = dataset.id %}
+    {% set reevaluation_par_dataset_id = None %}
+    {% include reevaluation_buttons.html %}
+</p>
+
+<form action="{{ url_root }}/activate_dataset/{{ dataset.id }}" method="POST">
+{% if len(changes) == 0 %}
+<p>Good news! At present, switching to this dataset will have no effect on the
+scores. No notifications will be sent.</p>
+{% else %}
+<p>Switching to this dataset will cause the following changes:</p>
+<table class="bordered">
+  <thead>
+    <tr>
+      <th>Notify</th>
+      <th>User</th>
+      <th>Submission id</th>
+      <th>Change</th>
+    </tr>
+  </thead>
+  <tbody>
+{% set prev_userid = None %}
+{% for c in sorted(changes, key=lambda c: (c.submission.user.id, c.submission.id)) %}
+    <tr>
+      <td style="text-align: right;">
+        {% if c.submission.user.id != prev_userid %}
+        <input type="checkbox" class="notify_user_box default_notify_{{ "on" if c.submission.user.id in default_notify_users else "off" }}" name="notify_{{ c.submission.user.id}}"/>
+        {% end %}
+      </td>
+      <td>
+        {% if c.submission.user.id != prev_userid %}
+        <a href="{{ url_root }}/user/{{ c.submission.user.id }}">{{ c.submission.user.username }}</a>
+        {% end %}
+      </td>
+      <td><a href="{{ url_root }}/submission/{{ c.submission.id }}">{{ c.submission.id }}</a>{{ " (Tokened)" if c.submission.tokened() else "" }}</td>
+      <td>
+        {% if c.old_score is not None or c.new_score is not None %}
+        Score: {{ c.old_score }} -&gt; {{ c.new_score }}<br/>
+        {% end %}
+        {% if c.old_public_score is not None or c.new_public_score is not None %}
+        Public score: {{ c.old_public_score }} -&gt; {{ c.new_public_score }}<br/>
+        {% end %}
+        {% if c.old_ranking_score_details is not None or c.new_ranking_score_details is not None %}
+        Ranking score: {{ c.old_ranking_score_details }} -&gt; {{ c.new_ranking_score_details }}<br/>
+        {% end %}
+      </td>
+    </tr>
+  {% set prev_userid = c.submission.user.id %}
+{% end %}
+  </tbody>
+</table>
+
+<p>
+Notify:
+<a onclick="setAllNotifyCheckboxes(true);">[All users]</a>
+<a onclick="setAllNotifyCheckboxes(false);">[No users]</a>
+<a onclick="setDefaultNotifyCheckboxes();">[Users with visible changes only]</a>
+</p>
+<p>
+By default, users with changes to their public score, or changes to the score
+of a tokened submission, will be notified.
+</p>
+
+<p>
+The following message will be sent to the selected users:
+</p>
+
+<div class="notifications">
+  <div class="notification communication">
+    <div class="notification_msg">
+      <div class="notification_subject">
+        Subject:
+        <input id="send_message_subject" type="text" name="message_subject" style="width: 100%" value="Task {{ task.name }} has been rejudged"/>
+      </div>
+      <div class="notification_text">
+        Text:
+        <textarea name="message_text" style="width: 100%" >The task "{{ task.name }}" has been rejudged and the score on your submissions has been updated.</textarea>
+      </div>
+    </div>
+  </div>
+</div>
+{% end %}
+
+<p>
+
+<p>
+<input type="submit" value="Activate!"/>
+<input type="button" value="Abort!" onclick="javascript:history.back();"/>
+</p>
+</form>
+
+{% end %}
