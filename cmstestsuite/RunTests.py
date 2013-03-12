@@ -25,8 +25,9 @@ import re
 from argparse import ArgumentParser
 
 from cmstestsuite import get_cms_config, CONFIG, info, sh
-from cmstestsuite import add_contest, add_user, add_task, add_testcase, \
-     add_manager, combine_coverage, start_service, start_server, \
+from cmstestsuite import add_contest, add_existing_user, add_existing_task, \
+     add_user, add_task, add_testcase, add_manager, combine_coverage, \
+     get_tasks, get_users, start_service, start_server, \
      start_ranking_web_server, shutdown_services, restart_service
 from cmstestsuite.Test import TestFailure
 import cmstestsuite.Tests
@@ -35,7 +36,7 @@ from cmscommon.DateTime import get_system_timezone
 
 FAILED_TEST_FILENAME = '.testfailures'
 
-# This stores a mapping from task module to task id.
+# This stores a mapping from task name to (task id, task_module)
 task_id_map = {}
 
 
@@ -49,7 +50,6 @@ def start_generic_services():
 
 
 def create_contest():
-    info("Creating contest.")
     start_time = datetime.datetime.utcnow()
     stop_time = start_time + datetime.timedelta(1, 0, 0)
     contest_id = add_contest(
@@ -66,18 +66,22 @@ def create_contest():
         token_gen_number="0",
         )
 
+    info("Created contest %d." % contest_id)
+
+    return contest_id
+
+
+def start_contest(contest_id):
     start_service("ScoringService", contest=contest_id)
     start_service("EvaluationService", contest=contest_id)
     start_server("ContestWebServer", contest=contest_id)
-
-    return contest_id
 
 
 global num_users
 num_users = 0
 
 
-def create_a_user(contest_id):
+def create_or_get_user(contest_id):
     global num_users
     num_users += 1
 
@@ -86,64 +90,89 @@ def create_a_user(contest_id):
             return 'th'
         return {1: 'st', 2: 'nd', 3: 'rd'}.get(x % 10, 'th')
 
-    info("Creating user.")
-    user_id = add_user(
-        contest_id=contest_id,
-        username="testrabbit%d" % num_users,
-        password="kamikaze",
-        first_name="Ms. Test",
-        last_name="Wabbit the %d%s" % (num_users,
-                                       enumerify(num_users)))
+    username = "testrabbit%d" % num_users
+
+    # Find a user that may already exist (from a previous contest).
+    users = get_users(contest_id)
+    user_create_args = {
+        "username": username,
+        "password": "kamikaze",
+        "first_name": "Ms. Test",
+        "last_name": "Wabbit the %d%s" % (num_users, enumerify(num_users)),
+    }
+    if username in users:
+        user_id = users[username]['id']
+        add_existing_user(contest_id, user_id, **user_create_args)
+        info("Using existing user with id %d." % user_id)
+    else:
+        user_id = add_user(contest_id, **user_create_args)
+        info("Created user with id %d." % user_id)
     return user_id
 
 
 def get_task_id(contest_id, user_id, task_module):
-    # Create a task in the contest if we haven't already.
-    if task_module not in task_id_map:
-        # add the task itself.
-        task_id = add_task(
-            contest_id=contest_id,
-            token_initial="100",
-            token_max="100",
-            token_total="100",
-            token_min_interval="0",
-            token_gen_time="0",
-            token_gen_number="0",
-            max_submission_number="100",
-            max_user_test_number="100",
-            min_submission_interval=None,
-            min_user_test_interval=None,
-            **task_module.task_info)
+    name = task_module.task_info['name']
 
-        # add any managers
-        code_path = os.path.join(
-            os.path.dirname(task_module.__file__),
-            "code")
-        if hasattr(task_module, 'managers'):
-            for manager in task_module.managers:
-                mpath = os.path.join(code_path, manager)
-                add_manager(task_id, mpath)
+    # Have we done this before? Pull it out of our cache if so.
+    if task_module in task_id_map:
+        # Ensure we don't have multiple modules with the same task name.
+        assert task_id_map[task_module][1] == task_module
 
-        # add the task's test data.
-        data_path = os.path.join(
-            os.path.dirname(task_module.__file__),
-            "data")
-        for num, (input_file, output_file, public) \
-                in enumerate(task_module.test_cases):
-            ipath = os.path.join(data_path, input_file)
-            opath = os.path.join(data_path, output_file)
-            add_testcase(task_id, str(num), ipath, opath, public)
+        return task_id_map[name][0]
 
-        task_id_map[task_module] = task_id
+    task_create_args = {
+        "token_initial": "100",
+        "token_max": "100",
+        "token_total": "100",
+        "token_min_interval": "0",
+        "token_gen_time": "0",
+        "token_gen_number": "0",
+        "max_submission_number": "100",
+        "max_user_test_number": "100",
+        "min_submission_interval": None,
+        "min_user_test_interval": None,
+    }
+    task_create_args.update(task_module.task_info)
 
-        info("Creating task %s as id %d" % (
-            task_module.task_info['name'], task_id))
+    # Find if the task already exists in the contest.
+    tasks = get_tasks(contest_id)
+    if name in tasks:
+        # Then just use the existing one.
+        task = tasks[name]
+        task_id = task['id']
+        task_id_map[name] = (task_id, task_module)
+        add_existing_task(contest_id, task_id, **task_create_args)
+        return task_id
 
-        # We need to restart ScoringService to ensure it has picked up the
-        # new task.
-        restart_service("ScoringService", contest=contest_id)
-    else:
-        task_id = task_id_map[task_module]
+    # Otherwise, we need to add the task ourselves.
+    task_id = add_task(contest_id, **task_create_args)
+
+    # add any managers
+    code_path = os.path.join(
+        os.path.dirname(task_module.__file__),
+        "code")
+    if hasattr(task_module, 'managers'):
+        for manager in task_module.managers:
+            mpath = os.path.join(code_path, manager)
+            add_manager(task_id, mpath)
+
+    # add the task's test data.
+    data_path = os.path.join(
+        os.path.dirname(task_module.__file__),
+        "data")
+    for num, (input_file, output_file, public) \
+            in enumerate(task_module.test_cases):
+        ipath = os.path.join(data_path, input_file)
+        opath = os.path.join(data_path, output_file)
+        add_testcase(task_id, str(num), ipath, opath, public)
+
+    task_id_map[name] = (task_id, task_module)
+
+    info("Created task %s as id %d" % (name, task_id))
+
+    # We need to restart ScoringService to ensure it has picked up the
+    # new task.
+    restart_service("ScoringService", contest=contest_id)
 
     return task_id
 
@@ -323,6 +352,8 @@ def main():
     parser.add_argument("-l", "--languages",
         type=str, action="store", default="",
         help="a comma-separated list of languages to test")
+    parser.add_argument("-c", "--contest", action="store",
+        help="use an existing contest (and the tasks in it)")
     parser.add_argument("-r", "--retry-failed", action="store_true",
         help="only run failed tests from the previous run (stored in %s)" %
         FAILED_TEST_FILENAME)
@@ -387,8 +418,13 @@ def main():
 
     # Fire us up!
     start_generic_services()
-    contest_id = create_contest()
-    user_id = create_a_user(contest_id)
+    if args.contest is None:
+        contest_id = create_contest()
+    else:
+        contest_id = int(args.contest)
+    user_id = create_or_get_user(contest_id)
+
+    start_contest(contest_id)
 
     # Run all of our test cases.
     test_results = run_testcases(contest_id, user_id, test_list)

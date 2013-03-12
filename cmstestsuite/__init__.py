@@ -363,6 +363,54 @@ def admin_req(path, multipart_post=False, args=None, files=None):
     return cmstestsuite.web.browser_do_request(br, url, args, files)
 
 
+def get_tasks(contest_id):
+    '''Return a list of existing tasks, returned as a dictionary of
+      'taskname' => { 'id': ..., 'title': ... }
+
+    '''
+    r = admin_req('/tasklist/%d' % contest_id)
+    groups = re.findall(r'''
+        <tr> \s*
+        <td> \s* (.*) \s* </td> \s*
+        <td><a\s+href="../task/(\d+)">(.*)</a></td>
+        ''', r.read(), re.X)
+    tasks = {}
+    for g in groups:
+        title, id, name = g
+        id = int(id)
+        tasks[name] = {
+            'title': title,
+            'id': id,
+        }
+
+    return tasks
+
+
+def get_users(contest_id):
+    '''Return a list of existing users, returned as a dictionary of
+      'username' => { 'id': ..., 'firstname': ..., 'lastname': ... }
+
+    '''
+    r = admin_req('/userlist/%d' % contest_id)
+    groups = re.findall(r'''
+        <tr> \s*
+        <td> \s* (.*) \s* </td> \s*
+        <td> \s* (.*) \s* </td> \s*
+        <td><a\s+href="../user/(\d+)">(.*)</a></td>
+        ''', r.read(), re.X)
+    users = {}
+    for g in groups:
+        firstname, lastname, id, username = g
+        id = int(id)
+        users[username] = {
+            'firstname': firstname,
+            'lastname': lastname,
+            'id': id,
+        }
+
+    return users
+
+
 def add_contest(**kwargs):
     resp = admin_req('/contest/add', multipart_post=True, args=kwargs)
     # Contest ID is returned as HTTP response.
@@ -424,6 +472,18 @@ def add_user(contest_id, **kwargs):
         return user_id
     else:
         raise FrameworkException("Unable to create user.")
+
+
+def add_existing_task(contest_id, task_id, **kwargs):
+    '''Add information about an existing task to our database so that we can
+    use it for submitting later.'''
+    created_tasks[task_id] = kwargs
+
+
+def add_existing_user(contest_id, user_id, **kwargs):
+    '''Add information about an existing user to our database so that we can
+    use it for submitting later.'''
+    created_users[user_id] = kwargs
 
 
 def cws_submit(contest_id, task_id, user_id, filename, language):

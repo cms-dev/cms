@@ -126,13 +126,19 @@ if __name__ == "__main__":
         drop_old_data()
         setup_cms()
     else:
-        os.chdir("%(TEST_DIR)s/cms" % CONFIG)
-        os.environ["PYTHONPATH"] = "%(TEST_DIR)s/cms" % CONFIG
+        os.chdir("%(TEST_DIR)s" % CONFIG)
+        os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
         read_cms_config()
 
     # Now run the tests from the checkout.
-    exec_cmd = ["./cmstestsuite/RunTests.py"] + args.arguments
-    sh(exec_cmd)
+    sh(["./cmstestsuite/RunTests.py"] + args.arguments)
+
+    # We export the contest, import it again and re-run the tests on the
+    # existing contest. Hard-coded contest indicies should be correct, as we
+    # own the database.
+    sh(["./cmscontrib/ContestExporter.py", "-c", "1"])
+    sh(["./cmscontrib/ContestImporter.py", "dump_testcontest1.tar.gz"])
+    sh(["./cmstestsuite/RunTests.py", "-c", "2"] + args.arguments)
 
     # Export coverage results.
     sh("python -m coverage xml --include 'cms*'")
