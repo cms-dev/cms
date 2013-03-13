@@ -326,7 +326,7 @@ def run_testcases(contest_id, user_id, test_list):
         results += "Failed tests stored in %s.\n" % FAILED_TEST_FILENAME
         results += "Run again with --retry-failed (or -r) to retry.\n"
 
-    return results
+    return len(failures) == 0, results
 
 
 def time_difference(start_time, end_time):
@@ -427,7 +427,7 @@ def main():
     start_contest(contest_id)
 
     # Run all of our test cases.
-    test_results = run_testcases(contest_id, user_id, test_list)
+    passed, test_results = run_testcases(contest_id, user_id, test_list)
 
     # And good night!
     shutdown_services()
@@ -438,6 +438,10 @@ def main():
     end_time = datetime.datetime.now()
     print time_difference(start_time, end_time)
 
+    if passed:
+        return 0
+    else:
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main())
