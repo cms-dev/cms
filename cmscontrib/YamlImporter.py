@@ -351,6 +351,17 @@ class YamlLoader:
                         ).export_to_dict())
                 else:
                     logger.error("Stub for language %s not found." % lang)
+            for header_filename in os.listdir(os.path.join(path, "sol")):
+                if header_filename.endswith(".h") or \
+                        header_filename.endswith(".lib.pas"):
+                    header_name = os.path.join(path, "sol", header_filename)
+                    if os.path.exists(header_name):
+                        params["managers"].append(Manager(
+                            header_filename,
+                            self.file_cacher.put_file(
+                                path=header_name,
+                                description="Header for task %s" % name),
+                            ).export_to_dict())
 
         # Otherwise, the task type is Batch
         else:
