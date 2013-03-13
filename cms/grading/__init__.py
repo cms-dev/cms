@@ -105,8 +105,6 @@ def compilation_step(sandbox, command):
     sandbox.dirs += [("/etc", None, None)]
     sandbox.preserve_env = True
     sandbox.max_processes = None
-    # FIXME - File access limits are not enforced on children
-    # processes (like ld).
     sandbox.timeout = 10
     sandbox.wallclock_timeout = 20
     sandbox.address_space = 256 * 1024
