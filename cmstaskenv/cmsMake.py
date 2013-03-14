@@ -375,7 +375,7 @@ def build_gen_list(base_dir, task_type):
     for line in iter_file(os.path.join(base_dir, gen_GEN)):
         testcase_num += 1
 
-    def compile_src(src, exe, lang):
+    def compile_src(src, exe, lang, assume=None):
         if lang in ['cpp', 'c', 'pas']:
             call(base_dir, get_compilation_command(lang, [src], exe,
                                                    for_evaluation=False))
@@ -422,7 +422,7 @@ def build_gen_list(base_dir, task_type):
                     [validator_exe],
                     functools.partial(compile_src, validator_src,
                                       validator_exe, validator_lang),
-                    "compile the generator"))
+                    "compile the validator"))
     actions.append(([gen_GEN, gen_exe, validator_exe],
                     map(lambda x: os.path.join(INPUT_DIRNAME,
                                                'input%d.txt' % (x)),
