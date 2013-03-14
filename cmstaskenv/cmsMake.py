@@ -190,14 +190,10 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
 
         box_path = Sandbox().detect_box_executable()
 
-        def compile_src(srcs, exe, lang, assume=None):
-            if exe.endswith('_EVAL'):
-                EVAL=True
-            else:
-                EVAL=False
+        def compile_src(srcs, exe, for_evaluation, lang, assume=None):
             if lang != 'pas' or len(srcs) == 1:
                 call(base_dir, get_compilation_command(lang, srcs, exe,
-                                                       for_evaluation=EVAL))
+                                                       for_evaluation=for_evaluation))
 
             # When using Pascal with graders, file naming conventions
             # require us to do a bit of trickery, i.e., performing the
@@ -215,11 +211,11 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                     shutil.copyfile(os.path.join(SOL_DIRNAME, lib_filename),
                                     os.path.join(tempdir, lib_filename))
                 call(tempdir, get_compilation_command(lang, new_srcs, new_exe,
-                                                      for_evaluation=EVAL))
+                                                      for_evaluation=for_evaluation))
                 shutil.copyfile(os.path.join(tempdir, new_exe),
-                                os.path.join(base_dir, SOL_DIRNAME, new_exe))
+                                os.path.join(base_dir, exe))
                 shutil.copymode(os.path.join(tempdir, new_exe),
-                                os.path.join(base_dir, SOL_DIRNAME, new_exe))
+                                os.path.join(base_dir, exe))
                 shutil.rmtree(tempdir)
 
         def test_src(exe, input_num, task_type, assume=None):
@@ -242,11 +238,11 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
 
         actions.append((srcs,
                         [exe],
-                        functools.partial(compile_src, srcs, exe, lang),
+                        functools.partial(compile_src, srcs, exe, False, lang),
                         'compile solution'))
         actions.append((srcs,
                         [exe_EVAL],
-                        functools.partial(compile_src, srcs, exe_EVAL, lang),
+                        functools.partial(compile_src, srcs, exe_EVAL, True, lang),
                         'compile solution with -DEVAL'))
 
         input_num = len(in_out_files) / 2
