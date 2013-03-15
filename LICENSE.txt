@@ -1,4 +1,4 @@
-Format: http://dep.debian.net/deps/dep5/
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: cms
 Upstream-Contact: CMS Mailing List <contestms@freelists.org>
 Source: http://github.com/cms-dev/cms
@@ -66,3 +66,8 @@ License: Apache-2.0
 Files: cms/server/static/img/mimetypes/*.png
 Copyright: 2009 Tango Desktop Project, http://tango.freedesktop.org/
 License: public-domain
+
+Files: isolate/*
+Copyright: 2012-2013 Martin Mares <mj@ucw.cz>
+           2012-2013 Bernard Blackham <b-pkg@largestprime.net>
+License: GPL-2
