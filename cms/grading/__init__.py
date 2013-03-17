@@ -125,11 +125,11 @@ def compilation_step(sandbox, command):
     stdout = sandbox.get_file_to_string("compiler_stdout.txt")
     if stdout.strip() == "":
         stdout = "(empty)\n"
-    stdout = unicode(stdout, errors='ignore')
+    stdout = unicode(stdout, 'utf-8', errors='replace')
     stderr = sandbox.get_file_to_string("compiler_stderr.txt")
     if stderr.strip() == "":
         stderr = "(empty)\n"
-    stderr = unicode(stderr, errors='ignore')
+    stderr = unicode(stderr, 'utf-8', errors='replace')
     compiler_output = "Compiler standard output:\n" \
         "%s\n" \
         "Compiler standard error:\n" \
