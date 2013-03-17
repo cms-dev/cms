@@ -404,6 +404,7 @@ class ScoringService(Service):
                         self.exit()
             session.commit()
 
+    @rpc_method
     def search_jobs_not_done(self):
         """Look in the database for submissions that have not been
         scored for no good reasons. Put the missing job in the queue.

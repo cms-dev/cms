@@ -672,6 +672,7 @@ class EvaluationService(Service):
                          .total_seconds(),
                          immediately=True)
 
+    @rpc_method
     def search_jobs_not_done(self):
         """Look in the database for submissions that have not been
         compiled or evaluated for no good reasons. Put the missing job
