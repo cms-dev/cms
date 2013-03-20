@@ -35,6 +35,13 @@ from cms.grading.TaskType import TaskType, \
 from cms.db.SQLAlchemyAll import Submission, Executable
 
 
+HEADERS_MAP = {
+    "c": "h",
+    "cpp": "h",
+    "pas": "lib.pas",
+    }
+
+
 class Communication(TaskType):
     """Task type class for tasks that requires:
 
@@ -111,6 +118,11 @@ class Communication(TaskType):
         source_filenames.append(format_filename.replace("%l", language))
         files_to_get[source_filenames[-1]] = \
             self.job.files[format_filename].digest
+        # Headers.
+        for manager_filename, manager in self.job.managers.items():
+            if manager_filename.endswith("." + HEADERS_MAP[language]):
+                source_filenames.append(manager_filename)
+                files_to_get[manager_filename] = manager.digest
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
 
