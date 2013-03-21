@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -41,9 +42,10 @@ from cms import config, default_argument_parser, logger
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_method
 from cms.db import ask_for_contest
-from cms.db.SQLAlchemyAll import SessionGen, Submission, Contest
+from cms.db.SQLAlchemyAll import SessionGen, Submission, SubmissionResult, \
+    Contest, Dataset
 from cms.grading.scoretypes import get_score_type
-from cms.service import get_submissions
+from cms.service import get_submission_results, get_datasets_to_judge
 from cmscommon.DateTime import make_timestamp
 
 
@@ -324,7 +326,13 @@ class ScoringService(Service):
         # score, this is the set where you want to pur their ids. Note
         # that sets != {} if and only if there is an alive timeout for
         # the method "score_old_submission".
-        self.submissions_to_score = set()
+        #
+        # submission_results_to_score and submission_results_scored
+        # contain pairs of (submission_id, dataset_id).
+        #
+        # submissions_to_token and submission_tokened contain scalar
+        # values of submission_id.
+        self.submission_results_to_score = set()
         self.submissions_to_token = set()
         self.scoring_old_submission = False
 
@@ -332,7 +340,7 @@ class ScoringService(Service):
         # to invalidate every score so that we can simply load the
         # score-less submissions. So we keep a set of submissions that
         # we analyzed (for scoring and for tokens).
-        self.submissions_scored = set()
+        self.submission_results_scored = set()
         self.submissions_tokened = set()
 
         # Initialize ranking web servers we need to send data to.
@@ -385,12 +393,15 @@ class ScoringService(Service):
             contest = Contest.get_from_id(self.contest_id, session)
 
             for task in contest.tasks:
-                try:
-                    self.scorers[task.id] = get_score_type(task=task)
-                except Exception as error:
-                    logger.critical("Cannot get score type for task %s: %r" %
-                                    (task.name, error))
-                    self.exit()
+                for dataset in task.datasets:
+                    try:
+                        self.scorers[dataset.id] = \
+                            get_score_type(dataset=dataset)
+                    except Exception as error:
+                        logger.critical(
+                            "Cannot get score type for task %s(%d): %r" %
+                            (task.name, dataset.id, error))
+                        self.exit()
             session.commit()
 
     def search_jobs_not_done(self):
@@ -406,26 +417,31 @@ class ScoringService(Service):
         with SessionGen(commit=False) as session:
             contest = Contest.get_from_id(self.contest_id, session)
 
-            new_submissions_to_score = set()
+            new_submission_results_to_score = set()
             new_submissions_to_token = set()
 
             for submission in contest.get_submissions():
-                if (submission.evaluated()
-                    or submission.compilation_outcome == "fail") \
-                        and submission.id not in self.submissions_scored:
-                    new_submissions_to_score.add(submission.id)
-                if submission.tokened() \
-                        and submission.id not in self.submissions_tokened:
+                for dataset in get_datasets_to_judge(submission.task):
+                    sr = submission.get_result(dataset)
+                    sr_id = (submission.id, dataset.id)
+
+                    if sr is not None and (sr.evaluated() or
+                            sr.compilation_outcome == "fail") and \
+                            sr_id not in self.submission_results_scored:
+                        new_submission_results_to_score.add(sr_id)
+
+                if submission.tokened() and \
+                        submission.id not in self.submissions_tokened:
                     new_submissions_to_token.add(submission.id)
 
-        new_s = len(new_submissions_to_score)
-        old_s = len(self.submissions_to_score)
+        new_s = len(new_submission_results_to_score)
+        old_s = len(self.submission_results_to_score)
         new_t = len(new_submissions_to_token)
         old_t = len(self.submissions_to_token)
         logger.info("Submissions found to score/token: %d, %d." %
                     (new_s, new_t))
         if new_s + new_t > 0:
-            self.submissions_to_score |= new_submissions_to_score
+            self.submission_results_to_score |= new_submission_results_to_score
             self.submissions_to_token |= new_submissions_to_token
             if old_s + old_t == 0:
                 self.add_timeout(self.score_old_submissions, None,
@@ -435,7 +451,7 @@ class ScoringService(Service):
         return True
 
     def score_old_submissions(self):
-        """The submissions in the submissions_to_score set are
+        """The submissions in the submission_results_to_score set are
         evaluated submissions that we can assign a score to, and this
         method scores a bunch of these at a time. This method keeps
         getting called while the set is non-empty. (Exactly the same
@@ -447,7 +463,7 @@ class ScoringService(Service):
 
         """
         self.scoring_old_submission = True
-        to_score = len(self.submissions_to_score)
+        to_score = len(self.submission_results_to_score)
         to_token = len(self.submissions_to_token)
         to_score_now = to_score if to_score < 4 else 4
         to_token_now = to_token if to_token < 16 else 16
@@ -455,12 +471,14 @@ class ScoringService(Service):
                     (to_score, to_token))
 
         for unused_i in xrange(to_score_now):
-            self.new_evaluation(self.submissions_to_score.pop())
+            submission_id, dataset_id = self.submission_results_to_score.pop()
+            self.new_evaluation(submission_id, dataset_id)
         if to_score - to_score_now > 0:
             return True
 
         for unused_i in xrange(to_token_now):
-            self.submission_tokened(self.submissions_to_token.pop())
+            submission_id = self.submissions_to_token.pop()
+            self.submission_tokened(submission_id)
         if to_token - to_token_now > 0:
             return True
 
@@ -626,30 +644,42 @@ class ScoringService(Service):
                 self.initialize_queue.add(ranking)
 
     @rpc_method
-    def new_evaluation(self, submission_id):
+    def new_evaluation(self, submission_id, dataset_id):
         """This RPC inform ScoringService that ES finished the work on
         a submission (either because it has been evaluated, or because
         the compilation failed).
 
         submission_id (int): the id of the submission that changed.
+        dataset_id (int): the id of the dataset to use.
 
         """
         with SessionGen(commit=True) as session:
             submission = Submission.get_from_id(submission_id, session)
+
             if submission is None:
-                logger.error("[new_evaluation] Couldn't find "
-                             " submission %d in the database." %
-                             submission_id)
-                raise KeyError
-            elif not submission.compiled():
-                logger.warning("[new_evaluation] Submission %d "
-                               "is not compiled." % submission_id)
+                logger.error("[new_evaluation] Couldn't find submission %d "
+                             "in the database." % submission_id)
+                raise ValueError
+
+            dataset = Dataset.get_from_id(dataset_id, session)
+
+            if dataset is None:
+                logger.error("[new_evaluation] Couldn't find dataset %d "
+                             "in the database." % dataset_id)
+                raise ValueError
+
+            submission_result = submission.get_result(dataset)
+
+            if submission_result is None or not submission_result.compiled():
+                logger.warning("[new_evaluation] Submission %d(%d) is not "
+                               "compiled." %
+                               (submission_id, dataset_id))
                 return
-            elif submission.compilation_outcome == "ok" \
-                    and not submission.evaluated():
-                logger.warning("[new_evaluation] Submission %d compiled "
-                               "correctly but is not evaluated."
-                               % submission_id)
+            elif submission_result.compilation_outcome == "ok" and \
+                    not submission_result.evaluated():
+                logger.warning("[new_evaluation] Submission %d(%d) compiled "
+                               "correctly but is not evaluated." %
+                               (submission_id, dataset_id))
                 return
             elif submission.user.hidden:
                 logger.info("[new_evaluation] Submission %d not scored "
@@ -657,31 +687,33 @@ class ScoringService(Service):
                 return
 
             # Assign score to the submission.
-            scorer = self.scorers[submission.task_id]
+            scorer = self.scorers[dataset_id]
             scorer.add_submission(submission_id, submission.timestamp,
                                   submission.user.username,
-                                  submission.evaluated(),
+                                  submission_result.evaluated(),
                                   dict((ev.num,
                                         {"outcome": ev.outcome,
                                          "text": ev.text,
                                          "time": ev.execution_time,
                                          "memory": ev.memory_used})
-                                       for ev in submission.evaluations),
+                                       for ev in submission_result.evaluations),
                                   submission.tokened())
 
             # Mark submission as scored.
-            self.submissions_scored.add(submission_id)
+            self.submission_results_scored.add((submission_id, dataset_id))
 
             # Filling submission's score info in the db.
-            submission.score = scorer.pool[submission_id]["score"]
-            submission.public_score = \
+            submission_result.score = \
+                scorer.pool[submission_id]["score"]
+            submission_result.public_score = \
                 scorer.pool[submission_id]["public_score"]
 
             # And details.
-            submission.score_details = scorer.pool[submission_id]["details"]
-            submission.public_score_details = \
+            submission_result.score_details = \
+                scorer.pool[submission_id]["details"]
+            submission_result.public_score_details = \
                 scorer.pool[submission_id]["public_details"]
-            submission.ranking_score_details = \
+            submission_result.ranking_score_details = \
                 scorer.pool[submission_id]["ranking_details"]
 
             # Data to send to remote rankings.
@@ -696,8 +728,8 @@ class ScoringService(Service):
                 "submission": encode_id(submission_id),
                 "time": int(make_timestamp(submission.timestamp)),
                 # We're sending the unrounded score to RWS
-                "score": submission.score,
-                "extra": submission.ranking_score_details}
+                "score": submission_result.score,
+                "extra": submission_result.ranking_score_details}
 
         # TODO: ScoreRelative here does not work with remote
         # rankings (it does in the ranking view) because we
@@ -766,17 +798,22 @@ class ScoringService(Service):
     @rpc_method
     def invalidate_submission(self,
                               submission_id=None,
+                              dataset_id=None,
                               user_id=None,
                               task_id=None):
         """Request for invalidating some scores.
 
-        Invalidate the scores of the Submission whose ID is
-        submission_id or, if None, of those whose user is user_id
-        and/or whose task is task_id or, if both None, of those that
-        belong to the contest this service is running for.
+        Invalidate the scores of the SubmissionResults that:
+        - belong to submission_id or, if None, to any submission of
+          user_id and/or task_id or, if both None, to any submission
+          of the contest this service is running for.
+        - belong to dataset_id or, if None, to any dataset of task_id
+          or, if None, to any dataset of any task of the contest this
+          service is running for.
 
         submission_id (int): id of the submission to invalidate, or
                              None.
+        dataset_id (int): id of the dataset to invalidate, or None.
         user_id (int): id of the user to invalidate, or None.
         task_id (int): id of the task to invalidate, or None.
 
@@ -787,32 +824,34 @@ class ScoringService(Service):
         # TODO Check that all these objects belong to this contest.
 
         with SessionGen(commit=True) as session:
-            submissions = get_submissions(
+            submission_results = get_submission_results(
                 # Give contest_id only if all others are None.
                 self.contest_id
-                    if {user_id, task_id, submission_id} == {None}
+                    if {user_id, task_id, submission_id, dataset_id} == {None}
                     else None,
-                user_id, task_id, submission_id, session)
+                user_id, task_id, submission_id, dataset_id, session)
 
-            logger.info("Submissions to invalidate scores for: %d." %
-                        len(submissions))
-            if len(submissions) == 0:
+            logger.info("Submission results to invalidate scores for: %d." %
+                        len(submission_results))
+            if len(submission_results) == 0:
                 return
 
-            new_submissions_to_score = set()
+            new_submission_results_to_score = set()
 
-            for submission in submissions:
+            for submission_result in submission_results:
                 # If the submission is not evaluated, it does not have
                 # a score to invalidate, and, when evaluated,
                 # ScoringService will be prompted to score it. So in
                 # that case we do not have to do anything.
-                if submission.evaluated():
-                    submission.invalidate_score()
-                    new_submissions_to_score.add(submission.id)
+                if submission_result.evaluated():
+                    submission_result.invalidate_score()
+                    new_submission_results_to_score.add(
+                        (submission_result.submission_id,
+                         submission_result.dataset_id))
 
-        old_s = len(self.submissions_to_score)
+        old_s = len(self.submission_results_to_score)
         old_t = len(self.submissions_to_token)
-        self.submissions_to_score |= new_submissions_to_score
+        self.submission_results_to_score |= new_submission_results_to_score
         if old_s + old_t == 0:
             self.add_timeout(self.score_old_submissions, None,
                              0.5, immediately=False)
