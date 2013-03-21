@@ -59,33 +59,34 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         <td><a href="{{ url_root }}/submission/{{ s.id }}">{{ str(s.timestamp) }}</a></td>
         <td><a href="{{ url_root }}/user/{{ s.user.id }}">{{ s.user.username }}</a></td>
         <td>
-          {% if s.compilation_outcome is None %}
+          {% set sr = s.get_result(s.task.active_dataset) %}
+          {% if sr is None or sr.compilation_outcome is None %}
           Compiling...
           {% else %}
           <div id="title_evaluation_{{ s.id }}" class="toggling_off">
-            {% if s.compilation_outcome == "fail" %}
+            {% if sr.compilation_outcome == "fail" %}
             Compilation failed
             <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
-            {% elif not s.evaluated() %}
+            {% elif not sr.evaluated() %}
             Evaluating...
             <div  id="evaluation_{{ s.id }}" class="score_details" style="display: none;">
-            {% elif s.scored() %}
+            {% elif sr.scored() %}
               {% try %}
                 {% set max_score = current_score_type.max_score %}
               {% except %}
                 {% set max_score = "[Cannot get score type - see logs]" %}
               {% end %}
-            Evaluated ({{ s.score }} / {{ max_score }})
+            Evaluated ({{ sr.score }} / {{ max_score }})
             <div class="score_details" id="evaluation_{{ s.id }}" style="display: none;">
               {% try %}
-                {% raw current_score_type.get_html_details(s.score_details) %}
+                {% raw current_score_type.get_html_details(sr.score_details) %}
               {% except %}
               [Cannot get score type - see logs]
               {% end %}
             {% else %}
             Evaluated
             <div id="evaluation_{{ s.id }}" style="display: none;">
-              {% if s.evaluated() %}
+              {% if sr.evaluated() %}
               <h3>Testcases</h3>
               <table class="nested bordered">
                 <thead>
@@ -96,10 +97,10 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
                   </tr>
                 </thead>
                 <tbody>
-                  {% for ev in s.evaluations %}
+                  {% for ev in sr.evaluations %}
                   <tr>
                     <td>{{ ev.outcome }}</td>
-                    {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
+                    {% if s.token is not None or s.task.active_dataset.testcases[int(ev.num)].public %}
                     <td style="align: center;">&bullet;</td>
                     {% else %}
                     <td></td>
@@ -112,7 +113,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
               {% end %}
             {% end %}
               <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
-              <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
+              <pre>{% if sr.compilation_text is not None %}{{ sr.compilation_text }}{% end %}</pre>
             </div>
           </div>
 

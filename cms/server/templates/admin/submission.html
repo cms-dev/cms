@@ -3,6 +3,7 @@
 {% block core %}
 {% from cms.grading.scoretypes import get_score_type %}
 {% set st = get_score_type(submission=s) %}
+{% set sr = s.get_result(s.task.active_dataset) %}
 <div class="core_title">
   <h1>Submission {{ s.id }}</h1>
 </div>
@@ -57,40 +58,42 @@
       <tr>
         <td>Status</td>
         <td id="submission_status">
-          {% if s.compilation_outcome is None %}
+          {% if sr is None or sr.compilation_outcome is None %}
           Compiling...
-          {% elif s.compilation_outcome == "fail" %}
+          {% elif sr.compilation_outcome == "fail" %}
           Compilation failed
-          {% elif not s.evaluated() %}
+          {% elif not sr.evaluated() %}
           Evaluating...
-          {% elif s.scored() %}
+          {% elif sr.scored() %}
             {% try %}
               {% set max_score = st.max_score %}
             {% except %}
               {% set max_score = "[Cannot get score type - see logs]" %}
             {% end %}
-          Evaluated ({{ s.score }} / {{ max_score }})
+          Evaluated ({{ sr.score }} / {{ max_score }})
           {% else %}
           Evaluated
           {% end %}
         </td>
       </tr>
+      {% if sr is not None %}
       <tr>
         <td>Compilation attempts</td>
-        <td>{{ s.compilation_tries }}</td>
+        <td>{{ sr.compilation_tries }}</td>
       </tr>
       <tr>
         <td>Compilation shard</td>
-        <td>{{ s.compilation_shard }}</td>
+        <td>{{ sr.compilation_shard }}</td>
       </tr>
       <tr>
         <td>Compilation sandbox</td>
-        <td>{{ s.compilation_sandbox }}</td>
+        <td>{{ sr.compilation_sandbox }}</td>
       </tr>
       <tr>
         <td>Evaluation attempts</td>
-        <td>{{ s.evaluation_tries }}</td>
+        <td>{{ sr.evaluation_tries }}</td>
       </tr>
+      {% end %}
       <tr>
         <td>Reevaluate</td>
         <td>
@@ -104,23 +107,23 @@
 
 </div>
 
-  {% if s.scored() %}
+  {% if sr is not None and sr.scored() %}
 
 <h2 id="title_evaluation_user" class="toggling_on">Evaluation (as seen by the user)</h2>
 <div id="evaluation_user">
 
   <div class="score_details" id="evaluation_{{ s.id }}">
     {% if s.tokened() %}
-      {% raw st.get_html_details(s.score_details) %}
+      {% raw st.get_html_details(sr.score_details) %}
     {% else %}
-      {% raw st.get_html_details(s.public_score_details) %}
+      {% raw st.get_html_details(sr.public_score_details) %}
     {% end %}
   </div>
 </div>
 
   {% end %}
 
-  {% if s.evaluated() %}
+  {% if sr is not None and sr.evaluated() %}
 
 <h2 id="title_evaluation_admin" class="toggling_on">Evaluation (as seen by the admin)</h2>
 <div id="evaluation_admin">
@@ -137,10 +140,10 @@
       </tr>
     </thead>
     <tbody>
-      {% for idx, ev in enumerate(s.evaluations) %}
+      {% for idx, ev in enumerate(sr.evaluations) %}
       <tr>
         <td id="eval_outcome_{{ idx }}">{{ ev.outcome }}</td>
-        {% if s.token is not None or s.task.testcases[int(ev.num)].public %}
+        {% if s.token is not None or s.task.active_dataset.testcases[int(ev.num)].public %}
         <td style="align: center;">&bullet;</td>
         {% else %}
         <td></td>
@@ -169,12 +172,12 @@
 
   {% end %}
 
-  {% if s.compiled() %}
+  {% if sr is not None and sr.compiled() %}
 
 <h2 id="title_compilation" class="toggling_on">Compilation</h2>
 <div id="compilation">
 
-  <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
+  <pre>{% if sr.compilation_text is not None %}{{ sr.compilation_text }}{% end %}</pre>
 
 </div>
 
