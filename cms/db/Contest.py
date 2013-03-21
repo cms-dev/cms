@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -232,14 +233,16 @@ class Contest(Base):
                 files.add(file_.digest)
 
             # Enumerate managers
-            for file_ in task.managers.values():
-                files.add(file_.digest)
+            for dataset in task.datasets:
+                for file_ in dataset.managers.values():
+                    files.add(file_.digest)
 
             # Enumerate testcases
             if not light:
-                for testcase in task.testcases:
-                    files.add(testcase.input)
-                    files.add(testcase.output)
+                for dataset in task.datasets:
+                    for testcase in dataset.testcases:
+                        files.add(testcase.input)
+                        files.add(testcase.output)
 
         if not skip_submissions:
             for submission in self.get_submissions():

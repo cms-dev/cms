@@ -30,7 +30,7 @@ from cms.db.SQLAlchemyUtils import Base, metadata, Session, \
     ScopedSession, SessionGen
 from cms.db.Contest import Contest, Announcement
 from cms.db.User import User, Message, Question
-from cms.db.Task import Task, Manager, Testcase, Attachment, \
+from cms.db.Task import Task, Manager, Dataset, Testcase, Attachment, \
     SubmissionFormatElement, Statement
 from cms.db.Submission import Submission, Token, Evaluation, File, Executable
 from cms.db.UserTest import UserTest, UserTestFile, UserTestExecutable, \
