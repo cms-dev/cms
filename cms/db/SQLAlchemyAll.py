@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -32,7 +33,8 @@ from cms.db.Contest import Contest, Announcement
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task, Manager, Dataset, Testcase, Attachment, \
     SubmissionFormatElement, Statement
-from cms.db.Submission import Submission, Token, Evaluation, File, Executable
+from cms.db.Submission import Submission, SubmissionResult, Token, \
+    Evaluation, File, Executable
 from cms.db.UserTest import UserTest, UserTestFile, UserTestExecutable, \
     UserTestManager
 from cms.db.FSObject import FSObject
@@ -51,6 +53,20 @@ def get_submissions(self):
                .join(Task).filter(Task.contest == self).all()
 
 
+def get_submission_results(self):
+    """Returns a list of submission results for all submissions in
+    the current contest, as evaluated against the active dataset
+    for each task.
+
+    returns (list): list of submission results.
+
+    """
+    return self.sa_session.query(SubmissionResult)\
+               .join(Submission).join(Task).filter(Task.contest == self)\
+               .filter(Task.active_dataset_id == SubmissionResult.dataset_id)\
+               .all()
+
+
 def get_user_tests(self):
     """Returns a list of user tests (with the information about the
     corresponding user) referring to the contest.
@@ -62,6 +78,7 @@ def get_user_tests(self):
                .join(Task).filter(Task.contest == self).all()
 
 Contest.get_submissions = get_submissions
+Contest.get_submission_results = get_submission_results
 Contest.get_user_tests = get_user_tests
 
 

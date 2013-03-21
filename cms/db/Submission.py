@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,13 +26,14 @@ used directly (import  from SQLAlchemyAll).
 
 """
 
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
+from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
+    UniqueConstraint
 from sqlalchemy.types import Integer, Float, String, DateTime
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.orderinglist import ordering_list
 
 from cms.db.SQLAlchemyUtils import Base
-from cms.db.Task import Task
+from cms.db.Task import Task, Dataset
 from cms.db.User import User
 from cms.db.SmartMappedCollection import smart_mapped_collection
 
@@ -85,6 +87,78 @@ class Submission(Base):
     language = Column(
         String,
         nullable=True)
+
+    # Follows the description of the fields automatically added by
+    # SQLAlchemy.
+    # files (dict of File objects indexed by filename)
+    # token (Token object or None)
+    # results (list of SubmissionResult objects)
+
+    LANGUAGES = ["c", "cpp", "pas"]
+    LANGUAGES_MAP = {".c": "c",
+                     ".cpp": "cpp",
+                     ".cc": "cpp",
+                     ".pas": "pas",
+                     }
+
+    def get_result(self, dataset):
+        # Use IDs to avoid triggering a lazy-load query.
+        assert self.task_id == dataset.task_id
+
+        return SubmissionResult.get_from_id(
+            (self.id, dataset.id), self.sa_session)
+
+    def get_result_or_create(self, dataset):
+        submission_result = self.get_result(dataset)
+
+        if submission_result is None:
+            submission_result = SubmissionResult(submission=self,
+                                                 dataset=dataset)
+
+        return submission_result
+
+    def tokened(self):
+        """Return if the user played a token against the submission.
+
+        return (bool): True if tokened, False otherwise.
+
+        """
+        return self.token is not None
+
+
+class SubmissionResult(Base):
+    """Class to store the evaluation results of a submission. Not to
+    be used directly (import it from SQLAlchemyAll).
+
+    """
+    __tablename__ = 'submission_results'
+    __table_args__ = (
+        UniqueConstraint('submission_id', 'dataset_id',
+                         name='cst_submission_results_submission_id_dataset_id'),
+    )
+
+    # Primary key is (submission_id, dataset_id).
+    submission_id = Column(
+        Integer,
+        ForeignKey(Submission.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        primary_key=True)
+    submission = relationship(
+        Submission,
+        backref=backref(
+            "results",
+            cascade="all, delete-orphan",
+            passive_deletes=True))
+
+    dataset_id = Column(
+        Integer,
+        ForeignKey(Dataset.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        primary_key=True)
+    dataset = relationship(
+        Dataset)
+
+    # Now below follow the actual result fields.
 
     # Compilation outcome (can be None = yet to compile, "ok" =
     # compilation successful and we can evaluate, "fail" =
@@ -158,25 +232,8 @@ class Submission(Base):
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
-    # files (dict of File objects indexed by filename)
     # executables (dict of Executable objects indexed by filename)
     # evaluations (list of Evaluation objects, one for testcase)
-    # token (Token object or None)
-
-    LANGUAGES = ["c", "cpp", "pas"]
-    LANGUAGES_MAP = {".c": "c",
-                     ".cpp": "cpp",
-                     ".cc": "cpp",
-                     ".pas": "pas",
-                     }
-
-    def tokened(self):
-        """Return if the user played a token against the submission.
-
-        return (bool): True if tokened, False otherwise.
-
-        """
-        return self.token is not None
 
     def compiled(self):
         """Return if the submission has been compiled.
@@ -321,7 +378,11 @@ class Executable(Base):
     """
     __tablename__ = 'executables'
     __table_args__ = (
-        UniqueConstraint('submission_id', 'filename',
+        ForeignKeyConstraint(
+            ('submission_id', 'dataset_id'),
+            (SubmissionResult.submission_id, SubmissionResult.dataset_id),
+            onupdate="CASCADE", ondelete="CASCADE"),
+        UniqueConstraint('submission_id', 'dataset_id', 'filename',
                          name='cst_executables_submission_id_filename'),
     )
 
@@ -346,7 +407,21 @@ class Executable(Base):
         nullable=False,
         index=True)
     submission = relationship(
-        Submission,
+        Submission)
+
+    # Dataset (id and object) owning the executable.
+    dataset_id = Column(
+        Integer,
+        ForeignKey(Dataset.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    dataset = relationship(
+        Dataset)
+
+    # SubmissionResult owning the executable.
+    submission_result = relationship(
+        SubmissionResult,
         backref=backref('executables',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
@@ -361,7 +436,11 @@ class Evaluation(Base):
     """
     __tablename__ = 'evaluations'
     __table_args__ = (
-        UniqueConstraint('submission_id', 'num',
+        ForeignKeyConstraint(
+            ('submission_id', 'dataset_id'),
+            (SubmissionResult.submission_id, SubmissionResult.dataset_id),
+            onupdate="CASCADE", ondelete="CASCADE"),
+        UniqueConstraint('submission_id', 'dataset_id', 'num',
                          name='cst_evaluations_submission_id_num'),
     )
 
@@ -383,7 +462,21 @@ class Evaluation(Base):
         nullable=False,
         index=True)
     submission = relationship(
-        Submission,
+        Submission)
+
+    # Dataset (id and object) owning the evaluation.
+    dataset_id = Column(
+        Integer,
+        ForeignKey(Dataset.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    dataset = relationship(
+        Dataset)
+
+    # SubmissionResult owning the evaluation.
+    submission_result = relationship(
+        SubmissionResult,
         backref=backref('evaluations',
                         collection_class=ordering_list('num'),
                         order_by=[num],

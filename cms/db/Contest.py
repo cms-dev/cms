@@ -167,6 +167,7 @@ class Contest(Base):
 
     # Moreover, we have the following methods.
     # get_submissions (defined in SQLAlchemyAll)
+    # get_submission_results (defined in SQLAlchemyAll)
     # get_user_tests (defined in SQLAlchemyAll)
 
     # FIXME - Use SQL syntax
@@ -253,8 +254,9 @@ class Contest(Base):
 
                 # Enumerate executables
                 if not light:
-                    for file_ in submission.executables.values():
-                        files.add(file_.digest)
+                    for sr in submission.results:
+                        for file_ in sr.executables.itervalues():
+                            files.add(file_.digest)
 
         if not skip_user_tests:
             for user_test in self.get_user_tests():
