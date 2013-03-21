@@ -1,9 +1,9 @@
-{% if t.evaluated() %}
+{% if tr is not None and tr.evaluated() %}
 <h3>{{ _("Evaluation outcome") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-<pre>{% if t.evaluation_text is not None %}{{ t.evaluation_text }}{% else %}Everything OK.{% end %}</pre>
+<pre>{% if tr.evaluation_text is not None %}{{ tr.evaluation_text }}{% else %}Everything OK.{% end %}</pre>
 {% end %}
 
-{% if t.compiled() %}
+{% if tr is not None and tr.compiled() %}
 <h3>{{ _("Compilation output") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-<pre>{% if t.compilation_text is not None %}{{ t.compilation_text }}{% end %}</pre>
+<pre>{% if tr.compilation_text is not None %}{{ tr.compilation_text }}{% end %}</pre>
 {% end %}

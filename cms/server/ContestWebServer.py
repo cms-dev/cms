@@ -5,7 +5,8 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -931,7 +932,7 @@ class SubmitHandler(BaseHandler):
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
         # type says so.
-        task_type = get_task_type(task=task)
+        task_type = get_task_type(dataset=task.active_dataset)
         required = set([x.filename for x in task.submission_format])
         provided = set(self.request.files.keys())
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
@@ -1201,21 +1202,22 @@ class SubmissionStatusHandler(BaseHandler):
         if submission is None:
             raise tornado.web.HTTPError(404)
 
-        score_type = get_score_type(submission=submission)
+        sr = submission.get_result(task.active_dataset)
+        score_type = get_score_type(dataset=task.active_dataset)
 
         # TODO: use some kind of constants to refer to the status.
         data = dict()
-        if not submission.compiled():
+        if sr is None or not sr.compiled():
             data["status"] = 1
             data["status_text"] = self._("Compiling...")
-        elif submission.compilation_outcome == "fail":
+        elif sr.compilation_outcome == "fail":
             data["status"] = 2
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
                 self._("Compilation failed"), self._("details"))
-        elif not submission.evaluated():
+        elif not sr.evaluated():
             data["status"] = 3
             data["status_text"] = self._("Evaluating...")
-        elif not submission.scored():
+        elif not sr.scored():
             data["status"] = 4
             data["status_text"] = self._("Scoring...")
         else:
@@ -1227,13 +1229,13 @@ class SubmissionStatusHandler(BaseHandler):
                 data["max_public_score"] = "%g" % \
                     round(score_type.max_public_score, task.score_precision)
             data["public_score"] = "%g" % \
-                round(submission.public_score, task.score_precision)
+                round(sr.public_score, task.score_precision)
             if submission.token is not None:
                 if score_type is not None and score_type.max_score != 0:
                     data["max_score"] = "%g" % \
                         round(score_type.max_score, task.score_precision)
                 data["score"] = "%g" % \
-                    round(submission.score, task.score_precision)
+                    round(sr.score, task.score_precision)
 
         self.write(data)
 
@@ -1258,20 +1260,23 @@ class SubmissionDetailsHandler(BaseHandler):
         if submission is None:
             raise tornado.web.HTTPError(404)
 
-        score_type = get_score_type(submission=submission)
-        details = None
-        if submission.tokened():
-            details = submission.score_details
-        else:
-            details = submission.public_score_details
+        sr = submission.get_result(task.active_dataset)
+        score_type = get_score_type(dataset=task.active_dataset)
 
-        if submission.scored():
-            details = score_type.get_html_details(details, self._)
-        else:
-            details = None
+        details = None
+        if sr is not None:
+            if submission.tokened():
+                details = sr.score_details
+            else:
+                details = sr.public_score_details
+
+            if sr.scored():
+                details = score_type.get_html_details(details, self._)
+            else:
+                details = None
 
         self.render("submission_details.html",
-                    s=submission,
+                    sr=sr,
                     details=details)
 
 
@@ -1315,7 +1320,7 @@ class UserTestHandler(BaseHandler):
             raise tornado.web.HTTPError(404)
 
         # Check that the task is testable
-        task_type = get_task_type(task=task)
+        task_type = get_task_type(dataset=task.active_dataset)
         if not task_type.testable:
             logger.warning("User %s tried to make test on task %s." %
                            (self.current_user.username, task_name))
@@ -1645,32 +1650,34 @@ class UserTestStatusHandler(BaseHandler):
         if user_test is None:
             raise tornado.web.HTTPError(404)
 
+        ur = user_test.get_result(task.active_dataset)
+
         # TODO: use some kind of constants to refer to the status.
         data = dict()
-        if not user_test.compiled():
+        if ur is None or not ur.compiled():
             data["status"] = 1
             data["status_text"] = "Compiling..."
-        elif user_test.compilation_outcome == "fail":
+        elif ur.compilation_outcome == "fail":
             data["status"] = 2
             data["status_text"] = "Compilation failed " + \
                                   "<a class=\"details\">details</a>"
-        elif not user_test.evaluated():
+        elif not ur.evaluated():
             data["status"] = 3
             data["status_text"] = "Executing..."
         else:
             data["status"] = 4
             data["status_text"] = "Executed <a class=\"details\">details</a>"
-            if user_test.execution_time is not None:
+            if ur.execution_time is not None:
                 data["time"] = "%(seconds)0.3f s" % {
-                    'seconds': user_test.execution_time}
+                    'seconds': ur.execution_time}
             else:
                 data["time"] = None
-            if user_test.memory_used is not None:
+            if ur.memory_used is not None:
                 data["memory"] = "%(mb)0.2f MiB" % {
-                    'mb': user_test.memory_used / 1024. / 1024.}
+                    'mb': ur.memory_used / 1024. / 1024.}
             else:
                 data["memory"] = None
-            data["output"] = user_test.output is not None
+            data["output"] = ur.output is not None
 
         self.write(data)
 
@@ -1695,7 +1702,9 @@ class UserTestDetailsHandler(BaseHandler):
         if user_test is None:
             raise tornado.web.HTTPError(404)
 
-        self.render("user_test_details.html", task=task, t=user_test)
+        tr = user_test.get_result(task.active_dataset)
+
+        self.render("user_test_details.html", task=task, tr=tr)
 
 
 class UserTestIOHandler(FileHandler):
@@ -1719,7 +1728,11 @@ class UserTestIOHandler(FileHandler):
         if user_test is None:
             raise tornado.web.HTTPError(404)
 
-        digest = getattr(user_test, io)
+        if io == "input":
+            digest = user_test.input
+        else:  # io == "output"
+            tr = user_test.get_result(task.active_dataset)
+            digest = tr.output if tr is not None else None
         self.sql_session.close()
 
         if digest is None:

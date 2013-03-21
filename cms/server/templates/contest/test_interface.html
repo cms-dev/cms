@@ -73,7 +73,7 @@ $(document).ready(function () {
 
 <ul class="nav nav-tabs">
 {% for i, task in enumerate(contest.tasks) %}
-    {% set task_type = get_task_type(task=task) %}
+    {% set task_type = get_task_type(dataset=task.active_dataset) %}
     {% if task_type.testable %}
     <li{% if task == default_task %} class="active"{% end %}><a href="#test_{{ task.name }}" data-toggle="tab">{{ task.name }}</a></li>
     {% end %}
@@ -82,7 +82,7 @@ $(document).ready(function () {
 
 <div class="tab-content">
 {% for i, task in enumerate(contest.tasks) %}
-    {% set task_type = get_task_type(task=task) %}
+    {% set task_type = get_task_type(dataset=task.active_dataset) %}
     {% if task_type.testable %}
 <div class="tab-pane{% if task == default_task %} active{% end %}" id="test_{{ task.name }}">
 
@@ -173,6 +173,7 @@ $(document).ready(function () {
     {% else %}
         {% for t_idx, t in enumerate(sorted(user_tests[task.id], key=lambda t: t.timestamp, reverse=True)) %}
             {% set t_idx = len(user_tests[task.id]) - t_idx %}
+            {% set tr = t.get_result(t.task.active_dataset) %}
             {% include user_test_row.html %}
         {% end %}
     {% end %}

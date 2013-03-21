@@ -189,24 +189,24 @@
             <th>{{ t_iter.name }}</th>
             <td>{{ t_iter.title }}</td>
             <td>
-    {% if t_iter.time_limit is not None %}
-        {% if t_iter.time_limit == 1.0 %}
-            {{ _("%(seconds)g second") % {"seconds": t_iter.time_limit} }}
+    {% if t_iter.active_dataset.time_limit is not None %}
+        {% if t_iter.active_dataset.time_limit == 1.0 %}
+            {{ _("%(seconds)g second") % {"seconds": t_iter.active_dataset.time_limit} }}
         {% else %}
-            {{ _("%(seconds)g seconds") % {"seconds": t_iter.time_limit} }}
+            {{ _("%(seconds)g seconds") % {"seconds": t_iter.active_dataset.time_limit} }}
         {% end %}
     {% else %}
         {{ _("N/A") }}
     {% end %}
             </td>
             <td>
-    {% if t_iter.memory_limit is not None %}
-        {{ _("%(mb)d MiB") % {"mb": t_iter.memory_limit} }}
+    {% if t_iter.active_dataset.memory_limit is not None %}
+        {{ _("%(mb)d MiB") % {"mb": t_iter.active_dataset.memory_limit} }}
     {% else %}
         {{ _("N/A") }}
     {% end %}
             </td>
-            <td>{{ get_task_type(task=t_iter).name }}</td>
+            <td>{{ get_task_type(dataset=t_iter.active_dataset).name }}</td>
             <td>{{ " ".join(a.filename.replace("%l", "[c|cpp|pas]") for a in t_iter.submission_format) }}</td>
     {% if tokens_contest != 0 and tokens_tasks != 0 %}
             <td>

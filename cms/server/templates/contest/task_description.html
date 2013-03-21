@@ -96,24 +96,24 @@
     <tbody>
         <tr>
             <th>{{ _("Type") }}</th>
-            <td colspan="2">{% set task_type = get_task_type(task=task) %}{{ task_type.name }}</td>
+            <td colspan="2">{% set task_type = get_task_type(dataset=task.active_dataset) %}{{ task_type.name }}</td>
         </tr>
-{% if task.time_limit is not None %}
+{% if task.active_dataset.time_limit is not None %}
         <tr>
             <th>{{ _("Time limit") }}</th>
             <td colspan="2">
-    {% if task.time_limit == 1.0 %}
-        {{ _("%(seconds)g second") % {"seconds": task.time_limit} }}
+    {% if task.active_dataset.time_limit == 1.0 %}
+        {{ _("%(seconds)g second") % {"seconds": task.active_dataset.time_limit} }}
     {% else %}
-        {{ _("%(seconds)g seconds") % {"seconds": task.time_limit} }}
+        {{ _("%(seconds)g seconds") % {"seconds": task.active_dataset.time_limit} }}
     {% end %}
             </td>
         </tr>
 {% end %}
-{% if task.memory_limit is not None %}
+{% if task.active_dataset.memory_limit is not None %}
         <tr>
             <th>{{ _("Memory limit") }}</th>
-            <td colspan="2">{{ _("%(mb)d MiB") % {"mb": task.memory_limit} }}</td>
+            <td colspan="2">{{ _("%(mb)d MiB") % {"mb": task.active_dataset.memory_limit} }}</td>
         </tr>
 {% end %}
 {% set compilation_commands = task_type.get_compilation_commands([x.filename for x in task.submission_format]) %}

@@ -182,7 +182,7 @@ $(document).ready(function () {
 
 {% from cms.grading.scoretypes import get_score_type %}
 {% try %}
-    {% set score_type = get_score_type(task=task) %}
+    {% set score_type = get_score_type(dataset=task.active_dataset) %}
 {% except %}
     {% set score_type = None %}
 {% end %}
@@ -242,6 +242,7 @@ $(document).ready(function () {
     {% else %}
         {% for s_idx, s in enumerate(sorted(submissions, key=lambda s: s.timestamp, reverse=True)) %}
             {% set s_idx = len(submissions) - s_idx %}
+            {% set sr = s.get_result(s.task.active_dataset) %}
             {% include submission_row.html %}
         {% end %}
     {% end %}
