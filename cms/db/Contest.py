@@ -25,6 +25,8 @@ directly (import it from SQLAlchemyAll).
 
 """
 
+from datetime import timedelta
+
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
 from sqlalchemy.types import Integer, String, DateTime, Interval
 from sqlalchemy.orm import relationship, backref
@@ -32,7 +34,6 @@ from sqlalchemy.orm import relationship, backref
 from cms.db.SQLAlchemyUtils import Base
 
 from cmscommon.DateTime import make_datetime, make_timestamp
-from datetime import timedelta
 
 
 class Contest(Base):
@@ -44,7 +45,7 @@ class Contest(Base):
     __tablename__ = 'contests'
     __table_args__ = (
         CheckConstraint("token_initial <= token_max"),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(
@@ -104,7 +105,7 @@ class Contest(Base):
         nullable=False,
         default=0)
 
-    # Beginning and ending of the contest, unix times.
+    # Beginning and ending of the contest.
     start = Column(
         DateTime,
         nullable=True)
@@ -263,16 +264,16 @@ class Contest(Base):
         for task in self.tasks:
 
             # Enumerate statements
-            for _file in task.statements.values():
-                files.add(_file.digest)
+            for file_ in task.statements.values():
+                files.add(file_.digest)
 
             # Enumerate attachments
-            for _file in task.attachments.values():
-                files.add(_file.digest)
+            for file_ in task.attachments.values():
+                files.add(file_.digest)
 
             # Enumerate managers
-            for _file in task.managers.values():
-                files.add(_file.digest)
+            for file_ in task.managers.values():
+                files.add(file_.digest)
 
             # Enumerate testcases
             if not light:
@@ -284,13 +285,13 @@ class Contest(Base):
             for submission in self.get_submissions():
 
                 # Enumerate files
-                for _file in submission.files.values():
-                    files.add(_file.digest)
+                for file_ in submission.files.values():
+                    files.add(file_.digest)
 
                 # Enumerate executables
                 if not light:
-                    for _file in submission.executables.values():
-                        files.add(_file.digest)
+                    for file_ in submission.executables.values():
+                        files.add(file_.digest)
 
         if not skip_user_tests:
             for user_test in self.get_user_tests():
@@ -301,17 +302,17 @@ class Contest(Base):
                     files.add(user_test.output)
 
                 # Enumerate files
-                for _file in user_test.files.values():
-                    files.add(_file.digest)
+                for file_ in user_test.files.values():
+                    files.add(file_.digest)
 
                 # Enumerate managers
-                for _file in user_test.managers.values():
-                    files.add(_file.digest)
+                for file_ in user_test.managers.values():
+                    files.add(file_.digest)
 
                 # Enumerate executables
                 if not light:
-                    for _file in user_test.executables.values():
-                        files.add(_file.digest)
+                    for file_ in user_test.executables.values():
+                        files.add(file_.digest)
 
         return files
 
@@ -358,8 +359,9 @@ class Contest(Base):
         # the tokens played up to now have expired (i.e. the first
         # time at which we can play another token). If no tokens have
         # been played so far, this time is the start of the contest.
-        expiration = token_timestamps[-1] + token_min_interval \
-                     if len(token_timestamps) > 0 else start
+        expiration = \
+            token_timestamps[-1] + token_min_interval \
+            if len(token_timestamps) > 0 else start
 
         # If we have infinite tokens we don't need to simulate
         # anything, since nothing gets consumed or generated. We can
@@ -426,9 +428,10 @@ class Contest(Base):
         # Compute the time in which the next token will be generated.
         next_gen_time = None
         if token_gen_number > 0 and (token_max is None or avail < token_max):
-            next_gen_time = start + token_gen_time * \
-                            int((timestamp - start).total_seconds() /
-                                token_gen_time.total_seconds() + 1)
+            next_gen_time = \
+                start + token_gen_time * \
+                int((timestamp - start).total_seconds() /
+                    token_gen_time.total_seconds() + 1)
 
         # If we have more tokens than how many we are allowed to play,
         # cap it, and note that no more will be generated.
@@ -586,7 +589,7 @@ class Announcement(Base):
         Integer,
         primary_key=True)
 
-    # Time, subject and text of the announcements.
+    # Time, subject and text of the announcement.
     timestamp = Column(
         DateTime,
         nullable=False)
@@ -597,7 +600,7 @@ class Announcement(Base):
         String,
         nullable=False)
 
-    # Contest for which the announcements are.
+    # Contest (id and object) owning the announcement.
     contest_id = Column(
         Integer,
         ForeignKey(Contest.id,

@@ -105,7 +105,7 @@ class Submission(Base):
         nullable=False,
         default=0)
 
-    # Worker shard and sanbox where the compilation was performed
+    # Worker shard and sandbox where the compilation was performed.
     compilation_shard = Column(
         Integer,
         nullable=True)
@@ -126,15 +126,16 @@ class Submission(Base):
         nullable=False,
         default=0)
 
-    # Score as computed by ScoreService. Null means not yet scored.
+    # Score as computed by ScoringService. Null means not yet scored.
     score = Column(
         Float,
         nullable=True)
 
-    # Score details. It is a string containing *simple* HTML code that
-    # AWS (and CWS if the user used a token) uses to display the
-    # details of the submission. For example, results for each
-    # testcases, subtask, etc.
+    # Score details. It's a JSON-encoded string containing information
+    # that is given to ScoreType.get_html_details to generate an HTML
+    # snippet that is shown on AWS and, if the user used a token, on
+    # CWS to display the details of the submission.
+    # For example, results for each testcases, subtask, etc.
     score_details = Column(
         String,
         nullable=True)
@@ -259,6 +260,8 @@ class Submission(Base):
         self.compilation_outcome = None
         self.compilation_text = None
         self.compilation_tries = 0
+        self.compilation_shard = None
+        self.compilation_sandbox = None
         self.executables = {}
 
     def invalidate_evaluation(self):
@@ -267,8 +270,8 @@ class Submission(Base):
         """
         self.invalidate_score()
         self.evaluation_outcome = None
-        self.evaluations = []
         self.evaluation_tries = 0
+        self.evaluations = []
 
     def invalidate_score(self):
         """Blank the score.
@@ -278,14 +281,7 @@ class Submission(Base):
         self.score_details = None
         self.public_score = None
         self.public_score_details = None
-
-    def play_token(self, timestamp=None):
-        """Tell the submission that a token has been used.
-
-        timestamp (int): the time the token has been played.
-
-        """
-        self.token = Token(timestamp=timestamp)
+        self.ranking_score_details = None
 
 
 class Token(Base):
@@ -297,14 +293,14 @@ class Token(Base):
     __table_args__ = (
         UniqueConstraint('submission_id',
                          name='cst_tokens_submission_id'),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(
         Integer,
         primary_key=True)
 
-    # Submission (id and object) the token has been played against.
+    # Submission (id and object) the token has been used on.
     submission_id = Column(
         Integer,
         ForeignKey(Submission.id,
@@ -353,7 +349,7 @@ class File(Base):
     __table_args__ = (
         UniqueConstraint('submission_id', 'filename',
                          name='cst_files_submission_id_filename'),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(
@@ -368,7 +364,7 @@ class File(Base):
         String,
         nullable=False)
 
-    # Submission (id and object) of the submission.
+    # Submission (id and object) owning the file.
     submission_id = Column(
         Integer,
         ForeignKey(Submission.id,
@@ -402,14 +398,14 @@ class Executable(Base):
     __table_args__ = (
         UniqueConstraint('submission_id', 'filename',
                          name='cst_executables_submission_id_filename'),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(
         Integer,
         primary_key=True)
 
-    # Filename and digest of the file.
+    # Filename and digest of the generated executable.
     filename = Column(
         String,
         nullable=False)
@@ -417,7 +413,7 @@ class Executable(Base):
         String,
         nullable=False)
 
-    # Submission (id and object) of the submission.
+    # Submission (id and object) owning the executable.
     submission_id = Column(
         Integer,
         ForeignKey(Submission.id,
@@ -451,19 +447,19 @@ class Evaluation(Base):
     __table_args__ = (
         UniqueConstraint('submission_id', 'num',
                          name='cst_evaluations_submission_id_num'),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(
         Integer,
         primary_key=True)
 
-    # Number of the testcase
+    # Number of the testcase this evaluation was performed on.
     num = Column(
         Integer,
         nullable=False)
 
-    # Submission (id and object) of the submission.
+    # Submission (id and object) owning the evaluation.
     submission_id = Column(
         Integer,
         ForeignKey(Submission.id,
@@ -496,7 +492,7 @@ class Evaluation(Base):
         Integer,
         nullable=True)
 
-    # Evaluation's time and wall-clock time, in s.
+    # Evaluation's time and wall-clock time, in seconds.
     execution_time = Column(
         Float,
         nullable=True)
@@ -504,7 +500,7 @@ class Evaluation(Base):
         Float,
         nullable=True)
 
-    # Worker shard and sanbox where the evaluation was performed
+    # Worker shard and sandbox where the evaluation was performed.
     evaluation_shard = Column(
         Integer,
         nullable=True)

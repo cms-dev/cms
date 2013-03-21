@@ -21,7 +21,8 @@ from sqlalchemy import util
 from sqlalchemy import event
 from sqlalchemy.orm import class_mapper
 from sqlalchemy.orm.collections import \
-    collection, collection_adapter, MappedCollection, __set as sa_set, __del as sa_del
+    collection, collection_adapter, MappedCollection, \
+    __set as sa_set, __del as sa_del
 
 
 # XXX When dropping support for SQLAlchemy pre-0.7.6, remove these two
@@ -70,6 +71,7 @@ _event_manager = _EventManager()
 
 
 class SmartMappedCollection(MappedCollection):
+
     def __init__(self, column):
         self._column = column
 
@@ -80,7 +82,6 @@ class SmartMappedCollection(MappedCollection):
         self._parent_cls = None
         self._child_rel = None
         self._child_cls = None
-
 
     # XXX When dropping support for SQLAlchemy pre-0.8, rename this
     # decorator to 'collection.linker'.
@@ -98,10 +99,12 @@ class SmartMappedCollection(MappedCollection):
             self._parent_rel = adapter.attr.key
             self._parent_obj = adapter.owner_state.obj()
             self._parent_cls = type(self._parent_obj)
-            parent_rel_prop = class_mapper(self._parent_cls)._props[self._parent_rel]
+            parent_rel_prop = \
+                class_mapper(self._parent_cls)._props[self._parent_rel]
             self._child_rel = parent_rel_prop.back_populates
             self._child_cls = parent_rel_prop.mapper.class_
-            child_rel_prop = class_mapper(self._child_cls)._props[self._child_rel]
+            child_rel_prop = \
+                class_mapper(self._child_cls)._props[self._child_rel]
 
             # XXX When SQLAlchemy will support removal of attribute
             # events, use the following code:
@@ -208,7 +211,7 @@ class SmartMappedCollection(MappedCollection):
 
     @collection.converter
     def _convert(self, collection):
-        # TODO We could check if the object's type is correct.
+        # TODO We could check if the objects' type is correct.
         type_ = util.duck_type_collection(collection)
         if type_ is dict:
             for key, value in util.dictlike_iteritems(collection):
@@ -224,7 +227,7 @@ class SmartMappedCollection(MappedCollection):
             raise TypeError("Object '%r' is not dict-like nor iterable" %
                             collection)
 
-    # When dropping support for SQLAlchemy pre-0.8, remove this.
+    # XXX When dropping support for SQLAlchemy pre-0.8, remove this.
     _sa_converter = _convert
 
     def __iadd__(self, collection):

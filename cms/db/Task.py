@@ -25,6 +25,8 @@ directly (import it from SQLAlchemyAll).
 
 """
 
+from datetime import timedelta
+
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint
 from sqlalchemy.types import Boolean, Integer, Float, String, Interval
@@ -34,8 +36,6 @@ from sqlalchemy.ext.orderinglist import ordering_list
 from cms.db.SQLAlchemyUtils import Base
 from cms.db.Contest import Contest
 from cms.db.SmartMappedCollection import smart_mapped_collection
-
-from datetime import timedelta
 
 
 class Task(Base):
@@ -50,7 +50,7 @@ class Task(Base):
         UniqueConstraint('contest_id', 'name',
                          name='cst_task_contest_id_name'),
         CheckConstraint("token_initial <= token_max"),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(
@@ -86,7 +86,7 @@ class Task(Base):
         nullable=False)
 
     # A JSON-encoded lists of strings: the language codes of the
-    # statments that will be highlighted to all users for this task.
+    # statements that will be highlighted to all users for this task.
     primary_statements = Column(
         String,
         nullable=False,
@@ -291,15 +291,15 @@ class Testcase(Base):
     __tablename__ = 'task_testcases'
     __table_args__ = (
         UniqueConstraint('task_id', 'num',
-                         name='cst_task_testcases_task_id_num'),
-        )
+                         name='cst_testcases_task_id_num'),
+    )
 
     # Auto increment primary key.
     id = Column(
         Integer,
         primary_key=True)
 
-    # Number of the task for sorting.
+    # Number of the testcase for sorting.
     num = Column(
         Integer,
         nullable=False)
@@ -374,13 +374,14 @@ class Attachment(Base):
     __table_args__ = (
         UniqueConstraint('task_id', 'filename',
                          name='cst_attachments_task_id_filename'),
-        )
+    )
+
     # Auto increment primary key.
     id = Column(
         Integer,
         primary_key=True)
 
-    # Filename and digest of the manager.
+    # Filename and digest of the provided attachment.
     filename = Column(
         String,
         nullable=False)
@@ -420,14 +421,14 @@ class Manager(Base):
     __table_args__ = (
         UniqueConstraint('task_id', 'filename',
                          name='cst_managers_task_id_filename'),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(
         Integer,
         primary_key=True)
 
-    # Filename and digest of the manager.
+    # Filename and digest of the provided manager.
     filename = Column(
         String,
         nullable=False)
@@ -471,7 +472,7 @@ class SubmissionFormatElement(Base):
         Integer,
         primary_key=True)
 
-    # Task (id and object) owning the submission format.
+    # Task (id and object) owning the submission format element.
     task_id = Column(
         Integer,
         ForeignKey(Task.id,
@@ -505,7 +506,7 @@ class Statement(Base):
     __table_args__ = (
         UniqueConstraint('task_id', 'language',
                          name='cst_statements_task_id_language'),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(

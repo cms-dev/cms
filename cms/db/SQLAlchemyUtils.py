@@ -20,25 +20,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import six
+from datetime import datetime, timedelta
+
 from sqlalchemy import create_engine, __version__ as sqlalchemy_version
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy.orm.session import object_session
-from sqlalchemy.orm import class_mapper, object_mapper, \
-                           ColumnProperty, RelationshipProperty
-from sqlalchemy.types import Boolean, Integer, Float, String, DateTime, Interval
-
-from datetime import datetime, timedelta
+from sqlalchemy.orm import \
+    class_mapper, object_mapper, ColumnProperty, RelationshipProperty
+from sqlalchemy.types import \
+    Boolean, Integer, Float, String, DateTime, Interval
 
 from cms import config
 
-import six
-
-# We need version 0.7.3 because of the __abstract__ keyword.
-sqlalchemy_version = tuple(int(x) for x in sqlalchemy_version.split("."))
-assert sqlalchemy_version >= (0, 7, 3), \
-       "Please install SQLAlchemy >= 0.7.3."
 
 db_string = config.database.replace("%s", config.data_dir)
 db = create_engine(db_string, echo=config.database_debug,
@@ -109,10 +105,10 @@ _type_map = {
     Boolean: bool,
     Integer: six.integer_types,
     Float: float,
-    String: six.string_types, # XXX unicode, bytes or both?
+    String: six.string_types,  # XXX unicode, bytes or both?
     DateTime: datetime,
     Interval: timedelta,
-    }
+}
 
 
 class Base(object):

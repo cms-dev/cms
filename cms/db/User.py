@@ -25,6 +25,8 @@ directly (import it from SQLAlchemyAll).
 
 """
 
+from datetime import timedelta
+
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
 from sqlalchemy.types import Boolean, Integer, String, DateTime, \
     Interval
@@ -34,7 +36,6 @@ from cms.db.SQLAlchemyUtils import Base
 from cms.db.Contest import Contest
 
 from cmscommon.DateTime import make_datetime, make_timestamp
-from datetime import timedelta
 
 
 def generate_random_password():
@@ -54,7 +55,7 @@ class User(Base):
     __table_args__ = (
         UniqueConstraint('contest_id', 'username',
                          name='cst_user_contest_id_username'),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(
@@ -108,7 +109,7 @@ class User(Base):
                         passive_deletes=True))
 
     # A JSON-encoded dictionary of lists of strings: statements["a"]
-    # contains the language codes of the statments that will be
+    # contains the language codes of the statements that will be
     # highlighted to this user for task "a".
     primary_statements = Column(
         String,
@@ -126,13 +127,13 @@ class User(Base):
         nullable=True)
 
     # Starting time: for contests where every user has at most x hours
-    # of the y > x hours totally available. This is the first time the
-    # user logged in while the contest was active.
+    # of the y > x hours totally available, this is the time the user
+    # decided to start his/her time-frame.
     starting_time = Column(
         DateTime,
         nullable=True)
 
-    # An extra amount of time allocated for this user
+    # An extra amount of time allocated for this user.
     extra_time = Column(
         Interval,
         nullable=False,

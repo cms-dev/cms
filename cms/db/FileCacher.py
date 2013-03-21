@@ -29,10 +29,10 @@ import tempfile
 import shutil
 import hashlib
 
+from sqlalchemy.exc import IntegrityError
+
 from cms import config, logger, mkdir
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
-
-from sqlalchemy.exc import IntegrityError
 
 
 class FileCacherBackend:
@@ -336,9 +336,9 @@ class FileCacher:
         self.tmp_dir = os.path.join(self.base_dir, "tmp")
         self.obj_dir = os.path.join(self.base_dir, "objects")
         if not mkdir(config.cache_dir) or \
-               not mkdir(self.base_dir) or \
-               not mkdir(self.tmp_dir) or \
-               not mkdir(self.obj_dir):
+                not mkdir(self.base_dir) or \
+                not mkdir(self.tmp_dir) or \
+                not mkdir(self.obj_dir):
             logger.error("Cannot create necessary directories.")
 
     def get_file(self, digest, path=None, file_obj=None,
@@ -519,9 +519,9 @@ class FileCacher:
         """
         shutil.rmtree(self.base_dir)
         if not mkdir(config.cache_dir) or \
-               not mkdir(self.base_dir) or \
-               not mkdir(self.tmp_dir) or \
-               not mkdir(self.obj_dir):
+                not mkdir(self.base_dir) or \
+                not mkdir(self.tmp_dir) or \
+                not mkdir(self.obj_dir):
             logger.error("Cannot create necessary directories.")
 
     def list(self):

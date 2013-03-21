@@ -84,7 +84,7 @@ class UserTest(Base):
         nullable=True)
 
     # Input (provided by the user) and output files' digests for this
-    # test
+    # test.
     input = Column(
         String,
         nullable=False)
@@ -111,7 +111,7 @@ class UserTest(Base):
         nullable=False,
         default=0)
 
-    # Worker shard and sandbox where the compilation was performed
+    # Worker shard and sandbox where the compilation was performed.
     compilation_shard = Column(
         Integer,
         nullable=True)
@@ -134,7 +134,7 @@ class UserTest(Base):
         nullable=False,
         default=0)
 
-    # Worker shard and sandbox wgere the evaluation was performed
+    # Worker shard and sandbox where the evaluation was performed.
     evaluation_shard = Column(
         Integer,
         nullable=True)
@@ -142,7 +142,7 @@ class UserTest(Base):
         String,
         nullable=True)
 
-    # Other information about the execution
+    # Other information about the execution.
     memory_used = Column(
         Integer,
         nullable=True)
@@ -227,6 +227,31 @@ class UserTest(Base):
         """
         return self.evaluation_outcome is not None
 
+    def invalidate_compilation(self):
+        """Blank all compilation and evaluation outcomes.
+
+        """
+        self.invalidate_evaluation()
+        self.compilation_outcome = None
+        self.compilation_text = None
+        self.compilation_tries = 0
+        self.compilation_shard = None
+        self.compilation_sandbox = None
+        self.executables = {}
+
+    def invalidate_evaluation(self):
+        """Blank the evaluation outcome.
+
+        """
+        self.evaluation_outcome = None
+        self.evaluation_text = None
+        self.evaluation_tries = 0
+        self.evaluation_shard = None
+        self.evaluation_sandbox = None
+        self.output = None
+        self.memory_used = None
+        self.evaluation_time = None
+
 
 class UserTestFile(Base):
     """Class to store information about one file submitted within a
@@ -237,7 +262,7 @@ class UserTestFile(Base):
     __table_args__ = (
         UniqueConstraint('user_test_id', 'filename',
                          name='cst_files_user_test_id_filename'),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(
@@ -252,7 +277,7 @@ class UserTestFile(Base):
         String,
         nullable=False)
 
-    # Submission (id and object) of the submission.
+    # UserTest (id and object) owning the file.
     user_test_id = Column(
         Integer,
         ForeignKey(UserTest.id,
@@ -286,14 +311,14 @@ class UserTestExecutable(Base):
     __table_args__ = (
         UniqueConstraint('user_test_id', 'filename',
                          name='cst_executables_user_test_id_filename'),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(
         Integer,
         primary_key=True)
 
-    # Filename and digest of the file.
+    # Filename and digest of the generated executable.
     filename = Column(
         String,
         nullable=False)
@@ -301,7 +326,7 @@ class UserTestExecutable(Base):
         String,
         nullable=False)
 
-    # Submission (id and object) of the submission.
+    # UserTest (id and object) owning the executable.
     user_test_id = Column(
         Integer,
         ForeignKey(UserTest.id,
@@ -335,14 +360,14 @@ class UserTestManager(Base):
     __table_args__ = (
         UniqueConstraint('user_test_id', 'filename',
                          name='cst_managers_user_test_id_filename'),
-        )
+    )
 
     # Auto increment primary key.
     id = Column(
         Integer,
         primary_key=True)
 
-    # Filename and digest of the manager.
+    # Filename and digest of the submitted manager.
     filename = Column(
         String,
         nullable=False)
@@ -350,7 +375,7 @@ class UserTestManager(Base):
         String,
         nullable=False)
 
-    # Task (id and object) owning the manager.
+    # UserTest (id and object) owning the manager.
     user_test_id = Column(
         Integer,
         ForeignKey(UserTest.id,
