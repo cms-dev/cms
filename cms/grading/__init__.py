@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,7 +24,7 @@ import os
 import codecs
 
 from cms import logger
-from cms.db.SQLAlchemyAll import SessionGen, Submission
+from cms.db.SQLAlchemyAll import SessionGen, Submission, SubmissionResult
 from cms.grading.Sandbox import Sandbox
 
 
@@ -571,15 +572,16 @@ def task_score(user, task):
                           yet to score.
 
     """
-    def waits_for_score(submission):
+    def waits_for_score(submission_result):
         """Return if submission could be scored but it currently is
         not.
 
-        submission (Submission): the submission to check.
+        submission_result (SubmissionResult): the result to check. May be None.
 
         """
-        return submission.compilation_outcome != "fail" and \
-               not submission.scored()
+        return submission_result is None or \
+               submission_result.compilation_outcome != "fail" and \
+               not submission_result.scored()
 
     # The score of the last submission (if valid, otherwise 0.0).
     last_score = 0.0
@@ -602,17 +604,20 @@ def task_score(user, task):
         # Last score: if the last submission is scored we use that,
         # otherwise we use 0.0 (and mark that the score is partial
         # when the last submission could be scored).
-        if submissions[-1].scored():
-            last_score = submissions[-1].score
-        elif waits_for_score(submissions[-1]):
+        last_s = submissions[-1]
+        last_sr = last_s.get_result(task.active_dataset)
+
+        if last_sr is not None and last_sr.scored():
+            last_score = last_sr.score
+        elif waits_for_score(last_sr):
             partial = True
 
-        for submission in submissions:
-            if submission.token is not None:
-                if submission.scored():
-                    max_tokened_score = max(max_tokened_score,
-                                            submission.score)
-                elif waits_for_score(submission):
+        for s in submissions:
+            sr = s.get_result(task.active_dataset)
+            if s.tokened():
+                if sr is not None and sr.scored():
+                    max_tokened_score = max(max_tokened_score, sr.score)
+                elif waits_for_score(sr):
                     partial = True
 
     return max(last_score, max_tokened_score), partial
