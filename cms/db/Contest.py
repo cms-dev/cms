@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -169,6 +169,7 @@ class Contest(Base):
     # get_submissions (defined in SQLAlchemyAll)
     # get_submission_results (defined in SQLAlchemyAll)
     # get_user_tests (defined in SQLAlchemyAll)
+    # get_user_test_results (defined in SQLAlchemyAll)
 
     # FIXME - Use SQL syntax
     def get_task(self, task_name):
@@ -263,8 +264,10 @@ class Contest(Base):
 
                 files.add(user_test.input)
 
-                if not light and user_test.output is not None:
-                    files.add(user_test.output)
+                if not light:
+                    for ur in user_test.results:
+                        if ur.output is not None:
+                            files.add(ur.output)
 
                 # Enumerate files
                 for file_ in user_test.files.values():
@@ -276,8 +279,9 @@ class Contest(Base):
 
                 # Enumerate executables
                 if not light:
-                    for file_ in user_test.executables.values():
-                        files.add(file_.digest)
+                    for ur in user_test.results:
+                        for file_ in ur.executables.values():
+                            files.add(file_.digest)
 
         return files
 

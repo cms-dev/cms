@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -35,8 +36,8 @@ from cms.db.Task import Task, Manager, Dataset, Testcase, Attachment, \
     SubmissionFormatElement, Statement
 from cms.db.Submission import Submission, SubmissionResult, Token, \
     Evaluation, File, Executable
-from cms.db.UserTest import UserTest, UserTestFile, UserTestExecutable, \
-    UserTestManager
+from cms.db.UserTest import UserTest, UserTestResult, UserTestFile, \
+    UserTestExecutable, UserTestManager
 from cms.db.FSObject import FSObject
 
 # The following are methods of Contest that cannot be put in the right
@@ -77,9 +78,24 @@ def get_user_tests(self):
     return self.sa_session.query(UserTest)\
                .join(Task).filter(Task.contest == self).all()
 
+
+def get_user_test_results(self):
+    """Returns a list of user_test results for all user_tests in
+    the current contest, as evaluated against the active dataset
+    for each task.
+
+    returns (list): list of user test results.
+
+    """
+    return self.sa_session.query(UserTestResult)\
+               .join(UserTest).join(Task).filter(Task.contest == self)\
+               .filter(Task.active_dataset_id == UserTestResult.dataset_id)\
+               .all()
+
 Contest.get_submissions = get_submissions
 Contest.get_submission_results = get_submission_results
 Contest.get_user_tests = get_user_tests
+Contest.get_user_test_results = get_user_test_results
 
 
 # The following is a method of User that cannot be put in the right

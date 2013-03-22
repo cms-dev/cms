@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,12 +23,13 @@ directly (import from SQLAlchemyAll).
 
 """
 
-from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
+from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
+    UniqueConstraint
 from sqlalchemy.types import Integer, Float, String, DateTime
 from sqlalchemy.orm import relationship, backref
 
 from cms.db.SQLAlchemyUtils import Base
-from cms.db.Task import Task
+from cms.db.Task import Task, Dataset
 from cms.db.User import User
 from cms.db.SmartMappedCollection import smart_mapped_collection
 
@@ -83,11 +84,69 @@ class UserTest(Base):
         String,
         nullable=True)
 
-    # Input (provided by the user) and output files' digests for this
-    # test.
+    # Input (provided by the user) file's digest for this test.
     input = Column(
         String,
         nullable=False)
+
+    # Follows the description of the fields automatically added by
+    # SQLAlchemy.
+    # files (dict of UserTestFile objects indexed by filename)
+    # managers (dict of UserTestManager objects indexed by filename)
+    # results (list of UserTestResult objects)
+
+    def get_result(self, dataset):
+        # Use IDs to avoid triggering a lazy-load query.
+        assert self.task_id == dataset.task_id
+
+        return UserTestResult.get_from_id(
+            (self.id, dataset.id), self.sa_session)
+
+    def get_result_or_create(self, dataset):
+        user_test_result = self.get_result(dataset)
+
+        if user_test_result is None:
+            user_test_result = UserTestResult(user_test=self,
+                                              dataset=dataset)
+
+        return user_test_result
+
+
+class UserTestResult(Base):
+    """Class to store the execution results of a user_test. Not to
+    be used directly (import it from SQLAlchemyAll).
+
+    """
+    __tablename__ = 'user_test_results'
+    __table_args__ = (
+        UniqueConstraint('user_test_id', 'dataset_id',
+                         name='cst_user_test_results_user_test_id_dataset_id'),
+    )
+
+    # Primary key is (user_test_id, dataset_id).
+    user_test_id = Column(
+        Integer,
+        ForeignKey(UserTest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        primary_key=True)
+    user_test = relationship(
+        UserTest,
+        backref=backref(
+            "results",
+            cascade="all, delete-orphan",
+            passive_deletes=True))
+
+    dataset_id = Column(
+        Integer,
+        ForeignKey(Dataset.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        primary_key=True)
+    dataset = relationship(
+        Dataset)
+
+    # Now below follow the actual result fields.
+
+    # Output file's digest for this test
     output = Column(
         String,
         nullable=True)
@@ -152,9 +211,7 @@ class UserTest(Base):
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
-    # files (dict of UserTestFile objects indexed by filename)
     # executables (dict of UserTestExecutable objects indexed by filename)
-    # managers (dict of UserTestManager objects indexed by filename)
 
     def compiled(self):
         """Return if the user test has been compiled.
@@ -245,7 +302,11 @@ class UserTestExecutable(Base):
     """
     __tablename__ = 'user_test_executables'
     __table_args__ = (
-        UniqueConstraint('user_test_id', 'filename',
+        ForeignKeyConstraint(
+            ('user_test_id', 'dataset_id'),
+            (UserTestResult.user_test_id, UserTestResult.dataset_id),
+            onupdate="CASCADE", ondelete="CASCADE"),
+        UniqueConstraint('user_test_id', 'dataset_id', 'filename',
                          name='cst_executables_user_test_id_filename'),
     )
 
@@ -270,7 +331,21 @@ class UserTestExecutable(Base):
         nullable=False,
         index=True)
     user_test = relationship(
-        UserTest,
+        UserTest)
+
+    # Dataset (id and object) owning the executable.
+    dataset_id = Column(
+        Integer,
+        ForeignKey(Dataset.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    dataset = relationship(
+        Dataset)
+
+    # UserTestResult owning the executable.
+    user_test_result = relationship(
+        UserTestResult,
         backref=backref('executables',
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
