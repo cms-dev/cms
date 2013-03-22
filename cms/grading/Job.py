@@ -156,15 +156,14 @@ class CompilationJob(Job):
         res.update({
                 'type': 'compilation',
                 'language': self.language,
-                'files': [file_.export_to_dict()
-                          for file_ in self.files.itervalues()],
-                'managers': [manager.export_to_dict()
-                             for manager in self.managers.itervalues()],
+                'files': dict((k, v.digest)
+                              for k, v in self.files.iteritems()),
+                'managers': dict((k, v.digest)
+                                 for k, v in self.managers.iteritems()),
                 'success': self.success,
                 'compilation_success': self.compilation_success,
-                'executables': [executable.export_to_dict()
-                                for executable
-                                in self.executables.itervalues()],
+                'executables': dict((k, v.digest)
+                                    for k, v in self.executables.iteritems()),
                 'text': self.text,
                 'plus': self.plus,
                 })
@@ -172,18 +171,12 @@ class CompilationJob(Job):
 
     @classmethod
     def import_from_dict(cls, data):
-        data['files'] = [File.import_from_dict(file_data)
-                         for file_data in data['files']]
-        data['files'] = dict([(file_.filename, file_)
-                              for file_ in data['files']])
-        data['managers'] = [Manager.import_from_dict(manager_data)
-                            for manager_data in data['managers']]
-        data['managers'] = dict([(manager.filename, manager)
-                                 for manager in data['managers']])
-        data['executables'] = [Executable.import_from_dict(executable_data)
-                               for executable_data in data['executables']]
-        data['executables'] = dict([(executable.filename, executable)
-                                    for executable in data['executables']])
+        data['files'] = dict(
+            (k, File(k, v)) for k, v in data['files'].iteritems())
+        data['managers'] = dict(
+            (k, Manager(k, v)) for k, v in data['managers'].iteritems())
+        data['executables'] = dict(
+            (k, Executable(k, v)) for k, v in data['executables'].iteritems())
         return cls(**data)
 
 
@@ -292,17 +285,16 @@ class EvaluationJob(Job):
         res = Job.export_to_dict(self)
         res.update({
                 'type': 'evaluation',
-                'executables': [executable.export_to_dict()
-                                for executable
-                                in self.executables.itervalues()],
+                'executables': dict((k, v.digest)
+                                    for k, v in self.executables.iteritems()),
                 'testcases': [testcase.export_to_dict()
                               for testcase in self.testcases],
                 'time_limit': self.time_limit,
                 'memory_limit': self.memory_limit,
-                'managers': [manager.export_to_dict()
-                             for manager in self.managers.itervalues()],
-                'files': [file_.export_to_dict()
-                          for file_ in self.files.itervalues()],
+                'managers': dict((k, v.digest)
+                                 for k, v in self.managers.iteritems()),
+                'files': dict((k, v.digest)
+                              for k, v in self.files.iteritems()),
                 'success': self.success,
                 # XXX We convert the key from int to str because it'll
                 # be the key of a JSON object.
@@ -315,20 +307,14 @@ class EvaluationJob(Job):
 
     @classmethod
     def import_from_dict(cls, data):
-        data['executables'] = [Executable.import_from_dict(executable_data)
-                               for executable_data in data['executables']]
-        data['executables'] = dict([(executable.filename, executable)
-                                    for executable in data['executables']])
+        data['files'] = dict(
+            (k, File(k, v)) for k, v in data['files'].iteritems())
+        data['managers'] = dict(
+            (k, Manager(k, v)) for k, v in data['managers'].iteritems())
+        data['executables'] = dict(
+            (k, Executable(k, v)) for k, v in data['executables'].iteritems())
         data['testcases'] = [Testcase.import_from_dict(testcase_data)
                              for testcase_data in data['testcases']]
-        data['managers'] = [Manager.import_from_dict(manager_data)
-                            for manager_data in data['managers']]
-        data['managers'] = dict([(manager.filename, manager)
-                                 for manager in data['managers']])
-        data['files'] = [File.import_from_dict(file_data)
-                         for file_data in data['files']]
-        data['files'] = dict([(file_.filename, file_)
-                              for file_ in data['files']])
         # XXX We convert the key from str to int because it was the key
         # of a JSON object.
         data['evaluations'] = dict((int(k), v) for k, v

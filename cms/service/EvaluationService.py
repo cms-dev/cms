@@ -1019,8 +1019,8 @@ class EvaluationService(Service):
                     user_test.compilation_shard = job.shard
                     user_test.compilation_sandbox = ":".join(job.sandboxes)
                     for executable in job.executables.itervalues():
-                        ut_executable = UserTestExecutable.import_from_dict(
-                            executable.export_to_dict())
+                        ut_executable = UserTestExecutable(
+                            executable.filename, executable.digest)
                         user_test.executables[ut_executable.filename] = \
                             ut_executable
                         session.add(ut_executable)
