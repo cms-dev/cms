@@ -172,7 +172,7 @@ class SpoolExporter:
         # Make the score type compute the scores.
         scorers = {}
         for task in self.contest.tasks:
-            scorers[task.id] = get_score_type(task=task)
+            scorers[task.id] = get_score_type(dataset=task.active_dataset)
 
         for submission in self.submissions:
             scorers[submission.task_id].add_submission(
