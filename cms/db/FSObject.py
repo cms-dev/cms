@@ -146,9 +146,3 @@ class FSObject(Base):
         """
         for fso in cls.get_all(session):
             fso.delete()
-
-    def export_to_dict(self):
-        """FSObjects cannot be exported to a dictionary.
-
-        """
-        return {}

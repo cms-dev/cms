@@ -168,46 +168,6 @@ class Contest(Base):
     # get_submissions (defined in SQLAlchemyAll)
     # get_user_tests (defined in SQLAlchemyAll)
 
-    def export_to_dict(self, skip_submissions=False, skip_user_tests=False):
-        """Return object data as a dictionary.
-
-        """
-        return {'name':               self.name,
-                'description':        self.description,
-                'tasks':              [task.export_to_dict()
-                                       for task in self.tasks],
-                'users':              [user.export_to_dict(skip_submissions,
-                                                           skip_user_tests)
-                                       for user in self.users],
-                'token_initial':      self.token_initial,
-                'token_max':          self.token_max,
-                'token_total':        self.token_total,
-                'token_min_interval': self.token_min_interval.total_seconds(),
-                'token_gen_time':     self.token_gen_time.total_seconds(),
-                'token_gen_number':   self.token_gen_number,
-                'start':
-                    make_timestamp(self.start)
-                    if self.start is not None else None,
-                'stop':
-                    make_timestamp(self.stop)
-                    if self.stop is not None else None,
-                'timezone':           self.timezone,
-                'per_user_time':
-                    self.per_user_time.total_seconds()
-                    if self.per_user_time is not None else None,
-                'max_submission_number': self.max_submission_number,
-                'max_user_test_number': self.max_user_test_number,
-                'min_submission_interval':
-                    self.min_submission_interval.total_seconds()
-                    if self.min_submission_interval is not None else None,
-                'min_user_test_interval':
-                    self.min_user_test_interval.total_seconds()
-                    if self.min_user_test_interval is not None else None,
-                'score_precision':    self.score_precision,
-                'announcements':      [announcement.export_to_dict()
-                                       for announcement in self.announcements],
-                }
-
     # FIXME - Use SQL syntax
     def get_task(self, task_name):
         """Return the first task in the contest with the given name.
@@ -614,19 +574,3 @@ class Announcement(Base):
             order_by=[timestamp],
             cascade="all, delete-orphan",
             passive_deletes=True))
-
-    def export_to_dict(self):
-        """Return object data as a dictionary.
-
-        """
-        return {'timestamp': make_timestamp(self.timestamp),
-                'subject':   self.subject,
-                'text':      self.text}
-
-    @classmethod
-    def import_from_dict(cls, data):
-        """Build the object using data from a dictionary.
-
-        """
-        data['timestamp'] = make_datetime(data['timestamp'])
-        return cls(**data)

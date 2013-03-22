@@ -149,38 +149,6 @@ class User(Base):
     # Moreover, we have the following methods.
     # get_tokens (defined in SQLAlchemyAll)
 
-    def export_to_dict(self, skip_submissions=False, skip_user_tests=False):
-        """Return object data as a dictionary.
-
-        """
-        submissions = []
-        if not skip_submissions:
-            submissions = [submission.export_to_dict()
-                           for submission in self.submissions]
-        user_tests = []
-        if not skip_user_tests:
-            user_tests = [user_test.export_to_dict()
-                          for user_test in self.user_tests]
-
-        return {'first_name':    self.first_name,
-                'last_name':     self.last_name,
-                'username':      self.username,
-                'password':      self.password,
-                'email':         self.email,
-                'ip':            self.ip,
-                'hidden':        self.hidden,
-                'primary_statements': self.primary_statements,
-                'timezone':      self.timezone,
-                'starting_time': make_timestamp(self.starting_time)
-                if self.starting_time is not None else None,
-                'extra_time':    self.extra_time.total_seconds(),
-                'messages':      [message.export_to_dict()
-                                  for message in self.messages],
-                'questions':     [question.export_to_dict()
-                                  for question in self.questions],
-                'submissions':   submissions,
-                'user_tests':    user_tests}
-
 
 class Message(Base):
     """Class to store a private message from the managers to the
@@ -220,22 +188,6 @@ class Message(Base):
                         order_by=[timestamp],
                         cascade="all, delete-orphan",
                         passive_deletes=True))
-
-    def export_to_dict(self):
-        """Return object data as a dictionary.
-
-        """
-        return {'timestamp': make_timestamp(self.timestamp),
-                'subject':   self.subject,
-                'text':      self.text}
-
-    @classmethod
-    def import_from_dict(cls, data):
-        """Build the object using data from a dictionary.
-
-        """
-        data['timestamp'] = make_datetime(data['timestamp'])
-        return cls(**data)
 
 
 class Question(Base):
@@ -297,26 +249,3 @@ class Question(Base):
                         order_by=[question_timestamp, reply_timestamp],
                         cascade="all, delete-orphan",
                         passive_deletes=True))
-
-    def export_to_dict(self):
-        """Return object data as a dictionary.
-
-        """
-        return {'question_timestamp': make_timestamp(self.question_timestamp),
-                'subject':            self.subject,
-                'text':               self.text,
-                'reply_timestamp':    make_timestamp(self.reply_timestamp)
-                if self.reply_timestamp is not None else None,
-                'reply_subject':      self.reply_subject,
-                'reply_text':         self.reply_text,
-                'ignored':            self.ignored}
-
-    @classmethod
-    def import_from_dict(cls, data):
-        """Build the object using data from a dictionary.
-
-        """
-        data['question_timestamp'] = make_datetime(data['question_timestamp'])
-        if data['reply_timestamp'] is not None:
-            data['reply_timestamp'] = make_datetime(data['reply_timestamp'])
-        return cls(**data)

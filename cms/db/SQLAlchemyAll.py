@@ -37,9 +37,6 @@ from cms.db.UserTest import UserTest, UserTestFile, UserTestExecutable, \
     UserTestManager
 from cms.db.FSObject import FSObject
 
-import cms.db.ImportFromDict
-
-
 # The following are methods of Contest that cannot be put in the right
 # file because of circular dependencies.
 

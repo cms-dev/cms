@@ -307,24 +307,6 @@ class Base(object):
         except ObjectDeletedError:
             return None
 
-    def export_to_dict(self):
-        """Placeholder for exporting method.
-
-        """
-        raise NotImplementedError("Please subclass me.")
-
-    @classmethod
-    def import_from_dict(cls, data):
-        """Placeholder for importing method. These cannot be defined
-        neither here nor at the time of the definition of the subclass
-        (because they usually depends on a lot of other db-related
-        classes). So we define them in ImportFromDict. To avoid
-        unnecessary warnings, we don't throw a NotImplementedError
-        here.
-
-        """
-        return cls(**data)
-
 
 Base = declarative_base(db, cls=Base, constructor=None)
 

@@ -199,89 +199,6 @@ class Task(Base):
     # building the scores of the submissions.
     scorer = None
 
-    def export_to_dict(self):
-        """Return object data as a dictionary.
-
-        """
-        return {'name':                 self.name,
-                'title':                self.title,
-                'num':                  self.num,
-                'statements':           [statement.export_to_dict()
-                                         for statement
-                                         in self.statements.itervalues()],
-                'attachments':          [attachment.export_to_dict()
-                                         for attachment
-                                         in self.attachments.itervalues()],
-                'time_limit':           self.time_limit,
-                'memory_limit':         self.memory_limit,
-                'primary_statements':   self.primary_statements,
-                'task_type':            self.task_type,
-                'task_type_parameters': self.task_type_parameters,
-                'submission_format':    [element.export_to_dict()
-                                         for element
-                                         in self.submission_format],
-                'managers':             [manager.export_to_dict()
-                                         for manager
-                                         in self.managers.itervalues()],
-                'score_type':           self.score_type,
-                'score_type_parameters': self.score_type_parameters,
-                'testcases':            [testcase.export_to_dict()
-                                         for testcase in self.testcases],
-                'token_initial':        self.token_initial,
-                'token_max':            self.token_max,
-                'token_total':          self.token_total,
-                'token_min_interval':
-                    self.token_min_interval.total_seconds(),
-                'token_gen_time':
-                    self.token_gen_time.total_seconds(),
-                'token_gen_number':     self.token_gen_number,
-                'max_submission_number': self.max_submission_number,
-                'max_user_test_number': self.max_user_test_number,
-                'min_submission_interval':
-                    self.min_submission_interval.total_seconds()
-                    if self.min_submission_interval is not None else None,
-                'min_user_test_interval':
-                    self.min_user_test_interval.total_seconds()
-                    if self.min_user_test_interval is not None else None,
-                'score_precision':      self.score_precision,
-                }
-
-    @classmethod
-    def import_from_dict(cls, data):
-        """Build the object using data from a dictionary.
-
-        """
-        data['attachments'] = [Attachment.import_from_dict(attch_data)
-                               for attch_data in data['attachments']]
-        data['attachments'] = dict([(attachment.filename, attachment)
-                                    for attachment in data['attachments']])
-        data['submission_format'] = [SubmissionFormatElement.import_from_dict(
-            sfe_data) for sfe_data in data['submission_format']]
-        data['managers'] = [Manager.import_from_dict(manager_data)
-                            for manager_data in data['managers']]
-        data['managers'] = dict([(manager.filename, manager)
-                                 for manager in data['managers']])
-        data['testcases'] = [Testcase.import_from_dict(testcase_data)
-                             for testcase_data in data['testcases']]
-        data['statements'] = [Statement.import_from_dict(statement_data)
-                              for statement_data in data['statements']]
-        data['statements'] = dict([(statement.language, statement)
-                                   for statement in data['statements']])
-        if 'token_min_interval' in data:
-            data['token_min_interval'] = \
-                timedelta(seconds=data['token_min_interval'])
-        if 'token_gen_time' in data:
-            data['token_gen_time'] = timedelta(seconds=data['token_gen_time'])
-        if 'min_submission_interval' in data and \
-                data['min_submission_interval'] is not None:
-            data['min_submission_interval'] = \
-                timedelta(seconds=data['min_submission_interval'])
-        if 'min_user_test_interval' in data and \
-                data['min_user_test_interval'] is not None:
-            data['min_user_test_interval'] = \
-                timedelta(seconds=data['min_user_test_interval'])
-        return cls(**data)
-
 
 class Testcase(Base):
     """Class to store the information about a testcase. Not to be used
@@ -334,35 +251,6 @@ class Testcase(Base):
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
-    def export_to_dict(self):
-        """Return object data as a dictionary.
-
-        """
-        return {'input':  self.input,
-                'output': self.output,
-                'public': self.public}
-
-    @classmethod
-    def import_from_dict(cls, data):
-        """Build the object using data from a dictionary.
-
-        """
-        public = data.get('public', None)
-        input_ = data.get('input', None)
-        output = data.get('output', None)
-        res = cls(num=0,
-                  public=public if public is not None else True,
-                  input=input_ if input_ is not None else "",
-                  output=output if output is not None else "")
-        res.num = None
-        if public is None:
-            res.public = None
-        if input_ is None:
-            res.input = None
-        if output is None:
-            res.output = None
-        return res
-
 
 class Attachment(Base):
     """Class to store additional files to give to the user together
@@ -402,13 +290,6 @@ class Attachment(Base):
                         collection_class=smart_mapped_collection('filename'),
                         cascade="all, delete-orphan",
                         passive_deletes=True))
-
-    def export_to_dict(self):
-        """Return object data as a dictionary.
-
-        """
-        return {'filename': self.filename,
-                'digest':   self.digest}
 
 
 class Manager(Base):
@@ -450,13 +331,6 @@ class Manager(Base):
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
-    def export_to_dict(self):
-        """Return object data as a dictionary.
-
-        """
-        return {'filename': self.filename,
-                'digest':   self.digest}
-
 
 class SubmissionFormatElement(Base):
     """Class to store the requested files that a submission must
@@ -489,12 +363,6 @@ class SubmissionFormatElement(Base):
     filename = Column(
         String,
         nullable=False)
-
-    def export_to_dict(self):
-        """Return object data as a dictionary.
-
-        """
-        return {'filename': self.filename}
 
 
 class Statement(Base):
@@ -540,10 +408,3 @@ class Statement(Base):
                         collection_class=smart_mapped_collection('language'),
                         cascade="all, delete-orphan",
                         passive_deletes=True))
-
-    def export_to_dict(self):
-        """Return object data as a dictionary.
-
-        """
-        return {'language': self.language,
-                'digest':   self.digest}
