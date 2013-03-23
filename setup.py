@@ -64,6 +64,10 @@ def do_setup():
             os.path.join("code", "*.*"),
             os.path.join("tasks", "batch_stdio", "data", "*.*"),
             os.path.join("tasks", "batch_fileio", "data", "*.*"),
+            os.path.join("tasks", "batch_fileio_managed", "data", "*"),
+            os.path.join("tasks", "batch_fileio_managed", "code", "*"),
+            os.path.join("tasks", "communication", "data", "*"),
+            os.path.join("tasks", "communication", "code", "*"),
             ],
         }
 
