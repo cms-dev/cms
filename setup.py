@@ -99,7 +99,9 @@ def do_setup():
                     "cmstestsuite.web",
                     "cmstestsuite.tasks",
                     "cmstestsuite.tasks.batch_stdio",
-                    "cmstestsuite.tasks.batch_fileio"],
+                    "cmstestsuite.tasks.batch_fileio",
+                    "cmstestsuite.tasks.batch_fileio_managed",
+                    "cmstestsuite.tasks.communication"],
           package_data=package_data,
           entry_points={
               "console_scripts": [
