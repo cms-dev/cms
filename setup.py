@@ -64,6 +64,12 @@ def do_setup():
             os.path.join("code", "*.*"),
             os.path.join("tasks", "batch_stdio", "data", "*.*"),
             os.path.join("tasks", "batch_fileio", "data", "*.*"),
+            os.path.join("tasks", "batch_fileio_managed", "data", "*"),
+            os.path.join("tasks", "batch_fileio_managed", "code", "*"),
+            os.path.join("tasks", "twostep_multisubmit", "data", "*"),
+            os.path.join("tasks", "twostep_multisubmit", "code", "*"),
+            os.path.join("tasks", "communication", "data", "*"),
+            os.path.join("tasks", "communication", "code", "*"),
             ],
         }
 
@@ -101,6 +107,7 @@ def do_setup():
                     "cmstestsuite.tasks.batch_stdio",
                     "cmstestsuite.tasks.batch_fileio",
                     "cmstestsuite.tasks.batch_fileio_managed",
+                    "cmstestsuite.tasks.twostep_multisubmit",
                     "cmstestsuite.tasks.communication"],
           package_data=package_data,
           entry_points={

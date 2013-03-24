@@ -21,6 +21,7 @@ import cmstestsuite.tasks.batch_stdio as batch_stdio
 import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
+import cmstestsuite.tasks.twostep_multisubmit as twostep_multisubmit
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
      CheckTimeout, CheckSignal, CheckNonzeroReturn
 
@@ -30,112 +31,136 @@ all_languages = ('c', 'cpp', 'pas')
 ALL_TESTS = [
 
 Test('correct-stdio',
-     task=batch_stdio, filename='correct-stdio.%l',
+     task=batch_stdio, files=['correct-stdio.%l'],
      languages=all_languages,
      checks=[CheckOverallScore(100, 100)]),
 
 Test('incorrect-stdio',
-     task=batch_stdio, filename='incorrect-stdio.%l',
+     task=batch_stdio, files=['incorrect-stdio.%l'],
      languages=all_languages,
      checks=[CheckOverallScore(0, 100)]),
 
 Test('half-correct-stdio',
-     task=batch_stdio, filename='half-correct-stdio.%l',
+     task=batch_stdio, files=['half-correct-stdio.%l'],
      languages=all_languages,
      checks=[CheckOverallScore(50, 100)]),
 
 Test('correct-freopen',
-     task=batch_fileio, filename='correct-freopen.%l',
+     task=batch_fileio, files=['correct-freopen.%l'],
      languages=('c',),
      checks=[CheckOverallScore(100, 100)]),
 
 Test('correct-fileio',
-     task=batch_fileio, filename='correct-fileio.%l',
+     task=batch_fileio, files=['correct-fileio.%l'],
      languages=all_languages,
      checks=[CheckOverallScore(100, 100)]),
 
 Test('incorrect-fileio',
-     task=batch_fileio, filename='incorrect-fileio.%l',
+     task=batch_fileio, files=['incorrect-fileio.%l'],
      languages=all_languages,
      checks=[CheckOverallScore(0, 100)]),
 
 Test('half-correct-fileio',
-     task=batch_fileio, filename='half-correct-fileio.%l',
+     task=batch_fileio, files=['half-correct-fileio.%l'],
      languages=all_languages,
      checks=[CheckOverallScore(50, 100)]),
 
 Test('incorrect-fileio-nooutput',
-     task=batch_fileio, filename='incorrect-fileio-nooutput.%l',
+     task=batch_fileio, files=['incorrect-fileio-nooutput.%l'],
      languages=('c',),
      checks=[CheckOverallScore(0, 100)]),
 
 Test('incorrect-fileio-emptyoutput',
-     task=batch_fileio, filename='incorrect-fileio-emptyoutput.%l',
+     task=batch_fileio, files=['incorrect-fileio-emptyoutput.%l'],
      languages=('c',),
      checks=[CheckOverallScore(0, 100)]),
 
 Test('incorrect-readstdio',
-     task=batch_fileio, filename='correct-stdio.%l',
+     task=batch_fileio, files=['correct-stdio.%l'],
      languages=all_languages,
      checks=[CheckOverallScore(0, 100)]),
 
 Test('compile-fail',
-     task=batch_fileio, filename='compile-fail.%l',
+     task=batch_fileio, files=['compile-fail.%l'],
      languages=all_languages,
      checks=[CheckCompilationFail()]),
 
 Test('timeout-cputime',
-     task=batch_stdio, filename='timeout-cputime.%l',
+     task=batch_stdio, files=['timeout-cputime.%l'],
      languages=all_languages,
      checks=[CheckOverallScore(0, 100), CheckTimeout()]),
 
 Test('timeout-pause',
-     task=batch_stdio, filename='timeout-pause.%l',
+     task=batch_stdio, files=['timeout-pause.%l'],
      languages=('cpp',),
      checks=[CheckOverallScore(0, 100), CheckTimeout()]),
 
 Test('timeout-sleep',
-     task=batch_stdio, filename='timeout-sleep.%l',
+     task=batch_stdio, files=['timeout-sleep.%l'],
      languages=('cpp',),
      checks=[CheckOverallScore(0, 100), CheckTimeout()]),
 
 Test('timeout-sigstop',
-     task=batch_stdio, filename='timeout-sigstop.%l',
+     task=batch_stdio, files=['timeout-sigstop.%l'],
      languages=('cpp',),
      checks=[CheckOverallScore(0, 100), CheckTimeout()]),
 
 Test('timeout-select',
-     task=batch_stdio, filename='timeout-select.%l',
+     task=batch_stdio, files=['timeout-select.%l'],
      languages=('cpp',),
      checks=[CheckOverallScore(0, 100), CheckTimeout()]),
 
 Test('nonzero-return-stdio',
-     task=batch_stdio, filename='nonzero-return-stdio.%l',
+     task=batch_stdio, files=['nonzero-return-stdio.%l'],
      languages=all_languages,
      checks=[CheckOverallScore(0, 100), CheckNonzeroReturn()]),
 
 Test('nonzero-return-fileio',
-     task=batch_fileio, filename='nonzero-return-fileio.%l',
+     task=batch_fileio, files=['nonzero-return-fileio.%l'],
      languages=all_languages,
      checks=[CheckOverallScore(0, 100), CheckNonzeroReturn()]),
 
 Test('managed-correct',
-     task=batch_fileio_managed, filename='managed-correct.%l',
+     task=batch_fileio_managed, files=['managed-correct.%l'],
      languages=('c', 'cpp'), # TODO: Pascal.
      checks=[CheckOverallScore(100, 100)]),
 
 Test('managed-incorrect',
-     task=batch_fileio_managed, filename='managed-incorrect.%l',
+     task=batch_fileio_managed, files=['managed-incorrect.%l'],
      languages=('c', 'cpp'), # TODO: Pascal.
      checks=[CheckOverallScore(0, 100)]),
 
 Test('communication-correct',
-     task=communication, filename='managed-correct.%l',
+     task=communication, files=['managed-correct.%l'],
      languages=('c', 'cpp'), # TODO: Pascal.
      checks=[CheckOverallScore(100, 100)]),
 
 Test('communication-incorrect',
-     task=communication, filename='managed-incorrect.%l',
+     task=communication, files=['managed-incorrect.%l'],
+     languages=('c', 'cpp'), # TODO: Pascal.
+     checks=[CheckOverallScore(0, 100)]),
+
+Test('twostepmultisubmit-correct',
+     task=twostep_multisubmit,
+     files=['twostep-correct-partA.%l', 'twostep-correct-partB.%l'],
+     languages=('c', 'cpp'), # TODO: Pascal.
+     checks=[CheckOverallScore(100, 100)]),
+
+Test('twostepmultisubmit-incorrect',
+     task=twostep_multisubmit,
+     files=['twostep-incorrect-partA.%l', 'twostep-incorrect-partB.%l'],
+     languages=('c', 'cpp'), # TODO: Pascal.
+     checks=[CheckOverallScore(0, 100)]),
+
+Test('twostepmultisubmit-only-partA-correct',
+     task=twostep_multisubmit,
+     files=['twostep-correct-partA.%l', 'twostep-incorrect-partB.%l'],
+     languages=('c', 'cpp'), # TODO: Pascal.
+     checks=[CheckOverallScore(0, 100)]),
+
+Test('twostepmultisubmit-only-partB-correct',
+     task=twostep_multisubmit,
+     files=['twostep-incorrect-partA.%l', 'twostep-correct-partB.%l'],
      languages=('c', 'cpp'), # TODO: Pascal.
      checks=[CheckOverallScore(0, 100)]),
 

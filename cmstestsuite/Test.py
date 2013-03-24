@@ -19,8 +19,9 @@
 
 import os
 import re
+import simplejson as json
 
-from cmstestsuite import cws_submit, get_evaluation_result
+from cmstestsuite import created_tasks, cws_submit, get_evaluation_result
 
 
 class TestFailure(Exception):
@@ -121,10 +122,10 @@ class CheckNonzeroReturn(CheckAbstractEvaluationFailure):
 
 
 class Test:
-    def __init__(self, name, task, filename, languages, checks):
+    def __init__(self, name, task, files, languages, checks):
         self.name = name
         self.task_module = task
-        self.filename = filename
+        self.files = files
         self.languages = languages
         self.checks = checks
 
@@ -132,14 +133,38 @@ class Test:
         # Source files are stored under cmstestsuite/code/.
         path = os.path.join(os.path.dirname(__file__), 'code')
 
-        # Choose the correct file to submit.
-        filename = self.filename.replace("%l", language)
+        # List of files to submit
+        files = []
+        # For each file to be submitted
 
-        full_path = os.path.join(path, filename)
+        # Set appropriate field name depending on format choice
+        task_format = created_tasks[task_id]['submission_format_choice']
+        if task_format == "simple":
+            # Choose the correct file to submit.  There should only be one if
+            # submission_format_choice is simple.
+            filename = self.files[0]
+            filename = filename.replace("%l", language)
+            full_path = os.path.join(path, filename)
+
+            # Create the correct field name
+            field_name = '%s.%%l'%(created_tasks[task_id]['name'])
+
+            # Set as file to be submitted
+            files = [[field_name, full_path]]
+        elif task_format == "other":
+            # Create the list of field_name + filename pairs
+
+            # First split the json-formatted list of strings in a regular
+            # list of strings
+            submission_format = json.loads(created_tasks[task_id]['submission_format'])
+            filenames = map(lambda x: os.path.join(path, x),self.files)
+            filenames = map(lambda x: x.replace("%l", language), filenames)
+            files = zip(submission_format,filenames)
+            files = map(list,files)
 
         # Submit our code.
         submission_id = cws_submit(contest_id, task_id, user_id,
-                                   full_path, language)
+                                   files, language)
 
         # Wait for evaluation to complete.
         result_info = get_evaluation_result(contest_id, submission_id)

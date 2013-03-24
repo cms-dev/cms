@@ -43,8 +43,13 @@ def browser_do_request(browser, url, data=None, files=None):
     url (string): the URL to open.
     data (dict): a dictionary of parameters to pass as POST arguments.
     files (list): a list of files to pass as POST arguments. Each
-                  entry is a tuple containing two strings: the field
-                  name and the file name to send.
+                  entry is one of :
+                  1) a tuple containing two strings: the field name and the
+                  file name to send, or
+                  2) a triple containing three strings: the field
+                  name, the filename to send and the actual name of the file
+                  being sent. Note that the two file names referenced do not
+                  have to be the same.
 
     """
     if files is None:
@@ -59,10 +64,15 @@ def browser_do_request(browser, url, data=None, files=None):
         for key in sorted(data.keys()):
             browser.form.new_control('hidden', key, {'value': data[key]})
 
-        for field_name, file_path in files:
+        for f in files:
+            if len(f) == 3:
+                [field_name, file_name, file_path] = f
+            else:
+                [field_name, file_path] = f
+                file_name = os.path.basename(file_path)
+
             browser.form.new_control('file', field_name, {'id': field_name})
-            filename = os.path.basename(file_path)
-            browser.form.add_file(open(file_path), 'text/plain', filename,
+            browser.form.add_file(open(file_path), 'text/plain', file_name,
                 id=field_name)
 
         browser.form.set_all_readonly(False)

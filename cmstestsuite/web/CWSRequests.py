@@ -129,7 +129,7 @@ class SubmitRequest(GenericRequest):
 
     def prepare(self):
         GenericRequest.prepare(self)
-        self.files = [('%s.%%l' % (self.task[1]), self.filename)]
+        self.files = [['%s.%%l' % self.task[1], self.filename]]
 
     def describe(self):
         return "submit source %s for task %s (ID %d)" % \
@@ -156,6 +156,54 @@ class SubmitRequest(GenericRequest):
             return None
         return submission_id
 
+class SubmitMultifileRequest(GenericRequest):
+    """Submit a solution in CWS.
+
+       Files to be submitted must be passed in as the files list. This list
+       must contain entries which refer to the files. Each entry is one of:
+       1) a tuple containing two strings: the field name and the name of the
+       file to send, or
+       2) a triple containing three strings: the field name, the filename to
+       send and the name of the file to send. Note that in this case, the
+       second and third arguments do not have to match. The second field is
+       the name sent to the server, the third field is the name of the file
+       as it exists on local storage.
+
+    """
+    def __init__(self, browser, task, files, base_url=None):
+        GenericRequest.__init__(self, browser, base_url)
+        self.url = "%stasks/%s/submit" % (self.base_url, task[1])
+        self.task = task
+        self.files = files
+        self.data = {}
+
+    def prepare(self):
+        GenericRequest.prepare(self)
+
+    def describe(self):
+        return "submit %d source(s) for task %s (ID %d)" % \
+            (len(self.files), self.task[1], self.task[0])
+
+    def specific_info(self):
+        return 'Task: %s (ID %d)\nFiles: %s\n' % \
+            (self.task[1], self.task[0], self.files) + \
+            GenericRequest.specific_info(self)
+
+    def test_success(self):
+        if not GenericRequest.test_success(self):
+            return False
+
+        return self.get_submission_id() is not None
+
+    def get_submission_id(self):
+        # Only valid after self.execute()
+        # Parse submission ID out of response.
+        p = self.browser.geturl().split("?")[-1]
+        try:
+            submission_id = decrypt_number(p)
+        except Exception:
+            return None
+        return submission_id
 
 class TokenRequest(GenericRequest):
     """Release test a submission.
@@ -208,7 +256,7 @@ class SubmitRandomRequest(SubmitRequest):
         sources = os.listdir(task_path)
         source = random.choice(sources)
         self.source_path = os.path.join(task_path, source)
-        self.files = [('%s.%%l' % (self.task[1]), self.source_path)]
+        self.files = [['%s.%%l', self.task[1], self.source_path]]
 
     def describe(self):
         return "submit source %s for task %s (ID %d)" % \
