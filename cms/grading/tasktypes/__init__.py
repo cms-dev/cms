@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -25,15 +26,15 @@ from cms import logger, plugin_lookup
 from cms.grading.Job import Job
 
 
-def get_task_type(job=None, file_cacher=None, task=None,
+def get_task_type(job=None, file_cacher=None, dataset=None,
                   task_type_name=None):
     """Given a job, instantiate the corresponding TaskType class.
 
     job (Job): the job to perform.
     file_cacher (FileCacher): a file cacher object.
-    task (Task): if we don't want to grade, but just to get
+    dataset (Dataset): if we don't want to grade, but just to get
                  information, we can provide only the
-                 task and not the submission.
+                 dataset and not the submission.
     task_type_name (string): again, if we only need the class, we can
                              give only the task type name.
 
@@ -42,7 +43,7 @@ def get_task_type(job=None, file_cacher=None, task=None,
     """
     # Validate arguments.
     if [x is not None
-        for x in [job, task, task_type_name]].count(True) != 1:
+        for x in [job, dataset, task_type_name]].count(True) != 1:
         raise ValueError("Need exactly one way to get the task type.")
     elif [x is not None
           for x in [job, file_cacher]].count(True) not in [0, 2]:
@@ -52,10 +53,10 @@ def get_task_type(job=None, file_cacher=None, task=None,
     task_type_parameters = None
     if job is not None:
         task_type_name = job.task_type
-    if task is not None:
-        task_type_name = task.task_type
+    if dataset is not None:
+        task_type_name = dataset.task_type
         try:
-            task_type_parameters = json.loads(task.task_type_parameters)
+            task_type_parameters = json.loads(dataset.task_type_parameters)
         except json.decoder.JSONDecodeError as error:
             logger.error("Cannot decode task type parameters.\n%r." % error)
             raise
