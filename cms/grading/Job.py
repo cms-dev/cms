@@ -4,6 +4,7 @@
 # Programming contest management system
 # Copyright © 2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -106,31 +107,29 @@ class CompilationJob(Job):
         self.plus = plus
 
     @staticmethod
-    def from_submission(submission):
+    def from_submission(submission, dataset):
         job = CompilationJob()
 
         # Job
-        job.task_type = submission.task.task_type
-        job.task_type_parameters = json.loads(
-            submission.task.task_type_parameters)
+        job.task_type = dataset.task_type
+        job.task_type_parameters = json.loads(dataset.task_type_parameters)
 
         # CompilationJob; dict() is required to detach the dictionary
         # that gets added to the Job from the control of SQLAlchemy
         job.language = submission.language
         job.files = dict(submission.files)
-        job.managers = dict(submission.task.managers)
+        job.managers = dict(dataset.managers)
         job.info = "compile submission %d" % (submission.id)
 
         return job
 
     @staticmethod
-    def from_user_test(user_test):
+    def from_user_test(user_test, dataset):
         job = CompilationJob()
 
         # Job
-        job.task_type = user_test.task.task_type
-        job.task_type_parameters = json.loads(
-            user_test.task.task_type_parameters)
+        job.task_type = dataset.task_type
+        job.task_type_parameters = json.loads(dataset.task_type_parameters)
 
         # CompilationJob; dict() is required to detach the dictionary
         # that gets added to the Job from the control of SQLAlchemy
@@ -142,17 +141,17 @@ class CompilationJob(Job):
         # Add the managers to be got from the Task; get_task_type must
         # be imported here to avoid circular dependencies
         from cms.grading.tasktypes import get_task_type
-        task_type = get_task_type(task=user_test.task)
+        task_type = get_task_type(dataset=dataset)
         auto_managers = task_type.get_auto_managers()
         if auto_managers is not None:
             for manager_filename in auto_managers:
                 job.managers[manager_filename] = \
-                    user_test.task.managers[manager_filename]
+                    dataset.managers[manager_filename]
         else:
-            for manager_filename in user_test.task.managers:
+            for manager_filename in dataset.managers:
                 if manager_filename not in job.managers:
                     job.managers[manager_filename] = \
-                        user_test.task.managers[manager_filename]
+                        dataset.managers[manager_filename]
 
         return job
 
@@ -228,62 +227,70 @@ class EvaluationJob(Job):
         self.get_output = get_output
 
     @staticmethod
-    def from_submission(submission):
+    def from_submission(submission, dataset):
         job = EvaluationJob()
 
         # Job
-        job.task_type = submission.task.task_type
-        job.task_type_parameters = json.loads(
-            submission.task.task_type_parameters)
+        job.task_type = dataset.task_type
+        job.task_type_parameters = json.loads(dataset.task_type_parameters)
+
+        submission_result = submission.get_result(dataset)
+
+        # This should have been created by now.
+        assert submission_result is not None
 
         # EvaluationJob; dict() is required to detach the dictionary
         # that gets added to the Job from the control of SQLAlchemy
         job.language = submission.language
         job.files = dict(submission.files)
-        job.managers = dict(submission.task.managers)
-        job.executables = dict(submission.executables)
+        job.managers = dict(dataset.managers)
+        job.executables = dict(submission_result.executables)
         job.testcases = dict((t.num, Testcase(t.input, t.output))
-                             for t in submission.task.testcases)
-        job.time_limit = submission.task.time_limit
-        job.memory_limit = submission.task.memory_limit
+                             for t in dataset.testcases)
+        job.time_limit = dataset.time_limit
+        job.memory_limit = dataset.memory_limit
         job.info = "evaluate submission %d" % (submission.id)
 
         return job
 
     @staticmethod
-    def from_user_test(user_test):
+    def from_user_test(user_test, dataset):
         job = EvaluationJob()
 
         # Job
-        job.task_type = user_test.task.task_type
-        job.task_type_parameters = json.loads(
-            user_test.task.task_type_parameters)
+        job.task_type = dataset.task_type
+        job.task_type_parameters = json.loads(dataset.task_type_parameters)
+
+        user_test_result = user_test.get_result(dataset)
+
+        # This should have been created by now.
+        assert user_test_result is not None
 
         # EvaluationJob; dict() is required to detach the dictionary
         # that gets added to the Job from the control of SQLAlchemy
         job.language = user_test.language
         job.files = dict(user_test.files)
         job.managers = dict(user_test.managers)
-        job.executables = dict(user_test.executables)
+        job.executables = dict(user_test_result.executables)
         job.testcases = {0: Testcase(user_test.input, None)}
-        job.time_limit = user_test.task.time_limit
-        job.memory_limit = user_test.task.memory_limit
+        job.time_limit = dataset.time_limit
+        job.memory_limit = dataset.memory_limit
         job.info = "evaluate user test %d" % (user_test.id)
 
         # Add the managers to be got from the Task; get_task_type must
         # be imported here to avoid circular dependencies
         from cms.grading.tasktypes import get_task_type
-        task_type = get_task_type(task=user_test.task)
+        task_type = get_task_type(dataset=dataset)
         auto_managers = task_type.get_auto_managers()
         if auto_managers is not None:
             for manager_filename in auto_managers:
                 job.managers[manager_filename] = \
-                    user_test.task.managers[manager_filename]
+                    dataset.managers[manager_filename]
         else:
-            for manager_filename in user_test.task.managers:
+            for manager_filename in dataset.managers:
                 if manager_filename not in job.managers:
                     job.managers[manager_filename] = \
-                        user_test.task.managers[manager_filename]
+                        dataset.managers[manager_filename]
 
         return job
 
