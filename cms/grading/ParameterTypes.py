@@ -202,7 +202,7 @@ class ParameterTypeArray(ParameterType):
                "<table>" \
                "{% for element in elements%}" \
                "<tr><td>{{element.name}}</td>" \
-               "<td>{% raw element.content %}</td>" \
+               "<td>{% raw element.content %}</td></tr>" \
                "{% end %}" \
                "</table>"
 
@@ -242,7 +242,7 @@ class ParameterTypeCollection(ParameterType):
     TEMPLATE = "<table>" \
                "{% for element in elements %}" \
                "<tr><td>{{element['name']}}</td>" \
-               "<td>{% raw element['content'] %}</td>" \
+               "<td>{% raw element['content'] %}</td></tr>" \
                "{% end %}" \
                "</table>"
 
