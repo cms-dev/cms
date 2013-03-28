@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -323,16 +324,16 @@ class ScoringService(Service):
         # score, this is the set where you want to pur their ids. Note
         # that sets != {} if and only if there is an alive timeout for
         # the method "score_old_submission".
-        self.submission_ids_to_score = set([])
-        self.submission_ids_to_token = set([])
+        self.submissions_to_score = set()
+        self.submissions_to_token = set()
         self.scoring_old_submission = False
 
         # We need to load every submission at start, but we don't want
         # to invalidate every score so that we can simply load the
         # score-less submissions. So we keep a set of submissions that
         # we analyzed (for scoring and for tokens).
-        self.submission_ids_scored = set()
-        self.submission_ids_tokened = set()
+        self.submissions_scored = set()
+        self.submissions_tokened = set()
 
         # Initialize ranking web servers we need to send data to.
         self.rankings = []
@@ -381,8 +382,8 @@ class ScoringService(Service):
 
         """
         with SessionGen(commit=False) as session:
-            contest = session.query(Contest).\
-                      filter_by(id=self.contest_id).first()
+            contest = Contest.get_from_id(self.contest_id, session)
+
             for task in contest.tasks:
                 try:
                     self.scorers[task.id] = get_score_type(task=task)
@@ -403,31 +404,29 @@ class ScoringService(Service):
             return True
 
         with SessionGen(commit=False) as session:
-            contest = session.query(Contest).\
-                      filter_by(id=self.contest_id).first()
+            contest = Contest.get_from_id(self.contest_id, session)
 
-            new_submission_ids_to_score = set([])
-            new_submission_ids_to_token = set([])
+            new_submissions_to_score = set()
+            new_submissions_to_token = set()
+
             for submission in contest.get_submissions():
                 if (submission.evaluated()
                     or submission.compilation_outcome == "fail") \
-                        and submission.id not in self.submission_ids_scored:
-                    new_submission_ids_to_score.add(submission.id)
+                        and submission.id not in self.submissions_scored:
+                    new_submissions_to_score.add(submission.id)
                 if submission.tokened() \
-                        and submission.id not in self.submission_ids_tokened:
-                    new_submission_ids_to_token.add(
-                        (submission.id,
-                         make_timestamp(submission.token.timestamp)))
+                        and submission.id not in self.submissions_tokened:
+                    new_submissions_to_token.add(submission.id)
 
-        new_s = len(new_submission_ids_to_score)
-        old_s = len(self.submission_ids_to_score)
-        new_t = len(new_submission_ids_to_token)
-        old_t = len(self.submission_ids_to_token)
+        new_s = len(new_submissions_to_score)
+        old_s = len(self.submissions_to_score)
+        new_t = len(new_submissions_to_token)
+        old_t = len(self.submissions_to_token)
         logger.info("Submissions found to score/token: %d, %d." %
                     (new_s, new_t))
         if new_s + new_t > 0:
-            self.submission_ids_to_score |= new_submission_ids_to_score
-            self.submission_ids_to_token |= new_submission_ids_to_token
+            self.submissions_to_score |= new_submissions_to_score
+            self.submissions_to_token |= new_submissions_to_token
             if old_s + old_t == 0:
                 self.add_timeout(self.score_old_submissions, None,
                                  0.5, immediately=False)
@@ -436,7 +435,7 @@ class ScoringService(Service):
         return True
 
     def score_old_submissions(self):
-        """The submissions in the submission_ids_to_score set are
+        """The submissions in the submissions_to_score set are
         evaluated submissions that we can assign a score to, and this
         method scores a bunch of these at a time. This method keeps
         getting called while the set is non-empty. (Exactly the same
@@ -448,21 +447,20 @@ class ScoringService(Service):
 
         """
         self.scoring_old_submission = True
-        to_score = len(self.submission_ids_to_score)
-        to_token = len(self.submission_ids_to_token)
+        to_score = len(self.submissions_to_score)
+        to_token = len(self.submissions_to_token)
         to_score_now = to_score if to_score < 4 else 4
         to_token_now = to_token if to_token < 16 else 16
         logger.info("Old submission yet to score/token: %s/%s." %
                     (to_score, to_token))
 
         for unused_i in xrange(to_score_now):
-            self.new_evaluation(self.submission_ids_to_score.pop())
+            self.new_evaluation(self.submissions_to_score.pop())
         if to_score - to_score_now > 0:
             return True
 
         for unused_i in xrange(to_token_now):
-            submission_id, timestamp = self.submission_ids_to_token.pop()
-            self.submission_tokened(submission_id, timestamp)
+            self.submission_tokened(self.submissions_to_token.pop())
         if to_token - to_token_now > 0:
             return True
 
@@ -565,6 +563,7 @@ class ScoringService(Service):
 
             with SessionGen(commit=False) as session:
                 contest = Contest.get_from_id(self.contest_id, session)
+
                 if contest is None:
                     log_bridge.error("Received request for unexistent contest "
                                    "id %s." % self.contest_id)
@@ -670,7 +669,7 @@ class ScoringService(Service):
                                   submission.tokened())
 
             # Mark submission as scored.
-            self.submission_ids_scored.add(submission_id)
+            self.submissions_scored.add(submission_id)
 
             # Filling submission's score info in the db.
             submission.score = scorer.pool[submission_id]["score"]
@@ -716,7 +715,7 @@ class ScoringService(Service):
                     subchange_put_data
 
     @rpc_method
-    def submission_tokened(self, submission_id, timestamp):
+    def submission_tokened(self, submission_id):
         """This RPC inform ScoringService that the user has played the
         token on a submission.
 
@@ -736,18 +735,19 @@ class ScoringService(Service):
                 return
 
             # Mark submission as tokened.
-            self.submission_ids_tokened.add(submission_id)
+            self.submissions_tokened.add(submission_id)
 
             # Data to send to remote rankings.
             submission_put_data = {
                 "user": encode_id(submission.user.username),
                 "task": encode_id(submission.task.name),
                 "time": int(make_timestamp(submission.timestamp))}
-            subchange_id = "%s%st" % (int(timestamp),
-                                      submission_id)
+            subchange_id = "%s%st" % \
+                (int(make_timestamp(submission.token.timestamp)),
+                 submission_id)
             subchange_put_data = {
                 "submission": encode_id(submission_id),
-                "time": int(timestamp),
+                "time": int(make_timestamp(submission.token.timestamp)),
                 "token": True}
 
         # Adding operations to the queue.
@@ -789,7 +789,7 @@ class ScoringService(Service):
         if len(submission_ids) == 0:
             return
 
-        new_submission_ids = []
+        new_submissions_to_score = set()
         with SessionGen(commit=True) as session:
             for submission_id in submission_ids:
                 submission = Submission.get_from_id(submission_id, session)
@@ -799,11 +799,11 @@ class ScoringService(Service):
                 # that case we do not have to do anything.
                 if submission.evaluated():
                     submission.invalidate_score()
-                    new_submission_ids.append(submission_id)
+                    new_submissions_to_score.add(submission_id)
 
-        old_s = len(self.submission_ids_to_score)
-        old_t = len(self.submission_ids_to_token)
-        self.submission_ids_to_score |= set(new_submission_ids)
+        old_s = len(self.submissions_to_score)
+        old_t = len(self.submissions_to_token)
+        self.submissions_to_score |= new_submissions_to_score
         if old_s + old_t == 0:
             self.add_timeout(self.score_old_submissions, None,
                              0.5, immediately=False)
