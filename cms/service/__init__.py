@@ -21,7 +21,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from cms import logger
-from cms.db.SQLAlchemyAll import SessionGen, Contest, User, Task, Submission
+from cms.db.SQLAlchemyAll import \
+    SessionGen, Contest, User, Task, Dataset, Submission, SubmissionResult
 
 
 def get_submissions(contest_id=None, user_id=None, task_id=None,
@@ -65,6 +66,66 @@ def get_submissions(contest_id=None, user_id=None, task_id=None,
     q = session.query(Submission)
     if submission_id is not None:
         q = q.filter(Submission.id == submission_id)
+    if user_id is not None:
+        q = q.filter(Submission.user_id == user_id)
+    if task_id is not None:
+        q = q.filter(Submission.task_id == task_id)
+    if contest_id is not None:
+        q = q.join(User).filter(User.contest_id == contest_id)\
+             .join(Task).filter(Task.contest_id == contest_id)
+    return q.all()
+
+
+def get_submission_results(contest_id=None, user_id=None, task_id=None,
+                           submission_id=None, dataset_id=None, session=None):
+    """Search for submission results that match the given criteria
+
+    The submission results will be returned as a list, and the first
+    five parameters determine the filters used to decide which
+    submission results to include. Some of them are incompatible, that
+    is they cannot be non-None at the same time. When this happens it
+    means that one of the parameters "implies" the other (for example,
+    giving the user already gives the contest it belongs to). Trying to
+    give them both is useless and could only lead to inconsistencies
+    and errors.
+
+    contest_id (int): id of the contest to filter with, or None.
+    user_id (int): id of the user to filter with, or None.
+    task_id (int): id of the task to filter with, or None.
+    submission_id (int): id of the submission to filter with, or None.
+    dataset_id (int): id of the dataset to filter with, or None.
+    session (Session): the database session to use, or None to use a
+                       temporary one.
+    returns (list of SubmissionResults): the list of submission results
+                                         that match the given criteria
+
+    """
+    if session is None:
+        with SessionGen(commit=False) as session:
+            return get_submission_results(
+                contest_id, user_id, task_id, submission_id, dataset_id,
+                session)
+
+    if task_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if task_id is given")
+    if user_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if user_id is given")
+    if submission_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if submission_id is given")
+    if submission_id is not None and task_id is not None:
+        raise ValueError("task_id is superfluous if submission_id is given")
+    if submission_id is not None and user_id is not None:
+        raise ValueError("user_id is superfluous if submission_id is given")
+    if dataset_id is not None and task_id is not None:
+        raise ValueError("task_id is superfluous if dataset_id is given")
+    if dataset_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if dataset_id is given")
+
+    q = session.query(SubmissionResult).join(Submission)
+    if submission_id is not None:
+        q = q.filter(SubmissionResult.submission_id == submission_id)
+    if dataset_id is not None:
+        q = q.filter(SubmissionResult.dataset_id == dataset_id)
     if user_id is not None:
         q = q.filter(Submission.user_id == user_id)
     if task_id is not None:
