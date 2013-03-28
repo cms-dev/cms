@@ -767,39 +767,47 @@ class ScoringService(Service):
                               submission_id=None,
                               user_id=None,
                               task_id=None):
-        """Request for invalidating the scores of some submissions.
+        """Request for invalidating some scores.
 
-        The scores to be cleared are the one regarding 1) a submission
-        or 2) all submissions of a user or 3) all submissions of a
-        task or 4) all submission (if all parameters are None).
+        Invalidate the scores of the Submission whose ID is
+        submission_id or, if None, of those whose user is user_id
+        and/or whose task is task_id or, if both None, of those that
+        belong to the contest this service is running for.
 
         submission_id (int): id of the submission to invalidate, or
                              None.
-        user_id (int): id of the user we want to invalidate, or None.
-        task_id (int): id of the task we want to invalidate, or None.
+        user_id (int): id of the user to invalidate, or None.
+        task_id (int): id of the task to invalidate, or None.
 
         """
         logger.info("Invalidation request received.")
 
-        submission_ids = get_submissions(
-            self.contest_id,
-            submission_id, user_id, task_id)
+        # Validate arguments
+        # TODO Check that all these objects belong to this contest.
 
-        logger.info("Submissions to invalidate: %s" % len(submission_ids))
-        if len(submission_ids) == 0:
-            return
-
-        new_submissions_to_score = set()
         with SessionGen(commit=True) as session:
-            for submission_id in submission_ids:
-                submission = Submission.get_from_id(submission_id, session)
+            submissions = get_submissions(
+                # Give contest_id only if all others are None.
+                self.contest_id
+                    if {user_id, task_id, submission_id} == {None}
+                    else None,
+                user_id, task_id, submission_id, session)
+
+            logger.info("Submissions to invalidate scores for: %d." %
+                        len(submissions))
+            if len(submissions) == 0:
+                return
+
+            new_submissions_to_score = set()
+
+            for submission in submissions:
                 # If the submission is not evaluated, it does not have
                 # a score to invalidate, and, when evaluated,
                 # ScoringService will be prompted to score it. So in
                 # that case we do not have to do anything.
                 if submission.evaluated():
                     submission.invalidate_score()
-                    new_submissions_to_score.add(submission_id)
+                    new_submissions_to_score.add(submission.id)
 
         old_s = len(self.submissions_to_score)
         old_t = len(self.submissions_to_token)

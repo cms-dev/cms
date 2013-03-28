@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -1247,64 +1248,67 @@ class EvaluationService(Service):
                               user_id=None,
                               task_id=None,
                               level="compilation"):
-        """Request for invalidating some computed data.
+        """Request to invalidate some computed data.
 
-        The data (compilations and evaluations, or evaluations only)
-        to be cleared are the one regarding 1) a submission or 2) all
-        submissions of a user or 3) all submissions of a task or 4)
-        all submission (if all parameters are None).
+        Invalidate the compilation and/or evaluation data of the
+        Submission whose ID is submission_id or, if None, of those
+        whose user is user_id and/or whose task is task_id or, if both
+        None, of those that belong to the contest this service is
+        running for.
 
-        The data are cleared, the jobs involving the submissions
-        currently enqueued are deleted, and the one already assigned
+        The data is cleared, the jobs involving the submissions
+        currently enqueued are deleted, and the ones already assigned
         to the workers are ignored. New appropriate jobs are enqueued.
 
         submission_id (int): id of the submission to invalidate, or
                              None.
-        user_id (int): id of the user we want to invalidate, or None.
-        task_id (int): id of the task we want to invalidate, or None.
+        user_id (int): id of the user to invalidate, or None.
+        task_id (int): id of the task to invalidate, or None.
         level (string): 'compilation' or 'evaluation'
 
         """
         logger.info("Invalidation request received.")
-        if level not in ["compilation", "evaluation"]:
-            err_msg = "Unexpected invalidation level `%s'." % level
-            logger.error(err_msg)
-            raise ValueError(err_msg)
 
-        submission_ids = get_submissions(
-            self.contest_id,
-            submission_id, user_id, task_id)
+        # Validate arguments
+        # TODO Check that all these objects belong to this contest.
+        if level not in ("compilation", "evaluation"):
+            raise ValueError(
+                "Unexpected invalidation level `%s'." % level)
 
-        logger.info("Submissions to invalidate for %s: %s." %
-                    (level, len(submission_ids)))
-        if len(submission_ids) == 0:
-            return
-
-        for submission_id in submission_ids:
-            jobs = [(EvaluationService.JOB_TYPE_COMPILATION, submission_id),
-                    (EvaluationService.JOB_TYPE_EVALUATION, submission_id)]
-            for job in jobs:
-                try:
-                    self.queue.remove(job)
-                except KeyError:
-                    pass  # Ok, the job wasn't in the queue.
-                try:
-                    self.pool.ignore_job(job)
-                except LookupError:
-                    pass  # Ok, the job wasn't in the pool.
-
-        # We invalidate the appropriate data and queue the jobs to
-        # recompute those data.
         with SessionGen(commit=True) as session:
-            for submission_id in submission_ids:
-                submission = Submission.get_from_id(submission_id, session)
+            submissions = get_submissions(
+                # Give contest_id only if all others are None.
+                self.contest_id \
+                    if {user_id, task_id, submission_id} == {None}
+                    else None,
+                user_id, task_id, submission_id, session)
 
+            logger.info("Submissions to invalidate %s for: %d." %
+                        (level, len(submissions)))
+            if len(submissions) == 0:
+                return
+
+            for submission in submissions:
+                jobs = [(EvaluationService.JOB_TYPE_COMPILATION, submission.id),
+                        (EvaluationService.JOB_TYPE_EVALUATION, submission.id)]
+                for job in jobs:
+                    try:
+                        self.queue.remove(job)
+                    except KeyError:
+                        pass  # Ok, the job wasn't in the queue.
+                    try:
+                        self.pool.ignore_job(job)
+                    except LookupError:
+                        pass  # Ok, the job wasn't in the pool.
+
+                # We invalidate the appropriate data and queue the jobs to
+                # recompute those data.
                 if level == "compilation":
                     submission.invalidate_compilation()
                     if to_compile(submission):
                         self.push_in_queue(
                             (EvaluationService.JOB_TYPE_COMPILATION,
-                             submission_id),
+                             submission.id),
                             EvaluationService.JOB_PRIORITY_HIGH,
                             submission.timestamp)
                 elif level == "evaluation":
@@ -1312,7 +1316,7 @@ class EvaluationService(Service):
                     if to_evaluate(submission):
                         self.push_in_queue(
                             (EvaluationService.JOB_TYPE_EVALUATION,
-                             submission_id),
+                             submission.id),
                             EvaluationService.JOB_PRIORITY_MEDIUM,
                             submission.timestamp)
 

@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,49 +21,56 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from cms import logger
-from cms.db.SQLAlchemyAll import SessionGen, Contest, Submission, Task, User
+from cms.db.SQLAlchemyAll import SessionGen, Contest, User, Task, Submission
 
 
-def get_submissions(contest_id,
-                    submission_id=None,
+def get_submissions(contest_id=None,
                     user_id=None,
-                    task_id=None):
-    """Return a list of submission_ids restricted with the given
-    information.
+                    task_id=None,
+                    submission_id=None,
+                    session=None):
+    """Search for submissions that match the given criteria
 
-    We allow at most one of the parameters to be non-None. If all
-    parameters are, we return all submissions for the given contest.
+    The submissions will be returned as a list, and the first four
+    parameters determine the filters used to decide which submissions
+    to include. Some of them are incompatible, that is they cannot be
+    non-None at the same time. When this happens it means that one of
+    the parameters "implies" the other (for example, giving the user
+    already gives the contest it belongs to). Trying to give them both
+    is useless and could only lead to inconsistencies and errors.
 
-    contest_id (int): the id of the contest.
-
+    contest_id (int): id of the contest to invalidate, or None.
+    user_id (int): id of the user to invalidate, or None.
+    task_id (int): id of the task to invalidate, or None.
     submission_id (int): id of the submission to invalidate, or None.
-    user_id (int): id of the user we want to invalidate, or None.
-    task_id (int): id of the task we want to invalidate, or None.
-    level (string): 'compilation' or 'evaluation'
+    session (Session): the database session to use, or None to use a
+                       temporary one.
 
     """
-    if [x is not None
-        for x in [submission_id, user_id, task_id]].count(True) > 1:
-        err_msg = "Too many arguments for invalidate_submission."
-        logger.warning(err_msg)
-        raise ValueError(err_msg)
+    if session is None:
+        with SessionGen(commit=False) as session:
+            return get_submissions(
+                contest_id, user_id, task_id, submission_id, session)
 
-    submission_ids = []
+    if task_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if task_id is given")
+    if user_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if user_id is given")
+    if submission_id is not None and contest_id is not None:
+        raise ValueError("contest_id is superfluous if submission_id is given")
+    if submission_id is not None and task_id is not None:
+        raise ValueError("task_id is superfluous if submission_id is given")
+    if submission_id is not None and user_id is not None:
+        raise ValueError("user_id is superfluous if submission_id is given")
+
+    q = session.query(Submission)
     if submission_id is not None:
-        submission_ids = [submission_id]
-    elif user_id is not None:
-        with SessionGen(commit=False) as session:
-            user = User.get_from_id(user_id, session)
-            submission_ids = [x.id for x in user.submissions]
-    elif task_id is not None:
-        with SessionGen(commit=False) as session:
-            submissions = session.query(Submission)\
-                .join(Task).filter(Task.id == task_id)
-            submission_ids = [x.id for x in submissions]
-    else:
-        with SessionGen(commit=False) as session:
-            contest = session.query(Contest).\
-                filter_by(id=contest_id).first()
-            submission_ids = [x.id for x in contest.get_submissions()]
-
-    return submission_ids
+        q = q.filter(Submission.id == submission_id)
+    if user_id is not None:
+        q = q.filter(Submission.user_id == user_id)
+    if task_id is not None:
+        q = q.filter(Submission.task_id == task_id)
+    if contest_id is not None:
+        q = q.join(User).filter(User.contest_id == contest_id)\
+             .join(Task).filter(Task.contest_id == contest_id)
+    return q.all()
