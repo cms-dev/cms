@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -134,3 +135,25 @@ def get_submission_results(contest_id=None, user_id=None, task_id=None,
         q = q.join(User).filter(User.contest_id == contest_id)\
              .join(Task).filter(Task.contest_id == contest_id)
     return q.all()
+
+
+def get_datasets_to_judge(task):
+    """Determine the datasets that ES and SS have to judge.
+
+    Return a list of all Dataset objects that are either the
+    active_dataset of their Task or have the autojudge flag set.
+    These are the ones that are automatically judged in background by
+    ES and SS, whereas any other submission has to be explictly judged
+    by the contest admin (by invalidating it).
+
+    task (Task): the task to query.
+    returns (list of Datasets): list of datasets to judge.
+
+    """
+    judge = []
+
+    for dataset in task.datasets:
+        if dataset is task.active_dataset or dataset.autojudge:
+            judge.append(dataset)
+
+    return judge
