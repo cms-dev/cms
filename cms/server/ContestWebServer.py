@@ -1646,6 +1646,7 @@ class UserTestStatusHandler(BaseHandler):
         if user_test is None:
             raise tornado.web.HTTPError(404)
 
+        # TODO: use some kind of constants to refer to the status.
         data = dict()
         if not user_test.compiled():
             data["status"] = 1

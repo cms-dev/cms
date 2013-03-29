@@ -1,8 +1,10 @@
-<div class="score_details">
 {% if s.scored() %}
+<div class="score_details">
 {% raw details %}
+</div>
 {% end %}
 
+{% if s.compiled() %}
 <h3>{{ _("Compilation output") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
 <pre>{% if s.compilation_text is not None %}{{ s.compilation_text }}{% end %}</pre>
-</div>
+{% end %}
