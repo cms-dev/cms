@@ -32,7 +32,7 @@ from cmscommon.DateTime import make_datetime
 
 from cms.db.SQLAlchemyAll import \
     Contest, User, Task, Statement, Attachment, SubmissionFormatElement, \
-    Manager, Testcase, Submission
+    Dataset, Manager, Testcase, Submission
 
 
 def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
@@ -197,9 +197,6 @@ class YamlLoader:
             logger.warning("Short name equals long name (title). "
                            "Please check.")
 
-        load(conf, args, "timeout", "time_limit", conv=float)
-        load(conf, args, "memlimit", "memory_limit")
-
         digest = self.file_cacher.put_file(
             path=os.path.join(task_path, "testo", "testo.pdf"),
             description="Statement for task %s (lang: it)" % name)
@@ -223,6 +220,16 @@ class YamlLoader:
         load(conf, args, "max_user_test_number")
         load(conf, args, "min_submission_interval", conv=make_timedelta)
         load(conf, args, "min_user_test_interval", conv=make_timedelta)
+
+        task = Task(**args)
+
+        args = {}
+        args["task"] = task
+        args["description"] = conf.get("version", "Default")
+        args["autojudge"] = False
+
+        load(conf, args, "timeout", "time_limit", conv=float)
+        load(conf, args, "memlimit", "memory_limit")
 
         # Builds the parameters that depend on the task type
         args["managers"] = []
@@ -358,7 +365,7 @@ class YamlLoader:
             args["time_limit"] = None
             args["memory_limit"] = None
             args["task_type_parameters"] = '["%s"]' % evaluation_param
-            args["submission_format"] = [
+            task.submission_format = [
                 SubmissionFormatElement("output_%03d.txt" % i)
                 for i in xrange(int(conf["n_input"]))]
 
@@ -402,13 +409,16 @@ class YamlLoader:
             args["testcases"] += [
                 Testcase(i, False, input_digest, output_digest)]
             if args["task_type"] == "OutputOnly":
-                args["attachments"] += [
+                task.attachments += [
                     Attachment("input_%03d.txt" % i, input_digest)]
         public_testcases = conf.get("risultati", "").strip()
         if public_testcases != "":
             for x in public_testcases.split(","):
                 args["testcases"][int(x.strip())].public = True
 
+        dataset = Dataset(**args)
+        task.active_dataset = dataset
+
         logger.info("Task parameters loaded.")
 
-        return Task(**args)
+        return task
