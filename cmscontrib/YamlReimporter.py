@@ -74,11 +74,12 @@ class Reimporter:
         # relationships too. The data model isn't a tree: for example
         # there are two distinct paths from Contest to Submission, one
         # through User and one through Task. Yet, at the moment, if we
-        # ignore Submissions and UserTest we get a tree-like structure
-        # and Submission.token is the only scalar relationship that
-        # doesn't refer to the parent. Therefore, if we catch these as
-        # special cases, we can use a simple DFS to explore the whole
-        # data graph, recursing only on "vector" relationships.
+        # ignore Submissions and UserTest (and thus their results, too)
+        # we get a tree-like structure and Task.active_dataset and
+        # Submission.token are the only scalar relationships that don't
+        # refer to the parent. Therefore, if we catch these as special
+        # cases, we can use a simple DFS to explore the whole data
+        # graph, recursing only on "vector" relationships.
         # TODO Find a better way to handle all of this.
 
         self._update_columns(old_object, new_object)
@@ -99,7 +100,28 @@ class Reimporter:
                 # collections.
                 pass
 
-            # Special case #2: User.submissions, Task.submissions,
+            # Special case #2: Task.datasets
+            if _is_rel(prp, Task.datasets):
+                old_datasets = dict((d.description, d) for d in old_value)
+                new_datasets = dict((d.description, d) for d in new_value)
+
+                for key in set(new_datasets.keys()):
+                    if key not in old_datasets:
+                        # create
+                        temp = new_datasets[key]
+                        new_value.remove(temp)
+                        old_value.append(temp)
+                    else:
+                        # update
+                        self._update_object(old_datasets[key],
+                                            new_datasets[key])
+
+            # Special case #3: Task.active_dataset
+            elif _is_rel(prp, Task.active_dataset):
+                # We don't want to update the existing active dataset.
+                pass
+
+            # Special case #4: User.submissions, Task.submissions,
             #                  User.user_tests, Task.user_tests
             elif _is_rel(prp, User.submissions) or \
                     _is_rel(prp, Task.submissions) or \
@@ -112,7 +134,7 @@ class Reimporter:
                 # collections.
                 pass
 
-            # Special case #3: Submission.token
+            # Special case #5: Submission.token
             elif _is_rel(prp, Submission.token):
                 # We should never reach this point! We should never try
                 # to update Submissions! We could even assert False...
@@ -168,9 +190,9 @@ class Reimporter:
                 # That should only happen in case of a scalar
                 # relationship (i.e. a many-to-one or a one-to-one)
                 # that is nullable. "Parent" relationships aren't
-                # nullable, so the only possible cases are the tokens,
-                # but we should have already caught them. We could even
-                # assert False...
+                # nullable, so the only possible cases are the active
+                # datasets and the tokens, but we should have already
+                # caught them. We could even assert False...
                 pass
 
             else:
