@@ -3,6 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -18,8 +19,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import simplejson as json
+from collections import namedtuple
 
-from cms.db.SQLAlchemyAll import File, Manager, Executable, Testcase
+from cms.db.SQLAlchemyAll import File, Manager, Executable
+
+
+Testcase = namedtuple('Testcase', ['input', 'output'])
 
 
 class Job:
@@ -76,9 +81,8 @@ class CompilationJob(Job):
 
     def __init__(self, task_type=None, task_type_parameters=None,
                  shard=None, sandboxes=None, info=None,
-                 language=None, files=None,
-                 managers=None, success=None,
-                 compilation_success=None,
+                 language=None, files=None, managers=None,
+                 success=None, compilation_success=None,
                  executables=None,
                  text=None, plus=None):
         if language is None:
@@ -110,10 +114,11 @@ class CompilationJob(Job):
         job.task_type_parameters = json.loads(
             submission.task.task_type_parameters)
 
-        # CompilationJob
+        # CompilationJob; dict() is required to detach the dictionary
+        # that gets added to the Job from the control of SQLAlchemy
         job.language = submission.language
-        job.files = submission.files
-        job.managers = submission.task.managers
+        job.files = dict(submission.files)
+        job.managers = dict(submission.task.managers)
         job.info = "compile submission %d" % (submission.id)
 
         return job
@@ -192,9 +197,9 @@ class EvaluationJob(Job):
 
     def __init__(self, task_type=None, task_type_parameters=None,
                  shard=None, sandboxes=None, info=None,
+                 language=None, files=None, managers=None,
                  executables=None, testcases=None,
                  time_limit=None, memory_limit=None,
-                 managers=None, files=None,
                  success=None, evaluations=None,
                  only_execution=False, get_output=False):
         if executables is None:
@@ -210,12 +215,13 @@ class EvaluationJob(Job):
 
         Job.__init__(self, task_type, task_type_parameters,
                      shard, sandboxes, info)
+        self.language = language
+        self.files = files
+        self.managers = managers
         self.executables = executables
         self.testcases = testcases
         self.time_limit = time_limit
         self.memory_limit = memory_limit
-        self.managers = managers
-        self.files = files
         self.success = success
         self.evaluations = evaluations
         self.only_execution = only_execution
@@ -232,12 +238,14 @@ class EvaluationJob(Job):
 
         # EvaluationJob; dict() is required to detach the dictionary
         # that gets added to the Job from the control of SQLAlchemy
+        job.language = submission.language
+        job.files = dict(submission.files)
+        job.managers = dict(submission.task.managers)
         job.executables = dict(submission.executables)
-        job.testcases = submission.task.testcases
+        job.testcases = [Testcase(t.input, t.output)
+                         for t in submission.task.testcases]
         job.time_limit = submission.task.time_limit
         job.memory_limit = submission.task.memory_limit
-        job.managers = dict(submission.task.managers)
-        job.files = dict(submission.files)
         job.info = "evaluate submission %d" % (submission.id)
 
         return job
@@ -251,17 +259,15 @@ class EvaluationJob(Job):
         job.task_type_parameters = json.loads(
             user_test.task.task_type_parameters)
 
-        # EvaluationJob
-        job.executables = user_test.executables
-        # FIXME This is not a proper way to use Testcases!
-        testcase = Testcase(num=0, input=user_test.input, output='')
-        testcase.num = None
-        testcase.output = None
-        job.testcases = [testcase]
+        # EvaluationJob; dict() is required to detach the dictionary
+        # that gets added to the Job from the control of SQLAlchemy
+        job.language = user_test.language
+        job.files = dict(user_test.files)
+        job.managers = dict(user_test.managers)
+        job.executables = dict(user_test.executables)
+        job.testcases = [Testcase(user_test.input, None)]
         job.time_limit = user_test.task.time_limit
         job.memory_limit = user_test.task.memory_limit
-        job.managers = dict(user_test.managers)
-        job.files = user_test.files
         job.info = "evaluate user test %d" % (user_test.id)
 
         # Add the managers to be got from the Task; get_task_type must
@@ -285,16 +291,17 @@ class EvaluationJob(Job):
         res = Job.export_to_dict(self)
         res.update({
                 'type': 'evaluation',
-                'executables': dict((k, v.digest)
-                                    for k, v in self.executables.iteritems()),
-                'testcases': [testcase.export_to_dict()
-                              for testcase in self.testcases],
-                'time_limit': self.time_limit,
-                'memory_limit': self.memory_limit,
-                'managers': dict((k, v.digest)
-                                 for k, v in self.managers.iteritems()),
+                'language': self.language,
                 'files': dict((k, v.digest)
                               for k, v in self.files.iteritems()),
+                'managers': dict((k, v.digest)
+                                 for k, v in self.managers.iteritems()),
+                'executables': dict((k, v.digest)
+                                    for k, v in self.executables.iteritems()),
+                'testcases': list((t.input, t.output)
+                                  for t in self.testcases),
+                'time_limit': self.time_limit,
+                'memory_limit': self.memory_limit,
                 'success': self.success,
                 # XXX We convert the key from int to str because it'll
                 # be the key of a JSON object.
@@ -313,8 +320,8 @@ class EvaluationJob(Job):
             (k, Manager(k, v)) for k, v in data['managers'].iteritems())
         data['executables'] = dict(
             (k, Executable(k, v)) for k, v in data['executables'].iteritems())
-        data['testcases'] = [Testcase.import_from_dict(testcase_data)
-                             for testcase_data in data['testcases']]
+        data['testcases'] = list(
+            Testcase(t[0], t[1]) for t in data['testcases'])
         # XXX We convert the key from str to int because it was the key
         # of a JSON object.
         data['evaluations'] = dict((int(k), v) for k, v
