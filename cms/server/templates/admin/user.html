@@ -52,7 +52,6 @@ function update_additional_answer(element, invoker)
       </tr>
     </thead>
     <tbody>
-      {% set reevaluation_par_name = "submission" %}
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
         {% if s.task.name in score_types %}
           {% set score_type = score_types[s.task.name] %}
@@ -132,6 +131,7 @@ function update_additional_answer(element, invoker)
           {% end %}
         </td>
         <td>
+          {% set reevaluation_par_name = "submission" %}
           {% set reevaluation_par_value = s.id %}
           {% include reevaluation_buttons.html %}
         </td>

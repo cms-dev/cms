@@ -15,13 +15,13 @@
     </tr>
   </thead>
   <tbody>
-    {% set reevaluation_par_name = "user" %}
     {% for u in sorted(contest.users, cmp = lambda x, y: cmp(x.username, y.username)) %}
     <tr>
       <td>{{ u.first_name }}</td>
       <td>{{ u.last_name }}</td>
       <td><a href="{{ url_root }}/user/{{ u.id }}">{{ u.username }}</a></td>
       <td>
+        {% set reevaluation_par_name = "user" %}
         {% set reevaluation_par_value = u.id %}
         {% include reevaluation_buttons.html %}
       </td>

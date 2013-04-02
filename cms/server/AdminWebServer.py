@@ -333,6 +333,7 @@ def SimpleContestHandler(page):
     class Cls(BaseHandler):
         def get(self, contest_id):
             self.contest = self.safe_get_item(Contest, contest_id)
+
             self.r_params = self.render_params()
             self.render(page, **self.r_params)
     return Cls
@@ -354,10 +355,11 @@ class ResourcesListHandler(BaseHandler):
 
 class ResourcesHandler(BaseHandler):
     def get(self, shard=None, contest_id=None):
-        contest_address = ""
         if contest_id is not None:
             self.contest = self.safe_get_item(Contest, contest_id)
             contest_address = "/%s" % contest_id
+        else:
+            contest_address = ""
 
         if shard is None:
             shard = "all"
@@ -493,12 +495,15 @@ class AddContestHandler(BaseHandler):
 
         if try_commit(self.sql_session, self):
             self.application.service.scoring_service.reinitialize()
-        self.redirect("/contest/%s" % contest.id)
+            self.redirect("/contest/%s" % contest.id)
+        else:
+            self.redirect("/contest/add")
 
 
 class ContestHandler(BaseHandler):
     def get(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
+
         self.r_params = self.render_params()
         self.render("contest.html", **self.r_params)
 
@@ -621,6 +626,7 @@ class AddStatementHandler(BaseHandler):
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
+
         self.r_params = self.render_params()
         self.r_params["task"] = task
         self.render("add_statement.html", **self.r_params)
@@ -628,6 +634,7 @@ class AddStatementHandler(BaseHandler):
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
+
         language = self.get_argument("language", None)
         if language is None:
             self.application.service.add_notification(
@@ -665,10 +672,15 @@ class AddStatementHandler(BaseHandler):
 
         self.sql_session = Session()
         task = self.safe_get_item(Task, task_id)
+        self.contest = task.contest
+
         statement = Statement(language, digest, task=task)
         self.sql_session.add(statement)
-        self.sql_session.commit()
-        self.redirect("/task/%s" % task_id)
+
+        if try_commit(self.sql_session, self):
+            self.redirect("/task/%s" % task_id)
+        else:
+            self.redirect("/add_statement/%s" % task_id)
 
 
 class DeleteStatementHandler(BaseHandler):
@@ -678,8 +690,11 @@ class DeleteStatementHandler(BaseHandler):
     def get(self, statement_id):
         statement = self.safe_get_item(Statement, statement_id)
         task = statement.task
+        self.contest = task.contest
+
         self.sql_session.delete(statement)
-        self.sql_session.commit()
+
+        try_commit(self.sql_session, self)
         self.redirect("/task/%s" % task.id)
 
 
@@ -690,6 +705,7 @@ class AddAttachmentHandler(BaseHandler):
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
+
         self.r_params = self.render_params()
         self.r_params["task"] = task
         self.render("add_attachment.html", **self.r_params)
@@ -697,6 +713,7 @@ class AddAttachmentHandler(BaseHandler):
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
+
         attachment = self.request.files["attachment"][0]
         task_name = task.name
         self.sql_session.close()
@@ -718,9 +735,15 @@ class AddAttachmentHandler(BaseHandler):
 
         self.sql_session = Session()
         task = self.safe_get_item(Task, task_id)
-        self.sql_session.add(Attachment(attachment["filename"], digest, task=task))
-        self.sql_session.commit()
-        self.redirect("/task/%s" % task_id)
+        self.contest = task.contest
+
+        attachment = Attachment(attachment["filename"], digest, task=task)
+        self.sql_session.add(attachment)
+
+        if try_commit(self.sql_session, self):
+            self.redirect("/task/%s" % task_id)
+        else:
+            self.redirect("/add_attachment/%s" % task_id)
 
 
 class DeleteAttachmentHandler(BaseHandler):
@@ -730,8 +753,11 @@ class DeleteAttachmentHandler(BaseHandler):
     def get(self, attachment_id):
         attachment = self.safe_get_item(Attachment, attachment_id)
         task = attachment.task
+        self.contest = task.contest
+
         self.sql_session.delete(attachment)
-        self.sql_session.commit()
+
+        try_commit(self.sql_session, self)
         self.redirect("/task/%s" % task.id)
 
 
@@ -742,6 +768,7 @@ class AddManagerHandler(BaseHandler):
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
+
         self.r_params = self.render_params()
         self.r_params["task"] = task
         self.render("add_manager.html", **self.r_params)
@@ -749,6 +776,7 @@ class AddManagerHandler(BaseHandler):
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
+
         manager = self.request.files["manager"][0]
         task_name = task.name
         self.sql_session.close()
@@ -767,9 +795,15 @@ class AddManagerHandler(BaseHandler):
 
         self.sql_session = Session()
         task = self.safe_get_item(Task, task_id)
-        self.sql_session.add(Manager(manager["filename"], digest, task=task))
-        self.sql_session.commit()
-        self.redirect("/task/%s" % task_id)
+        self.contest = task.contest
+
+        manager = Manager(manager["filename"], digest, task=task)
+        self.sql_session.add(manager)
+
+        if try_commit(self.sql_session, self):
+            self.redirect("/task/%s" % task_id)
+        else:
+            self.redirect("/add_manager/%s" % task_id)
 
 
 class DeleteManagerHandler(BaseHandler):
@@ -780,8 +814,10 @@ class DeleteManagerHandler(BaseHandler):
         manager = self.safe_get_item(Manager, manager_id)
         task = manager.task
         self.contest = task.contest
+
         self.sql_session.delete(manager)
-        self.sql_session.commit()
+
+        try_commit(self.sql_session, self)
         self.redirect("/task/%s" % task.id)
 
 
@@ -792,6 +828,7 @@ class AddTestcaseHandler(BaseHandler):
     def get(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
+
         self.r_params = self.render_params()
         self.r_params["task"] = task
         self.render("add_testcase.html", **self.r_params)
@@ -799,6 +836,7 @@ class AddTestcaseHandler(BaseHandler):
     def post(self, task_id):
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
+
         try:
             num = int(self.get_argument("num"))
         except ValueError:
@@ -842,20 +880,14 @@ class AddTestcaseHandler(BaseHandler):
         self.sql_session = Session()
         task = self.safe_get_item(Task, task_id)
         self.contest = task.contest
-        self.sql_session.add(Testcase(
-            num, public, input_digest, output_digest, task=task))
 
-        try:
-            self.sql_session.commit()
-        except IntegrityError as error:
-            self.application.service.add_notification(
-                make_datetime(),
-                "Testcase storage failed",
-                repr(error))
+        testcase = Testcase(num, public, input_digest, output_digest, task=task)
+        self.sql_session.add(testcase)
+
+        if try_commit(self.sql_session, self):
+            self.redirect("/task/%s" % task_id)
+        else:
             self.redirect("/add_testcase/%s" % task_id)
-            return
-
-        self.redirect("/task/%s" % task_id)
 
 
 class DeleteTestcaseHandler(BaseHandler):
@@ -866,14 +898,17 @@ class DeleteTestcaseHandler(BaseHandler):
         testcase = self.safe_get_item(Testcase, testcase_id)
         task = testcase.task
         self.contest = task.contest
+
         self.sql_session.delete(testcase)
-        self.sql_session.commit()
+
+        try_commit(self.sql_session, self)
         self.redirect("/task/%s" % task.id)
 
 
 class AddTaskHandler(BaseHandler):
     def get(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
+
         self.r_params = self.render_params()
         self.render("add_task.html", **self.r_params)
 
@@ -990,11 +1025,6 @@ class AddTaskHandler(BaseHandler):
                 0,
                 allow_empty=False)
 
-            statements = {}
-            attachments = {}
-            managers = {}
-            testcases = []
-
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(),
@@ -1013,14 +1043,14 @@ class AddTaskHandler(BaseHandler):
                     max_submission_number, max_user_test_number,
                     min_submission_interval, min_user_test_interval,
                     score_precision, contest=self.contest,
-                    statements=statements, attachments=attachments,
-                    submission_format=submission_format, managers=managers,
-                    testcases=testcases)
+                    submission_format=submission_format)
         self.sql_session.add(task)
 
         if try_commit(self.sql_session, self):
             self.application.service.scoring_service.reinitialize()
-        self.redirect("/task/%s" % task.id)
+            self.redirect("/task/%s" % task.id)
+        else:
+            self.redirect("/add_task/%s" % contest_id)
 
 
 class TaskHandler(BaseHandler):
@@ -1176,19 +1206,6 @@ class TaskHandler(BaseHandler):
         self.redirect("/task/%s" % task_id)
 
 
-class TaskStatementViewHandler(FileHandler):
-    """Shows the statement file of a task in the contest.
-
-    """
-    @tornado.web.asynchronous
-    def get(self, task_id):
-        task = self.safe_get_item(Task, task_id)
-        statement = task.statement
-        task_name = task.name
-        self.sql_session.close()
-        self.fetch(statement, "application/pdf", "%s.pdf" % task_name)
-
-
 class RankingHandler(BaseHandler):
     """Shows the ranking for a contest.
 
@@ -1235,8 +1252,10 @@ class RemoveAnnouncementHandler(BaseHandler):
     def get(self, ann_id):
         ann = self.safe_get_item(Announcement, ann_id)
         contest_id = ann.contest.id
+
         self.sql_session.delete(ann)
-        self.sql_session.commit()
+
+        try_commit(self.sql_session, self)
         self.redirect("/announcements/%s" % contest_id)
 
 
@@ -1248,6 +1267,7 @@ class UserViewHandler(BaseHandler):
     def get(self, user_id):
         user = self.safe_get_item(User, user_id)
         self.contest = user.contest
+
         self.r_params = self.render_params()
         self.r_params["selected_user"] = user
         self.r_params["submissions"] = user.submissions
@@ -1256,6 +1276,7 @@ class UserViewHandler(BaseHandler):
     def post(self, user_id):
         user = self.safe_get_item(User, user_id)
         self.contest = user.contest
+
         user.first_name = self.get_argument("first_name", user.first_name)
         user.last_name = self.get_argument("last_name", user.last_name)
         user.username = self.get_argument("username", user.username)
@@ -1394,6 +1415,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
                     extra_time=extra_time,
                     contest=self.contest)
         self.sql_session.add(user)
+
         if try_commit(self.sql_session, self):
             self.application.service.scoring_service.reinitialize()
             self.redirect("/user/%s" % user.id)
@@ -1411,6 +1433,7 @@ class SubmissionViewHandler(BaseHandler):
     def get(self, submission_id):
         submission = self.safe_get_item(Submission, submission_id)
         self.contest = submission.user.contest
+
         self.r_params = self.render_params()
         self.r_params["s"] = submission
         self.render("submission.html", **self.r_params)
@@ -1426,10 +1449,12 @@ class SubmissionFileHandler(FileHandler):
         sub_file = self.safe_get_item(File, file_id)
         submission = sub_file.submission
         self.contest = submission.task.contest
+
         real_filename = sub_file.filename
         if submission.language is not None:
             real_filename = real_filename.replace("%l", submission.language)
         digest = sub_file.digest
+
         self.sql_session.close()
         self.fetch(digest, "text/plain", real_filename)
 
@@ -1457,6 +1482,7 @@ class QuestionReplyHandler(BaseHandler):
         ref = self.get_argument("ref", "/")
         question = self.safe_get_item(Question, question_id)
         self.contest = question.user.contest
+
         reply_subject_code = self.get_argument("reply_question_quick_answer",
                                                "")
         question.reply_text = self.get_argument("reply_question_text", "")
@@ -1490,6 +1516,7 @@ class QuestionIgnoreHandler(BaseHandler):
         # Fetch form data.
         question = self.safe_get_item(Question, question_id)
         self.contest = question.user.contest
+
         should_ignore = self.get_argument("ignore", "no") == "yes"
 
         # Commit the change.
@@ -1567,43 +1594,42 @@ class NotificationsHandler(BaseHandler):
 
 
 _aws_handlers = [
-    (r"/",         MainHandler),
+    (r"/", MainHandler),
     (r"/([0-9]+)", MainHandler),
-    (r"/contest/([0-9]+)",       ContestHandler),
+    (r"/contest/([0-9]+)", ContestHandler),
     (r"/announcements/([0-9]+)", SimpleContestHandler("announcements.html")),
-    (r"/userlist/([0-9]+)",      SimpleContestHandler("userlist.html")),
-    (r"/tasklist/([0-9]+)",      SimpleContestHandler("tasklist.html")),
-    (r"/contest/add",           AddContestHandler),
-    (r"/ranking/([0-9]+)",          RankingHandler),
+    (r"/userlist/([0-9]+)", SimpleContestHandler("userlist.html")),
+    (r"/tasklist/([0-9]+)", SimpleContestHandler("tasklist.html")),
+    (r"/contest/add", AddContestHandler),
+    (r"/ranking/([0-9]+)", RankingHandler),
     (r"/ranking/([0-9]+)/([a-z]+)", RankingHandler),
-    (r"/task/([0-9]+)",           TaskHandler),
-    (r"/task/([0-9]+)/statement", TaskStatementViewHandler),
-    (r"/add_task/([0-9]+)",            AddTaskHandler),
-    (r"/add_statement/([0-9]+)",       AddStatementHandler),
-    (r"/delete_statement/([0-9]+)",    DeleteStatementHandler),
-    (r"/add_attachment/([0-9]+)",      AddAttachmentHandler),
-    (r"/delete_attachment/([0-9]+)",   DeleteAttachmentHandler),
-    (r"/add_manager/([0-9]+)",         AddManagerHandler),
-    (r"/delete_manager/([0-9]+)",      DeleteManagerHandler),
-    (r"/add_testcase/([0-9]+)",        AddTestcaseHandler),
-    (r"/delete_testcase/([0-9]+)",     DeleteTestcaseHandler),
-    (r"/user/([0-9]+)",   UserViewHandler),
-    (r"/add_user/([0-9]+)",       AddUserHandler),
-    (r"/add_announcement/([0-9]+)",    AddAnnouncementHandler),
+    (r"/task/([0-9]+)", TaskHandler),
+    (r"/add_task/([0-9]+)", AddTaskHandler),
+    (r"/add_statement/([0-9]+)", AddStatementHandler),
+    (r"/delete_statement/([0-9]+)", DeleteStatementHandler),
+    (r"/add_attachment/([0-9]+)", AddAttachmentHandler),
+    (r"/delete_attachment/([0-9]+)", DeleteAttachmentHandler),
+    (r"/add_manager/([0-9]+)", AddManagerHandler),
+    (r"/delete_manager/([0-9]+)", DeleteManagerHandler),
+    (r"/add_testcase/([0-9]+)", AddTestcaseHandler),
+    (r"/delete_testcase/([0-9]+)", DeleteTestcaseHandler),
+    (r"/user/([0-9]+)", UserViewHandler),
+    (r"/add_user/([0-9]+)", AddUserHandler),
+    (r"/add_announcement/([0-9]+)", AddAnnouncementHandler),
     (r"/remove_announcement/([0-9]+)", RemoveAnnouncementHandler),
-    (r"/submission/([0-9]+)",                SubmissionViewHandler),
-    (r"/submission_file/([0-9]+)",  SubmissionFileHandler),
+    (r"/submission/([0-9]+)", SubmissionViewHandler),
+    (r"/submission_file/([0-9]+)", SubmissionFileHandler),
     (r"/file/([a-f0-9]+)/([a-zA-Z0-9_.-]+)", FileFromDigestHandler),
-    (r"/message/([0-9]+)",         MessageHandler),
-    (r"/question/([0-9]+)",        QuestionReplyHandler),
+    (r"/message/([0-9]+)", MessageHandler),
+    (r"/question/([0-9]+)", QuestionReplyHandler),
     (r"/ignore_question/([0-9]+)", QuestionIgnoreHandler),
-    (r"/questions/([0-9]+)",       QuestionsHandler),
-    (r"/resourceslist",                   ResourcesListHandler),
-    (r"/resourceslist/([0-9]+)",          ResourcesListHandler),
-    (r"/resources",                       ResourcesHandler),
-    (r"/resources/([0-9]+|all)",          ResourcesHandler),
+    (r"/questions/([0-9]+)", QuestionsHandler),
+    (r"/resourceslist", ResourcesListHandler),
+    (r"/resourceslist/([0-9]+)", ResourcesListHandler),
+    (r"/resources", ResourcesHandler),
+    (r"/resources/([0-9]+|all)", ResourcesHandler),
     (r"/resources/([0-9]+|all)/([0-9]+)", ResourcesHandler),
-    (r"/notifications",               NotificationsHandler),
+    (r"/notifications", NotificationsHandler),
 ]
 
 

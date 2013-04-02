@@ -69,7 +69,6 @@ $("select[name=task_type]").change(showTaskTypeOption);
       </tr>
     </thead>
     <tbody>
-      {% set reevaluation_par_name = "submission" %}
       {% for s in sorted(submissions, key=lambda s: s.timestamp, reverse=True) %}
         {% if current_score_type is None %}
           {% try %}
@@ -159,6 +158,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
           {% end %}
         </td>
         <td>
+          {% set reevaluation_par_name = "submission" %}
           {% set reevaluation_par_value = s.id %}
           {% include reevaluation_buttons.html %}
         </td>

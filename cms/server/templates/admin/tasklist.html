@@ -14,12 +14,12 @@
     </tr>
   </thead>
   <tbody>
-    {% set reevaluation_par_name = "task" %}
     {% for t in contest.tasks %}
     <tr>
       <td>{{ t.title }}</td>
       <td><a href="{{ url_root }}/task/{{ t.id }}">{{ t.name }}</a></td>
       <td>
+        {% set reevaluation_par_name = "task" %}
         {% set reevaluation_par_value = t.id %}
         {% include reevaluation_buttons.html %}
       </td>
