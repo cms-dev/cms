@@ -793,19 +793,22 @@ class DeleteAttachmentHandler(BaseHandler):
 
 
 class AddManagerHandler(BaseHandler):
-    """Add a manager to a task.
+    """Add a manager to a dataset.
 
     """
-    def get(self, task_id):
-        task = self.safe_get_item(Task, task_id)
+    def get(self, dataset_id):
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
         self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
+        self.r_params["dataset"] = dataset
         self.render("add_manager.html", **self.r_params)
 
-    def post(self, task_id):
-        task = self.safe_get_item(Task, task_id)
+    def post(self, dataset_id):
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
         self.contest = task.contest
 
         manager = self.request.files["manager"][0]
@@ -821,20 +824,21 @@ class AddManagerHandler(BaseHandler):
                 make_datetime(),
                 "Manager storage failed",
                 repr(error))
-            self.redirect("/add_manager/%s" % task_id)
+            self.redirect("/add_manager/%s" % dataset_id)
             return
 
         self.sql_session = Session()
-        task = self.safe_get_item(Task, task_id)
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
         self.contest = task.contest
 
-        manager = Manager(manager["filename"], digest, task=task)
+        manager = Manager(manager["filename"], digest, dataset=dataset)
         self.sql_session.add(manager)
 
         if try_commit(self.sql_session, self):
-            self.redirect("/task/%s" % task_id)
+            self.redirect("/task/%s" % task.id)
         else:
-            self.redirect("/add_manager/%s" % task_id)
+            self.redirect("/add_manager/%s" % dataset_id)
 
 
 class DeleteManagerHandler(BaseHandler):
@@ -843,7 +847,7 @@ class DeleteManagerHandler(BaseHandler):
     """
     def get(self, manager_id):
         manager = self.safe_get_item(Manager, manager_id)
-        task = manager.task
+        task = manager.dataset.task
         self.contest = task.contest
 
         self.sql_session.delete(manager)
@@ -1105,19 +1109,22 @@ class ToggleAutojudgeDatasetHandler(BaseHandler):
 
 
 class AddTestcaseHandler(BaseHandler):
-    """Add a testcase to a task.
+    """Add a testcase to a dataset.
 
     """
-    def get(self, task_id):
-        task = self.safe_get_item(Task, task_id)
+    def get(self, dataset_id):
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
         self.contest = task.contest
 
         self.r_params = self.render_params()
         self.r_params["task"] = task
+        self.r_params["dataset"] = dataset
         self.render("add_testcase.html", **self.r_params)
 
-    def post(self, task_id):
-        task = self.safe_get_item(Task, task_id)
+    def post(self, dataset_id):
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
         self.contest = task.contest
 
         try:
@@ -1127,7 +1134,7 @@ class AddTestcaseHandler(BaseHandler):
                 make_datetime(),
                 "Invalid data",
                 "Please give a numerical value for the position.")
-            self.redirect("/add_testcase/%s" % task_id)
+            self.redirect("/add_testcase/%s" % dataset_id)
             return
 
         try:
@@ -1138,7 +1145,7 @@ class AddTestcaseHandler(BaseHandler):
                 make_datetime(),
                 "Invalid data",
                 "Please fill both input and output.")
-            self.redirect("/add_testcase/%s" % task_id)
+            self.redirect("/add_testcase/%s" % dataset_id)
             return
 
         public = self.get_argument("public", None) is not None
@@ -1157,20 +1164,21 @@ class AddTestcaseHandler(BaseHandler):
                 make_datetime(),
                 "Testcase storage failed",
                 repr(error))
-            self.redirect("/add_testcase/%s" % task_id)
+            self.redirect("/add_testcase/%s" % dataset_id)
             return
 
         self.sql_session = Session()
-        task = self.safe_get_item(Task, task_id)
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
         self.contest = task.contest
 
-        testcase = Testcase(num, public, input_digest, output_digest, task=task)
+        testcase = Testcase(num, public, input_digest, output_digest, dataset=dataset)
         self.sql_session.add(testcase)
 
         if try_commit(self.sql_session, self):
-            self.redirect("/task/%s" % task_id)
+            self.redirect("/task/%s" % task.id)
         else:
-            self.redirect("/add_testcase/%s" % task_id)
+            self.redirect("/add_testcase/%s" % dataset_id)
 
 
 class DeleteTestcaseHandler(BaseHandler):
@@ -1179,7 +1187,7 @@ class DeleteTestcaseHandler(BaseHandler):
     """
     def get(self, testcase_id):
         testcase = self.safe_get_item(Testcase, testcase_id)
-        task = testcase.task
+        task = testcase.dataset.task
         self.contest = task.contest
 
         self.sql_session.delete(testcase)
