@@ -242,8 +242,8 @@ class EvaluationJob(Job):
         job.files = dict(submission.files)
         job.managers = dict(submission.task.managers)
         job.executables = dict(submission.executables)
-        job.testcases = [Testcase(t.input, t.output)
-                         for t in submission.task.testcases]
+        job.testcases = dict((t.num, Testcase(t.input, t.output))
+                             for t in submission.task.testcases)
         job.time_limit = submission.task.time_limit
         job.memory_limit = submission.task.memory_limit
         job.info = "evaluate submission %d" % (submission.id)
@@ -265,7 +265,7 @@ class EvaluationJob(Job):
         job.files = dict(user_test.files)
         job.managers = dict(user_test.managers)
         job.executables = dict(user_test.executables)
-        job.testcases = [Testcase(user_test.input, None)]
+        job.testcases = {0: Testcase(user_test.input, None)}
         job.time_limit = user_test.task.time_limit
         job.memory_limit = user_test.task.memory_limit
         job.info = "evaluate user test %d" % (user_test.id)
@@ -298,8 +298,8 @@ class EvaluationJob(Job):
                                  for k, v in self.managers.iteritems()),
                 'executables': dict((k, v.digest)
                                     for k, v in self.executables.iteritems()),
-                'testcases': list((t.input, t.output)
-                                  for t in self.testcases),
+                'testcases': dict((k, (v.input, v.output))
+                                  for k, v in self.testcases.iteritems()),
                 'time_limit': self.time_limit,
                 'memory_limit': self.memory_limit,
                 'success': self.success,
@@ -320,8 +320,8 @@ class EvaluationJob(Job):
             (k, Manager(k, v)) for k, v in data['managers'].iteritems())
         data['executables'] = dict(
             (k, Executable(k, v)) for k, v in data['executables'].iteritems())
-        data['testcases'] = list(
-            Testcase(t[0], t[1]) for t in data['testcases'])
+        data['testcases'] = dict(
+            (k, Testcase(*v)) for k, v in data['testcases'].iteritems())
         # XXX We convert the key from str to int because it was the key
         # of a JSON object.
         data['evaluations'] = dict((int(k), v) for k, v

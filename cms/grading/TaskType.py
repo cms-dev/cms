@@ -234,7 +234,7 @@ class TaskType:
         return (bool): success of operation.
 
         """
-        for test_number in xrange(len(self.job.testcases)):
+        for test_number in self.job.testcases.iterkeys():
             success = self.evaluate_testcase(test_number)
             if not success or self.ignore_job:
                 self.job.success = False
