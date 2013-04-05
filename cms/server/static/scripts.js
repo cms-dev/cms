@@ -309,15 +309,35 @@
         repr_job: function(job)
         {
             var job_type = "???";
-            if (job == null)
+            if (job == null) {
                 return "N/A";
-            else if (job == "disabled")
+            }
+            else if (job == "disabled") {
                 return "Worker disabled";
-            else if (job[0] == 'compile')
+            }
+            else if (job.job_type == 'compile') {
                 job_type = 'Compiling';
-            else if (job[0] == 'evaluate')
+                object_type = 'submission';
+            }
+            else if (job.job_type == 'evaluate') {
                 job_type = 'Evaluating';
-            return job_type + ' submission <a href="' + url_root + '/submission/' + job[1] + '">' + job[1] + '</a>';
+                object_type = 'submission';
+            }
+            else if (job.job_type == 'compile_test') {
+                job_type = 'Compiling';
+                object_type = 'user_test';
+            }
+            else if (job.job_type == 'evaluate_test') {
+                job_type = 'Evaluating';
+                object_type = 'user_test';
+            }
+
+            if (object_type == 'submission') {
+                return job_type + ' the <a href="' + url_root + '/submission/' + job.object_id + '/' + job.dataset_id + '">result</a> of <a href="' + url_root + '/submission/' + job.object_id + '">submission ' + job.object_id + '</a> on <a href="' + url_root + '/dataset/' + job.dataset_id + '">dataset ' + job.dataset_id + '</a>';
+            }
+            else {
+                return job_type + ' the result of user_test ' + job.object_id + ' on <a href="' + url_root + '/dataset/' + job.dataset_id + '">dataset ' + job.dataset_id + '</a>';
+            }
         },
 
         /**

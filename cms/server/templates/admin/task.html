@@ -138,6 +138,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       {% if dataset is not task.active_dataset %}
         <a href="{{ url_root }}/autojudge_dataset/{{ dataset.id }}">[{% if dataset.autojudge %}Disable{% else %}Enable{% end %} background judging]</a>
       {% end %}
+      <a href="{{ url_root }}/dataset/{{ dataset.id }}">[View results]</a>
     </p>
 
   <!-- Task type and score type settings -->
@@ -238,7 +239,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
         </tr>
         <tr>
           <td>Score Parameters</td>
-          <td><input type="text" name="score_type_parameters_{{ dataset.id }}" value="{{ dataset.score_type_parameters }}"/></td>
+          <td><textarea name="score_type_parameters_{{ dataset.id }}">{{ dataset.score_type_parameters }}</textarea></td>
         </tr>
       </table>
       <div class="hr"></div>

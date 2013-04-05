@@ -112,7 +112,7 @@ You are cloning the dataset "{{ original_dataset.description }}".
       </tr>
       <tr>
         <td>Score Parameters</td>
-        <td><input type="text" name="score_type_parameters" value="{{ original_dataset.score_type_parameters if original_dataset is not None else "" }}"/></td>
+        <td><textarea name="score_type_parameters">{{ original_dataset.score_type_parameters if original_dataset is not None else "" }}</textarea></td>
       </tr>
     </table>
     <div class="hr"></div>

@@ -6,7 +6,7 @@
 {% set current_score_type = None %}
 
 <div class="core_title">
-  <h1>{{ task.title }} ({{ task.name }})</h1>
+  <h1>{{ task.title }} (<a href="{{ url_root }}/task/{{ task.id }}">{{ task.name }}</a>)</h1>
 </div>
 
 {% set dataset_selector_par_url = "%s/dataset" % (url_root) %}
