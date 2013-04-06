@@ -161,7 +161,9 @@ class Sandbox:
         # Get our shard number, to use as a unique identifier for the sandbox
         # on this machine.
         if file_cacher is not None and file_cacher.service is not None:
-            box_id = file_cacher.service._my_coord.shard
+            # We add 1 to avoid conflicting with console users of the
+            # sandbox who use the default box id of 0.
+            box_id = file_cacher.service._my_coord.shard + 1
         else:
             box_id = 0
 
