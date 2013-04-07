@@ -619,6 +619,7 @@ class ScoringService(Service):
 
         """
         logger.info("Reinitializing rankings.")
+        self.scorers = {}
         self._initialize_scorers()
         with self.operation_queue_lock:
             for ranking in self.rankings:
