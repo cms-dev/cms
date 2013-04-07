@@ -1150,6 +1150,11 @@ var DataStore = new function () {
         data["selected"] = 0;
     });
 
+    self.user_update.add(function (key, old_data, data) {
+        data["selected"] = old_data["selected"];
+        delete old_data["selected"];
+    });
+
     self.user_delete.add(function (key, old_data) {
         self.set_selected(key, false);
         delete old_data["selected"];
