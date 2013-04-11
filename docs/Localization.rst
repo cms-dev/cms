@@ -27,7 +27,7 @@ To begin translating to a new language, run this command, from :gh_tree:`cms/ser
 
 .. sourcecode:: bash
 
-    msginit -d <two_letter_code_of_language>
+    msginit -l <two_letter_code_of_language>
 
 Right after that, open :file:`<code>.po` and fill the information in the header. To translate a string, simply fill the corresponding msgstr with the translations.
 
