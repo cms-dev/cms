@@ -407,6 +407,13 @@ var Scoreboard = new function () {
         $row.remove();
     };
 
+    // Easing function to animate the score increase (or decrease)
+    $.easing.exponential = function (x, t, b, c, d) {
+        return 1 / (1 + Math.exp(1 / (x + 0.1) - 1 / (1.06 - x)));
+    }
+
+    var chosenEasing = 'exponential';
+    var chosenDuration = 5000;
 
     // This callback is called by the DataStore when a user changes score.
     self.score_handler = function (u_id, user, t_id, task, delta) {
@@ -429,10 +436,24 @@ var Scoreboard = new function () {
             } else if ($this.hasClass("task")) {
                 var task = DataStore.tasks[$this.data("task")];
                 var max_score = task["max_score"];
-                $this.text(round_to_str(score, task["score_precision"]));
+                var currentScore = parseFloat($this.text());
+                var newScore = parseFloat(round_to_str(score, task["score_precision"]));
+                if (newScore != currentScore) {
+                    // animate old score towards new score
+                    $({scoreValue: currentScore}).animate({scoreValue: newScore}, {
+                        duration: chosenDuration,
+                        easing: chosenEasing,
+                        step: function() {
+                            $this.text(round_to_str(this.scoreValue, task["score_precision"]));
+                        },
+                        complete: function() {
+                            $this.text(round_to_str(newScore, task["score_precision"]));
+                        }
+                    });
+                }
             }
 
-            // TODO we could user a data-* attribute to store the score class
+            // TODO we could use a data-* attribute to store the score class
 
             var score_class = self.get_score_class(score, max_score);
             $this.removeClass("score_0 score_0_10 score_10_20 score_20_30 score_30_40 score_40_50 score_50_60 score_60_70 score_70_80 score_80_90 score_90_100 score_100");
