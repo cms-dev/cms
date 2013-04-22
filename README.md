@@ -36,26 +36,26 @@ Testimonials
 ------------
 
 CMS has been used in several official and unofficial contests. In
-particular we are aware of the following:
+particular we are aware of the following.
 
-- IOI 2012 (International Olympiad in Informatics), September 2012;
-
-- OII 2011 (Italian Olympiad in Informatics), September 2011 and OII
-  2012, October 2012;
-
-- AIIO 2012 (Australian Invitational Informatics Olympiad), February
-  2012;
-
-- FARIO 2012 (French-Australian Regional Informatics Olympiad), March
-  2012;
-
-- Taipei High School Programming Contest, Taiwan, October 2012;
-
-- training camps for the selections of the national IOI teams of Australia,
-  India, Italy and Latvia.
-
-- laboratory exercises and exams of the course "Algorithms and data
-  structures" at University of Trento (year 2011-2012).
+- International competitions:
+    - IOI 2012 (International Olympiad in Informatics), September
+      2012;
+    - FARIO 2012 (French-Australian Regional Informatics Olympiad),
+      March 2012.
+- National competitions:
+    - OII 2011 (Italian Olympiad in Informatics), September 2011;
+    - OII 2012, October 2012;
+    - AIIO 2012 (Australian Invitational Informatics Olympiad),
+      February 2012;
+    - Taipei High School Programming Contest, Taiwan, October 2012;
+    - Croatian high school programming contest 2013, March 2013.
+- Training:
+    - training camps for the selections of the national IOI teams of
+      Australia, India, Italy, Japan and Latvia.
+- Other:
+    - laboratory exercises and exams of the course "Algorithms and
+      data structures" at University of Trento (year 2011-2012).
 
 If you used CMS for a contest, selection, or a similar event, and want
 to publicize this information, we would be more than happy to hear
