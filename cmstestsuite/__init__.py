@@ -29,7 +29,7 @@ import time
 import mechanize
 
 import cmstestsuite.web
-from cmstestsuite.web.CWSRequests import LoginRequest, SubmitRequest
+from cmstestsuite.web.CWSRequests import LoginRequest, SubmitMultifileRequest
 from cmstestsuite.web.AWSRequests import AWSSubmissionViewRequest
 
 
@@ -486,7 +486,7 @@ def add_existing_user(contest_id, user_id, **kwargs):
     created_users[user_id] = kwargs
 
 
-def cws_submit(contest_id, task_id, user_id, filename, language):
+def cws_submit(contest_id, task_id, user_id, files, language):
     username = created_users[user_id]['username']
     password = created_users[user_id]['password']
     base_url = 'http://localhost:8888/'
@@ -501,7 +501,7 @@ def cws_submit(contest_id, task_id, user_id, filename, language):
 
     lr = LoginRequest(browser, username, password, base_url=base_url)
     step(lr)
-    sr = SubmitRequest(browser, task, base_url=base_url, filename=filename)
+    sr = SubmitMultifileRequest(browser, task, base_url=base_url, files=files)
     step(sr)
 
     submission_id = sr.get_submission_id()

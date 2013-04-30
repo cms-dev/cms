@@ -22,6 +22,7 @@
 
 import os
 import tempfile
+import shutil
 
 from cms import config, logger
 from cms.grading.Sandbox import wait_without_std
@@ -170,6 +171,8 @@ class TwoSteps(TaskType):
         fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
         fifo = os.path.join(fifo_dir, "fifo")
         os.mkfifo(fifo)
+        os.chmod(fifo_dir, 0o755)
+        os.chmod(fifo, 0o666)
 
         # First step: we start the first manager.
         first_filename = "manager"
@@ -181,7 +184,7 @@ class TwoSteps(TaskType):
         first_files_to_get = {
             "input.txt": self.job.testcases[test_number].input
             }
-        first_allow_path = ["input.txt", fifo]
+        first_allow_dirs = [fifo_dir]
 
         # Put the required files into the sandbox
         for filename, digest in first_executables_to_get.iteritems():
@@ -196,7 +199,7 @@ class TwoSteps(TaskType):
             first_command,
             self.job.time_limit,
             self.job.memory_limit,
-            first_allow_path,
+            allow_dirs=first_allow_dirs,
             stdin_redirect="input.txt",
             wait=False)
 
@@ -208,7 +211,7 @@ class TwoSteps(TaskType):
             self.job.executables[second_filename].digest
             }
         second_files_to_get = {}
-        second_allow_path = [fifo, "output.txt"]
+        second_allow_dirs = [fifo_dir]
 
         # Put the required files into the second sandbox
         for filename, digest in second_executables_to_get.iteritems():
@@ -223,7 +226,7 @@ class TwoSteps(TaskType):
             second_command,
             self.job.time_limit,
             self.job.memory_limit,
-            second_allow_path,
+            allow_dirs=second_allow_dirs,
             stdout_redirect="output.txt",
             wait=False)
 
@@ -290,10 +293,11 @@ class TwoSteps(TaskType):
 
         # Whatever happened, we conclude.
         evaluation['success'] = success
-        evaluation['outcome'] = outcome
+        evaluation['outcome'] = str(outcome) if outcome is not None else None
         evaluation['text'] = text
 
         delete_sandbox(first_sandbox)
         delete_sandbox(second_sandbox)
 
+        shutil.rmtree(fifo_dir)
         return success
