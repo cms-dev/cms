@@ -51,7 +51,7 @@
         </a>
         {% end %}
     {% end %}
-    {% set user_primary = json.loads(current_user.primary_statements)[task.name] %}
+    {% set user_primary = json.loads(current_user.primary_statements).get(task.name, []) %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
         {% if statement.language in user_primary and statement.language not in task_primary %}
         <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(statement.language, safe='') }}" class="btn btn-large">
