@@ -76,6 +76,7 @@ class Importer:
         except sqlalchemy.exc.OperationalError as error:
             logger.critical("Unable to access DB.\n%r" % error)
             return False
+        return True
 
     def do_import(self):
         """Get the contest from the Loader and store it."""
