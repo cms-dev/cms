@@ -182,7 +182,7 @@ class ContestExporter:
                 # Specify the "root" of the data graph
                 data["_objects"] = ["0"]
 
-                with io.open(os.path.join(self.export_target,
+                with io.open(os.path.join(export_dir,
                                           "contest.json"), "wb") as fout:
                     json.dump(data, fout, encoding="utf-8",
                               indent=4, sort_keys=True)
