@@ -126,8 +126,7 @@ class SubmissionResult(Base):
     """
     __tablename__ = 'submission_results'
     __table_args__ = (
-        UniqueConstraint('submission_id', 'dataset_id',
-                         name='cst_submission_results_submission_id_dataset_id'),
+        UniqueConstraint('submission_id', 'dataset_id'),
     )
 
     # Primary key is (submission_id, dataset_id).
@@ -291,8 +290,7 @@ class Token(Base):
     """
     __tablename__ = 'tokens'
     __table_args__ = (
-        UniqueConstraint('submission_id',
-                         name='cst_tokens_submission_id'),
+        UniqueConstraint('submission_id'),
     )
 
     # Auto increment primary key.
@@ -331,8 +329,7 @@ class File(Base):
     """
     __tablename__ = 'files'
     __table_args__ = (
-        UniqueConstraint('submission_id', 'filename',
-                         name='cst_files_submission_id_filename'),
+        UniqueConstraint('submission_id', 'filename'),
     )
 
     # Auto increment primary key.
@@ -375,8 +372,7 @@ class Executable(Base):
             ('submission_id', 'dataset_id'),
             (SubmissionResult.submission_id, SubmissionResult.dataset_id),
             onupdate="CASCADE", ondelete="CASCADE"),
-        UniqueConstraint('submission_id', 'dataset_id', 'filename',
-                         name='cst_executables_submission_id_filename'),
+        UniqueConstraint('submission_id', 'dataset_id', 'filename'),
     )
 
     # Auto increment primary key.
@@ -433,8 +429,7 @@ class Evaluation(Base):
             ('submission_id', 'dataset_id'),
             (SubmissionResult.submission_id, SubmissionResult.dataset_id),
             onupdate="CASCADE", ondelete="CASCADE"),
-        UniqueConstraint('submission_id', 'dataset_id', 'num',
-                         name='cst_evaluations_submission_id_num'),
+        UniqueConstraint('submission_id', 'dataset_id', 'num'),
     )
 
     # Auto increment primary key.

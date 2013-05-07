@@ -119,8 +119,7 @@ class UserTestResult(Base):
     """
     __tablename__ = 'user_test_results'
     __table_args__ = (
-        UniqueConstraint('user_test_id', 'dataset_id',
-                         name='cst_user_test_results_user_test_id_dataset_id'),
+        UniqueConstraint('user_test_id', 'dataset_id'),
     )
 
     # Primary key is (user_test_id, dataset_id).
@@ -262,8 +261,7 @@ class UserTestFile(Base):
     """
     __tablename__ = 'user_test_files'
     __table_args__ = (
-        UniqueConstraint('user_test_id', 'filename',
-                         name='cst_files_user_test_id_filename'),
+        UniqueConstraint('user_test_id', 'filename'),
     )
 
     # Auto increment primary key.
@@ -306,8 +304,7 @@ class UserTestExecutable(Base):
             ('user_test_id', 'dataset_id'),
             (UserTestResult.user_test_id, UserTestResult.dataset_id),
             onupdate="CASCADE", ondelete="CASCADE"),
-        UniqueConstraint('user_test_id', 'dataset_id', 'filename',
-                         name='cst_executables_user_test_id_filename'),
+        UniqueConstraint('user_test_id', 'dataset_id', 'filename'),
     )
 
     # Auto increment primary key.
@@ -360,8 +357,7 @@ class UserTestManager(Base):
     """
     __tablename__ = 'user_test_managers'
     __table_args__ = (
-        UniqueConstraint('user_test_id', 'filename',
-                         name='cst_managers_user_test_id_filename'),
+        UniqueConstraint('user_test_id', 'filename'),
     )
 
     # Auto increment primary key.

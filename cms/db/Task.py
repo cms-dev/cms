@@ -46,10 +46,8 @@ class Task(Base):
     """
     __tablename__ = 'tasks'
     __table_args__ = (
-        UniqueConstraint('contest_id', 'num',
-                         name='cst_task_contest_id_num'),
-        UniqueConstraint('contest_id', 'name',
-                         name='cst_task_contest_id_name'),
+        UniqueConstraint('contest_id', 'num'),
+        UniqueConstraint('contest_id', 'name'),
         ForeignKeyConstraint(
             ("id", "active_dataset_id"),
             ("datasets.task_id", "datasets.id"),
@@ -202,8 +200,7 @@ class Dataset(Base):
     """
     __tablename__ = 'datasets'
     __table_args__ = (
-        UniqueConstraint('task_id', 'description',
-                         name='cst_datasets_task_id_description'),
+        UniqueConstraint('task_id', 'description'),
     )
 
     # Auto increment primary key.
@@ -279,8 +276,7 @@ class Testcase(Base):
     """
     __tablename__ = 'testcases'
     __table_args__ = (
-        UniqueConstraint('dataset_id', 'num',
-                         name='cst_testcases_dataset_id_num'),
+        UniqueConstraint('dataset_id', 'num'),
     )
 
     # Auto increment primary key.
@@ -332,8 +328,7 @@ class Attachment(Base):
     """
     __tablename__ = 'attachments'
     __table_args__ = (
-        UniqueConstraint('task_id', 'filename',
-                         name='cst_attachments_task_id_filename'),
+        UniqueConstraint('task_id', 'filename'),
     )
 
     # Auto increment primary key.
@@ -372,8 +367,7 @@ class Manager(Base):
     """
     __tablename__ = 'managers'
     __table_args__ = (
-        UniqueConstraint('dataset_id', 'filename',
-                         name='cst_managers_dataset_id_filename'),
+        UniqueConstraint('dataset_id', 'filename'),
     )
 
     # Auto increment primary key.
@@ -444,8 +438,7 @@ class Statement(Base):
     """
     __tablename__ = 'statements'
     __table_args__ = (
-        UniqueConstraint('task_id', 'language',
-                         name='cst_statements_task_id_language'),
+        UniqueConstraint('task_id', 'language'),
     )
 
     # Auto increment primary key.

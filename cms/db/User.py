@@ -53,8 +53,7 @@ class User(Base):
     # with a contest) and a participation.
     __tablename__ = 'users'
     __table_args__ = (
-        UniqueConstraint('contest_id', 'username',
-                         name='cst_user_contest_id_username'),
+        UniqueConstraint('contest_id', 'username'),
     )
 
     # Auto increment primary key.
