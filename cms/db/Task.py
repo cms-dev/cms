@@ -194,11 +194,6 @@ class Task(Base):
     # submissions (list of Submission objects)
     # user_tests (list of UserTest objects)
 
-    # This object (independent from SQLAlchemy) is the instance of the
-    # ScoreType class with the given parameters, taking care of
-    # building the scores of the submissions.
-    scorer = None
-
 
 class Dataset(Base):
     """Class to store the information about a data set. Not to be used
