@@ -23,14 +23,14 @@
 import os
 import tempfile
 
-from cms import config, logger
+from cms import LANGUAGES, config, logger
 from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step_before_run, evaluation_step_after_run, \
     is_evaluation_passed, human_evaluation_message, white_diff_step
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
-from cms.db.SQLAlchemyAll import Submission, Executable
+from cms.db.SQLAlchemyAll import Executable
 
 
 HEADERS_MAP = {
@@ -62,7 +62,7 @@ class TwoSteps(TaskType):
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         res = dict()
-        for language in Submission.LANGUAGES:
+        for language in LANGUAGES:
             header = HEADERS_MAP[language]
             source_filenames = []
             for filename in submission_format:

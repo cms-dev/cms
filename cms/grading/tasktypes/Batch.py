@@ -22,7 +22,7 @@
 
 import os
 
-from cms import logger
+from cms import LANGUAGES, logger
 from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step, human_evaluation_message, is_evaluation_passed, \
     extract_outcome_and_text, white_diff_step
@@ -30,7 +30,7 @@ from cms.grading.ParameterTypes import ParameterTypeCollection, \
      ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
-from cms.db.SQLAlchemyAll import Submission, Executable
+from cms.db.SQLAlchemyAll import Executable
 
 
 class Batch(TaskType):
@@ -95,7 +95,7 @@ class Batch(TaskType):
     def get_compilation_commands(self, submission_format):
         """See TaskType.get_compilation_commands."""
         res = dict()
-        for language in Submission.LANGUAGES:
+        for language in LANGUAGES:
             format_filename = submission_format[0]
             source_filenames = []
             # If a grader is specified, we add to the command line (and to

@@ -27,12 +27,12 @@ import yaml
 
 from datetime import timedelta
 
-from cms import logger
+from cms import LANGUAGES, logger
 from cmscommon.DateTime import make_datetime
 
 from cms.db.SQLAlchemyAll import \
     Contest, User, Task, Statement, Attachment, SubmissionFormatElement, \
-    Dataset, Manager, Testcase, Submission
+    Dataset, Manager, Testcase
 
 
 def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
@@ -240,14 +240,14 @@ class YamlLoader:
         # presuming that the task type is Batch, we retrieve graders
         # in the form sol/grader.%l
         graders = False
-        for lang in Submission.LANGUAGES:
+        for lang in LANGUAGES:
             if os.path.exists(os.path.join(
                     task_path, "sol", "grader.%s" % lang)):
                 graders = True
                 break
         if graders:
             # Read grader for each language
-            for lang in Submission.LANGUAGES:
+            for lang in LANGUAGES:
                 grader_filename = os.path.join(
                     task_path, "sol", "grader.%s" % lang)
                 if os.path.exists(grader_filename):
@@ -378,7 +378,7 @@ class YamlLoader:
                 description="Manager for task %s" % name)
             args["managers"] += [
                 Manager("manager", digest)]
-            for lang in Submission.LANGUAGES:
+            for lang in LANGUAGES:
                 stub_name = os.path.join(task_path, "sol", "stub.%s" % lang)
                 if os.path.exists(stub_name):
                     digest = self.file_cacher.put_file(

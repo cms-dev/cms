@@ -52,7 +52,7 @@ import tornado.web
 
 from sqlalchemy import func
 
-from cms import config, default_argument_parser, logger
+from cms import LANGUAGES_MAP, config, default_argument_parser, logger
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 from cms.db import ask_for_contest
@@ -988,7 +988,7 @@ class SubmitHandler(BaseHandler):
             """
             extension = os.path.splitext(user_filename)[1]
             try:
-                return Submission.LANGUAGES_MAP[extension]
+                return LANGUAGES_MAP[extension]
             except KeyError:
                 return None
 
@@ -1500,7 +1500,7 @@ class UserTestHandler(BaseHandler):
             """
             extension = os.path.splitext(user_filename)[1]
             try:
-                return Submission.LANGUAGES_MAP[extension]
+                return LANGUAGES_MAP[extension]
             except KeyError:
                 return None
 

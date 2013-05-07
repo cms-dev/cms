@@ -39,6 +39,14 @@ from cms.async import ServiceCoord, Address, config as async_config, \
 from cms.async.AsyncLibrary import RemoteService
 
 
+LANGUAGES = ["c", "cpp", "pas"]
+LANGUAGES_MAP = {".c": "c",
+                 ".cpp": "cpp",
+                 ".cc": "cpp",
+                 ".pas": "pas",
+                 }
+
+
 ## Configuration ##
 
 class Config:

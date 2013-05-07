@@ -94,13 +94,6 @@ class Submission(Base):
     # token (Token object or None)
     # results (list of SubmissionResult objects)
 
-    LANGUAGES = ["c", "cpp", "pas"]
-    LANGUAGES_MAP = {".c": "c",
-                     ".cpp": "cpp",
-                     ".cc": "cpp",
-                     ".pas": "pas",
-                     }
-
     def get_result(self, dataset):
         # Use IDs to avoid triggering a lazy-load query.
         assert self.task_id == dataset.task_id
