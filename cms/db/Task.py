@@ -277,7 +277,7 @@ class Testcase(Base):
     directly (import it from SQLAlchemyAll).
 
     """
-    __tablename__ = 'task_testcases'
+    __tablename__ = 'testcases'
     __table_args__ = (
         UniqueConstraint('dataset_id', 'num',
                          name='cst_testcases_dataset_id_num'),
