@@ -211,7 +211,7 @@ class ResourceService(Service):
                     self._services_prev_cpu_times[service] = \
                         proc.get_cpu_times()
                     return proc
-            except psutil.error.NoSuchProcess:
+            except psutil.NoSuchProcess:
                 continue
         return None
 
@@ -333,7 +333,7 @@ class ResourceService(Service):
                     dic["threads"] = 0  # 0 = Not implemented
 
                 self._procs[service] = proc
-            except psutil.error.NoSuchProcess:
+            except psutil.NoSuchProcess:
                 # Shut down while we operated?
                 dic = {"autorestart": self._will_restart[service],
                        "running": False}
