@@ -1293,6 +1293,8 @@ class UserViewHandler(BaseHandler):
         user.email = self.get_argument("email", user.email)
 
         user.ip = self.get_argument("ip", None)
+        if user.ip == '':
+            user.ip = None
         if user.ip is not None and not valid_ip(user.ip):
             self.application.service.add_notification(
                 make_datetime(),
@@ -1365,6 +1367,8 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
         email = self.get_argument("email", None)
 
         ip_address = self.get_argument("ip", None)
+        if ip_address == '':
+            ip_address = None
         if ip_address is not None and not valid_ip(ip_address):
             self.application.service.add_notification(
                 make_datetime(),
