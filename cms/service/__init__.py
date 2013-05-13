@@ -24,11 +24,8 @@ from cms import logger
 from cms.db.SQLAlchemyAll import SessionGen, Contest, User, Task, Submission
 
 
-def get_submissions(contest_id=None,
-                    user_id=None,
-                    task_id=None,
-                    submission_id=None,
-                    session=None):
+def get_submissions(contest_id=None, user_id=None, task_id=None,
+                    submission_id=None, session=None):
     """Search for submissions that match the given criteria
 
     The submissions will be returned as a list, and the first four
@@ -39,12 +36,14 @@ def get_submissions(contest_id=None,
     already gives the contest it belongs to). Trying to give them both
     is useless and could only lead to inconsistencies and errors.
 
-    contest_id (int): id of the contest to invalidate, or None.
-    user_id (int): id of the user to invalidate, or None.
-    task_id (int): id of the task to invalidate, or None.
-    submission_id (int): id of the submission to invalidate, or None.
+    contest_id (int): id of the contest to filter with, or None.
+    user_id (int): id of the user to filter with, or None.
+    task_id (int): id of the task to filter with, or None.
+    submission_id (int): id of the submission to filter with, or None.
     session (Session): the database session to use, or None to use a
                        temporary one.
+    returns (list of Submissions): the list of submission that match
+                                   the given criteria
 
     """
     if session is None:
