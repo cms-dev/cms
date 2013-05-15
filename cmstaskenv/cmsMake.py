@@ -31,7 +31,6 @@ import tempfile
 import yaml
 
 from cms.grading import get_compilation_command
-from cms.grading.Sandbox import Sandbox
 from cmstaskenv.Test import test_testcases
 
 SOL_DIRNAME = 'sol'
@@ -70,6 +69,7 @@ def detect_data_dir():
 
 DATA_DIR = detect_data_dir()
 
+
 def endswith2(string, suffixes):
     """True if string ends with one of the given suffixes.
 
@@ -92,7 +92,7 @@ def basename2(string, suffixes):
 
 def call(base_dir, args, stdin=None, stdout=None, stderr=None, env=None):
     print >> sys.stderr, "> Executing command %s in dir %s" % \
-          (" ".join(args), base_dir)
+        (" ".join(args), base_dir)
     if env is None:
         env = {}
     env2 = copy.copy(os.environ)
@@ -167,7 +167,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
         # Delete the dot
         lang = lang[1:]
         exe_EVAL = "%s_EVAL" % (exe)
-        
+
         # Ignore things known to be auxiliary files
         if exe == os.path.join(SOL_DIRNAME, GRAD_BASENAME):
             continue
@@ -188,12 +188,13 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 task_type == ['Batch', 'GradComp']:
             test_deps.append('cor/correttore')
 
-        box_path = Sandbox().detect_box_executable()
-
         def compile_src(srcs, exe, for_evaluation, lang, assume=None):
             if lang != 'pas' or len(srcs) == 1:
-                call(base_dir, get_compilation_command(lang, srcs, exe,
-                                                       for_evaluation=for_evaluation))
+                call(base_dir, get_compilation_command(
+                    lang,
+                    srcs,
+                    exe,
+                    for_evaluation=for_evaluation))
 
             # When using Pascal with graders, file naming conventions
             # require us to do a bit of trickery, i.e., performing the
@@ -204,54 +205,47 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 new_srcs = [os.path.split(srcs[0])[1],
                             '%s.pas' % (task_name)]
                 new_exe = os.path.split(srcs[1])[1][:-4]
-                shutil.copyfile(os.path.join(base_dir, srcs[0]), os.path.join(tempdir, new_srcs[0]))
-                shutil.copyfile(os.path.join(base_dir, srcs[1]), os.path.join(tempdir, new_srcs[1]))
+                shutil.copyfile(os.path.join(base_dir, srcs[0]),
+                                os.path.join(tempdir, new_srcs[0]))
+                shutil.copyfile(os.path.join(base_dir, srcs[1]),
+                                os.path.join(tempdir, new_srcs[1]))
                 lib_filename = '%slib.pas' % (task_name)
                 if os.path.exists(os.path.join(SOL_DIRNAME, lib_filename)):
                     shutil.copyfile(os.path.join(SOL_DIRNAME, lib_filename),
                                     os.path.join(tempdir, lib_filename))
-                call(tempdir, get_compilation_command(lang, new_srcs, new_exe,
-                                                      for_evaluation=for_evaluation))
+                call(tempdir, get_compilation_command(
+                    lang,
+                    new_srcs,
+                    new_exe,
+                    for_evaluation=for_evaluation))
                 shutil.copyfile(os.path.join(tempdir, new_exe),
                                 os.path.join(base_dir, exe))
                 shutil.copymode(os.path.join(tempdir, new_exe),
                                 os.path.join(base_dir, exe))
                 shutil.rmtree(tempdir)
 
-        def test_src(exe, input_num, task_type, assume=None):
+        def test_src(exe, assume=None):
             print "Testing solution %s" % (exe)
-            cormgr = ''
-            if task_type == ['Batch', 'Comp'] or \
-                    task_type == ['Batch', 'GradComp']:
-                cormgr = 'cor/correttore'
             test_testcases(
                 base_dir,
-                input_num,
-                box_path,
                 exe,
-                yaml_conf['timeout'],
-                yaml_conf['memlimit'],
-                task_type[0],
-                task_type[1],
-                cormgr=cormgr,
                 assume=assume)
 
-        actions.append((srcs,
-                        [exe],
-                        functools.partial(compile_src, srcs, exe, False, lang),
-                        'compile solution'))
-        actions.append((srcs,
-                        [exe_EVAL],
-                        functools.partial(compile_src, srcs, exe_EVAL, True, lang),
-                        'compile solution with -DEVAL'))
+        actions.append(
+            (srcs,
+             [exe],
+             functools.partial(compile_src, srcs, exe, False, lang),
+             'compile solution'))
+        actions.append(
+            (srcs,
+             [exe_EVAL],
+             functools.partial(compile_src, srcs, exe_EVAL, True, lang),
+             'compile solution with -DEVAL'))
 
-        input_num = len(in_out_files) / 2
         test_actions.append((test_deps,
                              ['test_%s' % (os.path.split(exe)[1])],
                              functools.partial(test_src,
-                                               exe_EVAL,
-                                               input_num,
-                                               task_type),
+                                               exe_EVAL),
                              'test solution (compiled with -DEVAL)'))
 
     return actions + test_actions
@@ -438,8 +432,8 @@ def build_gen_list(base_dir, task_type):
                         "output generation"))
     in_out_files = [os.path.join(INPUT_DIRNAME, 'input%d.txt' % (n))
                     for n in xrange(testcase_num)] + \
-                    [os.path.join(OUTPUT_DIRNAME, 'output%d.txt' % (n))
-                     for n in xrange(testcase_num)]
+                   [os.path.join(OUTPUT_DIRNAME, 'output%d.txt' % (n))
+                    for n in xrange(testcase_num)]
     return actions, in_out_files
 
 
@@ -584,7 +578,8 @@ def execute_target(base_dir, exec_tree, target,
         print ">> Target %s finished to build" % (target)
 
 
-def execute_multiple_targets(base_dir, exec_tree, targets, debug=False, assume=None):
+def execute_multiple_targets(base_dir, exec_tree, targets,
+                             debug=False, assume=None):
     already_executed = set()
     for target in targets:
         execute_target(base_dir, exec_tree, target,
@@ -596,29 +591,29 @@ def main():
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
     parser.add_argument("-D", "--base-dir",
-                      help="base directory for problem to make "
-                      "(CWD by default)",
-                      dest="base_dir", action="store", default=None)
+                        help="base directory for problem to make "
+                        "(CWD by default)",
+                        dest="base_dir", action="store", default=None)
     parser.add_argument("-l", "--list",
-                      help="list actions that cmsMake is aware of",
-                      dest="list", action="store_true", default=False)
+                        help="list actions that cmsMake is aware of",
+                        dest="list", action="store_true", default=False)
     parser.add_argument("-c", "--clean",
-                      help="clean all generated files",
-                      dest="clean", action="store_true", default=False)
+                        help="clean all generated files",
+                        dest="clean", action="store_true", default=False)
     parser.add_argument("-a", "--all",
-                      help="make all targets",
-                      dest="all", action="store_true", default=False)
+                        help="make all targets",
+                        dest="all", action="store_true", default=False)
     group.add_argument("-y", "--yes",
-                      help="answer yes to all questions", const='y',
-                      dest="assume", action="store_const", default=None)
+                       help="answer yes to all questions", const='y',
+                       dest="assume", action="store_const", default=None)
     group.add_argument("-n", "--no",
-                      help="answer no to all questions", const='n',
-                      dest="assume", action="store_const")
+                       help="answer no to all questions", const='n',
+                       dest="assume", action="store_const")
     parser.add_argument("-d", "--debug",
-                      help="enable debug messages",
-                      dest="debug", action="store_true", default=False)
+                        help="enable debug messages",
+                        dest="debug", action="store_true", default=False)
     parser.add_argument("targets", metavar="target", nargs="*",
-                      help="target to build", type=str)
+                        help="target to build", type=str)
     options = parser.parse_args()
 
     base_dir = options.base_dir
@@ -627,7 +622,7 @@ def main():
     else:
         base_dir = os.path.abspath(base_dir)
 
-    assume=options.assume
+    assume = options.assume
 
     task_type = detect_task_type(base_dir)
     yaml_conf = parse_task_yaml(base_dir)
@@ -635,12 +630,12 @@ def main():
     exec_tree, generated_list = build_execution_tree(actions)
 
     if [len(options.targets) > 0, options.list, options.clean,
-        options.all].count(True) > 1:
+            options.all].count(True) > 1:
         parser.error("Too many commands")
 
     if options.list:
         print "Task name: %s" % (detect_task_name(base_dir))
-        print "Task type: %s %s" % (task_type[0], task_type[1])
+        print "Task type: %s %s" % (task_type[0],  task_type[1])
         print "Available operations:"
         for entry in actions:
             print "  %s: %s -> %s" % (entry[3], ", ".join(entry[0]),
