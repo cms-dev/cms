@@ -50,6 +50,7 @@ particular we are aware of the following.
       February 2012;
     - Taipei High School Programming Contest, Taiwan, October 2012;
     - Croatian high school programming contest 2013, March 2013.
+    - OCI 2013 (Chilean Olympiads in Informatics), May 2013.
 - Training:
     - training camps for the selections of the national IOI teams of
       Australia, India, Italy, Japan and Latvia.
