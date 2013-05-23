@@ -93,7 +93,7 @@
         */
         show_file: function(file_name, url)
         {
-            this.file_asked_filename = file_name;
+            this.file_asked_name = file_name;
             this.file_asked_url = url;
             var file_received = cmsutils.bind_func(this,
                                                    this.__file_received);
