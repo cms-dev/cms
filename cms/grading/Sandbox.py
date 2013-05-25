@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
@@ -220,15 +220,21 @@ class Sandbox:
                 "Failed to initialize sandbox (error %d)" % ret)
 
     def detect_box_executable(self):
-        """Try to find an isolate executable. It first looks in ./isolate/,
-        then the local directory, then in the system paths.
+        """Try to find an isolate executable. It first looks in
+        ./isolate/, then the local directory, then in a relative path
+        from the file that contains the Sandbox module, then in the
+        system paths.
 
         return (string): the path to a valid (hopefully) isolate.
 
         """
         paths = [os.path.join('.', 'isolate', self.exec_name),
-                 os.path.join('.', self.exec_name),
-                 self.exec_name]
+                 os.path.join('.', self.exec_name)]
+        if '__file__' in globals():
+            paths += [os.path.abspath(os.path.join(
+                        os.path.dirname(__file__),
+                        '..', '..', 'isolate', self.exec_name))]
+        paths += [self.exec_name]
         for path in paths:
             if os.path.exists(path):
                 return path

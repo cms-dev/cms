@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
@@ -142,9 +142,13 @@ class Config:
             self.log_dir = "log"
             self.cache_dir = "cache"
             self.data_dir = "lib"
-            paths = [os.path.join(".", "examples", "cms.conf"),
-                     os.path.join("/", "usr", "local", "etc", "cms.conf"),
-                     os.path.join("/", "etc", "cms.conf")]
+            paths = [os.path.join(".", "examples", "cms.conf")]
+            if '__file__' in globals():
+                paths += [os.path.abspath(os.path.join(
+                            os.path.dirname(__file__),
+                            '..', 'examples', 'cms.conf'))]
+            paths += [os.path.join("/", "usr", "local", "etc", "cms.conf"),
+                      os.path.join("/", "etc", "cms.conf")]
 
         # Allow user to override config file path using environment
         # variable 'CMS_CONFIG'.
