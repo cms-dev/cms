@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -201,6 +201,7 @@ class Dataset(Base):
     __tablename__ = 'datasets'
     __table_args__ = (
         UniqueConstraint('task_id', 'description'),
+        UniqueConstraint('id', 'task_id'),
     )
 
     # Auto increment primary key.
