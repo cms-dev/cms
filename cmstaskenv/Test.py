@@ -148,6 +148,17 @@ def test_testcases(base_dir, soluzione, assume=None):
 
     return zip(points, comments, info)
 
+def clean_test_env():
+    """Clean the testing environment, mostly to reclaim disk space.
+
+    """
+
+    # We're done: since we have no way to reuse this cache, we destroy
+    # it to free space. See the TODO above.
+    global file_cacher
+    if file_cacher is not None:
+        file_cacher.destroy_cache()
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         usage()

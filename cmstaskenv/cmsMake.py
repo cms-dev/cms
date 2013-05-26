@@ -31,7 +31,7 @@ import tempfile
 import yaml
 
 from cms.grading import get_compilation_command
-from cmstaskenv.Test import test_testcases
+from cmstaskenv.Test import test_testcases, clean_test_env
 
 SOL_DIRNAME = 'sol'
 SOL_FILENAME = 'soluzione'
@@ -226,10 +226,13 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
 
         def test_src(exe, assume=None):
             print "Testing solution %s" % (exe)
-            test_testcases(
-                base_dir,
-                exe,
-                assume=assume)
+            try:
+                test_testcases(
+                    base_dir,
+                    exe,
+                    assume=assume)
+            finally:
+                clean_test_env()
 
         actions.append(
             (srcs,
