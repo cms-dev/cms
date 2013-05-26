@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
@@ -301,6 +301,33 @@ class DBBackend(FileCacherBackend):
                 return _list(session)
 
 
+class NullBackend(FileCacherBackend):
+    """This backend is always empty, it just drops each file that
+    receives. It looks mostly like /dev/null. It is useful when you
+    want to just rely on the caching capabilities of FileCacher for
+    very short-lived and local storages.
+
+    """
+
+    def get_file(self, digest, dest):
+        raise Exception("No files in a NullBackend")
+
+    def put_file(self, digest, origin, description=""):
+        pass
+
+    def describe(self, digest):
+        return None
+
+    def get_size(self, digest):
+        return None
+
+    def delete(self, digest):
+        pass
+
+    def list(self):
+        return []
+
+
 class FileCacher:
     """This class implement a local cache for files stored as FSObject
     in the database.
@@ -308,7 +335,7 @@ class FileCacher:
     """
     CHUNK_SIZE = 2 ** 20
 
-    def __init__(self, service=None, path=None):
+    def __init__(self, service=None, path=None, null=False):
         """Initialization.
 
         service (Service): the service we are running in. If None, we
@@ -319,13 +346,19 @@ class FileCacher:
                        database-based one. The specified directory
                        will be used as root for the storage and it
                        will be created if it doesn't exist.
+        null (bool): if True, back the FileCacher with a NullBackend,
+                     that just discards every file it receives. It
+                     takes priority over path.
 
         """
         self.service = service
-        if path is None:
+        if null:
+            self.backend = NullBackend(self.service)
+        elif path is None:
             self.backend = DBBackend(self.service)
         else:
             self.backend = FSBackend(path, self.service)
+
         if self.service is None:
             self.base_dir = tempfile.mkdtemp(dir=config.temp_dir)
         else:
