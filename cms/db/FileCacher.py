@@ -550,12 +550,19 @@ class FileCacher:
         """Delete all the content of the cache.
 
         """
-        shutil.rmtree(self.base_dir)
+        self.destroy_cache()
         if not mkdir(config.cache_dir) or \
                 not mkdir(self.base_dir) or \
                 not mkdir(self.tmp_dir) or \
                 not mkdir(self.obj_dir):
             logger.error("Cannot create necessary directories.")
+
+    def destroy_cache(self):
+        """Completely destroys the cache. The FileCacher is not usable
+        anymore.
+
+        """
+        shutil.rmtree(self.base_dir)
 
     def list(self):
         """List the files available in the storage.
