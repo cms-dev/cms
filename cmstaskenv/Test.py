@@ -125,9 +125,6 @@ def test_testcases(base_dir, soluzione, assume=None):
     for i, (p, c, b) in enumerate(zip(points, comments, info)):
         print "%3d) %5.2lf --- %s [%s]" % (i, p, c.ljust(clen), b.center(ilen))
 
-    # Delete the executable we stored before
-    file_cacher.delete(digest)
-
     return zip(points, comments, info)
 
 if __name__ == "__main__":
