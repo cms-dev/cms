@@ -4,6 +4,7 @@
 # Programming contest management system
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2013 Luca Versari <veluca93@gmail.com>
+# Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -28,6 +29,7 @@ from cms.db.SQLAlchemyAll import Executable
 from cms.grading.tasktypes import get_task_type
 import simplejson as json
 
+# TODO - Use a context object instead of global variables
 task = None
 file_cacher = None
 
@@ -54,9 +56,17 @@ def mem_human(mem):
 def test_testcases(base_dir, soluzione, assume=None):
     global task, file_cacher
 
+    # Use a FileCacher with a NullBackend in order to avoid to fill
+    # the database with junk
     if file_cacher is None:
-        file_cacher = FileCacher()
+        file_cacher = FileCacher(null=True)
 
+    # Load the task
+    # TODO - This implies copying a lot of data to the FileCacher,
+    # which is annoying if you have to do it continuously; it would be
+    # better to use a persistent cache (although local, possibly
+    # filesystem-based instead of database-based) and somehow detect
+    # when the task has already been loaded
     if task is None:
         loader = YamlLoader(
             os.path.realpath(os.path.join(base_dir, "..")),
@@ -66,6 +76,7 @@ def test_testcases(base_dir, soluzione, assume=None):
         taskdata["num"] = 1
         task = loader.get_task(taskdata)
 
+    # Prepare the EvaluationJob
     dataset = task.active_dataset
     digest = file_cacher.put_file(
         path=os.path.join(base_dir, soluzione),
@@ -81,22 +92,27 @@ def test_testcases(base_dir, soluzione, assume=None):
         time_limit=dataset.time_limit,
         memory_limit=dataset.memory_limit)
     tasktype = get_task_type(job, file_cacher)
+
     ask_again = True
     last_status = "ok"
     status = "ok"
     stop = False
-
     info = []
     points = []
     comments = []
     for i in job.testcases.keys():
         print i,
         sys.stdout.flush()
+
+        # Skip the testcase if we decide to consider everything to
+        # timeout
         if stop:
             info.append("Time limit exceeded")
             points.append(0.0)
             comments.append("Timeout.")
             continue
+
+        # Evaluate testcase
         last_status = status
         tasktype.evaluate_testcase(i)
         # print job.evaluations[i]
@@ -107,6 +123,9 @@ def test_testcases(base_dir, soluzione, assume=None):
                     mem_human(job.evaluations[i]["plus"]["memory_used"])))
         points.append(float(job.evaluations[i]["outcome"]))
         comments.append(job.evaluations[i]["text"])
+
+        # If we saw two consecutive timeouts, ask wether we want to
+        # consider everything to timeout
         if ask_again and status == "timeout" and last_status == "timeout":
             print
             print "Want to stop and consider everything to timeout? [y/N]",
@@ -119,6 +138,8 @@ def test_testcases(base_dir, soluzione, assume=None):
                 stop = True
             else:
                 ask_again = False
+
+    # Result pretty printing
     print
     clen = max(len(c) for c in comments)
     ilen = max(len(i) for i in info)
