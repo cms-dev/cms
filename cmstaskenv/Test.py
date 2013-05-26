@@ -148,6 +148,7 @@ def test_testcases(base_dir, soluzione, assume=None):
 
     return zip(points, comments, info)
 
+
 def clean_test_env():
     """Clean the testing environment, mostly to reclaim disk space.
 
