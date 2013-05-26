@@ -49,7 +49,7 @@
     "_help": "Don't delete the sandbox directory under /tmp/ when they",
     "_help": "are not needed anymore. Warning: this can easily eat GB",
     "_help": "of space very soon.",
-    "keep_sandbox": true,
+    "keep_sandbox": false,
 
 
 
