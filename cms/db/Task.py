@@ -201,6 +201,8 @@ class Dataset(Base):
     __tablename__ = 'datasets'
     __table_args__ = (
         UniqueConstraint('task_id', 'description'),
+        # Useless, in theory, because 'id' is already unique. Yet, we
+        # need this because it's a target of a foreign key.
         UniqueConstraint('id', 'task_id'),
     )
 
