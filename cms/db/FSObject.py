@@ -29,7 +29,7 @@ from sqlalchemy.orm.exc import NoResultFound
 
 from psycopg2 import OperationalError
 
-from cms.db.SQLAlchemyUtils import Base
+from cms.db.SQLAlchemyUtils import Base, get_psycopg2_connection
 
 from contextlib import contextmanager
 
@@ -86,7 +86,7 @@ class FSObject(Base):
 
         # Here we rely on the fact that we're using psycopg2 as
         # PostgreSQL backend
-        lo = session.connection().connection.lobject(self.loid, mode)
+        lo = get_psycopg2_connection(session).lobject(self.loid, mode)
 
         if self.loid == 0:
             self.loid = lo.oid

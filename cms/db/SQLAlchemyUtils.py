@@ -326,3 +326,20 @@ Base = declarative_base(db, cls=Base, constructor=None)
 
 
 metadata = Base.metadata
+
+
+def get_psycopg2_connection(session):
+    """Return the psycopg2 connection object associated to the given
+    SQLAlchemy Session. This, of course, means that the Session must
+    be using psycopg2 as backend. Undefined behavior will happen if
+    this precondition is not satisfied.
+
+    Moreover, all psycopg2-specific code in CMS is supposed to invoke
+    this method.
+
+    session (Session): a SQLAlchemy Session.
+
+    return (connection): the associated psycopg2 connection object.
+
+    """
+    return session.connection().connection
