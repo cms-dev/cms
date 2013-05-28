@@ -10,7 +10,7 @@ The first thing to do is to create the user and the database. For PostgreSQL, th
 
     sudo su postgres
     createuser cmsuser -P
-    createdb -O cmsuser cmsdb
+    createdb -O cmsuser database
 
 If you are going to use CMS services on different hosts from the one where PostgreSQL is running, you also need to instruct it to accept the connections from the services. To do so, you need to change the listening address of PostgreSQL in :file:`postgresql.conf`, for example like this::
 
@@ -18,7 +18,7 @@ If you are going to use CMS services on different hosts from the one where Postg
 
 Moreover, you need to change the HBA (a sort of access control list for PostgreSQL) to accept login requests from outside localhost. Open the file :file:`pg_hba.conf` and add a line like this one::
 
-    host  cmsdb  cmsuser  192.168.0.0/24  md5
+    host  database  cmsuser  192.168.0.0/24  md5
 
 
 Configuring CMS
