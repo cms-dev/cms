@@ -226,13 +226,10 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
 
         def test_src(exe, assume=None):
             print "Testing solution %s" % (exe)
-            try:
-                test_testcases(
-                    base_dir,
-                    exe,
-                    assume=assume)
-            finally:
-                clean_test_env()
+            test_testcases(
+                base_dir,
+                exe,
+                assume=assume)
 
         actions.append(
             (srcs,
@@ -650,14 +647,24 @@ def main():
 
     elif options.all:
         print "Making all targets"
-        execute_multiple_targets(base_dir, exec_tree,
-                                 generated_list, debug=options.debug,
-                                 assume=assume)
+        try:
+            execute_multiple_targets(base_dir, exec_tree,
+                                     generated_list, debug=options.debug,
+                                     assume=assume)
+
+        # After all work, possibly clean the left-overs of testing
+        finally:
+            clean_test_env()
 
     else:
-        execute_multiple_targets(base_dir, exec_tree,
-                                 options.targets, debug=options.debug,
-                                 assume=assume)
+        try:
+            execute_multiple_targets(base_dir, exec_tree,
+                                     options.targets, debug=options.debug,
+                                     assume=assume)
+
+        # After all work, possibly clean the left-overs of testing
+        finally:
+            clean_test_env()
 
 if __name__ == '__main__':
     main()

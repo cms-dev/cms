@@ -153,12 +153,13 @@ def clean_test_env():
     """Clean the testing environment, mostly to reclaim disk space.
 
     """
-
     # We're done: since we have no way to reuse this cache, we destroy
     # it to free space. See the TODO above.
-    global file_cacher
+    global file_cacher, task
     if file_cacher is not None:
         file_cacher.destroy_cache()
+        file_cacher = None
+        task = None
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
