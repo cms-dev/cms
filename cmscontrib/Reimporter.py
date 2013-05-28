@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Versari <veluca93@gmail.com>
@@ -21,9 +21,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This script reimports a contest from disk using YamlLoader.
+"""This script reimports a contest from disk using one of the
+available loaders.
 
-The data parsed by YamlLoader is used to update a Contest that's
+The data parsed by the loader is used to update a Contest that's
 already existing in the database.
 
 """
@@ -38,7 +39,7 @@ from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import \
     SessionGen, Base, Contest, User, Task, Submission
 
-from cmscontrib.YamlLoader import YamlLoader
+from cmscontrib.Loaders import choose_loader, build_epilog
 
 
 def _is_rel(prp, attr):
@@ -48,20 +49,21 @@ def _is_rel(prp, attr):
 
 class Reimporter:
 
-    """This script reimports a contest from disk using YamlLoader
+    """This script reimports a contest from disk using the specified
+    loader.
 
-    The data parsed by YamlLoader is used to update a Contest that's
+    The data parsed by the loader is used to update a Contest that's
     already existing in the database.
 
     """
 
-    def __init__(self, path, contest_id, force):
+    def __init__(self, path, contest_id, force, loader_class):
         self.old_contest_id = contest_id
         self.force = force
 
         self.file_cacher = FileCacher()
 
-        self.loader = YamlLoader(os.path.realpath(path), self.file_cacher)
+        self.loader = loader_class(os.path.realpath(path), self.file_cacher)
 
     def _update_columns(self, old_object, new_object):
         for prp in old_object._col_props:
@@ -285,23 +287,31 @@ class Reimporter:
 def main():
     """Parse arguments and launch process."""
     parser = argparse.ArgumentParser(
-        description="Reimport a contest from disk using YamlLoader")
+        description="Reimport a contest from disk",
+        epilog=build_epilog(),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("-c", "--contest-id", action="store", type=int,
                         help="id of contest to overwrite")
     parser.add_argument("-f", "--force", action="store_true",
                         help="force the reimport even if some users or tasks "
                         "may get lost")
+    parser.add_argument("-L", "--loader", action="store", default=None,
+                        help="use the specified loader (default: autodetect)")
     parser.add_argument("import_directory",
                         help="source directory from where import")
 
     args = parser.parse_args()
+    loader_class = choose_loader(args.loader,
+                                 args.import_directory,
+                                 parser.error)
 
     if args.contest_id is None:
         args.contest_id = ask_for_contest()
 
     Reimporter(path=args.import_directory,
                contest_id=args.contest_id,
-               force=args.force).do_reimport()
+               force=args.force,
+               loader_class=loader_class).do_reimport()
 
 
 if __name__ == "__main__":

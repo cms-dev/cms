@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
@@ -125,8 +125,8 @@ def do_setup():
                   "cmsRemoveUser=cmscontrib.RemoveUser:main",
                   "cmsRemoveTask=cmscontrib.RemoveTask:main",
                   "cmsComputeComplexity=cmscontrib.ComputeComplexity:main",
-                  "cmsYamlImporter=cmscontrib.YamlImporter:main",
-                  "cmsYamlReimporter=cmscontrib.YamlReimporter:main",
+                  "cmsImporter=cmscontrib.Importer:main",
+                  "cmsReimporter=cmscontrib.Reimporter:main",
                   "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
                   "cmsContestExporter=cmscontrib.ContestExporter:main",
                   "cmsContestImporter=cmscontrib.ContestImporter:main",

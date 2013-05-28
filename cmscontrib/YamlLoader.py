@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -71,6 +71,34 @@ class YamlLoader:
 
         self.path = path
         self.file_cacher = file_cacher
+
+    @classmethod
+    def short_name(cls):
+        """Short name of this loader.
+
+        """
+        return 'italy_yaml'
+
+    @classmethod
+    def description(cls):
+        """Description of this loader.
+
+        """
+        return 'Italian YAML-based format'
+
+    @classmethod
+    def detect(cls, path):
+        """Detect whether this loader is able to interpret the given
+        path.
+
+        path (string): the path to scan.
+
+        return (bool): True if the loader is able to interpret the
+                       given path.
+
+        """
+        # Not really refined...
+        return os.path.exists(os.path.join(path, "contest.yaml"))
 
     def get_contest(self):
 

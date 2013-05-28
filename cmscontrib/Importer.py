@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -20,9 +20,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This script imports a contest from disk using YamlLoader.
+"""This script imports a contest from disk using one of the available
+loaders.
 
-The data parsed by YamlLoader is used to create a new Contest in the
+The data parsed by the loader is used to create a new Contest in the
 database.
 
 """
@@ -36,22 +37,23 @@ import sqlalchemy.exc
 
 from cms import logger
 from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import metadata, SessionGen, FSObject, User, \
+from cms.db.SQLAlchemyAll import metadata, SessionGen, User, \
     drop_everything
 
-from cmscontrib.YamlLoader import YamlLoader
+from cmscontrib.Loaders import choose_loader, build_epilog
 
 
 class Importer:
 
-    """This script imports a contest from disk using YamlLoader.
+    """This script imports a contest from disk using one of the
+    available loaders.
 
-    The data parsed by YamlLoader is used to create a new Contest in
+    The data parsed by the loader is used to create a new Contest in
     the database.
 
     """
 
-    def __init__(self, path, drop, test, zero_time, user_number):
+    def __init__(self, path, drop, test, zero_time, user_number, loader_class):
         self.drop = drop
         self.test = test
         self.zero_time = zero_time
@@ -59,7 +61,7 @@ class Importer:
 
         self.file_cacher = FileCacher()
 
-        self.loader = YamlLoader(os.path.realpath(path), self.file_cacher)
+        self.loader = loader_class(os.path.realpath(path), self.file_cacher)
 
     def _prepare_db(self):
         logger.info("Creating database structure.")
@@ -123,29 +125,38 @@ class Importer:
 
 def main():
     """Parse arguments and launch process."""
+
     parser = argparse.ArgumentParser(
-        description="Import a contest from disk using YamlLoader")
+        description="Import a contest from disk",
+        epilog=build_epilog(),
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     group = parser.add_mutually_exclusive_group()
     group.add_argument("-z", "--zero-time", action="store_true",
                        help="set to zero contest start and stop time")
     group.add_argument("-t", "--test", action="store_true",
                        help="setup a contest for testing "
-                       "(times: 0, 2*10^9; ips: unset, passwords: a)")
+                       "(times: 1970, 2100; ips: unset, passwords: a)")
     parser.add_argument("-d", "--drop", action="store_true",
                         help="drop everything from the database "
                         "before importing")
     parser.add_argument("-n", "--user-number", action="store", type=int,
                         help="put N random users instead of importing them")
+    parser.add_argument("-L", "--loader", action="store", default=None,
+                        help="use the specified loader (default: autodetect)")
     parser.add_argument("import_directory",
                         help="source directory from where import")
 
     args = parser.parse_args()
+    loader_class = choose_loader(args.loader,
+                                 args.import_directory,
+                                 parser.error)
 
     Importer(path=args.import_directory,
              drop=args.drop,
              test=args.test,
              zero_time=args.zero_time,
-             user_number=args.user_number).do_import()
+             user_number=args.user_number,
+             loader_class=loader_class).do_import()
 
 
 if __name__ == "__main__":
