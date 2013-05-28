@@ -29,7 +29,7 @@ db objects must be imported from this module.
 import sys
 
 from cms.db.SQLAlchemyUtils import Base, metadata, Session, \
-    ScopedSession, SessionGen
+    ScopedSession, SessionGen, drop_everything
 from cms.db.Contest import Contest, Announcement
 from cms.db.User import User, Message, Question
 from cms.db.Task import Task, Manager, Dataset, Testcase, Attachment, \
@@ -39,6 +39,7 @@ from cms.db.Submission import Submission, SubmissionResult, Token, \
 from cms.db.UserTest import UserTest, UserTestResult, UserTestFile, \
     UserTestExecutable, UserTestManager
 from cms.db.FSObject import FSObject
+
 
 # The following are methods of Contest that cannot be put in the right
 # file because of circular dependencies.

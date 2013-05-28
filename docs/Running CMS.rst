@@ -11,6 +11,10 @@ The first thing to do is to create the user and the database. For PostgreSQL, th
     sudo su postgres
     createuser cmsuser -P
     createdb -O cmsuser database
+    psql database -c 'ALTER SCHEMA public OWNER TO cmsuser'
+    psql database -c 'GRANT SELECT ON pg_largeobject TO cmsuser'
+
+The last two lines are required to give the PostgreSQL user some privileges which it doesn't have by default, despite being the database owner.
 
 If you are going to use CMS services on different hosts from the one where PostgreSQL is running, you also need to instruct it to accept the connections from the services. To do so, you need to change the listening address of PostgreSQL in :file:`postgresql.conf`, for example like this::
 

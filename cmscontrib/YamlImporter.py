@@ -36,7 +36,8 @@ import sqlalchemy.exc
 
 from cms import logger
 from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import metadata, SessionGen, FSObject, User
+from cms.db.SQLAlchemyAll import metadata, SessionGen, FSObject, User, \
+    drop_everything
 
 from cmscontrib.YamlLoader import YamlLoader
 
@@ -64,10 +65,7 @@ class Importer:
         logger.info("Creating database structure.")
         if self.drop:
             try:
-                with SessionGen() as session:
-                    FSObject.delete_all(session)
-                    session.commit()
-                metadata.drop_all()
+                drop_everything()
             except sqlalchemy.exc.OperationalError as error:
                 logger.critical("Unable to access DB.\n%r" % error)
                 return False

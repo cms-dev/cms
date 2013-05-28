@@ -20,6 +20,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import sys
 import six
 from datetime import datetime, timedelta
 
@@ -33,7 +34,7 @@ from sqlalchemy.orm import \
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, DateTime, Interval
 
-from cms import config
+from cms import config, logger
 
 
 db_string = config.database.replace("%s", config.data_dir)
@@ -343,3 +344,52 @@ def get_psycopg2_connection(session):
 
     """
     return session.connection().connection
+
+
+def drop_everything():
+    """Drop everything in the database. In theory metadata.drop_all()
+    should do the same; in practice, it isn't able to handle cases
+    when the data present in the database doesn't fit the schema known
+    by metadata.
+
+    This method is psycopg2 and PostgreSQL-specific. Technically, what
+    it does is to drop the schema "public", create it again and fix
+    corresponding privileges. This doesn't work if for some reason the
+    database was set up to use a different schema: this situation is
+    strange enough for us to just ignore it.
+
+    """
+    session = Session()
+    connection = get_psycopg2_connection(session)
+    cursor = connection.cursor()
+
+    # See
+    # http://stackoverflow.com/questions/3327312/drop-all-tables-in-postgresql
+    from psycopg2 import ProgrammingError
+    try:
+        cursor.execute("DROP SCHEMA public CASCADE")
+    except ProgrammingError:
+        logger.error("Couldn't drop schema \"public\", probably you don't " \
+                         "have the privileges. Please execute as database " \
+                         "superuser: \"ALTER SCHEMA public OWNER TO " \
+                         "<cmsuser>;\" and run again")
+        sys.exit(1)
+    cursor.execute("CREATE SCHEMA public")
+
+    # But we also have to drop the lobjects: this is hardly the best
+    # way to do it, but I couldn't find anything better
+    try:
+        cursor.execute("SELECT DISTINCT loid FROM pg_largeobject")
+    except ProgrammingError:
+        logger.error("Couldn't list large objects, probably you don't have " \
+                         "the privileges. Please execute as database " \
+                         "superuser: \"GRANT SELECT ON pg_largeobject TO " \
+                         "<cmsuser>;\" and run again")
+        sys.exit(1)
+    rows = cursor.fetchall()
+    for row in rows:
+        cursor.execute("SELECT lo_unlink(%d)" % (row[0]))
+
+    cursor.close()
+
+    connection.commit()
