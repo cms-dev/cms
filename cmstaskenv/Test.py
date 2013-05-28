@@ -44,12 +44,12 @@ assume:     if it's y, answer yes to every question
 
 
 def mem_human(mem):
-    if mem > 2**30:
-        return "%4.3gG" % (float(mem)/(2**30))
-    if mem > 2**20:
-        return "%4.3gM" % (float(mem)/(2**20))
-    if mem > 2**10:
-        return "%4dK" % (mem/(2**10))
+    if mem > 2 ** 30:
+        return "%4.3gG" % (float(mem) / (2 ** 30))
+    if mem > 2 ** 20:
+        return "%4.3gM" % (float(mem) / (2 ** 20))
+    if mem > 2 ** 10:
+        return "%4dK" % (mem / (2 ** 10))
     return "%4d" % mem
 
 
