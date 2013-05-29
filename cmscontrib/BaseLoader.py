@@ -88,41 +88,32 @@ class Loader:
 
         Do what is needed (i.e. search directories and explore files
         in the location given to the constructor) to produce a Contest
-        object. Also get a minimal amount of information on users and
-        tasks, at least enough to produce two lists of dicts, one for
-        each user/task in the contest, containing the username/user and
-        every other information you think is useful. These dicts will
-        then be given as arguments to get_user/get_task that have to
-        produce fully-featured User/Task objects.
+        object. Also get a minimal amount of information on tasks and
+        users, at least enough to produce the list of all task names
+        and the list of all usernames.
 
-        return (tuple): Contest object and two lists of dicts. Each
-                        element of the first list has to contain a
-                        "username" item whereas the ones in the second
-                        have to contain a "name" item.
+        return (tuple): the Contest object and the two lists described
+                        above.
 
         """
         raise NotImplementedError("Please extend Loader")
 
-    def get_user(self, conf):
+    def get_user(self, username):
         """Produce a User object.
 
-        Given an object of the first list returned by get_contest,
-        construct a full User object and return it. Access the data on
-        the filesystem if needed.
+        username (string): the username.
 
-        return (User): the User object corresponding to the given dict.
+        return (User): the User object.
 
         """
         raise NotImplementedError("Please extend Loader")
 
-    def get_task(self, conf):
+    def get_task(self, name):
         """Produce a Task object.
 
-        Given an object of the second list returned by get_contest,
-        construct a full Task object (with all its dependencies) and
-        return it. Access the data on the filesystem if needed.
+        name (string): the task name.
 
-        return (Task): the Task object corresponding to the given dict.
+        return (Task): the Task object.
 
         """
         raise NotImplementedError("Please extend Loader")
