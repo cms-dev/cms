@@ -36,10 +36,36 @@ from cmscontrib.BaseLoader import Loader
 
 
 def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
+    """Execute:
+      dst[dst_name] = conv(src[src_name])
+    with the following features:
+
+      * If src_name is a list, it tries each of its element as
+        src_name, stopping when the first one succedes.
+
+      * If dst_name is None, it is set to src_name; if src_name is a
+        list, dst_name is set to src_name[0] (_not_ the one that
+        succedes).
+
+      * By default conv is the identity function.
+
+    """
     if dst_name is None:
-        dst_name = src_name
-    if src_name in src:
-        dst[dst_name] = conv(src[src_name])
+        if isinstance(src_name, list):
+            dst_name = src_name[0]
+        else:
+            dst_name = src_name
+    if isinstance(src_name, list):
+        for this_src_name in src_name:
+            try:
+                dst[dst_name] = conv(src[this_src_name])
+            except KeyError:
+                pass
+            else:
+                break
+    else:
+        if src_name in src:
+            dst[dst_name] = conv(src[src_name])
 
 
 def make_timedelta(t):
@@ -93,8 +119,8 @@ class YamlLoader(Loader):
 
         args = {}
 
-        load(conf, args, "nome_breve", "name")
-        load(conf, args, "nome", "description")
+        load(conf, args, ["name", "nome_breve"])
+        load(conf, args, ["description", "nome"])
 
         assert name == args["name"]
 
@@ -105,8 +131,8 @@ class YamlLoader(Loader):
         load(conf, args, "token_gen_time", conv=make_timedelta)
         load(conf, args, "token_gen_number")
 
-        load(conf, args, "inizio", "start", conv=make_datetime)
-        load(conf, args, "fine", "stop", conv=make_datetime)
+        load(conf, args, ["start", "inizio"], conv=make_datetime)
+        load(conf, args, ["stop", "fine"], conv=make_datetime)
 
         load(conf, args, "max_submission_number")
         load(conf, args, "max_user_test_number")
@@ -140,15 +166,15 @@ class YamlLoader(Loader):
         load(conf, args, "password")
         load(conf, args, "ip")
 
-        load(conf, args, "nome", "first_name")
-        load(conf, args, "cognome", "last_name")
+        load(conf, args, ["first_name", "nome"])
+        load(conf, args, ["last_name", "cognome"])
 
         if "first_name" not in args:
             args["first_name"] = ""
         if "last_name" not in args:
             args["last_name"] = args["username"]
 
-        load(conf, args, "fake", "hidden", lambda a: a == "True")
+        load(conf, args, ["hidden", "fake"], conv=lambda a: a == "True")
 
         logger.info("User parameters loaded.")
 
@@ -170,8 +196,8 @@ class YamlLoader(Loader):
         args = {}
 
         args["num"] = num
-        load(conf, args, "nome_breve", "name")
-        load(conf, args, "nome", "title")
+        load(conf, args, ["name", "nome_breve"])
+        load(conf, args, ["title", "nome"])
 
         assert name == args["name"]
 
@@ -210,8 +236,8 @@ class YamlLoader(Loader):
         args["description"] = conf.get("version", "Default")
         args["autojudge"] = False
 
-        load(conf, args, "timeout", "time_limit", conv=float)
-        load(conf, args, "memlimit", "memory_limit")
+        load(conf, args, ["time_limit", "timeout"], conv=float)
+        load(conf, args, ["memory_limit", "memlimit"])
 
         # Builds the parameters that depend on the task type
         args["managers"] = []
