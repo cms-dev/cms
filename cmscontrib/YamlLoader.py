@@ -29,10 +29,10 @@ from datetime import timedelta
 
 from cms import LANGUAGES, logger
 from cmscommon.DateTime import make_datetime
-
 from cms.db.SQLAlchemyAll import \
     Contest, User, Task, Statement, Attachment, SubmissionFormatElement, \
     Dataset, Manager, Testcase
+from cmscontrib.BaseLoader import Loader
 
 
 def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
@@ -46,8 +46,7 @@ def make_timedelta(t):
     return timedelta(seconds=t)
 
 
-class YamlLoader:
-
+class YamlLoader(Loader):
     """Load a contest stored using the Italian IOI format.
 
     Given the filesystem location of a contest saved in the Italian IOI
@@ -58,65 +57,30 @@ class YamlLoader:
 
     """
 
-    def __init__(self, path, file_cacher):
-
-        """Initialize the Loader.
-
-        path (str): the filesystem location given by the user
-        file_cacher (FileCacher): the file cacher to use to store
-                                  files (i.e. statements, managers,
-                                  testcases, etc.)
-
-        """
-
-        self.path = path
-        self.file_cacher = file_cacher
-
     @classmethod
     def short_name(cls):
-        """Short name of this loader.
+        """See docstring in class Loader.
 
         """
         return 'italy_yaml'
 
     @classmethod
     def description(cls):
-        """Description of this loader.
+        """See docstring in class Loader.
 
         """
         return 'Italian YAML-based format'
 
     @classmethod
     def detect(cls, path):
-        """Detect whether this loader is able to interpret the given
-        path.
-
-        path (string): the path to scan.
-
-        return (bool): True if the loader is able to interpret the
-                       given path.
+        """See docstring in class Loader.
 
         """
         # Not really refined...
         return os.path.exists(os.path.join(path, "contest.yaml"))
 
     def get_contest(self):
-
-        """Produce a Contest object.
-
-        Do what is needed (i.e. search directories and explore files
-        in the location given to the constructor) to produce a Contest
-        object. Also get a minimal amount of information on users and
-        tasks, at least enough to produce two lists of dicts, one for
-        each user/task in the contest, containing the username/user and
-        every other information you think is useful. These dicts will
-        then be given as arguments to get_user/get_task that have to
-        produce fully-featured User/Task objects.
-
-        return (tuple): Contest object and two lists of dicts. Each
-                        element of the first list has to contain a
-                        "username" item whereas the ones in the second
-                        have to contain a "name" item.
+        """See docstring in class Loader.
 
         """
 
@@ -157,17 +121,9 @@ class YamlLoader:
         return Contest(**args), tasks, users
 
     def get_user(self, conf):
-
-        """Produce a User object.
-
-        Given an object of the first list returned by get_contest,
-        construct a full User object and return it. Access the data on
-        the filesystem if needed.
-
-        return (User): the User object corresponding to the given dict.
+        """See docstring in class Loader.
 
         """
-
         logger.info("Loading parameters for user %s." % conf['username'])
 
         args = {}
@@ -192,17 +148,9 @@ class YamlLoader:
         return User(**args)
 
     def get_task(self, conf):
-
-        """Produce a Task object.
-
-        Given an object of the second list returned by get_contest,
-        construct a full Task object (with all its dependencies) and
-        return it. Access the data on the filesystem if needed.
-
-        return (Task): the Task object corresponding to the given dict.
+        """See docstring in class Loader.
 
         """
-
         name = conf["name"]
         num = conf["num"]
 
