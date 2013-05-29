@@ -212,8 +212,6 @@ class Reimporter:
 
             # Load the new contest from the filesystem.
             new_contest, new_tasks, new_users = self.loader.get_contest()
-            new_users = dict((x["username"], x) for x in new_users)
-            new_tasks = dict((x["name"], x) for x in new_tasks)
 
             # Updates contest-global settings that are set in new_contest.
             self._update_columns(old_contest, new_contest)
@@ -221,60 +219,79 @@ class Reimporter:
             # Do the actual merge: compare all users of the old and of
             # the new contest and see if we need to create, update or
             # delete them. Delete only if authorized, fail otherwise.
-            users = set(old_users.keys()) | set(new_users.keys())
-            for user in users:
-                old_user = old_users.get(user, None)
-                new_user = new_users.get(user, None)
+            users = set(old_users.keys()) | set(new_users)
+            for username in users:
+                old_user = old_users.get(username, None)
 
                 if old_user is None:
                     # Create a new user.
-                    logger.info("Creating user %s" % user)
-                    new_user = self.loader.get_user(new_user)
+                    logger.info("Creating user %s" % username)
+                    new_user = self.loader.get_user(username)
                     old_contest.users.append(new_user)
-                elif new_user is not None:
+                elif username in new_users:
                     # Update an existing user.
-                    logger.info("Updating user %s" % user)
-                    new_user = self.loader.get_user(new_user)
+                    logger.info("Updating user %s" % username)
+                    new_user = self.loader.get_user(username)
                     self._update_object(old_user, new_user)
                 else:
                     # Delete an existing user.
                     if self.force:
-                        logger.info("Deleting user %s" % user)
+                        logger.info("Deleting user %s" % username)
                         old_contest.users.remove(old_user)
                     else:
                         logger.critical(
                             "User %s exists in old contest, but "
                             "not in the new one. Use -f to force." %
-                            user)
+                            username)
                         return False
 
-            # The same for tasks.
-            tasks = set(old_tasks.keys()) | set(new_tasks.keys())
+            # The same for tasks. Setting num for tasks requires a bit
+            # of trickery, since we have to avoid triggering a
+            # duplicate key constraint violation while we're messing
+            # with the task order. To do that we just set sufficiently
+            # high number on the first pass and then fix it on a
+            # second pass.
+            tasks = set(old_tasks.keys()) | set(new_tasks)
+            current_num = max(len(old_tasks), len(new_tasks))
             for task in tasks:
                 old_task = old_tasks.get(task, None)
-                new_task = new_tasks.get(task, None)
 
                 if old_task is None:
                     # Create a new task.
                     logger.info("Creating task %s" % task)
-                    new_task = self.loader.get_task(new_task)
+                    new_task = self.loader.get_task(task)
+                    new_task.num = current_num
+                    current_num += 1
                     old_contest.tasks.append(new_task)
-                elif new_task is not None:
+                elif task in new_tasks:
                     # Update an existing task.
                     logger.info("Updating task %s" % task)
-                    new_task = self.loader.get_task(new_task)
+                    new_task = self.loader.get_task(task)
+                    new_task.num = current_num
+                    current_num += 1
                     self._update_object(old_task, new_task)
                 else:
                     # Delete an existing task.
                     if self.force:
                         logger.info("Deleting task %s" % task)
-                        old_contest.tasks.remove(old_task)
+                        session.delete(old_task)
                     else:
                         logger.critical(
                             "Task %s exists in old contest, but "
                             "not in the new one. Use -f to force." %
                             task)
                         return False
+
+                session.flush()
+
+            # And finally we fix the numbers; old_contest must be
+            # refreshed because otherwise SQLAlchemy doesn't get aware
+            # that some tasks may have been deleted
+            tasks_order = dict((name, num)
+                               for num, name in enumerate(new_tasks))
+            session.refresh(old_contest)
+            for task in old_contest.tasks:
+                task.num = tasks_order[task.name]
 
             session.commit()
 

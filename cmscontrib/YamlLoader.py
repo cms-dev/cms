@@ -115,16 +115,23 @@ class YamlLoader(Loader):
 
         logger.info("Contest parameters loaded.")
 
-        tasks = [dict(name=v, num=i) for i, v in enumerate(conf["problemi"])]
-        users = conf["utenti"]
+        self.tasks_order = dict((name, num)
+                                for num, name in enumerate(conf["problemi"]))
+        self.users_conf = dict((user['username'], user)
+                               for user in conf["utenti"])
+
+        tasks = conf["problemi"]
+        users = self.users_conf.keys()
 
         return Contest(**args), tasks, users
 
-    def get_user(self, conf):
+    def get_user(self, username):
         """See docstring in class Loader.
 
         """
-        logger.info("Loading parameters for user %s." % conf['username'])
+        logger.info("Loading parameters for user %s." % username)
+        conf = self.users_conf[username]
+        assert username == conf['username']
 
         args = {}
 
@@ -147,12 +154,11 @@ class YamlLoader(Loader):
 
         return User(**args)
 
-    def get_task(self, conf):
+    def get_task(self, name):
         """See docstring in class Loader.
 
         """
-        name = conf["name"]
-        num = conf["num"]
+        num = self.tasks_order[name]
 
         conf = yaml.safe_load(
             io.open(os.path.join(self.path, name + ".yaml"),
