@@ -23,6 +23,7 @@
 import io
 import os
 import os.path
+import sys
 import yaml
 
 from datetime import timedelta
@@ -49,23 +50,36 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
 
       * By default conv is the identity function.
 
+      * If dst is None, instead of assigning the result to
+        dst[dst_name] (which would cast an exception) it just returns
+        it.
+
     """
-    if dst_name is None:
+    if dst is not None and dst_name is None:
         if isinstance(src_name, list):
             dst_name = src_name[0]
         else:
             dst_name = src_name
+    res = None
+    found = False
     if isinstance(src_name, list):
         for this_src_name in src_name:
             try:
-                dst[dst_name] = conv(src[this_src_name])
+                found = True
+                res = conv(src[this_src_name])
             except KeyError:
                 pass
             else:
                 break
     else:
         if src_name in src:
-            dst[dst_name] = conv(src[src_name])
+            found = True
+            res = conv(src[src_name])
+    if dst is not None:
+        if found:
+            dst[dst_name] = res
+    else:
+        return res
 
 
 def make_timedelta(t):
@@ -141,12 +155,12 @@ class YamlLoader(Loader):
 
         logger.info("Contest parameters loaded.")
 
+        tasks = load(conf, None, ["tasks", "problemi"])
         self.tasks_order = dict((name, num)
-                                for num, name in enumerate(conf["problemi"]))
+                                for num, name in enumerate(tasks))
         self.users_conf = dict((user['username'], user)
-                               for user in conf["utenti"])
-
-        tasks = conf["problemi"]
+                               for user
+                               in load(conf, None, ["users", "utenti"]))
         users = self.users_conf.keys()
 
         return Contest(**args), tasks, users
@@ -205,9 +219,17 @@ class YamlLoader(Loader):
             logger.warning("Short name equals long name (title). "
                            "Please check.")
 
-        digest = self.file_cacher.put_file(
-            path=os.path.join(task_path, "testo", "testo.pdf"),
-            description="Statement for task %s (lang: it)" % name)
+        paths = [os.path.join(task_path, "text", "text.pdf"),
+                 os.path.join(task_path, "testo", "testo.pdf")]
+        for path in paths:
+            if os.path.exists(path):
+                digest = self.file_cacher.put_file(
+                    path=path,
+                    description="Statement for task %s (lang: it)" % name)
+                break
+        else:
+            logger.error("Couldn't find any task statement, aborting...")
+            sys.exit(1)
         args["statements"] = [Statement("it", digest)]
 
         args["primary_statements"] = '["it"]'
@@ -281,15 +303,20 @@ class YamlLoader(Loader):
         else:
             compilation_param = "alone"
 
-        # If there is cor/correttore, then, presuming that the task
-        # type is Batch or OutputOnly, we retrieve the comparator
-        if os.path.exists(os.path.join(task_path, "cor", "correttore")):
-            digest = self.file_cacher.put_file(
-                path=os.path.join(task_path, "cor", "correttore"),
-                description="Manager for task %s" % name)
-            args["managers"] += [
-                Manager("checker", digest)]
-            evaluation_param = "comparator"
+        # If there is check/checker (or equivalent), then, presuming
+        # that the task type is Batch or OutputOnly, we retrieve the
+        # comparator
+        paths = [os.path.join(task_path, "check", "checker"),
+                 os.path.join(task_path, "cor", "correttore")]
+        for path in paths:
+            if os.path.exists(path):
+                digest = self.file_cacher.put_file(
+                    path=path,
+                    description="Manager for task %s" % name)
+                args["managers"] += [
+                    Manager("checker", digest)]
+                evaluation_param = "comparator"
+                break
         else:
             evaluation_param = "diff"
 
@@ -377,34 +404,42 @@ class YamlLoader(Loader):
                 SubmissionFormatElement("output_%03d.txt" % i)
                 for i in xrange(int(conf["n_input"]))]
 
-        # If there is cor/manager, then the task type is Communication
-        elif os.path.exists(os.path.join(task_path, "cor", "manager")):
-            args["task_type"] = "Communication"
-            args["task_type_parameters"] = '[]'
-            digest = self.file_cacher.put_file(
-                path=os.path.join(task_path, "cor", "manager"),
-                description="Manager for task %s" % name)
-            args["managers"] += [
-                Manager("manager", digest)]
-            for lang in LANGUAGES:
-                stub_name = os.path.join(task_path, "sol", "stub.%s" % lang)
-                if os.path.exists(stub_name):
-                    digest = self.file_cacher.put_file(
-                        path=stub_name,
-                        description="Stub for task %s and language %s" %
-                                    (name, lang))
-                    args["managers"] += [
-                        Manager("stub.%s" % lang, digest)]
-                else:
-                    logger.error("Stub for language %s not found." % lang)
-
-        # Otherwise, the task type is Batch
+        # If there is check/manager (or equivalent), then the task
+        # type is Communication
         else:
-            args["task_type"] = "Batch"
-            args["task_type_parameters"] = \
-                '["%s", ["%s", "%s"], "%s"]' % \
-                (compilation_param, infile_param, outfile_param,
-                 evaluation_param)
+            paths = [os.path.join(task_path, "check", "manager"),
+                     os.path.join(task_path, "cor", "manager")]
+            for path in paths:
+                if os.path.exists(path):
+                    args["task_type"] = "Communication"
+                    args["task_type_parameters"] = '[]'
+                    digest = self.file_cacher.put_file(
+                        path=path,
+                        description="Manager for task %s" % name)
+                    args["managers"] += [
+                        Manager("manager", digest)]
+                    for lang in LANGUAGES:
+                        stub_name = os.path.join(
+                            task_path, "sol", "stub.%s" % lang)
+                        if os.path.exists(stub_name):
+                            digest = self.file_cacher.put_file(
+                                path=stub_name,
+                                description="Stub for task %s and "
+                                "language %s" % (name, lang))
+                            args["managers"] += [
+                                Manager("stub.%s" % lang, digest)]
+                        else:
+                            logger.error("Stub for language %s not "
+                                         "found." % lang)
+                    break
+
+            # Otherwise, the task type is Batch
+            else:
+                args["task_type"] = "Batch"
+                args["task_type_parameters"] = \
+                    '["%s", ["%s", "%s"], "%s"]' % \
+                    (compilation_param, infile_param, outfile_param,
+                     evaluation_param)
 
         args["testcases"] = []
         for i in xrange(int(conf["n_input"])):
@@ -419,7 +454,8 @@ class YamlLoader(Loader):
             if args["task_type"] == "OutputOnly":
                 task.attachments += [
                     Attachment("input_%03d.txt" % i, input_digest)]
-        public_testcases = conf.get("risultati", "").strip()
+        public_testcases = load(conf, None, ["public_testcases", "risultati"],
+                                conv=lambda x: "" if x is None else x)
         if public_testcases != "":
             for x in public_testcases.split(","):
                 args["testcases"][int(x.strip())].public = True

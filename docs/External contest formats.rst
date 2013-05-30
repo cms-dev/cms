@@ -28,25 +28,27 @@ You can follow this description looking at `this example <https://github.com/cms
 
 The exact structure of these files and directories is detailed below. Note that providing confusing input to ``cmsYamlImporter`` can, unexpectedly, confuse it and create inconsistent tasks and/or strange errors. For confusing input we mean parameters and/or files from which it can infer no or multiple task types or score types.
 
+As the name suggest, this format was born among the Italian trainers group, thus many of the keywords detailed below used to be in Italian. Now they have been translated to English, but Italian keys are still recognized for backward compatibility and are detailed below. Please note that, although so far this is the only format natively supported by CMS, it is far from ideal: in particular, it has grown in a rather untidy manner in the last few years (CMS authors are planning to develop a new, more general and more organic, format, but unfortunately it doesn't exist yet). Thus, instead of converting your tasks to the Italian format for importing into CMS, it is suggested to write an importer for the format you already have. Please get in touch with CMS authors to have support.
+
 
 General contest description
 ---------------------------
 
 The :file:`contest.yaml` file is a plain YAML file, with at least the following keys.
 
-- ``nome_breve`` ("short name", string): the contest's short name, used for internal reference (and exposed in the URLs); it has to match the name of the directory that serves as contest root.
+- ``name`` (string; also accepted: ``nome_breve``): the contest's short name, used for internal reference (and exposed in the URLs); it has to match the name of the directory that serves as contest root.
 
-- ``nome`` ("name", string): the contest's name (description), shown to contestants in the web interface.
+- ``description`` (string; also accepted: ``nome``): the contest's name (description), shown to contestants in the web interface.
 
-- ``problemi`` ("tasks", list of strings): a list of the tasks belonging to this contest; for each of these strings, say :samp:`{task_name}`, there must be a file named :file:`{task_name}.yaml` in the contest directory and a directory called :file:`{task_name}`, used to extract information about that task; the order in this list will be the order of the tasks in the web interface.
+- ``tasks`` (list of strings; also accepted: ``problemi``): a list of the tasks belonging to this contest; for each of these strings, say :samp:`{task_name}`, there must be a file named :file:`{task_name}.yaml` in the contest directory and a directory called :file:`{task_name}`, used to extract information about that task; the order in this list will be the order of the tasks in the web interface.
 
-- ``utenti`` ("users", list of associative arrays): each of the elements of the list describes one user of the contest; the exact structure of the record is described :ref:`below <externalcontestformats_user-description>`.
+- ``users`` (list of associative arrays; also accepted: ``utenti``): each of the elements of the list describes one user of the contest; the exact structure of the record is described :ref:`below <externalcontestformats_user-description>`.
 
 The following are optional keys.
 
-- ``inizio`` ("start", integer): the UNIX timestamp of the beginning of the contest (copied in the ``start`` field); defaults to zero, meaning that contest times haven't yet been decided.
+- ``start`` (integer; also accepted: ``inizio``): the UNIX timestamp of the beginning of the contest (copied in the ``start`` field); defaults to zero, meaning that contest times haven't yet been decided.
 
-- ``fine`` ("stop", integer): the UNIX timestamp of the end of the contest (copied in the ``stop`` field); defaults to zero, meaning that contest times haven't yet been decided.
+- ``stop`` (integer; also accepted: ``fine``): the UNIX timestamp of the end of the contest (copied in the ``stop`` field); defaults to zero, meaning that contest times haven't yet been decided.
 
 - ``token_*``: token parameters for the contest, see :ref:`configuringacontest_tokens` (the names of the parameters are the same as the internal names described there); by default tokens are disabled.
 
@@ -66,13 +68,13 @@ Each contest user (contestant) is described in one element of the ``utenti`` key
 
 The following are optional keys.
 
-- ``nome`` ("name", string): the user real first name; defaults to the empty string.
+- ``first_name`` (string; also accepted: ``nome``): the user real first name; defaults to the empty string.
 
-- ``cognome`` ("surname", string): the user real last name; defaults to the value of ``username``.
+- ``last_name`` (string; also accepted: ``cognome``): the user real last name; defaults to the value of ``username``.
 
 - ``ip`` (string): the IP address from which incoming connections for this user are accepted, see :ref:`configuringacontest_login`.
 
-- ``fake`` (string): when set to ``True`` (case-sensitive _string_) set the ``hidden`` flag in the user, see :ref:`configuringacontest_login`; defaults to ``False``.
+- ``hidden`` (string; also accepted: ``fake``): when set to ``True`` (case-sensitive _string_) set the ``hidden`` flag in the user, see :ref:`configuringacontest_login`; defaults to ``False``.
 
 
 Task description
@@ -80,19 +82,19 @@ Task description
 
 The task YAML files requires the following keys.
 
-- ``nome_breve`` ("short name", string): the name used to reference internally to this task; it is exposed in the URLs.
+- ``name`` (string; also accepted: ``nome_breve``): the name used to reference internally to this task; it is exposed in the URLs.
 
-- ``nome`` ("name", string): the long name (title) used in the web interface.
+- ``title`` (string; also accepted: ``nome``): the long name (title) used in the web interface.
 
 - ``n_input`` (integer): number of test cases to be evaluated for this task; the actual test cases are retrieved from the :ref:`task directory <externalcontestformats_task-directory>`.
 
 The following are optional keys.
 
-- ``timeout`` (float): the timeout limit for this task in seconds; defaults to no limitations.
+- ``time_limit`` (float; also accepted: ``timeout``): the timeout limit for this task in seconds; defaults to no limitations.
 
-- ``memlimit`` (integer): the memory limit for this task in megabytes; defaults to no limitations.
+- ``memory_limit`` (integer; also accepted: ``memlimit``): the memory limit for this task in megabytes; defaults to no limitations.
 
-- ``risultati`` ("results", string): a comma-separated list of test cases (identified by their numbers, starting from 0) that are marked as public, hence their results are available to contestants even without using tokens.
+- ``public_testcases`` (string; also accepted: ``risultati``): a comma-separated list of test cases (identified by their numbers, starting from 0) that are marked as public, hence their results are available to contestants even without using tokens.
 
 - ``token_*``: token parameters for the task, see :ref:`configuringacontest_tokens` (the names of the parameters are the same as the internal names described there); by default tokens are disabled.
 
@@ -116,7 +118,7 @@ The content of the task directory is used both to retrieve the task data and to 
 
 These are the required files.
 
-- :file:`testo/testo.pdf` ("statement"): the main statement of the problem. It is not yet possible to import several statement associated to different languages.
+- :file:`text/text.pdf` (also accepted: :file:`testo/testo.pdf`): the main statement of the problem. It is not yet possible to import several statement associated to different languages.
 
 - :file:`input/input{%d}.txt` and :file:`output/output{%d}.txt` for all integers :samp:`{%d}` between 0 (included) and ``n_input`` (excluded): these are of course the input and (one of) the correct output files.
 
@@ -128,8 +130,8 @@ The following are optional files, that must be present for certain task types or
 
 - :file:`sol/*.h` and :file:`sol/*lib.pas`: if a grader is present, all other files in the :file:`sol` directory that end with ``.h`` or ``lib.pas`` are treated as auxiliary files needed by the compilation of the grader with the submitted solution.
 
-- :file:`cor/correttore` (checker): for tasks of types :ref:`tasktypes_batch` or :ref:`tasktypes_outputonly`, if this file is present, it must be the executable that examines the input and both the correct and the contestant's output files and assigns the outcome. If the file is not present, a simple diff is used to compare the correct and the contestant's output files.
+- :file:`check/checker` (also accepted: :file:`cor/correttore`): for tasks of types :ref:`tasktypes_batch` or :ref:`tasktypes_outputonly`, if this file is present, it must be the executable that examines the input and both the correct and the contestant's output files and assigns the outcome. If the file is not present, a simple diff is used to compare the correct and the contestant's output files.
 
-- :file:`cor/manager`: for tasks of type :ref:`tasktypes_communication`, this executable is the program that reads the input and communicates with the user solution.
+- :file:`check/manager`: (also accepted: :file:`cor/manager`) for tasks of type :ref:`tasktypes_communication`, this executable is the program that reads the input and communicates with the user solution.
 
 - :file:`sol/stub.%l`: for tasks of type :ref:`tasktypes_communication`, this is the piece of code that is compiled together with the user submitted code, and is usually used to manage the communication with :file:`manager`. Again, all supported languages must be present.
