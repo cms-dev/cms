@@ -219,7 +219,7 @@ class YamlLoader(Loader):
             logger.warning("Short name equals long name (title). "
                            "Please check.")
 
-        paths = [os.path.join(task_path, "text", "text.pdf"),
+        paths = [os.path.join(task_path, "statement", "statement.pdf"),
                  os.path.join(task_path, "testo", "testo.pdf")]
         for path in paths:
             if os.path.exists(path):

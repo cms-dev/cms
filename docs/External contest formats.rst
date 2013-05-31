@@ -120,7 +120,7 @@ The content of the task directory is used both to retrieve the task data and to 
 
 These are the required files.
 
-- :file:`text/text.pdf` (also accepted: :file:`testo/testo.pdf`): the main statement of the problem. It is not yet possible to import several statement associated to different languages.
+- :file:`statement/statement.pdf` (also accepted: :file:`testo/testo.pdf`): the main statement of the problem. It is not yet possible to import several statement associated to different languages.
 
 - :file:`input/input{%d}.txt` and :file:`output/output{%d}.txt` for all integers :samp:`{%d}` between 0 (included) and ``n_input`` (excluded): these are of course the input and (one of) the correct output files.
 
