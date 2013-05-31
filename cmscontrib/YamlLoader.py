@@ -219,20 +219,24 @@ class YamlLoader(Loader):
             logger.warning("Short name equals long name (title). "
                            "Please check.")
 
+        primary_language = load(conf, None, "primary_language")
+        if primary_language is None:
+            primary_language = 'it'
         paths = [os.path.join(task_path, "statement", "statement.pdf"),
                  os.path.join(task_path, "testo", "testo.pdf")]
         for path in paths:
             if os.path.exists(path):
                 digest = self.file_cacher.put_file(
                     path=path,
-                    description="Statement for task %s (lang: it)" % name)
+                    description="Statement for task %s (lang: %s)"
+                    % (name, primary_language))
                 break
         else:
             logger.error("Couldn't find any task statement, aborting...")
             sys.exit(1)
-        args["statements"] = [Statement("it", digest)]
+        args["statements"] = [Statement(primary_language, digest)]
 
-        args["primary_statements"] = '["it"]'
+        args["primary_statements"] = '["%s"]' % (primary_language)
 
         args["attachments"] = []  # FIXME Use auxiliary
 

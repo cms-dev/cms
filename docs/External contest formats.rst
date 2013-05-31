@@ -110,6 +110,8 @@ The following are optional keys that must be present for some task type or score
 
 - ``infile`` and ``outfile`` (strings): for :ref:`tasktypes_batch` tasks, these are the file names for the input and output files; default to :file:`input.txt` and :file:`output.txt`.
 
+- ``primary_language`` (string): the statement will be imported with this language code; defaults to ``it`` (Italian), in order to ensure backward compatibility.
+
 
 .. _externalcontestformats_task-directory:
 
@@ -120,7 +122,7 @@ The content of the task directory is used both to retrieve the task data and to 
 
 These are the required files.
 
-- :file:`statement/statement.pdf` (also accepted: :file:`testo/testo.pdf`): the main statement of the problem. It is not yet possible to import several statement associated to different languages.
+- :file:`statement/statement.pdf` (also accepted: :file:`testo/testo.pdf`): the main statement of the problem. It is not yet possible to import several statement associated to different languages: this (only) statement will be imported according to the language specified under the key ``primary_language``.
 
 - :file:`input/input{%d}.txt` and :file:`output/output{%d}.txt` for all integers :samp:`{%d}` between 0 (included) and ``n_input`` (excluded): these are of course the input and (one of) the correct output files.
 
