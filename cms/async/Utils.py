@@ -25,7 +25,6 @@
 
 import sys
 import datetime
-import struct
 import time
 
 import simplejson as json
@@ -38,35 +37,6 @@ def random_string(length):
     """
     letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     return "".join(choice(letters) for unused_i in xrange(length))
-
-
-def encode_length(length):
-    """Encode an integer as a 4 bytes string
-
-    length (int): the integer to encode
-    return (string): a 4 bytes representation of length
-
-    """
-    try:
-        return struct.pack(">I", length)
-    except Exception as error:
-        print >> sys.stderr, "Can't encode length: %s %r" % (length, error)
-        raise ValueError
-
-
-def decode_length(string):
-    """Decode an integer from a 4 bytes string
-
-    string (string): a 4 bytes representation of an integer
-    return (int): the corresponding integer
-
-    """
-    try:
-        val, = struct.unpack(">I", string[:4])
-        return val
-    except:
-        print >> sys.stderr, "Can't decode length"
-        raise ValueError
 
 
 def encode_json(obj):
