@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
@@ -96,35 +96,6 @@ def decode_json(string):
         return json.loads(string)
     except json.JSONDecodeError:
         print >> sys.stderr, "Can't decode JSON: %s" % string
-        raise ValueError
-
-
-def encode_binary(string):
-    """Encode a string for binary transmission - escape character is
-    '\\' and we escape '\r' as '\\r', so we can use again '\r\n' as
-    terminator string.
-
-    string (string): the binary string to encode
-    returns (string): the escaped string
-
-    """
-    try:
-        return string.replace('\n', '\\\n')
-    except:
-        print >> sys.stderr, "Can't encode binary."
-        raise ValueError
-
-
-def decode_binary(string):
-    """Decode an escaped string to a usual string.
-
-    string (string): the escaped string to decode
-    return (object): the decoded string
-    """
-    try:
-        return string.replace('\\\n', '\n')
-    except:
-        print >> sys.stderr, "Can't decode binary."
         raise ValueError
 
 
