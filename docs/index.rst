@@ -15,3 +15,4 @@ Welcome to CMS's documentation!
    RankingWebServer
    Localization
    Troubleshooting
+   Internals
