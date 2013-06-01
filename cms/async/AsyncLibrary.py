@@ -38,7 +38,7 @@ from functools import wraps
 
 from cms.async import ServiceCoord, Address, get_service_address
 from cms.async.Utils import random_string, Logger, \
-     encode_length, encode_json, decode_length, decode_json
+     encode_json, decode_json
 
 
 # Our logger object - can be a standard one (provided in Utils), or a
@@ -525,12 +525,7 @@ class RemoteService(asynchat.async_chat):
 
         # We decode the arriving data
         try:
-            json_length = decode_length(data[:4])
-            if len(data) != json_length + 4:
-                logger.warning("Incoming message with binary data aren't "
-                               "supported anymore, discarding.")
-                return
-            message = decode_json(data[4:json_length + 4])
+            message = decode_json(data)
         except:
             logger.error("Cannot understand incoming message, discarding.")
             return
@@ -595,12 +590,11 @@ class RemoteService(asynchat.async_chat):
         try:
             response["__data"] = method_response
             json_message = encode_json(response)
-            json_length = encode_length(len(json_message))
         except ValueError as error:
             logger.error("Cannot send response because of " +
                          "encoding error. %s" % repr(error))
             return
-        self._push_right(json_length + json_message)
+        self._push_right(json_message)
 
     def execute_rpc(self, method, data, callback=None, plus=None,
                     timeout=None):
@@ -677,13 +671,12 @@ class RemoteService(asynchat.async_chat):
         # We encode the request and send it
         try:
             json_message = encode_json(message)
-            json_length = encode_length(len(json_message))
         except ValueError:
             msg = "Cannot send request of method %s because of " \
                 "encoding error." % method
             request.complete({"__error": msg})
             return
-        ret = self._push_right(json_length + json_message)
+        ret = self._push_right(json_message)
         if not ret:
             msg = "Transfer interrupted"
             request.complete({"__error": msg})
