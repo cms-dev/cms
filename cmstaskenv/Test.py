@@ -71,10 +71,9 @@ def test_testcases(base_dir, soluzione, assume=None):
         loader = YamlLoader(
             os.path.realpath(os.path.join(base_dir, "..")),
             file_cacher)
-        taskdata = {}
-        taskdata["name"] = os.path.split(os.path.realpath(base_dir))[1]
-        taskdata["num"] = 1
-        task = loader.get_task(taskdata)
+        # Normally we should import the contest before, but YamlLoader
+        # accepts get_task() even without previous get_contest() calls
+        task = loader.get_task(os.path.split(os.path.realpath(base_dir))[1])
 
     # Prepare the EvaluationJob
     dataset = task.active_dataset

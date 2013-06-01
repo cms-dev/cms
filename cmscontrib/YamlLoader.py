@@ -198,7 +198,14 @@ class YamlLoader(Loader):
         """See docstring in class Loader.
 
         """
-        num = self.tasks_order[name]
+        try:
+            num = self.tasks_order[name]
+
+        # Here we expose an undocumented behavior, so that cmsMake can
+        # import a task even without the whole contest; this is not to
+        # be relied upon in general
+        except AttributeError:
+            num = 1
 
         conf = yaml.safe_load(
             io.open(os.path.join(self.path, name + ".yaml"),
