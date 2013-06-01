@@ -378,6 +378,14 @@ def build_gen_list(base_dir, task_type):
         else:
             raise Exception("Wrong generator/validator language!")
 
+    # Question: why, differently from outputs, inputs have to be
+    # created all together instead of selectively over those that have
+    # been changed since last execution? This is a waste of time,
+    # usually generating inputs is a pretty long thing. Answer:
+    # because cmsMake architecture, which is based on file timestamps,
+    # doesn't make us able to understand which lines of gen/GEN have
+    # been changed. Douch! We'll have to thing better this thing for
+    # the new format we're developing.
     def make_input(assume=None):
         n = 0
         try:
