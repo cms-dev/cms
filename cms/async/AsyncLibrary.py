@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 """This file defines classes to handle asynchronous RPC communication
-usinc asynchat and JSON encoding.
+using asynchat and JSON encoding.
 
 """
 
@@ -737,7 +737,7 @@ class RemoteService(asynchat.async_chat):
         raise
 
     def handle_close(self):
-        """Handle the case when the connection fall.
+        """Handle the case when the connection falls.
 
         """
         self.close()
