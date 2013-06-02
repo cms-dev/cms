@@ -23,7 +23,7 @@
 
 from cmscontrib.YamlLoader import YamlLoader
 
-LOADERS = dict((loader_class.short_name(), loader_class)
+LOADERS = dict((loader_class.short_name, loader_class)
                for loader_class in [YamlLoader])
 
 
@@ -71,5 +71,5 @@ def choose_loader(arg, path, error_callback):
 def build_epilog():
     epilog = "The following loaders are supported:\n"
     for short_name, loader_class in sorted(LOADERS.items()):
-        epilog += " * %s (%s)\n" % (short_name, loader_class.description())
+        epilog += " * %s (%s)\n" % (short_name, loader_class.description)
     return epilog

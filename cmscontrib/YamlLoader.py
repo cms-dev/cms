@@ -98,19 +98,8 @@ class YamlLoader(Loader):
 
     """
 
-    @classmethod
-    def short_name(cls):
-        """See docstring in class Loader.
-
-        """
-        return 'italy_yaml'
-
-    @classmethod
-    def description(cls):
-        """See docstring in class Loader.
-
-        """
-        return 'Italian YAML-based format'
+    short_name = 'italy_yaml'
+    description = 'Italian YAML-based format'
 
     @classmethod
     def detect(cls, path):

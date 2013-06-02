@@ -28,8 +28,7 @@ class Loader:
     Each loader must extend this class and support the following
     access pattern:
 
-      * The class methods short_name(), description() and detect() can
-        be called at any time.
+      * The class method detect() can be called at any time.
 
       * Once a loader is instatiated, get_contest() can be called on
         it, only once.
@@ -42,6 +41,12 @@ class Loader:
         the caller isn't interested in users or tasks.
 
     """
+
+    # Short name of this loader, meant to be a unique identifier.
+    short_name = None
+
+    # Description of this loader, meant to be human readable.
+    description = None
 
     def __init__(self, path, file_cacher):
         """Initialize the Loader.
@@ -56,23 +61,10 @@ class Loader:
         self.file_cacher = file_cacher
 
     @classmethod
-    def short_name(cls):
-        """Short name of this loader, meant to be a unique identifier.
-
-        """
-        raise NotImplementedError("Please extend Loader")
-
-    @classmethod
-    def description(cls):
-        """Description of this loader, meant to be human readable.
-
-        """
-        raise NotImplementedError("Please extend Loader")
-
-    @classmethod
     def detect(cls, path):
-        """Detect whether this loader is able to interpret the given
-        path. If the loader chooses to not support autodetection, just
+        """Detect whether this loader is able to interpret a path.
+
+        If the loader chooses to not support autodetection, just
         always return False.
 
         path (string): the path to scan.
