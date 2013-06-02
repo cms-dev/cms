@@ -30,14 +30,113 @@ import tornado.wsgi
 
 from gevent.pywsgi import WSGIServer
 
+from cms.async import ServiceCoord
 from cms.async.GeventLibrary import Service, rpc_callback
-from cms.async.WebAsyncLibrary import RPCRequestHandler, \
-    RPCAnswerHandler, SyncRPCRequestHandler
+from cms.async.Utils import decode_json
 
 
 # Our logger. We cannot simply import from AsyncLibrary because at
 # loading it is not yet defined.
 logger = None
+
+
+class RPCRequestHandler(tornado.web.RequestHandler):
+    """This handler receives a request for a RPC method, interprets
+    the request, and calls the method.
+
+    """
+    def get(self, service, shard, method):
+        # TODO: still lacking configurable arguments - some of these
+        # should be GET arguments.
+        rid = self.get_argument("__rid")
+        arguments = self.request.arguments
+        del arguments["__rid"]
+
+        # Tornado gives for every key a list of arguments, we need
+        # only one
+        arguments = dict((k, decode_json(arguments[k][0])) for k in arguments)
+
+        service = ServiceCoord(service, int(shard))
+
+        authorized = self.application.service.authorized_rpc(service,
+                                                             method,
+                                                             arguments)
+        if not authorized:
+            self.write({'status': 'not authorized'})
+            return
+
+        if service not in self.application.service.remote_services or \
+               not self.application.service.remote_services[service].connected:
+            self.write({'status': 'unconnected'})
+            return
+
+        self.application.service.__responses[rid] = "wait"
+        self.application.service.remote_services[service].__getattr__(method)(\
+            callback=WebService._default_callback,
+            plus=rid,
+            **arguments)
+        self.write({'status': 'wait'})
+
+
+class RPCAnswerHandler(tornado.web.RequestHandler):
+    """This handler check if a previously requested request has
+    finished and inform the client of the status of the request.
+
+    """
+    def get(self):
+        rid = self.get_argument("__rid")
+        responses = self.application.service.__responses
+        if rid in responses:
+            if responses[rid] == "wait":
+                self.write({'status': 'wait'})
+            else:
+                try:
+                    self.write({'status': 'ok',
+                                'data': responses[rid][0],
+                                'error': responses[rid][1]})
+                except UnicodeDecodeError:
+                    self.write({'status': 'ok',
+                                'data': '',
+                                'error': 'Cannot call binary RPC methods.'})
+                del responses[rid]
+        else:
+            self.write({'status': 'fail'})
+
+
+class SyncRPCRequestHandler(tornado.web.RequestHandler):
+    """Using the decorator tornado.web.asynchronous, the request stays
+    alive until we decide to end it (with self.finish). We use this to
+    let the browser wait until we have the response for the rpc/
+
+    """
+    @tornado.web.asynchronous
+    def get(self, service, shard, method):
+        arguments = self.request.arguments
+        # Tornado gives for every key a list of arguments, we need
+        # only one
+        arguments = dict((k, decode_json(arguments[k][0])) for k in arguments)
+
+        service = ServiceCoord(service, int(shard))
+        if service not in self.application.service.remote_services or \
+            not self.application.service.remote_services[service].connected:
+            self.write({'status': 'unconnected'})
+            self.finish()
+            return
+
+        self.application.service.remote_services[service].__getattr__(method)(
+            callback=self._request_callback, plus=0, **arguments)
+
+    @rpc_callback
+    def _request_callback(self, caller, data, plus, error=None):
+        try:
+            self.write({'status': 'ok',
+                        'data': data,
+                        'error': error})
+        except UnicodeDecodeError:
+            self.write({'status': 'ok',
+                        'data': '',
+                        'error': 'Cannot call binary RPC methods.'})
+        self.finish()
 
 
 class WebService(Service):
