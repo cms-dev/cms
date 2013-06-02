@@ -28,8 +28,10 @@ LOADERS = dict((loader_class.short_name, loader_class)
 
 
 def choose_loader(arg, path, error_callback):
-    """Decide which loader to use, depending upon the specified
-    argument and possibly performing an autodetection.
+    """Decide which loader to use.
+
+    The choice depends upon the specified argument and possibly
+    performing an autodetection.
 
     The autodetection is done by calling detect() on all the known
     loaders and returning the only one that returns True. If no one or
@@ -69,6 +71,11 @@ def choose_loader(arg, path, error_callback):
 
 
 def build_epilog():
+    """Build the ArgumentParser epilog.
+
+    Basically, list the known loaders' short names.
+
+    """
     epilog = "The following loaders are supported:\n"
     for short_name, loader_class in sorted(LOADERS.items()):
         epilog += " * %s (%s)\n" % (short_name, loader_class.description)
