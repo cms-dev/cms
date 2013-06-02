@@ -54,7 +54,7 @@ from sqlalchemy import func
 
 from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, default_argument_parser, \
     logger
-from cms.async.WebAsyncLibrary import WebService
+from cms.async.WebGeventLibrary import WebService
 from cms.async import ServiceCoord
 from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
