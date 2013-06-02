@@ -37,9 +37,12 @@ from cms.async import ServiceCoord, Address, get_service_address
 from cms.async.Utils import Logger, encode_json, decode_json
 from cms.async.AsyncLibrary import rpc_callback, rpc_method, rpc_threaded, \
     AuthorizationError, RPCRequest
+from cms.async.PsycoGevent import make_psycopg_green
 
 
 logger = None
+
+make_psycopg_green()
 
 
 class Service:
