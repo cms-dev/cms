@@ -112,7 +112,7 @@ class YamlLoader(Loader):
         """See docstring in class Loader.
 
         """
-        # Not really refined...
+        # TODO - Not really refined...
         return os.path.exists(os.path.join(path, "contest.yaml"))
 
     def get_contest(self):
