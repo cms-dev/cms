@@ -52,7 +52,8 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
 
       * If dst is None, instead of assigning the result to
         dst[dst_name] (which would cast an exception) it just returns
-        it.
+        it. This option doesn't distinguish between src_name not being
+        in src and conv(src[src_name]) returning None.
 
     """
     if dst is not None and dst_name is None:
@@ -65,11 +66,11 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
     if isinstance(src_name, list):
         for this_src_name in src_name:
             try:
-                found = True
                 res = conv(src[this_src_name])
             except KeyError:
                 pass
             else:
+                found = True
                 break
     else:
         if src_name in src:
