@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
@@ -31,6 +31,7 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import tornado.escape
+import tornado.wsgi
 
 from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_callback
@@ -177,7 +178,7 @@ class WebService(Service):
                      (r"/sync_rpc_request/([a-zA-Z0-9_-]+)/" \
                       "([0-9]+)/([a-zA-Z0-9_-]+)",
                       SyncRPCRequestHandler)]
-        self.application = tornado.web.Application(handlers, **parameters)
+        self.application = tornado.wsgi.WSGIApplication(handlers, **parameters)
 
         # xheaders=True means that Tornado uses the content of the
         # header X-Real-IP as the request IP. This means that if it is
@@ -186,8 +187,10 @@ class WebService(Service):
         # (i.e., if we are not behind a proxy that sets that header,
         # we must not use it).
         self.application.service = self
+        self.wsgi_container = tornado.wsgi.WSGIContainer(self.application)
         http_server = tornado.httpserver.HTTPServer(
-            self.application, xheaders=parameters.get("is_proxy_used", True))
+            self.wsgi_container,
+            xheaders=parameters.get("is_proxy_used", True))
         http_server.listen(listen_port, address=listen_address)
         self.instance = tornado.ioloop.IOLoop.instance()
 
