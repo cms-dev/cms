@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -197,9 +197,13 @@ class BaseHandler(CommonRequestHandler):
         return params
 
     def finish(self, *args, **kwds):
-        """ Finish this response, ending the HTTP request.
+        """Finish this response, ending the HTTP request.
 
         We override this method in order to properly close the database.
+
+        TODO - Now that we have greenlet support, this method could be
+        refactored in terms of context manager or something like
+        that. So far I'm leaving it to minimize changes.
 
         """
         self.sql_session.close()
@@ -1820,7 +1824,6 @@ class SubmissionFileHandler(FileHandler):
 
     """
     # FIXME: Replace with FileFromDigestHandler?
-    @tornado.web.asynchronous
     def get(self, file_id):
         sub_file = self.safe_get_item(File, file_id)
         submission = sub_file.submission
@@ -1928,7 +1931,6 @@ class MessageHandler(BaseHandler):
 
 class FileFromDigestHandler(FileHandler):
 
-    @tornado.web.asynchronous
     def get(self, digest, filename):
         #TODO: Accept a MIME type
         self.sql_session.close()

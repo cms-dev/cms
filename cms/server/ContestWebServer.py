@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -325,9 +325,13 @@ class BaseHandler(CommonRequestHandler):
         return ret
 
     def finish(self, *args, **kwds):
-        """ Finishes this response, ending the HTTP request.
+        """Finish this response, ending the HTTP request.
 
         We override this method in order to properly close the database.
+
+        TODO - Now that we have greenlet support, this method could be
+        refactored in terms of context manager or something like
+        that. So far I'm leaving it to minimize changes.
 
         """
         if hasattr(self, "sql_session"):
@@ -584,7 +588,6 @@ class TaskStatementViewHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    @tornado.web.asynchronous
     def get(self, task_name, lang_code):
         try:
             task = self.contest.get_task(task_name)
@@ -611,7 +614,6 @@ class TaskAttachmentViewHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    @tornado.web.asynchronous
     def get(self, task_name, filename):
         try:
             task = self.contest.get_task(task_name)
@@ -637,7 +639,6 @@ class SubmissionFileHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    @tornado.web.asynchronous
     def get(self, task_name, submission_num, filename):
         try:
             task = self.contest.get_task(task_name)
@@ -1712,7 +1713,6 @@ class UserTestIOHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    @tornado.web.asynchronous
     def get(self, task_name, user_test_num, io):
         try:
             task = self.contest.get_task(task_name)
@@ -1748,7 +1748,6 @@ class UserTestFileHandler(FileHandler):
     """
     @tornado.web.authenticated
     @actual_phase_required(0)
-    @tornado.web.asynchronous
     def get(self, task_name, user_test_num, filename):
         try:
             task = self.contest.get_task(task_name)

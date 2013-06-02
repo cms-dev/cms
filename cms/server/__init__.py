@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -459,9 +459,14 @@ def file_handler_gen(BaseClass):
             self.start_time = time.time()
             self.size = 0
             self.temp_file = open(self.temp_filename, "rb")
-            self.application.service.add_timeout(self._fetch_write_chunk,
-                                                 None, 0.02,
-                                                 immediately=True)
+
+            # TODO - Here I'm changing things as few as possible when
+            # switching from the asynchronous to the greenlet-based
+            # framework; at some point this should be rewritten in a
+            # somewhat more greenlet-idomatic way...
+            ret = True
+            while ret:
+                ret = self._fetch_write_chunk()
 
         def _fetch_write_chunk(self):
             """Send a chunk of the file to the browser.

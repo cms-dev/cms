@@ -29,6 +29,7 @@ import tornado.escape
 import tornado.wsgi
 
 from gevent.pywsgi import WSGIServer
+from gevent.event import Event
 
 from cms.async import ServiceCoord
 from cms.async.GeventLibrary import Service, rpc_callback
@@ -109,7 +110,6 @@ class SyncRPCRequestHandler(tornado.web.RequestHandler):
     let the browser wait until we have the response for the rpc/
 
     """
-    @tornado.web.asynchronous
     def get(self, service, shard, method):
         arguments = self.request.arguments
         # Tornado gives for every key a list of arguments, we need
@@ -123,11 +123,19 @@ class SyncRPCRequestHandler(tornado.web.RequestHandler):
             self.finish()
             return
 
+        # TODO - So far we have no support for synchronous calls, so I
+        # use an Event to delay the termination of this greenlet
+        event = Event()
+        event.clear()
+
         self.application.service.remote_services[service].__getattr__(method)(
-            callback=self._request_callback, plus=0, **arguments)
+            callback=self._request_callback, plus=event, **arguments)
+
+        event.wait()
 
     @rpc_callback
     def _request_callback(self, caller, data, plus, error=None):
+        event = plus
         try:
             self.write({'status': 'ok',
                         'data': data,
@@ -137,6 +145,7 @@ class SyncRPCRequestHandler(tornado.web.RequestHandler):
                         'data': '',
                         'error': 'Cannot call binary RPC methods.'})
         self.finish()
+        event.set()
 
 
 class WebService(Service):
