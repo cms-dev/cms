@@ -113,6 +113,16 @@ class Loader:
     def has_changed(self, name):
         """Detect if a Task has been changed since its last import.
 
+        This is expected to happen by saving, at every import, some
+        piece of data about the last importation time. Then, when
+        has_changed() is called, such time is compared with the last
+        modification time of the files describind the task. Anyway,
+        the Loader may choose the heuristic better suite for its case.
+
+        If this task is being imported for the first time or if the
+        Loader decides not to support changes detection, just return
+        True.
+
         name (string): the task name.
 
         return (bool): True if the task was changed, False otherwise.
