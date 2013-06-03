@@ -57,9 +57,10 @@ class Reimporter:
 
     """
 
-    def __init__(self, path, contest_id, force, loader_class):
+    def __init__(self, path, contest_id, force, loader_class, full):
         self.old_contest_id = contest_id
         self.force = force
+        self.full = full
 
         self.file_cacher = FileCacher()
 
@@ -265,11 +266,14 @@ class Reimporter:
                     old_contest.tasks.append(new_task)
                 elif task in new_tasks:
                     # Update an existing task.
-                    logger.info("Updating task %s" % task)
-                    new_task = self.loader.get_task(task)
-                    new_task.num = current_num
-                    current_num += 1
-                    self._update_object(old_task, new_task)
+                    if self.full or self.loader.has_changed(task):
+                        logger.info("Updating task %s" % task)
+                        new_task = self.loader.get_task(task)
+                        new_task.num = current_num
+                        current_num += 1
+                        self._update_object(old_task, new_task)
+                    else:
+                        logger.info("Task %s has not changed" % task)
                 else:
                     # Delete an existing task.
                     if self.force:
@@ -314,6 +318,8 @@ def main():
                         "may get lost")
     parser.add_argument("-L", "--loader", action="store", default=None,
                         help="use the specified loader (default: autodetect)")
+    parser.add_argument("-F", "--full", action="store_true",
+                        help="reimport tasks even if they haven't changed")
     parser.add_argument("import_directory",
                         help="source directory from where import")
 
@@ -328,7 +334,8 @@ def main():
     Reimporter(path=args.import_directory,
                contest_id=args.contest_id,
                force=args.force,
-               loader_class=loader_class).do_reimport()
+               loader_class=loader_class,
+               full=args.full).do_reimport()
 
 
 if __name__ == "__main__":

@@ -160,6 +160,60 @@ class YamlLoader(Loader):
 
         return Contest(**args), tasks, users
 
+    def has_changed(self, name):
+        """See docstring in class Loader
+
+        """
+
+        path = os.path.realpath(os.path.join(self.path, name))
+
+        # If there is no .itime file, we assume that the task has changed
+        if not os.path.exists(os.path.join(path, ".itime")):
+            return True
+
+        getmtime = lambda fname: os.stat(fname).st_mtime
+
+        itime = getmtime(os.path.join(path, ".itime"))
+
+        # Generate a task's list of files
+        # Testcases
+        files = []
+        for filename in os.listdir(os.path.join(path, "input")):
+            files.append(os.path.join(path, "input", filename))
+
+        for filename in os.listdir(os.path.join(path, "output")):
+            files.append(os.path.join(path, "output", filename))
+
+        # Statement
+        files.append(os.path.join(path, "statement", "statement.pdf"))
+        files.append(os.path.join(path, "testo", "testo.pdf"))
+
+        # Managers
+        files.append(os.path.join(path, "check", "checker"))
+        files.append(os.path.join(path, "cor", "correttore"))
+        files.append(os.path.join(path, "check", "manager"))
+        files.append(os.path.join(path, "cor", "manager"))
+        for lang in LANGUAGES:
+            files.append(os.path.join(path, "sol", "grader.%s" % lang))
+        for other_filename in os.listdir(os.path.join(path, "sol")):
+            if other_filename.endswith('.h') or \
+                    other_filename.endswith('lib.pas'):
+                files.append(os.path.join(path, "sol", other_filename))
+
+        # Yaml
+        files.append(os.path.join(self.path, name + ".yaml"))
+
+        # Check is any of the files have changed
+        for fname in files:
+            if os.path.exists(fname):
+                if getmtime(fname) > itime:
+                    return True
+
+        if os.path.exists(os.path.join(path, ".import_error")):
+            logger.warning("Last attempt to import task %s failed,"
+                           " I'm not trying again." % name)
+        return False
+
     def get_user(self, username):
         """See docstring in class Loader.
 
@@ -208,6 +262,11 @@ class YamlLoader(Loader):
         task_path = os.path.join(self.path, name)
 
         logger.info("Loading parameters for task %s." % name)
+
+        # Here we update the time of the last import
+        open(os.path.join(task_path, ".itime"), "w").close()
+        # If this file is not deleted, then the import failed
+        open(os.path.join(task_path, ".import_error"), "w").close()
 
         args = {}
 
@@ -468,6 +527,9 @@ class YamlLoader(Loader):
 
         dataset = Dataset(**args)
         task.active_dataset = dataset
+
+        # Import was successful
+        os.remove(os.path.join(task_path, ".import_error"))
 
         logger.info("Task parameters loaded.")
 

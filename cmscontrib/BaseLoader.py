@@ -109,3 +109,13 @@ class Loader:
 
         """
         raise NotImplementedError("Please extend Loader")
+
+    def has_changed(self, name):
+        """Detect if a Task has been changed since its last import.
+
+        name (string): the task name.
+
+        return (bool): True if the task was changed, False otherwise.
+
+        """
+        raise NotImplementedError("Please extend Loader")
