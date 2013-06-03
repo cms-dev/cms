@@ -66,7 +66,7 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
     if isinstance(src_name, list):
         for this_src_name in src_name:
             try:
-                res = conv(src[this_src_name])
+                res = src[this_src_name]
             except KeyError:
                 pass
             else:
@@ -75,12 +75,12 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
     else:
         if src_name in src:
             found = True
-            res = conv(src[src_name])
+            res = src[src_name]
     if dst is not None:
         if found:
-            dst[dst_name] = res
+            dst[dst_name] = conv(res)
     else:
-        return res
+        return conv(res)
 
 
 def make_timedelta(t):
