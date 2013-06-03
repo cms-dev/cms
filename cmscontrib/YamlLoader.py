@@ -185,6 +185,9 @@ class YamlLoader(Loader):
         for filename in os.listdir(os.path.join(path, "output")):
             files.append(os.path.join(path, "output", filename))
 
+        # Score file
+        files.append(os.path.join(path, "gen", "GEN"))
+
         # Statement
         files.append(os.path.join(path, "statement", "statement.pdf"))
         files.append(os.path.join(path, "testo", "testo.pdf"))
