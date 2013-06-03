@@ -52,8 +52,13 @@ def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
 
       * If dst is None, instead of assigning the result to
         dst[dst_name] (which would cast an exception) it just returns
-        it. This option doesn't distinguish between src_name not being
-        in src and conv(src[src_name]) returning None.
+        it.
+
+      * If src[src_name] doesn't exist, the behavior is different
+        depending on whether dst is None or not: if dst is None,
+        conv(None) is returned; if dst is not None, nothing is done
+        (in particular, dst[dst_name] is _not_ assigned to conv(None);
+        it is not assigned to anything!).
 
     """
     if dst is not None and dst_name is None:
