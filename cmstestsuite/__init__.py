@@ -3,6 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,7 +24,6 @@ import signal
 import re
 import simplejson as json
 import socket
-import struct
 import subprocess
 import time
 import mechanize
@@ -76,47 +76,24 @@ class RemoteService:
         self.address = address
         self.port = port
 
-    @staticmethod
-    def encode_binary(s):
-        return s.replace('\n', '\\\n')
-
-    @staticmethod
-    def decode_binary(s):
-        return s.replace('\\\n', '\n')
-
-    @staticmethod
-    def encode_length(s):
-        return struct.pack(">I", len(s))
-
-    @staticmethod
-    def decode_length(s):
-        l, = struct.unpack(">I", s)
-        return l
-
     def call(self, function_name, data):
         """Perform a synchronous RPC call."""
         s = json.dumps({
             "__method": function_name,
             "__data": data,
-            })
-        msg = RemoteService.encode_length(s) + s + "\r\n"
+        })
+        msg = s + "\r\n"
 
         # Send message.
         sock = socket.socket()
         sock.connect((self.address, self.port))
         sock.send(msg)
 
-        # Wait for response length.
-        len_str = ''
-        while len(len_str) != 4:
-            len_str += sock.recv(4 - len(len_str))
-        recv_len = RemoteService.decode_length(len_str)
-
         # Wait for response.
         s = ''
-        while len(s) != recv_len:
-            s += sock.recv(recv_len - len(s))
-
+        while len(s) < 2 or s[-2:] != "\r\n":
+            s += sock.recv(1)
+        s = s[:-2]
         sock.close()
 
         # Decode reply.
@@ -172,7 +149,7 @@ def spawn(cmdline):
 
     if CONFIG["TEST_DIR"] is not None:
         cmdline = ['python-coverage', 'run', '-p'] + \
-                  cmdline
+            cmdline
 
     if CONFIG["VERBOSITY"] >= 3:
         stdout = None
@@ -444,7 +421,7 @@ def add_task(contest_id, **kwargs):
 def add_manager(task_id, manager):
     args = {}
     files = [
-        ( 'manager', manager ),
+        ('manager', manager),
     ]
     dataset_id = get_task_active_dataset_id(task_id)
     admin_req('/add_manager/%d' % (dataset_id),
@@ -467,7 +444,7 @@ def add_testcase(task_id, num, input_file, output_file, public):
     files = [
         ('input', input_file),
         ('output', output_file),
-        ]
+    ]
     args = {}
     args["num"] = num
     if public:
