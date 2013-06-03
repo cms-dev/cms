@@ -34,6 +34,7 @@ from cms.db.SQLAlchemyAll import \
     Contest, User, Task, Statement, Attachment, SubmissionFormatElement, \
     Dataset, Manager, Testcase
 from cmscontrib.BaseLoader import Loader
+from cmscontrib import touch
 
 
 def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
@@ -264,9 +265,9 @@ class YamlLoader(Loader):
         logger.info("Loading parameters for task %s." % name)
 
         # Here we update the time of the last import
-        open(os.path.join(task_path, ".itime"), "w").close()
+        touch(os.path.join(task_path, ".itime"))
         # If this file is not deleted, then the import failed
-        open(os.path.join(task_path, ".import_error"), "w").close()
+        touch(os.path.join(task_path, ".import_error"))
 
         args = {}
 

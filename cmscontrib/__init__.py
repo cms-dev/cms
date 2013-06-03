@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
@@ -27,6 +27,7 @@ losing no data in the process).
 """
 
 import hashlib
+import os
 
 
 def sha1sum(path):
@@ -45,3 +46,17 @@ def sha1sum(path):
             hasher.update(buf)
             buf = fin.read(buffer_length)
         return hasher.hexdigest()
+
+
+# Taken from
+# http://stackoverflow.com/questions/1158076/implement-touch-using-python
+def touch(path):
+    """Touch path, which must be regular file.
+
+    This behaves like the UNIX touch utility.
+
+    path (str): the path to be touched.
+
+    """
+    with file(path, 'a'):
+        os.utime(path, None)
