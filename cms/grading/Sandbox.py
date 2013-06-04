@@ -21,12 +21,13 @@
 
 import os
 import shutil
-import subprocess
 import tempfile
 import stat
 import select
 import re
 from functools import wraps
+
+from gevent import subprocess
 
 from cms import config, logger
 from cms.async.GeventUtils import copyfileobj
