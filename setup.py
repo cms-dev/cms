@@ -42,7 +42,7 @@ def do_setup():
     package_data = {
         "cms.async": [
             os.path.join("static", "*"),
-            ],
+        ],
         "cms.server": [
             os.path.join("static", "jq", "*.*"),
             os.path.join("static", "sh", "*.*"),
@@ -54,18 +54,22 @@ def do_setup():
             os.path.join("templates", "contest", "*.*"),
             os.path.join("templates", "admin", "*.*"),
             os.path.join("templates", "ranking", "*.*"),
-            ],
+        ],
         "cmsranking": [
             os.path.join("static", "img", "*.*"),
             os.path.join("static", "lib", "*.*"),
             os.path.join("static", "*.*"),
-            ],
+        ],
         "cmstestsuite": [
             os.path.join("code", "*.*"),
             os.path.join("tasks", "batch_stdio", "data", "*.*"),
             os.path.join("tasks", "batch_fileio", "data", "*.*"),
-            ],
-        }
+            os.path.join("tasks", "batch_fileio_managed", "code", "*"),
+            os.path.join("tasks", "batch_fileio_managed", "data", "*.*"),
+            os.path.join("tasks", "communication", "code", "*"),
+            os.path.join("tasks", "communication", "data", "*.*"),
+        ],
+    }
 
     # Apparently, pip installs package_data with the permissions they
     # have on the source. We fix the source permissions here. (Though,
@@ -132,18 +136,18 @@ def do_setup():
                   "cmsContestImporter=cmscontrib.ContestImporter:main",
 
                   "cmsMake=cmstaskenv.cmsMake:main",
-                  ]
-              },
+              ]
+          },
           keywords="ioi programming contest grader management system",
           license="Affero General Public License v3",
-          classifiers=["Development Status :: 3 - Alpha",
-                       "Natural Language :: English",
-                       "Operating System :: POSIX :: Linux",
-                       "Programming Language :: Python :: 2",
-                       "License :: OSI Approved :: "
-                       "GNU Affero General Public License v3",
-                      ],
-         )
+          classifiers=[
+              "Development Status :: 3 - Alpha",
+              "Natural Language :: English",
+              "Operating System :: POSIX :: Linux",
+              "Programming Language :: Python :: 2",
+              "License :: OSI Approved :: "
+              "GNU Affero General Public License v3",
+          ])
     os.umask(old_umask)
 
 
