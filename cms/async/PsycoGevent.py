@@ -9,6 +9,7 @@ Use `make_psycopg_green()` to enable gevent support in Psycopg.
 """
 
 # Copyright (C) 2010 Daniele Varrazzo <daniele.varrazzo@gmail.com>
+# Copyright (C) 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # and licensed under the MIT license:
 # 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -42,6 +43,15 @@ def make_psycopg_green():
             % psycopg2.__version__)
 
     extensions.set_wait_callback(gevent_wait_callback)
+
+def unmake_psycopg_green():
+    """Undo make_psycopg_green()."""
+    if not hasattr(extensions, 'set_wait_callback'):
+        raise ImportError(
+            "support for coroutines not available in this Psycopg version (%s)"
+            % psycopg2.__version__)
+
+    extensions.set_wait_callback(None)
 
 def gevent_wait_callback(conn, timeout=None):
     """A wait callback useful to allow gevent to work with Psycopg."""
