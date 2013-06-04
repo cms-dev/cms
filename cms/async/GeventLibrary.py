@@ -150,6 +150,20 @@ class Service:
             logger.critical(err_msg)
         self.server.stop()
 
+    def _step(self):
+        """Cooperatively yield the control to another greenlet.
+
+        There is no analog of AsyncLibrary.Service._step() in
+        GeventLibrary. So we just interpret a _step() call as a desire
+        to yield the control to another greenlet.
+
+        TODO - When we decide to discontinue compatibility with
+        AsyncLibrary, this method could be renamed to something more
+        idiomatic.
+
+        """
+        gevent.sleep(0)
+
     def _reconnect(self):
         """Reconnect to all remote services that have been disconnected.
 
