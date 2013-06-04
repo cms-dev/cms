@@ -26,14 +26,16 @@ blocking way.
 
 """
 
-from cms.async import using_gevent
+from contextlib import contextmanager
+
+from cms.async import is_using_gevent
 
 
 def copyfileobj(fsrc, fdst, length=16 * 1024):
     """As shutil.copyfilobj(), but with gevent support.
 
     """
-    if using_gevent:
+    if is_using_gevent():
         import gevent
     while True:
         buf = fsrc.read(length)
@@ -41,7 +43,7 @@ def copyfileobj(fsrc, fdst, length=16 * 1024):
             break
         fdst.write(buf)
         if using_gevent:
-            gevent.sleep(0)
+            gevent.wait(0)
 
 
 def copyfile(src, dst):
@@ -55,3 +57,24 @@ def copyfile(src, dst):
     with open(src, 'rb') as fsrc:
         with open(dst, 'wb') as fdst:
             copyfileobj(fsrc, fdst)
+
+
+@contextmanager
+def ungreen_psycopg():
+    """Temporarily disable gevent support in psycopg.
+
+    Inside this context manager you can use psycopg's features that
+    are not compatible with coroutine support, such as large
+    objects. Of course, at the expense of being blocking, so please
+    stay inside the context manager as short as possible.
+
+    """
+    if is_using_gevent():
+        from cms.async.PsycoGevent import make_psycopg_green, \
+            unmake_psycopg_green
+        unmake_psycopg_green()
+    try:
+        yield
+    finally:
+        if is_using_gevent():
+            make_psycopg_green()

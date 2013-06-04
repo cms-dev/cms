@@ -51,6 +51,7 @@ def unmake_psycopg_green():
             "support for coroutines not available in this Psycopg version (%s)"
             % psycopg2.__version__)
 
+    print 'unmaking'
     extensions.set_wait_callback(None)
 
 def gevent_wait_callback(conn, timeout=None):

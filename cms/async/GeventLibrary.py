@@ -33,7 +33,8 @@ import gevent
 import gevent.socket
 from gevent.server import StreamServer
 
-from cms.async import ServiceCoord, Address, get_service_address
+from cms.async import ServiceCoord, Address, get_service_address, \
+    set_using_gevent
 from cms.async.Utils import Logger, encode_json, decode_json
 from cms.async.AsyncLibrary import rpc_callback, rpc_method, rpc_threaded, \
     AuthorizationError, RPCRequest
@@ -46,8 +47,7 @@ make_psycopg_green()
 
 # Set flag in cms.async to indicate that we're using gevent (only
 # importing using_gevent from cms.async and setting it doesn't work)
-import cms.async
-cms.async.using_gevent = True
+set_using_gevent()
 
 
 class Service:
