@@ -44,6 +44,11 @@ logger = None
 
 make_psycopg_green()
 
+# Set flag in cms.async to indicate that we're using gevent (only
+# importing using_gevent from cms.async and setting it doesn't work)
+import cms.async
+cms.async.using_gevent = True
+
 
 class Service:
 

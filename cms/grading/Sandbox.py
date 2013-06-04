@@ -29,6 +29,7 @@ import re
 from functools import wraps
 
 from cms import config, logger
+from cms.async.GeventUtils import copyfileobj
 
 
 class SandboxInterfaceException(Exception):
@@ -583,7 +584,7 @@ class Sandbox:
 
         """
         dest = self.create_file(path, executable)
-        shutil.copyfileobj(file_obj, dest)
+        copyfileobj(file_obj, dest)
         dest.close()
 
     # TODO - Rewrite it as context manager

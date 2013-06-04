@@ -33,6 +33,7 @@ from sqlalchemy.exc import IntegrityError
 
 from cms import config, logger, mkdir
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
+from cms.async.GeventUtils import copyfile, copyfileobj
 
 
 class FileCacherBackend:
@@ -144,14 +145,14 @@ class FSBackend(FileCacherBackend):
         """See FileCacherBackend.get_file().
 
         """
-        shutil.copyfile(os.path.join(self.path, digest), dest)
+        copyfile(os.path.join(self.path, digest), dest)
 
     def put_file(self, digest, origin, description=""):
         """See FileCacherBackend.put_file().
 
         """
         if not os.path.exists(os.path.join(self.path, digest)):
-            shutil.copyfile(origin, os.path.join(self.path, digest))
+            copyfile(origin, os.path.join(self.path, digest))
 
     def describe(self, digest):
         """See FileCacherBackend.describe(). This method returns
@@ -428,7 +429,7 @@ class FileCacher:
         # Saving to file object
         if file_obj is not None:
             with open(cache_path, "rb") as file_:
-                shutil.copyfileobj(file_, file_obj)
+                copyfileobj(file_, file_obj)
 
         # Returning string?
         if string:
@@ -486,7 +487,7 @@ class FileCacher:
                 temp_file.write(binary_data)
         else:  # file_obj is not None.
             with open(temp_path, 'wb') as temp_file:
-                shutil.copyfileobj(file_obj, temp_file)
+                copyfileobj(file_obj, temp_file)
 
         hasher = hashlib.sha1()
 
