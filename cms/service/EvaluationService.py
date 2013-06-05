@@ -34,7 +34,6 @@ from collections import namedtuple
 import random
 
 from cms import default_argument_parser, logger
-#from cms.async.AsyncLibrary import Service, rpc_method, rpc_callback
 from cms.async.GeventLibrary import Service, rpc_method, rpc_callback
 from cms.async import ServiceCoord, get_service_shards
 from cms.db import ask_for_contest
@@ -354,7 +353,7 @@ class WorkerPool:
 
         """
         shard = worker_coord.shard
-        # Instruct AsyncLibrary to connect ES to the Worker.
+        # Instruct GeventLibrary to connect ES to the Worker.
         self._worker[shard] = self._service.connect_to(
             worker_coord,
             on_connect=self.on_worker_connected)

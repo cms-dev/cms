@@ -26,7 +26,6 @@ import gevent.coros
 
 from cms import default_argument_parser, logger
 from cms.async import ServiceCoord
-#from cms.async.AsyncLibrary import Service, rpc_method
 from cms.async.GeventLibrary import Service, rpc_method
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest

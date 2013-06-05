@@ -37,7 +37,6 @@ from gevent import subprocess
 
 from cms import config, logger, find_local_addresses
 from cms.async import ServiceCoord, get_shard_from_addresses
-#from cms.async.AsyncLibrary import Service, rpc_method, RemoteService
 from cms.async.GeventLibrary import Service, rpc_method, RemoteService
 from cms.db import ask_for_contest, is_contest_id
 

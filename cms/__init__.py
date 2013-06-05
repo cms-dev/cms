@@ -37,7 +37,7 @@ from argparse import ArgumentParser
 
 from cms.async import ServiceCoord, Address, config as async_config, \
     get_shard_from_addresses
-from cms.async.AsyncLibrary import RemoteService
+from cms.async.GeventLibrary import RemoteService
 
 
 LANGUAGES = ["c", "cpp", "pas"]

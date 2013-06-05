@@ -37,7 +37,6 @@ import tornado.web
 import tornado.locale
 
 from cms import config, default_argument_parser, logger
-#from cms.async.WebAsyncLibrary import WebService
 from cms.async.WebGeventLibrary import WebService
 from cms.async import ServiceCoord, get_service_shards, get_service_address
 from cms.db.FileCacher import FileCacher

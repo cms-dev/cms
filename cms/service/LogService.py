@@ -31,7 +31,6 @@ from cms import config, default_argument_parser, mkdir, \
      logger, format_log, \
      SEV_CRITICAL, SEV_ERROR, SEV_WARNING
 from cms.async import ServiceCoord
-#from cms.async.AsyncLibrary import Service, rpc_method
 from cms.async.GeventLibrary import Service, rpc_method
 
 
