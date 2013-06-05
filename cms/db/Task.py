@@ -186,11 +186,127 @@ class Task(Base):
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # datasets (list of Dataset objects)
-    # submission_format (list of SubmissionFormatElement objects)
-    # attachments (dict of Attachment objects indexed by filename)
     # statements (dict of Statement objects indexed by language code)
+    # attachments (dict of Attachment objects indexed by filename)
+    # submission_format (list of SubmissionFormatElement objects)
     # submissions (list of Submission objects)
     # user_tests (list of UserTest objects)
+
+
+class Statement(Base):
+    """Class to store a translation of the task statement. Not
+    to be used directly (import it from SQLAlchemyAll).
+
+    """
+    __tablename__ = 'statements'
+    __table_args__ = (
+        UniqueConstraint('task_id', 'language'),
+    )
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Task (id and object) the statement is for.
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    task = relationship(
+        Task,
+        backref=backref('statements',
+                        collection_class=smart_mapped_collection('language'),
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
+
+    # Code for the language the statement is written in.
+    # It can be an arbitrary string, but if it's in the form "en" or "en_US"
+    # it will be rendered appropriately on the interface (i.e. "English" and
+    # "English (United States of America)"). These codes need to be taken from
+    # ISO 639-1 and ISO 3166-1 respectively.
+    language = Column(
+        String,
+        nullable=False)
+
+    # Digest of the file.
+    digest = Column(
+        String,
+        nullable=False)
+
+
+class Attachment(Base):
+    """Class to store additional files to give to the user together
+    with the statement of the task. Not to be used directly (import it
+    from SQLAlchemyAll).
+
+    """
+    __tablename__ = 'attachments'
+    __table_args__ = (
+        UniqueConstraint('task_id', 'filename'),
+    )
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Task (id and object) owning the attachment.
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    task = relationship(
+        Task,
+        backref=backref('attachments',
+                        collection_class=smart_mapped_collection('filename'),
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
+
+    # Filename and digest of the provided attachment.
+    filename = Column(
+        String,
+        nullable=False)
+    digest = Column(
+        String,
+        nullable=False)
+
+
+class SubmissionFormatElement(Base):
+    """Class to store the requested files that a submission must
+    include. Filenames may include %l to represent an accepted
+    language extension. Not to be used directly (import it from
+    SQLAlchemyAll).
+
+    """
+    __tablename__ = 'submission_format_elements'
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Task (id and object) owning the submission format element.
+    task_id = Column(
+        Integer,
+        ForeignKey(Task.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    task = relationship(
+        Task,
+        backref=backref('submission_format',
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
+
+    # Format of the given submission file.
+    filename = Column(
+        String,
+        nullable=False)
 
 
 class Dataset(Base):
@@ -272,6 +388,45 @@ class Dataset(Base):
     # testcases (list of Testcase objects)
 
 
+class Manager(Base):
+    """Class to store additional files needed to compile or evaluate a
+    submission (e.g., graders). Not to be used directly (import it from
+    SQLAlchemyAll).
+
+    """
+    __tablename__ = 'managers'
+    __table_args__ = (
+        UniqueConstraint('dataset_id', 'filename'),
+    )
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    # Dataset (id and object) owning the manager.
+    dataset_id = Column(
+        Integer,
+        ForeignKey(Dataset.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    dataset = relationship(
+        Dataset,
+        backref=backref('managers',
+                        collection_class=smart_mapped_collection('filename'),
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
+
+    # Filename and digest of the provided manager.
+    filename = Column(
+        String,
+        nullable=False)
+    digest = Column(
+        String,
+        nullable=False)
+
+
 class Testcase(Base):
     """Class to store the information about a testcase. Not to be used
     directly (import it from SQLAlchemyAll).
@@ -286,6 +441,21 @@ class Testcase(Base):
     id = Column(
         Integer,
         primary_key=True)
+
+    # Dataset (id and object) owning the testcase.
+    dataset_id = Column(
+        Integer,
+        ForeignKey(Dataset.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    dataset = relationship(
+        Dataset,
+        backref=backref('testcases',
+                        collection_class=ordering_list('num'),
+                        order_by=[num],
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
 
     # Number of the testcase for sorting.
     num = Column(
@@ -306,173 +476,3 @@ class Testcase(Base):
     output = Column(
         String,
         nullable=False)
-
-    # Dataset (id and object) owning the testcase.
-    dataset_id = Column(
-        Integer,
-        ForeignKey(Dataset.id,
-                   onupdate="CASCADE", ondelete="CASCADE"),
-        nullable=False,
-        index=True)
-    dataset = relationship(
-        Dataset,
-        backref=backref('testcases',
-                        collection_class=ordering_list('num'),
-                        order_by=[num],
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
-
-
-class Attachment(Base):
-    """Class to store additional files to give to the user together
-    with the statement of the task. Not to be used directly (import it
-    from SQLAlchemyAll).
-
-    """
-    __tablename__ = 'attachments'
-    __table_args__ = (
-        UniqueConstraint('task_id', 'filename'),
-    )
-
-    # Auto increment primary key.
-    id = Column(
-        Integer,
-        primary_key=True)
-
-    # Filename and digest of the provided attachment.
-    filename = Column(
-        String,
-        nullable=False)
-    digest = Column(
-        String,
-        nullable=False)
-
-    # Task (id and object) owning the attachment.
-    task_id = Column(
-        Integer,
-        ForeignKey(Task.id,
-                   onupdate="CASCADE", ondelete="CASCADE"),
-        nullable=False,
-        index=True)
-    task = relationship(
-        Task,
-        backref=backref('attachments',
-                        collection_class=smart_mapped_collection('filename'),
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
-
-
-class Manager(Base):
-    """Class to store additional files needed to compile or evaluate a
-    submission (e.g., graders). Not to be used directly (import it from
-    SQLAlchemyAll).
-
-    """
-    __tablename__ = 'managers'
-    __table_args__ = (
-        UniqueConstraint('dataset_id', 'filename'),
-    )
-
-    # Auto increment primary key.
-    id = Column(
-        Integer,
-        primary_key=True)
-
-    # Filename and digest of the provided manager.
-    filename = Column(
-        String,
-        nullable=False)
-    digest = Column(
-        String,
-        nullable=False)
-
-    # Dataset (id and object) owning the manager.
-    dataset_id = Column(
-        Integer,
-        ForeignKey(Dataset.id,
-                   onupdate="CASCADE", ondelete="CASCADE"),
-        nullable=False,
-        index=True)
-    dataset = relationship(
-        Dataset,
-        backref=backref('managers',
-                        collection_class=smart_mapped_collection('filename'),
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
-
-
-class SubmissionFormatElement(Base):
-    """Class to store the requested files that a submission must
-    include. Filenames may include %l to represent an accepted
-    language extension. Not to be used directly (import it from
-    SQLAlchemyAll).
-
-    """
-    __tablename__ = 'submission_format_elements'
-
-    # Auto increment primary key.
-    id = Column(
-        Integer,
-        primary_key=True)
-
-    # Task (id and object) owning the submission format element.
-    task_id = Column(
-        Integer,
-        ForeignKey(Task.id,
-                   onupdate="CASCADE", ondelete="CASCADE"),
-        nullable=False,
-        index=True)
-    task = relationship(
-        Task,
-        backref=backref('submission_format',
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
-
-    # Format of the given submission file.
-    filename = Column(
-        String,
-        nullable=False)
-
-
-class Statement(Base):
-    """Class to store a translation of the task statement. Not
-    to be used directly (import it from SQLAlchemyAll).
-
-    """
-    __tablename__ = 'statements'
-    __table_args__ = (
-        UniqueConstraint('task_id', 'language'),
-    )
-
-    # Auto increment primary key.
-    id = Column(
-        Integer,
-        primary_key=True)
-
-    # Code for the language the statement is written in.
-    # It can be an arbitrary string, but if it's in the form "en" or "en_US"
-    # it will be rendered appropriately on the interface (i.e. "English" and
-    # "English (United States of America)"). These codes need to be taken from
-    # ISO 639-1 and ISO 3166-1 respectively.
-    language = Column(
-        String,
-        nullable=False)
-
-    # Digest of the file.
-    digest = Column(
-        String,
-        nullable=False)
-
-    # Task (id and object) the statement is for.
-    task_id = Column(
-        Integer,
-        ForeignKey(Task.id,
-                   onupdate="CASCADE", ondelete="CASCADE"),
-        nullable=False,
-        index=True)
-    task = relationship(
-        Task,
-        backref=backref('statements',
-                        collection_class=smart_mapped_collection('language'),
-                        cascade="all, delete-orphan",
-                        passive_deletes=True))
