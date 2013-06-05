@@ -28,6 +28,7 @@ import heapq
 import signal
 import time
 import traceback
+from functools import wraps
 
 import gevent
 import gevent.socket
@@ -35,12 +36,13 @@ from gevent.server import StreamServer
 
 from cms.async import ServiceCoord, Address, get_service_address, \
     set_using_gevent
-from cms.async.Utils import Logger, encode_json, decode_json
-from cms.async.AsyncLibrary import rpc_callback, rpc_method, \
-    AuthorizationError, RPCRequest
+from cms.async.Utils import random_string, Logger, \
+     encode_json, decode_json
 from cms.async.PsycoGevent import make_psycopg_green
 
 
+# Our logger object - can be a standard one (provided in Utils), or a
+# custom one provided by the class subclassing service.
 logger = None
 
 make_psycopg_green()
@@ -48,6 +50,106 @@ make_psycopg_green()
 # Set flag in cms.async to indicate that we're using gevent (only
 # importing using_gevent from cms.async and setting it doesn't work)
 set_using_gevent()
+
+
+def rpc_callback(func):
+    """Tentative decorator for a RPC callback function. Up to now it
+    does not do a lot, I hope to be able to manage errors in a
+    Pythonic way.
+
+    """
+    @wraps(func)
+    def newfunc(self, *args, **kwargs):
+        """Mangle __error and give back error when appropriate.
+
+        """
+        if "__error" in kwargs:
+            if kwargs["__error"] is not None:
+                kwargs["error"] = kwargs["__error"]
+# We want to be able to manage the exception, so no raise.
+#                raise Exception(kwargs["__error"])
+            del kwargs["__error"]
+        return func(self, *args, **kwargs)
+
+    return newfunc
+
+
+def rpc_method(func):
+    """Decorator for a method that other services are allowed to
+    call. Does not do a lot, just defines the right method's
+    attribute.
+
+    """
+    func.rpc_callable = True
+    return func
+
+
+class AuthorizationError(Exception):
+    pass
+
+
+class RPCRequest:
+    """Class to keep the state of an RPC request, while we were
+    waiting for the response. There is also a class variable that
+    stores all the pending RPC requests.
+
+    """
+    pending_requests = {}
+
+    def __init__(self, message, bind_obj, callback, plus):
+        """Create the istance of a RPC query.
+
+        message (object): the message to send.
+        bind_obj (object): the context for the callback.
+        callback (function): the function to call on completion.
+        plus (object): additional argument for callback.
+
+        """
+        self.message = message
+        self.bind_obj = bind_obj
+        self.callback = callback
+        self.plus = plus
+
+    def pre_execute(self):
+        """Store in the class the RPC request before sending it, in
+        order to couple later the response.
+
+        return (object): the object to send.
+        """
+        self.message["__id"] = random_string(16)
+        RPCRequest.pending_requests[self.message["__id"]] = self
+
+        return self.message
+
+    def complete(self, response):
+        """To be called when the response arrives. It deletes the
+        stored state and executes the callback.
+
+        response (object): The response, already decoded from JSON.
+
+        """
+        del RPCRequest.pending_requests[self.message["__id"]]
+        if self.callback is not None:
+            params = []
+            if self.bind_obj is not None:
+                params.append(self.bind_obj)
+            params.append(response["__data"])
+            if self.plus is not None:
+                params.append(self.plus)
+            self.callback(*params,
+                          __error=response.get("__error", None))
+        else:
+            error = None
+            if response is not None:
+                error = response.get("__error", None)
+            if error is not None:
+                try:
+                    err_msg = "Error in the call without callback `%s': " \
+                              "%s." % (self.message["__method"], error)
+                except KeyError:
+                    err_msg = "Error in a call without callback: %s." % \
+                              error
+                logger.error(err_msg)
 
 
 class Service:
