@@ -42,8 +42,8 @@ def copyfileobj(fsrc, fdst, length=16 * 1024):
         if not buf:
             break
         fdst.write(buf)
-        if using_gevent:
-            gevent.wait(0)
+        if is_using_gevent():
+            gevent.sleep(0)
 
 
 def copyfile(src, dst):

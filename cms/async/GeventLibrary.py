@@ -36,7 +36,7 @@ from gevent.server import StreamServer
 from cms.async import ServiceCoord, Address, get_service_address, \
     set_using_gevent
 from cms.async.Utils import Logger, encode_json, decode_json
-from cms.async.AsyncLibrary import rpc_callback, rpc_method, rpc_threaded, \
+from cms.async.AsyncLibrary import rpc_callback, rpc_method, \
     AuthorizationError, RPCRequest
 from cms.async.PsycoGevent import make_psycopg_green
 

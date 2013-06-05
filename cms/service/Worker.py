@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -20,12 +20,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import threading
 import traceback
+
+import gevent.coros
 
 from cms import default_argument_parser, logger
 from cms.async import ServiceCoord
-from cms.async.AsyncLibrary import Service, rpc_method, rpc_threaded
+#from cms.async.AsyncLibrary import Service, rpc_method
+from cms.async.GeventLibrary import Service, rpc_method
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.grading import JobException
@@ -49,7 +51,7 @@ class Worker(Service):
         Service.__init__(self, shard, custom_logger=logger)
         self.file_cacher = FileCacher(self)
 
-        self.work_lock = threading.Lock()
+        self.work_lock = gevent.coros.RLock()
         self.ignore_job = False
 
     @rpc_method
@@ -64,10 +66,7 @@ class Worker(Service):
         logger.info("Trying to interrupt job as requested.")
         self.ignore_job = True
 
-    # FIXME - rpc_threaded is disable because it makes the call fail:
-    # we should investigate on this
     @rpc_method
-    @rpc_threaded
     def precache_files(self, contest_id):
         """RPC to ask the worker to precache of files in the contest.
 
@@ -87,7 +86,6 @@ class Worker(Service):
         logger.info("Precaching finished.")
 
     @rpc_method
-    @rpc_threaded
     def execute_job_group(self, job_group_dict):
         job_group = JobGroup.import_from_dict(job_group_dict)
 
