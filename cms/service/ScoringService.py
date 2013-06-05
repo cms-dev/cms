@@ -43,7 +43,7 @@ from cms.async import ServiceCoord
 from cms.async.AsyncLibrary import Service, rpc_method
 from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import SessionGen, Submission, SubmissionResult, \
-    Contest, Dataset
+    Contest, Dataset, Task
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submission_results, get_datasets_to_judge
 from cmscommon.DateTime import make_timestamp
