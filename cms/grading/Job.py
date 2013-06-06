@@ -109,7 +109,7 @@ class CompilationJob(Job):
 
         # Job
         job.task_type = dataset.task_type
-        job.task_type_parameters = json.loads(dataset.task_type_parameters)
+        job.task_type_parameters = dataset.task_type_parameters
 
         # CompilationJob; dict() is required to detach the dictionary
         # that gets added to the Job from the control of SQLAlchemy
@@ -126,7 +126,7 @@ class CompilationJob(Job):
 
         # Job
         job.task_type = dataset.task_type
-        job.task_type_parameters = json.loads(dataset.task_type_parameters)
+        job.task_type_parameters = dataset.task_type_parameters
 
         # CompilationJob; dict() is required to detach the dictionary
         # that gets added to the Job from the control of SQLAlchemy
@@ -229,7 +229,7 @@ class EvaluationJob(Job):
 
         # Job
         job.task_type = dataset.task_type
-        job.task_type_parameters = json.loads(dataset.task_type_parameters)
+        job.task_type_parameters = dataset.task_type_parameters
 
         submission_result = submission.get_result(dataset)
 
@@ -256,7 +256,7 @@ class EvaluationJob(Job):
 
         # Job
         job.task_type = dataset.task_type
-        job.task_type_parameters = json.loads(dataset.task_type_parameters)
+        job.task_type_parameters = dataset.task_type_parameters
 
         user_test_result = user_test.get_result(dataset)
 

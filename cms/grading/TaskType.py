@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -41,10 +41,10 @@ from cms.grading.Job import CompilationJob, EvaluationJob
 
 ## Sandbox lifecycle. ##
 
-def create_sandbox(task_type):
+def create_sandbox(file_cacher):
     """Create a sandbox, and return it.
 
-    task_type (TaskType): a task type instance.
+    file_cacher (FileCacher): a file cacher instance.
 
     return (Sandbox): a sandbox.
 
@@ -52,7 +52,7 @@ def create_sandbox(task_type):
 
     """
     try:
-        sandbox = Sandbox(task_type.file_cacher)
+        sandbox = Sandbox(file_cacher)
     except (OSError, IOError):
         err_msg = "Couldn't create sandbox."
         logger.error("%s\n%s" % (err_msg, traceback.format_exc()))
@@ -71,8 +71,8 @@ def delete_sandbox(sandbox):
         try:
             sandbox.delete()
         except (IOError, OSError):
-            logger.warning("Couldn't delete sandbox.\n%s",
-                           traceback.format_exc())
+            err_msg = "Couldn't delete sandbox."
+            logger.warning("%s\n%s" % (err_msg, traceback.format_exc()))
 
 
 class TaskType:
@@ -123,17 +123,17 @@ class TaskType:
                                  % (parameter.name, error.message))
         return new_parameters
 
-    def __init__(self, job, file_cacher):
-        """
+    def __init__(self, parameters):
+        """Instantiate a new TaskType with the given parameters.
 
-        job (CompilationJob or EvaluationJob): the job describing what
-                                               to do
-        file_cacher (FileCacher): a FileCacher object to retrieve
-                                  files from FS.
+        parameters (list): a list of data structures that matches the
+                           format described in ACCEPTED_PARAMETERS
+                           (they often come from Dataset.task_type_
+                           _parameters and, in that case, they have to
+                           be already decoded from JSON).
 
         """
-        self.job = job
-        self.file_cacher = file_cacher
+        self.parameters = parameters
 
         # If ignore_job is True, we conclude as soon as possible.
         self.ignore_job = False
@@ -191,7 +191,7 @@ class TaskType:
         """
         raise NotImplementedError("Please subclass this class.")
 
-    def compile(self):
+    def compile(self, job, file_cacher):
         """Tries to compile the specified submission.
 
         It returns True when *our infrastracture* is successful (i.e.,
@@ -200,22 +200,33 @@ class TaskType:
         (trying again to compile the same submission in a sane
         environment should lead to returning True).
 
+        job (CompilationJob): the data structure that contains details
+                              about the work that has to be done and
+                              that will hold its results.
+        file_cacher (FileCacher): the file cacher to use to obtain the
+                                  required files and to store the ones
+                                  that are produced.
         return (bool): success of operation.
 
         """
         raise NotImplementedError("Please subclass this class.")
 
-    def evaluate_testcase(self, test_number):
+    def evaluate_testcase(self, job, test_number, file_cacher):
         """Perform the evaluation of a single testcase.
 
+        job (EvaluationJob): the data structure that contains details
+                             about the work that has to be done and
+                             that will hold its results.
         test_number (int): the number of the testcase to test.
-
+        file_cacher (FileCacher): the file cacher to use to obtain the
+                                  required files and to store the ones
+                                  that are produced.
         return (bool): True if the evaluation was successful.
 
         """
         raise NotImplementedError("Please subclass this class.")
 
-    def evaluate(self):
+    def evaluate(self, job, file_cacher):
         """Tries to evaluate the specified submission.
 
         It returns True when *our infrastracture* is successful (i.e.,
@@ -227,25 +238,31 @@ class TaskType:
         A default implementation which should suit most task types is
         provided.
 
+        job (EvaluationJob): the data structure that contains details
+                             about the work that has to be done and
+                             that will hold its results.
+        file_cacher (FileCacher): the file cacher to use to obtain the
+                                  required files and to store the ones
+                                  that are produced.
         return (bool): success of operation.
 
         """
-        for test_number in self.job.testcases:
-            success = self.evaluate_testcase(test_number)
+        for test_number in job.testcases:
+            success = self.evaluate_testcase(job, test_number, file_cacher)
             if not success or self.ignore_job:
-                self.job.success = False
+                job.success = False
                 return
-        self.job.success = True
+        job.success = True
 
-    def execute_job(self):
+    def execute_job(self, job, file_cacher):
         """Call compile() or execute() depending on the job passed
         when constructing the TaskType.
 
         """
-        if isinstance(self.job, CompilationJob):
-            return self.compile()
-        elif isinstance(self.job, EvaluationJob):
-            return self.evaluate()
+        if isinstance(job, CompilationJob):
+            return self.compile(job, file_cacher)
+        elif isinstance(job, EvaluationJob):
+            return self.evaluate(job, file_cacher)
         else:
             raise ValueError("The job isn't neither CompilationJob "
                              "or EvaluationJob")

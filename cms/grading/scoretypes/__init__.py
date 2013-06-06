@@ -26,26 +26,38 @@ import simplejson as json
 from cms import logger, plugin_lookup
 
 
-def get_score_type(dataset):
+def get_score_type_class(name):
+    return plugin_lookup(name,
+                         "cms.grading.scoretypes", "scoretypes")
+
+
+def get_score_type(name=None, parameters=None, public_testcases=None,
+                   dataset=None):
     """Given a dataset, instantiate the corresponding ScoreType class.
 
-    datset (Dataset): the Dataset whose ScoreType we want
+    dataset (Dataset): the Dataset whose ScoreType we want
 
     return (object): an instance of the correct ScoreType class.
 
     """
-    score_type_name = dataset.score_type
+    if dataset is not None:
+        if any(x is not None for x in (name, parameters, public_testcases)):
+            raise ValueError("Need exactly one way to get the score type.")
+
+        name = dataset.score_type
+        parameters = dataset.score_type_parameters
+        public_testcases = dict((tc.num, tc.public)
+                                for tc in dataset.testcases)
+
+    elif any(x is None for x in (name, parameters, public_testcases)):
+        raise ValueError("Need exactly one way to get the score type.")
+
+    class_ = get_score_type_class(name)
 
     try:
-        score_type_parameters = json.loads(dataset.score_type_parameters)
+        parameters = json.loads(parameters)
     except json.decoder.JSONDecodeError as error:
         logger.error("Cannot decode score type parameters.\n%r." % error)
         raise
 
-    public_testcases = dict((testcase.num, testcase.public)
-                            for testcase in dataset.testcases)
-
-    cls = plugin_lookup(score_type_name,
-                        "cms.grading.scoretypes", "scoretypes")
-
-    return cls(score_type_parameters, public_testcases)
+    return class_(parameters, public_testcases)

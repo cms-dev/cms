@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -82,12 +82,12 @@ class TwoSteps(TaskType):
             res[language] = [command]
         return res
 
-    def compile(self):
+    def compile(self, job, file_cacher):
         """See TaskType.compile."""
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = self.job.language
+        language = job.language
         source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
         header_ext = LANGUAGE_TO_HEADER_EXT_MAP[language]
 
@@ -95,22 +95,22 @@ class TwoSteps(TaskType):
         # task.submission_format. The following check shouldn't be
         # here, but in the definition of the task, since this actually
         # checks that task's task type and submission format agree.
-        if len(self.job.files) != 2:
-            self.job.success = True
-            self.job.compilation_success = False
-            self.job.text = "Invalid files in submission"
+        if len(job.files) != 2:
+            job.success = True
+            job.compilation_success = False
+            job.text = "Invalid files in submission"
             logger.error("Submission contains %d files, expecting 2" %
-                         len(self.job.files))
+                         len(job.files))
             return True
 
         # First and only one compilation.
-        sandbox = create_sandbox(self)
-        self.job.sandboxes.append(sandbox.path)
+        sandbox = create_sandbox(file_cacher)
+        job.sandboxes.append(sandbox.path)
         files_to_get = {}
 
         # User's submissions and headers.
         source_filenames = []
-        for filename, file_ in self.job.files.iteritems():
+        for filename, file_ in job.files.iteritems():
             source_filename = filename.replace(".%l", source_ext)
             source_filenames.append(source_filename)
             files_to_get[source_filename] = file_.digest
@@ -118,18 +118,18 @@ class TwoSteps(TaskType):
             header_filename = filename.replace(".%l", header_ext)
             source_filenames.append(header_filename)
             files_to_get[header_filename] = \
-                self.job.managers[header_filename].digest
+                job.managers[header_filename].digest
 
         # Manager.
         manager_filename = "manager%s" % source_ext
         source_filenames.append(manager_filename)
         files_to_get[manager_filename] = \
-                self.job.managers[manager_filename].digest
+                job.managers[manager_filename].digest
         # Manager's header.
         manager_filename = "manager%s" % header_ext
         source_filenames.append(manager_filename)
         files_to_get[manager_filename] = \
-                self.job.managers[manager_filename].digest
+                job.managers[manager_filename].digest
 
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
@@ -143,26 +143,26 @@ class TwoSteps(TaskType):
             compilation_step(sandbox, command)
 
         # Retrieve the compiled executables
-        self.job.success = operation_success
-        self.job.compilation_success = compilation_success
-        self.job.plus = plus
-        self.job.text = text
+        job.success = operation_success
+        job.compilation_success = compilation_success
+        job.plus = plus
+        job.text = text
         if operation_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
                 "Executable %s for %s" %
-                (executable_filename, self.job.info))
-            self.job.executables[executable_filename] = \
+                (executable_filename, job.info))
+            job.executables[executable_filename] = \
                 Executable(executable_filename, digest)
 
         # Cleanup
         delete_sandbox(sandbox)
 
-    def evaluate_testcase(self, test_number):
+    def evaluate_testcase(self, job, test_number, file_cacher):
         """See TaskType.evaluate_testcase."""
         # f stand for first, s for second.
-        first_sandbox = create_sandbox(self)
-        second_sandbox = create_sandbox(self)
+        first_sandbox = create_sandbox(file_cacher)
+        second_sandbox = create_sandbox(file_cacher)
         fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
         fifo = os.path.join(fifo_dir, "fifo")
         os.mkfifo(fifo)
@@ -172,10 +172,10 @@ class TwoSteps(TaskType):
         first_command = ["./%s" % first_filename, "0", fifo]
         first_executables_to_get = {
             first_filename:
-            self.job.executables[first_filename].digest
+            job.executables[first_filename].digest
             }
         first_files_to_get = {
-            "input.txt": self.job.testcases[test_number].input
+            "input.txt": job.testcases[test_number].input
             }
         first_allow_path = ["input.txt", fifo]
 
@@ -190,8 +190,8 @@ class TwoSteps(TaskType):
         first = evaluation_step_before_run(
             first_sandbox,
             first_command,
-            self.job.time_limit,
-            self.job.memory_limit,
+            job.time_limit,
+            job.memory_limit,
             first_allow_path,
             stdin_redirect="input.txt",
             wait=False)
@@ -201,7 +201,7 @@ class TwoSteps(TaskType):
         second_command = ["./%s" % second_filename, "1", fifo]
         second_executables_to_get = {
             second_filename:
-            self.job.executables[second_filename].digest
+            job.executables[second_filename].digest
             }
         second_files_to_get = {}
         second_allow_path = [fifo, "output.txt"]
@@ -217,8 +217,8 @@ class TwoSteps(TaskType):
         second = evaluation_step_before_run(
             second_sandbox,
             second_command,
-            self.job.time_limit,
-            self.job.memory_limit,
+            job.time_limit,
+            job.memory_limit,
             second_allow_path,
             stdout_redirect="output.txt",
             wait=False)
@@ -232,13 +232,13 @@ class TwoSteps(TaskType):
         success_second, second_plus = \
             evaluation_step_after_run(second_sandbox)
 
-        self.job.evaluations[test_number] = {
+        job.evaluations[test_number] = {
             'sandboxes': [first_sandbox.path,
                           second_sandbox.path],
             'plus': second_plus}
         outcome = None
         text = None
-        evaluation = self.job.evaluations[test_number]
+        evaluation = job.evaluations[test_number]
         success = True
 
         # Error in the sandbox: report failure!
@@ -253,7 +253,7 @@ class TwoSteps(TaskType):
                 text = human_evaluation_message(first_plus)
             else:
                 text = human_evaluation_message(second_plus)
-            if self.job.get_output:
+            if job.get_output:
                 evaluation['output'] = None
 
         # Otherwise, advance to checking the solution
@@ -263,23 +263,23 @@ class TwoSteps(TaskType):
             if not second_sandbox.file_exists('output.txt'):
                 outcome = 0.0
                 text = "Execution didn't produce file output.txt"
-                if self.job.get_output:
+                if job.get_output:
                     evaluation['output'] = None
 
             else:
                 # If asked so, put the output file into the storage
-                if self.job.get_output:
+                if job.get_output:
                     evaluation['output'] = second_sandbox.get_file_to_storage(
                         "output.txt",
                         "Output file for testcase %d in job %s" %
-                        (test_number, self.job.info))
+                        (test_number, job.info))
 
                 # If not asked otherwise, evaluate the output file
-                if not self.job.only_execution:
+                if not job.only_execution:
                     # Put the reference solution into the sandbox
                     second_sandbox.create_file_from_storage(
                         "res.txt",
-                        self.job.testcases[test_number].output)
+                        job.testcases[test_number].output)
 
                     outcome, text = white_diff_step(
                         second_sandbox, "output.txt", "res.txt")

@@ -45,7 +45,7 @@ from cms.db.SQLAlchemyAll import Session, \
     SubmissionResult, Evaluation, Executable, File, Task, Dataset, \
     Attachment, Manager, Testcase, SubmissionFormatElement, Statement
 from cms.grading import compute_changes_for_dataset
-from cms.grading.tasktypes import get_task_type
+from cms.grading.tasktypes import get_task_type_class
 from cms.server import file_handler_gen, get_url_root, \
     CommonRequestHandler
 from cmscommon.DateTime import make_datetime, make_timestamp
@@ -118,7 +118,7 @@ def sanity_check_memory_limit(memory_limit):
 def sanity_check_task_type_class(task_type):
     # Look for a task type with the specified name.
     try:
-        task_type_class = get_task_type(task_type_name=task_type)
+        task_type_class = get_task_type_class(task_type)
     except KeyError:
         # Task type not found.
         raise ValueError("Task type not recognized: %s." % task_type)

@@ -101,8 +101,9 @@ class Worker(Service):
                 logger.info("Request received")
                 job.shard = self.shard
 
-                self.task_type = get_task_type(job, self.file_cacher)
-                self.task_type.execute_job()
+                self.task_type = get_task_type(job.task_type,
+                                               job.task_type_parameters)
+                self.task_type.execute_job(job, self.file_cacher)
                 logger.info("Request finished.")
 
                 return job.export_to_dict()

@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -73,56 +73,56 @@ class OutputOnly(TaskType):
         """See TaskType.get_auto_managers."""
         return []
 
-    def compile(self):
+    def compile(self, job, file_cacher):
         """See TaskType.compile."""
         # No compilation needed.
-        self.job.success = True
-        self.job.compilation_success = True
-        self.job.text = "No compilation needed."
+        job.success = True
+        job.compilation_success = True
+        job.text = "No compilation needed."
 
-    def evaluate_testcase(self, test_number):
+    def evaluate_testcase(self, job, test_number, file_cacher):
         """See TaskType.evaluate_testcase."""
-        sandbox = create_sandbox(self)
-        self.job.sandboxes.append(sandbox.path)
+        sandbox = create_sandbox(file_cacher)
+        job.sandboxes.append(sandbox.path)
 
         # Immediately prepare the skeleton to return
-        self.job.evaluations[test_number] = {'sandboxes': [sandbox.path],
-                                             'plus': {}}
-        evaluation = self.job.evaluations[test_number]
+        job.evaluations[test_number] = {'sandboxes': [sandbox.path],
+                                        'plus': {}}
+        evaluation = job.evaluations[test_number]
         outcome = None
         text = None
 
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
-        if "output_%03d.txt" % test_number not in self.job.files:
+        if "output_%03d.txt" % test_number not in job.files:
             evaluation['success'] = True
             evaluation['outcome'] = "0.0"
             evaluation['text'] = "File not submitted."
             return True
 
         # First and only one step: diffing (manual or with manager).
-        output_digest = self.job.files["output_%03d.txt" %
-                                       test_number].digest
+        output_digest = job.files["output_%03d.txt" %
+                                  test_number].digest
 
         # Put the files into the sandbox
         sandbox.create_file_from_storage(
             "res.txt",
-            self.job.testcases[test_number].output)
+            job.testcases[test_number].output)
         sandbox.create_file_from_storage(
             "output.txt",
             output_digest)
 
-        if self.job.task_type_parameters[0] == "diff":
+        if self.parameters[0] == "diff":
             # No manager: I'll do a white_diff between the submission
             # file and the correct output res.txt.
             success = True
             outcome, text = white_diff_step(
                 sandbox, "output.txt", "res.txt")
 
-        elif self.job.task_type_parameters[0] == "comparator":
+        elif self.parameters[0] == "comparator":
             # Manager present: wonderful, he'll do all the job.
             manager_filename = "checker"
-            if not manager_filename in self.job.managers:
+            if not manager_filename in job.managers:
                 logger.error("Configuration error: missing or "
                              "invalid comparator (it must be "
                              "named `checker')")
@@ -130,9 +130,9 @@ class OutputOnly(TaskType):
             else:
                 sandbox.create_file_from_storage(
                     manager_filename,
-                    self.job.managers[manager_filename].digest,
+                    job.managers[manager_filename].digest,
                     executable=True)
-                input_digest = self.job.testcases[test_number].input
+                input_digest = job.testcases[test_number].input
                 sandbox.create_file_from_storage(
                     "input.txt",
                     input_digest)
@@ -147,7 +147,7 @@ class OutputOnly(TaskType):
             raise ValueError("Unrecognized first parameter "
                              "`%s' for OutputOnly tasktype. "
                              "Should be `diff' or `comparator'." %
-                             self.job.task_type_parameters[0])
+                             self.parameters[0])
 
         # Whatever happened, we conclude.
         evaluation['success'] = success

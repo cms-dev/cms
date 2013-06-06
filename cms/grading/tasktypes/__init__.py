@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,11 +24,15 @@
 import simplejson as json
 
 from cms import logger, plugin_lookup
-from cms.grading.Job import Job
 
 
-def get_task_type(job=None, file_cacher=None, dataset=None,
-                  task_type_name=None):
+def get_task_type_class(name):
+    return plugin_lookup(name,
+                         "cms.grading.tasktypes", "tasktypes")
+
+
+def get_task_type(name=None, parameters=None,
+                  dataset=None):
     """Given a job, instantiate the corresponding TaskType class.
 
     job (Job): the job to perform.
@@ -41,30 +46,22 @@ def get_task_type(job=None, file_cacher=None, dataset=None,
     return (object): an instance of the correct TaskType class.
 
     """
-    # Validate arguments.
-    if [x is not None
-        for x in [job, dataset, task_type_name]].count(True) != 1:
-        raise ValueError("Need exactly one way to get the task type.")
-    elif [x is not None
-          for x in [job, file_cacher]].count(True) not in [0, 2]:
-        raise ValueError("Need file cacher to perform a job.")
-
-    # Recover information from the arguments.
-    task_type_parameters = None
-    if job is not None:
-        task_type_name = job.task_type
     if dataset is not None:
-        task_type_name = dataset.task_type
-        try:
-            task_type_parameters = json.loads(dataset.task_type_parameters)
-        except json.decoder.JSONDecodeError as error:
-            logger.error("Cannot decode task type parameters.\n%r." % error)
-            raise
-        job = Job()
-        job.task_type = task_type_name
-        job.task_type_parameters = task_type_parameters
+        if any(x is not None for x in (name, parameters)):
+            raise ValueError("Need exactly one way to get the task type.")
 
-    cls = plugin_lookup(task_type_name,
-                        "cms.grading.tasktypes", "tasktypes")
+        name = dataset.task_type
+        parameters = dataset.task_type_parameters
 
-    return cls(job, file_cacher)
+    elif any(x is None for x in (name, parameters)):
+        raise ValueError("Need exactly one way to get the task type.")
+
+    class_ = get_task_type_class(name)
+
+    try:
+        parameters = json.loads(parameters)
+    except json.decoder.JSONDecodeError as error:
+        logger.error("Cannot decode task type parameters.\n%r." % error)
+        raise
+
+    return class_(parameters)

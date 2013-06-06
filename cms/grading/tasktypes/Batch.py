@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -101,7 +101,7 @@ class Batch(TaskType):
             source_filenames = []
             # If a grader is specified, we add to the command line (and to
             # the files to get) the corresponding manager.
-            if self.job.task_type_parameters[0] == "grader":
+            if self.parameters[0] == "grader":
                 source_filenames.append("grader%s" % source_ext)
             source_filenames.append(format_filename.replace(".%l", source_ext))
             executable_filename = format_filename.replace(".%l", "")
@@ -119,51 +119,51 @@ class Batch(TaskType):
         """See TaskType.get_auto_managers."""
         return None
 
-    def compile(self):
+    def compile(self, job, file_cacher):
         """See TaskType.compile."""
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = self.job.language
+        language = job.language
         source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
         # here, but in the definition of the task, since this actually
         # checks that task's task type and submission format agree.
-        if len(self.job.files) != 1:
-            self.job.success = True
-            self.job.compilation_success = False
-            self.job.text = "Invalid files in submission"
+        if len(job.files) != 1:
+            job.success = True
+            job.compilation_success = False
+            job.text = "Invalid files in submission"
             logger.error("Submission contains %d files, expecting 1" %
-                         len(self.job.files))
+                         len(job.files))
             return True
 
         # Create the sandbox
-        sandbox = create_sandbox(self)
-        self.job.sandboxes.append(sandbox.path)
+        sandbox = create_sandbox(file_cacher)
+        job.sandboxes.append(sandbox.path)
 
         # Prepare the source files in the sandbox
         files_to_get = {}
-        format_filename = self.job.files.keys()[0]
+        format_filename = job.files.keys()[0]
         source_filenames = []
         source_filenames.append(format_filename.replace(".%l", source_ext))
         files_to_get[source_filenames[0]] = \
-            self.job.files[format_filename].digest
+            job.files[format_filename].digest
         # If a grader is specified, we add to the command line (and to
         # the files to get) the corresponding manager. The grader must
         # be the first file in source_filenames.
-        if self.job.task_type_parameters[0] == "grader":
+        if self.parameters[0] == "grader":
             source_filenames.insert(0, "grader%s" % source_ext)
             files_to_get["grader%s" % source_ext] = \
-                self.job.managers["grader%s" % source_ext].digest
+                job.managers["grader%s" % source_ext].digest
 
         # Also copy all *.h and *lib.pas graders
-        for filename in self.job.managers.iterkeys():
+        for filename in job.managers.iterkeys():
             if filename.endswith('.h') or \
                     filename.endswith('lib.pas'):
                 files_to_get[filename] = \
-                    self.job.managers[filename].digest
+                    job.managers[filename].digest
 
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
@@ -179,34 +179,34 @@ class Batch(TaskType):
             compilation_step(sandbox, command)
 
         # Retrieve the compiled executables
-        self.job.success = operation_success
-        self.job.compilation_success = compilation_success
-        self.job.plus = plus
-        self.job.text = text
+        job.success = operation_success
+        job.compilation_success = compilation_success
+        job.plus = plus
+        job.text = text
         if operation_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
                 "Executable %s for %s" %
-                (executable_filename, self.job.info))
-            self.job.executables[executable_filename] = \
+                (executable_filename, job.info))
+            job.executables[executable_filename] = \
                 Executable(executable_filename, digest)
 
         # Cleanup
         delete_sandbox(sandbox)
 
-    def evaluate_testcase(self, test_number):
+    def evaluate_testcase(self, job, test_number, file_cacher):
         """See TaskType.evaluate_testcase."""
         # Create the sandbox
-        sandbox = create_sandbox(self)
+        sandbox = create_sandbox(file_cacher)
 
         # Prepare the execution
-        executable_filename = self.job.executables.keys()[0]
+        executable_filename = job.executables.keys()[0]
         command = [os.path.join(".", executable_filename)]
         executables_to_get = {
             executable_filename:
-            self.job.executables[executable_filename].digest
+            job.executables[executable_filename].digest
             }
-        input_filename, output_filename = self.job.task_type_parameters[1]
+        input_filename, output_filename = self.parameters[1]
         stdin_redirect = None
         stdout_redirect = None
         if input_filename == "":
@@ -216,7 +216,7 @@ class Batch(TaskType):
             output_filename = "output.txt"
             stdout_redirect = output_filename
         files_to_get = {
-            input_filename: self.job.testcases[test_number].input
+            input_filename: job.testcases[test_number].input
             }
 
         # Put the required files into the sandbox
@@ -229,16 +229,16 @@ class Batch(TaskType):
         success, plus = evaluation_step(
             sandbox,
             command,
-            self.job.time_limit,
-            self.job.memory_limit,
+            job.time_limit,
+            job.memory_limit,
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect)
 
-        self.job.evaluations[test_number] = {'sandboxes': [sandbox.path],
-                                             'plus': plus}
+        job.evaluations[test_number] = {'sandboxes': [sandbox.path],
+                                        'plus': plus}
         outcome = None
         text = None
-        evaluation = self.job.evaluations[test_number]
+        evaluation = job.evaluations[test_number]
 
         # Error in the sandbox: nothing to do!
         if not success:
@@ -248,7 +248,7 @@ class Batch(TaskType):
         elif not is_evaluation_passed(plus):
             outcome = 0.0
             text = human_evaluation_message(plus)
-            if self.job.get_output:
+            if job.get_output:
                 evaluation['output'] = None
 
         # Otherwise, advance to checking the solution
@@ -259,36 +259,36 @@ class Batch(TaskType):
                 outcome = 0.0
                 text = "Execution didn't produce file %s" % \
                     (output_filename)
-                if self.job.get_output:
+                if job.get_output:
                     evaluation['output'] = None
 
             else:
                 # If asked so, put the output file into the storage
-                if self.job.get_output:
+                if job.get_output:
                     evaluation['output'] = sandbox.get_file_to_storage(
                         output_filename,
                         "Output file for testcase %d in job %s" %
-                        (test_number, self.job.info),
+                        (test_number, job.info),
                         trunc_len=100 * 1024)
 
                 # If not asked otherwise, evaluate the output file
-                if not self.job.only_execution:
+                if not job.only_execution:
 
                     # Put the reference solution into the sandbox
                     sandbox.create_file_from_storage(
                         "res.txt",
-                        self.job.testcases[test_number].output)
+                        job.testcases[test_number].output)
 
                     # Check the solution with white_diff
-                    if self.job.task_type_parameters[2] == "diff":
+                    if self.parameters[2] == "diff":
                         outcome, text = white_diff_step(
                             sandbox, output_filename, "res.txt")
 
                     # Check the solution with a comparator
-                    elif self.job.task_type_parameters[2] == "comparator":
+                    elif self.parameters[2] == "comparator":
                         manager_filename = "checker"
 
-                        if not manager_filename in self.job.managers:
+                        if not manager_filename in job.managers:
                             logger.error("Configuration error: missing or "
                                          "invalid comparator (it must be "
                                          "named 'checker')")
@@ -297,7 +297,7 @@ class Batch(TaskType):
                         else:
                             sandbox.create_file_from_storage(
                                 manager_filename,
-                                self.job.managers[manager_filename].digest,
+                                job.managers[manager_filename].digest,
                                 executable=True)
                             success, _ = evaluation_step(
                                 sandbox,
@@ -315,7 +315,7 @@ class Batch(TaskType):
                     else:
                         raise ValueError("Unrecognized third parameter"
                                          " `%s' for Batch tasktype." %
-                                         self.job.task_type_parameters[2])
+                                         self.parameters[2])
 
         # Whatever happened, we conclude.
         evaluation['success'] = success

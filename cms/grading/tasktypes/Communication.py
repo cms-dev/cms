@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -77,42 +77,42 @@ class Communication(TaskType):
         """See TaskType.get_auto_managers."""
         return ["manager"]
 
-    def compile(self):
+    def compile(self, job, file_cacher):
         """See TaskType.compile."""
         # Detect the submission's language. The checks about the
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
-        language = self.job.language
+        language = job.language
         source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
         # here, but in the definition of the task, since this actually
         # checks that task's task type and submission format agree.
-        if len(self.job.files) != 1:
-            self.job.success = True
-            self.job.compilation_success = False
-            self.job.text = "Invalid files in submission"
+        if len(job.files) != 1:
+            job.success = True
+            job.compilation_success = False
+            job.text = "Invalid files in submission"
             logger.error("Submission contains %d files, expecting 1" %
-                         len(self.job.files))
+                         len(job.files))
             return True
 
         # Create the sandbox
-        sandbox = create_sandbox(self)
-        self.job.sandboxes.append(sandbox.path)
+        sandbox = create_sandbox(file_cacher)
+        job.sandboxes.append(sandbox.path)
 
         # Prepare the source files in the sandbox
         files_to_get = {}
-        format_filename = self.job.files.keys()[0]
+        format_filename = job.files.keys()[0]
         source_filenames = []
         # Stub.
         source_filenames.append("stub%s" % source_ext)
         files_to_get[source_filenames[-1]] = \
-                self.job.managers["stub%s" % source_ext].digest
+                job.managers["stub%s" % source_ext].digest
         # User's submission.
         source_filenames.append(format_filename.replace(".%l", source_ext))
         files_to_get[source_filenames[-1]] = \
-            self.job.files[format_filename].digest
+            job.files[format_filename].digest
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
 
@@ -127,26 +127,26 @@ class Communication(TaskType):
             compilation_step(sandbox, command)
 
         # Retrieve the compiled executables
-        self.job.success = operation_success
-        self.job.compilation_success = compilation_success
-        self.job.plus = plus
-        self.job.text = text
+        job.success = operation_success
+        job.compilation_success = compilation_success
+        job.plus = plus
+        job.text = text
         if operation_success and compilation_success:
             digest = sandbox.get_file_to_storage(
                 executable_filename,
                 "Executable %s for %s" %
-                (executable_filename, self.job.info))
-            self.job.executables[executable_filename] = \
+                (executable_filename, job.info))
+            job.executables[executable_filename] = \
                 Executable(executable_filename, digest)
 
         # Cleanup
         delete_sandbox(sandbox)
 
-    def evaluate_testcase(self, test_number):
+    def evaluate_testcase(self, job, test_number, file_cacher):
         """See TaskType.evaluate_testcase."""
         # Create sandboxes and FIFOs
-        sandbox_mgr = create_sandbox(self)
-        sandbox_user = create_sandbox(self)
+        sandbox_mgr = create_sandbox(file_cacher)
+        sandbox_user = create_sandbox(file_cacher)
         fifo_dir = tempfile.mkdtemp(dir=config.temp_dir)
         fifo_in = os.path.join(fifo_dir, "in")
         fifo_out = os.path.join(fifo_dir, "out")
@@ -161,10 +161,10 @@ class Communication(TaskType):
         manager_command = ["./%s" % manager_filename, fifo_in, fifo_out]
         manager_executables_to_get = {
             manager_filename:
-            self.job.managers[manager_filename].digest
+            job.managers[manager_filename].digest
             }
         manager_files_to_get = {
-            "input.txt": self.job.testcases[test_number].input
+            "input.txt": job.testcases[test_number].input
             }
         manager_allow_dirs = [fifo_dir]
         for filename, digest in manager_executables_to_get.iteritems():
@@ -175,18 +175,18 @@ class Communication(TaskType):
         manager = evaluation_step_before_run(
             sandbox_mgr,
             manager_command,
-            self.job.time_limit,
+            job.time_limit,
             0,
             allow_dirs=manager_allow_dirs,
             stdin_redirect="input.txt")
 
         # Second step: we start the user submission compiled with the
         # stub.
-        executable_filename = self.job.executables.keys()[0]
+        executable_filename = job.executables.keys()[0]
         command = ["./%s" % executable_filename, fifo_out, fifo_in]
         executables_to_get = {
             executable_filename:
-            self.job.executables[executable_filename].digest
+            job.executables[executable_filename].digest
             }
         user_allow_dirs = [fifo_dir]
         for filename, digest in executables_to_get.iteritems():
@@ -195,8 +195,8 @@ class Communication(TaskType):
         process = evaluation_step_before_run(
             sandbox_user,
             command,
-            self.job.time_limit,
-            self.job.memory_limit,
+            job.time_limit,
+            job.memory_limit,
             allow_dirs=user_allow_dirs)
 
         # Consume output.
@@ -208,11 +208,11 @@ class Communication(TaskType):
         success_mgr, plus_mgr = \
             evaluation_step_after_run(sandbox_mgr)
 
-        self.job.evaluations[test_number] = \
+        job.evaluations[test_number] = \
             {'sandboxes': [sandbox_user.path,
                            sandbox_mgr.path],
              'plus': plus_user}
-        evaluation = self.job.evaluations[test_number]
+        evaluation = job.evaluations[test_number]
 
         # If at least one evaluation had problems, we report the
         # problems.
@@ -229,12 +229,12 @@ class Communication(TaskType):
             outcome, text = extract_outcome_and_text(sandbox_mgr)
 
         # If asked so, save the output file, provided that it exists
-        if self.job.get_output:
+        if job.get_output:
             if sandbox_mgr.file_exists("output.txt"):
                 evaluation['output'] = sandbox_mgr.get_file_to_storage(
                     "output.txt",
                     "Output file for testcase %d in job %s" %
-                    (test_number, self.job.info))
+                    (test_number, job.info))
             else:
                 evaluation['output'] = None
 
