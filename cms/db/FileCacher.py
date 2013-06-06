@@ -33,8 +33,7 @@ from sqlalchemy.exc import IntegrityError
 
 from cms import config, logger, mkdir
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
-from cms.async.GeventUtils import copyfile, copyfileobj, \
-    ungreen_psycopg
+from cms.async.GeventUtils import copyfile, copyfileobj
 
 
 class FileCacherBackend:
@@ -190,7 +189,7 @@ class DBBackend(FileCacherBackend):
     PostgreSQL database.
 
     """
-    CHUNK_SIZE = 2 ** 20
+    CHUNK_SIZE = 2 ** 14
 
     def get_file(self, digest, dest):
         """See FileCacherBackend.get_file().
@@ -201,19 +200,15 @@ class DBBackend(FileCacherBackend):
             with SessionGen() as session:
                 fso = FSObject.get_from_digest(digest, session)
 
-                # Disable green support in psycopg, to work with large
-                # objects
-                with ungreen_psycopg():
-
-                    # Copy the file into the lobject
-                    with fso.get_lobject(mode='rb') as lobject:
+                # Copy the file into the lobject
+                with fso.get_lobject(mode='rb') as lobject:
+                    buf = lobject.read(self.CHUNK_SIZE)
+                    while buf != '':
+                        # hasher.update(buf)
+                        temp_file.write(buf)
+                        if self.service is not None:
+                            self.service._step()
                         buf = lobject.read(self.CHUNK_SIZE)
-                        while buf != '':
-                            # hasher.update(buf)
-                            temp_file.write(buf)
-                            if self.service is not None:
-                                self.service._step()
-                            buf = lobject.read(self.CHUNK_SIZE)
 
     def put_file(self, digest, origin, description=""):
         """See FileCacherBackend.put_file().
@@ -235,21 +230,17 @@ class DBBackend(FileCacherBackend):
                     logger.debug("Sending file %s to the database." % digest)
                     with open(origin, 'rb') as temp_file:
 
-                        # Disable green support in psycopg, to work
-                        # with large objects
-                        with ungreen_psycopg():
-
-                            with fso.get_lobject(session, mode='wb') \
-                                    as lobject:
-                                logger.debug("Large object created.")
+                        with fso.get_lobject(session, mode='wb') \
+                                as lobject:
+                            logger.debug("Large object created.")
+                            buf = temp_file.read(self.CHUNK_SIZE)
+                            while buf != '':
+                                while len(buf) > 0:
+                                    written = lobject.write(buf)
+                                    buf = buf[written:]
+                                    if self.service is not None:
+                                        self.service._step()
                                 buf = temp_file.read(self.CHUNK_SIZE)
-                                while buf != '':
-                                    while len(buf) > 0:
-                                        written = lobject.write(buf)
-                                        buf = buf[written:]
-                                        if self.service is not None:
-                                            self.service._step()
-                                    buf = temp_file.read(self.CHUNK_SIZE)
 
                     fso.digest = digest
                     session.add(fso)

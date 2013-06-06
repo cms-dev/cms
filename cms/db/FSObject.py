@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
@@ -27,11 +27,197 @@ used directly (import from SQLAlchemyAll).
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.exc import NoResultFound
 
+import psycopg2
 from psycopg2 import OperationalError
 
 from cms.db.SQLAlchemyUtils import Base, get_psycopg2_connection
 
 from contextlib import contextmanager
+
+
+class LargeObject:
+    """Class to present a PostgreSQL large object as a Python file.
+
+    A LargeObject mustn't be reused across transactions, but has to be
+    created again.
+
+    Because of technical reasons, this class has some restrictions
+    that make it not fully compliant with usual file-like API. Be sure
+    of checking the actual methods' docstring.
+
+    """
+
+    # Some constants from libpq, that are not published by psycopg2
+    INV_READ = 0x20000
+    INV_WRITE = 0x40000
+
+    def __init__(self, loid, connection, mode):
+        """Open a large object, creating it if required.
+
+        Not to be called directly, but via FSObject.get_lobject().
+
+        loid (int): the large object ID.
+        connection (psycopg2.Connection): the connection to use.
+        mode (str): how to open the file (r -> read, w -> write,
+                    b -> binary, which must be always specified). If
+                    None, use `rb'.
+
+        """
+        self.loid = loid
+        self.connection = connection
+        cursor = self.connection.cursor()
+
+        # Check mode value
+        mode = set(mode)
+        if not (mode <= set(['r', 'w', 'b'])):
+            raise ValueError("Only valid characters in mode are r, w and b")
+        if 'b' not in mode:
+            raise ValueError("Character b must be specified in mode")
+        creat_mode = LargeObject.INV_READ | LargeObject.INV_WRITE
+        open_mode = (LargeObject.INV_READ if 'r' in mode else 0) | \
+            (LargeObject.INV_WRITE if 'w' in mode else 0)
+
+        # If the loid is 0, the the large object has to be created
+        if self.loid == 0:
+            cursor.execute("SELECT lo_creat(%(creat_mode)s);",
+                           {'creat_mode': creat_mode})
+            [self.loid] = cursor.fetchone()
+            if self.loid == 0:
+                raise OperationalError("Couldn't create large object")
+            assert len(cursor.fetchall()) == 0
+
+        # Open the file
+        cursor.execute("SELECT lo_open(%(loid)s, %(open_mode)s);",
+                            {'loid': self.loid,
+                             'open_mode': open_mode})
+        [self.fd] = cursor.fetchone()
+        if self.fd == -1:
+            raise OperationalError("Couldn't open large object")
+        assert len(cursor.fetchall()) == 0
+
+        cursor.close()
+
+    def read(self, length):
+        """Read bytes from the large object.
+
+        Less bytes than requested may be read and returned.
+
+        length (int): read no more than this number of bytes.
+
+        return (string): the read data.
+
+        """
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT loread(%(fd)s, %(length)s);",
+                            {'fd': self.fd,
+                             'length': length})
+        [data] = cursor.fetchone()
+        assert len(cursor.fetchall()) == 0
+        cursor.close()
+        return bytes(data)
+
+    def write(self, buf):
+        """Write bytes to the large object.
+
+        Less bytes then requested may be written.
+
+        buf (string): data to write.
+
+        return (int): number of written bytes.
+
+        """
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT lowrite(%(fd)s, %(buf)s);",
+                            {'fd': self.fd,
+                             'buf': psycopg2.Binary(buf)})
+        [length] = cursor.fetchone()
+        assert len(cursor.fetchall()) == 0
+        cursor.close()
+        if length == -1:
+            raise OperationalError("Couldn't write in large object")
+        return length
+
+    def seek(self, offset, whence=0):
+        """Move pointer to a location in large object.
+
+        offset (int): offset from the reference point.
+        whence (int): reference point, expressed like in os.seek().
+
+        return (int): new position.
+
+        """
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT lo_lseek(%(fd)s, %(offset)s, %(whence)s);",
+                       {'fd': self.fd,
+                        'offset': offset,
+                        'whence': whence})
+        [pos] = cursor.fetchone()
+        assert len(cursor.fetchall()) == 0
+        cursor.close()
+        if pos == -1:
+            raise OperationalError("Couldn't seek in large object")
+        return pos
+
+    def tell(self):
+        """Tell position in a large object.
+
+        return (int): position in the large object.
+
+        """
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT lo_tell(%(fd)s);",
+                       {'fd': self.fd})
+        [pos] = cursor.fetchone()
+        assert len(cursor.fetchall()) == 0
+        cursor.close()
+        if pos == -1:
+            raise OperationalError("Couldn't tell large object")
+        return pos
+
+    def close(self):
+        """Close the large object.
+
+        After this call the object is not usable anymore. It is
+        allowed to close an object more than once, with the calls
+        after the first doing nothing.
+
+        """
+        # If the large object has already been closed, don't close it
+        # again; this way the context manager doesn't risk to make
+        # mistakes while exiting
+        if self.fd is None:
+            return
+
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT lo_close(%(fd)s);",
+                       {'fd': self.fd})
+        [res] = cursor.fetchone()
+        assert len(cursor.fetchall()) == 0
+        cursor.close()
+
+        # We delete the fd number to avoid writing on another file by
+        # mistake
+        self.fd = None
+
+        if res == -1:
+            raise OperationalError("Couldn't close large object")
+
+    def unlink(self):
+        """Delete the large object, removing its content.
+
+        After an unlink, the content can't be restored anymore, so use
+        with caution!
+
+        This large object mustn't have been closed before this
+        call. This call will take care of closing it.
+
+        """
+        fd = self.fd
+        self.close()
+        cursor = self.connection.cursor()
+        cursor.execute("SELECT lo_unlink(%(fd));",
+                       {'fd': fd})
+        cursor.close()
 
 
 class FSObject(Base):
@@ -76,7 +262,8 @@ class FSObject(Base):
         session (session object): the session to use, or None to use
                                   the one associated with the FSObject.
         mode (string): how to open the file (r -> read, w -> write,
-                       b -> binary). If None, use `rb'.
+                       b -> binary, which must be always
+                       specified). If None, use `rb'.
 
         """
         if mode is None:
@@ -86,7 +273,8 @@ class FSObject(Base):
 
         # Here we rely on the fact that we're using psycopg2 as
         # PostgreSQL backend
-        lo = get_psycopg2_connection(session).lobject(self.loid, mode)
+        connection = get_psycopg2_connection(session)
+        lo = LargeObject(self.loid, connection, mode)
 
         if self.loid == 0:
             self.loid = lo.oid
@@ -97,16 +285,23 @@ class FSObject(Base):
             lo.close()
 
     def check_lobject(self):
-        """Check that the referenced large object is actually
-        available in the database.
+        """Check the large object availability in the database.
+
+        Return True if this FSObject actually refers an object (that
+        is, not the OID 0) and such large object exists. Returns False
+        otherwise.
 
         """
+        connection = get_psycopg2_connection(self.sa_session)
+        if self.loid == 0:
+            return False
         try:
-            lo = self.sa_session.connection().connection.lobject(self.loid)
-            lo.close()
-            return True
+            lo = LargeObject(self.loid, connection, 'rb')
         except OperationalError:
             return False
+        else:
+            lo.close()
+            return True
 
     def delete(self):
         """Delete this file.
