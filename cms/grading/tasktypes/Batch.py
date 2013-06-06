@@ -22,7 +22,7 @@
 
 import os
 
-from cms import LANGUAGES, logger
+from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, logger
 from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step, human_evaluation_message, is_evaluation_passed, \
     extract_outcome_and_text, white_diff_step
@@ -97,12 +97,13 @@ class Batch(TaskType):
         res = dict()
         for language in LANGUAGES:
             format_filename = submission_format[0]
+            source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
             source_filenames = []
             # If a grader is specified, we add to the command line (and to
             # the files to get) the corresponding manager.
             if self.job.task_type_parameters[0] == "grader":
-                source_filenames.append("grader.%s" % language)
-            source_filenames.append(format_filename.replace("%l", language))
+                source_filenames.append("grader%s" % source_ext)
+            source_filenames.append(format_filename.replace(".%l", source_ext))
             executable_filename = format_filename.replace(".%l", "")
             command = " ".join(get_compilation_command(language,
                                                        source_filenames,
@@ -124,6 +125,7 @@ class Batch(TaskType):
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
         language = self.job.language
+        source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
@@ -145,16 +147,16 @@ class Batch(TaskType):
         files_to_get = {}
         format_filename = self.job.files.keys()[0]
         source_filenames = []
-        source_filenames.append(format_filename.replace("%l", language))
+        source_filenames.append(format_filename.replace(".%l", source_ext))
         files_to_get[source_filenames[0]] = \
             self.job.files[format_filename].digest
         # If a grader is specified, we add to the command line (and to
         # the files to get) the corresponding manager. The grader must
         # be the first file in source_filenames.
         if self.job.task_type_parameters[0] == "grader":
-            source_filenames.insert(0, "grader.%s" % language)
-            files_to_get["grader.%s" % language] = \
-                self.job.managers["grader.%s" % language].digest
+            source_filenames.insert(0, "grader%s" % source_ext)
+            files_to_get["grader%s" % source_ext] = \
+                self.job.managers["grader%s" % source_ext].digest
 
         # Also copy all *.h and *lib.pas graders
         for filename in self.job.managers.iterkeys():

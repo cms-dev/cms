@@ -24,7 +24,7 @@ import os
 import tempfile
 import shutil
 
-from cms import LANGUAGES, config, logger
+from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, config, logger
 from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_command, compilation_step, \
     human_evaluation_message, is_evaluation_passed, \
@@ -58,9 +58,10 @@ class Communication(TaskType):
         res = dict()
         for language in LANGUAGES:
             format_filename = submission_format[0]
+            source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
             source_filenames = []
-            source_filenames.append("stub.%s" % language)
-            source_filenames.append(format_filename.replace("%l", language))
+            source_filenames.append("stub%s" % source_ext)
+            source_filenames.append(format_filename.replace(".%l", source_ext))
             executable_filename = format_filename.replace(".%l", "")
             command = " ".join(get_compilation_command(language,
                                                        source_filenames,
@@ -82,6 +83,7 @@ class Communication(TaskType):
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
         language = self.job.language
+        source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
@@ -104,11 +106,11 @@ class Communication(TaskType):
         format_filename = self.job.files.keys()[0]
         source_filenames = []
         # Stub.
-        source_filenames.append("stub.%s" % language)
+        source_filenames.append("stub%s" % source_ext)
         files_to_get[source_filenames[-1]] = \
-                self.job.managers["stub.%s" % language].digest
+                self.job.managers["stub%s" % source_ext].digest
         # User's submission.
-        source_filenames.append(format_filename.replace("%l", language))
+        source_filenames.append(format_filename.replace(".%l", source_ext))
         files_to_get[source_filenames[-1]] = \
             self.job.files[format_filename].digest
         for filename, digest in files_to_get.iteritems():

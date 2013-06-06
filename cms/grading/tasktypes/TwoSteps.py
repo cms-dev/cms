@@ -23,7 +23,8 @@
 import os
 import tempfile
 
-from cms import LANGUAGES, config, logger
+from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
+    LANGUAGE_TO_HEADER_EXT_MAP, config, logger
 from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step_before_run, evaluation_step_after_run, \
@@ -31,13 +32,6 @@ from cms.grading import get_compilation_command, compilation_step, \
 from cms.grading.TaskType import TaskType, \
      create_sandbox, delete_sandbox
 from cms.db.SQLAlchemyAll import Executable
-
-
-HEADERS_MAP = {
-    "c": "h",
-    "cpp": "h",
-    "pas": "lib.pas",
-    }
 
 
 class TwoSteps(TaskType):
@@ -51,7 +45,7 @@ class TwoSteps(TaskType):
     first instance, 1 if it is the second instance, and the name of
     the pipe.
 
-    Admins must provide also header files, named *.HEADERS_MAP[%l] for
+    Admins must provide also header files, named "foo{.h|lib.pas}" for
     the three sources (manager and user provided).
 
     """
@@ -63,20 +57,21 @@ class TwoSteps(TaskType):
         """See TaskType.get_compilation_commands."""
         res = dict()
         for language in LANGUAGES:
-            header = HEADERS_MAP[language]
+            source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
+            header_ext = LANGUAGE_TO_HEADER_EXT_MAP[language]
             source_filenames = []
             for filename in submission_format:
-                source_filename = filename.replace("%l", language)
+                source_filename = filename.replace(".%l", source_ext)
                 source_filenames.append(source_filename)
                 # Headers.
-                header_filename = filename.replace("%l", header)
+                header_filename = filename.replace(".%l", header_ext)
                 source_filenames.append(header_filename)
 
             # Manager.
-            manager_source_filename = "manager.%s" % language
+            manager_source_filename = "manager%s" % source_ext
             source_filenames.append(manager_source_filename)
             # Manager's header.
-            manager_header_filename = "manager.%s" % header
+            manager_header_filename = "manager%s" % header_ext
             source_filenames.append(manager_header_filename)
 
             # Get compilation command and compile.
@@ -93,7 +88,8 @@ class TwoSteps(TaskType):
         # formal correctedness of the submission are done in CWS,
         # before accepting it.
         language = self.job.language
-        header = HEADERS_MAP[language]
+        source_ext = LANGUAGE_TO_SOURCE_EXT_MAP[language]
+        header_ext = LANGUAGE_TO_HEADER_EXT_MAP[language]
 
         # TODO: here we are sure that submission.files are the same as
         # task.submission_format. The following check shouldn't be
@@ -115,22 +111,22 @@ class TwoSteps(TaskType):
         # User's submissions and headers.
         source_filenames = []
         for filename, _file in self.job.files.iteritems():
-            source_filename = filename.replace("%l", language)
+            source_filename = filename.replace(".%l", source_ext)
             source_filenames.append(source_filename)
             files_to_get[source_filename] = _file.digest
             # Headers.
-            header_filename = filename.replace("%l", header)
+            header_filename = filename.replace(".%l", header_ext)
             source_filenames.append(header_filename)
             files_to_get[header_filename] = \
                 self.job.managers[header_filename].digest
 
         # Manager.
-        manager_filename = "manager.%s" % language
+        manager_filename = "manager%s" % source_ext
         source_filenames.append(manager_filename)
         files_to_get[manager_filename] = \
                 self.job.managers[manager_filename].digest
         # Manager's header.
-        manager_filename = "manager.%s" % header
+        manager_filename = "manager%s" % header_ext
         source_filenames.append(manager_filename)
         files_to_get[manager_filename] = \
                 self.job.managers[manager_filename].digest

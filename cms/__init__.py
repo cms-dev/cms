@@ -5,6 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -40,11 +41,30 @@ from cms.async.AsyncLibrary import RemoteService
 
 
 LANGUAGES = ["c", "cpp", "pas"]
-LANGUAGES_MAP = {".c": "c",
-                 ".cpp": "cpp",
-                 ".cc": "cpp",
-                 ".pas": "pas",
-                 }
+
+# A reference for extension-based automatic language detection.
+# (It's more difficult with headers because ".h" is ambiguous.)
+SOURCE_EXT_TO_LANGUAGE_MAP = {
+    ".c": "c",
+    ".cpp": "cpp",
+    ".cxx": "cpp",
+    ".cc": "cpp",
+    ".C": "cpp",
+    ".c++": "cpp",
+    ".pas": "pas",
+    }
+
+# Our preferred source file and header file extension for each language.
+LANGUAGE_TO_SOURCE_EXT_MAP = {
+    "c": ".c",
+    "cpp": ".cpp",
+    "pas": ".pas",
+    }
+LANGUAGE_TO_HEADER_EXT_MAP = {
+    "c": ".h",
+    "cpp": ".h",
+    "pas": "lib.pas",
+    }
 
 
 ## Configuration ##

@@ -52,7 +52,8 @@ import tornado.web
 
 from sqlalchemy import func
 
-from cms import LANGUAGES_MAP, config, default_argument_parser, logger
+from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, default_argument_parser, \
+    logger
 from cms.async.WebAsyncLibrary import WebService
 from cms.async import ServiceCoord
 from cms.db import ask_for_contest
@@ -986,11 +987,10 @@ class SubmitHandler(BaseHandler):
                              if it is not a recognized language.
 
             """
-            extension = os.path.splitext(user_filename)[1]
-            try:
-                return LANGUAGES_MAP[extension]
-            except KeyError:
-                return None
+            for source_ext, language in SOURCE_EXT_TO_LANGUAGE_MAP.iteritems():
+                if user_filename.endswith(source_ext):
+                    return language
+            return None
 
         error = None
         for our_filename in files:
@@ -1498,11 +1498,10 @@ class UserTestHandler(BaseHandler):
                              if it is not a recognized language.
 
             """
-            extension = os.path.splitext(user_filename)[1]
-            try:
-                return LANGUAGES_MAP[extension]
-            except KeyError:
-                return None
+            for source_ext, language in SOURCE_EXT_TO_LANGUAGE_MAP.iteritems():
+                if user_filename.endswith(source_ext):
+                    return language
+            return None
 
         error = None
         for our_filename in files:
