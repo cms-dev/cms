@@ -242,7 +242,7 @@ class Contest(Base):
             # Enumerate testcases
             if not light:
                 for dataset in task.datasets:
-                    for testcase in dataset.testcases:
+                    for testcase in dataset.testcases.itervalues():
                         files.add(testcase.input)
                         files.add(testcase.output)
 

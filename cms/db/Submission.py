@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -30,10 +30,9 @@ from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
     UniqueConstraint
 from sqlalchemy.types import Integer, Float, String, DateTime
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.ext.orderinglist import ordering_list
 
 from cms.db.SQLAlchemyUtils import Base
-from cms.db.Task import Task, Dataset
+from cms.db.Task import Task, Dataset, Testcase
 from cms.db.User import User
 from cms.db.SmartMappedCollection import smart_mapped_collection
 
@@ -302,7 +301,29 @@ class SubmissionResult(Base):
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # executables (dict of Executable objects indexed by filename)
-    # evaluations (list of Evaluation objects, one for testcase)
+    # evaluations (list of Evaluation objects)
+
+    def get_evaluation(self, testcase):
+        """Return the Evaluation of this SR on the given Testcase, if any
+
+        testcase (Testcase): the testcase the returned evaluation will
+                             belong to
+        return (Evaluation): the (only!) evaluation of this submission
+                             result on the given testcase, or None if
+                             there isn't any.
+
+        """
+        # Use IDs to avoid triggering a lazy-load query.
+        assert self.dataset_id == testcase.dataset_id
+
+        # XXX If self.evaluations is already loaded we can walk over it
+        # and spare a query.
+        # (We could use .one() and avoid a LIMIT but we would need to
+        # catch a NoResultFound exception.)
+        self.sa_session.query(Evaluation)\
+            .filter(Evaluation.submission_result == self)\
+            .filter(Evaluation.testcase == testcase)\
+            .first()
 
     def compiled(self):
         """Return if the submission has been compiled.
@@ -429,7 +450,7 @@ class Evaluation(Base):
             ('submission_id', 'dataset_id'),
             (SubmissionResult.submission_id, SubmissionResult.dataset_id),
             onupdate="CASCADE", ondelete="CASCADE"),
-        UniqueConstraint('submission_id', 'dataset_id', 'num'),
+        UniqueConstraint('submission_id', 'dataset_id', 'testcase_id'),
     )
 
     # Auto increment primary key.
@@ -461,15 +482,18 @@ class Evaluation(Base):
     submission_result = relationship(
         SubmissionResult,
         backref=backref('evaluations',
-                        collection_class=ordering_list('num'),
-                        order_by=[num],
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
-    # Number of the testcase this evaluation was performed on.
-    num = Column(
+    # Testcase (id and object) this evaluation was performed on.
+    testcase_id = Column(
         Integer,
-        nullable=False)
+        ForeignKey(Testcase.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    testcase = relationship(
+        Testcase)
 
     # String containing the outcome of the evaluation (usually 1.0,
     # ...) not necessary the points awarded, that will be computed by
@@ -504,3 +528,7 @@ class Evaluation(Base):
     evaluation_sandbox = Column(
         String,
         nullable=True)
+
+    @property
+    def codename(self):
+        return self.testcase.codename

@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -385,7 +385,7 @@ class Dataset(Base):
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # managers (dict of Manager objects indexed by filename)
-    # testcases (list of Testcase objects)
+    # testcases (dict of Testcase objects indexed by codename)
 
 
 class Manager(Base):
@@ -434,7 +434,7 @@ class Testcase(Base):
     """
     __tablename__ = 'testcases'
     __table_args__ = (
-        UniqueConstraint('dataset_id', 'num'),
+        UniqueConstraint('dataset_id', 'codename'),
     )
 
     # Auto increment primary key.
@@ -452,14 +452,13 @@ class Testcase(Base):
     dataset = relationship(
         Dataset,
         backref=backref('testcases',
-                        collection_class=ordering_list('num'),
-                        order_by=[num],
+                        collection_class=smart_mapped_collection('codename'),
                         cascade="all, delete-orphan",
                         passive_deletes=True))
 
-    # Number of the testcase for sorting.
-    num = Column(
-        Integer,
+    # Codename identifying the testcase.
+    codename = Column(
+        String,
         nullable=False)
 
     # If the testcase outcome is going to be showed to the user (even
