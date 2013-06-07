@@ -262,6 +262,8 @@ class DBBackend(FileCacherBackend):
         """See FileCacherBackend.get_size().
 
         """
+        # TODO - The business logic may be moved in FSObject, for
+        # better generality
         with SessionGen() as session:
             fso = FSObject.get_from_digest(digest, session)
             if fso is not None:
