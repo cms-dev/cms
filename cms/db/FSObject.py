@@ -74,7 +74,8 @@ class LargeObject:
         if 'b' not in mode:
             raise ValueError("Character b must be specified in mode")
         creat_mode = LargeObject.INV_READ | LargeObject.INV_WRITE
-        open_mode = (LargeObject.INV_READ if 'r' in mode else 0) | \
+        # We always open at least in read mode
+        open_mode = LargeObject.INV_READ | \
             (LargeObject.INV_WRITE if 'w' in mode else 0)
 
         # If the loid is 0, the the large object has to be created
@@ -277,7 +278,7 @@ class FSObject(Base):
         lo = LargeObject(self.loid, connection, mode)
 
         if self.loid == 0:
-            self.loid = lo.oid
+            self.loid = lo.loid
 
         try:
             yield lo
