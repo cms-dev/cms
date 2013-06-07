@@ -28,7 +28,7 @@ from cms.db.SQLAlchemyAll import File, Manager, Executable
 Testcase = namedtuple('Testcase', ['input', 'output'])
 
 
-class Job:
+class Job(object):
     # Input: task_type, task_type_parameters
     # Metadata: shard, sandboxes, info
 
@@ -77,17 +77,14 @@ class Job:
 
 
 class CompilationJob(Job):
-    # Input: langauge, files, managers
+    # Input: language, files, managers
     # Output: success, compilation_success, executables, text, plus
 
     def __init__(self, task_type=None, task_type_parameters=None,
                  shard=None, sandboxes=None, info=None,
                  language=None, files=None, managers=None,
                  success=None, compilation_success=None,
-                 executables=None,
-                 text=None, plus=None):
-        if language is None:
-            language = ""
+                 executables=None, text=None, plus=None):
         if files is None:
             files = {}
         if managers is None:
@@ -158,19 +155,19 @@ class CompilationJob(Job):
     def export_to_dict(self):
         res = Job.export_to_dict(self)
         res.update({
-                'type': 'compilation',
-                'language': self.language,
-                'files': dict((k, v.digest)
-                              for k, v in self.files.iteritems()),
-                'managers': dict((k, v.digest)
-                                 for k, v in self.managers.iteritems()),
-                'success': self.success,
-                'compilation_success': self.compilation_success,
-                'executables': dict((k, v.digest)
-                                    for k, v in self.executables.iteritems()),
-                'text': self.text,
-                'plus': self.plus,
-                })
+            'type': 'compilation',
+            'language': self.language,
+            'files': dict((k, v.digest)
+                          for k, v in self.files.iteritems()),
+            'managers': dict((k, v.digest)
+                             for k, v in self.managers.iteritems()),
+            'success': self.success,
+            'compilation_success': self.compilation_success,
+            'executables': dict((k, v.digest)
+                                for k, v in self.executables.iteritems()),
+            'text': self.text,
+            'plus': self.plus,
+            })
         return res
 
     @classmethod
@@ -186,8 +183,8 @@ class CompilationJob(Job):
 
 class EvaluationJob(Job):
 
-    # Input: executables, testcases, time_limit, memory_limit,
-    # managers, files
+    # Input: language, files, managers, executables, testcases,
+    #        time_limit, memory_limit
     # Output: success, evaluations
     # Metadata: only_execution, get_output
 
@@ -201,14 +198,14 @@ class EvaluationJob(Job):
                  time_limit=None, memory_limit=None,
                  success=None, evaluations=None,
                  only_execution=False, get_output=False):
+        if files is None:
+            files = {}
+        if managers is None:
+            managers = {}
         if executables is None:
             executables = {}
         if testcases is None:
             testcases = {}
-        if managers is None:
-            managers = {}
-        if files is None:
-            files = {}
         if evaluations is None:
             evaluations = {}
 
@@ -297,26 +294,26 @@ class EvaluationJob(Job):
     def export_to_dict(self):
         res = Job.export_to_dict(self)
         res.update({
-                'type': 'evaluation',
-                'language': self.language,
-                'files': dict((k, v.digest)
-                              for k, v in self.files.iteritems()),
-                'managers': dict((k, v.digest)
-                                 for k, v in self.managers.iteritems()),
-                'executables': dict((k, v.digest)
-                                    for k, v in self.executables.iteritems()),
-                'testcases': dict((k, (v.input, v.output))
-                                  for k, v in self.testcases.iteritems()),
-                'time_limit': self.time_limit,
-                'memory_limit': self.memory_limit,
-                'success': self.success,
-                # XXX We convert the key from int to str because it'll
-                # be the key of a JSON object.
-                'evaluations': dict((str(k), v) for k, v
-                                    in self.evaluations.iteritems()),
-                'only_execution': self.only_execution,
-                'get_output': self.get_output,
-                })
+            'type': 'evaluation',
+            'language': self.language,
+            'files': dict((k, v.digest)
+                          for k, v in self.files.iteritems()),
+            'managers': dict((k, v.digest)
+                             for k, v in self.managers.iteritems()),
+            'executables': dict((k, v.digest)
+                                for k, v in self.executables.iteritems()),
+            'testcases': dict((k, (v.input, v.output))
+                              for k, v in self.testcases.iteritems()),
+            'time_limit': self.time_limit,
+            'memory_limit': self.memory_limit,
+            'success': self.success,
+            # XXX We convert the key from int to str because it'll
+            # be the key of a JSON object.
+            'evaluations': dict((str(k), v) for k, v
+                                in self.evaluations.iteritems()),
+            'only_execution': self.only_execution,
+            'get_output': self.get_output,
+            })
         return res
 
     @classmethod
