@@ -28,7 +28,7 @@ from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm.exc import NoResultFound
 
 import psycopg2
-from psycopg2 import OperationalError
+from psycopg2 import OperationalError, InternalError
 
 from cms.db.SQLAlchemyUtils import Base, get_psycopg2_connection
 
@@ -283,7 +283,15 @@ class FSObject(Base):
         try:
             yield lo
         finally:
-            lo.close()
+            # We ignore exceptions here, because they could be
+            # triggered by trying to close a file descriptor when the
+            # transaction already failed and cannot receive any more
+            # commands; it's not grave if we can't close the fd: it
+            # will be closed when the transaction terminates anyway
+            try:
+                lo.close()
+            except InternalError:
+                pass
 
     def check_lobject(self):
         """Check the large object availability in the database.
