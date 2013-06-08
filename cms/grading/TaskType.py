@@ -134,10 +134,6 @@ class TaskType:
         """
         self.job = job
         self.file_cacher = file_cacher
-        self.result = {}
-
-        self.worker_shard = None
-        self.sandbox_paths = ""
 
         # If ignore_job is True, we conclude as soon as possible.
         self.ignore_job = False
@@ -234,7 +230,7 @@ class TaskType:
         return (bool): success of operation.
 
         """
-        for test_number in self.job.testcases.iterkeys():
+        for test_number in self.job.testcases:
             success = self.evaluate_testcase(test_number)
             if not success or self.ignore_job:
                 self.job.success = False
