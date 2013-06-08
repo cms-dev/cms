@@ -209,15 +209,13 @@ class LargeObject:
         After an unlink, the content can't be restored anymore, so use
         with caution!
 
-        This large object mustn't have been closed before this
-        call. This call will take care of closing it.
+        If the large object is opened, it will be closed.
 
         """
-        fd = self.fd
         self.close()
         cursor = self.connection.cursor()
-        cursor.execute("SELECT lo_unlink(%(fd));",
-                       {'fd': fd})
+        cursor.execute("SELECT lo_unlink(%(loid)s);",
+                       {'loid': self.loid})
         cursor.close()
 
 
