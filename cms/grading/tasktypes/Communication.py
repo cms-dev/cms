@@ -142,7 +142,7 @@ class Communication(TaskType):
         # Cleanup
         delete_sandbox(sandbox)
 
-    def evaluate_testcase(self, job, test_number, file_cacher):
+    def evaluate_testcase(self, job, test_name, file_cacher):
         """See TaskType.evaluate_testcase."""
         # Create sandboxes and FIFOs
         sandbox_mgr = create_sandbox(file_cacher)
@@ -164,7 +164,7 @@ class Communication(TaskType):
             job.managers[manager_filename].digest
             }
         manager_files_to_get = {
-            "input.txt": job.testcases[test_number].input
+            "input.txt": job.testcases[test_name].input
             }
         manager_allow_dirs = [fifo_dir]
         for filename, digest in manager_executables_to_get.iteritems():
@@ -208,11 +208,11 @@ class Communication(TaskType):
         success_mgr, plus_mgr = \
             evaluation_step_after_run(sandbox_mgr)
 
-        job.evaluations[test_number] = \
+        job.evaluations[test_name] = \
             {'sandboxes': [sandbox_user.path,
                            sandbox_mgr.path],
              'plus': plus_user}
-        evaluation = job.evaluations[test_number]
+        evaluation = job.evaluations[test_name]
 
         # If at least one evaluation had problems, we report the
         # problems.
@@ -233,8 +233,8 @@ class Communication(TaskType):
             if sandbox_mgr.file_exists("output.txt"):
                 evaluation['output'] = sandbox_mgr.get_file_to_storage(
                     "output.txt",
-                    "Output file for testcase %d in job %s" %
-                    (test_number, job.info))
+                    "Output file for testcase %s in job %s" %
+                    (test_name job.info))
             else:
                 evaluation['output'] = None
 

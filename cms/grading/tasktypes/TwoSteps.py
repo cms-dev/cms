@@ -158,7 +158,7 @@ class TwoSteps(TaskType):
         # Cleanup
         delete_sandbox(sandbox)
 
-    def evaluate_testcase(self, job, test_number, file_cacher):
+    def evaluate_testcase(self, job, test_name, file_cacher):
         """See TaskType.evaluate_testcase."""
         # f stand for first, s for second.
         first_sandbox = create_sandbox(file_cacher)
@@ -175,7 +175,7 @@ class TwoSteps(TaskType):
             job.executables[first_filename].digest
             }
         first_files_to_get = {
-            "input.txt": job.testcases[test_number].input
+            "input.txt": job.testcases[test_name].input
             }
         first_allow_path = ["input.txt", fifo]
 
@@ -232,13 +232,13 @@ class TwoSteps(TaskType):
         success_second, second_plus = \
             evaluation_step_after_run(second_sandbox)
 
-        job.evaluations[test_number] = {
+        job.evaluations[test_name] = {
             'sandboxes': [first_sandbox.path,
                           second_sandbox.path],
             'plus': second_plus}
         outcome = None
         text = None
-        evaluation = job.evaluations[test_number]
+        evaluation = job.evaluations[test_name]
         success = True
 
         # Error in the sandbox: report failure!
@@ -271,15 +271,15 @@ class TwoSteps(TaskType):
                 if job.get_output:
                     evaluation['output'] = second_sandbox.get_file_to_storage(
                         "output.txt",
-                        "Output file for testcase %d in job %s" %
-                        (test_number, job.info))
+                        "Output file for testcase %s in job %s" %
+                        (test_name, job.info))
 
                 # If not asked otherwise, evaluate the output file
                 if not job.only_execution:
                     # Put the reference solution into the sandbox
                     second_sandbox.create_file_from_storage(
                         "res.txt",
-                        job.testcases[test_number].output)
+                        job.testcases[test_name].output)
 
                     outcome, text = white_diff_step(
                         second_sandbox, "output.txt", "res.txt")

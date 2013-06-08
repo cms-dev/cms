@@ -100,13 +100,15 @@ class Sum(ScoreTypeAlone):
         if not self.pool[submission_id]["evaluated"]:
             return 0.0, "[]", 0.0, "[]", []
 
+        # XXX Lexicographical order by codename
+        indices = sorted(self.public_testcases.keys())
         evaluations = self.pool[submission_id]["evaluations"]
         testcases = []
         public_testcases = []
         score = 0.0
         public_score = 0.0
 
-        for idx in evaluations:
+        for idx in indices:
             this_score = float(evaluations[idx]["outcome"]) * self.parameters
             tc_outcome = self.get_public_outcome(this_score)
             score += this_score

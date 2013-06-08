@@ -194,7 +194,7 @@ class Batch(TaskType):
         # Cleanup
         delete_sandbox(sandbox)
 
-    def evaluate_testcase(self, job, test_number, file_cacher):
+    def evaluate_testcase(self, job, test_name, file_cacher):
         """See TaskType.evaluate_testcase."""
         # Create the sandbox
         sandbox = create_sandbox(file_cacher)
@@ -216,7 +216,7 @@ class Batch(TaskType):
             output_filename = "output.txt"
             stdout_redirect = output_filename
         files_to_get = {
-            input_filename: job.testcases[test_number].input
+            input_filename: job.testcases[test_name].input
             }
 
         # Put the required files into the sandbox
@@ -234,11 +234,11 @@ class Batch(TaskType):
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect)
 
-        job.evaluations[test_number] = {'sandboxes': [sandbox.path],
-                                        'plus': plus}
+        job.evaluations[test_name] = {'sandboxes': [sandbox.path],
+                                      'plus': plus}
         outcome = None
         text = None
-        evaluation = job.evaluations[test_number]
+        evaluation = job.evaluations[test_name]
 
         # Error in the sandbox: nothing to do!
         if not success:
@@ -267,8 +267,8 @@ class Batch(TaskType):
                 if job.get_output:
                     evaluation['output'] = sandbox.get_file_to_storage(
                         output_filename,
-                        "Output file for testcase %d in job %s" %
-                        (test_number, job.info),
+                        "Output file for testcase %s in job %s" %
+                        (test_name, job.info),
                         trunc_len=100 * 1024)
 
                 # If not asked otherwise, evaluate the output file
@@ -277,7 +277,7 @@ class Batch(TaskType):
                     # Put the reference solution into the sandbox
                     sandbox.create_file_from_storage(
                         "res.txt",
-                        job.testcases[test_number].output)
+                        job.testcases[test_name].output)
 
                     # Check the solution with white_diff
                     if self.parameters[2] == "diff":

@@ -211,13 +211,13 @@ class TaskType:
         """
         raise NotImplementedError("Please subclass this class.")
 
-    def evaluate_testcase(self, job, test_number, file_cacher):
+    def evaluate_testcase(self, job, test_name, file_cacher):
         """Perform the evaluation of a single testcase.
 
         job (EvaluationJob): the data structure that contains details
                              about the work that has to be done and
                              that will hold its results.
-        test_number (int): the number of the testcase to test.
+        test_name (str): the codename of the testcase to test.
         file_cacher (FileCacher): the file cacher to use to obtain the
                                   required files and to store the ones
                                   that are produced.
@@ -247,8 +247,8 @@ class TaskType:
         return (bool): success of operation.
 
         """
-        for test_number in job.testcases:
-            success = self.evaluate_testcase(job, test_number, file_cacher)
+        for test_name in job.testcases:
+            success = self.evaluate_testcase(job, test_name, file_cacher)
             if not success or self.ignore_job:
                 job.success = False
                 return

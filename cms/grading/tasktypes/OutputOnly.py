@@ -80,34 +80,34 @@ class OutputOnly(TaskType):
         job.compilation_success = True
         job.text = "No compilation needed."
 
-    def evaluate_testcase(self, job, test_number, file_cacher):
+    def evaluate_testcase(self, job, test_name, file_cacher):
         """See TaskType.evaluate_testcase."""
         sandbox = create_sandbox(file_cacher)
         job.sandboxes.append(sandbox.path)
 
         # Immediately prepare the skeleton to return
-        job.evaluations[test_number] = {'sandboxes': [sandbox.path],
-                                        'plus': {}}
-        evaluation = job.evaluations[test_number]
+        job.evaluations[test_name] = {'sandboxes': [sandbox.path],
+                                      'plus': {}}
+        evaluation = job.evaluations[test_name]
         outcome = None
         text = None
 
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
-        if "output_%03d.txt" % test_number not in job.files:
+        if "output_%s.txt" % test_name not in job.files:
             evaluation['success'] = True
             evaluation['outcome'] = "0.0"
             evaluation['text'] = "File not submitted."
             return True
 
         # First and only one step: diffing (manual or with manager).
-        output_digest = job.files["output_%03d.txt" %
-                                  test_number].digest
+        output_digest = job.files["output_%s.txt" %
+                                  test_name].digest
 
         # Put the files into the sandbox
         sandbox.create_file_from_storage(
             "res.txt",
-            job.testcases[test_number].output)
+            job.testcases[test_name].output)
         sandbox.create_file_from_storage(
             "output.txt",
             output_digest)
@@ -132,7 +132,7 @@ class OutputOnly(TaskType):
                     manager_filename,
                     job.managers[manager_filename].digest,
                     executable=True)
-                input_digest = job.testcases[test_number].input
+                input_digest = job.testcases[test_name].input
                 sandbox.create_file_from_storage(
                     "input.txt",
                     input_digest)

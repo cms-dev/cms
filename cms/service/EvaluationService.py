@@ -974,14 +974,14 @@ class EvaluationService(Service):
 
         else:
             try:
-                job = Job.import_from_dict_with_type(data)
+                job_group = JobGroup.import_from_dict(data)
             except:
-                logger.error("[action_finished] Couldn't build Job for data"
-                             " %s." % data)
+                logger.error("[action_finished] Couldn't build JobGroup for "
+                             "data %s." % data)
                 job_success = False
 
             else:
-                if not job.success:
+                if not job_group.success:
                     logger.error("Worker %s signaled action "
                                  "not successful." % shard)
                     job_success = False
@@ -1005,6 +1005,15 @@ class EvaluationService(Service):
                 submission_result.compilation_tries += 1
 
                 if job_success:
+                    if "" not in job_group.jobs:
+                        logger.error("[action_finished] JobGroup didn't "
+                                     "contain the Jobs it should.")
+                        return
+
+                    job = job_group.jobs[""]
+
+                    # XXX Verify it's a CompilationJob?
+
                     submission_result.compilation_outcome = 'ok' \
                         if job.compilation_success else 'fail'
                     submission_result.compilation_text = job.text
@@ -1031,18 +1040,19 @@ class EvaluationService(Service):
 
                 if job_success:
                     submission_result.evaluation_outcome = "ok"
-                    for test_number, info in job.evaluations.iteritems():
+                    for test_name, job in job_group.jobs.iteritems():
                         evaluation = Evaluation(
-                            num=int(test_number),
-                            text=info['text'],
-                            outcome=info['outcome'],
-                            memory_used=info['plus'].get('memory_used', None),
-                            execution_time=info['plus']
-                                .get('execution_time', None),
-                            execution_wall_clock_time=info['plus']
-                                .get('execution_wall_clock_time', None),
+                            testcase=submission_result.dataset.testcases[test_name],
+                            text=job.text,
+                            outcome=job.outcome,
+                            memory_used= \
+                                job.plus.get('memory_used', None),
+                            execution_time= \
+                                job.plus.get('execution_time', None),
+                            execution_wall_clock_time= \
+                                job.plus.get('execution_wall_clock_time', None),
                             evaluation_shard=job.shard,
-                            evaluation_sandbox=":".join(info['sandboxes']),
+                            evaluation_sandbox=":".join(job.sandboxes),
                             submission_result=submission_result)
                         session.add(evaluation)
 
@@ -1060,6 +1070,15 @@ class EvaluationService(Service):
                 user_test_result.compilation_tries += 1
 
                 if job_success:
+                    if "" not in job_group.jobs:
+                        logger.error("[action_finished] JobGroup didn't "
+                                     "contain the Jobs it should.")
+                        return
+
+                    job = job_group.jobs[""]
+
+                    # XXX Verify it's a CompilationJob?
+
                     user_test_result.compilation_outcome = 'ok' \
                         if job.compilation_success else 'fail'
                     user_test_result.compilation_text = job.text
@@ -1087,24 +1106,25 @@ class EvaluationService(Service):
                 user_test_result.evaluation_tries += 1
 
                 if job_success:
-                    try:
-                        [evaluation] = job.evaluations.values()
-                    except ValueError:
-                        logger.error("[action_finished] I expected the job "
-                                     "for a user test to contain a single "
-                                     "evaluation, while instead it has %d."
-                                     % len(job.evaluations.values()))
+                    if "" not in job_group.jobs:
+                        logger.error("[action_finished] JobGroup didn't "
+                                     "contain the Jobs it should.")
                         return
+
+                    job = job_group.jobs[""]
+
+                    # XXX Verify it's an EvaluationJob?
+
                     user_test_result.evaluation_outcome = 'ok'
-                    user_test_result.evaluation_text = evaluation['text']
+                    user_test_result.evaluation_text = job.text
                     user_test_result.evaluation_shard = job.shard
                     user_test_result.evaluation_sandbox = \
-                        ":".join(evaluation['sandboxes'])
-                    user_test_result.output = evaluation['output']
-                    user_test_result.memory_used = evaluation['plus']. \
-                        get('memory_used', None),
-                    user_test_result.execution_time = evaluation['plus'] \
-                        .get('execution_time', None),
+                        ":".join(job.sandboxes)
+                    user_test_result.output = job.user_output
+                    user_test_result.memory_used = \
+                        job.plus.get('memory_used', None),
+                    user_test_result.execution_time = \
+                        job.plus.get('execution_time', None),
 
                 self.user_test_evaluation_ended(user_test_result)
 

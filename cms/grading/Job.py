@@ -242,8 +242,8 @@ class EvaluationJob(Job):
         job.files = dict(submission.files)
         job.managers = dict(dataset.managers)
         job.executables = dict(submission_result.executables)
-        job.testcases = dict((t.num, Testcase(t.input, t.output))
-                             for t in dataset.testcases)
+        job.testcases = dict((t.codename, Testcase(t.input, t.output))
+                             for t in dataset.testcases.itervalues())
         job.time_limit = dataset.time_limit
         job.memory_limit = dataset.memory_limit
         job.info = "evaluate submission %d" % (submission.id)
@@ -269,7 +269,7 @@ class EvaluationJob(Job):
         job.files = dict(user_test.files)
         job.managers = dict(user_test.managers)
         job.executables = dict(user_test_result.executables)
-        job.testcases = {0: Testcase(user_test.input, None)}
+        job.testcases = {"": Testcase(user_test.input, None)}
         job.time_limit = dataset.time_limit
         job.memory_limit = dataset.memory_limit
         job.info = "evaluate user test %d" % (user_test.id)
@@ -307,10 +307,7 @@ class EvaluationJob(Job):
             'time_limit': self.time_limit,
             'memory_limit': self.memory_limit,
             'success': self.success,
-            # XXX We convert the key from int to str because it'll
-            # be the key of a JSON object.
-            'evaluations': dict((str(k), v) for k, v
-                                in self.evaluations.iteritems()),
+            'evaluations': self.evaluations,
             'only_execution': self.only_execution,
             'get_output': self.get_output,
             })
@@ -326,8 +323,4 @@ class EvaluationJob(Job):
             (k, Executable(k, v)) for k, v in data['executables'].iteritems())
         data['testcases'] = dict(
             (k, Testcase(*v)) for k, v in data['testcases'].iteritems())
-        # XXX We convert the key from str to int because it was the key
-        # of a JSON object.
-        data['evaluations'] = dict((int(k), v) for k, v
-                                   in data['evaluations'].iteritems())
         return cls(**data)

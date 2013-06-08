@@ -47,9 +47,9 @@ class ScoreType:
         """Initializer.
 
         parameters (object): format is specified in the subclasses.
-        public_testcases (dict): associate to each testcase's num a
-                                 boolean indicating if the testcase is
-                                 public.
+        public_testcases (dict): associate to each testcase's codename
+                                 a boolean indicating if the testcase
+                                 is public.
 
         """
         self.parameters = parameters
@@ -337,6 +337,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         returns (float, float): maximum score overall and public.
 
         """
+        # XXX Lexicographical order by codename
         indices = sorted(self.public_testcases.keys())
         public_score = 0.0
         score = 0.0
@@ -360,6 +361,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         if not self.pool[submission_id]["evaluated"]:
             return 0.0, "[]", 0.0, "[]", ["%lg" % 0.0 for _ in self.parameters]
 
+        # XXX Lexicographical order by codename
         indices = sorted(self.public_testcases.keys())
         evaluations = self.pool[submission_id]["evaluations"]
         subtasks = []

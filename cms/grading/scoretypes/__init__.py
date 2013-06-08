@@ -46,8 +46,8 @@ def get_score_type(name=None, parameters=None, public_testcases=None,
 
         name = dataset.score_type
         parameters = dataset.score_type_parameters
-        public_testcases = dict((tc.num, tc.public)
-                                for tc in dataset.testcases)
+        public_testcases = dict((k, tc.public)
+                                for k, tc in dataset.testcases.iteritems())
 
     elif any(x is None for x in (name, parameters, public_testcases)):
         raise ValueError("Need exactly one way to get the score type.")

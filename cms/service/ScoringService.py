@@ -692,7 +692,7 @@ class ScoringService(Service):
             scorer.add_submission(submission_id, submission.timestamp,
                                   submission.user.username,
                                   submission_result.evaluated(),
-                                  dict((ev.num,
+                                  dict((ev.codename,
                                         {"outcome": ev.outcome,
                                          "text": ev.text,
                                          "time": ev.execution_time,
