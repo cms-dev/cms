@@ -360,6 +360,7 @@ def drop_everything():
 
     """
     session = Session()
+
     connection = get_psycopg2_connection(session)
     cursor = connection.cursor()
 
@@ -376,10 +377,9 @@ def drop_everything():
         sys.exit(1)
     cursor.execute("CREATE SCHEMA public")
 
-    # But we also have to drop the lobjects: this is hardly the best
-    # way to do it, but I couldn't find anything better
+    # But we also have to drop the large objects
     try:
-        cursor.execute("SELECT DISTINCT loid FROM pg_largeobject")
+        cursor.execute("SELECT oid FROM pg_largeobject_metadata")
     except ProgrammingError:
         logger.error("Couldn't list large objects, probably you don't have " \
                          "the privileges. Please execute as database " \

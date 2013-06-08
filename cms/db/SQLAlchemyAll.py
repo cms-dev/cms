@@ -119,4 +119,4 @@ metadata.create_all()
 
 if __name__ == "__main__":
     if "redrop" in sys.argv[1:]:
-        metadata.drop_all()
+        drop_everything()
