@@ -158,8 +158,8 @@ class TwoSteps(TaskType):
         # Cleanup
         delete_sandbox(sandbox)
 
-    def evaluate_testcase(self, job, test_name, file_cacher):
-        """See TaskType.evaluate_testcase."""
+    def evaluate(self, job, file_cacher):
+        """See TaskType.evaluate."""
         # f stand for first, s for second.
         first_sandbox = create_sandbox(file_cacher)
         second_sandbox = create_sandbox(file_cacher)
@@ -175,7 +175,7 @@ class TwoSteps(TaskType):
             job.executables[first_filename].digest
             }
         first_files_to_get = {
-            "input.txt": job.testcases[test_name].input
+            "input.txt": job.input
             }
         first_allow_path = ["input.txt", fifo]
 
@@ -232,14 +232,13 @@ class TwoSteps(TaskType):
         success_second, second_plus = \
             evaluation_step_after_run(second_sandbox)
 
-        job.evaluations[test_name] = {
-            'sandboxes': [first_sandbox.path,
-                          second_sandbox.path],
-            'plus': second_plus}
+        job.sandboxes = [first_sandbox.path,
+                         second_sandbox.path]
+        job.plus = second_plus
+
+        success = True
         outcome = None
         text = None
-        evaluation = job.evaluations[test_name]
-        success = True
 
         # Error in the sandbox: report failure!
         if not success_first or not success_second:
@@ -254,7 +253,7 @@ class TwoSteps(TaskType):
             else:
                 text = human_evaluation_message(second_plus)
             if job.get_output:
-                evaluation['output'] = None
+                job.user_output = None
 
         # Otherwise, advance to checking the solution
         else:
@@ -264,30 +263,29 @@ class TwoSteps(TaskType):
                 outcome = 0.0
                 text = "Execution didn't produce file output.txt"
                 if job.get_output:
-                    evaluation['output'] = None
+                   job.user_output = None
 
             else:
                 # If asked so, put the output file into the storage
                 if job.get_output:
-                    evaluation['output'] = second_sandbox.get_file_to_storage(
+                    job.user_output = second_sandbox.get_file_to_storage(
                         "output.txt",
-                        "Output file for testcase %s in job %s" %
-                        (test_name, job.info))
+                        "Output file in job %s" % job.info)
 
                 # If not asked otherwise, evaluate the output file
                 if not job.only_execution:
                     # Put the reference solution into the sandbox
                     second_sandbox.create_file_from_storage(
                         "res.txt",
-                        job.testcases[test_name].output)
+                        job.output)
 
                     outcome, text = white_diff_step(
                         second_sandbox, "output.txt", "res.txt")
 
         # Whatever happened, we conclude.
-        evaluation['success'] = success
-        evaluation['outcome'] = outcome
-        evaluation['text'] = text
+        job.success = success
+        job.outcome = outcome
+        job.text = text
 
         delete_sandbox(first_sandbox)
         delete_sandbox(second_sandbox)

@@ -142,8 +142,8 @@ class Communication(TaskType):
         # Cleanup
         delete_sandbox(sandbox)
 
-    def evaluate_testcase(self, job, test_name, file_cacher):
-        """See TaskType.evaluate_testcase."""
+    def evaluate(self, job, file_cacher):
+        """See TaskType.evaluate."""
         # Create sandboxes and FIFOs
         sandbox_mgr = create_sandbox(file_cacher)
         sandbox_user = create_sandbox(file_cacher)
@@ -164,7 +164,7 @@ class Communication(TaskType):
             job.managers[manager_filename].digest
             }
         manager_files_to_get = {
-            "input.txt": job.testcases[test_name].input
+            "input.txt": job.input
             }
         manager_allow_dirs = [fifo_dir]
         for filename, digest in manager_executables_to_get.iteritems():
@@ -208,11 +208,9 @@ class Communication(TaskType):
         success_mgr, plus_mgr = \
             evaluation_step_after_run(sandbox_mgr)
 
-        job.evaluations[test_name] = \
-            {'sandboxes': [sandbox_user.path,
-                           sandbox_mgr.path],
-             'plus': plus_user}
-        evaluation = job.evaluations[test_name]
+        job.sandboxes = [sandbox_user.path,
+                         sandbox_mgr.path]
+        job.plus = plus_user
 
         # If at least one evaluation had problems, we report the
         # problems.
@@ -231,17 +229,16 @@ class Communication(TaskType):
         # If asked so, save the output file, provided that it exists
         if job.get_output:
             if sandbox_mgr.file_exists("output.txt"):
-                evaluation['output'] = sandbox_mgr.get_file_to_storage(
+                job.user_output = sandbox_mgr.get_file_to_storage(
                     "output.txt",
-                    "Output file for testcase %s in job %s" %
-                    (test_name job.info))
+                    "Output file in job %s" % job.info)
             else:
-                evaluation['output'] = None
+                job.user_output = None
 
         # Whatever happened, we conclude.
-        evaluation['success'] = success
-        evaluation['outcome'] = str(outcome) if outcome is not None else None
-        evaluation['text'] = text
+        job.success = success
+        job.outcome = str(outcome) if outcome is not None else None
+        job.text = text
         delete_sandbox(sandbox_mgr)
         delete_sandbox(sandbox_user)
         shutil.rmtree(fifo_dir)

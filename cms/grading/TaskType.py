@@ -135,9 +135,6 @@ class TaskType:
         """
         self.parameters = parameters
 
-        # If ignore_job is True, we conclude as soon as possible.
-        self.ignore_job = False
-
     @property
     def name(self):
         """Returns the name of the TaskType.
@@ -211,21 +208,6 @@ class TaskType:
         """
         raise NotImplementedError("Please subclass this class.")
 
-    def evaluate_testcase(self, job, test_name, file_cacher):
-        """Perform the evaluation of a single testcase.
-
-        job (EvaluationJob): the data structure that contains details
-                             about the work that has to be done and
-                             that will hold its results.
-        test_name (str): the codename of the testcase to test.
-        file_cacher (FileCacher): the file cacher to use to obtain the
-                                  required files and to store the ones
-                                  that are produced.
-        return (bool): True if the evaluation was successful.
-
-        """
-        raise NotImplementedError("Please subclass this class.")
-
     def evaluate(self, job, file_cacher):
         """Tries to evaluate the specified submission.
 
@@ -234,9 +216,6 @@ class TaskType:
         evaluation fails because of environmental problems (trying
         again to compile the same submission in a sane environment
         should lead to returning True).
-
-        A default implementation which should suit most task types is
-        provided.
 
         job (EvaluationJob): the data structure that contains details
                              about the work that has to be done and
@@ -247,12 +226,7 @@ class TaskType:
         return (bool): success of operation.
 
         """
-        for test_name in job.testcases:
-            success = self.evaluate_testcase(job, test_name, file_cacher)
-            if not success or self.ignore_job:
-                job.success = False
-                return
-        job.success = True
+        raise NotImplementedError("Please subclass this class.")
 
     def execute_job(self, job, file_cacher):
         """Call compile() or execute() depending on the job passed

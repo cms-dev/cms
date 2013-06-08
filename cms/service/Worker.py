@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -29,7 +30,7 @@ from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.grading import JobException
 from cms.grading.tasktypes import get_task_type
-from cms.grading.Job import Job
+from cms.grading.Job import JobGroup
 
 
 class Worker(Service):
@@ -48,9 +49,8 @@ class Worker(Service):
         Service.__init__(self, shard, custom_logger=logger)
         self.file_cacher = FileCacher(self)
 
-        self.task_type = None
         self.work_lock = threading.Lock()
-        self.session = None
+        self.ignore_job = False
 
     @rpc_method
     def ignore_job(self):
@@ -60,12 +60,9 @@ class Worker(Service):
         inconsistent.
 
         """
-        # We inform the task_type to quit as soon as possible.
+        # We remember to quit as soon as possible.
         logger.info("Trying to interrupt job as requested.")
-        try:
-            self.task_type.ignore_job = True
-        except AttributeError:
-            pass  # Job concluded right under our nose, that's ok too.
+        self.ignore_job = True
 
     # FIXME - rpc_threaded is disable because it makes the call fail:
     # we should investigate on this
@@ -91,22 +88,44 @@ class Worker(Service):
 
     @rpc_method
     @rpc_threaded
-    def execute_job(self, job_dict):
-        job = Job.import_from_dict_with_type(job_dict)
+    def execute_job_group(self, job_group_dict):
+        job_group = JobGroup.import_from_dict(job_group_dict)
 
         if self.work_lock.acquire(False):
 
             try:
-                logger.operation = "job '%s'" % (job.info)
-                logger.info("Request received")
-                job.shard = self.shard
+                self.ignore_job = False
 
-                self.task_type = get_task_type(job.task_type,
-                                               job.task_type_parameters)
-                self.task_type.execute_job(job, self.file_cacher)
-                logger.info("Request finished.")
+                for k, job in job_group.jobs.iteritems():
+                    logger.operation = "job '%s'" % (job.info)
+                    logger.info("Request received")
 
-                return job.export_to_dict()
+                    job.shard = self.shard
+
+                    # FIXME This is actually kind of a workaround...
+                    # The only TaskType that needs it is OutputOnly.
+                    job._key = k
+
+                    # FIXME We're creating a new TaskType for each Job
+                    # even if, at the moment, a JobGroup always uses
+                    # the same TaskType and the same parameters. Yet,
+                    # this could change in the future, so the best
+                    # solution is to keep a cache of TaskTypes objects
+                    # (like ScoringService does with ScoreTypes, except
+                    # that we cannot index by Dataset ID here...).
+                    task_type = get_task_type(job.task_type,
+                                              job.task_type_parameters)
+                    task_type.execute_job(job, self.file_cacher)
+
+                    logger.info("Request finished.")
+
+                    if not job.success or self.ignore_job:
+                        job_group.success = False
+                        break
+                else:
+                    job_group.success = True
+
+                return job_group.export_to_dict()
 
             except:
                 err_msg = "Worker failed on operation `%s'" % logger.operation
@@ -114,8 +133,6 @@ class Worker(Service):
                 raise JobException(err_msg)
 
             finally:
-                self.task_type = None
-                self.session = None
                 logger.operation = ""
                 self.work_lock.release()
 

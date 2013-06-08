@@ -80,34 +80,34 @@ class OutputOnly(TaskType):
         job.compilation_success = True
         job.text = "No compilation needed."
 
-    def evaluate_testcase(self, job, test_name, file_cacher):
-        """See TaskType.evaluate_testcase."""
+    def evaluate(self, job, file_cacher):
+        """See TaskType.evaluate."""
         sandbox = create_sandbox(file_cacher)
         job.sandboxes.append(sandbox.path)
 
         # Immediately prepare the skeleton to return
-        job.evaluations[test_name] = {'sandboxes': [sandbox.path],
-                                      'plus': {}}
-        evaluation = job.evaluations[test_name]
+        job.sandboxes = [sandbox.path]
+        job.plus = {}
+
         outcome = None
         text = None
 
         # Since we allow partial submission, if the file is not
         # present we report that the outcome is 0.
-        if "output_%s.txt" % test_name not in job.files:
-            evaluation['success'] = True
-            evaluation['outcome'] = "0.0"
-            evaluation['text'] = "File not submitted."
+        if "output_%s.txt" % job._key not in job.files:
+            job.success = True
+            job.outcome = "0.0"
+            job.text = "File not submitted."
             return True
 
         # First and only one step: diffing (manual or with manager).
         output_digest = job.files["output_%s.txt" %
-                                  test_name].digest
+                                  job._key].digest
 
         # Put the files into the sandbox
         sandbox.create_file_from_storage(
             "res.txt",
-            job.testcases[test_name].output)
+            job.output)
         sandbox.create_file_from_storage(
             "output.txt",
             output_digest)
@@ -132,7 +132,7 @@ class OutputOnly(TaskType):
                     manager_filename,
                     job.managers[manager_filename].digest,
                     executable=True)
-                input_digest = job.testcases[test_name].input
+                input_digest = job.input
                 sandbox.create_file_from_storage(
                     "input.txt",
                     input_digest)
@@ -150,8 +150,8 @@ class OutputOnly(TaskType):
                              self.parameters[0])
 
         # Whatever happened, we conclude.
-        evaluation['success'] = success
-        evaluation['outcome'] = str(outcome) if outcome is not None else None
-        evaluation['text'] = text
+        job.success = success
+        job.outcome = str(outcome) if outcome is not None else None
+        job.text = text
         delete_sandbox(sandbox)
         return success

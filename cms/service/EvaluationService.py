@@ -42,7 +42,7 @@ from cms.db.SQLAlchemyAll import SessionGen, Contest, Dataset, \
      UserTest, UserTestResult, UserTestExecutable
 from cms.service import get_submission_results, get_datasets_to_judge
 from cmscommon.DateTime import make_datetime, make_timestamp
-from cms.grading.Job import Job, CompilationJob, EvaluationJob
+from cms.grading.Job import JobGroup
 
 
 def to_compile(submission_result):
@@ -421,24 +421,28 @@ class WorkerPool:
             if job_type == EvaluationService.JOB_TYPE_COMPILATION:
                 submission = Submission.get_from_id(object_id, session)
                 dataset = Dataset.get_from_id(dataset_id, session)
-                job_ = CompilationJob.from_submission(submission, dataset)
+                job_group = \
+                    JobGroup.from_submission_compilation(submission, dataset)
             elif job_type == EvaluationService.JOB_TYPE_EVALUATION:
                 submission = Submission.get_from_id(object_id, session)
                 dataset = Dataset.get_from_id(dataset_id, session)
-                job_ = EvaluationJob.from_submission(submission, dataset)
+                job_group = \
+                    JobGroup.from_submission_evaluation(submission, dataset)
             elif job_type == EvaluationService.JOB_TYPE_TEST_COMPILATION:
                 user_test = UserTest.get_from_id(object_id, session)
                 dataset = Dataset.get_from_id(dataset_id, session)
-                job_ = CompilationJob.from_user_test(user_test, dataset)
+                job_group = \
+                    JobGroup.from_user_test_compilation(user_test, dataset)
             elif job_type == EvaluationService.JOB_TYPE_TEST_EVALUATION:
                 user_test = UserTest.get_from_id(object_id, session)
                 dataset = Dataset.get_from_id(dataset_id, session)
-                job_ = EvaluationJob.from_user_test(user_test, dataset)
-                job_.get_output = True
-                job_.only_execution = True
+                job_group = \
+                    JobGroup.from_user_test_evaluation(user_test, dataset)
+                job_group.jobs[''].get_output = True
+                job_group.jobs[''].only_execution = True
 
-            self._worker[shard].execute_job(
-                job_dict=job_.export_to_dict(),
+            self._worker[shard].execute_job_group(
+                job_group_dict=job_group.export_to_dict(),
                 callback=self._service.action_finished.__func__,
                 plus=(job_type, object_id, dataset_id, side_data, shard))
         return shard
@@ -944,7 +948,7 @@ class EvaluationService(Service):
         """Callback from a worker, to signal that is finished some
         action (compilation or evaluation).
 
-        data (dict): a dictionary that describes a Job instance.
+        data (dict): a dictionary that describes a JobGroup instance.
         plus (tuple): the tuple (job_type,
                                  object_id,
                                  dataset_id,

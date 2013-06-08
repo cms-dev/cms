@@ -194,8 +194,8 @@ class Batch(TaskType):
         # Cleanup
         delete_sandbox(sandbox)
 
-    def evaluate_testcase(self, job, test_name, file_cacher):
-        """See TaskType.evaluate_testcase."""
+    def evaluate(self, job, file_cacher):
+        """See TaskType.evaluate."""
         # Create the sandbox
         sandbox = create_sandbox(file_cacher)
 
@@ -216,7 +216,7 @@ class Batch(TaskType):
             output_filename = "output.txt"
             stdout_redirect = output_filename
         files_to_get = {
-            input_filename: job.testcases[test_name].input
+            input_filename: job.input
             }
 
         # Put the required files into the sandbox
@@ -234,11 +234,11 @@ class Batch(TaskType):
             stdin_redirect=stdin_redirect,
             stdout_redirect=stdout_redirect)
 
-        job.evaluations[test_name] = {'sandboxes': [sandbox.path],
-                                      'plus': plus}
+        job.sandboxes = [sandbox.path]
+        job.plus = plus
+
         outcome = None
         text = None
-        evaluation = job.evaluations[test_name]
 
         # Error in the sandbox: nothing to do!
         if not success:
@@ -249,7 +249,7 @@ class Batch(TaskType):
             outcome = 0.0
             text = human_evaluation_message(plus)
             if job.get_output:
-                evaluation['output'] = None
+                job.user_output = None
 
         # Otherwise, advance to checking the solution
         else:
@@ -260,15 +260,14 @@ class Batch(TaskType):
                 text = "Execution didn't produce file %s" % \
                     (output_filename)
                 if job.get_output:
-                    evaluation['output'] = None
+                    job.user_output = None
 
             else:
                 # If asked so, put the output file into the storage
                 if job.get_output:
-                    evaluation['output'] = sandbox.get_file_to_storage(
+                    job.user_output = sandbox.get_file_to_storage(
                         output_filename,
-                        "Output file for testcase %s in job %s" %
-                        (test_name, job.info),
+                        "Output file in job %s" % job.info,
                         trunc_len=100 * 1024)
 
                 # If not asked otherwise, evaluate the output file
@@ -277,7 +276,7 @@ class Batch(TaskType):
                     # Put the reference solution into the sandbox
                     sandbox.create_file_from_storage(
                         "res.txt",
-                        job.testcases[test_name].output)
+                        job.output)
 
                     # Check the solution with white_diff
                     if self.parameters[2] == "diff":
@@ -318,8 +317,8 @@ class Batch(TaskType):
                                          self.parameters[2])
 
         # Whatever happened, we conclude.
-        evaluation['success'] = success
-        evaluation['outcome'] = str(outcome) if outcome is not None else None
-        evaluation['text'] = text
+        job.success = success
+        job.outcome = str(outcome) if outcome is not None else None
+        job.text = text
         delete_sandbox(sandbox)
         return success
