@@ -519,7 +519,7 @@ class YamlLoader(Loader):
                 path=os.path.join(task_path, "output", "output%d.txt" % i),
                 description="Output %d for task %s" % (i, name))
             args["testcases"] += [
-                Testcase(i, False, input_digest, output_digest)]
+                Testcase("%03d" % i, False, input_digest, output_digest)]
             if args["task_type"] == "OutputOnly":
                 task.attachments += [
                     Attachment("input_%03d.txt" % i, input_digest)]

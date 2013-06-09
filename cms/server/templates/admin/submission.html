@@ -144,10 +144,10 @@
       </tr>
     </thead>
     <tbody>
-      {% for idx, ev in enumerate(sr.evaluations) %}
+      {% for idx, ev in sorted((ev.codename, ev) for ev in sr.evaluations) %}
       <tr>
         <td id="eval_outcome_{{ idx }}">{{ ev.outcome }}</td>
-        {% if s.token is not None or shown_dataset.testcases[int(ev.num)].public %}
+        {% if s.token is not None or ev.testcase.public %}
         <td style="align: center;">&bullet;</td>
         {% else %}
         <td></td>

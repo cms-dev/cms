@@ -253,7 +253,7 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
       <table class="bordered" style="text-align:center">
         <thead>
           <tr>
-            <th>Position</th>
+            <th>Codename</th>
             <th>Public</th>
             <th>Input</th>
             <th>Output</th>
@@ -261,17 +261,17 @@ $("select[name=task_type_{{ dataset.id }}]").change(function() {
           </tr>
         </thead>
         <tbody>
-          {% for testcase in dataset.testcases %}
+          {% for codename, testcase in sorted(dataset.testcases.iteritems()) %}
           <tr>
-            <td style="font-weight:bold;">{{ testcase.num }}</td>
+            <td style="font-weight:bold;">{{ codename }}</td>
             <td style="font-weight:bold;">
-              <input type="checkbox" name="testcase_{{ dataset.id }}_{{ testcase.num }}_public" {% if testcase.public %}checked{% end %} />
+              <input type="checkbox" name="testcase_{{ testcase.id }}_public" {% if testcase.public %}checked{% end %} />
             </td>
             <td>
-              <a href="#" onclick="utils.show_file('input{{ testcase.num }}','{{ url_root }}/file/{{ testcase.input }}/input{{ testcase.num }}')">Show input</a>
+              <a href="#" onclick="utils.show_file('input_{{ testcase.codename }}','{{ url_root }}/file/{{ testcase.input }}/input_{{ testcase.codename }}')">Show input</a>
             </td>
             <td>
-              <a href="#" onclick="utils.show_file('output{{ testcase.num }}','{{ url_root }}/file/{{ testcase.output }}/output{{ testcase.num }}')">Show output</a>
+              <a href="#" onclick="utils.show_file('output_{{ testcase.codename }}','{{ url_root }}/file/{{ testcase.output }}/output_{{ testcase.codename }}')">Show output</a>
             </td>
             <td>
               <a href="{{ url_root }}/delete_testcase/{{ testcase.id }}">Delete</a>

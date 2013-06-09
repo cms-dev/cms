@@ -871,7 +871,7 @@ def copy_dataset(
     sql_session (Session): the session to commit.
 
     """
-    for testcase in old_dataset.testcases:
+    for testcase in old_dataset.testcases.itervalues():
         new_dataset.testcases += [testcase.clone()]
 
     if clone_managers:
@@ -1193,15 +1193,7 @@ class AddTestcaseHandler(BaseHandler):
         task = dataset.task
         self.contest = task.contest
 
-        try:
-            num = int(self.get_argument("num"))
-        except ValueError:
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid data",
-                "Please give a numerical value for the position.")
-            self.redirect("/add_testcase/%s" % dataset_id)
-            return
+        codename = self.get_argument("codename")
 
         try:
             input_ = self.request.files["input"][0]
@@ -1238,7 +1230,7 @@ class AddTestcaseHandler(BaseHandler):
         task = dataset.task
         self.contest = task.contest
 
-        testcase = Testcase(num, public, input_digest, output_digest, dataset=dataset)
+        testcase = Testcase(codename, public, input_digest, output_digest, dataset=dataset)
         self.sql_session.add(testcase)
 
         if try_commit(self.sql_session, self):
@@ -1480,10 +1472,9 @@ class TaskHandler(BaseHandler):
                     "score_type_parameters_%d" % dataset.id,
                     dataset.score_type_parameters)
 
-                for testcase in dataset.testcases:
+                for testcase in dataset.testcases.itervalues():
                     testcase.public = bool(self.get_argument(
-                        "testcase_%s_%s_public" % (
-                            dataset.id, testcase.num), False))
+                        "testcase_%s_public" % testcase.id, False))
 
             task.token_initial = self.get_non_negative_int(
                 "token_initial",
