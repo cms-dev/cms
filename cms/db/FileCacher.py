@@ -29,6 +29,8 @@ import tempfile
 import shutil
 import hashlib
 
+import gevent
+
 from sqlalchemy.exc import IntegrityError
 
 from cms import config, logger, mkdir
@@ -206,8 +208,8 @@ class DBBackend(FileCacherBackend):
                     while buf != '':
                         # hasher.update(buf)
                         temp_file.write(buf)
-                        if self.service is not None:
-                            self.service._step()
+                        # Cooperative yield
+                        gevent.sleep(0)
                         buf = lobject.read(self.CHUNK_SIZE)
 
     def put_file(self, digest, origin, description=""):
@@ -238,8 +240,8 @@ class DBBackend(FileCacherBackend):
                                 while len(buf) > 0:
                                     written = lobject.write(buf)
                                     buf = buf[written:]
-                                    if self.service is not None:
-                                        self.service._step()
+                                    # Cooperative yield
+                                    gevent.sleep(0)
                                 buf = temp_file.read(self.CHUNK_SIZE)
 
                     fso.digest = digest
