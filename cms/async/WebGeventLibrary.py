@@ -186,6 +186,7 @@ class WebService(Service):
                       "([0-9]+)/([a-zA-Z0-9_-]+)",
                       SyncRPCRequestHandler)]
         self.application = tornado.wsgi.WSGIApplication(handlers, **parameters)
+        self.application.service = self
 
         # xheaders=True means that Tornado uses the content of the
         # header X-Real-IP as the request IP. This means that if it is
@@ -193,11 +194,12 @@ class WebService(Service):
         # from. But, to use it, we need to be sure we can trust it
         # (i.e., if we are not behind a proxy that sets that header,
         # we must not use it).
-        # TODO - This was broken while switching to
-        # gevent.pywsgi.WSGIServer
-        self.application.service = self
+        real_application = self.application
+        if parameters.get('is_proxy_used', False):
+            real_application = WSGIXheadersMiddleware(real_application)
+
         self.web_server = WSGIServer((listen_address, listen_port),
-                                     self.application)
+                                     real_application)
 
     def run(self):
         """Start the WebService.
@@ -216,3 +218,42 @@ class WebService(Service):
 
         """
         self.__responses[plus] = (data, error)
+
+
+class WSGIXheadersMiddleware:
+    """A WSGI middleware to detect X-Real-IP and X-Forwarded-For
+    headers.
+
+    environ['REMOTE_ADDR'] is set accordingly.
+
+    """
+
+    def __init__(self, app):
+        """Build a wrapper around a WSGI application.
+
+        app (WSGI application): the original application.
+
+        """
+        self.app = app
+
+    def __call__(self, environ, start_response):
+        """Handle WSGI call.
+
+        Mangle environ['REMOTE_ADDR'] and forward the call to the
+        original application.
+
+        """
+        # X-Forwarded-For: client_ip, proxy1_ip, proxy2_ip, ...
+        if 'HTTP_X_FORWARDED_FOR' in environ:
+            environ['REMOTE_ADDR'] = environ['HTTP_X_FORWARDED_FOR']. \
+                split(',')[0].strip()
+
+        # X-Real-Ip: client_ip
+        elif 'HTTP_X_REAL_IP' in environ:
+            environ['REMOTE_ADDR'] = environ['HTTP_X_REAL_IP']
+
+        else:
+            logger.error("is_proxy_used=True, but no proxy headers detected; "
+                         "this may bring to security issues")
+
+        return self.app(environ, start_response)
