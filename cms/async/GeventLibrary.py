@@ -132,8 +132,9 @@ class RPCRequest:
             params.append(response["__data"])
             if self.plus is not None:
                 params.append(self.plus)
-            self.callback(*params,
-                          __error=response.get("__error", None))
+            gevent.spawn(self.callback,
+                         *params,
+                         __error=response.get("__error", None))
         else:
             error = None
             if response is not None:
