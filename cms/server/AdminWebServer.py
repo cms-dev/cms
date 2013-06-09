@@ -1204,7 +1204,7 @@ class AddTestcaseHandler(BaseHandler):
             return
 
         try:
-            _input = self.request.files["input"][0]
+            input_ = self.request.files["input"][0]
             output = self.request.files["output"][0]
         except KeyError:
             self.application.service.add_notification(
@@ -1220,7 +1220,7 @@ class AddTestcaseHandler(BaseHandler):
 
         try:
             input_digest = self.application.service.file_cacher.put_file(
-                binary_data=_input["body"],
+                binary_data=input_["body"],
                 description="Testcase input for task %s" % task_name)
             output_digest = self.application.service.file_cacher.put_file(
                 binary_data=output["body"],

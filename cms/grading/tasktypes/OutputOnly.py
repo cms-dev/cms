@@ -26,7 +26,7 @@
 
 from cms import logger
 from cms.grading.TaskType import TaskType, \
-     create_sandbox, delete_sandbox
+    create_sandbox, delete_sandbox
 from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading import white_diff_step, evaluation_step, \
     extract_outcome_and_text

@@ -30,7 +30,7 @@ from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step_before_run, evaluation_step_after_run, \
     is_evaluation_passed, human_evaluation_message, white_diff_step
 from cms.grading.TaskType import TaskType, \
-     create_sandbox, delete_sandbox
+    create_sandbox, delete_sandbox
 from cms.db.SQLAlchemyAll import Executable
 
 
@@ -110,10 +110,10 @@ class TwoSteps(TaskType):
 
         # User's submissions and headers.
         source_filenames = []
-        for filename, _file in self.job.files.iteritems():
+        for filename, file_ in self.job.files.iteritems():
             source_filename = filename.replace(".%l", source_ext)
             source_filenames.append(source_filename)
-            files_to_get[source_filename] = _file.digest
+            files_to_get[source_filename] = file_.digest
             # Headers.
             header_filename = filename.replace(".%l", header_ext)
             source_filenames.append(header_filename)

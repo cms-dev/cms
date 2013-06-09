@@ -27,9 +27,9 @@ from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step, human_evaluation_message, is_evaluation_passed, \
     extract_outcome_and_text, white_diff_step
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
-     ParameterTypeChoice, ParameterTypeString
+    ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
-     create_sandbox, delete_sandbox
+    create_sandbox, delete_sandbox
 from cms.db.SQLAlchemyAll import Executable
 
 
