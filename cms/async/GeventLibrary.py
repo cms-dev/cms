@@ -247,6 +247,7 @@ class Service:
                       "Exception `%s' and traceback `%s'" % \
                       (repr(error), traceback.format_exc())
             logger.critical(err_msg)
+        self._disconnect_all()
         self.server.stop()
 
     def _step(self):
@@ -279,6 +280,15 @@ class Service:
                        is not None:
                     self.on_remote_service_connected[service](service)
         return True
+
+    def _disconnect_all(self):
+        """Disconnect all remote services.
+
+        """
+        for service in self.remote_services:
+            remote_service = self.remote_services[service]
+            if remote_service.connected:
+                remote_service.disconnect_remote_service()
 
     def _trigger(self, maximum=2.0):
         """Call the timeouts that have expired and find interval to
@@ -544,6 +554,19 @@ class RemoteService():
             pass
         else:
             self._initialize_channel(sock)
+
+    def disconnect_remote_service(self):
+        """Disconnect from remote service.
+
+        Errors are silently ignored.
+
+        """
+        try:
+            self.socket.shutdown(gevent.socket.SHUT_RDWR)
+            self.socket.close()
+        except:
+            pass
+        self.connected = False
 
     def execute_rpc(self, method, data, callback=None, plus=None):
         """Method to send an RPC request to the remote service.
