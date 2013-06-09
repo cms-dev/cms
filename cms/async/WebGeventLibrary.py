@@ -161,19 +161,6 @@ class WebService(Service):
         from cms.async.GeventLibrary import logger as _logger
         logger = _logger
 
-        # This ensures that when the server autoreloads because its source is
-        # modified, the socket is closed correctly.
-        # In the development branch of Tornado, you can add a hook before
-        # the server reloads.
-        # TODO - Verify this in the new setup (in particularly, does
-        # the server still reload itself?)
-        #try:
-        #    if parameters["debug"]:
-        #        fcntl.fcntl(self.server.socket,
-        #                    fcntl.F_SETFD, fcntl.FD_CLOEXEC)
-        #except KeyError:
-        #    pass
-
         self.__responses = {}
         # TODO: why are the following two lines needed?
         self._RPCRequestHandler__responses = self.__responses
