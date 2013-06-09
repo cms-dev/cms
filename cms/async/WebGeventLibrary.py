@@ -175,8 +175,8 @@ class WebService(Service):
         self.application = tornado.wsgi.WSGIApplication(handlers, **parameters)
         self.application.service = self
 
-        # xheaders=True means that Tornado uses the content of the
-        # header X-Real-IP as the request IP. This means that if it is
+        # is_proxy_used=True means the content of the header X-Real-IP
+        # is interpreted as the request IP. This means that if we're
         # behind a proxy, it can see the real IP the request is coming
         # from. But, to use it, we need to be sure we can trust it
         # (i.e., if we are not behind a proxy that sets that header,
@@ -241,6 +241,7 @@ class WSGIXheadersMiddleware:
 
         else:
             logger.error("is_proxy_used=True, but no proxy headers detected; "
-                         "this may bring to security issues")
+                         "probably no proxy is actually used, and this may "
+                         "bring to security issues")
 
         return self.app(environ, start_response)
