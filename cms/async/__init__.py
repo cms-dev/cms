@@ -31,27 +31,6 @@ import socket
 Address = namedtuple("Address", "ip port")
 
 
-# Flag to know whether current application is using gevent or not; if
-# not, utilities in GeventUtils.py don't yield
-using_gevent = False
-
-
-def set_using_gevent():
-    """Set the using_gevent flag.
-
-    """
-    global using_gevent
-    using_gevent = True
-
-
-def is_using_gevent():
-    """Quert the using_gevent flag.
-
-    """
-    global using_gevent
-    return using_gevent
-
-
 class ServiceCoord(namedtuple("ServiceCoord", "name shard")):
     """A compact representation for the name and the shard number of a
     service (thus identifying it).

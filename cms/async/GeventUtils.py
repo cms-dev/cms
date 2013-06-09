@@ -28,22 +28,22 @@ blocking way.
 
 from contextlib import contextmanager
 
-from cms.async import is_using_gevent
+import gevent
+
+from cms.async.PsycoGevent import make_psycopg_green, \
+    unmake_psycopg_green
 
 
 def copyfileobj(fsrc, fdst, length=16 * 1024):
     """As shutil.copyfilobj(), but with gevent support.
 
     """
-    if is_using_gevent():
-        import gevent
     while True:
         buf = fsrc.read(length)
         if not buf:
             break
         fdst.write(buf)
-        if is_using_gevent():
-            gevent.sleep(0)
+        gevent.sleep(0)
 
 
 def copyfile(src, dst):
@@ -69,12 +69,8 @@ def ungreen_psycopg():
     stay inside the context manager as short as possible.
 
     """
-    if is_using_gevent():
-        from cms.async.PsycoGevent import make_psycopg_green, \
-            unmake_psycopg_green
-        unmake_psycopg_green()
+    unmake_psycopg_green()
     try:
         yield
     finally:
-        if is_using_gevent():
-            make_psycopg_green()
+        make_psycopg_green()
