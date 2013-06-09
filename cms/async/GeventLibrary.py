@@ -32,6 +32,7 @@ from functools import wraps
 
 import gevent
 import gevent.socket
+import gevent.event
 from gevent.server import StreamServer
 
 from cms.async import ServiceCoord, Address, get_service_address
@@ -172,6 +173,10 @@ class Service:
         # called when the remote service becomes online.
         self.remote_services = {}
         self.on_remote_service_connected = {}
+        # Event to signal that something happened and the sleeping in
+        # run() must be interrupted
+        self.event = gevent.event.Event()
+        self.event.clear()
 
         self._my_coord = ServiceCoord(self.__class__.__name__, self.shard)
 
@@ -226,12 +231,18 @@ class Service:
             next_timeout += seconds
         heapq.heappush(self._timeouts, (next_timeout, seconds, func, plus))
 
+        # Wake up the run() cycle
+        self.event.set()
+
     def exit(self):
         """Terminate the service at the next step.
 
         """
         self._exit = True
         logger.warning("%s %d dying in 3, 2, 1..." % self._my_coord)
+
+        # Wake up the run() cycle
+        self.event.set()
 
     def run(self):
         """Starts the main loop of the service.
@@ -241,7 +252,8 @@ class Service:
         try:
             while not self._exit:
                 next_timeout = self._trigger(maximum=0.5)
-                gevent.sleep(next_timeout)
+                self.event.clear()
+                self.event.wait(timeout=next_timeout)
         except Exception as error:
             err_msg = "Exception not managed, quitting. " \
                       "Exception `%s' and traceback `%s'" % \
