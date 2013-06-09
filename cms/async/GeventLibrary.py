@@ -367,7 +367,6 @@ class Service:
 
         res = {}
         res["callable"] = hasattr(method, "rpc_callable")
-        res["threaded"] = hasattr(method, "threaded")
 
         return res
 
@@ -470,25 +469,6 @@ class RemoteService():
                         "__error": None}
             if "__id" in message:
                 response["__id"] = message["__id"]
-
-            # We find the properties of the called rpc method.
-            try:
-                method_info = self.service.method_info(message["__method"])
-                threaded = method_info["threaded"]
-            except KeyError as exception:
-                response["__error"] = "%s: %s\n%s" % \
-                    (exception.__class__.__name__, exception,
-                     traceback.format_exc())
-                method_response = None
-                self.send_reply(response, method_response)
-                return
-
-            # Threaded RPC not supported here
-            if threaded:
-                response["__error"] = "Threaded RPC unsupported"
-                method_response = None
-                self.send_reply(response, method_response)
-                return
 
             # Otherwise, we compute the method here and send the reply
             # right away.
