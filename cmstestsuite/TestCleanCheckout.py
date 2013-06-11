@@ -3,6 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -57,15 +58,14 @@ def setup_cms():
 
     info("Configuring CMS.")
     configure_cms(
-        {
-            "database": '"postgresql+psycopg2://' \
-                '%(DB_USER)s:%(DB_PASSWORD)s@' \
-                '%(DB_HOST)s/%(DB_NAME)s"' % CONFIG,
-            "keep_sandbox": "false",
-            "contest_listen_address": '["127.0.0.1"]',
-            "admin_listen_address": '"127.0.0.1"',
-            "min_submission_interval": '0',
-        })
+        {"database": '"postgresql+psycopg2://'
+         '%(DB_USER)s:%(DB_PASSWORD)s@'
+         '%(DB_HOST)s/%(DB_NAME)s"' % CONFIG,
+         "keep_sandbox": "false",
+         "contest_listen_address": '["127.0.0.1"]',
+         "admin_listen_address": '"127.0.0.1"',
+         "min_submission_interval": '0',
+         })
 
     info("Setting environment.")
     os.environ["PYTHONPATH"] = "%(TEST_DIR)s" % CONFIG
@@ -88,13 +88,16 @@ def setup_cms():
 if __name__ == "__main__":
     parser = ArgumentParser(
         description="This utility tests a clean checkout of CMS.")
-    parser.add_argument("-r", "--revision",
+    parser.add_argument(
+        "-r", "--revision",
         type=str, default=None, action="store",
         help="Test a specific git revision.")
-    parser.add_argument("-k", "--keep-working",
+    parser.add_argument(
+        "-k", "--keep-working",
         default=False, action="store_true",
         help="Do not delete the working directory.")
-    parser.add_argument("arguments", nargs="*",
+    parser.add_argument(
+        "arguments", nargs="*",
         help="All remaining arguments are passed to the test script.")
     args = parser.parse_args()
 

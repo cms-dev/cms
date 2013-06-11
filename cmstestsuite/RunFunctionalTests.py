@@ -3,6 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,9 +27,9 @@ from argparse import ArgumentParser
 
 from cmstestsuite import get_cms_config, CONFIG, info, sh
 from cmstestsuite import add_contest, add_existing_user, add_existing_task, \
-     add_user, add_task, add_testcase, add_manager, combine_coverage, \
-     get_tasks, get_users, start_service, start_server, \
-     start_ranking_web_server, shutdown_services, restart_service
+    add_user, add_task, add_testcase, add_manager, combine_coverage, \
+    get_tasks, get_users, start_service, start_server, \
+    start_ranking_web_server, shutdown_services, restart_service
 from cmstestsuite.Test import TestFailure
 import cmstestsuite.Tests
 from cmscommon.DateTime import get_system_timezone
@@ -64,7 +65,7 @@ def create_contest():
         token_min_interval="0",
         token_gen_time="0",
         token_gen_number="0",
-        )
+    )
 
     info("Created contest %d." % contest_id)
 
@@ -193,6 +194,8 @@ def load_test_list_from_file(filename):
     testname language1
 
     """
+    if not os.path.exists(filename):
+        return []
     try:
         with open(filename) as f:
             lines = f.readlines()
@@ -242,7 +245,7 @@ def load_test_list_from_file(filename):
 
 def load_failed_tests():
     list = load_test_list_from_file(FAILED_TEST_FILENAME)
-    if list == None:
+    if list is None:
         sys.exit(1)
 
     return list
@@ -345,21 +348,27 @@ def config_is_usable(cms_config):
 
 
 def main():
-    parser = ArgumentParser(description="Runs the CMS test suite.")
-    parser.add_argument("regex", metavar="regex",
+    parser = ArgumentParser(description="Runs the CMS functional test suite.")
+    parser.add_argument(
+        "regex", metavar="regex",
         type=str, nargs='*',
         help="a regex to match to run a subset of tests")
-    parser.add_argument("-l", "--languages",
+    parser.add_argument(
+        "-l", "--languages",
         type=str, action="store", default="",
         help="a comma-separated list of languages to test")
-    parser.add_argument("-c", "--contest", action="store",
+    parser.add_argument(
+        "-c", "--contest", action="store",
         help="use an existing contest (and the tasks in it)")
-    parser.add_argument("-r", "--retry-failed", action="store_true",
+    parser.add_argument(
+        "-r", "--retry-failed", action="store_true",
         help="only run failed tests from the previous run (stored in %s)" %
         FAILED_TEST_FILENAME)
-    parser.add_argument("-n", "--dry-run", action="store_true",
+    parser.add_argument(
+        "-n", "--dry-run", action="store_true",
         help="show what tests would be run, but do not run them")
-    parser.add_argument("-v", "--verbose", action="count",
+    parser.add_argument(
+        "-v", "--verbose", action="count",
         help="print debug information (use multiple times for more)")
     args = parser.parse_args()
 
