@@ -22,6 +22,8 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `Psycopg <http://initd.org/psycopg/>`_ >= 2.4;
 
+* `gevent <http://www.gevent.org/>`_ >= 1.0;
+
 * `simplejson <https://github.com/simplejson/simplejson>`_ >= 2.1;
 
 * `SQLAlchemy <http://www.sqlalchemy.org/>`_ >= 0.7;
@@ -58,7 +60,9 @@ These are our requirements (in particular we highlight those that are not usuall
 
 You will also require a Linux kernel with support for control groups and namespaces. Support has been in the Linux kernel since 2.6.32, and is provided by Ubuntu 12.04 and later. Other distributions, or systems with custom kernels, may not have support enabled. At a minimum, you will need to enable the following Linux kernel options: ``CONFIG_CGROUPS``, ``CONFIG_CGROUP_CPUACCT``, ``CONFIG_MEMCG`` (previously called as ``CONFIG_CGROUP_MEM_RES_CTLR``), ``CONFIG_CPUSETS``, ``CONFIG_PID_NS``, ``CONFIG_IPC_NS``, ``CONFIG_NET_NS``.
 
-On Ubuntu 12.04, one will need to run the following script to satisfy all dependencies:
+Nearly all dependencies (i.e., all except gevent) can be installed automatically on most Linux distributions (gevent itself is provided on some distributions, but we need the development version). Instructions for installing gevent are below.
+
+On Ubuntu 12.04, one will need to run the following script to satisfy all dependencies (except gevent):
 
 .. sourcecode:: bash
 
@@ -95,6 +99,18 @@ If you prefer using Python Package Index, you can retrieve all Python dependenci
 .. sourcecode:: bash
 
     sudo pip install -r REQUIREMENTS.txt
+
+Installing gevent (version 1.0)
+===============================
+
+To install gevent please clone its GIT repository and use the ``setup.py`` script:
+
+.. sourcecode:: bash
+
+    git clone git@github.com:surfly/gevent.git
+    cd gevent
+    python ./setup.py build
+    sudo python ./setup.py install
 
 
 Installing CMS
