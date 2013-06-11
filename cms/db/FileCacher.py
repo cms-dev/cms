@@ -35,7 +35,7 @@ from sqlalchemy.exc import IntegrityError
 
 from cms import config, logger, mkdir
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
-from cms.async.GeventUtils import copyfile, copyfileobj
+from cms.io.GeventUtils import copyfile, copyfileobj
 
 
 class FileCacherBackend:

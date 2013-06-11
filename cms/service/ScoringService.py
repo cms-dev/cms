@@ -39,8 +39,8 @@ from gevent import socket
 from gevent import ssl
 
 from cms import config, default_argument_parser, logger
-from cms.async import ServiceCoord
-from cms.async.GeventLibrary import Service, rpc_method
+from cms.io import ServiceCoord
+from cms.io.GeventLibrary import Service, rpc_method
 from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import SessionGen, Submission, \
     Contest, Dataset, Task

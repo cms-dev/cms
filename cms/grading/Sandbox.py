@@ -31,7 +31,7 @@ from gevent import subprocess
 #import gevent_subprocess as subprocess
 
 from cms import config, logger
-from cms.async.GeventUtils import copyfileobj
+from cms.io.GeventUtils import copyfileobj
 
 
 class SandboxInterfaceException(Exception):

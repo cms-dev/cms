@@ -29,7 +29,7 @@ import time
 import codecs
 
 from cms import config
-from cms.async import ServiceCoord, get_service_address
+from cms.io import ServiceCoord, get_service_address
 from cms.db.SQLAlchemyAll import Contest, SessionGen
 
 import cmstestsuite.web

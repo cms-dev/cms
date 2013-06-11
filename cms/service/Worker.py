@@ -25,8 +25,8 @@ import traceback
 import gevent.coros
 
 from cms import default_argument_parser, logger
-from cms.async import ServiceCoord
-from cms.async.GeventLibrary import Service, rpc_method
+from cms.io import ServiceCoord
+from cms.io.GeventLibrary import Service, rpc_method
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest
 from cms.grading import JobException

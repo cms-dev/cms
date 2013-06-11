@@ -27,7 +27,7 @@ service.
 
 import time
 
-from cms.async.GeventLibrary import Service
+from cms.io.GeventLibrary import Service
 
 
 # Our logger. We cannot simply import from AsyncLibrary because at
@@ -43,7 +43,7 @@ class TestService(Service):
         Service.__init__(self, shard, custom_logger)
 
         global logger
-        from cms.async.GeventLibrary import logger as _logger
+        from cms.io.GeventLibrary import logger as _logger
         logger = _logger
 
         self.start = 0

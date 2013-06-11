@@ -34,8 +34,8 @@ from collections import namedtuple
 import random
 
 from cms import default_argument_parser, logger
-from cms.async.GeventLibrary import Service, rpc_method, rpc_callback
-from cms.async import ServiceCoord, get_service_shards
+from cms.io.GeventLibrary import Service, rpc_method, rpc_callback
+from cms.io import ServiceCoord, get_service_shards
 from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import SessionGen, Contest, Dataset, \
      Submission, SubmissionResult, Evaluation, \

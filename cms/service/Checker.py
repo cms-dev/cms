@@ -26,8 +26,8 @@
 import time
 
 from cms import config, default_argument_parser, logger
-from cms.async import ServiceCoord
-from cms.async.GeventLibrary import Service, rpc_callback
+from cms.io import ServiceCoord
+from cms.io.GeventLibrary import Service, rpc_callback
 
 
 class Checker(Service):

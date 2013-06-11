@@ -35,10 +35,10 @@ import gevent.socket
 import gevent.event
 from gevent.server import StreamServer
 
-from cms.async import ServiceCoord, Address, get_service_address
-from cms.async.Utils import random_string, Logger, \
+from cms.io import ServiceCoord, Address, get_service_address
+from cms.io.Utils import random_string, Logger, \
      encode_json, decode_json
-from cms.async.PsycoGevent import make_psycopg_green
+from cms.io.PsycoGevent import make_psycopg_green
 
 
 # Our logger object - can be a standard one (provided in Utils), or a

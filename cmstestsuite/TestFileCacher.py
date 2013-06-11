@@ -29,8 +29,8 @@ from StringIO import StringIO
 import hashlib
 
 from cms import default_argument_parser, config, logger
-from cms.async import ServiceCoord
-from cms.async.TestService import TestService
+from cms.io import ServiceCoord
+from cms.io.TestService import TestService
 from cms.db.FileCacher import FileCacher
 
 

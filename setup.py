@@ -40,7 +40,7 @@ def do_setup():
     old_umask = os.umask(0022)
 
     package_data = {
-        "cms.async": [
+        "cms.io": [
             os.path.join("static", "*"),
         ],
         "cms.server": [
@@ -91,7 +91,7 @@ def do_setup():
                     "cms.db",
                     "cms.server",
                     "cms.service",
-                    "cms.async",
+                    "cms.io",
                     "cms.grading",
                     "cms.grading.scoretypes",
                     "cms.grading.tasktypes",

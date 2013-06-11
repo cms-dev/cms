@@ -72,7 +72,7 @@ Copyright: 2012-2013 Martin Mares <mj@ucw.cz>
            2012-2013 Bernard Blackham <b-pkg@largestprime.net>
 License: GPL-2
 
-Files: cms/async/PsycoGevent.py
+Files: cms/io/PsycoGevent.py
 Copyright: 2010 Daniele Varrazzo <daniele.varrazzo@gmail.com>
 	   2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 License: MIT

@@ -31,9 +31,9 @@ import tornado.wsgi
 from gevent.pywsgi import WSGIServer
 from gevent.event import Event
 
-from cms.async import ServiceCoord
-from cms.async.GeventLibrary import Service, rpc_callback
-from cms.async.Utils import decode_json
+from cms.io import ServiceCoord
+from cms.io.GeventLibrary import Service, rpc_callback
+from cms.io.Utils import decode_json
 
 
 # Our logger. We cannot simply import from AsyncLibrary because at
@@ -158,7 +158,7 @@ class WebService(Service):
         Service.__init__(self, shard, custom_logger)
 
         global logger
-        from cms.async.GeventLibrary import logger as _logger
+        from cms.io.GeventLibrary import logger as _logger
         logger = _logger
 
         self.__responses = {}

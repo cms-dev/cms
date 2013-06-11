@@ -30,7 +30,7 @@ from contextlib import contextmanager
 
 import gevent
 
-from cms.async.PsycoGevent import make_psycopg_green, \
+from cms.io.PsycoGevent import make_psycopg_green, \
     unmake_psycopg_green
 
 

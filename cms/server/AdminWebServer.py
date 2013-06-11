@@ -37,8 +37,8 @@ import tornado.web
 import tornado.locale
 
 from cms import config, default_argument_parser, logger
-from cms.async.WebGeventLibrary import WebService
-from cms.async import ServiceCoord, get_service_shards, get_service_address
+from cms.io.WebGeventLibrary import WebService
+from cms.io import ServiceCoord, get_service_shards, get_service_address
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import Session, \
     Contest, User, Announcement, Question, Message, Submission, \
