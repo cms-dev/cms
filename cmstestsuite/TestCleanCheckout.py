@@ -134,14 +134,14 @@ if __name__ == "__main__":
         read_cms_config()
 
     # Now run the tests from the checkout.
-    sh(["./cmstestsuite/RunFunctionalTests.py"] + args.arguments)
+    sh(["./cmstestsuite/RunTests.py"] + args.arguments)
 
     # We export the contest, import it again and re-run the tests on the
     # existing contest. Hard-coded contest indicies should be correct, as we
     # own the database.
     sh(["./cmscontrib/ContestExporter.py", "-c", "1"])
     sh(["./cmscontrib/ContestImporter.py", "dump_testcontest1.tar.gz"])
-    sh(["./cmstestsuite/RunFunctionalTests.py", "-c", "2"] + args.arguments)
+    sh(["./cmstestsuite/RunTests.py", "-c", "2"] + args.arguments)
 
     # Export coverage results.
     sh("python -m coverage xml --include 'cms*'")
