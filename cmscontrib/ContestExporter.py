@@ -29,7 +29,6 @@ idempotent.
 import io
 import argparse
 import os
-import shutil
 import simplejson as json
 import tempfile
 import tarfile
@@ -41,6 +40,7 @@ from cms import logger
 from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import SessionGen, Contest, Submission, UserTest
+from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum
 from cmscommon.DateTime import make_timestamp
@@ -193,7 +193,7 @@ class ContestExporter:
                                    archive_info["write_mode"])
             archive.add(export_dir, arcname=archive_info["basename"])
             archive.close()
-            shutil.rmtree(export_dir)
+            rmtree(export_dir)
 
         logger.info("Export finished.")
         logger.operation = ""

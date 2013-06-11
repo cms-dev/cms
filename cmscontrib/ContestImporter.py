@@ -29,7 +29,6 @@ again should be idempotent.
 import io
 import os
 import argparse
-import shutil
 import simplejson as json
 import tempfile
 import tarfile
@@ -49,6 +48,7 @@ from cms.db import version as model_version
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Contest, \
     Submission, UserTest
+from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum
 from cmscommon.DateTime import make_datetime
@@ -296,7 +296,7 @@ class ContestImporter:
 
         # If we extracted an archive, we remove it.
         if self.import_dir != self.import_source:
-            shutil.rmtree(self.import_dir)
+            rmtree(self.import_dir)
 
         return True
 

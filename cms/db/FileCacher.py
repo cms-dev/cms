@@ -26,7 +26,6 @@
 import os
 
 import tempfile
-import shutil
 import hashlib
 
 import gevent
@@ -35,7 +34,7 @@ from sqlalchemy.exc import IntegrityError
 
 from cms import config, logger, mkdir
 from cms.db.SQLAlchemyAll import SessionGen, FSObject
-from cms.io.GeventUtils import copyfile, copyfileobj
+from cms.io.GeventUtils import copyfile, copyfileobj, move, copy, rmtree
 
 
 class FileCacherBackend:
@@ -423,13 +422,13 @@ class FileCacher:
 
             # And move it in the cache. Warning: this is not atomic if
             # the temp and the cache dir are on different filesystems.
-            shutil.move(temp_filename, cache_path)
+            move(temp_filename, cache_path)
 
             logger.debug("File %s downloaded." % digest)
 
         # Saving to path
         if path is not None:
-            shutil.copy(cache_path, path)
+            copy(cache_path, path)
 
         # Saving to file object
         if file_obj is not None:
@@ -445,14 +444,14 @@ class FileCacher:
         elif temp_path:
             temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
             os.close(temp_file)
-            shutil.copy(cache_path, temp_filename)
+            copy(cache_path, temp_filename)
             return temp_filename
 
         # Returning temporary file object?
         elif temp_file_obj:
             temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
             os.close(temp_file)
-            shutil.copy(cache_path, temp_filename)
+            copy(cache_path, temp_filename)
             temp_file = open(temp_filename, "rb")
             return temp_file
 
@@ -482,11 +481,8 @@ class FileCacher:
 
         # Copy the file content, whatever forms it arrives, into the
         # temporary file
-        # TODO - This could be long lasting: probably it would be wise
-        # to call self.service._step() periodically, but this would
-        # require reimplementing of shutil functions
         if path is not None:
-            shutil.copy(path, temp_path)
+            copy(path, temp_path)
         elif binary_data is not None:
             with open(temp_path, 'wb') as temp_file:
                 temp_file.write(binary_data)
@@ -509,8 +505,8 @@ class FileCacher:
         self.backend.put_file(digest, temp_path, description=description)
 
         # Move the temporary file in the cache
-        shutil.move(temp_path,
-                    os.path.join(self.obj_dir, digest))
+        move(temp_path,
+             os.path.join(self.obj_dir, digest))
 
         return digest
 
@@ -570,7 +566,7 @@ class FileCacher:
         anymore.
 
         """
-        shutil.rmtree(self.base_dir)
+        rmtree(self.base_dir)
 
     def list(self):
         """List the files available in the storage.

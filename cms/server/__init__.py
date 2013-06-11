@@ -34,6 +34,8 @@ from functools import wraps
 from tornado.web import RequestHandler
 import tornado.locale
 
+import gevent
+
 from cms import logger
 from cms.db.FileCacher import FileCacher
 from cmscommon.DateTime import make_datetime, utc
@@ -467,6 +469,7 @@ def file_handler_gen(BaseClass):
             ret = True
             while ret:
                 ret = self._fetch_write_chunk()
+                gevent.sleep(0)
 
         def _fetch_write_chunk(self):
             """Send a chunk of the file to the browser.

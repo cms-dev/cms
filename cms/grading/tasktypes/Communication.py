@@ -22,7 +22,6 @@
 
 import os
 import tempfile
-import shutil
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, config, logger
 from cms.grading.Sandbox import wait_without_std
@@ -33,6 +32,7 @@ from cms.grading import get_compilation_command, compilation_step, \
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.db.SQLAlchemyAll import Executable
+from cms.io.GeventUtils import rmtree
 
 
 class Communication(TaskType):
@@ -242,4 +242,4 @@ class Communication(TaskType):
 
         delete_sandbox(sandbox_mgr)
         delete_sandbox(sandbox_user)
-        shutil.rmtree(fifo_dir)
+        rmtree(fifo_dir)

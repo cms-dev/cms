@@ -20,7 +20,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import shutil
 import tempfile
 import stat
 import select
@@ -31,7 +30,7 @@ from gevent import subprocess
 #import gevent_subprocess as subprocess
 
 from cms import config, logger
-from cms.io.GeventUtils import copyfileobj
+from cms.io.GeventUtils import copyfileobj, rmtree
 
 
 class SandboxInterfaceException(Exception):
@@ -765,4 +764,4 @@ class Sandbox:
         subprocess.call(box_cmd + ["--cleanup"])
 
         # Delete the working directory.
-        shutil.rmtree(self.outer_temp_dir)
+        rmtree(self.outer_temp_dir)
