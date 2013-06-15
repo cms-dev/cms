@@ -328,7 +328,7 @@ class UserTestResult(Base):
         self.evaluation_sandbox = None
         self.output = None
         self.memory_used = None
-        self.evaluation_time = None
+        self.execution_time = None
 
 
 class UserTestExecutable(Base):

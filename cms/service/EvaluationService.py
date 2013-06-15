@@ -1281,7 +1281,7 @@ class EvaluationService(Service):
             for dataset in get_datasets_to_judge(user_test.task):
                 user_test_result = user_test.get_result_or_create(dataset)
 
-                if user_test_to_compile(user_test):
+                if user_test_to_compile(user_test_result):
                     self.push_in_queue(
                         JobQueueEntry(
                             EvaluationService.JOB_TYPE_TEST_COMPILATION,
