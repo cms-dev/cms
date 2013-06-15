@@ -438,8 +438,6 @@ class WorkerPool:
                 dataset = Dataset.get_from_id(dataset_id, session)
                 job_group = \
                     JobGroup.from_user_test_evaluation(user_test, dataset)
-                job_group.jobs[''].get_output = True
-                job_group.jobs[''].only_execution = True
 
             self._worker[shard].execute_job_group(
                 job_group_dict=job_group.export_to_dict(),
@@ -1009,25 +1007,7 @@ class EvaluationService(Service):
                 submission_result.compilation_tries += 1
 
                 if job_success:
-                    if "" not in job_group.jobs:
-                        logger.error("[action_finished] JobGroup didn't "
-                                     "contain the Jobs it should.")
-                        return
-
-                    job = job_group.jobs[""]
-
-                    # XXX Verify it's a CompilationJob?
-
-                    submission_result.compilation_outcome = 'ok' \
-                        if job.compilation_success else 'fail'
-                    submission_result.compilation_text = job.text
-                    submission_result.compilation_shard = job.shard
-                    submission_result.compilation_sandbox = \
-                        ":".join(job.sandboxes)
-                    for executable in job.executables.itervalues():
-                        submission_result.executables += [
-                            executable]
-                        session.add(executable)
+                    job_group.to_submission_compilation(submission_result)
 
                 self.compilation_ended(submission_result)
 
@@ -1043,22 +1023,7 @@ class EvaluationService(Service):
                 submission_result.evaluation_tries += 1
 
                 if job_success:
-                    submission_result.evaluation_outcome = "ok"
-                    for test_name, job in job_group.jobs.iteritems():
-                        evaluation = Evaluation(
-                            testcase=submission_result.dataset.testcases[test_name],
-                            text=job.text,
-                            outcome=job.outcome,
-                            memory_used= \
-                                job.plus.get('memory_used', None),
-                            execution_time= \
-                                job.plus.get('execution_time', None),
-                            execution_wall_clock_time= \
-                                job.plus.get('execution_wall_clock_time', None),
-                            evaluation_shard=job.shard,
-                            evaluation_sandbox=":".join(job.sandboxes),
-                            submission_result=submission_result)
-                        session.add(evaluation)
+                    job_group.to_submission_evaluation(submission_result)
 
                 self.evaluation_ended(submission_result)
 
@@ -1074,27 +1039,7 @@ class EvaluationService(Service):
                 user_test_result.compilation_tries += 1
 
                 if job_success:
-                    if "" not in job_group.jobs:
-                        logger.error("[action_finished] JobGroup didn't "
-                                     "contain the Jobs it should.")
-                        return
-
-                    job = job_group.jobs[""]
-
-                    # XXX Verify it's a CompilationJob?
-
-                    user_test_result.compilation_outcome = 'ok' \
-                        if job.compilation_success else 'fail'
-                    user_test_result.compilation_text = job.text
-                    user_test_result.compilation_shard = job.shard
-                    user_test_result.compilation_sandbox = \
-                        ":".join(job.sandboxes)
-                    for executable in job.executables.itervalues():
-                        ut_executable = UserTestExecutable(
-                            executable.filename, executable.digest)
-                        user_test_result.executables += [
-                            ut_executable]
-                        session.add(ut_executable)
+                    job_group.to_user_test_compilation(user_test_result)
 
                 self.user_test_compilation_ended(user_test_result)
 
@@ -1110,25 +1055,7 @@ class EvaluationService(Service):
                 user_test_result.evaluation_tries += 1
 
                 if job_success:
-                    if "" not in job_group.jobs:
-                        logger.error("[action_finished] JobGroup didn't "
-                                     "contain the Jobs it should.")
-                        return
-
-                    job = job_group.jobs[""]
-
-                    # XXX Verify it's an EvaluationJob?
-
-                    user_test_result.evaluation_outcome = 'ok'
-                    user_test_result.evaluation_text = job.text
-                    user_test_result.evaluation_shard = job.shard
-                    user_test_result.evaluation_sandbox = \
-                        ":".join(job.sandboxes)
-                    user_test_result.output = job.user_output
-                    user_test_result.memory_used = \
-                        job.plus.get('memory_used', None),
-                    user_test_result.execution_time = \
-                        job.plus.get('execution_time', None),
+                    job_group.to_user_test_evaluation(user_test_result)
 
                 self.user_test_evaluation_ended(user_test_result)
 

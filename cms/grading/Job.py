@@ -22,7 +22,8 @@
 import simplejson as json
 from copy import deepcopy
 
-from cms.db.SQLAlchemyAll import File, Manager, Executable
+from cms.db.SQLAlchemyAll import File, Manager, Executable, \
+    UserTestExecutable, Evaluation
 
 
 class Job(object):
@@ -251,6 +252,24 @@ class JobGroup(object):
 
         return JobGroup(jobs)
 
+    def to_submission_compilation(self, sr):
+        # This should actually be useless.
+        sr.invalidate_compilation()
+
+        job = self.jobs[""]
+        assert isinstance(job, CompilationJob)
+
+        # No need to check self.success or job.success because this
+        # method gets called only if the first (and therefore the
+        # second!) is True.
+
+        sr.compilation_outcome = 'ok' if job.compilation_success else 'fail'
+        sr.compilation_text = job.text
+        sr.compilation_shard = job.shard
+        sr.compilation_sandbox = ":".join(job.sandboxes)
+        for executable in job.executables.itervalues():
+            sr.executables += [executable]
+
     @staticmethod
     def from_user_test_compilation(user_test, dataset):
         job = CompilationJob()
@@ -284,6 +303,26 @@ class JobGroup(object):
         jobs = {"": job}
 
         return JobGroup(jobs)
+
+    def to_user_test_compilation(self, ur):
+        # This should actually be useless.
+        ur.invalidate_compilation()
+
+        job = self.jobs[""]
+        assert isinstance(job, CompilationJob)
+
+        # No need to check self.success or job.success because this
+        # method gets called only if the first (and therefore the
+        # second!) is True.
+
+        ur.compilation_outcome = 'ok' if job.compilation_success else 'fail'
+        ur.compilation_text = job.text
+        ur.compilation_shard = job.shard
+        ur.compilation_sandbox = ":".join(job.sandboxes)
+        for executable in job.executables.itervalues():
+            ut_executable = UserTestExecutable(
+                executable.filename, executable.digest)
+            ur.executables += [ut_executable]
 
     # Evaluation
 
@@ -322,6 +361,30 @@ class JobGroup(object):
             jobs[k] = job2
 
         return JobGroup(jobs)
+
+    def to_submission_evaluation(self, sr):
+        # This should actually be useless.
+        sr.invalidate_evaluation()
+
+        # No need to check self.success or job.success because this
+        # method gets called only if the first (and therefore the
+        # second!) is True.
+
+        sr.evaluation_outcome = "ok"
+
+        for test_name, job in self.jobs.iteritems():
+            assert isinstance(job, EvaluationJob)
+
+            sr.evaluations += [Evaluation(
+                text=job.text,
+                outcome=job.outcome,
+                memory_used=job.plus.get('memory_used'),
+                execution_time=job.plus.get('execution_time'),
+                execution_wall_clock_time= \
+                    job.plus.get('execution_wall_clock_time'),
+                evaluation_shard=job.shard,
+                evaluation_sandbox=":".join(job.sandboxes),
+                testcase=sr.dataset.testcases[test_name])]
 
     @staticmethod
     def from_user_test_evaluation(user_test, dataset):
@@ -362,6 +425,29 @@ class JobGroup(object):
                     job.managers[manager_filename] = \
                         dataset.managers[manager_filename]
 
+        job.get_output = True
+        job.only_execution = True
+
         jobs = {"": job}
 
         return JobGroup(jobs)
+
+    def to_user_test_evaluation(self, ur):
+        # This should actually be useless.
+        ur.invalidate_evaluation()
+
+        job = self.jobs[""]
+        assert isinstance(job, EvaluationJob)
+
+        # No need to check self.success or job.success because this
+        # method gets called only if the first (and therefore the
+        # second!) is True.
+
+        ur.evaluation_text = job.text
+        ur.evaluation_outcome = 'ok'  # FIXME use job.outcome
+        ur.output = job.user_output
+        ur.memory_used = job.plus.get('memory_used')
+        ur.execution_time = job.plus.get('execution_time')
+        # FIXME wall_clock_time
+        ur.evaluation_shard = job.shard
+        ur.evaluation_sandbox = ":".join(job.sandboxes)
