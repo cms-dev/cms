@@ -320,5 +320,5 @@ class Batch(TaskType):
         job.success = success
         job.outcome = str(outcome) if outcome is not None else None
         job.text = text
+
         delete_sandbox(sandbox)
-        return success

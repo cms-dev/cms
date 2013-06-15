@@ -189,13 +189,13 @@ class TaskType:
         raise NotImplementedError("Please subclass this class.")
 
     def compile(self, job, file_cacher):
-        """Tries to compile the specified submission.
+        """Try to compile the given CompilationJob.
 
-        It returns True when *our infrastracture* is successful (i.e.,
-        the actual compilation may success or fail), and False when
-        the compilation fails because of environmental problems
-        (trying again to compile the same submission in a sane
-        environment should lead to returning True).
+        Set job.success to True when *our infrastracture* is successful
+        (i.e. the compilation may succeed or fail), and to False when
+        the compilation fails because of environmental problems (trying
+        again to compile the same submission in a sane environment
+        should lead to True).
 
         job (CompilationJob): the data structure that contains details
                               about the work that has to be done and
@@ -203,19 +203,18 @@ class TaskType:
         file_cacher (FileCacher): the file cacher to use to obtain the
                                   required files and to store the ones
                                   that are produced.
-        return (bool): success of operation.
 
         """
         raise NotImplementedError("Please subclass this class.")
 
     def evaluate(self, job, file_cacher):
-        """Tries to evaluate the specified submission.
+        """Try to evaluate the given EvaluationJob.
 
-        It returns True when *our infrastracture* is successful (i.e.,
-        the actual program may score or not), and False when the
-        evaluation fails because of environmental problems (trying
+        Set job.success to True when *our infrastracture* is successful
+        (i.e. the actual program may score or not), and to False when
+        the evaluation fails because of environmental problems (trying
         again to compile the same submission in a sane environment
-        should lead to returning True).
+        should lead to True).
 
         job (EvaluationJob): the data structure that contains details
                              about the work that has to be done and
@@ -223,7 +222,6 @@ class TaskType:
         file_cacher (FileCacher): the file cacher to use to obtain the
                                   required files and to store the ones
                                   that are produced.
-        return (bool): success of operation.
 
         """
         raise NotImplementedError("Please subclass this class.")
@@ -234,9 +232,9 @@ class TaskType:
 
         """
         if isinstance(job, CompilationJob):
-            return self.compile(job, file_cacher)
+            self.compile(job, file_cacher)
         elif isinstance(job, EvaluationJob):
-            return self.evaluate(job, file_cacher)
+            self.evaluate(job, file_cacher)
         else:
             raise ValueError("The job isn't neither CompilationJob "
                              "or EvaluationJob")

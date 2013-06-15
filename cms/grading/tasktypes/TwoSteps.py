@@ -289,5 +289,3 @@ class TwoSteps(TaskType):
 
         delete_sandbox(first_sandbox)
         delete_sandbox(second_sandbox)
-
-        return success
