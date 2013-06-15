@@ -227,16 +227,16 @@ class Contest(Base):
         for task in self.tasks:
 
             # Enumerate statements
-            for file_ in task.statements.values():
+            for file_ in task.statements.itervalues():
                 files.add(file_.digest)
 
             # Enumerate attachments
-            for file_ in task.attachments.values():
+            for file_ in task.attachments.itervalues():
                 files.add(file_.digest)
 
             # Enumerate managers
             for dataset in task.datasets:
-                for file_ in dataset.managers.values():
+                for file_ in dataset.managers.itervalues():
                     files.add(file_.digest)
 
             # Enumerate testcases
@@ -250,7 +250,7 @@ class Contest(Base):
             for submission in self.get_submissions():
 
                 # Enumerate files
-                for file_ in submission.files.values():
+                for file_ in submission.files.itervalues():
                     files.add(file_.digest)
 
                 # Enumerate executables
@@ -270,17 +270,17 @@ class Contest(Base):
                             files.add(ur.output)
 
                 # Enumerate files
-                for file_ in user_test.files.values():
+                for file_ in user_test.files.itervalues():
                     files.add(file_.digest)
 
                 # Enumerate managers
-                for file_ in user_test.managers.values():
+                for file_ in user_test.managers.itervalues():
                     files.add(file_.digest)
 
                 # Enumerate executables
                 if not light:
                     for ur in user_test.results:
-                        for file_ in ur.executables.values():
+                        for file_ in ur.executables.itervalues():
                             files.add(file_.digest)
 
         return files
