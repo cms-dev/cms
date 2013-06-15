@@ -28,7 +28,7 @@ import sys
 from cms.db.SQLAlchemyAll import metadata, Contest, SessionGen
 
 
-version = 4
+version = 5
 
 
 def analyze_table(tablename, session=None):

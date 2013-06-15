@@ -448,6 +448,6 @@ class JobGroup(object):
         ur.output = job.user_output
         ur.memory_used = job.plus.get('memory_used')
         ur.execution_time = job.plus.get('execution_time')
-        # FIXME wall_clock_time
+        ur.execution_wall_clock_time = job.plus.get('execution_wall_clock_time')
         ur.evaluation_shard = job.shard
         ur.evaluation_sandbox = ":".join(job.sandboxes)

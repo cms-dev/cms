@@ -284,6 +284,9 @@ class UserTestResult(Base):
     execution_time = Column(
         Float,
         nullable=True)
+    execution_wall_clock_time = Column(
+        Float,
+        nullable=True)
 
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
@@ -329,6 +332,7 @@ class UserTestResult(Base):
         self.output = None
         self.memory_used = None
         self.execution_time = None
+        self.execution_wall_clock_time = None
 
 
 class UserTestExecutable(Base):
