@@ -439,7 +439,7 @@ class WorkerPool:
 
             self._worker[shard].execute_job(
                 job_dict=job_.export_to_dict(),
-                callback=self._service.action_finished.im_func,
+                callback=self._service.action_finished.__func__,
                 plus=(job_type, object_id, dataset_id, side_data, shard))
         return shard
 
@@ -947,20 +947,23 @@ class EvaluationService(Service):
         data (dict): a dictionary that describes a Job instance.
         plus (tuple): the tuple (job_type,
                                  object_id,
+                                 dataset_id,
                                  side_data=(priority, timestamp),
                                  shard_of_worker)
 
         """
-        # TODO - The next two comments are in the wrong place and
-        # really little understandable anyway.
-
-        # We notify the pool that the worker is free (even if it
-        # replied with an error), but if the pool wants to disable the
-        # worker, it's because it already assigned its job to someone
-        # else, so we discard the data from the worker.
+        # Unpack the plus tuple. It's built in the RPC call to Worker's
+        # execute_job_group method inside WorkerPool.acquire_worker.
         job_type, object_id, dataset_id, side_data, shard = plus
 
-        # If worker was ignored, do nothing.
+        # We notify the pool that the worker is available again for
+        # further work (no matter how the current request turned out,
+        # even if the worker encountered an error). If the pool informs
+        # us that the data produced by the worker has to be ignored (by
+        # returning True) we interrupt the execution of this method and
+        # do nothing because in that case we know the job has returned
+        # to the queue and perhaps already been reassigned to another
+        # worker.
         if self.pool.release_worker(shard):
             return
 
