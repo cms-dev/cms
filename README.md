@@ -59,7 +59,7 @@ particular we are aware of the following.
       2013.
 - Training:
     - training camps for the selections of the national IOI teams of
-      Australia, India, Italy, Japan and Latvia.
+      Australia, India, Italy, Japan, Latvia and Serbia.
 - Other:
     - laboratory exercises and exams of the course "Algorithms and
       data structures" at University of Trento (year 2011-2012).
