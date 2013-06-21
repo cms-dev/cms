@@ -98,6 +98,7 @@ def do_setup():
                     "cmscommon",
                     "cmsranking",
                     "cmscontrib",
+                    "cmscontrib.updaters",
                     "cmstaskenv",
                     "cmstestsuite",
                     "cmstestsuite.web",
@@ -134,6 +135,7 @@ def do_setup():
                   "cmsSpoolExporter=cmscontrib.SpoolExporter:main",
                   "cmsContestExporter=cmscontrib.ContestExporter:main",
                   "cmsContestImporter=cmscontrib.ContestImporter:main",
+                  "cmsDumpUpdater=cmscontrib.DumpUpdater:main",
 
                   "cmsMake=cmstaskenv.cmsMake:main",
               ]

@@ -28,6 +28,9 @@ import sys
 from cms.db.SQLAlchemyAll import metadata, Contest, SessionGen
 
 
+version = 3
+
+
 def analyze_table(tablename, session=None):
     """Analyze the specified table (issuing the corresponding ANALYZE
     command to the SQL backend).

@@ -45,6 +45,7 @@ from sqlalchemy.types import \
 import cms.db.SQLAlchemyAll as class_hook
 
 from cms import logger
+from cms.db import version as model_version
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import metadata, SessionGen, Contest, \
     Submission, UserTest
@@ -165,6 +166,40 @@ class ContestImporter:
                     # validations.  Thus, for example, we're not
                     # checking that the decoded object is a dict...
                     self.datas = json.load(fin, encoding="utf-8")
+
+                # If the dump has been exported using a data model
+                # different than the current one (that is, a previous
+                # one) we try to update it.
+                # If no "_version" field is found we assume it's a v1.0
+                # export (before the new dump format was introduced).
+                dump_version = self.datas.get("_version", 0)
+
+                if dump_version < model_version:
+                    logger.warning(
+                        "The dump you're trying to import has been created "
+                        "by an old version of CMS. It may take a while to "
+                        "adapt it to the current data model. You can use "
+                        "cmsDumpUpdater to update the on-disk dump and "
+                        "speed up future imports.")
+
+                if dump_version > model_version:
+                    logger.critical(
+                        "The dump you're trying to import has been created "
+                        "by a version of CMS newer than this one and there "
+                        "is no way to adapt it to the current data model. "
+                        "You probably need to update CMS to handle it. It's "
+                        "impossible to proceed with the importation.")
+                    return False
+
+                for version in range(dump_version, model_version):
+                    # Update from version to version+1
+                    updater = __import__(
+                        "cmscontrib.updaters.update_%d" % (version + 1),
+                        globals(), locals(), ["Updater"]).Updater(self.datas)
+                    self.datas = updater.run()
+                    self.datas["_version"] = version + 1
+
+                assert self.datas["_version"] == model_version
 
                 self.objs = dict()
                 for id_, data in self.datas.iteritems():
