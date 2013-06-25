@@ -75,7 +75,7 @@ SS is only able to create or update data on RWS, but not to delete it. This mean
 
 * You can stop RWS, delete only the JSON files of the data you want to remove and start RWS again. Note that if you remove an object (e.g. a user) you have to remove all objects (e.g. the submissions) that depend on it, that is you have to simulate the "on delete cascade" behavior of SQL by hand. (When you delete a submission remember to delete also the related subchanges).
 
-* You can keep RWS running and send a hand-crafted HTTP request to it and it'll, all by itself, delete the objects you want to remove and all the ones that depend on it.
+* You can keep RWS running and send a hand-crafted HTTP request to it and it'll, all by itself, delete the objects you want to remove and all the ones that depend on it. (Actually, ``cmsRWSHelper`` should make this operation quite easy).
 
 Note that when you change the username of an user, the name of a task or the name of a contest in CMS and then restart SS, that user, task or contest will be duplicated in RWS and you will need to delete the old copy using this procedure.
 

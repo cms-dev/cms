@@ -46,6 +46,8 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `PyYAML <http://pyyaml.org/wiki/PyYAML>`_ >= 3.10 (only for Importer);
 
+* `requests <http://docs.python-requests.org/en/latest/>`_ >= 1.0 (only for RWSHelper);
+
 * `BeautifulSoup <http://www.crummy.com/software/BeautifulSoup/>`_ >= 3.2 (only for running tests);
 
 * `mechanize <http://wwwsearch.sourceforge.net/mechanize/>`_ >= 0.2 (only for running tests);
@@ -68,7 +70,7 @@ On Ubuntu 12.04, one will need to run the following script to satisfy all depend
          cgroup-lite
 
     # Optional.
-    # sudo apt-get install phppgadmin python-yaml python-sphinx
+    # sudo apt-get install phppgadmin python-yaml python-sphinx python-requests
 
 On Arch Linux, the following command will install almost all dependencies (three of them can be found in the AUR):
 
@@ -86,7 +88,7 @@ On Arch Linux, the following command will install almost all dependencies (three
     # https://aur.archlinux.org/packages/python2-coverage/
 
     # Optional.
-    # sudo pacman -S phppgadmin python2-yaml python-sphinx
+    # sudo pacman -S phppgadmin python2-yaml python-sphinx python2-requests
 
 If you prefer using Python Package Index, you can retrieve all Python dependencies with this line:
 

@@ -12,3 +12,4 @@ BeautifulSoup>=3.2
 coverage>=3.4
 mechanize>=0.2
 six>=1.1
+requests>=1.0
