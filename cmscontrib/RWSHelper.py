@@ -82,7 +82,7 @@ def main():
     parser.add_argument(
         '-r', '--ranking', dest='rankings', action='append', default=None,
         choices=list(xrange(len(config.rankings_address))), metavar='shard',
-        help="select which RWS to connect to (omit for 'all')")
+        type=int, help="select which RWS to connect to (omit for 'all')")
     subparsers = parser.add_subparsers(
         title='available actions', metavar='action',
         help='what to ask the RWS to do with the entity')
