@@ -28,9 +28,9 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `libcg <http://libcg.sourceforge.net/>`_;
 
-.. We need 0.6 because of the new memory API (https://code.google.com/p/psutil/wiki/Documentation#Memory).
-
 * `psutil <https://code.google.com/p/psutil/>`_ >= 0.6;
+
+  .. We need 0.6 because of the new memory API (https://code.google.com/p/psutil/wiki/Documentation#Memory).
 
 * `netifaces <http://alastairs-place.net/projects/netifaces/>`_ >= 0.5;
 
@@ -44,7 +44,7 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `shared-mime-info <http://freedesktop.org/wiki/Software/shared-mime-info>`_;
 
-* `PyYAML <http://pyyaml.org/wiki/PyYAML>`_ >= 3.10 (only for YamlImporter);
+* `PyYAML <http://pyyaml.org/wiki/PyYAML>`_ >= 3.10 (only for Importer);
 
 * `BeautifulSoup <http://www.crummy.com/software/BeautifulSoup/>`_ >= 3.2 (only for running tests);
 

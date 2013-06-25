@@ -36,6 +36,10 @@ The configuration file is a JSON object. The most important parameters are:
 
   They specify the credentials needed to alter the data of RWS. We suggest to set them to long random strings, for maximum security, since you won't need to remember them. ``username`` cannot contain a colon.
 
+  .. note::
+
+    Remember to change the ``username`` and ``password`` every time you set up a RWS. Keeping the default ones will leave your scoreboard open to illegitimate access.
+
 To connect the rest of CMS to your new RWS you need to add its connection parameters to the configuration file of CMS (i.e. :file:`cms.conf`). Note that you can connect CMS to multiple RWSs, each on a different server and/or port. There are three parameters to do it, three lists of the same length: ``ranking_address``, ``ranking_username`` and ``ranking_password``. The elements in ``ranking_address`` are lists of three elements: the protocol (either "http" or "https"), the address (IP address or hostname) and the port. If any of your RWSs uses the HTTPS protocol you also need to specify the ``https_certfile`` configuration parameter. More details on this in :ref:`rankingwebserver_securing-the-connection-between-ss-and-rws`.
 
 You also need to make sure that RWS is able to keep enough simultaneously active connections by checking that the maximum number of open file descriptors is larger than the expected number of clients. You can see the current value with ``ulimit -Sn`` (or ``-Sa`` to see all limitations) and change it with ``ulimit -Sn <value>``. This value will be reset when you open a new shell, so remember to run the command again. Note that there may be a hard limit that you cannot overcome (use ``-H`` instead of ``-S`` to see it).
@@ -45,7 +49,7 @@ Managing it
 
 RWS doesn't use the PostgreSQL database. Instead, it stores its data in :file:`/var/local/lib/cms/ranking` (or whatever directory is given as ``lib_dir`` in the configuration file) as a collection of JSON files. Thus, if you want to backup the RWS data, just make a copy of that directory. RWS modifies this data in response to specific (authenticated) HTTP requests it receives.
 
-The intended way to get data to RWS is to have the rest of CMS send it. The service responsible for that is ScoringService (SS for short). When SS is started for a certain contest, it'll send the data for that contest to all RWSs it knows about (i.e. those in its configuration). This data includes the contest itself (its name, its begin and end times, etc.), its tasks, its users and the submissions received so far. Then it'll continue to send new submissions as soon as they're scored and it'll update them as needed (for example when a users uses a token). Note that hidden users (and their submissions) won't be sent to RWS.
+The intended way to get data to RWS is to have the rest of CMS send it. The service responsible for that is ScoringService (SS for short). When SS is started for a certain contest, it'll send the data for that contest to all RWSs it knows about (i.e. those in its configuration). This data includes the contest itself (its name, its begin and end times, etc.), its tasks, its users and the submissions received so far. Then it'll continue to send new submissions as soon as they're scored and it'll update them as needed (for example when a user uses a token). Note that hidden users (and their submissions) won't be sent to RWS.
 
 There are also other ways to insert data into RWS: send custom HTTP requests or directly write JSON files. They're both discouraged but, at the moment, they're the only way to add team information to RWS (see :gh_issue:`65`).
 
