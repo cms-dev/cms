@@ -132,7 +132,7 @@ def encode_id(entity_id):
 
     """
     encoded_id = ""
-    for char in str(entity_id):
+    for char in entity_id.encode('utf-8'):
         if char not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
                "abcdefghijklmnopqrstuvwxyz" \
                "0123456789":
@@ -693,7 +693,7 @@ class ScoringService(Service):
                 (int(make_timestamp(submission.timestamp)),
                  submission_id)
             subchange_put_data = {
-                "submission": encode_id(submission_id),
+                "submission": encode_id(str(submission_id)),
                 "time": int(make_timestamp(submission.timestamp)),
                 # We're sending the unrounded score to RWS
                 "score": submission.score,
@@ -708,7 +708,7 @@ class ScoringService(Service):
             for ranking in self.rankings:
                 self.submission_queue.setdefault(
                     ranking,
-                    dict())[encode_id(submission_id)] = \
+                    dict())[encode_id(str(submission_id))] = \
                     submission_put_data
                 self.subchange_queue.setdefault(
                     ranking,
