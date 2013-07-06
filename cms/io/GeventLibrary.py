@@ -166,11 +166,11 @@ class Service:
         # managed with heapq. Format: (next_timeout, period, function,
         # plus)
         self._timeouts = []
-        # If we want to exit the main loop
+        # Whether we want to exit the main loop
         self._exit = False
         # Dictionaries of (to be) connected RemoteService, and
         # dictionaries of callback functions that are going to be
-        # called when the remote service becomes online.
+        # called every time the remote service becomes online.
         self.remote_services = {}
         self.on_remote_service_connected = {}
         # Event to signal that something happened and the sleeping in
@@ -190,6 +190,12 @@ class Service:
             self.server = StreamServer(address, self._connection_handler)
 
     def _connection_handler(self, socket, address):
+        """Receive and act upon an incoming connection.
+
+        A new RemoteService is spawned to take care of the new
+        connection.
+
+        """
         try:
             ipaddr, port = address
             ipaddr = gevent.socket.gethostbyname(ipaddr)
@@ -197,9 +203,8 @@ class Service:
         except:
             logger.warning("Error: %s" % (traceback.format_exc()))
             return
-        remote_service = RemoteService(self,
-                                       address=address)
-        remote_service._initialize_channel(socket)
+        remote_service = RemoteService(self, address=address)
+        remote_service.initialize_channel(socket)
 
     def connect_to(self, service, on_connect=None):
         """Ask the service to connect to another service. A channel is
@@ -391,7 +396,8 @@ class Service:
                                      method)
 
         if "__data" not in message:
-            raise ValueError("No data present.")
+            raise ValueError("No data present when calling %s." %
+                             (method_name))
 
         result = method(**message["__data"])
 
@@ -408,6 +414,7 @@ class RemoteService():
     """
 
     # Requests bigger than 100 KiB are dropped to avoid DOS attacks
+    # XXX - Check that these sizes are sensible
     RECV_SIZE = 4096
     MAX_INBOX_SIZE = 100 * 1024
 
@@ -423,7 +430,8 @@ class RemoteService():
 
         """
         if address is None and remote_service_coord is None:
-            raise
+            raise ValueError("Please provide address or "
+                             "remote_service_coord")
 
         # service is the local service connecting to the remote one.
         self.service = service
@@ -436,7 +444,34 @@ class RemoteService():
             self.address = address
         self.connected = False
 
-    def _initialize_channel(self, sock):
+    def _loop(self):
+        inbox = b''
+        ignore_first_message = False
+        while True:
+            buf = self.socket.recv(RemoteService.RECV_SIZE)
+            splits = (inbox + buf).split('\r\n')
+            inbox = splits[-1]
+
+            # Check that the data buffer doesn't exceed a maximum
+            # size; otherwise, this could be a DOS attack vector
+            if len(inbox) > RemoteService.MAX_INBOX_SIZE:
+                inbox = b''
+                ignore_first_message = True
+                logger.error("Message too long, I'm discarding it")
+
+            # Process incoming data
+            for data in splits[:-1]:
+                if ignore_first_message:
+                    ignore_first_message = False
+                    continue
+                self.process_data(data)
+
+            # Connection has been closed
+            if buf == b'':
+                self.connected = False
+                break
+
+    def initialize_channel(self, sock):
         """When we have a socket, we configure the channel using this
         socket. This spawns a new Greenlet that monitors the incoming
         channel and collects data.
@@ -449,15 +484,18 @@ class RemoteService():
 
     def process_data(self, data):
         """Function called when a terminator is detected in the
-        stream. It clear the cache and decode the data. Then it ask
+        stream. It clears the buffer and decode the data. Then it asks
         the local service to act and in case the service wants to
         respond, it sends back the response.
+
+        data (string): the raw string received from the remote party,
+                       to be JSON-decoded.
 
         """
         # We decode the arriving data
         try:
             message = decode_json(data)
-        except:
+        except ValueError:
             logger.warning("Cannot understand incoming message, discarding.")
             return
 
@@ -500,41 +538,14 @@ class RemoteService():
         method_response (object): the actual returned value.
 
         """
+        response["__data"] = method_response
         try:
-            response["__data"] = method_response
             json_message = encode_json(response)
         except ValueError as error:
             logger.warning("Cannot send response because of " +
                            "encoding error. %s" % repr(error))
             return
         self._push_right(json_message)
-
-    def _loop(self):
-        inbox = b''
-        ignore_first_message = False
-        while True:
-            buf = self.socket.recv(RemoteService.RECV_SIZE)
-            splits = (inbox + buf).split('\r\n')
-            inbox = splits[-1]
-
-            # Check that the data buffer doesn't exceed a maximum
-            # size; otherwise, this could be a DOS attack vector
-            if len(inbox) > RemoteService.MAX_INBOX_SIZE:
-                inbox = b''
-                ignore_first_message = True
-                logger.error("Message too long, I'm discarding it")
-
-            # Process incoming data
-            for data in splits[:-1]:
-                if ignore_first_message:
-                    ignore_first_message = False
-                    continue
-                self.process_data(data)
-
-            # Connection has been closed
-            if buf == b'':
-                self.connected = False
-                break
 
     def connect_remote_service(self):
         """Try to connect to the remote service.
@@ -547,7 +558,7 @@ class RemoteService():
         except:
             pass
         else:
-            self._initialize_channel(sock)
+            self.initialize_channel(sock)
 
     def disconnect_remote_service(self):
         """Disconnect from remote service.
@@ -621,7 +632,7 @@ class RemoteService():
 
     def __getattr__(self, method):
         """Syntactic sugar to call a remote method without using
-        execute_rpc. If the local service ask for something that is
+        execute_rpc. If the local service asks for something that is
         not present, we assume that it is a remote RPC method.
 
         method (string): the method to call.
