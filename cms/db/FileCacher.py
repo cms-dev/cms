@@ -190,6 +190,8 @@ class DBBackend(FileCacherBackend):
     PostgreSQL database.
 
     """
+    # XXX - How do we choose the best value here? There are other
+    # similar cases around.
     CHUNK_SIZE = 2 ** 14
 
     def get_file(self, digest, dest):
