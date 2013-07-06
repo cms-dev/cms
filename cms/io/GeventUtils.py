@@ -26,6 +26,9 @@
 # They're distributed under the terms of the Python Software
 # Foundation license version 2, which can be be found at
 # <http://www.python.org/download/releases/2.7/license/>.
+#
+# You can find the original file at:
+# http://hg.python.org/cpython/file/ab05e7dad2788/Lib/shutil.py
 
 """A collection of misc utilities that behave nicely towards gevent,
 yielding from time to time in order to pass the control to other
