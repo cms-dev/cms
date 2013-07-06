@@ -54,8 +54,17 @@ def unmake_psycopg_green():
             "support for coroutines not available in this Psycopg version (%s)"
             % psycopg2.__version__)
 
-    print 'unmaking'
     extensions.set_wait_callback(None)
+
+
+def is_psycopg_green():
+    """Test whether gevent compatibility layer is installed in psycopg."""
+    if not hasattr(extensions, 'set_wait_callback'):
+        raise ImportError(
+            "support for coroutines not available in this Psycopg version (%s)"
+            % psycopg2.__version__)
+
+    return extensions.get_wait_callback() == gevent_wait_callback
 
 
 def gevent_wait_callback(conn, timeout=None):

@@ -50,7 +50,7 @@ from contextlib import contextmanager
 import gevent
 
 from cms.io.PsycoGevent import make_psycopg_green, \
-    unmake_psycopg_green
+    unmake_psycopg_green, is_psycopg_green
 
 
 def copyfileobj(fsrc, fdst, length=16 * 1024):
@@ -277,8 +277,11 @@ def ungreen_psycopg():
     stay inside the context manager as short as possible.
 
     """
-    unmake_psycopg_green()
+    is_green = is_psycopg_green()
+    if is_green:
+        unmake_psycopg_green()
     try:
         yield
     finally:
-        make_psycopg_green()
+        if is_green:
+            make_psycopg_green()
