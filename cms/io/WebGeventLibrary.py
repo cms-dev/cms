@@ -95,6 +95,9 @@ class RPCAnswerHandler(tornado.web.RequestHandler):
                     self.write({'status': 'ok',
                                 'data': responses[rid][0],
                                 'error': responses[rid][1]})
+                # XXX - It is belived that this exception block was
+                # added when we supported binary requests and it is
+                # not needed anymore. Check it.
                 except UnicodeDecodeError:
                     self.write({'status': 'ok',
                                 'data': '',
