@@ -19,8 +19,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""This file defines classes to create a Tornado server that is also
-an asynchronous RPC service.
+"""This file defines classes with common code to add Web server
+capabilities to a RPC service.
 
 """
 
@@ -152,7 +152,7 @@ class SyncRPCRequestHandler(tornado.web.RequestHandler):
 
 
 class WebService(Service):
-    """Example of a RPC service that is also a tornado webserver.
+    """RPC service with Web server capabilities.
 
     """
 
@@ -211,7 +211,7 @@ class WebService(Service):
 
 
 class WSGIXheadersMiddleware:
-    """A WSGI middleware to detect X-Real-IP and X-Forwarded-For
+    """WSGI middleware to detect X-Real-IP and X-Forwarded-For
     headers.
 
     environ['REMOTE_ADDR'] is set accordingly.
