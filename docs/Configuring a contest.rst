@@ -39,7 +39,7 @@ Tokens also affect the score computation. That is, all "tokened" submissions wil
 
 There are two types of tokens: contest-tokens and task-tokens. When a contestant uses a token to unlock a submission he/she is in reality using two tokens, one of each type, and therefore needs to have both available. As the names suggest, contest-tokens are bound to the contest while task-tokens are bound to a specific task. That means that there is just one set of contest-tokens but there can be many sets of task-tokens (precisely one for every task). These sets are controlled independently by rules defined either on the contest or on the task.
 
-A token set can be disabled (i.e. there will never be tokens available for use), infinite (i.e. there will always be tokens tokens available for use) or finite.
+A token set can be disabled (i.e. there will never be tokens available for use), infinite (i.e. there will always be tokens available for use) or finite.
 
 Rules consist of six parameters: ``token_initial``, ``token_gen_number``, ``token_gen_time``, ``token_max``, ``token_total`` and ``token_min_interval``. For a set to be disabled, the ``token_initial`` field has to be unset. For a set to be infinite, ``token_initial`` needs to be a non-negative integer, ``token_gen_number`` needs to be a positive integer and ``token_gen_time`` needs to be zero.
 
