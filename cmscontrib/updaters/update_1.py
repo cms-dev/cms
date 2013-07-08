@@ -107,6 +107,11 @@ class Updater(object):
         data['submissions'] = []
         data['user_tests'] = []
 
+        # Handle some pre-1.0 dumps
+        if "score_parameters" in data:
+            data["score_type_parameters"] = data["score_parameters"]
+            del data["score_parameters"]
+
         data['_class'] = 'Task'
         self.objs[id_] = data
         return id_
