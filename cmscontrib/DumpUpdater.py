@@ -30,6 +30,7 @@ import io
 import json
 import argparse
 
+from cms import logger
 from cms.db import version as model_version
 
 
