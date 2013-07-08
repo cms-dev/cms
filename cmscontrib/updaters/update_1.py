@@ -120,8 +120,14 @@ class Updater(object):
             data['questions'], partial(self.parse_generic, cls='Question'), user=id_)
         data['submissions'] = self.parse_list(
             data['submissions'], partial(self.parse_submission, tasks_by_name=tasks_by_name), user=id_)
-        data['user_tests'] = self.parse_list(
-            data['user_tests'], partial(self.parse_user_test, tasks_by_name=tasks_by_name), user=id_)
+        # Because of a bug in older versions of CMS, some dumps may
+        # lack the user_tests key; unfortunately user tests for such
+        # contests have been lost
+        if 'user_tests' in data:
+            data['user_tests'] = self.parse_list(
+                data['user_tests'], partial(self.parse_user_test, tasks_by_name=tasks_by_name), user=id_)
+        else:
+            data['user_tests'] = []
 
         data['_class'] = 'User'
         self.objs[id_] = data
