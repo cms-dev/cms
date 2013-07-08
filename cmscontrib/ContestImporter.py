@@ -125,6 +125,18 @@ class ContestImporter:
                      or self.import_source.endswith(".tar"):
                 archive = tarfile.open(name=self.import_source)
                 file_names = archive.getnames()
+            elif self.import_source.endswith(".tar.xz") \
+                    or self.import_source.endswith(".txz"):
+                try:
+                    import lzma
+                except ImportError:
+                    logger.critical("LZMA compression format not "
+                                    "supported. Please install package "
+                                    "lzma.")
+                    return False
+                archive = tarfile.open(
+                    fileobj=lzma.LZMAFile(self.import_source))
+                file_names = archive.getnames()
             else:
                 logger.critical("Unable to import from %s." %
                                 self.import_source)
