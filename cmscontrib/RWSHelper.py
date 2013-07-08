@@ -48,7 +48,7 @@ from cms import config, logger
 
 ACTION_METHODS = {
     'get': 'GET',
-    'create': 'POST',
+    'create': 'PUT',  # Create is actually an update.
     'update': 'PUT',
     'delete': 'DELETE',
     }
@@ -146,13 +146,15 @@ def main():
                 "Preparing %s request to %s (username: %s; password: %s)" %
                 (ACTION_METHODS[args.action], url, username, password))
 
-        req = Request(ACTION_METHODS[args.action],
-                      url, auth=(username, password)).prepare()
-
         if hasattr(args, 'file'):
             if args.verbose:
                 logger.info("Reading file contents to use as message body")
-            req.body = args.file.read()
+            body = args.file.read()
+        else:
+            body = None
+
+        req = Request(ACTION_METHODS[args.action], url,
+                      data=body, auth=(username, password)).prepare()
 
         if args.verbose:
             logger.info("Sending request")
@@ -168,7 +170,7 @@ def main():
         if args.verbose:
             logger.info("Response received")
 
-        if res.status_code != (201 if args.action == "create" else 200):
+        if res.status_code not in (200, 201):
             logger.error("Unexpected status code: %d" % res.status_code)
             error = True
             continue
