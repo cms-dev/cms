@@ -34,7 +34,7 @@ import gevent.socket
 import gevent.event
 from gevent.server import StreamServer
 
-from cmscommon.DateTime import monotonic_clock
+from cmscommon.DateTime import monotonic_time
 from cms.io import ServiceCoord, Address, get_service_address
 from cms.io.Utils import random_string, Logger, \
      encode_json, decode_json
@@ -231,7 +231,7 @@ class Service:
                             beginning.
 
         """
-        next_timeout = monotonic_clock()
+        next_timeout = monotonic_time()
         if not immediately:
             next_timeout += seconds
         heapq.heappush(self._timeouts, (next_timeout, seconds, func, plus))
@@ -301,7 +301,7 @@ class Service:
         return (float): seconds to next timeout.
 
         """
-        current = monotonic_clock()
+        current = monotonic_time()
 
         # Try to connect to disconnected services.
         self._reconnect()
