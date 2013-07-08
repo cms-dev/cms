@@ -26,7 +26,6 @@ using gevent and JSON encoding.
 
 import heapq
 import signal
-import time
 import traceback
 from functools import wraps
 
@@ -35,6 +34,7 @@ import gevent.socket
 import gevent.event
 from gevent.server import StreamServer
 
+from cmscommon.DateTime import monotonic_clock
 from cms.io import ServiceCoord, Address, get_service_address
 from cms.io.Utils import random_string, Logger, \
      encode_json, decode_json
@@ -231,7 +231,7 @@ class Service:
                             beginning.
 
         """
-        next_timeout = time.time()
+        next_timeout = monotonic_clock()
         if not immediately:
             next_timeout += seconds
         heapq.heappush(self._timeouts, (next_timeout, seconds, func, plus))
@@ -301,7 +301,7 @@ class Service:
         return (float): seconds to next timeout.
 
         """
-        current = time.time()
+        current = monotonic_clock()
 
         # Try to connect to disconnected services.
         self._reconnect()
