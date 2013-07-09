@@ -416,7 +416,7 @@ class RemoteService():
     # Requests bigger than 100 KiB are dropped to avoid DOS attacks
     # XXX - Check that these sizes are sensible
     RECV_SIZE = 4096
-    MAX_INBOX_SIZE = 100 * 1024
+    MAX_INBOX_SIZE = 1024 * 1024
 
     def __init__(self, service, remote_service_coord=None, address=None):
         """Create a communication channel to a remote service.
@@ -454,16 +454,20 @@ class RemoteService():
 
             # Check that the data buffer doesn't exceed a maximum
             # size; otherwise, this could be a DOS attack vector
-            if len(inbox) > RemoteService.MAX_INBOX_SIZE:
-                inbox = b''
-                ignore_first_message = True
-                logger.error("Message too long, I'm discarding it")
+            # TODO - This check is disabled, because it risks to stop
+            # legitimate messages; we have to carefully check which
+            # maximum length has to be considered acceptable
+            #if len(inbox) > RemoteService.MAX_INBOX_SIZE:
+            #    inbox = b''
+            #    ignore_first_message = True
+            #    logger.error("Message too long, I'm discarding it")
 
             # Process incoming data
             for data in splits[:-1]:
                 if ignore_first_message:
                     ignore_first_message = False
                     continue
+                #logger.debug("Message length: %d" % (len(data)))
                 self.process_data(data)
 
             # Connection has been closed
