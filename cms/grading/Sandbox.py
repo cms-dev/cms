@@ -196,7 +196,7 @@ class Sandbox:
 
         # Default parameters for isolate
         self.box_id = box_id           # -b
-        self.cgroup = True             # --cg
+        self.cgroup = False            # --cg
         self.chdir = self.inner_temp_dir # -c
         self.dirs = []                 # -d
         self.dirs += [(self.inner_temp_dir, self.path, "rw")]
@@ -215,7 +215,8 @@ class Sandbox:
         self.extra_timeout = None      # -x
 
         # Tell isolate to get the sandbox ready.
-        box_cmd = [self.box_exec, "--cg", "-b", str(self.box_id)]
+        box_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
+            + ["-b", str(self.box_id)]
         ret = subprocess.call(box_cmd + ["--init"])
         if ret != 0:
             raise SandboxInterfaceException(
@@ -760,7 +761,8 @@ class Sandbox:
         logger.debug("Deleting sandbox in %s" % self.path)
 
         # Tell isolate to cleanup the sandbox.
-        box_cmd = [self.box_exec, "--cg", "-b", str(self.box_id)]
+        box_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
+            + ["-b", str(self.box_id)]
         subprocess.call(box_cmd + ["--cleanup"])
 
         # Delete the working directory.
