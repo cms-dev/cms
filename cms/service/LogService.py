@@ -65,7 +65,7 @@ class LogService(Service):
         self._last_messages = []
 
     @rpc_method
-    def Log(self, msg, coord, operation, severity, timestamp):
+    def Log(self, msg, coord, operation, severity, timestamp, exc_text):
         """Log a message.
 
         msg (string): the message to log
@@ -74,6 +74,8 @@ class LogService(Service):
                             operation that is going on in the service
         severity (string): a constant defined in Logger
         timestamp (float): seconds from epoch
+        exc_text (string): the text of the logged exception, or None.
+
         returns (bool): True
 
         """
@@ -86,14 +88,17 @@ class LogService(Service):
                                         "coord": coord,
                                         "operation": operation,
                                         "severity": severity,
-                                        "timestamp": timestamp})
+                                        "timestamp": timestamp,
+                                        "exc_text": exc_text})
             while len(self._last_messages) > LogService.LAST_MESSAGES_COUNT:
                 del self._last_messages[0]
 
         print >> self._log_file, format_log(
             msg, coord, operation, severity, timestamp,
+            exc_text=exc_text,
             colors=config.color_remote_file_log)
         print format_log(msg, coord, operation, severity, timestamp,
+                         exc_text=exc_text,
                          colors=config.color_remote_shell_log)
 
     @rpc_method

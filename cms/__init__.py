@@ -34,6 +34,7 @@ import pkgutil
 import codecs
 import netifaces
 from argparse import ArgumentParser
+import traceback
 
 from cms.io import ServiceCoord, Address, config as async_config, \
     get_shard_from_addresses
@@ -330,7 +331,8 @@ SEVERITY_COLORS = {SEV_CRITICAL: 'red',
                    SEV_DEBUG:    'cyan'}
 
 
-def format_log(msg, coord, operation, severity, timestamp, colors=False):
+def format_log(msg, coord, operation, severity, timestamp,
+               exc_text=None, colors=False):
     """Format a log message in a common way (for local and remote
     logging).
 
@@ -340,6 +342,7 @@ def format_log(msg, coord, operation, severity, timestamp, colors=False):
                         operation that is going on in the service.
     severity (string): a constant defined in Logger.
     timestamp (float): seconds from epoch.
+    exc_text (string): the text of the logged exception, or None.
     colors (bool): whether to use ANSI color commands (for the logs
                    directed to a shell).
 
@@ -364,17 +367,23 @@ def format_log(msg, coord, operation, severity, timestamp, colors=False):
                  ansi_color_string("%s", coord_color),
                  ansi_color_string("%s", operation_color))
     else:
-        if operation == "" or coord == "":
+        if operation == "":
             format_string = "%s - %s [%s] %s"
         else:
             format_string = "%s - %s [%s/%s] %s"
 
     if operation == "":
-        return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(_datetime),
-                                severity, coord, msg)
+        format_args = ['{0:%Y/%m/%d %H:%M:%S}'.format(_datetime),
+                       severity, coord, msg]
     else:
-        return format_string % ('{0:%Y/%m/%d %H:%M:%S}'.format(_datetime),
-                                severity, coord, operation, msg)
+        format_args = ['{0:%Y/%m/%d %H:%M:%S}'.format(_datetime),
+                       severity, coord, operation, msg]
+
+    if exc_text is not None:
+        format_string += "\n%s"
+        format_args.append(exc_text)
+
+    return format_string % tuple(format_args)
 
 
 class Logger(object):
@@ -395,8 +404,8 @@ class Logger(object):
         SEV_WARNING,
         SEV_INFO
         ]
-    # FIXME - SEV_DEBUG cannot be added to TO_SEND, otherwise we enter
-    # an infinite loop
+    # SEV_DEBUG cannot be added to TO_SEND, otherwise we enter an
+    # infinite loop
     TO_SEND = [
         SEV_CRITICAL,
         SEV_ERROR,
@@ -472,7 +481,8 @@ class Logger(object):
                    os.path.join(log_dir, "last.log"))
         self.info("%s %d up and running!" % service)
 
-    def log(self, msg, operation=None, severity=None, timestamp=None):
+    def log(self, msg, operation=None, severity=None, timestamp=None,
+            exc_info=False):
         """Record locally a log message and tries to send it to the
         log service.
 
@@ -481,6 +491,8 @@ class Logger(object):
                             operation that is going on in the service
         severity (string): a constant defined in Logger
         timestamp (float): seconds from epoch
+        exc_info (boolean): whether to log the exception raised in
+                            this frame
 
         """
         if severity is None:
@@ -493,19 +505,28 @@ class Logger(object):
         if self._my_coord is not None:
             coord = repr(self._my_coord)
 
+        if exc_info:
+            exc_text = "".join(traceback.format_exception(
+                    *sys.exc_info(), limit=100))
+        else:
+            exc_text = None
+
         if severity in self.TO_DISPLAY:
             print format_log(msg, coord, operation, severity, timestamp,
+                             exc_text=exc_text,
                              colors=config.color_shell_log)
         if self._my_coord is not None:
             if severity in self.TO_STORE:
                 print >> self._log_file, format_log(
                     msg, coord, operation,
                     severity, timestamp,
+                    exc_text=exc_text,
                     colors=config.color_file_log)
             if severity in self.TO_SEND:
                 self._log_service.Log(
                     msg=msg, coord=coord, operation=operation,
-                    severity=severity, timestamp=timestamp)
+                    severity=severity, timestamp=timestamp,
+                    exc_text=exc_text)
 
     def __getattr__(self, method):
         """Syntactic sugar to allow, e.g., logger.debug(...).
@@ -519,11 +540,13 @@ class Logger(object):
             "critical": SEV_CRITICAL
             }
         if method in severities:
-            def new_method(msg, operation=None, timestamp=None):
+            def new_method(msg, operation=None, timestamp=None,
+                           exc_info=False):
                 """Syntactic sugar around log().
 
                 """
-                return self.log(msg, operation, severities[method], timestamp)
+                return self.log(msg, operation, severities[method], timestamp,
+                                exc_info=exc_info)
             return new_method
 
 
