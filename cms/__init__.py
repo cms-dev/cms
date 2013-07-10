@@ -146,6 +146,7 @@ class Config:
         self.color_file_log = False
         self.color_remote_shell_log = True
         self.color_remote_file_log = True
+        self.include_traceback = True
 
         # Installed or from source?
         self.installed = sys.argv[0].startswith("/usr/") and \
@@ -379,7 +380,7 @@ def format_log(msg, coord, operation, severity, timestamp,
         format_args = ['{0:%Y/%m/%d %H:%M:%S}'.format(_datetime),
                        severity, coord, operation, msg]
 
-    if exc_text is not None:
+    if exc_text is not None and Config.include_traceback:
         format_string += "\n%s"
         format_args.append(exc_text)
 

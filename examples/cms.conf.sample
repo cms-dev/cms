@@ -153,6 +153,7 @@
     "color_file_log":         false,
     "color_remote_shell_log": true,
     "color_remote_file_log":  true,
+    "include_traceback":      true,
 
 
 
