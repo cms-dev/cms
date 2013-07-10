@@ -380,7 +380,7 @@ def format_log(msg, coord, operation, severity, timestamp,
         format_args = ['{0:%Y/%m/%d %H:%M:%S}'.format(_datetime),
                        severity, coord, operation, msg]
 
-    if exc_text is not None and Config.include_traceback:
+    if exc_text is not None and config.include_traceback:
         format_string += "\n%s"
         format_args.append(exc_text)
 
