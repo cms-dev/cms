@@ -95,6 +95,7 @@ class Config:
 
         # Worker.
         self.keep_sandbox = True
+        self.use_cgroups = True
 
         # WebServers.
         self.secret_key = "8e045a51e4b102ea803c06f92841a1fb",

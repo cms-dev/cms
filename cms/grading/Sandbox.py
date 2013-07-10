@@ -196,7 +196,7 @@ class Sandbox:
 
         # Default parameters for isolate
         self.box_id = box_id           # -b
-        self.cgroup = True             # --cg
+        self.cgroup = config.use_cgroups # --cg
         self.chdir = self.inner_temp_dir # -c
         self.dirs = []                 # -d
         self.dirs += [(self.inner_temp_dir, self.path, "rw")]
