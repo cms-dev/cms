@@ -457,6 +457,10 @@ class RemoteService():
             # TODO - This check is disabled, because it risks to stop
             # legitimate messages; we have to carefully check which
             # maximum length has to be considered acceptable
+            # TODO - This check wouldn't work as expected anyway,
+            # because it does prevent the first message from being
+            # interpreted, but it doesn't prevent the inbox to be
+            # bloated with a good share of it
             #if len(inbox) > RemoteService.MAX_INBOX_SIZE:
             #    inbox = b''
             #    ignore_first_message = True
