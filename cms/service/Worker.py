@@ -126,7 +126,7 @@ class Worker(Service):
 
             except:
                 err_msg = "Worker failed on operation `%s'" % logger.operation
-                logger.error("%s\n%s" % (err_msg, traceback.format_exc()))
+                logger.error(err_msg, exc_info=True)
                 raise JobException(err_msg)
 
             finally:

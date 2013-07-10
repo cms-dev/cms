@@ -625,8 +625,9 @@ class Sandbox:
                 content = file_.read()
             else:
                 content = file_.read(maxlen)
-        except UnicodeDecodeError as error:
-            logger.error("Unable to interpret file as UTF-8. %r" % error)
+        except UnicodeDecodeError:
+            logger.error("Unable to interpret file as UTF-8.",
+                         exc_info=True)
             return None
         file_.close()
         return content
@@ -719,10 +720,9 @@ class Sandbox:
             p = subprocess.Popen(args,
                                     stdin=stdin, stdout=stdout, stderr=stderr,
                                     close_fds=close_fds)
-        except OSError, e:
+        except OSError:
             logger.critical("Failed to execute program in sandbox with command: %s" %
-                        " ".join(args))
-            logger.critical("Exception: %r" % e)
+                            " ".join(args), exc_info=True)
             raise
 
         return p
