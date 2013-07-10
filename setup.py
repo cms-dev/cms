@@ -106,7 +106,8 @@ def do_setup():
                     "cmstestsuite.tasks.batch_stdio",
                     "cmstestsuite.tasks.batch_fileio",
                     "cmstestsuite.tasks.batch_fileio_managed",
-                    "cmstestsuite.tasks.communication"],
+                    "cmstestsuite.tasks.communication",
+                    "cmscompat"],
           package_data=package_data,
           entry_points={
               "console_scripts": [
@@ -139,6 +140,9 @@ def do_setup():
                   "cmsRWSHelper=cmscontrib.RWSHelper:main",
 
                   "cmsMake=cmstaskenv.cmsMake:main",
+
+                  "cmsYamlImporter=cmscompat.YamlImporter:main",
+                  "cmsYamlReimporter=cmscompat.YamlReimporter:main",
               ]
           },
           keywords="ioi programming contest grader management system",
