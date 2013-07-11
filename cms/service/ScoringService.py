@@ -705,7 +705,7 @@ class ScoringService(Service):
                 (int(make_timestamp(submission.token.timestamp)),
                  submission_id)
             subchange_put_data = {
-                "submission": encode_id(submission_id),
+                "submission": encode_id(str(submission_id)),
                 "time": int(make_timestamp(submission.token.timestamp)),
                 "token": True}
 
@@ -713,7 +713,7 @@ class ScoringService(Service):
         for ranking in self.rankings:
             self.submission_queue.setdefault(
                 ranking,
-                dict())[encode_id(submission_id)] = \
+                dict())[encode_id(str(submission_id))] = \
                 submission_put_data
             self.subchange_queue.setdefault(
                 ranking,
@@ -818,7 +818,7 @@ class ScoringService(Service):
                     (int(make_timestamp(submission.timestamp)),
                      submission.id)
                 subchange_put_data = {
-                    "submission": encode_id(submission.id),
+                    "submission": encode_id(str(submission.id)),
                     "time": int(make_timestamp(submission.timestamp))}
                 if score is not None:
                     # We're sending the unrounded score to RWS
