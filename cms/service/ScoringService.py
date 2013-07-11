@@ -30,6 +30,11 @@ services the scores, via http requests.
 
 """
 
+# We enable monkey patching to make many libraries gevent-friendly
+# (for instance, urllib3, used by requests)
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import simplejson as json
 import base64
 from httplib import HTTPConnection as _HTTPConnection

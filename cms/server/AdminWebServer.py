@@ -24,6 +24,11 @@
 
 """
 
+# We enable monkey patching to make many libraries gevent-friendly
+# (for instance, urllib3, used by requests)
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import os
 from datetime import datetime, timedelta
 import traceback
