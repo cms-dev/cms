@@ -746,7 +746,7 @@ class ScoringService(Service):
             subchange_id = "%s%st" % (int(timestamp),
                                       submission_id)
             subchange_put_data = {
-                "submission": encode_id(submission_id),
+                "submission": encode_id(str(submission_id)),
                 "time": int(timestamp),
                 "token": True}
 
@@ -755,7 +755,7 @@ class ScoringService(Service):
             for ranking in self.rankings:
                 self.submission_queue.setdefault(
                     ranking,
-                    dict())[encode_id(submission_id)] = \
+                    dict())[encode_id(str(submission_id))] = \
                     submission_put_data
                 self.subchange_queue.setdefault(
                     ranking,
