@@ -32,6 +32,7 @@ from functools import wraps
 import gevent
 import gevent.socket
 import gevent.event
+import gevent.monkey
 from gevent.server import StreamServer
 
 from cmscommon.DateTime import monotonic_time
@@ -47,6 +48,10 @@ logger = None
 
 # Fix psycopg in order to support gevent greenlets
 make_psycopg_green()
+
+# We enable monkey patching to make many libraries gevent-friendly
+# (particularly, urllib3, used by requests)
+gevent.monkey.patch_all()
 
 
 def rpc_callback(func):
