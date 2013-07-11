@@ -110,10 +110,13 @@ class BaseHandler(CommonRequestHandler):
         """
         if self.get_secure_cookie("login") is None:
             return None
+
+        # Parse cookie.
         try:
             cookie = pickle.loads(self.get_secure_cookie("login"))
             username = str(cookie[0])
-            last_update = make_datetime(cookie[1])
+            password = str(cookie[1])
+            last_update = make_datetime(cookie[2])
         except:
             self.clear_cookie("login")
             return None
@@ -124,16 +127,27 @@ class BaseHandler(CommonRequestHandler):
             self.clear_cookie("login")
             return None
 
+        # Load the user from DB.
         user = self.sql_session.query(User)\
             .filter(User.contest == self.contest)\
             .filter(User.username == username).first()
-        if user is None:
+
+        # Check if user exists and is allowed to login.
+        if user is None or user.password != password:
+            self.clear_cookie("login")
+            return None
+        if config.ip_lock and user.ip is not None \
+                and user.ip != self.request.remote_ip:
+            self.clear_cookie("login")
+            return None
+        if config.block_hidden_users and user.hidden:
             self.clear_cookie("login")
             return None
 
         if self.refresh_cookie:
             self.set_secure_cookie("login",
                                    pickle.dumps((user.username,
+                                                 user.password,
                                                  make_timestamp())),
                                    expires_days=None)
 
@@ -494,7 +508,9 @@ class LoginHandler(BaseHandler):
         logger.info("User logged in: user=%s remote_ip=%s." %
                     (filtered_user, self.request.remote_ip))
         self.set_secure_cookie("login",
-                               pickle.dumps((user.username, make_timestamp())),
+                               pickle.dumps((user.username,
+                                             user.password,
+                                             make_timestamp())),
                                expires_days=None)
         self.redirect(next_page)
 
