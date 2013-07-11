@@ -37,11 +37,13 @@ gevent.monkey.patch_all()
 
 import simplejson as json
 import base64
-from httplib import HTTPConnection as _HTTPConnection
 
 import gevent
 from gevent import socket
 from gevent import ssl
+
+import requests
+from urlparse import urljoin
 
 from cms import config, default_argument_parser, logger
 from cms.io import ServiceCoord
@@ -56,90 +58,6 @@ from cmscommon.DateTime import make_timestamp
 
 class CannotSendError(Exception):
     pass
-
-
-# HTTPConnection and HTTPSConnection are taken from [1] and adapted to
-# use gevent; moreover, in HTTPSConnection client key and certificate
-# were removed and server certificate validation was added. Note:
-# tunneling capabilities have been removed, too (in both classes).
-#
-# [1] http://hg.python.org/releasing/2.7.3/file/7bb96963d067/Lib/httplib.py
-class HTTPConnection(_HTTPConnection):
-    """A subclass of httplib.HTTPConnection compatible with gevent.
-
-    """
-    def connect(self):
-        self.sock = socket.create_connection((self.host, self.port),
-                                             self.timeout, self.source_address)
-
-
-class HTTPSConnection(_HTTPConnection):
-    """A subclass of httplib.HTTPConnection with HTTPS and gevent
-    capabilities.
-
-    Check that the certificate provided by the server is trusted using
-    the ones in config.https_certfile. This allows many configurations:
-    - a single self-signed certificate used both by SS and RWS;
-    - a different self-signed cerficiate for each RWS, all included in
-      the list used by SS;
-    - a single self-signed certificate used by SS, used to sign other
-      certificates used by the RWSs;
-    - etc.
-
-    """
-    def connect(self):
-        sock = socket.create_connection((self.host, self.port),
-                                        self.timeout, self.source_address)
-
-        self.sock = ssl.wrap_socket(sock,
-                                    ssl_version=ssl.PROTOCOL_TLSv1,
-                                    cert_reqs=ssl.CERT_REQUIRED,
-                                    ca_certs=config.https_certfile)
-
-
-# Used to store active connections to ranking servers.
-active_connections = dict()
-
-
-def get_connection(ranking):
-    """Return a connection to a ranking server
-
-    If we already have an open connection return that one, otherwise
-    attempt to open a new one.
-
-    ranking ((str, str)): protocol and address of ranking server
-
-    raise a CannotSendError if a new connection cannot be established.
-
-    """
-    if ranking[1] not in active_connections:
-        try:
-            if ranking[0] == 'https':
-                active_connections[ranking[1]] = HTTPSConnection(ranking[1])
-            elif ranking[0] == 'http':
-                active_connections[ranking[1]] = HTTPConnection(ranking[1])
-            else:
-                raise ValueError("Unknown protocol '%s'." % ranking[0])
-        except Exception as error:
-            logger.info("Error %r while connecting to ranking %s." %
-                        (error, ranking[1]))
-            raise CannotSendError
-    return active_connections[ranking[1]]
-
-
-def get_authorization(username, password):
-    """Compute the basic authentication string needed to send data to
-    the ranking.
-
-    username (string): username to login with.
-    password (string): password of the username.
-    return (string): the basic auth header, or ValueError if username
-                     contains ":"
-
-    """
-    if ":" in username:
-        raise ValueError("Colon `:' is not allowed in a username.")
-    return "Basic %s" % base64.b64encode(username + ':' + password)
 
 
 def encode_id(entity_id):
@@ -165,14 +83,12 @@ def encode_id(entity_id):
     return encoded_id
 
 
-def safe_put_data(connection, url, data, auth, operation):
-    """Send some data to url through the connection using username and
-    password specified in auth.
+def safe_put_data(ranking, resource, data, operation):
+    """Send some data to ranking using a PUT request.
 
-    connection (httplib.HTTPConnection): the connection.
-    url (string): the relative url.
+    ranking (str): the URL of ranking server.
+    resource (str): the relative path of the entity.
     data (dict): the data to json-encode and send.
-    auth (string): the authorization as returned by get_authorization.
     operation (str): a human-readable description of the operation
                      we're performing (to produce log messages).
 
@@ -180,63 +96,47 @@ def safe_put_data(connection, url, data, auth, operation):
 
     """
     try:
-        connection.request("PUT", url,
-                           json.dumps(data),
-                           {'Authorization': auth})
-        res = connection.getresponse()
-        res.read()
+        url = urljoin(ranking, resource)
+        res = requests.put(url, json.dumps(data),
+                           verify=config.https_certfile)
     except Exception as error:
         logger.info("Error %r while %s." % (error, operation))
         raise CannotSendError
-    if res.status not in [200, 201]:
-        logger.info("Status %s while %s." % (res.status, operation))
+    if res.status_code != 200:
+        logger.info("Status %s while %s." % (res.status_code, operation))
         raise CannotSendError
 
 
 def send_submissions(ranking, submission_put_data):
     """Send a submission to the remote ranking.
 
-    ranking ((str, str, str)): protocol, address and authorization
-                               string of ranking server.
+    ranking (str): the URL of ranking server.
     submission_put_data (dict): dictionary to send to the ranking to
                                 send the submission.
 
     raise CannotSendError in case of communication errors.
 
     """
-    logger.info("Sending submissions to ranking %s." % ranking[1])
+    logger.info("Sending submissions to ranking %s." % ranking)
 
-    try:
-        safe_put_data(get_connection(ranking[:2]), "/submissions/",
-                      submission_put_data, ranking[2],
-                      "sending submissions to ranking %s" % ranking[1])
-    except CannotSendError as error:
-        # Delete it to make get_connection try to create it again.
-        del active_connections[ranking[1]]
-        raise error
+    safe_put_data(ranking, "submissions/", submission_put_data,
+                  "sending submissions to ranking %s" % ranking)
 
 
 def send_subchanges(ranking, subchange_put_data):
     """Send a change to a submission (token or score update).
 
-    ranking ((str, str, str)): protocol, address and authorization
-                               string of ranking server.
+    ranking (str): the URL of ranking server.
     subchange_put_data (dict): dictionary to send to the ranking to
                                update the submission.
 
     raise CannotSendError in case of communication errors.
 
     """
-    logger.info("Sending subchanges to ranking %s." % ranking[1])
+    logger.info("Sending subchanges to ranking %s." % ranking)
 
-    try:
-        safe_put_data(get_connection(ranking[:2]), "/subchanges/",
-                      subchange_put_data, ranking[2],
-                      "sending subchanges to ranking %s" % ranking[1])
-    except CannotSendError as error:
-        # Delete it to make get_connection try to create it again.
-        del active_connections[ranking[1]]
-        raise error
+    safe_put_data(ranking, "subchanges/", subchange_put_data,
+                  "sending subchanges to ranking %s" % ranking)
 
 
 class ScoringService(Service):
@@ -281,20 +181,12 @@ class ScoringService(Service):
         self.submission_results_scored = set()
         self.submissions_tokened = set()
 
-        # Initialize ranking web servers we need to send data to.
-        self.rankings = []
-        for i in xrange(len(config.rankings_address)):
-            address = config.rankings_address[i]
-            username = config.rankings_username[i]
-            password = config.rankings_password[i]
-            self.rankings.append((address[0],  # HTTP / HTTPS
-                                  "%s:%d" % tuple(address[1:]),
-                                  get_authorization(username, password)))
+        # Initialize queues for data we will send to ranking servers.
         self.initialize_queue = set()
         self.submission_queue = dict()
         self.subchange_queue = dict()
 
-        for ranking in self.rankings:
+        for ranking in config.rankings:
             self.initialize_queue.add(ranking)
 
         gevent.spawn(self.dispath_operations_thread)
@@ -440,7 +332,7 @@ class ScoringService(Service):
                 self.initialize(ranking)
             except:
                 logger.info("Ranking %s not connected or generic error." %
-                               ranking[1])
+                            ranking)
                 new_initialize_queue.add(ranking)
                 failed_rankings.add(ranking)
 
@@ -453,7 +345,7 @@ class ScoringService(Service):
                 send_submissions(ranking, data)
             except:
                 logger.info("Ranking %s not connected or generic error." %
-                               ranking[1])
+                            ranking)
                 new_submission_queue[ranking] = data
                 failed_rankings.add(ranking)
 
@@ -466,7 +358,7 @@ class ScoringService(Service):
                 send_subchanges(ranking, data)
             except:
                 logger.info("Ranking %s not connected or generic error." %
-                               ranking[1])
+                            ranking)
                 new_subchange_queue[ranking] = data
                 failed_rankings.add(ranking)
 
@@ -488,64 +380,58 @@ class ScoringService(Service):
         sent before the contest: contest, users, tasks. No support for
         teams, flags and faces.
 
-        ranking ((str, str, str)): protocol, address and authorization
-                                   string of ranking server.
+        ranking (str): the URL of ranking server.
 
         raise CannotSendError in case of communication errors.
 
         """
-        logger.info("Initializing ranking %s." % ranking[1])
+        logger.info("Initializing ranking %s." % ranking)
 
-        try:
-            connection = get_connection(ranking[:2])
-            auth = ranking[2]
+        with SessionGen(commit=False) as session:
+            contest = Contest.get_from_id(self.contest_id, session)
 
-            with SessionGen(commit=False) as session:
-                contest = Contest.get_from_id(self.contest_id, session)
+            if contest is None:
+                logger.error("Received request for unexistent contest "
+                             "id %s." % self.contest_id)
+                raise KeyError
 
-                if contest is None:
-                    logger.error("Received request for unexistent contest "
-                                   "id %s." % self.contest_id)
-                    raise KeyError
-                contest_name = contest.name
-                contest_url = "/contests/%s" % encode_id(contest_name)
-                contest_data = {
-                    "name": contest.description,
-                    "begin": int(make_timestamp(contest.start)),
-                    "end": int(make_timestamp(contest.stop)),
-                    "score_precision": contest.score_precision}
+            contest_name = contest.name
+            contest_url = "contests/%s" % encode_id(contest_name)
+            contest_data = {
+                "name": contest.description,
+                "begin": int(make_timestamp(contest.start)),
+                "end": int(make_timestamp(contest.stop)),
+                "score_precision": contest.score_precision}
 
-                users = dict((encode_id(user.username),
-                              {"f_name": user.first_name,
-                               "l_name": user.last_name,
-                               "team": None})
-                             for user in contest.users
-                             if not user.hidden)
+            users = dict((encode_id(user.username),
+                          {"f_name": user.first_name,
+                           "l_name": user.last_name,
+                           "team": None})
+                         for user in contest.users
+                         if not user.hidden)
 
-                tasks = dict((encode_id(task.name),
-                              {"name": task.title,
-                               "contest": encode_id(contest.name),
-                               "max_score": 100.0,
-                               "score_precision": task.score_precision,
-                               "extra_headers": [],
-                               "order": task.num,
-                               "short_name": task.name})
-                             for task in contest.tasks)
+            tasks = dict((encode_id(task.name),
+                          {"name": task.title,
+                           "contest": encode_id(contest.name),
+                           "max_score": 100.0,
+                           "score_precision": task.score_precision,
+                           "extra_headers": [],
+                           "order": task.num,
+                           "short_name": task.name})
+                         for task in contest.tasks)
 
-            safe_put_data(connection, contest_url, contest_data, auth,
-                          "sending contest %s to ranking %s" %
-                          (contest_name, ranking[1]))
+        safe_put_data(ranking, contest_url, contest_data,
+                      "sending contest %s to ranking %s" %
+                      (contest_name, ranking))
 
-            safe_put_data(connection, "/users/", users, auth,
-                          "sending users to ranking %s" % ranking[1])
+        safe_put_data(ranking, "users/", users,
+                      "sending users of contest %s to ranking %s" %
+                      (contest_name, ranking))
 
-            safe_put_data(connection, "/tasks/", tasks, auth,
-                          "sending tasks to ranking %s" % ranking[1])
+        safe_put_data(ranking, "tasks/", tasks,
+                      "sending tasks of contest %s to ranking %s" %
+                      (contest_name, ranking))
 
-        except CannotSendError as error:
-            # Delete it to make get_connection try to create it again.
-            del active_connections[ranking[1]]
-            raise error
 
     @rpc_method
     def reinitialize(self):
@@ -558,7 +444,7 @@ class ScoringService(Service):
         logger.info("Reinitializing rankings.")
         self.scorers = {}
         self._initialize_scorers()
-        for ranking in self.rankings:
+        for ranking in config.rankings:
             self.initialize_queue.add(ranking)
 
     @rpc_method
@@ -668,7 +554,7 @@ class ScoringService(Service):
         # update only the user owning the submission.
 
         # Adding operations to the queue.
-        for ranking in self.rankings:
+        for ranking in config.rankings:
             self.submission_queue.setdefault(
                 ranking,
                 dict())[encode_id(str(submission_id))] = \
@@ -715,7 +601,7 @@ class ScoringService(Service):
                 "token": True}
 
         # Adding operations to the queue.
-        for ranking in self.rankings:
+        for ranking in config.rankings:
             self.submission_queue.setdefault(
                 ranking,
                 dict())[encode_id(str(submission_id))] = \
@@ -833,7 +719,7 @@ class ScoringService(Service):
                 subchanges.append((subchange_id, subchange_put_data))
 
         # Adding operations to the queue.
-        for ranking in self.rankings:
+        for ranking in config.rankings:
             for subchange_id, data in subchanges:
                 self.subchange_queue.setdefault(
                     ranking,

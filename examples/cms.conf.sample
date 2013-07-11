@@ -122,10 +122,8 @@
 
     "_help": "Lists of addresses (protocol, ip, port), usernames and",
     "_help": "passwords where the scores are to be sent.",
-    "rankings_address":        [["http", "localhost", 8890]],
-    "rankings_username":       ["usern4me"],
-    "rankings_password":       ["passw0rd"],
-
+    "rankings": ["http://usern4me:passw0rd@localhost:8890/"],
+    "https_certfile": null,
 
 
     "_section": "ResourceService",

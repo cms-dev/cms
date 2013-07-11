@@ -40,9 +40,13 @@ The configuration file is a JSON object. The most important parameters are:
 
     Remember to change the ``username`` and ``password`` every time you set up a RWS. Keeping the default ones will leave your scoreboard open to illegitimate access.
 
-To connect the rest of CMS to your new RWS you need to add its connection parameters to the configuration file of CMS (i.e. :file:`cms.conf`). Note that you can connect CMS to multiple RWSs, each on a different server and/or port. There are three parameters to do it, three lists of the same length: ``ranking_address``, ``ranking_username`` and ``ranking_password``. The elements in ``ranking_address`` are lists of three elements: the protocol (either "http" or "https"), the address (IP address or hostname) and the port. If any of your RWSs uses the HTTPS protocol you also need to specify the ``https_certfile`` configuration parameter. More details on this in :ref:`rankingwebserver_securing-the-connection-between-ss-and-rws`.
+To connect the rest of CMS to your new RWS you need to add its connection parameters to the configuration file of CMS (i.e. :file:`cms.conf`). Note that you can connect CMS to multiple RWSs, each on a different server and/or port. The parameter you need to change is ``rankings``, a list of URLs in the form::
 
-You also need to make sure that RWS is able to keep enough simultaneously active connections by checking that the maximum number of open file descriptors is larger than the expected number of clients. You can see the current value with ``ulimit -Sn`` (or ``-Sa`` to see all limitations) and change it with ``ulimit -Sn <value>``. This value will be reset when you open a new shell, so remember to run the command again. Note that there may be a hard limit that you cannot overcome (use ``-H`` instead of ``-S`` to see it).
+    <scheme>://<username>:<password>@<hostname>:<port>/<prefix>
+
+where ``scheme`` can be either ``http`` or ``https``, ``username``, ``password`` and ``port`` are the values specified in the configuration file of the RWS and ``prefix`` is explained in :ref:`rankingwebserver_using-a-proxy` (it will generally be blank, otherwise it needs to end with a slash). If any of your RWSs uses the HTTPS protocol you also need to specify the ``https_certfile`` configuration parameter. More details on this in :ref:`rankingwebserver_securing-the-connection-between-ss-and-rws`.
+
+You also need to make sure that RWS is able to keep enough simultaneously active connections by checking that the maximum number of open file descriptors is larger than the expected number of clients. You can see the current value with ``ulimit -Sn`` (or ``-Sa`` to see all limitations) and change it with ``ulimit -Sn <value>``. This value will be reset when you open a new shell, so remember to run the command again. Note that there may be a hard limit that you cannot overcome (use ``-H`` instead of ``-S`` to see it). If that's still too low you can start multiple RWSs and use a proxy to distribute clients among them (see :ref:`rankingwebserver_using-a-proxy`).
 
 Managing it
 ===========
@@ -136,7 +140,6 @@ As a security measure, we recommend not to run RWS as root but to run it as an u
 A reverse proxy is most commonly used to map RWS from a high port number (say 8080) to the default HTTP port (i.e. 80), hence we will assume this scenario throughout this section.
 
 With nginx it's also extremely easy to do some URL mapping. That is, you can make RWS "share" the URL space of port 80 with other servers by making it "live" inside a prefix. This means that you will access RWS using an URL like "http://myserver/prefix/".
-Note that, however, an "unprefixed" port has to be publicly available and that is the port that has to be written in the ``cms.conf`` file since it's needed by SS (because it's currently unable to use a prefixed RWS, see :gh_issue:`36`).
 
 We'll provide here an example configuration file for nginx. This is just the "core" of the file, but other options need to be added in order for it to be complete and usable by nginx. These bits are different on each distribution, so the best is for you to take the default configuration file provided by your distribution and adapt it to contain the following code:
 

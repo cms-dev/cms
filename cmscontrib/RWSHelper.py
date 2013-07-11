@@ -38,10 +38,10 @@ import argparse
 import six
 
 if six.PY3:
-    from urllib.parse import quote, urlunsplit
+    from urllib.parse import quote, urljoin
 else:
     from urllib import quote
-    from urlparse import urlunsplit
+    from urlparse import urljoin
 
 from six.moves import xrange
 
@@ -67,14 +67,8 @@ ENTITY_TYPES = ['contest',
                 ]
 
 
-def get_parameters(ranking_shard, entity_type, entity_id):
-    protocol, hostname, port = config.rankings_address[ranking_shard]
-    username = config.rankings_username[ranking_shard]
-    password = config.rankings_password[ranking_shard]
-
-    return (urlunsplit((protocol, '%s:%d' % (hostname, port),
-                        '/%ss/%s' % (entity_type, entity_id), '', '')),
-            username, password)
+def get_url(shard, entity_type, entity_id):
+    return urljoin(config.rankings[shard], '%ss/%s' % (entity_type, entity_id))
 
 
 def main():
@@ -86,7 +80,7 @@ def main():
     # and nargs='+' but it doesn't seem to work with subparsers...
     parser.add_argument(
         '-r', '--ranking', dest='rankings', action='append', default=None,
-        choices=list(xrange(len(config.rankings_address))), metavar='shard',
+        choices=list(xrange(len(config.rankings))), metavar='shard',
         type=int, help="select which RWS to connect to (omit for 'all')")
     subparsers = parser.add_subparsers(
         title='available actions', metavar='action',
@@ -137,19 +131,18 @@ def main():
     if args.rankings is not None:
         shards = args.rankings
     else:
-        shards = list(xrange(len(config.rankings_address)))
+        shards = list(xrange(len(config.rankings)))
 
     s = Session()
     error = False
 
     for shard in shards:
-        url, username, password = get_parameters(
-            shard, args.entity_type, args.entity_id)
+        url = get_url(shard, args.entity_type, args.entity_id)
 
         if args.verbose:
             logger.info(
-                "Preparing %s request to %s (username: %s; password: %s)" %
-                (ACTION_METHODS[args.action], url, username, password))
+                "Preparing %s request to %s" %
+                (ACTION_METHODS[args.action], url))
 
         if hasattr(args, 'file'):
             if args.verbose:
@@ -158,8 +151,7 @@ def main():
         else:
             body = None
 
-        req = Request(ACTION_METHODS[args.action], url,
-                      data=body, auth=(username, password)).prepare()
+        req = Request(ACTION_METHODS[args.action], url, data=body).prepare()
 
         if args.verbose:
             logger.info("Sending request")

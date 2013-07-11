@@ -135,9 +135,7 @@ class Config:
         self.admin_listen_port = 8889
 
         # ScoringService.
-        self.rankings_address = [["http", "localhost", 8890]]
-        self.rankings_username = ["usern4me"]
-        self.rankings_password = ["passw0rd"]
+        self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]
         self.https_certfile = None
 
         # ResourceService.
