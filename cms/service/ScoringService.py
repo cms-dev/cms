@@ -95,10 +95,11 @@ def safe_put_data(ranking, resource, data, operation):
         res = requests.put(url, json.dumps(data),
                            verify=config.https_certfile)
     except Exception as error:
-        logger.info("Error %r while %s." % (error, operation))
+        logger.warning(
+            "%s while %s." % (type(error).__name__, operation), exc_info=True)
         raise CannotSendError
     if res.status_code != 200:
-        logger.info("Status %s while %s." % (res.status_code, operation))
+        logger.warning("Status %s while %s." % (res.status_code, operation))
         raise CannotSendError
 
 
