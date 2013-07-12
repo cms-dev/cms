@@ -24,8 +24,10 @@ using gevent and JSON encoding.
 
 """
 
+import errno
 import heapq
 import signal
+import sys
 import traceback
 from functools import wraps
 
@@ -37,7 +39,7 @@ from gevent.server import StreamServer
 from cmscommon.DateTime import monotonic_time
 from cms.io import ServiceCoord, Address, get_service_address
 from cms.io.Utils import random_string, Logger, \
-     encode_json, decode_json
+    encode_json, decode_json
 from cms.io.PsycoGevent import make_psycopg_green
 
 
@@ -253,7 +255,18 @@ class Service:
         """Starts the main loop of the service.
 
         """
-        self.server.start()
+        try:
+            self.server.start()
+        except gevent.socket.error as (error, unused_msg):
+            if error == errno.EADDRINUSE:
+                logger.critical("Listening port %s for service %s is "
+                                "already in use, quitting." %
+                                (self.server.address.port,
+                                 self._my_coord.name))
+                sys.exit(1)
+            else:
+                raise
+
         try:
             while not self._exit:
                 next_timeout = self._trigger(maximum=0.5)
@@ -279,8 +292,8 @@ class Service:
                 except:
                     pass
                 if remote_service.connected and \
-                       self.on_remote_service_connected[service] \
-                       is not None:
+                        self.on_remote_service_connected[service] \
+                        is not None:
                     self.on_remote_service_connected[service](service)
         return True
 

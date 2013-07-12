@@ -124,9 +124,9 @@ User.get_tokens = get_tokens
 try:
     metadata.create_all()
 except OperationalError:
-    logger.error("Cannot connect to the database. Please ensure that it is "
-                 "running and the connection line `database' in cms.conf is "
-                 "correct (in particular, username and password).")
+    logger.critical("Cannot connect to the database. Please ensure that it is "
+                    "running and the connection line `database' in cms.conf "
+                    "is correct (in particular, username and password).")
     sys.exit(1)
 
 
