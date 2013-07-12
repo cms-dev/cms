@@ -91,8 +91,8 @@ class SpoolExporter:
             try:
                 self.export_submissions()
                 self.export_ranking()
-            except Exception as error:
-                logger.critical("Generic error. %r" % error)
+            except Exception:
+                logger.critical("Generic error.", exc_info=True)
                 return False
 
         logger.info("Export finished.")
@@ -108,43 +108,53 @@ class SpoolExporter:
 
         queue_file = codecs.open(os.path.join(self.spool_dir, "queue"), "w",
                                  encoding="utf-8")
-        for submission in self.submissions:
+        for submission in sorted(self.submissions, key=lambda x: x.timestamp):
             logger.info("Exporting submission %s." % submission.id)
             username = submission.user.username
             task = submission.task.name
             timestamp = time.mktime(submission.timestamp.timetuple())
 
             # Get source files to the spool directory.
-            file_digest = submission.files["%s.%s" % (task, "%l")].digest
-            upload_filename = os.path.join(
+            submission_dir = os.path.join(
                 self.upload_dir, username, "%s.%d.%s" %
                 (task, timestamp, submission.language))
-            self.file_cacher.get_file(file_digest, path=upload_filename)
-            upload_filename = os.path.join(
+            os.mkdir(submission_dir)
+            for filename, file_ in submission.files.iteritems():
+                self.file_cacher.get_file(
+                    file_.digest,
+                    path=os.path.join(submission_dir, filename))
+            last_submission_dir = os.path.join(
                 self.upload_dir, username, "%s.%s" %
                 (task, submission.language))
-            self.file_cacher.get_file(file_digest, path=upload_filename)
+            try:
+                os.unlink(last_submission_dir)
+            except OSError:
+                pass
+            os.symlink(os.path.basename(submission_dir), last_submission_dir)
             print >> queue_file, "./upload/%s/%s.%d.%s" % \
                 (username, task, timestamp, submission.language)
 
             # Write results file for the submission.
-            if submission.evaluated():
+            active_dataset = submission.task.active_dataset
+            result = submission.get_result(active_dataset)
+            if result.evaluated():
                 res_file = codecs.open(os.path.join(
-                    self.spool_dir,
-                    "%d.%s.%s.%s.res" % (timestamp, username,
-                                         task, submission.language)),
+                        self.spool_dir,
+                        "%d.%s.%s.%s.res" % (timestamp, username,
+                                             task, submission.language)),
                                        "w", encoding="utf-8")
                 res2_file = codecs.open(os.path.join(
-                    self.spool_dir,
-                    "%s.%s.%s.res" % (username, task,
-                                      submission.language)),
+                        self.spool_dir,
+                        "%s.%s.%s.res" % (username, task,
+                                          submission.language)),
                                         "w", encoding="utf-8")
                 total = 0.0
-                for num, evaluation in enumerate(submission.evaluations):
+                for evaluation in result.evaluations:
                     outcome = float(evaluation.outcome)
                     total += outcome
-                    line = "Executing on file n. %2d %s (%.4f)" % \
-                        (num, evaluation.text, outcome)
+                    line = "Executing on file with codename '%s' %s (%.4f)" % \
+                        (evaluation.testcase.codename,
+                         evaluation.text, outcome)
                     print >> res_file, line
                     print >> res2_file, line
                 line = "Score: %.6f" % total
@@ -181,16 +191,18 @@ class SpoolExporter:
             scorers[task.id] = get_score_type(dataset=task.active_dataset)
 
         for submission in self.submissions:
+            active_dataset = submission.task.active_dataset
+            result = submission.get_result(active_dataset)
             scorers[submission.task_id].add_submission(
                 submission.id, submission.timestamp,
                 submission.user.username,
-                submission.evaluated(),
-                dict((ev.num,
+                result.evaluated(),
+                dict((ev.codename,
                       {"outcome": ev.outcome,
                        "text": ev.text,
                        "time": ev.execution_time,
                        "memory": ev.memory_used})
-                     for ev in submission.evaluations),
+                     for ev in result.evaluations),
                 submission.tokened())
 
         # Put together all the scores.
@@ -209,10 +221,9 @@ class SpoolExporter:
             for task_id in task_scores:
                 task_scores[task_id][username] = max(
                     task_scores[task_id][username],
-                    last_scores[task_id][username]
-                    )
-            print username, [task_scores[task_id][username]
-                                    for task_id in task_scores]
+                    last_scores[task_id][username])
+            #print username, [task_scores[task_id][username]
+            #                        for task_id in task_scores]
             scores[username] = sum(task_scores[task_id][username]
                                    for task_id in task_scores)
 
@@ -237,9 +248,9 @@ class SpoolExporter:
         points_line = " %10s" * n_tasks
         csv_points_line = ",%s" * n_tasks
         print >> ranking_file, ("%20s %10s" % ("Utente", "Totale")) + \
-              (points_line % tuple([t.name for t in sorted_tasks]))
+            (points_line % tuple([t.name for t in sorted_tasks]))
         print >> ranking_csv, ("%s,%s" % ("utente", "totale")) + \
-              (csv_points_line % tuple([t.name for t in sorted_tasks]))
+            (csv_points_line % tuple([t.name for t in sorted_tasks]))
 
         # Write rankings' content.
         points_line = " %10.3f" * n_tasks
@@ -247,12 +258,14 @@ class SpoolExporter:
         for username in sorted_usernames:
             user_scores = [task_scores[task.id][username]
                            for task in sorted_tasks]
-            print >> ranking_file, ("%20s %10.3f" % (username,
-                                                     scores[username])) + \
-                  (points_line % tuple(user_scores))
-            print >> ranking_csv, ("%s,%.6f" % (username,
-                                                scores[username])) + \
-                  (csv_points_line % tuple(user_scores))
+            print >> ranking_file, ("%20s %10.3f" % (
+                    username,
+                    scores[username])) + \
+                    (points_line % tuple(user_scores))
+            print >> ranking_csv, ("%s,%.6f" % (
+                    username,
+                    scores[username])) + \
+                    (csv_points_line % tuple(user_scores))
 
         ranking_file.close()
         ranking_csv.close()
@@ -265,7 +278,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="Exporter for the Italian repository for CMS.")
     parser.add_argument("-c", "--contest-id", help="id of contest to export",
-                      action="store", type=int)
+                        action="store", type=int)
     parser.add_argument("export_directory",
                         help="target directory where to export")
     args = parser.parse_args()
