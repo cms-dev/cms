@@ -27,23 +27,25 @@ from cms import logger, plugin_lookup
 
 
 def get_task_type_class(name):
+    """Load the TaskType class given as parameter."""
     return plugin_lookup(name,
                          "cms.grading.tasktypes", "tasktypes")
 
 
 def get_task_type(name=None, parameters=None,
                   dataset=None):
-    """Given a job, instantiate the corresponding TaskType class.
+    """Construct the TaskType specified by parameters.
 
-    job (Job): the job to perform.
-    file_cacher (FileCacher): a file cacher object.
-    dataset (Dataset): if we don't want to grade, but just to get
-                 information, we can provide only the
-                 dataset and not the submission.
-    task_type_name (string): again, if we only need the class, we can
-                             give only the task type name.
+    Load the TaskType class named "name" and instantiate it with the
+    data structure obtained by JSON-decoding "parameters".
+    If "dataset" is given then all other arguments should be omitted as
+    they are obtained from the dataset.
 
-    return (object): an instance of the correct TaskType class.
+    name (str): the name of the TaskType class
+    parameters (str): the JSON-encoded parameters
+    dataset (Dataset): the dataset whose TaskType we want
+
+    return (TaskType): an instance of the correct TaskType class.
 
     """
     if dataset is not None:

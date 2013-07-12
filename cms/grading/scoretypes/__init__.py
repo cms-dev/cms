@@ -27,17 +27,28 @@ from cms import logger, plugin_lookup
 
 
 def get_score_type_class(name):
+    """Load the ScoreType class given as parameter."""
     return plugin_lookup(name,
                          "cms.grading.scoretypes", "scoretypes")
 
 
 def get_score_type(name=None, parameters=None, public_testcases=None,
                    dataset=None):
-    """Given a dataset, instantiate the corresponding ScoreType class.
+    """Construct the ScoreType specified by parameters.
 
-    dataset (Dataset): the Dataset whose ScoreType we want
+    Load the ScoreType class named "name" and instantiate it with the
+    data structure obtained by JSON-decoding "parameters" and with the
+    dict "public_testcases".
+    If "dataset" is given then all other arguments should be omitted as
+    they are obtained from the dataset.
 
-    return (object): an instance of the correct ScoreType class.
+    name (str): the name of the TaskType class
+    parameters (str): the JSON-encoded parameters
+    public_testcases ({str: bool}): for each testcase (identified by
+        its codename) a flag telling whether it's public or not
+    dataset (Dataset): the dataset whose TaskType we want
+
+    return (TaskType): an instance of the correct TaskType class.
 
     """
     if dataset is not None:
