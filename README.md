@@ -41,6 +41,7 @@ particular we are aware of the following.
 - International competitions:
     - IOI 2012 (International Olympiad in Informatics), September
       2012;
+    - IOI 2013, July 2013;
     - FARIO 2012 (French-Australian Regional Informatics Olympiad),
       March 2012.
 - National competitions:
