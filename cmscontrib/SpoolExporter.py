@@ -32,6 +32,7 @@ gevent.monkey.patch_all()
 import os
 import codecs
 import argparse
+import time
 
 from cms import logger
 from cms.db import ask_for_contest
@@ -111,7 +112,7 @@ class SpoolExporter:
             logger.info("Exporting submission %s." % submission.id)
             username = submission.user.username
             task = submission.task.name
-            timestamp = submission.timestamp
+            timestamp = time.mktime(submission.timestamp.timetuple())
 
             # Get source files to the spool directory.
             file_digest = submission.files["%s.%s" % (task, "%l")].digest
@@ -183,7 +184,12 @@ class SpoolExporter:
             scorers[submission.task_id].add_submission(
                 submission.id, submission.timestamp,
                 submission.user.username,
-                dict((ev.num, float(ev.outcome))
+                submission.evaluated(),
+                dict((ev.num,
+                      {"outcome": ev.outcome,
+                       "text": ev.text,
+                       "time": ev.execution_time,
+                       "memory": ev.memory_used})
                      for ev in submission.evaluations),
                 submission.tokened())
 
