@@ -24,7 +24,7 @@ import os
 
 from cmscontrib.YamlLoader import YamlLoader
 from cms.db.FileCacher import FileCacher
-from cms.grading.Job import EvaluationJob, Testcase
+from cms.grading.Job import EvaluationJob
 from cms.db.SQLAlchemyAll import Executable
 from cms.grading.tasktypes import get_task_type
 import simplejson as json
@@ -81,16 +81,15 @@ def test_testcases(base_dir, soluzione, assume=None):
         path=os.path.join(base_dir, soluzione),
         description="Solution %s for task %s" % (soluzione, task.name))
     executables = {task.name: Executable(filename=task.name, digest=digest)}
-    job = EvaluationJob(
+    jobs = [(t, EvaluationJob(
         task_type=dataset.task_type,
         task_type_parameters=json.loads(dataset.task_type_parameters),
         managers=dict(dataset.managers),
         executables=executables,
-        testcases=dict((t.num, Testcase(t.input, t.output))
-                       for t in dataset.testcases),
+        input=dataset.testcases[t].input, output=dataset.testcases[t].output,
         time_limit=dataset.time_limit,
-        memory_limit=dataset.memory_limit)
-    tasktype = get_task_type(job, file_cacher)
+        memory_limit=dataset.memory_limit)) for t in dataset.testcases]
+    tasktype = get_task_type(dataset=dataset)
 
     ask_again = True
     last_status = "ok"
@@ -99,10 +98,11 @@ def test_testcases(base_dir, soluzione, assume=None):
     info = []
     points = []
     comments = []
-    for i in job.testcases.keys():
-        print i,
+    tcnames = []
+    for jobinfo in sorted(jobs):
+        print jobinfo[0],
         sys.stdout.flush()
-
+        job = jobinfo[1]
         # Skip the testcase if we decide to consider everything to
         # timeout
         if stop:
@@ -113,15 +113,15 @@ def test_testcases(base_dir, soluzione, assume=None):
 
         # Evaluate testcase
         last_status = status
-        tasktype.evaluate_testcase(i)
-        # print job.evaluations[i]
-        status = job.evaluations[i]["plus"]["exit_status"]
+        tasktype.evaluate(job, file_cacher)
+        status = job.plus["exit_status"]
         info.append("Time: %5.3f   Wall: %5.3f   Memory: %s" %
-                    (job.evaluations[i]["plus"]["execution_time"],
-                    job.evaluations[i]["plus"]["execution_wall_clock_time"],
-                    mem_human(job.evaluations[i]["plus"]["memory_used"])))
-        points.append(float(job.evaluations[i]["outcome"]))
-        comments.append(job.evaluations[i]["text"])
+                   (job.plus["execution_time"],
+                    job.plus["execution_wall_clock_time"],
+                    mem_human(job.plus["memory_used"])))
+        points.append(float(job.outcome))
+        comments.append(job.text)
+        tcnames.append(jobinfo[0])
 
         # If we saw two consecutive timeouts, ask wether we want to
         # consider everything to timeout
@@ -142,8 +142,8 @@ def test_testcases(base_dir, soluzione, assume=None):
     print
     clen = max(len(c) for c in comments)
     ilen = max(len(i) for i in info)
-    for i, (p, c, b) in enumerate(zip(points, comments, info)):
-        print "%3d) %5.2lf --- %s [%s]" % (i, p, c.ljust(clen), b.center(ilen))
+    for (i, p, c, b) in zip(tcnames, points, comments, info):
+        print "%s) %5.2lf --- %s [%s]" % (i, p, c.ljust(clen), b.center(ilen))
 
     return zip(points, comments, info)
 
