@@ -322,10 +322,10 @@ class ScoringService(Service):
                     try:
                         self.scorers[dataset.id] = \
                             get_score_type(dataset=dataset)
-                    except Exception as error:
+                    except Exception:
                         logger.critical(
-                            "Cannot get score type for task %s(%d): %r" %
-                            (task.name, dataset.id, error))
+                            "Cannot get score type for task %s(%d)" %
+                            (task.name, dataset.id), exc_info=True)
                         self.exit()
             session.commit()
 
