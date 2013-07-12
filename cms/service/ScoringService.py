@@ -37,6 +37,7 @@ gevent.monkey.patch_all()
 
 import simplejson as json
 import base64
+import string
 
 import gevent
 import gevent.queue
@@ -70,15 +71,8 @@ def encode_id(entity_id):
     """
     encoded_id = ""
     for char in entity_id.encode('utf-8'):
-        if char not in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
-               "abcdefghijklmnopqrstuvwxyz" \
-               "0123456789":
-            try:
-                encoded_id += "_" + hex(ord(char))[-2:]
-            except TypeError:
-                logger.error("Entity %s cannot be send correctly, "
-                             "sending anyway (this may cause errors)." %
-                             entity_id)
+        if char not in string.ascii_letters + string.digits:
+            encoded_id += "_%x" % ord(char)
         else:
             encoded_id += char
     return encoded_id
