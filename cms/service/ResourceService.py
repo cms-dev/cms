@@ -60,6 +60,8 @@ class ResourceService(Service):
     SERVICE_PATH = {
         "Checker": os.path.join("cms", "service"),
         "EvaluationService": os.path.join("cms", "service"),
+        "LogService": os.path.join("cms", "service"),
+        "ResourceService": os.path.join("cms", "service"),
         "ScoringService": os.path.join("cms", "service"),
         "Worker": os.path.join("cms", "service"),
         "AdminWebServer": os.path.join("cms", "server"),
@@ -158,17 +160,17 @@ class ResourceService(Service):
                                                         service.shard))
                 devnull = os.open(os.devnull, os.O_WRONLY)
                 command = "cms%s" % service.name
-                cwd = "."
                 if not config.installed:
-                    command = os.path.join(".", "%s.py" % service.name)
-                    cwd = ResourceService.SERVICE_PATH[service.name]
+                    command = os.path.join(
+                        ".",
+                        "%s" % ResourceService.SERVICE_PATH[service.name],
+                        "%s.py" % service.name)
                 process = subprocess.Popen([command,
                                             str(service.shard),
                                             "-c",
                                             str(self.contest_id)],
                                            stdout=devnull,
-                                           stderr=subprocess.STDOUT,
-                                           cwd=cwd
+                                           stderr=subprocess.STDOUT
                                            )
                 self._launched_processes.add(process)
 
@@ -203,7 +205,14 @@ class ResourceService(Service):
         cmdline = config.process_cmdline[:]
         length = len(cmdline)
         for i in range(length):
-            cmdline[i] = cmdline[i].replace("%s", service.name)
+            if config.installed:
+                cmdline[i] = cmdline[i].replace("%s", service.name)
+            else:
+                cmdline[i] = cmdline[i].replace(
+                    "%s",
+                    os.path.join(
+                        ResourceService.SERVICE_PATH[service.name],
+                        service.name))
             cmdline[i] = cmdline[i].replace("%d", str(service.shard))
         for proc in psutil.get_process_list():
             try:
