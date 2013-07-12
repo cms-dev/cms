@@ -39,6 +39,7 @@ import simplejson as json
 import base64
 
 import gevent
+import gevent.queue
 from gevent import socket
 from gevent import ssl
 
@@ -107,45 +108,91 @@ def safe_put_data(ranking, resource, data, operation):
         raise CannotSendError
 
 
-def send_submissions(ranking, submission_put_data):
-    """Send a submission to the remote ranking.
+class RankingProxy(object):
+    # We use a single queue for all the data we have to send to the
+    # ranking so we need to distingush the type of each item (either
+    # initialize, submission or subchange).
+    CONTEST_TYPE = 0
+    TASK_TYPE = 1
+    TEAM_TYPE = 2
+    USER_TYPE = 3
+    SUBMISSION_TYPE = 4
+    SUBCHANGE_TYPE = 5
 
-    ranking (str): the URL of ranking server.
-    submission_put_data (dict): dictionary to send to the ranking to
-                                send the submission.
+    # The resource paths for the different entity types, relative to
+    # the self.ranking URL.
+    RESOURCE_PATHS = [
+        "contests",
+        "tasks",
+        "teams",
+        "users",
+        "submissions",
+        "subchanges"]
 
-    raise CannotSendError in case of communication errors.
+    # How many different entity types we know about.
+    TYPE_COUNT = len(RESOURCE_PATHS)
 
-    """
-    logger.info("Sending submissions to ranking %s." % ranking)
+    # How long we wait after having failed to push data to a ranking
+    # before trying again.
+    FAILURE_WAIT = 60.0
 
-    safe_put_data(ranking, "submissions/", submission_put_data,
-                  "sending submissions to ranking %s" % ranking)
+    def __init__(self, ranking):
+        self.ranking = ranking
+        self.data_queue = gevent.queue.JoinableQueue()
 
+    def run(self):
+        # The cumulative data that we will try to send to the ranking,
+        # built by combining items in the queue.
+        data = list(dict() for i in xrange(self.TYPE_COUNT))
 
-def send_subchanges(ranking, subchange_put_data):
-    """Send a change to a submission (token or score update).
+        # The number of times we will call self.data_queue.task_done()
+        # after a successful send (i.e. how many times we called .get()
+        # on the queue to build up the data we have now).
+        task_count = list(0 for i in xrange(self.TYPE_COUNT))
 
-    ranking (str): the URL of ranking server.
-    subchange_put_data (dict): dictionary to send to the ranking to
-                               update the submission.
+        while True:
+            # Block until we have something to do.
+            item = self.data_queue.peek()
 
-    raise CannotSendError in case of communication errors.
+            try:
+                while True:
+                    # Get other data if it's immediately available.
+                    item = self.data_queue.get_nowait()
+                    task_count[item[0]] += 1
 
-    """
-    logger.info("Sending subchanges to ranking %s." % ranking)
+                    # Merge this item with the cumulative data.
+                    data[item[0]].update(item[1])
+            except gevent.queue.Empty:
+                pass
 
-    safe_put_data(ranking, "subchanges/", subchange_put_data,
-                  "sending subchanges to ranking %s" % ranking)
+            try:
+                for i in xrange(self.TYPE_COUNT):
+                    # Send entities of type i.
+                    if len(data[i]) > 0:
+                        # XXX We abuse the resource path as the english
+                        # (plural) name for the entity type.
+                        name = self.RESOURCE_PATHS[i]
+                        operation = \
+                            "sending %s to ranking %s" % (name, self.ranking)
+
+                        logger.debug(operation.capitalize())
+                        safe_put_data(
+                            self.ranking, "%s/" % name, data[i], operation)
+
+                        data[i].clear()
+                        for j in xrange(task_count[i]):
+                            self.data_queue.task_done()
+                        task_count[i] = 0
+
+            except CannotSendError:
+                # A log message has already been produced.
+                gevent.sleep(self.FAILURE_WAIT)
 
 
 class ScoringService(Service):
     """Scoring service.
 
     """
-
-    # How often we try to send data to remote rankings.
-    CHECK_DISPATCH_TIME = 5.0
 
     # How often we look for submission not scored/tokened.
     JOBS_NOT_DONE_CHECK_TIME = 347.0
@@ -181,15 +228,14 @@ class ScoringService(Service):
         self.submission_results_scored = set()
         self.submissions_tokened = set()
 
-        # Initialize queues for data we will send to ranking servers.
-        self.initialize_queue = set()
-        self.submission_queue = dict()
-        self.subchange_queue = dict()
-
+        # Create and spawn threads to send data to rankings.
+        self.rankings = list()
         for ranking in config.rankings:
-            self.initialize_queue.add(ranking)
+            proxy = RankingProxy(ranking)
+            gevent.spawn(proxy.run)
+            self.rankings.append(proxy)
 
-        gevent.spawn(self.dispath_operations_thread)
+        self.initialize_rankings()
 
         self.add_timeout(self.search_jobs_not_done, None,
                          ScoringService.JOBS_NOT_DONE_CHECK_TIME,
@@ -304,88 +350,13 @@ class ScoringService(Service):
         self.scoring_old_submission = False
         return False
 
-    def dispatch_operations(self):
-        """Look at the operations still to do in the queue and tries
-        to dispatch them
-
-        """
-        initialize_queue = self.initialize_queue
-        submission_queue = self.submission_queue
-        subchange_queue = self.subchange_queue
-        self.initialize_queue = set()
-        self.submission_queue = dict()
-        self.subchange_queue = dict()
-        pending = len(initialize_queue) + \
-            len(submission_queue) + \
-            len(subchange_queue)
-        if pending > 0:
-            logger.info("%s operations still pending." % pending)
-
-        failed_rankings = set()
-
-        new_initialize_queue = set()
-        for ranking in initialize_queue:
-            if ranking in failed_rankings:
-                new_initialize_queue.add(ranking)
-                continue
-            try:
-                self.initialize(ranking)
-            except:
-                logger.info("Ranking %s not connected or generic error." %
-                            ranking)
-                new_initialize_queue.add(ranking)
-                failed_rankings.add(ranking)
-
-        new_submission_queue = dict()
-        for ranking, data in submission_queue.iteritems():
-            if ranking in failed_rankings:
-                new_submission_queue[ranking] = data
-                continue
-            try:
-                send_submissions(ranking, data)
-            except:
-                logger.info("Ranking %s not connected or generic error." %
-                            ranking)
-                new_submission_queue[ranking] = data
-                failed_rankings.add(ranking)
-
-        new_subchange_queue = dict()
-        for ranking, data in subchange_queue.iteritems():
-            if ranking in failed_rankings:
-                new_subchange_queue[ranking] = data
-                continue
-            try:
-                send_subchanges(ranking, data)
-            except:
-                logger.info("Ranking %s not connected or generic error." %
-                            ranking)
-                new_subchange_queue[ranking] = data
-                failed_rankings.add(ranking)
-
-        self.initialize_queue |= new_initialize_queue
-        for r in set(self.submission_queue) | set(new_submission_queue):
-            new_submission_queue.setdefault(r, dict()). \
-                update(self.submission_queue.get(r, dict()))
-        self.submission_queue = new_submission_queue
-        for r in set(self.subchange_queue) | set(new_subchange_queue):
-            new_subchange_queue.setdefault(r, dict()). \
-                update(self.subchange_queue.get(r, dict()))
-        self.subchange_queue = new_subchange_queue
-
-        # We want this to run forever.
-        return True
-
-    def initialize(self, ranking):
-        """Send to the ranking all the data that are supposed to be
+    def initialize_rankings(self):
+        """Send to all the rankings all the data that are supposed to be
         sent before the contest: contest, users, tasks. No support for
         teams, flags and faces.
 
-        ranking (str): the URL of ranking server.
-
-        raise CannotSendError in case of communication errors.
-
         """
-        logger.info("Initializing ranking %s." % ranking)
+        logger.info("Initializing rankings.")
 
         with SessionGen(commit=False) as session:
             contest = Contest.get_from_id(self.contest_id, session)
@@ -395,8 +366,7 @@ class ScoringService(Service):
                              "id %s." % self.contest_id)
                 raise KeyError
 
-            contest_name = contest.name
-            contest_url = "contests/%s" % encode_id(contest_name)
+            contest_id = encode_id(contest.name)
             contest_data = {
                 "name": contest.description,
                 "begin": int(make_timestamp(contest.start)),
@@ -420,18 +390,11 @@ class ScoringService(Service):
                            "short_name": task.name})
                          for task in contest.tasks)
 
-        safe_put_data(ranking, contest_url, contest_data,
-                      "sending contest %s to ranking %s" %
-                      (contest_name, ranking))
-
-        safe_put_data(ranking, "users/", users,
-                      "sending users of contest %s to ranking %s" %
-                      (contest_name, ranking))
-
-        safe_put_data(ranking, "tasks/", tasks,
-                      "sending tasks of contest %s to ranking %s" %
-                      (contest_name, ranking))
-
+        for ranking in self.rankings:
+            ranking.data_queue.put((ranking.CONTEST_TYPE,
+                                    {contest_id: contest_data}))
+            ranking.data_queue.put((ranking.USER_TYPE, users))
+            ranking.data_queue.put((ranking.TASK_TYPE, tasks))
 
     @rpc_method
     def reinitialize(self):
@@ -444,8 +407,7 @@ class ScoringService(Service):
         logger.info("Reinitializing rankings.")
         self.scorers = {}
         self._initialize_scorers()
-        for ranking in config.rankings:
-            self.initialize_queue.add(ranking)
+        self.initialize_rankings()
 
     @rpc_method
     def new_evaluation(self, submission_id, dataset_id):
@@ -534,14 +496,14 @@ class ScoringService(Service):
                 return
 
             # Data to send to remote rankings.
-            submission_put_data = {
+            submission_data = {
                 "user": encode_id(submission.user.username),
                 "task": encode_id(submission.task.name),
                 "time": int(make_timestamp(submission.timestamp))}
             subchange_id = "%s%ss" % \
                 (int(make_timestamp(submission.timestamp)),
                  submission_id)
-            subchange_put_data = {
+            subchange_data = {
                 "submission": encode_id(str(submission_id)),
                 "time": int(make_timestamp(submission.timestamp)),
                 # We're sending the unrounded score to RWS
@@ -554,15 +516,11 @@ class ScoringService(Service):
         # update only the user owning the submission.
 
         # Adding operations to the queue.
-        for ranking in config.rankings:
-            self.submission_queue.setdefault(
-                ranking,
-                dict())[encode_id(str(submission_id))] = \
-                submission_put_data
-            self.subchange_queue.setdefault(
-                ranking,
-                dict())[encode_id(subchange_id)] = \
-                subchange_put_data
+        for ranking in self.rankings:
+            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
+                                    {str(submission_id): submission_data}))
+            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
+                                    {subchange_id: subchange_data}))
 
     @rpc_method
     def submission_tokened(self, submission_id):
@@ -588,28 +546,24 @@ class ScoringService(Service):
             self.submissions_tokened.add(submission_id)
 
             # Data to send to remote rankings.
-            submission_put_data = {
+            submission_data = {
                 "user": encode_id(submission.user.username),
                 "task": encode_id(submission.task.name),
                 "time": int(make_timestamp(submission.timestamp))}
             subchange_id = "%s%st" % \
                 (int(make_timestamp(submission.token.timestamp)),
                  submission_id)
-            subchange_put_data = {
+            subchange_data = {
                 "submission": encode_id(str(submission_id)),
                 "time": int(make_timestamp(submission.token.timestamp)),
                 "token": True}
 
         # Adding operations to the queue.
-        for ranking in config.rankings:
-            self.submission_queue.setdefault(
-                ranking,
-                dict())[encode_id(str(submission_id))] = \
-                submission_put_data
-            self.subchange_queue.setdefault(
-                ranking,
-                dict())[encode_id(subchange_id)] = \
-                subchange_put_data
+        for ranking in self.rankings:
+            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
+                                    {str(submission_id): submission_data}))
+            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
+                                    {subchange_id: subchange_data}))
 
     @rpc_method
     def invalidate_submission(self,
@@ -687,7 +641,7 @@ class ScoringService(Service):
             logger.info("Dataset update for task %d (dataset now is %d)." % (
                 task.id, dataset.id))
 
-            subchanges = []
+            subchanges = dict()
             for submission in task.submissions:
                 submission_result = submission.get_result(dataset)
 
@@ -708,7 +662,7 @@ class ScoringService(Service):
                 subchange_id = "%s%ss" % \
                     (int(make_timestamp(submission.timestamp)),
                      submission.id)
-                subchange_put_data = {
+                subchange_data = {
                     "submission": encode_id(str(submission.id)),
                     "time": int(make_timestamp(submission.timestamp))}
                 if score is not None:
@@ -716,14 +670,12 @@ class ScoringService(Service):
                     subchange_put_data["score"] = score
                 if ranking_score_details is not None:
                     subchange_put_data["extra"] = ranking_score_details
-                subchanges.append((subchange_id, subchange_put_data))
+                subchanges[subchange_id] = subchange_data
 
         # Adding operations to the queue.
-        for ranking in config.rankings:
-            for subchange_id, data in subchanges:
-                self.subchange_queue.setdefault(
-                    ranking,
-                    dict())[encode_id(subchange_id)] = data
+        for ranking in self.rankings:
+            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
+                                    subchanges))
 
 
 def main():
