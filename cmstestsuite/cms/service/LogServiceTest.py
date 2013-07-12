@@ -33,6 +33,7 @@ class TestLogService(unittest.TestCase):
     COORD = "Random coordinates"
     OPERATION = "Random operation"
     TIMESTAMP = 1234567890
+    EXC_TEXT = "Random exception"
 
     def setUp(self):
         self.service = LogService(0)
@@ -48,13 +49,15 @@ class TestLogService(unittest.TestCase):
                          TestLogService.COORD,
                          TestLogService.OPERATION,
                          severity,
-                         TestLogService.TIMESTAMP)
+                         TestLogService.TIMESTAMP,
+                         TestLogService.EXC_TEXT)
         last_message = self.service.last_messages()[-1]
         self.assertEquals(last_message["message"], TestLogService.MESSAGE)
         self.assertEquals(last_message["coord"], TestLogService.COORD)
         self.assertEquals(last_message["operation"], TestLogService.OPERATION)
         self.assertEquals(last_message["severity"], severity)
         self.assertEquals(last_message["timestamp"], TestLogService.TIMESTAMP)
+        self.assertEquals(last_message["exc_text"], TestLogService.EXC_TEXT)
         pass
 
 
