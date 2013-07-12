@@ -29,7 +29,9 @@ db objects must be imported from this module.
 import sys
 
 from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import OperationalError
 
+from cms import logger
 from cms.db.SQLAlchemyUtils import Base, metadata, Session, \
     ScopedSession, SessionGen, drop_everything
 from cms.db.Contest import Contest, Announcement
@@ -119,7 +121,13 @@ def get_tokens(self):
 User.get_tokens = get_tokens
 
 
-metadata.create_all()
+try:
+    metadata.create_all()
+except OperationalError:
+    logger.error("Cannot connect to the database. Please ensure that it is "
+                 "running and the connection line `database' in cms.conf is "
+                 "correct (in particular, username and password).")
+    sys.exit(1)
 
 
 if __name__ == "__main__":
