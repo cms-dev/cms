@@ -39,14 +39,15 @@ CMS has been used in several official and unofficial contests. In
 particular we are aware of the following.
 
 - International competitions:
-    - IOI 2012 (International Olympiad in Informatics), September
-      2012;
-    - IOI 2013, July 2013;
+    - IOI 2012 (International Olympiad in Informatics), Sirmione
+      and Montichiari, Italy, September 2012;
+    - IOI 2013, Brisbane, Australia, July 2013;
     - FARIO 2012 (French-Australian Regional Informatics Olympiad),
       March 2012.
 - National competitions:
-    - OII 2011 (Italian Olympiad in Informatics), September 2011;
-    - OII 2012, October 2012;
+    - OII 2011 (Italian Olympiad in Informatics), Sirmione,
+      September 2011;
+    - OII 2012, Sirmione, October 2012;
     - AIIO 2012 (Australian Invitational Informatics Olympiad),
       February 2012;
     - Taipei High School Programming Contest, Taiwan, October 2012;
@@ -57,14 +58,15 @@ particular we are aware of the following.
     - Slovenian Invitational Informatics Olympiad, May 2013;
     - JOI Open Contest 2013, Japan, June 2013.
 - Local competitions:
-    - ABC 2013 (Algoritmi Bergamo Contest), Bergamo (Italy), May
+    - ABC 2013 (Algoritmi Bergamo Contest), Bergamo. Italy, May
       2013.
 - Training:
     - training camps for the selections of the national IOI teams of
       Australia, India, Italy, Japan, Latvia and Serbia.
 - Other:
     - laboratory exercises and exams of the course "Algorithms and
-      data structures" at University of Trento (year 2011-2012).
+      data structures" at University of Trento, Italy (year
+      2011-2012).
 
 If you used CMS for a contest, selection, or a similar event, and want
 to publicize this information, we would be more than happy to hear
