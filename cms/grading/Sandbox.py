@@ -33,6 +33,7 @@ from gevent import subprocess
 
 from cms import config, logger
 from cms.io.GeventUtils import copyfileobj, rmtree
+from cmscommon.DateTime import monotonic_time
 
 
 class SandboxInterfaceException(Exception):
@@ -340,6 +341,9 @@ class StupidSandbox(SandboxBase):
 
         self.cmd_file = "commands.log"
         self.exec_num = -1
+        self.popen = None
+        self.popen_time = None
+        self.exec_time = None
 
         logger.debug("Sandbox in `%s' created, using stupid box." %
                      (self.path))
@@ -366,16 +370,20 @@ class StupidSandbox(SandboxBase):
         self.max_processes = 1
         self.verbosity = 0
 
-    # TODO - Stub
+    # TODO - It returns wall clock time, because I have no way to
+    # check CPU time (libev doesn't have wait4() support)
     def get_execution_time(self):
         """Return the time spent in the sandbox.
 
         return (float): time spent in the sandbox.
 
         """
-        return None
+        return self.get_execution_wall_clock_time()
 
-    # TODO - Stub
+    # TODO - It returns the best known approximation of wall clock
+    # time; unfortunately I have no way to compute wall clock time
+    # just after the child terminates, because I have no guarantee
+    # about how the control will come back to this class
     def get_execution_wall_clock_time(self):
         """Return the total time from the start of the sandbox to the
         conclusion of the task.
@@ -383,9 +391,15 @@ class StupidSandbox(SandboxBase):
         return (float): total time the sandbox was alive.
 
         """
+        if self.exec_time:
+            return self.exec_time
+        if self.popen_time:
+            self.exec_time = monotonic_time() - self.popen_time
+            return self.exec_time
         return None
 
-    # TODO - Stub
+    # TODO - It always returns None, since I have no way to check
+    # memory usage (libev doesn't have wait4() support)
     def get_memory_used(self):
         """Return the memory used by the sandbox.
 
@@ -394,25 +408,39 @@ class StupidSandbox(SandboxBase):
         """
         return None
 
-    # TODO - Stub
+    def get_killing_signal(self):
+        """Return the signal that killed the sandboxed process.
+
+        return (int): offending signal, or 0.
+
+        """
+        if self.popen.returncode < 0:
+            return -self.popen.returncode
+        return 0
+
+    # This sandbox only discriminates between processes terminating
+    # properly or being killed with a signal; all other exceptional
+    # conditions (RAM or CPU limitations, ...) result in some signal
+    # being delivered to the process
     def get_exit_status(self):
         """Get information about how the sandbox terminated.
 
         return (string): the main reason why the sandbox terminated.
 
         """
-        return self.EXIT_OK
+        if self.popen.returncode >= 0:
+            return self.EXIT_OK
+        else:
+            return self.EXIT_SIGNAL
 
-    # TODO - Stub
     def get_exit_code(self):
         """Return the exit code of the sandboxed process.
 
         return (float): exitcode, or 0.
 
         """
-        return 0
+        return self.popen.returncode
 
-    # TODO - Stub
     def get_human_exit_description(self):
         """Get the status of the sandbox and return a human-readable
         string describing it.
@@ -423,7 +451,11 @@ class StupidSandbox(SandboxBase):
         """
         status = self.get_exit_status()
         if status == self.EXIT_OK:
-            return "Execution successfully finished"
+            return "Execution successfully finished (with exit code %d)" % \
+                self.get_exit_code()
+        elif status == self.EXIT_SIGNAL:
+            return "Execution killed with signal %d" % \
+                self.get_killing_signal()
 
     def _popen(self, command,
                stdin=None, stdout=None, stderr=None,
@@ -443,6 +475,7 @@ class StupidSandbox(SandboxBase):
         return (object): popen object.
 
         """
+        self.exec_time = None
         self.exec_num += 1
         self.log = None
         logger.debug("Executing program in sandbox with command: %s" %
@@ -504,7 +537,7 @@ class StupidSandbox(SandboxBase):
                 resource.setrlimit(resource.RLIMIT_STACK,
                                    (rlimit_stack, rlimit_stack))
 
-            # TODO - Doesn't work as hoped
+            # TODO - Doesn't work as expected
             #resource.setrlimit(resource.RLIMIT_NPROC, (1, 1))
 
         # Setup std*** redirection
@@ -528,13 +561,16 @@ class StupidSandbox(SandboxBase):
         else:
             stderr_fd = subprocess.PIPE
 
+        # Note down execution time
+        self.popen_time = monotonic_time()
+
         # Actually call the Popen
-        popen = self._popen(command,
-                            stdin=stdin_fd,
-                            stdout=stdout_fd,
-                            stderr=stderr_fd,
-                            preexec_fn=partial(preexec_fn, self),
-                            close_fds=True)
+        self.popen = self._popen(command,
+                                 stdin=stdin_fd,
+                                 stdout=stdout_fd,
+                                 stderr=stderr_fd,
+                                 preexec_fn=partial(preexec_fn, self),
+                                 close_fds=True)
 
         # Close file descriptors passed to the child
         if self.stdin_file:
@@ -545,11 +581,8 @@ class StupidSandbox(SandboxBase):
             os.close(stderr_fd)
 
         # Kill the process after the wall clock time passed
-        def timed_killer(self, popen):
-            wallclock_time = self.wallclock_timeout
-            if self.extra_timeout:
-                wallclock_time += self.extra_timeout
-            gevent.sleep(wallclock_time)
+        def timed_killer(timeout, popen):
+            gevent.sleep(timeout)
             # TODO - Here we risk to kill some other process that gets
             # the same PID in the meantime; I don't know how to
             # properly solve this problem
@@ -558,19 +591,24 @@ class StupidSandbox(SandboxBase):
             except OSError:
                 # The process had died by itself
                 pass
-        gevent.spawn(timed_killer, self, popen)
+
+        # Setup the killer
+        full_wallclock_timeout = self.wallclock_timeout
+        if self.extra_timeout:
+            full_wallclock_timeout += self.extra_timeout
+        gevent.spawn(timed_killer, full_wallclock_timeout, self.popen)
 
         # If the caller wants us to wait for completion, we also avoid
         # std*** to interfere with command. Otherwise we let the
         # caller handle these issues.
         if wait:
-            return self.translate_box_exitcode(wait_without_std([popen])[0])
+            return self.translate_box_exitcode(wait_without_std([self.popen])[0])
         else:
-            return popen
+            return self.popen
 
     def translate_box_exitcode(self, exitcode):
-        """The stupid box always terminates successfully (unless it
-        raises an exception).
+        """The stupid box always terminates successfully (or it raises
+        an exception).
 
         """
         return True
@@ -942,6 +980,10 @@ class IsolateSandbox(SandboxBase):
         """
         return os.path.join(self.inner_temp_dir, path)
 
+    # XXX - Temporarily disabled (i.e., set as private), in order to
+    # ease interface while implementing other sandboxes, since it's
+    # not used; anyway, it should probably factored through _popen in
+    # order to avoid code duplication
     def _execute(self, command):
         """Execute the given command in the sandbox.
 
