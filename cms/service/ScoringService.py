@@ -236,11 +236,6 @@ class ScoringService(Service):
                          ScoringService.JOBS_NOT_DONE_CHECK_TIME,
                          immediately=True)
 
-    def dispath_operations_thread(self):
-        while True:
-            self.dispatch_operations()
-            gevent.sleep(ScoringService.CHECK_DISPATCH_TIME)
-
     def _initialize_scorers(self):
         """Initialize scorers, the ScoreType objects holding all
         submissions for a given task and deciding scores, and create
