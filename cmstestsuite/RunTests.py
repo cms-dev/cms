@@ -19,12 +19,16 @@
 
 import sys
 
-from cmstestsuite import sh
+from cmstestsuite import FrameworkException, sh
 
 
 def main():
-    sh(["./cmstestsuite/RunUnitTests.py"] + sys.argv[1:])
-    sh(["./cmstestsuite/RunFunctionalTests.py"] + sys.argv[1:])
+    try:
+        sh(["./cmstestsuite/RunUnitTests.py"] + sys.argv[1:])
+        sh(["./cmstestsuite/RunFunctionalTests.py"] + sys.argv[1:])
+    except FrameworkException:
+        return 1
+    return 0
 
 
 if __name__ == "__main__":
