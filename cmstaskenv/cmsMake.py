@@ -39,12 +39,10 @@ SOL_EXTS = ['.cpp', '.c', '.pas']
 CHECK_DIRNAME = 'cor'
 CHECK_EXTS = SOL_EXTS
 TEXT_DIRNAME = 'testo'
-TEXT_XML = 'testo.xml'
 TEXT_TEX = 'testo.tex'
 TEXT_PDF = 'testo.pdf'
 TEXT_AUX = 'testo.aux'
 TEXT_LOG = 'testo.log'
-TEXT_HTML = 'testo.html'
 INPUT0_TXT = 'input0.txt'
 OUTPUT0_TXT = 'output0.txt'
 GEN_DIRNAME = 'gen'
@@ -275,26 +273,10 @@ def build_checker_list(base_dir, task_type):
 
 
 def build_text_list(base_dir, task_type):
-    text_xml = os.path.join(TEXT_DIRNAME, TEXT_XML)
     text_tex = os.path.join(TEXT_DIRNAME, TEXT_TEX)
     text_pdf = os.path.join(TEXT_DIRNAME, TEXT_PDF)
     text_aux = os.path.join(TEXT_DIRNAME, TEXT_AUX)
     text_log = os.path.join(TEXT_DIRNAME, TEXT_LOG)
-    text_html = os.path.join(TEXT_DIRNAME, TEXT_HTML)
-
-    def make_html(assume=None):
-        with open(os.path.join(base_dir, text_html), 'w') as fout:
-            call(base_dir,
-                 ['xsltproc',
-                  os.path.join(DATA_DIR, 'problem_layout.xslt'), text_xml],
-                 stdout=fout)
-
-    def make_tex(assume=None):
-        with open(os.path.join(base_dir, text_tex), 'w') as fout:
-            call(base_dir,
-                 ['xsltproc',
-                  os.path.join(DATA_DIR, 'problem_layout_tex.xslt'), text_xml],
-                 stdout=fout)
 
     def make_pdf(assume=None):
         call(base_dir,
@@ -302,31 +284,10 @@ def build_text_list(base_dir, task_type):
               '-interaction', 'batchmode', text_tex],
              env={'TEXINPUTS': '.:%s:%s/file:' % (TEXT_DIRNAME, TEXT_DIRNAME)})
 
-    def make_input0(assume=None):
-        with open(os.path.join(base_dir, INPUT0_TXT), 'w') as fout:
-            call(base_dir,
-                 ['xsltproc',
-                  os.path.join(DATA_DIR, 'estrai_input.xslt'), text_xml],
-                 stdout=fout)
-
-    def make_output0(assume=None):
-        with open(os.path.join(base_dir, OUTPUT0_TXT), 'w') as fout:
-            call(base_dir,
-                 ['xsltproc',
-                  os.path.join(DATA_DIR, 'estrai_output.xslt'), text_xml],
-                 stdout=fout)
-
     actions = []
-    actions.append(([text_xml], [text_html],
-                    make_html, 'compile to HTML'))
-    actions.append(([text_xml], [text_tex],
-                    make_tex, 'compile to LaTeX'))
-    actions.append(([text_tex], [text_pdf, text_aux, text_log],
-                    make_pdf, 'compile to PDF'))
-    actions.append(([text_xml], [INPUT0_TXT],
-                    make_input0, 'extract first input'))
-    actions.append(([text_xml], [OUTPUT0_TXT],
-                    make_output0, 'extract first output'))
+    if os.path.exists(text_tex):
+        actions.append(([text_tex], [text_pdf, text_aux, text_log],
+                        make_pdf, 'compile to PDF'))
     return actions
 
 
@@ -469,7 +430,7 @@ def build_action_list(base_dir, task_type, yaml_conf):
     actions += gen_actions
     actions += build_sols_list(base_dir, task_type, in_out_files, yaml_conf)
     actions += build_checker_list(base_dir, task_type)
-    #actions += build_text_list(base_dir, task_type)
+    actions += build_text_list(base_dir, task_type)
     return actions
 
 
