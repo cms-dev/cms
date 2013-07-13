@@ -45,6 +45,7 @@ from gevent import socket
 from gevent import ssl
 
 import requests
+import requests.exceptions
 from urlparse import urljoin
 
 from cms import config, default_argument_parser, logger
@@ -94,9 +95,9 @@ def safe_put_data(ranking, resource, data, operation):
         url = urljoin(ranking, resource)
         res = requests.put(url, json.dumps(data),
                            verify=config.https_certfile)
-    except Exception as error:
+    except requests.exceptions.RequestException as error:
         logger.warning(
-            "%s while %s." % (type(error).__name__, operation), exc_info=True)
+            "%s while %s: %s" % (type(error).__name__, operation, error))
         raise CannotSendError
     if res.status_code != 200:
         logger.warning("Status %s while %s." % (res.status_code, operation))
