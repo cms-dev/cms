@@ -446,7 +446,7 @@ def add_testcase(task_id, num, input_file, output_file, public):
         ('output', output_file),
     ]
     args = {}
-    args["num"] = num
+    args["codename"] = str(num)
     if public:
         args['public'] = '1'
     dataset_id = get_task_active_dataset_id(task_id)
