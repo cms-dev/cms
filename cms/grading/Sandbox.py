@@ -55,6 +55,7 @@ def with_log(func):
 
     return newfunc
 
+
 def wait_without_std(procs):
     """Wait for the conclusion of the processes in the list, avoiding
     starving for input and output.
@@ -74,7 +75,7 @@ def wait_without_std(procs):
         """
         to_consume = []
         for process in procs:
-            if process.poll() == None:  # If the process is alive.
+            if process.poll() is None:  # If the process is alive.
                 if process.stdout and not process.stdout.closed:
                     to_consume.append(process.stdout)
                 if process.stderr and not process.stderr.closed:
@@ -602,7 +603,8 @@ class StupidSandbox(SandboxBase):
         # std*** to interfere with command. Otherwise we let the
         # caller handle these issues.
         if wait:
-            return self.translate_box_exitcode(wait_without_std([self.popen])[0])
+            return self.translate_box_exitcode(
+                wait_without_std([self.popen])[0])
         else:
             return self.popen
 
@@ -683,8 +685,8 @@ class IsolateSandbox(SandboxBase):
 
         # Default parameters for isolate
         self.box_id = box_id           # -b
-        self.cgroup = config.use_cgroups # --cg
-        self.chdir = self.inner_temp_dir # -c
+        self.cgroup = config.use_cgroups  # --cg
+        self.chdir = self.inner_temp_dir  # -c
         self.dirs = []                 # -d
         self.dirs += [(self.inner_temp_dir, self.path, "rw")]
         self.preserve_env = False      # -e
@@ -722,8 +724,8 @@ class IsolateSandbox(SandboxBase):
                  os.path.join('.', self.exec_name)]
         if '__file__' in globals():
             paths += [os.path.abspath(os.path.join(
-                        os.path.dirname(__file__),
-                        '..', '..', 'isolate', self.exec_name))]
+                      os.path.dirname(__file__),
+                      '..', '..', 'isolate', self.exec_name))]
         paths += [self.exec_name]
         for path in paths:
             if os.path.exists(path):
@@ -961,7 +963,7 @@ class IsolateSandbox(SandboxBase):
                 self.get_killing_syscall()
         elif status == self.EXIT_FILE_ACCESS:
             return "Execution killed because of forbidden file access: %s" \
-                    % self.get_forbidden_file_error()
+                % self.get_forbidden_file_error()
         elif status == self.EXIT_TIMEOUT:
             return "Execution timed out"
         elif status == self.EXIT_SIGNAL:
@@ -1003,8 +1005,8 @@ class IsolateSandbox(SandboxBase):
         return self.translate_box_exitcode(subprocess.call(args))
 
     def _popen(self, command,
-              stdin=None, stdout=None, stderr=None,
-              close_fds=True):
+               stdin=None, stdout=None, stderr=None,
+               close_fds=True):
         """Execute the given command in the sandbox using
         subprocess.Popen, assigning the corresponding standard file
         descriptors.
