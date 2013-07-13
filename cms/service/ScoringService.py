@@ -453,8 +453,7 @@ class ScoringService(Service):
                                          "time": ev.execution_time,
                                          "memory": ev.memory_used})
                                        for ev in
-                                       submission_result.evaluations),
-                                  submission.tokened())
+                                       submission_result.evaluations))
 
             # Mark submission as scored.
             self.submission_results_scored.add((submission_id, dataset_id))
@@ -500,10 +499,6 @@ class ScoringService(Service):
                 "score": submission_result.score}
             if ranking_score_details is not None:
                 subchange_put_data["extra"] = ranking_score_details
-
-        # TODO: ScoreRelative here does not work with remote
-        # rankings (it does in the ranking view) because we
-        # update only the user owning the submission.
 
         # Adding operations to the queue.
         for ranking in self.rankings:

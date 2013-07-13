@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -55,32 +56,15 @@ class ScoreType:
         self.parameters = parameters
         self.public_testcases = public_testcases
 
-        # Dict that associate to a username the list of its
-        # submission_ids - sorted by timestamp.
-        self.submissions = {}
-
         # Dict that associate to every submission_id its data:
-        # timestamp, username, evaluations, tokened, score.
+        # timestamp, username, evaluations, score.
         self.pool = {}
-
-        # Dict that associate to a username the maximum score amongst
-        # its tokened submissions and the last one.
-        self.scores = {}
 
         # Preload the maximum possible scores.
         self.max_score, self.max_public_score = self.max_scores()
 
-        # Initialization method that can be overwritten by subclass.
-        self.initialize()
-
-    def initialize(self):
-        """Intended to be overwritten by subclasses.
-
-        """
-        pass
-
     def add_submission(self, submission_id, timestamp, username, evaluated,
-                       evaluations, tokened):
+                       evaluations):
         """To call in order to add a submission to the computation of
         all scores.
 
@@ -90,7 +74,6 @@ class ScoreType:
         evaluated (bool): if the submission compiled correctly.
         evaluations (dict): associate to each evaluation's num a
                             dictionary {'outcome': xxx, 'text': yyy}.
-        tokened (bool): if the user played a token on submission.
 
         """
         self.pool[submission_id] = {
@@ -98,7 +81,6 @@ class ScoreType:
             "username": username,
             "evaluated": evaluated,
             "evaluations": evaluations,
-            "tokened": tokened,
             "score": None,
             "details": None,
             "public_score": None,
@@ -111,52 +93,6 @@ class ScoreType:
             self.pool[submission_id]["public_details"], \
             self.pool[submission_id]["ranking_details"] = \
             self.compute_score(submission_id)
-
-        if username not in self.submissions or \
-            self.submissions[username] is None:
-            self.submissions[username] = [submission_id]
-        else:
-            self.submissions[username].append(submission_id)
-
-        # We expect submissions to arrive more or less ordered by
-        # timestamp, so we insert-sort the new one.
-        i = len(self.submissions[username]) - 1
-        while i > 0 and \
-                  self.pool[self.submissions[username][i - 1]]["timestamp"] > \
-                  self.pool[self.submissions[username][i]]["timestamp"]:
-            self.submissions[username][i - 1], \
-                self.submissions[username][i] = \
-                self.submissions[username][i], \
-                self.submissions[username][i - 1]
-            i -= 1
-
-        self.update_scores(submission_id)
-
-    def add_token(self, submission_id):
-        """To call when a token is played, so that the scores updates.
-
-        submission_id (int): id of the tokened submission.
-
-        """
-        try:
-            self.pool[submission_id]["tokened"] = True
-        except KeyError:
-            logger.error("Submission %d not found in ScoreType's pool." %
-                         submission_id)
-
-        self.update_scores(submission_id)
-
-    def update_scores(self, new_submission_id):
-        """Update the scores of the users assuming that only this
-        submission appeared or was modified (i.e., tokened). The way
-        to do this depends on the subclass, so we leave this
-        unimplemented.
-
-        new_submission_id (int): id of the newly added submission.
-
-        """
-        logger.error("Unimplemented method update_scores.")
-        raise NotImplementedError
 
     def get_html_details(self, score_details, translator=None):
         """Return an HTML string representing the score details of a
@@ -218,27 +154,7 @@ class ScoreTypeAlone(ScoreType):
     obtain the score of a single submission and max_scores.
 
     """
-    def update_scores(self, new_submission_id):
-        """Update the scores of the user assuming that only this
-        submission appeared.
-
-        new_submission_id (int): id of the newly added submission.
-
-        """
-        username = self.pool[new_submission_id]["username"]
-        submission_ids = self.submissions[username]
-        score = 0.0
-
-        # We find the best amongst all tokened submissions...
-        for submission_id in submission_ids:
-            if self.pool[submission_id]["tokened"]:
-                score = max(score, self.pool[submission_id]["score"])
-        # and the last one.
-        if submission_ids != []:
-            score = max(score, self.pool[submission_ids[-1]]["score"])
-
-        # Finally we update the score table.
-        self.scores[username] = score
+    pass
 
 
 class ScoreTypeGroup(ScoreTypeAlone):
