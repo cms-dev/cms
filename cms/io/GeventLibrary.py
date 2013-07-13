@@ -461,7 +461,21 @@ class RemoteService():
         inbox = b''
         ignore_first_message = False
         while True:
-            buf = self.socket.recv(RemoteService.RECV_SIZE)
+            try:
+                buf = self.socket.recv(RemoteService.RECV_SIZE)
+            except gevent.socket.error as (error, msg):
+                if self.remote_service_coord == '':
+                    logger.warning("Connection with unknown "
+                                   "remote service was lost"
+                                   " (%s)" % (msg))
+                else:
+                    logger.warning("Connection with remote "
+                                   "service %s was lost"
+                                   " (%s)"
+                                   % (self.remote_service_coord, msg))
+                self.connected = False
+                break
+
             splits = (inbox + buf).split('\r\n')
             inbox = splits[-1]
 
