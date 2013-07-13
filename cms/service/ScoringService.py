@@ -105,8 +105,7 @@ def safe_put_data(ranking, resource, data, operation):
 
 class RankingProxy(object):
     # We use a single queue for all the data we have to send to the
-    # ranking so we need to distingush the type of each item (either
-    # initialize, submission or subchange).
+    # ranking so we need to distingush the type of each item.
     CONTEST_TYPE = 0
     TASK_TYPE = 1
     TEAM_TYPE = 2
@@ -147,7 +146,7 @@ class RankingProxy(object):
 
         while True:
             # Block until we have something to do.
-            item = self.data_queue.peek()
+            self.data_queue.peek()
 
             try:
                 while True:
