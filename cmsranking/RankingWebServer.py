@@ -225,7 +225,7 @@ class MessageProxy(object):
 
         Scoring.store.add_score_callback(self.score_callback)
 
-    def callback(self, entity, event, key):
+    def callback(self, entity, event, key, *args):
         timestamp = time.time()
         msg = 'id: %0.6f\n' \
               'event: %s\n' \

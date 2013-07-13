@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -163,7 +163,7 @@ class Store(object):
             confirm()
         # notify callbacks
         for callback in self._create_callbacks:
-            callback(key)
+            callback(key, item)
         # reflect changes on the persistent storage
         try:
             with open(os.path.join(self._path, key + '.json'), 'w') as rec:
@@ -198,6 +198,7 @@ class Store(object):
             if not item.consistent():
                 raise InvalidData('Inconsistent data')
             item.key = key
+            old_item = self._store[key]
             self._store[key] = item
         except ValueError:
             raise InvalidData('Invalid JSON')
@@ -206,7 +207,7 @@ class Store(object):
             confirm()
         # notify callbacks
         for callback in self._update_callbacks:
-            callback(key)
+            callback(key, old_item, item)
         # reflect changes on the persistent storage
         try:
             with open(os.path.join(self._path, key + '.json'), 'w') as rec:
@@ -261,15 +262,16 @@ class Store(object):
 
         for key, value in item_dict.iteritems():
             is_new = key not in self._store
+            old_value = self._store.get(key)
             # insert entity
             self._store[key] = value
             # notify callbacks
             if is_new:
                 for callback in self._create_callbacks:
-                    callback(key)
+                    callback(key, value)
             else:
                 for callback in self._update_callbacks:
-                    callback(key)
+                    callback(key, old_value, value)
             # reflect changes on the persistent storage
             try:
                 with open(os.path.join(self._path, key + '.json'), 'w') as rec:
@@ -298,6 +300,7 @@ class Store(object):
         if confirm is not None:
             confirm()
         # delete entity
+        old_value = self._store[key]
         del self._store[key]
         # enforce consistency
         for depend in self._depends:
@@ -306,7 +309,7 @@ class Store(object):
                     depend.store.delete(o_key)
         # notify callbacks
         for callback in self._delete_callbacks:
-            callback(key)
+            callback(key, old_value)
         # reflect changes on the persistent storage
         try:
             os.remove(os.path.join(self._path, key + '.json'))
