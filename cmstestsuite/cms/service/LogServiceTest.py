@@ -23,7 +23,7 @@
 
 import unittest
 
-from cms import SEV_CRITICAL, SEV_ERROR, SEV_WARNING
+from cms import SEV_CRITICAL, SEV_ERROR, SEV_WARNING, SEV_INFO, SEV_DEBUG
 from cms.service.LogService import LogService
 
 
@@ -43,22 +43,34 @@ class TestLogService(unittest.TestCase):
                          SEV_ERROR,
                          SEV_WARNING]:
             self.helper_test_last_messages(severity)
+        for severity in [SEV_INFO,
+                         SEV_DEBUG]:
+            self.helper_test_last_messages(severity, saved=False)
 
-    def helper_test_last_messages(self, severity):
-        self.service.Log(TestLogService.MESSAGE,
-                         TestLogService.COORD,
-                         TestLogService.OPERATION,
+    def helper_test_last_messages(self, severity, saved=True):
+        self.service.Log(TestLogService.MESSAGE + severity,
+                         TestLogService.COORD + severity,
+                         TestLogService.OPERATION + severity,
                          severity,
                          TestLogService.TIMESTAMP,
-                         TestLogService.EXC_TEXT)
+                         TestLogService.EXC_TEXT + severity)
         last_message = self.service.last_messages()[-1]
-        self.assertEquals(last_message["message"], TestLogService.MESSAGE)
-        self.assertEquals(last_message["coord"], TestLogService.COORD)
-        self.assertEquals(last_message["operation"], TestLogService.OPERATION)
-        self.assertEquals(last_message["severity"], severity)
-        self.assertEquals(last_message["timestamp"], TestLogService.TIMESTAMP)
-        self.assertEquals(last_message["exc_text"], TestLogService.EXC_TEXT)
-        pass
+        if saved:
+            self.assertEquals(last_message["message"],
+                              TestLogService.MESSAGE + severity)
+            self.assertEquals(last_message["coord"],
+                              TestLogService.COORD + severity)
+            self.assertEquals(last_message["operation"],
+                              TestLogService.OPERATION + severity)
+            self.assertEquals(last_message["severity"],
+                              severity)
+            self.assertEquals(last_message["timestamp"],
+                              TestLogService.TIMESTAMP)
+            self.assertEquals(last_message["exc_text"],
+                              TestLogService.EXC_TEXT + severity)
+            pass
+        else:
+            self.assertNotEquals(last_message["severity"], severity)
 
 
 if __name__ == "__main__":
