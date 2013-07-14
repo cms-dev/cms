@@ -245,8 +245,8 @@ class Service:
         """Terminate the service at the next step.
 
         """
+        logger.warning("%s %d received request to shut down" % self._my_coord)
         self._exit = True
-        logger.warning("%s %d dying in 3, 2, 1..." % self._my_coord)
 
         # Wake up the run() cycle
         self.event.set()
@@ -267,6 +267,10 @@ class Service:
             else:
                 raise
 
+        local = self._my_coord.name == 'LogService'
+        logger.info("%s %d up and running!" % self._my_coord,
+                    local=local)
+
         try:
             while not self._exit:
                 next_timeout = self._trigger(maximum=0.5)
@@ -277,6 +281,9 @@ class Service:
                       "Exception `%s' and traceback `%s'" % \
                       (repr(error), traceback.format_exc())
             logger.critical(err_msg)
+
+        logger.info("%s %d is shutting down" % self._my_coord)
+
         self._disconnect_all()
         self.server.stop()
 

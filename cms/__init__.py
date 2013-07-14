@@ -480,10 +480,9 @@ class Logger(object):
             pass
         os.symlink(log_filename,
                    os.path.join(log_dir, "last.log"))
-        self.info("%s %d up and running!" % service)
 
     def log(self, msg, operation=None, severity=None, timestamp=None,
-            exc_info=False):
+            exc_info=False, local=False):
         """Record locally a log message and tries to send it to the
         log service.
 
@@ -494,6 +493,10 @@ class Logger(object):
         timestamp (float): seconds from epoch
         exc_info (boolean): whether to log the exception raised in
                             this frame
+        local (boolean): do not forward this message to a remote
+                         LogServer; to be used only in specific
+                         contexts to prevent LogServer from logging
+                         twice
 
         """
         if severity is None:
@@ -523,7 +526,7 @@ class Logger(object):
                     severity, timestamp,
                     exc_text=exc_text,
                     colors=config.color_file_log)
-            if severity in self.TO_SEND:
+            if severity in self.TO_SEND and not local:
                 self._log_service.Log(
                     msg=msg, coord=coord, operation=operation,
                     severity=severity, timestamp=timestamp,
@@ -542,12 +545,12 @@ class Logger(object):
             }
         if method in severities:
             def new_method(msg, operation=None, timestamp=None,
-                           exc_info=False):
+                           exc_info=False, local=False):
                 """Syntactic sugar around log().
 
                 """
                 return self.log(msg, operation, severities[method], timestamp,
-                                exc_info=exc_info)
+                                exc_info=exc_info, local=local)
             return new_method
 
 
