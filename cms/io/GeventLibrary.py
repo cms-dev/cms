@@ -257,12 +257,26 @@ class Service:
         """
         try:
             self.server.start()
+
+        # This must come before socket.error, because socket.gaierror
+        # extends socket.error
+        except gevent.socket.gaierror:
+            logger.critical("Service %s could not listen on "
+                            "specified address, because it cannot "
+                            "be resolved." % (self._my_coord.name))
+            sys.exit(1)
+
         except gevent.socket.error as (error, unused_msg):
             if error == errno.EADDRINUSE:
                 logger.critical("Listening port %s for service %s is "
                                 "already in use, quitting." %
                                 (self.server.address.port,
                                  self._my_coord.name))
+                sys.exit(1)
+            elif error == errno.EADDRNOTAVAIL:
+                logger.critical("Service %s could not listen on "
+                                "specified address, because it is not "
+                                "available." % (self._my_coord.name))
                 sys.exit(1)
             else:
                 raise

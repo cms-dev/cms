@@ -26,7 +26,8 @@
 from collections import namedtuple
 from functools import wraps
 from types import GeneratorType
-import socket
+
+import gevent.socket
 
 Address = namedtuple("Address", "ip port")
 
@@ -81,21 +82,42 @@ def get_shard_from_addresses(service, addrs):
     specified addresses.
 
     service (string): the name of the service.
-    addrs (list): a list of strings, the addresses that can match the
-                  shard.
+    addrs ([(int, str)]): a list like the one returned by
+                          find_local_addresses().
+
     returns (int): the found shard, or -1 in case it doesn't exist.
 
     """
     i = 0
+    ipv4_addrs = set()
+    ipv6_addrs = set()
+    for proto, addr in addrs:
+        if proto == gevent.socket.AF_INET:
+            ipv4_addrs.add(addr)
+        elif proto == gevent.socket.AF_INET6:
+            ipv6_addrs.add(addr)
     while True:
         try:
             host, port = get_service_address(ServiceCoord(service, i))
+            # For magic numbers, see getaddrinfo() documentation
             try:
-                if socket.gethostbyname(host) in addrs:
-                    return i
-            except socket.gaierror:
+                res_ipv4_addrs = set([x[4][0] for x in
+                                      gevent.socket.getaddrinfo(
+                            host, port,
+                            family=gevent.socket.AF_INET,
+                            socktype=gevent.socket.SOCK_STREAM)])
+                res_ipv6_addrs = set([x[4][0] for x in
+                                      gevent.socket.getaddrinfo(
+                            host, port,
+                            family=gevent.socket.AF_INET6,
+                            socktype=gevent.socket.SOCK_STREAM)])
+            except gevent.socket.gaierror:
                 # If the address can't be resolved, we simply skip it
                 pass
+            else:
+                if not ipv4_addrs.isdisjoint(res_ipv4_addrs) or \
+                        not ipv6_addrs.isdisjoint(res_ipv6_addrs):
+                    return i
         except KeyError:
             return -1
         i += 1

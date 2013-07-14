@@ -688,6 +688,11 @@ def default_argument_parser(description, cls, ask_contest=None):
     if args.shard == -1:
         addrs = find_local_addresses()
         args.shard = get_shard_from_addresses(cls.__name__, addrs)
+        if args.shard == -1:
+            logger.critical("Couldn't autodetect shard number and "
+                            "no shard specified for service %s, "
+                            "quitting." % (cls.__name__))
+            sys.exit(1)
 
     if ask_contest is not None:
         if args.contest_id is not None:
@@ -724,17 +729,21 @@ def mkdir(path):
 
 
 def find_local_addresses():
-    """Returns the list of IPv4 addresses configured on the local
-    machine.
+    """Returns the list of IPv4 and IPv6 addresses configured on the
+    local machine.
 
-    returns (list): a list of strings, each representing a local
-                    IPv4 address.
+    returns ([(int, str)]): a list of tuples, each representing a
+                            local address; the first element is the
+                            protocol and the second one is the
+                            address.
 
     """
     addrs = []
     # Based on http://stackoverflow.com/questions/166506/
     # /finding-local-ip-addresses-using-pythons-stdlib
     for iface_name in netifaces.interfaces():
-        addrs += [i['addr'] for i in netifaces.ifaddresses(iface_name). \
-                      setdefault(netifaces.AF_INET, [])]
+        for proto in [netifaces.AF_INET, netifaces.AF_INET6]:
+            addrs += [(proto, i['addr'])
+                      for i in netifaces.ifaddresses(iface_name).
+                      setdefault(proto, [])]
     return addrs
