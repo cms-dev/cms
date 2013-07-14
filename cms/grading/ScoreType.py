@@ -56,43 +56,8 @@ class ScoreType:
         self.parameters = parameters
         self.public_testcases = public_testcases
 
-        # Dict that associate to every submission_id its data:
-        # timestamp, username, evaluations, score.
-        self.pool = {}
-
         # Preload the maximum possible scores.
         self.max_score, self.max_public_score = self.max_scores()
-
-    def add_submission(self, submission_id, timestamp, username, evaluated,
-                       evaluations):
-        """To call in order to add a submission to the computation of
-        all scores.
-
-        submission_id (int): id of the new submission.
-        timestamp (int): time of submission.
-        username (string): username of the owner of the submission.
-        evaluated (bool): if the submission compiled correctly.
-        evaluations (dict): associate to each evaluation's num a
-                            dictionary {'outcome': xxx, 'text': yyy}.
-
-        """
-        self.pool[submission_id] = {
-            "timestamp": timestamp,
-            "username": username,
-            "evaluated": evaluated,
-            "evaluations": evaluations,
-            "score": None,
-            "details": None,
-            "public_score": None,
-            "public_details": None,
-            "ranking_details": None,
-            }
-        self.pool[submission_id]["score"], \
-            self.pool[submission_id]["details"], \
-            self.pool[submission_id]["public_score"], \
-            self.pool[submission_id]["public_details"], \
-            self.pool[submission_id]["ranking_details"] = \
-            self.compute_score(submission_id)
 
     def get_html_details(self, score_details, translator=None):
         """Return an HTML string representing the score details of a
@@ -130,7 +95,7 @@ class ScoreType:
         logger.error("Unimplemented method max_scores.")
         raise NotImplementedError
 
-    def compute_score(self, submission_id):
+    def compute_score(self, submission_result):
         """Computes a score of a single submission. We don't know here
         how to do it, but our subclasses will.
 
@@ -267,19 +232,20 @@ class ScoreTypeGroup(ScoreTypeAlone):
             current = next_
         return score, public_score
 
-    def compute_score(self, submission_id):
+    def compute_score(self, submission_result):
         """Compute the score of a submission.
 
         submission_id (int): the submission to evaluate.
         returns (float): the score
 
         """
-        if not self.pool[submission_id]["evaluated"]:
+        if not submission_result.evaluated():
             return 0.0, "[]", 0.0, "[]", ["%lg" % 0.0 for _ in self.parameters]
 
         # XXX Lexicographical order by codename
         indices = sorted(self.public_testcases.keys())
-        evaluations = self.pool[submission_id]["evaluations"]
+        evaluations = dict((ev.codename, ev)
+                           for ev in submission_result.evaluations)
         subtasks = []
         public_subtasks = []
         ranking_details = []
@@ -288,7 +254,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         for st_idx, parameter in enumerate(self.parameters):
             tc_end = tc_start + parameter[1]
-            st_score = self.reduce([float(evaluations[idx]["outcome"])
+            st_score = self.reduce([float(evaluations[idx].outcome)
                                     for idx in indices[tc_start:tc_end]],
                                    parameter) * parameter[0]
             st_public = all(self.public_testcases[idx]
@@ -296,7 +262,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             tc_outcomes = dict((
                 idx,
                 self.get_public_outcome(
-                    float(evaluations[idx]["outcome"]), parameter)
+                    float(evaluations[idx].outcome), parameter)
                 ) for idx in indices[tc_start:tc_end])
 
             testcases = []
@@ -305,9 +271,9 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 testcases.append({
                     "idx": idx,
                     "outcome": tc_outcomes[idx],
-                    "text": evaluations[idx]["text"],
-                    "time": evaluations[idx]["time"],
-                    "memory": evaluations[idx]["memory"],
+                    "text": evaluations[idx].text,
+                    "time": evaluations[idx].execution_time,
+                    "memory": evaluations[idx].memory_used,
                     })
                 if self.public_testcases[idx]:
                     public_testcases.append(testcases[-1])

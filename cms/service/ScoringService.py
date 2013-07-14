@@ -198,9 +198,6 @@ class ScoringService(Service):
 
         self.contest_id = contest_id
 
-        self.scorers = {}
-        self._initialize_scorers()
-
         # If for some reason (SS switched off for a while, or broken
         # connection with ES), submissions have been left without
         # score, this is the set where you want to pur their ids. Note
@@ -235,27 +232,6 @@ class ScoringService(Service):
         self.add_timeout(self.search_jobs_not_done, None,
                          ScoringService.JOBS_NOT_DONE_CHECK_TIME,
                          immediately=True)
-
-    def _initialize_scorers(self):
-        """Initialize scorers, the ScoreType objects holding all
-        submissions for a given task and deciding scores, and create
-        an empty ranking view for the contest.
-
-        """
-        with SessionGen(commit=False) as session:
-            contest = Contest.get_from_id(self.contest_id, session)
-
-            for task in contest.tasks:
-                for dataset in task.datasets:
-                    try:
-                        self.scorers[dataset.id] = \
-                            get_score_type(dataset=dataset)
-                    except Exception:
-                        logger.critical(
-                            "Cannot get score type for task %s(%d)" %
-                            (task.name, dataset.id), exc_info=True)
-                        self.exit()
-            session.commit()
 
     @rpc_method
     def search_jobs_not_done(self):
@@ -395,8 +371,6 @@ class ScoringService(Service):
 
         """
         logger.info("Reinitializing rankings.")
-        self.scorers = {}
-        self._initialize_scorers()
         self.initialize_rankings()
 
     @rpc_method
@@ -443,34 +417,21 @@ class ScoringService(Service):
                 return
 
             # Assign score to the submission.
-            scorer = self.scorers[dataset_id]
-            scorer.add_submission(submission_id, submission.timestamp,
-                                  submission.user.username,
-                                  submission_result.evaluated(),
-                                  dict((ev.codename,
-                                        {"outcome": ev.outcome,
-                                         "text": ev.text,
-                                         "time": ev.execution_time,
-                                         "memory": ev.memory_used})
-                                       for ev in
-                                       submission_result.evaluations))
+            score_type = get_score_type(dataset=dataset)
+            score, details, public_score, public_details, ranking_details = \
+                score_type.compute_score(submission_result)
 
             # Mark submission as scored.
             self.submission_results_scored.add((submission_id, dataset_id))
 
             # Filling submission's score info in the db.
-            submission_result.score = \
-                scorer.pool[submission_id]["score"]
-            submission_result.public_score = \
-                scorer.pool[submission_id]["public_score"]
+            submission_result.score = score
+            submission_result.public_score = public_score
 
             # And details.
-            submission_result.score_details = \
-                scorer.pool[submission_id]["details"]
-            submission_result.public_score_details = \
-                scorer.pool[submission_id]["public_details"]
-            submission_result.ranking_score_details = \
-                scorer.pool[submission_id]["ranking_details"]
+            submission_result.score_details = details
+            submission_result.public_score_details = public_details
+            submission_result.ranking_score_details = ranking_details
 
             try:
                 ranking_score_details = json.loads(

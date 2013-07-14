@@ -91,33 +91,34 @@ class Sum(ScoreTypeAlone):
             score += self.parameters
         return score, public_score
 
-    def compute_score(self, submission_id):
+    def compute_score(self, submission_result):
         """Compute the score of a submission.
 
         See the same method in ScoreType for details.
 
         """
-        if not self.pool[submission_id]["evaluated"]:
+        if not submission_result.evaluated():
             return 0.0, "[]", 0.0, "[]", []
 
         # XXX Lexicographical order by codename
         indices = sorted(self.public_testcases.keys())
-        evaluations = self.pool[submission_id]["evaluations"]
+        evaluations = dict((ev.codename, ev)
+                           for ev in submission_result.evaluations)
         testcases = []
         public_testcases = []
         score = 0.0
         public_score = 0.0
 
         for idx in indices:
-            this_score = float(evaluations[idx]["outcome"]) * self.parameters
+            this_score = float(evaluations[idx].outcome) * self.parameters
             tc_outcome = self.get_public_outcome(this_score)
             score += this_score
             testcases.append({
                 "idx": idx,
                 "outcome": tc_outcome,
-                "text": evaluations[idx]["text"],
-                "time": evaluations[idx]["time"],
-                "memory": evaluations[idx]["memory"],
+                "text": evaluations[idx].text,
+                "time": evaluations[idx].execution_time,
+                "memory": evaluations[idx].memory_used,
                 })
             if self.public_testcases[idx]:
                 public_score += this_score
