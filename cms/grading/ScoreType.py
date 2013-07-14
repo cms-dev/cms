@@ -240,7 +240,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         """
         if not submission_result.evaluated():
-            return 0.0, "[]", 0.0, "[]", ["%lg" % 0.0 for _ in self.parameters]
+            return 0.0, "[]", 0.0, "[]", json.dumps(["%lg" % 0.0 for _ in self.parameters])
 
         # XXX Lexicographical order by codename
         indices = sorted(self.public_testcases.keys())
@@ -303,7 +303,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         return score, json.dumps(subtasks), \
                public_score, json.dumps(public_subtasks), \
-               ranking_details
+               json.dumps(ranking_details)
 
     def get_public_outcome(self, outcome, parameter):
         """Return a public outcome from an outcome.

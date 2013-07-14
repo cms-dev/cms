@@ -433,13 +433,6 @@ class ScoringService(Service):
             submission_result.public_score_details = public_details
             submission_result.ranking_score_details = ranking_details
 
-            try:
-                ranking_score_details = json.loads(
-                        submission_result.ranking_score_details)
-            except (TypeError, ValueError):
-                # It may be blank.
-                ranking_score_details = None
-
             # If we are not a live dataset then we can bail out here,
             # and avoid updating RWS.
             if dataset is not submission.task.active_dataset:
@@ -457,9 +450,8 @@ class ScoringService(Service):
                 "submission": encode_id(str(submission_id)),
                 "time": int(make_timestamp(submission.timestamp)),
                 # We're sending the unrounded score to RWS
-                "score": submission_result.score}
-            if ranking_score_details is not None:
-                subchange_put_data["extra"] = ranking_score_details
+                "score": submission_result.score,
+                "extra": json.loads(submission_result.ranking_score_details)}
 
         # Adding operations to the queue.
         for ranking in self.rankings:
@@ -591,19 +583,6 @@ class ScoringService(Service):
             for submission in task.submissions:
                 submission_result = submission.get_result(dataset)
 
-                if submission_result is None:
-                    # Not yet compiled, evaluated or scored.
-                    score = None
-                    ranking_score_details = None
-                else:
-                    score = submission_result.score
-                    try:
-                        ranking_score_details = json.loads(
-                                submission_result.ranking_score_details)
-                    except (TypeError, ValueError):
-                        # It may be blank.
-                        ranking_score_details = None
-
                 # Data to send to remote rankings.
                 subchange_id = "%s%ss" % \
                     (int(make_timestamp(submission.timestamp)),
@@ -611,11 +590,11 @@ class ScoringService(Service):
                 subchange_data = {
                     "submission": encode_id(str(submission.id)),
                     "time": int(make_timestamp(submission.timestamp))}
-                if score is not None:
+                if submission_result is not None:
                     # We're sending the unrounded score to RWS
-                    subchange_put_data["score"] = score
-                if ranking_score_details is not None:
-                    subchange_put_data["extra"] = ranking_score_details
+                    subchange_data["score"] = submission_result.score
+                    subchange_data["extra"] = \
+                        json.loads(submission_result.ranking_score_details)
                 subchanges[subchange_id] = subchange_data
 
         # Adding operations to the queue.

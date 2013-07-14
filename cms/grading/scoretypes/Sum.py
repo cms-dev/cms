@@ -98,7 +98,7 @@ class Sum(ScoreTypeAlone):
 
         """
         if not submission_result.evaluated():
-            return 0.0, "[]", 0.0, "[]", []
+            return 0.0, "[]", 0.0, "[]", json.dumps([])
 
         # XXX Lexicographical order by codename
         indices = sorted(self.public_testcases.keys())
@@ -128,7 +128,7 @@ class Sum(ScoreTypeAlone):
 
         return score, json.dumps(testcases), \
                public_score, json.dumps(public_testcases), \
-               []
+               json.dumps([])
 
     def get_public_outcome(self, outcome):
         """Return a public outcome from an outcome.
