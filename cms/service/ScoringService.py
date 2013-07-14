@@ -599,6 +599,8 @@ class ScoringService(Service):
                 # Update RWS.
                 self.rankings_send_score(submission)
 
+        # TODO Spawn a search_jobs_not_done.
+
 
 def main():
     """Parse arguments and launch service.
