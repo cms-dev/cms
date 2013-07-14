@@ -239,6 +239,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
         returns (float): the score
 
         """
+        # Actually, this means it didn't even compile!
         if not submission_result.evaluated():
             return 0.0, "[]", 0.0, "[]", json.dumps(["%lg" % 0.0 for _ in self.parameters])
 

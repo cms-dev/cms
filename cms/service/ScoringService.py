@@ -457,6 +457,8 @@ class ScoringService(Service):
 
             submission_result = submission.get_result(dataset)
 
+            # We'll accept only submissions that either didn't compile
+            # at all or that did evaluate successfully.
             if submission_result is None or not submission_result.compiled():
                 logger.warning("[new_evaluation] Submission %d(%d) is "
                                "not compiled." % (submission_id, dataset_id))

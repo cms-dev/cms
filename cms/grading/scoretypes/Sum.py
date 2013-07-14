@@ -97,6 +97,7 @@ class Sum(ScoreTypeAlone):
         See the same method in ScoreType for details.
 
         """
+        # Actually, this means it didn't even compile!
         if not submission_result.evaluated():
             return 0.0, "[]", 0.0, "[]", json.dumps([])
 
