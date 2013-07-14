@@ -884,7 +884,7 @@ def copy_dataset(
         new_dataset.testcases += [testcase.clone()]
 
     if clone_managers:
-        for manager in old_dataset.managers:
+        for manager in old_dataset.managers.itervalues():
             new_dataset.managers += [manager.clone()]
 
     if clone_results:
@@ -911,7 +911,10 @@ def copy_dataset(
             for e in old_sr.evaluations:
                 new_sr.evaluations += [e.clone()]
 
-            new_dataset.results += [new_sr]
+            # FIXME If SQLAlchemy holds a weak reference to new_sr it
+            # will immediately be deleted as its reference count
+            # reaches zero. Investigate and, in case, fix that.
+            new_sr.dataset = new_dataset
 
 
 class AddDatasetHandler(BaseHandler):
