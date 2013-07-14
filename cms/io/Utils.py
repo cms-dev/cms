@@ -26,6 +26,7 @@
 import sys
 import datetime
 import time
+import traceback
 
 import simplejson as json
 from random import choice
@@ -76,7 +77,8 @@ class Logger:
     def __init__(self):
         self.operation = ""
 
-    def log(self, msg, operation=None, severity=None, timestamp=None):
+    def log(self, msg, operation=None, severity=None, timestamp=None,
+            exc_info=False, local=False):
         """Print a log message.
 
         msg (string): the message to log
@@ -84,6 +86,10 @@ class Logger:
                             operation that is going on in the service
         severity (string): a constant defined in Logger
         timestamp (float): seconds from epoch
+        exc_info (boolean): whether to log the exception raised in
+                            this frame
+        local (boolean): ignored here, but kept for compatibility
+                         with cms.Logger.log()
 
         """
         if severity is None:
@@ -97,12 +103,20 @@ class Logger:
 
         if operation == "":
             fmt_string = "%s - %s [%s] - %s"
-            print fmt_string % ("{0:%Y/%m/%d %H:%M:%S}".format(_datetime),
-                                severity, operation, msg)
+            fmt_list = ["{0:%Y/%m/%d %H:%M:%S}".format(_datetime),
+                        severity, operation, msg]
         else:
             fmt_string = "%s - %s - %s"
-            print fmt_string % ("{0:%Y/%m/%d %H:%M:%S}".format(_datetime),
-                                severity, msg)
+            fmt_list = ["{0:%Y/%m/%d %H:%M:%S}".format(_datetime),
+                        severity, msg]
+
+        if exc_info:
+            exc_text = "".join(traceback.format_exception(
+                *sys.exc_info(), limit=100))
+            fmt_string += "\n%s"
+            fmt_list.append(exc_text)
+
+        print fmt_string % tuple(fmt_list)
 
     def __getattr__(self, method):
         """Syntactic sugar to allow, e.g., logger.debug(...).
@@ -114,11 +128,14 @@ class Logger:
             "warning":  "WARNING ",
             "error":    "ERROR   ",
             "critical": "CRITICAL"
-            }
+        }
         if method in severities:
-            def new_method(msg, operation=None, timestamp=None):
+            def new_method(msg, operation=None, timestamp=None,
+                           exc_info=False, local=False):
                 """Syntactic sugar around log().
 
                 """
-                return self.log(msg, operation, severities[method], timestamp)
+                return self.log(msg, operation, severities[method],
+                                timestamp, exc_info=exc_info,
+                                local=local)
             return new_method
