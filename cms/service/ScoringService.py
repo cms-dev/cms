@@ -227,7 +227,7 @@ class ScoringService(Service):
             gevent.spawn(proxy.run)
             self.rankings.append(proxy)
 
-        self.initialize_rankings()
+        self.rankings_initialize()
 
         self.add_timeout(self.search_jobs_not_done, None,
                          ScoringService.JOBS_NOT_DONE_CHECK_TIME,
@@ -316,7 +316,7 @@ class ScoringService(Service):
         self.scoring_old_submission = False
         return False
 
-    def initialize_rankings(self):
+    def rankings_initialize(self):
         """Send to all the rankings all the data that are supposed to be
         sent before the contest: contest, users, tasks. No support for
         teams, flags and faces.
@@ -362,6 +362,58 @@ class ScoringService(Service):
             ranking.data_queue.put((ranking.USER_TYPE, users))
             ranking.data_queue.put((ranking.TASK_TYPE, tasks))
 
+    def rankings_send_score(self, submission):
+        dataset = submission.task.active_dataset
+        submission_result = submission.get_result(dataset)
+
+        # Data to send to remote rankings.
+        submission_id = str(submission.id)
+        submission_data = {
+            "user": encode_id(submission.user.username),
+            "task": encode_id(submission.task.name),
+            "time": int(make_timestamp(submission.timestamp))}
+
+        subchange_id = \
+            "%d%ss" % (make_timestamp(submission.timestamp), submission_id)
+        subchange_data = {
+            "submission": submission_id,
+            "time": int(make_timestamp(submission.timestamp))}
+
+        if submission_result is not None and submission_result.scored():
+            # We're sending the unrounded score to RWS
+            subchange_data["score"] = submission_result.score
+            subchange_data["extra"] = \
+                json.loads(submission_result.ranking_score_details)
+
+        # Adding operations to the queue.
+        for ranking in self.rankings:
+            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
+                                    {submission_id: submission_data}))
+            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
+                                    {subchange_id: subchange_data}))
+
+    def rankings_send_token(self, submission):
+        # Data to send to remote rankings.
+        submission_id = str(submission.id)
+        submission_data = {
+            "user": encode_id(submission.user.username),
+            "task": encode_id(submission.task.name),
+            "time": int(make_timestamp(submission.timestamp))}
+
+        subchange_id = \
+            "%d%st" % (make_timestamp(submission.token.timestamp), submission_id)
+        subchange_data = {
+            "submission": submission_id,
+            "time": int(make_timestamp(submission.token.timestamp)),
+            "token": True}
+
+        # Adding operations to the queue.
+        for ranking in self.rankings:
+            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
+                                    {submission_id: submission_data}))
+            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
+                                    {subchange_id: subchange_data}))
+
     @rpc_method
     def reinitialize(self):
         """Inform the service that something in the data of the
@@ -371,7 +423,7 @@ class ScoringService(Service):
 
         """
         logger.info("Reinitializing rankings.")
-        self.initialize_rankings()
+        self.rankings_initialize()
 
     @rpc_method
     def new_evaluation(self, submission_id, dataset_id):
@@ -433,32 +485,9 @@ class ScoringService(Service):
             submission_result.public_score_details = public_details
             submission_result.ranking_score_details = ranking_details
 
-            # If we are not a live dataset then we can bail out here,
-            # and avoid updating RWS.
-            if dataset is not submission.task.active_dataset:
-                return
-
-            # Data to send to remote rankings.
-            submission_data = {
-                "user": encode_id(submission.user.username),
-                "task": encode_id(submission.task.name),
-                "time": int(make_timestamp(submission.timestamp))}
-            subchange_id = "%s%ss" % \
-                (int(make_timestamp(submission.timestamp)),
-                 submission_id)
-            subchange_data = {
-                "submission": encode_id(str(submission_id)),
-                "time": int(make_timestamp(submission.timestamp)),
-                # We're sending the unrounded score to RWS
-                "score": submission_result.score,
-                "extra": json.loads(submission_result.ranking_score_details)}
-
-        # Adding operations to the queue.
-        for ranking in self.rankings:
-            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
-                                    {str(submission_id): submission_data}))
-            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
-                                    {subchange_id: subchange_data}))
+            # If dataset is the active one, update RWS.
+            if dataset is submission.task.active_dataset:
+                self.rankings_send_score(submission)
 
     @rpc_method
     def submission_tokened(self, submission_id):
@@ -483,25 +512,8 @@ class ScoringService(Service):
             # Mark submission as tokened.
             self.submissions_tokened.add(submission_id)
 
-            # Data to send to remote rankings.
-            submission_data = {
-                "user": encode_id(submission.user.username),
-                "task": encode_id(submission.task.name),
-                "time": int(make_timestamp(submission.timestamp))}
-            subchange_id = "%s%st" % \
-                (int(make_timestamp(submission.token.timestamp)),
-                 submission_id)
-            subchange_data = {
-                "submission": encode_id(str(submission_id)),
-                "time": int(make_timestamp(submission.token.timestamp)),
-                "token": True}
-
-        # Adding operations to the queue.
-        for ranking in self.rankings:
-            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
-                                    {str(submission_id): submission_data}))
-            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
-                                    {subchange_id: subchange_data}))
+            # Update RWS.
+            self.rankings_send_token(submission)
 
     @rpc_method
     def invalidate_submission(self,
@@ -579,28 +591,9 @@ class ScoringService(Service):
             logger.info("Dataset update for task %d (dataset now is %d)." % (
                 task.id, dataset.id))
 
-            subchanges = dict()
             for submission in task.submissions:
-                submission_result = submission.get_result(dataset)
-
-                # Data to send to remote rankings.
-                subchange_id = "%s%ss" % \
-                    (int(make_timestamp(submission.timestamp)),
-                     submission.id)
-                subchange_data = {
-                    "submission": encode_id(str(submission.id)),
-                    "time": int(make_timestamp(submission.timestamp))}
-                if submission_result is not None:
-                    # We're sending the unrounded score to RWS
-                    subchange_data["score"] = submission_result.score
-                    subchange_data["extra"] = \
-                        json.loads(submission_result.ranking_score_details)
-                subchanges[subchange_id] = subchange_data
-
-        # Adding operations to the queue.
-        for ranking in self.rankings:
-            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
-                                    subchanges))
+                # Update RWS.
+                self.rankings_send_score(submission)
 
 
 def main():
