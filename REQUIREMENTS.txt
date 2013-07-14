@@ -10,6 +10,7 @@ pytz>=2011k
 psutil>=0.6
 BeautifulSoup>=3.2
 coverage>=3.4
+mock>=1.0
 mechanize>=0.2
 six>=1.1
 requests>=1.0
