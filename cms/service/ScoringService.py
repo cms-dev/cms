@@ -443,6 +443,11 @@ class ScoringService(Service):
                              "in the database." % submission_id)
                 raise ValueError
 
+            if submission.user.hidden:
+                logger.info("[new_evaluation] Submission %d not scored "
+                            "because user is hidden." % submission_id)
+                return
+
             dataset = Dataset.get_from_id(dataset_id, session)
 
             if dataset is None:
@@ -453,19 +458,14 @@ class ScoringService(Service):
             submission_result = submission.get_result(dataset)
 
             if submission_result is None or not submission_result.compiled():
-                logger.warning("[new_evaluation] Submission %d(%d) is not "
-                               "compiled." %
-                               (submission_id, dataset_id))
+                logger.warning("[new_evaluation] Submission %d(%d) is "
+                               "not compiled." % (submission_id, dataset_id))
                 return
             elif submission_result.compilation_outcome == "ok" and \
                     not submission_result.evaluated():
-                logger.warning("[new_evaluation] Submission %d(%d) compiled "
-                               "correctly but is not evaluated." %
+                logger.warning("[new_evaluation] Submission %d(%d) is "
+                               "compiled but is not evaluated." %
                                (submission_id, dataset_id))
-                return
-            elif submission.user.hidden:
-                logger.info("[new_evaluation] Submission %d not scored "
-                            "because user is hidden." % submission_id)
                 return
 
             # Assign score to the submission.
@@ -500,11 +500,13 @@ class ScoringService(Service):
         """
         with SessionGen(commit=False) as session:
             submission = Submission.get_from_id(submission_id, session)
+
             if submission is None:
                 logger.error("[submission_tokened] Received token request for "
                              "unexistent submission id %s." % submission_id)
                 raise KeyError
-            elif submission.user.hidden:
+
+            if submission.user.hidden:
                 logger.info("[submission_tokened] Token for submission %d "
                             "not sent because user is hidden." % submission_id)
                 return
