@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -24,8 +24,6 @@
 # (for instance, urllib3, used by requests)
 import gevent.monkey
 gevent.monkey.patch_all()
-
-import traceback
 
 import gevent.coros
 
@@ -56,7 +54,7 @@ class Worker(Service):
         self.file_cacher = FileCacher(self)
 
         self.work_lock = gevent.coros.RLock()
-        self.ignore_job = False
+        self._ignore_job = False
 
     @rpc_method
     def ignore_job(self):
@@ -68,7 +66,7 @@ class Worker(Service):
         """
         # We remember to quit as soon as possible.
         logger.info("Trying to interrupt job as requested.")
-        self.ignore_job = True
+        self._ignore_job = True
 
     @rpc_method
     def precache_files(self, contest_id):
@@ -91,12 +89,19 @@ class Worker(Service):
 
     @rpc_method
     def execute_job_group(self, job_group_dict):
+        """Receive a group of jobs in a dict format and executes them
+        one by one.
+
+        job_group_dict (dict): a dictionary suitable to be imported
+            from JobGroup.
+
+        """
         job_group = JobGroup.import_from_dict(job_group_dict)
 
         if self.work_lock.acquire(False):
 
             try:
-                self.ignore_job = False
+                self._ignore_job = False
 
                 for k, job in job_group.jobs.iteritems():
                     logger.operation = "job '%s'" % (job.info)
@@ -121,7 +126,7 @@ class Worker(Service):
 
                     logger.info("Request finished.")
 
-                    if not job.success or self.ignore_job:
+                    if not job.success or self._ignore_job:
                         job_group.success = False
                         break
                 else:
@@ -139,9 +144,10 @@ class Worker(Service):
                 self.work_lock.release()
 
         else:
-            err_msg = "Request '%s' received, " \
-                "but declined because of acquired lock" % \
-                (job.info)
+            err_msg = "Request received, but declined because of acquired " \
+                "lock (Worker is busy executing another job group, this " \
+                "should not happen: check if there are more than one ES " \
+                "running, or for bugs in ES."
             logger.warning(err_msg)
             raise JobException(err_msg)
 
