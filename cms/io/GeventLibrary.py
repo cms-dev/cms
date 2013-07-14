@@ -506,7 +506,7 @@ class RemoteService():
                     ignore_first_message = False
                     continue
                 #logger.debug("Message length: %d" % (len(data)))
-                self.process_data(data)
+                gevent.spawn(self.process_data, data)
 
             # Connection has been closed
             if buf == b'':
