@@ -53,19 +53,19 @@ SOURCE_EXT_TO_LANGUAGE_MAP = {
     ".C": "cpp",
     ".c++": "cpp",
     ".pas": "pas",
-    }
+}
 
 # Our preferred source file and header file extension for each language.
 LANGUAGE_TO_SOURCE_EXT_MAP = {
     "c": ".c",
     "cpp": ".cpp",
     "pas": ".pas",
-    }
+}
 LANGUAGE_TO_HEADER_EXT_MAP = {
     "c": ".h",
     "cpp": ".h",
     "pas": "lib.pas",
-    }
+}
 
 
 ## Configuration ##
@@ -167,8 +167,8 @@ class Config:
             paths = [os.path.join(".", "examples", "cms.conf")]
             if '__file__' in globals():
                 paths += [os.path.abspath(os.path.join(
-                            os.path.dirname(__file__),
-                            '..', 'examples', 'cms.conf'))]
+                          os.path.dirname(__file__),
+                          '..', 'examples', 'cms.conf'))]
             paths += [os.path.join("/", "usr", "local", "etc", "cms.conf"),
                       os.path.join("/", "etc", "cms.conf")]
 
@@ -319,11 +319,11 @@ def ansi_color_string(string, col):
 ## Logging utilities ##
 
 SEV_CRITICAL, SEV_ERROR, SEV_WARNING, SEV_INFO, SEV_DEBUG = \
-              "CRITICAL", \
-              "ERROR   ", \
-              "WARNING ", \
-              "INFO    ", \
-              "DEBUG   "
+    "CRITICAL", \
+    "ERROR   ", \
+    "WARNING ", \
+    "INFO    ", \
+    "DEBUG   "
 
 SEVERITY_COLORS = {SEV_CRITICAL: 'red',
                    SEV_ERROR:    'red',
@@ -398,13 +398,13 @@ class Logger(object):
         SEV_WARNING,
         SEV_INFO,
         SEV_DEBUG,
-        ]
+    ]
     TO_DISPLAY = [
         SEV_CRITICAL,
         SEV_ERROR,
         SEV_WARNING,
         SEV_INFO
-        ]
+    ]
     # SEV_DEBUG cannot be added to TO_SEND, otherwise we enter an
     # infinite loop
     TO_SEND = [
@@ -412,7 +412,7 @@ class Logger(object):
         SEV_ERROR,
         SEV_WARNING,
         SEV_INFO
-        ]
+    ]
 
     # We use a singleton approach here. The following is the only
     # instance around.
@@ -511,7 +511,7 @@ class Logger(object):
 
         if exc_info:
             exc_text = "".join(traceback.format_exception(
-                    *sys.exc_info(), limit=100))
+                *sys.exc_info(), limit=100))
         else:
             exc_text = None
 
@@ -542,7 +542,7 @@ class Logger(object):
             "warning": SEV_WARNING,
             "error": SEV_ERROR,
             "critical": SEV_CRITICAL
-            }
+        }
         if method in severities:
             def new_method(msg, operation=None, timestamp=None,
                            exc_info=False, local=False):
@@ -649,7 +649,7 @@ def plugin_list(plugin_dir, plugin_family):
     rets = pkgutil.iter_modules([
         os.path.join(cms_root_path, plugin_dir.replace(".", "/")),
         os.path.join(config.data_dir, "plugins", plugin_family),
-        ])
+    ])
     modules = [ret[0].find_module(ret[1]).load_module(ret[1]) for ret in rets]
     return [module.__dict__[module.__name__]
             for module in modules if module.__name__ in module.__dict__]
@@ -699,11 +699,11 @@ def default_argument_parser(description, cls, ask_contest=None):
             # Test if there is a contest with the given contest id.
             from cms.db.SQLAlchemyAll import Contest, SessionGen
             with SessionGen(commit=False) as session:
-                contest = session.query(Contest).\
-                          filter_by(id=args.contest_id).first()
+                contest = session.query(Contest). \
+                    filter_by(id=args.contest_id).first()
                 if contest is None:
                     print >> sys.stderr, "There is no contest " \
-                          "with the specified id. Please try again."
+                        "with the specified id. Please try again."
                     sys.exit(1)
             return cls(args.shard, args.contest_id)
         else:
