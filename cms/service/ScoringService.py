@@ -198,6 +198,8 @@ class ScoringService(Service):
 
         self.contest_id = contest_id
 
+        self.tokens_sent_to_rankings = set()
+
         # If for some reason (SS switched off for a while, or broken
         # connection with ES), submissions have been left without
         # score, this is the set where you want to pur their ids. Note
@@ -206,11 +208,7 @@ class ScoringService(Service):
         #
         # submission_results_to_score and submission_results_scored
         # contain pairs of (submission_id, dataset_id).
-        #
-        # submissions_to_token and submission_tokened contain scalar
-        # values of submission_id.
         self.submission_results_to_score = set()
-        self.submissions_to_token = set()
         self.scoring_old_submission = False
 
         # We need to load every submission at start, but we don't want
@@ -218,7 +216,6 @@ class ScoringService(Service):
         # score-less submissions. So we keep a set of submissions that
         # we analyzed (for scoring and for tokens).
         self.submission_results_scored = set()
-        self.submissions_tokened = set()
 
         # Create and spawn threads to send data to rankings.
         self.rankings = list()
@@ -248,7 +245,6 @@ class ScoringService(Service):
             contest = Contest.get_from_id(self.contest_id, session)
 
             new_submission_results_to_score = set()
-            new_submissions_to_token = set()
 
             for submission in contest.get_submissions():
                 if submission.user.hidden:
@@ -264,19 +260,15 @@ class ScoringService(Service):
                         new_submission_results_to_score.add(sr_id)
 
                 if submission.tokened() and \
-                        submission.id not in self.submissions_tokened:
-                    new_submissions_to_token.add(submission.id)
+                        submission.id not in self.tokens_sent_to_rankings:
+                    self.rankings_send_token(submission)
 
         new_s = len(new_submission_results_to_score)
         old_s = len(self.submission_results_to_score)
-        new_t = len(new_submissions_to_token)
-        old_t = len(self.submissions_to_token)
-        logger.info("Submissions found to score/token: %d, %d." %
-                    (new_s, new_t))
-        if new_s + new_t > 0:
+        logger.info("Submissions found to score: %d." % new_s)
+        if new_s > 0:
             self.submission_results_to_score |= new_submission_results_to_score
-            self.submissions_to_token |= new_submissions_to_token
-            if old_s + old_t == 0:
+            if old_s == 0:
                 self.add_timeout(self.score_old_submissions, None,
                                  0.5, immediately=False)
 
@@ -297,22 +289,13 @@ class ScoringService(Service):
         """
         self.scoring_old_submission = True
         to_score = len(self.submission_results_to_score)
-        to_token = len(self.submissions_to_token)
         to_score_now = to_score if to_score < 4 else 4
-        to_token_now = to_token if to_token < 16 else 16
-        logger.info("Old submission yet to score/token: %s/%s." %
-                    (to_score, to_token))
+        logger.info("Old submission yet to score: %s." % to_score)
 
         for unused_i in xrange(to_score_now):
             submission_id, dataset_id = self.submission_results_to_score.pop()
             self.new_evaluation(submission_id, dataset_id)
         if to_score - to_score_now > 0:
-            return True
-
-        for unused_i in xrange(to_token_now):
-            submission_id = self.submissions_to_token.pop()
-            self.submission_tokened(submission_id)
-        if to_token - to_token_now > 0:
             return True
 
         logger.info("Finished loading old submissions.")
@@ -416,6 +399,8 @@ class ScoringService(Service):
             ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
                                     {subchange_id: subchange_data}))
 
+        self.tokens_sent_to_rankings.add(submission.id)
+
     @rpc_method
     def reinitialize(self):
         """Inform the service that something in the data of the
@@ -515,9 +500,6 @@ class ScoringService(Service):
                             "not sent because user is hidden." % submission_id)
                 return
 
-            # Mark submission as tokened.
-            self.submissions_tokened.add(submission_id)
-
             # Update RWS.
             self.rankings_send_token(submission)
 
@@ -576,9 +558,8 @@ class ScoringService(Service):
                          submission_result.dataset_id))
 
         old_s = len(self.submission_results_to_score)
-        old_t = len(self.submissions_to_token)
         self.submission_results_to_score |= new_submission_results_to_score
-        if old_s + old_t == 0:
+        if old_s == 0:
             self.add_timeout(self.score_old_submissions, None,
                              0.5, immediately=False)
 
