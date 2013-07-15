@@ -251,6 +251,9 @@ class ScoringService(Service):
             new_submissions_to_token = set()
 
             for submission in contest.get_submissions():
+                if submission.user.hidden:
+                    continue
+
                 for dataset in get_datasets_to_judge(submission.task):
                     sr = submission.get_result(dataset)
                     sr_id = (submission.id, dataset.id)
