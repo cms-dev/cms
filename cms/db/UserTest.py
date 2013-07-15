@@ -95,14 +95,20 @@ class UserTest(Base):
     # managers (dict of UserTestManager objects indexed by filename)
     # results (list of UserTestResult objects)
 
-    def get_result(self, dataset):
+    def get_result(self, dataset=None):
+        if dataset is None:
+            dataset = self.task.active_dataset
+
         # Use IDs to avoid triggering a lazy-load query.
         assert self.task_id == dataset.task_id
 
         return UserTestResult.get_from_id(
             (self.id, dataset.id), self.sa_session)
 
-    def get_result_or_create(self, dataset):
+    def get_result_or_create(self, dataset=None):
+        if dataset is None:
+            dataset = self.task.active_dataset
+
         user_test_result = self.get_result(dataset)
 
         if user_test_result is None:

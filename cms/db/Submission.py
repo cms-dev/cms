@@ -93,14 +93,20 @@ class Submission(Base):
     # token (Token object or None)
     # results (list of SubmissionResult objects)
 
-    def get_result(self, dataset):
+    def get_result(self, dataset=None):
+        if dataset is None:
+            dataset = self.task.active_dataset
+
         # Use IDs to avoid triggering a lazy-load query.
         assert self.task_id == dataset.task_id
 
         return SubmissionResult.get_from_id(
             (self.id, dataset.id), self.sa_session)
 
-    def get_result_or_create(self, dataset):
+    def get_result_or_create(self, dataset=None):
+        if dataset is None:
+            dataset = self.task.active_dataset
+
         submission_result = self.get_result(dataset)
 
         if submission_result is None:
