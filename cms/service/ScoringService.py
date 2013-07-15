@@ -363,8 +363,7 @@ class ScoringService(Service):
             ranking.data_queue.put((ranking.TASK_TYPE, tasks))
 
     def rankings_send_score(self, submission):
-        dataset = submission.task.active_dataset
-        submission_result = submission.get_result(dataset)
+        submission_result = submission.get_result()
 
         # Data to send to remote rankings.
         submission_id = str(submission.id)
