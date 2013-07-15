@@ -364,6 +364,7 @@ class ScoringService(Service):
             "submission": submission_id,
             "time": int(make_timestamp(submission.timestamp))}
 
+        # XXX This check is probably useless.
         if submission_result is not None and submission_result.scored():
             # We're sending the unrounded score to RWS
             subchange_data["score"] = submission_result.score
@@ -580,7 +581,8 @@ class ScoringService(Service):
 
             for submission in task.submissions:
                 # Update RWS.
-                self.rankings_send_score(submission)
+                if submission.get_result().scored():
+                    self.rankings_send_score(submission)
 
         # TODO Spawn a search_jobs_not_done.
 
