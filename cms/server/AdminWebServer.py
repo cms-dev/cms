@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -888,13 +888,14 @@ def copy_dataset(
         # lazy-load them when we access them for each SubmissionResult,
         # one at a time. We need them because we want to copy them too,
         # recursively.
-        results = \
+        old_results = \
             sql_session.query(SubmissionResult)\
                        .filter(SubmissionResult.dataset == old_dataset)\
                        .options(joinedload(SubmissionResult.executables))\
                        .options(joinedload(SubmissionResult.evaluations)).all()
+        new_results = list()
 
-        for old_sr in results:
+        for old_sr in old_results:
             # Create the submission result.
             new_sr = old_sr.clone()
 
@@ -906,10 +907,14 @@ def copy_dataset(
             for e in old_sr.evaluations:
                 new_sr.evaluations += [e.clone()]
 
-            # FIXME If SQLAlchemy holds a weak reference to new_sr it
-            # will immediately be deleted as its reference count
-            # reaches zero. Investigate and, in case, fix that.
             new_sr.dataset = new_dataset
+
+            # We need to keep a reference to the object to prevent it
+            # from being deleted (as SQLAlchemy's Session holds just a
+            # weak reference...).
+            new_results += [new_sr]
+
+    session.flush()
 
 
 class AddDatasetHandler(BaseHandler):
