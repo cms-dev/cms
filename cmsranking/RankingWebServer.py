@@ -499,7 +499,3 @@ def main():
     except KeyboardInterrupt:
         # Exit cleanly.
         return
-
-
-if __name__ == "__main__":
-    main()

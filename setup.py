@@ -5,6 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -109,19 +110,18 @@ def do_setup():
                     "cmstestsuite.tasks.communication",
                     "cmscompat"],
           package_data=package_data,
+          scripts=["scripts/cmsLogService",
+                   "scripts/cmsScoringService",
+                   "scripts/cmsEvaluationService",
+                   "scripts/cmsWorker",
+                   "scripts/cmsResourceService",
+                   "scripts/cmsChecker",
+                   "scripts/cmsContestWebServer",
+                   "scripts/cmsAdminWebServer",
+
+                   "scripts/cmsRankingWebServer"],
           entry_points={
               "console_scripts": [
-                  "cmsLogService=cms.service.LogService:main",
-                  "cmsScoringService=cms.service.ScoringService:main",
-                  "cmsEvaluationService=cms.service.EvaluationService:main",
-                  "cmsWorker=cms.service.Worker:main",
-                  "cmsResourceService=cms.service.ResourceService:main",
-                  "cmsChecker=cms.service.Checker:main",
-                  "cmsContestWebServer=cms.server.ContestWebServer:main",
-                  "cmsAdminWebServer=cms.server.AdminWebServer:main",
-
-                  "cmsRankingWebServer=cmsranking.RankingWebServer:main",
-
                   "cmsRunTests=cmstestsuite.RunTests:main",
                   "cmsReplayContest=cmstestsuite.ReplayContest:main",
                   "cmsAdaptContest=cmstestsuite.AdaptContest:main",

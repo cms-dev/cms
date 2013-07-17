@@ -20,14 +20,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# We enable monkey patching to make many libraries gevent-friendly
-# (for instance, urllib3, used by requests)
-import gevent.monkey
-gevent.monkey.patch_all()
-
 import gevent.coros
 
-from cms import default_argument_parser, logger
+from cms import logger
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
 from cms.db.FileCacher import FileCacher
@@ -150,14 +145,3 @@ class Worker(Service):
                 "running, or for bugs in ES."
             logger.warning(err_msg)
             raise JobException(err_msg)
-
-
-def main():
-    """Parse arguments and launch service.
-
-    """
-    default_argument_parser("Safe command executer for CMS.", Worker).run()
-
-
-if __name__ == "__main__":
-    main()

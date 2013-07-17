@@ -24,11 +24,6 @@
 
 """
 
-# We enable monkey patching to make many libraries gevent-friendly
-# (for instance, urllib3, used by requests)
-import gevent.monkey
-gevent.monkey.patch_all()
-
 import os
 from datetime import datetime, timedelta
 import traceback
@@ -41,7 +36,7 @@ from sqlalchemy.exc import IntegrityError
 import tornado.web
 import tornado.locale
 
-from cms import config, default_argument_parser, logger
+from cms import config, logger
 from cms.io.WebGeventLibrary import WebService
 from cms.io import ServiceCoord, get_service_shards, get_service_address
 from cms.db.FileCacher import FileCacher
@@ -2038,14 +2033,3 @@ _aws_handlers = [
     (r"/resources/([0-9]+|all)/([0-9]+)", ResourcesHandler),
     (r"/notifications", NotificationsHandler),
 ]
-
-
-def main():
-    """Parse arguments and launch service.
-
-    """
-    default_argument_parser("Admins' web server for CMS.",
-                            AdminWebServer).run()
-
-if __name__ == "__main__":
-    main()

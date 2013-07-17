@@ -25,14 +25,8 @@ that saves the resources usage in that machine.
 
 """
 
-# We enable monkey patching to make many libraries gevent-friendly
-# (for instance, urllib3, used by requests)
-import gevent.monkey
-gevent.monkey.patch_all()
-
 import os
 import time
-import argparse
 import bisect
 
 import psutil
@@ -40,10 +34,9 @@ import psutil
 from gevent import subprocess
 #import gevent_subprocess as subprocess
 
-from cms import config, logger, find_local_addresses
-from cms.io import ServiceCoord, get_shard_from_addresses
+from cms import config, logger
+from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method, RemoteService
-from cms.db import ask_for_contest, is_contest_id
 
 
 B_TO_MB = 1024.0 * 1024.0
@@ -55,19 +48,6 @@ class ResourceService(Service):
     upon request.
 
     """
-    # Path of the services in the local tree, used to restart the
-    # services when CMS is not installed.
-    SERVICE_PATH = {
-        "Checker": os.path.join("cms", "service"),
-        "EvaluationService": os.path.join("cms", "service"),
-        "LogService": os.path.join("cms", "service"),
-        "ResourceService": os.path.join("cms", "service"),
-        "ScoringService": os.path.join("cms", "service"),
-        "Worker": os.path.join("cms", "service"),
-        "AdminWebServer": os.path.join("cms", "server"),
-        "ContestWebServer": os.path.join("cms", "server"),
-        }
-
     def __init__(self, shard, contest_id=None):
         """If contest_id is not None, we assume the user wants the
         autorestart feature.
@@ -163,8 +143,8 @@ class ResourceService(Service):
                 if not config.installed:
                     command = os.path.join(
                         ".",
-                        "%s" % ResourceService.SERVICE_PATH[service.name],
-                        "%s.py" % service.name)
+                        "scripts",
+                        "cms%s" % service.name)
                 process = subprocess.Popen([command,
                                             str(service.shard),
                                             "-c",
@@ -205,14 +185,7 @@ class ResourceService(Service):
         cmdline = config.process_cmdline[:]
         length = len(cmdline)
         for i in range(length):
-            if config.installed:
-                cmdline[i] = cmdline[i].replace("%s", service.name)
-            else:
-                cmdline[i] = cmdline[i].replace(
-                    "%s",
-                    os.path.join(
-                        ResourceService.SERVICE_PATH[service.name],
-                        service.name))
+            cmdline[i] = cmdline[i].replace("%s", service.name)
             cmdline[i] = cmdline[i].replace("%d", str(service.shard))
         for proc in psutil.get_process_list():
             try:
@@ -411,41 +384,3 @@ class ResourceService(Service):
                     (service.name, service.shard, self._will_restart[service]))
 
         return self._will_restart[service]
-
-
-def main():
-    """Parses arguments and launch service.
-
-    """
-    parser = argparse.ArgumentParser(
-        description="Resource monitor and service starter for CMS.")
-    parser.add_argument("-a", "--autorestart", metavar="CONTEST_ID",
-                        help="restart automatically services on its machine",
-                        nargs="?", type=int, const=-1)
-    parser.add_argument("shard", type=int, nargs="?", default=-1)
-    args = parser.parse_args()
-
-    # If the shard is -1 (i.e., unspecified) we find it basing on the
-    # local IP addresses
-    if args.shard == -1:
-        addrs = find_local_addresses()
-        args.shard = get_shard_from_addresses("ResourceService", addrs)
-
-    if args.autorestart is not None:
-        if args.autorestart == -1:
-            ResourceService(args.shard,
-                            contest_id=ask_for_contest()).run()
-        else:
-            if is_contest_id(args.autorestart):
-                ResourceService(args.shard, contest_id=args.autorestart).run()
-            else:
-                import sys
-                print >> sys.stderr, "There is no contest " \
-                      "with the specified id. Please try again."
-                sys.exit(1)
-    else:
-        ResourceService(args.shard).run()
-
-
-if __name__ == "__main__":
-    main()

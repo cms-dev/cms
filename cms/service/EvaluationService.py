@@ -29,19 +29,13 @@ current ranking.
 
 """
 
-# We enable monkey patching to make many libraries gevent-friendly
-# (for instance, urllib3, used by requests)
-import gevent.monkey
-gevent.monkey.patch_all()
-
 from datetime import timedelta
 from collections import namedtuple
 import random
 
-from cms import default_argument_parser, logger
+from cms import logger
 from cms.io.GeventLibrary import Service, rpc_method, rpc_callback
 from cms.io import ServiceCoord, get_service_shards
-from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import SessionGen, Contest, Dataset, \
      Submission, SubmissionResult, Evaluation, \
      UserTest, UserTestResult, UserTestExecutable
@@ -1389,16 +1383,3 @@ class EvaluationService(Service):
                                 submission_result.dataset_id),
                             EvaluationService.JOB_PRIORITY_MEDIUM,
                             submission_result.submission.timestamp)
-
-
-def main():
-    """Parse arguments and launch service.
-
-    """
-    default_argument_parser("Submission's compiler and evaluator for CMS.",
-                            EvaluationService,
-                            ask_contest=ask_for_contest).run()
-
-
-if __name__ == "__main__":
-    main()

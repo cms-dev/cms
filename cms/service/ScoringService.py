@@ -30,11 +30,6 @@ services the scores, via http requests.
 
 """
 
-# We enable monkey patching to make many libraries gevent-friendly
-# (for instance, urllib3, used by requests)
-import gevent.monkey
-gevent.monkey.patch_all()
-
 import simplejson as json
 import base64
 import string
@@ -48,10 +43,9 @@ import requests
 import requests.exceptions
 from urlparse import urljoin
 
-from cms import config, default_argument_parser, logger
+from cms import config, logger
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
-from cms.db import ask_for_contest
 from cms.db.SQLAlchemyAll import SessionGen, Submission, \
     Contest, Dataset, Task
 from cms.grading.scoretypes import get_score_type
@@ -585,16 +579,3 @@ class ScoringService(Service):
                     self.rankings_send_score(submission)
 
         # TODO Spawn a search_jobs_not_done.
-
-
-def main():
-    """Parse arguments and launch service.
-
-    """
-    default_argument_parser("Score computer and relayer for CMS.",
-                            ScoringService,
-                            ask_contest=ask_for_contest).run()
-
-
-if __name__ == "__main__":
-    main()

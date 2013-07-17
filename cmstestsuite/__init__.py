@@ -4,6 +4,7 @@
 # Programming contest management system
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -27,6 +28,7 @@ import socket
 import subprocess
 import time
 import mechanize
+from urlparse import urlsplit
 
 import cmstestsuite.web
 from cmstestsuite.web.CWSRequests import LoginRequest, SubmitRequest
@@ -209,12 +211,11 @@ def start_prog(path, shard=0, contest=None):
     return spawn(args)
 
 
-def start_servicer(service_name, check, shard=0, contest=None,
-                   prefix="service"):
+def start_servicer(service_name, check, shard=0, contest=None):
     """Start a CMS service."""
 
     info("Starting %s." % service_name)
-    executable = os.path.join('.', 'cms', prefix, '%s.py' % (service_name))
+    executable = os.path.join('.', 'scripts', 'cms%s' % (service_name))
     if CONFIG["TEST_DIR"] is None:
         executable = 'cms%s' % service_name
     prog = start_prog(executable, shard=shard, contest=contest)
@@ -275,8 +276,7 @@ def start_server(service_name, shard=0, contest=None):
         sock.connect(('127.0.0.1', port))
         sock.close()
 
-    prog = start_servicer(service_name, check, shard, contest,
-                          prefix="server")
+    prog = start_servicer(service_name, check, shard, contest)
     running_servers[service_name] = prog
 
     return prog
@@ -293,8 +293,7 @@ def start_ranking_web_server():
         sock.connect((addr, port))
         sock.close()
 
-    prog = start_servicer("RankingWebServer", check, shard=None,
-                          prefix="../cmsranking")
+    prog = start_servicer("RankingWebServer", check, shard=None)
     running_servers['RankingWebServer'] = prog
     return prog
 

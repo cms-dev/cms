@@ -23,18 +23,12 @@
 
 """
 
-# We enable monkey patching to make many libraries gevent-friendly
-# (for instance, urllib3, used by requests)
-import gevent.monkey
-gevent.monkey.patch_all()
-
 import os
 import time
 import codecs
 
-from cms import config, default_argument_parser, mkdir, \
-     logger, format_log, \
-     SEV_CRITICAL, SEV_ERROR, SEV_WARNING
+from cms import config, mkdir, logger, format_log, \
+    SEV_CRITICAL, SEV_ERROR, SEV_WARNING
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
 
@@ -109,14 +103,3 @@ class LogService(Service):
     @rpc_method
     def last_messages(self):
         return self._last_messages
-
-
-def main():
-    """Parse arguments and launch service.
-
-    """
-    default_argument_parser("Logger for CMS.", LogService).run()
-
-
-if __name__ == "__main__":
-    main()

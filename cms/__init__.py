@@ -139,7 +139,7 @@ class Config:
         self.https_certfile = None
 
         # ResourceService.
-        self.process_cmdline = ["/usr/bin/python", "./%s.py", "%d"]
+        self.process_cmdline = ["/usr/bin/python", "./scripts/cms%s", "%d"]
 
         # LogService.
         self.color_shell_log = True

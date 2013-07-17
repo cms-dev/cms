@@ -22,15 +22,9 @@
 """Service that checks the answering times of all services.
 
 """
-
-# We enable monkey patching to make many libraries gevent-friendly
-# (for instance, urllib3, used by requests)
-import gevent.monkey
-gevent.monkey.patch_all()
-
 import time
 
-from cms import config, default_argument_parser, logger
+from cms import config, logger
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_callback
 
@@ -95,15 +89,3 @@ class Checker(Service):
                 del self.waiting_for[service]
         except KeyError:
             logger.error("Echo answer mis-shapen.")
-
-
-def main():
-    """Parse arguments and launch service.
-
-    """
-    default_argument_parser("Checker for aliveness of other CMS service.",
-                            Checker).run()
-
-
-if __name__ == "__main__":
-    main()

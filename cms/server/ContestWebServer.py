@@ -35,11 +35,6 @@
 
 """
 
-# We enable monkey patching to make many libraries gevent-friendly
-# (for instance, urllib3, used by requests)
-import gevent.monkey
-gevent.monkey.patch_all()
-
 import os
 import re
 import pickle
@@ -57,11 +52,9 @@ import tornado.web
 
 from sqlalchemy import func
 
-from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, default_argument_parser, \
-    logger
+from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, logger
 from cms.io.WebGeventLibrary import WebService
 from cms.io import ServiceCoord
-from cms.db import ask_for_contest
 from cms.db.FileCacher import FileCacher
 from cms.db.SQLAlchemyAll import Session, Contest, User, Task, \
     Question, Submission, Token, File, UserTest, UserTestFile, \
@@ -1853,15 +1846,3 @@ _cws_handlers = [
     (r"/testing", UserTestInterfaceHandler),
     (r"/stl/(.*)", StaticFileGzHandler, {"path": config.stl_path}),
 ]
-
-
-def main():
-    """Parse arguments and launch service.
-
-    """
-    default_argument_parser("Contestants' web server for CMS.",
-                            ContestWebServer,
-                            ask_contest=ask_for_contest).run()
-
-if __name__ == "__main__":
-    main()

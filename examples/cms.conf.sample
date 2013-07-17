@@ -139,7 +139,7 @@
     "_help": "'python2.7' instead of 'python2', and the second",
     "_help": "one to contain '/usr/bin' instead of /usr/local/bin'.",
     "process_cmdline": ["/usr/bin/python2", "/usr/local/bin/cms%s", "%d"],
-    "_process_cmdline": ["/usr/bin/python2", "./%s.py", "%d"],
+    "_process_cmdline": ["/usr/bin/python2", "./scripts/cms%s", "%d"],
 
 
 
