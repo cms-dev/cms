@@ -31,40 +31,6 @@ from cms.db.SQLAlchemyAll import metadata, Contest, SessionGen
 version = 5
 
 
-def analyze_table(tablename, session=None):
-    """Analyze the specified table (issuing the corresponding ANALYZE
-    command to the SQL backend).
-
-    session (Session object): if specified, use such session for
-                              connecting to the database; otherwise,
-                              create a temporary one and discard it
-                              after the operation.
-
-    """
-    if session is None:
-        with SessionGen(commit=True) as session:
-            return analyze_table(tablename, session)
-
-    session.execute("ANALYZE %s;" % (tablename))
-
-
-def analyze_all_tables(session=None):
-    """Analyze all tables tracked by SQLAlchemy.
-
-    session (Session object): if specified, use such session for
-                              connecting to the database; otherwise,
-                              create a temporary one and discard it
-                              after the operation.
-
-    """
-    if session is None:
-        with SessionGen(commit=False) as session:
-            return analyze_all_tables(session)
-
-    for table in metadata.sorted_tables:
-        analyze_table(table.name, session)
-
-
 def get_contest_list(session=None):
     """Return all the contest objects available on the database.
 
