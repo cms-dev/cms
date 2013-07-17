@@ -33,7 +33,7 @@ import gevent
 from sqlalchemy.exc import IntegrityError
 
 from cms import config, logger, mkdir
-from cms.db.SQLAlchemyAll import SessionGen, FSObject
+from cms.db import SessionGen, FSObject
 from cms.io.GeventUtils import copyfile, copyfileobj, move, copy, rmtree
 
 

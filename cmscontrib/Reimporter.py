@@ -39,10 +39,9 @@ import os.path
 import argparse
 
 from cms import logger
-from cms.db import ask_for_contest
-from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import \
-    SessionGen, Base, Contest, User, Task, Submission
+from cms.db import SessionGen, Base, Contest, User, Task, Submission, \
+    ask_for_contest
+from cms.db.filecacher import FileCacher
 
 from cmscontrib.Loaders import choose_loader, build_epilog
 

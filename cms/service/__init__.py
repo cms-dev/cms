@@ -22,8 +22,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from cms import logger
-from cms.db.SQLAlchemyAll import \
-    SessionGen, Contest, User, Task, Dataset, Submission, SubmissionResult
+from cms.db import SessionGen, Contest, User, Task, Dataset, Submission, \
+    SubmissionResult
 
 
 def get_submissions(contest_id=None, user_id=None, task_id=None,

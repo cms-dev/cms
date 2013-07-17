@@ -20,8 +20,7 @@
 import argparse
 import sys
 
-from cms.db.SQLAlchemyAll import SessionGen, User
-from cms.db import ask_for_contest
+from cms.db import SessionGen, User, ask_for_contest
 
 
 def remove_user(contest_id, username):

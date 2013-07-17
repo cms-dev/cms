@@ -30,9 +30,8 @@ from datetime import timedelta
 
 from cms import LANGUAGES, logger
 from cmscommon.DateTime import make_datetime
-from cms.db.SQLAlchemyAll import \
-    Contest, User, Task, Statement, Attachment, SubmissionFormatElement, \
-    Dataset, Manager, Testcase
+from cms.db import Contest, User, Task, Statement, Attachment, \
+    SubmissionFormatElement, Dataset, Manager, Testcase
 from cmscontrib.BaseLoader import Loader
 from cmscontrib import touch
 

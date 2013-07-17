@@ -40,11 +40,10 @@ import pkg_resources
 from cms import config, logger
 from cms.io.WebGeventLibrary import WebService
 from cms.io import ServiceCoord, get_service_shards, get_service_address
-from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import Session, \
-    Contest, User, Announcement, Question, Message, Submission, \
-    SubmissionResult, Evaluation, Executable, File, Task, Dataset, \
-    Attachment, Manager, Testcase, SubmissionFormatElement, Statement
+from cms.db import Session, Contest, User, Announcement, Question, Message, \
+    Submission, SubmissionResult, Evaluation, Executable, File, Task, \
+    Dataset, Attachment, Manager, Testcase, SubmissionFormatElement, Statement
+from cms.db.filecacher import FileCacher
 from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type_class
 from cms.server import file_handler_gen, get_url_root, \

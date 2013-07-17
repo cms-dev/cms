@@ -41,9 +41,8 @@ import datetime
 import sqlalchemy.exc
 
 from cms import logger
-from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import metadata, SessionGen, User, \
-    drop_everything
+from cms.db import metadata, SessionGen, User, init_db, drop_db
+from cms.db.filecacher import FileCacher
 
 from cmscontrib.Loaders import choose_loader, build_epilog
 
@@ -72,12 +71,12 @@ class Importer:
         logger.info("Creating database structure.")
         if self.drop:
             try:
-                drop_everything()
+                drop_db()
             except sqlalchemy.exc.OperationalError as error:
                 logger.critical("Unable to access DB.\n%r" % error)
                 return False
         try:
-            metadata.create_all()
+            init_db()
         except sqlalchemy.exc.OperationalError as error:
             logger.critical("Unable to access DB.\n%r" % error)
             return False

@@ -38,8 +38,8 @@ import imp
 import numpy
 import sys
 
-from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import SessionGen, Task
+from cms.db import SessionGen, Task
+from cms.db.filecacher import FileCacher
 
 
 MAXP = 4

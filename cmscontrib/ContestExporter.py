@@ -42,9 +42,8 @@ from sqlalchemy.types import \
     Boolean, Integer, Float, String, DateTime, Interval
 
 from cms import logger
-from cms.db import ask_for_contest
-from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import SessionGen, Contest, Submission, UserTest
+from cms.db import SessionGen, Contest, Submission, UserTest, ask_for_contest
+from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum

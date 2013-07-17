@@ -56,10 +56,9 @@ from sqlalchemy import func
 from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, logger
 from cms.io.WebGeventLibrary import WebService
 from cms.io import ServiceCoord
-from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import Session, Contest, User, Task, \
-    Question, Submission, Token, File, UserTest, UserTestFile, \
-    UserTestManager
+from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
+    File, UserTest, UserTestFile, UserTestManager
+from cms.db.filecacher import FileCacher
 from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, extract_archive, \

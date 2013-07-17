@@ -46,13 +46,13 @@ from sqlalchemy.orm import \
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, DateTime, Interval
 
-import cms.db.SQLAlchemyAll as class_hook
+import cms.db as class_hook
 
 from cms import logger
 from cms.db import version as model_version
-from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import metadata, SessionGen, Contest, \
-    Submission, UserTest
+from cms.db import metadata, SessionGen, Contest, Submission, UserTest, \
+    init_db, drop_db
+from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum
@@ -160,12 +160,12 @@ class ContestImporter:
         if self.drop:
             logger.info("Dropping and recreating the database.")
             try:
-                metadata.drop_all()
+                drop_db()
             except sqlalchemy.exc.OperationalError as error:
                 logger.critical("Unable to access DB.\n%r" % error)
                 return False
         try:
-            metadata.create_all()
+            init_db()
         except sqlalchemy.exc.OperationalError as error:
             logger.critical("Unable to access DB.\n%r" % error)
             return False

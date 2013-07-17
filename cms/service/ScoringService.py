@@ -46,8 +46,7 @@ from urlparse import urljoin
 from cms import config, logger
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
-from cms.db.SQLAlchemyAll import SessionGen, Submission, \
-    Contest, Dataset, Task
+from cms.db import SessionGen, Submission, Contest, Dataset, Task
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submission_results, get_datasets_to_judge
 from cmscommon.DateTime import make_timestamp

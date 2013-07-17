@@ -23,7 +23,7 @@
 import mechanize
 import optparse
 
-from cms.db.SQLAlchemyAll import Contest, SessionGen
+from cms.db import Contest, SessionGen
 
 from cmstestsuite.web.CWSRequests import \
      LoginRequest, SubmitRequest, TokenRequest

@@ -20,8 +20,7 @@
 import argparse
 import sys
 
-from cms.db.SQLAlchemyAll import SessionGen, Task
-from cms.db import ask_for_contest
+from cms.db import SessionGen, Task, ask_for_contest
 
 
 def remove_task(contest_id, task_name):

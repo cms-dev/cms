@@ -23,9 +23,9 @@ import sys
 import os
 
 from cmscontrib.YamlLoader import YamlLoader
-from cms.db.FileCacher import FileCacher
+from cms.db import Executable
+from cms.db.filecacher import FileCacher
 from cms.grading.Job import EvaluationJob
-from cms.db.SQLAlchemyAll import Executable
 from cms.grading.tasktypes import get_task_type
 import simplejson as json
 

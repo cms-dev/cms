@@ -22,8 +22,7 @@
 import simplejson as json
 from copy import deepcopy
 
-from cms.db.SQLAlchemyAll import File, Manager, Executable, \
-    UserTestExecutable, Evaluation
+from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
 
 
 class Job(object):

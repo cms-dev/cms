@@ -37,7 +37,7 @@ import tornado.locale
 import gevent
 
 from cms import logger
-from cms.db.FileCacher import FileCacher
+from cms.db.filecacher import FileCacher
 from cmscommon.DateTime import make_datetime, utc
 
 

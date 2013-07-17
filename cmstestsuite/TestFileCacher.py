@@ -31,7 +31,7 @@ import hashlib
 from cms import default_argument_parser, config, logger
 from cms.io import ServiceCoord
 from cms.io.TestService import TestService
-from cms.db.FileCacher import FileCacher
+from cms.db.filecacher import FileCacher
 
 
 class RandomFile:

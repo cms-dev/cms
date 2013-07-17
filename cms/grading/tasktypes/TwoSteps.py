@@ -31,7 +31,7 @@ from cms.grading import get_compilation_command, compilation_step, \
     is_evaluation_passed, human_evaluation_message, white_diff_step
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
-from cms.db.SQLAlchemyAll import Executable
+from cms.db import Executable
 
 
 class TwoSteps(TaskType):

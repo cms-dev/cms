@@ -30,7 +30,7 @@ import codecs
 
 from cms import config
 from cms.io import ServiceCoord, get_service_address
-from cms.db.SQLAlchemyAll import Contest, SessionGen
+from cms.db import Contest, SessionGen
 
 import cmstestsuite.web
 from cmstestsuite.web.CWSRequests import HomepageRequest, \

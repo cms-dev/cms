@@ -35,9 +35,8 @@ import argparse
 import time
 
 from cms import logger
-from cms.db import ask_for_contest
-from cms.db.FileCacher import FileCacher
-from cms.db.SQLAlchemyAll import SessionGen, Contest
+from cms.db import SessionGen, Contest, ask_for_contest
+from cms.db.filecacher import FileCacher
 from cms.grading.scoretypes import get_score_type
 
 

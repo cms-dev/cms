@@ -31,7 +31,7 @@ from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step_after_run
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
-from cms.db.SQLAlchemyAll import Executable
+from cms.db import Executable
 from cms.io.GeventUtils import rmtree
 
 

@@ -82,7 +82,7 @@ def setup_cms():
     sh(["ln", "-s", "%(GIT_ORIGIN)s/log" % CONFIG, "log"])
 
     info("Creating tables.")
-    sh("python cms/db/SQLAlchemyAll.py")
+    sh("python scripts/cmsInitDB")
 
 
 if __name__ == "__main__":

@@ -119,7 +119,10 @@ def do_setup():
                    "scripts/cmsContestWebServer",
                    "scripts/cmsAdminWebServer",
 
-                   "scripts/cmsRankingWebServer"],
+                   "scripts/cmsRankingWebServer",
+
+                   "scripts/cmsInitDB",
+                   "scripts/cmsDropDB"],
           entry_points={
               "console_scripts": [
                   "cmsRunTests=cmstestsuite.RunTests:main",

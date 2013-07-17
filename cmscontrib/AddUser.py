@@ -23,8 +23,7 @@
 import argparse
 import sys
 
-from cms.db.SQLAlchemyAll import SessionGen, User, Contest
-from cms.db import ask_for_contest
+from cms.db import SessionGen, User, Contest, ask_for_contest
 
 
 def add_user(contest_id, first_name, last_name, username,

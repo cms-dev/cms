@@ -27,7 +27,7 @@ from collections import namedtuple
 from sqlalchemy.orm import joinedload
 
 from cms import logger
-from cms.db.SQLAlchemyAll import SessionGen, Submission, SubmissionResult
+from cms.db import SessionGen, Submission, SubmissionResult
 from cms.grading.Sandbox import Sandbox
 
 
