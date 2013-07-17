@@ -5,6 +5,8 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,88 +25,148 @@
 
 """
 
+from __future__ import absolute_import
+
 import sys
 
-from cms.db.SQLAlchemyAll import metadata, Contest, SessionGen
+from sqlalchemy import create_engine
+from sqlalchemy.orm import joinedload
 
+from cms import config, logger
+
+
+# Define what this package will provide.
+
+__all__ = [
+    "version", "engine",
+    # session
+    "Session", "ScopedSession", "SessionGen", "get_psycopg2_connection",
+    # base
+    "metadata", "Base",
+    # contest
+    "Contest", "Announcement",
+    # user
+    "User", "Message", "Question",
+    # task
+    "Task", "Statement", "Attachment", "SubmissionFormatElement", "Dataset",
+    "Manager", "Testcase",
+    # submission
+    "Submission", "File", "Token", "SubmissionResult", "Executable",
+    "Evaluation",
+    # usertest
+    "UserTest", "UserTestFile", "UserTestManager", "UserTestResult",
+    "UserTestExecutable",
+    # fsobject
+    "FSObject",
+    # init
+    "init_db",
+    # drop
+    "drop_db",
+    # util
+    "get_contest_list", "is_contest_id", "ask_for_contest",
+    ]
+
+
+# Instantiate or import these objects.
 
 version = 5
 
 
-def get_contest_list(session=None):
-    """Return all the contest objects available on the database.
-
-    session (Session object): if specified, use such session for
-                              connecting to the database; otherwise,
-                              create a temporary one and discard it
-                              after the operation (this means that no
-                              further expansion of lazy properties of
-                              the returned Contest objects will be
-                              possible).
-
-    """
-    if session is None:
-        with SessionGen(commit=True) as session:
-            return get_contest_list(session)
-
-    return session.query(Contest).all()
+engine = create_engine(config.database, echo=config.database_debug,
+                       pool_size=20, pool_recycle=120)
 
 
-def is_contest_id(contest_id):
-    """Return if there is a contest with the given id in the database.
+from .session import Session, ScopedSession, SessionGen, \
+    get_psycopg2_connection
 
-    contest_id (int): the id to query.
-    return (boolean): True if there is such a contest.
+from .base import metadata, Base
+from .contest import Contest, Announcement
+from .user import User, Message, Question
+from .task import Task, Statement, Attachment, SubmissionFormatElement, \
+    Dataset, Manager, Testcase
+from .submission import Submission, File, Token, SubmissionResult, \
+    Executable, Evaluation
+from .usertest import UserTest, UserTestFile, UserTestManager, \
+    UserTestResult, UserTestExecutable
+from .fsobject import FSObject
 
-    """
-    with SessionGen(commit=False) as session:
-        return Contest.get_from_id(contest_id, session) is not None
+from .init import init_db
+from .drop import drop_db
+
+from .util import get_contest_list, is_contest_id, ask_for_contest
 
 
-def ask_for_contest(skip=None):
-    """Print a greeter that ask the user for a contest, if there is
-    not an indication of which contest to use in the command line.
+# The following are methods of Contest that cannot be put in the right
+# file because of circular dependencies.
 
-    skip (int/None): how many commandline arguments are already taken
-                     by other usages.
+def get_submissions(self):
+    """Returns a list of submissions (with the information about the
+    corresponding task) referring to the contest.
 
-    return (int): a contest_id.
+    returns (list): list of submissions.
 
     """
-    if isinstance(skip, int) and len(sys.argv) > skip + 1:
-        contest_id = int(sys.argv[skip + 1])
+    return self.sa_session.query(Submission)\
+               .join(Task).filter(Task.contest == self)\
+               .options(joinedload(Submission.token))\
+               .options(joinedload(Submission.results)).all()
 
-    else:
 
-        with SessionGen(commit=False) as session:
-            contests = get_contest_list(session)
-            # The ids of the contests are cached, so the session can
-            # be closed as soon as possible
-            matches = {}
-            n_contests = len(contests)
-            if n_contests == 0:
-                print "No contests in the database."
-                print "You may want to use some of the facilities in " \
-                      "cmscontrib to import a contest."
-                sys.exit(0)
-            print "Contests available:"
-            for i, row in enumerate(contests):
-                print "%3d  -  ID: %d  -  Name: %s  -  Description: %s" % \
-                      (i + 1, row.id, row.name, row.description),
-                matches[i + 1] = row.id
-                if i == n_contests - 1:
-                    print " (default)"
-                else:
-                    print
+def get_submission_results(self):
+    """Returns a list of submission results for all submissions in
+    the current contest, as evaluated against the active dataset
+    for each task.
 
-        contest_number = raw_input("Insert the row number next to the contest "
-                                   "you want to load (not the id): ")
-        if contest_number == "":
-            contest_number = n_contests
-        try:
-            contest_id = matches[int(contest_number)]
-        except (ValueError, KeyError):
-            print "Insert a correct number."
-            sys.exit(1)
+    returns (list): list of submission results.
 
-    return contest_id
+    """
+    return self.sa_session.query(SubmissionResult)\
+               .join(Submission).join(Task).filter(Task.contest == self)\
+               .filter(Task.active_dataset_id == SubmissionResult.dataset_id)\
+               .all()
+
+
+def get_user_tests(self):
+    """Returns a list of user tests (with the information about the
+    corresponding user) referring to the contest.
+
+    return (list): list of user tests.
+
+    """
+    return self.sa_session.query(UserTest)\
+               .join(Task).filter(Task.contest == self)\
+               .options(joinedload(UserTest.results)).all()
+
+
+def get_user_test_results(self):
+    """Returns a list of user_test results for all user_tests in
+    the current contest, as evaluated against the active dataset
+    for each task.
+
+    returns (list): list of user test results.
+
+    """
+    return self.sa_session.query(UserTestResult)\
+               .join(UserTest).join(Task).filter(Task.contest == self)\
+               .filter(Task.active_dataset_id == UserTestResult.dataset_id)\
+               .all()
+
+Contest.get_submissions = get_submissions
+Contest.get_submission_results = get_submission_results
+Contest.get_user_tests = get_user_tests
+Contest.get_user_test_results = get_user_test_results
+
+
+# The following is a method of User that cannot be put in the right
+# file because of circular dependencies.
+
+def get_tokens(self):
+    """Returns a list of tokens used by a user.
+
+    returns (list): list of tokens.
+
+    """
+    return self.sa_session.query(Token)\
+               .join(Submission).filter(Submission.user == self).all()
+
+User.get_tokens = get_tokens

@@ -19,8 +19,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""SQLAlchemy interfaces to store files in the database. Not to be
-used directly (import from SQLAlchemyAll).
+"""SQLAlchemy interfaces to store files in the database.
 
 """
 
@@ -30,7 +29,7 @@ from sqlalchemy.orm.exc import NoResultFound
 import psycopg2
 from psycopg2 import OperationalError, InternalError
 
-from cms.db.SQLAlchemyUtils import Base, get_psycopg2_connection
+from . import Base, get_psycopg2_connection
 
 from contextlib import contextmanager
 

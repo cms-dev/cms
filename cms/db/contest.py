@@ -21,10 +21,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Contest-related database interface for SQLAlchemy. Not to be used
-directly (import it from SQLAlchemyAll).
+"""Contest-related database interface for SQLAlchemy.
 
 """
+
+from __future__ import absolute_import
 
 from datetime import timedelta
 
@@ -32,15 +33,14 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
 from sqlalchemy.types import Integer, String, DateTime, Interval
 from sqlalchemy.orm import relationship, backref
 
-from cms.db.SQLAlchemyUtils import Base
+from . import Base
 
-from cmscommon.DateTime import make_datetime, make_timestamp
+from cmscommon.DateTime import make_datetime
 
 
 class Contest(Base):
     """Class to store a contest (which is a single day of a
-    programming competition). Not to be used directly (import it from
-    SQLAlchemyAll).
+    programming competition).
 
     """
     __tablename__ = 'contests'
@@ -166,10 +166,10 @@ class Contest(Base):
     # users (list of User objects)
 
     # Moreover, we have the following methods.
-    # get_submissions (defined in SQLAlchemyAll)
-    # get_submission_results (defined in SQLAlchemyAll)
-    # get_user_tests (defined in SQLAlchemyAll)
-    # get_user_test_results (defined in SQLAlchemyAll)
+    # get_submissions (defined in __init__.py)
+    # get_submission_results (defined in __init__.py)
+    # get_user_tests (defined in __init__.py)
+    # get_user_test_results (defined in __init__.py)
 
     # FIXME - Use SQL syntax
     def get_task(self, task_name):
@@ -548,7 +548,7 @@ class Contest(Base):
 
 class Announcement(Base):
     """Class to store a messages sent by the contest managers to all
-    the users. Not to be used directly (import it from SQLAlchemyAll).
+    the users.
 
     """
     __tablename__ = 'announcements'

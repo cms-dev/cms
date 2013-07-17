@@ -20,13 +20,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
-import six
+from __future__ import absolute_import
+
 from datetime import datetime, timedelta
 
-from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.orm.exc import ObjectDeletedError
 from sqlalchemy.orm.session import object_session
 from sqlalchemy.orm import \
@@ -34,75 +32,12 @@ from sqlalchemy.orm import \
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, DateTime, Interval
 
-from cms import config, logger
+import six
+
+from . import engine
 
 
-db_string = config.database.replace("%s", config.data_dir)
-db = create_engine(db_string, echo=config.database_debug,
-                   pool_size=20, pool_recycle=120)
-
-Session = sessionmaker(db, twophase=config.twophase_commit)
-ScopedSession = scoped_session(Session)
-
-# For two-phases transactions:
-#Session = sessionmaker(db, twophase=True)
-
-
-# TODO: decide which one of the following is better.
-
-# from contextlib import contextmanager
-
-# @contextmanager
-# def SessionGen():
-#     """This allows us to create handy local sessions simply with:
-
-#     with SessionGen as session:
-#         session.do_something()
-
-#     and at the end, commit & close are automatically called.
-
-#     """
-#     session = Session()
-#     try:
-#         yield session
-#     finally:
-#         session.commit()
-#         session.close()
-
-# FIXME How does one rollback a session created with SessionGen?
-class SessionGen:
-    """This allows us to create handy local sessions simply with:
-
-    with SessionGen() as session:
-        session.do_something()
-
-    and at the end the session is automatically closed.
-
-    commit (bool): whether to commit or to rollback the session by
-                   default, when no other instruction has been
-                   specified. To do the commit or the rollback
-                   idependently of this setting, just call the
-                   relevant function from the session.  ATTENTION: by
-                   default, the session is not committed.
-
-    """
-    def __init__(self, commit=False):
-        self.commit = commit
-        self.session = None
-
-    def __enter__(self):
-        self.session = Session()
-        return self.session
-
-    def __exit__(self, unused1, unused2, unused3):
-        if self.commit:
-            self.session.commit()
-        else:
-            self.session.rollback()
-        self.session.close()
-
-
-_type_map = {
+_TYPE_MAP = {
     Boolean: bool,
     Integer: six.integer_types,
     Float: float,
@@ -161,7 +96,7 @@ class Base(object):
                     continue
 
                 # Check that we understand the type
-                if col_type not in _type_map:
+                if col_type not in _TYPE_MAP:
                     raise RuntimeError(
                         "Unknown SQLAlchemy column type for ColumnProperty "
                         "%s of %s: %s" % (prp.key, cls.__name__, col_type))
@@ -217,20 +152,20 @@ class Base(object):
         cls = type(self)
 
         # Check the number of positional argument
-        if len(args) > len(cls._col_props):
+        if len(args) > len(self._col_props):
             raise TypeError(
                 "%s.__init__() takes at most %d positional arguments (%d "
-                "given)" % (cls.__name__, len(cls._col_props), len(args)))
+                "given)" % (cls.__name__, len(self._col_props), len(args)))
 
         # Copy the positional arguments into the keyword ones
-        for arg, prp in zip(args, cls._col_props):
+        for arg, prp in zip(args, self._col_props):
             if prp.key in kwargs:
                 raise TypeError(
                     "%s.__init__() got multiple values for keyword "
                     "argument '%s'" % (cls.__name__, prp.key))
             kwargs[prp.key] = arg
 
-        for prp in cls._col_props:
+        for prp in self._col_props:
             col = prp.columns[0]
             col_type = type(col.type)
 
@@ -261,15 +196,16 @@ class Base(object):
                 else:
                     # TODO col_type.python_type contains the type that
                     # SQLAlchemy thinks is more appropriate. We could
-                    # use that and drop _type_map...
-                    if not isinstance(val, _type_map[col_type]):
+                    # use that and drop _TYPE_MAP...
+                    if not isinstance(val, _TYPE_MAP[col_type]):
                         raise TypeError(
                             "%s.__init__() got a '%s' for keyword argument "
-                            "'%s', which requires a '%s'" % (cls.__name__,
-                            type(val), prp.key, _type_map[col_type]))
+                            "'%s', which requires a '%s'" %
+                            (cls.__name__, type(val), prp.key,
+                             _TYPE_MAP[col_type]))
                     setattr(self, prp.key, val)
 
-        for prp in cls._rel_props:
+        for prp in self._rel_props:
             if prp.key not in kwargs:
                 # If the property isn't given we leave the default
                 # value instead of explictly setting it ourself.
@@ -319,77 +255,11 @@ class Base(object):
 
         """
         cls = type(self)
-        args = list(getattr(self, prp.key) for prp in cls._col_props)
+        args = list(getattr(self, prp.key) for prp in self._col_props)
         return cls(*args)
 
 
-Base = declarative_base(db, cls=Base, constructor=None)
+Base = declarative_base(engine, cls=Base, constructor=None)
 
 
 metadata = Base.metadata
-
-
-def get_psycopg2_connection(session):
-    """Return the psycopg2 connection object associated to the given
-    SQLAlchemy Session. This, of course, means that the Session must
-    be using psycopg2 as backend. Undefined behavior will happen if
-    this precondition is not satisfied.
-
-    Moreover, all psycopg2-specific code in CMS is supposed to invoke
-    this method.
-
-    session (Session): a SQLAlchemy Session.
-
-    return (connection): the associated psycopg2 connection object.
-
-    """
-    return session.connection().connection
-
-
-def drop_everything():
-    """Drop everything in the database. In theory metadata.drop_all()
-    should do the same; in practice, it isn't able to handle cases
-    when the data present in the database doesn't fit the schema known
-    by metadata.
-
-    This method is psycopg2 and PostgreSQL-specific. Technically, what
-    it does is to drop the schema "public", create it again and fix
-    corresponding privileges. This doesn't work if for some reason the
-    database was set up to use a different schema: this situation is
-    strange enough for us to just ignore it.
-
-    """
-    session = Session()
-
-    connection = get_psycopg2_connection(session)
-    cursor = connection.cursor()
-
-    # See
-    # http://stackoverflow.com/questions/3327312/drop-all-tables-in-postgresql
-    from psycopg2 import ProgrammingError
-    try:
-        cursor.execute("DROP SCHEMA public CASCADE")
-    except ProgrammingError:
-        logger.error("Couldn't drop schema \"public\", probably you don't " \
-                         "have the privileges. Please execute as database " \
-                         "superuser: \"ALTER SCHEMA public OWNER TO " \
-                         "<cmsuser>;\" and run again")
-        sys.exit(1)
-    cursor.execute("CREATE SCHEMA public")
-
-    # But we also have to drop the large objects
-    try:
-        cursor.execute("SELECT oid FROM pg_largeobject_metadata")
-    except ProgrammingError:
-        logger.error("Couldn't list large objects, probably you don't have " \
-                         "the privileges. Please execute as database " \
-                         "superuser: \"GRANT SELECT ON pg_largeobject TO " \
-                         "<cmsuser>;\" and run again")
-        sys.exit(1)
-    rows = cursor.fetchall()
-    for row in rows:
-        cursor.execute("SELECT lo_unlink(%d)" % (row[0]))
-
-    cursor.close()
-
-    connection.commit()

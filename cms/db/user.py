@@ -20,10 +20,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""User-related database interface for SQLAlchemy. Not to be used
-directly (import it from SQLAlchemyAll).
+"""User-related database interface for SQLAlchemy.
 
 """
+
+from __future__ import absolute_import
 
 from datetime import timedelta
 
@@ -32,21 +33,17 @@ from sqlalchemy.types import Boolean, Integer, String, DateTime, \
     Interval
 from sqlalchemy.orm import relationship, backref
 
-from cms.db.SQLAlchemyUtils import Base
-from cms.db.Contest import Contest
-
-from cmscommon.DateTime import make_datetime, make_timestamp
+from . import Base, Contest
 
 
 def generate_random_password():
     import random
     chars = "abcdefghijklmnopqrstuvwxyz"
-    return "".join([random.choice(chars) for unused_i in xrange(6)])
+    return "".join([random.choice(chars) for _ in xrange(6)])
 
 
 class User(Base):
-    """Class to store a 'user participating in a contest'. Not to be
-    used directly (import it from SQLAlchemyAll).
+    """Class to store a 'user participating in a contest'.
 
     """
     # TODO: we really need to split this as a user (as in: not paired
@@ -146,12 +143,12 @@ class User(Base):
     # user_tests (list of UserTest objects)
 
     # Moreover, we have the following methods.
-    # get_tokens (defined in SQLAlchemyAll)
+    # get_tokens (defined in __init__.py)
 
 
 class Message(Base):
     """Class to store a private message from the managers to the
-    user. Not to be used directly (import it from SQLAlchemyAll).
+    user.
 
     """
     __tablename__ = 'messages'
@@ -191,8 +188,7 @@ class Message(Base):
 
 class Question(Base):
     """Class to store a private question from the user to the
-    managers, and its answer. Not to be used directly (import it from
-    SQLAlchemyAll).
+    managers, and its answer.
 
     """
     __tablename__ = 'questions'

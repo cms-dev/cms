@@ -21,10 +21,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Task-related database interface for SQLAlchemy. Not to be used
-directly (import it from SQLAlchemyAll).
+"""Task-related database interface for SQLAlchemy.
 
 """
+
+from __future__ import absolute_import
 
 from datetime import timedelta
 
@@ -34,14 +35,12 @@ from sqlalchemy.types import Boolean, Integer, Float, String, Interval
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.orderinglist import ordering_list
 
-from cms.db.SQLAlchemyUtils import Base
-from cms.db.Contest import Contest
-from cms.db.SmartMappedCollection import smart_mapped_collection
+from . import Base, Contest
+from .smartmappedcollection import smart_mapped_collection
 
 
 class Task(Base):
-    """Class to store a task. Not to be used directly (import it from
-    SQLAlchemyAll).
+    """Class to store a task.
 
     """
     __tablename__ = 'tasks'
@@ -194,8 +193,7 @@ class Task(Base):
 
 
 class Statement(Base):
-    """Class to store a translation of the task statement. Not
-    to be used directly (import it from SQLAlchemyAll).
+    """Class to store a translation of the task statement.
 
     """
     __tablename__ = 'statements'
@@ -239,8 +237,7 @@ class Statement(Base):
 
 class Attachment(Base):
     """Class to store additional files to give to the user together
-    with the statement of the task. Not to be used directly (import it
-    from SQLAlchemyAll).
+    with the statement of the task.
 
     """
     __tablename__ = 'attachments'
@@ -279,8 +276,7 @@ class Attachment(Base):
 class SubmissionFormatElement(Base):
     """Class to store the requested files that a submission must
     include. Filenames may include %l to represent an accepted
-    language extension. Not to be used directly (import it from
-    SQLAlchemyAll).
+    language extension.
 
     """
     __tablename__ = 'submission_format_elements'
@@ -310,8 +306,7 @@ class SubmissionFormatElement(Base):
 
 
 class Dataset(Base):
-    """Class to store the information about a data set. Not to be used
-    directly (import it from SQLAlchemyAll).
+    """Class to store the information about a data set.
 
     """
     __tablename__ = 'datasets'
@@ -390,8 +385,7 @@ class Dataset(Base):
 
 class Manager(Base):
     """Class to store additional files needed to compile or evaluate a
-    submission (e.g., graders). Not to be used directly (import it from
-    SQLAlchemyAll).
+    submission (e.g., graders).
 
     """
     __tablename__ = 'managers'
@@ -428,8 +422,7 @@ class Manager(Base):
 
 
 class Testcase(Base):
-    """Class to store the information about a testcase. Not to be used
-    directly (import it from SQLAlchemyAll).
+    """Class to store the information about a testcase.
 
     """
     __tablename__ = 'testcases'
