@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,6 +20,7 @@
 import simplejson as json
 import os
 import sys
+import pkg_resources
 
 
 class Config(object):
@@ -55,7 +56,7 @@ class Config(object):
             sys.argv[0] != '/usr/bin/python2' and \
             sys.argv[0] != '/usr/bin/python'
 
-        self.web_dir = os.path.join(os.path.dirname(__file__), "static")
+        self.web_dir = pkg_resources.resource_filename("cmsranking", "static")
         if self.installed:
             self.log_dir = os.path.join("/", "var", "local", "log",
                                         "cms", "ranking")

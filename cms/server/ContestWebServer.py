@@ -47,6 +47,7 @@ import traceback
 from datetime import timedelta
 from urllib import quote
 import gettext
+import pkg_resources
 
 import tornado.web
 
@@ -398,10 +399,10 @@ class ContestWebServer(WebService):
 
         parameters = {
             "login_url": "/",
-            "template_path": os.path.join(os.path.dirname(__file__),
-                                          "templates", "contest"),
-            "static_path": os.path.join(os.path.dirname(__file__),
-                                        "static"),
+            "template_path":
+                pkg_resources.resource_filename("cms.server", "templates/contest"),
+            "static_path":
+                pkg_resources.resource_filename("cms.server", "static"),
             "cookie_secret": base64.b64encode(config.secret_key),
             "debug": config.tornado_debug,
         }

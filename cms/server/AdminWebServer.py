@@ -35,6 +35,7 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
 import tornado.web
 import tornado.locale
+import pkg_resources
 
 from cms import config, logger
 from cms.io.WebGeventLibrary import WebService
@@ -285,10 +286,10 @@ class AdminWebServer(WebService):
 
         parameters = {
             "login_url": "/",
-            "template_path": os.path.join(os.path.dirname(__file__),
-                                          "templates", "admin"),
-            "static_path": os.path.join(os.path.dirname(__file__),
-                                        "static"),
+            "template_path":
+                pkg_resources.resource_filename("cms.server", "templates/admin"),
+            "static_path":
+                pkg_resources.resource_filename("cms.server", "static"),
             "cookie_secret": base64.b64encode(config.secret_key),
             "debug": config.tornado_debug,
         }
