@@ -58,8 +58,7 @@ def is_contest_id(contest_id):
 
     """
     with SessionGen(commit=False) as session:
-        contest = session.query(Contest).filter_by(id=contest_id).first()
-        return contest is not None
+        return Contest.get_from_id(contest_id, session) is not None
 
 
 def ask_for_contest(skip=None):
