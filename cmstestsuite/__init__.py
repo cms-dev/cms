@@ -288,9 +288,9 @@ def start_ranking_web_server():
 
     """
     def check(service_name, shard, contest):
-        proto, addr, port = cms_config['rankings_address'][0]
+        url = urlsplit(cms_config['rankings'][0])
         sock = socket.socket()
-        sock.connect((addr, port))
+        sock.connect((url.hostname, url.port))
         sock.close()
 
     prog = start_servicer("RankingWebServer", check, shard=None)
