@@ -697,14 +697,11 @@ def default_argument_parser(description, cls, ask_contest=None):
     if ask_contest is not None:
         if args.contest_id is not None:
             # Test if there is a contest with the given contest id.
-            from cms.db.SQLAlchemyAll import Contest, SessionGen
-            with SessionGen(commit=False) as session:
-                contest = session.query(Contest). \
-                    filter_by(id=args.contest_id).first()
-                if contest is None:
-                    print >> sys.stderr, "There is no contest " \
-                        "with the specified id. Please try again."
-                    sys.exit(1)
+            from cms.db import is_contest_id
+            if not is_contest_id(args.contest_id):
+                print >> sys.stderr, "There is no contest " \
+                    "with the specified id. Please try again."
+                sys.exit(1)
             return cls(args.shard, args.contest_id)
         else:
             return cls(args.shard, ask_contest())
