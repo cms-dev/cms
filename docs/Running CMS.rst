@@ -24,6 +24,12 @@ Moreover, you need to change the HBA (a sort of access control list for PostgreS
 
     host  database  cmsuser  192.168.0.0/24  md5
 
+Finally you have to create the database schema for CMS, by running:
+
+.. sourcecode:: bash
+
+    cmsInitDB
+
 
 Configuring CMS
 ===============

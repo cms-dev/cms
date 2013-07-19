@@ -147,13 +147,16 @@ You can verify to be in the group by issuing the command:
 Updating CMS
 ============
 
-If you were using CMS before the release of version |release|, you can update the content of your database with:
+As CMS develops, the database schema it uses to represent its data may be updated and new versions may introduce changes that are incompatible with older versions.
+
+To preserve the data stored on the database you need to dump it on the filesystem using ``cmsContestExporter`` **before you update CMS** (i.e. with the old version).
+
+You can then update CMS and reset the database schema by running:
 
 .. sourcecode:: bash
 
-    cd cms/db
-    python UpdateDB.py -l # To see which updating scripts are available.
-    python UpdateDB.py -s YYYYMMDD # To update the DB, where YYYYMMDD is
-                                   # the last date in which you created or
-                                   # updated the DB.
+    cmsDropDB
+    cmsInitDB
+
+To load the previous data back into the database you can use ``cmsContestImporter``: it will adapt the data model automatically on-the-fly (you can use ``cmsDumpUpdater`` to store the updated version back on disk and speed up future imports).
 

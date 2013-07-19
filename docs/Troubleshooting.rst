@@ -14,12 +14,7 @@ Database
 
 - *Symptom.* Exceptions regarding missing database fields or with the wrong type.
 
-  *Possible cause.* The version of CMS that created the schema in your database is different from the one you are using now. If the schema is older than the current version, you can update the schema as in :ref:`installation_updatingcms`. If this fails, and you do not care about the content of the database, the following commands will **erase all content**, clear the schema and rebuild it.
-
-.. sourcecode:: bash
-
-    python cms/db/SQLAlchemyAll.py redrop
-    python cms/db/SQLAlchemyAll.py
+  *Possible cause.* The version of CMS that created the schema in your database is different from the one you are using now. If the schema is older than the current version, you can update the schema as in :ref:`installation_updatingcms`.
 
 
 Servers
