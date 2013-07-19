@@ -160,15 +160,11 @@ class ContestImporter:
         if self.drop:
             logger.info("Dropping and recreating the database.")
             try:
-                drop_db()
-            except sqlalchemy.exc.OperationalError as error:
+                if not (drop_db() and init_db()):
+                    return False
+            except Exception as error:
                 logger.critical("Unable to access DB.\n%r" % error)
                 return False
-        try:
-            init_db()
-        except sqlalchemy.exc.OperationalError as error:
-            logger.critical("Unable to access DB.\n%r" % error)
-            return False
 
         with SessionGen(commit=False) as session:
 

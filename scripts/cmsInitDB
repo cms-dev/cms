@@ -17,17 +17,27 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Script to initialize the database schema used by CMS.
+
+It will not check the current status of the DB and we therefore suggest
+to run it only on an blank DB (we don't guarantee this script to be
+idempotent).
+
+"""
+
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
 gevent.monkey.patch_all()
 
+import sys
+import argparse
+
 from cms.db import init_db
 
 
-def main():
-    init_db()
-
-
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    args = parser.parse_args()
+
+    sys.exit(init_db())

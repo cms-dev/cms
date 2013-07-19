@@ -58,7 +58,7 @@ def drop_db():
                      "have the privileges. Please execute as database "
                      "superuser: \"ALTER SCHEMA public OWNER TO %s;\" and "
                      "run again" % make_url(config.database).username)
-        sys.exit(1)
+        return False
     cursor.execute("CREATE SCHEMA public")
 
     # But we also have to drop the large objects
@@ -69,7 +69,7 @@ def drop_db():
                      "the privileges. Please execute as database superuser: "
                      "\"GRANT SELECT ON pg_largeobject TO %s;\" and run "
                      "again" % make_url(config.database).username)
-        sys.exit(1)
+        return False
     rows = cursor.fetchall()
     for row in rows:
         cursor.execute("SELECT lo_unlink(%d)" % (row[0]))

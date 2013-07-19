@@ -17,17 +17,28 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Script to drop the database data and schema used by CMS.
+
+It will work with a database initialized and populated by any version
+of CMS as it uses (PostgreSQL-specific) SQL queries to drop the whole
+database. This also means that other data in the same database used
+by CMS will be deleted as well.
+
+"""
+
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
 gevent.monkey.patch_all()
 
+import sys
+import argparse
+
 from cms.db import drop_db
 
 
-def main():
-    drop_db()
-
-
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description=__doc__)
+    args = parser.parse_args()
+
+    sys.exit(drop_db())

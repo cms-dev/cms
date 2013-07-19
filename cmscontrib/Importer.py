@@ -71,15 +71,11 @@ class Importer:
         logger.info("Creating database structure.")
         if self.drop:
             try:
-                drop_db()
-            except sqlalchemy.exc.OperationalError as error:
+                if not (drop_db() and init_db()):
+                    return False
+            except Exception as error:
                 logger.critical("Unable to access DB.\n%r" % error)
                 return False
-        try:
-            init_db()
-        except sqlalchemy.exc.OperationalError as error:
-            logger.critical("Unable to access DB.\n%r" % error)
-            return False
         return True
 
     def do_import(self):
