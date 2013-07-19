@@ -30,151 +30,12 @@ services the scores, via http requests.
 
 """
 
-import simplejson as json
-import base64
-import string
-
-import gevent
-import gevent.queue
-from gevent import socket
-from gevent import ssl
-
-import requests
-import requests.exceptions
-from urlparse import urljoin
-
-from cms import config, logger
+from cms import logger
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
-from cms.db import SessionGen, Submission, Contest, Dataset, Task
+from cms.db import SessionGen, Submission, Contest, Dataset
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submission_results, get_datasets_to_judge
-from cmscommon.DateTime import make_timestamp
-
-
-class CannotSendError(Exception):
-    pass
-
-
-def encode_id(entity_id):
-    """Encode the id using only A-Za-z0-9_.
-
-    entity_id (string): the entity id to encode.
-    return (string): encoded entity id.
-
-    """
-    encoded_id = ""
-    for char in entity_id.encode('utf-8'):
-        if char not in string.ascii_letters + string.digits:
-            encoded_id += "_%x" % ord(char)
-        else:
-            encoded_id += char
-    return encoded_id
-
-
-def safe_put_data(ranking, resource, data, operation):
-    """Send some data to ranking using a PUT request.
-
-    ranking (str): the URL of ranking server.
-    resource (str): the relative path of the entity.
-    data (dict): the data to json-encode and send.
-    operation (str): a human-readable description of the operation
-                     we're performing (to produce log messages).
-
-    raise CannotSendError in case of communication errors.
-
-    """
-    try:
-        url = urljoin(ranking, resource)
-        res = requests.put(url, json.dumps(data),
-                           verify=config.https_certfile)
-    except requests.exceptions.RequestException as error:
-        logger.warning(
-            "%s while %s: %s" % (type(error).__name__, operation, error))
-        raise CannotSendError
-    if res.status_code != 200:
-        logger.warning("Status %s while %s." % (res.status_code, operation))
-        raise CannotSendError
-
-
-class RankingProxy(object):
-    # We use a single queue for all the data we have to send to the
-    # ranking so we need to distingush the type of each item.
-    CONTEST_TYPE = 0
-    TASK_TYPE = 1
-    TEAM_TYPE = 2
-    USER_TYPE = 3
-    SUBMISSION_TYPE = 4
-    SUBCHANGE_TYPE = 5
-
-    # The resource paths for the different entity types, relative to
-    # the self.ranking URL.
-    RESOURCE_PATHS = [
-        "contests",
-        "tasks",
-        "teams",
-        "users",
-        "submissions",
-        "subchanges"]
-
-    # How many different entity types we know about.
-    TYPE_COUNT = len(RESOURCE_PATHS)
-
-    # How long we wait after having failed to push data to a ranking
-    # before trying again.
-    FAILURE_WAIT = 60.0
-
-    def __init__(self, ranking):
-        self.ranking = ranking
-        self.data_queue = gevent.queue.JoinableQueue()
-
-    def run(self):
-        # The cumulative data that we will try to send to the ranking,
-        # built by combining items in the queue.
-        data = list(dict() for i in xrange(self.TYPE_COUNT))
-
-        # The number of times we will call self.data_queue.task_done()
-        # after a successful send (i.e. how many times we called .get()
-        # on the queue to build up the data we have now).
-        task_count = list(0 for i in xrange(self.TYPE_COUNT))
-
-        while True:
-            # Block until we have something to do.
-            self.data_queue.peek()
-
-            try:
-                while True:
-                    # Get other data if it's immediately available.
-                    item = self.data_queue.get_nowait()
-                    task_count[item[0]] += 1
-
-                    # Merge this item with the cumulative data.
-                    data[item[0]].update(item[1])
-            except gevent.queue.Empty:
-                pass
-
-            try:
-                for i in xrange(self.TYPE_COUNT):
-                    # Send entities of type i.
-                    if len(data[i]) > 0:
-                        # XXX We abuse the resource path as the english
-                        # (plural) name for the entity type.
-                        name = self.RESOURCE_PATHS[i]
-                        operation = \
-                            "sending %s to ranking %s" % (name, self.ranking)
-
-                        logger.debug(operation.capitalize())
-                        safe_put_data(
-                            self.ranking, "%s/" % name, data[i], operation)
-
-                        data[i].clear()
-                        for j in xrange(task_count[i]):
-                            self.data_queue.task_done()
-                        task_count[i] = 0
-
-            except CannotSendError:
-                # A log message has already been produced.
-                gevent.sleep(self.FAILURE_WAIT)
 
 
 class ScoringService(Service):
@@ -191,7 +52,7 @@ class ScoringService(Service):
 
         self.contest_id = contest_id
 
-        self.tokens_sent_to_rankings = set()
+        self.proxy_service = self.connect_to(ServiceCoord("ProxyService", 0))
 
         # If for some reason (SS switched off for a while, or broken
         # connection with ES), submissions have been left without
@@ -209,15 +70,6 @@ class ScoringService(Service):
         # score-less submissions. So we keep a set of submissions that
         # we analyzed (for scoring and for tokens).
         self.submission_results_scored = set()
-
-        # Create and spawn threads to send data to rankings.
-        self.rankings = list()
-        for ranking in config.rankings:
-            proxy = RankingProxy(ranking)
-            gevent.spawn(proxy.run)
-            self.rankings.append(proxy)
-
-        self.rankings_initialize()
 
         self.add_timeout(self.search_jobs_not_done, None,
                          ScoringService.JOBS_NOT_DONE_CHECK_TIME,
@@ -252,10 +104,6 @@ class ScoringService(Service):
                             sr_id not in self.submission_results_scored:
                         new_submission_results_to_score.add(sr_id)
 
-                if submission.tokened() and \
-                        submission.id not in self.tokens_sent_to_rankings:
-                    self.rankings_send_token(submission)
-
         new_s = len(new_submission_results_to_score)
         old_s = len(self.submission_results_to_score)
         logger.info("Submissions found to score: %d." % new_s)
@@ -285,7 +133,7 @@ class ScoringService(Service):
         to_score_now = to_score if to_score < 4 else 4
         logger.info("Old submission yet to score: %s." % to_score)
 
-        for unused_i in xrange(to_score_now):
+        for _ in xrange(to_score_now):
             submission_id, dataset_id = self.submission_results_to_score.pop()
             self.new_evaluation(submission_id, dataset_id)
         if to_score - to_score_now > 0:
@@ -294,117 +142,6 @@ class ScoringService(Service):
         logger.info("Finished loading old submissions.")
         self.scoring_old_submission = False
         return False
-
-    def rankings_initialize(self):
-        """Send to all the rankings all the data that are supposed to be
-        sent before the contest: contest, users, tasks. No support for
-        teams, flags and faces.
-
-        """
-        logger.info("Initializing rankings.")
-
-        with SessionGen(commit=False) as session:
-            contest = Contest.get_from_id(self.contest_id, session)
-
-            if contest is None:
-                logger.error("Received request for unexistent contest "
-                             "id %s." % self.contest_id)
-                raise KeyError
-
-            contest_id = encode_id(contest.name)
-            contest_data = {
-                "name": contest.description,
-                "begin": int(make_timestamp(contest.start)),
-                "end": int(make_timestamp(contest.stop)),
-                "score_precision": contest.score_precision}
-
-            users = dict((encode_id(user.username),
-                          {"f_name": user.first_name,
-                           "l_name": user.last_name,
-                           "team": None})
-                         for user in contest.users
-                         if not user.hidden)
-
-            tasks = dict((encode_id(task.name),
-                          {"name": task.title,
-                           "contest": encode_id(contest.name),
-                           "max_score": 100.0,
-                           "score_precision": task.score_precision,
-                           "extra_headers": [],
-                           "order": task.num,
-                           "short_name": task.name})
-                         for task in contest.tasks)
-
-        for ranking in self.rankings:
-            ranking.data_queue.put((ranking.CONTEST_TYPE,
-                                    {contest_id: contest_data}))
-            ranking.data_queue.put((ranking.USER_TYPE, users))
-            ranking.data_queue.put((ranking.TASK_TYPE, tasks))
-
-    def rankings_send_score(self, submission):
-        submission_result = submission.get_result()
-
-        # Data to send to remote rankings.
-        submission_id = str(submission.id)
-        submission_data = {
-            "user": encode_id(submission.user.username),
-            "task": encode_id(submission.task.name),
-            "time": int(make_timestamp(submission.timestamp))}
-
-        subchange_id = \
-            "%d%ss" % (make_timestamp(submission.timestamp), submission_id)
-        subchange_data = {
-            "submission": submission_id,
-            "time": int(make_timestamp(submission.timestamp))}
-
-        # XXX This check is probably useless.
-        if submission_result is not None and submission_result.scored():
-            # We're sending the unrounded score to RWS
-            subchange_data["score"] = submission_result.score
-            subchange_data["extra"] = \
-                json.loads(submission_result.ranking_score_details)
-
-        # Adding operations to the queue.
-        for ranking in self.rankings:
-            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
-                                    {submission_id: submission_data}))
-            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
-                                    {subchange_id: subchange_data}))
-
-    def rankings_send_token(self, submission):
-        # Data to send to remote rankings.
-        submission_id = str(submission.id)
-        submission_data = {
-            "user": encode_id(submission.user.username),
-            "task": encode_id(submission.task.name),
-            "time": int(make_timestamp(submission.timestamp))}
-
-        subchange_id = \
-            "%d%st" % (make_timestamp(submission.token.timestamp), submission_id)
-        subchange_data = {
-            "submission": submission_id,
-            "time": int(make_timestamp(submission.token.timestamp)),
-            "token": True}
-
-        # Adding operations to the queue.
-        for ranking in self.rankings:
-            ranking.data_queue.put((ranking.SUBMISSION_TYPE,
-                                    {submission_id: submission_data}))
-            ranking.data_queue.put((ranking.SUBCHANGE_TYPE,
-                                    {subchange_id: subchange_data}))
-
-        self.tokens_sent_to_rankings.add(submission.id)
-
-    @rpc_method
-    def reinitialize(self):
-        """Inform the service that something in the data of the
-        contest has changed (users, tasks, the contest itself) and we
-        need to do it over again. This should be almost like
-        restarting the service.
-
-        """
-        logger.info("Reinitializing rankings.")
-        self.rankings_initialize()
 
     @rpc_method
     def new_evaluation(self, submission_id, dataset_id):
@@ -470,32 +207,8 @@ class ScoringService(Service):
 
             # If dataset is the active one, update RWS.
             if dataset is submission.task.active_dataset:
-                self.rankings_send_score(submission)
-
-    @rpc_method
-    def submission_tokened(self, submission_id):
-        """This RPC inform ScoringService that the user has played the
-        token on a submission.
-
-        submission_id (int): the id of the submission that changed.
-        timestamp (int): the time of the token.
-
-        """
-        with SessionGen(commit=False) as session:
-            submission = Submission.get_from_id(submission_id, session)
-
-            if submission is None:
-                logger.error("[submission_tokened] Received token request for "
-                             "unexistent submission id %s." % submission_id)
-                raise KeyError
-
-            if submission.user.hidden:
-                logger.info("[submission_tokened] Token for submission %d "
-                            "not sent because user is hidden." % submission_id)
-                return
-
-            # Update RWS.
-            self.rankings_send_token(submission)
+                self.proxy_service.submission_scored(
+                    submission_id=submission.id)
 
     @rpc_method
     def invalidate_submission(self,
@@ -556,25 +269,3 @@ class ScoringService(Service):
         if old_s == 0:
             self.add_timeout(self.score_old_submissions, None,
                              0.5, immediately=False)
-
-    @rpc_method
-    def dataset_updated(self, task_id):
-        """This function updates RWS with new data about a task. It should be
-        called after the live dataset of a task is changed.
-
-        task_id (int): id of the task whose dataset has changed.
-
-        """
-        with SessionGen(commit=False) as session:
-            task = Task.get_from_id(task_id, session)
-            dataset = task.active_dataset
-
-            logger.info("Dataset update for task %d (dataset now is %d)." % (
-                task.id, dataset.id))
-
-            for submission in task.submissions:
-                # Update RWS.
-                if submission.get_result().scored():
-                    self.rankings_send_score(submission)
-
-        # TODO Spawn a search_jobs_not_done.

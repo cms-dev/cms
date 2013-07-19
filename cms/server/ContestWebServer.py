@@ -418,6 +418,8 @@ class ContestWebServer(WebService):
             ServiceCoord("EvaluationService", 0))
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))
+        self.proxy_service = self.connect_to(
+            ServiceCoord("ProxyService", 0))
 
     @staticmethod
     def authorized_rpc(service, method, arguments):
@@ -1179,7 +1181,7 @@ class UseTokenHandler(BaseHandler):
 
         # Inform ScoringService and eventually the ranking that the
         # token has been played.
-        self.application.service.scoring_service.submission_tokened(
+        self.application.service.proxy_service.submission_tokened(
             submission_id=submission.id)
 
         logger.info("Token played by user %s on task %s."

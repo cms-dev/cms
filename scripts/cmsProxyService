@@ -24,15 +24,15 @@ gevent.monkey.patch_all()
 
 from cms import default_argument_parser
 from cms.db import ask_for_contest
-from cms.service.ScoringService import ScoringService
+from cms.service.ProxyService import ProxyService
 
 
 def main():
     """Parse arguments and launch service.
 
     """
-    default_argument_parser("Score computer for CMS.",
-                            ScoringService,
+    default_argument_parser("Ranking relayer for CMS.",
+                            ProxyService,
                             ask_contest=ask_for_contest).run()
 
 

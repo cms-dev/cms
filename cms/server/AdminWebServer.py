@@ -304,6 +304,8 @@ class AdminWebServer(WebService):
             ServiceCoord("EvaluationService", 0))
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))
+        self.proxy_service = self.connect_to(
+            ServiceCoord("ProxyService", 0))
         self.resource_services = []
         for i in xrange(get_service_shards("ResourceService")):
             self.resource_services.append(self.connect_to(
@@ -531,7 +533,8 @@ class AddContestHandler(BaseHandler):
         self.sql_session.add(contest)
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
+            # Create the contest on RWS.
+            self.application.service.proxy_service.reinitialize()
             self.redirect("/contest/%s" % contest.id)
         else:
             self.redirect("/contest/add")
@@ -652,7 +655,8 @@ class ContestHandler(BaseHandler):
             return
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
+            # Update the contest on RWS.
+            self.application.service.proxy_service.reinitialize()
         self.redirect("/contest/%s" % contest_id)
 
 
@@ -1034,7 +1038,7 @@ class AddDatasetHandler(BaseHandler):
             task.active_dataset = dataset
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
+            # self.application.service.scoring_service.reinitialize()
             self.redirect("/task/%s" % task_id)
         else:
             self.redirect("/add_dataset/%s/%s" % (task_id,
@@ -1102,7 +1106,8 @@ class DeleteDatasetHandler(BaseHandler):
         self.sql_session.delete(dataset)
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
+            # self.application.service.scoring_service.reinitialize()
+            pass
         self.redirect("/task/%s" % task.id)
 
 
@@ -1143,8 +1148,8 @@ class ActivateDatasetHandler(BaseHandler):
         task.active_dataset = dataset
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
-            self.application.service.scoring_service.dataset_updated(task_id=task.id)
+            # self.application.service.scoring_service.reinitialize()
+            self.application.service.proxy_service.dataset_updated(task_id=task.id)
 
             # This kicks off judging of any submissions which were previously
             # unloved, but are now part of an autojudged taskset.
@@ -1188,7 +1193,7 @@ class ToggleAutojudgeDatasetHandler(BaseHandler):
         dataset.autojudge = not dataset.autojudge
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
+            # self.application.service.scoring_service.reinitialize()
 
             # This kicks off judging of any submissions which were previously
             # unloved, but are now part of an autojudged taskset.
@@ -1258,7 +1263,7 @@ class AddTestcaseHandler(BaseHandler):
         self.sql_session.add(testcase)
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
+            # self.application.service.scoring_service.reinitialize()
             self.redirect("/task/%s" % task.id)
         else:
             self.redirect("/add_testcase/%s" % dataset_id)
@@ -1276,7 +1281,8 @@ class DeleteTestcaseHandler(BaseHandler):
         self.sql_session.delete(testcase)
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
+            # self.application.service.scoring_service.reinitialize()
+            pass
         self.redirect("/task/%s" % task.id)
 
 
@@ -1415,7 +1421,8 @@ class AddTaskHandler(BaseHandler):
         task.active_dataset = dataset
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
+            # Create the task on RWS.
+            self.application.service.proxy_service.reinitialize()
             self.redirect("/task/%s" % task.id)
         else:
             self.redirect("/add_task/%s" % contest_id)
@@ -1559,7 +1566,8 @@ class TaskHandler(BaseHandler):
             return
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
+            # Update the task on RWS.
+            self.application.service.proxy_service.reinitialize()
         self.redirect("/task/%s" % task_id)
 
 
@@ -1741,7 +1749,8 @@ class UserViewHandler(BaseHandler):
                                                     user.primary_statements)
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
+            # Update the user on RWS.
+            self.application.service.proxy_service.reinitialize()
         self.redirect("/user/%s" % user_id)
 
 
@@ -1819,7 +1828,8 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
         self.sql_session.add(user)
 
         if try_commit(self.sql_session, self):
-            self.application.service.scoring_service.reinitialize()
+            # Create the user on RWS.
+            self.application.service.proxy_service.reinitialize()
             self.redirect("/user/%s" % user.id)
         else:
             self.redirect("/add_user/%s" % contest_id)

@@ -118,6 +118,7 @@ def do_setup():
                    "scripts/cmsChecker",
                    "scripts/cmsContestWebServer",
                    "scripts/cmsAdminWebServer",
+                   "scripts/cmsProxyService",
 
                    "scripts/cmsRankingWebServer",
 
