@@ -22,7 +22,10 @@
 
 from __future__ import absolute_import
 
+import psycopg2
+
 from sqlalchemy.orm import sessionmaker, scoped_session
+from sqlalchemy.engine.url import make_url
 
 from cms import config
 
@@ -93,15 +96,36 @@ class SessionGen:
 def get_psycopg2_connection(session):
     """Return the psycopg2 connection object associated to the given
     SQLAlchemy Session. This, of course, means that the Session must
-    be using psycopg2 as backend. Undefined behavior will happen if
-    this precondition is not satisfied.
+    be using psycopg2 as backend.
+
+    Since the connection will be returned to the SQLAlchemy pool after
+    use its "behavior" cannot be changed (e.g. by setting autocommit).
+    Please use custom_psycopg2_connection in those cases.
 
     Moreover, all psycopg2-specific code in CMS is supposed to invoke
-    this method.
+    this method or custom_psycopg2_connection.
 
     session (Session): a SQLAlchemy Session.
 
     return (connection): the associated psycopg2 connection object.
 
     """
-    return session.connection().connection
+    sa_conn = session.connection()
+    assert sa_conn.dialect.driver == "psycopg2"
+
+    return sa_conn.connection
+
+
+def custom_psycopg2_connection(**kwargs):
+    database_url = make_url(config.database)
+    assert database_url.get_dialect().driver == "psycopg2"
+
+    database_url.query.update(kwargs)
+
+    return psycopg2.connect(
+        host=database_url.host,
+        port=database_url.port,
+        user=database_url.username,
+        password=database_url.password,
+        database=database_url.database,
+        **database_url.query)

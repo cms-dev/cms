@@ -24,9 +24,12 @@ from __future__ import absolute_import
 
 import sys
 
-from cms import logger
+from psycopg2 import ProgrammingError
+from sqlalchemy.engine.url import make_url
 
-from . import metadata, Session, get_psycopg2_connection
+from cms import config, logger
+
+from . import custom_psycopg2_connection
 
 
 def drop_db():
@@ -42,21 +45,19 @@ def drop_db():
     strange enough for us to just ignore it.
 
     """
-    session = Session()
-
-    connection = get_psycopg2_connection(session)
+    connection = custom_psycopg2_connection()
+    connection.autocommit = True
     cursor = connection.cursor()
 
     # See
     # http://stackoverflow.com/questions/3327312/drop-all-tables-in-postgresql
-    from psycopg2 import ProgrammingError
     try:
         cursor.execute("DROP SCHEMA public CASCADE")
     except ProgrammingError:
-        logger.error("Couldn't drop schema \"public\", probably you don't " \
-                         "have the privileges. Please execute as database " \
-                         "superuser: \"ALTER SCHEMA public OWNER TO " \
-                         "<cmsuser>;\" and run again")
+        logger.error("Couldn't drop schema \"public\", probably you don't "
+                     "have the privileges. Please execute as database "
+                     "superuser: \"ALTER SCHEMA public OWNER TO %s;\" and "
+                     "run again" % make_url(config.database).username)
         sys.exit(1)
     cursor.execute("CREATE SCHEMA public")
 
@@ -64,15 +65,13 @@ def drop_db():
     try:
         cursor.execute("SELECT oid FROM pg_largeobject_metadata")
     except ProgrammingError:
-        logger.error("Couldn't list large objects, probably you don't have " \
-                         "the privileges. Please execute as database " \
-                         "superuser: \"GRANT SELECT ON pg_largeobject TO " \
-                         "<cmsuser>;\" and run again")
+        logger.error("Couldn't list large objects, probably you don't have "
+                     "the privileges. Please execute as database superuser: "
+                     "\"GRANT SELECT ON pg_largeobject TO %s;\" and run "
+                     "again" % make_url(config.database).username)
         sys.exit(1)
     rows = cursor.fetchall()
     for row in rows:
         cursor.execute("SELECT lo_unlink(%d)" % (row[0]))
 
     cursor.close()
-
-    connection.commit()
