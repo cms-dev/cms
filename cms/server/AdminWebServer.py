@@ -875,13 +875,20 @@ def copy_dataset(
     sql_session (Session): the session to commit.
 
     """
-    for testcase in old_dataset.testcases.itervalues():
-        new_dataset.testcases += [testcase.clone()]
+    new_testcases = dict()
+    for old_t in old_dataset.testcases.itervalues():
+        new_t = old_t.clone()
+        new_t.dataset = new_dataset
+        new_testcases[new_t.codename] = new_t
 
     if clone_managers:
-        for manager in old_dataset.managers.itervalues():
-            new_dataset.managers += [manager.clone()]
+        for old_m in old_dataset.managers.itervalues():
+            new_m = old_m.clone()
+            new_m.dataset = new_dataset
 
+    sql_session.flush()
+
+    new_results = list()
     if clone_results:
         # We issue this query manually to optimize it: we load all
         # executables and evaluations at once instead of having SA
@@ -891,30 +898,35 @@ def copy_dataset(
         old_results = \
             sql_session.query(SubmissionResult)\
                        .filter(SubmissionResult.dataset == old_dataset)\
+                       .options(joinedload(SubmissionResult.submission))\
                        .options(joinedload(SubmissionResult.executables))\
                        .options(joinedload(SubmissionResult.evaluations)).all()
-        new_results = list()
 
         for old_sr in old_results:
             # Create the submission result.
             new_sr = old_sr.clone()
+            new_sr.submission = old_sr.submission
+            new_sr.dataset = new_dataset
 
             # Create executables.
-            for e in old_sr.executables.itervalues():
-                new_sr.executables += [e.clone()]
+            for old_e in old_sr.executables.itervalues():
+                new_e = old_e.clone()
+                new_e.submission_result = new_sr
 
             # Create evaluations.
-            for e in old_sr.evaluations:
-                new_sr.evaluations += [e.clone()]
-
-            new_sr.dataset = new_dataset
+            for old_e in old_sr.evaluations:
+                new_e = old_e.clone()
+                new_e.submission_result = new_sr
+                new_e.testcase = new_testcases[old_e.codename]
 
             # We need to keep a reference to the object to prevent it
             # from being deleted (as SQLAlchemy's Session holds just a
             # weak reference...).
             new_results += [new_sr]
 
-    session.flush()
+    sql_session.flush()
+
+    return new_results
 
 
 class AddDatasetHandler(BaseHandler):
@@ -1012,9 +1024,9 @@ class AddDatasetHandler(BaseHandler):
             # information too.
             clone_results = bool(self.get_argument("clone_results", False))
             clone_managers = bool(self.get_argument("clone_managers", False))
-            copy_dataset(dataset, original_dataset,
-                         clone_results, clone_managers,
-                         self.sql_session)
+            new_results = copy_dataset(
+                dataset, original_dataset, clone_results, clone_managers,
+                self.sql_session)
 
         # If the task does not yet have an active dataset, make this
         # one active.
