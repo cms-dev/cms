@@ -753,12 +753,12 @@ var DataStore = new function () {
             //     old_score <= user2["global"] < new_score
             if (old_rank >= user2["rank"] && user2["global"] < new_score) {
                 user2["rank"] += 1;
-                self.rank_events.fire(u2_id, user2);
+                self.rank_events.fire(u2_id, user2, +1);
             // this condition is equivalent to
             //     new_score <= user2["global"] < old_score
             } else if (new_score <= user2["global"] && user2["rank"] > old_rank) {
                 user2["rank"] -= 1;
-                self.rank_events.fire(u2_id, user2);
+                self.rank_events.fire(u2_id, user2, -1);
             }
             if (user2["global"] > new_score) {
                 new_rank += 1;

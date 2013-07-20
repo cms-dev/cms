@@ -52,6 +52,24 @@ var Overview = new function () {
         });
 
 
+        DataStore.user_update.add(function (key, old_data, data) {
+            if (old_data["markers"]) {
+                data["markers"] = old_data["markers"];
+                delete old_data["markers"];
+            }
+            if (old_data["marker_c_anim"]) {
+                data["marker_c_anim"] = old_data["marker_c_anim"];
+                delete old_data["marker_c_anim"];
+            }
+            if (old_data["marker_u_anim"]) {
+                data["marker_u_anim"] = old_data["marker_u_anim"];
+                delete old_data["marker_u_anim"];
+            }
+            if ($.inArray(old_data, self.user_list) != -1) {
+                self.user_list.splice($.inArray(old_data, self.user_list), 1, data);
+            }
+        });
+
         DataStore.score_events.add(self.score_handler);
         DataStore.rank_events.add(self.rank_handler);
         DataStore.select_events.add(self.select_handler);
