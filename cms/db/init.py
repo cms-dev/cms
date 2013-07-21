@@ -24,3 +24,5 @@ from . import metadata
 
 def init_db():
     metadata.create_all()
+
+    return True

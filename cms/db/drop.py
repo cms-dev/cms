@@ -75,3 +75,5 @@ def drop_db():
         cursor.execute("SELECT lo_unlink(%d)" % (row[0]))
 
     cursor.close()
+
+    return True
