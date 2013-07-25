@@ -29,7 +29,7 @@ from __future__ import absolute_import
 from datetime import timedelta
 
 from sqlalchemy.schema import Column, ForeignKey, UniqueConstraint
-from sqlalchemy.types import Boolean, Integer, String, DateTime, \
+from sqlalchemy.types import Boolean, Integer, String, Unicode, DateTime, \
     Interval
 from sqlalchemy.orm import relationship, backref
 
@@ -60,29 +60,29 @@ class User(Base):
 
     # Real name (human readable) of the user.
     first_name = Column(
-        String,
+        Unicode,
         nullable=False)
     last_name = Column(
-        String,
+        Unicode,
         nullable=False)
 
     # Username and password to log in the CWS.
     username = Column(
-        String,
+        Unicode,
         nullable=False)
     password = Column(
-        String,
+        Unicode,
         nullable=False,
         default=generate_random_password)
 
     # Email for any communications in case of remote contest.
     email = Column(
-        String,
+        Unicode,
         nullable=True)
 
     # User can log in CWS only from this ip.
     ip = Column(
-        String,
+        Unicode,
         nullable=True)
 
     # A hidden user is used only for debugging purpose.
@@ -119,7 +119,7 @@ class User(Base):
     # server. This value has to be a string like "Europe/Rome",
     # "Australia/Sydney", "America/New_York", etc.
     timezone = Column(
-        String,
+        Unicode,
         nullable=True)
 
     # Starting time: for contests where every user has at most x hours
@@ -165,10 +165,10 @@ class Message(Base):
 
     # Subject and body of the message.
     subject = Column(
-        String,
+        Unicode,
         nullable=False)
     text = Column(
-        String,
+        Unicode,
         nullable=False)
 
     # User (id and object) owning the message.
@@ -205,10 +205,10 @@ class Question(Base):
 
     # Subject and body of the question.
     subject = Column(
-        String,
+        Unicode,
         nullable=False)
     text = Column(
-        String,
+        Unicode,
         nullable=False)
 
     # Time the reply was sent.
@@ -225,10 +225,10 @@ class Question(Base):
     # Short (as in 'chosen amongst some predetermined choices') and
     # long answer.
     reply_subject = Column(
-        String,
+        Unicode,
         nullable=True)
     reply_text = Column(
-        String,
+        Unicode,
         nullable=True)
 
     # User (id and object) owning the question.

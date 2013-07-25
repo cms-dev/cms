@@ -26,7 +26,7 @@ from __future__ import absolute_import
 
 from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
     UniqueConstraint
-from sqlalchemy.types import Integer, Float, String, DateTime
+from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
 
 from . import Base, User, Task, Dataset
@@ -239,7 +239,7 @@ class UserTestResult(Base):
     # String containing output from the sandbox, and the compiler
     # stdout and stderr.
     compilation_text = Column(
-        String,
+        Unicode,
         nullable=True)
 
     # Number of attempts of compilation.

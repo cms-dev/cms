@@ -30,7 +30,7 @@ from sqlalchemy.orm.session import object_session
 from sqlalchemy.orm import \
     class_mapper, object_mapper, ColumnProperty, RelationshipProperty
 from sqlalchemy.types import \
-    Boolean, Integer, Float, String, DateTime, Interval
+    Boolean, Integer, Float, String, Unicode, DateTime, Interval
 
 import six
 
@@ -41,7 +41,8 @@ _TYPE_MAP = {
     Boolean: bool,
     Integer: six.integer_types,
     Float: float,
-    String: six.string_types,  # XXX unicode, bytes or both?
+    String: six.string_types, # TODO Use six.binary_type.
+    Unicode: six.string_types, # TODO Use six.text_type.
     DateTime: datetime,
     Interval: timedelta,
 }

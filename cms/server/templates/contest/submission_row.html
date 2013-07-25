@@ -87,7 +87,7 @@
             {% if s.language is not None %}
                 {% set filename = re.sub("\.%l$", ".%s" % s.language, filename) %}
             {% end %}
-        <a class="btn" href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/submissions/{{ s_idx }}/files/{{ quote(filename, safe='') }}">
+        <a class="btn" href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/{{ s_idx }}/files/{{ encode_for_url(filename) }}">
             {{ _("Download") }}
         </a>
         {% else %}
@@ -105,7 +105,7 @@
                     {% end %}
                 {% end %}
                 <li>
-                    <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/submissions/{{ s_idx }}/files/{{ quote(filename, safe='') }}">
+                    <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/{{ s_idx }}/files/{{ encode_for_url(filename) }}">
                         {{ filename }}
                     </a>
                 </li>
@@ -121,7 +121,7 @@
         {% else %}
             {% comment TODO If the expiration or generation time are greater than valid_phase_end they "don't exist". It's useless to show "Wait..." in those cases. %}
             {% if can_play_token and not need_to_wait %}
-        <form action="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/submissions/{{ s_idx }}/token" method="POST">
+        <form action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submissions/{{ s_idx }}/token" method="POST">
             <button type="submit" class="btn btn-warning">{{ _("Play!") }}</button>
         </form>
             {% elif (can_play_token and need_to_wait) or (not can_play_token and tokens_info[1] is not None) %}

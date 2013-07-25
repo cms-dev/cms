@@ -1,8 +1,7 @@
 {% import re %}
 {% import time %}
-{% from urllib import quote %}
-{% import simplejson as json %}
-{% from cms.server import format_amount_of_time, format_time, format_datetime, format_datetime_smart, get_score_class %}
+{% import json %}
+{% from cms.server import format_amount_of_time, format_time, format_datetime, format_datetime_smart, get_score_class, encode_for_url %}
 {% from cmscommon.DateTime import make_timestamp %}
 <!DOCTYPE html>
 <html>
@@ -154,11 +153,11 @@ $(document).ready(function () {
                             <li class="nav-header">
                                 {{ t_iter.name }}
                             </li>
-                            <li{% if request.path == '/tasks/%s/description' %  quote(t_iter.name, safe='') %} class="active"{% end %}>
-                                <a href="{{ url_root }}/tasks/{{ quote(t_iter.name, safe='') }}/description">{{ _("Statement") }}</a>
+                            <li{% if request.path == '/tasks/%s/description' % encode_for_url(t_iter.name) %} class="active"{% end %}>
+                                <a href="{{ url_root }}/tasks/{{ encode_for_url(t_iter.name) }}/description">{{ _("Statement") }}</a>
                             </li>
-                            <li{% if request.path == '/tasks/%s/submissions' %  quote(t_iter.name, safe='') %} class="active"{% end %}>
-                                <a href="{{ url_root }}/tasks/{{ quote(t_iter.name, safe='') }}/submissions">{{ _("Submissions") }}</a>
+                            <li{% if request.path == '/tasks/%s/submissions' % encode_for_url(t_iter.name) %} class="active"{% end %}>
+                                <a href="{{ url_root }}/tasks/{{ encode_for_url(t_iter.name) }}/submissions">{{ _("Submissions") }}</a>
                             </li>
         {% end %}
     {% end %}

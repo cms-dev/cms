@@ -36,7 +36,7 @@ TODO:
 
 import os
 import shutil
-import simplejson as json
+import json
 import sys
 import tempfile
 import time

@@ -29,6 +29,7 @@ import time
 
 import tarfile
 import zipfile
+from urllib import quote
 
 from functools import wraps
 from tornado.web import RequestHandler
@@ -420,6 +421,14 @@ def filter_ascii(string):
             return '*'
 
     return "".join(filter_ascii_char(c) for c in string)
+
+
+def encode_for_url(url_fragment):
+    """Encode to UTF-8 and then percent-encode a unicode string to be
+    used as an URL fragment.
+
+    """
+    return quote(url_fragment.encode('utf-8'), safe='')
 
 
 def file_handler_gen(BaseClass):

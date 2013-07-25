@@ -26,6 +26,8 @@ commit that created this same file.
 
 """
 
+from __future__ import unicode_literals
+
 
 class Updater(object):
 

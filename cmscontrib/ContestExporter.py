@@ -34,12 +34,12 @@ gevent.monkey.patch_all()
 import io
 import argparse
 import os
-import simplejson as json
+import json
 import tempfile
 import tarfile
 
 from sqlalchemy.types import \
-    Boolean, Integer, Float, String, DateTime, Interval
+    Boolean, Integer, Float, String, Unicode, DateTime, Interval
 
 from cms import logger
 from cms.db import SessionGen, Contest, Submission, UserTest, ask_for_contest
@@ -248,8 +248,11 @@ class ContestExporter:
             col_type = type(col.type)
 
             val = getattr(obj, prp.key)
-            if col_type in [Boolean, Integer, Float, String]:
+            if col_type in [Boolean, Integer, Float, Unicode]:
                 data[prp.key] = val
+            elif col_type is String:
+                data[prp.key] = \
+                    val.decode('latin1') if val is not None else None
             elif col_type is DateTime:
                 data[prp.key] = \
                     make_timestamp(val) if val is not None else None

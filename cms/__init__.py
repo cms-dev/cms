@@ -26,7 +26,7 @@
 
 import os
 import sys
-import simplejson as json
+import json
 import time
 import datetime
 import imp

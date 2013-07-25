@@ -30,7 +30,7 @@ task.
 
 """
 
-import simplejson as json
+import json
 
 from cms import logger
 

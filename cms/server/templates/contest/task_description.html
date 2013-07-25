@@ -27,7 +27,7 @@
 <div class="row statement one_statement">
     <div class="span9">
     {% for lang_code in task.statements %}
-        <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(lang_code, safe='') }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
+        <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(lang_code) }}" class="btn btn-large btn-success">{{ _("Download task statement") }}</a>
     {% end %}
     </div>
 </div>
@@ -42,7 +42,7 @@
     {% set task_primary = json.loads(task.primary_statements) %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
         {% if statement.language in task_primary %}
-        <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(statement.language, safe='') }}" class="btn btn-large btn-success">
+        <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}" class="btn btn-large btn-success">
             {% if statement.language != statement.language_name %}
                 {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}
             {% else %}
@@ -54,7 +54,7 @@
     {% set user_primary = json.loads(current_user.primary_statements).get(task.name, []) %}
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
         {% if statement.language in user_primary and statement.language not in task_primary %}
-        <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(statement.language, safe='') }}" class="btn btn-large">
+        <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}" class="btn btn-large">
             {% if statement.language != statement.language_name %}
                 {% raw _("Statement in <b>%s</b>") % escape(statement.language_name) %}
             {% else %}
@@ -69,7 +69,7 @@
             <ul>
     {% for statement in sorted(task.statements.itervalues(), key=lambda x: x.language_name) %}
                 <li>
-                    <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/statements/{{ quote(statement.language, safe='') }}">
+                    <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/statements/{{ encode_for_url(statement.language) }}">
         {% if statement.language != statement.language_name %}
             {% raw _("<b>%s</b>") % escape(statement.language_name) %}
         {% else %}
@@ -245,7 +245,7 @@
         {% end %}
         {% set file_size = handler.application.service.file_cacher.get_size(attachment.digest) %}
             <li>
-                <a href="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/attachments/{{ quote(filename, safe='') }}" class="btn">
+                <a href="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/attachments/{{ encode_for_url(filename) }}" class="btn">
             {% if type_icon is not None %}
                     <img src="{{ url_root }}/static/img/mimetypes/{{ type_icon }}.png"/>
             {% else %}

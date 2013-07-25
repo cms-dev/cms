@@ -30,7 +30,7 @@ from __future__ import absolute_import
 from datetime import timedelta
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
-from sqlalchemy.types import Integer, String, DateTime, Interval
+from sqlalchemy.types import Integer, String, Unicode, DateTime, Interval
 from sqlalchemy.orm import relationship, backref
 
 from . import Base
@@ -56,10 +56,10 @@ class Contest(Base):
     # Short name of the contest, and longer description. Both human
     # readable.
     name = Column(
-        String,
+        Unicode,
         nullable=False)
     description = Column(
-        String,
+        Unicode,
         nullable=False)
 
     # Follows the enforcement of token for any person, for all the
@@ -121,7 +121,7 @@ class Contest(Base):
     # timezone of the server. This value has to be a string like
     # "Europe/Rome", "Australia/Sydney", "America/New_York", etc.
     timezone = Column(
-        String,
+        Unicode,
         nullable=True)
 
     # Max contest time for each user in seconds.
@@ -563,10 +563,10 @@ class Announcement(Base):
         DateTime,
         nullable=False)
     subject = Column(
-        String,
+        Unicode,
         nullable=False)
     text = Column(
-        String,
+        Unicode,
         nullable=False)
 
     # Contest (id and object) owning the announcement.

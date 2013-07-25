@@ -26,6 +26,8 @@ This adapts the dump to some changes in the model introduced in commit
 
 """
 
+from __future__ import unicode_literals
+
 
 class Updater(object):
 

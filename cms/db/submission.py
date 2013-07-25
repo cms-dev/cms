@@ -29,7 +29,7 @@ from __future__ import absolute_import
 
 from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
     UniqueConstraint
-from sqlalchemy.types import Integer, Float, String, DateTime
+from sqlalchemy.types import Integer, Float, String, Unicode, DateTime
 from sqlalchemy.orm import relationship, backref
 
 from . import Base, User, Task, Dataset, Testcase
@@ -153,7 +153,7 @@ class File(Base):
 
     # Filename and digest of the submitted file.
     filename = Column(
-        String,
+        Unicode,
         nullable=False)
     digest = Column(
         String,
@@ -239,7 +239,7 @@ class SubmissionResult(Base):
     # String containing output from the sandbox, and the compiler
     # stdout and stderr.
     compilation_text = Column(
-        String,
+        Unicode,
         nullable=True)
 
     # Number of attempts of compilation.
@@ -253,7 +253,7 @@ class SubmissionResult(Base):
         Integer,
         nullable=True)
     compilation_sandbox = Column(
-        String,
+        Unicode,
         nullable=True)
 
     # Evaluation outcome (can be None = yet to evaluate, "ok" =
@@ -431,7 +431,7 @@ class Executable(Base):
 
     # Filename and digest of the generated executable.
     filename = Column(
-        String,
+        Unicode,
         nullable=False)
     digest = Column(
         String,
@@ -498,13 +498,13 @@ class Evaluation(Base):
     # ...) not necessary the points awarded, that will be computed by
     # the score type.
     outcome = Column(
-        String,
+        Unicode,
         nullable=True)
 
     # String containing output from the grader (usually "Correct",
     # "Time limit", ...).
     text = Column(
-        String,
+        Unicode,
         nullable=True)
 
     # Memory used by the evaluation, in bytes.
@@ -525,7 +525,7 @@ class Evaluation(Base):
         Integer,
         nullable=True)
     evaluation_sandbox = Column(
-        String,
+        Unicode,
         nullable=True)
 
     @property

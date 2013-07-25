@@ -31,7 +31,7 @@ from datetime import timedelta
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint, ForeignKeyConstraint
-from sqlalchemy.types import Boolean, Integer, Float, String, Interval
+from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, Interval
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.orderinglist import ordering_list
 
@@ -90,10 +90,10 @@ class Task(Base):
 
     # Short name and long human readable title of the task.
     name = Column(
-        String,
+        Unicode,
         nullable=False)
     title = Column(
-        String,
+        Unicode,
         nullable=False)
 
     # A JSON-encoded lists of strings: the language codes of the
@@ -226,7 +226,7 @@ class Statement(Base):
     # "English (United States of America)"). These codes need to be taken from
     # ISO 639-1 and ISO 3166-1 respectively.
     language = Column(
-        String,
+        Unicode,
         nullable=False)
 
     # Digest of the file.
@@ -266,7 +266,7 @@ class Attachment(Base):
 
     # Filename and digest of the provided attachment.
     filename = Column(
-        String,
+        Unicode,
         nullable=False)
     digest = Column(
         String,
@@ -301,7 +301,7 @@ class SubmissionFormatElement(Base):
 
     # Format of the given submission file.
     filename = Column(
-        String,
+        Unicode,
         nullable=False)
 
 
@@ -339,7 +339,7 @@ class Dataset(Base):
 
     # A human-readable text describing the dataset.
     description = Column(
-        String,
+        Unicode,
         nullable=False)
 
     # Whether this dataset will be automatically judged by ES and SS
@@ -414,7 +414,7 @@ class Manager(Base):
 
     # Filename and digest of the provided manager.
     filename = Column(
-        String,
+        Unicode,
         nullable=False)
     digest = Column(
         String,
@@ -451,7 +451,7 @@ class Testcase(Base):
 
     # Codename identifying the testcase.
     codename = Column(
-        String,
+        Unicode,
         nullable=False)
 
     # If the testcase outcome is going to be showed to the user (even

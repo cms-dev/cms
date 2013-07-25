@@ -28,7 +28,7 @@ import datetime
 import time
 import traceback
 
-import simplejson as json
+import json
 from random import choice
 
 

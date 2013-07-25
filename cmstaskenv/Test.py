@@ -27,7 +27,7 @@ from cms.db import Executable
 from cms.db.filecacher import FileCacher
 from cms.grading.Job import EvaluationJob
 from cms.grading.tasktypes import get_task_type
-import simplejson as json
+import json
 
 # TODO - Use a context object instead of global variables
 task = None

@@ -1,7 +1,6 @@
 setuptools>=0.6
 tornado>=2.0
 psycopg2>=2.4
-simplejson>=2.1
 sqlalchemy>=0.7
 netifaces>=0.5
 pycrypto>=2.3

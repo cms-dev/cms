@@ -22,7 +22,7 @@ import tornado.web
 
 import argparse
 import shutil
-import simplejson as json
+import json
 import functools
 import time
 from datetime import datetime

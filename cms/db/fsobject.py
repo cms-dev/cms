@@ -23,7 +23,8 @@
 
 """
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy.schema import Column
+from sqlalchemy.types import Integer, String, Unicode
 from sqlalchemy.orm.exc import NoResultFound
 
 import psycopg2
@@ -241,7 +242,7 @@ class FSObject(Base):
     # Human-readable description, primarily meant for debugging (i.e,
     # should have no semantic value from the viewpoint of CMS)
     description = Column(
-        String,
+        Unicode,
         nullable=True)
 
     def __init__(self, digest=None, loid=0, description=None):

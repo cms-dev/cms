@@ -23,7 +23,7 @@ import atexit
 import os
 import signal
 import re
-import simplejson as json
+import json
 import socket
 import subprocess
 import time

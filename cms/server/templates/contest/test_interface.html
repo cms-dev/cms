@@ -90,7 +90,7 @@ $(document).ready(function () {
 
 <div class="submit_test row">
     <div class="span5">
-        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/test" method="POST">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
             <fieldset>
 {% for idx, filename in enumerate([x.filename for x in task.submission_format] + task_type.get_user_managers(task.submission_format) + [_("input")]) %}
                 <div class="control-group">
@@ -110,7 +110,7 @@ $(document).ready(function () {
         </form>
     </div>
     <div class="span4">
-        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ quote(task.name, safe='') }}/test" method="POST">
+        <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
             <fieldset>
                 <div class="control-group">
                     <label class="control-label" for="input_zip">{{ _("submission.zip") }}</label>

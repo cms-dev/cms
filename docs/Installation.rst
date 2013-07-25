@@ -24,8 +24,6 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `gevent <http://www.gevent.org/>`_ >= 1.0;
 
-* `simplejson <https://github.com/simplejson/simplejson>`_ >= 2.1;
-
 * `SQLAlchemy <http://www.sqlalchemy.org/>`_ >= 0.7;
 
 * `libcg <http://libcg.sourceforge.net/>`_;
@@ -70,10 +68,10 @@ On Ubuntu 12.04, one will need to run the following script to satisfy all depend
 
     sudo apt-get install build-essential fpc postgresql postgresql-client \
          gettext python2.7 python-setuptools python-tornado python-psycopg2 \
-         python-simplejson python-sqlalchemy python-psutil python-netifaces \
-         python-crypto python-tz python-six iso-codes shared-mime-info \
-         stl-manual python-beautifulsoup python-mechanize python-coverage \
-         python-mock cgroup-lite python-requests
+         python-sqlalchemy python-psutil python-netifaces python-crypto \
+         python-tz python-six iso-codes shared-mime-info stl-manual \
+         python-beautifulsoup python-mechanize python-coverage python-mock \
+         cgroup-lite python-requests
 
     # Optional.
     # sudo apt-get install phppgadmin python-yaml python-sphinx
@@ -83,10 +81,10 @@ On Arch Linux, the following command will install almost all dependencies (four 
 .. sourcecode:: bash
 
     sudo pacman -S base-devel fpc postgresql postgresql-client python2 \
-         setuptools python2-tornado python2-psycopg2 python2-simplejson \
-         python2-sqlalchemy python2-psutil python2-netifaces python2-crypto \
-         python2-pytz python2-six iso-codes shared-mime-info \
-         python2-beautifulsoup3 python2-mechanize python2-requests
+         setuptools python2-tornado python2-psycopg2 python2-sqlalchemy \
+         python2-psutil python2-netifaces python2-crypto python2-pytz \
+         python2-six iso-codes shared-mime-info python2-beautifulsoup3 \
+         python2-mechanize python2-requests
 
     # Install gevent from repository.
     sudo pacman -S python2-gevent-beta

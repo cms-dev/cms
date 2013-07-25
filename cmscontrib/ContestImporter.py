@@ -34,7 +34,7 @@ gevent.monkey.patch_all()
 import io
 import os
 import argparse
-import simplejson as json
+import json
 import tempfile
 import tarfile
 import zipfile
@@ -44,7 +44,7 @@ import sqlalchemy.exc
 from sqlalchemy.orm import \
     ColumnProperty, RelationshipProperty, configure_mappers
 from sqlalchemy.types import \
-    Boolean, Integer, Float, String, DateTime, Interval
+    Boolean, Integer, Float, String, Unicode, DateTime, Interval
 
 import cms.db as class_hook
 
@@ -353,8 +353,10 @@ class ContestImporter:
             col_type = type(col.type)
 
             val = data[prp.key]
-            if col_type in [Boolean, Integer, Float, String]:
+            if col_type in [Boolean, Integer, Float, Unicode]:
                 args[prp.key] = val
+            elif col_type is String:
+                args[prp.key] = val.encode('latin1') if val is not None else None
             elif col_type is DateTime:
                 args[prp.key] = make_datetime(val) if val is not None else None
             elif col_type is Interval:
@@ -390,7 +392,7 @@ class ContestImporter:
             val = data[prp.key]
             if val is None:
                 setattr(obj, prp.key, None)
-            elif type(val) == str:
+            elif type(val) == unicode:
                 setattr(obj, prp.key, self.objs[val])
             elif type(val) == list:
                 setattr(obj, prp.key, list(self.objs[i] for i in val))

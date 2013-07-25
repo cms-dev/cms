@@ -30,7 +30,7 @@ import traceback
 
 import base64
 import re
-import simplejson as json
+import json
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
 import tornado.web

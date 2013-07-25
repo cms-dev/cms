@@ -41,7 +41,7 @@ import pickle
 import codecs
 
 import base64
-import simplejson as json
+import json
 import tempfile
 import traceback
 from datetime import timedelta
@@ -112,8 +112,8 @@ class BaseHandler(CommonRequestHandler):
         # Parse cookie.
         try:
             cookie = pickle.loads(self.get_secure_cookie("login"))
-            username = str(cookie[0])
-            password = str(cookie[1])
+            username = cookie[0]
+            password = cookie[1]
             last_update = make_datetime(cookie[2])
         except:
             self.clear_cookie("login")
