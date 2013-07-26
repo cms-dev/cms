@@ -60,16 +60,16 @@ utils.show_page("questions", 1);
           <input type="hidden" name="ref" value="/questions/{{ contest.id }}"/>
           {% if not msg.ignored %}
           <input type="hidden" name="ignore" value="yes"/>
-          <a href="#" onclick="document.ignore{{ msg.id }}.submit();">Ignore</a>
+          <a href="javascript:void(0);" onclick="document.ignore{{ msg.id }}.submit();">Ignore</a>
           {% else %}
           <input type="hidden" name="ignore" value="no"/>
-          <a href="#" onclick="document.ignore{{ msg.id }}.submit();">Unignore</a>
+          <a href="javascript:void(0);" onclick="document.ignore{{ msg.id }}.submit();">Unignore</a>
           {% end %}
         </form>
       </div>
       {% end %}
       <div class="reply_question_toggle">
-        <a href="#" onclick="return question_reply_toggle({{ msg_i }}, this);">Reply</a>
+        <a href="javascript:void(0);" onclick="return question_reply_toggle({{ msg_i }}, this);">Reply</a>
       </div>
       <div class="reply_question" >
         <hr/>
