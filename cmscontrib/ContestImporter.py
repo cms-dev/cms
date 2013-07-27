@@ -188,7 +188,8 @@ class ContestImporter:
                 # one) we try to update it.
                 # If no "_version" field is found we assume it's a v1.0
                 # export (before the new dump format was introduced).
-                dump_version = self.datas.get("_version", 0)
+                dump_version = int(self.datas.get("_version", 0))
+                self.datas["_version"] = dump_version
 
                 if dump_version < model_version:
                     logger.warning(

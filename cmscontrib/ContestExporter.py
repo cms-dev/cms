@@ -42,6 +42,7 @@ from sqlalchemy.types import \
     Boolean, Integer, Float, String, DateTime, Interval
 
 from cms import logger
+from cms.db import version as model_version
 from cms.db import SessionGen, Contest, Submission, UserTest, ask_for_contest
 from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
@@ -185,6 +186,8 @@ class ContestExporter:
 
                 # Specify the "root" of the data graph
                 data["_objects"] = ["0"]
+
+                data["_version"] = model_version
 
                 with io.open(os.path.join(export_dir,
                                           "contest.json"), "wb") as fout:
