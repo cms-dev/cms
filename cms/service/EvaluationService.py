@@ -672,6 +672,8 @@ class EvaluationService(Service):
                          .total_seconds(),
                          immediately=True)
 
+        self.immediately_dispatch = True
+
     @rpc_method
     def search_jobs_not_done(self):
         """Look in the database for submissions that have not been
@@ -750,6 +752,8 @@ class EvaluationService(Service):
             logger.info("%s jobs still pending." % pending)
         while self.dispatch_one_job():
             pass
+
+        self.immediately_dispatch = False
 
         # We want this to run forever.
         return True
@@ -937,6 +941,9 @@ class EvaluationService(Service):
             return False
         else:
             self.queue.push(job, priority, timestamp)
+            if not self.immediately_dispatch:
+                self.add_timeout(self.dispatch_jobs, None, 0)
+                self.immediately_dispatch = True
             return True
 
     @rpc_callback
@@ -966,6 +973,10 @@ class EvaluationService(Service):
         # worker.
         if self.pool.release_worker(shard):
             return
+
+        if not self.immediately_dispatch:
+            self.add_timeout(self.dispatch_jobs, None, 0)
+            self.immediately_dispatch = True
 
         job_success = True
         if error is not None:
