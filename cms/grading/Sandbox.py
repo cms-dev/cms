@@ -584,23 +584,24 @@ class StupidSandbox(SandboxBase):
         if self.stderr_file:
             os.close(stderr_fd)
 
-        # Kill the process after the wall clock time passed
-        def timed_killer(timeout, popen):
-            gevent.sleep(timeout)
-            # TODO - Here we risk to kill some other process that gets
-            # the same PID in the meantime; I don't know how to
-            # properly solve this problem
-            try:
-                popen.kill()
-            except OSError:
-                # The process had died by itself
-                pass
+        if self.wallclock_timeout:
+            # Kill the process after the wall clock time passed
+            def timed_killer(timeout, popen):
+                gevent.sleep(timeout)
+                # TODO - Here we risk to kill some other process that gets
+                # the same PID in the meantime; I don't know how to
+                # properly solve this problem
+                try:
+                    popen.kill()
+                except OSError:
+                    # The process had died by itself
+                    pass
 
-        # Setup the killer
-        full_wallclock_timeout = self.wallclock_timeout
-        if self.extra_timeout:
-            full_wallclock_timeout += self.extra_timeout
-        gevent.spawn(timed_killer, full_wallclock_timeout, self.popen)
+            # Setup the killer
+            full_wallclock_timeout = self.wallclock_timeout
+            if self.extra_timeout:
+                full_wallclock_timeout += self.extra_timeout
+            gevent.spawn(timed_killer, full_wallclock_timeout, self.popen)
 
         # If the caller wants us to wait for completion, we also avoid
         # std*** to interfere with command. Otherwise we let the
