@@ -72,7 +72,9 @@ class Importer:
         if self.drop:
             try:
                 if not (drop_db() and init_db()):
-                    logger.critical("Unexpected error.")
+                    logger.critical("Unexpected error while dropping and "
+                                    "recreating the database.",
+                                    exc_info=True)
                     return False
             except Exception as error:
                 logger.critical("Unable to access DB.\n%r" % error)
