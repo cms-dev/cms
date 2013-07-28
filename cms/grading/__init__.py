@@ -301,8 +301,9 @@ def evaluation_step_before_run(sandbox, command,
 
     """
     # Set sandbox parameters suitable for evaluation.
-    sandbox.timeout = time_limit
-    sandbox.wallclock_timeout = 2 * time_limit + 1
+    if time_limit > 0:
+        sandbox.timeout = time_limit
+        sandbox.wallclock_timeout = 2 * time_limit + 1
     sandbox.address_space = memory_limit * 1024
 
     if stdin_redirect is not None:
