@@ -70,8 +70,7 @@ def main():
 
     # If no "_version" field is found we assume it's a v1.0
     # export (before the new dump format was introduced).
-    dump_version = int(data.get("_version", 0))
-    data["_version"] = dump_version
+    dump_version = data.get("_version", 0)
 
     if dump_version == to_version:
         logger.info(
