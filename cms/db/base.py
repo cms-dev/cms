@@ -225,18 +225,23 @@ class Base(object):
 
     @classmethod
     def get_from_id(cls, id_, session):
-        """Given a session and an id, this class method returns the object
-        corresponding to the class and id, if existing.
+        """Retrieve an object from the database by its ID.
 
-        cls (class): the class to which the method is attached
-        id_ (string): the id of the object we want
-        session (SQLAlchemy session): the session to query
+        Use the given session to fetch the object of this class with
+        the given ID, and return it. If it doesn't exist return None.
 
-        return (object): the wanted object, or None
+        cls (class): the class to which the method is attached.
+        id_ (tuple, int or string): the ID of the object we want; in
+            general it will be a tuple (one int for each of the columns
+            that make up the primary key) but if there's only one then
+            a single int (even encoded as unicode or bytes) will work.
+        session (Session): the session to query.
+
+        return (object): the wanted object, or None.
 
         """
         try:
-            # This method returns None if the object isn't in the
+            # The .get() method returns None if the object isn't in the
             # identity map of the session nor in the database, but
             # raises ObjectDeletedError in case it was in the identity
             # map, got marked as expired but couldn't be found in the
