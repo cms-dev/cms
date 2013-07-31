@@ -30,7 +30,7 @@ from __future__ import absolute_import
 import sys
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, configure_mappers
 
 from cms import config, logger
 
@@ -95,6 +95,9 @@ from .init import init_db
 from .drop import drop_db
 
 from .util import get_contest_list, is_contest_id, ask_for_contest
+
+
+configure_mappers()
 
 
 # The following are methods of Contest that cannot be put in the right

@@ -41,8 +41,7 @@ import zipfile
 from datetime import timedelta
 
 import sqlalchemy.exc
-from sqlalchemy.orm import \
-    ColumnProperty, RelationshipProperty, configure_mappers
+from sqlalchemy.orm import ColumnProperty, RelationshipProperty
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval
 
@@ -57,11 +56,6 @@ from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum
 from cmscommon.DateTime import make_datetime
-
-# XXX We need mappers to be configured to access ._col_props and
-# ._rel_props. It's not clear what triggers SQLAlchemy to do this
-# automatically, so we force it here.
-configure_mappers()
 
 
 def find_root_of_archive(file_names):
