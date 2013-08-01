@@ -37,6 +37,7 @@ from cms import config, logger
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
 from cms.db import SessionGen, Contest, Task, Submission
+from cms.grading.scoretypes import get_score_type
 from cmscommon.DateTime import make_timestamp
 
 
@@ -321,22 +322,27 @@ class ProxyService(Service):
                 "end": int(make_timestamp(contest.stop)),
                 "score_precision": contest.score_precision}
 
-            users = dict((encode_id(user.username),
-                          {"f_name": user.first_name,
-                           "l_name": user.last_name,
-                           "team": None})
-                         for user in contest.users
-                         if not user.hidden)
+            users = dict()
 
-            tasks = dict((encode_id(task.name),
-                          {"name": task.title,
-                           "contest": encode_id(contest.name),
-                           "max_score": 100.0,
-                           "score_precision": task.score_precision,
-                           "extra_headers": [],
-                           "order": task.num,
-                           "short_name": task.name})
-                         for task in contest.tasks)
+            for user in contest.users:
+                if not user.hidden:
+                    users[encode_id(user.username)] = \
+                        {"f_name": user.first_name,
+                         "l_name": user.last_name,
+                         "team": None}
+
+            tasks = dict()
+
+            for task in contest.tasks:
+                score_type = get_score_type(dataset=task.active_dataset)
+                tasks[encode_id(task.name)] = \
+                    {"short_name": task.name,
+                     "name": task.title,
+                     "contest": encode_id(contest.name),
+                     "order": task.num,
+                     "max_score": score_type.max_score,
+                     "extra_headers": score_type.ranking_headers,
+                     "score_precision": task.score_precision}
 
         for ranking in self.rankings:
             ranking.data_queue.put((ranking.CONTEST_TYPE,
@@ -499,6 +505,9 @@ class ProxyService(Service):
 
             logger.info("Dataset update for task %d (dataset now is %d)." % (
                 task.id, dataset.id))
+
+            # max_score and/or extra_headers might have changed.
+            self.reinitialize()
 
             for submission in task.submissions:
                 # Update RWS.

@@ -89,7 +89,7 @@ class Sum(ScoreTypeAlone):
             if public:
                 public_score += self.parameters
             score += self.parameters
-        return score, public_score
+        return score, public_score, []
 
     def compute_score(self, submission_result):
         """Compute the score of a submission.

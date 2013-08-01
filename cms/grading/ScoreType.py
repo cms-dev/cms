@@ -57,7 +57,8 @@ class ScoreType:
         self.public_testcases = public_testcases
 
         # Preload the maximum possible scores.
-        self.max_score, self.max_public_score = self.max_scores()
+        self.max_score, self.max_public_score, self.ranking_headers = \
+            self.max_scores()
 
     def get_html_details(self, score_details, translator=None):
         """Return an HTML string representing the score details of a
@@ -218,19 +219,24 @@ class ScoreTypeGroup(ScoreTypeAlone):
         returns (float, float): maximum score overall and public.
 
         """
+        score = 0.0
+        public_score = 0.0
+        headers = list()
+
         # XXX Lexicographical order by codename
         indices = sorted(self.public_testcases.keys())
-        public_score = 0.0
-        score = 0.0
         current = 0
-        for parameter in self.parameters:
+
+        for i, parameter in enumerate(self.parameters):
             next_ = current + parameter[1]
             score += parameter[0]
             if all(self.public_testcases[idx]
                    for idx in indices[current:next_]):
                 public_score += parameter[0]
+            headers += ["Subtask %d (%g)" % (i+1, parameter[0])]
             current = next_
-        return score, public_score
+
+        return score, public_score, headers
 
     def compute_score(self, submission_result):
         """Compute the score of a submission.

@@ -1263,7 +1263,8 @@ class AddTestcaseHandler(BaseHandler):
         self.sql_session.add(testcase)
 
         if try_commit(self.sql_session, self):
-            # self.application.service.scoring_service.reinitialize()
+            # max_score and/or extra_headers might have changed.
+            self.application.service.proxy_service.reinitialize()
             self.redirect("/task/%s" % task.id)
         else:
             self.redirect("/add_testcase/%s" % dataset_id)
@@ -1281,8 +1282,8 @@ class DeleteTestcaseHandler(BaseHandler):
         self.sql_session.delete(testcase)
 
         if try_commit(self.sql_session, self):
-            # self.application.service.scoring_service.reinitialize()
-            pass
+            # max_score and/or extra_headers might have changed.
+            self.application.service.proxy_service.reinitialize()
         self.redirect("/task/%s" % task.id)
 
 
