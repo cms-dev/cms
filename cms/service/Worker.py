@@ -79,7 +79,7 @@ class Worker(Service):
             contest = Contest.get_from_id(contest_id, session)
             for digest in contest.enumerate_files(skip_submissions=True,
                                                   skip_user_tests=True):
-                self.file_cacher.get_file(digest)
+                self.file_cacher.load(digest)
         logger.info("Precaching finished.")
 
     @rpc_method

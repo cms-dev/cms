@@ -10,7 +10,9 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * build environment for the programming languages allowed in the competition;
 
-* `PostgreSQL <http://www.postgresql.org/>`_ >= 8.4;
+* `PostgreSQL <http://www.postgresql.org/>`_ >= 9.0;
+
+  .. We need 9.0 because of pg_largeobject_metadata (in drop_db).
 
 * `gettext <http://www.gnu.org/software/gettext/>`_ >= 0.18;
 

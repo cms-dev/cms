@@ -418,8 +418,7 @@ class ContestImporter:
 
         # Put the file.
         try:
-            digest = self.file_cacher.put_file(path=path,
-                                               description=description)
+            digest = self.file_cacher.put_file_from_path(path, description)
         except Exception as error:
             logger.critical("File %s could not be put to file server (%r), "
                             "aborting." % (path, error))

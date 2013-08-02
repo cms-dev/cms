@@ -310,7 +310,7 @@ class ContestExporter:
 
         # First get the file
         try:
-            self.file_cacher.get_file(digest, path=path)
+            self.file_cacher.get_file_to_path(digest, path)
         except Exception as error:
             logger.error("File %s could not retrieved from file server (%r)."
                          % (digest, error))

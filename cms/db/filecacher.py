@@ -5,6 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,10 +24,12 @@
 
 """
 
-import os
+from __future__ import unicode_literals
 
-import tempfile
 import hashlib
+import io
+import os
+import tempfile
 
 import gevent
 
@@ -34,42 +37,34 @@ from sqlalchemy.exc import IntegrityError
 
 from cms import config, logger, mkdir
 from cms.db import SessionGen, FSObject
-from cms.io.GeventUtils import copyfile, copyfileobj, move, copy, rmtree
+from cms.io.GeventUtils import copyfileobj, move, rmtree
 
 
 class FileCacherBackend:
 
-    def __init__(self, service=None):
-        """Initialization.
+    def get_file(self, digest):
+        """Retrieve a file from the storage.
 
-        service (Service): the service we are running in. If None, we
-                           simply avoid caching and allowing the
-                           service to step in once in a while.
+        digest (bytes): the digest of the file to retrieve.
 
-        """
-        self.service = service
+        return (fileobj): a readable binary file-like object from which
+            to read the contents of the file.
 
-    def get_file(self, digest, dest):
-        """Retrieve a file from the storage. If the requested digest
-        isn't available in the storage, raise an exception.
-
-        digest (string): the digest of the file to retrieve.
-        dest (string): the location where to put the retrieved file;
-                       it musn't exist and it will be created by
-                       get_file().
+        raise: KeyError if the file cannot be found.
 
         """
         raise NotImplementedError("Please subclass this class.")
 
-    def put_file(self, digest, origin, description=""):
-        """Put a file to the storage.
+    def put_file(self, digest, desc=""):
+        """Store a file to the storage.
 
-        digest (string): the digest that the file will receive.
-        origin (string): the location from where to get the file to be
-                         sent to the storage; it musn't be destroyed
-                         or modified by put_file().
-        description (string): the optional description of the file to
-                              store, intended for human beings.
+        digest (bytes): the digest of the file to store.
+        desc (unicode): the optional description of the file to
+            store, intended for human beings.
+
+        return (fileobj): a writable binary file-like object on which
+            to write the contents of the file, or None if the file is
+            already stored.
 
         """
         raise NotImplementedError("Please subclass this class.")
@@ -77,9 +72,11 @@ class FileCacherBackend:
     def describe(self, digest):
         """Return the description of a file given its digest.
 
-        digest (string): the digest to describe.
+        digest (bytes): the digest of the file to describe.
 
-        returns (string): the description associated.
+        return (unicode): the description of the file.
+
+        raise: KeyError if the file cannot be found.
 
         """
         raise NotImplementedError("Please subclass this class.")
@@ -87,9 +84,11 @@ class FileCacherBackend:
     def get_size(self, digest):
         """Return the size of a file given its digest.
 
-        digest (string): the digest of which to calculate the size.
+        digest (bytes): the digest of the file to calculate the size of.
 
-        returns (int): the size of the file.
+        return (int): the size of the file, in bytes.
+
+        raise: KeyError if the file cannot be found.
 
         """
         raise NotImplementedError("Please subclass this class.")
@@ -97,7 +96,7 @@ class FileCacherBackend:
     def delete(self, digest):
         """Delete a file from the storage.
 
-        digest (string): the file to delete.
+        digest (bytes): the digest of the file to delete.
 
         """
         raise NotImplementedError("Please subclass this class.")
@@ -105,14 +104,15 @@ class FileCacherBackend:
     def list(self):
         """List the files available in the storage.
 
-        return (list): a list of tuples, each representing a file in
-                       the form (digest, description).
+        return ([(bytes, unicode)]): a list of pairs, each representing
+            a file in the form (digest, description).
 
         """
         raise NotImplementedError("Please subclass this class.")
 
 
 class FSBackend(FileCacherBackend):
+
     """This class implements a backend for FileCacher that keeps all
     the files in a file system directory, named after their digest. Of
     course this directory can be shared, for example with NFS, acting
@@ -126,14 +126,13 @@ class FSBackend(FileCacherBackend):
     of 'ROOT/abcdef...'.
 
     """
-    def __init__(self, path, service=None):
-        """Initialization.
+
+    def __init__(self, path):
+        """Initialize the backend.
 
         path (string): the base path for the storage.
-        service (Service): as in FileCacherBackend.__init__().
 
         """
-        FileCacherBackend.__init__(self, service)
         self.path = path
 
         # Create the directory if it doesn't exist
@@ -142,128 +141,136 @@ class FSBackend(FileCacherBackend):
         except OSError:
             pass
 
-    def get_file(self, digest, dest):
+    def get_file(self, digest):
         """See FileCacherBackend.get_file().
 
         """
-        copyfile(os.path.join(self.path, digest), dest)
+        file_path = os.path.join(self.path, digest)
 
-    def put_file(self, digest, origin, description=""):
+        if not os.path.exists(file_path):
+            raise KeyError("File not found.")
+
+        return io.open(file_path, 'rb')
+
+    def put_file(self, digest, desc=""):
         """See FileCacherBackend.put_file().
 
         """
-        if not os.path.exists(os.path.join(self.path, digest)):
-            copyfile(origin, os.path.join(self.path, digest))
+        file_path = os.path.join(self.path, digest)
 
-    def describe(self, digest):
-        """See FileCacherBackend.describe(). This method returns
-        nothing, because FSBackend doesn't store the description.
+        if os.path.exists(file_path):
+            return None
 
-        """
-        return ''
-
-    def get_size(self, digest):
-        """See FileCacherBackend.get_size().
-
-        """
-        return os.stat(os.path.join(self.path, digest)).st_size
-
-    def delete(self, digest):
-        """See FileCacherBackend.delete().
-
-        """
-        try:
-            os.unlink(os.path.join(self.path, digest))
-        except OSError:
-            pass
-
-    def list(self, digest):
-        """See FileCacherBackend.list().
-
-        """
-        return map(lambda x: (x, ''), os.listdir(self.path))
-
-
-class DBBackend(FileCacherBackend):
-    """This class implements an actual backend for FileCacher that
-    stores the files as lobjects (encapsuled in a FSObject) into a
-    PostgreSQL database.
-
-    """
-    # XXX - How do we choose the best value here? There are other
-    # similar cases around.
-    CHUNK_SIZE = 2 ** 14
-
-    def get_file(self, digest, dest):
-        """See FileCacherBackend.get_file().
-
-        """
-        with open(dest, 'wb') as temp_file:
-            # hasher = hashlib.sha1()
-            with SessionGen() as session:
-                fso = FSObject.get_from_digest(digest, session)
-
-                # Copy the file into the lobject
-                with fso.get_lobject(mode='rb') as lobject:
-                    buf = lobject.read(self.CHUNK_SIZE)
-                    while buf != '':
-                        # hasher.update(buf)
-                        temp_file.write(buf)
-                        # Cooperative yield
-                        gevent.sleep(0)
-                        buf = lobject.read(self.CHUNK_SIZE)
-
-    def put_file(self, digest, origin, description=""):
-        """See FileCacherBackend.put_file().
-
-        """
-        try:
-            with SessionGen() as session:
-
-                # Check digest uniqueness
-                if FSObject.get_from_digest(digest, session) is not None:
-                    logger.debug("File %s already on database, "
-                                 "dropping this one." % digest)
-                    session.rollback()
-
-                # If it is not already present, copy the file into the
-                # lobject
-                else:
-                    fso = FSObject(description=description)
-                    logger.debug("Sending file %s to the database." % digest)
-                    with open(origin, 'rb') as temp_file:
-
-                        with fso.get_lobject(session, mode='wb') \
-                                as lobject:
-                            logger.debug("Large object created.")
-                            buf = temp_file.read(self.CHUNK_SIZE)
-                            while buf != '':
-                                while len(buf) > 0:
-                                    written = lobject.write(buf)
-                                    buf = buf[written:]
-                                    # Cooperative yield
-                                    gevent.sleep(0)
-                                buf = temp_file.read(self.CHUNK_SIZE)
-
-                    fso.digest = digest
-                    session.add(fso)
-                    session.commit()
-                    logger.debug("File %s sent to the database." % digest)
-
-        except IntegrityError:
-            logger.warning("File %s caused an IntegrityError, ignoring..."
-                           % digest)
+        return io.open(file_path, 'wb')
 
     def describe(self, digest):
         """See FileCacherBackend.describe().
 
         """
-        with SessionGen() as session:
+        file_path = os.path.join(self.path, digest)
+
+        if not os.path.exists(file_path):
+            raise KeyError("File not found.")
+
+        return ""
+
+    def get_size(self, digest):
+        """See FileCacherBackend.get_size().
+
+        """
+        file_path = os.path.join(self.path, digest)
+
+        if not os.path.exists(file_path):
+            raise KeyError("File not found.")
+
+        return os.stat(file_path).st_size
+
+    def delete(self, digest):
+        """See FileCacherBackend.delete().
+
+        """
+        file_path = os.path.join(self.path, digest)
+
+        try:
+            os.unlink(file_path)
+        except OSError:
+            pass
+
+    def list(self):
+        """See FileCacherBackend.list().
+
+        """
+        return list((x, "") for x in os.listdir(self.path))
+
+
+class DBBackend(FileCacherBackend):
+
+    """This class implements an actual backend for FileCacher that
+    stores the files as lobjects (encapsuled in a FSObject) into a
+    PostgreSQL database.
+
+    """
+
+    def get_file(self, digest):
+        """See FileCacherBackend.get_file().
+
+        """
+        with SessionGen(commit=False) as session:
             fso = FSObject.get_from_digest(digest, session)
-            if fso is not None:
-                return fso.description
-            else:
-                return None
+
+            if fso is None:
+                raise KeyError("File not found.")
+
+            return fso.get_lobject(mode='rb')
+
+    def put_file(self, digest, desc=""):
+        """See FileCacherBackend.put_file().
+
+        """
+        try:
+            with SessionGen(commit=True) as session:
+                fso = FSObject.get_from_digest(digest, session)
+
+                # Check digest uniqueness
+                if fso is not None:
+                    logger.debug("File %s already stored on database, not "
+                                 "sending it again." % digest)
+                    session.rollback()
+                    return None
+
+                # If it is not already present, copy the file into the
+                # lobject
+                else:
+                    fso = FSObject(description=desc)
+                    fso.digest = digest
+
+                    session.add(fso)
+                    session.commit()
+
+                    logger.debug("File %s stored on the database." % digest)
+
+                    # FIXME There is a remote possibility that someone
+                    # will try to access this file, believing it has
+                    # already been stored (since its FSObject exists),
+                    # while we're still sending its content.
+
+                    return fso.get_lobject(mode='wb')
+
+        except IntegrityError:
+            logger.warning("File %s caused an IntegrityError, ignoring..." %
+                           digest)
+
+    def describe(self, digest):
+        """See FileCacherBackend.describe().
+
+        """
+        with SessionGen(commit=False) as session:
+            fso = FSObject.get_from_digest(digest, session)
+
+            if fso is None:
+                raise KeyError("File not found.")
+
+            return fso.description
 
     def get_size(self, digest):
         """See FileCacherBackend.get_size().
@@ -271,37 +278,44 @@ class DBBackend(FileCacherBackend):
         """
         # TODO - The business logic may be moved in FSObject, for
         # better generality
-        with SessionGen() as session:
+        with SessionGen(commit=False) as session:
             fso = FSObject.get_from_digest(digest, session)
-            if fso is not None:
-                with fso.get_lobject(session, mode='rb') as lobject:
-                    return lobject.seek(0, os.SEEK_END)
-            else:
-                return None
+
+            if fso is None:
+                raise KeyError("File not found.")
+
+            with fso.get_lobject(mode='rb') as lobj:
+                return lobj.seek(0, io.SEEK_END)
 
     def delete(self, digest):
         """See FileCacherBackend.delete().
 
         """
-        with SessionGen() as session:
+        with SessionGen(commit=True) as session:
             fso = FSObject.get_from_digest(digest, session)
+
+            if fso is None:
+                session.rollback()
+                return
+
             fso.delete()
-            session.commit()
 
     def list(self, session=None):
-        """See FileCacherBackend.list(). This implementation also
-        accept an additional session parameter.
+        """See FileCacherBackend.list().
 
-        session (Session): if specified, use that session instead of
-                           creating a new one.
+        This implementation also accepts an additional (and optional)
+        parameter: a SQLAlchemy session to use to query the database.
+
+        session (Session): the session to use; if not given a temporary
+            one will be created and used.
 
         """
         def _list(session):
             """Do the work assuming session is valid.
 
             """
-            return map(lambda x: (x.digest, x.description),
-                       session.query(FSObject))
+            return list((x.digest, x.description)
+                        for x in session.query(FSObject))
 
         if session is not None:
             return _list(session)
@@ -311,6 +325,7 @@ class DBBackend(FileCacherBackend):
 
 
 class NullBackend(FileCacherBackend):
+
     """This backend is always empty, it just drops each file that
     receives. It looks mostly like /dev/null. It is useful when you
     want to just rely on the caching capabilities of FileCacher for
@@ -318,206 +333,316 @@ class NullBackend(FileCacherBackend):
 
     """
 
-    def get_file(self, digest, dest):
-        raise Exception("No files in a NullBackend")
+    def get_file(self, digest):
+        raise KeyError("File not found.")
 
-    def put_file(self, digest, origin, description=""):
-        pass
+    def put_file(self, digest, desc=""):
+        return None
 
     def describe(self, digest):
-        return None
+        raise KeyError("File not found.")
 
     def get_size(self, digest):
-        return None
+        raise KeyError("File not found.")
 
     def delete(self, digest):
         pass
 
     def list(self):
-        return []
+        return list()
 
 
 class FileCacher:
+
     """This class implement a local cache for files stored as FSObject
     in the database.
 
     """
-    CHUNK_SIZE = 2 ** 20
+
+    # This value is very arbitrary, and in this case we want it to be a
+    # one-size-fits-all, since we use it for many conversions. It has
+    # been chosen arbitrarily based on performance tests on my machine.
+    # A few consideration on the value it could assume follow:
+    # - The page size of large objects is LOBLKSIZE, which is BLCKSZ/4
+    #   (BLCKSZ is the block size of the PostgreSQL database, which is
+    #   set during pre-build configuration). BLCKSZ is by default 8192,
+    #   therefore LOBLKSIZE is 2048. See:
+    #   http://www.postgresql.org/docs/9.0/static/catalog-pg-largeobject.html
+    # - The `io' module defines a DEFAULT_BUFFER_SIZE constant, whose
+    #   value is 8192.
+    # CHUNK_SIZE should be a multiple of these values.
+    CHUNK_SIZE = 2 ** 14  # 16348
 
     def __init__(self, service=None, path=None, null=False):
-        """Initialization.
+        """Initialize.
 
-        service (Service): the service we are running in. If None, we
-                           simply avoid caching and allowing the
-                           service to step in once in a while.
+        By default the database-powered backend will be used, but this
+        can be changed using the parameters.
+
+        service (Service): the service we are running for. Only used to
+            determine the location of the file-system cache (and to
+            provide the shard number to the Sandbox... sigh!).
         path (string): if specified, back the FileCacher with a file
-                       system-based storage instead that the default
-                       database-based one. The specified directory
-                       will be used as root for the storage and it
-                       will be created if it doesn't exist.
+            system-based storage instead of the default database-based
+            one. The specified directory will be used as root for the
+            storage and it will be created if it doesn't exist.
         null (bool): if True, back the FileCacher with a NullBackend,
-                     that just discards every file it receives. It
-                     takes priority over path.
+            that just discards every file it receives. This setting
+            takes priority over path.
 
         """
         self.service = service
-        if null:
-            self.backend = NullBackend(self.service)
-        elif path is None:
-            self.backend = DBBackend(self.service)
-        else:
-            self.backend = FSBackend(path, self.service)
 
-        if self.service is None:
-            self.base_dir = tempfile.mkdtemp(dir=config.temp_dir)
+        if null:
+            self.backend = NullBackend()
+        elif path is None:
+            self.backend = DBBackend()
         else:
-            self.base_dir = os.path.join(
+            self.backend = FSBackend(path)
+
+        self.file_dir = os.path.join(config.cache_dir, "files")
+
+        if service is None:
+            self.file_dir = tempfile.mkdtemp(dir=config.temp_dir)
+        else:
+            self.file_dir = os.path.join(
                 config.cache_dir,
                 "fs-cache-%s-%d" % (service._my_coord.name,
                                     service._my_coord.shard))
-        self.tmp_dir = os.path.join(self.base_dir, "tmp")
-        self.obj_dir = os.path.join(self.base_dir, "objects")
-        if not mkdir(config.cache_dir) or \
-                not mkdir(self.base_dir) or \
-                not mkdir(self.tmp_dir) or \
-                not mkdir(self.obj_dir):
+
+        if not mkdir(config.cache_dir) or not mkdir(self.file_dir):
             logger.error("Cannot create necessary directories.")
+            raise RuntimeError("Cannot create necessary directories.")
 
-    def get_file(self, digest, path=None, file_obj=None,
-                 string=False, temp_path=False, temp_file_obj=False):
-        """Get a file from the storage, possibly using the cache if
-        the file is available there.
+    def load(self, digest):
+        """Load the file with the given digest into the cache.
 
-        digest (string): the sha1 sum of the file.
-        path (string): a path where to save the file.
-        file_obj (file): a handler where to save the file (that is not
-                         closed at return).
-        string (bool): True to return content as a string.
-        temp_path (bool): True to return path of a temporary file with
-                          that content. The file is reserved to the
-                          caller, who has the duty to unlink it.
-        temp_file-obj (bool): True to return a file object opened to a
-                              temporary file with that content. The
-                              file is reserved to the caller. Use this
-                              method only for debugging purpose, as it
-                              leave a file lying in the temporary
-                              directory of FileCacher.
+        Ask the backend to provide the file and, if it's available,
+        copy its content into the file-system cache.
+
+        digest (bytes): the digest of the file to load.
+
+        raise: KeyError if the backend cannot find the file.
 
         """
-        if [string, temp_path, temp_file_obj].count(True) > 1:
-            raise ValueError("Ask for at most one amongst content, "
-                             "temp path and temp file obj.")
+        cache_file_path = os.path.join(self.file_dir, digest)
 
-        cache_path = os.path.join(self.obj_dir, digest)
-        cache_exists = os.path.exists(cache_path)
+        fobj = self.backend.get_file(digest)
 
-        logger.debug("Getting file %s." % (digest))
+        try:
+            with io.open(cache_file_path, 'wb') as dst:
+                copyfileobj(fobj, dst, self.CHUNK_SIZE)
+        finally:
+            fobj.close()
 
-        if not cache_exists:
+    def get_file(self, digest):
+        """Retrieve a file from the storage.
+
+        If it's available in the cache use that copy, without querying
+        the backend. Otherwise ask the backend to provide it, and store
+        it in the cache for the benefit of future accesses.
+
+        The file is returned as a file-object. Other interfaces are
+        available as `get_file_content', `get_file_to_fobj' and `get_
+        file_to_path'.
+
+        digest (bytes): the digest of the file to get.
+
+        return (fileobj): a readable binary file-like object from which
+            to read the contents of the file.
+
+        raise: KeyError if the file cannot be found.
+
+        """
+        cache_file_path = os.path.join(self.file_dir, digest)
+
+        logger.debug("Getting file %s." % digest)
+
+        if not os.path.exists(cache_file_path):
             logger.debug("File %s not in cache, downloading "
                          "from database." % digest)
 
-            # Receives the file from the database
-            temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
-            temp_file = os.fdopen(temp_file, "wb")
-            self.backend.get_file(digest, temp_filename)
-
-            # And move it in the cache. Warning: this is not atomic if
-            # the temp and the cache dir are on different filesystems.
-            move(temp_filename, cache_path)
+            self.load(digest)
 
             logger.debug("File %s downloaded." % digest)
 
-        # Saving to path
-        if path is not None:
-            copy(cache_path, path)
+        return io.open(cache_file_path, 'rb')
 
-        # Saving to file object
-        if file_obj is not None:
-            with open(cache_path, "rb") as file_:
-                copyfileobj(file_, file_obj)
+    def get_file_content(self, digest):
+        """Retrieve a file from the storage.
 
-        # Returning string?
-        if string:
-            with open(cache_path, "rb") as cache_file:
-                return cache_file.read()
+        See `get_file'. This method returns the content of the file, as
+        a binary string.
 
-        # Returning temporary file?
-        elif temp_path:
-            temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
-            os.close(temp_file)
-            copy(cache_path, temp_filename)
-            return temp_filename
+        digest (bytes): the digest of the file to get.
 
-        # Returning temporary file object?
-        elif temp_file_obj:
-            temp_file, temp_filename = tempfile.mkstemp(dir=self.tmp_dir)
-            os.close(temp_file)
-            copy(cache_path, temp_filename)
-            temp_file = open(temp_filename, "rb")
-            return temp_file
+        return (bytes): the content of the retrieved file.
 
-    def put_file(self, description="", binary_data=None,
-                 file_obj=None, path=None):
-        """Put a file in the storage, and keep a copy locally. The
-        caller has to provide exactly one among binary_data, file_obj
-        and path.
-
-        description (string): a human-readable description of the
-                              content.
-        binary_data (string): the content of the file to send.
-        file_obj (file): the file-like object to send.
-        path (string): the file to send.
+        raise: KeyError if the file cannot be found.
 
         """
-        temp_fd, temp_path = tempfile.mkstemp(dir=self.tmp_dir)
-        os.close(temp_fd)
+        with self.get_file(digest) as src:
+            return src.read()
 
-        # Input checking
-        if [binary_data, file_obj, path].count(None) != 2:
-            error_string = "No content (or too many) specified in put_file."
-            logger.error(error_string)
-            raise ValueError(error_string)
+    def get_file_to_fobj(self, digest, dst):
+        """Retrieve a file from the storage.
 
+        See `get_file'. This method will write the content of the file
+        to the given file-object.
+
+        digest (bytes): the digest of the file to get.
+        dst (fileobj): a writable binary file-like object on which to
+            write the contents of the file.
+
+        raise: KeyError if the file cannot be found.
+
+        """
+        with self.get_file(digest) as src:
+            copyfileobj(src, dst, self.CHUNK_SIZE)
+
+    def get_file_to_path(self, digest, dst_path):
+        """Retrieve a file from the storage.
+
+        See `get_file'. This method will write the content of a file
+        to the given file-system location.
+
+        digest (bytes): the digest of the file to get.
+        dst_path (string): an accessible location on the file-system on
+            which to write the contents of the file.
+
+        raise: KeyError if the file cannot be found.
+
+        """
+        with self.get_file(digest) as src:
+            with io.open(dst_path, 'wb') as dst:
+                copyfileobj(src, dst, self.CHUNK_SIZE)
+
+    def save(self, digest, desc=""):
+        """Save the file with the given digest into the backend.
+
+        Use to local copy, available in the file-system cache, to store
+        the file in the backend, if it's not already there.
+
+        digest (bytes): the digest of the file to load.
+        desc (unicode): the (optional) description to associate to the
+            file.
+
+        """
+        cache_file_path = os.path.join(self.file_dir, digest)
+
+        fobj = self.backend.put_file(digest, desc)
+
+        if fobj is None:
+            return
+
+        try:
+            with io.open(cache_file_path, 'rb') as src:
+                copyfileobj(src, fobj, self.CHUNK_SIZE)
+        finally:
+            fobj.close()
+
+    def put_file_from_fobj(self, src, desc=""):
+        """Store a file in the storage.
+
+        If it's already (for some reason...) in the cache send that
+        copy to the backend. Otherwise store it in the file-system
+        cache first.
+
+        The file is obtained from a file-object. Other interfaces are
+        available as `put_file_content', `put_file_from_path'.
+
+        src (fileobj): a readable binary file-like object from which
+            to read the contents of the file.
+        desc (unicode): the (optional) description to associate to the
+            file.
+
+        return (bytes): the digest of the stored file.
+
+        """
         logger.debug("Reading input file to store on the database.")
 
-        # Copy the file content, whatever forms it arrives, into the
-        # temporary file
-        if path is not None:
-            copy(path, temp_path)
-        elif binary_data is not None:
-            with open(temp_path, 'wb') as temp_file:
-                temp_file.write(binary_data)
-        else:  # file_obj is not None.
-            with open(temp_path, 'wb') as temp_file:
-                copyfileobj(file_obj, temp_file)
-
-        hasher = hashlib.sha1()
-
-        # Calculate the file SHA1 digest
-        with open(temp_path, 'rb') as temp_file:
-            buf = temp_file.read(self.CHUNK_SIZE)
-            while buf != '':
+        # Unfortunately, we have to read the whole file-obj to compute
+        # the digest but we take that chance to save it to a temporary
+        # path so that we then just need to move it. Hoping that both
+        # locations will be on the same filesystem, that should be way
+        # faster than reading the whole file-obj again (as it could be
+        # compressed or require network communication).
+        # XXX We're *almost* reimplementing copyfileobj.
+        with tempfile.NamedTemporaryFile('wb', delete=False,
+                                         dir=config.temp_dir) as dst:
+            hasher = hashlib.sha1()
+            buf = src.read(self.CHUNK_SIZE)
+            while len(buf) > 0:
                 hasher.update(buf)
-                buf = temp_file.read(self.CHUNK_SIZE)
-        digest = hasher.hexdigest()
+                while len(buf) > 0:
+                    written = dst.write(buf)
+                    # Cooperative yield.
+                    gevent.sleep(0)
+                    if written is None:
+                        break
+                    buf = buf[written:]
+                buf = src.read(self.CHUNK_SIZE)
+            digest = hasher.hexdigest()
+            dst.flush()
 
-        logger.debug("File has digest %s." % digest)
+            logger.debug("File has digest %s." % digest)
 
-        self.backend.put_file(digest, temp_path, description=description)
+            cache_file_path = os.path.join(self.file_dir, digest)
 
-        # Move the temporary file in the cache
-        move(temp_path,
-             os.path.join(self.obj_dir, digest))
+            if not os.path.exists(cache_file_path):
+                move(dst.name, cache_file_path)
+            else:
+                os.unlink(dst.name)
+
+        # Store the file in the backend. We do that even if the file
+        # was already in the cache (that is, we ignore the check above)
+        # because there's a (small) chance that the file got removed
+        # from the backend but somehow remained in the cache.
+        self.save(digest, desc)
 
         return digest
+
+    def put_file_content(self, content, desc=""):
+        """Store a file in the storage.
+
+        See `put_file_from_fobj'. This method will read the content of
+        the file from the given binary string.
+
+        content (bytes): the content of the file to store.
+        desc (unicode): the (optional) description to associate to the
+            file.
+
+        return (bytes): the digest of the stored file.
+
+        """
+        with io.BytesIO(content) as src:
+            return self.put_file_from_fobj(src, desc)
+
+    def put_file_from_path(self, src_path, desc=""):
+        """Store a file in the storage.
+
+        See `put_file_from_fobj'. This method will read the content of
+        the file from the given file-system location.
+
+        src_path (string): an accessible location on the file-system
+            from which to read the contents of the file.
+        desc (unicode): the (optional) description to associate to the
+            file.
+
+        return (bytes): the digest of the stored file.
+
+        """
+        with io.open(src_path, 'rb') as src:
+            return self.put_file_from_fobj(src, desc)
 
     def describe(self, digest):
         """Return the description of a file given its digest.
 
-        digest (string): the digest to describe.
+        digest (bytes): the digest of the file to describe.
 
-        returns (string): the description associated.
+        return (unicode): the description of the file.
+
+        raise: KeyError if the file cannot be found.
 
         """
         return self.backend.describe(digest)
@@ -525,53 +650,60 @@ class FileCacher:
     def get_size(self, digest):
         """Return the size of a file given its digest.
 
-        digest (string): the digest of which to calculate the size.
+        digest (bytes): the digest of the file to calculate the size of.
 
-        returns (int): the size of the file.
+        return (int): the size of the file, in bytes.
+
+        raise: KeyError if the file cannot be found.
 
         """
         return self.backend.get_size(digest)
 
     def delete(self, digest):
-        """Delete from cache and FS the file with that digest.
+        """Delete a file from the backend and the local cache.
 
-        digest (string): the file to delete.
+        digest (bytes): the digest of the file to delete.
 
         """
-        self.delete_from_cache(digest)
+        self.drop(digest)
         self.backend.delete(digest)
 
-    def delete_from_cache(self, digest):
-        """Delete the specified file from the local cache.
+    def drop(self, digest):
+        """Delete a file only from the local cache.
 
-        digest (string): the file to delete.
+        digest (bytes): the file to delete.
 
         """
+        cache_file_path = os.path.join(self.file_dir, digest)
+
         try:
-            os.unlink(os.path.join(self.obj_dir, digest))
+            os.unlink(cache_file_path)
         except OSError:
             pass
 
     def purge_cache(self):
-        """Delete all the content of the cache.
+        """Empty the local cache.
 
         """
         self.destroy_cache()
-        if not mkdir(config.cache_dir) or \
-                not mkdir(self.base_dir) or \
-                not mkdir(self.tmp_dir) or \
-                not mkdir(self.obj_dir):
+        if not mkdir(config.cache_dir) or not mkdir(self.file_dir):
             logger.error("Cannot create necessary directories.")
+            raise RuntimeError("Cannot create necessary directories.")
 
     def destroy_cache(self):
-        """Completely destroys the cache. The FileCacher is not usable
-        anymore.
+        """Completely remove and destroy the cache.
+
+        Nothing that could have been created by this object will be
+        left on disk. After that, this instance isn't usable anymore.
 
         """
-        rmtree(self.base_dir)
+        rmtree(self.file_dir)
 
     def list(self):
         """List the files available in the storage.
+
+        return ([(bytes, unicode)]): a list of pairs, each representing
+            a file in the form (digest, description).
 
         """
         return self.backend.list()

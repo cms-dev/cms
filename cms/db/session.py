@@ -93,33 +93,26 @@ class SessionGen:
         self.session.close()
 
 
-def get_psycopg2_connection(session):
-    """Return the psycopg2 connection object associated to the given
-    SQLAlchemy Session. This, of course, means that the Session must
-    be using psycopg2 as backend.
+def custom_psycopg2_connection(**kwargs):
+    """Establish a new psycopg2.connection to the database.
 
-    Since the connection will be returned to the SQLAlchemy pool after
-    use its "behavior" cannot be changed (e.g. by setting autocommit).
-    Please use custom_psycopg2_connection in those cases.
+    The returned connection won't be in the SQLAlchemy pool and has to
+    be closed manually by the caller when it's done with it.
 
-    Moreover, all psycopg2-specific code in CMS is supposed to invoke
-    this method or custom_psycopg2_connection.
+    All psycopg2-specific code in CMS is supposed to obtain a function
+    this way.
 
-    session (Session): a SQLAlchemy Session.
+    kwargs (dict): additional values to use as query parameters in the
+        connection URL.
 
-    return (connection): the associated psycopg2 connection object.
+    return (connection): a new, shiny connection object.
+
+    raise: AssertionError if CMS (actually SQLAlchemy) isn't configured
+        to use psycopg2 as the DB-API driver.
 
     """
-    sa_conn = session.connection()
-    assert sa_conn.dialect.driver == "psycopg2"
-
-    return sa_conn.connection
-
-
-def custom_psycopg2_connection(**kwargs):
     database_url = make_url(config.database)
     assert database_url.get_dialect().driver == "psycopg2"
-
     database_url.query.update(kwargs)
 
     return psycopg2.connect(

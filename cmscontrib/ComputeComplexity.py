@@ -100,7 +100,7 @@ def file_length(digest, file_cacher=None, file_lengther=None):
     if file_lengther is None:
         file_lengther = FileLengther
     lengther = file_lengther()
-    file_cacher.get_file(digest, file_obj=lengther)
+    file_cacher.get_file_to_fobj(digest, lengther)
     return lengther.tell()
 
 

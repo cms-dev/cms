@@ -77,9 +77,9 @@ def test_testcases(base_dir, soluzione, assume=None):
 
     # Prepare the EvaluationJob
     dataset = task.active_dataset
-    digest = file_cacher.put_file(
-        path=os.path.join(base_dir, soluzione),
-        description="Solution %s for task %s" % (soluzione, task.name))
+    digest = file_cacher.put_file_from_path(
+        os.path.join(base_dir, soluzione),
+        "Solution %s for task %s" % (soluzione, task.name))
     executables = {task.name: Executable(filename=task.name, digest=digest)}
     jobs = [(t, EvaluationJob(
         task_type=dataset.task_type,

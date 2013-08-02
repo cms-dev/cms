@@ -1073,12 +1073,11 @@ class SubmitHandler(BaseHandler):
         # We now have to send all the files to the destination...
         try:
             for filename in files:
-                digest = self.application.service.file_cacher.put_file(
-                    description="Submission file %s sent by %s at %d." % (
-                        filename,
-                        self.current_user.username,
-                        make_timestamp(self.timestamp)),
-                    binary_data=files[filename][1])
+                digest = self.application.service.file_cacher.put_file_content(
+                    files[filename][1],
+                    "Submission file %s sent by %s at %d." % (
+                        filename, self.current_user.username,
+                        make_timestamp(self.timestamp)))
                 file_digests[filename] = digest
 
         # In case of error, the server aborts the submission
@@ -1594,12 +1593,11 @@ class UserTestHandler(BaseHandler):
         # We now have to send all the files to the destination...
         try:
             for filename in files:
-                digest = self.application.service.file_cacher.put_file(
-                    description="Test file %s sent by %s at %d." % (
-                        filename,
-                        self.current_user.username,
-                        make_timestamp(self.timestamp)),
-                    binary_data=files[filename][1])
+                digest = self.application.service.file_cacher.put_file_content(
+                    files[filename][1],
+                    "Test file %s sent by %s at %d." % (
+                        filename, self.current_user.username,
+                        make_timestamp(self.timestamp)))
                 file_digests[filename] = digest
 
         # In case of error, the server aborts the submission

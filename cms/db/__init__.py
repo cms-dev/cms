@@ -40,8 +40,7 @@ from cms import config, logger
 __all__ = [
     "version", "engine",
     # session
-    "Session", "ScopedSession", "SessionGen", "get_psycopg2_connection",
-    "custom_psycopg2_connection",
+    "Session", "ScopedSession", "SessionGen", "custom_psycopg2_connection",
     # base
     "metadata", "Base",
     # contest
@@ -78,7 +77,7 @@ engine = create_engine(config.database, echo=config.database_debug,
 
 
 from .session import Session, ScopedSession, SessionGen, \
-    get_psycopg2_connection, custom_psycopg2_connection
+    custom_psycopg2_connection
 
 from .base import metadata, Base
 from .contest import Contest, Announcement
