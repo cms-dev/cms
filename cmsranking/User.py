@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,20 +17,23 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
+import six
+
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
-
-import Team
-import Submission
+from cmsranking.Submission import store as submission_store
 
 
 class User(Entity):
     """The entity representing a user.
 
     It consists of the following properties:
-    - f_name (str): the first name of the user
-    - l_name (str): the last name of the user
-    - team (str): the id of the team the user belongs to
+    - f_name (unicode): the first name of the user
+    - l_name (unicode): the last name of the user
+    - team (unicode): the id of the team the user belongs to
 
     """
     def __init__(self):
@@ -50,22 +53,19 @@ class User(Entity):
 
         """
         try:
-            assert type(data) is dict, \
+            assert isinstance(data, dict), \
                 "Not a dictionary"
-            assert type(data['f_name']) is unicode or \
-                   type(data['f_name']) is str, \
+            assert isinstance(data['f_name'], six.text_type), \
                 "Field 'f_name' isn't a string"
-            assert type(data['l_name']) is unicode or \
-                   type(data['l_name']) is str, \
+            assert isinstance(data['l_name'], six.text_type), \
                 "Field 'l_name' isn't a string"
             assert data['team'] is None or \
-                   type(data['team']) is unicode or \
-                   type(data['team']) is str, \
+                   isinstance(data['team'], six.text_type), \
                 "Field 'team' isn't a string (or null)"
-        except KeyError as field:
-            raise InvalidData("Field %s is missing" % field)
-        except AssertionError as message:
-            raise InvalidData(str(message))
+        except KeyError as exc:
+            raise InvalidData("Field %s is missing" % exc.message)
+        except AssertionError as exc:
+            raise InvalidData(exc.message)
 
     def set(self, data):
         self.validate(data)
@@ -75,7 +75,7 @@ class User(Entity):
 
     def get(self):
         result = self.__dict__.copy()
-        del result["key"]
+        del result['key']
         return result
 
     def load(self, data):
@@ -86,11 +86,12 @@ class User(Entity):
 
     def dump(self):
         result = self.__dict__.copy()
-        del result["key"]
+        del result['key']
         return result
 
     def consistent(self):
-        return self.team is None or self.team in Team.store
+        from cmsranking.Team import store as team_store
+        return self.team is None or self.team in team_store
 
 
-store = Store(User, 'users', [Submission])
+store = Store(User, 'users', [submission_store])

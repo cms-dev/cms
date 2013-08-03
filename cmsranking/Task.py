@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,24 +17,29 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
+import six
+
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
-
-import Contest
-import Submission
+from cmsranking.Submission import store as submission_store
 
 
 class Task(Entity):
     """The entity representing a task.
 
     It consists of the following properties:
-    - name (str): the human-readable name of the task
-    - short_name (str): a shorter name for the task, usually a code-name
-    - contest (str): the id of the contest the task belongs to
+    - name (unicode): the human-readable name of the task
+    - short_name (unicode): a shorter name for the task, usually a
+        code-name
+    - contest (unicode): the id of the contest the task belongs to
     - max_score (float): the maximum achievable score for the task
     - score_precision (int): how many decimal places to show in scores
-    - data_headers (list of str): a list with the descriptions of the extra
-        fields that will be provided with each submission for the task
+    - data_headers ([unicode]): a list with the descriptions of the
+        extra fields that will be provided with each submission for the
+        task
     - order (int): the order of the tasks inside of the contest
 
     """
@@ -58,35 +63,31 @@ class Task(Entity):
 
         """
         try:
-            assert type(data) is dict, \
+            assert isinstance(data, dict), \
                 "Not a dictionary"
-            assert type(data['name']) is unicode or \
-                   type(data['name']) is str, \
+            assert isinstance(data['name'], six.text_type), \
                 "Field 'name' isn't a string"
-            assert type(data['short_name']) is unicode or \
-                   type(data['short_name']) is str, \
+            assert isinstance(data['short_name'], six.text_type), \
                 "Field 'short_name' isn't a string"
-            assert type(data['contest']) is unicode or \
-                   type(data['contest']) is str, \
+            assert isinstance(data['contest'], six.text_type), \
                 "Field 'contest' isn't a string"
-            assert type(data['max_score']) is float, \
+            assert isinstance(data['max_score'], float), \
                 "Field 'max_score' isn't a float"
-            assert type(data['score_precision']) is int, \
+            assert isinstance(data['score_precision'], six.integer_types), \
                 "Field 'score_precision' isn't an integer"
             assert data['score_precision'] >= 0, \
                 "Field 'score_precision' is negative"
-            assert type(data['extra_headers']) is list, \
+            assert isinstance(data['extra_headers'], list), \
                 "Field 'extra_headers' isn't a list of strings"
             for i in data['extra_headers']:
-                assert type(i) is unicode or \
-                       type(i) is str, \
+                assert isinstance(i, six.text_type), \
                     "Field 'extra_headers' isn't a list of strings"
-            assert type(data['order']) is int, \
+            assert isinstance(data['order'], six.integer_types), \
                 "Field 'order' isn't an integer"
-        except KeyError as field:
-            raise InvalidData("Field %s is missing" % field)
-        except AssertionError as message:
-            raise InvalidData(str(message))
+        except KeyError as exc:
+            raise InvalidData("Field %s is missing" % exc.message)
+        except AssertionError as exc:
+            raise InvalidData(exc.message)
 
     def set(self, data):
         self.validate(data)
@@ -100,7 +101,7 @@ class Task(Entity):
 
     def get(self):
         result = self.__dict__.copy()
-        del result["key"]
+        del result['key']
         return result
 
     def load(self, data):
@@ -115,11 +116,12 @@ class Task(Entity):
 
     def dump(self):
         result = self.__dict__.copy()
-        del result["key"]
+        del result['key']
         return result
 
     def consistent(self):
-        return self.contest in Contest.store
+        from cmsranking.Contest import store as contest_store
+        return self.contest in contest_store
 
 
-store = Store(Task, 'tasks', [Submission])
+store = Store(Task, 'tasks', [submission_store])

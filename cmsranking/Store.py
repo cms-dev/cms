@@ -17,9 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
+import io
 import json
 import os
 import re
+
+import six
 
 from cmsranking.Config import config
 from cmsranking.Logger import logger
@@ -30,18 +36,19 @@ from cmsranking.Entity import Entity, InvalidKey, InvalidData
 class Store(object):
     """A store for entities.
 
-    Provide methods to perform the CRUD operations (create, retrieve, update,
-    delete) on a set of entities, accessed by their unique key.
-    It's very similar to a dict, except that keys are strings, values are of
-    a single type (defined at init-time) and it's possible to get notified
-    when something changes by providing appropriate callbacks.
+    Provide methods to perform the CRUD operations (create, retrieve,
+    update, delete) on a set of entities, accessed by their unique key.
+    It's very similar to a dict, except that keys are strings, values
+    are of a single type (defined at init-time) and it's possible to
+    get notified when something changes by providing appropriate
+    callbacks.
 
     """
     def __init__(self, entity, dir_name, depends=None):
         """Initialize an empty EntityStore.
 
-        The entity definition given as argument will define what kind of
-        entities will be stored. It cannot be changed.
+        The entity definition given as argument will define what kind
+        of entities will be stored. It cannot be changed.
 
         entity (class): the class definition of the entities that will
             be stored
@@ -68,9 +75,9 @@ class Store(object):
             for name in os.listdir(self._path):
                 # TODO check that the key is '[A-Za-z0-9_]+'
                 if name[-5:] == '.json' and name[:-5] != '':
-                    with open(os.path.join(self._path, name), 'r') as rec:
+                    with io.open(os.path.join(self._path, name), 'rb') as rec:
                         item = self._entity()
-                        item.load(json.load(rec))
+                        item.load(json.load(rec, encoding='utf-8'))
                         item.key = name[:-5]
                         self._store[name[:-5]] = item
         except OSError:
@@ -82,8 +89,8 @@ class Store(object):
         except ValueError:
             logger.error("Invalid JSON", exc_info=False,
                          extra={'location': os.path.join(self._path, name)})
-        except InvalidData, exc:
-            logger.error(str(exc), exc_info=False,
+        except InvalidData as exc:
+            logger.error(exc.message, exc_info=False,
                          extra={'location': os.path.join(self._path, name)})
 
     def add_create_callback(self, callback):
@@ -116,14 +123,14 @@ class Store(object):
     def _verify_key(self, key, must_be_present=False):
         """Verify that the key has the correct type.
 
-        key (string): the key of the entity we want to interact with.
+        key (unicode): the key of the entity we want to interact with.
         must_be_present (bool): True if we need the key in the store,
-                                False if the key must not be in the
-                                store.
+            False if the key must not be in the store.
 
         raise: InvalidKey if key is not valid.
+
         """
-        if not (isinstance(key, unicode) or isinstance(key, str)):
+        if not isinstance(key, unicode):
             raise InvalidKey
         if (key in self._store and not must_be_present) or \
                (key not in self._store and must_be_present):
@@ -134,16 +141,18 @@ class Store(object):
 
         Create a new entity with the given key and the given data.
 
-        key (str): the key with which the entity will be later accessed
-        data (str): the properties of the entity (a dict encoded in JSON)
-        confirm (callable): action to be performed as soon as we're sure
-                            that the action won't fail (in particular,
-                            before notifying the callbacks).
+        key (unicode): the key with which the entity will be later
+            accessed
+        data (bytes): the properties of the entity (a UTF8-encoded JSON
+            representation of a dict)
+        confirm (callable): action to be performed as soon as we're
+            sure that the action won't fail (in particular, before
+            notifying the callbacks).
 
-        Raise InvalidKey if key isn't a str or if an entity with the same
-        key is already present in the store.
-        Raise InvalidData if data cannot be parsed, if it's missing some
-        properties or if properties are of the wrong type.
+        raise: InvalidKey if key isn't a unicode or if an entity with
+            the same key is already present in the store.
+        raise: InvalidData if data cannot be parsed, if it's missing
+            some properties or if properties are of the wrong type.
 
         """
         self._verify_key(key)
@@ -151,13 +160,13 @@ class Store(object):
         # create entity
         try:
             item = self._entity()
-            item.set(json.loads(data))
+            item.set(json.loads(data), encoding='utf-8')
             if not item.consistent():
-                raise InvalidData('Inconsistent data')
+                raise InvalidData("Inconsistent data")
             item.key = key
             self._store[key] = item
         except ValueError:
-            raise InvalidData('Invalid JSON')
+            raise InvalidData("Invalid JSON")
         # confirm the operation
         if confirm is not None:
             confirm()
@@ -166,8 +175,8 @@ class Store(object):
             callback(key, item)
         # reflect changes on the persistent storage
         try:
-            with open(os.path.join(self._path, key + '.json'), 'w') as rec:
-                rec.write(json.dumps(self._store[key].dump()))
+            with io.open(os.path.join(self._path, key + '.json'), 'wb') as rec:
+                json.dump(self._store[key].dump(), rec, encoding='utf-8')
         except IOError:
             logger.error("I/O error occured while creating entity",
                          exc_info=True)
@@ -175,18 +184,20 @@ class Store(object):
     def update(self, key, data, confirm=None):
         """Update an entity.
 
-        Update an existing entity with the given key and the given data.
+        Update an existing entity with the given key and the given
+        data.
 
-        key (str): the key of the entity that has to be updated
-        data (str): the new properties of the entity (a dict encoded in JSON)
-        confirm (callable): action to be performed as soon as we're sure
-                            that the action won't fail (in particular,
-                            before notifying the callbacks).
+        key (unicode): the key of the entity that has to be updated
+        data (bytes): the new properties of the entity (a UTF8-encoded
+            JSON representation of a dict)
+        confirm (callable): action to be performed as soon as we're
+            sure that the action won't fail (in particular, before
+            notifying the callbacks).
 
-        Raise InvalidKey if key isn't a str or if no entity with that key
-        is present in the store.
-        Raise InvalidData if data cannot be parsed, if it's missing some
-        properties or if properties are of the wrong type.
+        raise: InvalidKey if key isn't a unicode or if no entity with
+            that key is present in the store.
+        raise: InvalidData if data cannot be parsed, if it's missing
+            some properties or if properties are of the wrong type.
 
         """
         self._verify_key(key, must_be_present=True)
@@ -194,14 +205,14 @@ class Store(object):
         # update entity
         try:
             item = self._entity()
-            item.set(json.loads(data))
+            item.set(json.loads(data, encoding='utf-8'))
             if not item.consistent():
-                raise InvalidData('Inconsistent data')
+                raise InvalidData("Inconsistent data")
             item.key = key
             old_item = self._store[key]
             self._store[key] = item
         except ValueError:
-            raise InvalidData('Invalid JSON')
+            raise InvalidData("Invalid JSON")
         # confirm the operation
         if confirm is not None:
             confirm()
@@ -210,8 +221,8 @@ class Store(object):
             callback(key, old_item, item)
         # reflect changes on the persistent storage
         try:
-            with open(os.path.join(self._path, key + '.json'), 'w') as rec:
-                rec.write(json.dumps(self._store[key].dump()))
+            with io.open(os.path.join(self._path, key + '.json'), 'wb') as rec:
+                json.dump(self._store[key].dump(), rec, encoding='utf-8')
         except IOError:
             logger.error("I/O error occured while updating entity",
                          exc_info=True)
@@ -223,39 +234,41 @@ class Store(object):
          - if it's not present in the store, create it
          - if it's present, update it
 
-        data (str): the dictionary of entities (a dict encoded in JSON)
-        confirm (callable): action to be performed as soon as we're sure
-                            that the action won't fail (in particular,
-                            before notifying the callbacks).
+        data (bytes): the dictionary of entities (a UTF8-encoded JSON
+            representation of a dict).
+        confirm (callable): action to be performed as soon as we're
+            sure that the action won't fail (in particular, before
+            notifying the callbacks).
 
-        Raise InvalidData if data cannot be parsed, if an entity is missing
-        some properties or if properties are of the wrong type.
+        raise: InvalidData if data cannot be parsed, if an entity is
+            missing some properties or if properties are of the wrong
+            type.
 
         """
         try:
-            data_dict = json.loads(data)
-            assert type(data_dict) is dict, "Not a dictionary"
+            data_dict = json.loads(data, encoding='utf-8')
+            assert isinstance(data_dict, dict), "Not a dictionary"
             item_dict = dict()
             for key, value in data_dict.iteritems():
                 try:
                     # FIXME We should allow keys to be arbitrary unicode
                     # strings, so this just needs to be a non-empty check.
-                    if not re.match("[A-Za-z0-9_]+", key):
-                        raise InvalidData('Invalid key')
+                    if not re.match('[A-Za-z0-9_]+', key):
+                        raise InvalidData("Invalid key")
                     item = self._entity()
                     item.set(value)
                     if not item.consistent():
-                        raise InvalidData('Inconsistent data')
+                        raise InvalidData("Inconsistent data")
                     item.key = key
                     item_dict[key] = item
                 except InvalidData as exc:
-                    exc.message = '[entity %s] %s' % (key, exc)
+                    exc.message = "[entity %s] %s" % (key, exc)
                     exc.args = exc.message,
                     raise exc
         except ValueError:
-            raise InvalidData('Invalid JSON')
-        except AssertionError as message:
-            raise InvalidData(str(message))
+            raise InvalidData("Invalid JSON")
+        except AssertionError as exc:
+            raise InvalidData(exc.message)
         # confirm the operation
         if confirm is not None:
             confirm()
@@ -274,8 +287,9 @@ class Store(object):
                     callback(key, old_value, value)
             # reflect changes on the persistent storage
             try:
-                with open(os.path.join(self._path, key + '.json'), 'w') as rec:
-                    rec.write(json.dumps(value.dump()))
+                with io.open(os.path.join(self._path, key + '.json'), 'wb') \
+                        as rec:
+                    json.dump(value.dump(), rec, encoding='utf-8')
             except IOError:
                 logger.error("I/O error occured while merging entity lists",
                              exc_info=True)
@@ -285,13 +299,13 @@ class Store(object):
 
         Delete an existing entity from the store.
 
-        key (str): the key of the entity that has to be deleted
-        confirm (callable): action to be performed as soon as we're sure
-                            that the action won't fail (in particular,
-                            before notifying the callbacks).
+        key (unicode): the key of the entity that has to be deleted
+        confirm (callable): action to be performed as soon as we're
+            sure that the action won't fail (in particular, before
+            notifying the callbacks).
 
-        Raise InvalidKey if key isn't a str or if no entity with that key
-        is present in the store.
+        raise: InvalidKey if key isn't a unicode or if no entity with
+            that key is present in the store.
 
         """
         self._verify_key(key, must_be_present=True)
@@ -304,9 +318,9 @@ class Store(object):
         del self._store[key]
         # enforce consistency
         for depend in self._depends:
-            for o_key, o_value in list(depend.store._store.iteritems()):
+            for o_key, o_value in list(depend._store.iteritems()):
                 if not o_value.consistent():
-                    depend.store.delete(o_key)
+                    depend.delete(o_key)
         # notify callbacks
         for callback in self._delete_callbacks:
             callback(key, old_value)
@@ -321,9 +335,9 @@ class Store(object):
 
         Delete all existing entities from the store.
 
-        confirm (callable): action to be performed as soon as we're sure
-                            that the action won't fail (in particular,
-                            before notifying the callbacks).
+        confirm (callable): action to be performed as soon as we're
+            sure that the action won't fail (in particular, before
+            notifying the callbacks).
 
         """
         # confirm the operation
@@ -338,23 +352,23 @@ class Store(object):
 
         Retrieve an existing entity from the store.
 
-        key (str): the key of the entity that has to be retrieved
+        key (unicode): the key of the entity that has to be retrieved
 
-        Raise InvalidKey if key isn't a str or if no entity with that key
-        is present in the store.
+        raise: InvalidKey if key isn't a unicode or if no entity with
+            that key is present in the store.
 
         """
         self._verify_key(key, must_be_present=True)
 
         # retrieve entity
-        return json.dumps(self._store[key].get())
+        return json.dumps(self._store[key].get(), encoding='utf-8')
 
     def retrieve_list(self):
         """Retrieve a list of all entities."""
         result = dict()
         for key, value in self._store.iteritems():
             result[key] = value.get()
-        return json.dumps(result)
+        return json.dumps(result, encoding='utf-8')
 
     def __contains__(self, key):
         return key in self._store

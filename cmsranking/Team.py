@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,17 +17,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
+import six
+
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
-
-import User
+from cmsranking.User import store as user_store
 
 
 class Team(Entity):
     """The entity representing a team.
 
     It consists of the following properties:
-    - name (str): the human-readable name of the team
+    - name (unicode): the human-readable name of the team
 
     """
     def __init__(self):
@@ -45,15 +49,14 @@ class Team(Entity):
 
         """
         try:
-            assert type(data) is dict, \
+            assert isinstance(data, dict), \
                 "Not a dictionary"
-            assert type(data['name']) is unicode or \
-                   type(data['name']) is str, \
+            assert isinstance(data['name'], six.text_type), \
                 "Field 'name' isn't a string"
-        except KeyError as field:
-            raise InvalidData("Field %s is missing" % field)
-        except AssertionError as message:
-            raise InvalidData(str(message))
+        except KeyError as exc:
+            raise InvalidData("Field %s is missing" % exc.message)
+        except AssertionError as exc:
+            raise InvalidData(exc.message)
 
     def set(self, data):
         self.validate(data)
@@ -61,7 +64,7 @@ class Team(Entity):
 
     def get(self):
         result = self.__dict__.copy()
-        del result["key"]
+        del result['key']
         return result
 
     def load(self, data):
@@ -70,8 +73,8 @@ class Team(Entity):
 
     def dump(self):
         result = self.__dict__.copy()
-        del result["key"]
+        del result['key']
         return result
 
 
-store = Store(Team, 'teams', [User])
+store = Store(Team, 'teams', [user_store])

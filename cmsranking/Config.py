@@ -17,10 +17,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
+import io
 import json
 import os
-import sys
 import pkg_resources
+import sys
 
 
 class Config(object):
@@ -105,11 +109,12 @@ class Config(object):
             try:
                 self._load_unique(conf_file)
             except IOError:
+                # We cannot access the file, we skip it.
                 pass
-            except json.decoder.JSONDecodeError as error:
-                print "Unable to load JSON configuration file %s " \
+            except ValueError as exc:
+                print "Unable to load JSON configuration file %s, probably " \
                       "because of a JSON decoding error.\n%r" % (conf_file,
-                                                                 error)
+                                                                 exc)
             else:
                 print "Using configuration file %s." % conf_file
                 return
@@ -126,11 +131,12 @@ class Config(object):
 
         """
         # Load config file
-        dic = json.load(open(path))
+        with io.open(path, 'rb') as fobj:
+            data = json.load(fobj)
 
-        # Put everything.
-        for key in dic:
-            setattr(self, key, dic[key])
+            # Put everything.
+            for key, value in data.iteritems():
+                setattr(self, key, value)
 
 
 # Create an instance of the Config class.

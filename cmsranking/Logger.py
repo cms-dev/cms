@@ -17,13 +17,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from cmsranking.Config import config
-
 import logging
 import os.path
 import time
 
-from traceback import format_tb as formatTraceback
+from traceback import format_tb
+
+from cmsranking.Config import config
+
 
 ## ANSI utilities. See for reference:
 # http://pueblo.sourceforge.net/doc/manual/ansi_color_codes.html
@@ -135,7 +136,7 @@ class LogFormatter(logging.Formatter):
                        '\n'.join(
             map(lambda a: self.ansi_command(ANSI_FAINT_ON_CMD) +
                 a + self.ansi_command(ANSI_FAINT_OFF_CMD),
-                ''.join(formatTraceback(traceback)).strip().split('\n'))))
+                ''.join(format_tb(traceback)).strip().split('\n'))))
 
         return result
 

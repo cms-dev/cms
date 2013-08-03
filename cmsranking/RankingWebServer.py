@@ -17,19 +17,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import tornado.ioloop
-import tornado.web
-
 import argparse
-import shutil
-import json
+import base64
 import functools
-import time
-from datetime import datetime
+import json
 import os
 import re
-import base64
+import shutil
 import ssl
+import time
+
+from datetime import datetime
+
+import tornado.ioloop
+import tornado.web
 
 from cmsranking.Config import config
 from cmsranking.Logger import logger
@@ -122,7 +123,7 @@ def create_handler(entity_store):
                     entity_store.merge_list(self.request.body,
                                             self.finish)
                 except InvalidData as exc:
-                    logger.error(str(exc), exc_info=False,
+                    logger.error(exc.message, exc_info=False,
                                  extra={'location': self.request.full_url(),
                                         'details': self.request.body})
                     raise tornado.web.HTTPError(400)
@@ -132,7 +133,7 @@ def create_handler(entity_store):
                     entity_store.create(entity_id, self.request.body,
                                         self.finish)
                 except InvalidData as exc:
-                    logger.error(str(exc), exc_info=False,
+                    logger.error(exc.message, exc_info=False,
                                  extra={'location': self.request.full_url(),
                                         'details': self.request.body})
                     raise tornado.web.HTTPError(400)
@@ -142,7 +143,7 @@ def create_handler(entity_store):
                     entity_store.update(entity_id, self.request.body,
                                         self.finish)
                 except InvalidData as exc:
-                    logger.error(str(exc), exc_info=False,
+                    logger.error(exc.message, exc_info=False,
                                  extra={'location': self.request.full_url(),
                                         'details': self.request.body})
                     raise tornado.web.HTTPError(400)

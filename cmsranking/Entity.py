@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,6 +16,9 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+from __future__ import unicode_literals
+from __future__ import absolute_import
 
 
 class InvalidKey(Exception):
@@ -39,7 +42,8 @@ class Entity(object):
 
         Accept the data format used on the HTTP interface.
 
-        data (str): the properties of the entity, in the "external" format
+        data (dict): the properties of the entity, in the "external"
+            format
 
         Raise InvalidData if not able to parse the data argument.
 
@@ -51,7 +55,8 @@ class Entity(object):
 
         Produce the data format used on the HTTP interface.
 
-        return (str): the properties of the entity, in the "external" format
+        return (dict): the properties of the entity, in the "external"
+            format
 
         """
         pass
@@ -61,7 +66,8 @@ class Entity(object):
 
         Accept the data format used for the file storage.
 
-        data (str): the properties of the entity, in the "internal" format
+        data (dict): the properties of the entity, in the "internal"
+            format
 
         Raise InvalidData if not able to parse the data argument.
 
@@ -73,7 +79,8 @@ class Entity(object):
 
         Produce the data format used for the file storage.
 
-        return (str): the properties of the entity, in the "internal" format
+        return (dict): the properties of the entity, in the "internal"
+            format
 
         """
         pass
@@ -81,8 +88,8 @@ class Entity(object):
     def consistent(self):
         """Check if the entity is consistent.
 
-        Verify that all references to other entities are correct (i.e. those
-        entities actually exist).
+        Verify that all references to other entities are correct (i.e.
+        those entities actually exist).
 
         return (bool): the result of this check
 

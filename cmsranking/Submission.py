@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,20 +17,22 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
+import six
+
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
-
-import Task
-import User
-import Subchange
+from cmsranking.Subchange import store as subchange_store
 
 
 class Submission(Entity):
     """The entity representing a submission.
 
     It consists of the following properties:
-    - user (str): the key of the user who submitted
-    - task (str): the key of the task of the submission
+    - user (unicode): the key of the user who submitted
+    - task (unicode): the key of the task of the submission
     - time (int): the time the submission has been submitted
 
     """
@@ -51,20 +53,18 @@ class Submission(Entity):
 
         """
         try:
-            assert type(data) is dict, \
+            assert isinstance(data, dict), \
                 "Not a dictionary"
-            assert type(data['user']) is unicode or \
-                   type(data['user']) is str, \
+            assert isinstance(data['user'], six.text_type), \
                 "Field 'user' isn't a string"
-            assert type(data['task']) is unicode or \
-                   type(data['task']) is str, \
+            assert isinstance(data['task'], six.text_type), \
                 "Field 'task' isn't a string"
-            assert type(data['time']) is int, \
+            assert isinstance(data['time'], six.integer_types), \
                 "Field 'time' isn't an integer (unix timestamp)"
-        except KeyError as field:
-            raise InvalidData("Field %s is missing" % field)
-        except AssertionError as message:
-            raise InvalidData(str(message))
+        except KeyError as exc:
+            raise InvalidData("Field %s is missing" % exc.message)
+        except AssertionError as exc:
+            raise InvalidData(exc.message)
 
     def set(self, data):
         self.validate(data)
@@ -74,10 +74,10 @@ class Submission(Entity):
 
     def get(self):
         result = self.__dict__.copy()
-        del result["key"]
-        del result["score"]
-        del result["token"]
-        del result["extra"]
+        del result['key']
+        del result['score']
+        del result['token']
+        del result['extra']
         return result
 
     def load(self, data):
@@ -88,14 +88,16 @@ class Submission(Entity):
 
     def dump(self):
         result = self.__dict__.copy()
-        del result["key"]
-        del result["score"]
-        del result["token"]
-        del result["extra"]
+        del result['key']
+        del result['score']
+        del result['token']
+        del result['extra']
         return result
 
     def consistent(self):
-        return self.task in Task.store and self.user in User.store
+        from cmsranking.Task import store as task_store
+        from cmsranking.User import store as user_store
+        return self.task in task_store and self.user in user_store
 
 
-store = Store(Submission, 'submissions', [Subchange])
+store = Store(Submission, 'submissions', [subchange_store])

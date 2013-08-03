@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,19 +17,24 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
+import six
+
 from cmsranking.Entity import Entity, InvalidData
 from cmsranking.Store import Store
-
-import Submission
 
 
 class Subchange(Entity):
     """The entity representing a change in the status of a submission.
 
     It consists of the following properties:
-    - user (str): the key of the user who submitted
-    - task (str): the key of the task of the submission
-    - time (int): the time the submission has been submitted
+    - submission (unicode): the key of the affected submission
+    - time (int): the time the change takes effect
+    - score (float): optional, the new score
+    - token (bool): optional, the new token status
+    - extra ([unicode]): optional, the new details
 
     """
     def __init__(self):
@@ -51,30 +56,28 @@ class Subchange(Entity):
 
         """
         try:
-            assert type(data) is dict, \
+            assert isinstance(data, dict), \
                 "Not a dictionary"
-            assert type(data['submission']) is unicode or \
-                   type(data['submission']) is str, \
+            assert isinstance(data['submission'], six.text_type), \
                 "Field 'submission' isn't a string"
-            assert type(data['time']) is int, \
+            assert isinstance(data['time'], six.integer_types), \
                 "Field 'time' isn't an integer (unix timestamp)"
             if 'score' in data:
-                assert type(data['score']) is float, \
+                assert isinstance(data['score'], float), \
                     "Field 'score' isn't a float"
             if 'token' in data:
-                assert type(data['token']) is bool, \
+                assert isinstance(data['token'], bool), \
                     "Field 'token' isn't a boolean"
             if 'extra' in data:
-                assert type(data['extra']) is list, \
+                assert isinstance(data['extra'], list), \
                     "Field 'extra' isn't a list of strings"
                 for i in data['extra']:
-                    assert type(i) is unicode or \
-                           type(i) is str, \
+                    assert isinstance(i, six.text_type), \
                         "Field 'extra' isn't a list of strings"
-        except KeyError as field:
-            raise InvalidData("Field %s is missing" % field)
-        except AssertionError as message:
-            raise InvalidData(str(message))
+        except KeyError as exc:
+            raise InvalidData("Field %s is missing" % exc.message)
+        except AssertionError as exc:
+            raise InvalidData(exc.message)
 
     def set(self, data):
         self.validate(data)
@@ -86,7 +89,7 @@ class Subchange(Entity):
 
     def get(self):
         result = self.__dict__.copy()
-        del result["key"]
+        del result['key']
         for field in ['score', 'token', 'extra']:
             if result[field] is None:
                 del result[field]
@@ -102,14 +105,15 @@ class Subchange(Entity):
 
     def dump(self):
         result = self.__dict__.copy()
-        del result["key"]
+        del result['key']
         for field in ['score', 'token', 'extra']:
             if result[field] is None:
                 del result[field]
         return result
 
     def consistent(self):
-        return self.submission in Submission.store
+        from cmsranking.Submission import store as submission_store
+        return self.submission in submission_store
 
 
 store = Store(Subchange, 'subchanges')

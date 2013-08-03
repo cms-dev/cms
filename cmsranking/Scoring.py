@@ -17,12 +17,15 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
 import heapq
 
 from cmsranking.Logger import logger
 
-import cmsranking.Submission as Submission
-import cmsranking.Subchange as Subchange
+from cmsranking.Submission import store as submission_store
+from cmsranking.Subchange import store as subchange_store
 
 
 class NumberSet:
@@ -202,7 +205,7 @@ class Score:
 class ScoringStore:
     """A manager for all instances of Scoring.
 
-    It listens to the events of Submission.store and Subchange.store and
+    It listens to the events of submission_store and subchange_store and
     redirects them to the corresponding Score (based on their user/task).
     When asked to provide a global history of score changes it takes the
     ones of each Score and combines them toghether (using a binary heap).
@@ -217,20 +220,20 @@ class ScoringStore:
     # delete the last submission, but we cannot after we delete the
     # last subchange.
     def __init__(self):
-        Submission.store.add_create_callback(self.create_submission)
-        Submission.store.add_update_callback(self.update_submission)
-        Submission.store.add_delete_callback(self.delete_submission)
-        Subchange.store.add_create_callback(self.create_subchange)
-        Subchange.store.add_update_callback(self.update_subchange)
-        Subchange.store.add_delete_callback(self.delete_subchange)
+        submission_store.add_create_callback(self.create_submission)
+        submission_store.add_update_callback(self.update_submission)
+        submission_store.add_delete_callback(self.delete_submission)
+        subchange_store.add_create_callback(self.create_subchange)
+        subchange_store.add_update_callback(self.update_subchange)
+        subchange_store.add_delete_callback(self.delete_subchange)
 
         self._scores = dict()
 
         self._callbacks = list()
 
-        for key, value in Submission.store._store.iteritems():
+        for key, value in submission_store._store.iteritems():
             self.create_submission(key, value)
-        for key, value in Subchange.store._store.iteritems():
+        for key, value in subchange_store._store.iteritems():
             self.create_subchange(key, value)
 
     def add_score_callback(self, callback):
@@ -289,7 +292,7 @@ class ScoringStore:
             del self._scores[submission.user]
 
     def create_subchange(self, key, subchange):
-        submission = Submission.store._store[subchange.submission]
+        submission = submission_store._store[subchange.submission]
         score_obj = self._scores[submission.user][submission.task]
         old_score = score_obj.get_score()
         score_obj.create_subchange(key, subchange)
@@ -303,7 +306,7 @@ class ScoringStore:
             self.create_subchange(key, subchange)
             return
 
-        submission = Submission.store._store[subchange.submission]
+        submission = submission_store._store[subchange.submission]
         score_obj = self._scores[submission.user][submission.task]
         old_score = score_obj.get_score()
         score_obj.update_subchange(key, subchange)
@@ -312,7 +315,7 @@ class ScoringStore:
             self.notify_callbacks(submission.user, submission.task, new_score)
 
     def delete_subchange(self, key, subchange):
-        submission = Submission.store._store[subchange.submission]
+        submission = submission_store._store[subchange.submission]
         score_obj = self._scores[submission.user][submission.task]
         old_score = score_obj.get_score()
         score_obj.delete_subchange(key)
