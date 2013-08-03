@@ -179,33 +179,30 @@ class BaseHandler(CommonRequestHandler):
             locales.append("en_US")
         # End of copied code
 
-        if self.current_user is not None:
-            iso_639_locale = gettext.translation(
-                "iso_639",
-                os.path.join(config.iso_codes_prefix, "share", "locale"),
-                locales,
-                fallback=True)
-            iso_3166_locale = gettext.translation(
-                "iso_3166",
-                os.path.join(config.iso_codes_prefix, "share", "locale"),
-                locales,
-                fallback=True)
-            shared_mime_info_locale = gettext.translation(
-                "shared-mime-info",
-                os.path.join(
-                    config.shared_mime_info_prefix, "share", "locale"),
-                locales,
-                fallback=True)
-            cms_locale = gettext.translation(
-                "cms",
-                localization_dir,
-                locales,
-                fallback=True)
-            cms_locale.add_fallback(iso_639_locale)
-            cms_locale.add_fallback(iso_3166_locale)
-            cms_locale.add_fallback(shared_mime_info_locale)
-        else:
-            cms_locale = gettext.NullTranslations()
+        iso_639_locale = gettext.translation(
+            "iso_639",
+            os.path.join(config.iso_codes_prefix, "share", "locale"),
+            locales,
+            fallback=True)
+        iso_3166_locale = gettext.translation(
+            "iso_3166",
+            os.path.join(config.iso_codes_prefix, "share", "locale"),
+            locales,
+            fallback=True)
+        shared_mime_info_locale = gettext.translation(
+            "shared-mime-info",
+            os.path.join(
+                config.shared_mime_info_prefix, "share", "locale"),
+            locales,
+            fallback=True)
+        cms_locale = gettext.translation(
+            "cms",
+            localization_dir,
+            locales,
+            fallback=True)
+        cms_locale.add_fallback(iso_639_locale)
+        cms_locale.add_fallback(iso_3166_locale)
+        cms_locale.add_fallback(shared_mime_info_locale)
 
         # Add translate method to simulate tornado.Locale's interface
         def translate(message, plural_message=None, count=None):
