@@ -169,7 +169,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 <tr>
                     <th>{{ _("Outcome") }}</th>
                     <th>{{ _("Details") }}</th>
-                    <th>{{ _("Time") }}</th>
+                    <th>{{ _("Elapsed time") }}</th>
                     <th>{{ _("Memory") }}</th>
                 </tr>
             </thead>

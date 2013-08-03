@@ -1117,6 +1117,7 @@ msgid "Previous tests"
 msgstr ""
 
 #: templates/contest/test_interface.html:162
+#: grading/ScoreType.py:173
 msgid "Memory"
 msgstr ""
 
@@ -1146,4 +1147,16 @@ msgstr ""
 
 #: templates/contest/user_test_row.html:29
 msgid "Executed"
+msgstr ""
+
+#: grading/ScoreType.py:170
+msgid "Outcome"
+msgstr ""
+
+#: grading/ScoreType.py:171
+msgid "Details"
+msgstr ""
+
+#: grading/ScoreType.py:172
+msgid "Elapsed time"
 msgstr ""
