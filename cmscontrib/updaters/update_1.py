@@ -44,7 +44,7 @@ class Updater(object):
         return self.objs
 
     def get_id(self):
-        ret = str(self.next_id)
+        ret = unicode(self.next_id)
         self.next_id += 1
         return ret
 
