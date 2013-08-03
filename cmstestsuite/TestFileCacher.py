@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -156,21 +157,21 @@ class TestFileCacher(TestService):
 
         logger.info("  I am sending the ~100B binary file to FileCacher")
         try:
-            data = self.file_cacher.put_file(file_obj=StringIO(self.content),
-                                             description="Test #000")
+            data = self.file_cacher.put_file_from_fobj(StringIO(self.content),
+                                                       u"Test #000")
         except Exception as error:
             self.test_end(False, "Error received: %r." % error)
+            return
 
         if not os.path.exists(
-            os.path.join(self.cache_base_path, "objects", data)):
+            os.path.join(self.cache_base_path, data)):
             self.test_end(False, "File not stored in local cache.")
-        elif open(os.path.join(self.cache_base_path, "objects", data),
-                  "rb").read() != self.content:
+        elif open(os.path.join(self.cache_base_path, data), "rb").read() != \
+                self.content:
             self.test_end(False, "Local cache's content differ "
                           "from original file.")
         else:
-            self.cache_path = os.path.join(self.cache_base_path, "objects",
-                                           data)
+            self.cache_path = os.path.join(self.cache_base_path, data)
             self.digest = data
             self.test_end(True, "Data sent and cached without error.")
 
@@ -185,10 +186,10 @@ class TestFileCacher(TestService):
         with open(self.cache_path, "wb") as cached_file:
             cached_file.write(self.fake_content)
         try:
-            data = self.file_cacher.get_file(digest=self.digest,
-                                             temp_file_obj=True)
+            data = self.file_cacher.get_file(self.digest)
         except Exception as error:
             self.test_end(False, "Error received: %r." % error)
+            return
 
         received = data.read()
         data.close()
@@ -212,6 +213,7 @@ class TestFileCacher(TestService):
             size = self.file_cacher.get_size(self.digest)
         except Exception as error:
             self.test_end(False, "Error received: %r." % error)
+            return
 
         if size == self.size:
             self.test_end(True, "The size is correct.")
@@ -229,10 +231,10 @@ class TestFileCacher(TestService):
                     "after deleting the cache.")
         os.unlink(self.cache_path)
         try:
-            data = self.file_cacher.get_file(digest=self.digest,
-                                             temp_file_obj=True)
+            data = self.file_cacher.get_file(self.digest)
         except Exception as error:
             self.test_end(False, "Error received: %r." % error)
+            return
 
         received = data.read()
         data.close()
@@ -258,12 +260,13 @@ class TestFileCacher(TestService):
             self.file_cacher.delete(digest=self.digest)
         except Exception as error:
             self.test_end(False, "Error received: %s." % error)
+            return
 
         else:
             logger.info("  File deleted correctly.")
             logger.info("  I am getting the file from FileCacher.")
             try:
-                self.file_cacher.get_file(digest=self.digest)
+                self.file_cacher.get_file(self.digest)
             except Exception as error:
                 self.test_end(True, "Correctly received an error: %r." % error)
             else:
@@ -277,7 +280,7 @@ class TestFileCacher(TestService):
         """
         logger.info("  I am retrieving an unexisting file from FileCacher.")
         try:
-            self.file_cacher.get_file(digest=self.digest, temp_file_obj=True)
+            self.file_cacher.get_file(self.digest)
         except Exception as error:
             self.test_end(True, "Correctly received an error: %r." % error)
         else:
@@ -295,21 +298,21 @@ class TestFileCacher(TestService):
 
         logger.info("  I am sending the ~100B binary file to FileCacher")
         try:
-            data = self.file_cacher.put_file(binary_data=self.content,
-                                             description="Test #005")
+            data = self.file_cacher.put_file_content(self.content,
+                                                     u"Test #005")
         except Exception as error:
             self.test_end(False, "Error received: %r." % error)
+            return
 
         if not os.path.exists(
-            os.path.join(self.cache_base_path, "objects", data)):
+            os.path.join(self.cache_base_path, data)):
             self.test_end(False, "File not stored in local cache.")
-        elif open(os.path.join(self.cache_base_path, "objects", data),
+        elif open(os.path.join(self.cache_base_path, data),
                   "rb").read() != self.content:
             self.test_end(False, "Local cache's content differ "
                           "from original file.")
         else:
-            self.cache_path = os.path.join(self.cache_base_path, "objects",
-                                           data)
+            self.cache_path = os.path.join(self.cache_base_path, data)
             self.digest = data
             self.test_end(True, "Data sent and cached without error.")
 
@@ -325,9 +328,10 @@ class TestFileCacher(TestService):
         with open(self.cache_path, "wb") as cached_file:
             cached_file.write(self.fake_content)
         try:
-            data = self.file_cacher.get_file(digest=self.digest, string=True)
+            data = self.file_cacher.get_file_content(self.digest)
         except Exception as error:
             self.test_end(False, "Error received: %r." % error)
+            return
 
         if data != self.fake_content:
             if data == self.content:
@@ -348,23 +352,22 @@ class TestFileCacher(TestService):
         logger.info("  I am sending the ~100MB binary file to FileCacher")
         rand_file = RandomFile(100000000)
         try:
-            data = self.file_cacher.put_file(file_obj=rand_file,
-                                             description="Test #007")
+            data = self.file_cacher.put_file_from_fobj(rand_file, u"Test #007")
         except Exception as error:
             self.test_end(False, "Error received: %r." % error)
+            return
         if rand_file.dim != 0:
             self.test_end(False, "The input file wasn't read completely.")
         my_digest = rand_file.digest
         rand_file.close()
 
         if not os.path.exists(
-            os.path.join(self.cache_base_path, "objects", data)):
+            os.path.join(self.cache_base_path, data)):
             self.test_end(False, "File not stored in local cache.")
         elif my_digest != data:
             self.test_end(False, "File received with wrong hash.")
         else:
-            self.cache_path = os.path.join(self.cache_base_path, "objects",
-                                           data)
+            self.cache_path = os.path.join(self.cache_base_path, data)
             self.digest = data
             self.test_end(True, "Data sent and cached without error.")
 
@@ -379,9 +382,10 @@ class TestFileCacher(TestService):
         os.unlink(self.cache_path)
         hash_file = HashingFile()
         try:
-            self.file_cacher.get_file(digest=self.digest, file_obj=hash_file)
+            self.file_cacher.get_file_to_fobj(self.digest, hash_file)
         except Exception as error:
             self.test_end(False, "Error received: %r." % error)
+            return
         my_digest = hash_file.digest
         hash_file.close()
 

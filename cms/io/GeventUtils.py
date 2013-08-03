@@ -3,6 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -56,14 +57,23 @@ from cms.io.PsycoGevent import make_psycopg_green, \
     unmake_psycopg_green, is_psycopg_green
 
 
-def copyfileobj(fsrc, fdst, length=16 * 1024):
+# XXX Use buffer_size=io.DEFAULT_BUFFER_SIZE?
+def copyfileobj(fsrc, fdst, buffer_size=16 * 1024):
     """copy data from file-like object fsrc to file-like object fdst"""
-    while 1:
-        buf = fsrc.read(length)
-        if not buf:
-            break
-        fdst.write(buf)
-        gevent.sleep(0)
+    # file.write() behaves differently from io.FileIO.write(): the
+    # latter returns the number of bytes written, the former doesn't.
+    # This functions tries to support both behaviors by detecting which
+    # one is used.
+    buf = fsrc.read(buffer_size)
+    while len(buf) > 0:
+        while len(buf) > 0:
+            written = fdst.write(buf)
+            # Cooperative yield.
+            gevent.sleep(0)
+            if written is None:
+                break
+            buf = buf[written:]
+        buf = fsrc.read(buffer_size)
 
 
 def copyfile(src, dst):

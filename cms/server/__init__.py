@@ -455,9 +455,8 @@ def file_handler_gen(BaseClass):
                 self.finish()
                 return
             try:
-                self.temp_filename = \
-                    self.application.service.file_cacher.get_file(
-                        digest, temp_path=True)
+                self.temp_file = \
+                    self.application.service.file_cacher.get_file(digest)
             except Exception as error:
                 logger.error("Exception while retrieving file `%s'. %r" %
                              (filename, error))
@@ -469,7 +468,6 @@ def file_handler_gen(BaseClass):
                             "attachment; filename=\"%s\"" % filename)
             self.start_time = time.time()
             self.size = 0
-            self.temp_file = open(self.temp_filename, "rb")
 
             # TODO - Here I'm changing things as few as possible when
             # switching from the asynchronous to the greenlet-based
@@ -490,7 +488,6 @@ def file_handler_gen(BaseClass):
             self.write(data)
             if length < FileCacher.CHUNK_SIZE:
                 self.temp_file.close()
-                os.unlink(self.temp_filename)
                 duration = time.time() - self.start_time
                 logger.info("%.3lf seconds for %.3lf MB, %.3lf MB/s" %
                             (duration, self.size, self.size / duration))

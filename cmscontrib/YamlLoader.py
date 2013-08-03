@@ -290,10 +290,10 @@ class YamlLoader(Loader):
                  os.path.join(task_path, "testo", "testo.pdf")]
         for path in paths:
             if os.path.exists(path):
-                digest = self.file_cacher.put_file(
-                    path=path,
-                    description="Statement for task %s (lang: %s)"
-                    % (name, primary_language))
+                digest = self.file_cacher.put_file_from_path(
+                    path,
+                    "Statement for task %s (lang: %s)" % (name,
+                                                          primary_language))
                 break
         else:
             logger.error("Couldn't find any task statement, aborting...")
@@ -349,10 +349,9 @@ class YamlLoader(Loader):
                 grader_filename = os.path.join(
                     task_path, "sol", "grader.%s" % lang)
                 if os.path.exists(grader_filename):
-                    digest = self.file_cacher.put_file(
-                        path=grader_filename,
-                        description="Grader for task %s and language %s" %
-                                    (name, lang))
+                    digest = self.file_cacher.put_file_from_path(
+                        grader_filename,
+                        "Grader for task %s and language %s" % (name, lang))
                     args["managers"] += [
                         Manager("grader.%s" % lang, digest)]
                 else:
@@ -361,10 +360,9 @@ class YamlLoader(Loader):
             for other_filename in os.listdir(os.path.join(task_path, "sol")):
                 if other_filename.endswith('.h') or \
                         other_filename.endswith('lib.pas'):
-                    digest = self.file_cacher.put_file(
-                        path=os.path.join(task_path, "sol", other_filename),
-                        description="Manager %s for task %s" %
-                                    (other_filename, name))
+                    digest = self.file_cacher.put_file_from_path(
+                        os.path.join(task_path, "sol", other_filename),
+                        "Manager %s for task %s" % (other_filename, name))
                     args["managers"] += [
                         Manager(other_filename, digest)]
             compilation_param = "grader"
@@ -378,9 +376,9 @@ class YamlLoader(Loader):
                  os.path.join(task_path, "cor", "correttore")]
         for path in paths:
             if os.path.exists(path):
-                digest = self.file_cacher.put_file(
-                    path=path,
-                    description="Manager for task %s" % name)
+                digest = self.file_cacher.put_file_from_path(
+                    path,
+                    "Manager for task %s" % name)
                 args["managers"] += [
                     Manager("checker", digest)]
                 evaluation_param = "comparator"
@@ -481,19 +479,19 @@ class YamlLoader(Loader):
                 if os.path.exists(path):
                     args["task_type"] = "Communication"
                     args["task_type_parameters"] = '[]'
-                    digest = self.file_cacher.put_file(
-                        path=path,
-                        description="Manager for task %s" % name)
+                    digest = self.file_cacher.put_file_from_path(
+                        path,
+                        "Manager for task %s" % name)
                     args["managers"] += [
                         Manager("manager", digest)]
                     for lang in LANGUAGES:
                         stub_name = os.path.join(
                             task_path, "sol", "stub.%s" % lang)
                         if os.path.exists(stub_name):
-                            digest = self.file_cacher.put_file(
-                                path=stub_name,
-                                description="Stub for task %s and "
-                                "language %s" % (name, lang))
+                            digest = self.file_cacher.put_file_from_path(
+                                stub_name,
+                                "Stub for task %s and language %s" % (name,
+                                                                      lang))
                             args["managers"] += [
                                 Manager("stub.%s" % lang, digest)]
                         else:
@@ -511,12 +509,12 @@ class YamlLoader(Loader):
 
         args["testcases"] = []
         for i in xrange(int(conf["n_input"])):
-            input_digest = self.file_cacher.put_file(
-                path=os.path.join(task_path, "input", "input%d.txt" % i),
-                description="Input %d for task %s" % (i, name))
-            output_digest = self.file_cacher.put_file(
-                path=os.path.join(task_path, "output", "output%d.txt" % i),
-                description="Output %d for task %s" % (i, name))
+            input_digest = self.file_cacher.put_file_from_path(
+                os.path.join(task_path, "input", "input%d.txt" % i),
+                "Input %d for task %s" % (i, name))
+            output_digest = self.file_cacher.put_file_from_path(
+                os.path.join(task_path, "output", "output%d.txt" % i),
+                "Output %d for task %s" % (i, name))
             args["testcases"] += [
                 Testcase("%03d" % i, False, input_digest, output_digest)]
             if args["task_type"] == "OutputOnly":

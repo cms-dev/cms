@@ -696,10 +696,9 @@ class AddStatementHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            digest = self.application.service.file_cacher.put_file(
-                binary_data=statement["body"],
-                description="Statement for task %s (lang: %s)" % (task_name,
-                                                                  language))
+            digest = self.application.service.file_cacher.put_file_content(
+                statement["body"],
+                "Statement for task %s (lang: %s)" % (task_name, language))
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(),
@@ -760,9 +759,9 @@ class AddAttachmentHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            digest = self.application.service.file_cacher.put_file(
-                binary_data=attachment["body"],
-                description="Task attachment for %s" % task_name)
+            digest = self.application.service.file_cacher.put_file_content(
+                attachment["body"],
+                "Task attachment for %s" % task_name)
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(),
@@ -826,9 +825,9 @@ class AddManagerHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            digest = self.application.service.file_cacher.put_file(
-                binary_data=manager["body"],
-                description="Task manager for %s" % task_name)
+            digest = self.application.service.file_cacher.put_file_content(
+                manager["body"],
+                "Task manager for %s" % task_name)
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(),
@@ -1240,12 +1239,12 @@ class AddTestcaseHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            input_digest = self.application.service.file_cacher.put_file(
-                binary_data=input_["body"],
-                description="Testcase input for task %s" % task_name)
-            output_digest = self.application.service.file_cacher.put_file(
-                binary_data=output["body"],
-                description="Testcase output for task %s" % task_name)
+            input_digest = self.application.service.file_cacher.put_file_content(
+                input_["body"],
+                "Testcase input for task %s" % task_name)
+            output_digest = self.application.service.file_cacher.put_file_content(
+                output["body"],
+                "Testcase output for task %s" % task_name)
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(),
