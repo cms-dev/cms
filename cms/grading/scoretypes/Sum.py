@@ -24,11 +24,21 @@ import json
 from cms.grading.ScoreType import ScoreTypeAlone
 
 
+def _(message):
+    return message
+
+
 class Sum(ScoreTypeAlone):
     """The score of a submission is the sum of the outcomes,
     multiplied by the integer parameter.
 
     """
+    # Mark strings for localization.
+    _("Outcome")
+    _("Details")
+    _("Execution time")
+    _("Memory used")
+    _("N/A")
     TEMPLATE = """\
 {% from cms.server import format_size %}
 <table class="testcase-list">
@@ -36,8 +46,8 @@ class Sum(ScoreTypeAlone):
         <tr>
             <th>{{ _("Outcome") }}</th>
             <th>{{ _("Details") }}</th>
-            <th>{{ _("Time") }}</th>
-            <th>{{ _("Memory") }}</th>
+            <th>{{ _("Execution time") }}</th>
+            <th>{{ _("Memory used") }}</th>
         </tr>
     </thead>
     <tbody>
@@ -50,7 +60,7 @@ class Sum(ScoreTypeAlone):
             {% else %}
         <tr class="partiallycorrect">
             {% end %}
-            <td>{{ tc["outcome"] }}</td>
+            <td>{{ _(tc["outcome"]) }}</td>
             <td>{{ tc["text"] }}</td>
             <td>
             {% if tc["time"] is not None %}
@@ -140,8 +150,8 @@ class Sum(ScoreTypeAlone):
 
         """
         if outcome <= 0.0:
-            return "Not correct"
+            return _("Not correct")
         elif outcome >= self.parameters:
-            return "Correct"
+            return _("Correct")
         else:
-            return "Partially correct"
+            return _("Partially correct")

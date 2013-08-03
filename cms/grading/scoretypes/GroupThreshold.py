@@ -22,6 +22,10 @@
 from cms.grading.ScoreType import ScoreTypeGroup
 
 
+def _(message):
+    return message
+
+
 class GroupThreshold(ScoreTypeGroup):
     """The score of a submission is the sum of: the multiplier of the
     range if all outcomes are between 0.0 and the threshold, or 0.0.
@@ -35,9 +39,9 @@ class GroupThreshold(ScoreTypeGroup):
         """See ScoreTypeGroup."""
         threshold = parameter[2]
         if 0.0 <= outcome <= threshold:
-            return "Correct"
+            return _("Correct")
         else:
-            return "Not correct"
+            return _("Not correct")
 
     def reduce(self, outcomes, parameter):
         """See ScoreTypeGroup."""

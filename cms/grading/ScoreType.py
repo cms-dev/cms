@@ -123,6 +123,10 @@ class ScoreTypeAlone(ScoreType):
     pass
 
 
+def _(message):
+    return message
+
+
 class ScoreTypeGroup(ScoreTypeAlone):
     """Intermediate class to manage tasks whose testcases are
     subdivided in groups (or subtasks). The score type parameters must
@@ -135,6 +139,13 @@ class ScoreTypeGroup(ScoreTypeAlone):
     'reduce'.
 
     """
+    # Mark strings for localization.
+    _("Subtask %d")
+    _("Outcome")
+    _("Details")
+    _("Execution time")
+    _("Memory used")
+    _("N/A")
     TEMPLATE = """\
 {% from cms.server import format_size %}
 {% for st in details %}
@@ -169,8 +180,8 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 <tr>
                     <th>{{ _("Outcome") }}</th>
                     <th>{{ _("Details") }}</th>
-                    <th>{{ _("Time") }}</th>
-                    <th>{{ _("Memory") }}</th>
+                    <th>{{ _("Execution time") }}</th>
+                    <th>{{ _("Memory used") }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -183,7 +194,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
             {% else %}
                 <tr class="partiallycorrect">
             {% end %}
-                    <td>{{ tc["outcome"] }}</td>
+                    <td>{{ _(tc["outcome"]) }}</td>
                     <td>{{ tc["text"] }}</td>
                     <td>
             {% if "time" in tc and tc["time"] is not None %}

@@ -4,12 +4,13 @@ Localization
 For developers
 ==============
 
-When you change a string in a template or in a web server, you have to generate again the file :gh_blob:`cms/server/po/messages.pot`. To do so, run this command inside :gh_tree:`cms/server/`.
+When you change a string in a template or in a web server, you have to generate again the file :gh_blob:`cms/server/po/messages.pot`. To do so, run this command inside :gh_tree:`cms/`.
 
 .. sourcecode:: bash
 
-    xgettext -o po/messages.pot --language=Python --keyword=_:1,2 \
-      *.py templates/admin/*.html templates/contest/*.html
+    xgettext -o server/po/messages.pot --language=Python --keyword=_:1,2 \
+      grading/ScoreType.py grading/scoretypes/*.py server/*.py \
+      server/templates/admin/*.html server/templates/contest/*.html
 
 When you have a new translation, or an update of an old translation, you need to update the ``.mo`` files (the compiled versions of the ``.po`` files). You can run ``./setup.py build`` to update all translations (and also do a couple of other things, like compiling the sandbox). Alternatively, run the following inside :gh_tree:`cms/server/`.
 

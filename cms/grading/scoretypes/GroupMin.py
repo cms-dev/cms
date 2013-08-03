@@ -22,6 +22,10 @@
 from cms.grading.ScoreType import ScoreTypeGroup
 
 
+def _(message):
+    return message
+
+
 class GroupMin(ScoreTypeGroup):
     """The score of a submission is the sum of the product of the
     minimum of the ranges with the multiplier of that range.
@@ -33,11 +37,11 @@ class GroupMin(ScoreTypeGroup):
     def get_public_outcome(self, outcome, parameter):
         """See ScoreTypeGroup."""
         if outcome <= 0.0:
-            return "Not correct"
+            return _("Not correct")
         elif outcome >= 1.0:
-            return "Correct"
+            return _("Correct")
         else:
-            return "Partially correct"
+            return _("Partially correct")
 
     def reduce(self, outcomes, parameter):
         """See ScoreTypeGroup."""
