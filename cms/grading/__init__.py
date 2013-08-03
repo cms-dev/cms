@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -22,6 +23,7 @@
 
 import os
 import codecs
+import json
 from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
@@ -35,6 +37,11 @@ SubmissionScoreDelta = namedtuple('SubmissionScoreDelta',
     ['submission', 'old_score', 'new_score',
      'old_public_score', 'new_public_score',
      'old_ranking_score_details', 'new_ranking_score_details'])
+
+
+# Dummy function to mark translatable string.
+def N_(message):
+    return message
 
 
 class JobException(Exception):
@@ -100,6 +107,40 @@ def get_compilation_command(language, source_filenames, executable_filename,
     return command
 
 
+def format_status_text(status, translator=None):
+    """Format the given status text in the given locale.
+
+    A status text is the content of SubmissionResult.compilation_text,
+    Evaluation.text and UserTestResult.(compilation|evaluation)_text.
+    It is a list whose first element is a string with printf-like
+    placeholders and whose other elements are the data to use to fill
+    them. A JSON-encoded list is also accepted.
+    The first element will be translated using the given translator (or
+    the identity function, if not given), completed with the data and
+    returned.
+
+    status (list or bytes): a status, as described above.
+    translator (callable): a function expecting a string and returning
+        that same string translated in some language.
+
+    """
+    # Mark strings for localization.
+    N_("N/A")
+
+    if translator is None:
+        translator = lambda x: x
+
+    try:
+        if isinstance(status, (str, unicode)):
+            status = json.loads(status)
+
+        return translator(status[0]) % tuple(status[1:])
+    except:
+        logger.error("Unexpected error when formatting status "
+                     "text: %r" % status, exc_info=True)
+        return translator("N/A")
+
+
 def compilation_step(sandbox, command):
     """Execute a compilation command in the sandbox, setting up the
     sandbox itself with a standard configuration and doing standard
@@ -133,24 +174,15 @@ def compilation_step(sandbox, command):
     exit_status = sandbox.get_exit_status()
     exit_code = sandbox.get_exit_code()
     stdout = sandbox.get_file_to_string("compiler_stdout.txt")
-    if stdout.strip() == "":
-        stdout = "(empty)\n"
     stdout = unicode(stdout, 'utf-8', errors='replace')
     stderr = sandbox.get_file_to_string("compiler_stderr.txt")
-    if stderr.strip() == "":
-        stderr = "(empty)\n"
     stderr = unicode(stderr, 'utf-8', errors='replace')
-    compiler_output = "Compiler standard output:\n" \
-        "%s\n" \
-        "Compiler standard error:\n" \
-        "%s" % (stdout, stderr)
 
     # And retrieve some interesting data.
     plus = {
-        "execution_time": sandbox.get_execution_time(),
-        "execution_wall_clock_time":
-            sandbox.get_execution_wall_clock_time(),
-        "memory_used": sandbox.get_memory_used(),
+        "compilation_time": sandbox.get_execution_time(),
+        "compilation_wall_clock_time": sandbox.get_execution_wall_clock_time(),
+        "compilation_memory": sandbox.get_memory_used(),
         "stdout": stdout,
         "stderr": stderr,
         "exit_status": exit_status,
@@ -169,7 +201,7 @@ def compilation_step(sandbox, command):
         logger.debug("Compilation successfully finished.")
         success = True
         compilation_success = True
-        text = "OK %s\n%s" % (sandbox.get_stats(), compiler_output)
+        text = [N_("Compilation succeeded")]
 
     # Error in compilation: returning the error to the user.
     elif (exit_status == Sandbox.EXIT_OK and exit_code != 0) or \
@@ -177,14 +209,14 @@ def compilation_step(sandbox, command):
         logger.debug("Compilation failed.")
         success = True
         compilation_success = False
-        text = "Failed %s\n%s" % (sandbox.get_stats(), compiler_output)
+        text = [N_("Compilation failed")]
 
     # Timeout: returning the error to the user
     elif exit_status == Sandbox.EXIT_TIMEOUT:
         logger.debug("Compilation timed out.")
         success = True
         compilation_success = False
-        text = "Time out %s\n%s" % (sandbox.get_stats(), compiler_output)
+        text = [N_("Compilation timed out")]
 
     # Suicide with signal (probably memory limit): returning the error
     # to the user
@@ -194,9 +226,8 @@ def compilation_step(sandbox, command):
         success = True
         compilation_success = False
         plus["signal"] = signal
-        text = "Killed with signal %d %s.\nThis could be triggered by " \
-            "violating memory limits\n%s" % \
-            (signal, sandbox.get_stats(), compiler_output)
+        text = [N_("Compilation killed with signal %d (could be triggered "
+                  "by violating memory limits)"), signal]
 
     # Sandbox error: this isn't a user error, the administrator needs
     # to check the environment
@@ -303,9 +334,8 @@ def evaluation_step_after_run(sandbox):
     # And retrieve some interesting data.
     plus = {
         "execution_time": sandbox.get_execution_time(),
-        "execution_wall_clock_time":
-            sandbox.get_execution_wall_clock_time(),
-        "memory_used": sandbox.get_memory_used(),
+        "execution_wall_clock_time": sandbox.get_execution_wall_clock_time(),
+        "execution_memory": sandbox.get_memory_used(),
         "exit_status": exit_status,
         }
 
@@ -334,9 +364,8 @@ def evaluation_step_after_run(sandbox):
     # dynamically (offensive syscall is mprotect).
     elif exit_status == Sandbox.EXIT_SYSCALL:
         syscall = sandbox.get_killing_syscall()
-        msg = "Execution killed because of forbidden syscall %s." % \
-            syscall
-        logger.debug(msg)
+        logger.debug("Execution killed because of forbidden "
+                     "syscall: `%s'." % syscall)
         success = True
         plus["syscall"] = syscall
 
@@ -344,15 +373,14 @@ def evaluation_step_after_run(sandbox):
     # disclosing the offending file (can't we?).
     elif exit_status == Sandbox.EXIT_FILE_ACCESS:
         filename = sandbox.get_forbidden_file_error()
-        msg = "Execution killed because of forbidden file access."
-        logger.debug("%s `%s'." % (msg, filename))
+        logger.debug("Execution killed because of forbidden "
+                     "file access: `%s'." % filename)
         success = True
         plus["filename"] = filename
 
     # The exit code was nonzero: returning the error to the user.
     elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
-        msg = "Execution failed because the return code was nonzero."
-        logger.debug("%s" % msg)
+        logger.debug("Execution failed because the return code was nonzero.")
         success = True
 
     # Last check before assuming that evaluation finished
@@ -380,18 +408,21 @@ def human_evaluation_message(plus):
     """
     exit_status = plus['exit_status']
     if exit_status == Sandbox.EXIT_TIMEOUT:
-        return "Execution timed out."
+        return [N_("Execution timed out")]
     elif exit_status == Sandbox.EXIT_SIGNAL:
-        return "Execution killed with signal %d." % (plus['signal'])
+        return [N_("Execution killed with signal %d (could be triggered by "
+                  "violating memory limits)"), plus['signal']]
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         return None
     elif exit_status == Sandbox.EXIT_SYSCALL:
-        return "Execution killed because of forbidden syscall %s." % \
-            (plus['syscall'])
+        return [N_("Execution killed because of forbidden syscall %s"),
+                plus['syscall']]
     elif exit_status == Sandbox.EXIT_FILE_ACCESS:
-        return "Execution killed because of forbidden file access."
+        # Don't tell which file: would be too much information!
+        return [N_("Execution killed because of forbidden file access")]
     elif exit_status == Sandbox.EXIT_NONZERO_RETURN:
-        return "Execution failed because the return code was nonzero."
+        # Don't tell which code: would be too much information!
+        return [N_("Execution failed because the return code was nonzero")]
     elif exit_status == Sandbox.EXIT_OK:
         return None
     else:
@@ -456,7 +487,7 @@ def extract_outcome_and_text(sandbox):
         logger.error("Wrong outcome `%s' from manager." % outcome)
         raise ValueError("Outcome is not a float.")
 
-    return outcome, text
+    return outcome, [text]
 
 
 ## Automatic white diff. ##
@@ -558,13 +589,13 @@ def white_diff_step(sandbox, output_filename,
             res_file = sandbox.get_file("res.txt")
             if white_diff(out_file, res_file):
                 outcome = 1.0
-                text = "Output is correct"
+                text = [N_("Output is correct")]
             else:
                 outcome = 0.0
-                text = "Output isn't correct"
+                text = [N_("Output isn't correct")]
         else:
             outcome = 0.0
-            text = "Evaluation didn't produce file %s" % (output_filename)
+            text = [N_("Evaluation didn't produce file %s"), output_filename]
         return outcome, text
 
 

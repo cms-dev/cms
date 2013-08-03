@@ -225,13 +225,13 @@ def get_score_class(score, max_score):
 
 
 # Dummy function to mark strings for translation
-def _(*args, **kwargs):
+def N_(*args, **kwargs):
     pass
 
-_("%d second", "%d seconds", 0)
-_("%d minute", "%d minutes", 0)
-_("%d hour", "%d hours", 0)
-_("%d day", "%d days", 0)
+N_("%d second", "%d seconds", 0)
+N_("%d minute", "%d minutes", 0)
+N_("%d hour", "%d hours", 0)
+N_("%d day", "%d days", 0)
 
 
 def format_amount_of_time(seconds, precision=2, locale=None):

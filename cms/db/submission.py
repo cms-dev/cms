@@ -236,10 +236,9 @@ class SubmissionResult(Base):
         String,
         nullable=True)
 
-    # String containing output from the sandbox, and the compiler
-    # stdout and stderr.
+    # String containing output from the sandbox.
     compilation_text = Column(
-        Unicode,
+        String,
         nullable=True)
 
     # Number of attempts of compilation.
@@ -247,6 +246,25 @@ class SubmissionResult(Base):
         Integer,
         nullable=False,
         default=0)
+
+    # The compiler stdout and stderr.
+    compilation_stdout = Column(
+        Unicode,
+        nullable=True)
+    compilation_stderr = Column(
+        Unicode,
+        nullable=True)
+
+    # Other information about the compilation.
+    compilation_time = Column(
+        Float,
+        nullable=True)
+    compilation_wall_clock_time = Column(
+        Float,
+        nullable=True)
+    compilation_memory = Column(
+        Integer,
+        nullable=True)
 
     # Worker shard and sandbox where the compilation was performed.
     compilation_shard = Column(
@@ -358,6 +376,9 @@ class SubmissionResult(Base):
         self.compilation_outcome = None
         self.compilation_text = None
         self.compilation_tries = 0
+        self.compilation_time = None
+        self.compilation_wall_clock_time = None
+        self.compilation_memory = None
         self.compilation_shard = None
         self.compilation_sandbox = None
         self.executables = {}
@@ -504,12 +525,7 @@ class Evaluation(Base):
     # String containing output from the grader (usually "Correct",
     # "Time limit", ...).
     text = Column(
-        Unicode,
-        nullable=True)
-
-    # Memory used by the evaluation, in bytes.
-    memory_used = Column(
-        Integer,
+        String,
         nullable=True)
 
     # Evaluation's time and wall-clock time, in seconds.
@@ -518,6 +534,11 @@ class Evaluation(Base):
         nullable=True)
     execution_wall_clock_time = Column(
         Float,
+        nullable=True)
+
+    # Memory used by the evaluation, in bytes.
+    execution_memory = Column(
+        Integer,
         nullable=True)
 
     # Worker shard and sandbox where the evaluation was performed.

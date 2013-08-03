@@ -22,7 +22,8 @@
 from cms.grading.ScoreType import ScoreTypeGroup
 
 
-def _(message):
+# Dummy function to mark translatable string.
+def N_(message):
     return message
 
 
@@ -39,9 +40,9 @@ class GroupThreshold(ScoreTypeGroup):
         """See ScoreTypeGroup."""
         threshold = parameter[2]
         if 0.0 <= outcome <= threshold:
-            return _("Correct")
+            return N_("Correct")
         else:
-            return _("Not correct")
+            return N_("Not correct")
 
     def reduce(self, outcomes, parameter):
         """See ScoreTypeGroup."""

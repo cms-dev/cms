@@ -1,3 +1,6 @@
+{% from cms.grading import format_status_text %}
+{% from cms.server import format_size %}
+
 {% if details is not None %}
 <div class="score_details">
 {% raw details %}
@@ -6,5 +9,39 @@
 
 {% if sr is not None and sr.compiled() %}
 <h3>{{ _("Compilation output") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-<pre>{% if sr.compilation_text is not None %}{{ sr.compilation_text }}{% end %}</pre>
+<table class="table table-bordered" style="table-layout: fixed;">
+    <tbody>
+        <tr>
+            <th>{{ _("Compilation outcome:") }}</th>
+            <td>{{ format_status_text(sr.compilation_text, _) }}</td>
+        </tr>
+        <tr>
+            <th>{{ _("Compilation time:") }}</th>
+            <td>
+{% if sr.compilation_time is None %}
+    {{ _("N/A") }}
+{% else %}
+    {{ "%(seconds)0.3f s" % {'seconds': sr.compilation_time} }}
+{% end %}
+            </td>
+        </tr>
+            <th>{{ _("Memory used:") }}</th>
+            <td>
+{% if sr.compilation_memory is None %}
+    {{ _("N/A") }}
+{% else %}
+    {{ format_size(sr.compilation_memory) }}
+{% end %}
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% if sr.compilation_stdout is not None %}
+<h4>{{ _("Standard output") }}</h4>
+<pre>{{ sr.compilation_stdout }}</pre>
+{% end %}
+{% if sr.compilation_stderr is not None %}
+<h4>{{ _("Standard error") }}</h4>
+<pre>{{ sr.compilation_stderr }}</pre>
+{% end %}
 {% end %}

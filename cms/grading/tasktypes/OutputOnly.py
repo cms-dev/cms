@@ -32,6 +32,11 @@ from cms.grading import white_diff_step, evaluation_step, \
     extract_outcome_and_text
 
 
+# Dummy function to mark translatable string.
+def N_(message):
+    return message
+
+
 class OutputOnly(TaskType):
     """Task type class for output only tasks, with submission composed
     of testcase_number text files, to be evaluated diffing or using a
@@ -78,7 +83,7 @@ class OutputOnly(TaskType):
         # No compilation needed.
         job.success = True
         job.compilation_success = True
-        job.text = "No compilation needed."
+        job.text = [N_("No compilation needed")]
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
@@ -97,7 +102,7 @@ class OutputOnly(TaskType):
         if "output_%s.txt" % job._key not in job.files:
             job.success = True
             job.outcome = "0.0"
-            job.text = "File not submitted."
+            job.text = [N_("File not submitted")]
             return True
 
         # First and only one step: diffing (manual or with manager).

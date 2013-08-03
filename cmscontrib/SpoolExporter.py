@@ -200,7 +200,7 @@ class SpoolExporter:
                       {"outcome": ev.outcome,
                        "text": ev.text,
                        "time": ev.execution_time,
-                       "memory": ev.memory_used})
+                       "memory": ev.execution_memory})
                      for ev in result.evaluations),
                 submission.tokened())
 

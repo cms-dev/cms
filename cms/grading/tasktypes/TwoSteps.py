@@ -34,6 +34,11 @@ from cms.grading.TaskType import TaskType, \
 from cms.db import Executable
 
 
+# Dummy function to mark translatable string.
+def N_(message):
+    return message
+
+
 class TwoSteps(TaskType):
     """Task type class for tasks where the user must submit two files
     with a function each; the first function compute some data, that
@@ -98,7 +103,7 @@ class TwoSteps(TaskType):
         if len(job.files) != 2:
             job.success = True
             job.compilation_success = False
-            job.text = "Invalid files in submission"
+            job.text = [N_("Invalid files in submission")]
             logger.error("Submission contains %d files, expecting 2" %
                          len(job.files))
             return True
@@ -261,7 +266,7 @@ class TwoSteps(TaskType):
             # Check that the output file was created
             if not second_sandbox.file_exists('output.txt'):
                 outcome = 0.0
-                text = "Execution didn't produce file output.txt"
+                text = [N_("Evaluation didn't produce file %s"), "output.txt"]
                 if job.get_output:
                    job.user_output = None
 

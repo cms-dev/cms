@@ -22,7 +22,8 @@
 from cms.grading.ScoreType import ScoreTypeGroup
 
 
-def _(message):
+# Dummy function to mark translatable string.
+def N_(message):
     return message
 
 
@@ -37,11 +38,11 @@ class GroupMin(ScoreTypeGroup):
     def get_public_outcome(self, outcome, parameter):
         """See ScoreTypeGroup."""
         if outcome <= 0.0:
-            return _("Not correct")
+            return N_("Not correct")
         elif outcome >= 1.0:
-            return _("Correct")
+            return N_("Correct")
         else:
-            return _("Partially correct")
+            return N_("Partially correct")
 
     def reduce(self, outcomes, parameter):
         """See ScoreTypeGroup."""

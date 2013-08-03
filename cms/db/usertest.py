@@ -236,10 +236,9 @@ class UserTestResult(Base):
         String,
         nullable=True)
 
-    # String containing output from the sandbox, and the compiler
-    # stdout and stderr.
+    # String containing output from the sandbox.
     compilation_text = Column(
-        Unicode,
+        String,
         nullable=True)
 
     # Number of attempts of compilation.
@@ -247,6 +246,25 @@ class UserTestResult(Base):
         Integer,
         nullable=False,
         default=0)
+
+    # The compiler stdout and stderr.
+    compilation_stdout = Column(
+        Unicode,
+        nullable=True)
+    compilation_stderr = Column(
+        Unicode,
+        nullable=True)
+
+    # Other information about the compilation.
+    compilation_time = Column(
+        Float,
+        nullable=True)
+    compilation_wall_clock_time = Column(
+        Float,
+        nullable=True)
+    compilation_memory = Column(
+        Integer,
+        nullable=True)
 
     # Worker shard and sandbox where the compilation was performed.
     compilation_shard = Column(
@@ -271,23 +289,23 @@ class UserTestResult(Base):
         nullable=False,
         default=0)
 
+    # Other information about the execution.
+    execution_time = Column(
+        Float,
+        nullable=True)
+    execution_wall_clock_time = Column(
+        Float,
+        nullable=True)
+    execution_memory = Column(
+        Integer,
+        nullable=True)
+
     # Worker shard and sandbox where the evaluation was performed.
     evaluation_shard = Column(
         Integer,
         nullable=True)
     evaluation_sandbox = Column(
         String,
-        nullable=True)
-
-    # Other information about the execution.
-    memory_used = Column(
-        Integer,
-        nullable=True)
-    execution_time = Column(
-        Float,
-        nullable=True)
-    execution_wall_clock_time = Column(
-        Float,
         nullable=True)
 
     # Follows the description of the fields automatically added by
@@ -318,6 +336,9 @@ class UserTestResult(Base):
         self.compilation_outcome = None
         self.compilation_text = None
         self.compilation_tries = 0
+        self.compilation_time = None
+        self.compilation_wall_clock_time = None
+        self.compilation_memory = None
         self.compilation_shard = None
         self.compilation_sandbox = None
         self.executables = {}
@@ -329,12 +350,12 @@ class UserTestResult(Base):
         self.evaluation_outcome = None
         self.evaluation_text = None
         self.evaluation_tries = 0
+        self.execution_time = None
+        self.execution_wall_clock_time = None
+        self.execution_memory = None
         self.evaluation_shard = None
         self.evaluation_sandbox = None
         self.output = None
-        self.memory_used = None
-        self.execution_time = None
-        self.execution_wall_clock_time = None
 
 
 class UserTestExecutable(Base):

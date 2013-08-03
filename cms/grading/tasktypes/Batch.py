@@ -33,6 +33,11 @@ from cms.grading.TaskType import TaskType, \
 from cms.db import Executable
 
 
+# Dummy function to mark translatable string.
+def N_(message):
+    return message
+
+
 class Batch(TaskType):
     """Task type class for a unique standalone submission source, with
     comparator (or not).
@@ -134,7 +139,7 @@ class Batch(TaskType):
         if len(job.files) != 1:
             job.success = True
             job.compilation_success = False
-            job.text = "Invalid files in submission"
+            job.text = [N_("Invalid files in submission")]
             logger.error("Submission contains %d files, expecting 1" %
                          len(job.files))
             return True
@@ -257,8 +262,8 @@ class Batch(TaskType):
             # Check that the output file was created
             if not sandbox.file_exists(output_filename):
                 outcome = 0.0
-                text = "Execution didn't produce file %s" % \
-                    (output_filename)
+                text = [N_("Evaluation didn't produce file %s"),
+                        output_filename]
                 if job.get_output:
                     job.user_output = None
 

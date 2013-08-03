@@ -263,7 +263,13 @@ class JobGroup(object):
         # second!) is True.
 
         sr.compilation_outcome = 'ok' if job.compilation_success else 'fail'
-        sr.compilation_text = job.text
+        sr.compilation_text = json.dumps(job.text, encoding='utf-8')
+        sr.compilation_stdout = job.plus.get('stdout')
+        sr.compilation_stderr = job.plus.get('stderr')
+        sr.compilation_time = job.plus.get('execution_time')
+        sr.compilation_wall_clock_time = \
+            job.plus.get('execution_wall_clock_time')
+        sr.compilation_memory = job.plus.get('execution_memory')
         sr.compilation_shard = job.shard
         sr.compilation_sandbox = ":".join(job.sandboxes)
         for executable in job.executables.itervalues():
@@ -315,7 +321,13 @@ class JobGroup(object):
         # second!) is True.
 
         ur.compilation_outcome = 'ok' if job.compilation_success else 'fail'
-        ur.compilation_text = job.text
+        ur.compilation_text = json.dumps(job.text, encoding='utf-8')
+        ur.compilation_stdout = job.plus.get('stdout')
+        ur.compilation_stderr = job.plus.get('stderr')
+        ur.compilation_time = job.plus.get('execution_time')
+        ur.compilation_wall_clock_time = \
+            job.plus.get('execution_wall_clock_time')
+        ur.compilation_memory = job.plus.get('execution_memory')
         ur.compilation_shard = job.shard
         ur.compilation_sandbox = ":".join(job.sandboxes)
         for executable in job.executables.itervalues():
@@ -375,12 +387,12 @@ class JobGroup(object):
             assert isinstance(job, EvaluationJob)
 
             sr.evaluations += [Evaluation(
-                text=job.text,
+                text=json.dumps(job.text, encoding='utf-8'),
                 outcome=job.outcome,
-                memory_used=job.plus.get('memory_used'),
                 execution_time=job.plus.get('execution_time'),
                 execution_wall_clock_time= \
                     job.plus.get('execution_wall_clock_time'),
+                execution_memory=job.plus.get('execution_memory'),
                 evaluation_shard=job.shard,
                 evaluation_sandbox=":".join(job.sandboxes),
                 testcase=sr.dataset.testcases[test_name])]
@@ -442,11 +454,11 @@ class JobGroup(object):
         # method gets called only if the first (and therefore the
         # second!) is True.
 
-        ur.evaluation_text = job.text
+        ur.evaluation_text = json.dumps(job.text, encoding='utf-8')
         ur.evaluation_outcome = 'ok'  # FIXME use job.outcome
-        ur.output = job.user_output
-        ur.memory_used = job.plus.get('memory_used')
-        ur.execution_time = job.plus.get('execution_time')
-        ur.execution_wall_clock_time = job.plus.get('execution_wall_clock_time')
+        ur.evaluation_time = job.plus.get('execution_time')
+        ur.evaluation_wall_clock_time = job.plus.get('execution_wall_clock_time')
+        ur.evaluation_memory = job.plus.get('execution_memory')
         ur.evaluation_shard = job.shard
         ur.evaluation_sandbox = ":".join(job.sandboxes)
+        ur.output = job.user_output

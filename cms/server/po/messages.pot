@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-03 11:31+0200\n"
+"POT-Creation-Date: 2013-08-03 22:28+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,6 +17,87 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: grading/__init__.py:126 grading/ScoreType.py:148
+#: grading/scoretypes/Sum.py:41 server/templates/contest/overview.html:199
+#: server/templates/contest/overview.html:206
+#: server/templates/contest/submission_details.html:22
+#: server/templates/contest/submission_details.html:31
+#: server/templates/contest/submission_row.html:13
+#: server/templates/contest/submission_row.html:15
+#: server/templates/contest/submission_row.html:24
+#: server/templates/contest/submission_row.html:26
+#: server/templates/contest/submission_row.html:34
+#: server/templates/contest/submission_row.html:36
+#: server/templates/contest/submission_row.html:44
+#: server/templates/contest/submission_row.html:46
+#: server/templates/contest/submission_row.html:73
+#: server/templates/contest/user_test_details.html:21
+#: server/templates/contest/user_test_details.html:30
+#: server/templates/contest/user_test_row.html:35
+#: server/templates/contest/user_test_row.html:44
+#: server/templates/contest/user_test_row.html:64
+msgid "N/A"
+msgstr ""
+
+#: grading/__init__.py:202
+msgid "Compilation succeeded"
+msgstr ""
+
+#: grading/__init__.py:210 server/ContestWebServer.py:1232
+#: server/templates/contest/submission_row.html:20
+#: server/templates/contest/user_test_row.html:16
+msgid "Compilation failed"
+msgstr ""
+
+#: grading/__init__.py:217
+msgid "Compilation timed out"
+msgstr ""
+
+#: grading/__init__.py:227
+#, python-format
+msgid ""
+"Compilation killed with signal %d (could be triggered by violating memory "
+"limits)"
+msgstr ""
+
+#: grading/__init__.py:409
+msgid "Execution timed out"
+msgstr ""
+
+#: grading/__init__.py:411
+#, python-format
+msgid ""
+"Execution killed with signal %d (could be triggered by violating memory "
+"limits)"
+msgstr ""
+
+#: grading/__init__.py:416
+#, python-format
+msgid "Execution killed because of forbidden syscall %s"
+msgstr ""
+
+#: grading/__init__.py:420
+msgid "Execution killed because of forbidden file access"
+msgstr ""
+
+#: grading/__init__.py:423
+msgid "Execution failed because the return code was nonzero"
+msgstr ""
+
+#: grading/__init__.py:590
+msgid "Output is correct"
+msgstr ""
+
+#: grading/__init__.py:593
+msgid "Output isn't correct"
+msgstr ""
+
+#: grading/__init__.py:596 grading/tasktypes/Batch.py:264
+#: grading/tasktypes/TwoSteps.py:268
+#, python-format
+msgid "Evaluation didn't produce file %s"
+msgstr ""
 
 #: grading/ScoreType.py:143
 #, python-format
@@ -41,36 +122,32 @@ msgstr ""
 msgid "Memory used"
 msgstr ""
 
-#: grading/ScoreType.py:148 grading/scoretypes/Sum.py:41
-#: server/templates/contest/overview.html:199
-#: server/templates/contest/overview.html:206
-#: server/templates/contest/submission_row.html:13
-#: server/templates/contest/submission_row.html:15
-#: server/templates/contest/submission_row.html:24
-#: server/templates/contest/submission_row.html:26
-#: server/templates/contest/submission_row.html:34
-#: server/templates/contest/submission_row.html:36
-#: server/templates/contest/submission_row.html:44
-#: server/templates/contest/submission_row.html:46
-#: server/templates/contest/user_test_row.html:35
-#: server/templates/contest/user_test_row.html:44
-#: server/templates/contest/user_test_row.html:64
-msgid "N/A"
-msgstr ""
-
 #: grading/scoretypes/GroupMin.py:40 grading/scoretypes/GroupMul.py:40
-#: grading/scoretypes/GroupThreshold.py:44 grading/scoretypes/Sum.py:153
+#: grading/scoretypes/GroupThreshold.py:44 grading/scoretypes/Sum.py:154
 msgid "Not correct"
 msgstr ""
 
 #: grading/scoretypes/GroupMin.py:42 grading/scoretypes/GroupMul.py:42
-#: grading/scoretypes/GroupThreshold.py:42 grading/scoretypes/Sum.py:155
+#: grading/scoretypes/GroupThreshold.py:42 grading/scoretypes/Sum.py:156
 msgid "Correct"
 msgstr ""
 
 #: grading/scoretypes/GroupMin.py:44 grading/scoretypes/GroupMul.py:44
-#: grading/scoretypes/Sum.py:157
+#: grading/scoretypes/Sum.py:158
 msgid "Partially correct"
+msgstr ""
+
+#: grading/tasktypes/Batch.py:141 grading/tasktypes/Communication.py:99
+#: grading/tasktypes/TwoSteps.py:105
+msgid "Invalid files in submission"
+msgstr ""
+
+#: grading/tasktypes/OutputOnly.py:85
+msgid "No compilation needed"
+msgstr ""
+
+#: grading/tasktypes/OutputOnly.py:104
+msgid "File not submitted"
 msgstr ""
 
 #: server/ContestWebServer.py:812
@@ -195,12 +272,6 @@ msgstr ""
 #: server/templates/contest/submission_row.html:10
 #: server/templates/contest/user_test_row.html:10
 msgid "Compiling..."
-msgstr ""
-
-#: server/ContestWebServer.py:1232
-#: server/templates/contest/submission_row.html:20
-#: server/templates/contest/user_test_row.html:16
-msgid "Compilation failed"
 msgstr ""
 
 #: server/ContestWebServer.py:1232 server/ContestWebServer.py:1242
@@ -877,9 +948,34 @@ msgstr ""
 msgid "No"
 msgstr ""
 
-#: server/templates/contest/submission_details.html:8
-#: server/templates/contest/user_test_details.html:7
+#: server/templates/contest/submission_details.html:11
+#: server/templates/contest/user_test_details.html:10
 msgid "Compilation output"
+msgstr ""
+
+#: server/templates/contest/submission_details.html:15
+#: server/templates/contest/user_test_details.html:14
+msgid "Compilation outcome:"
+msgstr ""
+
+#: server/templates/contest/submission_details.html:19
+#: server/templates/contest/user_test_details.html:18
+msgid "Compilation time:"
+msgstr ""
+
+#: server/templates/contest/submission_details.html:28
+#: server/templates/contest/user_test_details.html:27
+msgid "Memory used:"
+msgstr ""
+
+#: server/templates/contest/submission_details.html:39
+#: server/templates/contest/user_test_details.html:38
+msgid "Standard output"
+msgstr ""
+
+#: server/templates/contest/submission_details.html:41
+#: server/templates/contest/user_test_details.html:40
+msgid "Standard error"
 msgstr ""
 
 #: server/templates/contest/submission_row.html:83
@@ -1190,7 +1286,7 @@ msgstr ""
 msgid "Test details"
 msgstr ""
 
-#: server/templates/contest/user_test_details.html:2
+#: server/templates/contest/user_test_details.html:5
 msgid "Evaluation outcome"
 msgstr ""
 

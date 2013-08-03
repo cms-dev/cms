@@ -1,9 +1,46 @@
+{% from cms.grading import format_status_text %}
+{% from cms.server import format_size %}
+
 {% if tr is not None and tr.evaluated() %}
 <h3>{{ _("Evaluation outcome") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-<pre>{% if tr.evaluation_text is not None %}{{ tr.evaluation_text }}{% else %}Everything OK.{% end %}</pre>
+<pre>{{ format_status_text(tr.evaluation_text, _) }}</pre>
 {% end %}
 
 {% if tr is not None and tr.compiled() %}
 <h3>{{ _("Compilation output") }}</h3>{% comment TODO: trim long outputs and add facility to see raw %}
-<pre>{% if tr.compilation_text is not None %}{{ tr.compilation_text }}{% end %}</pre>
+<table class="table table-bordered" style="table-layout: fixed;">
+    <tbody>
+        <tr>
+            <th>{{ _("Compilation outcome:") }}</th>
+            <td>{{ format_status_text(tr.compilation_text, _) }}</td>
+        </tr>
+        <tr>
+            <th>{{ _("Compilation time:") }}</th>
+            <td>
+{% if tr.compilation_time is None %}
+    {{ _("N/A") }}
+{% else %}
+    {{ "%(seconds)0.3f s" % {'seconds': tr.compilation_time} }}
+{% end %}
+            </td>
+        </tr>
+            <th>{{ _("Memory used:") }}</th>
+            <td>
+{% if tr.compilation_memory is None %}
+    {{ _("N/A") }}
+{% else %}
+    {{ format_size(tr.compilation_memory) }}
+{% end %}
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% if tr.compilation_stdout is not None %}
+<h4>{{ _("Standard output") }}</h4>
+<pre>{{ tr.compilation_stdout }}</pre>
+{% end %}
+{% if tr.compilation_stderr is not None %}
+<h4>{{ _("Standard error") }}</h4>
+<pre>{{ tr.compilation_stderr }}</pre>
+{% end %}
 {% end %}

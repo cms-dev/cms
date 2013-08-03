@@ -24,7 +24,8 @@ import json
 from cms.grading.ScoreType import ScoreTypeAlone
 
 
-def _(message):
+# Dummy function to mark translatable string.
+def N_(message):
     return message
 
 
@@ -34,12 +35,13 @@ class Sum(ScoreTypeAlone):
 
     """
     # Mark strings for localization.
-    _("Outcome")
-    _("Details")
-    _("Execution time")
-    _("Memory used")
-    _("N/A")
+    N_("Outcome")
+    N_("Details")
+    N_("Execution time")
+    N_("Memory used")
+    N_("N/A")
     TEMPLATE = """\
+{% from cms.grading import format_status_text %}
 {% from cms.server import format_size %}
 <table class="testcase-list">
     <thead>
@@ -61,7 +63,7 @@ class Sum(ScoreTypeAlone):
         <tr class="partiallycorrect">
             {% end %}
             <td>{{ _(tc["outcome"]) }}</td>
-            <td>{{ tc["text"] }}</td>
+            <td>{{ format_status_text(tc["text"], _) }}</td>
             <td>
             {% if tc["time"] is not None %}
                 {{ "%(seconds)0.3f s" % {'seconds': tc["time"]} }}
@@ -129,7 +131,7 @@ class Sum(ScoreTypeAlone):
                 "outcome": tc_outcome,
                 "text": evaluations[idx].text,
                 "time": evaluations[idx].execution_time,
-                "memory": evaluations[idx].memory_used,
+                "memory": evaluations[idx].execution_memory,
                 })
             if self.public_testcases[idx]:
                 public_score += this_score
@@ -150,8 +152,8 @@ class Sum(ScoreTypeAlone):
 
         """
         if outcome <= 0.0:
-            return _("Not correct")
+            return N_("Not correct")
         elif outcome >= self.parameters:
-            return _("Correct")
+            return N_("Correct")
         else:
-            return _("Partially correct")
+            return N_("Partially correct")

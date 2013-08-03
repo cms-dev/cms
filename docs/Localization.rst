@@ -9,8 +9,8 @@ When you change a string in a template or in a web server, you have to generate 
 .. sourcecode:: bash
 
     xgettext -o server/po/messages.pot --language=Python --keyword=_:1,2 \
-      grading/ScoreType.py grading/scoretypes/*.py server/*.py \
-      server/templates/admin/*.html server/templates/contest/*.html
+      grading/__init__.py grading/ScoreType.py grading/scoretypes/*.py grading/tasktypes/*.py \
+      server/*.py server/templates/admin/*.html server/templates/contest/*.html
 
 When you have a new translation, or an update of an old translation, you need to update the ``.mo`` files (the compiled versions of the ``.po`` files). You can run ``./setup.py build`` to update all translations (and also do a couple of other things, like compiling the sandbox). Alternatively, run the following inside :gh_tree:`cms/server/`.
 

@@ -25,6 +25,7 @@ import os
 from cmscontrib.YamlLoader import YamlLoader
 from cms.db import Executable
 from cms.db.filecacher import FileCacher
+from cms.grading import format_status_text
 from cms.grading.Job import EvaluationJob
 from cms.grading.tasktypes import get_task_type
 import json
@@ -118,9 +119,9 @@ def test_testcases(base_dir, soluzione, assume=None):
         info.append("Time: %5.3f   Wall: %5.3f   Memory: %s" %
                    (job.plus["execution_time"],
                     job.plus["execution_wall_clock_time"],
-                    mem_human(job.plus["memory_used"])))
+                    mem_human(job.plus["execution_memory"])))
         points.append(float(job.outcome))
-        comments.append(job.text)
+        comments.append(format_status_text(job.text))
         tcnames.append(jobinfo[0])
 
         # If we saw two consecutive timeouts, ask wether we want to

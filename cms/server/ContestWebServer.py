@@ -63,7 +63,7 @@ from cms.grading.tasktypes import get_task_type
 from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, extract_archive, \
     actual_phase_required, get_url_root, filter_ascii, \
-    CommonRequestHandler
+    CommonRequestHandler, format_size
 from cmscommon import ISOCodes
 from cmscommon.Cryptographics import encrypt_number
 from cmscommon.DateTime import make_datetime, make_timestamp, get_timezone
@@ -860,7 +860,7 @@ class SubmitHandler(BaseHandler):
                 self.current_user.username,
                 self.timestamp,
                 self._("Too many submissions!"),
-                str(error),
+                error.message,
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
@@ -900,7 +900,7 @@ class SubmitHandler(BaseHandler):
                 self.current_user.username,
                 self.timestamp,
                 self._("Submissions too frequent!"),
-                str(error),
+                error.message,
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/tasks/%s/submissions" % quote(task.name, safe=''))
             return
@@ -1371,7 +1371,7 @@ class UserTestHandler(BaseHandler):
                 self.current_user.username,
                 self.timestamp,
                 self._("Too many tests!"),
-                str(error),
+                error.message,
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/testing?%s" % quote(task.name, safe=''))
             return
@@ -1411,7 +1411,7 @@ class UserTestHandler(BaseHandler):
                 self.current_user.username,
                 self.timestamp,
                 self._("Tests too frequent!"),
-                str(error),
+                error.message,
                 ContestWebServer.NOTIFICATION_ERROR)
             self.redirect("/testing?%s" % quote(task.name, safe=''))
             return
@@ -1686,9 +1686,8 @@ class UserTestStatusHandler(BaseHandler):
                     'seconds': ur.execution_time}
             else:
                 data["time"] = None
-            if ur.memory_used is not None:
-                data["memory"] = "%(mb)0.2f MiB" % {
-                    'mb': ur.memory_used / 1024. / 1024.}
+            if ur.execution_memory is not None:
+                data["memory"] = format_size(ur.execution_memory)
             else:
                 data["memory"] = None
             data["output"] = ur.output is not None

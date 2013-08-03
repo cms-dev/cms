@@ -37,6 +37,11 @@ from cms import logger
 from tornado.template import Template
 
 
+# Dummy function to mark translatable string.
+def N_(message):
+    return message
+
+
 class ScoreType:
     """Base class for all score types, that must implement all methods
     defined here.
@@ -123,10 +128,6 @@ class ScoreTypeAlone(ScoreType):
     pass
 
 
-def _(message):
-    return message
-
-
 class ScoreTypeGroup(ScoreTypeAlone):
     """Intermediate class to manage tasks whose testcases are
     subdivided in groups (or subtasks). The score type parameters must
@@ -140,13 +141,14 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
     """
     # Mark strings for localization.
-    _("Subtask %d")
-    _("Outcome")
-    _("Details")
-    _("Execution time")
-    _("Memory used")
-    _("N/A")
+    N_("Subtask %d")
+    N_("Outcome")
+    N_("Details")
+    N_("Execution time")
+    N_("Memory used")
+    N_("N/A")
     TEMPLATE = """\
+{% from cms.grading import format_status_text %}
 {% from cms.server import format_size %}
 {% for st in details %}
     {% if "score" in st and "max_score" in st %}
@@ -195,7 +197,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                 <tr class="partiallycorrect">
             {% end %}
                     <td>{{ _(tc["outcome"]) }}</td>
-                    <td>{{ tc["text"] }}</td>
+                    <td>{{ format_status_text(tc["text"], _) }}</td>
                     <td>
             {% if "time" in tc and tc["time"] is not None %}
                         {{ "%(seconds)0.3f s" % {'seconds': tc["time"]} }}
@@ -291,7 +293,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     "outcome": tc_outcomes[idx],
                     "text": evaluations[idx].text,
                     "time": evaluations[idx].execution_time,
-                    "memory": evaluations[idx].memory_used,
+                    "memory": evaluations[idx].execution_memory,
                     })
                 if self.public_testcases[idx]:
                     public_testcases.append(testcases[-1])

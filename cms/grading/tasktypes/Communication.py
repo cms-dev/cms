@@ -35,6 +35,11 @@ from cms.db import Executable
 from cms.io.GeventUtils import rmtree
 
 
+# Dummy function to mark translatable string.
+def N_(message):
+    return message
+
+
 class Communication(TaskType):
     """Task type class for tasks that requires:
 
@@ -92,7 +97,7 @@ class Communication(TaskType):
         if len(job.files) != 1:
             job.success = True
             job.compilation_success = False
-            job.text = "Invalid files in submission"
+            job.text = [N_("Invalid files in submission")]
             logger.error("Submission contains %d files, expecting 1" %
                          len(job.files))
             return True
