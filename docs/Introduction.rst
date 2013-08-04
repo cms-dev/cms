@@ -36,7 +36,9 @@ CMS is composed of several services, that can be run on a single or on many serv
 
 - Worker: actually runs the jobs in a sandboxed environment;
 
-- ScoringService: collects the outcomes of the submissions and computes the score; also sends these scores to the rankings;
+- ScoringService: collects the outcomes of the submissions and computes the score;
+
+- ProxyService: sends the computed scores to the rankings;
 
 - ContestWebServer: the webserver that the contestants will be interacting with;
 

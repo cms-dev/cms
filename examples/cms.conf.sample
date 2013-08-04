@@ -22,7 +22,8 @@
         "Worker":            [["localhost", 26000], ["localhost", 26001]],
         "ProxyService":      [["localhost", 30000]],
         "ContestWebServer":  [["localhost", 21000]],
-        "AdminWebServer":    [["localhost", 21100]]
+        "AdminWebServer":    [["localhost", 21100]],
+        "ProxyService":      [["localhost", 28600]]
         },
 
     "other_services":
