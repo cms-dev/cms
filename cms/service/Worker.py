@@ -75,7 +75,7 @@ class Worker(Service):
         # usually happens since they are children of the same,
         # cms-created, directory.
         logger.info("Precaching files for contest %d." % contest_id)
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             contest = Contest.get_from_id(contest_id, session)
             for digest in contest.enumerate_files(skip_submissions=True,
                                                   skip_user_tests=True):

@@ -276,7 +276,7 @@ class ProxyService(Service):
 
         job_count = 0
 
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             contest = Contest.get_from_id(self.contest_id, session)
 
             for submission in contest.get_submissions():
@@ -307,7 +307,7 @@ class ProxyService(Service):
         """
         logger.info("Initializing rankings.")
 
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             contest = Contest.get_from_id(self.contest_id, session)
 
             if contest is None:
@@ -442,7 +442,7 @@ class ProxyService(Service):
         dataset_id (int): the id of the dataset to use.
 
         """
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             submission = Submission.get_from_id(submission_id, session)
 
             if submission is None:
@@ -469,7 +469,7 @@ class ProxyService(Service):
         submission_id (int): the id of the submission that changed.
 
         """
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             submission = Submission.get_from_id(submission_id, session)
 
             if submission is None:
@@ -499,7 +499,7 @@ class ProxyService(Service):
         task_id (int): the ID of the task whose dataset has changed.
 
         """
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             task = Task.get_from_id(task_id, session)
             dataset = task.active_dataset
 

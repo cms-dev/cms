@@ -24,11 +24,12 @@ from cms.db import SessionGen, User, ask_for_contest
 
 
 def remove_user(contest_id, username):
-    with SessionGen(commit=True) as session:
+    with SessionGen() as session:
         user = session.query(User)\
             .filter(User.contest_id == contest_id)\
             .filter(User.username == username).first()
         session.delete(user)
+        session.commit()
 
 
 def main():

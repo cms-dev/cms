@@ -28,7 +28,7 @@ from cms.db import SessionGen, User, Contest, ask_for_contest
 
 def add_user(contest_id, first_name, last_name, username,
              password, ip_address, email, hidden):
-    with SessionGen(commit=True) as session:
+    with SessionGen() as session:
         contest = Contest.get_from_id(contest_id, session)
         user = User(first_name=first_name,
                     last_name=last_name,
@@ -39,6 +39,7 @@ def add_user(contest_id, first_name, last_name, username,
                     hidden=hidden,
                     contest=contest)
         session.add(user)
+        session.commit()
 
 
 def main():

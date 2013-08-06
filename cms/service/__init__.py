@@ -49,7 +49,7 @@ def get_submissions(contest_id=None, user_id=None, task_id=None,
 
     """
     if session is None:
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             return get_submissions(
                 contest_id, user_id, task_id, submission_id, session)
 
@@ -102,7 +102,7 @@ def get_submission_results(contest_id=None, user_id=None, task_id=None,
 
     """
     if session is None:
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             return get_submission_results(
                 contest_id, user_id, task_id, submission_id, dataset_id,
                 session)

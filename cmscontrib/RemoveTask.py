@@ -24,11 +24,12 @@ from cms.db import SessionGen, Task, ask_for_contest
 
 
 def remove_task(contest_id, task_name):
-    with SessionGen(commit=True) as session:
+    with SessionGen() as session:
         task = session.query(Task)\
             .filter(Task.contest_id == contest_id)\
             .filter(Task.name == task_name).first()
         session.delete(task)
+        session.commit()
 
 
 def main():

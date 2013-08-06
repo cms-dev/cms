@@ -209,7 +209,7 @@ class Reimporter:
 
     def do_reimport(self):
         """Get the contest from the Loader and merge it."""
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             # Load the old contest from the database.
             old_contest = Contest.get_from_id(self.old_contest_id, session)
             old_users = dict((x.username, x) for x in old_contest.users)

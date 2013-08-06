@@ -415,7 +415,7 @@ class WorkerPool:
                     " (%s after submission)." %
                     (shard, job_type, object_id, dataset_id, queue_time))
 
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             if job_type == EvaluationService.JOB_TYPE_COMPILATION:
                 submission = Submission.get_from_id(object_id, session)
                 dataset = Dataset.get_from_id(dataset_id, session)
@@ -680,7 +680,7 @@ class EvaluationService(Service):
 
         """
         new_jobs = 0
-        with SessionGen(commit=True) as session:
+        with SessionGen() as session:
             contest = session.query(Contest).\
                       filter_by(id=self.contest_id).first()
 
@@ -732,6 +732,8 @@ class EvaluationService(Service):
                             EvaluationService.JOB_PRIORITY_MEDIUM,
                             user_test.timestamp):
                             new_jobs += 1
+
+            session.commit()
 
         if new_jobs > 0:
             logger.info("Found %s submissions or user tests with "
@@ -799,7 +801,7 @@ class EvaluationService(Service):
             "max_compilations": 0,
             "max_evaluations": 0,
             "invalid": 0}
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             contest = session.query(Contest).\
                       filter_by(id=self.contest_id).first()
             for submission_result in contest.get_submission_results():
@@ -992,7 +994,7 @@ class EvaluationService(Service):
                     (job_type, object_id, job_success))
 
         # We get the submission from DB and update it.
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             if job_type == EvaluationService.JOB_TYPE_COMPILATION:
                 submission_result = SubmissionResult.get_from_id(
                     (object_id, dataset_id), session)
@@ -1239,7 +1241,7 @@ class EvaluationService(Service):
         returns (bool): True if everything went well.
 
         """
-        with SessionGen(commit=True) as session:
+        with SessionGen() as session:
             submission = Submission.get_from_id(submission_id, session)
             if submission is None:
                 logger.error("[new_submission] Couldn't find submission "
@@ -1258,6 +1260,8 @@ class EvaluationService(Service):
                         EvaluationService.JOB_PRIORITY_HIGH,
                         submission.timestamp)
 
+            session.commit()
+
     @rpc_method
     def new_user_test(self, user_test_id):
         """This RPC prompts ES of the existence of a new user test. ES
@@ -1269,7 +1273,7 @@ class EvaluationService(Service):
         returns (bool): True if everything went well.
 
         """
-        with SessionGen(commit=True) as session:
+        with SessionGen() as session:
             user_test = UserTest.get_from_id(user_test_id, session)
             if user_test is None:
                 logger.error("[new_user_test] Couldn't find user test %d "
@@ -1287,6 +1291,8 @@ class EvaluationService(Service):
                             dataset.id),
                         EvaluationService.JOB_PRIORITY_HIGH,
                         user_test.timestamp)
+
+            session.commit()
 
     @rpc_method
     def invalidate_submission(self,
@@ -1326,7 +1332,7 @@ class EvaluationService(Service):
             raise ValueError(
                 "Unexpected invalidation level `%s'." % level)
 
-        with SessionGen(commit=True) as session:
+        with SessionGen() as session:
             submission_results = get_submission_results(
                 # Give contest_id only if all others are None.
                 self.contest_id \
@@ -1382,3 +1388,5 @@ class EvaluationService(Service):
                                 submission_result.dataset_id),
                             EvaluationService.JOB_PRIORITY_MEDIUM,
                             submission_result.submission.timestamp)
+
+            session.commit()

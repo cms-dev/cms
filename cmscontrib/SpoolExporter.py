@@ -74,7 +74,7 @@ class SpoolExporter:
             return False
         os.mkdir(self.upload_dir)
 
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             self.contest = Contest.get_from_id(self.contest_id, session)
             self.submissions = sorted(
                 (submission

@@ -39,46 +39,18 @@ ScopedSession = scoped_session(Session)
 #Session = sessionmaker(db, twophase=True)
 
 
-# TODO: decide which one of the following is better.
-
-# from contextlib import contextmanager
-
-# @contextmanager
-# def SessionGen():
-#     """This allows us to create handy local sessions simply with:
-
-#     with SessionGen as session:
-#         session.do_something()
-
-#     and at the end, commit & close are automatically called.
-
-#     """
-#     session = Session()
-#     try:
-#         yield session
-#     finally:
-#         session.commit()
-#         session.close()
-
-# FIXME How does one rollback a session created with SessionGen?
 class SessionGen:
     """This allows us to create handy local sessions simply with:
 
     with SessionGen() as session:
         session.do_something()
 
-    and at the end the session is automatically closed.
-
-    commit (bool): whether to commit or to rollback the session by
-                   default, when no other instruction has been
-                   specified. To do the commit or the rollback
-                   idependently of this setting, just call the
-                   relevant function from the session.  ATTENTION: by
-                   default, the session is not committed.
+    and at the end the session is automatically rolled back and
+    closed. If one wants to commit the session, they have to call
+    commit() explicitly.
 
     """
-    def __init__(self, commit=False):
-        self.commit = commit
+    def __init__(self):
         self.session = None
 
     def __enter__(self):
@@ -86,10 +58,7 @@ class SessionGen:
         return self.session
 
     def __exit__(self, unused1, unused2, unused3):
-        if self.commit:
-            self.session.commit()
-        else:
-            self.session.rollback()
+        self.session.rollback()
         self.session.close()
 
 

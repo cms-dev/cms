@@ -215,7 +215,7 @@ class DBBackend(FileCacherBackend):
         """See FileCacherBackend.get_file().
 
         """
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             fso = FSObject.get_from_digest(digest, session)
 
             if fso is None:
@@ -228,7 +228,7 @@ class DBBackend(FileCacherBackend):
 
         """
         try:
-            with SessionGen(commit=True) as session:
+            with SessionGen() as session:
                 fso = FSObject.get_from_digest(digest, session)
 
                 # Check digest uniqueness
@@ -264,7 +264,7 @@ class DBBackend(FileCacherBackend):
         """See FileCacherBackend.describe().
 
         """
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             fso = FSObject.get_from_digest(digest, session)
 
             if fso is None:
@@ -278,7 +278,7 @@ class DBBackend(FileCacherBackend):
         """
         # TODO - The business logic may be moved in FSObject, for
         # better generality
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             fso = FSObject.get_from_digest(digest, session)
 
             if fso is None:
@@ -291,7 +291,7 @@ class DBBackend(FileCacherBackend):
         """See FileCacherBackend.delete().
 
         """
-        with SessionGen(commit=True) as session:
+        with SessionGen() as session:
             fso = FSObject.get_from_digest(digest, session)
 
             if fso is None:
@@ -299,6 +299,8 @@ class DBBackend(FileCacherBackend):
                 return
 
             fso.delete()
+
+            session.commit()
 
     def list(self, session=None):
         """See FileCacherBackend.list().

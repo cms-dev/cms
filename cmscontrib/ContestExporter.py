@@ -114,7 +114,7 @@ class ContestExporter:
 
         # If target is not provided, we use the contest's name.
         if export_target == "":
-            with SessionGen(commit=False) as session:
+            with SessionGen() as session:
                 contest = Contest.get_from_id(self.contest_id, session)
                 self.export_target = "dump_%s.tar.gz" % contest.name
                 logger.warning("export_target not given, using \"%s\""
@@ -154,7 +154,7 @@ class ContestExporter:
         os.mkdir(files_dir)
         os.mkdir(descr_dir)
 
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
 
             contest = Contest.get_from_id(self.contest_id, session)
 

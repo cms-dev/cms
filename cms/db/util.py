@@ -40,7 +40,7 @@ def get_contest_list(session=None):
 
     """
     if session is None:
-        with SessionGen(commit=True) as session:
+        with SessionGen() as session:
             return get_contest_list(session)
 
     return session.query(Contest).all()
@@ -53,7 +53,7 @@ def is_contest_id(contest_id):
     return (boolean): True if there is such a contest.
 
     """
-    with SessionGen(commit=False) as session:
+    with SessionGen() as session:
         return Contest.get_from_id(contest_id, session) is not None
 
 
@@ -72,7 +72,7 @@ def ask_for_contest(skip=None):
 
     else:
 
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             contests = get_contest_list(session)
             # The ids of the contests are cached, so the session can
             # be closed as soon as possible

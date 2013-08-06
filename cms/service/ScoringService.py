@@ -86,7 +86,7 @@ class ScoringService(Service):
         if self.scoring_old_submission:
             return True
 
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
             contest = Contest.get_from_id(self.contest_id, session)
 
             new_submission_results_to_score = set()
@@ -153,7 +153,7 @@ class ScoringService(Service):
         dataset_id (int): the id of the dataset to use.
 
         """
-        with SessionGen(commit=True) as session:
+        with SessionGen() as session:
             submission = Submission.get_from_id(submission_id, session)
 
             if submission is None:
@@ -210,6 +210,8 @@ class ScoringService(Service):
                 self.proxy_service.submission_scored(
                     submission_id=submission.id)
 
+            session.commit()
+
     @rpc_method
     def invalidate_submission(self,
                               submission_id=None,
@@ -238,7 +240,7 @@ class ScoringService(Service):
         # Validate arguments
         # TODO Check that all these objects belong to this contest.
 
-        with SessionGen(commit=True) as session:
+        with SessionGen() as session:
             submission_results = get_submission_results(
                 # Give contest_id only if all others are None.
                 self.contest_id
@@ -263,6 +265,8 @@ class ScoringService(Service):
                     new_submission_results_to_score.add(
                         (submission_result.submission_id,
                          submission_result.dataset_id))
+
+            session.commit()
 
         old_s = len(self.submission_results_to_score)
         self.submission_results_to_score |= new_submission_results_to_score

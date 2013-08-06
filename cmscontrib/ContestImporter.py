@@ -163,7 +163,7 @@ class ContestImporter:
                 logger.critical("Unable to access DB.\n%r" % error)
                 return False
 
-        with SessionGen(commit=False) as session:
+        with SessionGen() as session:
 
             # Import the contest in JSON format.
             if self.load_model:
