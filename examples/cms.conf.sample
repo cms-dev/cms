@@ -20,6 +20,7 @@
         "Checker":           [["localhost", 22000]],
         "EvaluationService": [["localhost", 25000]],
         "Worker":            [["localhost", 26000], ["localhost", 26001]],
+        "ProxyService":      [["localhost", 30000]],
         "ContestWebServer":  [["localhost", 21000]],
         "AdminWebServer":    [["localhost", 21100]]
         },
