@@ -1197,6 +1197,7 @@ setup_credentials(void)
 static void
 setup_fds(void)
 {
+  umask(0);
   if (redir_stdin)
     {
       close(0);
