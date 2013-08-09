@@ -245,7 +245,6 @@ class DBBackend(FileCacherBackend):
                     fso.digest = digest
 
                     session.add(fso)
-                    session.commit()
 
                     logger.debug("File %s stored on the database." % digest)
 
@@ -254,7 +253,11 @@ class DBBackend(FileCacherBackend):
                     # already been stored (since its FSObject exists),
                     # while we're still sending its content.
 
-                    return fso.get_lobject(mode='wb')
+                    lobject = fso.get_lobject(mode='wb')
+
+                    session.commit()
+
+                    return lobject
 
         except IntegrityError:
             logger.warning("File %s caused an IntegrityError, ignoring..." %
