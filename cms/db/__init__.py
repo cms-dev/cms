@@ -46,7 +46,7 @@ __all__ = [
     # contest
     "Contest", "Announcement",
     # user
-    "User", "Message", "Question",
+    "User", "Message", "Question", "Group",
     # task
     "Task", "Statement", "Attachment", "SubmissionFormatElement", "Dataset",
     "Manager", "Testcase",
@@ -69,7 +69,7 @@ __all__ = [
 
 # Instantiate or import these objects.
 
-version = 5
+version = 6
 
 
 engine = create_engine(config.database, echo=config.database_debug,
@@ -81,7 +81,7 @@ from .session import Session, ScopedSession, SessionGen, \
 
 from .base import metadata, Base
 from .contest import Contest, Announcement
-from .user import User, Message, Question
+from .user import User, Message, Question, Group
 from .task import Task, Statement, Attachment, SubmissionFormatElement, \
     Dataset, Manager, Testcase
 from .submission import Submission, File, Token, SubmissionResult, \

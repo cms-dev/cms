@@ -1,0 +1,34 @@
+{% extends base.html %}
+
+{% block core %}
+
+<h1>New group</h1>
+
+<h2 id="title_general_info" class="toggling_on">General information</h2>
+<div id="general_info">
+  <form action="{{ url_root }}/add_group/{{ contest.id }}" method="POST">
+    <table>
+      <tr>
+        <td>Name</td>
+        <td><input type="text" name="name"/></td>
+      </tr>
+      <tr>
+        <td>Start (in UTC)</td>
+        <td><input type="text" name="start" value="{{ str(timestamp) }}"></td>
+      </tr>
+      <tr>
+        <td>End (in UTC)</td>
+        <td><input type="text" name="stop" value="{{ str(timestamp) }}"></td>
+      </tr>
+      <tr>
+        <td>Maximum length of the contest for a user (in seconds)</td>
+        <td><input type="text" name="per_user_time" value=""></td>
+      </tr>
+    </table>
+    <input type="submit"/>
+    <input type="reset" value="Reset" />
+  </form>
+  <div class="hr"></div>
+</div>
+
+{% end %}

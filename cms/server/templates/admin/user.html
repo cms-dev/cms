@@ -171,6 +171,16 @@ function update_additional_answer(element, invoker)
         <td><input type="text" name="username" value="{{ selected_user.username }}"/></td>
       </tr>
       <tr>
+        <td>Group</td>
+        <td>
+          <select name="group">
+            {% for group in contest.groups %}
+            <option value="{{ group.id }}" {% if selected_user.group.id == group.id %}selected{% end %}>{{group.name}}</option>
+            {% end %}
+          </select>
+        </td>
+      </tr>
+      <tr>
         <td>Password</td>
         <!-- FIXME: Plain text? -->
         <td><input type="text" name="password" value="{{ selected_user.password }}"/></td>

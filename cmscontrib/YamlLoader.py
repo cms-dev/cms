@@ -31,7 +31,7 @@ from datetime import timedelta
 from cms import LANGUAGES, logger
 from cmscommon.DateTime import make_datetime
 from cms.db import Contest, User, Task, Statement, Attachment, \
-    SubmissionFormatElement, Dataset, Manager, Testcase
+    SubmissionFormatElement, Dataset, Manager, Testcase, Group
 from cmscontrib.BaseLoader import Loader
 from cmscontrib import touch
 
@@ -127,6 +127,7 @@ class YamlLoader(Loader):
         logger.info("Loading parameters for contest %s." % name)
 
         args = {}
+        group_args = {}
 
         load(conf, args, ["name", "nome_breve"])
         load(conf, args, ["description", "nome"])
@@ -140,8 +141,8 @@ class YamlLoader(Loader):
         load(conf, args, "token_gen_time", conv=make_timedelta)
         load(conf, args, "token_gen_number")
 
-        load(conf, args, ["start", "inizio"], conv=make_datetime)
-        load(conf, args, ["stop", "fine"], conv=make_datetime)
+        load(conf, group_args, ["start", "inizio"], conv=make_datetime)
+        load(conf, group_args, ["stop", "fine"], conv=make_datetime)
 
         load(conf, args, "max_submission_number")
         load(conf, args, "max_user_test_number")
@@ -158,7 +159,12 @@ class YamlLoader(Loader):
                                in load(conf, None, ["users", "utenti"]))
         users = self.users_conf.keys()
 
-        return Contest(**args), tasks, users
+        contest = Contest(**args)
+        group = Group("default", **group_args)
+        contest.groups.append(group)
+        contest.main_group = group
+
+        return contest, tasks, users
 
     def has_changed(self, name):
         """See docstring in class Loader
@@ -217,7 +223,7 @@ class YamlLoader(Loader):
                            " I'm not trying again." % name)
         return False
 
-    def get_user(self, username):
+    def get_user(self, username, contest):
         """See docstring in class Loader.
 
         """
@@ -244,7 +250,7 @@ class YamlLoader(Loader):
 
         logger.info("User parameters loaded.")
 
-        return User(**args)
+        return User(group=contest.main_group, **args)
 
     def get_task(self, name):
         """See docstring in class Loader.

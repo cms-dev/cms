@@ -43,7 +43,7 @@ function init()
     utils.update_notifications();
     setInterval(cmsutils.bind_func(utils, utils.update_notifications), 15000);
     {% else %}
-    utils = new Utils({{ make_timestamp(timestamp) }}, {{ make_timestamp(contest.start) }}, {{ make_timestamp(contest.stop) }}, {{ phase }});
+    utils = new Utils({{ make_timestamp(timestamp) }}, {{ make_timestamp(contest.main_group.start) }}, {{ make_timestamp(contest.main_group.stop) }}, {{ phase }});
 
     firstDate = new Date();
     utils.get_time();
@@ -100,6 +100,7 @@ $(document).ready(init);
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/contest/{{ contest.id }}">General</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/ranking/{{ contest.id }}">Ranking</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/userlist/{{ contest.id }}">Users</a></li>
+            <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/grouplist/{{ contest.id }}">Groups</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/tasklist/{{ contest.id }}">Tasks</a></li>
             <li class="menu_entry"><a class="menu_link" href="{{ url_root }}/announcements/{{ contest.id }}">Announcements</a></li>
             <li class="menu_entry">

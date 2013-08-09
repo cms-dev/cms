@@ -1,0 +1,33 @@
+{% extends base.html %}
+
+{% block core %}
+
+<h1>Group {{ selected_group.name }}</h1>
+
+<h2 id="title_general_info" class="toggling_on">General Information</h2>
+<div id="general_info">
+  <form action="{{ url_root }}/group/{{ selected_group.id }}" method="POST">
+    <table>
+      <tr>
+        <td>Name</td>
+        <td><input type="text" name="name" value="{{ selected_group.name }}"/></td>
+      </tr>
+      <tr>
+        <td>Start (in UTC)</td>
+        <td><input type="text" name="start" value="{{ str(selected_group.start) }}"></td>
+      </tr>
+      <tr>
+        <td>End (in UTC)</td>
+        <td><input type="text" name="stop" value="{{ str(selected_group.stop) }}"></td>
+      </tr>
+      <tr>
+        <td>Maximum length of the contest for a user (in seconds)</td>
+        <td><input type="text" name="per_user_time" value="{{ int(selected_group.per_user_time.total_seconds()) if selected_group.per_user_time is not None else "" }}"></td>
+      </tr>
+    </table>
+    <input type="submit" value="Update" />
+    <input type="reset" value="Reset" />
+  </form>
+  <div class="hr"></div>
+</div>
+{% end %}

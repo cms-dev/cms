@@ -231,12 +231,12 @@ class Reimporter:
                 if old_user is None:
                     # Create a new user.
                     logger.info("Creating user %s" % username)
-                    new_user = self.loader.get_user(username)
+                    new_user = self.loader.get_user(username, contest)
                     old_contest.users.append(new_user)
                 elif username in new_users:
                     # Update an existing user.
                     logger.info("Updating user %s" % username)
-                    new_user = self.loader.get_user(username)
+                    new_user = self.loader.get_user(username, contest)
                     self._update_object(old_user, new_user)
                 else:
                     # Delete an existing user.
