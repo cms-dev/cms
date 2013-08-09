@@ -90,10 +90,11 @@ class Loader:
         """
         raise NotImplementedError("Please extend Loader")
 
-    def get_user(self, username):
+    def get_user(self, username, contest):
         """Produce a User object.
 
         username (string): the username.
+        contest (Contest): the contest.
 
         return (User): the User object.
 

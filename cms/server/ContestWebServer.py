@@ -246,35 +246,37 @@ class BaseHandler(CommonRequestHandler):
         ret["url_root"] = get_url_root(self.request.path)
         ret["cookie"] = str(self.cookies)  # FIXME really needed?
 
-        ret["phase"] = self.contest.phase(self.timestamp)
+        if self.current_user is None:
+            ret["phase"] = self.contest.main_group.phase(self.timestamp)
+        else:
+            ret["phase"] = self.current_user.group.phase(self.timestamp)
 
-        if self.current_user is not None:
             # "adjust" the phase, considering the per_user_time
             ret["actual_phase"] = 2 * ret["phase"]
 
             if ret["phase"] == -1:
                 # pre-contest phase
                 ret["current_phase_begin"] = None
-                ret["current_phase_end"] = self.contest.start
+                ret["current_phase_end"] = self.current_user.group.start
             elif ret["phase"] == 0:
                 # contest phase
-                if self.contest.per_user_time is None:
+                if self.current_user.group.per_user_time is None:
                     # "traditional" contest: every user can compete for
                     # the whole contest time
-                    ret["current_phase_begin"] = self.contest.start
-                    ret["current_phase_end"] = self.contest.stop
+                    ret["current_phase_begin"] = self.current_user.group.start
+                    ret["current_phase_end"] = self.current_user.group.stop
                 else:
                     # "USACO-like" contest: every user can compete only
                     # for a limited time frame during the contest time
                     if self.current_user.starting_time is None:
                         ret["actual_phase"] = -1
-                        ret["current_phase_begin"] = self.contest.start
-                        ret["current_phase_end"] = self.contest.stop
+                        ret["current_phase_begin"] = self.current_user.group.start
+                        ret["current_phase_end"] = self.current_user.group.stop
                     else:
                         user_end_time = min(
                             self.current_user.starting_time +
-                            self.contest.per_user_time,
-                            self.contest.stop)
+                            self.current_user.group.per_user_time,
+                            self.current_user.group.stop)
                         if self.timestamp <= user_end_time:
                             ret["current_phase_begin"] = \
                                 self.current_user.starting_time
@@ -282,10 +284,10 @@ class BaseHandler(CommonRequestHandler):
                         else:
                             ret["actual_phase"] = +1
                             ret["current_phase_begin"] = user_end_time
-                            ret["current_phase_end"] = self.contest.stop
+                            ret["current_phase_end"] = self.current_user.group.stop
             else:  # ret["phase"] == 1
                 # post-contest phase
-                ret["current_phase_begin"] = self.contest.stop
+                ret["current_phase_begin"] = self.current_user.group.stop
                 ret["current_phase_end"] = None
 
             # compute valid_phase_begin and valid_phase_end (that is,
@@ -293,15 +295,15 @@ class BaseHandler(CommonRequestHandler):
             # stopped/will stop being zero, or None if unknown).
             ret["valid_phase_begin"] = None
             ret["valid_phase_end"] = None
-            if self.contest.per_user_time is None:
-                ret["valid_phase_begin"] = self.contest.start
-                ret["valid_phase_end"] = self.contest.stop
+            if self.current_user.group.per_user_time is None:
+                ret["valid_phase_begin"] = self.current_user.group.start
+                ret["valid_phase_end"] = self.current_user.group.stop
             elif self.current_user.starting_time is not None:
                 ret["valid_phase_begin"] = self.current_user.starting_time
                 ret["valid_phase_end"] = min(
                     self.current_user.starting_time +
-                    self.contest.per_user_time,
-                    self.contest.stop)
+                    self.current_user.group.per_user_time,
+                    self.current_user.group.stop)
 
             # consider the extra time
             if ret["valid_phase_end"] is not None:

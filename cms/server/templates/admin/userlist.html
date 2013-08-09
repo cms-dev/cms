@@ -8,9 +8,10 @@
 <table class="bordered">
   <thead>
     <tr>
-      <th style="width: 25%">First name</th>
-      <th style="width: 27%">Last name</th>
-      <th style="width: 30%">Username</th>
+      <th style="width: 21%">First name</th>
+      <th style="width: 23%">Last name</th>
+      <th style="width: 23%">Username</th>
+      <th style="width: 15%">Group</th>
       <th style="width: 18%">Reevaluate</th>
     </tr>
   </thead>
@@ -20,6 +21,7 @@
       <td>{{ u.first_name }}</td>
       <td>{{ u.last_name }}</td>
       <td><a href="{{ url_root }}/user/{{ u.id }}">{{ u.username }}</a></td>
+      <td><a href="{{ url_root }}/group/{{ u.group.id }}">{{ u.group.name }}</a></td>
       <td>
         {% set reevaluation_par_name = "user" %}
         {% set reevaluation_par_value = u.id %}

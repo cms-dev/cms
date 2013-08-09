@@ -42,7 +42,8 @@ from cms.io.WebGeventLibrary import WebService
 from cms.io import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
     Submission, SubmissionResult, Evaluation, Executable, File, Task, \
-    Dataset, Attachment, Manager, Testcase, SubmissionFormatElement, Statement
+    Dataset, Attachment, Manager, Testcase, SubmissionFormatElement, Statement, \
+    Group
 from cms.db.filecacher import FileCacher
 from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type_class
@@ -183,7 +184,7 @@ class BaseHandler(CommonRequestHandler):
         params["contest"] = self.contest
         params["url_root"] = get_url_root(self.request.path)
         if self.contest is not None:
-            params["phase"] = self.contest.phase(params["timestamp"])
+            params["phase"] = self.contest.main_group.phase(params["timestamp"])
             # Keep "== None" in filter arguments
             params["unanswered"] = self.sql_session.query(Question)\
                 .join(User)\
@@ -525,11 +526,17 @@ class AddContestHandler(BaseHandler):
 
         contest = Contest(name, description, token_initial,
                           token_max, token_total, token_min_interval,
-                          token_gen_time, token_gen_number, start, stop,
-                          timezone, per_user_time,
+                          token_gen_time, token_gen_number, timezone,
                           max_submission_number, max_user_test_number,
                           min_submission_interval, min_user_test_interval,
                           score_precision)
+
+        # Add the default group
+        group = Group(name="default", start=start, stop=stop,
+                      per_user_time=per_user_time)
+        contest.groups.append(group)
+        contest.main_group = group
+
         self.sql_session.add(contest)
 
         if try_commit(self.sql_session, self):
@@ -556,6 +563,17 @@ class ContestHandler(BaseHandler):
 
             contest.description = self.get_argument("description",
                                                     contest.description)
+
+            try:
+                contest.main_group = self.safe_get_item(Group,
+                    self.get_argument("main_group", contest.main_group_id))
+            except KeyError:
+                self.application.service.add_notification(
+                    make_datetime(),
+                    "Group does not exist.",
+                    ""
+                    )
+                return
 
             contest.token_initial = self.get_non_negative_int(
                 "token_initial",
@@ -602,44 +620,11 @@ class ContestHandler(BaseHandler):
                 contest.min_user_test_interval = \
                     timedelta(seconds=contest.min_user_test_interval)
 
-            contest.start = self.get_argument(
-                "start",
-                str(contest.start) if contest.start is not None else "")
-            if contest.start == "":
-                contest.start = None
-            else:
-                if '.' not in contest.start:
-                    contest.start += ".0"
-                contest.start = datetime.strptime(contest.start,
-                                                  "%Y-%m-%d %H:%M:%S.%f")
-
-            contest.stop = self.get_argument(
-                "stop",
-                str(contest.stop) if contest.stop is not None else "")
-            if contest.stop == "":
-                contest.stop = None
-            else:
-                if '.' not in contest.stop:
-                    contest.stop += ".0"
-                contest.stop = datetime.strptime(contest.stop,
-                                                 "%Y-%m-%d %H:%M:%S.%f")
-
-            assert contest.start <= contest.stop, \
-                "Contest ends before it starts."
-
             contest.timezone = self.get_argument(
                 "timezone",
                 contest.timezone if contest.timezone is not None else "")
             if contest.timezone == "":
                 contest.timezone = None
-
-            contest.per_user_time = self.get_non_negative_int(
-                "per_user_time",
-                contest.per_user_time.total_seconds() if
-                contest.per_user_time is not None else None)
-            if contest.per_user_time is not None:
-                contest.per_user_time = \
-                    timedelta(seconds=contest.per_user_time)
 
             contest.score_precision = self.get_non_negative_int(
                 "score_precision",
@@ -1695,6 +1680,17 @@ class UserViewHandler(BaseHandler):
             self.redirect("/user/%s" % user_id)
             return
 
+        try:
+            user.group = self.safe_get_item(Group,
+                self.get_argument("group", user.group_id))
+        except KeyError:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Group does not exist.",
+                ""
+                )
+            return
+
         user.password = self.get_argument("password", user.password)
         user.email = self.get_argument("email", user.email)
 
@@ -1770,6 +1766,17 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
             self.redirect("/add_user/%s" % contest_id)
             return
 
+        try:
+            group = self.safe_get_item(Group,
+                self.get_argument("group", ""))
+        except KeyError:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Group does not exist.",
+                ""
+                )
+            return
+
         password = self.get_argument("password", "")
         email = self.get_argument("email", None)
 
@@ -1820,7 +1827,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
         primary_statements = self.get_argument("primary_statements", "{}")
 
         user = User(first_name, last_name, username, password=password,
-                    email=email, ip=ip_address, hidden=hidden,
+                    group=group, email=email, ip=ip_address, hidden=hidden,
                     primary_statements=primary_statements,
                     timezone=timezone, starting_time=starting_time,
                     extra_time=extra_time,
@@ -1833,6 +1840,118 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
             self.redirect("/user/%s" % user.id)
         else:
             self.redirect("/add_user/%s" % contest_id)
+
+
+class GroupViewHandler(BaseHandler):
+    """Shows the details of a single group.
+
+    """
+    def get(self, group_id):
+        group = self.safe_get_item(Group, group_id)
+        self.contest = group.contest
+
+        self.r_params = self.render_params()
+        self.r_params["selected_group"] = group
+        self.render("group.html", **self.r_params)
+
+    def post(self, group_id):
+        group = self.safe_get_item(Group, group_id)
+        self.contest = group.contest
+
+        group.name = self.get_argument("name", group.name)
+
+        if group.name == "":
+            self.application.service.add_notification(
+                make_datetime(),
+                "No name specified.",
+                "")
+            self.redirect("/group/%s" % group_id)
+            return
+
+        group.start = self.get_argument(
+            "start",
+            str(group.start) if group.start is not None else "")
+        if group.start == "":
+            group.start = None
+        else:
+            if '.' not in group.start:
+                group.start += ".0"
+            group.start = datetime.strptime(group.start,
+                                                "%Y-%m-%d %H:%M:%S.%f")
+
+        group.stop = self.get_argument(
+            "stop",
+            str(group.stop) if group.stop is not None else "")
+        if group.stop == "":
+            group.stop = None
+        else:
+            if '.' not in group.stop:
+                group.stop += ".0"
+            group.stop = datetime.strptime(group.stop,
+                                                "%Y-%m-%d %H:%M:%S.%f")
+
+        assert group.start <= group.stop, \
+            "Contest ends before it starts."
+
+        group.per_user_time = self.get_non_negative_int(
+            "per_user_time",
+            group.per_user_time.total_seconds() if
+            group.per_user_time is not None else None)
+        if group.per_user_time is not None:
+            group.per_user_time = \
+                timedelta(seconds=group.per_user_time)
+
+        if try_commit(self.sql_session, self):
+            self.application.service.scoring_service.reinitialize()
+        self.redirect("/group/%s" % group_id)
+
+
+class AddGroupHandler(SimpleContestHandler("add_group.html")):
+    def post(self, contest_id):
+        self.contest = self.safe_get_item(Contest, contest_id)
+
+        name = self.get_argument("name", "")
+        if name == "":
+            self.application.service.add_notification(
+                make_datetime(),
+                "No name specified.",
+                "")
+            self.redirect("/add_group/%s" % contest_id)
+            return
+
+        start = self.get_argument("start", "")
+        if start == "":
+            start = None
+        else:
+            if '.' not in start:
+                start += ".0"
+            start = datetime.strptime(start, "%Y-%m-%d %H:%M:%S.%f")
+
+        stop = self.get_argument("stop", "")
+        if stop == "":
+            stop = None
+        else:
+            if '.' not in stop:
+                stop += ".0"
+            stop = datetime.strptime(stop, "%Y-%m-%d %H:%M:%S.%f")
+
+        assert start <= stop, "Contest ends before it starts."
+
+        per_user_time = self.get_non_negative_int(
+            "per_user_time",
+            None)
+        if per_user_time is not None:
+            per_user_time = timedelta(seconds=per_user_time)
+
+        group = Group(name, start, stop, per_user_time,
+                      contest=self.contest)
+        self.sql_session.add(group)
+
+        if try_commit(self.sql_session, self):
+            self.application.service.scoring_service.reinitialize()
+            self.redirect("/group/%s" % group.id)
+        else:
+            self.redirect("/add_group/%s" % contest_id)
 
 
 class SubmissionViewHandler(BaseHandler):
@@ -2022,6 +2141,7 @@ _aws_handlers = [
     (r"/contest/([0-9]+)", ContestHandler),
     (r"/announcements/([0-9]+)", SimpleContestHandler("announcements.html")),
     (r"/userlist/([0-9]+)", SimpleContestHandler("userlist.html")),
+    (r"/grouplist/([0-9]+)", SimpleContestHandler("grouplist.html")),
     (r"/tasklist/([0-9]+)", SimpleContestHandler("tasklist.html")),
     (r"/contest/add", AddContestHandler),
     (r"/ranking/([0-9]+)", RankingHandler),
@@ -2044,6 +2164,8 @@ _aws_handlers = [
     (r"/delete_testcase/([0-9]+)", DeleteTestcaseHandler),
     (r"/user/([0-9]+)", UserViewHandler),
     (r"/add_user/([0-9]+)", AddUserHandler),
+    (r"/group/([0-9]+)", GroupViewHandler),
+    (r"/add_group/([0-9]+)", AddGroupHandler),
     (r"/add_announcement/([0-9]+)", AddAnnouncementHandler),
     (r"/remove_announcement/([0-9]+)", RemoveAnnouncementHandler),
     (r"/submission/([0-9]+)(?:/([0-9]+))?", SubmissionViewHandler),

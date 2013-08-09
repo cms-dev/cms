@@ -106,14 +106,6 @@ class Contest(Base):
         nullable=False,
         default=0)
 
-    # Beginning and ending of the contest.
-    start = Column(
-        DateTime,
-        nullable=True)
-    stop = Column(
-        DateTime,
-        nullable=True)
-
     # Timezone for the contest. All timestamps in CWS will be shown
     # using the timezone associated to the logged-in user or (if it's
     # None or an invalid string) the timezone associated to the
@@ -122,11 +114,6 @@ class Contest(Base):
     # "Europe/Rome", "Australia/Sydney", "America/New_York", etc.
     timezone = Column(
         Unicode,
-        nullable=True)
-
-    # Max contest time for each user in seconds.
-    per_user_time = Column(
-        Interval,
         nullable=True)
 
     # Maximum number of submissions or user_tests allowed for each user
@@ -159,11 +146,23 @@ class Contest(Base):
         nullable=False,
         default=0)
 
+    # Contest (id and object) to which this user group belongs.
+    main_group_id = Column(
+        Integer,
+        ForeignKey("group.id", use_alter=True, name="fk_contest_main_group_id",
+                   onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=False,
+        index=True)
+    main_group = relationship(
+        "Group",
+        primaryjoin="Group.id==Contest.main_group_id")
+
     # Follows the description of the fields automatically added by
     # SQLAlchemy.
     # tasks (list of Task objects)
     # announcements (list of Announcement objects)
     # users (list of User objects)
+    # groups (list of Group objects)
 
     # Moreover, we have the following methods.
     # get_submissions (defined in __init__.py)
@@ -211,6 +210,19 @@ class Contest(Base):
             if user.username == username:
                 return user
         raise KeyError("User not found")
+
+    def get_group(self, name):
+        """ Return the group with the given name.
+
+        name (string): the name of the group we are interested in.
+        return (Group): the corresponding group object, or KeyError.
+
+        """
+        # FIXME - Use SQL syntax
+        for g in self.groups:
+            if g.name == name:
+                return g
+        raise KeyError("Group not found")
 
     def enumerate_files(self, skip_submissions=False,
                         skip_user_tests=False, light=False):
@@ -284,21 +296,6 @@ class Contest(Base):
                             files.add(file_.digest)
 
         return files
-
-    def phase(self, timestamp):
-        """Return: -1 if contest isn't started yet at time timestamp,
-                    0 if the contest is active at time timestamp,
-                    1 if the contest has ended.
-
-        timestamp (int): the time we are iterested in.
-        return (int): contest phase as above.
-
-        """
-        if self.start is not None and self.start > timestamp:
-            return -1
-        if self.stop is None or self.stop > timestamp:
-            return 0
-        return 1
 
     @staticmethod
     def _tokens_available(token_timestamps, token_initial,
@@ -467,6 +464,7 @@ class Contest(Base):
             timestamp = make_datetime()
 
         user = self.get_user(username)
+        group = user.group
         task = self.get_task(task_name)
 
         # Take the list of the tokens already played (sorted by time).
@@ -481,8 +479,8 @@ class Contest(Base):
         # start when he/she logs in for the first time), then we start
         # accumulating tokens from the user starting time; otherwise,
         # from the start of the contest.
-        start = self.start
-        if self.per_user_time is not None:
+        start = group.start
+        if group.per_user_time is not None:
             start = user.starting_time
 
         # Compute separately for contest-wise and task-wise.

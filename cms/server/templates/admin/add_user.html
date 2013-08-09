@@ -21,6 +21,16 @@
         <td><input type="text" name="username" /></td>
       </tr>
       <tr>
+        <td>Group</td>
+        <td>
+          <select name="group">
+            {% for group in contest.groups %}
+            <option value="{{ group.id }}">{{group.name}}</option>
+            {% end %}
+          </select>
+        </td>
+      </tr>
+      <tr>
         <td>Password</td>
         <!-- FIXME: Plain text? -->
         <td><input type="text" name="password" /></td>

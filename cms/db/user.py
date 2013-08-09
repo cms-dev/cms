@@ -42,6 +42,68 @@ def generate_random_password():
     return "".join([random.choice(chars) for _ in xrange(6)])
 
 
+class Group(Base):
+    """Class to store a group of users (for timing, etc.).
+
+    """
+    __tablename__ = 'group'
+    __table_args__ = (
+        UniqueConstraint('contest_id', 'name'),
+    )
+
+    # Auto increment primary key.
+    id = Column(
+        Integer,
+        primary_key=True)
+
+    name = Column(
+        Unicode,
+        nullable=False)
+
+    # Beginning and ending of the contest.
+    start = Column(
+        DateTime,
+        nullable=True)
+    stop = Column(
+        DateTime,
+        nullable=True)
+
+    # Max contest time for each user in seconds.
+    per_user_time = Column(
+        Interval,
+        nullable=True)
+
+    # Contest (id and object) to which this user group belongs.
+    contest_id = Column(
+        Integer,
+        ForeignKey(Contest.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        index=True) # nullable=True does not work due to a circular dependency
+    contest = relationship(
+        Contest,
+        backref=backref('groups',
+                        cascade="all, delete-orphan",
+                        passive_deletes=True),
+        primaryjoin="Contest.id==Group.contest_id",
+        post_update=True)
+
+    def phase(self, timestamp):
+        """Return: -1 if contest isn't started yet at time timestamp,
+                    0 if the contest is active at time timestamp,
+                    1 if the contest has ended.
+                            (for this group)
+
+        timestamp (int): the time we are iterested in.
+        return (int): contest phase as above.
+
+        """
+        if self.start is not None and self.start > timestamp:
+            return -1
+        if self.stop is None or self.stop > timestamp:
+            return 0
+        return 1
+
+
 class User(Base):
     """Class to store a 'user participating in a contest'.
 
@@ -100,6 +162,19 @@ class User(Base):
         index=True)
     contest = relationship(
         Contest,
+        backref=backref("users",
+                        cascade="all, delete-orphan",
+                        passive_deletes=True))
+
+    # Group this user belongs to
+    group_id = Column(
+        Integer,
+        ForeignKey(Group.id,
+                   onupdate="CASCADE", ondelete="CASCADE"),
+        nullable=False,
+        index=True)
+    group = relationship(
+        Group,
         backref=backref("users",
                         cascade="all, delete-orphan",
                         passive_deletes=True))

@@ -96,21 +96,22 @@ class Importer:
         # Get the users or, if asked, generate them
         if self.user_number is None:
             for user in users:
-                contest.users.append(self.loader.get_user(user))
+                contest.users.append(self.loader.get_user(user, contest))
         else:
             logger.info("Generating %s random users." % self.user_number)
             contest.users = [User("User %d" % i,
                                   "Last name %d" % i,
-                                  "user%03d" % i)
+                                  "user%03d" % i,
+                                  group=contest.main_group)
                              for i in xrange(self.user_number)]
 
         # Apply the modification flags
         if self.zero_time:
-            contest.start = datetime.datetime(1970, 1, 1)
-            contest.stop = datetime.datetime(1970, 1, 1)
+            contest.main_group.start = datetime.datetime(1970, 1, 1)
+            contest.main_group.stop = datetime.datetime(1970, 1, 1)
         elif self.test:
-            contest.start = datetime.datetime(1970, 1, 1)
-            contest.stop = datetime.datetime(2100, 1, 1)
+            contest.main_group.start = datetime.datetime(1970, 1, 1)
+            contest.main_group.stop = datetime.datetime(2100, 1, 1)
 
             for user in contest.users:
                 user.password = 'a'
