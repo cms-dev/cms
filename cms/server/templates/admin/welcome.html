@@ -44,7 +44,10 @@ function update_queue_status(response)
 
     var l = response['data'].length;
     if (l == 0)
+    {
         table.html('<tr><td colspan="100">Queue empty.</td></tr>');
+        return;
+    }
 
     var strings = [];
     for (var i = 0; i < l; i++)
@@ -72,7 +75,10 @@ function update_workers_status(response)
 
     var l = response['data'].length;
     if (l == 0)
+    {
         table.html('<tr><td colspan="100">No workers found.</td>');
+        return;
+    }
 
     var strings = [];
     for (var i in response['data'])
@@ -109,7 +115,10 @@ function update_logs(response)
 
     var l = response['data'].length;
     if (l == 0)
+    {
         table.html('<tr><td colspan="100">No log entries.</td>');
+        return;
+    }
 
     var strings = [];
     response['data'] = response['data'].reverse()
