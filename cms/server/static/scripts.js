@@ -303,7 +303,7 @@
          * Represent in a nice looking way a couple (job_type,
          * submission_id) coming from the backend.
          *
-         * job (array): a couple (job_type, submission_id)
+         * job (array): a tuple (job_type, submission_id, dataset_id)
          * returns (string): nice representation of job
          */
         repr_job: function(job)
@@ -315,28 +315,28 @@
             else if (job == "disabled") {
                 return "Worker disabled";
             }
-            else if (job.job_type == 'compile') {
+            else if (job[0] == 'compile') {
                 job_type = 'Compiling';
                 object_type = 'submission';
             }
-            else if (job.job_type == 'evaluate') {
+            else if (job[0] == 'evaluate') {
                 job_type = 'Evaluating';
                 object_type = 'submission';
             }
-            else if (job.job_type == 'compile_test') {
+            else if (job[0] == 'compile_test') {
                 job_type = 'Compiling';
                 object_type = 'user_test';
             }
-            else if (job.job_type == 'evaluate_test') {
+            else if (job[0] == 'evaluate_test') {
                 job_type = 'Evaluating';
                 object_type = 'user_test';
             }
 
             if (object_type == 'submission') {
-                return job_type + ' the <a href="' + url_root + '/submission/' + job.object_id + '/' + job.dataset_id + '">result</a> of <a href="' + url_root + '/submission/' + job.object_id + '">submission ' + job.object_id + '</a> on <a href="' + url_root + '/dataset/' + job.dataset_id + '">dataset ' + job.dataset_id + '</a>';
+                return job_type + ' the <a href="' + url_root + '/submission/' + job[1] + '/' + job[2] + '">result</a> of <a href="' + url_root + '/submission/' + job[1] + '">submission ' + job[1] + '</a> on <a href="' + url_root + '/dataset/' + job[2] + '">dataset ' + job[2] + '</a>';
             }
             else {
-                return job_type + ' the result of user_test ' + job.object_id + ' on <a href="' + url_root + '/dataset/' + job.dataset_id + '">dataset ' + job.dataset_id + '</a>';
+                return job_type + ' the result of user_test ' + job[1] + ' on <a href="' + url_root + '/dataset/' + job[2] + '">dataset ' + job[2] + '</a>';
             }
         },
 
