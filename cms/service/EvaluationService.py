@@ -802,8 +802,7 @@ class EvaluationService(Service):
             "max_evaluations": 0,
             "invalid": 0}
         with SessionGen() as session:
-            contest = session.query(Contest).\
-                      filter_by(id=self.contest_id).first()
+            contest = Contest.get_from_id(self.contest_id, session)
             for submission_result in contest.get_submission_results():
                 if submission_result.compilation_outcome == "fail":
                     stats["compilation_fail"] += 1

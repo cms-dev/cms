@@ -26,6 +26,7 @@
 import os
 import time
 import codecs
+from collections import deque
 
 from cms import config, mkdir, logger, format_log, \
     SEV_CRITICAL, SEV_ERROR, SEV_WARNING
@@ -61,7 +62,7 @@ class LogService(Service):
         os.symlink(log_filename,
                    os.path.join(log_dir, "last.log"))
 
-        self._last_messages = []
+        self._last_messages = deque(maxlen=self.LAST_MESSAGES_COUNT)
 
     @rpc_method
     def Log(self, msg, coord, operation, severity, timestamp, exc_text):
@@ -89,8 +90,6 @@ class LogService(Service):
                                         "severity": severity,
                                         "timestamp": timestamp,
                                         "exc_text": exc_text})
-            while len(self._last_messages) > LogService.LAST_MESSAGES_COUNT:
-                del self._last_messages[0]
 
         print >> self._log_file, format_log(
             msg, coord, operation, severity, timestamp,
