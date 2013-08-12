@@ -23,51 +23,44 @@
 
 """
 
-import sys
 import datetime
+import json
+import sys
 import time
 import traceback
 
-import json
-from random import choice
-
-
-def random_string(length):
-    """Returns a random string of ASCII letters of specified length.
-
-    """
-    letters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    return "".join(choice(letters) for unused_i in xrange(length))
+import six
 
 
 def encode_json(obj):
     """Encode a dictionary as a JSON string; on failure, returns None.
 
     obj (object): the object to encode
-    return (string): an encoded string
+    return (bytes): an encoded string
 
     """
     try:
-        return json.dumps(obj)
-    except:
+        return json.dumps(obj, encoding='utf-8')
+    except ValueError:
         print >> sys.stderr, "Can't encode JSON: %r" % obj
-        raise ValueError
+        raise
 
 
 def decode_json(string):
     """Decode a JSON string to a dictionary; on failure, raises an
     exception.
 
-    string (string): the Unicode string to decode
+    string (bytes): the string to decode
     return (object): the decoded object
 
     """
+    if not isinstance(string, six.binary_type):
+        raise TypeError("String isn't binary")
     try:
-        string = string.decode("utf8")
-        return json.loads(string)
-    except json.JSONDecodeError:
-        print >> sys.stderr, "Can't decode JSON: %s" % string
-        raise ValueError
+        return json.loads(string, encoding='utf-8')
+    except ValueError:
+        print >> sys.stderr, "Can't decode JSON: %r" % string
+        raise
 
 
 class Logger:

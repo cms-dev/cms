@@ -29,6 +29,7 @@ import heapq
 import signal
 import sys
 import traceback
+import uuid
 from functools import wraps
 
 import gevent
@@ -38,8 +39,7 @@ from gevent.server import StreamServer
 
 from cmscommon.DateTime import monotonic_time
 from cms.io import ServiceCoord, Address, get_service_address
-from cms.io.Utils import random_string, Logger, \
-    encode_json, decode_json
+from cms.io.Utils import Logger, encode_json, decode_json
 from cms.io.PsycoGevent import make_psycopg_green
 
 
@@ -115,7 +115,7 @@ class RPCRequest:
 
         return (object): the object to send.
         """
-        self.message["__id"] = random_string(16)
+        self.message["__id"] = uuid.uuid4().hex
         RPCRequest.pending_requests[self.message["__id"]] = self
 
         return self.message
@@ -637,7 +637,7 @@ class RemoteService():
          "__data": {"<name of first arg>": <value of first arg,
                     ...
                    }
-         "__id": <16 letters random ID>
+         "__id": <32-digit hex-encoded UUID>
         }
 
         The __id field is put by the pre_execute method of
