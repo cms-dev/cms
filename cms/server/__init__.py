@@ -317,8 +317,8 @@ def format_token_rules(tokens, t_type=None, locale=None):
         tokens["type_s"] = _("token")
         tokens["type_pl"] = _("tokens")
 
-    tokens["min_interval"] = int(tokens["min_interval"].total_seconds())
-    tokens["gen_time"] = int(tokens["gen_time"].total_seconds() / 60)
+    tokens["min_interval"] = tokens["min_interval"].total_seconds()
+    tokens["gen_time"] = tokens["gen_time"].total_seconds() / 60
 
     result = ""
 
@@ -334,7 +334,7 @@ def format_token_rules(tokens, t_type=None, locale=None):
 
         if tokens['min_interval'] > 0:
             result += _("You can use a %(type_s)s every second.",
-                        "You can use a %(type_s)s every %(min_interval)d seconds.",
+                        "You can use a %(type_s)s every %(min_interval)g seconds.",
                         tokens['min_interval']) % tokens
         else:
             result += _("You have no limitations on how you use them.") % tokens
@@ -350,7 +350,7 @@ def format_token_rules(tokens, t_type=None, locale=None):
 
         if tokens['gen_time'] > 0 and tokens['gen_number'] > 0:
             result += _("Every minute ",
-                        "Every %(gen_time)d minutes ",
+                        "Every %(gen_time)g minutes ",
                         tokens['gen_time']) % tokens
             if tokens['max'] is not None:
                 result += _("you get another %(type_s)s, ",
@@ -370,14 +370,14 @@ def format_token_rules(tokens, t_type=None, locale=None):
 
         if tokens['min_interval'] > 0 and tokens['total'] is not None:
             result += _("You can use a %(type_s)s every second ",
-                        "You can use a %(type_s)s every %(min_interval)d seconds ",
+                        "You can use a %(type_s)s every %(min_interval)g seconds ",
                         tokens['min_interval']) % tokens
             result += _("and no more than one %(type_s)s in total.",
                         "and no more than %(total)d %(type_pl)s in total.",
                         tokens['total']) % tokens
         elif tokens['min_interval'] > 0:
             result += _("You can use a %(type_s)s every second.",
-                        "You can use a %(type_s)s every %(min_interval)d seconds.",
+                        "You can use a %(type_s)s every %(min_interval)g seconds.",
                         tokens['min_interval']) % tokens
         elif tokens['total'] is not None:
             result += _("You can use no more than one %(type_s)s in total.",
