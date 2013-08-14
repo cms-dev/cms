@@ -43,7 +43,8 @@ from sqlalchemy.types import \
 
 from cms import logger
 from cms.db import version as model_version
-from cms.db import SessionGen, Contest, Submission, UserTest, ask_for_contest
+from cms.db import SessionGen, Contest, ask_for_contest, \
+    Submission, UserTest, SubmissionResult, UserTestResult
 from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
@@ -103,12 +104,12 @@ class ContestExporter:
     """
 
     def __init__(self, contest_id, export_target,
-                 dump_files, dump_model, light,
+                 dump_files, dump_model, skip_generated,
                  skip_submissions, skip_user_tests):
         self.contest_id = contest_id
         self.dump_files = dump_files
         self.dump_model = dump_model
-        self.light = light
+        self.skip_generated = skip_generated
         self.skip_submissions = skip_submissions
         self.skip_user_tests = skip_user_tests
 
@@ -163,7 +164,7 @@ class ContestExporter:
                 logger.info("Exporting files.")
                 files = contest.enumerate_files(self.skip_submissions,
                                                 self.skip_user_tests,
-                                                self.light)
+                                                self.skip_generated)
                 for file_ in files:
                     if not self.safe_get_file(file_,
                                               os.path.join(files_dir, file_),
@@ -277,6 +278,11 @@ class ContestExporter:
             if self.skip_user_tests and other_cls is UserTest:
                 continue
 
+            # Skip generated data if requested
+            if self.skip_generated and other_cls in (SubmissionResult,
+                                                     UserTestResult):
+                continue
+
             val = getattr(obj, prp.key)
             if val is None:
                 data[prp.key] = None
@@ -341,9 +347,9 @@ def main():
                        help="only export files, ignore database structure")
     group.add_argument("-F", "--no-files", action="store_true",
                        help="only export database structure, ignore files")
-    parser.add_argument("-l", "--light", action="store_true",
-                        help="light export (without testcases and "
-                        "automatically generated files)")
+    parser.add_argument("-G", "--no-generated", action="store_true",
+                        help="don't export data and files that can be "
+                             "automatically generated")
     parser.add_argument("-S", "--no-submissions", action="store_true",
                         help="don't export submissions")
     parser.add_argument("-U", "--no-user-tests", action="store_true",
@@ -360,7 +366,7 @@ def main():
                     export_target=args.export_target,
                     dump_files=not args.no_files,
                     dump_model=not args.files,
-                    light=args.light,
+                    skip_generated=args.no_generated,
                     skip_submissions=args.no_submissions,
                     skip_user_tests=args.no_user_tests).do_export()
 

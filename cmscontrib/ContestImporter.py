@@ -49,8 +49,8 @@ import cms.db as class_hook
 
 from cms import logger
 from cms.db import version as model_version
-from cms.db import metadata, SessionGen, Contest, Submission, UserTest, \
-    init_db, drop_db
+from cms.db import metadata, SessionGen, Contest, init_db, drop_db, \
+     Submission, UserTest, SubmissionResult, UserTestResult
 from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
@@ -91,12 +91,12 @@ class ContestImporter:
     """
 
     def __init__(self, drop, import_source,
-                 load_files, load_model, light,
+                 load_files, load_model, skip_generated,
                  skip_submissions, skip_user_tests):
         self.drop = drop
         self.load_files = load_files
         self.load_model = load_model
-        self.light = light
+        self.skip_generated = skip_generated
         self.skip_submissions = skip_submissions
         self.skip_user_tests = skip_user_tests
 
@@ -229,6 +229,11 @@ class ContestImporter:
                     if self.skip_user_tests and isinstance(v, UserTest):
                         del self.objs[k]
 
+                    # Skip generated data if requested
+                    if self.skip_generated and \
+                            isinstance(v, (SubmissionResult, UserTestResult)):
+                        del self.objs[k]
+
                 contest_id = list()
                 contest_files = set()
 
@@ -247,7 +252,7 @@ class ContestImporter:
 
                     contest_id += [contest.id]
                     contest_files |= contest.enumerate_files(
-                        self.skip_submissions, self.skip_user_tests, self.light)
+                        self.skip_submissions, self.skip_user_tests, self.skip_generated)
 
                 session.commit()
             else:
@@ -445,9 +450,9 @@ def main():
                        help="only import files, ignore database structure")
     group.add_argument("-F", "--no-files", action="store_true",
                        help="only import database structure, ignore files")
-    parser.add_argument("-l", "--light", action="store_true",
-                        help="light import (without testcases and "
-                        "automatically generated files)")
+    parser.add_argument("-G", "--no-generated", action="store_true",
+                        help="don't import data and files that can be "
+                             "automatically generated")
     parser.add_argument("-S", "--no-submissions", action="store_true",
                         help="don't import submissions")
     parser.add_argument("-U", "--no-user-tests", action="store_true",
@@ -461,7 +466,7 @@ def main():
                     import_source=args.import_source,
                     load_files=not args.no_files,
                     load_model=not args.files,
-                    light=args.light,
+                    skip_generated=args.no_generated,
                     skip_submissions=args.no_submissions,
                     skip_user_tests=args.no_user_tests).do_import()
 

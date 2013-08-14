@@ -212,8 +212,8 @@ class Contest(Base):
                 return user
         raise KeyError("User not found")
 
-    def enumerate_files(self, skip_submissions=False,
-                        skip_user_tests=False, light=False):
+    def enumerate_files(self, skip_submissions=False, skip_user_tests=False,
+                        skip_generated=False):
         """Enumerate all the files (by digest) referenced by the
         contest.
 
@@ -240,11 +240,10 @@ class Contest(Base):
                     files.add(file_.digest)
 
             # Enumerate testcases
-            if not light:
-                for dataset in task.datasets:
-                    for testcase in dataset.testcases.itervalues():
-                        files.add(testcase.input)
-                        files.add(testcase.output)
+            for dataset in task.datasets:
+                for testcase in dataset.testcases.itervalues():
+                    files.add(testcase.input)
+                    files.add(testcase.output)
 
         if not skip_submissions:
             for submission in self.get_submissions():
@@ -254,7 +253,7 @@ class Contest(Base):
                     files.add(file_.digest)
 
                 # Enumerate executables
-                if not light:
+                if not skip_generated:
                     for sr in submission.results:
                         for file_ in sr.executables.itervalues():
                             files.add(file_.digest)
@@ -264,7 +263,7 @@ class Contest(Base):
 
                 files.add(user_test.input)
 
-                if not light:
+                if not skip_generated:
                     for ur in user_test.results:
                         if ur.output is not None:
                             files.add(ur.output)
@@ -278,7 +277,7 @@ class Contest(Base):
                     files.add(file_.digest)
 
                 # Enumerate executables
-                if not light:
+                if not skip_generated:
                     for ur in user_test.results:
                         for file_ in ur.executables.itervalues():
                             files.add(file_.digest)
