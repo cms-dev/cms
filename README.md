@@ -19,13 +19,15 @@ Support
 
 The complete CMS documentation is at <https://cms.readthedocs.org/>.
 
-The mailing list for announcements, discussion about development and
-user support is <contestms@freelists.org>. You can subscribe at
-<http://www.freelists.org/list/contestms>.
+The mailing list for announcements, user support and general discussion
+is <contestms@freelists.org>. You can subscribe at
+<http://www.freelists.org/list/contestms>. So far, it is an extremely
+low traffic mailing list.
 
-So far, it is an extremely low traffic mailing list. In the future, we
-may consider splitting it in different lists for more specific usage
-cases (user support, development, ...).
+The mailing list for development discussion (to submit feedback,
+proposals and critics, get opinions and reviews, etc.) is
+<contestms-dev@freelists.org>. You can subscribe at
+<http://www.freelists.org/list/contestms-dev>.
 
 To help with the troubleshooting, you can collect the complete log
 files that are placed in /var/local/log/cms/ (if CMS was running
