@@ -80,7 +80,7 @@ class ScoreType:
             translator = lambda string: string
         try:
             score_details = json.loads(score_details)
-        except (json.decoder.JSONDecodeError, TypeError):
+        except (TypeError, ValueError):
             # TypeError raised if score_details is None
             logger.error("Found a null or non-JSON score details string. "
                          "Try invalidating scores.")

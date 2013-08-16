@@ -14,8 +14,6 @@ $(document).on("click", "#submission_list tbody tr td.status .details", function
         $(".score_details .subtask .subtask-head").click(function () {
             $(this).parent().toggleClass("open");
             if ($(this).parent().hasClass("open")) {
-                console.log(this);
-                console.log($(this).children("i"));
                 $(this).children("i").removeClass("icon-chevron-right").addClass("icon-chevron-down");
             } else {
                 $(this).children("i").removeClass("icon-chevron-down").addClass("icon-chevron-right");
