@@ -180,9 +180,9 @@ def compilation_step(sandbox, command):
 
     # And retrieve some interesting data.
     plus = {
-        "compilation_time": sandbox.get_execution_time(),
-        "compilation_wall_clock_time": sandbox.get_execution_wall_clock_time(),
-        "compilation_memory": sandbox.get_memory_used(),
+        "execution_time": sandbox.get_execution_time(),
+        "execution_wall_clock_time": sandbox.get_execution_wall_clock_time(),
+        "execution_memory": sandbox.get_memory_used(),
         "stdout": stdout,
         "stderr": stderr,
         "exit_status": exit_status,
