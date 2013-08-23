@@ -20,14 +20,15 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import atexit
-import os
-import signal
-import re
+import errno
 import json
+import mechanize
+import os
+import re
+import signal
 import socket
 import subprocess
 import time
-import mechanize
 from urlparse import urlsplit
 
 import cmstestsuite.web
@@ -225,20 +226,27 @@ def start_servicer(service_name, check, shard=0, contest=None):
     while attempts <= 12:
         attempts += 1
         try:
-            check(service_name, shard, contest)
+            try:
+                check(service_name, shard, contest)
+            except socket.error as error:
+                if error.errno != errno.ECONNREFUSED:
+                    raise error
+                else:
+                    time.sleep(0.1 * (1.2 ** attempts))
+                    continue
+            else:
+                return prog
         except Exception:
-            time.sleep(0.1 * (1.2 ** attempts))
-            continue
-        break
-    else:
-        if shard is None:
-            raise FrameworkException("Failed to bring up service %s" %
-                                     service_name)
-        else:
-            raise FrameworkException("Failed to bring up service %s/%d" %
-                                     (service_name, shard))
+            print "Unexpected exception while waiting for the service:"
+            raise
 
-    return prog
+    # If we arrive here, it means the service was not fired up.
+    if shard is None:
+        raise FrameworkException("Failed to bring up service %s" %
+                                 service_name)
+    else:
+        raise FrameworkException("Failed to bring up service %s/%d" %
+                                 (service_name, shard))
 
 
 def start_service(service_name, shard=0, contest=None):
