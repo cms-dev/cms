@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -728,7 +728,10 @@ class IsolateSandbox(SandboxBase):
                       '..', '..', 'isolate', self.exec_name))]
         paths += [self.exec_name]
         for path in paths:
-            if os.path.exists(path):
+            # Consider only non-directory, executable files.
+            if os.path.exists(path) \
+                    and not os.path.isdir(path) \
+                    and os.access(path, os.X_OK):
                 return path
 
         # As default, return self.exec_name alone, that means that
