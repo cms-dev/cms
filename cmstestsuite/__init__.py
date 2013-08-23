@@ -151,7 +151,7 @@ def spawn(cmdline):
         print '$', ' '.join(cmdline)
 
     if CONFIG["TEST_DIR"] is not None:
-        cmdline = ['python-coverage', 'run', '-p'] + \
+        cmdline = ['python-coverage', 'run', '-p', '--source=cms'] + \
             cmdline
 
     if CONFIG["VERBOSITY"] >= 3:
