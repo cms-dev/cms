@@ -163,6 +163,7 @@ class Service:
         else:
             logger = custom_logger
 
+        self.name = self.__class__.__name__
         self.shard = shard
         # Stores the function to call periodically. It is to be
         # managed with heapq. Format: (next_timeout, period, function,
@@ -180,7 +181,7 @@ class Service:
         self.event = gevent.event.Event()
         self.event.clear()
 
-        self._my_coord = ServiceCoord(self.__class__.__name__, self.shard)
+        self._my_coord = ServiceCoord(self.name, self.shard)
 
         # We setup the listening address for services which want to
         # connect with us.
@@ -263,7 +264,7 @@ class Service:
         except gevent.socket.gaierror:
             logger.critical("Service %s could not listen on "
                             "specified address, because it cannot "
-                            "be resolved." % (self._my_coord.name))
+                            "be resolved." % (self.name))
             sys.exit(1)
 
         except gevent.socket.error as (error, unused_msg):
@@ -271,17 +272,17 @@ class Service:
                 logger.critical("Listening port %s for service %s is "
                                 "already in use, quitting." %
                                 (self.server.address.port,
-                                 self._my_coord.name))
+                                 self.name))
                 sys.exit(1)
             elif error == errno.EADDRNOTAVAIL:
                 logger.critical("Service %s could not listen on "
                                 "specified address, because it is not "
-                                "available." % (self._my_coord.name))
+                                "available." % (self.name))
                 sys.exit(1)
             else:
                 raise
 
-        local = self._my_coord.name == 'LogService'
+        local = self.name == 'LogService'
         logger.info("%s %d up and running!" % self._my_coord,
                     local=local)
 

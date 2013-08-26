@@ -412,8 +412,7 @@ class FileCacher:
         else:
             self.file_dir = os.path.join(
                 config.cache_dir,
-                "fs-cache-%s-%d" % (service._my_coord.name,
-                                    service._my_coord.shard))
+                "fs-cache-%s-%d" % (service.name, service.shard))
 
         if not mkdir(config.cache_dir) or not mkdir(self.file_dir):
             logger.error("Cannot create necessary directories.")
