@@ -101,4 +101,4 @@ class LogService(Service):
 
     @rpc_method
     def last_messages(self):
-        return self._last_messages
+        return list(self._last_messages)
