@@ -24,6 +24,8 @@ capabilities to a RPC service.
 
 """
 
+import logging
+
 import tornado.web
 import tornado.escape
 import tornado.wsgi
@@ -36,9 +38,7 @@ from cms.io.GeventLibrary import Service, rpc_callback
 from cms.io.Utils import decode_json
 
 
-# Our logger. We cannot simply import from AsyncLibrary because at
-# loading it is not yet defined.
-logger = None
+logger = logging.getLogger(__name__)
 
 
 class RPCRequestHandler(tornado.web.RequestHandler):
@@ -157,12 +157,8 @@ class WebService(Service):
     """
 
     def __init__(self, listen_port, handlers, parameters, shard=0,
-                 custom_logger=None, listen_address=""):
-        Service.__init__(self, shard, custom_logger)
-
-        global logger
-        from cms.io.GeventLibrary import logger as _logger
-        logger = _logger
+                 listen_address=""):
+        Service.__init__(self, shard)
 
         self.__responses = {}
         # TODO: why are the following two lines needed?

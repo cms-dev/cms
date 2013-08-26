@@ -27,12 +27,16 @@
 
 from __future__ import absolute_import
 
+import logging
 import sys
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import joinedload, configure_mappers
 
-from cms import config, logger
+from cms import config
+
+
+logger = logging.getLogger(__name__)
 
 
 # Define what this package will provide.

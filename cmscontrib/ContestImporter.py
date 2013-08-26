@@ -34,6 +34,7 @@ gevent.monkey.patch_all()
 import argparse
 import io
 import json
+import logging
 import os
 import tarfile
 import tempfile
@@ -47,7 +48,6 @@ from sqlalchemy.types import \
 
 import cms.db as class_hook
 
-from cms import logger
 from cms.db import version as model_version
 from cms.db import metadata, SessionGen, Contest, init_db, drop_db, \
      Submission, UserTest, SubmissionResult, UserTestResult
@@ -56,6 +56,9 @@ from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum
 from cmscommon.DateTime import make_datetime
+
+
+logger = logging.getLogger(__name__)
 
 
 def find_root_of_archive(file_names):

@@ -22,8 +22,12 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+import logging
 
-from cms import logger, plugin_lookup
+from cms import plugin_lookup
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_score_type_class(name):

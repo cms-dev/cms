@@ -39,6 +39,7 @@ import base64
 import codecs
 import gettext
 import json
+import logging
 import os
 import pickle
 import pkg_resources
@@ -52,7 +53,8 @@ import tornado.web
 
 from sqlalchemy import func
 
-from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, logger
+from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config
+from cms.log import initialize_logging
 from cms.io.WebGeventLibrary import WebService
 from cms.io import ServiceCoord
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
@@ -67,6 +69,9 @@ from cmscommon import ISOCodes
 from cmscommon.Cryptographics import encrypt_number
 from cmscommon.DateTime import make_datetime, make_timestamp, get_timezone
 from cmscommon.MimeTypes import get_type_for_file_name
+
+
+logger = logging.getLogger(__name__)
 
 
 class BaseHandler(CommonRequestHandler):
@@ -382,7 +387,7 @@ class ContestWebServer(WebService):
 
     """
     def __init__(self, shard, contest):
-        logger.initialize(ServiceCoord("ContestWebServer", shard))
+        initialize_logging("ContestWebServer", shard)
         self.contest = contest
 
         # This is a dictionary (indexed by username) of pending

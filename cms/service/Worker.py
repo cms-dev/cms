@@ -20,9 +20,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 import gevent.coros
 
-from cms import logger
+from cms.log import initialize_logging
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
 from cms.db import SessionGen, Contest
@@ -30,6 +32,9 @@ from cms.db.filecacher import FileCacher
 from cms.grading import JobException
 from cms.grading.tasktypes import get_task_type
 from cms.grading.Job import JobGroup
+
+
+logger = logging.getLogger(__name__)
 
 
 class Worker(Service):
@@ -44,8 +49,8 @@ class Worker(Service):
     JOB_TYPE_EVALUATION = "evaluate"
 
     def __init__(self, shard):
-        logger.initialize(ServiceCoord("Worker", shard))
-        Service.__init__(self, shard, custom_logger=logger)
+        initialize_logging("Worker", shard)
+        Service.__init__(self, shard)
         self.file_cacher = FileCacher(self)
 
         self.work_lock = gevent.coros.RLock()

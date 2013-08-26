@@ -26,6 +26,7 @@ using gevent and JSON encoding.
 
 import errno
 import heapq
+import logging
 import signal
 import sys
 import traceback
@@ -39,13 +40,12 @@ from gevent.server import StreamServer
 
 from cmscommon.DateTime import monotonic_time
 from cms.io import ServiceCoord, Address, get_service_address
-from cms.io.Utils import Logger, encode_json, decode_json
+from cms.io.Utils import encode_json, decode_json
 from cms.io.PsycoGevent import make_psycopg_green
 
 
-# Our logger object - can be a standard one (provided in Utils), or a
-# custom one provided by the class subclassing service.
-logger = None
+logger = logging.getLogger(__name__)
+
 
 # Fix psycopg in order to support gevent greenlets
 make_psycopg_green()
@@ -154,14 +154,8 @@ class RPCRequest:
 
 class Service:
 
-    def __init__(self, shard=0, custom_logger=None):
+    def __init__(self, shard=0):
         signal.signal(signal.SIGINT, lambda unused_x, unused_y: self.exit())
-
-        global logger
-        if custom_logger is None:
-            logger = Logger()
-        else:
-            logger = custom_logger
 
         self.name = self.__class__.__name__
         self.shard = shard
@@ -282,9 +276,7 @@ class Service:
             else:
                 raise
 
-        local = self.name == 'LogService'
-        logger.info("%s %d up and running!" % self._my_coord,
-                    local=local)
+        logger.info("%s %d up and running!" % self._my_coord)
 
         try:
             while not self._exit:

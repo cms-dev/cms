@@ -33,6 +33,7 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import argparse
+import logging
 import sys
 
 import six
@@ -48,7 +49,10 @@ from six.moves import xrange
 from requests import Session, Request
 from requests.exceptions import RequestException
 
-from cms import config, logger
+from cms import config
+
+
+logger = logging.getLogger(__name__)
 
 
 ACTION_METHODS = {
