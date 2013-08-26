@@ -599,18 +599,12 @@ def white_diff_step(sandbox, output_filename,
         return outcome, text
 
 
-def compute_changes_for_dataset(old_dataset, new_dataset,
-            look_at_score=True, look_at_public_score=True,
-            look_at_ranking_score_details=True):
+def compute_changes_for_dataset(old_dataset, new_dataset):
     """This function will compute the differences expected when changing from
     one dataset to another.
 
     old_dataset (Dataset): the original dataset, typically the active one.
     new_dataset (Dataset): the dataset to compare against.
-    look_at_score (bool): compare the score of a submission
-    look_at_public_score (bool): compare the public_score of a submission
-    look_at_ranking_score_details (bool): compare the ranking_score_details of
-    a submission
 
     returns (list): a list of tuples of SubmissionScoreDelta tuples where they
     differ. Those entries that do not differ will have None in the pair of
