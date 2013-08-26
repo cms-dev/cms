@@ -24,13 +24,16 @@
 import os
 import codecs
 import json
+import logging
 from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import logger
 from cms.db import SessionGen, Submission, SubmissionResult
 from cms.grading.Sandbox import Sandbox
+
+
+logger = logging.getLogger(__name__)
 
 
 SubmissionScoreDelta = namedtuple('SubmissionScoreDelta',

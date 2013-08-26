@@ -35,16 +35,19 @@ gevent.monkey.patch_all()
 
 import argparse
 import datetime
+import logging
 import os
 import os.path
 
 import sqlalchemy.exc
 
-from cms import logger
 from cms.db import metadata, SessionGen, User, init_db, drop_db
 from cms.db.filecacher import FileCacher
 
 from cmscontrib.Loaders import choose_loader, build_epilog
+
+
+logger = logging.getLogger(__name__)
 
 
 class Importer:

@@ -30,12 +30,16 @@ services the scores, via http requests.
 
 """
 
-from cms import logger
+import logging
+
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
 from cms.db import SessionGen, Submission, Contest, Dataset
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submission_results, get_datasets_to_judge
+
+
+logger = logging.getLogger(__name__)
 
 
 class ScoringService(Service):
@@ -47,8 +51,7 @@ class ScoringService(Service):
     JOBS_NOT_DONE_CHECK_TIME = 347.0
 
     def __init__(self, shard, contest_id):
-        logger.initialize(ServiceCoord("ScoringService", shard))
-        Service.__init__(self, shard, custom_logger=logger)
+        Service.__init__(self, shard)
 
         self.contest_id = contest_id
 

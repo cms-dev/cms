@@ -24,12 +24,16 @@
 
 """
 
-from cms import logger
+import logging
+
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.grading.ParameterTypes import ParameterTypeChoice
 from cms.grading import white_diff_step, evaluation_step, \
     extract_outcome_and_text
+
+
+logger = logging.getLogger(__name__)
 
 
 # Dummy function to mark translatable string.
@@ -130,7 +134,7 @@ class OutputOnly(TaskType):
             if not manager_filename in job.managers:
                 logger.error("Configuration error: missing or "
                              "invalid comparator (it must be "
-                             "named `checker')")
+                             "named `checker')", extra={"operation": job.info})
                 success = False
             else:
                 sandbox.create_file_from_storage(

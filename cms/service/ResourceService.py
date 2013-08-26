@@ -26,6 +26,7 @@ that saves the resources usage in that machine.
 """
 
 import bisect
+import logging
 import os
 import time
 
@@ -34,9 +35,12 @@ import psutil
 from gevent import subprocess
 #import gevent_subprocess as subprocess
 
-from cms import config, logger
+from cms import config
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method, RemoteService
+
+
+logger = logging.getLogger(__name__)
 
 
 B_TO_MB = 1024.0 * 1024.0
@@ -53,8 +57,7 @@ class ResourceService(Service):
         autorestart feature.
 
         """
-        logger.initialize(ServiceCoord("ResourceService", shard))
-        Service.__init__(self, shard, custom_logger=logger)
+        Service.__init__(self, shard)
 
         self.contest_id = contest_id
 

@@ -31,10 +31,12 @@ task.
 """
 
 import json
-
-from cms import logger
+import logging
 
 from tornado.template import Template
+
+
+logger = logging.getLogger(__name__)
 
 
 # Dummy function to mark translatable string.

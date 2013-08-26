@@ -20,10 +20,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import os
 import tempfile
 
-from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, config, logger
+from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_command, compilation_step, \
     human_evaluation_message, is_evaluation_passed, \
@@ -33,6 +34,9 @@ from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.db import Executable
 from cms.io.GeventUtils import rmtree
+
+
+logger = logging.getLogger(__name__)
 
 
 # Dummy function to mark translatable string.
@@ -99,7 +103,7 @@ class Communication(TaskType):
             job.compilation_success = False
             job.text = [N_("Invalid files in submission")]
             logger.error("Submission contains %d files, expecting 1" %
-                         len(job.files))
+                         len(job.files), extra={"operation": job.info})
             return True
 
         # Create the sandbox

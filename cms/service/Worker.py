@@ -20,9 +20,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
+
 import gevent.coros
 
-from cms import logger
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
 from cms.db import SessionGen, Contest
@@ -30,6 +31,9 @@ from cms.db.filecacher import FileCacher
 from cms.grading import JobException
 from cms.grading.tasktypes import get_task_type
 from cms.grading.Job import JobGroup
+
+
+logger = logging.getLogger(__name__)
 
 
 class Worker(Service):
@@ -44,8 +48,7 @@ class Worker(Service):
     JOB_TYPE_EVALUATION = "evaluate"
 
     def __init__(self, shard):
-        logger.initialize(ServiceCoord("Worker", shard))
-        Service.__init__(self, shard, custom_logger=logger)
+        Service.__init__(self, shard)
         self.file_cacher = FileCacher(self)
 
         self.work_lock = gevent.coros.RLock()
@@ -99,8 +102,8 @@ class Worker(Service):
                 self._ignore_job = False
 
                 for k, job in job_group.jobs.iteritems():
-                    logger.operation = "job '%s'" % (job.info)
-                    logger.info("Request received")
+                    logger.info("Starting job.",
+                                extra={"operation": job.info})
 
                     job.shard = self.shard
 
@@ -119,7 +122,8 @@ class Worker(Service):
                                               job.task_type_parameters)
                     task_type.execute_job(job, self.file_cacher)
 
-                    logger.info("Request finished.")
+                    logger.info("Finished job.",
+                                extra={"operation": job.info})
 
                     if not job.success or self._ignore_job:
                         job_group.success = False
@@ -130,12 +134,11 @@ class Worker(Service):
                 return job_group.export_to_dict()
 
             except:
-                err_msg = "Worker failed on operation `%s'" % logger.operation
+                err_msg = "Worker failed."
                 logger.error(err_msg, exc_info=True)
                 raise JobException(err_msg)
 
             finally:
-                logger.operation = ""
                 self.work_lock.release()
 
         else:

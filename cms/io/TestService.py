@@ -25,26 +25,21 @@ service.
 
 """
 
+import logging
 import time
 
 from cms.io.GeventLibrary import Service
 
 
-# Our logger. We cannot simply import from AsyncLibrary because at
-# loading it is not yet defined.
-logger = None
+logger = logging.getLogger(__name__)
 
 
 class TestService(Service):
     """Runs automatically a suite of tests defined on the subclass.
 
     """
-    def __init__(self, shard, custom_logger=None):
-        Service.__init__(self, shard, custom_logger)
-
-        global logger
-        from cms.io.GeventLibrary import logger as _logger
-        logger = _logger
+    def __init__(self, shard):
+        Service.__init__(self, shard)
 
         self.start = 0
         self.total_time = 0

@@ -21,51 +21,56 @@
 
 """
 
+import logging
 import unittest
 
-from cms import SEV_CRITICAL, SEV_ERROR, SEV_WARNING, SEV_INFO, SEV_DEBUG
 from cms.service.LogService import LogService
 
 
 class TestLogService(unittest.TestCase):
 
-    MESSAGE = "Random message"
-    COORD = "Random coordinates"
+    MSG = "Random message"
+    SERVICE_NAME = "RandomService"
+    SERVICE_SHARD = 0
     OPERATION = "Random operation"
-    TIMESTAMP = 1234567890
+    CREATED = 1234567890.123
     EXC_TEXT = "Random exception"
 
     def setUp(self):
         self.service = LogService(0)
 
     def test_last_messages(self):
-        for severity in [SEV_CRITICAL,
-                         SEV_ERROR,
-                         SEV_WARNING]:
+        for severity in ["CRITICAL",
+                         "ERROR",
+                         "WARNING"]:
             self.helper_test_last_messages(severity)
-        for severity in [SEV_INFO,
-                         SEV_DEBUG]:
+        for severity in ["INFO",
+                         "DEBUG"]:
             self.helper_test_last_messages(severity, saved=False)
 
     def helper_test_last_messages(self, severity, saved=True):
-        self.service.Log(TestLogService.MESSAGE + severity,
-                         TestLogService.COORD + severity,
-                         TestLogService.OPERATION + severity,
-                         severity,
-                         TestLogService.TIMESTAMP,
-                         TestLogService.EXC_TEXT + severity)
+        self.service.Log(
+            msg=TestLogService.MSG + severity,
+            levelname=severity,
+            levelno=getattr(logging, severity),
+            created=TestLogService.CREATED,
+            service_name=TestLogService.SERVICE_NAME + severity,
+            service_shard=TestLogService.SERVICE_SHARD,
+            operation=TestLogService.OPERATION + severity,
+            exc_text=TestLogService.EXC_TEXT + severity)
         last_message = self.service.last_messages()[-1]
         if saved:
             self.assertEquals(last_message["message"],
-                              TestLogService.MESSAGE + severity)
+                              TestLogService.MSG + severity)
             self.assertEquals(last_message["coord"],
-                              TestLogService.COORD + severity)
+                              TestLogService.SERVICE_NAME + severity +
+                              "," + str(TestLogService.SERVICE_SHARD))
             self.assertEquals(last_message["operation"],
                               TestLogService.OPERATION + severity)
             self.assertEquals(last_message["severity"],
                               severity)
             self.assertEquals(last_message["timestamp"],
-                              TestLogService.TIMESTAMP)
+                              TestLogService.CREATED)
             self.assertEquals(last_message["exc_text"],
                               TestLogService.EXC_TEXT + severity)
             pass

@@ -34,10 +34,13 @@ gevent.monkey.patch_all()
 import argparse
 import io
 import json
+import logging
 import os
 
-from cms import logger
 from cms.db import version as model_version
+
+
+logger = logging.getLogger(__name__)
 
 
 def main():

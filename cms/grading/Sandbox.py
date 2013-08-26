@@ -19,6 +19,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import os
 import re
 import resource
@@ -31,9 +32,12 @@ import gevent
 from gevent import subprocess
 #import gevent_subprocess as subprocess
 
-from cms import config, logger
+from cms import config
 from cms.io.GeventUtils import copyfileobj, rmtree
 from cmscommon.DateTime import monotonic_time
+
+
+logger = logging.getLogger(__name__)
 
 
 class SandboxInterfaceException(Exception):

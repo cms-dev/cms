@@ -28,6 +28,7 @@ from __future__ import unicode_literals
 
 import hashlib
 import io
+import logging
 import os
 import tempfile
 
@@ -35,9 +36,12 @@ import gevent
 
 from sqlalchemy.exc import IntegrityError
 
-from cms import config, logger, mkdir
+from cms import config, mkdir
 from cms.db import SessionGen, FSObject
 from cms.io.GeventUtils import copyfileobj, move, rmtree
+
+
+logger = logging.getLogger(__name__)
 
 
 class FileCacherBackend:

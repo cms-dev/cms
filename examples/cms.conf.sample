@@ -145,17 +145,5 @@
 
 
 
-    "_section": "LogService",
-
-    "_help": "Whether to print ANSI color codes on stdout/logfiles, in",
-    "_help": "the local logs and in the remote ones.",
-    "color_shell_log":        true,
-    "color_file_log":         false,
-    "color_remote_shell_log": true,
-    "color_remote_file_log":  true,
-    "include_traceback":      true,
-
-
-
     "_help": "This is the end of this file."
 }
