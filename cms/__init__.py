@@ -134,7 +134,7 @@ class Config:
         self.admin_listen_address = ""
         self.admin_listen_port = 8889
 
-        # ScoringService.
+        # ProxyService.
         self.rankings = ["http://usern4me:passw0rd@localhost:8890/"]
         self.https_certfile = None
 
