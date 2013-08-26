@@ -33,10 +33,10 @@ database.
 import gevent.monkey
 gevent.monkey.patch_all()
 
-import os
-import os.path
 import argparse
 import datetime
+import os
+import os.path
 
 import sqlalchemy.exc
 

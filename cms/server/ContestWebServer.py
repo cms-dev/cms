@@ -35,19 +35,18 @@
 
 """
 
-import os
-import re
-import pickle
-import codecs
-
 import base64
+import codecs
+import gettext
 import json
+import os
+import pickle
+import pkg_resources
+import re
 import tempfile
 import traceback
 from datetime import timedelta
 from urllib import quote
-import gettext
-import pkg_resources
 
 import tornado.web
 

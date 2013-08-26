@@ -24,17 +24,17 @@
 
 """
 
-import os
-import sys
-import json
-import time
+import codecs
 import datetime
 import imp
-import pkgutil
-import codecs
+import json
 import netifaces
-from argparse import ArgumentParser
+import os
+import pkgutil
+import sys
+import time
 import traceback
+from argparse import ArgumentParser
 
 from cms.io import ServiceCoord, Address, config as async_config, \
     get_shard_from_addresses

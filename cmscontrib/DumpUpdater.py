@@ -31,10 +31,10 @@ of the old supported versions to the current one.
 import gevent.monkey
 gevent.monkey.patch_all()
 
-import os
+import argparse
 import io
 import json
-import argparse
+import os
 
 from cms import logger
 from cms.db import version as model_version

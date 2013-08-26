@@ -29,9 +29,9 @@ current ranking.
 
 """
 
+import random
 from datetime import timedelta
 from collections import namedtuple
-import random
 
 from cms import logger
 from cms.io.GeventLibrary import Service, rpc_method, rpc_callback

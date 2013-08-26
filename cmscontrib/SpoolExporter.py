@@ -29,9 +29,9 @@ Italian IOI repository for storing the results of a contest.
 import gevent.monkey
 gevent.monkey.patch_all()
 
-import os
-import codecs
 import argparse
+import codecs
+import os
 import time
 
 from cms import logger

@@ -31,12 +31,12 @@ again should be idempotent.
 import gevent.monkey
 gevent.monkey.patch_all()
 
-import io
-import os
 import argparse
+import io
 import json
-import tempfile
+import os
 import tarfile
+import tempfile
 import zipfile
 from datetime import timedelta
 

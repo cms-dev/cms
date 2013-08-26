@@ -34,9 +34,9 @@ already existing in the database.
 import gevent.monkey
 gevent.monkey.patch_all()
 
+import argparse
 import os
 import os.path
-import argparse
 
 from cms import logger
 from cms.db import SessionGen, Base, Contest, User, Task, Submission, \

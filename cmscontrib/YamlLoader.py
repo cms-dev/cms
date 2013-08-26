@@ -25,7 +25,6 @@ import os
 import os.path
 import sys
 import yaml
-
 from datetime import timedelta
 
 from cms import LANGUAGES, logger

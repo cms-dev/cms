@@ -25,9 +25,9 @@ that saves the resources usage in that machine.
 
 """
 
+import bisect
 import os
 import time
-import bisect
 
 import psutil
 

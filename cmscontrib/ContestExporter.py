@@ -31,12 +31,12 @@ idempotent.
 import gevent.monkey
 gevent.monkey.patch_all()
 
-import io
 import argparse
-import os
+import io
 import json
-import tempfile
+import os
 import tarfile
+import tempfile
 
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval

@@ -20,11 +20,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import tempfile
-import stat
-import select
 import re
 import resource
+import select
+import stat
+import tempfile
 from functools import wraps, partial
 
 import gevent
