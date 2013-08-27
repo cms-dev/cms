@@ -127,6 +127,7 @@
     "https_certfile": null,
 
 
+
     "_section": "ResourceService",
 
     "_help": "Format of the *beginning* of the command line that we",
@@ -137,8 +138,8 @@
     "_help": "for CMS installed, while the second is for CMS run from",
     "_help": "the repository. On some systems it may be necessary to",
     "_help": "change the first item to contain 'python' or",
-    "_help": "'python2.7' instead of 'python2', and the second",
-    "_help": "one to contain '/usr/bin' instead of /usr/local/bin'.",
+    "_help": "'python2.7' instead of 'python2', and the second one to",
+    "_help": "contain '/usr/bin' instead of '/usr/local/bin'.",
     "process_cmdline": ["/usr/bin/python2", "/usr/local/bin/cms%s", "%d"],
     "_process_cmdline": ["/usr/bin/python2", "./scripts/cms%s", "%d"],
 
