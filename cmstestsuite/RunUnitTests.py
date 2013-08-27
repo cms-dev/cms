@@ -101,7 +101,8 @@ def get_all_tests():
     tests = []
     for path, _, names in os.walk(os.path.join("cmstestsuite", "cms")):
         for name in names:
-            tests.append((path, name))
+            if name.endswith(".py"):
+                tests.append((path, name))
     return tests
 
 
