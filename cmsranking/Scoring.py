@@ -199,6 +199,8 @@ class Score:
         # but we reset it just to be sure...
         if key in self._submissions:
             del self._submissions[key]
+            # Delete all its subchanges.
+            self._changes = filter(lambda a: a.submission != key, self._changes)
             self.reset_history()
 
 
@@ -315,6 +317,11 @@ class ScoringStore:
             self.notify_callbacks(submission.user, submission.task, new_score)
 
     def delete_subchange(self, key, subchange):
+        if subchange.submission not in submission_store:
+            # Submission has just been deleted. We cannot retrieve the
+            # user and the task, so we cannot clean up the Score obj.
+            # But the delete_submission callback will do it for us!
+            return
         submission = submission_store._store[subchange.submission]
         score_obj = self._scores[submission.user][submission.task]
         old_score = score_obj.get_score()
