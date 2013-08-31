@@ -488,8 +488,8 @@ def file_handler_gen(BaseClass):
             if length < FileCacher.CHUNK_SIZE:
                 self.temp_file.close()
                 duration = time.time() - self.start_time
-                logger.info("%.3lf seconds for %.3lf MB, %.3lf MB/s" %
-                            (duration, self.size, self.size / duration))
+                logger.info("%.3lf seconds for %.3lf MB" %
+                            (duration, self.size))
                 self.finish()
                 return False
             return True
