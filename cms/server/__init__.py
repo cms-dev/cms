@@ -26,6 +26,7 @@
 
 import os
 import time
+import logging
 import tarfile
 import zipfile
 from urllib import quote
@@ -36,9 +37,11 @@ import tornado.locale
 
 import gevent
 
-from cms import logger
 from cms.db.filecacher import FileCacher
 from cmscommon.DateTime import make_datetime, utc
+
+
+logger = logging.getLogger(__name__)
 
 
 def actual_phase_required(*actual_phases):

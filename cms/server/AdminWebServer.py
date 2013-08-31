@@ -26,6 +26,7 @@
 
 import base64
 import json
+import logging
 import os
 import pkg_resources
 import re
@@ -38,7 +39,8 @@ from sqlalchemy.exc import IntegrityError
 import tornado.web
 import tornado.locale
 
-from cms import config, logger
+from cms import config
+from cms.log import initialize_logging
 from cms.io.WebGeventLibrary import WebService
 from cms.io import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
@@ -50,6 +52,9 @@ from cms.grading.tasktypes import get_task_type_class
 from cms.server import file_handler_gen, get_url_root, \
     CommonRequestHandler
 from cmscommon.DateTime import make_datetime, make_timestamp
+
+
+logger = logging.getLogger(__name__)
 
 
 def try_commit(session, handler):
@@ -279,7 +284,7 @@ class AdminWebServer(WebService):
     }
 
     def __init__(self, shard):
-        logger.initialize(ServiceCoord("AdminWebServer", shard))
+        initialize_logging("AdminWebServer", shard)
 
         # A list of pending notifications.
         self.notifications = []
@@ -298,7 +303,6 @@ class AdminWebServer(WebService):
                             _aws_handlers,
                             parameters,
                             shard=shard,
-                            custom_logger=logger,
                             listen_address=config.admin_listen_address)
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(

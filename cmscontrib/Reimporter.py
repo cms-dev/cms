@@ -35,15 +35,18 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import argparse
+import logging
 import os
 import os.path
 
-from cms import logger
 from cms.db import SessionGen, Base, Contest, User, Task, Submission, \
     ask_for_contest
 from cms.db.filecacher import FileCacher
 
 from cmscontrib.Loaders import choose_loader, build_epilog
+
+
+logger = logging.getLogger(__name__)
 
 
 def _is_rel(prp, attr):

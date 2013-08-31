@@ -26,12 +26,18 @@
 import os
 import time
 import codecs
+import logging
+import sys
 from collections import deque
 
-from cms import config, mkdir, logger, format_log, \
-    SEV_CRITICAL, SEV_ERROR, SEV_WARNING
+from cms import config, mkdir
+from cms.log import initialize_logging, root_logger, shell_handler, \
+    FileHandler, CustomFormatter
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
+
+
+logger = logging.getLogger(__name__)
 
 
 class LogService(Service):
@@ -42,19 +48,26 @@ class LogService(Service):
     LAST_MESSAGES_COUNT = 100
 
     def __init__(self, shard):
-        logger.initialize(ServiceCoord("LogService", shard))
-        Service.__init__(self, shard, custom_logger=logger)
+        initialize_logging("LogService", shard)
+        Service.__init__(self, shard)
 
+        # Determine location of log file, and make directories.
         log_dir = os.path.join(config.log_dir, "cms")
         if not mkdir(config.log_dir) or \
                not mkdir(log_dir):
             logger.error("Cannot create necessary directories.")
             self.exit()
             return
-
         log_filename = "%d.log" % int(time.time())
-        self._log_file = codecs.open(os.path.join(log_dir, log_filename),
-                                     "w", "utf-8")
+
+        # Install a global file handler.
+        self.file_handler = FileHandler(os.path.join(log_dir, log_filename),
+                                        mode='w', encoding='utf-8')
+        self.file_handler.setLevel(logging.DEBUG)
+        self.file_handler.setFormatter(CustomFormatter(False))
+        root_logger.addHandler(self.file_handler)
+
+        # Provide a symlink to the latest log file.
         try:
             os.remove(os.path.join(log_dir, "last.log"))
         except OSError:
@@ -65,39 +78,47 @@ class LogService(Service):
         self._last_messages = deque(maxlen=self.LAST_MESSAGES_COUNT)
 
     @rpc_method
-    def Log(self, msg, coord, operation, severity, timestamp, exc_text):
+    def Log(self, **kwargs):
         """Log a message.
 
-        msg (string): the message to log
-        coord (string): a string representing the caller service
-        operation (string): a high-level description of the long-term
-                            operation that is going on in the service
-        severity (string): a constant defined in Logger
-        timestamp (float): seconds from epoch
-        exc_text (string): the text of the logged exception, or None.
+        Receive the attributes of a LogRecord, rebuild and handle it.
+        The given keyword arguments will contain:
+        msg (string): the message to log.
+        levelname (string): one of "DEBUG", "INFO", "WARNING", "ERROR"
+            and "CRITICAL".
+        levelno (int): a constant defined in logging.
+        created (float): when the log message was emitted (as an UNIX
+            timestamp, seconds from epoch).
 
-        returns (bool): True
+        And they may contain:
+        service_name (string) and service_shard (int): the coords of
+            the service where this message was generated.
+        operation (string): a high-level description of the long-term
+            operation that is going on in the service.
+        exc_text (string): the text of the logged exception.
 
         """
-        # To avoid possible mistakes.
-        msg = str(msg)
-        operation = str(operation)
+        record = logging.makeLogRecord(kwargs)
 
-        if severity in  [SEV_CRITICAL, SEV_ERROR, SEV_WARNING]:
-            self._last_messages.append({"message": msg,
-                                        "coord": coord,
-                                        "operation": operation,
-                                        "severity": severity,
-                                        "timestamp": timestamp,
-                                        "exc_text": exc_text})
+        # Show in stdout, together with the messages we produce
+        # ourselves.
+        shell_handler.handle(record)
+        # Write on the global log file.
+        self.file_handler.handle(record)
 
-        print >> self._log_file, format_log(
-            msg, coord, operation, severity, timestamp,
-            exc_text=exc_text,
-            colors=config.color_remote_file_log)
-        print format_log(msg, coord, operation, severity, timestamp,
-                         exc_text=exc_text,
-                         colors=config.color_remote_shell_log)
+        if record.levelno >= logging.WARNING:
+            if hasattr(record, "service_name") and \
+                    hasattr(record, "service_shard"):
+                coord = "%s,%s" % (record.service_name, record.service_shard)
+            else:
+                coord = ""
+            self._last_messages.append({
+                "message": record.msg,
+                "coord": coord,
+                "operation": getattr(record, "operation", ""),
+                "severity": record.levelname,
+                "timestamp": record.created,
+                "exc_text": getattr(record, "exc_text", None)})
 
     @rpc_method
     def last_messages(self):

@@ -23,11 +23,16 @@
 
 """
 
+import logging
 import time
 
-from cms import config, logger
+from cms import config
+from cms.log import initialize_logging
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_callback
+
+
+logger = logging.getLogger(__name__)
 
 
 class Checker(Service):
@@ -36,8 +41,8 @@ class Checker(Service):
     """
 
     def __init__(self, shard):
-        logger.initialize(ServiceCoord("Checker", shard))
-        Service.__init__(self, shard, custom_logger=logger)
+        initialize_logging("Checker", shard)
+        Service.__init__(self, shard)
         for service in config.async.core_services:
             self.connect_to(service)
         self.add_timeout(self.check, None, 90, immediately=True)

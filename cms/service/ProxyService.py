@@ -24,6 +24,7 @@
 from __future__ import unicode_literals
 
 import json
+import logging
 import string
 
 import gevent
@@ -33,12 +34,16 @@ import requests
 import requests.exceptions
 from urlparse import urljoin
 
-from cms import config, logger
+from cms import config
+from cms.log import initialize_logging
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
 from cms.db import SessionGen, Contest, Task, Submission
 from cms.grading.scoretypes import get_score_type
 from cmscommon.DateTime import make_timestamp
+
+
+logger = logging.getLogger(__name__)
 
 
 class CannotSendError(Exception):
@@ -238,8 +243,8 @@ class ProxyService(Service):
         contest_id (int): the ID of the contest to manage.
 
         """
-        logger.initialize(ServiceCoord("ProxyService", shard))
-        Service.__init__(self, shard, custom_logger=logger)
+        initialize_logging("ProxyService", shard)
+        Service.__init__(self, shard)
 
         self.contest_id = contest_id
 

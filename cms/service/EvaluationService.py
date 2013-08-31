@@ -29,11 +29,12 @@ current ranking.
 
 """
 
+import logging
 import random
 from datetime import timedelta
 from collections import namedtuple
 
-from cms import logger
+from cms.log import initialize_logging
 from cms.io.GeventLibrary import Service, rpc_method, rpc_callback
 from cms.io import ServiceCoord, get_service_shards
 from cms.db import SessionGen, Contest, Dataset, Submission, \
@@ -41,6 +42,9 @@ from cms.db import SessionGen, Contest, Dataset, Submission, \
 from cms.service import get_submission_results, get_datasets_to_judge
 from cmscommon.DateTime import make_datetime, make_timestamp
 from cms.grading.Job import JobGroup
+
+
+logger = logging.getLogger(__name__)
 
 
 def to_compile(submission_result):
@@ -641,8 +645,8 @@ class EvaluationService(Service):
     JOBS_NOT_DONE_CHECK_TIME = timedelta(seconds=117)
 
     def __init__(self, shard, contest_id):
-        logger.initialize(ServiceCoord("EvaluationService", shard))
-        Service.__init__(self, shard, custom_logger=logger)
+        initialize_logging("EvaluationService", shard)
+        Service.__init__(self, shard)
 
         self.contest_id = contest_id
 

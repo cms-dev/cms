@@ -30,13 +30,17 @@ compilation and the evaluation are contained in the task type class.
 
 """
 
+import logging
 import re
 import traceback
 
-from cms import config, logger
+from cms import config
 from cms.grading import JobException
 from cms.grading.Sandbox import Sandbox
 from cms.grading.Job import CompilationJob, EvaluationJob
+
+
+logger = logging.getLogger(__name__)
 
 
 ## Sandbox lifecycle. ##

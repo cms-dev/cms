@@ -20,11 +20,12 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import logging
 import os
 import tempfile
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
-    LANGUAGE_TO_HEADER_EXT_MAP, config, logger
+    LANGUAGE_TO_HEADER_EXT_MAP, config
 from cms.grading.Sandbox import wait_without_std
 from cms.grading import get_compilation_command, compilation_step, \
     evaluation_step_before_run, evaluation_step_after_run, \
@@ -32,6 +33,9 @@ from cms.grading import get_compilation_command, compilation_step, \
 from cms.grading.TaskType import TaskType, \
     create_sandbox, delete_sandbox
 from cms.db import Executable
+
+
+logger = logging.getLogger(__name__)
 
 
 # Dummy function to mark translatable string.

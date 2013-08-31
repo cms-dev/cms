@@ -21,18 +21,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import io
+import logging
 import os
 import os.path
 import sys
 import yaml
 from datetime import timedelta
 
-from cms import LANGUAGES, logger
+from cms import LANGUAGES
 from cmscommon.DateTime import make_datetime
 from cms.db import Contest, User, Task, Statement, Attachment, \
     SubmissionFormatElement, Dataset, Manager, Testcase
 from cmscontrib.BaseLoader import Loader
 from cmscontrib import touch
+
+
+logger = logging.getLogger(__name__)
 
 
 def load(src, dst, src_name, dst_name=None, conv=lambda i: i):

@@ -34,6 +34,7 @@ gevent.monkey.patch_all()
 import argparse
 import io
 import json
+import logging
 import os
 import tarfile
 import tempfile
@@ -41,7 +42,6 @@ import tempfile
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval
 
-from cms import logger
 from cms.db import version as model_version
 from cms.db import SessionGen, Contest, ask_for_contest, \
     Submission, UserTest, SubmissionResult, UserTestResult
@@ -50,6 +50,9 @@ from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum
 from cmscommon.DateTime import make_timestamp
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_archive_info(file_name):
