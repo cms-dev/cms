@@ -36,8 +36,8 @@
 """
 
 import base64
-import codecs
 import gettext
+import io
 import json
 import os
 import pickle
@@ -1054,10 +1054,12 @@ class SubmitHandler(BaseHandler):
                     self.current_user.username)
                 if not os.path.exists(path):
                     os.makedirs(path)
-                with codecs.open(
+                # Pickle in ASCII format produces str, not unicode,
+                # therefore we open the file in binary mode.
+                with io.open(
                         os.path.join(path,
                                      str(int(make_timestamp(self.timestamp)))),
-                        "w", "utf-8") as file_:
+                        "wb") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
                                  task.id,
@@ -1574,10 +1576,12 @@ class UserTestHandler(BaseHandler):
                     self.current_user.username)
                 if not os.path.exists(path):
                     os.makedirs(path)
-                with codecs.open(
+                # Pickle in ASCII format produces str, not unicode,
+                # therefore we open the file in binary mode.
+                with io.open(
                         os.path.join(path,
                                      str(int(make_timestamp(self.timestamp)))),
-                        "w", "utf-8") as file_:
+                        "wb") as file_:
                     pickle.dump((self.contest.id,
                                  self.current_user.id,
                                  task.id,
