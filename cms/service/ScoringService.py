@@ -21,258 +21,274 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""Scoring service. Its jobs is to handle everything is about
-assigning scores and communicating them to the world.
-
-In particular, it takes care of handling the internal way of keeping
-the score (i.e., the ranking view) and send to the external ranking
-services the scores, via http requests.
+"""A service that assigns a score to submission results.
 
 """
 
 import logging
+import time
+
+import gevent
+from gevent.queue import JoinableQueue
+from gevent.event import Event
 
 from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
-from cms.db import SessionGen, Submission, Contest, Dataset
+from cms.db import SessionGen, Submission, Dataset
 from cms.grading.scoretypes import get_score_type
-from cms.service import get_submission_results, get_datasets_to_judge
+from cms.service import get_submission_results
 
 
 logger = logging.getLogger(__name__)
 
 
+def to_score(sr):
+    """Return whether SS should score the submission result.
+
+    sr (SubmissionResult): a submission result.
+
+    return (bool): True if SS should score it.
+
+    """
+    return sr is not None and \
+        (sr.compilation_outcome == "fail" or sr.evaluated()) and \
+        not sr.scored()
+
+
 class ScoringService(Service):
-    """Scoring service.
+    """A service that assigns a score to submission results.
+
+    A submission result is ready to be scored when its compilation is
+    unsuccessful (in this case, no evaluation will be performed) or
+    after it has been evaluated. The goal of scoring is to use the
+    evaluations to determine score, score_details, public_score,
+    public_score_details and ranking_score_details (all not-null).
+    Scoring is done by the compute_score method of the ScoreType
+    defined by the dataset of the result.
+
+    ScoringService keeps a queue of (submission_id, dataset_id) pairs
+    identifying submission results to score. A thread (actually, a
+    greenlet) is spawned to consume this queue, one item at a time.
+    The queue is filled by the new_evaulation and the invalidate_\
+    submissions RPC methods, and by a sweeper thread (greenlet). Its
+    duty is to regularly check all submissions in the database and put
+    the unscored ones in the queue. This operation can also be forced
+    by the search_jobs_not_done RPC method.
 
     """
 
     # How often we look for submission not scored/tokened.
-    JOBS_NOT_DONE_CHECK_TIME = 347.0
+    SWEEPER_TIMEOUT = 347.0
 
-    def __init__(self, shard, contest_id):
+    def __init__(self, shard):
+        """Initialize the ScoringService.
+
+        """
         Service.__init__(self, shard)
 
-        self.contest_id = contest_id
-
+        # Set up communication with ProxyService.
         self.proxy_service = self.connect_to(ServiceCoord("ProxyService", 0))
 
-        # If for some reason (SS switched off for a while, or broken
-        # connection with ES), submissions have been left without
-        # score, this is the set where you want to pur their ids. Note
-        # that sets != {} if and only if there is an alive timeout for
-        # the method "score_old_submission".
-        #
-        # submission_results_to_score and submission_results_scored
-        # contain pairs of (submission_id, dataset_id).
-        self.submission_results_to_score = set()
-        self.scoring_old_submission = False
+        # Set up and spawn the scorer.
+        # TODO Link to greenlet: when it dies, log CRITICAL and exit.
+        self._scorer_queue = JoinableQueue()
+        gevent.spawn(self._scorer_loop)
 
-        # We need to load every submission at start, but we don't want
-        # to invalidate every score so that we can simply load the
-        # score-less submissions. So we keep a set of submissions that
-        # we analyzed (for scoring and for tokens).
-        self.submission_results_scored = set()
+        # Set up and spawn the sweeper.
+        # TODO Link to greenlet: when it dies, log CRITICAL and exit.
+        self._sweeper_start = None
+        self._sweeper_event = Event()
+        gevent.spawn(self._sweeper_loop)
 
-        self.add_timeout(self.search_jobs_not_done, None,
-                         ScoringService.JOBS_NOT_DONE_CHECK_TIME,
-                         immediately=True)
+    def _scorer_loop(self):
+        """Get results from the queue and score them, forever.
 
-    @rpc_method
-    def search_jobs_not_done(self):
-        """Look in the database for submissions that have not been
-        scored for no good reasons. Put the missing job in the queue.
+        This is an infinite loop that, at each iteration, gets an item
+        from the queue (blocking until there is one, if the queue is
+        empty) and scores it. Any error during the scoring is sent to
+        the logger and then suppressed, because the loop must go on.
 
         """
-        # Do this only if we are not still loading old submission
-        # (from the start of the service).
-        if self.scoring_old_submission:
-            return True
+        while True:
+            submission_id, dataset_id = self._scorer_queue.get()
+            try:
+                self._scorer(submission_id, dataset_id)
+            except Exception:
+                logger.error("Unexpected error when scoring submission %d on "
+                             "dataset %d.", submission_id, dataset_id,
+                             exc_info=True)
+            finally:
+                self._scorer_queue.task_done()
 
-        with SessionGen() as session:
-            contest = Contest.get_from_id(self.contest_id, session)
+    def _scorer(self, submission_id, dataset_id):
+        """Assign a score to a submission result.
 
-            new_submission_results_to_score = set()
+        This is the core of ScoringService: here we retrieve the result
+        from the database, check if it is in the correct status,
+        instantiate its ScoreType, compute its score, store it back in
+        the database and tell ProxyService to update RWS if needed.
 
-            for submission in contest.get_submissions():
-                if submission.user.hidden:
-                    continue
-
-                for dataset in get_datasets_to_judge(submission.task):
-                    sr = submission.get_result(dataset)
-                    sr_id = (submission.id, dataset.id)
-
-                    if sr is not None and (sr.evaluated() or
-                            sr.compilation_outcome == "fail") and \
-                            sr_id not in self.submission_results_scored:
-                        new_submission_results_to_score.add(sr_id)
-
-        new_s = len(new_submission_results_to_score)
-        old_s = len(self.submission_results_to_score)
-        logger.info("Submissions found to score: %d." % new_s)
-        if new_s > 0:
-            self.submission_results_to_score |= new_submission_results_to_score
-            if old_s == 0:
-                self.add_timeout(self.score_old_submissions, None,
-                                 0.5, immediately=False)
-
-        # Run forever.
-        return True
-
-    def score_old_submissions(self):
-        """The submissions in the submission_results_to_score set are
-        evaluated submissions that we can assign a score to, and this
-        method scores a bunch of these at a time. This method keeps
-        getting called while the set is non-empty. (Exactly the same
-        happens for the submissions to token.)
-
-        Note: doing this way (instead of putting everything in the
-        __init__) prevent freezing the service at the beginning in the
-        case of many old submissions.
-
-        """
-        self.scoring_old_submission = True
-        to_score = len(self.submission_results_to_score)
-        to_score_now = to_score if to_score < 4 else 4
-        logger.info("Old submission yet to score: %s." % to_score)
-
-        for _ in xrange(to_score_now):
-            submission_id, dataset_id = self.submission_results_to_score.pop()
-            self.new_evaluation(submission_id, dataset_id)
-        if to_score - to_score_now > 0:
-            return True
-
-        logger.info("Finished loading old submissions.")
-        self.scoring_old_submission = False
-        return False
-
-    @rpc_method
-    def new_evaluation(self, submission_id, dataset_id):
-        """This RPC inform ScoringService that ES finished the work on
-        a submission (either because it has been evaluated, or because
-        the compilation failed).
-
-        submission_id (int): the id of the submission that changed.
-        dataset_id (int): the id of the dataset to use.
+        submission_id (int) and dataset_id (int): primary key of the
+            submission result we have to score.
 
         """
         with SessionGen() as session:
+            # Obtain submission.
             submission = Submission.get_from_id(submission_id, session)
-
             if submission is None:
-                logger.error("[new_evaluation] Couldn't find submission %d "
-                             "in the database." % submission_id)
-                raise ValueError
+                raise ValueError("Submission %d not found in the database." %
+                                 submission_id)
 
-            if submission.user.hidden:
-                logger.info("[new_evaluation] Submission %d not scored "
-                            "because user is hidden." % submission_id)
-                return
-
+            # Obtain dataset.
             dataset = Dataset.get_from_id(dataset_id, session)
-
             if dataset is None:
-                logger.error("[new_evaluation] Couldn't find dataset %d "
-                             "in the database." % dataset_id)
-                raise ValueError
+                raise ValueError("Dataset %d not found in the database." %
+                                 dataset_id)
 
+            # Obtain submission result.
             submission_result = submission.get_result(dataset)
 
-            # We'll accept only submissions that either didn't compile
-            # at all or that did evaluate successfully.
-            if submission_result is None or not submission_result.compiled():
-                logger.warning("[new_evaluation] Submission %d(%d) is "
-                               "not compiled." % (submission_id, dataset_id))
-                return
-            elif submission_result.compilation_outcome == "ok" and \
-                    not submission_result.evaluated():
-                logger.warning("[new_evaluation] Submission %d(%d) is "
-                               "compiled but is not evaluated." %
-                               (submission_id, dataset_id))
-                return
+            # Check if it's ready to be scored.
+            if not to_score(submission_result):
+                raise ValueError("The state of the submission result doesn't "
+                                 "allow scoring.")
 
-            # Assign score to the submission.
+            # Assign score to the submission result.
             score_type = get_score_type(dataset=dataset)
-            score, details, public_score, public_details, ranking_details = \
-                score_type.compute_score(submission_result)
+            s, sd, ps, psd, rsd = score_type.compute_score(submission_result)
 
-            # Mark submission as scored.
-            self.submission_results_scored.add((submission_id, dataset_id))
+            # Fill data back in the database.
+            submission_result.score = s
+            submission_result.score_details = sd
+            submission_result.public_score = ps
+            submission_result.public_score_details = psd
+            submission_result.ranking_score_details = rsd
 
-            # Filling submission's score info in the db.
-            submission_result.score = score
-            submission_result.public_score = public_score
-
-            # And details.
-            submission_result.score_details = details
-            submission_result.public_score_details = public_details
-            submission_result.ranking_score_details = ranking_details
+            # Store it.
+            session.commit()
 
             # If dataset is the active one, update RWS.
             if dataset is submission.task.active_dataset:
                 self.proxy_service.submission_scored(
                     submission_id=submission.id)
 
-            session.commit()
+    def _sweeper_loop(self):
+        """Regularly check the database for unscored results.
+
+        Try to sweep the database once every SWEEPER_TIMEOUT seconds
+        but make sure that no two sweeps run simultaneously. That is,
+        start a new sweep SWEEPER_TIMEOUT seconds after the previous
+        one started or when the previous one finished, whatever comes
+        last.
+
+        The search_jobs_not_done RPC method can interfere with this
+        regularity, as it tries to run a sweeper as soon as possible:
+        immediately, if no sweeper is running, or as soon as the
+        current one terminates.
+
+        Any error during the sweep is sent to the logger and then
+        suppressed, because the loop must go on.
+
+        """
+        while True:
+            self._sweeper_start = time.time()
+            self._sweeper_event.clear()
+
+            try:
+                self._sweeper()
+            except Exception:
+                logger.error("Unexpected error when searching for unscored "
+                             "submissions.", exc_info=True)
+
+            self._sweeper_event.wait(max(self._sweeper_start +
+                                         self.SWEEPER_TIMEOUT -
+                                         time.time(), 0))
+
+    def _sweeper(self):
+        """Check the database for unscored submissions.
+
+        Obtain a list of all the submission results in the database,
+        check each of them to see if it's still unscored and, in case,
+        put it in the queue.
+
+        """
+        counter = 0
+
+        with SessionGen() as session:
+            for sr in get_submission_results(session=session):
+                if to_score(sr):
+                    self._scorer_queue.put((sr.submission_id, sr.dataset_id))
+                    counter += 1
+
+        if counter > 0:
+            logger.info("Found %d unscored submissions.", counter)
 
     @rpc_method
-    def invalidate_submission(self,
-                              submission_id=None,
-                              dataset_id=None,
-                              user_id=None,
-                              task_id=None):
-        """Request for invalidating some scores.
+    def search_jobs_not_done(self):
+        """Make the sweeper loop fire the sweeper as soon as possible.
 
-        Invalidate the scores of the SubmissionResults that:
+        """
+        self._sweeper_event.set()
+
+    @rpc_method
+    def new_evaluation(self, submission_id, dataset_id):
+        """Schedule the given submission result for scoring.
+
+        Put it in the queue to have it scored, sooner or later. Usually
+        called by EvaluationService when it's done with a result.
+
+        submission_id (int) and dataset_id (int): primary key of the
+            submission result to score.
+
+        """
+        self._scorer_queue.put((submission_id, dataset_id))
+
+    @rpc_method
+    def invalidate_submission(self, submission_id=None, dataset_id=None,
+                              user_id=None, task_id=None, contest_id=None):
+        """Invalidate (and re-score) some submission results.
+
+        Invalidate the scores of the submission results that:
         - belong to submission_id or, if None, to any submission of
           user_id and/or task_id or, if both None, to any submission
-          of the contest this service is running for.
+          of contest_id or, if None, to any submission in the database.
         - belong to dataset_id or, if None, to any dataset of task_id
-          or, if None, to any dataset of any task of the contest this
-          service is running for.
+          or, if None, to any dataset of contest_id or, if None, to any
+          dataset in the database.
 
-        submission_id (int): id of the submission to invalidate, or
-                             None.
-        dataset_id (int): id of the dataset to invalidate, or None.
-        user_id (int): id of the user to invalidate, or None.
-        task_id (int): id of the task to invalidate, or None.
+        submission_id (int): id of the submission whose results should
+            be invalidated, or None.
+        dataset_id (int): id of the dataset whose results should be
+            invalidated, or None.
+        user_id (int): id of the user whose results should be
+            invalidated, or None.
+        task_id (int): id of the task whose results should be
+            invalidated, or None.
+        contest_id (int): id of the contest whose results should be
+            invalidated, or None.
 
         """
         logger.info("Invalidation request received.")
 
-        # Validate arguments
-        # TODO Check that all these objects belong to this contest.
+        # We can put results in the scorer queue only after they have
+        # been invalidated (and committed to the database). Therefore
+        # we temporarily save them somewhere else.
+        temp_queue = list()
 
         with SessionGen() as session:
-            submission_results = get_submission_results(
-                # Give contest_id only if all others are None.
-                self.contest_id
-                    if {user_id, task_id, submission_id, dataset_id} == {None}
-                    else None,
-                user_id, task_id, submission_id, dataset_id, session)
+            submission_results = \
+                get_submission_results(contest_id, user_id, task_id,
+                                       submission_id, dataset_id,
+                                       session=session)
 
-            logger.info("Submission results to invalidate scores for: %d." %
-                        len(submission_results))
-            if len(submission_results) == 0:
-                return
-
-            new_submission_results_to_score = set()
-
-            for submission_result in submission_results:
-                # If the submission is not evaluated, it does not have
-                # a score to invalidate, and, when evaluated,
-                # ScoringService will be prompted to score it. So in
-                # that case we do not have to do anything.
-                if submission_result.evaluated():
-                    submission_result.invalidate_score()
-                    new_submission_results_to_score.add(
-                        (submission_result.submission_id,
-                         submission_result.dataset_id))
+            for sr in submission_results:
+                if sr.scored():
+                    sr.invalidate_score()
+                    temp_queue.append((sr.submission_id, sr.dataset_id))
 
             session.commit()
 
-        old_s = len(self.submission_results_to_score)
-        self.submission_results_to_score |= new_submission_results_to_score
-        if old_s == 0:
-            self.add_timeout(self.score_old_submissions, None,
-                             0.5, immediately=False)
+        for item in temp_queue:
+            self._scorer_queue.put(item)
+
+        logger.info("Invalidated %d submissions.", len(temp_queue))
