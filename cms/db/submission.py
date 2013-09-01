@@ -346,7 +346,7 @@ class SubmissionResult(Base):
             .first()
 
     def compiled(self):
-        """Return if the submission has been compiled.
+        """Return whether the submission result has been compiled.
 
         return (bool): True if compiled, False otherwise.
 
@@ -354,7 +354,7 @@ class SubmissionResult(Base):
         return self.compilation_outcome is not None
 
     def evaluated(self):
-        """Return if the submission has been evaluated.
+        """Return whether the submission result has been evaluated.
 
         return (bool): True if evaluated, False otherwise.
 
@@ -362,12 +362,15 @@ class SubmissionResult(Base):
         return self.evaluation_outcome is not None
 
     def scored(self):
-        """Return if the submission has been scored.
+        """Return whether the submission result has been scored.
 
         return (bool): True if scored, False otherwise.
 
         """
-        return self.score is not None
+        return all(getattr(self, k) is not None for k in [
+            "score", "score_details",
+            "public_score", "public_score_details",
+            "ranking_score_details"])
 
     def invalidate_compilation(self):
         """Blank all compilation and evaluation outcomes, and the score.

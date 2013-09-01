@@ -314,7 +314,7 @@ class UserTestResult(Base):
     # executables (dict of UserTestExecutable objects indexed by filename)
 
     def compiled(self):
-        """Return if the user test has been compiled.
+        """Return whether the user test result has been compiled.
 
         return (bool): True if compiled, False otherwise.
 
@@ -322,7 +322,7 @@ class UserTestResult(Base):
         return self.compilation_outcome is not None
 
     def evaluated(self):
-        """Return if the user test has been evaluated.
+        """Return whether the user test result has been evaluated.
 
         return (bool): True if evaluated, False otherwise.
 
