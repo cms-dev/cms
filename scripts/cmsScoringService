@@ -32,8 +32,7 @@ def main():
 
     """
     default_argument_parser("Score computer for CMS.",
-                            ScoringService,
-                            ask_contest=ask_for_contest).run()
+                            ScoringService).run()
 
 
 if __name__ == "__main__":
