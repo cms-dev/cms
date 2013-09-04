@@ -187,6 +187,11 @@ class YamlLoader(Loader):
         for filename in os.listdir(os.path.join(path, "output")):
             files.append(os.path.join(path, "output", filename))
 
+        # Attachments
+        if os.path.exists(os.path.join(path, "att")):
+            for filename in os.listdir(os.path.join(path, "att")):
+                files.append(os.path.join(path, "att", filename))
+
         # Score file
         files.append(os.path.join(path, "gen", "GEN"))
 
@@ -321,6 +326,15 @@ class YamlLoader(Loader):
         load(conf, args, "max_user_test_number")
         load(conf, args, "min_submission_interval", conv=make_timedelta)
         load(conf, args, "min_user_test_interval", conv=make_timedelta)
+
+        # Attachments
+        args["attachments"] = []
+        if os.path.exists(os.path.join(task_path, "att")):
+            for filename in os.listdir(os.path.join(task_path, "att")):
+                digest = self.file_cacher.put_file_from_path(
+                    os.path.join(task_path, "att", filename),
+                    "Attachment %s for task %s" % (filename, name))
+                args["attachments"] += [Attachment(filename, digest)]
 
         task = Task(**args)
 
