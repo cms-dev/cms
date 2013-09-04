@@ -139,3 +139,5 @@ The following are optional files, that must be present for certain task types or
 - :file:`check/manager`: (also accepted: :file:`cor/manager`) for tasks of type :ref:`tasktypes_communication`, this executable is the program that reads the input and communicates with the user solution.
 
 - :file:`sol/stub.%l`: for tasks of type :ref:`tasktypes_communication`, this is the piece of code that is compiled together with the user submitted code, and is usually used to manage the communication with :file:`manager`. Again, all supported languages must be present.
+
+- :file:`att/*`: each file in this folder is added as an attachment to the task, named as the file's filename.
