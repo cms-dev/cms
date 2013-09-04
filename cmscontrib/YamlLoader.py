@@ -187,6 +187,11 @@ class YamlLoader(Loader):
         for filename in os.listdir(os.path.join(path, "output")):
             files.append(os.path.join(path, "output", filename))
 
+        # Attachments
+        if os.path.exists(os.path.join(path, "att")):
+            for filename in os.listdir(os.path.join(path, "att")):
+                files.append(os.path.join(path, "att", filename))
+
         # Score file
         files.append(os.path.join(path, "gen", "GEN"))
 
@@ -528,6 +533,14 @@ class YamlLoader(Loader):
         if public_testcases != "":
             for x in public_testcases.split(","):
                 args["testcases"][int(x.strip())].public = True
+
+        # Attachments
+        if os.path.exists(os.path.join(task_path, "att")):
+            for att in os.listdir(os.path.join(task_path, "att")):
+                attachment_digest = self.file_cacher.put_file_from_path(
+                    os.path.join(task_path, "att", att),
+                    "Attachment %s for task %s" % (att, name))
+                task.attachments += [Attachment(att, attachment_digest)]
 
         dataset = Dataset(**args)
         task.active_dataset = dataset
