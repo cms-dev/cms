@@ -543,6 +543,14 @@ class YamlLoader(Loader):
             for x in public_testcases.split(","):
                 args["testcases"][int(x.strip())].public = True
 
+        # Attachments
+        if os.path.exists(os.path.join(task_path, "att")):
+            for att in os.listdir(os.path.join(task_path, "att")):
+                attachment_digest = self.file_cacher.put_file_from_path(
+                    os.path.join(task_path, "att", att),
+                    "Attachment %s for task %s" % (att, name))
+                task.attachments += [Attachment(att, attachment_digest)]
+
         dataset = Dataset(**args)
         task.active_dataset = dataset
 
