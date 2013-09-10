@@ -155,7 +155,8 @@ def main():
         else:
             body = None
 
-        req = Request(ACTION_METHODS[args.action], url, data=body).prepare()
+        req = Request(ACTION_METHODS[args.action], url, data=body,
+                      headers={'content-type': 'application/json'}).prepare()
 
         if args.verbose:
             logger.info("Sending request")
@@ -171,7 +172,7 @@ def main():
         if args.verbose:
             logger.info("Response received")
 
-        if res.status_code not in (200, 201):
+        if 400 <= res.status_code < 600:
             logger.error("Unexpected status code: %d" % res.status_code)
             error = True
             continue

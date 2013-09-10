@@ -44,6 +44,8 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `requests <http://docs.python-requests.org/en/latest/>`_ >= 1.1;
 
+* `werkzeug <http://werkzeug.pocoo.org/>`_ >= 0.8;
+
 * `iso-codes <http://pkg-isocodes.alioth.debian.org/>`_;
 
 * `shared-mime-info <http://freedesktop.org/wiki/Software/shared-mime-info>`_;
@@ -73,7 +75,7 @@ On Ubuntu 12.04, one will need to run the following script to satisfy all depend
          python-sqlalchemy python-psutil python-netifaces python-crypto \
          python-tz python-six iso-codes shared-mime-info stl-manual \
          python-beautifulsoup python-mechanize python-coverage python-mock \
-         cgroup-lite python-requests
+         cgroup-lite python-requests python-werkzeug
 
     # Optional.
     # sudo apt-get install phppgadmin python-yaml python-sphinx
@@ -86,7 +88,7 @@ On Arch Linux, the following command will install almost all dependencies (four 
          setuptools python2-tornado python2-psycopg2 python2-sqlalchemy \
          python2-psutil python2-netifaces python2-crypto python2-pytz \
          python2-six iso-codes shared-mime-info python2-beautifulsoup3 \
-         python2-mechanize python2-requests
+         python2-mechanize python2-requests python2-werkzeug
 
     # Install gevent from repository.
     sudo pacman -S python2-gevent-beta

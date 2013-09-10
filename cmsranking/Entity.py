@@ -61,30 +61,6 @@ class Entity(object):
         """
         pass
 
-    def load(self, data):
-        """Set all properties using the given data.
-
-        Accept the data format used for the file storage.
-
-        data (dict): the properties of the entity, in the "internal"
-            format
-
-        Raise InvalidData if not able to parse the data argument.
-
-        """
-        pass
-
-    def dump(self):
-        """Get all properties.
-
-        Produce the data format used for the file storage.
-
-        return (dict): the properties of the entity, in the "internal"
-            format
-
-        """
-        pass
-
     def consistent(self):
         """Check if the entity is consistent.
 

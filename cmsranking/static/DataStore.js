@@ -576,12 +576,13 @@ var DataStore = new function () {
     self.init_scores = function () {
         $.ajax({
             url: Config.get_score_url(),
+            dataType: "json",
             success: function (data, status, xhr) {
                 self.score_init_time = parseFloat(xhr.getResponseHeader("Timestamp"));
-                data = data.split("\n");
-                for (var idx = 0; idx < data.length - 1; idx += 1) {
-                    var line = data[idx].split(" ");
-                    self.set_score(line[0], line[1], parseFloat(line[2]));
+                for (var u_id in data) {
+                    for (var t_id in data[u_id]) {
+                        self.set_score(u_id, t_id, data[u_id][t_id]);
+                    }
                 }
                 self.init_ranks();
             },
@@ -805,11 +806,11 @@ var DataStore = new function () {
 
     self.create_event_source = function () {
         if (self.last_event_id == null) {
-            self.last_event_id = Math.min(self.contest_init_time,
-                                          self.task_init_time,
-                                          self.team_init_time,
-                                          self.user_init_time,
-                                          self.score_init_time);
+            self.last_event_id = Math.round(Math.min(self.contest_init_time,
+                                                     self.task_init_time,
+                                                     self.team_init_time,
+                                                     self.user_init_time,
+                                                     self.score_init_time) * 1000000).toString(16);
         }
 
         if (self.es) {
@@ -822,39 +823,39 @@ var DataStore = new function () {
         self.es.addEventListener("error", self.es_error_handler, false);
         self.es.addEventListener("reload", self.es_reload_handler, false);
         self.es.addEventListener("contest", function (event) {
-            var event_id = parseFloat(event.lastEventId);
-            if (event_id > self.contest_init_time) {
+            var timestamp = parseInt(event.lastEventId, 16) / 1000000;
+            if (timestamp > self.contest_init_time) {
                 self.contest_listener(event);
             }
-            self.last_event_id = event_id;
+            self.last_event_id = event.lastEventId;
         }, false);
         self.es.addEventListener("task", function (event) {
-            var event_id = parseFloat(event.lastEventId);
-            if (event_id > self.task_init_time) {
+            var timestamp = parseInt(event.lastEventId, 16) / 1000000;
+            if (timestamp > self.task_init_time) {
                 self.task_listener(event);
             }
-            self.last_event_id = event_id;
+            self.last_event_id = event.lastEventId;
         }, false);
         self.es.addEventListener("team", function (event) {
-            var event_id = parseFloat(event.lastEventId);
-            if (event_id > self.team_init_time) {
+            var timestamp = parseInt(event.lastEventId, 16) / 1000000;
+            if (timestamp > self.team_init_time) {
                 self.team_listener(event);
             }
-            self.last_event_id = event_id;
+            self.last_event_id = event.lastEventId;
         }, false);
         self.es.addEventListener("user", function (event) {
-            var event_id = parseFloat(event.lastEventId);
-            if (event_id > self.user_init_time) {
+            var timestamp = parseInt(event.lastEventId, 16) / 1000000;
+            if (timestamp > self.user_init_time) {
                 self.user_listener(event);
             }
-            self.last_event_id = event_id;
+            self.last_event_id = event.lastEventId;
         }, false);
         self.es.addEventListener("score", function (event) {
-            var event_id = parseFloat(event.lastEventId);
-            if (event_id > self.score_init_time) {
+            var timestamp = parseInt(event.lastEventId, 16) / 1000000;
+            if (timestamp > self.score_init_time) {
                 self.score_listener(event);
             }
-            self.last_event_id = event_id;
+            self.last_event_id = event.lastEventId;
         }, false);
     };
 

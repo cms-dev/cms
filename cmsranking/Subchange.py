@@ -95,22 +95,6 @@ class Subchange(Entity):
                 del result[field]
         return result
 
-    def load(self, data):
-        self.validate(data)
-        self.submission = data['submission']
-        self.time = data['time']
-        self.score = (data['score'] if 'score' in data else None)
-        self.token = (data['token'] if 'token' in data else None)
-        self.extra = (data['extra'] if 'extra' in data else None)
-
-    def dump(self):
-        result = self.__dict__.copy()
-        del result['key']
-        for field in ['score', 'token', 'extra']:
-            if result[field] is None:
-                del result[field]
-        return result
-
     def consistent(self):
         from cmsranking.Submission import store as submission_store
         return self.submission in submission_store

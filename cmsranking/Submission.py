@@ -80,20 +80,6 @@ class Submission(Entity):
         del result['extra']
         return result
 
-    def load(self, data):
-        self.validate(data)
-        self.user = data['user']
-        self.task = data['task']
-        self.time = data['time']
-
-    def dump(self):
-        result = self.__dict__.copy()
-        del result['key']
-        del result['score']
-        del result['token']
-        del result['extra']
-        return result
-
     def consistent(self):
         from cmsranking.Task import store as task_store
         from cmsranking.User import store as user_store

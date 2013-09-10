@@ -78,17 +78,6 @@ class User(Entity):
         del result['key']
         return result
 
-    def load(self, data):
-        self.validate(data)
-        self.f_name = data['f_name']
-        self.l_name = data['l_name']
-        self.team = data['team']
-
-    def dump(self):
-        result = self.__dict__.copy()
-        del result['key']
-        return result
-
     def consistent(self):
         from cmsranking.Team import store as team_store
         return self.team is None or self.team in team_store

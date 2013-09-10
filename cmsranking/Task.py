@@ -104,21 +104,6 @@ class Task(Entity):
         del result['key']
         return result
 
-    def load(self, data):
-        self.validate(data)
-        self.name = data['name']
-        self.short_name = data['short_name']
-        self.contest = data['contest']
-        self.max_score = data['max_score']
-        self.score_precision = data['score_precision']
-        self.extra_headers = data['extra_headers']
-        self.order = data['order']
-
-    def dump(self):
-        result = self.__dict__.copy()
-        del result['key']
-        return result
-
     def consistent(self):
         from cmsranking.Contest import store as contest_store
         return self.contest in contest_store

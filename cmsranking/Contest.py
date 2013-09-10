@@ -86,17 +86,5 @@ class Contest(Entity):
         del result['key']
         return result
 
-    def load(self, data):
-        self.validate(data)
-        self.name = data['name']
-        self.begin = data['begin']
-        self.end = data['end']
-        self.score_precision = data['score_precision']
-
-    def dump(self):
-        result = self.__dict__.copy()
-        del result['key']
-        return result
-
 
 store = Store(Contest, 'contests', [task_store])

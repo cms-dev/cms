@@ -67,14 +67,5 @@ class Team(Entity):
         del result['key']
         return result
 
-    def load(self, data):
-        self.validate(data)
-        self.name = data['name']
-
-    def dump(self):
-        result = self.__dict__.copy()
-        del result['key']
-        return result
-
 
 store = Store(Team, 'teams', [user_store])

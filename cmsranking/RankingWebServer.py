@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,26 +17,34 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import unicode_literals
+from __future__ import absolute_import
+
 import argparse
-import base64
 import functools
+import io
 import json
 import os
 import re
 import shutil
-import ssl
 import time
-
 from datetime import datetime
 
-import tornado.ioloop
-import tornado.web
+import gevent
+from gevent.pywsgi import WSGIServer
 
+from werkzeug.wrappers import Request, Response
+from werkzeug.routing import Map, Rule
+from werkzeug.exceptions import HTTPException, BadRequest, Unauthorized, \
+    Forbidden, NotFound, NotAcceptable, UnsupportedMediaType
+from werkzeug.wsgi import responder, wrap_file, SharedDataMiddleware, \
+    DispatcherMiddleware
+from werkzeug.utils import redirect
+
+from cmscommon.EventSource import EventSource
 from cmsranking.Config import config
 from cmsranking.Logger import logger
-
-from cmsranking.Entity import InvalidKey, InvalidData
-import cmsranking.Store as Store
+from cmsranking.Entity import InvalidData
 import cmsranking.Contest as Contest
 import cmsranking.Task as Task
 import cmsranking.Team as Team
@@ -46,155 +54,191 @@ import cmsranking.Subchange as Subchange
 import cmsranking.Scoring as Scoring
 
 
-def authenticated(method):
-    @functools.wraps(method)
-    def wrapper(self, *args, **kwargs):
-        if 'Authorization' not in self.request.headers:
-            logger.warning("Authentication: Header is missing",
-                           extra={'location': self.request.full_url()})
-            raise tornado.web.HTTPError(401)
-        header = self.request.headers['Authorization']
+class CustomUnauthorized(Unauthorized):
+    def get_response(self, environ=None):
+        response = Unauthorized.get_response(self, environ)
+        # XXX With werkzeug-0.9 a full-featured Response object is
+        # returned: there is no need for this.
+        response = Response.force_type(response)
+        response.www_authenticate.set_basic(config.realm_name)
+        return response
+
+
+class StoreHandler(object):
+    def __init__(self, store):
+        self.store = store
+
+        self.router = Map([
+                Rule("/<key>", methods=["GET"], endpoint="get"),
+                Rule("/", methods=["GET"], endpoint="get_list"),
+                Rule("/<key>", methods=["PUT"], endpoint="put"),
+                Rule("/", methods=["PUT"], endpoint="put_list"),
+                Rule("/<key>", methods=["DELETE"], endpoint="delete"),
+                Rule("/", methods=["DELETE"], endpoint="delete_list"),
+            ], encoding_errors="strict")
+
+    def __call__(self, environ, start_response):
+        return self.wsgi_app(environ, start_response)
+
+    @responder
+    def wsgi_app(self, environ, start_response):
+        route = self.router.bind_to_environ(environ)
+        try:
+            endpoint, args = route.match()
+        except HTTPException as exc:
+            return exc
+
+        request = Request(environ)
+        request.encoding_errors = "strict"
+
+        response = Response()
 
         try:
-            match = re.match('^Basic[ ]+([A-Za-z0-9+/]+[=]{0,2})$', header)
-            if match is None:
-                raise Exception("Invalid header")
-            if len(match.group(1)) % 4 != 0:  # base64 tokens are 4k chars long
-                raise Exception("Invalid header")
-            token = base64.b64decode(match.group(1))
-            assert ':' in token, "Invalid header"
-            username = token.split(':')[0]
-            password = ':'.join(token.split(':')[1:])
-            assert username == config.username, "Wrong username"
-            assert password == config.password, "Wrong password"
-        except Exception as exc:
-            logger.warning("Authentication: %s" % exc, exc_info=False,
-                           extra={'location': self.request.full_url(),
-                                  'details': header})
-            raise tornado.web.HTTPError(401)
-
-        return method(self, *args, **kwargs)
-    return wrapper
-
-
-class DataHandler(tornado.web.RequestHandler):
-    def initialize(self):
-        if self.request.method == 'POST':
-            self.set_status(201)
-        else:
-            self.set_status(200)
-
-    def set_default_headers(self):
-        self.set_header('Content-Type', 'text/plain; charset=UTF-8')
-        self.set_header('Date', datetime.utcnow())
-        # In case we need sub-second precision (and we do...).
-        self.set_header('Timestamp', "%0.6f" % time.time())
-        self.set_header("Cache-Control", "no-cache, must-revalidate")
-
-    def write_error(self, status_code, **kwargs):
-        if status_code == 401:
-            self.set_header('WWW-Authenticate',
-                            'Basic realm="' + config.realm_name + '"')
-
-
-def create_handler(entity_store):
-    """Return a handler for the given store.
-
-    Return a RESTful Tornado RequestHandler to manage the given
-    EntityStore. The HTTP methods are mapped to the CRUD actions
-    available on the store. The returned handler is supposed to be
-    paired with an URL like:
-        /<root>/<entity>/(.*)   (the group matches the key of the entity)
-
-    When the key is an empty string, we assume the operation is targeted
-    on the entire collection of entities.
-
-    """
-    if not isinstance(entity_store, Store.Store):
-        raise ValueError("The 'entity_store' parameter "
-                         "isn't a subclass of Store")
-
-    class RestHandler(DataHandler):
-        @authenticated
-        def put(self, entity_id):
-            if not entity_id:
-                # merge list
-                try:
-                    entity_store.merge_list(self.request.body,
-                                            self.finish)
-                except InvalidData as exc:
-                    logger.error(exc.message, exc_info=False,
-                                 extra={'location': self.request.full_url(),
-                                        'details': self.request.body})
-                    raise tornado.web.HTTPError(400)
-            elif entity_id not in entity_store:
-                # create
-                try:
-                    entity_store.create(entity_id, self.request.body,
-                                        self.finish)
-                except InvalidData as exc:
-                    logger.error(exc.message, exc_info=False,
-                                 extra={'location': self.request.full_url(),
-                                        'details': self.request.body})
-                    raise tornado.web.HTTPError(400)
+            if endpoint == "get":
+                self.get(request, response, args["key"])
+            elif endpoint == "get_list":
+                self.get_list(request, response)
+            elif endpoint == "put":
+                self.put(request, response, args["key"])
+            elif endpoint == "put_list":
+                self.put_list(request, response)
+            elif endpoint == "delete":
+                self.delete(request, response, args["key"])
+            elif endpoint == "delete_list":
+                self.delete_list(request, response)
             else:
-                # update
-                try:
-                    entity_store.update(entity_id, self.request.body,
-                                        self.finish)
-                except InvalidData as exc:
-                    logger.error(exc.message, exc_info=False,
-                                 extra={'location': self.request.full_url(),
-                                        'details': self.request.body})
-                    raise tornado.web.HTTPError(400)
+                raise RuntimeError()
+        except HTTPException as exc:
+            return exc
 
-        @authenticated
-        def delete(self, entity_id):
-            if not entity_id:
-                # delete list
-                entity_store.delete_list(self.finish)
-            elif entity_id in entity_store:
-                # delete
-                try:
-                    entity_store.delete(entity_id, self.finish)
-                except InvalidKey:
-                    logger.error("Entity %s doesn't exist" % entity_id,
-                                 extra={'location': self.request.full_url()})
-                    raise tornado.web.HTTPError(404)
+        return response
 
-        def get(self, entity_id):
-            if not entity_id:
-                # retrieve list
-                self.write(entity_store.retrieve_list() + '\n')
+    def authorized(self, request):
+        return request.authorization is not None and \
+            request.authorization.type == "basic" and \
+            request.authorization.username == config.username and \
+            request.authorization.password == config.password
+
+    def get(self, request, response, key):
+        # Limit charset of keys.
+        if re.match("^[A-Za-z0-9_]+$", key) is None:
+            return NotFound()
+        if key not in self.store:
+            raise NotFound()
+        if request.accept_mimetypes.quality("application/json") <= 0:
+            raise NotAcceptable()
+
+        response.status_code = 200
+        response.headers[b'Timestamp'] = b"%0.6f" % time.time()
+        response.mimetype = "application/json"
+        response.data = json.dumps(self.store.retrieve(key))
+
+    def get_list(self, request, response):
+        if request.accept_mimetypes.quality("application/json") <= 0:
+            raise NotAcceptable()
+
+        response.status_code = 200
+        response.headers[b'Timestamp'] = b"%0.6f" % time.time()
+        response.mimetype = "application/json"
+        response.data = json.dumps(self.store.retrieve_list())
+
+    def put(self, request, response, key):
+        # Limit charset of keys.
+        if re.match("^[A-Za-z0-9_]+$", key) is None:
+            return Forbidden()
+        if not self.authorized(request):
+            logger.warning("Unauthorized request.",
+                           extra={'location': request.url,
+                                  'details': repr(request.authorization)})
+            raise CustomUnauthorized()
+        if request.mimetype != "application/json":
+            logger.warning("Unsupported MIME type.",
+                           extra={'location': request.url,
+                                  'details': request.mimetype})
+            raise UnsupportedMediaType()
+
+        try:
+            data = json.load(request.stream)
+        except (TypeError, ValueError):
+            logger.warning("Wrong JSON.",
+                           extra={'location': request.url})
+            raise BadRequest()
+
+        try:
+            if key not in self.store:
+                self.store.create(key, data)
             else:
-                # retrieve
-                try:
-                    self.write(entity_store.retrieve(entity_id) + '\n')
-                except InvalidKey:
-                    raise tornado.web.HTTPError(404)
+                self.store.update(key, data)
+        except InvalidData:
+            logger.warning("Invalid data.", exc_info=True,
+                           extra={'location': request.url,
+                                  'details': data})
+            raise BadRequest()
 
-    return RestHandler
+        response.status_code = 204
+
+    def put_list(self, request, response):
+        if not self.authorized(request):
+            logger.info("Unauthorized request.",
+                        extra={'location': request.url,
+                               'details': repr(request.authorization)})
+            raise CustomUnauthorized()
+        if request.mimetype != "application/json":
+            logger.warning("Unsupported MIME type.",
+                           extra={'location': request.url,
+                                  'details': request.mimetype})
+            raise UnsupportedMediaType()
+
+        try:
+            data = json.load(request.stream)
+        except (TypeError, ValueError):
+            logger.warning("Wrong JSON.",
+                           extra={'location': request.url})
+            raise BadRequest()
+
+        try:
+            self.store.merge_list(data)
+        except InvalidData:
+            logger.warning("Invalid data.", exc_info=True,
+                           extra={'location': request.url,
+                                  'details': data})
+            raise BadRequest()
+
+        response.status_code = 204
+
+    def delete(self, request, response, key):
+        # Limit charset of keys.
+        if re.match("^[A-Za-z0-9_]+$", key) is None:
+            return NotFound()
+        if key not in self.store:
+            raise NotFound()
+        if not self.authorized(request):
+            logger.info("Unauthorized request.",
+                        extra={'location': request.url,
+                               'details': repr(request.authorization)})
+            raise CustomUnauthorized()
+
+        self.store.delete(key)
+
+        response.status_code = 204
+
+    def delete_list(self, request, response):
+        if not self.authorized(request):
+            logger.info("Unauthorized request.",
+                        extra={'location': request.url,
+                               'details': repr(request.authorization)})
+            raise CustomUnauthorized()
+
+        self.store.delete_list()
+
+        response.status_code = 204
 
 
-class MessageProxy(object):
+class DataWatcher(EventSource):
     """Receive the messages from the entities store and redirect them."""
     def __init__(self):
-        self.clients = list()
-
-        # We keep a buffer of sent messages, to send them to the clients
-        # that temporarily lose the connection, to avoid them missing
-        # any data. We push messages to the _new_buffer. When it fills
-        # up (i.e. reaches config.buffer_size messages) we drop the
-        # _old_buffer, make the _new_buffer become the _old_buffer and
-        # set up a new empty _new_buffer. In this way every push
-        # requires O(1) time and we keep at most 2 * config.buffer_size
-        # messages in the buffers.
-        self._new_buffer = list()
-        self._old_buffer = list()
-
-        # The "age" of the buffers is the minimum time such that we are
-        # sure to have all events that happened after that time.
-        self.age = time.time()
+        self._CACHE_SIZE = config.buffer_size
+        EventSource.__init__(self)
 
         Contest.store.add_create_callback(
             functools.partial(self.callback, "contest", "create"))
@@ -227,215 +271,161 @@ class MessageProxy(object):
         Scoring.store.add_score_callback(self.score_callback)
 
     def callback(self, entity, event, key, *args):
-        timestamp = time.time()
-        msg = 'id: %0.6f\n' \
-              'event: %s\n' \
-              'data: %s %s\n' \
-              '\n' % (timestamp, entity, event, key)
-        self.send(msg, timestamp)
+        self.send(entity, "%s %s" % (event, key))
 
     def score_callback(self, user, task, score):
-        timestamp = time.time()
-        msg = 'id: %0.6f\n' \
-              'event: score\n' \
-              'data: %s %s %0.2f\n' \
-              '\n' % (timestamp, user, task, score)
-        self.send(msg, timestamp)
-
-    def send(self, message, timestamp):
-        for client in self.clients:
-            client(message)
-        if len(self._new_buffer) == config.buffer_size:
-            if self._old_buffer:
-                self.age = self._old_buffer[-1][0]
-            self._old_buffer = self._new_buffer
-            self._new_buffer = list()
-        self._new_buffer.append((timestamp, message))
-
-    @property
-    def buffer(self):
-        for msg in self._old_buffer:
-            yield msg
-        for msg in self._new_buffer:
-            yield msg
-
-    def add_callback(self, callback):
-        self.clients.append(callback)
-
-    def remove_callback(self, callback):
-        self.clients.remove(callback)
-
-proxy = MessageProxy()
+        # FIXME Use score_precision.
+        self.send("score", "%s %s %0.2f" % (user, task, score))
 
 
-class NotificationHandler(DataHandler):
-    """Provide notification of the changes in the data store."""
-    @tornado.web.asynchronous
-    def get(self):
-        """Send asynchronous updates."""
-        self.set_status(200)
-        self.set_header('Content-Type', 'text/event-stream')
-        self.set_header('Cache-Control', 'no-cache')
-        self.flush()
+def SubListHandler(request, response, user_id):
+    if request.accept_mimetypes.quality("application/json") <= 0:
+        raise NotAcceptable()
 
-        # This is only needed to make Firefox fire the 'open' event on
-        # the EventSource object.
-        self.write(':\n')
-        self.flush()
+    result = list()
+    for task_id in Task.store._store.iterkeys():
+        result.extend(Scoring.store.get_submissions(user_id, task_id).values())
+    result.sort(key=lambda x: (x.task, x.time))
+    result = list(a.__dict__ for a in result)
 
-        # The EventSource polyfill will only deliver events once the
-        # connection has been closed, so we have to finish the request
-        # right after the first message has been sent. This custom
-        # header allows us to identify the requests from the polyfill.
-        self.one_shot = False
-        if 'X-Requested-With' in self.request.headers and \
-                self.request.headers['X-Requested-With'] == 'XMLHttpRequest':
-            self.one_shot = True
-
-        # We get the ID of the last event the client received. We give
-        # priority to the HTTP header because it's more reliable: on the
-        # first connection the client won't use the header but will use
-        # the argument (set by us); if it disconnects, it will try to
-        # reconnect with the same argument (which is now outdated) but
-        # with the header correctly set (which is what we want).
-        if "Last-Event-ID" in self.request.headers:
-            last_id = float(self.request.headers.get_list("Last-Event-ID")[-1])
-        elif self.get_argument("last_event_id", None) != None:
-            last_id = float(self.get_argument("last_event_id", None))
-        else:
-            last_id = time.time()
-
-        self.outdated = False
-        if last_id < proxy.age:
-            self.outdated = True
-            # The reload event will tell the client that we can't update
-            # its data using buffered event and that it'll need to init
-            # it again from scratch (in pratice: reload the page).
-            self.write("event: reload\n")
-            self.write("data: _\n\n")
-            # We're keeping the connection open because we want the
-            # client to close it. If we'd close it the client (i.e. the
-            # browser) may automatically attempt to reconnect before
-            # having processed the event we sent it.
-            if self.one_shot:
-                self.finish()
-                # Not calling .clean() because there's nothing to be
-                # cleaned yet and because it would have no effect,
-                # since self.outdated == True.
-            else:
-                self.flush()
-            return
-
-        sent = False
-        for t, msg in proxy.buffer:
-            if t > last_id:
-                self.write(msg)
-                sent = True
-        if sent and self.one_shot:
-            self.finish()
-            # Not calling .clean() because there's nothing to be
-            # cleaned yet
-            return
-
-        proxy.add_callback(self.send_event)
-
-        def callback():
-            self.finish()
-            self.clean()
-
-        self.timeout = tornado.ioloop.IOLoop.instance().add_timeout(
-            time.time() + config.timeout, callback)
-
-    # If the connection is closed by the client then the "on_connection_
-    # _close" callback is called. If we decide to finish the request (by
-    # calling the finish() method) then the "on_finish" callback gets
-    # called (and "on_connection_close" *won't* be called!).
-
-    def clean(self):
-        if not self.outdated:
-            proxy.remove_callback(self.send_event)
-            tornado.ioloop.IOLoop.instance().remove_timeout(self.timeout)
-
-    def on_connection_close(self):
-        self.clean()
-
-    # TODO As soon as we start supporting only Tornado 2.2+ use the
-    # .on_finish() callback to call .clean() instead of doing it after
-    # every call to .finish().
-
-    def send_event(self, message):
-        self.write(message)
-        if self.one_shot:
-            self.finish()
-            self.clean()
-        else:
-            self.flush()
+    response.status_code = 200
+    response.mimetype = "application/json"
+    response.data = json.dumps(result)
 
 
-class SubListHandler(DataHandler):
-    def get(self, user_id):
-        result = list()
-        for task_id in Task.store._store.iterkeys():
-            result.extend(Scoring.store.get_submissions(user_id,
-                                                        task_id).values())
-        result.sort(key=lambda x: (x.task, x.time))
-        self.write(json.dumps(map(lambda a: a.__dict__, result)) + '\n')
+def HistoryHandler(request, response):
+    if request.accept_mimetypes.quality("application/json") <= 0:
+        raise NotAcceptable()
+
+    result = list(Scoring.store.get_global_history())
+
+    response.status_code = 200
+    response.mimetype = "application/json"
+    response.data = json.dumps(result)
 
 
-class HistoryHandler(DataHandler):
-    def get(self):
-        self.write(json.dumps(list(Scoring.store.get_global_history())) + '\n')
+def ScoreHandler(request, response):
+    if request.accept_mimetypes.quality("application/json") <= 0:
+        raise NotAcceptable()
+
+    result = dict()
+    for u_id, tasks in Scoring.store._scores.iteritems():
+        for t_id, score in tasks.iteritems():
+            if score.get_score() > 0.0:
+                result.setdefault(u_id, dict())[t_id] = score.get_score()
+
+    response.status_code = 200
+    response.headers[b'Timestamp'] = b"%0.6f" % time.time()
+    response.mimetype = "application/json"
+    response.data = json.dumps(result)
 
 
-class ScoreHandler(DataHandler):
-    def get(self):
-        for u_id, dic in Scoring.store._scores.iteritems():
-            for t_id, score in dic.iteritems():
-                if score.get_score() > 0.0:
-                    self.write('%s %s %0.2f\n' %
-                               (u_id, t_id, score.get_score()))
-
-
-class ImageHandler(tornado.web.RequestHandler):
-    formats = {
+class ImageHandler(object):
+    EXT_TO_MIME = {
         'png': 'image/png',
         'jpg': 'image/jpeg',
         'gif': 'image/gif',
         'bmp': 'image/bmp'
     }
 
-    def initialize(self, location, fallback):
+    MIME_TO_EXT = dict((v, k) for k, v in EXT_TO_MIME.iteritems())
+
+    def __init__(self, location, fallback):
         self.location = location
         self.fallback = fallback
 
-    def get(self, *args):
-        self.location %= tuple(args)
+        self.router = Map([
+                Rule("/<name>", methods=["GET"], endpoint="get"),
+            ], encoding_errors="strict")
 
-        for ext, filetype in self.formats.iteritems():
-            if os.path.isfile(self.location + '.' + ext):
-                self.serve(self.location + '.' + ext, filetype)
-                return
+    def __call__(self, environ, start_response):
+        return self.wsgi_app(environ, start_response)
 
-        self.serve(self.fallback, 'image/png')  # FIXME hardcoded type
+    @responder
+    def wsgi_app(self, environ, start_response):
+        route = self.router.bind_to_environ(environ)
+        try:
+            endpoint, args = route.match()
+        except HTTPException as exc:
+            return exc
 
-    def serve(self, path, filetype):
-        self.set_header("Content-Type", filetype)
+        location = self.location % args
 
-        modified = datetime.utcfromtimestamp(int(os.path.getmtime(path)))
-        self.set_header('Last-Modified', modified)
+        request = Request(environ)
+        request.encoding_errors = "strict"
+
+        response = Response()
+
+        available = list()
+        for extension, mimetype in self.EXT_TO_MIME.iteritems():
+            if os.path.isfile(location + '.' + extension):
+                available.append(mimetype)
+        mimetype = request.accept_mimetypes.best_match(available)
+        if mimetype is not None:
+            path = "%s.%s" % (location, self.MIME_TO_EXT[mimetype])
+        else:
+            path = self.fallback
+            mimetype = 'image/png'  # FIXME Hardcoded type.
+
+        response.status_code = 200
+        response.mimetype = mimetype
+        response.last_modified = \
+            datetime.utcfromtimestamp(os.path.getmtime(path))\
+                    .replace(microsecond=0)
 
         # TODO check for If-Modified-Since and If-None-Match
 
-        with open(path, 'rb') as data:
-            self.write(data.read())
+        response.response = wrap_file(environ, io.open(path, 'rb'))
+        response.direct_passthrough = True
+
+        return response
 
 
-class HomeHandler(tornado.web.RequestHandler):
-    def get(self):
-        # Manually redirect us so that any relative paths are preserved.
-        self.set_status(302)
-        self.set_header("Location", "Ranking.html")
-        self.finish()
+class RoutingHandler(object):
+    def __init__(self, event_handler, logo_handler):
+        self.router = Map([
+                Rule("/", methods=["GET"], endpoint="root"),
+                Rule("/sublist/<user_id>", methods=["GET"], endpoint="sublist"),
+                Rule("/history", methods=["GET"], endpoint="history"),
+                Rule("/scores", methods=["GET"], endpoint="scores"),
+                Rule("/events", methods=["GET"], endpoint="events"),
+                Rule("/logo", methods=["GET"], endpoint="logo"),
+            ], encoding_errors="strict")
+
+        self.event_handler = event_handler
+        self.logo_handler = logo_handler
+        self.root_handler = redirect("Ranking.html")
+
+    def __call__(self, environ, start_response):
+        return self.wsgi_app(environ, start_response)
+
+    def wsgi_app(self, environ, start_response):
+        route = self.router.bind_to_environ(environ)
+        try:
+            endpoint, args = route.match()
+        except HTTPException as exc:
+            return exc(environ, start_response)
+
+        if endpoint == "events":
+            return self.event_handler(environ, start_response)
+        elif endpoint == "logo":
+            return self.logo_handler(environ, start_response)
+        elif endpoint == "root":
+            return self.root_handler(environ, start_response)
+        else:
+            request = Request(environ)
+            request.encoding_errors = "strict"
+
+            response = Response()
+
+            if endpoint == "sublist":
+                SubListHandler(request, response, args["user_id"])
+            elif endpoint == "scores":
+                ScoreHandler(request, response)
+            elif endpoint == "history":
+                HistoryHandler(request, response)
+
+            return response(environ, start_response)
 
 
 def main():
@@ -457,46 +447,39 @@ def main():
             print "Not removing directory %s." % config.lib_dir
         return
 
-    application = tornado.web.Application([
-        # FIXME We should allow keys to be arbitrary unicode strings.
-        (r"/contests/([A-Za-z0-9_]*)", create_handler(Contest.store)),
-        (r"/tasks/([A-Za-z0-9_]*)", create_handler(Task.store)),
-        (r"/teams/([A-Za-z0-9_]*)", create_handler(Team.store)),
-        (r"/users/([A-Za-z0-9_]*)", create_handler(User.store)),
-        (r"/submissions/([A-Za-z0-9_]*)", create_handler(Submission.store)),
-        (r"/subchanges/([A-Za-z0-9_]*)", create_handler(Subchange.store)),
-        (r"/sublist/([A-Za-z0-9_]+)", SubListHandler),
-        (r"/history", HistoryHandler),
-        (r"/scores", ScoreHandler),
-        (r"/events", NotificationHandler),
-        (r"/logo", ImageHandler, {
-            'location': os.path.join(config.lib_dir, 'logo'),
-            'fallback': os.path.join(config.web_dir, 'img', 'logo.png')
-        }),
-        (r"/faces/([A-Za-z0-9_]+)", ImageHandler, {
-            'location': os.path.join(config.lib_dir, 'faces', '%s'),
-            'fallback': os.path.join(config.web_dir, 'img', 'face.png')
-        }),
-        (r"/flags/([A-Za-z0-9_]+)", ImageHandler, {
-            'location': os.path.join(config.lib_dir, 'flags', '%s'),
-            'fallback': os.path.join(config.web_dir, 'img', 'flag.png')
-        }),
-        (r"/(.+)", tornado.web.StaticFileHandler, {
-            'path': config.web_dir
-        }),
-        (r"/", HomeHandler)
-        ])
-    # application.add_transform(tornado.web.ChunkedTransferEncoding)
+    toplevel_handler = RoutingHandler(DataWatcher(), ImageHandler(
+        os.path.join(config.lib_dir, '%(name)s'),
+        os.path.join(config.web_dir, 'img', 'logo.png')))
+
+    wsgi_app = SharedDataMiddleware(DispatcherMiddleware(toplevel_handler, {
+            '/contests': StoreHandler(Contest.store),
+            '/tasks': StoreHandler(Task.store),
+            '/teams': StoreHandler(Team.store),
+            '/users': StoreHandler(User.store),
+            '/submissions': StoreHandler(Submission.store),
+            '/subchanges': StoreHandler(Subchange.store),
+            '/faces': ImageHandler(
+                os.path.join(config.lib_dir, 'faces', '%(name)s'),
+                os.path.join(config.web_dir, 'img', 'face.png')),
+            '/flags': ImageHandler(
+                os.path.join(config.lib_dir, 'flags', '%(name)s'),
+                os.path.join(config.web_dir, 'img', 'flag.png')),
+        }), {'/': config.web_dir})
+
+    servers = list()
     if config.http_port is not None:
-        application.listen(config.http_port, address=config.bind_address)
+        http_server = WSGIServer(
+            (config.bind_address, config.http_port), wsgi_app)
+        servers.append(http_server)
     if config.https_port is not None:
-        application.listen(config.https_port, address=config.bind_address,
-                           ssl_options={"ssl_version": ssl.PROTOCOL_SSLv23,
-                                        "certfile": config.https_certfile,
-                                        "keyfile": config.https_keyfile})
+        https_server = WSGIServer(
+            (config.bind_address, config.https_port), wsgi_app,
+            certfile=config.https_certfile, keyfile=config.https_keyfile)
+        servers.append(https_server)
 
     try:
-        tornado.ioloop.IOLoop.instance().start()
+        gevent.joinall(list(gevent.spawn(s.serve_forever) for s in servers))
     except KeyboardInterrupt:
-        # Exit cleanly.
-        return
+        pass
+    finally:
+        gevent.joinall(list(gevent.spawn(s.stop) for s in servers))

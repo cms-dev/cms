@@ -14,3 +14,4 @@ mechanize>=0.2
 six>=1.1
 requests>=1.1
 gevent>=1.0dev
+werkzeug>=0.8

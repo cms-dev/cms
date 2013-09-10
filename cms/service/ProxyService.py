@@ -83,12 +83,13 @@ def safe_put_data(ranking, resource, data, operation):
         auth = urlsplit(url)
         res = requests.put(url, json.dumps(data, encoding="utf-8"),
                            auth=(auth.username, auth.password),
+                           headers={'content-type': 'application/json'},
                            verify=config.https_certfile)
     except requests.exceptions.RequestException as error:
         logger.warning(
             "%s while %s: %s" % (type(error).__name__, operation, error))
         raise CannotSendError
-    if res.status_code != 200:
+    if 400 <= res.status_code < 600:
         logger.warning("Status %s while %s." % (res.status_code, operation))
         raise CannotSendError
 
