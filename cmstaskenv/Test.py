@@ -45,6 +45,8 @@ assume:     if it's y, answer yes to every question
 
 
 def mem_human(mem):
+    if mem is None:
+        return 'None'
     if mem > 2 ** 30:
         return "%4.3gG" % (float(mem) / (2 ** 30))
     if mem > 2 ** 20:
