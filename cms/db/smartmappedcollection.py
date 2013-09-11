@@ -103,8 +103,9 @@ class SmartMappedCollection(MappedCollection):
                 class_mapper(self._parent_cls)._props[self._parent_rel]
             self._child_rel = parent_rel_prop.back_populates
             self._child_cls = parent_rel_prop.mapper.class_
-            child_rel_prop = \
-                class_mapper(self._child_cls)._props[self._child_rel]
+            # This is at the moment not used, but may be in the future.
+            # child_rel_prop = \
+            #     class_mapper(self._child_cls)._props[self._child_rel]
 
             # XXX When SQLAlchemy will support removal of attribute
             # events, use the following code:

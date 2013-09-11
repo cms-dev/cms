@@ -400,7 +400,8 @@ class ContestWebServer(WebService):
         parameters = {
             "login_url": "/",
             "template_path":
-                pkg_resources.resource_filename("cms.server", "templates/contest"),
+                pkg_resources.resource_filename("cms.server",
+                                                "templates/contest"),
             "static_path":
                 pkg_resources.resource_filename("cms.server", "static"),
             "cookie_secret": base64.b64encode(config.secret_key),
@@ -908,7 +909,7 @@ class SubmitHandler(BaseHandler):
 
         # Ensure that the user did not submit multiple files with the
         # same name.
-        if any(len(x) != 1 for x in self.request.files.values()):
+        if any(len(filename) != 1 for filename in self.request.files.values()):
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
@@ -952,7 +953,7 @@ class SubmitHandler(BaseHandler):
         # submission format and no more. Less is acceptable if task
         # type says so.
         task_type = get_task_type(dataset=task.active_dataset)
-        required = set([x.filename for x in task.submission_format])
+        required = set([sfe.filename for sfe in task.submission_format])
         provided = set(self.request.files.keys())
         if not (required == provided or (task_type.ALLOW_PARTIAL_SUBMISSION
                                          and required.issuperset(provided))):
@@ -1421,7 +1422,7 @@ class UserTestHandler(BaseHandler):
 
         # Ensure that the user did not submit multiple files with the
         # same name.
-        if any(len(x) != 1 for x in self.request.files.values()):
+        if any(len(filename) != 1 for filename in self.request.files.values()):
             self.application.service.add_notification(
                 self.current_user.username,
                 self.timestamp,
@@ -1463,7 +1464,7 @@ class UserTestHandler(BaseHandler):
         # This ensure that the user sent one file for every name in
         # submission format and no more. Less is acceptable if task
         # type says so.
-        required = set([x.filename for x in task.submission_format] +
+        required = set([sfe.filename for sfe in task.submission_format] +
                        task_type.get_user_managers(task.submission_format) +
                        ["input"])
         provided = set(self.request.files.keys())
@@ -1626,14 +1627,16 @@ class UserTestHandler(BaseHandler):
                              user=self.current_user,
                              task=task)
 
-        for filename in [x.filename for x in task.submission_format]:
+        for filename in [sfe.filename for sfe in task.submission_format]:
             digest = file_digests[filename]
-            self.sql_session.add(UserTestFile(filename, digest, user_test=user_test))
+            self.sql_session.add(
+                UserTestFile(filename, digest, user_test=user_test))
         for filename in task_type.get_user_managers(task.submission_format):
             digest = file_digests[filename]
             if submission_lang is not None:
                 filename = filename.replace("%l", submission_lang)
-            self.sql_session.add(UserTestManager(filename, digest, user_test=user_test))
+            self.sql_session.add(
+                UserTestManager(filename, digest, user_test=user_test))
 
         self.sql_session.add(user_test)
         self.sql_session.commit()

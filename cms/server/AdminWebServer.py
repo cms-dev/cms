@@ -44,8 +44,8 @@ from cms.log import initialize_logging
 from cms.io.WebGeventLibrary import WebService
 from cms.io import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
-    Submission, SubmissionResult, Evaluation, Executable, File, Task, \
-    Dataset, Attachment, Manager, Testcase, SubmissionFormatElement, Statement
+    Submission, SubmissionResult, File, Task, Dataset, Attachment, Manager, \
+    Testcase, SubmissionFormatElement, Statement
 from cms.db.filecacher import FileCacher
 from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type_class
@@ -1032,9 +1032,8 @@ class AddDatasetHandler(BaseHandler):
             # information too.
             clone_results = bool(self.get_argument("clone_results", False))
             clone_managers = bool(self.get_argument("clone_managers", False))
-            new_results = copy_dataset(
-                dataset, original_dataset, clone_results, clone_managers,
-                self.sql_session)
+            copy_dataset(dataset, original_dataset, clone_results,
+                         clone_managers, self.sql_session)
 
         # If the task does not yet have an active dataset, make this
         # one active.

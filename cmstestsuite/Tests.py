@@ -22,7 +22,7 @@ import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
-     CheckTimeout, CheckSignal, CheckNonzeroReturn
+     CheckTimeout, CheckNonzeroReturn
 
 
 all_languages = ('c', 'cpp', 'pas')

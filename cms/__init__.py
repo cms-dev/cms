@@ -24,8 +24,6 @@
 
 """
 
-import codecs
-import datetime
 import imp
 import json
 import logging
@@ -33,8 +31,6 @@ import netifaces
 import os
 import pkgutil
 import sys
-import time
-import traceback
 from argparse import ArgumentParser
 
 from cms.io import ServiceCoord, Address, config as async_config, \

@@ -23,7 +23,6 @@
 from __future__ import absolute_import
 
 import logging
-import sys
 
 from psycopg2 import ProgrammingError
 from sqlalchemy.engine.url import make_url

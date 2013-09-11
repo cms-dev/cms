@@ -41,16 +41,14 @@ import tempfile
 import zipfile
 from datetime import timedelta
 
-import sqlalchemy.exc
-from sqlalchemy.orm import ColumnProperty, RelationshipProperty
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval
 
 import cms.db as class_hook
 
 from cms.db import version as model_version
-from cms.db import metadata, SessionGen, Contest, init_db, drop_db, \
-     Submission, UserTest, SubmissionResult, UserTestResult
+from cms.db import SessionGen, init_db, drop_db, Submission, UserTest, \
+    SubmissionResult, UserTestResult
 from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 

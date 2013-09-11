@@ -23,8 +23,7 @@
 
 import logging
 
-from cms.db import SessionGen, Contest, User, Task, Dataset, Submission, \
-    SubmissionResult
+from cms.db import SessionGen, User, Task, Submission, SubmissionResult
 
 
 logger = logging.getLogger(__name__)

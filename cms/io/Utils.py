@@ -23,11 +23,8 @@
 
 """
 
-import datetime
 import json
 import sys
-import time
-import traceback
 
 import six
 

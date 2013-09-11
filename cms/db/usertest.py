@@ -32,8 +32,6 @@ from sqlalchemy.orm import relationship, backref
 from . import Base, User, Task, Dataset
 from .smartmappedcollection import smart_mapped_collection
 
-from cmscommon.DateTime import make_datetime, make_timestamp
-
 
 class UserTest(Base):
     """Class to store a test requested by a user.

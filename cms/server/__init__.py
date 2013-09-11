@@ -24,7 +24,6 @@
 
 """
 
-import os
 import time
 import logging
 import tarfile

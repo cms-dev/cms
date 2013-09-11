@@ -39,9 +39,7 @@ import logging
 import os
 import os.path
 
-import sqlalchemy.exc
-
-from cms.db import metadata, SessionGen, User, init_db, drop_db
+from cms.db import SessionGen, User, init_db, drop_db
 from cms.db.filecacher import FileCacher
 
 from cmscontrib.Loaders import choose_loader, build_epilog

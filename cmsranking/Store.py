@@ -25,8 +25,6 @@ import json
 import os
 import re
 
-import six
-
 from cmsranking.Config import config
 from cmsranking.Logger import logger
 

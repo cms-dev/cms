@@ -21,7 +21,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
 import codecs
 import json
 import logging
@@ -29,7 +28,7 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms.db import SessionGen, Submission, SubmissionResult
+from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
 

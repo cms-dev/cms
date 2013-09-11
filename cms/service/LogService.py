@@ -26,14 +26,11 @@
 
 import os
 import time
-import codecs
 import logging
-import sys
 from collections import deque
 
 from cms import config, mkdir
 from cms.log import root_logger, shell_handler, FileHandler, CustomFormatter
-from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
 
 

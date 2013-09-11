@@ -30,7 +30,7 @@ from __future__ import absolute_import
 from datetime import timedelta
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
-from sqlalchemy.types import Integer, String, Unicode, DateTime, Interval
+from sqlalchemy.types import Integer, Unicode, DateTime, Interval
 from sqlalchemy.orm import relationship, backref
 
 from . import Base

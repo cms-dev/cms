@@ -35,7 +35,6 @@ import requests.exceptions
 from urlparse import urljoin
 
 from cms import config
-from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
 from cms.db import SessionGen, Contest, Task, Submission
 from cms.grading.scoretypes import get_score_type

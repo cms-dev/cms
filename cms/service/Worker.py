@@ -24,7 +24,6 @@ import logging
 
 import gevent.coros
 
-from cms.io import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method
 from cms.db import SessionGen, Contest
 from cms.db.filecacher import FileCacher

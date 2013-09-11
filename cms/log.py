@@ -129,7 +129,7 @@ class LogServiceHandler(logging.Handler):
             ei = record.exc_info
             if ei:
                 # just to get traceback text into record.exc_text ...
-                dummy = self.format(record)
+                self.format(record)
                 record.exc_info = None  # to avoid Unpickleable error
             # See issue #14436: If msg or args are objects, they may not be
             # available on the receiving end. So we convert the msg % args
