@@ -181,7 +181,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                                      GRAD_BASENAME + '.%s' % (lang)))
         srcs.append(src)
 
-        test_deps = [exe_EVAL] + in_out_files
+        test_deps = [exe_EVAL, os.path.join(TEXT_DIRNAME, TEXT_PDF)] + in_out_files
         if task_type == ['Batch', 'Comp'] or \
                 task_type == ['Batch', 'GradComp']:
             test_deps.append('cor/correttore')
