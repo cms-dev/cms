@@ -113,6 +113,7 @@ If you don't use Arch Linux, to install gevent please clone its GIT repository a
 
 .. sourcecode:: bash
 
+    sudo apt-get install cython python-dev python-pip
     git clone https://github.com/surfly/gevent.git
     cd gevent
     python ./setup.py build
