@@ -676,17 +676,6 @@ def task_score(user, task):
     # submission_results table.  Doing so means that this function should incur
     # no exta database queries.
 
-    def waits_for_score(submission_result):
-        """Return if submission could be scored but it currently is
-        not.
-
-        submission_result (SubmissionResult): the result to check. May be None.
-
-        """
-        return submission_result is None or \
-               submission_result.compilation_outcome != "fail" and \
-               not submission_result.scored()
-
     # The score of the last submission (if valid, otherwise 0.0).
     last_score = 0.0
     # The maximum score amongst the tokened submissions (invalid
@@ -710,7 +699,7 @@ def task_score(user, task):
 
     if last_sr is not None and last_sr.scored():
         last_score = last_sr.score
-    elif waits_for_score(last_sr):
+    else:
         partial = True
 
     for s in submissions:
@@ -718,7 +707,7 @@ def task_score(user, task):
         if s.tokened():
             if sr is not None and sr.scored():
                 max_tokened_score = max(max_tokened_score, sr.score)
-            elif waits_for_score(sr):
+            else:
                 partial = True
 
     return max(last_score, max_tokened_score), partial

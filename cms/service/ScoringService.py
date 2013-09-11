@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -40,19 +40,6 @@ from cms.service import get_submission_results
 
 
 logger = logging.getLogger(__name__)
-
-
-def to_score(sr):
-    """Return whether the submission result needs to be scored.
-
-    sr (SubmissionResult): a submission result.
-
-    return (bool): True if SS should score it.
-
-    """
-    return sr is not None and \
-        (sr.compilation_outcome == "fail" or sr.evaluated()) and \
-        not sr.scored()
 
 
 class ScoringService(Service):
@@ -148,13 +135,20 @@ class ScoringService(Service):
             # Obtain submission result.
             submission_result = submission.get_result(dataset)
 
+            # It means it was not even compiled (for some reason).
+            if submission_result is None:
+                raise ValueError("Submission result %d(%d) was not found." %
+                                 (submission_id, dataset_id))
+
             # Check if it's ready to be scored.
-            if not to_score(submission_result):
+            if not submission_result.needs_scoring():
                 if submission_result.scored():
-                    logger.info("Submission result %d(%d) is already scored.")
+                    logger.info("Submission result %d(%d) is already scored.",
+                                submission_id, dataset_id)
                 else:
                     raise ValueError("The state of the submission result "
-                                     "doesn't allow scoring.")
+                                     "%d(%d) doesn't allow scoring." %
+                                     (submission_id, dataset_id))
 
             # Instantiate the score type.
             score_type = get_score_type(dataset=dataset)
@@ -219,7 +213,7 @@ class ScoringService(Service):
 
         with SessionGen() as session:
             for sr in get_submission_results(session=session):
-                if to_score(sr):
+                if sr is not None and sr.needs_scoring():
                     self._scorer_queue.put((sr.submission_id, sr.dataset_id))
                     counter += 1
 

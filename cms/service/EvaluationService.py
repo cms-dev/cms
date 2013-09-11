@@ -68,7 +68,7 @@ def to_evaluate(submission_result):
 
     """
     r = submission_result
-    return r is not None and r.compilation_outcome == "ok" and \
+    return r is not None and r.compilation_succeeded() and \
         not r.evaluated() and \
         r.evaluation_tries < EvaluationService.MAX_EVALUATION_TRIES
 
@@ -806,15 +806,15 @@ class EvaluationService(Service):
         with SessionGen() as session:
             contest = Contest.get_from_id(self.contest_id, session)
             for submission_result in contest.get_submission_results():
-                if submission_result.compilation_outcome == "fail":
+                if submission_result.compilation_failed():
                     stats["compilation_fail"] += 1
-                elif submission_result.compilation_outcome is None:
+                elif not submission_result.compiled():
                     if submission_result.compilation_tries >= \
                            EvaluationService.MAX_COMPILATION_TRIES:
                         stats["max_compilations"] += 1
                     else:
                         stats["compiling"] += 1
-                elif submission_result.compilation_outcome == "ok":
+                elif submission_result.compilation_succeeded():
                     if submission_result.evaluated():
                         if submission_result.scored():
                             stats["scored"] += 1
@@ -1078,7 +1078,7 @@ class EvaluationService(Service):
         """
         submission = submission_result.submission
         # Compilation was ok, so we evaluate.
-        if submission_result.compilation_outcome == "ok":
+        if submission_result.compilation_succeeded():
             self.push_in_queue(
                 JobQueueEntry(
                     EvaluationService.JOB_TYPE_EVALUATION,
@@ -1089,7 +1089,7 @@ class EvaluationService(Service):
         # If instead submission failed compilation, we don't evaluate,
         # but we inform ScoringService of the new submission. We need
         # to commit before so it has up to date information.
-        elif submission_result.compilation_outcome == "fail":
+        elif submission_result.compilation_failed():
             logger.info("Submission %d(%d) did not compile. Not going to "
                         "evaluate." %
                         (submission_result.submission_id,
@@ -1167,7 +1167,7 @@ class EvaluationService(Service):
         """
         user_test = user_test_result.user_test
         # Compilation was ok, so we evaluate
-        if user_test_result.compilation_outcome == 'ok':
+        if user_test_result.compilation_succeeded():
             self.push_in_queue(
                 JobQueueEntry(
                     EvaluationService.JOB_TYPE_TEST_EVALUATION,
@@ -1176,13 +1176,13 @@ class EvaluationService(Service):
                 EvaluationService.JOB_PRIORITY_MEDIUM,
                 user_test.timestamp)
         # If instead user test failed compilation, we don't evaluatate
-        elif user_test_result.compilation_outcome == 'fail':
+        elif user_test_result.compilation_failed():
             logger.info("User test %d(%d) did not compile. Not going to "
                         "evaluate." %
                         (user_test_result.user_test_id,
                          user_test_result.dataset_id))
         # If compilation failed for our fault, we requeue or not
-        elif user_test_result.compilation_outcome is None:
+        elif not user_test_result.compiled():
             if user_test_result.compilation_tries > \
                     EvaluationService.MAX_TEST_COMPILATION_TRIES:
                 logger.error("Maximum tries reached for the compilation of "

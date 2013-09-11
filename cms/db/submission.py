@@ -353,6 +353,26 @@ class SubmissionResult(Base):
         """
         return self.compilation_outcome is not None
 
+    def compilation_failed(self):
+        """Return whether the submission result did not compile.
+
+        return (bool): True if the compilation failed (in the sense
+            that there is a problem in the user's source), False if
+            not yet compiled or compilation was successful.
+
+        """
+        return self.compilation_outcome == "fail"
+
+    def compilation_succeeded(self):
+        """Return whether the submission compiled.
+
+        return (bool): True if the compilation succeeded (in the sense
+            that an executable was created), False if not yet compiled
+            or compilation was unsuccessful.
+
+        """
+        return self.compilation_outcome == "ok"
+
     def evaluated(self):
         """Return whether the submission result has been evaluated.
 
@@ -360,6 +380,15 @@ class SubmissionResult(Base):
 
         """
         return self.evaluation_outcome is not None
+
+    def needs_scoring(self):
+        """Return whether the submission result needs to be scored.
+
+        return (bool): True if in need of scoring, False otherwise.
+
+        """
+        return (self.compilation_failed() or self.evaluated()) and \
+            not self.scored()
 
     def scored(self):
         """Return whether the submission result has been scored.
@@ -405,6 +434,20 @@ class SubmissionResult(Base):
         self.public_score = None
         self.public_score_details = None
         self.ranking_score_details = None
+
+    def set_compilation_outcome(self, success):
+        """Set the compilation outcome based on the success.
+
+        success (bool): if the compilation was successful.
+
+        """
+        self.compilation_outcome = "ok" if success else "fail"
+
+    def set_evaluation_outcome(self):
+        """Set the evaluation outcome (always ok now).
+
+        """
+        self.evaluation_outcome = "ok"
 
 
 class Executable(Base):

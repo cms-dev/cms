@@ -1229,7 +1229,7 @@ class SubmissionStatusHandler(BaseHandler):
         if sr is None or not sr.compiled():
             data["status"] = 1
             data["status_text"] = self._("Compiling...")
-        elif sr.compilation_outcome == "fail":
+        elif sr.compilation_failed():
             data["status"] = 2
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
                 self._("Compilation failed"), self._("details"))
@@ -1676,7 +1676,7 @@ class UserTestStatusHandler(BaseHandler):
         if ur is None or not ur.compiled():
             data["status"] = 1
             data["status_text"] = "Compiling..."
-        elif ur.compilation_outcome == "fail":
+        elif ur.compilation_failed():
             data["status"] = 2
             data["status_text"] = "Compilation failed " + \
                                   "<a class=\"details\">details</a>"

@@ -262,7 +262,7 @@ class JobGroup(object):
         # method gets called only if the first (and therefore the
         # second!) is True.
 
-        sr.compilation_outcome = 'ok' if job.compilation_success else 'fail'
+        sr.set_compilation_outcome(job.compilation_success)
         sr.compilation_text = json.dumps(job.text, encoding='utf-8')
         sr.compilation_stdout = job.plus.get('stdout')
         sr.compilation_stderr = job.plus.get('stderr')
@@ -320,7 +320,7 @@ class JobGroup(object):
         # method gets called only if the first (and therefore the
         # second!) is True.
 
-        ur.compilation_outcome = 'ok' if job.compilation_success else 'fail'
+        ur.set_compilation_outcome(job.compilation_success)
         ur.compilation_text = json.dumps(job.text, encoding='utf-8')
         ur.compilation_stdout = job.plus.get('stdout')
         ur.compilation_stderr = job.plus.get('stderr')
@@ -381,7 +381,7 @@ class JobGroup(object):
         # method gets called only if the first (and therefore the
         # second!) is True.
 
-        sr.evaluation_outcome = "ok"
+        sr.set_evaluation_outcome()
 
         for test_name, job in self.jobs.iteritems():
             assert isinstance(job, EvaluationJob)
@@ -455,7 +455,7 @@ class JobGroup(object):
         # second!) is True.
 
         ur.evaluation_text = json.dumps(job.text, encoding='utf-8')
-        ur.evaluation_outcome = 'ok'  # FIXME use job.outcome
+        ur.set_evaluation_outcome()  # FIXME use job.outcome
         ur.evaluation_time = job.plus.get('execution_time')
         ur.evaluation_wall_clock_time = job.plus.get('execution_wall_clock_time')
         ur.evaluation_memory = job.plus.get('execution_memory')
