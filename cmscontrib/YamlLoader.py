@@ -457,24 +457,28 @@ class YamlLoader(Loader):
                     args["score_type"] = "Sum"
                     total_value = float(conf.get("total_value", 100.0))
                     input_value = 0.0
-                    if int(conf['n_input']) != 0:
-                        input_value = total_value / int(conf['n_input'])
+                    n_input = testcases
+                    if n_input != 0:
+                        input_value = total_value / n_input
                     args["score_type_parameters"] = str(input_value)
                 else:
                     subtasks.append([points, testcases])
                     assert(100 == sum([int(st[0]) for st in subtasks]))
-                    assert(int(conf['n_input']) ==
-                           sum([int(st[1]) for st in subtasks]))
+                    n_input = sum([int(st[1]) for st in subtasks])
                     args["score_type"] = "GroupMin"
                     args["score_type_parameters"] = str(subtasks)
+
+                if "n_input" in conf:
+                    assert int(conf['n_input']) == n_input
 
         # If gen/GEN doesn't exist, just fallback to Sum
         except IOError:
             args["score_type"] = "Sum"
             total_value = float(conf.get("total_value", 100.0))
             input_value = 0.0
-            if int(conf['n_input']) != 0:
-                input_value = total_value / int(conf['n_input'])
+            n_input = int(conf['n_input'])
+            if n_input != 0:
+                input_value = total_value / n_input
             args["score_type_parameters"] = str(input_value)
 
         # If output_only is set, then the task type is OutputOnly
@@ -485,7 +489,7 @@ class YamlLoader(Loader):
             args["task_type_parameters"] = '["%s"]' % evaluation_param
             task.submission_format = [
                 SubmissionFormatElement("output_%03d.txt" % i)
-                for i in xrange(int(conf["n_input"]))]
+                for i in xrange(n_input)]
 
         # If there is check/manager (or equivalent), then the task
         # type is Communication
@@ -525,7 +529,7 @@ class YamlLoader(Loader):
                      evaluation_param)
 
         args["testcases"] = []
-        for i in xrange(int(conf["n_input"])):
+        for i in xrange(n_input):
             input_digest = self.file_cacher.put_file_from_path(
                 os.path.join(task_path, "input", "input%d.txt" % i),
                 "Input %d for task %s" % (i, name))
