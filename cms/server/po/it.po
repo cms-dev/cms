@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-08-14 01:21+0200\n"
-"PO-Revision-Date: 2013-08-14 01:10+0200\n"
+"POT-Creation-Date: 2013-09-15 19:25+0200\n"
+"PO-Revision-Date: 2013-09-13 01:00+0200\n"
 "Last-Translator: Luca Wehrstedt <luca.wehrstedt@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
@@ -19,7 +19,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Gtranslator 2.91.6\n"
 
-#: grading/__init__.py:128 grading/ScoreType.py:149
+#: grading/__init__.py:130 grading/ScoreType.py:151
 #: grading/scoretypes/Sum.py:42 server/templates/contest/overview.html:199
 #: server/templates/contest/overview.html:206
 #: server/templates/contest/submission_details.html:22
@@ -41,21 +41,21 @@ msgstr ""
 msgid "N/A"
 msgstr "N/A"
 
-#: grading/__init__.py:204
+#: grading/__init__.py:206
 msgid "Compilation succeeded"
 msgstr "Compilazione eseguita con successo"
 
-#: grading/__init__.py:212 server/ContestWebServer.py:1229
+#: grading/__init__.py:214 server/ContestWebServer.py:1236
 #: server/templates/contest/submission_row.html:20
 #: server/templates/contest/user_test_row.html:16
 msgid "Compilation failed"
 msgstr "Compilazione fallita"
 
-#: grading/__init__.py:219
+#: grading/__init__.py:221
 msgid "Compilation timed out"
 msgstr "Compilazione interrotta perché fuori tempo massimo"
 
-#: grading/__init__.py:229
+#: grading/__init__.py:231
 #, python-format
 msgid ""
 "Compilation killed with signal %d (could be triggered by violating memory "
@@ -64,11 +64,11 @@ msgstr ""
 "Compilazione interrotta con segnale %d (può essere dovuto ad una violazione "
 "dei limiti di memoria)"
 
-#: grading/__init__.py:411
+#: grading/__init__.py:414
 msgid "Execution timed out"
 msgstr "Esecuzione terminata perché fuori tempo massimo"
 
-#: grading/__init__.py:413
+#: grading/__init__.py:416
 #, python-format
 msgid ""
 "Execution killed with signal %d (could be triggered by violating memory "
@@ -77,52 +77,52 @@ msgstr ""
 "Esecuzione interrotta con segnale %d (può essere dovuto ad una violazione "
 "dei limiti di memoria)"
 
-#: grading/__init__.py:418
+#: grading/__init__.py:421
 #, python-format
 msgid "Execution killed because of forbidden syscall %s"
 msgstr "Esecuzione terminata a causa di chiamata di sistema vietata %s"
 
-#: grading/__init__.py:422
+#: grading/__init__.py:425
 msgid "Execution killed because of forbidden file access"
 msgstr "Esecuzione terminata a causa di accesso a file vietato"
 
-#: grading/__init__.py:425
+#: grading/__init__.py:428
 msgid "Execution failed because the return code was nonzero"
 msgstr "Esecuzione fallita a causa di codice di ritorno diverso da zero"
 
-#: grading/__init__.py:592
+#: grading/__init__.py:595
 msgid "Output is correct"
 msgstr "L'output è corretto"
 
-#: grading/__init__.py:595
+#: grading/__init__.py:598
 msgid "Output isn't correct"
 msgstr "L'output non è corretto"
 
-#: grading/__init__.py:598 grading/tasktypes/Batch.py:267
-#: grading/tasktypes/TwoSteps.py:269
+#: grading/__init__.py:601 grading/tasktypes/Batch.py:269
+#: grading/tasktypes/TwoSteps.py:273
 #, python-format
 msgid "Evaluation didn't produce file %s"
 msgstr "La valutazione non ha prodotto il file %s"
 
-#: grading/ScoreType.py:144
+#: grading/ScoreType.py:146
 #, python-format
 msgid "Subtask %d"
 msgstr "Subtask %d"
 
-#: grading/ScoreType.py:145 grading/scoretypes/Sum.py:38
+#: grading/ScoreType.py:147 grading/scoretypes/Sum.py:38
 msgid "Outcome"
 msgstr "Esito"
 
-#: grading/ScoreType.py:146 grading/scoretypes/Sum.py:39
+#: grading/ScoreType.py:148 grading/scoretypes/Sum.py:39
 msgid "Details"
 msgstr "Dettagli"
 
-#: grading/ScoreType.py:147 grading/scoretypes/Sum.py:40
+#: grading/ScoreType.py:149 grading/scoretypes/Sum.py:40
 #: server/templates/contest/test_interface.html:161
 msgid "Execution time"
 msgstr "Tempo di esecuzione"
 
-#: grading/ScoreType.py:148 grading/scoretypes/Sum.py:41
+#: grading/ScoreType.py:150 grading/scoretypes/Sum.py:41
 #: server/templates/contest/test_interface.html:162
 msgid "Memory used"
 msgstr "Memoria utilizzata"
@@ -142,49 +142,49 @@ msgstr "Corretto"
 msgid "Partially correct"
 msgstr "Parzialmente corretto"
 
-#: grading/tasktypes/Batch.py:144 grading/tasktypes/Communication.py:100
-#: grading/tasktypes/TwoSteps.py:106
+#: grading/tasktypes/Batch.py:146 grading/tasktypes/Communication.py:104
+#: grading/tasktypes/TwoSteps.py:110
 msgid "Invalid files in submission"
 msgstr "File non validi nella sottoposizione"
 
-#: grading/tasktypes/OutputOnly.py:87
+#: grading/tasktypes/OutputOnly.py:90
 msgid "No compilation needed"
 msgstr "Compilazione non necessaria"
 
-#: grading/tasktypes/OutputOnly.py:106
+#: grading/tasktypes/OutputOnly.py:109
 msgid "File not submitted"
 msgstr "File non sottoposto"
 
-#: server/ContestWebServer.py:809
+#: server/ContestWebServer.py:814
 msgid "Question received"
 msgstr "Domanda ricevuta"
 
-#: server/ContestWebServer.py:810
+#: server/ContestWebServer.py:815
 msgid ""
 "Your question has been received, you will be notified when the it will be "
 "answered."
 msgstr ""
 "La tua domanda è stata inviata, riceverai una notifica quando sarà risposta. "
 
-#: server/ContestWebServer.py:842
+#: server/ContestWebServer.py:847
 #, python-format
 msgid ""
 "You have reached the maximum limit of at most %d submissions among all tasks."
 msgstr ""
 "Hai raggiunto il limite massimo di %d sottoposizioni tra tutti i problemi."
 
-#: server/ContestWebServer.py:852
+#: server/ContestWebServer.py:857
 #, python-format
 msgid ""
 "You have reached the maximum limit of at most %d submissions on this task."
 msgstr ""
 "Hai raggiunto il limite massimo di %d sottoposizioni su questo problema."
 
-#: server/ContestWebServer.py:859
+#: server/ContestWebServer.py:864
 msgid "Too many submissions!"
 msgstr "Troppe sottoposizioni!"
 
-#: server/ContestWebServer.py:877
+#: server/ContestWebServer.py:882
 #, python-format
 msgid ""
 "Among all tasks, you can submit again after %d seconds from last submission."
@@ -192,80 +192,80 @@ msgstr ""
 "Tra tutti i problemi, devi aspettare almeno %d secondi tra due "
 "sottoposizioni."
 
-#: server/ContestWebServer.py:892
+#: server/ContestWebServer.py:897
 #, python-format
 msgid ""
 "For this task, you can submit again after %d seconds from last submission."
 msgstr ""
 "Su questo problema, devi aspettare almeno %d secondi tra due sottoposizioni."
 
-#: server/ContestWebServer.py:899
+#: server/ContestWebServer.py:904
 msgid "Submissions too frequent!"
 msgstr "Sottoposizioni troppo frequenti!"
 
-#: server/ContestWebServer.py:911 server/ContestWebServer.py:958
+#: server/ContestWebServer.py:916 server/ContestWebServer.py:963
 msgid "Invalid submission format!"
 msgstr "Formato sottoposizione invalido!"
 
-#: server/ContestWebServer.py:912 server/ContestWebServer.py:959
-#: server/ContestWebServer.py:1423 server/ContestWebServer.py:1470
+#: server/ContestWebServer.py:917 server/ContestWebServer.py:964
+#: server/ContestWebServer.py:1430 server/ContestWebServer.py:1477
 msgid "Please select the correct files."
 msgstr "Seleziona i file corretti."
 
-#: server/ContestWebServer.py:937 server/ContestWebServer.py:1448
+#: server/ContestWebServer.py:942 server/ContestWebServer.py:1455
 msgid "Invalid archive format!"
 msgstr "Formato archivio invalido!"
 
-#: server/ContestWebServer.py:938 server/ContestWebServer.py:1449
+#: server/ContestWebServer.py:943 server/ContestWebServer.py:1456
 msgid "The submitted archive could not be opened."
 msgstr "Impossibile aprire l'archivio sottoposto."
 
-#: server/ContestWebServer.py:1015
+#: server/ContestWebServer.py:1020
 msgid "Cannot recognize submission's language."
 msgstr "Impossibile riconoscere il linguaggio della sottoposizione"
 
-#: server/ContestWebServer.py:1019 server/ContestWebServer.py:1529
+#: server/ContestWebServer.py:1024 server/ContestWebServer.py:1536
 msgid "All sources must be in the same language."
 msgstr "Tutti i sorgenti devono essere nello stesso linguaggio."
 
-#: server/ContestWebServer.py:1027
+#: server/ContestWebServer.py:1032
 msgid "Invalid submission!"
 msgstr "Sottoposizione invalida!"
 
-#: server/ContestWebServer.py:1039
+#: server/ContestWebServer.py:1044
 msgid "Submission too big!"
 msgstr "Sottoposizione troppo grande!"
 
-#: server/ContestWebServer.py:1040 server/ContestWebServer.py:1550
+#: server/ContestWebServer.py:1045 server/ContestWebServer.py:1557
 #, python-format
 msgid "Each source file must be at most %d bytes long."
 msgstr "Ogni file sorgente deve essere grande al massimo %d byte."
 
-#: server/ContestWebServer.py:1086
+#: server/ContestWebServer.py:1093
 msgid "Submission storage failed!"
 msgstr "Errore nel salvataggio della sottoposizione!"
 
-#: server/ContestWebServer.py:1087 server/ContestWebServer.py:1607
+#: server/ContestWebServer.py:1094 server/ContestWebServer.py:1616
 msgid "Please try again."
 msgstr "Riprova."
 
-#: server/ContestWebServer.py:1109
+#: server/ContestWebServer.py:1116
 msgid "Submission received"
 msgstr "Sottoposizione ricevuta"
 
-#: server/ContestWebServer.py:1110
+#: server/ContestWebServer.py:1117
 msgid "Your submission has been received and is currently being evaluated."
 msgstr "La tua sottoposizione è stata ricevuta e verrà valutata."
 
-#: server/ContestWebServer.py:1156 server/ContestWebServer.py:1171
+#: server/ContestWebServer.py:1163 server/ContestWebServer.py:1178
 msgid "Token request discarded"
 msgstr "Richiesta del token rifiutata"
 
-#: server/ContestWebServer.py:1157
+#: server/ContestWebServer.py:1164
 msgid "Your request has been discarded because you have no tokens available."
 msgstr "La tua richiesta è stata rifiutata perché non hai token disponibili."
 
-#: server/ContestWebServer.py:1172
+#: server/ContestWebServer.py:1179
 msgid ""
 "Your request has been discarded because you already used a token on that "
 "submission."
@@ -273,21 +273,21 @@ msgstr ""
 "La tua richiesta è stata rifiutata perché hai già usato un token su questa "
 "sottoposizione."
 
-#: server/ContestWebServer.py:1190
+#: server/ContestWebServer.py:1197
 msgid "Token request received"
 msgstr "Richiesta del token ricevuta"
 
-#: server/ContestWebServer.py:1191
+#: server/ContestWebServer.py:1198
 msgid "Your request has been received and applied to the submission."
 msgstr "La tua richiesta è stata ricevuta e applicata alla sottoposizione."
 
-#: server/ContestWebServer.py:1225
+#: server/ContestWebServer.py:1232
 #: server/templates/contest/submission_row.html:10
 #: server/templates/contest/user_test_row.html:10
 msgid "Compiling..."
 msgstr "Compilazione in corso..."
 
-#: server/ContestWebServer.py:1229 server/ContestWebServer.py:1239
+#: server/ContestWebServer.py:1236 server/ContestWebServer.py:1246
 #: server/templates/contest/submission_row.html:21
 #: server/templates/contest/submission_row.html:52
 #: server/templates/contest/user_test_row.html:17
@@ -295,241 +295,241 @@ msgstr "Compilazione in corso..."
 msgid "details"
 msgstr "dettagli"
 
-#: server/ContestWebServer.py:1232
+#: server/ContestWebServer.py:1239
 #: server/templates/contest/submission_row.html:31
 msgid "Evaluating..."
 msgstr "Valutazione in corso..."
 
-#: server/ContestWebServer.py:1235
+#: server/ContestWebServer.py:1242
 #: server/templates/contest/submission_row.html:41
 msgid "Scoring..."
 msgstr "Assegnazione del punteggio in corso..."
 
-#: server/ContestWebServer.py:1239
+#: server/ContestWebServer.py:1246
 #: server/templates/contest/submission_row.html:51
 msgid "Evaluated"
 msgstr "Valutato"
 
-#: server/ContestWebServer.py:1354
+#: server/ContestWebServer.py:1361
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests among all tasks."
 msgstr "Hai raggiunto il limite massimo di %d test tra tutti i problemi."
 
-#: server/ContestWebServer.py:1363
+#: server/ContestWebServer.py:1370
 #, python-format
 msgid "You have reached the maximum limit of at most %d tests on this task."
 msgstr "Hai raggiunto il limite massimo di %d test su questo problema."
 
-#: server/ContestWebServer.py:1370
+#: server/ContestWebServer.py:1377
 msgid "Too many tests!"
 msgstr "Troppi test!"
 
-#: server/ContestWebServer.py:1388
+#: server/ContestWebServer.py:1395
 #, python-format
 msgid "Among all tasks, you can test again after %d seconds from last test."
 msgstr "Tra tutti i problemi, devi aspettare almeno %d secondi tra due test."
 
-#: server/ContestWebServer.py:1403
+#: server/ContestWebServer.py:1410
 #, python-format
 msgid "For this task, you can test again after %d seconds from last test."
 msgstr "Su questo problema, devi aspettare almeno %d secondi tra due test."
 
-#: server/ContestWebServer.py:1410
+#: server/ContestWebServer.py:1417
 msgid "Tests too frequent!"
 msgstr "Test troppo frequenti!"
 
-#: server/ContestWebServer.py:1422 server/ContestWebServer.py:1469
+#: server/ContestWebServer.py:1429 server/ContestWebServer.py:1476
 msgid "Invalid test format!"
 msgstr "Formato test invalido!"
 
-#: server/ContestWebServer.py:1525
+#: server/ContestWebServer.py:1532
 msgid "Cannot recognize test's language."
 msgstr "Impossibile riconoscere il linguaggio del test"
 
-#: server/ContestWebServer.py:1537
+#: server/ContestWebServer.py:1544
 msgid "Invalid test!"
 msgstr "Test invalido!"
 
-#: server/ContestWebServer.py:1549
+#: server/ContestWebServer.py:1556
 msgid "Test too big!"
 msgstr "Test troppo grande!"
 
-#: server/ContestWebServer.py:1559
+#: server/ContestWebServer.py:1566
 msgid "Input too big!"
 msgstr "Input troppo grande!"
 
-#: server/ContestWebServer.py:1560
+#: server/ContestWebServer.py:1567
 #, python-format
 msgid "The input file must be at most %d bytes long."
 msgstr "Il file di input deve essere grande al massimo %d byte."
 
-#: server/ContestWebServer.py:1606
+#: server/ContestWebServer.py:1615
 msgid "Test storage failed!"
 msgstr "Errore nel salvataggio del test!"
 
-#: server/ContestWebServer.py:1637
+#: server/ContestWebServer.py:1648
 msgid "Test received"
 msgstr "Test ricevuto"
 
-#: server/ContestWebServer.py:1638
+#: server/ContestWebServer.py:1649
 msgid "Your test has been received and is currently being executed."
 msgstr "Il tuo test è stato ricevuto e verrà valutato."
 
-#: server/__init__.py:147
+#: server/__init__.py:148
 msgid "%Y-%m-%d"
 msgstr "%d/%m/%Y"
 
-#: server/__init__.py:166 server/__init__.py:206
+#: server/__init__.py:167 server/__init__.py:207
 msgid "%H:%M:%S"
 msgstr "%H:%M:%S"
 
-#: server/__init__.py:185 server/__init__.py:208
+#: server/__init__.py:186 server/__init__.py:209
 msgid "%Y-%m-%d %H:%M:%S"
 msgstr "%H:%M:%S %d/%m/%Y"
 
-#: server/__init__.py:231 server/__init__.py:260
+#: server/__init__.py:232 server/__init__.py:261
 #, python-format
 msgid "%d second"
 msgid_plural "%d seconds"
 msgstr[0] "%d secondo"
 msgstr[1] "%d secondi"
 
-#: server/__init__.py:232
+#: server/__init__.py:233
 #, python-format
 msgid "%d minute"
 msgid_plural "%d minutes"
 msgstr[0] "%d minuto"
 msgstr[1] "%d minuti"
 
-#: server/__init__.py:233
+#: server/__init__.py:234
 #, python-format
 msgid "%d hour"
 msgid_plural "%d hours"
 msgstr[0] "%d ora"
 msgstr[1] "%d ore"
 
-#: server/__init__.py:234
+#: server/__init__.py:235
 #, python-format
 msgid "%d day"
 msgid_plural "%d days"
 msgstr[0] "%d giorno"
 msgstr[1] "%d giorni"
 
-#: server/__init__.py:284
+#: server/__init__.py:285
 #, python-format
 msgid "%s and %s"
 msgstr "%s e %s"
 
-#: server/__init__.py:287
+#: server/__init__.py:288
 #, python-format
 msgid "more than %s"
 msgstr "più di %s"
 
-#: server/__init__.py:311
+#: server/__init__.py:312
 msgid "contest-token"
 msgstr "contest-token"
 
-#: server/__init__.py:312
+#: server/__init__.py:313
 msgid "contest-tokens"
 msgstr "contest-token"
 
-#: server/__init__.py:314
+#: server/__init__.py:315
 msgid "task-token"
 msgstr "task-token"
 
-#: server/__init__.py:315
+#: server/__init__.py:316
 msgid "task-tokens"
 msgstr "task-token"
 
-#: server/__init__.py:317
+#: server/__init__.py:318
 msgid "token"
 msgstr "token"
 
-#: server/__init__.py:318
+#: server/__init__.py:319
 msgid "tokens"
 msgstr "token"
 
-#: server/__init__.py:329
+#: server/__init__.py:330
 #, python-format
 msgid "You don't have %(type_pl)s available for this task."
 msgstr "Non hai %(type_pl)s disponibili per questo problema."
 
-#: server/__init__.py:331
+#: server/__init__.py:332
 #, python-format
 msgid "You have infinite %(type_pl)s."
 msgstr "Hai infiniti %(type_pl)s."
 
-#: server/__init__.py:336 server/__init__.py:379
+#: server/__init__.py:337 server/__init__.py:380
 #, python-format
 msgid "You can use a %(type_s)s every second."
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
 msgstr[0] "Puoi usare al massimo un %(type_s)s ogni secondo."
 msgstr[1] "Puoi usare al massimo un %(type_s)s ogni %(min_interval)g secondi."
 
-#: server/__init__.py:340 server/__init__.py:387
+#: server/__init__.py:341 server/__init__.py:388
 msgid "You have no limitations on how you use them."
 msgstr "Non hai limitazioni sul loro utilizzo."
 
-#: server/__init__.py:343
+#: server/__init__.py:344
 #, python-format
 msgid "You start with no %(type_pl)s."
 msgstr "All'inizio hai zero %(type_pl)s."
 
-#: server/__init__.py:345
+#: server/__init__.py:346
 #, python-format
 msgid "You start with one %(type_s)s."
 msgid_plural "You start with %(initial)d %(type_pl)s."
 msgstr[0] "All'inizio hai un %(type_s)s."
 msgstr[1] "All'inizio hai %(initial)d %(type_pl)s."
 
-#: server/__init__.py:352
+#: server/__init__.py:353
 #, python-format
 msgid "Every minute "
 msgid_plural "Every %(gen_time)g minutes "
 msgstr[0] "Ogni minuto "
 msgstr[1] "Ogni %(gen_time)g minuti "
 
-#: server/__init__.py:356
+#: server/__init__.py:357
 #, python-format
 msgid "you get another %(type_s)s, "
 msgid_plural "you get %(gen_number)d other %(type_pl)s, "
 msgstr[0] "riceverai un altro %(type_s)s, "
 msgstr[1] "riceverai altri %(gen_number)d %(type_pl)s, "
 
-#: server/__init__.py:359
+#: server/__init__.py:360
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
 msgid_plural "up to a maximum of %(max)d %(type_pl)s."
 msgstr[0] "fino ad un massimo di un %(type_s)s."
 msgstr[1] "fino ad un massimo di %(max)d %(type_pl)s."
 
-#: server/__init__.py:363
+#: server/__init__.py:364
 #, python-format
 msgid "you get another %(type_s)s."
 msgid_plural "you get %(gen_number)d other %(type_pl)s."
 msgstr[0] "riceverai un altro %(type_s)s."
 msgstr[1] "riceverai altri %(gen_number)d %(type_pl)s."
 
-#: server/__init__.py:367
+#: server/__init__.py:368
 #, python-format
 msgid "You don't get other %(type_pl)s."
 msgstr "Non riceverai altri %(type_pl)s."
 
-#: server/__init__.py:372
+#: server/__init__.py:373
 #, python-format
 msgid "You can use a %(type_s)s every second "
 msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds "
 msgstr[0] "Puoi usare al massimo un %(type_s)s ogni secondo "
 msgstr[1] "Puoi usare al massimo un %(type_s)s ogni %(min_interval)g secondi "
 
-#: server/__init__.py:375
+#: server/__init__.py:376
 #, python-format
 msgid "and no more than one %(type_s)s in total."
 msgid_plural "and no more than %(total)d %(type_pl)s in total."
 msgstr[0] "e non più di un %(type_s)s in totale."
 msgstr[1] "e non più di %(total)d %(type_pl)s in totale."
 
-#: server/__init__.py:383
+#: server/__init__.py:384
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
 msgid_plural "You can use no more than %(total)d %(type_pl)s in total."
@@ -575,8 +575,8 @@ msgstr "Login"
 
 #: server/templates/contest/base.html:91
 #: server/templates/contest/communication.html:53
-#: server/templates/contest/task_submissions.html:112
-#: server/templates/contest/task_submissions.html:131
+#: server/templates/contest/task_submissions.html:110
+#: server/templates/contest/task_submissions.html:129
 #: server/templates/contest/test_interface.html:106
 #: server/templates/contest/test_interface.html:124
 msgid "Reset"
@@ -973,7 +973,7 @@ msgid "Type"
 msgstr "Tipo"
 
 #: server/templates/contest/overview.html:180
-#: server/templates/contest/task_submissions.html:227
+#: server/templates/contest/task_submissions.html:225
 #: server/templates/contest/test_interface.html:165
 msgid "Files"
 msgstr "File"
@@ -1072,8 +1072,8 @@ msgstr "Nessun token"
 
 #: server/templates/contest/task_description.html:14
 #, python-format
-msgid "Statement <small>for %(name)s (%(short_name)s)</small>"
-msgstr "Descrizione <small>per %(name)s (%(short_name)s)</small>"
+msgid "%(name)s (%(short_name)s) <small>description</small>"
+msgstr "%(name)s (%(short_name)s) <small>descrizione</small>"
 
 #: server/templates/contest/task_description.html:23
 msgid "no statement available"
@@ -1232,111 +1232,111 @@ msgstr ""
 msgid "Attachments"
 msgstr "Allegati"
 
-#: server/templates/contest/task_submissions.html:91
+#: server/templates/contest/task_submissions.html:89
 #, python-format
-msgid "Submissions <small>for %(name)s (%(short_name)s)</small>"
-msgstr "Sottoposizioni <small>per %(name)s (%(short_name)s)</small>"
+msgid "%(name)s (%(short_name)s) <small>submissions</small>"
+msgstr "%(name)s (%(short_name)s) <small>sottoposizioni</small>"
 
-#: server/templates/contest/task_submissions.html:95
+#: server/templates/contest/task_submissions.html:93
 msgid "Submit a solution"
 msgstr "Sottoponi una soluzione"
 
-#: server/templates/contest/task_submissions.html:111
-#: server/templates/contest/task_submissions.html:130
+#: server/templates/contest/task_submissions.html:109
+#: server/templates/contest/task_submissions.html:128
 #: server/templates/contest/test_interface.html:105
 #: server/templates/contest/test_interface.html:123
 msgid "Submit"
 msgstr "Sottoponi"
 
-#: server/templates/contest/task_submissions.html:123
+#: server/templates/contest/task_submissions.html:121
 #: server/templates/contest/test_interface.html:116
 msgid "submission.zip"
 msgstr "sottoposizione.zip"
 
-#: server/templates/contest/task_submissions.html:141
+#: server/templates/contest/task_submissions.html:139
 msgid "Previous submissions"
 msgstr "Sottoposizioni precedenti"
 
-#: server/templates/contest/task_submissions.html:150
+#: server/templates/contest/task_submissions.html:148
 msgid "Right now, you have infinite tokens available on this task."
 msgstr "In questo momento hai infiniti token disponibili per questo problema."
 
-#: server/templates/contest/task_submissions.html:152
+#: server/templates/contest/task_submissions.html:150
 msgid "Right now, you have one token available on this task."
 msgstr "In questo momento hai un token disponibile per questo problema."
 
-#: server/templates/contest/task_submissions.html:154
+#: server/templates/contest/task_submissions.html:152
 #, python-format
 msgid "Right now, you have %(tokens)s tokens available on this task."
 msgstr ""
 "In questo momento, hai %(tokens)s token disponibili per questo problema."
 
-#: server/templates/contest/task_submissions.html:158
+#: server/templates/contest/task_submissions.html:156
 #, python-format
 msgid "But you have to wait until %(expiration_time)s to use them."
 msgstr "Ma dovrai aspettare fino alle %(expiration_time)s per usarli."
 
-#: server/templates/contest/task_submissions.html:162
-#: server/templates/contest/task_submissions.html:170
+#: server/templates/contest/task_submissions.html:160
+#: server/templates/contest/task_submissions.html:168
 #, python-format
 msgid "You will receive a new token at %(gen_time)s."
 msgstr "Riceverai un nuovo token alle %(gen_time)s."
 
-#: server/templates/contest/task_submissions.html:164
-#: server/templates/contest/task_submissions.html:176
+#: server/templates/contest/task_submissions.html:162
+#: server/templates/contest/task_submissions.html:174
 msgid "In the current situation, no more tokens will be generated."
 msgstr "Nella situazione attuale, nessun nuovo token verrà generato."
 
-#: server/templates/contest/task_submissions.html:167
+#: server/templates/contest/task_submissions.html:165
 msgid "Right now, you do not have tokens available for this task."
 msgstr "In questo momento, non hai token disponibili per questo problema."
 
-#: server/templates/contest/task_submissions.html:173
+#: server/templates/contest/task_submissions.html:171
 #, python-format
 msgid "But you will have to wait until %(expiration_time)s to use it."
 msgstr "Ma dovrai aspettare fino alle %(expiration_time)s per usarlo."
 
-#: server/templates/contest/task_submissions.html:216
+#: server/templates/contest/task_submissions.html:214
 #: server/templates/contest/test_interface.html:156
 msgid "Date and time"
 msgstr "Data e ora"
 
-#: server/templates/contest/task_submissions.html:218
+#: server/templates/contest/task_submissions.html:216
 #: server/templates/contest/test_interface.html:158
 msgid "Time"
 msgstr "Ora"
 
-#: server/templates/contest/task_submissions.html:220
+#: server/templates/contest/task_submissions.html:218
 #: server/templates/contest/test_interface.html:160
 msgid "Status"
 msgstr "Stato"
 
-#: server/templates/contest/task_submissions.html:222
+#: server/templates/contest/task_submissions.html:220
 msgid "Public score"
 msgstr "Punteggio pubblico"
 
-#: server/templates/contest/task_submissions.html:223
+#: server/templates/contest/task_submissions.html:221
 msgid "Total score"
 msgstr "Punteggio totale"
 
-#: server/templates/contest/task_submissions.html:225
+#: server/templates/contest/task_submissions.html:223
 msgid "Score"
 msgstr "Punteggio"
 
-#: server/templates/contest/task_submissions.html:229
+#: server/templates/contest/task_submissions.html:227
 msgid "Token"
 msgstr "Token"
 
+#: server/templates/contest/task_submissions.html:235
 #: server/templates/contest/task_submissions.html:237
-#: server/templates/contest/task_submissions.html:239
 msgid "no submissions yet"
 msgstr "nessuna sottoposizione"
 
-#: server/templates/contest/task_submissions.html:255
+#: server/templates/contest/task_submissions.html:253
 msgid "Submission details"
 msgstr "Dettagli della sottoposizione"
 
-#: server/templates/contest/task_submissions.html:260
+#: server/templates/contest/task_submissions.html:258
 #: server/templates/contest/test_interface.html:199
 msgid "Close"
 msgstr "Chiudi"
