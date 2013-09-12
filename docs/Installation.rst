@@ -42,7 +42,7 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `six <http://pythonhosted.org/six/>`_ >= 1.1;
 
-* `requests <http://docs.python-requests.org/en/latest/>`_ >= 1.0;
+* `requests <http://docs.python-requests.org/en/latest/>`_ >= 1.1;
 
 * `iso-codes <http://pkg-isocodes.alioth.debian.org/>`_;
 

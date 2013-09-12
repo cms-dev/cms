@@ -32,7 +32,7 @@ import gevent.queue
 
 import requests
 import requests.exceptions
-from urlparse import urljoin
+from urlparse import urljoin, urlsplit
 
 from cms import config
 from cms.io.GeventLibrary import Service, rpc_method
@@ -78,7 +78,11 @@ def safe_put_data(ranking, resource, data, operation):
     """
     try:
         url = urljoin(ranking, resource)
+        # XXX With requests-1.2 auth is automatically extracted from
+        # the URL: there is no need for this.
+        auth = urlsplit(url)
         res = requests.put(url, json.dumps(data, encoding="utf-8"),
+                           auth=(auth.username, auth.password),
                            verify=config.https_certfile)
     except requests.exceptions.RequestException as error:
         logger.warning(
