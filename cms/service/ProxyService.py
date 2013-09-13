@@ -171,8 +171,10 @@ class RankingProxy(object):
         task_count = list(0 for i in xrange(self.TYPE_COUNT))
 
         while True:
-            # Block until we have something to do.
-            self.data_queue.peek()
+            # If we don't have something left to do, block until we
+            # get something new.
+            if sum(task_count) == 0:
+                self.data_queue.peek()
 
             try:
                 while True:
@@ -206,6 +208,10 @@ class RankingProxy(object):
 
             except CannotSendError:
                 # A log message has already been produced.
+                gevent.sleep(self.FAILURE_WAIT)
+            except:
+                # Whoa! That's unexpected!
+                logger.error("Unexpected error.", exc_info=True)
                 gevent.sleep(self.FAILURE_WAIT)
 
 
