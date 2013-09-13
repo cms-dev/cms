@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -109,7 +109,7 @@ def get_shard_from_addresses(service, addrs):
                                           host, port,
                                           family=gevent.socket.AF_INET6,
                                           socktype=gevent.socket.SOCK_STREAM)])
-            except gevent.socket.gaierror:
+            except (gevent.socket.gaierror, gevent.socket.error):
                 # If the address can't be resolved, we simply skip it
                 pass
             else:
