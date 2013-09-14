@@ -27,7 +27,10 @@ using gevent and JSON encoding.
 import errno
 import heapq
 import logging
+import os
+import pwd
 import signal
+import _socket
 import sys
 import traceback
 import uuid
@@ -37,10 +40,12 @@ import gevent
 import gevent.socket
 import gevent.event
 from gevent.server import StreamServer
+from gevent.backdoor import BackdoorServer
 
 # We import the module, instead of its contents (i.e. "from cms.log
 # import ..."), to avoid a circular import.
 import cms.log
+from cms import config
 from cms.io import ServiceCoord, Address, get_service_address
 from cms.io.Utils import encode_json, decode_json
 from cms.io.PsycoGevent import make_psycopg_green
@@ -191,6 +196,7 @@ class Service:
             address = None
         if address is not None:
             self.server = StreamServer(address, self._connection_handler)
+            self.backdoor = None
 
     def _connection_handler(self, socket, address):
         """Receive and act upon an incoming connection.
@@ -252,6 +258,46 @@ class Service:
         # Wake up the run() cycle
         self.event.set()
 
+    @rpc_method
+    def start_backdoor(self, backlog=50):
+        """Start a backdoor server on a local UNIX domain socket.
+
+        """
+        backdoor_path = os.path.join(config.run_dir,
+                                     "%s_%d" % (self.name, self.shard))
+        try:
+            os.remove(backdoor_path)
+        except OSError as exc:
+            if exc.errno != errno.ENOENT:
+                raise
+        else:
+            logger.warning("A backdoor socket has been found and deleted.")
+        backdoor_sock = _socket.socket(_socket.AF_UNIX, _socket.SOCK_STREAM)
+        backdoor_sock.setblocking(0)
+        backdoor_sock.bind(backdoor_path)
+        user = pwd.getpwnam("cmsuser")
+        # We would like to also set the user to "cmsuser" but only root
+        # can do that. Therefore we limit ourselves to the group.
+        os.chown(backdoor_path, os.getuid(), user.pw_gid)
+        os.chmod(backdoor_path, 0o770)
+        backdoor_sock.listen(backlog)
+        self.backdoor = BackdoorServer(backdoor_sock, locals={'service': self})
+        self.backdoor.start()
+
+    @rpc_method
+    def stop_backdoor(self):
+        """Stop a backdoor server started by start_backdoor.
+
+        """
+        backdoor_path = os.path.join(config.run_dir,
+                                     "%s_%d" % (self.name, self.shard))
+        self.backdoor.stop()
+        try:
+            os.remove(backdoor_path)
+        except OSError as exc:
+            if exc.errno != errno.ENOENT:
+                raise
+
     def run(self):
         """Starts the main loop of the service.
 
@@ -282,6 +328,9 @@ class Service:
             else:
                 raise
 
+        if config.backdoor:
+            self.start_backdoor()
+
         logger.info("%s %d up and running!" % self._my_coord)
 
         try:
@@ -296,6 +345,9 @@ class Service:
             logger.critical(err_msg)
 
         logger.info("%s %d is shutting down" % self._my_coord)
+
+        if config.backdoor:
+            self.stop_backdoor()
 
         self._disconnect_all()
         self.server.stop()

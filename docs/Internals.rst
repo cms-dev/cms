@@ -59,3 +59,17 @@ data. This feature has been removed now, both because it was unused
 and because its implementation actually has a subtle bug that caused
 messages of a specific length to mess around with the ``\r\n``
 terminator.
+
+Backdoor
+========
+
+Setting the `backdoor` configuration key to true causes services to
+serve a Python console (accessible with netcat), running in the same
+interpreter instance as the service, allowing to inspect and modify its
+data, live. It will be bound to a local UNIX domain socket, usually at
+:file:`/var/local/run/cms/{service}_{shard}`. Access is granted only to
+users belonging to the cmsuser group.
+Although there's no authentication mechanism to prevent unauthorized
+access, the restrictions on the file should make it safe to run the
+backdoor everywhere, even on workers that are used as contestants'
+machines.

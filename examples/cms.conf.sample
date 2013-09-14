@@ -8,6 +8,9 @@
 
     "temp_dir": "/tmp",
 
+    "_help": "Whether to have a backdoor (see doc for the risks).",
+    "backdoor": false,
+
 
 
     "_section": "AsyncLibrary",

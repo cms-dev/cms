@@ -291,6 +291,7 @@ def install():
     dirs = [os.path.join("/", "var", "local", "log"),
             os.path.join("/", "var", "local", "cache"),
             os.path.join("/", "var", "local", "lib"),
+            os.path.join("/", "var", "local", "run"),
             os.path.join("/", "usr", "local", "share")]
     for _dir in dirs:
         # Skip if destination is a symlink

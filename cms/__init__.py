@@ -86,6 +86,7 @@ class Config:
 
         # System-wide
         self.temp_dir = "/tmp"
+        self.backdoor = False
 
         # Database.
         self.database = "postgresql+psycopg2://cmsuser@localhost/cms"
@@ -150,12 +151,14 @@ class Config:
             self.log_dir = os.path.join("/", "var", "local", "log", "cms")
             self.cache_dir = os.path.join("/", "var", "local", "cache", "cms")
             self.data_dir = os.path.join("/", "var", "local", "lib", "cms")
+            self.run_dir = os.path.join("/", "var", "local", "run", "cms")
             paths = [os.path.join("/", "usr", "local", "etc", "cms.conf"),
                      os.path.join("/", "etc", "cms.conf")]
         else:
             self.log_dir = "log"
             self.cache_dir = "cache"
             self.data_dir = "lib"
+            self.run_dir = "run"
             paths = [os.path.join(".", "examples", "cms.conf")]
             if '__file__' in globals():
                 paths += [os.path.abspath(os.path.join(
