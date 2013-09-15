@@ -12,5 +12,5 @@ coverage>=3.4
 mock>=1.0
 mechanize>=0.2
 six>=1.1
-requests>=1.0
+requests>=1.1
 gevent>=1.0dev

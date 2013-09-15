@@ -171,8 +171,8 @@ class RankingProxy(object):
         task_count = list(0 for i in xrange(self.TYPE_COUNT))
 
         while True:
-            # If we don't have something left to do, block until we
-            # get something new.
+            # If we don't have anything left to do, block until we get
+            # something new.
             if sum(task_count) == 0:
                 self.data_queue.peek()
 
