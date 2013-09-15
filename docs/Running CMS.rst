@@ -8,7 +8,7 @@ The first thing to do is to create the user and the database. For PostgreSQL, th
 
 .. sourcecode:: bash
 
-    sudo su postgres
+    sudo su - postgres
     createuser cmsuser -P
     createdb -O cmsuser database
     psql database -c 'ALTER SCHEMA public OWNER TO cmsuser'

@@ -136,7 +136,7 @@ If you install CMS, you also need to add your user to the ``cmsuser`` group and 
 
 .. sourcecode:: bash
 
-    sudo usermod -a -G cmsuser
+    sudo usermod -a -G cmsuser <your user>
 
 You can verify to be in the group by issuing the command:
 
