@@ -50,6 +50,7 @@ particular we are aware of the following.
     - OII 2011 (Italian Olympiad in Informatics), Sirmione,
       September 2011;
     - OII 2012, Sirmione, October 2012;
+    - OII 2013, Salerno, September 2013;
     - AIIO 2012 (Australian Invitational Informatics Olympiad),
       February 2012;
     - Taipei High School Programming Contest, Taiwan, October 2012;
