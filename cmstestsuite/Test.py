@@ -27,7 +27,7 @@ class TestFailure(Exception):
     pass
 
 
-class Check:
+class Check(object):
     def check(self, *args, **kwargs):
         raise NotImplementedError
 
@@ -120,7 +120,7 @@ class CheckNonzeroReturn(CheckAbstractEvaluationFailure):
             "Execution failed because the return code was nonzero")
 
 
-class Test:
+class Test(object):
     def __init__(self, name, task, filename, languages, checks):
         self.name = name
         self.task_module = task

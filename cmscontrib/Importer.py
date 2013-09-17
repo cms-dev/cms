@@ -48,7 +48,7 @@ from cmscontrib.Loaders import choose_loader, build_epilog
 logger = logging.getLogger(__name__)
 
 
-class Importer:
+class Importer(object):
 
     """This script imports a contest from disk using one of the
     available loaders.

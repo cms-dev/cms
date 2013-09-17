@@ -79,7 +79,7 @@ def delete_sandbox(sandbox):
             logger.warning("%s\n%s" % (err_msg, traceback.format_exc()))
 
 
-class TaskType:
+class TaskType(object):
     """Base class with common operation that (more or less) all task
     types must do sometimes.
 

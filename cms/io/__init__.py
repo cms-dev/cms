@@ -39,7 +39,7 @@ class ServiceCoord(namedtuple("ServiceCoord", "name shard")):
         return "%s,%d" % (self.name, self.shard)
 
 
-class Config:
+class Config(object):
     """This class will contain the configuration for the
     services. This needs to be populated at the initilization stage.
 

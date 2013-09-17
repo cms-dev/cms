@@ -98,7 +98,7 @@ def get_archive_info(file_name):
     return ret
 
 
-class ContestExporter:
+class ContestExporter(object):
 
     """This service exports every data about the contest that CMS
     knows. The process of exporting and importing again should be

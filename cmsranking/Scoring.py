@@ -28,7 +28,7 @@ from cmsranking.Submission import store as submission_store
 from cmsranking.Subchange import store as subchange_store
 
 
-class NumberSet:
+class NumberSet(object):
     """A fast data structure on numbers.
 
     It supports:
@@ -58,7 +58,7 @@ class NumberSet:
         del self._impl[:]
 
 
-class Score:
+class Score(object):
     """The score of a user for a task.
 
     It computes the current score (and its history) for this
@@ -204,7 +204,7 @@ class Score:
             self.reset_history()
 
 
-class ScoringStore:
+class ScoringStore(object):
     """A manager for all instances of Scoring.
 
     It listens to the events of submission_store and subchange_store and

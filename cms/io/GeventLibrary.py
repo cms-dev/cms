@@ -96,7 +96,7 @@ class AuthorizationError(Exception):
     pass
 
 
-class RPCRequest:
+class RPCRequest(object):
     """Class to keep the state of an RPC request, while we were
     waiting for the response. There is also a class variable that
     stores all the pending RPC requests.
@@ -161,7 +161,7 @@ class RPCRequest:
                 logger.error(err_msg)
 
 
-class Service:
+class Service(object):
 
     def __init__(self, shard=0):
         signal.signal(signal.SIGINT, lambda unused_x, unused_y: self.exit())
@@ -496,7 +496,7 @@ class Service:
         return result
 
 
-class RemoteService():
+class RemoteService(object):
     """This class mimick the local presence of a remote service. A
     local service can define many RemoteService object and call
     methods of those services almost as if they were local. Almost

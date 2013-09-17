@@ -44,7 +44,7 @@ def N_(message):
     return message
 
 
-class ScoreType:
+class ScoreType(object):
     """Base class for all score types, that must implement all methods
     defined here.
 

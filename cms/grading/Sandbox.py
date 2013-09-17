@@ -122,7 +122,7 @@ def my_truncate(ff, size):
     ff.seek(0, os.SEEK_SET)
 
 
-class SandboxBase:
+class SandboxBase(object):
     """A base class for all sandboxes, meant to contain common
     resources.
 

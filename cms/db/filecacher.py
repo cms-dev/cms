@@ -44,7 +44,7 @@ from cms.io.GeventUtils import copyfileobj, move, rmtree
 logger = logging.getLogger(__name__)
 
 
-class FileCacherBackend:
+class FileCacherBackend(object):
 
     def get_file(self, digest):
         """Retrieve a file from the storage.
@@ -361,7 +361,7 @@ class NullBackend(FileCacherBackend):
         return list()
 
 
-class FileCacher:
+class FileCacher(object):
 
     """This class implement a local cache for files stored as FSObject
     in the database.

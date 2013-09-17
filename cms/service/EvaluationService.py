@@ -107,7 +107,7 @@ JobQueueEntry = namedtuple('JobQueueEntry',
                            ['job_type', 'object_id', 'dataset_id'])
 
 
-class JobQueue:
+class JobQueue(object):
     """An instance of this class will contains the (unique) priority
     queue of jobs (compilations, evaluations, ...) that the ES needs
     to process next.
@@ -313,7 +313,7 @@ class JobQueue:
         return ret
 
 
-class WorkerPool:
+class WorkerPool(object):
     """This class keeps the state of the workers attached to ES, and
     allow the ES to get a usable worker when it needs it.
 

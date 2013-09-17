@@ -76,7 +76,7 @@ def step(request):
     request.execute()
 
 
-class ContestReplayer:
+class ContestReplayer(object):
 
     def __init__(self, import_source, cws_address, no_import=False,
                  start_from=0):

@@ -208,7 +208,7 @@ class WebService(Service):
         self.__responses[plus] = (data, error)
 
 
-class WSGIXheadersMiddleware:
+class WSGIXheadersMiddleware(object):
     """WSGI middleware to detect X-Real-IP and X-Forwarded-For
     headers.
 

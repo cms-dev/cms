@@ -54,7 +54,7 @@ def _is_rel(prp, attr):
     return prp.parent.class_ == attr.class_ and prp.key == attr.key
 
 
-class Reimporter:
+class Reimporter(object):
 
     """This script reimports a contest from disk using the specified
     loader.

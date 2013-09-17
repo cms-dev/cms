@@ -64,7 +64,7 @@ class FrameworkException(Exception):
     pass
 
 
-class RemoteService:
+class RemoteService(object):
     """Class which implements the RPC protocol used by CMS.
 
     This is deliberately a re-implementation in order to catch or

@@ -83,7 +83,7 @@ def find_root_of_archive(file_names):
     return current_root
 
 
-class ContestImporter:
+class ContestImporter(object):
 
     """This service imports a contest from a directory that has been
     the target of a ContestExport. The process of exporting and

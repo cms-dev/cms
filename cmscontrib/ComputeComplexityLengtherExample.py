@@ -28,7 +28,7 @@ integer in the file as the measure for the complexity of the input.
 """
 
 
-class FileLengther:
+class FileLengther(object):
     """A simple file-like object to extract the first number of the
     file.
 

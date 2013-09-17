@@ -69,7 +69,7 @@ LANGUAGE_TO_HEADER_EXT_MAP = {
 
 ## Configuration ##
 
-class Config:
+class Config(object):
     """This class will contain the configuration for CMS. This needs
     to be populated at the initilization stage. This is loaded by
     default with some sane data. See cms.conf.sample in the examples

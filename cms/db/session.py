@@ -39,7 +39,7 @@ ScopedSession = scoped_session(Session)
 #Session = sessionmaker(db, twophase=True)
 
 
-class SessionGen:
+class SessionGen(object):
     """This allows us to create handy local sessions simply with:
 
     with SessionGen() as session:

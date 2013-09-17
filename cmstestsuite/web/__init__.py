@@ -71,7 +71,7 @@ def browser_do_request(browser, url, data=None, files=None):
     return response
 
 
-class TestRequest:
+class TestRequest(object):
     """Docstring TODO.
 
     """

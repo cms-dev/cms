@@ -41,7 +41,7 @@ from cmstestsuite.web.CWSRequests import HomepageRequest, \
 cmstestsuite.web.debug = True
 
 
-class RequestLog:
+class RequestLog(object):
 
     def __init__(self, log_dir=None):
         self.total = 0

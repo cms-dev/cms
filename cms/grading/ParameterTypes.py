@@ -31,7 +31,7 @@ represented by JSON objects.
 from tornado.template import Template
 
 
-class ParameterType:
+class ParameterType(object):
     """Base class for parameter types.
 
     """

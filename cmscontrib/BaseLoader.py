@@ -22,7 +22,7 @@
 """
 
 
-class Loader:
+class Loader(object):
     """Base class for deriving loaders.
 
     Each loader must extend this class and support the following

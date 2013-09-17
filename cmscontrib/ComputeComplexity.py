@@ -57,7 +57,7 @@ def ijk_to_func(i, j, k):
     return lambda x: (x ** i) * (numpy.log2(x) ** j) * ((2 ** x) ** k)
 
 
-class FileLengther:
+class FileLengther(object):
     """A simple file-like object to count the bytes written to the
     file.
 

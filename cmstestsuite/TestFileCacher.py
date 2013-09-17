@@ -35,7 +35,7 @@ from cms.io.TestService import TestService
 from cms.db.filecacher import FileCacher
 
 
-class RandomFile:
+class RandomFile(object):
     """Simulate a random file with dim bytes, calculating its
     SHA1 hash.
 
@@ -79,7 +79,7 @@ class RandomFile:
         return self.hasher.hexdigest()
 
 
-class HashingFile:
+class HashingFile(object):
     """Hashes the content written to this files.
 
     """
