@@ -49,7 +49,7 @@ class FileCacherBackend(object):
     def get_file(self, digest):
         """Retrieve a file from the storage.
 
-        digest (bytes): the digest of the file to retrieve.
+        digest (unicode): the digest of the file to retrieve.
 
         return (fileobj): a readable binary file-like object from which
             to read the contents of the file.
@@ -62,7 +62,7 @@ class FileCacherBackend(object):
     def put_file(self, digest, desc=""):
         """Store a file to the storage.
 
-        digest (bytes): the digest of the file to store.
+        digest (unicode): the digest of the file to store.
         desc (unicode): the optional description of the file to
             store, intended for human beings.
 
@@ -76,7 +76,7 @@ class FileCacherBackend(object):
     def describe(self, digest):
         """Return the description of a file given its digest.
 
-        digest (bytes): the digest of the file to describe.
+        digest (unicode): the digest of the file to describe.
 
         return (unicode): the description of the file.
 
@@ -88,7 +88,8 @@ class FileCacherBackend(object):
     def get_size(self, digest):
         """Return the size of a file given its digest.
 
-        digest (bytes): the digest of the file to calculate the size of.
+        digest (unicode): the digest of the file to calculate the size
+            of.
 
         return (int): the size of the file, in bytes.
 
@@ -100,7 +101,7 @@ class FileCacherBackend(object):
     def delete(self, digest):
         """Delete a file from the storage.
 
-        digest (bytes): the digest of the file to delete.
+        digest (unicode): the digest of the file to delete.
 
         """
         raise NotImplementedError("Please subclass this class.")
@@ -108,8 +109,8 @@ class FileCacherBackend(object):
     def list(self):
         """List the files available in the storage.
 
-        return ([(bytes, unicode)]): a list of pairs, each representing
-            a file in the form (digest, description).
+        return ([(unicode, unicode)]): a list of pairs, each
+            representing a file in the form (digest, description).
 
         """
         raise NotImplementedError("Please subclass this class.")
@@ -428,7 +429,7 @@ class FileCacher(object):
         Ask the backend to provide the file and, if it's available,
         copy its content into the file-system cache.
 
-        digest (bytes): the digest of the file to load.
+        digest (unicode): the digest of the file to load.
 
         raise (KeyError): if the backend cannot find the file.
 
@@ -454,7 +455,7 @@ class FileCacher(object):
         available as `get_file_content', `get_file_to_fobj' and `get_
         file_to_path'.
 
-        digest (bytes): the digest of the file to get.
+        digest (unicode): the digest of the file to get.
 
         return (fileobj): a readable binary file-like object from which
             to read the contents of the file.
@@ -482,7 +483,7 @@ class FileCacher(object):
         See `get_file'. This method returns the content of the file, as
         a binary string.
 
-        digest (bytes): the digest of the file to get.
+        digest (unicode): the digest of the file to get.
 
         return (bytes): the content of the retrieved file.
 
@@ -498,7 +499,7 @@ class FileCacher(object):
         See `get_file'. This method will write the content of the file
         to the given file-object.
 
-        digest (bytes): the digest of the file to get.
+        digest (unicode): the digest of the file to get.
         dst (fileobj): a writable binary file-like object on which to
             write the contents of the file.
 
@@ -514,7 +515,7 @@ class FileCacher(object):
         See `get_file'. This method will write the content of a file
         to the given file-system location.
 
-        digest (bytes): the digest of the file to get.
+        digest (unicode): the digest of the file to get.
         dst_path (string): an accessible location on the file-system on
             which to write the contents of the file.
 
@@ -531,7 +532,7 @@ class FileCacher(object):
         Use to local copy, available in the file-system cache, to store
         the file in the backend, if it's not already there.
 
-        digest (bytes): the digest of the file to load.
+        digest (unicode): the digest of the file to load.
         desc (unicode): the (optional) description to associate to the
             file.
 
@@ -564,7 +565,7 @@ class FileCacher(object):
         desc (unicode): the (optional) description to associate to the
             file.
 
-        return (bytes): the digest of the stored file.
+        return (unicode): the digest of the stored file.
 
         """
         logger.debug("Reading input file to store on the database.")
@@ -590,7 +591,7 @@ class FileCacher(object):
                         break
                     buf = buf[written:]
                 buf = src.read(self.CHUNK_SIZE)
-            digest = hasher.hexdigest()
+            digest = hasher.hexdigest().decode("ascii")
             dst.flush()
 
             logger.debug("File has digest %s." % digest)
@@ -620,7 +621,7 @@ class FileCacher(object):
         desc (unicode): the (optional) description to associate to the
             file.
 
-        return (bytes): the digest of the stored file.
+        return (unicode): the digest of the stored file.
 
         """
         with io.BytesIO(content) as src:
@@ -637,7 +638,7 @@ class FileCacher(object):
         desc (unicode): the (optional) description to associate to the
             file.
 
-        return (bytes): the digest of the stored file.
+        return (unicode): the digest of the stored file.
 
         """
         with io.open(src_path, 'rb') as src:
@@ -646,7 +647,7 @@ class FileCacher(object):
     def describe(self, digest):
         """Return the description of a file given its digest.
 
-        digest (bytes): the digest of the file to describe.
+        digest (unicode): the digest of the file to describe.
 
         return (unicode): the description of the file.
 
@@ -658,7 +659,8 @@ class FileCacher(object):
     def get_size(self, digest):
         """Return the size of a file given its digest.
 
-        digest (bytes): the digest of the file to calculate the size of.
+        digest (unicode): the digest of the file to calculate the size
+            of.
 
         return (int): the size of the file, in bytes.
 
@@ -670,7 +672,7 @@ class FileCacher(object):
     def delete(self, digest):
         """Delete a file from the backend and the local cache.
 
-        digest (bytes): the digest of the file to delete.
+        digest (unicode): the digest of the file to delete.
 
         """
         self.drop(digest)
@@ -679,7 +681,7 @@ class FileCacher(object):
     def drop(self, digest):
         """Delete a file only from the local cache.
 
-        digest (bytes): the file to delete.
+        digest (unicode): the file to delete.
 
         """
         cache_file_path = os.path.join(self.file_dir, digest)
@@ -710,8 +712,8 @@ class FileCacher(object):
     def list(self):
         """List the files available in the storage.
 
-        return ([(bytes, unicode)]): a list of pairs, each representing
-            a file in the form (digest, description).
+        return ([(unicode, unicode)]): a list of pairs, each
+            representing a file in the form (digest, description).
 
         """
         return self.backend.list()
