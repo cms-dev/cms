@@ -186,7 +186,7 @@ class Config(object):
                 self._load_unique(conf_file)
             except IOError:
                 pass
-            except json.decoder.JSONDecodeError as error:
+            except ValueError as error:
                 print "Unable to load JSON configuration file %s " \
                       "because of a JSON decoding error.\n%r" % (conf_file,
                                                                  error)
