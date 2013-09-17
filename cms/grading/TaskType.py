@@ -52,7 +52,7 @@ def create_sandbox(file_cacher):
 
     return (Sandbox): a sandbox.
 
-    raise: JobException
+    raise (JobException): if the sandbox cannot be created.
 
     """
     try:

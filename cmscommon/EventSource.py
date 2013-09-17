@@ -51,8 +51,8 @@ def format_event(id_, event, data):
 
     return (bytes): the value to write on the stream.
 
-    raise: TypeError if any parameter isn't unicode.
-    raise: ValueError if event contains illegal characters.
+    raise (TypeError): if any parameter isn't unicode.
+    raise (ValueError): if event contains illegal characters.
 
     """
     if not isinstance(id_, six.text_type):
@@ -179,7 +179,7 @@ class Subscriber(object):
         return ([objects]): the items put in the publisher, in order
             (actually, returns a generator, not a list).
 
-        raise: OutdatedError if some of the messages it's supposed to
+        raise (OutdatedError) if some of the messages it's supposed to
             retrieve have already been removed from the cache.
 
         """

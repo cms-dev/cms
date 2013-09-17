@@ -465,7 +465,8 @@ def extract_outcome_and_text(sandbox):
                       comparator.
 
     return (float, string): outcome and text.
-    raise: ValueError if cannot decode the data.
+
+    raise (ValueError): if cannot decode the data.
 
     """
     stdout = sandbox.relative_path(sandbox.stdout_file)

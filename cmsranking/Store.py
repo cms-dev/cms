@@ -131,7 +131,7 @@ class Store(object):
         must_be_present (bool): True if we need the key in the store,
             False if the key must not be in the store.
 
-        raise: InvalidKey if key is not valid.
+        raise (InvalidKey): if key is not valid.
 
         """
         if not isinstance(key, unicode):
@@ -149,9 +149,9 @@ class Store(object):
             accessed
         data (dict): the properties of the entity
 
-        raise: InvalidKey if key isn't a unicode or if an entity with
-            the same key is already present in the store.
-        raise: InvalidData if data cannot be parsed, if it's missing
+        raise (InvalidKey): if key isn't a unicode or if an entity
+            with the same key is already present in the store.
+        raise (InvalidData): if data cannot be parsed, if it's missing
             some properties or if properties are of the wrong type.
 
         """
@@ -186,9 +186,9 @@ class Store(object):
         key (unicode): the key of the entity that has to be updated
         data (dict): the new properties of the entity
 
-        raise: InvalidKey if key isn't a unicode or if no entity with
-            that key is present in the store.
-        raise: InvalidData if data cannot be parsed, if it's missing
+        raise (InvalidKey): if key isn't a unicode or if no entity
+            with that key is present in the store.
+        raise (InvalidData): if data cannot be parsed, if it's missing
             some properties or if properties are of the wrong type.
 
         """
@@ -224,7 +224,7 @@ class Store(object):
 
         data_dict (dict): the dictionary of entities
 
-        raise: InvalidData if data cannot be parsed, if an entity is
+        raise (InvalidData) if data cannot be parsed, if an entity is
             missing some properties or if properties are of the wrong
             type.
 
@@ -278,8 +278,8 @@ class Store(object):
 
         key (unicode): the key of the entity that has to be deleted
 
-        raise: InvalidKey if key isn't a unicode or if no entity with
-            that key is present in the store.
+        raise (InvalidKey): if key isn't a unicode or if no entity
+            with that key is present in the store.
 
         """
         self._verify_key(key, must_be_present=True)
@@ -320,8 +320,8 @@ class Store(object):
 
         key (unicode): the key of the entity that has to be retrieved
 
-        raise: InvalidKey if key isn't a unicode or if no entity with
-            that key is present in the store.
+        raise (InvalidKey): if key isn't a unicode or if no entity
+            with that key is present in the store.
 
         """
         self._verify_key(key, must_be_present=True)

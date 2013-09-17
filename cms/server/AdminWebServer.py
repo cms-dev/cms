@@ -247,10 +247,18 @@ class BaseHandler(CommonRequestHandler):
         """ Get a non-negative integer from the arguments.
 
         Use default if the argument is missing; If allow_empty=False,
-        Empty values such as "" and None are not permitted.
+        Empty values such as "" and None are not permitted (unless,
+        for "", if allow_empty is true.
 
-        Raise ValueError if the argument can't be converted into a
-        non-negative integer.
+        argument_name (string): the name of the argument to query.
+        default (int): what to return if the argument is missing
+        allow_empty (bool): whether to return raise or not in case of
+            an empty argument.
+
+        return (int): the converted argument.
+
+        raise (ValueError): if the argument can't be converted into a
+            non-negative integer.
 
         """
         argument = self.get_argument(argument_name, None)

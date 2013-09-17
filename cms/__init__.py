@@ -314,7 +314,7 @@ def plugin_lookup(plugin_name, plugin_dir, plugin_family):
 
     return (class): the correct plugin class.
 
-    raise: KeyError if either the module or the class is not found.
+    raise (KeyError): if either the module or the class is not found.
 
     """
     module = None
@@ -351,9 +351,9 @@ def plugin_list(plugin_dir, plugin_family):
     plugin_family (string): the name of the plugin type, as used in
                             <system_plugins_directory>/<plugin_family>.
 
-    return ([]): the correct plugin class.
+    return ([type]): the correct plugin class.
 
-    raise: KeyError if either the module or the class is not found.
+    raise (KeyError): if either the module or the class is not found.
 
     """
     cms_root_path = os.path.dirname(__path__[0])

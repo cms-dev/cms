@@ -222,7 +222,7 @@ class JobQueue(object):
 
         returns (job): first element in the queue
 
-        raise: LookupError on empty queue.
+        raise (LookupError): on empty queue.
 
         """
         if len(self._queue) > 0:
@@ -235,7 +235,7 @@ class JobQueue(object):
 
         returns (job): first element in the queue
 
-        raise: LookupError on empty queue.
+        raise (LookupError): on empty queue.
 
         """
         top = self.top()
@@ -255,7 +255,7 @@ class JobQueue(object):
 
         return (int, int, job): priority, timestamp, and job.
 
-        raise: KeyError if job not present.
+        raise (KeyError): if job not present.
 
         """
         pos = self._reverse[job]
@@ -274,7 +274,7 @@ class JobQueue(object):
         job (job): the job whose priority needs to change.
         priority (int): the new priority.
 
-        raise: LookupError if job not present.
+        raise (LookupError): if job not present.
 
         """
         pos = self._reverse[job]
@@ -493,7 +493,7 @@ class WorkerPool(object):
 
         returns (int): the shard of the worker working on job.
 
-        raise: LookupError if nothing has been found.
+        raise (LookupError): if nothing has been found.
 
         """
         pool = []
@@ -511,9 +511,9 @@ class WorkerPool(object):
     def ignore_job(self, job):
         """Mark the job to be ignored, and try to inform the worker.
 
-        job (job): the job to ignore.
+        job (JobQueueEntry): the job to ignore.
 
-        raise: LookupError if job is not found.
+        raise (LookupError): if job is not found.
 
         """
         shard = self.find_worker(job)

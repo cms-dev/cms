@@ -54,7 +54,7 @@ class FileCacherBackend(object):
         return (fileobj): a readable binary file-like object from which
             to read the contents of the file.
 
-        raise: KeyError if the file cannot be found.
+        raise (KeyError): if the file cannot be found.
 
         """
         raise NotImplementedError("Please subclass this class.")
@@ -80,7 +80,7 @@ class FileCacherBackend(object):
 
         return (unicode): the description of the file.
 
-        raise: KeyError if the file cannot be found.
+        raise (KeyError): if the file cannot be found.
 
         """
         raise NotImplementedError("Please subclass this class.")
@@ -92,7 +92,7 @@ class FileCacherBackend(object):
 
         return (int): the size of the file, in bytes.
 
-        raise: KeyError if the file cannot be found.
+        raise (KeyError): if the file cannot be found.
 
         """
         raise NotImplementedError("Please subclass this class.")
@@ -430,7 +430,7 @@ class FileCacher(object):
 
         digest (bytes): the digest of the file to load.
 
-        raise: KeyError if the backend cannot find the file.
+        raise (KeyError): if the backend cannot find the file.
 
         """
         cache_file_path = os.path.join(self.file_dir, digest)
@@ -459,7 +459,7 @@ class FileCacher(object):
         return (fileobj): a readable binary file-like object from which
             to read the contents of the file.
 
-        raise: KeyError if the file cannot be found.
+        raise (KeyError): if the file cannot be found.
 
         """
         cache_file_path = os.path.join(self.file_dir, digest)
@@ -486,7 +486,7 @@ class FileCacher(object):
 
         return (bytes): the content of the retrieved file.
 
-        raise: KeyError if the file cannot be found.
+        raise (KeyError): if the file cannot be found.
 
         """
         with self.get_file(digest) as src:
@@ -502,7 +502,7 @@ class FileCacher(object):
         dst (fileobj): a writable binary file-like object on which to
             write the contents of the file.
 
-        raise: KeyError if the file cannot be found.
+        raise (KeyError): if the file cannot be found.
 
         """
         with self.get_file(digest) as src:
@@ -518,7 +518,7 @@ class FileCacher(object):
         dst_path (string): an accessible location on the file-system on
             which to write the contents of the file.
 
-        raise: KeyError if the file cannot be found.
+        raise (KeyError): if the file cannot be found.
 
         """
         with self.get_file(digest) as src:
@@ -650,7 +650,7 @@ class FileCacher(object):
 
         return (unicode): the description of the file.
 
-        raise: KeyError if the file cannot be found.
+        raise (KeyError): if the file cannot be found.
 
         """
         return self.backend.describe(digest)
@@ -662,7 +662,7 @@ class FileCacher(object):
 
         return (int): the size of the file, in bytes.
 
-        raise: KeyError if the file cannot be found.
+        raise (KeyError): if the file cannot be found.
 
         """
         return self.backend.get_size(digest)

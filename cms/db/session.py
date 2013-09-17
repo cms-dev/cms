@@ -76,8 +76,8 @@ def custom_psycopg2_connection(**kwargs):
 
     return (connection): a new, shiny connection object.
 
-    raise: AssertionError if CMS (actually SQLAlchemy) isn't configured
-        to use psycopg2 as the DB-API driver.
+    raise (AssertionError): if CMS (actually SQLAlchemy) isn't
+        configured to use psycopg2 as the DB-API driver.
 
     """
     database_url = make_url(config.database)
