@@ -44,7 +44,7 @@ def choose_loader(arg, path, error_callback):
                    perform the loading.
     error_callback (method): a method to call to report errors.
 
-    return (class): the chosen loader class.
+    return (type): the chosen loader class.
 
     """
     if arg is not None:

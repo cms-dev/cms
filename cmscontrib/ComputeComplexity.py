@@ -88,9 +88,8 @@ def file_length(digest, file_cacher=None, file_lengther=None):
 
     digest (string): the digest of the file.
     file_cacher (FileCacher): the cacher to use, or None.
-    file_lengther (class): a File-like object that tell the dimension
-                           of the input (see example above for how to
-                           write one).
+    file_lengther (type): a File-like object that tell the dimension
+        of the input (see example above for how to write one).
 
     return (int): the length of the tile.
 
@@ -253,9 +252,8 @@ def extract_complexity(task_id, file_lengther=None):
     results are stored in a file task_<id>.info
 
     task_id (int): the id of the task we are interested in.
-    file_lengther (class): a File-like object that tell the dimension
-                           of the input (see example above for how to
-                           write one).
+    file_lengther (type): a File-like object that tell the dimension
+        of the input (see example above for how to write one).
 
     return (int): 0 if operation was successful.
 

@@ -144,7 +144,7 @@ class BaseHandler(CommonRequestHandler):
         session if given, or self.sql_session if not given. If id is
         not found, raise a 404.
 
-        cls (class): class of object to retrieve.
+        cls (type): class of object to retrieve.
         ident (string): id of object.
         session (session/None): session to use.
 

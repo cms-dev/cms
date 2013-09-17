@@ -445,9 +445,9 @@ def file_handler_gen(BaseClass):
     the class FileHandler is exactly the same (in AWS and CWS) but
     they inherits from different BaseHandler.
 
-    BaseClass (class): the BaseHandler of our server.
+    BaseClass (type): the BaseHandler of our server.
 
-    return (class): a FileHandler extending BaseClass.
+    return (type): a FileHandler extending BaseClass.
 
     """
     class FileHandler(BaseClass):

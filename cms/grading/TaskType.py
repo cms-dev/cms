@@ -109,12 +109,12 @@ class TaskType(object):
         """Ensure that the parameters list template agrees with the
         parameters actually passed.
 
-        handler (Class): the Tornado handler with the parameters.
+        handler (type): the Tornado handler with the parameters.
         prefix (string): the prefix of the parameter names in the
-                         handler.
+            handler.
 
         return (list): parameters list correctly formatted, or
-                       ValueError if the parameters are not correct.
+            ValueError if the parameters are not correct.
 
         """
         new_parameters = []
@@ -131,10 +131,9 @@ class TaskType(object):
         """Instantiate a new TaskType with the given parameters.
 
         parameters (list): a list of data structures that matches the
-                           format described in ACCEPTED_PARAMETERS
-                           (they often come from Dataset.task_type_
-                           _parameters and, in that case, they have to
-                           be already decoded from JSON).
+            format described in ACCEPTED_PARAMETERS (they often come
+            from Dataset.task_type_parameters and, in that case, they
+            have to be already decoded from JSON).
 
         """
         self.parameters = parameters

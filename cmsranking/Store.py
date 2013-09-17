@@ -54,7 +54,7 @@ class Store(object):
         The entity definition given as argument will define what kind
         of entities will be stored. It cannot be changed.
 
-        entity (class): the class definition of the entities that will
+        entity (type): the class definition of the entities that will
             be stored
 
         """

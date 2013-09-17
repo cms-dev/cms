@@ -312,7 +312,7 @@ def plugin_lookup(plugin_name, plugin_dir, plugin_family):
     plugin_family (string): the name of the plugin type, as used in
                             <system_plugins_directory>/<plugin_family>.
 
-    return (class): the correct plugin class.
+    return (type): the correct plugin class.
 
     raise (KeyError): if either the module or the class is not found.
 
@@ -373,7 +373,7 @@ def default_argument_parser(description, cls, ask_contest=None):
     a contest_id, or not.
 
     description (string): description of the service.
-    cls (class): service's class.
+    cls (type): service's class.
     ask_contest (function): None if the service does not require a
                             contest, otherwise a function that returns
                             a contest_id (after asking the admins?)

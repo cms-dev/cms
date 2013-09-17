@@ -230,7 +230,7 @@ class Base(object):
         Use the given session to fetch the object of this class with
         the given ID, and return it. If it doesn't exist return None.
 
-        cls (class): the class to which the method is attached.
+        cls (type): the class to which the method is attached.
         id_ (tuple, int or string): the ID of the object we want; in
             general it will be a tuple (one int for each of the columns
             that make up the primary key) but if there's only one then
