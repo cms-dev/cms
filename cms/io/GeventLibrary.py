@@ -5,6 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -45,7 +46,7 @@ from gevent.backdoor import BackdoorServer
 # We import the module, instead of its contents (i.e. "from cms.log
 # import ..."), to avoid a circular import.
 import cms.log
-from cms import config
+from cms import config, mkdir
 from cms.io import ServiceCoord, Address, get_service_address
 from cms.io.Utils import encode_json, decode_json
 from cms.io.PsycoGevent import make_psycopg_green
@@ -258,20 +259,26 @@ class Service:
         # Wake up the run() cycle
         self.event.set()
 
+    def get_backdoor_path(self):
+        """Return the path for a UNIX domain socket to use as backdoor.
+
+        """
+        return os.path.join(config.run_dir, "%s_%d" % (self.name, self.shard))
+
     @rpc_method
     def start_backdoor(self, backlog=50):
         """Start a backdoor server on a local UNIX domain socket.
 
         """
-        backdoor_path = os.path.join(config.run_dir,
-                                     "%s_%d" % (self.name, self.shard))
+        backdoor_path = self.get_backdoor_path()
         try:
             os.remove(backdoor_path)
-        except OSError as exc:
+        except OSError as error:
             if exc.errno != errno.ENOENT:
                 raise
         else:
             logger.warning("A backdoor socket has been found and deleted.")
+        mkdir(os.path.dirname(backdoor_path))
         backdoor_sock = _socket.socket(_socket.AF_UNIX, _socket.SOCK_STREAM)
         backdoor_sock.setblocking(0)
         backdoor_sock.bind(backdoor_path)
@@ -289,12 +296,12 @@ class Service:
         """Stop a backdoor server started by start_backdoor.
 
         """
-        backdoor_path = os.path.join(config.run_dir,
-                                     "%s_%d" % (self.name, self.shard))
-        self.backdoor.stop()
+        if self.backdoor is not None:
+            self.backdoor.stop()
+        backdoor_path = self.get_backdoor_path()
         try:
             os.remove(backdoor_path)
-        except OSError as exc:
+        except OSError as error:
             if exc.errno != errno.ENOENT:
                 raise
 

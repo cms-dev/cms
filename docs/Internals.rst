@@ -73,3 +73,12 @@ Although there's no authentication mechanism to prevent unauthorized
 access, the restrictions on the file should make it safe to run the
 backdoor everywhere, even on workers that are used as contestants'
 machines.
+You can use ``rlwrap`` to add basic readline support. For example, the
+following is a complete working connection command:
+
+.. sourcecode:: bash
+
+    rlwrap netcat -U /var/local/run/cms/EvaluationService_0
+
+Substitute ``netcat`` with your implementation (``nc``, ``ncat``, etc.)
+if needed.
