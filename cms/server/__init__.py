@@ -133,7 +133,7 @@ def format_date(dt, timezone, locale=None):
     """Return the date of dt formatted according to the given locale
 
     dt (datetime): a datetime object
-    timezone (subclass of tzinfo): the timezone the output should be in
+    timezone (timezone): the timezone the output should be in
     return (str): the date of dt, formatted using the given locale
 
     """
@@ -152,7 +152,7 @@ def format_time(dt, timezone, locale=None):
     """Return the time of dt formatted according to the given locale
 
     dt (datetime): a datetime object
-    timezone (subclass of tzinfo): the timezone the output should be in
+    timezone (timezone): the timezone the output should be in
     return (str): the time of dt, formatted using the given locale
 
     """
@@ -171,7 +171,7 @@ def format_datetime(dt, timezone, locale=None):
     """Return the date and time of dt formatted according to the given locale
 
     dt (datetime): a datetime object
-    timezone (subclass of tzinfo): the timezone the output should be in
+    timezone (timezone): the timezone the output should be in
     return (str): the date and time of dt, formatted using the given locale
 
     """
@@ -190,7 +190,7 @@ def format_datetime_smart(dt, timezone, locale=None):
     """Return dt formatted as 'date & time' or, if date is today, just 'time'
 
     dt (datetime): a datetime object
-    timezone (subclass of tzinfo): the timezone the output should be in
+    timezone (timezone): the timezone the output should be in
     return (str): the [date and] time of dt, formatted using the given locale
 
     """

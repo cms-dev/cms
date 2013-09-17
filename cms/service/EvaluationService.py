@@ -206,7 +206,7 @@ class JobQueue(object):
 
         job (job): a tuple (job_type, object_id, dataset_id)
         priority (int): the priority of the job
-        timestamp (int): the time of the submission
+        timestamp (datetime): the time of the submission.
 
         """
         if timestamp is None:

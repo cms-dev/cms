@@ -446,7 +446,7 @@ class ContestWebServer(WebService):
         opportunity (i.e., at the first request fot db notifications).
 
         username (string): the user to notify.
-        timestamp (int): the time of the notification.
+        timestamp (datetime): the time of the notification.
         subject (string): subject of the notification.
         text (string): body of the notification.
         level (string): one of NOTIFICATION_* (defined above)

@@ -289,7 +289,7 @@ class Contest(Base):
                     0 if the contest is active at time timestamp,
                     1 if the contest has ended.
 
-        timestamp (int): the time we are iterested in.
+        timestamp (datetime): the time we are iterested in.
         return (int): contest phase as above.
 
         """
@@ -309,13 +309,16 @@ class Contest(Base):
         Basically, tokens_available call this twice for contest-wise
         and task-wise parameters and then assemble the result.
 
-        token_timestamps (list): list of timestamps of used tokens.
+        token_timestamps ([datetime]): list of timestamps of used
+            tokens.
         token_* (int): the parameters we want to enforce.
-        start (int): the time from which we start accumulating tokens.
-        timestamp (int): the time relative to which make the
-                         calculation (has to be greater than or equal
-                         to all elements of token_timestamps).
-        return (tuple): same as tokens_available.
+        start (datetime): the time from which we start accumulating
+            tokens.
+        timestamp (datetime): the time relative to which make the
+            calculation (has to be greater than or equal to all
+            elements of token_timestamps).
+
+        return ((int, datetime, datetime)): same as tokens_available.
 
         """
         # If token_initial is None, it means that the admin disabled
@@ -359,8 +362,8 @@ class Contest(Base):
             """Compute how many tokens have been generated between the
             two timestamps.
 
-            prev_time (int): timestamp of begin of interval.
-            next_time (int): timestamp of end of interval.
+            prev_time (datetime): timestamp of begin of interval.
+            next_time (datetime): timestamp of end of interval.
             return (int): number of tokens generated.
 
             """
@@ -456,10 +459,11 @@ class Contest(Base):
 
         username (string): the username of the user.
         task_name (string): the name of the task.
-        timestamp (int): the time relative to which making the
-                         calculation
-        return ((int, int, int)): see description above the latter two
-                                  are timestamps, or None.
+        timestamp (datetime): the time relative to which making the
+            calculation.
+
+        return ((int, datetime|None, datetime|None)): see description
+            above.
 
         """
         if timestamp is None:

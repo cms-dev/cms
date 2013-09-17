@@ -362,7 +362,7 @@ class AdminWebServer(WebService):
         """Store a new notification to send at the first
         opportunity (i.e., at the first request for db notifications).
 
-        timestamp (int): the time of the notification.
+        timestamp (datetime): the time of the notification.
         subject (string): subject of the notification.
         text (string): body of the notification.
 
