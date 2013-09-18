@@ -26,20 +26,29 @@ from __future__ import unicode_literals
 import gevent.monkey
 gevent.monkey.patch_all()
 
+import logging
 import sys
 
-from cms import default_argument_parser
-from cms.db import ask_for_contest
+from cms import ConfigError, default_argument_parser
+from cms.db import ask_for_contest, test_db_connection
 from cms.service.ScoringService import ScoringService
+
+
+logger = logging.getLogger(__name__)
 
 
 def main():
     """Parse arguments and launch service.
 
     """
+    test_db_connection()
     return default_argument_parser("Score computer for CMS.",
                                    ScoringService).run()
 
 
 if __name__ == "__main__":
-    sys.exit(0 if main() is True else 1)
+    try:
+        sys.exit(0 if main() is True else 1)
+    except ConfigError as error:
+        logger.critical(error.message)
+        sys.exit(1)

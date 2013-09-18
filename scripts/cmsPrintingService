@@ -25,7 +25,7 @@ gevent.monkey.patch_all()
 import sys
 
 from cms import default_argument_parser
-from cms.db import ask_for_contest
+from cms.db import ask_for_contest, test_db_connection
 from cms.service.PrintingService import PrintingService
 
 
@@ -33,6 +33,7 @@ def main():
     """Parse arguments and launch service.
 
     """
+    test_db_connection()
     return default_argument_parser("Printing job handler for CMS.",
                                    PrintingService).run()
 

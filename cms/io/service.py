@@ -37,7 +37,6 @@ import pwd
 import signal
 import socket
 import _socket
-import sys
 import time
 
 import gevent
@@ -46,7 +45,8 @@ import gevent.event
 from gevent.server import StreamServer
 from gevent.backdoor import BackdoorServer
 
-from cms import config, mkdir, ServiceCoord, Address, get_service_address
+from cms import ConfigError, config, mkdir, ServiceCoord, Address, \
+    get_service_address
 from cms.log import root_logger, shell_handler, ServiceFilter, \
     CustomFormatter, LogServiceHandler, FileHandler
 from cmscommon.datetime import monotonic_time
@@ -100,9 +100,9 @@ class Service(object):
         try:
             address = get_service_address(self._my_coord)
         except KeyError:
-            logger.critical("Couldn't find %r in the configuration.",
-                            self._my_coord)
-            sys.exit(1)
+            raise ConfigError("Unable to find address for service %r. "
+                              "Is it specified in core_services in cms.conf?" %
+                              (self._my_coord,))
 
         self.rpc_server = StreamServer(address, self._connection_handler)
         self.backdoor = None
@@ -197,12 +197,13 @@ class Service(object):
         if coord not in self.remote_services:
             try:
                 service = RemoteServiceClient(coord, auto_retry=0.5)
-            except KeyError as error:
-                # If the coordinates are invalid, raise that error if
+            except KeyError:
+                # The coordinates are invalid: raise a ConfigError if
                 # the service was needed, or return a dummy client if
                 # the service was optional.
                 if must_be_present:
-                    raise error
+                    raise ConfigError("Missing address and port for %s "
+                                      "in cms.conf." % (coord, ))
                 else:
                     service = FakeRemoteServiceClient(coord, None)
             service.connect()

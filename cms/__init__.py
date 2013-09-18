@@ -44,7 +44,7 @@ __all__ = [
     "mkdir", "utf8_decoder", "Address", "ServiceCoord", "get_safe_shard",
     "get_service_address", "get_service_shards", "default_argument_parser",
     # conf
-    "config",
+    "ConfigError", "config",
     # plugin
     "plugin_list", "plugin_lookup",
     ]
@@ -102,7 +102,9 @@ LANGUAGE_TO_HEADER_EXT_MAP = {
     LANG_PASCAL: "lib.pas",
 }
 
-from .util import mkdir, utf8_decoder, Address, ServiceCoord, get_safe_shard, \
-    get_service_address, get_service_shards, default_argument_parser
+
+from .util import Address, ConfigError, ServiceCoord, \
+    mkdir, utf8_decoder, default_argument_parser, \
+    get_safe_shard, get_service_address, get_service_shards
 from .conf import config
 from .plugin import plugin_list, plugin_lookup

@@ -40,6 +40,11 @@ import gevent.socket
 logger = logging.getLogger(__name__)
 
 
+class ConfigError(Exception):
+    """Exception for critical configuration errors."""
+    pass
+
+
 def mkdir(path):
     """Make a directory without complaining for errors.
 
@@ -206,7 +211,9 @@ def default_argument_parser(description, cls, ask_contest=None):
     try:
         args.shard = get_safe_shard(cls.__name__, args.shard)
     except ValueError:
-        sys.exit(1)
+        raise ConfigError("Couldn't autodetect shard number and "
+                          "no shard specified for service %s, "
+                          "quitting." % (cls.__name__))
 
     if ask_contest is not None:
         if args.contest_id is not None:

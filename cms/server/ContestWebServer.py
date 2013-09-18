@@ -65,7 +65,7 @@ from sqlalchemy import func
 from werkzeug.http import parse_accept_header
 from werkzeug.datastructures import LanguageAccept
 
-from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, ServiceCoord
+from cms import SOURCE_EXT_TO_LANGUAGE_MAP, ConfigError, config, ServiceCoord
 from cms.io import WebService
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
     File, UserTest, UserTestFile, UserTestManager, PrintJob
@@ -410,6 +410,16 @@ class ContestWebServer(WebService):
             "debug": config.tornado_debug,
             "is_proxy_used": config.is_proxy_used,
         }
+
+        try:
+            listen_address = config.contest_listen_address[shard]
+            listen_port = config.contest_listen_port[shard]
+        except IndexError:
+            raise ConfigError("Wrong shard number for %s, or missing "
+                              "address/port configuration. Please check "
+                              "contest_listen_address and contest_listen_port "
+                              "in cms.conf." % __name__)
+
         super(ContestWebServer, self).__init__(
             listen_port,
             _cws_handlers,
