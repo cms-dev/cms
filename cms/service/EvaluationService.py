@@ -55,8 +55,9 @@ def to_compile(submission_result):
 
     """
     r = submission_result
-    return r is None or (not r.compiled() and
-        r.compilation_tries < EvaluationService.MAX_COMPILATION_TRIES)
+    return r is None or \
+        (not r.compiled() and
+         r.compilation_tries < EvaluationService.MAX_COMPILATION_TRIES)
 
 
 def to_evaluate(submission_result):
@@ -82,8 +83,9 @@ def user_test_to_compile(user_test_result):
 
     """
     r = user_test_result
-    return r is None or (not r.compiled() and
-        r.compilation_tries < EvaluationService.MAX_TEST_COMPILATION_TRIES)
+    return r is None or \
+        (not r.compiled() and
+         r.compilation_tries < EvaluationService.MAX_TEST_COMPILATION_TRIES)
 
 
 def user_test_to_evaluate(user_test_result):
@@ -102,7 +104,7 @@ def user_test_to_evaluate(user_test_result):
 
 # job_type is a constant defined in EvaluationService.
 JobQueueEntry = namedtuple('JobQueueEntry',
-    ['job_type', 'object_id', 'dataset_id'])
+                           ['job_type', 'object_id', 'dataset_id'])
 
 
 class JobQueue:
@@ -142,7 +144,7 @@ class JobQueue:
 
         """
         self._queue[idx1], self._queue[idx2] = \
-                           self._queue[idx2], self._queue[idx1]
+            self._queue[idx2], self._queue[idx1]
         self._reverse[self._queue[idx1][2]] = idx1
         self._reverse[self._queue[idx2][2]] = idx2
 
@@ -177,7 +179,7 @@ class JobQueue:
         while 2 * idx + 1 <= last:
             child = 2 * idx + 1
             if 2 * idx + 2 <= last and \
-                   self._queue[2 * idx + 2] < self._queue[child]:
+                    self._queue[2 * idx + 2] < self._queue[child]:
                 child = 2 * idx + 2
             if self._queue[child] < self._queue[idx]:
                 self._swap(child, idx)
@@ -594,8 +596,8 @@ class WorkerPool:
         lost_jobs = []
         for shard in self._worker:
             if not self._worker[shard].connected and \
-                   self._job[shard] not in [WorkerPool.WORKER_DISABLED,
-                                            WorkerPool.WORKER_INACTIVE]:
+                    self._job[shard] not in [WorkerPool.WORKER_DISABLED,
+                                             WorkerPool.WORKER_INACTIVE]:
                 if not self._ignore[shard]:
                     job = self._job[shard]
                     priority, timestamp = self._side_data[shard]
@@ -684,7 +686,7 @@ class EvaluationService(Service):
         new_jobs = 0
         with SessionGen() as session:
             contest = session.query(Contest).\
-                      filter_by(id=self.contest_id).first()
+                filter_by(id=self.contest_id).first()
 
             # Only adding submission not compiled/evaluated that have
             # not yet reached the limit of tries.
@@ -694,21 +696,21 @@ class EvaluationService(Service):
                         submission.get_result_or_create(dataset)
                     if to_compile(submission_result):
                         if self.push_in_queue(
-                            JobQueueEntry(
-                                EvaluationService.JOB_TYPE_COMPILATION,
-                                submission.id,
-                                dataset.id),
-                            EvaluationService.JOB_PRIORITY_HIGH,
-                            submission.timestamp):
+                                JobQueueEntry(
+                                    EvaluationService.JOB_TYPE_COMPILATION,
+                                    submission.id,
+                                    dataset.id),
+                                EvaluationService.JOB_PRIORITY_HIGH,
+                                submission.timestamp):
                             new_jobs += 1
                     elif to_evaluate(submission_result):
                         if self.push_in_queue(
-                            JobQueueEntry(
-                                EvaluationService.JOB_TYPE_EVALUATION,
-                                submission.id,
-                                dataset.id),
-                            EvaluationService.JOB_PRIORITY_MEDIUM,
-                            submission.timestamp):
+                                JobQueueEntry(
+                                    EvaluationService.JOB_TYPE_EVALUATION,
+                                    submission.id,
+                                    dataset.id),
+                                EvaluationService.JOB_PRIORITY_MEDIUM,
+                                submission.timestamp):
                             new_jobs += 1
 
             # The same for user tests
@@ -718,21 +720,22 @@ class EvaluationService(Service):
                         user_test.get_result_or_create(dataset)
                     if user_test_to_compile(user_test_result):
                         if self.push_in_queue(
-                            JobQueueEntry(
-                                EvaluationService.JOB_TYPE_TEST_COMPILATION,
-                                user_test.id,
-                                dataset.id),
-                            EvaluationService.JOB_PRIORITY_HIGH,
-                            user_test.timestamp):
+                                JobQueueEntry(
+                                    EvaluationService.
+                                    JOB_TYPE_TEST_COMPILATION,
+                                    user_test.id,
+                                    dataset.id),
+                                EvaluationService.JOB_PRIORITY_HIGH,
+                                user_test.timestamp):
                             new_jobs += 1
                     elif user_test_to_evaluate(user_test_result):
                         if self.push_in_queue(
-                            JobQueueEntry(
-                                EvaluationService.JOB_TYPE_TEST_EVALUATION,
-                                user_test.id,
-                                dataset.id),
-                            EvaluationService.JOB_PRIORITY_MEDIUM,
-                            user_test.timestamp):
+                                JobQueueEntry(
+                                    EvaluationService.JOB_TYPE_TEST_EVALUATION,
+                                    user_test.id,
+                                    dataset.id),
+                                EvaluationService.JOB_PRIORITY_MEDIUM,
+                                user_test.timestamp):
                             new_jobs += 1
 
             session.commit()
@@ -810,7 +813,7 @@ class EvaluationService(Service):
                     stats["compilation_fail"] += 1
                 elif not submission_result.compiled():
                     if submission_result.compilation_tries >= \
-                           EvaluationService.MAX_COMPILATION_TRIES:
+                            EvaluationService.MAX_COMPILATION_TRIES:
                         stats["max_compilations"] += 1
                     else:
                         stats["compiling"] += 1
@@ -822,7 +825,7 @@ class EvaluationService(Service):
                             stats["evaluated"] += 1
                     else:
                         if submission_result.evaluation_tries >= \
-                               EvaluationService.MAX_EVALUATION_TRIES:
+                                EvaluationService.MAX_EVALUATION_TRIES:
                             stats["max_evaluations"] += 1
                         else:
                             stats["evaluating"] += 1
@@ -1336,9 +1339,9 @@ class EvaluationService(Service):
         with SessionGen() as session:
             submission_results = get_submission_results(
                 # Give contest_id only if all others are None.
-                self.contest_id \
-                    if {user_id, task_id, submission_id, dataset_id} == {None}
-                    else None,
+                self.contest_id
+                if {user_id, task_id, submission_id, dataset_id} == {None}
+                else None,
                 user_id, task_id, submission_id, dataset_id, session)
 
             logger.info("Submission results to invalidate %s for: %d." %

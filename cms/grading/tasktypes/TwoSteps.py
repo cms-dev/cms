@@ -133,12 +133,12 @@ class TwoSteps(TaskType):
         manager_filename = "manager%s" % source_ext
         source_filenames.append(manager_filename)
         files_to_get[manager_filename] = \
-                job.managers[manager_filename].digest
+            job.managers[manager_filename].digest
         # Manager's header.
         manager_filename = "manager%s" % header_ext
         source_filenames.append(manager_filename)
         files_to_get[manager_filename] = \
-                job.managers[manager_filename].digest
+            job.managers[manager_filename].digest
 
         for filename, digest in files_to_get.iteritems():
             sandbox.create_file_from_storage(filename, digest)
@@ -272,7 +272,7 @@ class TwoSteps(TaskType):
                 outcome = 0.0
                 text = [N_("Evaluation didn't produce file %s"), "output.txt"]
                 if job.get_output:
-                   job.user_output = None
+                    job.user_output = None
 
             else:
                 # If asked so, put the output file into the storage

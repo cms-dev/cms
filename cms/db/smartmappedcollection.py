@@ -169,7 +169,9 @@ class SmartMappedCollection(MappedCollection):
             if new_key != old_key:
                 dict.__delitem__(self, old_key)
                 if new_key in self:
-                    sa_del(self, dict.__getitem__(self, new_key), _sa_initiator)
+                    sa_del(self,
+                           dict.__getitem__(self, new_key),
+                           _sa_initiator)
                     dict.__delitem__(self, new_key)
                 dict.__setitem__(self, new_key, value)
 

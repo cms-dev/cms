@@ -140,8 +140,8 @@ class Sum(ScoreTypeAlone):
                 public_testcases.append({"idx": idx})
 
         return score, json.dumps(testcases), \
-               public_score, json.dumps(public_testcases), \
-               json.dumps([])
+            public_score, json.dumps(public_testcases), \
+            json.dumps([])
 
     def get_public_outcome(self, outcome):
         """Return a public outcome from an outcome.

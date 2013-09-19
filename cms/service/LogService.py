@@ -50,7 +50,7 @@ class LogService(Service):
         # Determine location of log file, and make directories.
         log_dir = os.path.join(config.log_dir, "cms")
         if not mkdir(config.log_dir) or \
-               not mkdir(log_dir):
+                not mkdir(log_dir):
             logger.error("Cannot create necessary directories.")
             self.exit()
             return

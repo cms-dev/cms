@@ -117,7 +117,7 @@ class Communication(TaskType):
         # Stub.
         source_filenames.append("stub%s" % source_ext)
         files_to_get[source_filenames[-1]] = \
-                job.managers["stub%s" % source_ext].digest
+            job.managers["stub%s" % source_ext].digest
         # User's submission.
         source_filenames.append(format_filename.replace(".%l", source_ext))
         files_to_get[source_filenames[-1]] = \

@@ -75,10 +75,10 @@ class ResourceService(Service):
                                   for service in self._local_services)
         # Found process associate to the ServiceCoord.
         self._procs = dict((service, None)
-            for service in self._local_services)
+                           for service in self._local_services)
         # Previous cpu time for each service.
-        self._services_prev_cpu_times = dict((service, (0.0, 0.0))
-            for service in self._local_services)
+        self._services_prev_cpu_times = \
+            dict((service, (0.0, 0.0)) for service in self._local_services)
         # Start finding processes and their cputimes.
         self._store_resources(store=False)
 
@@ -108,7 +108,7 @@ class ResourceService(Service):
         for service in self._local_services:
             # We let the user start logservice and resourceservice.
             if service.name == "LogService" or \
-                   service.name == "ResourceService":
+                    service.name == "ResourceService":
                 continue
 
             # If the user specified not to restart some service, we
@@ -238,7 +238,7 @@ class ResourceService(Service):
         data["cpu"] = dict((x, int(round((cpu_times[x] -
                                           self._prev_cpu_times[x])
                                    / delta * 100.0)))
-                            for x in cpu_times)
+                           for x in cpu_times)
         data["cpu"]["num_cpu"] = psutil.NUM_CPUS
         self._prev_cpu_times = cpu_times
 
@@ -290,7 +290,7 @@ class ResourceService(Service):
             try:
                 dic["since"] = self._last_saved_time - proc.create_time
                 dic["resident"], dic["virtual"] = \
-                    (x / 1048576  for x in proc.get_memory_info())
+                    (x / 1048576 for x in proc.get_memory_info())
                 cpu_times = proc.get_cpu_times()
                 dic["user"] = int(
                     round((cpu_times[0] -

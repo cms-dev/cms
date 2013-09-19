@@ -255,7 +255,9 @@ class LargeObject(io.RawIOBase):
             raise io.UnsupportedOperation("Large object is closed.")
 
         pos = self._execute("SELECT lo_lseek(%(fd)s, %(offset)s, %(whence)s);",
-                            {'fd': self._fd, 'offset': offset, 'whence': whence},
+                            {'fd': self._fd,
+                             'offset': offset,
+                             'whence': whence},
                             "Couldn't seek large object.")
         return pos
 

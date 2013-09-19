@@ -185,7 +185,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
         else:
             errors.extend((src, dst, str(why)))
     if errors:
-        raise Error, errors
+        raise Error(errors)
 
 
 def rmtree(path, ignore_errors=False, onerror=None):
@@ -265,14 +265,14 @@ def move(src, dst):
 
         real_dst = os.path.join(dst, _basename(src))
         if os.path.exists(real_dst):
-            raise Error, "Destination path '%s' already exists" % real_dst
+            raise Error("Destination path '%s' already exists" % real_dst)
     try:
         os.rename(src, real_dst)
     except OSError:
         if os.path.isdir(src):
             if _destinsrc(src, dst):
-                raise Error, "Cannot move a directory '%s' " \
-                    "into itself '%s'." % (src, dst)
+                raise Error("Cannot move a directory '%s' "
+                            "into itself '%s'." % (src, dst))
             copytree(src, real_dst, symlinks=True)
             rmtree(src)
         else:

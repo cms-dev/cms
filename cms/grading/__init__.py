@@ -35,7 +35,8 @@ from cms.grading.Sandbox import Sandbox
 logger = logging.getLogger(__name__)
 
 
-SubmissionScoreDelta = namedtuple('SubmissionScoreDelta',
+SubmissionScoreDelta = namedtuple(
+    'SubmissionScoreDelta',
     ['submission', 'old_score', 'new_score',
      'old_public_score', 'new_public_score',
      'old_ranking_score_details', 'new_ranking_score_details'])
@@ -207,7 +208,7 @@ def compilation_step(sandbox, command):
 
     # Error in compilation: returning the error to the user.
     elif (exit_status == Sandbox.EXIT_OK and exit_code != 0) or \
-             exit_status == Sandbox.EXIT_NONZERO_RETURN:
+            exit_status == Sandbox.EXIT_NONZERO_RETURN:
         logger.debug("Compilation failed.")
         success = True
         compilation_success = False
@@ -229,7 +230,7 @@ def compilation_step(sandbox, command):
         compilation_success = False
         plus["signal"] = signal
         text = [N_("Compilation killed with signal %d (could be triggered "
-                  "by violating memory limits)"), signal]
+                   "by violating memory limits)"), signal]
 
     # Sandbox error: this isn't a user error, the administrator needs
     # to check the environment
@@ -290,10 +291,10 @@ def evaluation_step(sandbox, command,
 
 
 def evaluation_step_before_run(sandbox, command,
-                              time_limit=0, memory_limit=0,
-                              allow_dirs=None,
-                              stdin_redirect=None, stdout_redirect=None,
-                              wait=False):
+                               time_limit=0, memory_limit=0,
+                               allow_dirs=None,
+                               stdin_redirect=None, stdout_redirect=None,
+                               wait=False):
     """First part of an evaluation step, until the running.
 
     return: exit code already translated if wait is True, the
@@ -414,7 +415,7 @@ def human_evaluation_message(plus):
         return [N_("Execution timed out")]
     elif exit_status == Sandbox.EXIT_SIGNAL:
         return [N_("Execution killed with signal %d (could be triggered by "
-                  "violating memory limits)"), plus['signal']]
+                   "violating memory limits)"), plus['signal']]
     elif exit_status == Sandbox.EXIT_SANDBOX_ERROR:
         return None
     elif exit_status == Sandbox.EXIT_SYSCALL:
@@ -571,35 +572,34 @@ def white_diff(output, res):
 
 def white_diff_step(sandbox, output_filename,
                     correct_output_filename):
-        """Assess the correctedness of a solution by doing a simple
-        white diff against the reference solution. It gives an outcome
-        1.0 if the output and the reference output are identical (or
-        differ just by white spaces) and 0.0 if they don't (or if the
-        output doesn't exist).
+    """Assess the correctedness of a solution by doing a simple white
+    diff against the reference solution. It gives an outcome 1.0 if
+    the output and the reference output are identical (or differ just
+    by white spaces) and 0.0 if they don't (or if the output doesn't
+    exist).
 
-        sandbox (Sandbox): the sandbox we consider.
-        output_filename (string): the filename of user's output in the
-                                  sandbox.
-        correct_output_filename (string): the same with reference
-                                          output.
+    sandbox (Sandbox): the sandbox we consider.
+    output_filename (string): the filename of user's output in the
+        sandbox.
+    correct_output_filename (string): the same with reference output.
 
-        return (float, string): the outcome as above and a description
-                                text.
+    return ((float, [str])): the outcome as above and a description
+        text.
 
-        """
-        if sandbox.file_exists(output_filename):
-            out_file = sandbox.get_file(output_filename)
-            res_file = sandbox.get_file("res.txt")
-            if white_diff(out_file, res_file):
-                outcome = 1.0
-                text = [N_("Output is correct")]
-            else:
-                outcome = 0.0
-                text = [N_("Output isn't correct")]
+    """
+    if sandbox.file_exists(output_filename):
+        out_file = sandbox.get_file(output_filename)
+        res_file = sandbox.get_file("res.txt")
+        if white_diff(out_file, res_file):
+            outcome = 1.0
+            text = [N_("Output is correct")]
         else:
             outcome = 0.0
-            text = [N_("Evaluation didn't produce file %s"), output_filename]
-        return outcome, text
+            text = [N_("Output isn't correct")]
+    else:
+        outcome = 0.0
+        text = [N_("Evaluation didn't produce file %s"), output_filename]
+    return outcome, text
 
 
 def compute_changes_for_dataset(old_dataset, new_dataset):
@@ -616,7 +616,8 @@ def compute_changes_for_dataset(old_dataset, new_dataset):
     """
     # If we are switching tasks, something has gone seriously wrong.
     if old_dataset.task is not new_dataset.task:
-        raise ValueError("Cannot compare datasets referring to different tasks.")
+        raise ValueError(
+            "Cannot compare datasets referring to different tasks.")
 
     task = old_dataset.task
 

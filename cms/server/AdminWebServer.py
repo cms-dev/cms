@@ -190,7 +190,8 @@ class BaseHandler(CommonRequestHandler):
         params["url_root"] = get_url_root(self.request.path)
         if self.contest is not None:
             params["phase"] = self.contest.phase(params["timestamp"])
-            # Keep "== None" in filter arguments
+            # Keep "== None" in filter arguments. SQLAlchemy does not
+            # understand "is None".
             params["unanswered"] = self.sql_session.query(Question)\
                 .join(User)\
                 .filter(User.contest_id == self.contest.id)\
@@ -291,10 +292,11 @@ class AdminWebServer(WebService):
 
         parameters = {
             "login_url": "/",
-            "template_path":
-                pkg_resources.resource_filename("cms.server", "templates/admin"),
-            "static_path":
-                pkg_resources.resource_filename("cms.server", "static"),
+            "template_path": pkg_resources.resource_filename(
+                "cms.server",
+                "templates/admin"),
+            "static_path": pkg_resources.resource_filename("cms.server",
+                                                           "static"),
             "cookie_secret": base64.b64encode(config.secret_key),
             "debug": config.tornado_debug,
         }
@@ -951,7 +953,8 @@ class AddDatasetHandler(BaseHandler):
             description = "Default"
         else:
             try:
-                original_dataset = self.safe_get_item(Dataset, dataset_id_to_copy)
+                original_dataset = \
+                    self.safe_get_item(Dataset, dataset_id_to_copy)
                 description = "Copy of %s" % original_dataset.description
             except ValueError:
                 raise tornado.web.HTTPError(404)
@@ -975,7 +978,8 @@ class AddDatasetHandler(BaseHandler):
             original_dataset = None
         else:
             try:
-                original_dataset = self.safe_get_item(Dataset, dataset_id_to_copy)
+                original_dataset = \
+                    self.safe_get_item(Dataset, dataset_id_to_copy)
             except ValueError:
                 raise tornado.web.HTTPError(404)
 
@@ -1152,7 +1156,8 @@ class ActivateDatasetHandler(BaseHandler):
 
         if try_commit(self.sql_session, self):
             # self.application.service.scoring_service.reinitialize()
-            self.application.service.proxy_service.dataset_updated(task_id=task.id)
+            self.application.service.proxy_service.dataset_updated(
+                task_id=task.id)
 
             # This kicks off judging of any submissions which were previously
             # unloved, but are now part of an autojudged taskset.
@@ -1243,12 +1248,14 @@ class AddTestcaseHandler(BaseHandler):
         self.sql_session.close()
 
         try:
-            input_digest = self.application.service.file_cacher.put_file_content(
-                input_["body"],
-                "Testcase input for task %s" % task_name)
-            output_digest = self.application.service.file_cacher.put_file_content(
-                output["body"],
-                "Testcase output for task %s" % task_name)
+            input_digest = \
+                self.application.service.file_cacher.put_file_content(
+                    input_["body"],
+                    "Testcase input for task %s" % task_name)
+            output_digest = \
+                self.application.service.file_cacher.put_file_content(
+                    output["body"],
+                    "Testcase output for task %s" % task_name)
         except Exception as error:
             self.application.service.add_notification(
                 make_datetime(),
@@ -1262,7 +1269,8 @@ class AddTestcaseHandler(BaseHandler):
         task = dataset.task
         self.contest = task.contest
 
-        testcase = Testcase(codename, public, input_digest, output_digest, dataset=dataset)
+        testcase = Testcase(
+            codename, public, input_digest, output_digest, dataset=dataset)
         self.sql_session.add(testcase)
 
         if try_commit(self.sql_session, self):
@@ -1481,13 +1489,15 @@ class TaskHandler(BaseHandler):
 
             for dataset in task.datasets:
                 dataset.time_limit = sanity_check_time_limit(
-                    self.get_argument("time_limit_%d" % dataset.id,
+                    self.get_argument(
+                        "time_limit_%d" % dataset.id,
                         str(dataset.time_limit)
-                            if dataset.time_limit is not None else ""))
+                        if dataset.time_limit is not None else ""))
 
                 dataset.memory_limit = sanity_check_memory_limit(
-                    self.get_argument("memory_limit_%d" % dataset.id,
-                    str(dataset.memory_limit)
+                    self.get_argument(
+                        "memory_limit_%d" % dataset.id,
+                        str(dataset.memory_limit)
                         if dataset.memory_limit is not None else ""))
 
                 dataset.task_type = self.get_argument(
@@ -1995,7 +2005,8 @@ class NotificationsHandler(BaseHandler):
         last_notification = make_datetime(
             float(self.get_argument("last_notification", "0")))
 
-        # Keep "== None" in filter arguments
+        # Keep "== None" in filter arguments. SQLAlchemy does not
+        # understand "is None".
         questions = self.sql_session.query(Question)\
             .filter(Question.reply_timestamp == None)\
             .filter(Question.question_timestamp > last_notification)\

@@ -67,12 +67,13 @@ class RPCRequestHandler(tornado.web.RequestHandler):
             return
 
         if service not in self.application.service.remote_services or \
-               not self.application.service.remote_services[service].connected:
+                not self.application.service.remote_services[service].\
+                connected:
             self.write({'status': 'unconnected'})
             return
 
         self.application.service.__responses[rid] = "wait"
-        self.application.service.remote_services[service].__getattr__(method)(\
+        self.application.service.remote_services[service].__getattr__(method)(
             callback=WebService._default_callback,
             plus=rid,
             **arguments)
@@ -121,7 +122,8 @@ class SyncRPCRequestHandler(tornado.web.RequestHandler):
 
         service = ServiceCoord(service, int(shard))
         if service not in self.application.service.remote_services or \
-            not self.application.service.remote_services[service].connected:
+                not self.application.service.remote_services[service].\
+                connected:
             self.write({'status': 'unconnected'})
             self.finish()
             return
@@ -164,11 +166,11 @@ class WebService(Service):
         # TODO: why are the following two lines needed?
         self._RPCRequestHandler__responses = self.__responses
         self._RPCAnswerHandler__responses = self.__responses
-        handlers += [(r"/rpc_request/([a-zA-Z0-9_-]+)/" \
+        handlers += [(r"/rpc_request/([a-zA-Z0-9_-]+)/"
                       "([0-9]+)/([a-zA-Z0-9_-]+)",
                       RPCRequestHandler),
                      (r"/rpc_answer", RPCAnswerHandler),
-                     (r"/sync_rpc_request/([a-zA-Z0-9_-]+)/" \
+                     (r"/sync_rpc_request/([a-zA-Z0-9_-]+)/"
                       "([0-9]+)/([a-zA-Z0-9_-]+)",
                       SyncRPCRequestHandler)]
         self.application = tornado.wsgi.WSGIApplication(handlers, **parameters)

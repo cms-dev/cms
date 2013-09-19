@@ -41,8 +41,8 @@ _TYPE_MAP = {
     Boolean: bool,
     Integer: six.integer_types,
     Float: float,
-    String: six.string_types, # TODO Use six.binary_type.
-    Unicode: six.string_types, # TODO Use six.text_type.
+    String: six.string_types,  # TODO Use six.binary_type.
+    Unicode: six.string_types,  # TODO Use six.text_type.
     DateTime: datetime,
     Interval: timedelta,
 }
