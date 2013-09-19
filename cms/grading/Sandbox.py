@@ -136,13 +136,11 @@ class SandboxBase(object):
     EXIT_SYSCALL = 'syscall'
     EXIT_NONZERO_RETURN = 'nonzero return'
 
-    def __init__(self, file_cacher=None, temp_dir=None):
+    def __init__(self, file_cacher=None):
         """Initialization.
 
         file_cacher (FileCacher): an instance of the FileCacher class
-                                  (to interact with FS).
-        temp_dir (string): the directory where to put the sandbox
-                           (which is itself a directory).
+            (to interact with FS).
 
         """
         self.file_cacher = file_cacher
@@ -166,6 +164,40 @@ class SandboxBase(object):
             mem_str = "(memory usage unknown)"
         return "[%s - %s]" % (time_str, mem_str)
 
+    def get_root_path(self):
+        """Return the toplevel path of the sandbox.
+
+        return (string): the root path.
+
+        raise (NotImplementedError): if the subclass does not
+            implement this method.
+
+        """
+        raise NotImplementedError("Subclasses must implement get_root_path.")
+
+    def get_execution_time(self):
+        """Return the time spent in the sandbox.
+
+        return (float): time spent in the sandbox.
+
+        raise (NotImplementedError): if the subclass does not
+            implement this method.
+
+        """
+        raise NotImplementedError(
+            "Subclasses must implement get_execution_time.")
+
+    def get_memory_used(self):
+        """Return the memory used by the sandbox.
+
+        return (int): memory used by the sandbox (in bytes).
+
+        raise (NotImplementedError): if the subclass does not
+            implement this method.
+
+        """
+        raise NotImplementedError("Subclasses must implement get_memory_used.")
+
     def relative_path(self, path):
         """Translate from a relative path inside the sandbox to a
         system path.
@@ -174,7 +206,7 @@ class SandboxBase(object):
         return (string): the absolute path.
 
         """
-        return os.path.join(self.path, path)
+        return os.path.join(self.get_root_path(), path)
 
     # TODO - Rewrite it as context manager
     def create_file(self, path, executable=False):
@@ -336,7 +368,7 @@ class StupidSandbox(SandboxBase):
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, file_cacher, temp_dir)
+        SandboxBase.__init__(self, file_cacher)
 
         # Make box directory
         if temp_dir is None:
@@ -651,7 +683,7 @@ class IsolateSandbox(SandboxBase):
         For arguments documentation, see SandboxBase.__init__.
 
         """
-        SandboxBase.__init__(self, file_cacher, temp_dir)
+        SandboxBase.__init__(self, file_cacher)
 
         # Get our shard number, to use as a unique identifier for the
         # sandbox on this machine. FIXME This is the only use of
@@ -715,6 +747,14 @@ class IsolateSandbox(SandboxBase):
         if ret != 0:
             raise SandboxInterfaceException(
                 "Failed to initialize sandbox (error %d)" % ret)
+
+    def get_root_path(self):
+        """Return the toplevel path of the sandbox.
+
+        return (string): the root path.
+
+        """
+        return self.path
 
     def detect_box_executable(self):
         """Try to find an isolate executable. It first looks in
@@ -1110,4 +1150,4 @@ class IsolateSandbox(SandboxBase):
 Sandbox = {
     'stupid': StupidSandbox,
     'isolate': IsolateSandbox,
-}[config.sandbox_implementation]
+    }[config.sandbox_implementation]
