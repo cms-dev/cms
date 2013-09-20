@@ -5,6 +5,7 @@
 # Copyright © 2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -19,6 +20,21 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""A JobGroup is an abstraction of an "atomic" action of a Worker.
+
+Jobs play a major role in the interface with TaskTypes: they are a
+data structure containing all information about what the TaskTypes
+should do. They are mostly used in the communication between ES and
+the Workers, hence they contain only serializable data (for example,
+the name of the task type, not the task type object itself.
+
+A JobGroup represent an indivisible action of a Worker, that is, a
+compilation or an evaluation. They contain one or more Jobs, for
+example "compile the submission" or "evaluate the submission on a
+certain testcase".
+
+"""
+
 import json
 from copy import deepcopy
 
@@ -26,13 +42,28 @@ from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
 
 
 class Job(object):
-    # Input: task_type, task_type_parameters
-    # Metadata: shard, sandboxes, info
+    """Base class for all jobs.
+
+    Input data (filled by ES): task_type, task_type_parameters.
+    Metadata: shard, sandboxes, info.
+
+    """
 
     # TODO Move 'success' inside Job.
 
     def __init__(self, task_type=None, task_type_parameters=None,
                  shard=None, sandboxes=None, info=None):
+        """Initialization.
+
+        task_type (string): the name of the task type.
+        task_type_parameters (string): the parameters for the creation
+            of the correct task type.
+        shard (int): the shard of the Worker completing this job.
+        sandboxes ([string]): the paths of the sandboxes used in the
+            Worker during the execution of the job.
+        info (string): a human readable description of the job.
+
+        """
         if task_type is None:
             task_type = ""
         if task_type_parameters is None:
@@ -76,14 +107,39 @@ class Job(object):
 
 
 class CompilationJob(Job):
-    # Input: language, files, managers
-    # Output: success, compilation_success, executables, text, plus
+    """Job representing a compilation.
+
+    Can represent either the compilation of a user test, or of a
+    submission, or of an arbitrary source (as used in cmsMake).
+
+    Input data (filled by ES): language, files, managers. Output data
+    (filled by the Worker): success, compilation_success, executables,
+    text, plus.
+
+    """
 
     def __init__(self, task_type=None, task_type_parameters=None,
                  shard=None, sandboxes=None, info=None,
                  language=None, files=None, managers=None,
                  success=None, compilation_success=None,
                  executables=None, text=None, plus=None):
+        """Initialization.
+
+        See base class for the remaining arguments.
+
+        language (string): the language of the submission / user test.
+        files ({string: File}): files submitted by the user.
+        managers ({string: Manager}): manager provided by the admins.
+        success (bool): whether the job succeeded.
+        compilation_success (bool): whether the compilation implicit
+            in the job succeeded, or there was a compilation error.
+        executables ({string: Executable}): executables created in the
+            job.
+        text ([object]): description of the outcome of the job, to be
+            presented to the user. It is a string
+        plus ({}): additional metadata.
+
+        """
         if files is None:
             files = {}
         if managers is None:
@@ -132,12 +188,17 @@ class CompilationJob(Job):
 
 
 class EvaluationJob(Job):
+    """Job representing a compilation.
 
-    # Input: language, files, managers, executables, input, output,
-    #        time_limit, memory_limit
-    # Output: success, outcome, text, user_output, plus
-    # Metadata: only_execution, get_output
+    Can represent either the compilation of a user test, or of a
+    submission.
 
+    Input data (filled by ES): language, files, managers, executables,
+    input, output, time_limit, memory_limit. Output data (filled by
+    the Worker): success, outcome, text, user_output, plux.
+    executables, text, plus. Metadata: only_execution, get_output.
+
+    """
     def __init__(self, task_type=None, task_type_parameters=None,
                  shard=None, sandboxes=None, info=None,
                  language=None, files=None, managers=None,
@@ -146,6 +207,34 @@ class EvaluationJob(Job):
                  success=None, outcome=None, text=None,
                  user_output=None, plus=None,
                  only_execution=False, get_output=False):
+        """Initialization.
+
+        See base class for the remaining arguments.
+
+        language (string): the language of the submission / user test.
+        files ({string: File}): files submitted by the user.
+        managers ({string: Manager}): manager provided by the admins.
+        executables ({string: Executable}): executables created in the
+            compilation.
+        input (string): digest of the input file.
+        output (string): digest of the output file.
+        time_limit (float): user time limit in seconds.
+        memory_limit (int): memory limit in bytes.
+        success (bool): whether the job succeeded.
+        outcome (string): the outcome of the evaluation, from which to
+            compute the score.
+        text ([object]): description of the outcome of the job, to be
+            presented to the user.
+        user_output (unicode): if requested (with get_output), the
+            digest of the file containing the output of the user
+            program.
+        plus ({}): additional metadata.
+        only_execution (bool): whether to perform only the execution,
+            or to compare the output with the reference solution too.
+        get_output (bool): whether to retrieve the execution output
+            (together with only_execution, useful for the user tests).
+
+        """
         if files is None:
             files = {}
         if managers is None:
@@ -208,7 +297,19 @@ class EvaluationJob(Job):
 
 
 class JobGroup(object):
+    """A collection of jobs.
+
+    This is the minimal unit of action for a Worker.
+
+    """
+
     def __init__(self, jobs=None, success=None):
+        """Initialization.
+
+        jobs ({string: Job}): the jobs composing the group.
+        success (bool): whether all jobs succeded.
+
+        """
         if jobs is None:
             jobs = {}
 
