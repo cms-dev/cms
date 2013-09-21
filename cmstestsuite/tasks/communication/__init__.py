@@ -20,7 +20,7 @@
 task_info = {
     "name": "communication",
     "title": "Test Communication Task",
-    "time_limit": "0.1",
+    "time_limit": "1.0",
     "memory_limit": "64",
     "official_language": "",
     "task_type": "Communication",
