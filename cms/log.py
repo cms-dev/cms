@@ -181,7 +181,7 @@ def get_color_hash(string):
 
     string (string): the string.
 
-    return (curses.COLOR_*): a color.
+    return (int): a color, as a curses.COLOR_* constant..
 
     """
     # We get the default hash of the string and use it to pick a color.
@@ -202,7 +202,8 @@ def add_color_to_string(string, color):
     make the given string appear with the given foreground color.
 
     string (string): the string to color.
-    color (curses.COLOR_*): the color as a curses constant.
+    color (int): the color as a curses constant, like
+        curses.COLOR_BLACK.
 
     return (string): the formatted string.
 

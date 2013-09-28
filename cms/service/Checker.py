@@ -43,7 +43,7 @@ class Checker(Service):
         Service.__init__(self, shard)
         for service in config.async.core_services:
             self.connect_to(service)
-        self.add_timeout(self.check, None, 90, immediately=True)
+        self.add_timeout(self.check, None, 90.0, immediately=True)
 
         self.waiting_for = {}
 

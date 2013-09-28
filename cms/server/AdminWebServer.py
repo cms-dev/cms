@@ -146,9 +146,11 @@ class BaseHandler(CommonRequestHandler):
 
         cls (type): class of object to retrieve.
         ident (string): id of object.
-        session (session/None): session to use.
+        session (Session|None): session to use.
 
-        return (object/404): the object with the given id, or 404.
+        return (object): the object with the given id.
+
+        raise (HTTPError): 404 if not found.
 
         """
         if session is None:

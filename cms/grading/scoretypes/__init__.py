@@ -46,13 +46,13 @@ def get_score_type(name=None, parameters=None, public_testcases=None,
     If "dataset" is given then all other arguments should be omitted as
     they are obtained from the dataset.
 
-    name (str): the name of the TaskType class
+    name (str): the name of the ScoreType class
     parameters (str): the JSON-encoded parameters
     public_testcases ({str: bool}): for each testcase (identified by
         its codename) a flag telling whether it's public or not
-    dataset (Dataset): the dataset whose TaskType we want
+    dataset (Dataset): the dataset whose ScoreType we want
 
-    return (TaskType): an instance of the correct TaskType class.
+    return (ScoreType): an instance of the correct ScoreType class.
 
     """
     if dataset is not None:

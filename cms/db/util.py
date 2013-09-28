@@ -30,13 +30,13 @@ from . import SessionGen, Contest
 def get_contest_list(session=None):
     """Return all the contest objects available on the database.
 
-    session (Session object): if specified, use such session for
-                              connecting to the database; otherwise,
-                              create a temporary one and discard it
-                              after the operation (this means that no
-                              further expansion of lazy properties of
-                              the returned Contest objects will be
-                              possible).
+    session (Session): if specified, use such session for connecting
+        to the database; otherwise, create a temporary one and discard
+        it after the operation (this means that no further expansion
+        of lazy properties of the returned Contest objects will be
+        possible).
+
+    return ([Contest]): the list of contests in the DB.
 
     """
     if session is None:
@@ -61,8 +61,8 @@ def ask_for_contest(skip=None):
     """Print a greeter that ask the user for a contest, if there is
     not an indication of which contest to use in the command line.
 
-    skip (int/None): how many commandline arguments are already taken
-                     by other usages.
+    skip (int|None): how many commandline arguments are already taken
+        by other usages (None for no arguments already consumed).
 
     return (int): a contest_id.
 

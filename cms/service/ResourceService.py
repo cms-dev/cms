@@ -82,10 +82,10 @@ class ResourceService(Service):
         # Start finding processes and their cputimes.
         self._store_resources(store=False)
 
-        self.add_timeout(self._store_resources, None, 5)
+        self.add_timeout(self._store_resources, None, 5.0)
         if self.contest_id is not None:
             self._launched_processes = set([])
-            self.add_timeout(self._restart_services, None, 5,
+            self.add_timeout(self._restart_services, None, 5.0,
                              immediately=True)
 
     def _restart_services(self):
@@ -321,12 +321,12 @@ class ResourceService(Service):
         return True
 
     @rpc_method
-    def get_resources(self, last_time=0):
+    def get_resources(self, last_time=0.0):
         """Returns the resurce usage information from last_time to
         now.
 
-        last_time (int): timestamp of the last time the caller called
-                         this method.
+        last_time (float): timestamp of the last time the caller
+            called this method.
 
         """
         logger.debug("ResourceService._get_resources")

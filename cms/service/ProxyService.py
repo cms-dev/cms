@@ -264,7 +264,7 @@ class ProxyService(Service):
         # Create and spawn threads to send data to rankings.
         self.rankings = list()
         for ranking in config.rankings:
-            proxy = RankingProxy(ranking)
+            proxy = RankingProxy(ranking.encode('utf-8'))
             gevent.spawn(proxy.run)
             self.rankings.append(proxy)
 

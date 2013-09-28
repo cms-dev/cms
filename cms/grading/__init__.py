@@ -122,8 +122,8 @@ def format_status_text(status, translator=None):
     the identity function, if not given), completed with the data and
     returned.
 
-    status (list or bytes): a status, as described above.
-    translator (callable): a function expecting a string and returning
+    status ([unicode]|unicode): a status, as described above.
+    translator (function): a function expecting a string and returning
         that same string translated in some language.
 
     """
@@ -152,7 +152,7 @@ def compilation_step(sandbox, command):
     Note: this needs a sandbox already created.
 
     sandbox (Sandbox): the sandbox we consider.
-    command (string): the actual compilation line.
+    command ([string]): the actual compilation line.
 
     """
     # Set sandbox parameters suitable for compilation.
@@ -260,7 +260,7 @@ def compilation_step(sandbox, command):
 
 
 def evaluation_step(sandbox, command,
-                    time_limit=0, memory_limit=0,
+                    time_limit=0.0, memory_limit=0,
                     allow_dirs=None,
                     stdin_redirect=None, stdout_redirect=None):
     """Execute an evaluation command in the sandbox. Note that in some
@@ -268,12 +268,12 @@ def evaluation_step(sandbox, command,
     testcase) (in others there can be none, of course).
 
     sandbox (Sandbox): the sandbox we consider.
-    command (string): the actual evaluation line.
+    command ([string]): the actual evaluation line.
     time_limit (float): time limit in seconds.
     memory_limit (int): memory limit in MB.
 
-    return (bool, dict): True if the evaluation was successful, or
-                         False; and additional data.
+    return ((bool, dict)): True if the evaluation was successful, or
+        False; and additional data.
 
     """
     success = evaluation_step_before_run(
@@ -464,7 +464,7 @@ def extract_outcome_and_text(sandbox):
     stdout (Sandbox): the sandbox whose last execution was a
                       comparator.
 
-    return (float, string): outcome and text.
+    return (float, [string]): outcome and text.
 
     raise (ValueError): if cannot decode the data.
 
@@ -610,9 +610,9 @@ def compute_changes_for_dataset(old_dataset, new_dataset):
     old_dataset (Dataset): the original dataset, typically the active one.
     new_dataset (Dataset): the dataset to compare against.
 
-    returns (list): a list of tuples of SubmissionScoreDelta tuples where they
-    differ. Those entries that do not differ will have None in the pair of
-    respective tuple entries.
+    returns (list): a list of tuples of SubmissionScoreDelta tuples
+        where they differ. Those entries that do not differ will have
+        None in the pair of respective tuple entries.
 
     """
     # If we are switching tasks, something has gone seriously wrong.
@@ -665,9 +665,8 @@ def task_score(user, task):
     user (User): the user for which to compute the score.
     task (Task): the task for which to compute the score.
 
-    return (float, bool): the score of user on task, and True if the
-                          score could change because of a submission
-                          yet to score.
+    return ((float, bool)): the score of user on task, and True if the
+        score could change because of a submission yet to score.
 
     """
     # As this function is primarily used when generating a rankings table

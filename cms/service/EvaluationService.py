@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -128,7 +128,7 @@ class JobQueue(object):
     def __contains__(self, job):
         """Implement the 'in' operator for a job in the queue.
 
-        job (job): a job to search.
+        job (JobQueueEntry): a job to search.
 
         return (bool): True if job is in the queue.
 
@@ -204,8 +204,8 @@ class JobQueue(object):
         """Push a job in the queue. If timestamp is not specified,
         uses the current time.
 
-        job (job): a tuple (job_type, object_id, dataset_id)
-        priority (int): the priority of the job
+        job (JobQueueEntry): the job to add to the queue.
+        priority (int): the priority of the job.
         timestamp (datetime): the time of the submission.
 
         """
@@ -220,7 +220,8 @@ class JobQueue(object):
         """Returns the first element in the queue without extracting
         it. If the queue is empty raises an exception.
 
-        returns (job): first element in the queue
+        returns ((int, datetime, JobQueueEntry)): first element in the
+            queue.
 
         raise (LookupError): on empty queue.
 
@@ -233,7 +234,8 @@ class JobQueue(object):
     def pop(self):
         """Extracts (and returns) the first element in the queue.
 
-        returns (job): first element in the queue
+        returns ((int, datetime, JobQueueEntry)): first element in the
+            queue.
 
         raise (LookupError): on empty queue.
 
@@ -251,7 +253,7 @@ class JobQueue(object):
     def remove(self, job):
         """Remove a job from the queue. Raise a KeyError if not present.
 
-        job (job): the job to remove
+        job (JobQueueEntry): the job to remove.
 
         return (int, int, job): priority, timestamp, and job.
 
@@ -271,7 +273,7 @@ class JobQueue(object):
         """Change the priority of a job inside the queue. Raises an
         exception if the job is not in the queue.
 
-        job (job): the job whose priority needs to change.
+        job (JobQueueEntry): the job whose priority needs to change.
         priority (int): the new priority.
 
         raise (LookupError): if job not present.
@@ -391,12 +393,13 @@ class WorkerPool(object):
         are available then this returns None, otherwise this returns
         the chosen worker.
 
-        job (job): the job to assign to a worker
+        job (JobQueueEntry): the job to assign to a worker.
         side_data (object): object to attach to the worker for later
-                            use
+            use.
 
         returns (int): None if no workers are available, the worker
-                       assigned to the job otherwise
+            assigned to the job otherwise.
+
         """
         # We look for an available worker
         try:
@@ -483,13 +486,13 @@ class WorkerPool(object):
         there is a placeholder job to signal that the worker is not
         doing anything (or disabled).
 
-        job (job): the job we are looking for, or WorkerPool.WORKER_*.
+        job (JobQueueEntry): the job we are looking for, or
+            WorkerPool.WORKER_*.
         require_connection (bool): True if we want to find a worker
-                                   doing the job and that is actually
-                                   connected to us (i.e., did not
-                                   die).
+            doing the job and that is actually connected to us (i.e.,
+            did not die).
         random_worker (bool): if True, choose uniformly amongst all
-                       workers doing the job.
+            workers doing the job.
 
         returns (int): the shard of the worker working on job.
 
@@ -933,8 +936,7 @@ class EvaluationService(Service):
         """Push a job in the job queue if the submission is not
         already in the queue or assigned to a worker.
 
-        job (JobQueueEntry): a tuple (job_type, object_id, dataset_id)
-                             to push.
+        job (JobQueueEntry): the job to put in the queue.
 
         return (bool): True if pushed, False if not.
 
@@ -983,7 +985,7 @@ class EvaluationService(Service):
                 job_group = JobGroup.import_from_dict(data)
             except:
                 logger.error("[action_finished] Couldn't build JobGroup for "
-                             "data %s." % data)
+                             "data %s." % data, exc_info=True)
                 job_success = False
 
             else:

@@ -439,7 +439,7 @@ class StupidSandbox(SandboxBase):
     def get_memory_used(self):
         """Return the memory used by the sandbox.
 
-        return (float): memory used by the sandbox (in bytes).
+        return (int): memory used by the sandbox (in bytes).
 
         """
         return None
@@ -500,8 +500,8 @@ class StupidSandbox(SandboxBase):
         subprocess.Popen, assigning the corresponding standard file
         descriptors.
 
-        command (list): executable filename and arguments of the
-                        command.
+        command ([string]): executable filename and arguments of the
+            command.
         stdin (file): a file descriptor/object or None.
         stdout (file): a file descriptor/object or None.
         stderr (file): a file descriptor/object or None.
@@ -538,10 +538,11 @@ class StupidSandbox(SandboxBase):
         read until the end, in a way that prevents the execution from
         being blocked because of insufficient buffering.
 
-        command (list): executable filename and arguments of the
-                        command.
+        command ([string]): executable filename and arguments of the
+            command.
+
         return (bool): True if the sandbox didn't report errors
-                       (caused by the sandbox itself), False otherwise
+            (caused by the sandbox itself), False otherwise
 
         """
         def preexec_fn(self):
@@ -787,7 +788,7 @@ class IsolateSandbox(SandboxBase):
         """Translate the options defined in the instance to a string
         that can be postponed to mo-box as an arguments list.
 
-        return (string): the arguments list as a string.
+        return ([string]): the arguments list as strings.
 
         """
         res = list()
@@ -888,7 +889,7 @@ class IsolateSandbox(SandboxBase):
         """Return the memory used by the sandbox, reading the logs if
         necessary.
 
-        return (float): memory used by the sandbox (in bytes).
+        return (int): memory used by the sandbox (in bytes).
 
         """
         if 'cg-mem' in self.log:
@@ -912,7 +913,7 @@ class IsolateSandbox(SandboxBase):
         """Return the exit code of the sandboxed process, reading the
         logs if necessary.
 
-        return (float): exitcode, or 0.
+        return (int): exitcode, or 0.
 
         """
         if 'exitcode' in self.log:
@@ -1059,13 +1060,14 @@ class IsolateSandbox(SandboxBase):
         subprocess.Popen, assigning the corresponding standard file
         descriptors.
 
-        command (list): executable filename and arguments of the
-                        command.
-        stdin (file): a file descriptor/object or None.
-        stdout (file): a file descriptor/object or None.
-        stderr (file): a file descriptor/object or None.
+        command ([string]): executable filename and arguments of the
+            command.
+        stdin (int): a file descriptor/object or None.
+        stdout (int): a file descriptor/object or None.
+        stderr (int): a file descriptor/object or None.
         close_fds (bool): close all file descriptor before executing.
-        return (object): popen object.
+
+        return (Popen): popen object.
 
         """
         self.exec_num += 1
@@ -1095,10 +1097,14 @@ class IsolateSandbox(SandboxBase):
         read until the end, in a way that prevents the execution from
         being blocked because of insufficient buffering.
 
-        command (list): executable filename and arguments of the
-                        command.
-        return (bool): True if the sandbox didn't report errors
-                       (caused by the sandbox itself), False otherwise
+        command ([string]): executable filename and arguments of the
+            command.
+        wait (bool): True if this call is blocking, False otherwise
+
+        return (bool|Popen): if the call is blocking, then return True
+            if the sandbox didn't report errors (caused by the sandbox
+            itself), False otherwise; if the call is not blocking,
+            return the Popen object from subprocess.
 
         """
         popen = self._popen(command, stdin=subprocess.PIPE,

@@ -133,7 +133,7 @@ def format_date(dt, timezone, locale=None):
     """Return the date of dt formatted according to the given locale
 
     dt (datetime): a datetime object
-    timezone (timezone): the timezone the output should be in
+    timezone (tzinfo): the timezone the output should be in
     return (str): the date of dt, formatted using the given locale
 
     """
@@ -152,7 +152,7 @@ def format_time(dt, timezone, locale=None):
     """Return the time of dt formatted according to the given locale
 
     dt (datetime): a datetime object
-    timezone (timezone): the timezone the output should be in
+    timezone (tzinfo): the timezone the output should be in
     return (str): the time of dt, formatted using the given locale
 
     """
@@ -171,7 +171,7 @@ def format_datetime(dt, timezone, locale=None):
     """Return the date and time of dt formatted according to the given locale
 
     dt (datetime): a datetime object
-    timezone (timezone): the timezone the output should be in
+    timezone (tzinfo): the timezone the output should be in
     return (str): the date and time of dt, formatted using the given locale
 
     """
@@ -190,7 +190,7 @@ def format_datetime_smart(dt, timezone, locale=None):
     """Return dt formatted as 'date & time' or, if date is today, just 'time'
 
     dt (datetime): a datetime object
-    timezone (timezone): the timezone the output should be in
+    timezone (tzinfo): the timezone the output should be in
     return (str): the [date and] time of dt, formatted using the given locale
 
     """
@@ -245,7 +245,7 @@ def format_amount_of_time(seconds, precision=2, locale=None):
 
     seconds (int): the length of the amount of time in seconds.
     precision (int): see above
-    locale (tornado.locale.Locale): the locale to be used.
+    locale (Locale): the locale to be used.
 
     return (string): seconds formatted as above.
 
@@ -298,7 +298,7 @@ def format_token_rules(tokens, t_type=None, locale=None):
     t_type (str): the type of tokens the string should refer to (can be
                   "contest" to mean contest-tokens, "task" to mean
                   task-tokens, any other value to mean normal tokens).
-    locale (tornado.locale.Locale): the locale to be used.
+    locale (Locale|NullTranslation): the locale to be used.
 
     return (string): localized string describing the rules.
 

@@ -97,6 +97,8 @@ def get_shard_from_addresses(service, addrs):
     while True:
         try:
             host, port = get_service_address(ServiceCoord(service, i))
+            res_ipv4_addrs = set()
+            res_ipv6_addrs = set()
             # For magic numbers, see getaddrinfo() documentation
             try:
                 res_ipv4_addrs = set([x[4][0] for x in

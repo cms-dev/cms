@@ -26,9 +26,9 @@ from pytz import timezone, all_timezones
 def make_datetime(timestamp=None):
     """Return the datetime object associated with the given timestamp
 
-    timestamp (int or float): a POSIX timestamp
+    timestamp (int|float): a POSIX timestamp
     returns (datetime): the datetime representing the UTC time of the
-                        given timestamp, or now if timestamp is None.
+        given timestamp, or now if timestamp is None.
 
     """
     if timestamp is None:

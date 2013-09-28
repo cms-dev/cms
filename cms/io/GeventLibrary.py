@@ -706,11 +706,10 @@ class RemoteService(object):
         callback (function): method to call with the RPC response.
         plus (object): additional object to be passed to the callback.
 
-        return (bool/dict): False if the remote service is not
-                            connected; in a non-yielded call True if
-                            it is connected; in a yielded call, a
-                            dictionary with fields 'completed',
-                            'data', and 'error'.
+        return (bool|dict): False if the remote service is not
+            connected; in a non-yielded call True if it is connected;
+            in a yielded call, a dictionary with fields 'completed',
+            'data', and 'error'.
 
         """
         # Try to connect, or fail.

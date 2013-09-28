@@ -7,6 +7,7 @@
 """A wait callback to allow psycopg2 cooperation with gevent.
 
 Use `make_psycopg_green()` to enable gevent support in Psycopg.
+
 """
 
 # Copyright (C) 2010 Daniele Varrazzo <daniele.varrazzo@gmail.com>
