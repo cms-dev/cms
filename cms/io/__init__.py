@@ -104,18 +104,21 @@ def get_shard_from_addresses(service, addrs):
                                           host, port,
                                           family=gevent.socket.AF_INET,
                                           socktype=gevent.socket.SOCK_STREAM)])
+            except (gevent.socket.gaierror, gevent.socket.error):
+                res_ipv4_addrs = set()
+
+            try:
                 res_ipv6_addrs = set([x[4][0] for x in
                                       gevent.socket.getaddrinfo(
                                           host, port,
                                           family=gevent.socket.AF_INET6,
                                           socktype=gevent.socket.SOCK_STREAM)])
             except (gevent.socket.gaierror, gevent.socket.error):
-                # If the address can't be resolved, we simply skip it
-                pass
-            else:
-                if not ipv4_addrs.isdisjoint(res_ipv4_addrs) or \
-                        not ipv6_addrs.isdisjoint(res_ipv6_addrs):
-                    return i
+                res_ipv6_addrs = set()
+
+            if not ipv4_addrs.isdisjoint(res_ipv4_addrs) or \
+                    not ipv6_addrs.isdisjoint(res_ipv6_addrs):
+                return i
         except KeyError:
             return -1
         i += 1
