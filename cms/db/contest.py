@@ -318,7 +318,8 @@ class Contest(Base):
             calculation (has to be greater than or equal to all
             elements of token_timestamps).
 
-        return ((int, datetime, datetime)): same as tokens_available.
+        return ((int, datetime|None, datetime|None)): same as
+            tokens_available.
 
         """
         # If token_initial is None, it means that the admin disabled

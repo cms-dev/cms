@@ -400,10 +400,9 @@ class ContestWebServer(WebService):
         parameters = {
             "login_url": "/",
             "template_path": pkg_resources.resource_filename(
-                "cms.server",
-                "templates/contest"),
-            "static_path": pkg_resources.resource_filename("cms.server",
-                                                           "static"),
+                "cms.server", "templates/contest"),
+            "static_path": pkg_resources.resource_filename(
+                "cms.server", "static"),
             "cookie_secret": base64.b64encode(config.secret_key),
             "debug": config.tornado_debug,
         }
