@@ -281,10 +281,10 @@ class Reimporter:
                         self._update_object(old_task, new_task)
                     else:
                         logger.info("Task %s has not changed" % task)
-			# Even unchanged tasks should use a temporary number
-			# to avoid duplicate numbers when we fix them.
-			old_task.num = current_num
-			current_num += 1
+                        # Even unchanged tasks should use a temporary number
+                        # to avoid duplicate numbers when we fix them.
+                        old_task.num = current_num
+                        current_num += 1
                 else:
                     # Delete an existing task.
                     if self.force:
