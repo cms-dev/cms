@@ -41,25 +41,28 @@ CMS has been used in several official and unofficial contests. In
 particular we are aware of the following.
 
 - International competitions:
-    - IOI 2012 (International Olympiad in Informatics), Sirmione
-      and Montichiari, Italy, September 2012;
-    - IOI 2013, Brisbane, Australia, July 2013;
-    - FARIO 2012 (French-Australian Regional Informatics Olympiad),
-      March 2012.
+    - [IOI 2012](http://www.ioi2012.org) (International Olympiad in
+      Informatics), Sirmione and Montichiari, Italy, September 2012;
+    - [IOI 2013](http://www.ioi2013.org), Brisbane, Australia, July
+      2013;
+    - [FARIO 2012](http://orac.amt.edu.au/fario/fario12results.html)
+      (French-Australian Regional Informatics Olympiad), March 2012.
 - National competitions:
-    - OII 2011 (Italian Olympiad in Informatics), Sirmione,
-      September 2011;
+    - OII 2011 ([Italian Olympiad in Informatics]
+      (http://www.olimpiadi-informatica.it)), Sirmione, September
+      2011;
     - OII 2012, Sirmione, October 2012;
     - OII 2013, Salerno, September 2013;
-    - AIIO 2012 (Australian Invitational Informatics Olympiad),
-      February 2012;
+    - [AIIO 2012](http://orac.amt.edu.au/aiio/aiio12results.html)
+      (Australian Invitational Informatics Olympiad), February 2012;
     - Taipei High School Programming Contest, Taiwan, October 2012;
     - Croatian high school programming contest 2013, March 2013;
     - Festival of Innovative Technologies 2013 (national high school
       programming contest), Slovenia, April 2013;
     - OCI 2013 (Chilean Olympiads in Informatics), May 2013;
     - Slovenian Invitational Informatics Olympiad, May 2013;
-    - JOI Open Contest 2013, Japan, June 2013.
+    - [JOI Open Contest 2013]
+      (http://cms.ioi-jp.org/open-2013/index.html), Japan, June 2013.
 - Local competitions:
     - ABC 2013 (Algoritmi Bergamo Contest), Bergamo. Italy, May
       2013.
