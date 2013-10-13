@@ -26,10 +26,10 @@ Jobs play a major role in the interface with TaskTypes: they are a
 data structure containing all information about what the TaskTypes
 should do. They are mostly used in the communication between ES and
 the Workers, hence they contain only serializable data (for example,
-the name of the task type, not the task type object itself.
+the name of the task type, not the task type object itself).
 
-A JobGroup represent an indivisible action of a Worker, that is, a
-compilation or an evaluation. They contain one or more Jobs, for
+A JobGroup represents an indivisible action of a Worker, that is, a
+compilation or an evaluation. It contains one or more Jobs, for
 example "compile the submission" or "evaluate the submission on a
 certain testcase".
 
@@ -44,8 +44,8 @@ from cms.db import File, Manager, Executable, UserTestExecutable, Evaluation
 class Job(object):
     """Base class for all jobs.
 
-    Input data (filled by ES): task_type, task_type_parameters.
-    Metadata: shard, sandboxes, info.
+    Input data (usually filled by ES): task_type,
+    task_type_parameters. Metadata: shard, sandboxes, info.
 
     """
 
@@ -112,9 +112,9 @@ class CompilationJob(Job):
     Can represent either the compilation of a user test, or of a
     submission, or of an arbitrary source (as used in cmsMake).
 
-    Input data (filled by ES): language, files, managers. Output data
-    (filled by the Worker): success, compilation_success, executables,
-    text, plus.
+    Input data (usually filled by ES): language, files,
+    managers. Output data (filled by the Worker): success,
+    compilation_success, executables, text, plus.
 
     """
 
@@ -129,14 +129,16 @@ class CompilationJob(Job):
 
         language (string): the language of the submission / user test.
         files ({string: File}): files submitted by the user.
-        managers ({string: Manager}): manager provided by the admins.
+        managers ({string: Manager}): managers provided by the admins.
         success (bool): whether the job succeeded.
         compilation_success (bool): whether the compilation implicit
             in the job succeeded, or there was a compilation error.
         executables ({string: Executable}): executables created in the
             job.
         text ([object]): description of the outcome of the job, to be
-            presented to the user. It is a string
+            presented to the user. The first item is a string,
+            potentially with %-escaping; the following items are the
+            values to be %-formatted into the first.
         plus ({}): additional metadata.
 
         """
@@ -188,14 +190,14 @@ class CompilationJob(Job):
 
 
 class EvaluationJob(Job):
-    """Job representing a compilation.
+    """Job representing an evaluation on a testcase.
 
-    Can represent either the compilation of a user test, or of a
-    submission.
+    Can represent either the evaluation of a user test, or of a
+    submission, or of an arbitrary source (as used in cmsMake).
 
-    Input data (filled by ES): language, files, managers, executables,
-    input, output, time_limit, memory_limit. Output data (filled by
-    the Worker): success, outcome, text, user_output, plux.
+    Input data (usually filled by ES): language, files, managers,
+    executables, input, output, time_limit, memory_limit. Output data
+    (filled by the Worker): success, outcome, text, user_output, plux.
     executables, text, plus. Metadata: only_execution, get_output.
 
     """
@@ -213,7 +215,7 @@ class EvaluationJob(Job):
 
         language (string): the language of the submission / user test.
         files ({string: File}): files submitted by the user.
-        managers ({string: Manager}): manager provided by the admins.
+        managers ({string: Manager}): managers provided by the admins.
         executables ({string: Executable}): executables created in the
             compilation.
         input (string): digest of the input file.
@@ -224,7 +226,9 @@ class EvaluationJob(Job):
         outcome (string): the outcome of the evaluation, from which to
             compute the score.
         text ([object]): description of the outcome of the job, to be
-            presented to the user.
+            presented to the user. The first item is a string,
+            potentially with %-escaping; the following items are the
+            values to be %-formatted into the first.
         user_output (unicode): if requested (with get_output), the
             digest of the file containing the output of the user
             program.

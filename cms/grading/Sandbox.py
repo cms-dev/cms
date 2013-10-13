@@ -1062,9 +1062,9 @@ class IsolateSandbox(SandboxBase):
 
         command ([string]): executable filename and arguments of the
             command.
-        stdin (int): a file descriptor/object or None.
-        stdout (int): a file descriptor/object or None.
-        stderr (int): a file descriptor/object or None.
+        stdin (int|None): a file descriptor.
+        stdout (int|None): a file descriptor.
+        stderr (int|None): a file descriptor.
         close_fds (bool): close all file descriptor before executing.
 
         return (Popen): popen object.
