@@ -36,9 +36,9 @@ Servers
 Sandbox
 =======
 
-- *Symptom.* The freopen test fails.
+- *Symptom.* The Worker fails to evaluate a submission logging about an invalid (empty) output from the manager.
 
-  *Possible cause.* Add the ``dup3`` syscall to the allowed list.
+  *Possible cause.* You might have been used a non-statically linked checker. The sandbox prevent dynamically linked executables to work. Try compiling the checker with ```-static```.
 
 
 Importers
