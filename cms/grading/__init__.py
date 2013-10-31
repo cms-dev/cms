@@ -24,11 +24,13 @@
 import codecs
 import json
 import logging
+import os
+
 from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import LANG_C, LANG_CPP, LANG_PASCAL
+from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -64,8 +66,10 @@ class JobException(Exception):
 
 def get_compilation_command(language, source_filenames, executable_filename,
                             for_evaluation=True):
-    """Returns the compilation command for the specified language,
-    source filenames and executable filename. The command is a list of
+    """Return the compilation command.
+
+    The compilation command is for the specified language, source
+    filenames and executable filename. The command is a list of
     strings, suitable to be passed to the methods in subprocess
     package.
 
@@ -80,15 +84,10 @@ def get_compilation_command(language, source_filenames, executable_filename,
     executable_filename (string): the output file.
     for_evaluation (bool): if True, define EVAL during the compilation;
                            defaults to True.
+
     return (list): a list of string to be passed to subprocess.
 
     """
-    # For compiling in 32-bit mode under 64-bit OS: add "-march=i686",
-    # "-m32" for gcc/g++. Don't know about Pascal. Anyway, this will
-    # require some better support from the evaluation environment
-    # (particularly the sandbox, which has to be compiled in a
-    # different way depending on whether it will execute 32- or 64-bit
-    # programs).
     if language == LANG_C:
         command = ["/usr/bin/gcc"]
         if for_evaluation:
@@ -108,6 +107,41 @@ def get_compilation_command(language, source_filenames, executable_filename,
             command += ["-dEVAL"]
         command += ["-XS", "-O2", "-o%s" % executable_filename]
         command += [source_filenames[0]]
+    elif language == LANG_PYTHON:
+        # The executable name is fixed, and there is no way to specify
+        # the name of the pyc, so we need to bundle together two
+        # commands (compilation and rename).
+        command = ["/bin/sh", "-c"]
+        # Change the raw string to:
+        # "/usr/bin/python3 -m py_compile %s;mv __pycache__/%s.*.pyc %s"
+        # in order to use Python 3.
+        command += ["/usr/bin/python2 -m py_compile %s;mv %s.pyc %s" % (
+            source_filenames[0],
+            os.path.splitext(os.path.basename(source_filenames[0]))[0],
+            executable_filename,
+            )]
+    return command
+
+
+def get_evaluation_command(language, executable_filename):
+    """Return the evaluation command.
+
+    The evaluation command is for the given language and executable
+    filename. The command is a list of strings, suitable to be passed
+    to the methods in subprocess package.
+
+    language (string): one of the recognized languages.
+    executable_filename (string): the name of the executable.
+
+    return (list): a list of string to be passed to subprocess.
+
+    """
+    if language in (LANG_C, LANG_CPP, LANG_PASCAL):
+        command = [os.path.join(".", executable_filename)]
+    elif language == LANG_PYTHON:
+        command = ["/bin/sh", "-c"]
+        # Change "python2" to "python3" to use Python 3.
+        command += ["HOME=./ /usr/bin/python2 %s" % executable_filename]
     return command
 
 

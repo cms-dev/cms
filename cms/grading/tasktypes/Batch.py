@@ -24,9 +24,9 @@ import logging
 import os
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP
-from cms.grading import get_compilation_command, compilation_step, \
-    evaluation_step, human_evaluation_message, is_evaluation_passed, \
-    extract_outcome_and_text, white_diff_step
+from cms.grading import get_compilation_command, get_evaluation_command, \
+    compilation_step, evaluation_step, human_evaluation_message, \
+    is_evaluation_passed, extract_outcome_and_text, white_diff_step
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
     ParameterTypeChoice, ParameterTypeString
 from cms.grading.TaskType import TaskType, \
@@ -210,7 +210,8 @@ class Batch(TaskType):
 
         # Prepare the execution
         executable_filename = job.executables.keys()[0]
-        command = [os.path.join(".", executable_filename)]
+        language = job.language
+        command = get_evaluation_command(language, executable_filename)
         executables_to_get = {
             executable_filename:
             job.executables[executable_filename].digest
