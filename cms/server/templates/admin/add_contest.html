@@ -26,7 +26,7 @@ function validate_contest()
     var end = document.add_contest.end.value;
     var per_user_time = document.add_contest.per_user_time.value;
 
-    if( name === undefined || name == '')
+    if (name === undefined || name == '')
     {
         alert('No contest name specified');
         document.add_contest.name.focus();
@@ -34,17 +34,17 @@ function validate_contest()
     }
 
     par = "";
-    par += "&name="+encodeURIComponent(name);
-    par += "&description="+encodeURIComponent(description);
-    par += "&token_initial="+encodeURIComponent(token_initial);
-    par += "&token_max="+encodeURIComponent(token_max);
-    par += "&token_total="+encodeURIComponent(token_total);
-    par += "&token_min_interval="+encodeURIComponent(token_min_interval);
-    par += "&token_gen_time="+encodeURIComponent(token_gen_time);
-    par += "&token_gen_number="+encodeURIComponent(token_gen_number);
-    par += "&start="+encodeURIComponent(start);
-    par += "&end="+encodeURIComponent(end);
-    par += "&per_user_time="+encodeURIComponent(per_user_time);
+    par += "&name=" + encodeURIComponent(name);
+    par += "&description=" + encodeURIComponent(description);
+    par += "&token_initial=" + encodeURIComponent(token_initial);
+    par += "&token_max=" + encodeURIComponent(token_max);
+    par += "&token_total=" + encodeURIComponent(token_total);
+    par += "&token_min_interval=" + encodeURIComponent(token_min_interval);
+    par += "&token_gen_time=" + encodeURIComponent(token_gen_time);
+    par += "&token_gen_number=" + encodeURIComponent(token_gen_number);
+    par += "&start=" + encodeURIComponent(start);
+    par += "&end=" + encodeURIComponent(end);
+    par += "&per_user_time=" + encodeURIComponent(per_user_time);
 
     cmsutils.ajax_request(url_root + '/contest/add', par, contest_response, "POST");
     return false;
