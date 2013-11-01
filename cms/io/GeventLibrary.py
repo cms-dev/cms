@@ -274,7 +274,7 @@ class Service(object):
         try:
             os.remove(backdoor_path)
         except OSError as error:
-            if exc.errno != errno.ENOENT:
+            if error.errno != errno.ENOENT:
                 raise
         else:
             logger.warning("A backdoor socket has been found and deleted.")
@@ -302,7 +302,7 @@ class Service(object):
         try:
             os.remove(backdoor_path)
         except OSError as error:
-            if exc.errno != errno.ENOENT:
+            if error.errno != errno.ENOENT:
                 raise
 
     def run(self):
