@@ -40,30 +40,42 @@ from cms.io import ServiceCoord, Address, config as async_config, \
 logger = logging.getLogger(__name__)
 
 
-LANGUAGES = ["c", "cpp", "pas"]
+# Shorthand codes for all supported languages.
+LANG_C = "c"
+LANG_CPP = "cpp"
+LANG_PASCAL = "pas"
+
+LANGUAGE_NAMES = {
+    LANG_C: "C",
+    LANG_CPP: "C++",
+    LANG_PASCAL: "Pascal",
+}
+
+LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
+DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
 
 # A reference for extension-based automatic language detection.
 # (It's more difficult with headers because ".h" is ambiguous.)
 SOURCE_EXT_TO_LANGUAGE_MAP = {
-    ".c": "c",
-    ".cpp": "cpp",
-    ".cxx": "cpp",
-    ".cc": "cpp",
-    ".C": "cpp",
-    ".c++": "cpp",
-    ".pas": "pas",
+    ".c": LANG_C,
+    ".cpp": LANG_CPP,
+    ".cxx": LANG_CPP,
+    ".cc": LANG_CPP,
+    ".C": LANG_CPP,
+    ".c++": LANG_CPP,
+    ".pas": LANG_PASCAL,
 }
 
 # Our preferred source file and header file extension for each language.
 LANGUAGE_TO_SOURCE_EXT_MAP = {
-    "c": ".c",
-    "cpp": ".cpp",
-    "pas": ".pas",
+    LANG_C: ".c",
+    LANG_CPP: ".cpp",
+    LANG_PASCAL: ".pas",
 }
 LANGUAGE_TO_HEADER_EXT_MAP = {
-    "c": ".h",
-    "cpp": ".h",
-    "pas": "lib.pas",
+    LANG_C: ".h",
+    LANG_CPP: ".h",
+    LANG_PASCAL: "lib.pas",
 }
 
 

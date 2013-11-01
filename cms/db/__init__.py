@@ -46,6 +46,8 @@ __all__ = [
     "Session", "ScopedSession", "SessionGen", "custom_psycopg2_connection",
     # base
     "metadata", "Base",
+    # types
+    "RepeatedUnicode",
     # contest
     "Contest", "Announcement",
     # user
@@ -72,7 +74,7 @@ __all__ = [
 
 # Instantiate or import these objects.
 
-version = 6
+version = 7
 
 
 engine = create_engine(config.database, echo=config.database_debug,
@@ -82,6 +84,7 @@ engine = create_engine(config.database, echo=config.database_debug,
 from .session import Session, ScopedSession, SessionGen, \
     custom_psycopg2_connection
 
+from .types import RepeatedUnicode
 from .base import metadata, Base
 from .contest import Contest, Announcement
 from .user import User, Message, Question

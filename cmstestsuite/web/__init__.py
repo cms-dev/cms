@@ -57,7 +57,14 @@ def browser_do_request(browser, url, data=None, files=None):
                                 method='POST',
                                 enctype='multipart/form-data')
         for key in sorted(data.keys()):
-            browser.form.new_control('hidden', key, {'value': data[key]})
+            # If the passed value is a list, we assume it is a list of
+            # names of checkboxes that are checked.
+            if isinstance(data[key], list):
+                for value in data[key]:
+                    browser.form.new_control(
+                        'checkbox', key, {'value': value, 'checked': True})
+            else:
+                browser.form.new_control('hidden', key, {'value': data[key]})
 
         for field_name, file_path in files:
             browser.form.new_control('file', field_name, {'id': field_name})

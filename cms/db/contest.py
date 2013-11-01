@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -33,8 +33,9 @@ from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
 from sqlalchemy.types import Integer, Unicode, DateTime, Interval
 from sqlalchemy.orm import relationship, backref
 
-from . import Base
+from . import Base, RepeatedUnicode
 
+from cms import DEFAULT_LANGUAGES
 from cmscommon.DateTime import make_datetime
 
 
@@ -61,6 +62,13 @@ class Contest(Base):
     description = Column(
         Unicode,
         nullable=False)
+
+    # The list of languages shorthand allowed in the contest,
+    # e.g. cpp. The codes must be the same as those in cms.LANGUAGES.
+    languages = Column(
+        RepeatedUnicode(),
+        nullable=False,
+        default=DEFAULT_LANGUAGES)
 
     # Follows the enforcement of token for any person, for all the
     # task. This enforcements add up to the ones defined task-wise.

@@ -9,35 +9,43 @@
   <table class="sub_table">
     <tr>
       <td>Name</td>
-      <td><input type="text" name="name" value="{{ contest.name }}" /></td>
+      <td><input type="text" name="name" value="{{ contest.name }}"></td>
     </tr>
     <tr>
       <td>Description</td>
       <td><textarea name="description">{{ contest.description }}</textarea></td>
     </tr>
     <tr>
+      <td>Languages allowed</td>
+      <td>
+        {% for lang in LANGUAGES %}
+          <label><input type="checkbox" name="languages" value="{{ lang }}" {{ "checked" if lang in contest.languages else "" }}>{{ LANGUAGE_NAMES[lang] }}</label>
+        {% end %}
+      </td>
+    </tr>
+    <tr>
       <td>Initial number of tokens</td>
-      <td><input type="text" name="token_initial" value="{{ contest.token_initial if contest.token_initial is not None else "" }}" size="3" /></td>
+      <td><input type="text" name="token_initial" value="{{ contest.token_initial if contest.token_initial is not None else "" }}" size="3"></td>
     </tr>
     <tr>
       <td>Maximum accumulated tokens</td>
-      <td><input type="text" name="token_max" value="{{ contest.token_max if contest.token_max is not None else "" }}" size="3" /></td>
+      <td><input type="text" name="token_max" value="{{ contest.token_max if contest.token_max is not None else "" }}" size="3"></td>
     </tr>
     <tr>
       <td>Total number of tokens</td>
-      <td><input type="text" name="token_total" value="{{ contest.token_total if contest.token_total is not None else "" }}" size="3" /></td>
+      <td><input type="text" name="token_total" value="{{ contest.token_total if contest.token_total is not None else "" }}" size="3"></td>
     </tr>
     <tr>
       <td>Minimum interval between tokens (in seconds)</td>
-      <td><input type="text" name="token_min_interval" value="{{ int(contest.token_min_interval.total_seconds()) }}" size="3" /></td>
+      <td><input type="text" name="token_min_interval" value="{{ int(contest.token_min_interval.total_seconds()) }}" size="3"></td>
     </tr>
     <tr>
       <td>Token generation period (in minutes)</td>
-      <td><input type="text" name="token_gen_time" value="{{ int(contest.token_gen_time.total_seconds() / 60) }}" size="3" /></td>
+      <td><input type="text" name="token_gen_time" value="{{ int(contest.token_gen_time.total_seconds() / 60) }}" size="3"></td>
     </tr>
     <tr>
       <td>Token generation number</td>
-      <td><input type="text" name="token_gen_number" value="{{ contest.token_gen_number }}" size="3" /></td>
+      <td><input type="text" name="token_gen_number" value="{{ contest.token_gen_number }}" size="3"></td>
     </tr>
     <tr>
       <td>Start (in UTC)</td>
@@ -76,8 +84,8 @@
       <td><input type="text" name="score_precision" value="{{ contest.score_precision }}"></td>
     </tr>
   </table>
-  <input type="submit" value="Update" />
-  <input type="reset" value="Reset" />
+  <input type="submit" value="Update">
+  <input type="reset" value="Reset">
 </form>
 
 {% end %}

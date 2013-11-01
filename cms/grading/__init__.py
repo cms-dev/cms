@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -28,6 +28,7 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
+from cms import LANG_C, LANG_CPP, LANG_PASCAL
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -88,20 +89,20 @@ def get_compilation_command(language, source_filenames, executable_filename,
     # (particularly the sandbox, which has to be compiled in a
     # different way depending on whether it will execute 32- or 64-bit
     # programs).
-    if language == "c":
+    if language == LANG_C:
         command = ["/usr/bin/gcc"]
         if for_evaluation:
             command += ["-DEVAL"]
         command += ["-static", "-O2", "-o", executable_filename]
         command += source_filenames
         command += ["-lm"]
-    elif language == "cpp":
+    elif language == LANG_CPP:
         command = ["/usr/bin/g++"]
         if for_evaluation:
             command += ["-DEVAL"]
         command += ["-static", "-O2", "-o", executable_filename]
         command += source_filenames
-    elif language == "pas":
+    elif language == LANG_PASCAL:
         command = ["/usr/bin/fpc"]
         if for_evaluation:
             command += ["-dEVAL"]

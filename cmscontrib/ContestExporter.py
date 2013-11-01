@@ -44,7 +44,8 @@ from sqlalchemy.types import \
 
 from cms.db import version as model_version
 from cms.db import SessionGen, Contest, ask_for_contest, \
-    Submission, UserTest, SubmissionResult, UserTestResult
+    Submission, UserTest, SubmissionResult, UserTestResult, \
+    RepeatedUnicode
 from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
@@ -253,7 +254,7 @@ class ContestExporter(object):
             col_type = type(col.type)
 
             val = getattr(obj, prp.key)
-            if col_type in [Boolean, Integer, Float, Unicode]:
+            if col_type in [Boolean, Integer, Float, Unicode, RepeatedUnicode]:
                 data[prp.key] = val
             elif col_type is String:
                 data[prp.key] = \

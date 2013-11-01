@@ -34,7 +34,7 @@ from sqlalchemy.types import \
 
 import six
 
-from . import engine
+from . import RepeatedUnicode, engine
 
 
 _TYPE_MAP = {
@@ -45,6 +45,7 @@ _TYPE_MAP = {
     Unicode: six.string_types,  # TODO Use six.text_type.
     DateTime: datetime,
     Interval: timedelta,
+    RepeatedUnicode: list,  # TODO Use a type that checks also the content.
 }
 
 

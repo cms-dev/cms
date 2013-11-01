@@ -16,6 +16,11 @@ function validate_contest()
 {
     var name = document.add_contest.name.value;
     var description = document.add_contest.description.value;
+    var languages = [];
+    var langInputs = document.add_contest.languages;
+    for (var i = 0; i < langInputs.length; i++)
+        if (langInputs[i].checked)
+            languages.push([langInputs[i].value);
     var token_initial = document.add_contest.token_initial.value;
     var token_max = document.add_contest.token_max.value;
     var token_total = document.add_contest.token_total.value;
@@ -36,6 +41,10 @@ function validate_contest()
     par = "";
     par += "&name=" + encodeURIComponent(name);
     par += "&description=" + encodeURIComponent(description);
+    for (var i = 0; i < languages.length; i++)
+    {
+        par += "&languages=" + encodeURIComponent(languages[i]);
+    }
     par += "&token_initial=" + encodeURIComponent(token_initial);
     par += "&token_max=" + encodeURIComponent(token_max);
     par += "&token_total=" + encodeURIComponent(token_total);
@@ -60,35 +69,43 @@ function validate_contest()
   <table class="sub_table">
     <tr>
       <td>Name</td>
-      <td><input type="text" name="name" /></td>
+      <td><input type="text" name="name"></td>
     </tr>
     <tr>
       <td>Description</td>
       <td><textarea name="description"></textarea></td>
     </tr>
     <tr>
+      <td>Languages allowed</td>
+      <td>
+        {% for lang in LANGUAGES %}
+          <label><input type="checkbox" name="languages" value="{{ lang }}" {{ "checked" if lang in DEFAULT_LANGUAGES else "" }}>{{ LANGUAGE_NAMES[lang] }}</label>
+        {% end %}
+      </td>
+    </tr>
+    <tr>
       <td>Initial number of tokens</td>
-      <td><input type="text" name="token_initial" size="3" value="" /></td>
+      <td><input type="text" name="token_initial" size="3" value=""></td>
     </tr>
     <tr>
       <td>Maximum accumulated tokens</td>
-      <td><input type="text" name="token_max" size="3" value="" /></td>
+      <td><input type="text" name="token_max" size="3" value=""></td>
     </tr>
     <tr>
       <td>Total number of tokens</td>
-      <td><input type="text" name="token_total" size="3" value="" /></td>
+      <td><input type="text" name="token_total" size="3" value=""></td>
     </tr>
     <tr>
       <td>Minimum interval between tokens (in seconds)</td>
-      <td><input type="text" name="token_min_interval" size="3" value="0" /></td>
+      <td><input type="text" name="token_min_interval" size="3" value="0"></td>
     </tr>
     <tr>
       <td>Token generation period (in minutes)</td>
-      <td><input type="text" name="token_gen_time" size="3" value="0" /></td>
+      <td><input type="text" name="token_gen_time" size="3" value="0"></td>
     </tr>
     <tr>
       <td>Token generation number</td>
-      <td><input type="text" name="token_gen_number" size="3" value="0" /></td>
+      <td><input type="text" name="token_gen_number" size="3" value="0"></td>
     </tr>
     <tr>
       <td>Start (in UTC)</td>

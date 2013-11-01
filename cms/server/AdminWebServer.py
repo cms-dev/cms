@@ -455,6 +455,8 @@ class AddContestHandler(BaseHandler):
 
             description = self.get_argument("description", "")
 
+            languages = self.get_arguments("languages", [])
+
             token_initial = self.get_non_negative_int(
                 "token_initial",
                 None)
@@ -539,7 +541,7 @@ class AddContestHandler(BaseHandler):
             self.redirect("/contest/add")
             return
 
-        contest = Contest(name, description, token_initial,
+        contest = Contest(name, description, languages, token_initial,
                           token_max, token_total, token_min_interval,
                           token_gen_time, token_gen_number, start, stop,
                           timezone, per_user_time,
@@ -572,6 +574,8 @@ class ContestHandler(BaseHandler):
 
             contest.description = self.get_argument("description",
                                                     contest.description)
+
+            contest.languages = self.get_arguments("languages", [])
 
             contest.token_initial = self.get_non_negative_int(
                 "token_initial",

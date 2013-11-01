@@ -25,6 +25,7 @@ import datetime
 import re
 from argparse import ArgumentParser
 
+from cms import LANGUAGES
 from cmstestsuite import get_cms_config, CONFIG, info, sh
 from cmstestsuite import add_contest, add_existing_user, add_existing_task, \
     add_user, add_task, add_testcase, add_manager, combine_coverage, \
@@ -56,6 +57,7 @@ def create_contest():
     contest_id = add_contest(
         name="testcontest1",
         description="A test contest #1.",
+        languages=LANGUAGES,
         start=start_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
         stop=stop_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
         timezone=get_system_timezone(),

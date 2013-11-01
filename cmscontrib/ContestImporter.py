@@ -48,7 +48,7 @@ import cms.db as class_hook
 
 from cms.db import version as model_version
 from cms.db import SessionGen, init_db, drop_db, Submission, UserTest, \
-    SubmissionResult, UserTestResult
+    SubmissionResult, UserTestResult, RepeatedUnicode
 from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
@@ -351,7 +351,7 @@ class ContestImporter(object):
             col_type = type(col.type)
 
             val = data[prp.key]
-            if col_type in [Boolean, Integer, Float, Unicode]:
+            if col_type in [Boolean, Integer, Float, Unicode, RepeatedUnicode]:
                 args[prp.key] = val
             elif col_type is String:
                 args[prp.key] = val.encode('latin1') if val is not None else None

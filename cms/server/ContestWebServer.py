@@ -993,9 +993,9 @@ class SubmitHandler(BaseHandler):
                     retrieved += 1
 
         # We need to ensure that everytime we have a .%l in our
-        # filenames, the user has one amongst ".cpp", ".c", or ".pas,
-        # and that all these are the same (i.e., no mixed-language
-        # submissions).
+        # filenames, the user has the extension of an allowed
+        # language, and that all these are the same (i.e., no
+        # mixed-language submissions).
         def which_language(user_filename):
             """Determine the language of user_filename from its
             extension.
@@ -1021,6 +1021,10 @@ class SubmitHandler(BaseHandler):
                 elif submission_lang is not None and \
                         submission_lang != lang:
                     error = self._("All sources must be in the same language.")
+                    break
+                elif lang not in contest.languages:
+                    error = self._(
+                        "Language %s not allowed in this contest." % lang)
                     break
                 else:
                     submission_lang = lang
