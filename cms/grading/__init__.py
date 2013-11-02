@@ -30,7 +30,7 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON
+from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -120,6 +120,11 @@ def get_compilation_command(language, source_filenames, executable_filename,
             os.path.splitext(os.path.basename(source_filenames[0]))[0],
             executable_filename,
             )]
+    elif language == LANG_PHP:
+        command = ["/bin/sh", "-c"]
+        command += ["cp %s %s" % (source_filenames[0], executable_filename)]
+    else:
+        raise ValueError("Unknown language %s." % language)
     return command
 
 
@@ -142,6 +147,11 @@ def get_evaluation_command(language, executable_filename):
         command = ["/bin/sh", "-c"]
         # Change "python2" to "python3" to use Python 3.
         command += ["HOME=./ /usr/bin/python2 %s" % executable_filename]
+    elif language == LANG_PHP:
+        command = ["/bin/sh", "-c"]
+        command += ["/usr/bin/php5 %s" % executable_filename]
+    else:
+        raise ValueError("Unknown language %s." % language)
     return command
 
 
