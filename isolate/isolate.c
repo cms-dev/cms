@@ -1101,7 +1101,7 @@ box_keeper(void)
     {
       sa.sa_handler = signal_alarm;
       sigaction(SIGALRM, &sa, NULL);
-      set_timer(timeout+100);
+      set_timer((wall_timeout<timeout ? timeout : wall_timeout) + 100);
     }
 
   for(;;)
