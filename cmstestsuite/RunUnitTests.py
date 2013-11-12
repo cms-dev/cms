@@ -99,7 +99,7 @@ def load_test_list_from_file(filename):
 
 def get_all_tests():
     tests = []
-    for path, _, names in os.walk(os.path.join("cmstestsuite", "cms")):
+    for path, _, names in os.walk(os.path.join("cmstestsuite", "unit_tests")):
         for name in names:
             if name.endswith(".py"):
                 tests.append((path, name))

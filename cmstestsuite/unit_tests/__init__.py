@@ -1,0 +1,52 @@
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+
+# Programming contest management system
+# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""Tests for the initialization routines.
+
+"""
+
+import unittest
+
+from cms import LANGUAGES, DEFAULT_LANGUAGES, LANGUAGE_NAMES, \
+    LANGUAGE_TO_SOURCE_EXT_MAP, LANGUAGE_TO_HEADER_EXT_MAP, \
+    SOURCE_EXT_TO_LANGUAGE_MAP
+
+
+class TestCmsInit(unittest.TestCase):
+
+    def test_languages(self):
+        # All languages are described.
+        for lang in LANGUAGES:
+            assert lang in LANGUAGE_NAMES
+            assert lang in LANGUAGE_TO_SOURCE_EXT_MAP
+            assert lang in LANGUAGE_TO_HEADER_EXT_MAP
+        # All default languages are languages.
+        for lang in DEFAULT_LANGUAGES:
+            assert lang in LANGUAGES
+        # Extensions are sane.
+        for lang in LANGUAGES:
+            assert LANGUAGE_TO_SOURCE_EXT_MAP[lang][0] == "."
+            assert lang == \
+                SOURCE_EXT_TO_LANGUAGE_MAP[LANGUAGE_TO_SOURCE_EXT_MAP[lang]]
+        for ext in SOURCE_EXT_TO_LANGUAGE_MAP:
+            assert ext[0] == "."
+
+
+if __name__ == "__main__":
+    unittest.main()

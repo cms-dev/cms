@@ -117,6 +117,7 @@
         </tr>
 {% end %}
 {% set compilation_commands = task_type.get_compilation_commands([x.filename for x in task.submission_format]) %}
+{% set compilation_commands = {lang: compilation_commands[lang] for lang in contest.languages} %}
 {% if compilation_commands is not None %}
 <tr>
     <th rowspan="{{ len(compilation_commands) }}">{{ _("Compilation commands") }}</th>
@@ -125,7 +126,7 @@
 </tr>
 <tr>
         {% end %}
-    <td>{{ {"c": "C", "cpp": "C++", "pas": "Pascal"}[l] }}</td>
+    <td>{{ LANGUAGE_NAMES[l] }}</td>
     <td class="compilation_command_cell">
 {% for cmd in c %}
         <code class="compilation_command">{{ cmd }}</code>
