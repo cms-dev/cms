@@ -22,6 +22,8 @@
 import gevent.monkey
 gevent.monkey.patch_all()
 
+import sys
+
 from cms import default_argument_parser
 from cms.db import ask_for_contest
 from cms.service.ProxyService import ProxyService
@@ -31,10 +33,10 @@ def main():
     """Parse arguments and launch service.
 
     """
-    default_argument_parser("Ranking relayer for CMS.",
-                            ProxyService,
-                            ask_contest=ask_for_contest).run()
+    return default_argument_parser("Ranking relayer for CMS.",
+                                   ProxyService,
+                                   ask_contest=ask_for_contest).run()
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(0 if main() is True else 1)

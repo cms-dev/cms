@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -32,7 +32,6 @@ import os
 import pwd
 import signal
 import _socket
-import sys
 import traceback
 import uuid
 from functools import wraps
@@ -308,6 +307,8 @@ class Service(object):
     def run(self):
         """Starts the main loop of the service.
 
+        return (bool): True if successful.
+
         """
         try:
             self.server.start()
@@ -318,7 +319,7 @@ class Service(object):
             logger.critical("Service %s could not listen on "
                             "specified address, because it cannot "
                             "be resolved." % (self.name))
-            sys.exit(1)
+            return False
 
         except gevent.socket.error as (error, unused_msg):
             if error == errno.EADDRINUSE:
@@ -326,12 +327,12 @@ class Service(object):
                                 "already in use, quitting." %
                                 (self.server.address.port,
                                  self.name))
-                sys.exit(1)
+                return False
             elif error == errno.EADDRNOTAVAIL:
                 logger.critical("Service %s could not listen on "
                                 "specified address, because it is not "
                                 "available." % (self.name))
-                sys.exit(1)
+                return False
             else:
                 raise
 
@@ -358,6 +359,7 @@ class Service(object):
 
         self._disconnect_all()
         self.server.stop()
+        return True
 
     def _reconnect(self):
         """Reconnect to all remote services that have been disconnected.

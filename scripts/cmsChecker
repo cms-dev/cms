@@ -22,6 +22,8 @@
 import gevent.monkey
 gevent.monkey.patch_all()
 
+import sys
+
 from cms import default_argument_parser
 from cms.service.Checker import Checker
 
@@ -30,9 +32,9 @@ def main():
     """Parse arguments and launch service.
 
     """
-    default_argument_parser("Checker for aliveness of other CMS service.",
-                            Checker).run()
+    return default_argument_parser(
+        "Checker for aliveness of other CMS service.", Checker).run()
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(0 if main() is True else 1)
