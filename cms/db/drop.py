@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -46,6 +46,8 @@ def drop_db():
     corresponding privileges. This doesn't work if for some reason the
     database was set up to use a different schema: this situation is
     strange enough for us to just ignore it.
+
+    return (bool): True if successful.
 
     """
     connection = custom_psycopg2_connection()

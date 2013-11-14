@@ -23,6 +23,7 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import argparse
+import sys
 
 from cms import find_local_addresses
 from cms.io import get_shard_from_addresses
@@ -59,10 +60,10 @@ def main():
                 import sys
                 print >> sys.stderr, "There is no contest " \
                       "with the specified id. Please try again."
-                sys.exit(1)
+                return False
     else:
-        ResourceService(args.shard).run()
+        return ResourceService(args.shard).run()
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(0 if main() is True else 1)

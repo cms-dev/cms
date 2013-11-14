@@ -3,6 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -23,6 +24,11 @@ from . import metadata
 
 
 def init_db():
+    """Initialize the database.
+
+    return (bool): True if successful.
+
+    """
     metadata.create_all()
 
     return True

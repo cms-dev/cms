@@ -22,8 +22,10 @@
 import gevent.monkey
 gevent.monkey.patch_all()
 
+import sys
+
 from cmsranking.RankingWebServer import main
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(0 if main() is True else 1)

@@ -429,6 +429,11 @@ class RoutingHandler(object):
 
 
 def main():
+    """Entry point for RWS.
+
+    return (bool): True if executed successfully.
+
+    """
     parser = argparse.ArgumentParser(
         description="Ranking for CMS.")
     parser.add_argument("-d", "--drop",
@@ -445,7 +450,7 @@ def main():
             shutil.rmtree(config.lib_dir)
         else:
             print "Not removing directory %s." % config.lib_dir
-        return
+        return False
 
     toplevel_handler = RoutingHandler(DataWatcher(), ImageHandler(
         os.path.join(config.lib_dir, '%(name)s'),
@@ -483,3 +488,4 @@ def main():
         pass
     finally:
         gevent.joinall(list(gevent.spawn(s.stop) for s in servers))
+    return True
