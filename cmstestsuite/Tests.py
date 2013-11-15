@@ -21,122 +21,125 @@ import cmstestsuite.tasks.batch_stdio as batch_stdio
 import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
+
+from cms import LANGUAGES, LANG_C, LANG_CPP
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
      CheckTimeout, CheckNonzeroReturn
 
 
-all_languages = ('c', 'cpp', 'pas')
+ALL_LANGUAGES = tuple(LANGUAGES)
+
 
 ALL_TESTS = [
 
 Test('correct-stdio',
      task=batch_stdio, filename='correct-stdio.%l',
-     languages=all_languages,
+     languages=ALL_LANGUAGES,
      checks=[CheckOverallScore(100, 100)]),
 
 Test('incorrect-stdio',
      task=batch_stdio, filename='incorrect-stdio.%l',
-     languages=all_languages,
+     languages=ALL_LANGUAGES,
      checks=[CheckOverallScore(0, 100)]),
 
 Test('half-correct-stdio',
      task=batch_stdio, filename='half-correct-stdio.%l',
-     languages=all_languages,
+     languages=ALL_LANGUAGES,
      checks=[CheckOverallScore(50, 100)]),
 
 Test('correct-freopen',
      task=batch_fileio, filename='correct-freopen.%l',
-     languages=('c',),
+     languages=(LANG_C,),
      checks=[CheckOverallScore(100, 100)]),
 
 Test('correct-fileio',
      task=batch_fileio, filename='correct-fileio.%l',
-     languages=all_languages,
+     languages=ALL_LANGUAGES,
      checks=[CheckOverallScore(100, 100)]),
 
 Test('incorrect-fileio',
      task=batch_fileio, filename='incorrect-fileio.%l',
-     languages=all_languages,
+     languages=ALL_LANGUAGES,
      checks=[CheckOverallScore(0, 100)]),
 
 Test('half-correct-fileio',
      task=batch_fileio, filename='half-correct-fileio.%l',
-     languages=all_languages,
+     languages=ALL_LANGUAGES,
      checks=[CheckOverallScore(50, 100)]),
 
 Test('incorrect-fileio-nooutput',
      task=batch_fileio, filename='incorrect-fileio-nooutput.%l',
-     languages=('c',),
+     languages=(LANG_C,),
      checks=[CheckOverallScore(0, 100)]),
 
 Test('incorrect-fileio-emptyoutput',
      task=batch_fileio, filename='incorrect-fileio-emptyoutput.%l',
-     languages=('c',),
+     languages=(LANG_C,),
      checks=[CheckOverallScore(0, 100)]),
 
 Test('incorrect-readstdio',
      task=batch_fileio, filename='correct-stdio.%l',
-     languages=all_languages,
+     languages=ALL_LANGUAGES,
      checks=[CheckOverallScore(0, 100)]),
 
 Test('compile-fail',
      task=batch_fileio, filename='compile-fail.%l',
-     languages=all_languages,
+     languages=ALL_LANGUAGES,
      checks=[CheckCompilationFail()]),
 
 Test('timeout-cputime',
      task=batch_stdio, filename='timeout-cputime.%l',
-     languages=all_languages,
+     languages=ALL_LANGUAGES,
      checks=[CheckOverallScore(0, 100), CheckTimeout()]),
 
 Test('timeout-pause',
      task=batch_stdio, filename='timeout-pause.%l',
-     languages=('cpp',),
+     languages=(LANG_CPP,),
      checks=[CheckOverallScore(0, 100), CheckTimeout()]),
 
 Test('timeout-sleep',
      task=batch_stdio, filename='timeout-sleep.%l',
-     languages=('cpp',),
+     languages=(LANG_CPP,),
      checks=[CheckOverallScore(0, 100), CheckTimeout()]),
 
 Test('timeout-sigstop',
      task=batch_stdio, filename='timeout-sigstop.%l',
-     languages=('cpp',),
+     languages=(LANG_CPP,),
      checks=[CheckOverallScore(0, 100), CheckTimeout()]),
 
 Test('timeout-select',
      task=batch_stdio, filename='timeout-select.%l',
-     languages=('cpp',),
+     languages=(LANG_CPP,),
      checks=[CheckOverallScore(0, 100), CheckTimeout()]),
 
 Test('nonzero-return-stdio',
      task=batch_stdio, filename='nonzero-return-stdio.%l',
-     languages=all_languages,
+     languages=ALL_LANGUAGES,
      checks=[CheckOverallScore(0, 100), CheckNonzeroReturn()]),
 
 Test('nonzero-return-fileio',
      task=batch_fileio, filename='nonzero-return-fileio.%l',
-     languages=all_languages,
+     languages=ALL_LANGUAGES,
      checks=[CheckOverallScore(0, 100), CheckNonzeroReturn()]),
 
 Test('managed-correct',
      task=batch_fileio_managed, filename='managed-correct.%l',
-     languages=('c', 'cpp'), # TODO: Pascal.
+     languages=(LANG_C, LANG_CPP), # TODO: Pascal, Python.
      checks=[CheckOverallScore(100, 100)]),
 
 Test('managed-incorrect',
      task=batch_fileio_managed, filename='managed-incorrect.%l',
-     languages=('c', 'cpp'), # TODO: Pascal.
+     languages=(LANG_C, LANG_CPP), # TODO: Pascal, Python.
      checks=[CheckOverallScore(0, 100)]),
 
 Test('communication-correct',
      task=communication, filename='managed-correct.%l',
-     languages=('c', 'cpp'), # TODO: Pascal.
+     languages=(LANG_C, LANG_CPP), # TODO: Pascal, Python.
      checks=[CheckOverallScore(100, 100)]),
 
 Test('communication-incorrect',
      task=communication, filename='managed-incorrect.%l',
-     languages=('c', 'cpp'), # TODO: Pascal.
+     languages=(LANG_C, LANG_CPP), # TODO: Pascal, Python.
      checks=[CheckOverallScore(0, 100)]),
 
 ]

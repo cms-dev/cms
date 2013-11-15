@@ -44,14 +44,16 @@ logger = logging.getLogger(__name__)
 LANG_C = "c"
 LANG_CPP = "cpp"
 LANG_PASCAL = "pas"
+LANG_PYTHON = "py"
 
 LANGUAGE_NAMES = {
     LANG_C: "C",
     LANG_CPP: "C++",
     LANG_PASCAL: "Pascal",
+    LANG_PYTHON: "Python",
 }
 
-LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
+LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON]
 DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
 
 # A reference for extension-based automatic language detection.
@@ -64,6 +66,7 @@ SOURCE_EXT_TO_LANGUAGE_MAP = {
     ".C": LANG_CPP,
     ".c++": LANG_CPP,
     ".pas": LANG_PASCAL,
+    ".py": LANG_PYTHON,
 }
 
 # Our preferred source file and header file extension for each language.
@@ -71,11 +74,13 @@ LANGUAGE_TO_SOURCE_EXT_MAP = {
     LANG_C: ".c",
     LANG_CPP: ".cpp",
     LANG_PASCAL: ".pas",
+    LANG_PYTHON: ".py",
 }
 LANGUAGE_TO_HEADER_EXT_MAP = {
     LANG_C: ".h",
     LANG_CPP: ".h",
     LANG_PASCAL: "lib.pas",
+    LANG_PYTHON: ".py",
 }
 
 
