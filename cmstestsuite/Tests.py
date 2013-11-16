@@ -23,12 +23,13 @@ import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
 
-from cms import LANGUAGES, LANG_C, LANG_CPP
+from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
     CheckTimeout, CheckNonzeroReturn
 
 
 ALL_LANGUAGES = tuple(LANGUAGES)
+NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL)
 
 
 ALL_TESTS = [
@@ -132,6 +133,18 @@ ALL_TESTS = [
          task=batch_fileio, filename='nonzero-return-fileio.%l',
          languages=ALL_LANGUAGES,
          checks=[CheckOverallScore(0, 100), CheckNonzeroReturn()]),
+
+    # OOM problems. TODO: add appropriate checks for the correct output.
+
+    Test('oom-static',
+         task=batch_stdio, filename='oom-static.%l',
+         languages=NON_INTERPRETED_LANGUAGES,
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('oom-heap',
+         task=batch_stdio, filename='oom-heap.%l',
+         languages=ALL_LANGUAGES,
+         checks=[CheckOverallScore(0, 100)]),
 
     # Tasks with graders. TODO: add Pascal and Python.
 
