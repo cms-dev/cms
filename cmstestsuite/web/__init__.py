@@ -70,7 +70,7 @@ def browser_do_request(browser, url, data=None, files=None):
             browser.form.new_control('file', field_name, {'id': field_name})
             filename = os.path.basename(file_path)
             browser.form.add_file(open(file_path), 'text/plain', filename,
-                id=field_name)
+                                  id=field_name)
 
         browser.form.set_all_readonly(False)
         browser.form.fixup()
@@ -177,10 +177,10 @@ class TestRequest(object):
     def store_to_file(self, fd):
         print >> fd, "Test type: %s" % (self.__class__.__name__)
         print >> fd, "Execution start time: %s" % (
-            datetime.datetime.fromtimestamp(self.start_time).\
+            datetime.datetime.fromtimestamp(self.start_time).
             strftime("%d/%m/%Y %H:%M:%S.%f"))
         print >> fd, "Execution stop time: %s" % (
-            datetime.datetime.fromtimestamp(self.stop_time).\
+            datetime.datetime.fromtimestamp(self.stop_time).
             strftime("%d/%m/%Y %H:%M:%S.%f"))
         print >> fd, "Duration: %f seconds" % (self.duration)
         print >> fd, "Outcome: %s" % (self.outcome)

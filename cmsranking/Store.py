@@ -137,7 +137,7 @@ class Store(object):
         if not isinstance(key, unicode):
             raise InvalidKey
         if (key in self._store and not must_be_present) or \
-               (key not in self._store and must_be_present):
+                (key not in self._store and must_be_present):
             raise InvalidKey
 
     def create(self, key, data):
@@ -268,8 +268,9 @@ class Store(object):
                     with io.open(path, 'wb') as rec:
                         json.dump(value.get(), rec, encoding='utf-8')
                 except IOError:
-                    logger.error("I/O error occured while merging entity lists",
-                                 exc_info=True)
+                    logger.error(
+                        "I/O error occured while merging entity lists",
+                        exc_info=True)
 
     def delete(self, key):
         """Delete an entity.

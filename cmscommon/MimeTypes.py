@@ -61,7 +61,9 @@ class _get_comment (ContentHandler):
         self.result = None
 
     def startElementNS(self, name, qname, attrs):
-        if name == (_XDG_NS, "comment") and ((_XML_NS, "lang") not in attrs or attrs[(_XML_NS, "lang")] in ["en", "en_US"]):
+        if name == (_XDG_NS, "comment") and \
+                ((_XML_NS, "lang") not in attrs or
+                 attrs[(_XML_NS, "lang")] in ["en", "en_US"]):
             self.inside = True
             self.result = ''
 
@@ -94,7 +96,7 @@ def get_name_for_type(name):
         try:
             media, subtype = name.split('/')
             path = os.path.join(config.shared_mime_info_prefix,
-                               'share', 'mime', media, "%s.xml" % subtype)
+                                'share', 'mime', media, "%s.xml" % subtype)
 
             handler = _get_comment()
             parser = sax.make_parser()

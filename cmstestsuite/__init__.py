@@ -134,8 +134,8 @@ def sh(cmdline, ignore_failure=False):
         ret = os.system(cmdline)
     if not ignore_failure and ret != 0:
         raise FrameworkException(
-            "Execution failed with %d/%d. Tried to execute:\n%s\n" % (
-            ret & 0xff, ret >> 8, cmdline))
+            "Execution failed with %d/%d. Tried to execute:\n%s\n" %
+            (ret & 0xff, ret >> 8, cmdline))
 
 
 def spawn(cmdline):

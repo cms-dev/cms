@@ -21,7 +21,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
-import os
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP
 from cms.grading import get_compilation_command, get_evaluation_command, \

@@ -106,8 +106,9 @@ class Score(object):
             self._submissions[s_id].extra = change.extra
         if self._submissions[s_id].token:
             self._released.insert(self._submissions[s_id].score)
-        if change.score is not None and (self._last is None or \
-           self._submissions[s_id].time > self._last.time):
+        if change.score is not None and \
+                (self._last is None or
+                 self._submissions[s_id].time > self._last.time):
             self._last = self._submissions[s_id]
 
         score = max(self._released.query(),
@@ -140,9 +141,9 @@ class Score(object):
         # (sorted) list and call the appropriate method (append_change
         # or reset_history)
         if len(self._changes) == 0 or \
-           subchange.time > self._changes[-1].time or \
-           (subchange.time == self._changes[-1].time and
-            subchange.key > self._changes[-1].key):
+                subchange.time > self._changes[-1].time or \
+                (subchange.time == self._changes[-1].time and
+                 subchange.key > self._changes[-1].key):
             self._changes.append(subchange)
             self.append_change(subchange)
         else:
@@ -153,10 +154,11 @@ class Score(object):
                     break
             self.reset_history()
             logger.info("Reset history for user '" +
-                self._submissions[subchange.submission].user + "' and task '" +
-                self._submissions[subchange.submission].user +
-                "' after creating subchange '" + key + "' for submission '" +
-                subchange.submission + "'")
+                        self._submissions[subchange.submission].user +
+                        "' and task '" +
+                        self._submissions[subchange.submission].user +
+                        "' after creating subchange '" + key +
+                        "' for submission '" + subchange.submission + "'")
 
     def update_subchange(self, key, subchange):
         # Update the subchange inside the (sorted) list and,
@@ -166,10 +168,11 @@ class Score(object):
                 self._changes[i] = subchange
         self.reset_history()
         logger.info("Reset history for user '" +
-            self._submissions[subchange.submission].user + "' and task '" +
-            self._submissions[subchange.submission].user +
-            "' after updating subchange '" + key + "' for submission '" +
-            subchange.submission + "'")
+                    self._submissions[subchange.submission].user +
+                    "' and task '" +
+                    self._submissions[subchange.submission].user +
+                    "' after updating subchange '" + key +
+                    "' for submission '" + subchange.submission + "'")
 
     def delete_subchange(self, key):
         # Delete the subchange from the (sorted) list and reset the
@@ -200,7 +203,8 @@ class Score(object):
         if key in self._submissions:
             del self._submissions[key]
             # Delete all its subchanges.
-            self._changes = filter(lambda a: a.submission != key, self._changes)
+            self._changes = filter(lambda a: a.submission != key,
+                                   self._changes)
             self.reset_history()
 
 
@@ -288,7 +292,8 @@ class ScoringStore(object):
         if old_score != new_score:
             self.notify_callbacks(submission.user, submission.task, new_score)
 
-        if len(self._scores[submission.user][submission.task]._submissions) == 0:
+        if len(self._scores[submission.user][submission.task].
+               _submissions) == 0:
             del self._scores[submission.user][submission.task]
         if len(self._scores[submission.user]) == 0:
             del self._scores[submission.user]

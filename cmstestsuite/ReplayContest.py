@@ -48,7 +48,7 @@ from threading import Thread, RLock
 from cms import config, logger
 from cmscontrib.ContestImporter import ContestImporter
 from cmstestsuite.web.CWSRequests import \
-     LoginRequest, SubmitRequest, TokenRequest
+    LoginRequest, SubmitRequest, TokenRequest
 
 
 def to_time(seconds):
@@ -126,8 +126,10 @@ class ContestReplayer(object):
             time.sleep(1)
         while thread.isAlive():
             new_speed = raw_input("Write the speed multiplier or q to quit "
-                                  "(time %s, multiplier %s):\n" % (
-                to_time((time.time() - self.start) * self.speed), self.speed))
+                                  "(time %s, multiplier %s):\n" %
+                                  (to_time((time.time() - self.start) *
+                                           self.speed),
+                                   self.speed))
             if new_speed == "q":
                 return 0
             elif new_speed != "":
@@ -315,8 +317,8 @@ def main():
     if args.resume is not None:
         try:
             start_from = int(args.resume[6:8]) + \
-                         int(args.resume[3:5]) * 60 + \
-                         int(args.resume[0:2]) * 3600
+                int(args.resume[3:5]) * 60 + \
+                int(args.resume[0:2]) * 3600
         except:
             logger.critical("Invalid resume time %s, format is %%H:%%M:%%S"
                             % args.resume)

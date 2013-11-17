@@ -33,9 +33,8 @@ from cms.io import ServiceCoord, get_service_address
 from cms.db import Contest, SessionGen
 
 import cmstestsuite.web
-from cmstestsuite.web.CWSRequests import HomepageRequest, \
-     LoginRequest, TaskRequest, TaskStatementRequest, \
-     SubmitRandomRequest
+from cmstestsuite.web.CWSRequests import HomepageRequest, LoginRequest, \
+    TaskRequest, TaskStatementRequest, SubmitRandomRequest
 
 
 cmstestsuite.web.debug = True
@@ -144,8 +143,8 @@ class Actor(threading.Thread):
         to overwrite this stub method properly.
 
         """
-        raise Exception("Not implemented. Please subclass Action" \
-                            "and overwrite act()")
+        raise Exception("Not implemented. Please subclass Action"
+                        "and overwrite act().")
 
     def do_step(self, request):
         self.wait_next()
@@ -183,7 +182,7 @@ class Actor(threading.Thread):
         """
         SLEEP_PERIOD = 0.1
         time_to_wait = self.metric['time_coeff'] * \
-                       random.expovariate(self.metric['time_lambda'])
+            random.expovariate(self.metric['time_lambda'])
         sleep_num = int(time_to_wait / SLEEP_PERIOD)
         for i in xrange(sleep_num):
             time.sleep(SLEEP_PERIOD)
@@ -214,10 +213,10 @@ class RandomActor(Actor):
             if choice < 0.1 and self.submissions_path is not None:
                 task = random.choice(self.tasks)
                 self.do_step(SubmitRandomRequest(
-                        self.browser,
-                        task,
-                        base_url=self.base_url,
-                        submissions_path=self.submissions_path))
+                    self.browser,
+                    task,
+                    base_url=self.base_url,
+                    submissions_path=self.submissions_path))
             elif choice < 0.5:
                 task = random.choice(self.tasks)
                 self.do_step(TaskRequest(self.browser,
@@ -251,7 +250,7 @@ def harvest_contest_data(contest_id):
     return users, tasks
 
 
-DEFAULT_METRICS = {'time_coeff':  10.0,
+DEFAULT_METRICS = {'time_coeff': 10.0,
                    'time_lambda': 2.0}
 
 

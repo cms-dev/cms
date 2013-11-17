@@ -55,8 +55,8 @@ def to_timestamp(time_tuple):
 
     """
     return time_tuple[2] + \
-           time_tuple[1] * 60 + \
-           time_tuple[0] * 3600
+        time_tuple[1] * 60 + \
+        time_tuple[0] * 3600
 
 
 def main():

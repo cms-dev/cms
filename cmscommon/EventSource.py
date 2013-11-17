@@ -32,8 +32,7 @@ from gevent.queue import Queue, Empty
 from gevent.pywsgi import WSGIHandler
 
 from werkzeug.wrappers import Request
-from werkzeug.routing import Map, Rule
-from werkzeug.exceptions import HTTPException, NotAcceptable
+from werkzeug.exceptions import NotAcceptable
 
 
 def format_event(id_, event, data):

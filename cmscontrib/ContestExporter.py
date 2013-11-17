@@ -186,7 +186,8 @@ class ContestExporter(object):
                 data = dict()
                 while len(self.queue) > 0:
                     obj = self.queue.pop(0)
-                    data[self.ids[obj.sa_identity_key]] = self.export_object(obj)
+                    data[self.ids[obj.sa_identity_key]] = \
+                        self.export_object(obj)
 
                 # Specify the "root" of the data graph
                 data["_objects"] = ["0"]

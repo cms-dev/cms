@@ -95,28 +95,28 @@ class CheckAbstractEvaluationFailure(Check):
 
 class CheckTimeout(CheckAbstractEvaluationFailure):
     def __init__(self):
-        CheckAbstractEvaluationFailure.__init__(self,
-            "timed out", "Execution timed out")
+        CheckAbstractEvaluationFailure.__init__(
+            self, "timed out", "Execution timed out")
 
 
 class CheckForbiddenSyscall(CheckAbstractEvaluationFailure):
     def __init__(self, syscall_name=''):
-        CheckAbstractEvaluationFailure.__init__(self,
-            "executed a forbidden syscall",
+        CheckAbstractEvaluationFailure.__init__(
+            self, "executed a forbidden syscall",
             "Execution killed because of forbidden syscall %s" % syscall_name)
 
 
 class CheckSignal(CheckAbstractEvaluationFailure):
     def __init__(self, signal_number):
-        CheckAbstractEvaluationFailure.__init__(self,
-            "died on a signal",
+        CheckAbstractEvaluationFailure.__init__(
+            self, "died on a signal",
             "Execution killed with signal %d" % signal_number)
 
 
 class CheckNonzeroReturn(CheckAbstractEvaluationFailure):
     def __init__(self):
-        CheckAbstractEvaluationFailure.__init__(self,
-            "nonzero return",
+        CheckAbstractEvaluationFailure.__init__(
+            self, "nonzero return",
             "Execution failed because the return code was nonzero")
 
 

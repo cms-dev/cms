@@ -223,7 +223,9 @@ if platform.system() not in ('Windows', 'Darwin'):
 else:
     try:
         from win32api import GetTickCount
+
         def monotonic_time():
             return GetTickCount / 1000.0
+
     except ImportError:
         from time import time as monotonic_time
