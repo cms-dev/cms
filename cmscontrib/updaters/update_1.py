@@ -82,11 +82,13 @@ class Updater(object):
 
         tasks_by_name = dict((self.objs[i]['name'], i) for i in data['tasks'])
 
-        data['users'] = self.parse_list(
-            data['users'], partial(self.parse_user, tasks_by_name=tasks_by_name), contest=id_)
+        data['users'] = self.parse_list(data['users'],
+                                        partial(self.parse_user,
+                                                tasks_by_name=tasks_by_name),
+                                        contest=id_)
         data['announcements'] = self.parse_list(
-            data['announcements'], partial(self.parse_generic, cls='Announcement'),
-            contest=id_)
+            data['announcements'],
+            partial(self.parse_generic, cls='Announcement'), contest=id_)
 
         data['_class'] = 'Contest'
         self.objs[id_] = data
@@ -96,15 +98,21 @@ class Updater(object):
         id_ = self.get_id()
 
         data['statements'] = self.parse_dict(
-            data['statements'], partial(self.parse_generic, cls='Statement'), 'language', task=id_)
+            data['statements'], partial(self.parse_generic, cls='Statement'),
+            'language', task=id_)
         data['attachments'] = self.parse_dict(
-            data['attachments'], partial(self.parse_generic, cls='Attachment'), 'filename', task=id_)
+            data['attachments'], partial(self.parse_generic, cls='Attachment'),
+            'filename', task=id_)
         data['submission_format'] = self.parse_list(
-            data['submission_format'], partial(self.parse_generic, cls='SubmissionFormatElement'), task=id_)
+            data['submission_format'],
+            partial(self.parse_generic, cls='SubmissionFormatElement'),
+            task=id_)
         data['managers'] = self.parse_dict(
-            data['managers'], partial(self.parse_generic, cls='Manager'), 'filename', task=id_)
+            data['managers'], partial(self.parse_generic, cls='Manager'),
+            'filename', task=id_)
         data['testcases'] = self.parse_list(
-            data['testcases'], partial(self.parse_generic, cls='Testcase'), True, task=id_)
+            data['testcases'], partial(self.parse_generic, cls='Testcase'),
+            True, task=id_)
 
         data['submissions'] = []
         data['user_tests'] = []
@@ -122,17 +130,23 @@ class Updater(object):
         id_ = self.get_id()
 
         data['messages'] = self.parse_list(
-            data['messages'], partial(self.parse_generic, cls='Message'), user=id_)
+            data['messages'],
+            partial(self.parse_generic, cls='Message'), user=id_)
         data['questions'] = self.parse_list(
-            data['questions'], partial(self.parse_generic, cls='Question'), user=id_)
+            data['questions'],
+            partial(self.parse_generic, cls='Question'), user=id_)
         data['submissions'] = self.parse_list(
-            data['submissions'], partial(self.parse_submission, tasks_by_name=tasks_by_name), user=id_)
+            data['submissions'],
+            partial(self.parse_submission, tasks_by_name=tasks_by_name),
+            user=id_)
         # Because of a bug in older versions of CMS, some dumps may
         # lack the user_tests key; unfortunately user tests for such
         # contests have been lost
         if 'user_tests' in data:
             data['user_tests'] = self.parse_list(
-                data['user_tests'], partial(self.parse_user_test, tasks_by_name=tasks_by_name), user=id_)
+                data['user_tests'],
+                partial(self.parse_user_test, tasks_by_name=tasks_by_name),
+                user=id_)
         else:
             data['user_tests'] = []
 
@@ -144,11 +158,16 @@ class Updater(object):
         id_ = self.get_id()
 
         data['files'] = self.parse_dict(
-            data['files'], partial(self.parse_generic, cls='File'), 'filename', submission=id_)
+            data['files'],
+            partial(self.parse_generic, cls='File'), 'filename',
+            submission=id_)
         data['executables'] = self.parse_dict(
-            data['executables'], partial(self.parse_generic, cls='Executable'), 'filename', submission=id_)
+            data['executables'],
+            partial(self.parse_generic, cls='Executable'), 'filename',
+            submission=id_)
         data['evaluations'] = self.parse_list(
-            data['evaluations'], partial(self.parse_generic, cls='Evaluation'), submission=id_)
+            data['evaluations'],
+            partial(self.parse_generic, cls='Evaluation'), submission=id_)
         if data['token'] is not None:
             data['token'] = self.parse_generic(data['token'], 'Token')
 
@@ -164,11 +183,16 @@ class Updater(object):
         id_ = self.get_id()
 
         data['files'] = self.parse_dict(
-            data['files'], partial(self.parse_generic, cls='UserTestFile'), 'filename', user_test=id_)
+            data['files'], partial(self.parse_generic, cls='UserTestFile'),
+            'filename', user_test=id_)
         data['executables'] = self.parse_dict(
-            data['executables'], partial(self.parse_generic, cls='UserTestExecutable'), 'filename', user_test=id_)
+            data['executables'],
+            partial(self.parse_generic, cls='UserTestExecutable'),
+            'filename', user_test=id_)
         data['managers'] = self.parse_dict(
-            data['managers'], partial(self.parse_generic, cls='UserTestManager'), 'filename', user_test=id_)
+            data['managers'],
+            partial(self.parse_generic, cls='UserTestManager'),
+            'filename', user_test=id_)
 
         task_id = tasks_by_name[data['task']]
         data['task'] = task_id

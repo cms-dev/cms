@@ -60,7 +60,7 @@ class User(Entity):
             assert isinstance(data['l_name'], six.text_type), \
                 "Field 'l_name' isn't a string"
             assert data['team'] is None or \
-                   isinstance(data['team'], six.text_type), \
+                isinstance(data['team'], six.text_type), \
                 "Field 'team' isn't a string (or null)"
         except KeyError as exc:
             raise InvalidData("Field %s is missing" % exc.message)

@@ -26,7 +26,7 @@ import optparse
 from cms.db import Contest, SessionGen
 
 from cmstestsuite.web.CWSRequests import \
-     LoginRequest, SubmitRequest, TokenRequest
+    LoginRequest, SubmitRequest, TokenRequest
 
 
 def harvest_contest_data(contest_id):
@@ -71,7 +71,8 @@ def release_test(username, password, task, submission_num, base_url=None):
     browser.set_handle_robots(False)
 
     step(LoginRequest(browser, username, password, base_url=base_url))
-    step(TokenRequest(browser, task, base_url=base_url, submission_num=submission_num))
+    step(TokenRequest(
+        browser, task, base_url=base_url, submission_num=submission_num))
 
 
 def main():

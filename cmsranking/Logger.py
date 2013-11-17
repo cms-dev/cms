@@ -123,20 +123,19 @@ class LogFormatter(logging.Formatter):
         exc_type, exc_value, traceback = exc_info
 
         result = "%sException%s %s.%s%s%s:\n\n    %s\n\n" % \
-                      (self.ansi_command(ANSI_BOLD_ON_CMD),
-                       self.ansi_command(ANSI_BOLD_OFF_CMD),
-                       exc_type.__module__,
-                       self.ansi_command(ANSI_BOLD_ON_CMD),
-                       exc_type.__name__,
-                       self.ansi_command(ANSI_BOLD_OFF_CMD),
-                       exc_value)
+            (self.ansi_command(ANSI_BOLD_ON_CMD),
+             self.ansi_command(ANSI_BOLD_OFF_CMD),
+             exc_type.__module__,
+             self.ansi_command(ANSI_BOLD_ON_CMD),
+             exc_type.__name__,
+             self.ansi_command(ANSI_BOLD_OFF_CMD),
+             exc_value)
         result += "%sTraceback (most recent call last):%s\n%s" % \
-                      (self.ansi_command(ANSI_FAINT_ON_CMD),
-                       self.ansi_command(ANSI_FAINT_OFF_CMD),
-                       '\n'.join(
-            map(lambda a: self.ansi_command(ANSI_FAINT_ON_CMD) +
-                a + self.ansi_command(ANSI_FAINT_OFF_CMD),
-                ''.join(format_tb(traceback)).strip().split('\n'))))
+            (self.ansi_command(ANSI_FAINT_ON_CMD),
+             self.ansi_command(ANSI_FAINT_OFF_CMD),
+             '\n'.join(map(lambda a: self.ansi_command(ANSI_FAINT_ON_CMD) +
+                           a + self.ansi_command(ANSI_FAINT_OFF_CMD),
+                           ''.join(format_tb(traceback)).strip().split('\n'))))
 
         return result
 
@@ -148,9 +147,10 @@ class LogFormatter(logging.Formatter):
         exception details (if present).
 
         """
-        result = '%s%s.%03d%s' % (self.time_prefix,
-            self.formatTime(record, '%Y-%m-%d %H:%M:%S'), record.msecs,
-            self.time_suffix)
+        result = '%s%s.%03d%s' % \
+            (self.time_prefix,
+             self.formatTime(record, '%Y-%m-%d %H:%M:%S'), record.msecs,
+             self.time_suffix)
 
         if record.levelno == logging.CRITICAL:
             result += ' %s CRI %s ' % (self.cri_prefix, self.cri_suffix)

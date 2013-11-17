@@ -163,8 +163,7 @@ class TestFileCacher(TestService):
             self.test_end(False, "Error received: %r." % error)
             return
 
-        if not os.path.exists(
-            os.path.join(self.cache_base_path, data)):
+        if not os.path.exists(os.path.join(self.cache_base_path, data)):
             self.test_end(False, "File not stored in local cache.")
         elif open(os.path.join(self.cache_base_path, data), "rb").read() != \
                 self.content:
@@ -304,8 +303,7 @@ class TestFileCacher(TestService):
             self.test_end(False, "Error received: %r." % error)
             return
 
-        if not os.path.exists(
-            os.path.join(self.cache_base_path, data)):
+        if not os.path.exists(os.path.join(self.cache_base_path, data)):
             self.test_end(False, "File not stored in local cache.")
         elif open(os.path.join(self.cache_base_path, data),
                   "rb").read() != self.content:
@@ -361,8 +359,7 @@ class TestFileCacher(TestService):
         my_digest = rand_file.digest
         rand_file.close()
 
-        if not os.path.exists(
-            os.path.join(self.cache_base_path, data)):
+        if not os.path.exists(os.path.join(self.cache_base_path, data)):
             self.test_end(False, "File not stored in local cache.")
         elif my_digest != data:
             self.test_end(False, "File received with wrong hash.")

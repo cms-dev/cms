@@ -118,7 +118,7 @@ class Updater(object):
                 v["compilation_text"], v["compilation_time"], \
                     v["compilation_memory"], v["compilation_stdout"], \
                     v["compilation_stderr"] = \
-                        parse_compilation_text(v["compilation_text"])
+                    parse_compilation_text(v["compilation_text"])
                 v["compilation_wall_clock_time"] = None
 
             # Evaluation
@@ -154,7 +154,7 @@ class Updater(object):
 
                 if rsd is not None:
                     rsd = json.dumps(
-                        list(i.strip()  for i in rsd[1:-1].split(',')))
+                        list(i.strip() for i in rsd[1:-1].split(',')))
 
                 v["score"] = s
                 v["score_details"] = sd

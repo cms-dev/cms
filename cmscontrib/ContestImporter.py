@@ -118,10 +118,10 @@ class ContestImporter(object):
                 self.import_dir = tempfile.mkdtemp()
                 archive.extractall(self.import_dir)
             elif self.import_source.endswith(".tar.gz") \
-                     or self.import_source.endswith(".tgz") \
-                     or self.import_source.endswith(".tar.bz2") \
-                     or self.import_source.endswith(".tbz2") \
-                     or self.import_source.endswith(".tar"):
+                    or self.import_source.endswith(".tgz") \
+                    or self.import_source.endswith(".tar.bz2") \
+                    or self.import_source.endswith(".tbz2") \
+                    or self.import_source.endswith(".tar"):
                 archive = tarfile.open(name=self.import_source)
                 file_names = archive.getnames()
             elif self.import_source.endswith(".tar.xz") \
@@ -252,7 +252,8 @@ class ContestImporter(object):
 
                     contest_id += [contest.id]
                     contest_files |= contest.enumerate_files(
-                        self.skip_submissions, self.skip_user_tests, self.skip_generated)
+                        self.skip_submissions, self.skip_user_tests,
+                        self.skip_generated)
 
                 session.commit()
             else:
@@ -295,12 +296,11 @@ class ContestImporter(object):
                     file_ = os.path.join(files_dir, digest)
                     desc = os.path.join(descr_dir, digest)
                     if not self.safe_put_file(file_, desc):
-                        logger.critical("Unable to put file `%s' in the database. "
+                        logger.critical("Unable to put file `%s' in the DB. "
                                         "Aborting. Please remove the contest "
                                         "from the database." % file_)
                         # TODO: remove contest from the database.
                         return False
-
 
         if contest_id is not None:
             logger.info("Import finished (contest id: %s)." %
@@ -354,13 +354,17 @@ class ContestImporter(object):
             if col_type in [Boolean, Integer, Float, Unicode, RepeatedUnicode]:
                 args[prp.key] = val
             elif col_type is String:
-                args[prp.key] = val.encode('latin1') if val is not None else None
+                args[prp.key] = \
+                    val.encode('latin1') if val is not None else None
             elif col_type is DateTime:
-                args[prp.key] = make_datetime(val) if val is not None else None
+                args[prp.key] = \
+                    make_datetime(val) if val is not None else None
             elif col_type is Interval:
-                args[prp.key] = timedelta(seconds=val) if val is not None else None
+                args[prp.key] = \
+                    timedelta(seconds=val) if val is not None else None
             else:
-                raise RuntimeError("Unknown SQLAlchemy column type: %s" % col_type)
+                raise RuntimeError(
+                    "Unknown SQLAlchemy column type: %s" % col_type)
 
         return cls(**args)
 
@@ -395,9 +399,11 @@ class ContestImporter(object):
             elif type(val) == list:
                 setattr(obj, prp.key, list(self.objs[i] for i in val))
             elif type(val) == dict:
-                setattr(obj, prp.key, dict((k, self.objs[v]) for k, v in val.iteritems()))
+                setattr(obj, prp.key,
+                        dict((k, self.objs[v]) for k, v in val.iteritems()))
             else:
-                raise RuntimeError("Unknown RelationshipProperty value: %s" % type(val))
+                raise RuntimeError(
+                    "Unknown RelationshipProperty value: %s" % type(val))
 
     def safe_put_file(self, path, descr_path):
 

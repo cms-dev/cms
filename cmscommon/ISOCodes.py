@@ -55,11 +55,11 @@ _country_codes = dict()
 parse(os.path.join(config.iso_codes_prefix,
                    'share', 'xml', 'iso-codes', 'iso_639.xml'),
       _make_dict(["iso_639_entries", "iso_639_entry"],
-                "iso_639_1_code", "name", _language_codes))
+                 "iso_639_1_code", "name", _language_codes))
 parse(os.path.join(config.iso_codes_prefix,
                    'share', 'xml', 'iso-codes', 'iso_3166.xml'),
       _make_dict(["iso_3166_entries", "iso_3166_entry"],
-                "alpha_2_code", "name", _country_codes))
+                 "alpha_2_code", "name", _country_codes))
 
 
 def is_language_code(code):

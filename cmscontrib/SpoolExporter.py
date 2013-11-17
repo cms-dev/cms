@@ -43,6 +43,7 @@ from cms.grading.scoretypes import get_score_type
 logger = logging.getLogger(__name__)
 
 
+# TODO: review this file to use io instead of codecs and avoid print >> f.
 class SpoolExporter(object):
     """This service creates a tree structure "similar" to the one used
     in Italian IOI repository for storing the results of a contest.
@@ -141,15 +142,15 @@ class SpoolExporter(object):
             result = submission.get_result(active_dataset)
             if result.evaluated():
                 res_file = codecs.open(os.path.join(
-                        self.spool_dir,
-                        "%d.%s.%s.%s.res" % (timestamp, username,
-                                             task, submission.language)),
-                                       "w", encoding="utf-8")
-                res2_file = codecs.open(os.path.join(
-                        self.spool_dir,
-                        "%s.%s.%s.res" % (username, task,
-                                          submission.language)),
-                                        "w", encoding="utf-8")
+                    self.spool_dir,
+                    "%d.%s.%s.%s.res" % (timestamp, username,
+                                         task, submission.language)),
+                    "w", encoding="utf-8")
+                res2_file = codecs.open(
+                    os.path.join(self.spool_dir,
+                                 "%s.%s.%s.res" % (username, task,
+                                                   submission.language)),
+                    "w", encoding="utf-8")
                 total = 0.0
                 for evaluation in result.evaluations:
                     outcome = float(evaluation.outcome)
@@ -260,14 +261,12 @@ class SpoolExporter(object):
         for username in sorted_usernames:
             user_scores = [task_scores[task.id][username]
                            for task in sorted_tasks]
-            print >> ranking_file, ("%20s %10.3f" % (
-                    username,
-                    scores[username])) + \
-                    (points_line % tuple(user_scores))
-            print >> ranking_csv, ("%s,%.6f" % (
-                    username,
-                    scores[username])) + \
-                    (csv_points_line % tuple(user_scores))
+            print >> ranking_file, \
+                ("%20s %10.3f" % (username, scores[username])) + \
+                (points_line % tuple(user_scores))
+            print >> ranking_csv, \
+                ("%s,%.6f" % (username, scores[username])) + \
+                (csv_points_line % tuple(user_scores))
 
         ranking_file.close()
         ranking_csv.close()

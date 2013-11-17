@@ -199,7 +199,7 @@ class BaseHandler(CommonRequestHandler):
                 .filter(User.contest_id == self.contest.id)\
                 .filter(Question.reply_timestamp == None)\
                 .filter(Question.ignored == False)\
-                .count()
+                .count()  # noqa
         params["contest_list"] = self.sql_session.query(Contest).all()
         params["cookie"] = str(self.cookies)
         return params
@@ -2023,7 +2023,7 @@ class NotificationsHandler(BaseHandler):
         questions = self.sql_session.query(Question)\
             .filter(Question.reply_timestamp == None)\
             .filter(Question.question_timestamp > last_notification)\
-            .all()
+            .all()  # noqa
 
         for question in questions:
             res.append({"type": "new_question",

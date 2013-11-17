@@ -141,7 +141,7 @@ def extract_meaningful_points(testcases_lengths, submission):
     for idx, length in enumerate(testcases_lengths):
         evaluation = submission.evaluations[idx]
         if float(evaluation.outcome) == 1.0 and \
-               evaluation.execution_time is not None:
+                evaluation.execution_time is not None:
             if length == last_length:
                 points_y[-1] = max(points_y[-1], evaluation.execution_time)
             else:
@@ -217,11 +217,10 @@ def extract_complexity_submission(testcases_lengths, submission):
         for i in xrange(MAXP + 1):
             for j in xrange(MAXL + 1):
                 for k in xrange(MAXE + 1):
-                    info.write("%+20.13lf x^%d log^%d(x) (2^x)^%d  "
-                               "-->  %+20.13lf\n" % (
-                        res[ijk_to_idx(i, j, k)],
-                        i, j, k,
-                        residues[ijk_to_idx(i, j, k)]))
+                    info.write(
+                        "%+20.13lf x^%d log^%d(x) (2^x)^%d  -->  %+20.13lf\n" %
+                        (res[ijk_to_idx(i, j, k)], i, j, k,
+                         residues[ijk_to_idx(i, j, k)]))
         info.write("Complexity: %s\n" % complexity_to_string(best_idxs))
         if sbest_residue != 0.0:
             confidence = (100.0 * (1.0 - best_residue / sbest_residue))
@@ -274,7 +273,7 @@ def extract_complexity(task_id, file_lengther=None):
         with open("task_%s.info" % task_id, "wt") as info:
             for submission in task.contest.get_submissions():
                 if submission.task_id == task_id and \
-                       submission.evaluated():
+                        submission.evaluated():
                     print submission.user.username
                     result = extract_complexity_submission(testcases_lengths,
                                                            submission)
