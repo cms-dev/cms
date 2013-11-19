@@ -296,7 +296,7 @@ class ContestImporter(object):
                     file_ = os.path.join(files_dir, digest)
                     desc = os.path.join(descr_dir, digest)
                     if not self.safe_put_file(file_, desc):
-                        logger.critical("Unable to put file `%s' in the db. "
+                        logger.critical("Unable to put file `%s' in the DB. "
                                         "Aborting. Please remove the contest "
                                         "from the database." % file_)
                         # TODO: remove contest from the database.

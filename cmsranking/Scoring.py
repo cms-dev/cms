@@ -153,12 +153,11 @@ class Score(object):
                     self._changes.insert(idx, subchange)
                     break
             self.reset_history()
-            logger.info("Reset history for user '" +
-                        self._submissions[subchange.submission].user +
-                        "' and task '" +
-                        self._submissions[subchange.submission].user +
-                        "' after creating subchange '" + key +
-                        "' for submission '" + subchange.submission + "'")
+            logger.info("Reset history for user '%s' and task '%s' after "
+                        "creating subchange '%s' for submission '%s'" %
+                        (self._submissions[subchange.submission].user,
+                         self._submissions[subchange.submission].user,
+                         key, subchange.submission))
 
     def update_subchange(self, key, subchange):
         # Update the subchange inside the (sorted) list and,
@@ -167,12 +166,11 @@ class Score(object):
             if self._changes[i].key == key:
                 self._changes[i] = subchange
         self.reset_history()
-        logger.info("Reset history for user '" +
-                    self._submissions[subchange.submission].user +
-                    "' and task '" +
-                    self._submissions[subchange.submission].user +
-                    "' after updating subchange '" + key +
-                    "' for submission '" + subchange.submission + "'")
+        logger.info("Reset history for user '%s' and task '%s' after "
+                    "creating subchange '%s' for submission '%s'" %
+                    (self._submissions[subchange.submission].user,
+                     self._submissions[subchange.submission].user,
+                     key, subchange.submission))
 
     def delete_subchange(self, key):
         # Delete the subchange from the (sorted) list and reset the
@@ -292,9 +290,9 @@ class ScoringStore(object):
         if old_score != new_score:
             self.notify_callbacks(submission.user, submission.task, new_score)
 
-        if len(self._scores[submission.user][submission.task].
-               _submissions) == 0:
-            del self._scores[submission.user][submission.task]
+        user_scores = self._scores[submission.user]
+        if len(user_scores[submission.task]._submissions) == 0:
+            del user_scores[submission.task]
         if len(self._scores[submission.user]) == 0:
             del self._scores[submission.user]
 

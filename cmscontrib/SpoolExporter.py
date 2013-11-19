@@ -43,6 +43,7 @@ from cms.grading.scoretypes import get_score_type
 logger = logging.getLogger(__name__)
 
 
+# TODO: review this file to use io instead of codecs and avoid print >> f.
 class SpoolExporter(object):
     """This service creates a tree structure "similar" to the one used
     in Italian IOI repository for storing the results of a contest.
