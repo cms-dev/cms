@@ -156,7 +156,7 @@ class Score(object):
             logger.info("Reset history for user '%s' and task '%s' after "
                         "creating subchange '%s' for submission '%s'" %
                         (self._submissions[subchange.submission].user,
-                         self._submissions[subchange.submission].user,
+                         self._submissions[subchange.submission].task,
                          key, subchange.submission))
 
     def update_subchange(self, key, subchange):
@@ -169,7 +169,7 @@ class Score(object):
         logger.info("Reset history for user '%s' and task '%s' after "
                     "creating subchange '%s' for submission '%s'" %
                     (self._submissions[subchange.submission].user,
-                     self._submissions[subchange.submission].user,
+                     self._submissions[subchange.submission].task,
                      key, subchange.submission))
 
     def delete_subchange(self, key):
@@ -177,7 +177,7 @@ class Score(object):
         # history.
         self._changes = filter(lambda a: a.key != key, self._changes)
         self.reset_history()
-        logger.info("Reset history after deleting subchange '" + key + "'")
+        logger.info("Reset history after deleting subchange '%s'" % key)
 
     def create_submission(self, key, submission):
         # A new submission never triggers an update in the history,
