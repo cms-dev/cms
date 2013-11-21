@@ -29,6 +29,7 @@ import os
 import shutil
 import re
 import pwd
+import grp
 
 from glob import glob
 from setuptools import setup
@@ -162,7 +163,7 @@ def do_setup():
     os.umask(old_umask)
 
 
-def copyfile(src, dest, owner, perm):
+def copyfile(src, dest, owner, perm, group=None):
     """Copy the file src to dest, and assign owner and permissions.
 
     src (string): the complete path of the source file.
@@ -170,10 +171,18 @@ def copyfile(src, dest, owner, perm):
                    not the destination directory).
     owner (as given by pwd.getpwnam): the owner we want for dest.
     perm (integer): the permission for dest (example: 0660).
+    group (as given by grp.getgrnam): the group we want for dest; if
+                                      not specified, use owner's
+                                      group.
 
     """
     shutil.copy(src, dest)
-    os.chown(dest, owner.pw_uid, owner.pw_gid)
+    owner_id = owner.pw_uid
+    if group is not None:
+        group_id = group.gr_gid
+    else:
+        group_id = owner.pw_gid
+    os.chown(dest, owner_id, group_id)
     os.chmod(dest, perm)
 
 
@@ -253,12 +262,13 @@ def install():
     os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
     cmsuser = pwd.getpwnam("cmsuser")
     root = pwd.getpwnam("root")
+    cmsuser_grp = grp.getgrnam("cmsuser")
 
     print "copying isolate to /usr/local/bin/."
     makedir(os.path.join("/", "usr", "local", "bin"), root, 0755)
     copyfile(os.path.join(".", "isolate", "isolate"),
              os.path.join("/", "usr", "local", "bin", "isolate"),
-             root, 04750)
+             root, 04750, group=cmsuser_grp)
 
     print "copying configuration to /usr/local/etc/."
     makedir(os.path.join("/", "usr", "local", "etc"), root, 0755)
