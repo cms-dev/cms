@@ -258,7 +258,7 @@ def install():
     makedir(os.path.join("/", "usr", "local", "bin"), root, 0755)
     copyfile(os.path.join(".", "isolate", "isolate"),
              os.path.join("/", "usr", "local", "bin", "isolate"),
-             root, 04755)
+             root, 04750)
 
     print "copying configuration to /usr/local/etc/."
     makedir(os.path.join("/", "usr", "local", "etc"), root, 0755)
