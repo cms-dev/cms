@@ -290,9 +290,9 @@ class ScoringStore(object):
         if old_score != new_score:
             self.notify_callbacks(submission.user, submission.task, new_score)
 
-        user_scores = self._scores[submission.user]
-        if len(user_scores[submission.task]._submissions) == 0:
-            del user_scores[submission.task]
+        if len(self._scores[submission.user][submission.task]
+               ._submissions) == 0:
+            del self._scores[submission.user][submission.task]
         if len(self._scores[submission.user]) == 0:
             del self._scores[submission.user]
 
