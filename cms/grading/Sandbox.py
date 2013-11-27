@@ -60,6 +60,21 @@ def with_log(func):
     return newfunc
 
 
+def pretty_print_cmdline(cmdline):
+    """Pretty print a command line.
+
+    Take a command line suitable to be passed to a Popen-like call and
+    returns a string that represents it in a way that preserves the
+    structure of arguments and can be passed to bash as is.
+
+    More precisely, delimitate every item of the command line with
+    single apstrophes and join all the arguments separating them with
+    spaces.
+
+    """
+    return " ".join(["'%s'" % (x) for x in cmdline])
+
+
 def wait_without_std(procs):
     """Wait for the conclusion of the processes in the list, avoiding
     starving for input and output.
@@ -517,7 +532,7 @@ class StupidSandbox(SandboxBase):
         logger.debug("Executing program in sandbox with command: %s" %
                      " ".join(command))
         with open(self.relative_path(self.cmd_file), 'a') as commands:
-            commands.write("%s\n" % (" ".join(command)))
+            commands.write("%s\n" % (pretty_print_cmdline(command)))
         try:
             p = subprocess.Popen(command,
                                  stdin=stdin, stdout=stdout, stderr=stderr,
@@ -743,11 +758,12 @@ class IsolateSandbox(SandboxBase):
 
         # Tell isolate to get the sandbox ready.
         box_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
-            + ["-b", str(self.box_id)]
-        ret = subprocess.call(box_cmd + ["--init"])
+            + ["-b", str(self.box_id)] + ["--init"]
+        ret = subprocess.call(box_cmd)
         if ret != 0:
             raise SandboxInterfaceException(
-                "Failed to initialize sandbox (error %d)" % ret)
+                "Failed to initialize sandbox with command: %s "
+                "(error %d)" % (pretty_print_cmdline(box_cmd), ret))
 
     def get_root_path(self):
         """Return the toplevel path of the sandbox.
@@ -1048,9 +1064,9 @@ class IsolateSandbox(SandboxBase):
         self.log = None
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: %s" %
-                     " ".join(args))
+                     pretty_print_cmdline(args))
         with open(self.relative_path(self.cmd_file), 'a') as commands:
-            commands.write("%s\n" % (" ".join(args)))
+            commands.write("%s\n" % (pretty_print_cmdline(args)))
         return self.translate_box_exitcode(subprocess.call(args))
 
     def _popen(self, command,
@@ -1074,9 +1090,9 @@ class IsolateSandbox(SandboxBase):
         self.log = None
         args = [self.box_exec] + self.build_box_options() + ["--"] + command
         logger.debug("Executing program in sandbox with command: %s" %
-                     " ".join(args))
+                     pretty_print_cmdline(args))
         with open(self.relative_path(self.cmd_file), 'a') as commands:
-            commands.write("%s\n" % (" ".join(args)))
+            commands.write("%s\n" % (pretty_print_cmdline(args)))
         try:
             p = subprocess.Popen(args,
                                  stdin=stdin, stdout=stdout, stderr=stderr,
@@ -1084,7 +1100,7 @@ class IsolateSandbox(SandboxBase):
         except OSError:
             logger.critical("Failed to execute program in sandbox "
                             "with command: %s" %
-                            " ".join(args), exc_info=True)
+                            pretty_print_cmdline(args), exc_info=True)
             raise
 
         return p
