@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2013 Luca Versari <veluca93@gmail.com>
 # Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -39,6 +40,7 @@ def usage():
     print """%s base_dir executable [assume]"
 base_dir:   directory of the task
 executable: solution to test (relative to the task's directory)
+language:   programming language the solution is written in
 assume:     if it's y, answer yes to every question
             if it's n, answer no to every question
 """ % sys.argv[0]
@@ -56,7 +58,7 @@ def mem_human(mem):
     return "%4d" % mem
 
 
-def test_testcases(base_dir, soluzione, assume=None):
+def test_testcases(base_dir, soluzione, language, assume=None):
     global task, file_cacher
 
     # Use a FileCacher with a NullBackend in order to avoid to fill
@@ -85,6 +87,7 @@ def test_testcases(base_dir, soluzione, assume=None):
         "Solution %s for task %s" % (soluzione, task.name))
     executables = {task.name: Executable(filename=task.name, digest=digest)}
     jobs = [(t, EvaluationJob(
+        language=language,
         task_type=dataset.task_type,
         task_type_parameters=json.loads(dataset.task_type_parameters),
         managers=dict(dataset.managers),
@@ -164,10 +167,10 @@ def clean_test_env():
         task = None
 
 if __name__ == "__main__":
-    if len(sys.argv) < 3:
+    if len(sys.argv) < 4:
         usage()
-    if len(sys.argv) == 3:
+    if len(sys.argv) == 4:
         assume = None
     else:
-        assume = sys.argv[3]
-    test_testcases(sys.argv[1], sys.argv[2], assume)
+        assume = sys.argv[4]
+    test_testcases(sys.argv[1], sys.argv[2], sys.argv[3], assume=assume)

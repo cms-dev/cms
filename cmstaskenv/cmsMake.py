@@ -5,6 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -223,11 +224,12 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                                 os.path.join(base_dir, exe))
                 shutil.rmtree(tempdir)
 
-        def test_src(exe, assume=None):
+        def test_src(exe, lang, assume=None):
             print "Testing solution %s" % (exe)
             test_testcases(
                 base_dir,
                 exe,
+                language=lang,
                 assume=assume)
 
         actions.append(
@@ -243,8 +245,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
 
         test_actions.append((test_deps,
                              ['test_%s' % (os.path.split(exe)[1])],
-                             functools.partial(test_src,
-                                               exe_EVAL),
+                             functools.partial(test_src, exe_EVAL, lang),
                              'test solution (compiled with -DEVAL)'))
 
     return actions + test_actions
