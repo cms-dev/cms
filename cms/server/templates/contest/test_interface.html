@@ -132,7 +132,7 @@ $(document).ready(function () {
 
 <h2 style="margin: 40px 0 10px">{{ _("Previous tests") }}</h2>
 
-{% from cmscommon.DateTime import utc %}
+{% from cmscommon.datetime import utc %}
 {% set show_date = any(t.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != datetime.datetime.utcnow().replace(tzinfo=utc).astimezone(timezone).date() for t in user_tests[task.id]) %}
 
 

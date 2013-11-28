@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -20,10 +20,25 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Utilities dealing with encryption and randomness."""
+
+from __future__ import absolute_import
+
 import base64
 import binascii
 
 from Crypto.Cipher import AES
+
+
+__all__ = [
+    "is_random_secure",
+
+    "get_random_key", "get_hex_random_key",
+
+    "encrypt_string", "decrypt_string",
+    "encrypt_number", "decrypt_number",
+    ]
+
 
 # Some older versions of pycrypto don't provide a Random module
 # If that's the case, fallback to weak standard library PRG

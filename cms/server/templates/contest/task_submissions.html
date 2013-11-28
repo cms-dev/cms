@@ -185,7 +185,7 @@ $(document).ready(function () {
     {% set score_type = None %}
 {% end %}
 
-{% from cmscommon.DateTime import utc %}
+{% from cmscommon.datetime import utc %}
 {% set show_date = any(s.timestamp.replace(tzinfo=utc).astimezone(timezone).date() != datetime.datetime.utcnow().replace(tzinfo=utc).astimezone(timezone).date() for s in submissions) %}
 
 

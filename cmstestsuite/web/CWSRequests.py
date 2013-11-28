@@ -23,7 +23,7 @@ import re
 import os
 import random
 
-from cmscommon.Cryptographics import encrypt_number, decrypt_number
+from cmscommon.crypto import encrypt_number, decrypt_number
 from cmstestsuite.web import GenericRequest
 
 

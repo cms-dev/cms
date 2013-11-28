@@ -65,10 +65,12 @@ from cms.grading.scoretypes import get_score_type
 from cms.server import file_handler_gen, extract_archive, \
     actual_phase_required, get_url_root, filter_ascii, \
     CommonRequestHandler, format_size
-from cmscommon import ISOCodes
-from cmscommon.Cryptographics import encrypt_number
+from cmscommon.isocodes import is_language_code, translate_language_code, \
+    is_country_code, translate_country_code, \
+    is_language_country_code, translate_language_country_code
+from cmscommon.crypto import encrypt_number
 from cmscommon.datetime import make_datetime, make_timestamp, get_timezone
-from cmscommon.MimeTypes import get_type_for_file_name
+from cmscommon.mimetypes import get_type_for_file_name
 
 
 logger = logging.getLogger(__name__)
@@ -562,16 +564,15 @@ class TaskDescriptionHandler(BaseHandler):
 
         for statement in task.statements.itervalues():
             lang_code = statement.language
-            if ISOCodes.is_language_country_code(lang_code):
+            if is_language_country_code(lang_code):
                 statement.language_name = \
-                    ISOCodes.translate_language_country_code(lang_code,
-                                                             self.locale)
-            elif ISOCodes.is_language_code(lang_code):
+                    translate_language_country_code(lang_code, self.locale)
+            elif is_language_code(lang_code):
                 statement.language_name = \
-                    ISOCodes.translate_language_code(lang_code, self.locale)
-            elif ISOCodes.is_country_code(lang_code):
+                    translate_language_code(lang_code, self.locale)
+            elif is_country_code(lang_code):
                 statement.language_name = \
-                    ISOCodes.translate_country_code(lang_code, self.locale)
+                    translate_country_code(lang_code, self.locale)
             else:
                 statement.language_name = lang_code
 

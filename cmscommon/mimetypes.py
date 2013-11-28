@@ -24,6 +24,13 @@ from xml import sax
 from xml.sax.handler import ContentHandler
 from xml.dom import XML_NAMESPACE as _XML_NS
 
+
+__all__ = [
+    "get_icon_for_type", "get_name_for_type",
+    "get_type_for_file_name",
+    ]
+
+
 _XDG_NS = "http://www.freedesktop.org/standards/shared-mime-info"
 
 # We need the config to access the shared_mime_info_prefix value. It
