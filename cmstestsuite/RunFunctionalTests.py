@@ -33,7 +33,7 @@ from cmstestsuite import add_contest, add_existing_user, add_existing_task, \
     start_ranking_web_server, shutdown_services, restart_service
 from cmstestsuite.Test import TestFailure
 import cmstestsuite.Tests
-from cmscommon.DateTime import get_system_timezone
+from cmscommon.datetime import get_system_timezone
 
 
 FAILED_TEST_FILENAME = '.testfailures'

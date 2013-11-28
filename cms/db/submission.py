@@ -35,7 +35,7 @@ from sqlalchemy.orm import relationship, backref
 from . import Base, User, Task, Dataset, Testcase
 from .smartmappedcollection import smart_mapped_collection
 
-from cmscommon.DateTime import make_datetime
+from cmscommon.datetime import make_datetime
 
 
 class Submission(Base):

@@ -67,7 +67,7 @@ from cms.server import file_handler_gen, extract_archive, \
     CommonRequestHandler, format_size
 from cmscommon import ISOCodes
 from cmscommon.Cryptographics import encrypt_number
-from cmscommon.DateTime import make_datetime, make_timestamp, get_timezone
+from cmscommon.datetime import make_datetime, make_timestamp, get_timezone
 from cmscommon.MimeTypes import get_type_for_file_name
 
 

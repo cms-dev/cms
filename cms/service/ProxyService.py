@@ -38,7 +38,7 @@ from cms import config
 from cms.io.GeventLibrary import Service, rpc_method
 from cms.db import SessionGen, Contest, Task, Submission
 from cms.grading.scoretypes import get_score_type
-from cmscommon.DateTime import make_timestamp
+from cmscommon.datetime import make_timestamp
 
 
 logger = logging.getLogger(__name__)

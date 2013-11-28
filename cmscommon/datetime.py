@@ -3,6 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,10 +18,22 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+
 import time
 import platform
 from datetime import tzinfo, timedelta, datetime
 from pytz import timezone, all_timezones
+
+
+__all__ = [
+    "make_datetime", "make_timestamp",
+    "get_timezone", "get_system_timezone",
+
+    "utc",
+
+    "monotonic_time",
+    ]
 
 
 def make_datetime(timestamp=None):
@@ -121,27 +134,6 @@ class UTC(tzinfo):
         return ZERO
 
 utc = UTC()
-
-
-# A class building tzinfo objects for fixed-offset time zones.
-# Note that FixedOffset(0, "UTC") is a different way to build a
-# UTC tzinfo object.
-
-class FixedOffset(tzinfo):
-    """Fixed offset in minutes east from UTC."""
-
-    def __init__(self, offset, name):
-        self.__offset = timedelta(minutes=offset)
-        self.__name = name
-
-    def utcoffset(self, dt):
-        return self.__offset
-
-    def tzname(self, dt):
-        return self.__name
-
-    def dst(self, dt):
-        return ZERO
 
 
 # A class capturing the platform's idea of local time.

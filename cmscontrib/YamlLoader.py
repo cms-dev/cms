@@ -29,7 +29,7 @@ import yaml
 from datetime import timedelta
 
 from cms import LANGUAGES
-from cmscommon.DateTime import make_datetime
+from cmscommon.datetime import make_datetime
 from cms.db import Contest, User, Task, Statement, Attachment, \
     SubmissionFormatElement, Dataset, Manager, Testcase
 from cmscontrib.BaseLoader import Loader

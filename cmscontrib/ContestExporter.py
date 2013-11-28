@@ -50,7 +50,7 @@ from cms.db.filecacher import FileCacher
 from cms.io.GeventUtils import rmtree
 
 from cmscontrib import sha1sum
-from cmscommon.DateTime import make_timestamp
+from cmscommon.datetime import make_timestamp
 
 
 logger = logging.getLogger(__name__)

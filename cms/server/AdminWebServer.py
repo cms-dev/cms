@@ -51,7 +51,7 @@ from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type_class
 from cms.server import file_handler_gen, get_url_root, \
     CommonRequestHandler
-from cmscommon.DateTime import make_datetime, make_timestamp
+from cmscommon.datetime import make_datetime, make_timestamp
 
 
 logger = logging.getLogger(__name__)
