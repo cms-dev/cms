@@ -49,7 +49,7 @@ from cms import config, mkdir
 from cms.io import ServiceCoord, Address, get_service_address
 from cms.io.Utils import encode_json, decode_json
 from cms.io.PsycoGevent import make_psycopg_green
-from cmscommon.DateTime import monotonic_time
+from cmscommon.datetime import monotonic_time
 
 
 logger = logging.getLogger(__name__)

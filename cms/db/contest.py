@@ -36,7 +36,7 @@ from sqlalchemy.orm import relationship, backref
 from . import Base, RepeatedUnicode
 
 from cms import DEFAULT_LANGUAGES
-from cmscommon.DateTime import make_datetime
+from cmscommon.datetime import make_datetime
 
 
 class Contest(Base):

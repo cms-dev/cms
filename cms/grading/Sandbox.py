@@ -34,7 +34,7 @@ from gevent import subprocess
 
 from cms import config
 from cms.io.GeventUtils import copyfileobj, rmtree
-from cmscommon.DateTime import monotonic_time
+from cmscommon.datetime import monotonic_time
 
 
 logger = logging.getLogger(__name__)

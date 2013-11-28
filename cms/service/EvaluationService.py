@@ -39,7 +39,7 @@ from cms.io import ServiceCoord, get_service_shards
 from cms.db import SessionGen, Contest, Dataset, Submission, \
     SubmissionResult, UserTest, UserTestResult
 from cms.service import get_submission_results, get_datasets_to_judge
-from cmscommon.DateTime import make_datetime, make_timestamp
+from cmscommon.datetime import make_datetime, make_timestamp
 from cms.grading.Job import JobGroup
 
 
