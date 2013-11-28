@@ -131,22 +131,5 @@
 
 
 
-    "_section": "ResourceService",
-
-    "_help": "Format of the *beginning* of the command line that we",
-    "_help": "expect services are running from. Used to found their",
-    "_help": "associated processes - %s is replaced by the service",
-    "_help": "name (e.g. LogService) and %d by the shard number.",
-    "_help": "The first is a process_cmdline that may work by default",
-    "_help": "for CMS installed, while the second is for CMS run from",
-    "_help": "the repository. On some systems it may be necessary to",
-    "_help": "change the first item to contain 'python' or",
-    "_help": "'python2.7' instead of 'python2', and the second one to",
-    "_help": "contain '/usr/bin' instead of '/usr/local/bin'.",
-    "process_cmdline": ["/usr/bin/python2", "/usr/local/bin/cms%s", "%d"],
-    "_process_cmdline": ["/usr/bin/python2", "./scripts/cms%s", "%d"],
-
-
-
     "_help": "This is the end of this file."
 }

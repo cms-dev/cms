@@ -185,14 +185,11 @@ class ResourceService(Service):
 
         """
         logger.debug("ResourceService._find_proc")
-        cmdline = config.process_cmdline[:]
-        length = len(cmdline)
-        for i in range(length):
-            cmdline[i] = cmdline[i].replace("%s", service.name)
-            cmdline[i] = cmdline[i].replace("%d", str(service.shard))
         for proc in psutil.get_process_list():
             try:
-                if proc.cmdline[:length] == cmdline:
+                if len(proc.cmdline) >= 3 and "python" in proc.cmdline[0] and \
+                        proc.cmdline[1].endswith("cms%s" % service.name) and \
+                        proc.cmdline[2] == "%d" % service.shard:
                     self._services_prev_cpu_times[service] = \
                         proc.get_cpu_times()
                     return proc
