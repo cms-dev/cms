@@ -24,7 +24,7 @@ You can configure, for each task, the behavior of these task types on the task's
 Batch
 -----
 
-In a Batch task, the contestant submits a single source file, in one of the three supported languages: C, C++, or Pascal.
+In a Batch task, the contestant submits a single source file, in one of the :ref:`allowed programming languages <configuringacontest_programming-languages>`.
 
 The source file is either standalone or to be compiled with a grader provided by the contest admins. The resulting executable does I/O either on standard input and output or on two files with a specified name. The output produced by the contestant's program is then compared to the correct output either using a simple diff algorithm (that ignores whitespaces) or using a comparator, provided by the admins.
 

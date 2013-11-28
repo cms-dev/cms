@@ -118,3 +118,15 @@ Contest administrators may want to give some users a short additional amount of 
 Note that in its extra time the user will continue to receive newly generated tokens. If you don't want him/her to have more tokens that other contestants set the ``token_total`` parameter described above to the number of tokens you expect a user to have at his/her disposal during the whole contest (if it doesn't already have a value less than or equal to this). See also :gh_issue:`29`.
 
 Note also that submissions sent during the extra time will continue to be considered when computing the score, even if the ``extra_time`` field of the user is later reset to zero (for example in case the user loses the appeal): you need to completely delete them from the database.
+
+
+.. _configuringacontest_programming-languages:
+
+Programming languages
+=====================
+
+It is possible to limit the set of programming languages available to contestants by setting the appropriate configuration in the contest page in AWS. By default, the historical set of IOI programming languages is allowed (C, C++, and Pascal). These languages have been used in several contests and with many different types of tasks, and are thus fully tested and safe.
+
+Contestants may be also allowed to use Python and PHP, but these languages have only been tested for Batch tasks, and have not been thoroughly analyzed for potential security and usability issues. Being run under the sandbox, they should be reasonably safe, but, for example, the libraries available to contestants might be hard to control.
+
+For Python, the contestants' programs are interpreted using Python 2 (you need to have ``/usr/bin/python2``). To use Python 3, you need to modify the CMS code following the instructions in :file:`cms/grading/__init__.py`. For PHP, you need to have ``/usr/bin/php5``.

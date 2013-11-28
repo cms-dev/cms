@@ -50,6 +50,8 @@ These are our requirements (in particular we highlight those that are not usuall
 
 * `shared-mime-info <http://freedesktop.org/wiki/Software/shared-mime-info>`_;
 
+* `PHP <http://www.php.net>`_ >= 5 (only if you plan to run a contest allowing PHP);
+
 * `PyYAML <http://pyyaml.org/wiki/PyYAML>`_ >= 3.10 (only for Importer);
 
 * `BeautifulSoup <http://www.crummy.com/software/BeautifulSoup/>`_ >= 3.2 (only for running tests);
@@ -78,7 +80,7 @@ On Ubuntu 12.04, one will need to run the following script to satisfy all depend
          cgroup-lite python-requests python-werkzeug
 
     # Optional.
-    # sudo apt-get install phppgadmin python-yaml python-sphinx
+    # sudo apt-get install php5-cli phppgadmin python-yaml python-sphinx
 
 On Arch Linux, the following command will install almost all dependencies (four of them can be found in the AUR):
 
