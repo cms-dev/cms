@@ -23,13 +23,14 @@ import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
 
-from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL
+from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
     CheckTimeout, CheckNonzeroReturn
 
 
 ALL_LANGUAGES = tuple(LANGUAGES)
 NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL)
+COMPILED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON)
 
 
 ALL_TESTS = [
@@ -92,7 +93,7 @@ ALL_TESTS = [
 
     Test('compile-fail',
          task=batch_fileio, filename='compile-fail.%l',
-         languages=ALL_LANGUAGES,
+         languages=COMPILED_LANGUAGES,
          checks=[CheckCompilationFail()]),
 
     # Various timeout conditions.
