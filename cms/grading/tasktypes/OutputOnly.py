@@ -88,6 +88,7 @@ class OutputOnly(TaskType):
         job.success = True
         job.compilation_success = True
         job.text = [N_("No compilation needed")]
+        job.plus = {}
 
     def evaluate(self, job, file_cacher):
         """See TaskType.evaluate."""
