@@ -2,6 +2,7 @@
 
 {% block core %}
 {% from cms import plugin_list %}
+{% from cms.grading import format_status_text %}
 {% from cms.grading.scoretypes import get_score_type %}
 {% set current_score_type = None %}
 
@@ -96,7 +97,7 @@
               {% end %}
             {% end %}
               <h3>Compilation output</h3><!-- TODO: trim long outputs and add facility to see raw -->
-              <pre>{% if sr.compilation_text is not None %}{{ sr.compilation_text }}{% end %}</pre>
+              <pre>{% if sr.compilation_text is not None %}{{ format_status_text(sr.compilation_text) }}{% end %}</pre>
             </div>
           </div>
 
