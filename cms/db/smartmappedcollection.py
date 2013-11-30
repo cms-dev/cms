@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import weakref
+
 from sqlalchemy import util
 from sqlalchemy import event
 from sqlalchemy.orm import class_mapper
@@ -40,24 +42,14 @@ class _EventManager(object):
 
     def listen(self, cls, prp, handler):
         if (cls, prp) not in self.handlers:
-            self.handlers[(cls, prp)] = list()
+            self.handlers[(cls, prp)] = weakref.WeakSet()
             event.listen(class_mapper(cls)._props[prp],
                          'set', self.make_callback(cls, prp))
 
-        self.handlers[(cls, prp)].append(handler)
+        self.handlers[(cls, prp)].add(handler)
 
-    def remove(self, cls, prp, handler):
-        assert (cls, prp) in self.handlers
-        assert handler in self.handlers[(cls, prp)]
-
-        # The following doesn't work due to the equality operator of
-        # the collection, but it's exactly what we want to achieve.
-        #self.handlers[(cls, prp)].remove(handler)
-
-        for i in xrange(len(self.handlers[(cls, prp)])):
-            if self.handlers[(cls, prp)][i] is handler:
-                del self.handlers[(cls, prp)][i]
-                break
+    # No need to enable handlers to be removed: they'll automatically
+    # vanish when they are garbage collected, as they are weakrefs.
 
     def make_callback(self, cls, prp):
         def callback(target, new_key, old_key, _sa_initiator):
@@ -82,6 +74,12 @@ class SmartMappedCollection(MappedCollection):
         self._parent_cls = None
         self._child_rel = None
         self._child_cls = None
+
+    def __eq__(self, other):
+        return self is other
+
+    def __hash__(self):
+        return hash(id(self))
 
     # XXX When dropping support for SQLAlchemy pre-0.8, rename this
     # decorator to 'collection.linker'.
@@ -123,8 +121,7 @@ class SmartMappedCollection(MappedCollection):
             # events, use the following code:
             #event.remove(class_mapper(self._child_cls)._props[self._column],
             #             'set', self._on_column_change)
-            # In the meanwhile we have to use this:
-            _event_manager.remove(self._child_cls, self._column, self)
+            # In the meanwhile we just rely on EventManager + weakrefs.
 
             self._parent_rel = None
             self._parent_obj = None
