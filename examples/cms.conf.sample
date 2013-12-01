@@ -74,8 +74,10 @@
 
     "_section": "ContestWebServer",
 
-    "_help": "Listening http address and ports for the CWS listed before in",
-    "_help": "core_services.",
+    "_help": "Listening HTTP addresses and ports for the CWSs listed above",
+    "_help": "in core_services. If you access them through a proxy (acting",
+    "_help": "as a load balancer) running on the same host you could put",
+    "_help": "127.0.0.1 here for additional security.",
     "contest_listen_address": [""],
     "contest_listen_port":    [8888],
 
@@ -102,7 +104,9 @@
     "_help": "one listed in the request headers.",
     "is_proxy_used": false,
 
-    "_help": "Maximum size of a submission in bytes.",
+    "_help": "Maximum size of a submission in bytes. If you use a proxy",
+    "_help": "and set these sizes to large values remember to change",
+    "_help": "client_max_body_size in nginx.conf too.",
     "max_submission_length": 100000,
     "max_input_length": 5000000,
 
@@ -116,7 +120,9 @@
 
     "_section": "AdminWebServer",
 
-    "_help": "Listening http address and port for AdminWebServer.",
+    "_help": "Listening HTTP address and port for the AWS. If you access",
+    "_help": "it through a proxy running on the same host you could put",
+    "_help": "127.0.0.1 here for additional security.",
     "admin_listen_address": "",
     "admin_listen_port":    8889,
 
@@ -124,8 +130,11 @@
 
     "_section": "ScoringService",
 
-    "_help": "Lists of addresses (protocol, ip, port), usernames and",
-    "_help": "passwords where the scores are to be sent.",
+    "_help": "List of URLs (with embedded username and password) of the",
+    "_help": "RWSs where the scores are to be sent. Don't include the",
+    "_help": "load balancing proxy (if any), just the backends. If any",
+    "_help": "of them uses HTTPS specify a file with the certificates",
+    "_help": "you trust.",
     "rankings": ["http://usern4me:passw0rd@localhost:8890/"],
     "https_certfile": null,
 
