@@ -1,41 +1,151 @@
+# This config requires the following Ubuntu packages to be installed:
+# nginx-full php5-cgi php5-fpm phppgadmin
+
 user www-data;
-worker_processes 1;
 
-error_log /var/log/nginx/error.log;
-pid       /var/run/nginx.pid;
+pid /run/nginx.pid;
 
+# Raise the three following values if you expect a very high load.
+worker_processes 4;
+worker_rlimit_nofile 1024;
 events {
-  worker_connections  1024;
+    worker_connections 768;
+    multi_accept on;
 }
 
 http {
-  upstream cms {
-    ip_hash;
-    server 127.0.0.1:8888;
-  }
+    # Default Ubuntu 13.10 settings.
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+    keepalive_timeout 65;
+    types_hash_max_size 2048;
 
-  server {
-    listen 443 default_server ssl;
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
 
-    # How to generate certificate: http://wiki.nginx.org/HttpSslModule
-    ssl_certificate /etc/nginx/ssl/server.cert;
-    ssl_certificate_key /etc/nginx/ssl/server.key;
+    # Default Ubuntu 13.10 settings for gzip (uncommented).
+    gzip on;
+    gzip_disable "msie6";
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_buffers 16 8k;
+    gzip_http_version 1.1;
+    gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
 
-    server_name ioi.phc.unipi.it;
-    location / {
-      proxy_pass http://cms;
+    # Group the ContestWebServers to load balance the users' requests
+    # on them. The "ip_hash" option is necessary for the notifications
+    # to work.
+    upstream cws {
+        ip_hash;
+        server 127.0.0.1:8888;
+        # Insert other CWSs here.
     }
-    proxy_set_header Host            $host;
-    proxy_set_header X-Real-IP       $remote_addr;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-  }
 
-  server {
-    listen 80;
-    server_name ioi.phc.unipi.it;
-    location / {
-      rewrite ^/(.*)$ https://ioi.phc.unipi.it/$1;
+    # Group the RankingWebServers to load balance among them (useful to
+    # overcome the hard limit on simultaneous open file descriptors if
+    # you expect a very large number of clients).
+    upstream rws {
+        server 127.0.0.1:8890;
+        # Insert other RWSs here.
     }
-  }
 
+    # Force HTTPS.
+    server {
+        listen 80;
+        server_name ioi-server;
+        location / {
+            rewrite ^/(.*)$ https://ioi-server/$1;
+        }
+    }
+
+    server {
+        listen 443 default_server;
+        server_name ioi-server;
+
+        # Have the nginx server be the HTTPS endpoint, authenticating
+        # and decripting the connection, forwarding plain HTTP requests
+        # upstream. To learn how to generate a self-signed certificate
+        # see http://wiki.nginx.org/HttpSslModule.
+        ssl on;
+        ssl_certificate /etc/nginx/ssl/server.crt;
+        ssl_certificate_key /etc/nginx/ssl/server.key;
+
+        # Serve phppgadmin on a prefix. This assumes that you have the
+        # phppgadmin and php5-fpm packages properly installed and
+        # configured.
+        location /phppgadmin/ {
+            alias /usr/share/phppgadmin/;
+            index index.php;
+
+            # Protect it with an IP address whitelist.
+            allow 127.0.0.1;
+            # Insert other allowed IP addesses or subnets here.
+            deny all;
+
+            # Authentication will be required by phppgadmin, no need to
+            # enforce it here.
+
+            # Serve the static files with a (likely) correct MIME type.
+            include /etc/nginx/mime.types;
+            default_type application/octet-stream;
+
+            try_files $uri $uri/ =404;
+
+            location ~ \.php$ {
+                fastcgi_pass unix:/var/run/php5-fpm.sock;
+                fastcgi_index index.php;
+                include fastcgi_params;
+            }
+        }
+
+        # Serve AWS on a prefix.
+        location ^~ /aws/ {
+            proxy_pass http://127.0.0.1:8889/;
+            include proxy_params;
+
+            # Protect it with an authentication. For more information
+            # see http://wiki.nginx.org/HttpAuthBasicModule.
+            auth_basic "AdminWebServer";
+            auth_basic_user_file /etc/nginx/htpasswd_AWS;
+
+            # Protect it with an IP address whitelist.
+            allow 127.0.0.1;
+            # Insert other allowed IP addesses or subnets here.
+            deny all;
+
+            # Allow to upload large files (e.g. testcases).
+            client_max_body_size 100M;
+        }
+
+        # Serve RWS on a prefix.
+        location ^~ /rws/ {
+            proxy_pass http://rws/;
+            include proxy_params;
+            # Buffering blocks the streaming HTTP requests used for
+            # live-update.
+            proxy_buffering off;
+
+            # Protect it with an authentication. For more information
+            # see http://wiki.nginx.org/HttpAuthBasicModule.
+            auth_basic "RankingWebServer";
+            auth_basic_user_file /etc/nginx/htpasswd_RWS;
+
+            # Protect it with an IP address whitelist.
+            allow 127.0.0.1;
+            # Insert other allowed IP addesses or subnets here.
+            deny all;
+        }
+
+        # Serve CWS unprefixed.
+        location / {
+            proxy_pass http://cws/;
+            include proxy_params;
+
+            # Needs to be as large as the maximum allowed submission
+            # and input lengths set in cms.conf.
+            client_max_body_size 50M;
+        }
+    }
 }
