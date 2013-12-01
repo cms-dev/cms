@@ -126,22 +126,6 @@ class Store(object):
         """
         self._delete_callbacks.append(callback)
 
-    def _verify_key(self, key, must_be_present=False):
-        """Verify that the key has the correct type.
-
-        key (unicode): the key of the entity we want to interact with.
-        must_be_present (bool): True if we need the key in the store,
-            False if the key must not be in the store.
-
-        raise (InvalidKey): if key is not valid.
-
-        """
-        if not isinstance(key, unicode):
-            raise InvalidKey
-        if (key in self._store and not must_be_present) or \
-                (key not in self._store and must_be_present):
-            raise InvalidKey
-
     def create(self, key, data):
         """Create a new entity.
 
@@ -157,7 +141,8 @@ class Store(object):
             some properties or if properties are of the wrong type.
 
         """
-        self._verify_key(key)
+        if not isinstance(key, unicode) or key in self._store:
+            raise InvalidKey("Key already in store.")
 
         # create entity
         with LOCK:
@@ -194,7 +179,8 @@ class Store(object):
             some properties or if properties are of the wrong type.
 
         """
-        self._verify_key(key, must_be_present=True)
+        if not isinstance(key, unicode) or key not in self._store:
+            raise InvalidKey("Key not in store.")
 
         # update entity
         with LOCK:
@@ -285,7 +271,8 @@ class Store(object):
             with that key is present in the store.
 
         """
-        self._verify_key(key, must_be_present=True)
+        if not isinstance(key, unicode) or key not in self._store:
+            raise InvalidKey("Key not in store.")
 
         with LOCK:
             # delete entity
@@ -327,7 +314,8 @@ class Store(object):
             with that key is present in the store.
 
         """
-        self._verify_key(key, must_be_present=True)
+        if not isinstance(key, unicode) or key not in self._store:
+            raise InvalidKey("Key not in store.")
 
         # retrieve entity
         return self._store[key].get()

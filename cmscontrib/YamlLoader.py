@@ -304,7 +304,7 @@ class YamlLoader(Loader):
                                                           primary_language))
                 break
         else:
-            logger.error("Couldn't find any task statement, aborting...")
+            logger.critical("Couldn't find any task statement, aborting...")
             sys.exit(1)
         args["statements"] = [Statement(primary_language, digest)]
 
@@ -372,7 +372,7 @@ class YamlLoader(Loader):
                     args["managers"] += [
                         Manager("grader.%s" % lang, digest)]
                 else:
-                    logger.error("Grader for language %s not found " % lang)
+                    logger.warning("Grader for language %s not found " % lang)
             # Read managers with other known file extensions
             for other_filename in os.listdir(os.path.join(task_path, "sol")):
                 if other_filename.endswith('.h') or \
@@ -516,8 +516,8 @@ class YamlLoader(Loader):
                             args["managers"] += [
                                 Manager("stub.%s" % lang, digest)]
                         else:
-                            logger.error("Stub for language %s not "
-                                         "found." % lang)
+                            logger.warning("Stub for language %s not "
+                                           "found." % lang)
                     break
 
             # Otherwise, the task type is Batch
