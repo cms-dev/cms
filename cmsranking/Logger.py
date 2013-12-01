@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2011-2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2011-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -17,13 +17,70 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import curses
 import logging
 import os.path
+import sys
 import time
-
 from traceback import format_tb
 
+import gevent.coros
+
 from cmsranking.Config import config
+
+
+class StreamHandler(logging.StreamHandler):
+    """Subclass to make gevent-aware.
+
+    Use a gevent lock instead of a threading one to block only the
+    current greenlet.
+
+    """
+    def createLock(self):
+        """Set self.lock to a new gevent RLock.
+
+        """
+        self.lock = gevent.coros.RLock()
+
+
+class FileHandler(logging.FileHandler):
+    """Subclass to make gevent-aware.
+
+    Use a gevent lock instead of a threading one to block only the
+    current greenlet.
+
+    """
+    def createLock(self):
+        """Set self.lock to a new gevent RLock.
+
+        """
+        self.lock = gevent.coros.RLock()
+
+
+def has_color_support(stream):
+    """Try to determine if the given stream supports colored output.
+
+    Return True only if the stream declares to be a TTY, if it has a
+    file descriptor on which ncurses can initialize a terminal and if
+    that terminal's entry in terminfo declares support for colors.
+
+    stream (fileobj): a file-like object (that adheres to the API
+        declared in the `io' package).
+
+    return (bool): True if we're sure that colors are supported, False
+        if they aren't or if we can't tell.
+
+    """
+    if stream.isatty():
+        try:
+            curses.setupterm(fd=stream.fileno())
+            # See `man terminfo` for capabilities' names and meanings.
+            if curses.tigetnum("colors") > 0:
+                return True
+        # fileno() can raise IOError or OSError (since Python 3.3).
+        except Exception:
+            pass
+    return False
 
 
 ## ANSI utilities. See for reference:
@@ -71,7 +128,7 @@ ANSI_INVERSE_OFF_CMD = 27
 # - "conceal on" and "conceal off" (also called reveal)
 
 
-class LogFormatter(logging.Formatter):
+class CustomFormatter(logging.Formatter):
     """A custom Formatter for our logs.
 
     """
@@ -183,19 +240,20 @@ class LogFormatter(logging.Formatter):
 
 
 # Create a global reference to the root logger.
-logger = logging.getLogger()
+root_logger = logging.getLogger()
 # Catch all logging messages (we'll filter them on the handlers).
-logger.setLevel(logging.DEBUG)
+root_logger.setLevel(logging.DEBUG)
 
 # Define the stream handler to output on stderr.
-_stream_log = logging.StreamHandler()
-_stream_log.setLevel(logging.WARNING)
-_stream_log.setFormatter(LogFormatter(color=config.log_color))
-logger.addHandler(_stream_log)
+shell_handler = StreamHandler(sys.stdout)
+shell_handler.setLevel(logging.INFO)
+shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stdout)))
+root_logger.addHandler(shell_handler)
 
 # Define the file handler to output on the specified log directory.
-_file_log = logging.FileHandler(os.path.join(config.log_dir,
-                                time.strftime("%Y-%m-%d-%H-%M-%S.log")))
-_file_log.setLevel(logging.WARNING)
-_file_log.setFormatter(LogFormatter(color=False))
-logger.addHandler(_file_log)
+log_filename = time.strftime("%Y-%m-%d-%H-%M-%S.log")
+file_handler = FileHandler(os.path.join(config.log_dir, log_filename),
+                           mode='w', encoding='utf-8')
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(CustomFormatter(False))
+root_logger.addHandler(file_handler)

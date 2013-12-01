@@ -24,6 +24,7 @@ import argparse
 import functools
 import io
 import json
+import logging
 import os
 import re
 import shutil
@@ -41,9 +42,11 @@ from werkzeug.wsgi import responder, wrap_file, SharedDataMiddleware, \
     DispatcherMiddleware
 from werkzeug.utils import redirect
 
+# Needed for initialization. Do not remove.
+import cmsranking.Logger
+
 from cmscommon.EventSource import EventSource
 from cmsranking.Config import config
-from cmsranking.Logger import logger
 from cmsranking.Entity import InvalidData
 import cmsranking.Contest as Contest
 import cmsranking.Task as Task
@@ -52,6 +55,9 @@ import cmsranking.User as User
 import cmsranking.Submission as Submission
 import cmsranking.Subchange as Subchange
 import cmsranking.Scoring as Scoring
+
+
+logger = logging.getLogger(__name__)
 
 
 class CustomUnauthorized(Unauthorized):

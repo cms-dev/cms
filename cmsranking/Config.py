@@ -51,9 +51,6 @@ class Config(object):
         # Buffers
         self.buffer_size = 100  # Needs to be strictly positive.
 
-        # Logging.
-        self.log_color = True
-
         # File system.
         self.installed = sys.argv[0].startswith("/usr/") and \
             sys.argv[0] != '/usr/bin/ipython' and \

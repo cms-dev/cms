@@ -21,11 +21,13 @@ from __future__ import unicode_literals
 from __future__ import absolute_import
 
 import heapq
-
-from cmsranking.Logger import logger
+import logging
 
 from cmsranking.Submission import store as submission_store
 from cmsranking.Subchange import store as subchange_store
+
+
+logger = logging.getLogger(__name__)
 
 
 class NumberSet(object):

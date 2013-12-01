@@ -432,7 +432,7 @@ def initialize_logging(service_name, service_shard):
     # Install a file handler.
     file_handler = FileHandler(os.path.join(log_dir, log_filename),
                                mode='w', encoding='utf-8')
-    file_handler.setLevel(logging.DEBUG)
+    file_handler.setLevel(logging.INFO)
     file_handler.setFormatter(CustomFormatter(False))
     file_handler.addFilter(filter_)
     root_logger.addHandler(file_handler)

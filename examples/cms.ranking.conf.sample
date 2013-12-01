@@ -12,8 +12,5 @@
     "username":   "usern4me",
     "password":   "passw0rd",
 
-    "_help": "Whether to write logs with ANSI color codes.",
-    "log_color": true,
-
     "_help": "This is the end of this file."
 }

@@ -22,15 +22,17 @@ from __future__ import absolute_import
 
 import io
 import json
+import logging
 import os
 import re
 
 from gevent.lock import RLock
 
 from cmsranking.Config import config
-from cmsranking.Logger import logger
-
 from cmsranking.Entity import Entity, InvalidKey, InvalidData
+
+
+logger = logging.getLogger(__name__)
 
 
 # Global shared lock for all Store instances.
