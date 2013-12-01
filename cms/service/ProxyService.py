@@ -73,7 +73,7 @@ def safe_put_data(ranking, resource, data, operation):
     operation (unicode): a human-readable description of the operation
         we're performing (to produce log messages).
 
-    raise CannotSendError in case of communication errors.
+    raise (CannotSendError): in case of communication errors.
 
     """
     try:
@@ -88,10 +88,10 @@ def safe_put_data(ranking, resource, data, operation):
     except requests.exceptions.RequestException as error:
         logger.warning(
             "%s while %s: %s" % (type(error).__name__, operation, error))
-        raise CannotSendError
+        raise CannotSendError()
     if 400 <= res.status_code < 600:
         logger.warning("Status %s while %s." % (res.status_code, operation))
-        raise CannotSendError
+        raise CannotSendError()
 
 
 class RankingProxy(object):
@@ -326,7 +326,7 @@ class ProxyService(Service):
             if contest is None:
                 logger.error("Received request for unexistent contest "
                              "id %s." % self.contest_id)
-                raise KeyError
+                raise KeyError()
 
             contest_id = encode_id(contest.name)
             contest_data = {
@@ -461,7 +461,7 @@ class ProxyService(Service):
             if submission is None:
                 logger.error("[submission_scored] Received score request for "
                              "unexistent submission id %s." % submission_id)
-                raise KeyError
+                raise KeyError()
 
             if submission.user.hidden:
                 logger.info("[submission_scored] Score for submission %d "
@@ -488,7 +488,7 @@ class ProxyService(Service):
             if submission is None:
                 logger.error("[submission_tokened] Received token request for "
                              "unexistent submission id %s." % submission_id)
-                raise KeyError
+                raise KeyError()
 
             if submission.user.hidden:
                 logger.info("[submission_tokened] Token for submission %d "

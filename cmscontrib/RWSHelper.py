@@ -167,9 +167,9 @@ def main():
 
         try:
             res = s.send(req, verify=config.https_certfile)
-        except RequestException as e:
+        except RequestException as exc:
             logger.error("Failed")
-            logger.info(repr(e))
+            logger.info(repr(exc))
             error = True
             continue
 

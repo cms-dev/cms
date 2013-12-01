@@ -76,8 +76,9 @@ class Base(object):
     def __declare_last__(cls):
         """Analyze and extract properties of mapper and save them in cls
 
-        Split the properties into column and relationship properties and
-        raise RuntimeError if something isn't correctly understood.
+        Split the properties into column and relationship properties.
+
+        raise (RuntimeError): if something isn't correctly understood.
 
         """
         # Divide all properties into column and relationship ones.

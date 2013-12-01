@@ -137,10 +137,10 @@ class Store(object):
 
         """
         if not isinstance(key, unicode):
-            raise InvalidKey
+            raise InvalidKey()
         if (key in self._store and not must_be_present) or \
                 (key not in self._store and must_be_present):
-            raise InvalidKey
+            raise InvalidKey()
 
     def create(self, key, data):
         """Create a new entity.

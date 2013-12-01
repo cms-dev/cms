@@ -101,7 +101,7 @@ class ScoreType(object):
 
         """
         logger.error("Unimplemented method max_scores.")
-        raise NotImplementedError
+        raise NotImplementedError("Please subclass this class.")
 
     def compute_score(self, submission_result):
         """Computes a score of a single submission. We don't know here
@@ -117,7 +117,7 @@ class ScoreType(object):
 
         """
         logger.error("Unimplemented method compute_score.")
-        raise NotImplementedError
+        raise NotImplementedError("Please subclass this class.")
 
 
 class ScoreTypeAlone(ScoreType):
@@ -345,7 +345,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         """
         logger.error("Unimplemented method get_public_outcome.")
-        raise NotImplementedError
+        raise NotImplementedError("Please subclass this class.")
 
     def reduce(self, outcomes, parameter):
         """Return the score of a subtask given the outcomes.
@@ -358,4 +358,4 @@ class ScoreTypeGroup(ScoreTypeAlone):
 
         """
         logger.error("Unimplemented method reduce.")
-        raise NotImplementedError
+        raise NotImplementedError("Please subclass this class.")

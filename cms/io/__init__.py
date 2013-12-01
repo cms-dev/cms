@@ -72,7 +72,7 @@ def get_service_address(key):
     elif key in config.other_services:
         return config.other_services[key]
     else:
-        raise KeyError
+        raise KeyError()
 
 
 def get_shard_from_addresses(service, addrs):
