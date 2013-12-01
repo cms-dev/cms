@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 import atexit
 import errno
 import json
@@ -125,7 +127,7 @@ def sh(cmdline, ignore_failure=False):
 
     """
     if CONFIG["VERBOSITY"] >= 1:
-        print '$', cmdline
+        print('$', cmdline)
     if CONFIG["VERBOSITY"] >= 3:
         cmdline += ' > /dev/null 2>&1'
     if isinstance(cmdline, list):
@@ -148,7 +150,7 @@ def spawn(cmdline):
             pass
 
     if CONFIG["VERBOSITY"] >= 1:
-        print '$', ' '.join(cmdline)
+        print('$', ' '.join(cmdline))
 
     if CONFIG["TEST_DIR"] is not None:
         cmdline = ['python-coverage', 'run', '-p', '--source=cms'] + \
@@ -166,7 +168,7 @@ def spawn(cmdline):
 
 
 def info(s):
-    print '==>', s
+    print('==>', s)
 
 
 def configure_cms(options):
@@ -195,8 +197,8 @@ def configure_cms(options):
     out_file.close()
 
     if unset:
-        print "These configuration items were not set:"
-        print "  " + ", ".join(sorted(list(unset)))
+        print("These configuration items were not set:")
+        print("  " + ", ".join(sorted(list(unset))))
 
     # Load the config database.
     read_cms_config()
@@ -237,7 +239,7 @@ def start_servicer(service_name, check, shard=0, contest=None):
             else:
                 return prog
         except Exception:
-            print "Unexpected exception while waiting for the service:"
+            print("Unexpected exception while waiting for the service:")
             raise
 
     # If we arrive here, it means the service was not fired up.

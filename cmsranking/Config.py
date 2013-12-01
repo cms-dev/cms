@@ -19,6 +19,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import print_function
 
 import io
 import json
@@ -109,13 +110,13 @@ class Config(object):
                 # We cannot access the file, we skip it.
                 pass
             except ValueError as exc:
-                print "Unable to load JSON configuration file %s, probably " \
+                print("Unable to load JSON configuration file %s, probably "
                       "because of a JSON decoding error.\n%r" % (conf_file,
-                                                                 exc)
+                                                                 exc))
             else:
-                print "Using configuration file %s." % conf_file
+                print("Using configuration file %s." % conf_file)
                 return
-        print "Warning: no configuration file found."
+        print("Warning: no configuration file found.")
 
     def _load_unique(self, path):
         """Populate the Config class with everything that sits inside

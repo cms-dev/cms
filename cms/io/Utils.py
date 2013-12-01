@@ -23,6 +23,8 @@
 
 """
 
+from __future__ import print_function
+
 import json
 import sys
 
@@ -39,7 +41,7 @@ def encode_json(obj):
     try:
         return json.dumps(obj, encoding='utf-8')
     except ValueError:
-        print >> sys.stderr, "Can't encode JSON: %r" % obj
+        print("Can't encode JSON: %r" % obj, file=sys.stderr)
         raise
 
 
@@ -56,5 +58,5 @@ def decode_json(string):
     try:
         return json.loads(string, encoding='utf-8')
     except ValueError:
-        print >> sys.stderr, "Can't decode JSON: %r" % string
+        print("Can't decode JSON: %r" % string, file=sys.stderr)
         raise

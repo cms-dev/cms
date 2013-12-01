@@ -24,6 +24,8 @@
 
 """
 
+from __future__ import print_function
+
 import sys
 import os
 import shutil
@@ -221,7 +223,7 @@ def copytree(src_path, dest_path, owner, perm_files, perm_dirs):
         elif os.path.isfile(path):
             copyfile(path, sub_dest, owner, perm_files)
         else:
-            print "Error: unexpected filetype for file %s. Not copied" % path
+            print("Error: unexpected filetype for file %s. Not copied" % path)
 
 
 def build():
@@ -231,21 +233,21 @@ def build():
 
 
     """
-    print "compiling isolate..."
+    print("compiling isolate...")
     os.chdir("isolate")
     os.system(os.path.join(".", "compile.sh"))
     os.chdir("..")
 
-    print "compiling localization files:"
+    print("compiling localization files:")
     for locale in glob(os.path.join("cms", "server", "po", "*.po")):
         country_code = re.search("/([^/]*)\.po", locale).groups()[0]
-        print "  %s" % country_code
+        print("  %s" % country_code)
         path = os.path.join("cms", "server", "mo", country_code,
                             "LC_MESSAGES")
         makedir(path)
         os.system("msgfmt %s -o %s" % (locale, os.path.join(path, "cms.mo")))
 
-    print "done."
+    print("done.")
 
 
 def install():
@@ -258,19 +260,19 @@ def install():
     # max liberty to change them.
     old_umask = os.umask(0000)
 
-    print "creating user and group cmsuser."
+    print("creating user and group cmsuser.")
     os.system("useradd cmsuser -c 'CMS default user' -M -r -s /bin/false -U")
     cmsuser = pwd.getpwnam("cmsuser")
     root = pwd.getpwnam("root")
     cmsuser_grp = grp.getgrnam("cmsuser")
 
-    print "copying isolate to /usr/local/bin/."
+    print("copying isolate to /usr/local/bin/.")
     makedir(os.path.join("/", "usr", "local", "bin"), root, 0755)
     copyfile(os.path.join(".", "isolate", "isolate"),
              os.path.join("/", "usr", "local", "bin", "isolate"),
              root, 04750, group=cmsuser_grp)
 
-    print "copying configuration to /usr/local/etc/."
+    print("copying configuration to /usr/local/etc/.")
     makedir(os.path.join("/", "usr", "local", "etc"), root, 0755)
     for conf_file_name in ["cms.conf", "cms.ranking.conf"]:
         conf_file = os.path.join("/", "usr", "local", "etc", conf_file_name)
@@ -285,10 +287,10 @@ def install():
             copyfile(os.path.join(".", "examples", conf_file_name),
                      conf_file, cmsuser, 0660)
 
-    print "copying localization files:"
+    print("copying localization files:")
     for locale in glob(os.path.join("cms", "server", "po", "*.po")):
         country_code = re.search("/([^/]*)\.po", locale).groups()[0]
-        print "  %s" % country_code
+        print("  %s" % country_code)
         path = os.path.join("cms", "server", "mo", country_code, "LC_MESSAGES")
         dest_path = os.path.join("/", "usr", "local", "share", "locale",
                                  country_code, "LC_MESSAGES")
@@ -297,7 +299,7 @@ def install():
                  os.path.join(dest_path, "cms.mo"),
                  root, 0644)
 
-    print "creating directories."
+    print("creating directories.")
     dirs = [os.path.join("/", "var", "local", "log"),
             os.path.join("/", "var", "local", "cache"),
             os.path.join("/", "var", "local", "lib"),
@@ -312,7 +314,7 @@ def install():
         makedir(_dir, cmsuser, 0770)
 
     os.umask(old_umask)
-    print "done."
+    print("done.")
 
 
 if __name__ == "__main__":

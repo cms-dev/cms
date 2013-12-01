@@ -17,6 +17,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 import os
 import sys
 import subprocess
@@ -93,7 +95,7 @@ def load_test_list_from_file(filename):
         lines = open(filename).readlines()
         return [line.strip().split(" ") for line in lines]
     except (IOError, OSError) as error:
-        print "Failed to read test list. %s." % error
+        print("Failed to read test list. %s." % error)
         return None
 
 
@@ -156,7 +158,7 @@ def main():
             "git rev-parse --show-toplevel", shell=True,
             stderr=open(os.devnull, "w")).strip()
     except subprocess.CalledProcessError:
-        print "Please run the unit tests from the git repository."
+        print("Please run the unit tests from the git repository.")
         return 1
 
     if args.retry_failed:
@@ -166,7 +168,7 @@ def main():
 
     if args.dry_run:
         for t in test_list:
-            print t[0].name, t[1]
+            print(t[0].name, t[1])
         return 0
 
     if args.retry_failed:
@@ -192,10 +194,10 @@ def main():
 
     combine_coverage()
 
-    print test_results
+    print(test_results)
 
     end_time = datetime.datetime.now()
-    print time_difference(start_time, end_time)
+    print(time_difference(start_time, end_time))
 
     if passed:
         return 0
