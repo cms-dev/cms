@@ -26,6 +26,7 @@ import io
 import json
 import logging
 import os
+import pprint
 import re
 import shutil
 import time
@@ -178,7 +179,7 @@ class StoreHandler(object):
         except InvalidData:
             logger.warning("Invalid data.", exc_info=True,
                            extra={'location': request.url,
-                                  'details': data})
+                                  'details': pprint.pformat(data)})
             raise BadRequest()
 
         response.status_code = 204
@@ -207,7 +208,7 @@ class StoreHandler(object):
         except InvalidData:
             logger.warning("Invalid data.", exc_info=True,
                            extra={'location': request.url,
-                                  'details': data})
+                                  'details': pprint.pformat(data)})
             raise BadRequest()
 
         response.status_code = 204
