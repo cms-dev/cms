@@ -39,10 +39,10 @@ import sys
 import six
 
 if six.PY3:
-    from urllib.parse import quote, urljoin
+    from urllib.parse import quote, urljoin, urlsplit
 else:
     from urllib import quote
-    from urlparse import urljoin
+    from urlparse import urljoin, urlsplit
 
 from six.moves import xrange
 
@@ -142,6 +142,9 @@ def main():
 
     for shard in shards:
         url = get_url(shard, args.entity_type, args.entity_id)
+        # XXX With requests-1.2 auth is automatically extracted from
+        # the URL: there is no need for this.
+        auth = urlsplit(url)
 
         if args.verbose:
             logger.info(
@@ -156,6 +159,7 @@ def main():
             body = None
 
         req = Request(ACTION_METHODS[args.action], url, data=body,
+                      auth=(auth.username, auth.password),
                       headers={'content-type': 'application/json'}).prepare()
 
         if args.verbose:
