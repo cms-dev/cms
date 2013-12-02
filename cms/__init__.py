@@ -49,6 +49,7 @@ LANG_CPP = "cpp"
 LANG_PASCAL = "pas"
 LANG_PYTHON = "py"
 LANG_PHP = "php"
+LANG_JAVA = "java"
 
 LANGUAGE_NAMES = {
     LANG_C: "C",
@@ -56,9 +57,10 @@ LANGUAGE_NAMES = {
     LANG_PASCAL: "Pascal",
     LANG_PYTHON: "Python",
     LANG_PHP: "PHP",
+    LANG_JAVA: "Java",
 }
 
-LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP]
+LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA]
 DEFAULT_LANGUAGES = [LANG_C, LANG_CPP, LANG_PASCAL]
 
 # A reference for extension-based automatic language detection.
@@ -73,6 +75,7 @@ SOURCE_EXT_TO_LANGUAGE_MAP = {
     ".pas": LANG_PASCAL,
     ".py": LANG_PYTHON,
     ".php": LANG_PHP,
+    ".java": LANG_JAVA,
 }
 
 # Our preferred source file and header file extension for each language.
@@ -81,14 +84,16 @@ LANGUAGE_TO_SOURCE_EXT_MAP = {
     LANG_CPP: ".cpp",
     LANG_PASCAL: ".pas",
     LANG_PYTHON: ".py",
-    LANG_PHP: ".php"
+    LANG_PHP: ".php",
+    LANG_JAVA: ".java",
 }
 LANGUAGE_TO_HEADER_EXT_MAP = {
     LANG_C: ".h",
     LANG_CPP: ".h",
     LANG_PASCAL: "lib.pas",
     LANG_PYTHON: ".py",
-    LANG_PHP: ".php"
+    LANG_PHP: ".php",
+    LANG_JAVA: ".java",
 }
 
 

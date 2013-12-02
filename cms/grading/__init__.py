@@ -30,7 +30,7 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP
+from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -123,6 +123,15 @@ def get_compilation_command(language, source_filenames, executable_filename,
     elif language == LANG_PHP:
         command = ["/bin/sh", "-c"]
         command += ["cp %s %s" % (source_filenames[0], executable_filename)]
+    elif language == LANG_JAVA:
+        class_name = "Task" # submitted java class must be called Task
+        command = ["/bin/sh", "-c"]
+        command += ["/bin/mv %s %s.java; /usr/bin/gcj --main=%s -O3 -o %s %s.java" % (
+            source_filenames[0],
+            class_name,class_name,
+            executable_filename,
+            class_name
+            )]
     else:
         raise ValueError("Unknown language %s." % language)
     return command
@@ -141,7 +150,7 @@ def get_evaluation_command(language, executable_filename):
     return (list): a list of string to be passed to subprocess.
 
     """
-    if language in (LANG_C, LANG_CPP, LANG_PASCAL):
+    if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA):
         command = [os.path.join(".", executable_filename)]
     elif language == LANG_PYTHON:
         command = ["/bin/sh", "-c"]
