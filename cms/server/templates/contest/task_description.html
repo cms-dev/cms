@@ -234,7 +234,7 @@
     <h2>{{ _("Attachments") }}</h2>
     <div id="attachments">
         <ul>
-    {% from cmscommon import MimeTypes %}
+    {% from cmscommon import mimetypes %}
     {% for filename, attachment in sorted(task.attachments.items()) %}
         {% set mime_type = MimeTypes.get_type_for_file_name(filename) %}
         {% if mime_type is not None %}

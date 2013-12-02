@@ -3,6 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2012 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -20,6 +21,14 @@
 import os.path
 from xml.sax import parse
 from xml.sax.handler import ContentHandler
+
+
+__all__ = [
+    "is_language_code", "translate_language_code",
+    "is_country_code", "translate_country_code",
+    "is_language_country_code", "translate_country_code",
+    ]
+
 
 # We need the config to access the iso_codes_prefix value. It would be
 # better not to depend on cms (i.e. be standalone). The best solution

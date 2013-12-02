@@ -35,6 +35,12 @@ from werkzeug.wrappers import Request
 from werkzeug.exceptions import NotAcceptable
 
 
+__all__ = [
+    "format_event",
+    "Publisher", "Subscriber", "EventSource",
+    ]
+
+
 def format_event(id_, event, data):
     """Format the parameters to be sent on an event stream.
 
