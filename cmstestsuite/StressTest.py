@@ -19,6 +19,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 import os
 import sys
 import mechanize
@@ -59,15 +61,15 @@ class RequestLog(object):
                 pass
 
     def print_stats(self):
-        print >> sys.stderr, "TOTAL:          %5d" % (self.total)
-        print >> sys.stderr, "SUCCESS:        %5d" % (self.success)
-        print >> sys.stderr, "FAIL:           %5d" % (self.failure)
-        print >> sys.stderr, "ERROR:          %5d" % (self.error)
-        print >> sys.stderr, "UNDECIDED:      %5d" % (self.undecided)
-        print >> sys.stderr, "Total time:   %7.3f" % (self.total_time)
-        print >> sys.stderr, "Average time: %7.3f" % (self.total_time /
-                                                      self.total)
-        print >> sys.stderr, "Max time:     %7.3f" % (self.max_time)
+        print("TOTAL:          %5d" % (self.total), file=sys.stderr)
+        print("SUCCESS:        %5d" % (self.success), file=sys.stderr)
+        print("FAIL:           %5d" % (self.failure), file=sys.stderr)
+        print("ERROR:          %5d" % (self.error), file=sys.stderr)
+        print("UNDECIDED:      %5d" % (self.undecided), file=sys.stderr)
+        print("Total time:   %7.3f" % (self.total_time), file=sys.stderr)
+        print("Average time: %7.3f" % (self.total_time / self.total),
+              file=sys.stderr)
+        print("Max time:     %7.3f" % (self.max_time), file=sys.stderr)
 
     def merge(self, log2):
         self.total += log2.total
@@ -132,11 +134,12 @@ class Actor(threading.Thread):
 
     def run(self):
         try:
-            print >> sys.stderr, "Starting actor for user %s" % (self.username)
+            print("Starting actor for user %s" % (self.username),
+                  file=sys.stderr)
             self.act()
 
         except ActorDying:
-            print >> sys.stderr, "Actor dying for user %s" % (self.username)
+            print("Actor dying for user %s" % (self.username), file=sys.stderr)
 
     def act(self):
         """Define the behaviour of the actor. Subclasses are expected
@@ -152,14 +155,14 @@ class Actor(threading.Thread):
         try:
             request.prepare()
         except Exception as exc:
-            print >> sys.stderr, "Unhandled exception while " \
-                "preparing the request: %s" % (str(exc))
+            print("Unhandled exception while preparing the request: %s" %
+                  (str(exc)), file=sys.stderr)
             return
         try:
             request.execute()
         except Exception as exc:
-            print >> sys.stderr, "Unhandled exception while " \
-                "executing the request %s" % (str(exc))
+            print("Unhandled exception while executing the request %s" %
+                  (str(exc)), file=sys.stderr)
             return
         self.log.__dict__[request.outcome] += 1
         self.log.total_time += request.duration
@@ -305,15 +308,15 @@ def main():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        print >> sys.stderr, "Taking down actors"
+        print("Taking down actors", file=sys.stderr)
         for actor in actors:
             actor.die = True
 
-    # Turn on some memory profiling
-    #from meliae import scanner
-    #print "Dumping"
-    #scanner.dump_all_objects('objects.json')
-    #print "Dump finished"
+    # Uncomment to turn on some memory profiling.
+    # from meliae import scanner
+    # print("Dumping")
+    # scanner.dump_all_objects('objects.json')
+    # print("Dump finished")
 
     finished = False
     while not finished:
@@ -322,7 +325,7 @@ def main():
         else:
             finished = True
 
-    print >> sys.stderr, "Test finished"
+    print("Test finished", file=sys.stderr)
 
     great_log = RequestLog()
     for actor in actors:

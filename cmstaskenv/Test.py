@@ -20,8 +20,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import sys
+from __future__ import print_function
+
+import json
 import os
+import sys
 
 from cmscontrib.YamlLoader import YamlLoader
 from cms.db import Executable
@@ -29,7 +32,7 @@ from cms.db.filecacher import FileCacher
 from cms.grading import format_status_text
 from cms.grading.Job import EvaluationJob
 from cms.grading.tasktypes import get_task_type
-import json
+
 
 # TODO - Use a context object instead of global variables
 task = None
@@ -37,13 +40,13 @@ file_cacher = None
 
 
 def usage():
-    print """%s base_dir executable [assume]"
+    print("""%s base_dir executable [assume]"
 base_dir:   directory of the task
 executable: solution to test (relative to the task's directory)
 language:   programming language the solution is written in
 assume:     if it's y, answer yes to every question
             if it's n, answer no to every question
-""" % sys.argv[0]
+""" % sys.argv[0])
 
 
 def mem_human(mem):
@@ -106,7 +109,7 @@ def test_testcases(base_dir, soluzione, language, assume=None):
     comments = []
     tcnames = []
     for jobinfo in sorted(jobs):
-        print jobinfo[0],
+        print(jobinfo[0], end='')
         sys.stdout.flush()
         job = jobinfo[1]
         # Skip the testcase if we decide to consider everything to
@@ -132,10 +135,11 @@ def test_testcases(base_dir, soluzione, language, assume=None):
         # If we saw two consecutive timeouts, ask wether we want to
         # consider everything to timeout
         if ask_again and status == "timeout" and last_status == "timeout":
-            print
-            print "Want to stop and consider everything to timeout? [y/N]",
+            print()
+            print("Want to stop and consider everything to timeout? [y/N]",
+                  end='')
             if assume is not None:
-                print assume
+                print(assume)
                 tmp = assume
             else:
                 tmp = raw_input().lower()
@@ -145,11 +149,11 @@ def test_testcases(base_dir, soluzione, language, assume=None):
                 ask_again = False
 
     # Result pretty printing
-    print
+    print()
     clen = max(len(c) for c in comments)
     ilen = max(len(i) for i in info)
     for (i, p, c, b) in zip(tcnames, points, comments, info):
-        print "%s) %5.2lf --- %s [%s]" % (i, p, c.ljust(clen), b.center(ilen))
+        print("%s) %5.2lf --- %s [%s]" % (i, p, c.ljust(clen), b.center(ilen)))
 
     return zip(points, comments, info)
 

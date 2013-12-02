@@ -24,6 +24,8 @@ Italian IOI repository for storing the results of a contest.
 
 """
 
+from __future__ import print_function
+
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
@@ -43,7 +45,7 @@ from cms.grading.scoretypes import get_score_type
 logger = logging.getLogger(__name__)
 
 
-# TODO: review this file to use io instead of codecs and avoid print >> f.
+# TODO: review this file to use io instead of codecs and avoid print.
 class SpoolExporter(object):
     """This service creates a tree structure "similar" to the one used
     in Italian IOI repository for storing the results of a contest.
@@ -134,8 +136,9 @@ class SpoolExporter(object):
             except OSError:
                 pass
             os.symlink(os.path.basename(submission_dir), last_submission_dir)
-            print >> queue_file, "./upload/%s/%s.%d.%s" % \
-                (username, task, timestamp, submission.language)
+            print("./upload/%s/%s.%d.%s" %
+                  (username, task, timestamp, submission.language),
+                  file=queue_file)
 
             # Write results file for the submission.
             active_dataset = submission.task.active_dataset
@@ -158,15 +161,15 @@ class SpoolExporter(object):
                     line = "Executing on file with codename '%s' %s (%.4f)" % \
                         (evaluation.testcase.codename,
                          evaluation.text, outcome)
-                    print >> res_file, line
-                    print >> res2_file, line
+                    print(line, file=res_file)
+                    print(line, file=res2_file)
                 line = "Score: %.6f" % total
-                print >> res_file, line
-                print >> res2_file, line
+                print(line, file=res_file)
+                print(line, file=res2_file)
                 res_file.close()
                 res2_file.close()
 
-        print >> queue_file
+        print(file=queue_file)
         queue_file.close()
 
     def export_ranking(self):
@@ -225,8 +228,8 @@ class SpoolExporter(object):
                 task_scores[task_id][username] = max(
                     task_scores[task_id][username],
                     last_scores[task_id][username])
-            #print username, [task_scores[task_id][username]
-            #                        for task_id in task_scores]
+            # print(username, [task_scores[task_id][username]
+            #                  for task_id in task_scores])
             scores[username] = sum(task_scores[task_id][username]
                                    for task_id in task_scores)
 
@@ -246,14 +249,16 @@ class SpoolExporter(object):
 
         # Write rankings' header.
         n_tasks = len(sorted_tasks)
-        print >> ranking_file, "Classifica finale del contest `%s'" % \
-            self.contest.description
+        print("Classifica finale del contest `%s'" %
+              self.contest.description, file=ranking_file)
         points_line = " %10s" * n_tasks
         csv_points_line = ",%s" * n_tasks
-        print >> ranking_file, ("%20s %10s" % ("Utente", "Totale")) + \
-            (points_line % tuple([t.name for t in sorted_tasks]))
-        print >> ranking_csv, ("%s,%s" % ("utente", "totale")) + \
-            (csv_points_line % tuple([t.name for t in sorted_tasks]))
+        print(("%20s %10s" % ("Utente", "Totale")) +
+              (points_line % tuple([t.name for t in sorted_tasks])),
+              file=ranking_file)
+        print(("%s,%s" % ("utente", "totale")) +
+              (csv_points_line % tuple([t.name for t in sorted_tasks])),
+              file=ranking_csv)
 
         # Write rankings' content.
         points_line = " %10.3f" * n_tasks
@@ -261,12 +266,12 @@ class SpoolExporter(object):
         for username in sorted_usernames:
             user_scores = [task_scores[task.id][username]
                            for task in sorted_tasks]
-            print >> ranking_file, \
-                ("%20s %10.3f" % (username, scores[username])) + \
-                (points_line % tuple(user_scores))
-            print >> ranking_csv, \
-                ("%s,%.6f" % (username, scores[username])) + \
-                (csv_points_line % tuple(user_scores))
+            print(("%20s %10.3f" % (username, scores[username])) +
+                  (points_line % tuple(user_scores)),
+                  file=ranking_file)
+            print(("%s,%.6f" % (username, scores[username])) +
+                  (csv_points_line % tuple(user_scores)),
+                  file=ranking_csv)
 
         ranking_file.close()
         ranking_csv.close()

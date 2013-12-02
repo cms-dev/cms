@@ -24,6 +24,8 @@
 
 """
 
+from __future__ import print_function
+
 import imp
 import json
 import logging
@@ -31,6 +33,7 @@ import netifaces
 import os
 import pkgutil
 import sys
+
 from argparse import ArgumentParser
 
 from cms.io import ServiceCoord, Address, config as async_config, \
@@ -206,18 +209,18 @@ class Config(object):
             except IOError:
                 pass
             except ValueError as error:
-                print "Unable to load JSON configuration file %s " \
+                print("Unable to load JSON configuration file %s "
                       "because of a JSON decoding error.\n%r" % (conf_file,
-                                                                 error)
+                                                                 error))
             else:
-                print "Using configuration file %s." % conf_file
+                print("Using configuration file %s." % conf_file)
                 return
         else:
-            print "Warning: no configuration file found " \
-                  "in following locations:"
+            print("Warning: no configuration file found "
+                  "in following locations:")
             for path in paths:
-                print "    %s" % path
-            print "Using default values."
+                print("    %s" % path)
+            print("Using default values.")
 
     def _load_unique(self, path):
         """Populate the Config class with everything that sits inside
@@ -429,8 +432,8 @@ def default_argument_parser(description, cls, ask_contest=None):
             # Test if there is a contest with the given contest id.
             from cms.db import is_contest_id
             if not is_contest_id(args.contest_id):
-                print >> sys.stderr, "There is no contest " \
-                    "with the specified id. Please try again."
+                print("There is no contest with the specified id. "
+                      "Please try again.", file=sys.stderr)
                 sys.exit(1)
             return cls(args.shard, args.contest_id)
         else:

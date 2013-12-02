@@ -17,11 +17,13 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 
 def main():
-    print "YamlImporter has been removed from CMS starting from version 1.1."
-    print "Please, use program Importer."
-    print "Check CMS documentation for instructions."
+    print("YamlImporter has been removed from CMS starting from version 1.1.")
+    print("Please, use program Importer.")
+    print("Check CMS documentation for instructions.")
 
 
 if __name__ == '__main__':

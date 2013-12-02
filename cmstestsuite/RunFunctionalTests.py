@@ -18,11 +18,14 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 import os
 import sys
 import subprocess
 import datetime
 import re
+
 from argparse import ArgumentParser
 
 from cms import LANGUAGES
@@ -202,7 +205,7 @@ def load_test_list_from_file(filename):
         with open(filename) as f:
             lines = f.readlines()
     except (IOError, OSError) as e:
-        print "Failed to read test list. %s." % (e)
+        print("Failed to read test list. %s." % (e))
         return None
 
     errors = False
@@ -210,7 +213,7 @@ def load_test_list_from_file(filename):
     name_to_test_map = {}
     for test in cmstestsuite.Tests.ALL_TESTS:
         if test.name in name_to_test_map:
-            print "ERROR: Multiple tests with the same name `%s'." % test.name
+            print("ERROR: Multiple tests with the same name `%s'." % test.name)
             errors = True
         name_to_test_map[test.name] = test
 
@@ -218,22 +221,22 @@ def load_test_list_from_file(filename):
     for i, line in enumerate(lines):
         bits = [x.strip() for x in line.split()]
         if len(bits) != 2:
-            print "ERROR: %s:%d invalid line: %s" % (filename, i + 1, line)
+            print("ERROR: %s:%d invalid line: %s" % (filename, i + 1, line))
             errors = True
             continue
 
         name, lang = bits
 
         if name not in name_to_test_map:
-            print "ERROR: %s:%d invalid test case: %s" % (
-                filename, i + 1, name)
+            print("ERROR: %s:%d invalid test case: %s" %
+                  (filename, i + 1, name))
             errors = True
             continue
 
         test = name_to_test_map[name]
         if lang not in test.languages:
-            print "ERROR: %s:%d test `%s' does not have language `%s'" % (
-                filename, i + 1, name, lang)
+            print("ERROR: %s:%d test `%s' does not have language `%s'" %
+                  (filename, i + 1, name, lang))
             errors = True
             continue
 
@@ -396,7 +399,7 @@ def main():
 
     if args.dry_run:
         for t in test_list:
-            print t[0].name, t[1]
+            print(t[0].name, t[1])
         return 0
 
     if args.retry_failed:
@@ -444,10 +447,10 @@ def main():
     shutdown_services()
     combine_coverage()
 
-    print test_results
+    print(test_results)
 
     end_time = datetime.datetime.now()
-    print time_difference(start_time, end_time)
+    print(time_difference(start_time, end_time))
 
     if passed:
         return 0

@@ -19,6 +19,7 @@
 
 from __future__ import unicode_literals
 from __future__ import absolute_import
+from __future__ import print_function
 
 import argparse
 import functools
@@ -449,14 +450,14 @@ def main():
     args = parser.parse_args()
 
     if args.drop:
-        print "Are you sure you want to delete directory %s? [y/N]" % \
-              config.lib_dir,
+        print("Are you sure you want to delete directory %s? [y/N]" %
+              config.lib_dir, end='')
         ans = raw_input().lower()
         if ans in ['y', 'yes']:
-            print "Removing directory %s." % config.lib_dir
+            print("Removing directory %s." % config.lib_dir)
             shutil.rmtree(config.lib_dir)
         else:
-            print "Not removing directory %s." % config.lib_dir
+            print("Not removing directory %s." % config.lib_dir)
         return False
 
     toplevel_handler = RoutingHandler(DataWatcher(), ImageHandler(

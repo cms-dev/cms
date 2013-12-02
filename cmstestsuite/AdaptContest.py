@@ -37,6 +37,8 @@ The zip file contains all files submitted.
 
 """
 
+from __future__ import print_function
+
 import os
 import shutil
 import sys
@@ -75,7 +77,7 @@ def main():
                    for x in glob("%s/*" % args.source)
                    if not os.path.basename(x).startswith("test_")]
     for t_short in tasks_short:
-        print >> sys.stderr, t_short
+        print(t_short, file=sys.stderr)
         users = [os.path.basename(x)
                  for x in glob("%s/%s/*" % (args.source, t_short))
                  if len(os.path.basename(x)) == 4]
@@ -127,7 +129,7 @@ def main():
 
     all_events.sort()
     for event in all_events:
-        print " ".join([str(x) for x in event])
+        print(" ".join([str(x) for x in event]))
 
     return 0
 

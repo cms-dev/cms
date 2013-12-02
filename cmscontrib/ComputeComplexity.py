@@ -33,6 +33,8 @@ the dimensions of the testcases.
 
 """
 
+from __future__ import print_function
+
 import argparse
 import imp
 import numpy
@@ -173,7 +175,7 @@ def extract_complexity_submission(testcases_lengths, submission):
 
     points_x, points_y = extract_meaningful_points(testcases_lengths,
                                                    submission)
-    print submission.user.username, len(points_x)
+    print(submission.user.username, len(points_x))
     if len(points_x) <= 6:
         return result
 
@@ -242,7 +244,7 @@ def extract_complexity_submission(testcases_lengths, submission):
             dat.write("%15.8lf %+15.8lf %+15.8lf\n" % (point_x * x_scale,
                                                        point_y * y_scale,
                                                        computed_y * y_scale))
-    print submission.user.username, result
+    print(submission.user.username, result)
     return result
 
 
@@ -274,7 +276,7 @@ def extract_complexity(task_id, file_lengther=None):
             for submission in task.contest.get_submissions():
                 if submission.task_id == task_id and \
                         submission.evaluated():
-                    print submission.user.username
+                    print(submission.user.username)
                     result = extract_complexity_submission(testcases_lengths,
                                                            submission)
                     if result[1] is None:
@@ -316,11 +318,11 @@ def main():
                                      file_, file_name, description)
             file_lengther = module.FileLengther
         except ImportError as error:
-            print "Unable to import module %s.\n%r" % (args.lengther, error)
+            print("Unable to import module %s.\n%r" % (args.lengther, error))
             return -1
         except AttributeError:
-            print "Module %s must have a class named FileLengther." % \
-                  args.lengther
+            print("Module %s must have a class named FileLengther." %
+                  args.lengther)
 
     return extract_complexity(int(args.task_id), file_lengther=file_lengther)
 
