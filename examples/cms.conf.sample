@@ -9,7 +9,7 @@
     "temp_dir": "/tmp",
 
     "_help": "Whether to have a backdoor (see doc for the risks).",
-    "backdoor": false,
+    "backdoor": true,
 
 
 
