@@ -1,3 +1,6 @@
+# This config requires the following Ubuntu packages to be installed:
+# nginx-full php5-cgi php5-fpm phppgadmin
+
 user www-data;
 
 pid /run/nginx.pid;
