@@ -476,6 +476,53 @@ class DocumentationHandler(BaseHandler):
         self.render("documentation.html", **self.r_params)
 
 
+class RegisterHandler(BaseHandler):
+    """Register handler.
+
+    """
+    def post(self):
+        if not config.registration_form:
+            self.redirect("/?login_error=true")
+            return
+
+        first_name = self.get_argument("first_name", "")
+        last_name = self.get_argument("last_name", "")
+        username = self.get_argument("username", "")
+        password = self.get_argument("password", "")
+        next_page = self.get_argument("next", "/")
+
+        if username != filter_ascii(username):
+            self.redirect("/?login_error=true")
+            return
+
+        user = User(first_name, last_name, username, password=password,
+                    email=None, ip=None, hidden=False,
+                    primary_statements="{}",
+                    timezone=None, starting_time=None,
+                    extra_time=timedelta(seconds=0),
+                    contest=self.contest)
+        self.sql_session.add(user)
+        try:
+            self.sql_session.commit()
+        except:
+            self.redirect("/?login_error=true")
+            return
+
+        filtered_user = filter_ascii(username)
+        filtered_pass = filter_ascii(password)
+
+        self.application.service.proxy_service.reinitialize()
+
+        logger.info("User logged in: user=%s remote_ip=%s." %
+                    (filtered_user, self.request.remote_ip))
+        self.set_secure_cookie("login",
+                               pickle.dumps((user.username,
+                                             user.password,
+                                             make_timestamp())),
+                               expires_days=None)
+        self.redirect(next_page)
+
+
 class LoginHandler(BaseHandler):
     """Login handler.
 
@@ -1833,6 +1880,7 @@ _cws_handlers = [
     (r"/", MainHandler),
     (r"/login", LoginHandler),
     (r"/logout", LogoutHandler),
+    (r"/register", RegisterHandler),
     (r"/start", StartHandler),
     (r"/tasks/(.*)/description", TaskDescriptionHandler),
     (r"/tasks/(.*)/submissions", TaskSubmissionsHandler),
