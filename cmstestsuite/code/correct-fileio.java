@@ -12,5 +12,6 @@ public class Task {
         int n = scanner.nextInt();
         PrintWriter writer = new PrintWriter("output.txt");
         writer.println("correct "+n);
+        writer.close();
     }
 }

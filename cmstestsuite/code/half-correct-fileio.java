@@ -11,5 +11,6 @@ public class Task {
         int n = scanner.nextInt();
         PrintWriter writer = new PrintWriter("output.txt");
         writer.println("correct "+(n % 2 == 1 ? n : 0) );
+        writer.close();
     }
 }
