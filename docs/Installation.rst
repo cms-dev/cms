@@ -66,7 +66,7 @@ These are our requirements (in particular we highlight those that are not usuall
 
 You will also require a Linux kernel with support for control groups and namespaces. Support has been in the Linux kernel since 2.6.32, and is provided by Ubuntu 12.04 and later. Other distributions, or systems with custom kernels, may not have support enabled. At a minimum, you will need to enable the following Linux kernel options: ``CONFIG_CGROUPS``, ``CONFIG_CGROUP_CPUACCT``, ``CONFIG_MEMCG`` (previously called as ``CONFIG_CGROUP_MEM_RES_CTLR``), ``CONFIG_CPUSETS``, ``CONFIG_PID_NS``, ``CONFIG_IPC_NS``, ``CONFIG_NET_NS``.
 
-Nearly all dependencies (i.e., all except gevent) can be installed automatically on most Linux distributions (gevent itself is provided on some distributions, but we need the development version which isn't generally available as a package). Instructions for manually installing gevent are below.
+Nearly all dependencies (i.e., all except gevent) can be installed automatically on most Linux distributions (we need version 1.0 of gevent, which many distributions don't provide yet). Instructions for manually installing gevent are below.
 
 On Ubuntu 12.04, one will need to run the following script to satisfy all dependencies (except gevent):
 
@@ -80,7 +80,8 @@ On Ubuntu 12.04, one will need to run the following script to satisfy all depend
          cgroup-lite python-requests python-werkzeug
 
     # Optional.
-    # sudo apt-get install php5-cli phppgadmin python-yaml python-sphinx
+    # sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
+    #      python-yaml python-sphinx
 
 On Arch Linux, the following command will install almost all dependencies (four of them can be found in the AUR):
 
@@ -90,10 +91,7 @@ On Arch Linux, the following command will install almost all dependencies (four 
          setuptools python2-tornado python2-psycopg2 python2-sqlalchemy \
          python2-psutil python2-netifaces python2-crypto python2-pytz \
          python2-six iso-codes shared-mime-info python2-beautifulsoup3 \
-         python2-mechanize python2-requests python2-werkzeug
-
-    # Install gevent from repository.
-    sudo pacman -S python2-gevent-beta
+         python2-mechanize python2-requests python2-werkzeug python2-gevent
 
     # Install the following from AUR.
     # https://aur.archlinux.org/packages/libcgroup/
@@ -102,7 +100,7 @@ On Arch Linux, the following command will install almost all dependencies (four 
     # https://aur.archlinux.org/packages/python2-mock/
 
     # Optional.
-    # sudo pacman -S phppgadmin python2-yaml python-sphinx
+    # sudo pacman -S nginx php php-fpm phppgadmin python2-yaml python-sphinx
 
 If you prefer using Python Package Index, you can retrieve all Python dependencies with this line:
 
