@@ -216,7 +216,7 @@ def compilation_step(sandbox, command):
     sandbox.max_processes = None
     sandbox.timeout = 10
     sandbox.wallclock_timeout = 20
-    sandbox.address_space = 256 * 1024
+    sandbox.address_space = 512 * 1024
     sandbox.stdout_file = "compiler_stdout.txt"
     sandbox.stderr_file = "compiler_stderr.txt"
 
