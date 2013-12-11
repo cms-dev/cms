@@ -21,7 +21,7 @@ task_info = {
     "name": "batchfileiomanaged",
     "title": "Test Batch Task using manager with I/O via files",
     "time_limit": "0.1",
-    "memory_limit": "64",
+    "memory_limit": "128",
     "official_language": "",
     "task_type": "Batch",
     "TaskTypeOptions_Batch_compilation": "grader",
