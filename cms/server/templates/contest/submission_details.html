@@ -21,7 +21,7 @@
 {% if sr.compilation_time is None %}
     {{ _("N/A") }}
 {% else %}
-    {{ "%(seconds)0.3f s" % {'seconds': sr.compilation_time} }}
+    {{ _("%(seconds)0.3f s") % {'seconds': sr.compilation_time} }}
 {% end %}
             </td>
         </tr>

@@ -1682,19 +1682,20 @@ class UserTestStatusHandler(BaseHandler):
         data = dict()
         if ur is None or not ur.compiled():
             data["status"] = 1
-            data["status_text"] = "Compiling..."
+            data["status_text"] = self._("Compiling...")
         elif ur.compilation_failed():
             data["status"] = 2
-            data["status_text"] = "Compilation failed " + \
-                                  "<a class=\"details\">details</a>"
+            data["status_text"] = "%s <a class=\"details\">%s</a>" % (
+                self._("Compilation failed"), self._("details"))
         elif not ur.evaluated():
             data["status"] = 3
-            data["status_text"] = "Executing..."
+            data["status_text"] = self._("Executing...")
         else:
             data["status"] = 4
-            data["status_text"] = "Executed <a class=\"details\">details</a>"
+            data["status_text"] = "%s <a class=\"details\">%s</a>" % (
+                self._("Evaluated"), self._("details"))
             if ur.execution_time is not None:
-                data["time"] = "%(seconds)0.3f s" % {
+                data["time"] = self._("%(seconds)0.3f s") % {
                     'seconds': ur.execution_time}
             else:
                 data["time"] = None
