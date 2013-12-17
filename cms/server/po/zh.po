@@ -384,22 +384,22 @@ msgstr[1] "%d 秒"
 #, python-format
 msgid "%d minute"
 msgid_plural "%d minutes"
-msgstr[0] "%d 分"
-msgstr[1] "%d 分"
+msgstr[0] "%d 分鐘"
+msgstr[1] "%d 分鐘"
 
 #: server/__init__.py:234
 #, python-format
 msgid "%d hour"
 msgid_plural "%d hours"
-msgstr[0] "%d 時"
-msgstr[1] "%d 時"
+msgstr[0] "%d 小時"
+msgstr[1] "%d 小時"
 
 #: server/__init__.py:235
 #, python-format
 msgid "%d day"
 msgid_plural "%d days"
-msgstr[0] "%d 日"
-msgstr[1] "%d 日"
+msgstr[0] "%d 天"
+msgstr[1] "%d 天"
 
 #: server/__init__.py:285
 #, python-format
@@ -799,7 +799,7 @@ msgstr "關於各題中題目-Token 的詳細使用規則, 請參閱各題的題
 msgid ""
 "In addition to those rules, you can use at most one token every second among "
 "all tasks."
-msgstr "除以上規則外, 在競賽中每秒至多可以使用一個 Token."
+msgstr "除以上規則外, 在競賽中每秒均可以使用一個 Token."
 
 #: server/templates/contest/overview.html:80
 #, python-format
@@ -810,7 +810,7 @@ msgstr "除以上規則外, 在競賽中兩次 Token 的使用間至少需相隔
 
 #: server/templates/contest/overview.html:86
 msgid "You have a set of tokens shared among all tasks."
-msgstr "您有一些所有題目共用的 Tokens."
+msgstr "您有一些所有題目共用的 Token."
 
 #: server/templates/contest/overview.html:95
 msgid ""
@@ -840,49 +840,49 @@ msgstr "關於題目-Token 的詳細使用規則, 請參閱各題的題目敘述
 msgid ""
 "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
 "time frame of %(per_user_time)s."
-msgstr ""
+msgstr "每位參賽者可以選擇連續的 %(per_user_time)s 參加本次計時競賽."
 
-#: server/templates/contest/overview.html:126
+#: server/templates/contest/overview.html:126 開啟 or 啟動?
 msgid "As soon as the contest starts you can choose to start your time frame."
-msgstr ""
+msgstr "當競賽開啟時, 您就可以參加競賽並開始計時."
 
 #: server/templates/contest/overview.html:127
 #: server/templates/contest/overview.html:130
 msgid ""
 "Once you start, you can submit solutions until the end of the time frame or "
 "until the end of the contest, whatever comes first."
-msgstr ""
+msgstr "開始計時後即可開始作答. 此外, 若整體競賽已終止, 即使您自己的競賽計時器尚未結束, 您也必須停止作答."
 
 #: server/templates/contest/overview.html:129
 msgid "By clicking on the button below you can start your time frame."
-msgstr ""
+msgstr "點擊以下按鈕確認開始參加競賽並開始計時."
 
 #: server/templates/contest/overview.html:132
 #, python-format
 msgid "You started your time frame at %(start_time)s."
-msgstr ""
+msgstr "您已在 %(start_time)s 開始競賽計時."
 
 #: server/templates/contest/overview.html:133
 msgid ""
 "You can submit solutions until the end of the time frame or until the end of "
 "the contest, whatever comes first."
-msgstr ""
+msgstr "您可以作答到整體競賽終止或您的競賽計時器結束為止."
 
 #: server/templates/contest/overview.html:135
 #: server/templates/contest/overview.html:141
 #, python-format
 msgid ""
 "You started your time frame at %(start_time)s and you already finished it."
-msgstr ""
+msgstr "您已在 %(start_time)s 開始競賽計時, 而現在時間已結束."
 
 #: server/templates/contest/overview.html:136
 #: server/templates/contest/overview.html:143
 msgid "There's nothing you can do now."
-msgstr ""
+msgstr "目前無法進行任何操作."
 
 #: server/templates/contest/overview.html:139
 msgid "You never started your time frame. Now it's too late."
-msgstr ""
+msgstr "您尚未開始競賽, 但現在已超過允許時間."
 
 #: server/templates/contest/overview.html:150
 msgid "Start!"
@@ -1315,4 +1315,5 @@ msgstr "已評測 <a class=\"details\">詳細資料</a>"
 #: add
 msgid "loading..."
 msgstr "載入中..."
+
 
