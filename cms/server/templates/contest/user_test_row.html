@@ -1,3 +1,4 @@
+{% from cms.server import format_size %}
 {% if show_date %}
     {% set col1 = "<td class=\"datetime\">%s</td>" % format_datetime(t.timestamp, timezone, locale=locale) %}
 {% else %}
