@@ -561,10 +561,10 @@ class JobGroup(object):
 
         ur.evaluation_text = json.dumps(job.text, encoding='utf-8')
         ur.set_evaluation_outcome()  # FIXME use job.outcome
-        ur.evaluation_time = job.plus.get('execution_time')
-        ur.evaluation_wall_clock_time = \
+        ur.execution_time = job.plus.get('execution_time')
+        ur.execution_wall_clock_time = \
             job.plus.get('execution_wall_clock_time')
-        ur.evaluation_memory = job.plus.get('execution_memory')
+        ur.execution_memory = job.plus.get('execution_memory')
         ur.evaluation_shard = job.shard
         ur.evaluation_sandbox = ":".join(job.sandboxes)
         ur.output = job.user_output
