@@ -20,11 +20,11 @@ update_user_test_row = function (task_id, user_test_id, data) {
     if (data["status"] == 4) {
         if (data["output"]) {
             var btn = row.children("td.output").children("a.btn");
-            btn.text("Download");
+            btn.text('{{ _("Download") }}');
             btn.removeClass("disabled");
             btn.attr("href", "{{ url_root }}/tasks/" + encodeURIComponent(task_id) + "/tests/" + user_test_id + "/output");
         } else {
-            row.children("td.output").children("a.btn").text("N/A");
+            row.children("td.output").children("a.btn").text("{{ _("N/A") }}");
         }
         if (data["time"] != null) {
             row.children("td.time").removeClass("undefined");
@@ -35,7 +35,7 @@ update_user_test_row = function (task_id, user_test_id, data) {
             row.children("td.memory").text(data["memory"]);
         }
     } else if (data["status"] == 2) {
-        row.children("td.output").children("a.btn").text("N/A");
+        row.children("td.output").children("a.btn").text("{{ _("N/A") }}");
     } else {
         schedule_update_user_test_row(task_id, user_test_id);
     }
