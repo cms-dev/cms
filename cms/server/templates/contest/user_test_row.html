@@ -37,7 +37,7 @@
     </td>
 {% else %}
     <td class="time">
-        {{ "%(seconds)0.3f s" % {'seconds': tr.execution_time} }}
+        {{ _("%(seconds)0.3f s") % {'seconds': tr.execution_time} }}
     </td>
 {% end %}
 {% if tr is None or tr.execution_memory is None %}
