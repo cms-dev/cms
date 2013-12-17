@@ -1,7 +1,7 @@
 # Twi translations for PACKAGE package.
 # Copyright (C) 2013 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# root <cms@csie.org>, 2013.
+# magrady24 <b01902110@csie.ntu.edu.tw>, 2013.
 #
 msgid ""
 msgstr ""
@@ -9,8 +9,8 @@ msgstr ""
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2013-09-15 19:25+0200\n"
 "PO-Revision-Date: 2013-12-16 02:48+0800\n"
-"Last-Translator: root <cms@csie.org>\n"
-"Language-Team: Twi\n"
+"Last-Translator: magrady24 <b01902110@csie.ntu.edu.tw>\n"
+"Language-Team: TW\n"
 "Language: tw\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
