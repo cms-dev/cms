@@ -124,14 +124,13 @@ def get_compilation_command(language, source_filenames, executable_filename,
         command = ["/bin/sh", "-c"]
         command += ["cp %s %s" % (source_filenames[0], executable_filename)]
     elif language == LANG_JAVA:
-        class_name = "Task" # submitted java class must be called Task
+        class_name = "Task"  # Submitted java class must be called Task.
         command = ["/bin/sh", "-c"]
-        command += ["/bin/mv %s %s.java; /usr/bin/gcj --main=%s -O3 -o %s %s.java" % (
-            source_filenames[0],
-            class_name,class_name,
-            executable_filename,
-            class_name
-            )]
+        command += ["/bin/mv %(source)s %(class)s.java; /usr/bin/gcj --main=%(class)s -O3 -o %(exec)s %(class)s.java" % {
+            "source": source_filenames[0],
+            "exec": executable_filename,
+            "class": class_name
+            }]
     else:
         raise ValueError("Unknown language %s." % language)
     return command
