@@ -12,6 +12,7 @@ Luca Wehrstedt <luca.wehrstedt@gmail.com>
 OTHER CONTRIBUTORS
 
 Giovanni Campagna (aka gcampax) <scampa.giovanni@gmail.com>
+Cheng, Ting-Yuan (aka magrady24) <magrady24+github@gmail.com>
 Vittorio Gambaletta (aka VittGam) <VittGam@VittGam.net>
 David Greenaway <mail@davidgreenaway.com>
 Fabian Gundlach (aka fagu) <320pointsguy@gmail.com>
