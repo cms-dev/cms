@@ -8,7 +8,7 @@ When you change a string in a template or in a web server, you have to generate 
 
 .. sourcecode:: bash
 
-    xgettext -o server/po/messages.pot --language=Python --keyword=_:1,2 --keyword=N_ --keyword=N_:1,2 \
+    xgettext -o server/po/messages.pot --language=Python --no-location --keyword=_:1,2 --keyword=N_ --keyword=N_:1,2 \
       grading/__init__.py grading/ScoreType.py grading/scoretypes/*.py grading/tasktypes/*.py \
       server/*.py server/templates/admin/*.html server/templates/contest/*.html
 
