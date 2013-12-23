@@ -126,7 +126,8 @@ def get_compilation_command(language, source_filenames, executable_filename,
     elif language == LANG_JAVA:
         class_name = "Task"  # Submitted java class must be called Task.
         command = ["/bin/sh", "-c"]
-        command += ["/bin/mv %(source)s %(class)s.java; /usr/bin/gcj --main=%(class)s -O3 -o %(exec)s %(class)s.java" % {
+        command += ["/bin/mv %(source)s %(class)s.java; "
+            "/usr/bin/gcj --main=%(class)s -O3 -o %(exec)s %(class)s.java" % {
             "source": source_filenames[0],
             "exec": executable_filename,
             "class": class_name
