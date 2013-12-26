@@ -421,8 +421,8 @@ class ContestWebServer(WebService):
                 "cms.server", "static"),
             "cookie_secret": base64.b64encode(config.secret_key),
             "debug": config.tornado_debug,
+            "is_proxy_used": config.is_proxy_used,
         }
-        parameters["is_proxy_used"] = config.is_proxy_used
         WebService.__init__(
             self,
             config.contest_listen_port[shard],
