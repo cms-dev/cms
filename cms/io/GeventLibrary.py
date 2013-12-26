@@ -27,6 +27,7 @@ using gevent and JSON encoding.
 
 import errno
 import heapq
+import json
 import logging
 import os
 import pwd
@@ -47,7 +48,6 @@ from gevent.backdoor import BackdoorServer
 import cms.log
 from cms import config, mkdir
 from cms.io import ServiceCoord, Address, get_service_address
-from cms.io.Utils import encode_json, decode_json
 from cms.io.PsycoGevent import make_psycopg_green
 from cmscommon.datetime import monotonic_time
 
@@ -610,7 +610,7 @@ class RemoteService(object):
         """
         # We decode the arriving data
         try:
-            message = decode_json(data)
+            message = json.loads(data, encoding='utf-8')
         except ValueError:
             logger.warning("Cannot understand incoming message, discarding.")
             return
@@ -656,7 +656,7 @@ class RemoteService(object):
         """
         response["__data"] = method_response
         try:
-            json_message = encode_json(response)
+            json_message = json.dumps(response, encoding='utf-8')
         except ValueError as error:
             logger.warning("Cannot send response because of " +
                            "encoding error. %s" % repr(error))
@@ -731,7 +731,7 @@ class RemoteService(object):
 
         # We encode the request and send it
         try:
-            json_message = encode_json(message)
+            json_message = json.dumps(message, encoding='utf-8')
         except ValueError:
             msg = "Cannot send request of method %s because of " \
                 "encoding error." % method
