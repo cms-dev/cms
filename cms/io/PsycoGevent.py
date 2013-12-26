@@ -33,6 +33,8 @@ Use `make_psycopg_green()` to enable gevent support in Psycopg.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from contextlib import contextmanager
+
 import psycopg2
 from psycopg2 import extensions
 
@@ -82,3 +84,23 @@ def gevent_wait_callback(conn, timeout=None):
         else:
             raise psycopg2.OperationalError(
                 "Bad result from poll: %r" % state)
+
+
+@contextmanager
+def ungreen_psycopg():
+    """Temporarily disable gevent support in psycopg.
+
+    Inside this context manager you can use psycopg's features that
+    are not compatible with coroutine support, such as large
+    objects. Of course, at the expense of being blocking, so please
+    stay inside the context manager as short as possible.
+
+    """
+    is_green = is_psycopg_green()
+    if is_green:
+        unmake_psycopg_green()
+    try:
+        yield
+    finally:
+        if is_green:
+            make_psycopg_green()
