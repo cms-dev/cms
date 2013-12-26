@@ -40,7 +40,6 @@ import tornado.web
 import tornado.locale
 
 from cms import config
-from cms.log import initialize_logging
 from cms.io.WebGeventLibrary import WebService
 from cms.io import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
@@ -446,8 +445,6 @@ class AdminWebServer(WebService):
     }
 
     def __init__(self, shard):
-        initialize_logging("AdminWebServer", shard)
-
         parameters = {
             "login_url": "/",
             "template_path": pkg_resources.resource_filename(

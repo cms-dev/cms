@@ -33,6 +33,7 @@ import os
 import pwd
 import signal
 import _socket
+import time
 import traceback
 import uuid
 from functools import wraps
@@ -43,10 +44,9 @@ import gevent.event
 from gevent.server import StreamServer
 from gevent.backdoor import BackdoorServer
 
-# We import the module, instead of its contents (i.e. "from cms.log
-# import ..."), to avoid a circular import.
-import cms.log
 from cms import config, mkdir
+from cms.log import root_logger, shell_handler, ServiceFilter, \
+    CustomFormatter, LogServiceHandler, FileHandler
 from cms.io import ServiceCoord, Address, get_service_address
 from cms.io.PsycoGevent import make_psycopg_green
 from cmscommon.datetime import monotonic_time
@@ -168,7 +168,7 @@ class Service(object):
         self.name = self.__class__.__name__
         self.shard = shard
 
-        cms.log.initialize_logging(self.name, self.shard)
+        self.initialize_logging()
 
         # Stores the function to call periodically. It is to be
         # managed with heapq. Format: (next_timeout, period, function,
@@ -197,6 +197,52 @@ class Service(object):
         if address is not None:
             self.server = StreamServer(address, self._connection_handler)
             self.backdoor = None
+
+    def initialize_logging(self):
+        """Set up additional logging handlers.
+
+        What we do, in detail, is to add a logger to file (whose
+        filename depends on the coords) and a remote logger to a
+        LogService. We also attach the service coords to all log
+        messages.
+
+        """
+        filter_ = ServiceFilter(self.name, self.shard)
+
+        # Update shell handler to attach service coords.
+        shell_handler.addFilter(filter_)
+
+        # Determine location of log file, and make directories.
+        log_dir = os.path.join(config.log_dir,
+                               "%s-%d" % (self.name, self.shard))
+        mkdir(config.log_dir)
+        mkdir(log_dir)
+        log_filename = "%d.log" % int(time.time())
+
+        # Install a file handler.
+        file_handler = FileHandler(os.path.join(log_dir, log_filename),
+                                   mode='w', encoding='utf-8')
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(CustomFormatter(False))
+        file_handler.addFilter(filter_)
+        root_logger.addHandler(file_handler)
+
+        # Provide a symlink to the latest log file.
+        try:
+            os.remove(os.path.join(log_dir, "last.log"))
+        except OSError:
+            pass
+        os.symlink(log_filename,
+                   os.path.join(log_dir, "last.log"))
+
+        # Setup a remote LogService handler (except when we already are
+        # LogService, to avoid circular logging).
+        if self.name != "LogService":
+            log_service = RemoteService(None, ServiceCoord("LogService", 0))
+            remote_handler = LogServiceHandler(log_service)
+            remote_handler.setLevel(logging.INFO)
+            remote_handler.addFilter(filter_)
+            root_logger.addHandler(remote_handler)
 
     def _connection_handler(self, socket, address):
         """Receive and act upon an incoming connection.

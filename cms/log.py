@@ -51,12 +51,6 @@ import time
 
 import gevent.coros
 
-from cms import config, mkdir
-# This stuff may log messages, but it's okay to *import* it before we
-# set up at least the shell handler, provided that we don't use it.
-from cms.io import ServiceCoord
-from cms.io.GeventLibrary import RemoteService
-
 
 class StreamHandler(logging.StreamHandler):
     """Subclass to make gevent-aware.
@@ -106,14 +100,16 @@ class LogServiceHandler(logging.Handler):
     then store the message as msg and drop args.
 
     """
-    def __init__(self):
+    def __init__(self, log_service):
         """Initialize the handler.
 
-        Establish a connection to the LogService.
+        Establish a connection to the given LogService.
+
+        log_service (RemoteService): a handle for a remote LogService.
 
         """
         logging.Handler.__init__(self)
-        self._log_service = RemoteService(None, ServiceCoord("LogService", 0))
+        self._log_service = log_service
 
     def createLock(self):
         """Set self.lock to a new gevent RLock.
@@ -402,53 +398,3 @@ shell_handler = StreamHandler(sys.stdout)
 shell_handler.setLevel(logging.INFO)
 shell_handler.setFormatter(CustomFormatter(has_color_support(sys.stdout)))
 root_logger.addHandler(shell_handler)
-
-
-def initialize_logging(service_name, service_shard):
-    """Set up additional logging handlers.
-
-    Some of the logging handlers are only activated when running for a
-    service (by choice or because of technical issues). We therefore
-    provide this method for services to call as soon as possible, with
-    their coords as parameters, to complete logger initialization.
-
-    What we do, in detail, is to add a logger to file (whose filename
-    depends on the coords) and a remote logger to a LogService. We also
-    attach the service coords to all log messages.
-
-    """
-    filter_ = ServiceFilter(service_name, service_shard)
-
-    # Update shell handler to attach service coords.
-    shell_handler.addFilter(filter_)
-
-    # Determine location of log file, and make directories.
-    log_dir = os.path.join(config.log_dir,
-                           "%s-%d" % (service_name, service_shard))
-    mkdir(config.log_dir)
-    mkdir(log_dir)
-    log_filename = "%d.log" % int(time.time())
-
-    # Install a file handler.
-    file_handler = FileHandler(os.path.join(log_dir, log_filename),
-                               mode='w', encoding='utf-8')
-    file_handler.setLevel(logging.INFO)
-    file_handler.setFormatter(CustomFormatter(False))
-    file_handler.addFilter(filter_)
-    root_logger.addHandler(file_handler)
-
-    # Provide a symlink to the latest log file.
-    try:
-        os.remove(os.path.join(log_dir, "last.log"))
-    except OSError:
-        pass
-    os.symlink(log_filename,
-               os.path.join(log_dir, "last.log"))
-
-    # Setup a remote LogService handler (except when we already are
-    # LogService, to avoid circular logging).
-    if service_name != "LogService":
-        remote_handler = LogServiceHandler()
-        remote_handler.setLevel(logging.INFO)
-        remote_handler.addFilter(filter_)
-        root_logger.addHandler(remote_handler)
