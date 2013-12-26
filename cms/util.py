@@ -24,6 +24,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import errno
 import logging
 import netifaces
 import os
@@ -46,14 +47,15 @@ def mkdir(path):
     """
     try:
         os.mkdir(path)
-        return True
-    except OSError:
-        if os.path.isdir(path):
-            return True
-    return False
+    except OSError as error:
+        if error.errno != errno.EEXIST:
+            return False
+    return True
 
 
-Address = namedtuple("Address", "ip port")
+class Address(namedtuple("Address", "ip port")):
+    def __repr__(self):
+        return "%s:%d" % (self.ip, self.port)
 
 
 class ServiceCoord(namedtuple("ServiceCoord", "name shard")):
