@@ -60,7 +60,6 @@ from werkzeug.http import parse_accept_header
 from werkzeug.datastructures import LanguageAccept
 
 from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config
-from cms.log import initialize_logging
 from cms.io.WebGeventLibrary import WebService
 from cms.io import ServiceCoord
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
@@ -403,8 +402,6 @@ class ContestWebServer(WebService):
 
     """
     def __init__(self, shard, contest):
-        initialize_logging("ContestWebServer", shard)
-
         parameters = {
             "login_url": "/",
             "template_path": pkg_resources.resource_filename(
