@@ -24,6 +24,8 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import errno
+import io
 import json
 import logging
 import os
@@ -145,23 +147,11 @@ class Config(object):
 
         """
         for conf_file in paths:
-            try:
-                self._load_unique(conf_file)
-            except IOError:
-                pass
-            except ValueError as error:
-                print("Unable to load JSON configuration file %s "
-                      "because of a JSON decoding error.\n%r" % (conf_file,
-                                                                 error))
-            else:
-                print("Using configuration file %s." % conf_file)
-                return
+            if self._load_unique(conf_file):
+                break
         else:
-            print("Warning: no configuration file found "
-                  "in following locations:")
-            for path in paths:
-                print("    %s" % path)
-            print("Using default values.")
+            logging.warning("No configuration file found: "
+                            "falling back to default values.")
 
     def _load_unique(self, path):
         """Populate the Config class with everything that sits inside
@@ -176,32 +166,49 @@ class Config(object):
         path (string): the path of the JSON config file.
 
         """
-        # Load config file
-        dic = json.load(open(path))
+        # Load config file.
+        try:
+            with io.open(path, 'rt', encoding='utf-8') as f:
+                data = json.load(f)
+        except IOError as error:
+            if error.errno == errno.ENOENT:
+                logger.debug("Couldn't find config file %s.", path)
+            else:
+                logger.warning("I/O error while opening file %s: [%s] %s",
+                               path, errno.errorcode[error.errno],
+                               os.strerror(error.errno))
+            return False
+        except ValueError as error:
+            logger.warning("Invalid syntax in file %s: %s", path, error)
+            return False
+
+        logger.info("Using configuration file %s.", path)
 
         # Put core and test services in async_config, ignoring those
-        # whose name begins with "_"
-        for service in dic["core_services"]:
+        # whose name begins with "_".
+        for service in data["core_services"]:
             if service.startswith("_"):
                 continue
             for shard_number, shard in \
-                    enumerate(dic["core_services"][service]):
+                    enumerate(data["core_services"][service]):
                 coord = ServiceCoord(service, shard_number)
                 self.async.core_services[coord] = Address(*shard)
-        del dic["core_services"]
+        del data["core_services"]
 
-        for service in dic["other_services"]:
+        for service in data["other_services"]:
             if service.startswith("_"):
                 continue
             for shard_number, shard in \
-                    enumerate(dic["other_services"][service]):
+                    enumerate(data["other_services"][service]):
                 coord = ServiceCoord(service, shard_number)
                 self.async.other_services[coord] = Address(*shard)
-        del dic["other_services"]
+        del data["other_services"]
 
-        # Put everything else.
-        for key in dic:
-            setattr(self, key, dic[key])
+        # Put everything else in self.
+        for key, value in data.iteritems():
+            setattr(self, key, value)
+
+        return True
 
 
 config = Config()
