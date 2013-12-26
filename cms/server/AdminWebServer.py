@@ -448,9 +448,6 @@ class AdminWebServer(WebService):
     def __init__(self, shard):
         initialize_logging("AdminWebServer", shard)
 
-        # A list of pending notifications.
-        self.notifications = []
-
         parameters = {
             "login_url": "/",
             "template_path": pkg_resources.resource_filename(
@@ -466,6 +463,10 @@ class AdminWebServer(WebService):
                             parameters,
                             shard=shard,
                             listen_address=config.admin_listen_address)
+
+        # A list of pending notifications.
+        self.notifications = []
+
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
             ServiceCoord("EvaluationService", 0))
