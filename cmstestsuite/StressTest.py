@@ -30,8 +30,7 @@ import random
 import time
 import codecs
 
-from cms import config
-from cms.io import ServiceCoord, get_service_address
+from cms import config, ServiceCoord, get_service_address
 from cms.db import Contest, SessionGen
 
 import cmstestsuite.web

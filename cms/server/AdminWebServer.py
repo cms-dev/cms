@@ -40,9 +40,8 @@ from sqlalchemy.exc import IntegrityError
 import tornado.web
 import tornado.locale
 
-from cms import config
+from cms import config, ServiceCoord, get_service_shards, get_service_address
 from cms.io.WebGeventLibrary import WebService
-from cms.io import ServiceCoord, get_service_shards, get_service_address
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
     Submission, SubmissionResult, File, Task, Dataset, Attachment, Manager, \
     Testcase, SubmissionFormatElement, Statement

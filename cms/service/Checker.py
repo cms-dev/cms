@@ -26,8 +26,7 @@
 import logging
 import time
 
-from cms import config
-from cms.io import ServiceCoord
+from cms import config, ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_callback
 
 

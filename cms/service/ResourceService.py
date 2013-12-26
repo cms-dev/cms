@@ -35,8 +35,7 @@ import psutil
 from gevent import subprocess
 #import gevent_subprocess as subprocess
 
-from cms import config
-from cms.io import ServiceCoord
+from cms import config, ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_method, RemoteService
 
 

@@ -34,8 +34,8 @@ import random
 from datetime import timedelta
 from collections import namedtuple
 
+from cms import ServiceCoord, get_service_shards
 from cms.io.GeventLibrary import Service, rpc_method, rpc_callback
-from cms.io import ServiceCoord, get_service_shards
 from cms.db import SessionGen, Contest, Dataset, Submission, \
     SubmissionResult, UserTest, UserTestResult
 from cms.service import get_submission_results, get_datasets_to_judge

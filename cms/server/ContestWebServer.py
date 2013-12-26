@@ -59,9 +59,8 @@ from sqlalchemy import func
 from werkzeug.http import parse_accept_header
 from werkzeug.datastructures import LanguageAccept
 
-from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config
+from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, ServiceCoord
 from cms.io.WebGeventLibrary import WebService
-from cms.io import ServiceCoord
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
     File, UserTest, UserTestFile, UserTestManager
 from cms.db.filecacher import FileCacher

@@ -41,7 +41,9 @@ __all__ = [
     # log
     # Nothing intended for external use, no need to advertise anything.
     # util
-    "mkdir", "default_argument_parser", "find_local_addresses",
+    "mkdir", "Address", "ServiceCoord", "get_service_address",
+    "get_shard_from_addresses", "get_service_shards",
+    "default_argument_parser", "find_local_addresses",
     # conf
     "config",
     # plugin
@@ -99,6 +101,8 @@ LANGUAGE_TO_HEADER_EXT_MAP = {
     LANG_PHP: ".php"
 }
 
-from .util import mkdir, default_argument_parser, find_local_addresses
+from .util import mkdir, Address, ServiceCoord, get_service_address, \
+    get_shard_from_addresses, get_service_shards, \
+    default_argument_parser, find_local_addresses
 from .conf import config
 from .plugin import plugin_list, plugin_lookup
