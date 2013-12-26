@@ -404,14 +404,6 @@ class ContestWebServer(WebService):
     """
     def __init__(self, shard, contest):
         initialize_logging("ContestWebServer", shard)
-        self.contest = contest
-
-        # This is a dictionary (indexed by username) of pending
-        # notification. Things like "Yay, your submission went
-        # through.", not things like "Your question has been replied",
-        # that are handled by the db. Each username points to a list
-        # of tuples (timestamp, subject, text).
-        self.notifications = {}
 
         parameters = {
             "login_url": "/",
@@ -430,6 +422,16 @@ class ContestWebServer(WebService):
             parameters,
             shard=shard,
             listen_address=config.contest_listen_address[shard])
+
+        self.contest = contest
+
+        # This is a dictionary (indexed by username) of pending
+        # notification. Things like "Yay, your submission went
+        # through.", not things like "Your question has been replied",
+        # that are handled by the db. Each username points to a list
+        # of tuples (timestamp, subject, text).
+        self.notifications = {}
+
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
             ServiceCoord("EvaluationService", 0))
