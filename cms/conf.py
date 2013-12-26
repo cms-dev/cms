@@ -29,7 +29,7 @@ import logging
 import os
 import sys
 
-from cms.io import ServiceCoord, Address, config as async_config
+from .util import ServiceCoord, Address, async_config
 
 
 logger = logging.getLogger(__name__)

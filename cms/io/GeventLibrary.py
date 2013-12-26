@@ -44,10 +44,9 @@ import gevent.event
 from gevent.server import StreamServer
 from gevent.backdoor import BackdoorServer
 
-from cms import config, mkdir
+from cms import config, mkdir, ServiceCoord, Address, get_service_address
 from cms.log import root_logger, shell_handler, ServiceFilter, \
     CustomFormatter, LogServiceHandler, FileHandler
-from cms.io import ServiceCoord, Address, get_service_address
 from cms.io.PsycoGevent import make_psycopg_green
 from cmscommon.datetime import monotonic_time
 

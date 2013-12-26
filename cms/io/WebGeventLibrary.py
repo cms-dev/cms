@@ -33,7 +33,7 @@ import tornado.wsgi
 from gevent.pywsgi import WSGIServer
 from gevent.event import Event
 
-from cms.io import ServiceCoord
+from cms import ServiceCoord
 from cms.io.GeventLibrary import Service, rpc_callback
 from cms.io.Utils import decode_json
 
