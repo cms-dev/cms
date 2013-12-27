@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
+# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -16,3 +17,34 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from __future__ import print_function
+
+
+# Define what this package will provide.
+
+__all__ = [
+    # rpc
+    "RPCError", "rpc_method", "RemoteServiceServer", "RemoteServiceClient",
+    # service
+    "Service",
+    # web_rpc
+    "RPCMiddleware",
+    # web_service
+    "WebService",
+    ]
+
+
+# Instantiate or import these objects.
+
+from .rpc import RPCError, rpc_method, RemoteServiceServer, RemoteServiceClient
+from .service import Service
+from .web_rpc import RPCMiddleware
+from .web_service import WebService
+
+from .PsycoGevent import make_psycopg_green
+
+
+# Fix psycopg in order to support gevent greenlets.
+make_psycopg_green()

@@ -60,7 +60,7 @@ from werkzeug.http import parse_accept_header
 from werkzeug.datastructures import LanguageAccept
 
 from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, ServiceCoord
-from cms.io.WebGeventLibrary import WebService
+from cms.io import WebService
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
     File, UserTest, UserTestFile, UserTestManager
 from cms.db.filecacher import FileCacher
@@ -435,20 +435,6 @@ class ContestWebServer(WebService):
             ServiceCoord("ScoringService", 0))
         self.proxy_service = self.connect_to(
             ServiceCoord("ProxyService", 0))
-
-    @staticmethod
-    def authorized_rpc(service, method, arguments):
-        """Used by WebService to check if the browser can call a
-        certain RPC method.
-
-        service (ServiceCoord): the service called by the browser.
-        method (string): the name of the method called.
-        arguments (dict): the arguments of the call.
-        return (bool): True if ok, False if not authorized.
-
-        """
-        # Default fallback: don't authorize.
-        return False
 
     NOTIFICATION_ERROR = "error"
     NOTIFICATION_WARNING = "warning"

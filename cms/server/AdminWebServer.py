@@ -40,7 +40,7 @@ import tornado.web
 import tornado.locale
 
 from cms import config, ServiceCoord, get_service_shards, get_service_address
-from cms.io.WebGeventLibrary import WebService
+from cms.io import WebService
 from cms.db import Session, Contest, User, Announcement, Question, Message, \
     Submission, SubmissionResult, File, Task, Dataset, Attachment, Manager, \
     Testcase, SubmissionFormatElement, Statement
@@ -452,6 +452,7 @@ class AdminWebServer(WebService):
                 "cms.server", "static"),
             "cookie_secret": base64.b64encode(config.secret_key),
             "debug": config.tornado_debug,
+            "rpc_enabled": True,
         }
         WebService.__init__(self,
                             config.admin_listen_port,
@@ -475,37 +476,6 @@ class AdminWebServer(WebService):
             self.resource_services.append(self.connect_to(
                 ServiceCoord("ResourceService", i)))
         self.logservice = self.connect_to(ServiceCoord("LogService", 0))
-
-    @staticmethod
-    def authorized_rpc(service, method, arguments):
-        """Used by WebService to check if the browser can call a
-        certain RPC method.
-
-        service (ServiceCoord): the service called by the browser.
-        method (string): the name of the method called.
-        arguments (dict): the arguments of the call.
-        return (bool): True if ok, False if not authorized.
-
-        """
-        if service == ServiceCoord("EvaluationService", 0):
-            return method in ["submissions_status",
-                              "queue_status",
-                              "workers_status",
-                              "invalidate_submission"]
-
-        elif service == ServiceCoord("ScoringService", 0):
-            return method in ["invalidate_submission"]
-
-        elif service == ServiceCoord("LogService", 0):
-            return method in ["last_messages"]
-
-        elif service.name == "ResourceService":
-            return method in ["get_resources",
-                              "kill_service",
-                              "toggle_autorestart"]
-
-        # Default fallback: don't authorize.
-        return False
 
     def add_notification(self, timestamp, subject, text):
         """Store a new notification to send at the first

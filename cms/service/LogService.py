@@ -31,7 +31,7 @@ from collections import deque
 
 from cms import config, mkdir
 from cms.log import root_logger, shell_handler, FileHandler, CustomFormatter
-from cms.io.GeventLibrary import Service, rpc_method
+from cms.io import Service, rpc_method
 
 
 logger = logging.getLogger(__name__)
