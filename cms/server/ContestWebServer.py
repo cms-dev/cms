@@ -411,8 +411,7 @@ class ContestWebServer(WebService):
             "debug": config.tornado_debug,
             "is_proxy_used": config.is_proxy_used,
         }
-        WebService.__init__(
-            self,
+        super(ContestWebServer, self).__init__(
             config.contest_listen_port[shard],
             _cws_handlers,
             parameters,

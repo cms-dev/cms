@@ -204,7 +204,7 @@ def default_argument_parser(description, cls, ask_contest=None):
         if args.shard == -1:
             logger.critical("Couldn't autodetect shard number and "
                             "no shard specified for service %s, "
-                            "quitting." % (cls.__name__))
+                            "quitting.", cls.__name__)
             sys.exit(1)
 
     if ask_contest is not None:

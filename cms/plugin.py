@@ -56,7 +56,7 @@ def _try_import(plugin_name, dir_name):
                                  file_, file_name, description)
     except ImportError as error:
         logger.warning("Unable to use task type %s from plugin in "
-                       "directory %s.\n%r" % (plugin_name, dir_name, error))
+                       "directory %s.\n%r", plugin_name, dir_name, error)
         return None
     else:
         return module
@@ -100,7 +100,7 @@ def plugin_lookup(plugin_name, plugin_dir, plugin_family):
         raise KeyError("Module %s not found." % plugin_name)
 
     if plugin_name not in module.__dict__:
-        logger.warning("Unable to find class %s in the plugin." % plugin_name)
+        logger.warning("Unable to find class %s in the plugin.", plugin_name)
         raise KeyError("Class %s not found." % plugin_name)
 
     return module.__dict__[plugin_name]

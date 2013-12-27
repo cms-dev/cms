@@ -454,12 +454,12 @@ class AdminWebServer(WebService):
             "debug": config.tornado_debug,
             "rpc_enabled": True,
         }
-        WebService.__init__(self,
-                            config.admin_listen_port,
-                            _aws_handlers,
-                            parameters,
-                            shard=shard,
-                            listen_address=config.admin_listen_address)
+        super(AdminWebServer, self).__init__(
+            config.admin_listen_port,
+            _aws_handlers,
+            parameters,
+            shard=shard,
+            listen_address=config.admin_listen_address)
 
         # A list of pending notifications.
         self.notifications = []
