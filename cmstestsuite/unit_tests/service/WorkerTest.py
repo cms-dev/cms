@@ -121,21 +121,19 @@ class TestWorker(unittest.TestCase):
         that should fail because of the lock.
 
         """
-        jobgroup_a, calls_a = TestWorker.new_jobgroup(1, prefix="a")
         # Because of how gevent works, the interval here can be very small.
-        task_type_a = FakeTaskType([0.01])
-        cms.service.Worker.get_task_type = Mock(return_value=task_type_a)
+        task_type = FakeTaskType([0.01])
+        cms.service.Worker.get_task_type = Mock(return_value=task_type)
+
+        jobgroup_a, calls_a = TestWorker.new_jobgroup(1, prefix="a")
+        jobgroup_b, calls_b = TestWorker.new_jobgroup(1, prefix="b")
 
         def first_call():
             JobGroup.import_from_dict(
                 self.service.execute_job_group(jobgroup_a.export_to_dict()))
 
         first_greenlet = gevent.spawn(first_call)
-        gevent.sleep(0)  # To ensure we call jobgroup a first.
-
-        jobgroup_b, calls_b = TestWorker.new_jobgroup(1, prefix="b")
-        task_type_b = FakeTaskType([True])
-        cms.service.Worker.get_task_type = Mock(return_value=task_type_b)
+        gevent.sleep(0)  # To ensure we call jobgroup_a first.
 
         try:
             JobGroup.import_from_dict(
