@@ -24,7 +24,7 @@ import logging
 
 import gevent.coros
 
-from cms.io.GeventLibrary import Service, rpc_method
+from cms.io import Service, rpc_method
 from cms.db import SessionGen, Contest
 from cms.db.filecacher import FileCacher
 from cms.grading import JobException

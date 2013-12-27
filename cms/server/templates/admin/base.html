@@ -14,7 +14,7 @@ var url_root = "{{ url_root }}";
     <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/reset.css">
     <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/style.css">
     <script type="text/javascript" src="{{ url_root }}/static/utils.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/web_async_library.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/web_rpc.js"></script>
     <script type="text/javascript" src="{{ url_root }}/static/scripts.js"></script>
     <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.7.1.min.js"></script>
     <script type="text/javascript" src="{{ url_root }}/static/jq/jquery.jqplot.min.js"></script>
@@ -37,7 +37,6 @@ var url_root = "{{ url_root }}";
 <!--
 function init()
 {
-    cmsrpc = new CMSAjaxRPC();
     cmsutils = new CMSUtils();
     {% if contest is None %}
     utils = new Utils({{ make_timestamp(timestamp) }}, 0, 0, -1);

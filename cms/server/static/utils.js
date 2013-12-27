@@ -72,25 +72,5 @@
             }
         },
 
-        /**
-         * Returns a random string of letters of specified length,
-         * useful for generating ids.
-         *
-         * length (int): the length of the string to generate
-         * returns (string): a random string of letters
-         */
-        random_string: function(length)
-        {
-            var string = "";
-            var letters =
-                "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            for(var i = 0; i < length; i++)
-            {
-                var idx = Math.floor(Math.random() * letters.length);
-                string += letters.charAt(idx);
-            }
-            return string;
-        },
-
     };
 }());

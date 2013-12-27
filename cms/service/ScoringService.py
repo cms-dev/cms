@@ -32,7 +32,7 @@ from gevent.queue import JoinableQueue
 from gevent.event import Event
 
 from cms import ServiceCoord
-from cms.io.GeventLibrary import Service, rpc_method
+from cms.io import Service, rpc_method
 from cms.db import SessionGen, Submission, Dataset
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submission_results

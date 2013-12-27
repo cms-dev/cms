@@ -36,7 +36,7 @@ from gevent import subprocess
 #import gevent_subprocess as subprocess
 
 from cms import config, ServiceCoord
-from cms.io.GeventLibrary import Service, rpc_method, RemoteService
+from cms.io import Service, rpc_method, RemoteServiceClient
 
 
 logger = logging.getLogger(__name__)
@@ -349,7 +349,7 @@ class ResourceService(Service):
         except ValueError:
             logger.error("Unable to decode service shard.")
 
-        remote_service = RemoteService(self, ServiceCoord(name, shard))
+        remote_service = RemoteServiceClient(ServiceCoord(name, shard))
         remote_service.quit(reason="Asked by ResourceService")
 
     @rpc_method
