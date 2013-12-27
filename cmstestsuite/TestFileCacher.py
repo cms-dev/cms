@@ -30,8 +30,8 @@ from StringIO import StringIO
 import hashlib
 
 from cms import default_argument_parser, config, logger, ServiceCoord
-from cms.io.TestService import TestService
 from cms.db.filecacher import FileCacher
+from cmstestsuite.TestService import TestService
 
 
 class RandomFile(object):
