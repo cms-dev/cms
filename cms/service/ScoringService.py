@@ -145,6 +145,7 @@ class ScoringService(Service):
                 if submission_result.scored():
                     logger.info("Submission result %d(%d) is already scored.",
                                 submission_id, dataset_id)
+                    return
                 else:
                     raise ValueError("The state of the submission result "
                                      "%d(%d) doesn't allow scoring." %
