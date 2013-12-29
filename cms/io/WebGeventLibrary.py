@@ -234,7 +234,7 @@ class WSGIXheadersMiddleware(object):
         # X-Forwarded-For: client_ip, proxy1_ip, proxy2_ip, ...
         if 'HTTP_X_FORWARDED_FOR' in environ:
             environ['REMOTE_ADDR'] = environ['HTTP_X_FORWARDED_FOR']. \
-                split(',')[0].strip()
+                split(',')[-1].strip()
 
         # X-Real-Ip: client_ip
         elif 'HTTP_X_REAL_IP' in environ:
