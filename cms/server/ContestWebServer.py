@@ -37,6 +37,7 @@
 
 import base64
 import gettext
+import glob
 import io
 import json
 import logging
@@ -52,6 +53,9 @@ from urllib import quote
 import tornado.web
 
 from sqlalchemy import func
+
+from werkzeug.http import parse_accept_header
+from werkzeug.datastructures import LanguageAccept
 
 from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config
 from cms.log import initialize_logging
@@ -164,47 +168,37 @@ class BaseHandler(CommonRequestHandler):
         else:
             localization_dir = os.path.join(os.path.dirname(__file__), "mo")
 
-        # Copied (and modified) from Tornado's get_browser_locale
-        locales = list()
-        if "Accept-Language" in self.request.headers:
-            languages = self.request.headers["Accept-Language"].split(",")
-            scores = dict()
-            for language in languages:
-                parts = language.strip().split(";")
-                if len(parts) > 1 and parts[1].startswith("q="):
-                    try:
-                        score = float(parts[1][2:])
-                    except (ValueError, TypeError):
-                        score = 0.0
-                else:
-                    score = 1.0
-                scores[parts[0]] = score
-                locales.append(parts[0])
-            locales.sort(key=lambda l: scores[l], reverse=True)
-        if not locales:
-            locales.append("en_US")
-        # End of copied code
+        # Retrieve the available translations.
+        langs = ["en-US"] + [
+            path.split("/")[-3].replace("_", "-") for path in glob.glob(
+                os.path.join(localization_dir, "*", "LC_MESSAGES", "cms.mo"))]
+        # Select the one the user likes most.
+        lang = parse_accept_header(
+            self.request.headers.get("Accept-Language", ""),
+            LanguageAccept).best_match(langs, "en-US")
+        self.set_header("Content-Language", lang)
+        lang = lang.replace("-", "_")
 
         iso_639_locale = gettext.translation(
             "iso_639",
             os.path.join(config.iso_codes_prefix, "share", "locale"),
-            locales,
+            [lang],
             fallback=True)
         iso_3166_locale = gettext.translation(
             "iso_3166",
             os.path.join(config.iso_codes_prefix, "share", "locale"),
-            locales,
+            [lang],
             fallback=True)
         shared_mime_info_locale = gettext.translation(
             "shared-mime-info",
             os.path.join(
                 config.shared_mime_info_prefix, "share", "locale"),
-            locales,
+            [lang],
             fallback=True)
         cms_locale = gettext.translation(
             "cms",
             localization_dir,
-            locales,
+            [lang],
             fallback=True)
         cms_locale.add_fallback(iso_639_locale)
         cms_locale.add_fallback(iso_3166_locale)
