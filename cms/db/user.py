@@ -80,7 +80,7 @@ class User(Base):
         Unicode,
         nullable=True)
 
-    # User can log in CWS only from this ip.
+    # User can log in CWS only from this IP address or subnet.
     ip = Column(
         Unicode,
         nullable=True)

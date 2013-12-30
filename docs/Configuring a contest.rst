@@ -93,7 +93,7 @@ User login
 
 Users log into CWS using a username and a password. These have to be specified, respectively, in the ``username`` and ``password`` fields (in cleartext!). These credentials need to be inserted (i.e. there's no way to have an automatic login, a "guest" session, etc.) and, if they match, the login (usually) succeeds. The user needs to login again if he/she doesn't navigate the site for ``cookie_duration`` seconds (specified in the :file:`cms.conf` file).
 
-In fact, there are other reasons that can cause the login to fail. If the ``ip_lock`` option (in :file:`cms.conf`) is set to ``true`` then the login will fail if the IP address that attempted it is different from the ``ip`` field of the specified user. If ``ip`` is not set then this check will be skipped, even if ``ip_lock`` is ``true``. Note that if a reverse-proxy (like nginx) is in use then it is necessary to set ``is_proxy_used`` (in :file:`cms.conf`) to ``true``.
+In fact, there are other reasons that can cause the login to fail. If the ``ip_lock`` option (in :file:`cms.conf`) is set to ``true`` then the login will fail if the IP address that attempted it doesn't match the address or subnet in the ``ip`` field of the specified user. If ``ip`` is not set then this check will be skipped, even if ``ip_lock`` is ``true``. Note that if a reverse-proxy (like nginx) is in use then it is necessary to set ``is_proxy_used`` (in :file:`cms.conf`) to ``true``.
 
 The login can also fail if ``block_hidden_users`` (in :file:`cms.conf`) is ``true`` and the user one wants to login as has the ``hidden`` field set.
 

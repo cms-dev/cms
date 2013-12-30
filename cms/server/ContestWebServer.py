@@ -45,6 +45,8 @@ import os
 import pickle
 import pkg_resources
 import re
+import socket
+import struct
 import tempfile
 import traceback
 from datetime import timedelta
@@ -78,6 +80,24 @@ from cmscommon.mimetypes import get_type_for_file_name
 
 
 logger = logging.getLogger(__name__)
+
+
+def check_ip(client, wanted):
+    """Return if client IP belongs to the wanted subnet.
+
+    client (string): IP address to verify.
+    wanted (string): IP address or subnet to check against.
+
+    return (bool): whether client equals wanted (if the latter is an IP
+        address) or client belongs to wanted (if it's a subnet).
+
+    """
+    wanted, sep, subnet = wanted.partition('/')
+    subnet = 32 if sep == "" else int(subnet)
+    snmask = 2**32 - 2**(32 - subnet)
+    wanted = struct.unpack(">I", socket.inet_aton(wanted))[0]
+    client = struct.unpack(">I", socket.inet_aton(client))[0]
+    return (wanted & snmask) == (client & snmask)
 
 
 class BaseHandler(CommonRequestHandler):
@@ -145,7 +165,7 @@ class BaseHandler(CommonRequestHandler):
             self.clear_cookie("login")
             return None
         if config.ip_lock and user.ip is not None \
-                and user.ip != self.request.remote_ip:
+                and not check_ip(self.request.remote_ip, user.ip):
             self.clear_cookie("login")
             return None
         if config.block_hidden_users and user.hidden:
@@ -490,7 +510,7 @@ class LoginHandler(BaseHandler):
             self.redirect("/?login_error=true")
             return
         if config.ip_lock and user.ip is not None \
-                and user.ip != self.request.remote_ip:
+                and not check_ip(self.request.remote_ip, user.ip):
             logger.info("Unexpected IP: user=%s pass=%s remote_ip=%s." %
                         (filtered_user, filtered_pass, self.request.remote_ip))
             self.redirect("/?login_error=true")

@@ -89,15 +89,23 @@ def valid_ip(ip_address):
     return (bool): True iff valid.
 
     """
+    ip_address, sep, subnet = ip_address.partition("/")
+    if sep != "":
+        try:
+            subnet = int(subnet)
+        except ValueError:
+            return False
+        if not 0 <= subnet < 32:
+            return False
     fields = ip_address.split(".")
     if len(fields) != 4:
-        return
+        return False
     for field in fields:
         try:
             num = int(field)
         except ValueError:
             return False
-        if num < 0 or num >= 256:
+        if not 0 <= num < 256:
             return False
     return True
 
