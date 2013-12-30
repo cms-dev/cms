@@ -248,7 +248,8 @@ class YamlLoader(Loader):
         if "last_name" not in args:
             args["last_name"] = args["username"]
 
-        load(conf, args, ["hidden", "fake"], conv=lambda a: a == "True")
+        load(conf, args, ["hidden", "fake"],
+             conv=lambda a: a is True or a == "True")
 
         logger.info("User parameters loaded.")
 

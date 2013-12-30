@@ -76,7 +76,7 @@ The following are optional keys.
 
 - ``ip`` (string): the IP address or subnet from which incoming connections for this user are accepted, see :ref:`configuringacontest_login`.
 
-- ``hidden`` (string; also accepted: ``fake``): when set to ``True`` (case-sensitive _string_) set the ``hidden`` flag in the user, see :ref:`configuringacontest_login`; defaults to ``False``.
+- ``hidden`` (boolean; also accepted: ``fake``): when set to true set the ``hidden`` flag in the user, see :ref:`configuringacontest_login`; defaults to false (the case-sensitive _string_ ``True`` is also accepted).
 
 
 Task description
