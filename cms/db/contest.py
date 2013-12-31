@@ -46,6 +46,7 @@ class Contest(Base):
     """
     __tablename__ = 'contests'
     __table_args__ = (
+        CheckConstraint("start <= stop"),
         CheckConstraint("token_initial <= token_max"),
     )
 
