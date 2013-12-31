@@ -236,10 +236,10 @@
         <ul>
     {% from cmscommon import mimetypes %}
     {% for filename, attachment in sorted(task.attachments.items()) %}
-        {% set mime_type = MimeTypes.get_type_for_file_name(filename) %}
+        {% set mime_type = mimetypes.get_type_for_file_name(filename) %}
         {% if mime_type is not None %}
-            {% set type_name = MimeTypes.get_name_for_type(mime_type) %}
-            {% set type_icon = MimeTypes.get_icon_for_type(mime_type) %}
+            {% set type_name = mimetypes.get_name_for_type(mime_type) %}
+            {% set type_icon = mimetypes.get_icon_for_type(mime_type) %}
         {% else %}
             {% set type_name = None %}
             {% set type_icon = None %}
