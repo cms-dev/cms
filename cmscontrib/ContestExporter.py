@@ -40,7 +40,7 @@ import tarfile
 import tempfile
 
 from sqlalchemy.types import \
-    Boolean, Integer, Float, String, Unicode, DateTime, Interval
+    Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
 
 from cms.db import version as model_version
 from cms.db import SessionGen, Contest, ask_for_contest, \
@@ -255,7 +255,8 @@ class ContestExporter(object):
             col_type = type(col.type)
 
             val = getattr(obj, prp.key)
-            if col_type in [Boolean, Integer, Float, Unicode, RepeatedUnicode]:
+            if col_type in \
+                    [Boolean, Integer, Float, Unicode, RepeatedUnicode, Enum]:
                 data[prp.key] = val
             elif col_type is String:
                 data[prp.key] = \

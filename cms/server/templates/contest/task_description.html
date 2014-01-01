@@ -180,7 +180,7 @@
         {% end %}
     {% elif tokens_contest >= 2 %}
         <p>
-        {% set tokens = {"initial": task.token_initial, "max": task.token_max, "total": task.token_total, "min_interval": task.token_min_interval, "gen_time": task.token_gen_time, "gen_number": task.token_gen_number} %}
+        {% set tokens = {k[6:]: v for k, v in task.__dict__.iteritems() if k.startswith("token_")} %}
         {{ format_token_rules(tokens, locale=locale) }}
         </p>
 
@@ -217,7 +217,7 @@
         </p>
 
         <p>
-        {% set tokens = {"initial": task.token_initial, "max": task.token_max, "total": task.token_total, "min_interval": task.token_min_interval, "gen_time": task.token_gen_time, "gen_number": task.token_gen_number} %}
+        {% set tokens = {k[6:]: v for k, v in task.__dict__.iteritems() if k.startswith("token_")} %}
         {{ format_token_rules(tokens, t_type="task", locale=locale) }}
         {% raw _("You can find the rules for the contest-tokens on the <a href=\"%(url_root)s/\">contest overview page</a>.") % {"url_root": url_root} %}
         </p>

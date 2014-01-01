@@ -25,28 +25,38 @@
       </td>
     </tr>
     <tr>
-      <td>Initial number of tokens</td>
-      <td><input type="text" name="token_initial" value="{{ contest.token_initial if contest.token_initial is not None else "" }}" size="3"></td>
+      <td>Token mode</td>
+      <td>
+        <select name="token_mode">
+          <option value="disabled" {{ "selected" if contest.token_mode == "disabled" else "" }}>Disabled</option>
+          <option value="finite" {{ "selected" if contest.token_mode == "finite" else "" }}>Finite</option>
+          <option value="infinite" {{ "selected" if contest.token_mode == "infinite" else "" }}>Infinite</option>
+        </select>
+      </td>
     </tr>
     <tr>
-      <td>Maximum accumulated tokens</td>
-      <td><input type="text" name="token_max" value="{{ contest.token_max if contest.token_max is not None else "" }}" size="3"></td>
+      <td>[only if finite] Maximum number of tokens a contestant can use</td>
+      <td><input type="text" name="token_max_number" value="{{ contest.token_max_number if contest.token_max_number is not None else "" }}" size="3"></td>
     </tr>
     <tr>
-      <td>Total number of tokens</td>
-      <td><input type="text" name="token_total" value="{{ contest.token_total if contest.token_total is not None else "" }}" size="3"></td>
-    </tr>
-    <tr>
-      <td>Minimum interval between tokens (in seconds)</td>
+      <td>Minimum interval a contestant has to wait between two token uses (in seconds)</td>
       <td><input type="text" name="token_min_interval" value="{{ int(contest.token_min_interval.total_seconds()) }}" size="3"></td>
     </tr>
     <tr>
-      <td>Token generation period (in minutes)</td>
-      <td><input type="text" name="token_gen_time" value="{{ int(contest.token_gen_time.total_seconds() / 60) }}" size="3"></td>
+      <td>[only if finite] Initial number of tokens</td>
+      <td><input type="text" name="token_gen_initial" value="{{ contest.token_gen_initial }}" size="3"></td>
     </tr>
     <tr>
-      <td>Token generation number</td>
+      <td>[only if finite] Token generation number</td>
       <td><input type="text" name="token_gen_number" value="{{ contest.token_gen_number }}" size="3"></td>
+    </tr>
+    <tr>
+      <td>[only if finite] Token generation period (in minutes)</td>
+      <td><input type="text" name="token_gen_interval" value="{{ int(contest.token_gen_interval.total_seconds() / 60) }}" size="3"></td>
+    </tr>
+    <tr>
+      <td>[only if finite] Maximum accumulated tokens</td>
+      <td><input type="text" name="token_gen_max" value="{{ contest.token_gen_max if contest.token_gen_max is not None else "" }}" size="3"></td>
     </tr>
     <tr>
       <td>Start (in UTC)</td>

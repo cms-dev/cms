@@ -29,28 +29,38 @@
       </td>
     </tr>
     <tr>
-      <td>Initial number of tokens</td>
-      <td><input type="text" name="token_initial" size="3" value=""></td>
+      <td>Token mode</td>
+      <td>
+        <select name="token_mode">
+          <option value="disabled">Disabled</option>
+          <option value="finite">Finite</option>
+          <option value="infinite" selected>Infinite</option>
+        </select>
+      </td>
     </tr>
     <tr>
-      <td>Maximum accumulated tokens</td>
-      <td><input type="text" name="token_max" size="3" value=""></td>
+      <td>[only if finite] Maximum number of tokens a contestant can use</td>
+      <td><input type="text" name="token_max_number" size="3" value=""></td>
     </tr>
     <tr>
-      <td>Total number of tokens</td>
-      <td><input type="text" name="token_total" size="3" value=""></td>
-    </tr>
-    <tr>
-      <td>Minimum interval between tokens (in seconds)</td>
+      <td>Minimum interval a contestant has to wait between two token uses (in seconds)</td>
       <td><input type="text" name="token_min_interval" size="3" value="0"></td>
     </tr>
     <tr>
-      <td>Token generation period (in minutes)</td>
-      <td><input type="text" name="token_gen_time" size="3" value="0"></td>
+      <td>[only if finite] Initial number of tokens</td>
+      <td><input type="text" name="token_gen_initial" size="3" value="2"></td>
     </tr>
     <tr>
-      <td>Token generation number</td>
-      <td><input type="text" name="token_gen_number" size="3" value="0"></td>
+      <td>[only if finite] Token generation number</td>
+      <td><input type="text" name="token_gen_number" size="3" value="2"></td>
+    </tr>
+    <tr>
+      <td>[only if finite] Token generation period (in minutes)</td>
+      <td><input type="text" name="token_gen_interval" size="3" value="30"></td>
+    </tr>
+    <tr>
+      <td>[only if finite] Maximum accumulated tokens</td>
+      <td><input type="text" name="token_gen_max" size="3" value=""></td>
     </tr>
     <tr>
       <td>Start (in UTC)</td>

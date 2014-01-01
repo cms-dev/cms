@@ -131,28 +131,39 @@ $("select[name=task_type]").change(showTaskTypeOption);
 
   <div id="tokens">
     <table>
-        <td>Initial number of tokens</td>
-        <td><input type="text" name="token_initial" value="" /></td>
+      <tr>
+        <td>Token mode</td>
+        <td>
+          <select name="token_mode">
+            <option value="disabled" selected>Disabled</option>
+            <option value="finite">Finite</option>
+            <option value="infinite">Infinite</option>
+          </select>
+        </td>
       </tr>
       <tr>
-        <td>Maximum number of tokens</td>
-        <td><input type="text" name="token_max" value="" /></td>
+        <td>[only if finite] Maximum number of tokens a contestant can use</td>
+        <td><input type="text" name="token_max_number" value="" /></td>
       </tr>
       <tr>
-        <td>Total number of tokens</td>
-        <td><input type="text" name="token_total" value="" /></td>
-      </tr>
-      <tr>
-        <td>Minimum interval between tokens (in seconds)</td>
+        <td>Minimum interval a contestant has to wait between two token uses (in seconds)</td>
         <td><input type="text" name="token_min_interval" value="0" /></td>
       </tr>
       <tr>
-        <td>Token generation period (in minutes)</td>
-        <td><input type="text" name="token_gen_time" value="0" /></td>
+        <td>[only if finite] Initial number of tokens</td>
+        <td><input type="text" name="token_gen_initial" value="2" /></td>
       </tr>
       <tr>
-        <td>Token generation number</td>
-        <td><input type="text" name="token_gen_number" value="0" /></td>
+        <td>[only if finite] Token generation number</td>
+        <td><input type="text" name="token_gen_number" value="2" /></td>
+      </tr>
+      <tr>
+        <td>[only if finite] Token generation period (in minutes)</td>
+        <td><input type="text" name="token_gen_interval" value="30" /></td>
+      </tr>
+      <tr>
+        <td>[only if finite] Maximum number of tokens</td>
+        <td><input type="text" name="token_gen_max" value="" /></td>
       </tr>
       <tr>
         <td>Maximum number of submissions for each user (for this task)</td>

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-01 17:32+0100\n"
+"POT-Creation-Date: 2014-01-01 17:38+0100\n"
 "PO-Revision-Date: 2013-12-20 12:01+0000\n"
 "Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
 "Language-Team: Italian <>\n"
@@ -367,15 +367,15 @@ msgstr "All'inizio hai zero %(type_pl)s."
 
 #, python-format
 msgid "You start with one %(type_s)s."
-msgid_plural "You start with %(initial)d %(type_pl)s."
+msgid_plural "You start with %(gen_initial)d %(type_pl)s."
 msgstr[0] "All'inizio hai un %(type_s)s."
-msgstr[1] "All'inizio hai %(initial)d %(type_pl)s."
+msgstr[1] "All'inizio hai %(gen_initial)d %(type_pl)s."
 
 #, python-format
 msgid "Every minute "
-msgid_plural "Every %(gen_time)g minutes "
+msgid_plural "Every %(gen_interval)g minutes "
 msgstr[0] "Ogni minuto "
-msgstr[1] "Ogni %(gen_time)g minuti "
+msgstr[1] "Ogni %(gen_interval)g minuti "
 
 #, python-format
 msgid "you get another %(type_s)s, "
@@ -385,9 +385,9 @@ msgstr[1] "riceverai altri %(gen_number)d %(type_pl)s, "
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
-msgid_plural "up to a maximum of %(max)d %(type_pl)s."
+msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] "fino ad un massimo di un %(type_s)s."
-msgstr[1] "fino ad un massimo di %(max)d %(type_pl)s."
+msgstr[1] "fino ad un massimo di %(gen_max)d %(type_pl)s."
 
 #, python-format
 msgid "you get another %(type_s)s."
@@ -407,15 +407,15 @@ msgstr[1] "Puoi usare al massimo un %(type_s)s ogni %(min_interval)g secondi "
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
-msgid_plural "and no more than %(total)d %(type_pl)s in total."
+msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "e non più di un %(type_s)s in totale."
-msgstr[1] "e non più di %(total)d %(type_pl)s in totale."
+msgstr[1] "e non più di %(max_number)d %(type_pl)s in totale."
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
-msgid_plural "You can use no more than %(total)d %(type_pl)s in total."
+msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "Non puoi usare più di un %(type_s)s in totale."
-msgstr[1] "Non puoi usare più di %(total)d %(type_pl)s in totale."
+msgstr[1] "Non puoi usare più di %(max_number)d %(type_pl)s in totale."
 
 #, python-format
 msgid ""
