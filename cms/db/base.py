@@ -31,7 +31,7 @@ from sqlalchemy.orm.session import object_session
 from sqlalchemy.orm import \
     class_mapper, object_mapper, ColumnProperty, RelationshipProperty
 from sqlalchemy.types import \
-    Boolean, Integer, Float, String, Unicode, DateTime, Interval
+    Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
 
 import six
 
@@ -46,6 +46,7 @@ _TYPE_MAP = {
     Unicode: six.string_types,  # TODO Use six.text_type.
     DateTime: datetime,
     Interval: timedelta,
+    Enum: six.string_types,  # TODO Use six.text_type.
     RepeatedUnicode: list,  # TODO Use a type that checks also the content.
 }
 

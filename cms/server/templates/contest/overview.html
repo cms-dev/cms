@@ -89,7 +89,7 @@
         </p>
 
         <p>
-        {% set tokens = {"initial": contest.token_initial, "max": contest.token_max, "total": contest.token_total, "min_interval": contest.token_min_interval, "gen_time": contest.token_gen_time, "gen_number": contest.token_gen_number} %}
+        {% set tokens = {k[6:]: v for k, v in contest.__dict__.iteritems() if k.startswith("token_")} %}
         {{ format_token_rules(tokens, locale=locale) }}
         {% if tokens_tasks == 2 %}
             {{ _("In addition to these rules, tasks may pose some limitations on how often you can use tokens.") }}
@@ -104,7 +104,7 @@
         </p>
 
         <p>
-        {% set tokens = {"initial": contest.token_initial, "max": contest.token_max, "total": contest.token_total, "min_interval": contest.token_min_interval, "gen_time": contest.token_gen_time, "gen_number": contest.token_gen_number} %}
+        {% set tokens = {k[6:]: v for k, v in contest.__dict__.iteritems() if k.startswith("token_")} %}
         {{ format_token_rules(tokens, t_type="contest", locale=locale) }}
         {{ _("You can find the rules for the task-tokens on each task's description page.") }}
         </p>
@@ -211,7 +211,7 @@
             <td>{{ " ".join(a.filename.replace("%l", extensions) for a in t_iter.submission_format) }}</td>
     {% if tokens_contest != 0 and tokens_tasks != 0 %}
             <td>
-        {% if t_iter.token_initial is not None %}
+        {% if t_iter.token_mode in ("finite", "infinite") %}
             {{ _("Yes") }}
         {% else %}
             {{ _("No") }}

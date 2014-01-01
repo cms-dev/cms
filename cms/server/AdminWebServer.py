@@ -577,12 +577,13 @@ class AddContestHandler(BaseHandler):
 
             attrs["languages"] = self.get_arguments("languages", [])
 
-            self.get_int(attrs, "token_initial")
-            self.get_int(attrs, "token_max")
-            self.get_int(attrs, "token_total")
+            self.get_string(attrs, "token_mode")
+            self.get_int(attrs, "token_max_number")
             self.get_timedelta_sec(attrs, "token_min_interval")
-            self.get_timedelta_min(attrs, "token_gen_time")
+            self.get_int(attrs, "token_gen_initial")
             self.get_int(attrs, "token_gen_number")
+            self.get_timedelta_min(attrs, "token_gen_interval")
+            self.get_int(attrs, "token_gen_max")
 
             self.get_int(attrs, "max_submission_number")
             self.get_int(attrs, "max_user_test_number")
@@ -634,12 +635,13 @@ class ContestHandler(BaseHandler):
 
             attrs["languages"] = self.get_arguments("languages", [])
 
-            self.get_int(attrs, "token_initial")
-            self.get_int(attrs, "token_max")
-            self.get_int(attrs, "token_total")
+            self.get_string(attrs, "token_mode")
+            self.get_int(attrs, "token_max_number")
             self.get_timedelta_sec(attrs, "token_min_interval")
-            self.get_timedelta_min(attrs, "token_gen_time")
+            self.get_int(attrs, "token_gen_initial")
             self.get_int(attrs, "token_gen_number")
+            self.get_timedelta_min(attrs, "token_gen_interval")
+            self.get_int(attrs, "token_gen_max")
 
             self.get_int(attrs, "max_submission_number")
             self.get_int(attrs, "max_user_test_number")
@@ -1308,12 +1310,13 @@ class AddTaskHandler(BaseHandler):
 
             self.get_submission_format(attrs)
 
-            self.get_int(attrs, "token_initial")
-            self.get_int(attrs, "token_max")
-            self.get_int(attrs, "token_total")
+            self.get_string(attrs, "token_mode")
+            self.get_int(attrs, "token_max_number")
             self.get_timedelta_sec(attrs, "token_min_interval")
-            self.get_timedelta_min(attrs, "token_gen_time")
+            self.get_int(attrs, "token_gen_initial")
             self.get_int(attrs, "token_gen_number")
+            self.get_timedelta_min(attrs, "token_gen_interval")
+            self.get_int(attrs, "token_gen_max")
 
             self.get_int(attrs, "max_submission_number")
             self.get_int(attrs, "max_user_test_number")
@@ -1398,12 +1401,13 @@ class TaskHandler(BaseHandler):
 
             self.get_submission_format(attrs)
 
-            self.get_int(attrs, "token_initial")
-            self.get_int(attrs, "token_max")
-            self.get_int(attrs, "token_total")
+            self.get_string(attrs, "token_mode")
+            self.get_int(attrs, "token_max_number")
             self.get_timedelta_sec(attrs, "token_min_interval")
-            self.get_timedelta_min(attrs, "token_gen_time")
+            self.get_int(attrs, "token_gen_initial")
             self.get_int(attrs, "token_gen_number")
+            self.get_timedelta_min(attrs, "token_gen_interval")
+            self.get_int(attrs, "token_gen_max")
 
             self.get_int(attrs, "max_submission_number")
             self.get_int(attrs, "max_user_test_number")

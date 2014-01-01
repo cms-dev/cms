@@ -42,7 +42,7 @@ import zipfile
 from datetime import timedelta
 
 from sqlalchemy.types import \
-    Boolean, Integer, Float, String, Unicode, DateTime, Interval
+    Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
 
 import cms.db as class_hook
 
@@ -355,7 +355,8 @@ class ContestImporter(object):
             col_type = type(col.type)
 
             val = data[prp.key]
-            if col_type in [Boolean, Integer, Float, Unicode, RepeatedUnicode]:
+            if col_type in \
+                    [Boolean, Integer, Float, Unicode, RepeatedUnicode, Enum]:
                 args[prp.key] = val
             elif col_type is String:
                 args[prp.key] = \

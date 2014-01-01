@@ -242,12 +242,14 @@ class BaseHandler(CommonRequestHandler):
                       (enabled/infinite).
 
         """
-        if obj.token_initial is None:
+        if obj.token_mode == "disabled":
             return 0
-        elif obj.token_gen_number and not obj.token_gen_time:
+        elif obj.token_mode == "finite":
+            return 1
+        elif obj.token_mode == "infinite":
             return 2
         else:
-            return 1
+            raise RuntimeError("Unknown token_mode value.")
 
     def render_params(self):
         """Return the default render params used by almost all handlers.

@@ -412,9 +412,9 @@ def add_contest(**kwargs):
 
 
 def add_task(contest_id, **kwargs):
-    # We need to specify token_initial. Why this and no others?
-    if 'token_initial' not in kwargs:
-        kwargs['token_initial'] = '0'
+    # We need to specify token_mode. Why this and no others?
+    if 'token_mode' not in kwargs:
+        kwargs['token_mode'] = 'disabled'
 
     r = admin_req('/add_task/%d' % contest_id,
                   multipart_post=True,

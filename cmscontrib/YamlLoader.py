@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -147,12 +147,46 @@ class YamlLoader(Loader):
 
         assert name == args["name"]
 
-        load(conf, args, "token_initial")
-        load(conf, args, "token_max")
-        load(conf, args, "token_total")
-        load(conf, args, "token_min_interval", conv=make_timedelta)
-        load(conf, args, "token_gen_time", conv=make_timedelta)
-        load(conf, args, "token_gen_number")
+        # Use the new token settings format if detected.
+        if "token_mode" in conf:
+            load(conf, args, "token_mode")
+            load(conf, args, "token_max_number")
+            load(conf, args, "token_min_interval", conv=make_timedelta)
+            load(conf, args, "token_gen_initial")
+            load(conf, args, "token_gen_number")
+            load(conf, args, "token_gen_interval", conv=make_timedelta)
+            load(conf, args, "token_gen_max")
+        # Otherwise fall back on the old one.
+        else:
+            logger.warning(
+                "contest.yaml uses a deprecated format for token settings "
+                "which will soon stop being supported, you're advised to "
+                "update it.")
+            # Determine the mode.
+            if conf.get("token_initial", None) is None:
+                args["token_mode"] = "disabled"
+            elif conf.get("token_gen_number", 0) > 0 and \
+                    conf.get("token_gen_time", 0) == 0:
+                args["token_mode"] = "infinite"
+            else:
+                args["token_mode"] = "finite"
+            # Set the old default values.
+            args["token_gen_initial"] = 0
+            args["token_gen_number"] = 0
+            args["token_gen_interval"] = timedelta()
+            # Copy the parameters to their new names.
+            load(conf, args, "token_total", "token_max_number")
+            load(conf, args, "token_min_interval", conv=make_timedelta)
+            load(conf, args, "token_initial", "token_gen_initial")
+            load(conf, args, "token_gen_number")
+            load(conf, args, "token_gen_time", "token_gen_interval",
+                 conv=make_timedelta)
+            load(conf, args, "token_max", "token_gen_max")
+            # Remove some corner cases.
+            if args["token_gen_initial"] is None:
+                args["token_gen_initial"] = 0
+            if args["token_gen_interval"].total_seconds() == 0:
+                args["token_gen_interval"] = timedelta(minutes=1)
 
         load(conf, args, ["start", "inizio"], conv=make_datetime)
         load(conf, args, ["stop", "fine"], conv=make_datetime)
@@ -327,12 +361,46 @@ class YamlLoader(Loader):
         args["submission_format"] = [
             SubmissionFormatElement("%s.%%l" % name)]
 
-        load(conf, args, "token_initial")
-        load(conf, args, "token_max")
-        load(conf, args, "token_total")
-        load(conf, args, "token_min_interval", conv=make_timedelta)
-        load(conf, args, "token_gen_time", conv=make_timedelta)
-        load(conf, args, "token_gen_number")
+        # Use the new token settings format if detected.
+        if "token_mode" in conf:
+            load(conf, args, "token_mode")
+            load(conf, args, "token_max_number")
+            load(conf, args, "token_min_interval", conv=make_timedelta)
+            load(conf, args, "token_gen_initial")
+            load(conf, args, "token_gen_number")
+            load(conf, args, "token_gen_interval", conv=make_timedelta)
+            load(conf, args, "token_gen_max")
+        # Otherwise fall back on the old one.
+        else:
+            logger.warning(
+                "%s.yaml uses a deprecated format for token settings which "
+                "will soon stop being supported, you're advised to update it.",
+                name)
+            # Determine the mode.
+            if conf.get("token_initial", None) is None:
+                args["token_mode"] = "disabled"
+            elif conf.get("token_gen_number", 0) > 0 and \
+                    conf.get("token_gen_time", 0) == 0:
+                args["token_mode"] = "infinite"
+            else:
+                args["token_mode"] = "finite"
+            # Set the old default values.
+            args["token_gen_initial"] = 0
+            args["token_gen_number"] = 0
+            args["token_gen_interval"] = timedelta()
+            # Copy the parameters to their new names.
+            load(conf, args, "token_total", "token_max_number")
+            load(conf, args, "token_min_interval", conv=make_timedelta)
+            load(conf, args, "token_initial", "token_gen_initial")
+            load(conf, args, "token_gen_number")
+            load(conf, args, "token_gen_time", "token_gen_interval",
+                 conv=make_timedelta)
+            load(conf, args, "token_max", "token_gen_max")
+            # Remove some corner cases.
+            if args["token_gen_initial"] is None:
+                args["token_gen_initial"] = 0
+            if args["token_gen_interval"].total_seconds() == 0:
+                args["token_gen_interval"] = timedelta(minutes=1)
 
         load(conf, args, "max_submission_number")
         load(conf, args, "max_user_test_number")

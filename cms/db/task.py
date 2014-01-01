@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -32,7 +32,8 @@ from datetime import timedelta
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint, \
     UniqueConstraint, ForeignKeyConstraint
-from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, Interval
+from sqlalchemy.types import Boolean, Integer, Float, String, Unicode, \
+    Interval, Enum
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.ext.orderinglist import ordering_list
 
@@ -58,7 +59,7 @@ class Task(Base):
             use_alter=True,
             name="fk_active_dataset_id"
         ),
-        CheckConstraint("token_initial <= token_max"),
+        CheckConstraint("token_gen_initial <= token_gen_max"),
     )
 
     # Auto increment primary key.
@@ -104,38 +105,60 @@ class Task(Base):
         nullable=False,
         default="[]")
 
-    # Parameter to define the token behaviour. See Contest.py for
-    # details. The only change is that these parameters influence the
-    # contest in a task-per-task behaviour. To play a token on a given
-    # task, a user must satisfy the condition of the contest and the
-    # one of the task.
-    token_initial = Column(
+    # The parameters that control task-tokens follow. Note that their
+    # effect during the contest depends on the interaction with the
+    # parameters that control contest-tokens, defined on the Contest.
+
+    # The "kind" of token rules that will be active during the contest.
+    # - disabled: The user will never be able to use any token.
+    # - finite: The user has a finite amount of tokens and can choose
+    #   when to use them, subject to some limitations. Tokens may not
+    #   be all available at start, but given periodically during the
+    #   contest instead.
+    # - infinite: The user will (almost) always be able to use a token.
+    #   Some limitations may still apply.
+    token_mode = Column(
+        Enum("disabled", "finite", "infinite", name="token_mode"),
+        nullable=False,
+        default="disabled")
+
+    # The maximum number of tokens a contestant is allowed to use
+    # during the whole contest (on this tasks).
+    token_max_number = Column(
         Integer,
-        CheckConstraint("token_initial >= 0"),
+        CheckConstraint("token_max_number > 0"),
         nullable=True)
-    token_max = Column(
-        Integer,
-        CheckConstraint("token_max > 0"),
-        nullable=True)
-    token_total = Column(
-        Integer,
-        CheckConstraint("token_total > 0"),
-        nullable=True)
+
+    # The minimum interval between two successive uses of tokens for
+    # the same user (on this task).
     token_min_interval = Column(
         Interval,
         CheckConstraint("token_min_interval >= '0 seconds'"),
         nullable=False,
         default=timedelta())
-    token_gen_time = Column(
-        Interval,
-        CheckConstraint("token_gen_time >= '0 seconds'"),
+
+    # The parameters that control generation (if mode is "finite"):
+    # the user starts with "initial" tokens and receives "number" more
+    # every "interval", but their total number is capped to "max".
+    token_gen_initial = Column(
+        Integer,
+        CheckConstraint("token_gen_initial >= 0"),
         nullable=False,
-        default=timedelta())
+        default=2)
     token_gen_number = Column(
         Integer,
         CheckConstraint("token_gen_number >= 0"),
         nullable=False,
-        default=0)
+        default=2)
+    token_gen_interval = Column(
+        Interval,
+        CheckConstraint("token_gen_interval > '0 seconds'"),
+        nullable=False,
+        default=timedelta(minutes=30))
+    token_gen_max = Column(
+        Integer,
+        CheckConstraint("token_gen_max > 0"),
+        nullable=True)
 
     # Maximum number of submissions or user_tests allowed for each user
     # on this task during the whole contest or None to not enforce

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-05 15:52+0000\n"
+"POT-Creation-Date: 2014-01-08 13:15+0100\n"
 "PO-Revision-Date: 2013-12-16 02:48+0800\n"
 "Last-Translator: magrady24 <b01902110@csie.ntu.edu.tw>\n"
 "Language-Team: TW\n"
@@ -352,15 +352,15 @@ msgstr "競賽開始時沒有任何 %(type_pl)s."
 
 #, python-format
 msgid "You start with one %(type_s)s."
-msgid_plural "You start with %(initial)d %(type_pl)s."
+msgid_plural "You start with %(gen_initial)d %(type_pl)s."
 msgstr[0] "競賽開始時有一個 %(type_pl)s."
-msgstr[1] "競賽開始時有 %(initial)d 個 %(type_pl)s."
+msgstr[1] "競賽開始時有 %(gen_initial)d 個 %(type_pl)s."
 
 #, python-format
 msgid "Every minute "
-msgid_plural "Every %(gen_time)g minutes "
+msgid_plural "Every %(gen_interval)g minutes "
 msgstr[0] "接著每分鐘"
-msgstr[1] "接著每 %(gen_time)g 分鐘"
+msgstr[1] "接著每 %(gen_interval)g 分鐘"
 
 #, python-format
 msgid "you get another %(type_s)s, "
@@ -370,9 +370,9 @@ msgstr[1] "會產生 %d 個額外的 %(type_s)s, "
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
-msgid_plural "up to a maximum of %(max)d %(type_pl)s."
+msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] "至多只能擁有一個未使用的 %(type_pl)s."
-msgstr[1] "至多可以同時擁有 %(max)d 個未使用的 %(type_pl)s."
+msgstr[1] "至多可以同時擁有 %(gen_max)d 個未使用的 %(type_pl)s."
 
 #, python-format
 msgid "you get another %(type_s)s."
@@ -392,15 +392,15 @@ msgstr[1] "兩次 %(type_s)s 的使用間必須間隔至少 %(min_interval)g 秒
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
-msgid_plural "and no more than %(total)d %(type_pl)s in total."
+msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "且總共至多只能使用一個 %(type_s)s."
-msgstr[1] "且總共可以使用 %(total)d 個 %(type_s)s."
+msgstr[1] "且總共可以使用 %(max_number)d 個 %(type_s)s."
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
-msgid_plural "You can use no more than %(total)d %(type_pl)s in total."
+msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "且一旦產生 %(type_s)s 後將不會再增加."
-msgstr[1] "且一旦產生總共 %(total)d 個 %(type_s)s 後將不會再增加."
+msgstr[1] "且一旦產生總共 %(max_number)d 個 %(type_s)s 後將不會再增加."
 
 #, python-format
 msgid ""

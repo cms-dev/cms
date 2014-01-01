@@ -64,12 +64,13 @@ def create_contest():
         start=start_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
         stop=stop_time.strftime("%Y-%m-%d %H:%M:%S.%f"),
         timezone=get_system_timezone(),
-        token_initial="100",
-        token_max="100",
-        token_total="100",
+        token_mode="finite",
+        token_max_number="100",
         token_min_interval="0",
-        token_gen_time="0",
+        token_gen_initial="100",
         token_gen_number="0",
+        token_gen_interval="1",
+        token_gen_max="100",
     )
 
     info("Created contest %d." % contest_id)
@@ -127,12 +128,13 @@ def get_task_id(contest_id, user_id, task_module):
         return task_id_map[name][0]
 
     task_create_args = {
-        "token_initial": "100",
-        "token_max": "100",
-        "token_total": "100",
+        "token_mode": "finite",
+        "token_max_number": "100",
         "token_min_interval": "0",
-        "token_gen_time": "0",
+        "token_gen_initial": "100",
         "token_gen_number": "0",
+        "token_gen_interval": "1",
+        "token_gen_max": "100",
         "max_submission_number": "100",
         "max_user_test_number": "100",
         "min_submission_interval": None,
