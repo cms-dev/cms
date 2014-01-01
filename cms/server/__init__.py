@@ -328,24 +328,15 @@ def format_token_rules(tokens, t_type=None, locale=None):
     result = ""
 
     if tokens["mode"] == "disabled":
-        # note: we are sure that this text will only be displayed in task
-        # pages because if tokens are disabled for the whole contest they
-        # don't appear anywhere in CWS
+        # This message will only be shown on tasks in case of a mixed
+        # modes scenario.
         result += \
             _("You don't have %(type_pl)s available for this task.") % tokens
     elif tokens["mode"] == "infinite":
-        result += _("You have infinite %(type_pl)s.") % tokens
-
-        result += " "
-
-        if tokens['min_interval'] > 0:
-            result += _("You can use a %(type_s)s every second.",
-                        "You can use a %(type_s)s every %(min_interval)g "
-                        "seconds.",
-                        tokens['min_interval']) % tokens
-        else:
-            result += \
-                _("You have no limitations on how you use them.") % tokens
+        # This message will only be shown on tasks in case of a mixed
+        # modes scenario.
+        result += \
+            _("You have infinite an infinite number of %(type_pl)s for this task.") % tokens
     else:
         if tokens['gen_initial'] == 0:
             result += _("You start with no %(type_pl)s.") % tokens

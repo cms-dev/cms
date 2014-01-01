@@ -115,8 +115,7 @@ class Task(Base):
     #   when to use them, subject to some limitations. Tokens may not
     #   be all available at start, but given periodically during the
     #   contest instead.
-    # - infinite: The user will (almost) always be able to use a token.
-    #   Some limitations may still apply.
+    # - infinite: The user will always be able to use a token.
     token_mode = Column(
         Enum("disabled", "finite", "infinite", name="token_mode"),
         nullable=False,

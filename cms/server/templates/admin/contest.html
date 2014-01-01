@@ -39,7 +39,7 @@
       <td><input type="text" name="token_max_number" value="{{ contest.token_max_number if contest.token_max_number is not None else "" }}" size="3"></td>
     </tr>
     <tr>
-      <td>Minimum interval a contestant has to wait between two token uses (in seconds)</td>
+      <td>[only if finite] Minimum interval a contestant has to wait between two token uses (in seconds)</td>
       <td><input type="text" name="token_min_interval" value="{{ int(contest.token_min_interval.total_seconds()) }}" size="3"></td>
     </tr>
     <tr>
