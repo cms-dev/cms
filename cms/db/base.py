@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -197,6 +197,7 @@ class Base(object):
                         raise TypeError(
                             "%s.__init__() got None for keyword argument '%s',"
                             " which is not nullable" % (cls.__name__, prp.key))
+                    setattr(self, prp.key, val)
                 else:
                     # TODO col_type.python_type contains the type that
                     # SQLAlchemy thinks is more appropriate. We could
@@ -223,8 +224,8 @@ class Base(object):
         # Check if there were unknown arguments
         if kwargs:
             raise TypeError(
-                "%s.__init__() got an unexpected keyword argument '%s'\n%s" %
-                (cls.__name__, kwargs, kwargs.popitem()[0]))
+                "%s.__init__() got an unexpected keyword argument '%s'" %
+                (cls.__name__, kwargs.popitem()[0]))
 
     @classmethod
     def get_from_id(cls, id_, session):
@@ -266,6 +267,69 @@ class Base(object):
         cls = type(self)
         args = list(getattr(self, prp.key) for prp in self._col_props)
         return cls(*args)
+
+    def get_attrs(self):
+        """Return self.__dict__.
+
+        Limited to SQLAlchemy column properties.
+
+        return ({string: object}): the properties of this object.
+
+        """
+        attrs = dict()
+        for prp in self._col_props:
+            if hasattr(self, prp.key):
+                attrs[prp.key] = getattr(self, prp.key)
+        return attrs
+
+    def set_attrs(self, attrs):
+        """Do self.__dict__.update(attrs) with validation.
+
+        Limited to SQLAlchemy column and relationship properties.
+
+        attrs ({string: object}): the new properties we want to set on
+            this object.
+
+        """
+        # We want to pop items without altering the caller's object.
+        attrs = attrs.copy()
+
+        for prp in self._col_props:
+            col = prp.columns[0]
+            col_type = type(col.type)
+
+            if prp.key in attrs:
+                val = attrs.pop(prp.key)
+
+                if val is None:
+                    if not col.nullable:
+                        raise TypeError(
+                            "set_attrs() got None for keyword argument '%s',"
+                            " which is not nullable" % prp.key)
+                    setattr(self, prp.key, val)
+                else:
+                    # TODO col_type.python_type contains the type that
+                    # SQLAlchemy thinks is more appropriate. We could
+                    # use that and drop _TYPE_MAP...
+                    if not isinstance(val, _TYPE_MAP[col_type]):
+                        raise TypeError(
+                            "set_attrs() got a '%s' for keyword argument "
+                            "'%s', which requires a '%s'" %
+                            (type(val), prp.key, _TYPE_MAP[col_type]))
+                    setattr(self, prp.key, val)
+
+        for prp in self._rel_props:
+            if prp.key in attrs:
+                val = attrs.pop(prp.key)
+
+                # TODO Some type validation (take a look at prp.uselist)
+                setattr(self, prp.key, val)
+
+        # Check if there were unknown arguments
+        if attrs:
+            raise TypeError(
+                "set_attrs() got an unexpected keyword argument '%s'" %
+                attrs.popitem()[0])
 
 
 Base = declarative_base(engine, cls=Base, constructor=None)
