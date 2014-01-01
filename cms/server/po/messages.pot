@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-20 12:27+0000\n"
+"POT-Creation-Date: 2014-01-01 17:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -262,6 +262,9 @@ msgstr ""
 msgid "Executing..."
 msgstr ""
 
+msgid "Executed"
+msgstr ""
+
 #, python-format
 msgid "%(seconds)0.3f s"
 msgstr ""
@@ -273,6 +276,9 @@ msgid "%H:%M:%S"
 msgstr ""
 
 msgid "%Y-%m-%d %H:%M:%S"
+msgstr ""
+
+msgid "loading..."
 msgstr ""
 
 #, python-format
@@ -400,8 +406,8 @@ msgstr[1] ""
 
 #, python-format
 msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)"
-"</em>"
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
 msgstr ""
 
 msgid "Logout"
@@ -943,7 +949,4 @@ msgid "Test details"
 msgstr ""
 
 msgid "Evaluation outcome"
-msgstr ""
-
-msgid "Executed"
 msgstr ""

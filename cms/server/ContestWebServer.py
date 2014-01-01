@@ -1707,7 +1707,7 @@ class UserTestStatusHandler(BaseHandler):
         else:
             data["status"] = 4
             data["status_text"] = "%s <a class=\"details\">%s</a>" % (
-                self._("Evaluated"), self._("details"))
+                self._("Executed"), self._("details"))
             if ur.execution_time is not None:
                 data["time"] = self._("%(seconds)0.3f s") % {
                     'seconds': ur.execution_time}

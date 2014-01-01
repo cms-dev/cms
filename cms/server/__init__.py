@@ -229,6 +229,10 @@ def get_score_class(score, max_score):
 def N_(*args, **kwargs):
     pass
 
+# This is a string in task_submissions.html and test_interface.html
+# that for some reason doesn't get included in messages.pot.
+N_("loading...")
+
 N_("%d second", "%d seconds", 0)
 N_("%d minute", "%d minutes", 0)
 N_("%d hour", "%d hours", 0)

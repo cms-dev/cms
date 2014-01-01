@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-15 19:25+0200\n"
+"POT-Creation-Date: 2014-01-01 17:32+0100\n"
 "PO-Revision-Date: 2013-12-16 02:48+0800\n"
 "Last-Translator: magrady24 <b01902110@csie.ntu.edu.tw>\n"
 "Language-Team: TW\n"
@@ -149,6 +149,10 @@ msgstr "無法辨識本次傳送所使用的程式語言"
 msgid "All sources must be in the same language."
 msgstr "所有程式碼需使用相同的程式語言"
 
+#, python-format
+msgid "Language %s not allowed in this contest."
+msgstr ""
+
 msgid "Invalid submission!"
 msgstr "檔案不正確"
 
@@ -253,6 +257,16 @@ msgstr "已收到測試"
 msgid "Your test has been received and is currently being executed."
 msgstr "請靜待測試結果出爐"
 
+msgid "Executing..."
+msgstr "執行中..."
+
+msgid "Executed"
+msgstr "已評測"
+
+#, python-format
+msgid "%(seconds)0.3f s"
+msgstr "%(seconds)0.3f 秒"
+
 msgid "%Y-%m-%d"
 msgstr ""
 
@@ -261,6 +275,9 @@ msgstr ""
 
 msgid "%Y-%m-%d %H:%M:%S"
 msgstr ""
+
+msgid "loading..."
+msgstr "載入中..."
 
 #, python-format
 msgid "%d second"
@@ -389,7 +406,8 @@ msgstr[1] "且一旦產生總共 %(total)d 個 %(type_s)s 後將不會再增加.
 msgid ""
 "Logged in as <strong>%(first_name)s %(last_name)s</strong> "
 "<em>(%(username)s)</em>"
-msgstr "使用者 <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
+msgstr ""
+"使用者 <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 
 msgid "Logout"
 msgstr "登出"
@@ -546,7 +564,9 @@ msgstr "繳交 Token 後即可觀看本次傳送的詳細得分情形."
 msgid ""
 "Your score for each task will be the maximum among the tokened submissions "
 "and the last one."
-msgstr "本題的最終得分將以所有使用 Token 的傳送或最後一次傳送 (無論是否使用 Token) 所得的最高總分計算."
+msgstr ""
+"本題的最終得分將以所有使用 Token 的傳送或最後一次傳送 (無論是否使用 Token) 所"
+"得的最高總分計算."
 
 msgid "You can use at most one token every second among all tasks."
 msgstr "每秒鐘至多只能使用一個 Token."
@@ -581,7 +601,8 @@ msgstr "除以上規則外, 在競賽中每秒均可以使用一個 Token."
 msgid ""
 "In addition to those rules, you can use at most one token every "
 "%(min_interval)d seconds among all tasks."
-msgstr "除以上規則外, 在競賽中兩次 Token 的使用間至少需相隔 %(min_interval)d 秒."
+msgstr ""
+"除以上規則外, 在競賽中兩次 Token 的使用間至少需相隔 %(min_interval)d 秒."
 
 msgid "You have a set of tokens shared among all tasks."
 msgstr "您有一些所有題目共用的 Token."
@@ -594,7 +615,9 @@ msgstr "除以上規則外, 各題可能有關於 Token 使用頻率的額外限
 msgid ""
 "You have two types of tokens: a set of <em>contest-tokens</em> shared among "
 "all tasks and a distinct set of <em>task-tokens</em> for each task."
-msgstr "Token 分為兩類: 競賽-Token (競賽共用的 Token), 與題目-Token (每題各自獨立的 Token)."
+msgstr ""
+"Token 分為兩類: 競賽-Token (競賽共用的 Token), 與題目-Token (每題各自獨立的 "
+"Token)."
 
 msgid ""
 "You can see the detailed result of a submission by using two tokens on it, "
@@ -617,7 +640,9 @@ msgstr "當競賽開啟時, 您就可以參加競賽並開始計時."
 msgid ""
 "Once you start, you can submit solutions until the end of the time frame or "
 "until the end of the contest, whatever comes first."
-msgstr "開始計時後即可開始作答. 此外, 若整體競賽已終止, 即使您自己的競賽計時器尚未結束, 您也必須停止作答."
+msgstr ""
+"開始計時後即可開始作答. 此外, 若整體競賽已終止, 即使您自己的競賽計時器尚未結"
+"束, 您也必須停止作答."
 
 msgid "By clicking on the button below you can start your time frame."
 msgstr "點擊以下按鈕確認開始參加競賽並開始計時."
@@ -807,7 +832,8 @@ msgstr "此外在競賽中, 兩次 Token 的使用間至少需相隔 %(min_inter
 msgid ""
 "You can find the rules for the tokens on the <a href=\"%(url_root)s/"
 "\">contest overview page</a>."
-msgstr "關於競賽 Token 的使用規則, 請參閱 <a href=\"%(url_root)s/\">競賽資訊</a>."
+msgstr ""
+"關於競賽 Token 的使用規則, 請參閱 <a href=\"%(url_root)s/\">競賽資訊</a>."
 
 msgid ""
 "In addition to those rules, you can use at most one token every second on "
@@ -829,7 +855,8 @@ msgstr "請注意: 欲觀看詳細的評測結果, 須使用競賽-Token 與題�
 msgid ""
 "You can find the rules for the contest-tokens on the <a href=\"%(url_root)s/"
 "\">contest overview page</a>."
-msgstr "關於競賽-Token 的使用規則, 請參閱<a href=\"%(url_root)s/\">競賽資訊</a>."
+msgstr ""
+"關於競賽-Token 的使用規則, 請參閱<a href=\"%(url_root)s/\">競賽資訊</a>."
 
 msgid "Attachments"
 msgstr "附件"
@@ -931,19 +958,3 @@ msgstr "測試詳細資料"
 
 msgid "Evaluation outcome"
 msgstr "測試訊息"
-
-msgid "Executing..."
-msgstr "執行中..."
-
-msgid "Executed"
-msgstr "已評測"
-
-#: add
-msgid "Executed <a class=\"details\">details</a>"
-msgstr "已評測 <a class=\"details\">詳細資料</a>"
-
-#: add
-msgid "loading..."
-msgstr "載入中..."
-
-

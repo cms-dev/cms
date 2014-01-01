@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-12-20 12:27+0000\n"
+"POT-Creation-Date: 2014-01-01 17:32+0100\n"
 "PO-Revision-Date: 2013-12-20 12:01+0000\n"
 "Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
 "Language-Team: Italian <>\n"
@@ -275,6 +275,9 @@ msgstr "Il tuo test è stato ricevuto e verrà valutato."
 msgid "Executing..."
 msgstr "Esecuzione in corso..."
 
+msgid "Executed"
+msgstr "Eseguito"
+
 #, python-format
 msgid "%(seconds)0.3f s"
 msgstr "%(seconds)0.3f s"
@@ -287,6 +290,9 @@ msgstr "%H:%M:%S"
 
 msgid "%Y-%m-%d %H:%M:%S"
 msgstr "%H:%M:%S %d/%m/%Y"
+
+msgid "loading..."
+msgstr "caricamento in corso..."
 
 #, python-format
 msgid "%d second"
@@ -413,11 +419,11 @@ msgstr[1] "Non puoi usare più di %(total)d %(type_pl)s in totale."
 
 #, python-format
 msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)"
-"</em>"
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
 msgstr ""
-"Accesso effettuato come <strong>%(first_name)s %(last_name)s</strong> <em>"
-"(%(username)s)</em>"
+"Accesso effettuato come <strong>%(first_name)s %(last_name)s</strong> "
+"<em>(%(username)s)</em>"
 
 msgid "Logout"
 msgstr "Logout"
@@ -1027,6 +1033,3 @@ msgstr "Dettagli del test"
 
 msgid "Evaluation outcome"
 msgstr "Valutazione"
-
-msgid "Executed"
-msgstr "Eseguito"

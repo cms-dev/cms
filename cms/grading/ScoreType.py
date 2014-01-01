@@ -202,7 +202,7 @@ class ScoreTypeGroup(ScoreTypeAlone):
                     <td>{{ format_status_text(tc["text"], _) }}</td>
                     <td>
             {% if "time" in tc and tc["time"] is not None %}
-                        {{ "%(seconds)0.3f s" % {'seconds': tc["time"]} }}
+                        {{ _("%(seconds)0.3f s") % {'seconds': tc["time"]} }}
             {% else %}
                         {{ _("N/A") }}
             {% end %}
