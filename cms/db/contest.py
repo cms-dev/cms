@@ -82,8 +82,7 @@ class Contest(Base):
     #   when to use them, subject to some limitations. Tokens may not
     #   be all available at start, but given periodically during the
     #   contest instead.
-    # - infinite: The user will (almost) always be able to use a token.
-    #   Some limitations may still apply.
+    # - infinite: The user will always be able to use a token.
     token_mode = Column(
         Enum("disabled", "finite", "infinite", name="token_mode"),
         nullable=False,
@@ -347,6 +346,10 @@ class Contest(Base):
         if token_mode == "disabled":
             return (0, None, None)
 
+        # If tokens are infinite there are always tokens available.
+        if token_mode == "infinite":
+            return (-1, None, None)
+
         # expiration is the timestamp at which all min_intervals for
         # the tokens played up to now have expired (i.e. the first
         # time at which we can play another token). If no tokens have
@@ -354,12 +357,6 @@ class Contest(Base):
         expiration = \
             token_timestamps[-1] + token_min_interval \
             if len(token_timestamps) > 0 else start
-
-        # If we have infinite tokens we don't need to simulate
-        # anything, since nothing gets consumed or generated. We can
-        # return immediately.
-        if token_mode == "infinite":
-            return (-1, None, expiration if expiration > timestamp else None)
 
         # If we already played the total number allowed, we don't have
         # anything left.

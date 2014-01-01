@@ -38,75 +38,47 @@
 
 
 {% if tokens_contest != 0 and tokens_tasks != 0 %}
-    {% set contest_token_min_interval = int(contest.token_min_interval.total_seconds()) %}
-    {% if tokens_contest >= 2 and tokens_tasks >= 2 %}
+    {% if tokens_contest == 2 and tokens_tasks == 2 %}
         <p>
-        {{ _("You have an infinite set of tokens.") }}
-        {{ _("You can use one of these tokens to see the detailed result of a submission.") }}
-        {{ _("Your score for each task will be the maximum among the tokened submissions and the last one.") }}
+        {{ _("You have an infinite number of tokens.") }}
         </p>
 
-        {% if tokens_contest == 2 %}
         <p>
-            {% if contest_token_min_interval == 1 %}
-        {{ _("You can use at most one token every second among all tasks.") }}
-            {% else %}
-        {{ _("You can use at most one token every %(min_interval)d seconds among all tasks.") % {"min_interval": contest_token_min_interval} }}
-            {% end %}
-            {% if tokens_tasks == 2 %}
-        {{ _("Tasks may pose further limitations on how often you can use tokens.") }}
-        {{ _("See the description page of each task for more information.") }}
-            {% end %}
+        {{ _("You can see the detailed result of a submission by using a token on it.") }}
+        {{ _("Your score for each task will be the maximum among the tokened submissions and the last one.") }}
         </p>
-        {% elif tokens_tasks == 2 %}
-        <p>
-        {{ _("Tasks may pose some limitations on how often you can use tokens.") }}
-        {{ _("See the description page of each task for more information.") }}
-        </p>
-        {% end %}
-    {% elif tokens_contest >= 2 %}
+    {% elif tokens_contest == 2 %}
         <p>
         {{ _("You have a distinct set of tokens for each task.") }}
-        {{ _("You can use one of these tokens to see the detailed result of a submission.") }}
-        {{ _("Your score for each task will be the maximum among the tokened submissions and the last one.") }}
+        {{ _("You can find the rules for the %(type_pl)s on each task's description page.") % {"type_pl": _("tokens")} }}
         </p>
 
         <p>
-        {{ _("You can find the rules for the tokens on the description page of each task.") }}
-        {% if tokens_contest == 2 %}
-            {% if contest_token_min_interval == 1 %}
-        {{ _("In addition to those rules, you can use at most one token every second among all tasks.") }}
-            {% else %}
-        {{ _("In addition to those rules, you can use at most one token every %(min_interval)d seconds among all tasks.") % {"min_interval": contest_token_min_interval} }}
-            {% end %}
-        {% end %}
+        {{ _("You can see the detailed result of a submission by using a token on it.") }}
+        {{ _("Your score for each task will be the maximum among the tokened submissions and the last one.") }}
         </p>
-    {% elif tokens_tasks >= 2 %}
+    {% elif tokens_tasks == 2 %}
         <p>
         {{ _("You have a set of tokens shared among all tasks.") }}
-        {{ _("You can use one of these tokens to see the detailed result of a submission.") }}
-        {{ _("Your score for each task will be the maximum among the tokened submissions and the last one.") }}
+        {% set tokens = {k[6:]: v for k, v in contest.__dict__.iteritems() if k.startswith("token_")} %}
+        {{ format_token_rules(tokens, locale=locale) }}
         </p>
 
         <p>
-        {% set tokens = {k[6:]: v for k, v in contest.__dict__.iteritems() if k.startswith("token_")} %}
-        {{ format_token_rules(tokens, locale=locale) }}
-        {% if tokens_tasks == 2 %}
-            {{ _("In addition to these rules, tasks may pose some limitations on how often you can use tokens.") }}
-            {{ _("See the description page of each task for more information.") }}
-        {% end %}
+        {{ _("You can see the detailed result of a submission by using a token on it.") }}
+        {{ _("Your score for each task will be the maximum among the tokened submissions and the last one.") }}
         </p>
     {% else %}
         <p>
         {% raw _("You have two types of tokens: a set of <em>contest-tokens</em> shared among all tasks and a distinct set of <em>task-tokens</em> for each task.") %}
-        {{ _("You can see the detailed result of a submission by using two tokens on it, one of each type.") }}
-        {{ _("Your score for each task will be the maximum among the tokened submissions and the last one.") }}
+        {% set tokens = {k[6:]: v for k, v in contest.__dict__.iteritems() if k.startswith("token_")} %}
+        {{ format_token_rules(tokens, t_type="contest", locale=locale) }}
+        {{ _("You can find the rules for the %(type_pl)s on each task's description page.") % {"type_pl": _("task-tokens")} }}
         </p>
 
         <p>
-        {% set tokens = {k[6:]: v for k, v in contest.__dict__.iteritems() if k.startswith("token_")} %}
-        {{ format_token_rules(tokens, t_type="contest", locale=locale) }}
-        {{ _("You can find the rules for the task-tokens on each task's description page.") }}
+        {{ _("You can see the detailed result of a submission by using two tokens on it, one of each type.") }}
+        {{ _("Your score for each task will be the maximum among the tokened submissions and the last one.") }}
         </p>
     {% end %}
 {% end %}
