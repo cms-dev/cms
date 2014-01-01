@@ -6,7 +6,8 @@
 
 <h2 id="title_general_info" class="toggling_on">General information</h2>
 <div id="general_info">
-  <form action="{{ url_root }}/add_user/{{ contest.id }}" method="POST">
+  <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+  <form enctype="multipart/form-data" action="{{ url_root }}/add_user/{{ contest.id }}" method="POST">
     <table>
       <tr>
         <td>First name</td>
@@ -39,7 +40,7 @@
       </tr>
       <tr>
         <td>First login time during contest</td>
-        <td><input type="text" name="starting_time" value="None"></td>
+        <td><input type="text" name="starting_time" value=""></td>
       </tr>
       <tr>
         <td>Extra time (in seconds)</td>

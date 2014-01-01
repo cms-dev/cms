@@ -156,7 +156,8 @@ function update_additional_answer(element, invoker)
 
 <h2 id="title_general_info" class="toggling_on">General Information</h2>
 <div id="general_info">
-  <form action="{{ url_root }}/user/{{ selected_user.id }}" method="POST">
+  <!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+  <form enctype="multipart/form-data" action="{{ url_root }}/user/{{ selected_user.id }}" method="POST">
     <table>
       <tr>
         <td>First name</td>

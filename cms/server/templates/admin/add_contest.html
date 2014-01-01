@@ -2,62 +2,6 @@
 
 {% block js %}
 
-function contest_response(response, error)
-{
-    if( error == null && response != null  && !isNaN(response))
-        window.location = url_root + "/contest/" + response;
-    else
-    {
-        utils.display_notification("error", new Date().getTime() / 1000, error, response);
-    }
-}
-
-function validate_contest()
-{
-    var name = document.add_contest.name.value;
-    var description = document.add_contest.description.value;
-    var languages = [];
-    var langInputs = document.add_contest.languages;
-    for (var i = 0; i < langInputs.length; i++)
-        if (langInputs[i].checked)
-            languages.push([langInputs[i].value);
-    var token_initial = document.add_contest.token_initial.value;
-    var token_max = document.add_contest.token_max.value;
-    var token_total = document.add_contest.token_total.value;
-    var token_min_interval = document.add_contest.token_min_interval.value;
-    var token_gen_time = document.add_contest.token_gen_time.value;
-    var token_gen_number = document.add_contest.token_gen_number.value;
-    var start = document.add_contest.start.value;
-    var end = document.add_contest.end.value;
-    var per_user_time = document.add_contest.per_user_time.value;
-
-    if (name === undefined || name == '')
-    {
-        alert('No contest name specified');
-        document.add_contest.name.focus();
-        return false;
-    }
-
-    par = "";
-    par += "&name=" + encodeURIComponent(name);
-    par += "&description=" + encodeURIComponent(description);
-    for (var i = 0; i < languages.length; i++)
-    {
-        par += "&languages=" + encodeURIComponent(languages[i]);
-    }
-    par += "&token_initial=" + encodeURIComponent(token_initial);
-    par += "&token_max=" + encodeURIComponent(token_max);
-    par += "&token_total=" + encodeURIComponent(token_total);
-    par += "&token_min_interval=" + encodeURIComponent(token_min_interval);
-    par += "&token_gen_time=" + encodeURIComponent(token_gen_time);
-    par += "&token_gen_number=" + encodeURIComponent(token_gen_number);
-    par += "&start=" + encodeURIComponent(start);
-    par += "&end=" + encodeURIComponent(end);
-    par += "&per_user_time=" + encodeURIComponent(per_user_time);
-
-    cmsutils.ajax_request(url_root + '/contest/add', par, contest_response, "POST");
-    return false;
-}
 {% end %}
 
 {% block core %}
@@ -65,7 +9,8 @@ function validate_contest()
   <h1>New contest</h1>
 </div>
 
-<form enctype="multipart/form-data" action="{{ url_root }}/contest/add" method="POST" name="add_contest" onsubmit="return validate_contest();">
+<!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
+<form enctype="multipart/form-data" action="{{ url_root }}/contest/add" method="POST" name="add_contest">
   <table class="sub_table">
     <tr>
       <td>Name</td>

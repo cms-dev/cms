@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -32,6 +32,7 @@ import pkg_resources
 import re
 import traceback
 from datetime import datetime, timedelta
+from functools import wraps
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
@@ -49,6 +50,7 @@ from cms.db import Session, Contest, User, Announcement, Question, Message, \
 from cms.db.filecacher import FileCacher
 from cms.grading import compute_changes_for_dataset
 from cms.grading.tasktypes import get_task_type_class
+from cms.grading.scoretypes import get_score_type_class
 from cms.server import file_handler_gen, get_url_root, \
     CommonRequestHandler
 from cmscommon.datetime import make_datetime, make_timestamp
@@ -81,62 +83,41 @@ def try_commit(session, handler):
         return True
 
 
-def valid_ip(ip_address):
-    """Return True if ip_address is a valid IPv4 address.
+def argument_reader(empty=None):
+    """Decorator factory to help reading and parsing form values.
 
-    ip_address (string): the ip to validate.
-
-    return (bool): True iff valid.
+    empty (object): the value to use in place of the empty string.
+    return (function): the decorator.
 
     """
-    ip_address, sep, subnet = ip_address.partition("/")
-    if sep != "":
-        try:
-            subnet = int(subnet)
-        except ValueError:
-            return False
-        if not 0 <= subnet < 32:
-            return False
-    fields = ip_address.split(".")
-    if len(fields) != 4:
-        return False
-    for field in fields:
-        try:
-            num = int(field)
-        except ValueError:
-            return False
-        if not 0 <= num < 256:
-            return False
-    return True
+    def decorator(func):
+        """Decorator to help reading and parsing form values.
 
+        func (function): a string-to-something parser.
+        return (function): the decorated function.
 
-def sanity_check_time_limit(time_limit):
-    if time_limit == "":
-        time_limit = None
-    else:
-        time_limit = float(time_limit)
-        assert 0 <= time_limit < float("+inf"), \
-            "Time limit out of range."
-    return time_limit
+        """
+        @wraps(func)
+        def wrapper(self, dest, name, empty=empty):
+            """Read the argument called "name" and save it in "dest".
 
+            Call the decorated function for additional parsing.
 
-def sanity_check_memory_limit(memory_limit):
-    if memory_limit == "":
-        memory_limit = None
-    else:
-        memory_limit = int(memory_limit)
-        assert 0 < memory_limit, "Invalid memory limit."
-    return memory_limit
+            self (RequestHandler): a thing with a get_argument method.
+            dest (dict): a place to store the obtained value.
+            name (string): the name of the argument and of the item.
+            empty (object): overrides the default empty value.
 
-
-def sanity_check_task_type_class(task_type):
-    # Look for a task type with the specified name.
-    try:
-        task_type_class = get_task_type_class(task_type)
-    except KeyError:
-        # Task type not found.
-        raise ValueError("Task type not recognized: %s." % task_type)
-    return task_type_class
+            """
+            value = self.get_argument(name, None)
+            if value is None:
+                return
+            if value == "":
+                dest[name] = empty
+            else:
+                dest[name] = func(value)
+        return wrapper
+    return decorator
 
 
 class BaseHandler(CommonRequestHandler):
@@ -253,37 +234,201 @@ class BaseHandler(CommonRequestHandler):
                 self.write("A critical error has occurred :-(")
                 self.finish()
 
-    def get_non_negative_int(self, argument_name, default, allow_empty=True):
-        """ Get a non-negative integer from the arguments.
+    @argument_reader(empty="")
+    def get_string(value):
+        """Parse a string."""
+        return value
 
-        Use default if the argument is missing; If allow_empty=False,
-        Empty values such as "" and None are not permitted (unless,
-        for "", if allow_empty is true.
+    # When a checkbox isn't active it's not sent at all, making it
+    # impossible to distinguish between missing and False.
+    def get_bool(self, dest, name):
+        """Parse a boolean.
 
-        argument_name (string): the name of the argument to query.
-        default (int): what to return if the argument is missing
-        allow_empty (bool): whether to return raise or not in case of
-            an empty argument.
-
-        return (int): the converted argument.
-
-        raise (ValueError): if the argument can't be converted into a
-            non-negative integer.
+        dest (dict): a place to store the result.
+        name (string): the name of the argument and of the item.
 
         """
-        argument = self.get_argument(argument_name, None)
-        if argument is None:
-            return default
-        if allow_empty and argument == "":
-            return None
+        value = self.get_argument(name, False)
         try:
-            argument = int(argument)
+            dest[name] = bool(value)
         except:
-            raise ValueError("%s: can't cast %s to int." %
-                             (argument_name, argument))
-        if argument < 0:
-            raise ValueError("%s is negative." % argument_name)
-        return argument
+            raise ValueError("Can't cast %s to bool." % value)
+
+    @argument_reader(empty=None)
+    def get_int(value):
+        """Parse an integer."""
+        try:
+            return int(value)
+        except:
+            raise ValueError("Can't cast %s to int." % value)
+
+    @argument_reader(empty=None)
+    def get_timedelta_sec(value):
+        """Parse a timedelta (as number of seconds)."""
+        try:
+            return timedelta(seconds=float(value))
+        except:
+            raise ValueError("Can't cast %s to timedelta." % value)
+
+    @argument_reader(empty=None)
+    def get_timedelta_min(value):
+        """Parse a timedelta (as number of minutes)."""
+        try:
+            return timedelta(minutes=float(value))
+        except:
+            raise ValueError("Can't cast %s to timedelta." % value)
+
+    @argument_reader(empty=None)
+    def get_datetime(value):
+        """Parse a datetime (in pseudo-ISO8601)."""
+        if '.' not in value:
+            value += ".0"
+        try:
+            return datetime.strptime(value, "%Y-%m-%d %H:%M:%S.%f")
+        except:
+            raise ValueError("Can't cast %s to datetime." % value)
+
+    @argument_reader(empty=None)
+    def get_ip_address_or_subnet(value):
+        """Validate an IP address or subnet."""
+        address, sep, subnet = value.partition("/")
+        if sep != "":
+            subnet = int(subnet)
+            assert 0 <= subnet < 32
+        fields = address.split(".")
+        assert len(fields) == 4
+        for field in fields:
+            num = int(field)
+            assert 0 <= num < 256
+        return value
+
+    def get_submission_format(self, dest):
+        """Parse the submission format.
+
+        Using the two arguments "submission_format_choice" and
+        "submission_format" set the "submission_format" item of the
+        given dictionary.
+
+        dest (dict): a place to store the result.
+
+        """
+        choice = self.get_argument("submission_format_choice", "other")
+        if choice == "simple":
+            filename = "%s.%%l" % dest["name"]
+            format_ = [SubmissionFormatElement(filename)]
+        elif choice == "other":
+            value = self.get_argument("submission_format", "[]")
+            if value == "":
+                value = "[]"
+            format_ = []
+            try:
+                for filename in json.loads(value):
+                    format_ += [SubmissionFormatElement(filename)]
+            except ValueError:
+                raise ValueError("Submission format not recognized.")
+        else:
+            raise ValueError("Submission format not recognized.")
+        dest["submission_format"] = format_
+
+    def get_time_limit(self, dest, field):
+        """Parse the time limit.
+
+        Read the argument with the given name and use its value to set
+        the "time_limit" item of the given dictionary.
+
+        dest (dict): a place to store the result.
+        field (string): the name of the argument to use.
+
+        """
+        value = self.get_argument(field, None)
+        if value is None:
+            return
+        if value == "":
+            dest["time_limit"] = None
+        else:
+            try:
+                value = float(value)
+            except:
+                raise ValueError("Can't cast %s to float." % value)
+            if not 0 <= value < float("+inf"):
+                raise ValueError("Time limit out of range.")
+            dest["time_limit"] = value
+
+    def get_memory_limit(self, dest, field):
+        """Parse the memory limit.
+
+        Read the argument with the given name and use its value to set
+        the "memory_limit" item of the given dictionary.
+
+        dest (dict): a place to store the result.
+        field (string): the name of the argument to use.
+
+        """
+        value = self.get_argument(field, None)
+        if value is None:
+            return
+        if value == "":
+            dest["memory_limit"] = None
+        else:
+            try:
+                value = int(value)
+            except:
+                raise ValueError("Can't cast %s to float." % value)
+            if not 0 < value:
+                raise ValueError("Invalid memory limit.")
+            dest["memory_limit"] = value
+
+    def get_task_type(self, dest, name, params):
+        """Parse the task type.
+
+        Parse the arguments to get the task type and its parameters,
+        and fill them in the "task_type" and "task_type_parameters"
+        items of the given dictionary.
+
+        dest (dict): a place to store the result.
+        name (string): the name of the argument that holds the task
+            type name.
+        params (string): the prefix of the names of the arguments that
+            hold the parameters.
+
+        """
+        name = self.get_argument(name, None)
+        if name is None:
+            raise ValueError("Task type not found.")
+        try:
+            class_ = get_task_type_class(name)
+        except KeyError:
+            raise ValueError("Task type not recognized: %s." % name)
+        params = json.dumps(class_.parse_handler(self, params + name + "_"))
+        dest["task_type"] = name
+        dest["task_type_parameters"] = params
+
+    def get_score_type(self, dest, name, params):
+        """Parse the score type.
+
+        Parse the arguments to get the score type and its parameters,
+        and fill them in the "score_type" and "score_type_parameters"
+        items of the given dictionary.
+
+        dest (dict): a place to store the result.
+        name (string): the name of the argument that holds the score
+            type name.
+        params (string): the name of the argument that hold the
+            parameters.
+
+        """
+        name = self.get_argument(name, None)
+        if name is None:
+            raise ValueError("Score type not found.")
+        try:
+            get_score_type_class(name)
+        except KeyError:
+            raise ValueError("Score type not recognized: %s." % name)
+        params = self.get_argument(params, None)
+        if params is None:
+            raise ValueError("Score type parameters not found.")
+        dest["score_type"] = name
+        dest["score_type_parameters"] = params
 
 
 FileHandler = file_handler_gen(BaseHandler)
@@ -458,105 +603,43 @@ class AddContestHandler(BaseHandler):
 
     def post(self):
         try:
-            name = self.get_argument("name", "")
-            assert name != "", "No contest name specified."
+            attrs = dict()
 
-            description = self.get_argument("description", "")
+            self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "description")
 
-            languages = self.get_arguments("languages", [])
+            assert attrs.get("name") is not None, "No contest name specified."
 
-            token_initial = self.get_non_negative_int(
-                "token_initial",
-                None)
-            token_max = self.get_non_negative_int(
-                "token_max",
-                None)
-            token_total = self.get_non_negative_int(
-                "token_total",
-                None)
-            token_min_interval = timedelta(
-                seconds=self.get_non_negative_int(
-                    "token_min_interval",
-                    0,
-                    allow_empty=False))
-            token_gen_time = timedelta(
-                minutes=self.get_non_negative_int(
-                    "token_gen_time",
-                    0,
-                    allow_empty=False))
-            token_gen_number = self.get_non_negative_int(
-                "token_gen_number",
-                0,
-                allow_empty=False)
+            attrs["languages"] = self.get_arguments("languages", [])
 
-            max_submission_number = self.get_non_negative_int(
-                "max_submission_number",
-                None)
-            max_user_test_number = self.get_non_negative_int(
-                "max_user_test_number",
-                None)
-            min_submission_interval = self.get_non_negative_int(
-                "min_submission_interval",
-                None)
-            if min_submission_interval is not None:
-                min_submission_interval = \
-                    timedelta(seconds=min_submission_interval)
-            min_user_test_interval = self.get_non_negative_int(
-                "min_user_test_interval",
-                None)
-            if min_user_test_interval is not None:
-                min_user_test_interval = \
-                    timedelta(seconds=min_user_test_interval)
+            self.get_int(attrs, "token_initial")
+            self.get_int(attrs, "token_max")
+            self.get_int(attrs, "token_total")
+            self.get_timedelta_sec(attrs, "token_min_interval")
+            self.get_timedelta_min(attrs, "token_gen_time")
+            self.get_int(attrs, "token_gen_number")
 
-            start = self.get_argument("start", "")
-            if start == "":
-                start = None
-            else:
-                if '.' not in start:
-                    start += ".0"
-                start = datetime.strptime(start, "%Y-%m-%d %H:%M:%S.%f")
+            self.get_int(attrs, "max_submission_number")
+            self.get_int(attrs, "max_user_test_number")
+            self.get_timedelta_sec(attrs, "min_submission_interval")
+            self.get_timedelta_sec(attrs, "min_user_test_interval")
 
-            stop = self.get_argument("stop", "")
-            if stop == "":
-                stop = None
-            else:
-                if '.' not in stop:
-                    stop += ".0"
-                stop = datetime.strptime(stop, "%Y-%m-%d %H:%M:%S.%f")
+            self.get_datetime(attrs, "start")
+            self.get_datetime(attrs, "stop")
 
-            assert start <= stop, "Contest ends before it starts."
+            self.get_string(attrs, "timezone", empty=None)
+            self.get_timedelta_sec(attrs, "per_user_time")
+            self.get_int(attrs, "score_precision")
 
-            timezone = self.get_argument("timezone", "")
-            if timezone == "":
-                timezone = None
-
-            per_user_time = self.get_non_negative_int(
-                "per_user_time",
-                None)
-            if per_user_time is not None:
-                per_user_time = timedelta(seconds=per_user_time)
-
-            score_precision = self.get_non_negative_int(
-                "score_precision",
-                0,
-                allow_empty=False)
+            # Create the contest.
+            contest = Contest(**attrs)
+            self.sql_session.add(contest)
 
         except Exception as error:
             self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field(s)",
-                repr(error))
+                make_datetime(), "Invalid field(s)", repr(error))
             self.redirect("/contest/add")
             return
-
-        contest = Contest(name, description, languages, token_initial,
-                          token_max, token_total, token_min_interval,
-                          token_gen_time, token_gen_number, start, stop,
-                          timezone, per_user_time,
-                          max_submission_number, max_user_test_number,
-                          min_submission_interval, min_user_test_interval,
-                          score_precision)
-        self.sql_session.add(contest)
 
         if try_commit(self.sql_session, self):
             # Create the contest on RWS.
@@ -577,108 +660,40 @@ class ContestHandler(BaseHandler):
         contest = self.safe_get_item(Contest, contest_id)
 
         try:
-            contest.name = self.get_argument("name", contest.name)
-            assert contest.name != "", "No contest name specified."
+            attrs = contest.get_attrs()
 
-            contest.description = self.get_argument("description",
-                                                    contest.description)
+            self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "description")
 
-            contest.languages = self.get_arguments("languages", [])
+            assert attrs.get("name") is not None, "No contest name specified."
 
-            contest.token_initial = self.get_non_negative_int(
-                "token_initial",
-                contest.token_initial)
-            contest.token_max = self.get_non_negative_int(
-                "token_max",
-                contest.token_max)
-            contest.token_total = self.get_non_negative_int(
-                "token_total",
-                contest.token_total)
-            contest.token_min_interval = timedelta(
-                seconds=self.get_non_negative_int(
-                    "token_min_interval",
-                    contest.token_min_interval.total_seconds(),
-                    allow_empty=False))
-            contest.token_gen_time = timedelta(
-                minutes=self.get_non_negative_int(
-                    "token_gen_time",
-                    contest.token_gen_time.total_seconds(),
-                    allow_empty=False))
-            contest.token_gen_number = self.get_non_negative_int(
-                "token_gen_number",
-                contest.token_gen_number,
-                allow_empty=False)
+            attrs["languages"] = self.get_arguments("languages", [])
 
-            contest.max_submission_number = self.get_non_negative_int(
-                "max_submission_number",
-                contest.max_submission_number)
-            contest.max_user_test_number = self.get_non_negative_int(
-                "max_user_test_number",
-                contest.max_user_test_number)
-            contest.min_submission_interval = self.get_non_negative_int(
-                "min_submission_interval",
-                contest.min_submission_interval.total_seconds() if
-                contest.min_submission_interval is not None else None)
-            if contest.min_submission_interval is not None:
-                contest.min_submission_interval = \
-                    timedelta(seconds=contest.min_submission_interval)
-            contest.min_user_test_interval = self.get_non_negative_int(
-                "min_user_test_interval",
-                contest.min_user_test_interval.total_seconds() if
-                contest.min_user_test_interval is not None else None)
-            if contest.min_user_test_interval is not None:
-                contest.min_user_test_interval = \
-                    timedelta(seconds=contest.min_user_test_interval)
+            self.get_int(attrs, "token_initial")
+            self.get_int(attrs, "token_max")
+            self.get_int(attrs, "token_total")
+            self.get_timedelta_sec(attrs, "token_min_interval")
+            self.get_timedelta_min(attrs, "token_gen_time")
+            self.get_int(attrs, "token_gen_number")
 
-            contest.start = self.get_argument(
-                "start",
-                str(contest.start) if contest.start is not None else "")
-            if contest.start == "":
-                contest.start = None
-            else:
-                if '.' not in contest.start:
-                    contest.start += ".0"
-                contest.start = datetime.strptime(contest.start,
-                                                  "%Y-%m-%d %H:%M:%S.%f")
+            self.get_int(attrs, "max_submission_number")
+            self.get_int(attrs, "max_user_test_number")
+            self.get_timedelta_sec(attrs, "min_submission_interval")
+            self.get_timedelta_sec(attrs, "min_user_test_interval")
 
-            contest.stop = self.get_argument(
-                "stop",
-                str(contest.stop) if contest.stop is not None else "")
-            if contest.stop == "":
-                contest.stop = None
-            else:
-                if '.' not in contest.stop:
-                    contest.stop += ".0"
-                contest.stop = datetime.strptime(contest.stop,
-                                                 "%Y-%m-%d %H:%M:%S.%f")
+            self.get_datetime(attrs, "start")
+            self.get_datetime(attrs, "stop")
 
-            assert contest.start <= contest.stop, \
-                "Contest ends before it starts."
+            self.get_string(attrs, "timezone", empty=None)
+            self.get_timedelta_sec(attrs, "per_user_time")
+            self.get_int(attrs, "score_precision")
 
-            contest.timezone = self.get_argument(
-                "timezone",
-                contest.timezone if contest.timezone is not None else "")
-            if contest.timezone == "":
-                contest.timezone = None
-
-            contest.per_user_time = self.get_non_negative_int(
-                "per_user_time",
-                contest.per_user_time.total_seconds() if
-                contest.per_user_time is not None else None)
-            if contest.per_user_time is not None:
-                contest.per_user_time = \
-                    timedelta(seconds=contest.per_user_time)
-
-            contest.score_precision = self.get_non_negative_int(
-                "score_precision",
-                contest.score_precision,
-                allow_empty=False)
+            # Update the contest.
+            contest.set_attrs(attrs)
 
         except Exception as error:
             self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field(s).",
-                repr(error))
+                make_datetime(), "Invalid field(s).", repr(error))
             self.redirect("/contest/%s" % contest_id)
             return
 
@@ -1004,11 +1019,14 @@ class AddDatasetHandler(BaseHandler):
             except ValueError:
                 raise tornado.web.HTTPError(404)
 
-        description = self.get_argument("description", "")
+        try:
+            attrs = dict()
 
-        # Ensure description is unique.
-        for d in task.datasets:
-            if d.description == description:
+            self.get_string(attrs, "description")
+
+            # Ensure description is unique.
+            if any(attrs["description"] == d.description
+                   for d in task.datasets):
                 self.application.service.add_notification(
                     make_datetime(),
                     "Dataset name \"%s\" is already taken." % description,
@@ -1017,39 +1035,23 @@ class AddDatasetHandler(BaseHandler):
                                                       dataset_id_to_copy))
                 return
 
-        try:
-            time_limit = sanity_check_time_limit(
-                self.get_argument("time_limit", ""))
-            memory_limit = sanity_check_memory_limit(
-                self.get_argument("memory_limit", ""))
-            task_type = self.get_argument("task_type", "")
-            task_type_class = sanity_check_task_type_class(task_type)
-            task_type_parameters = json.dumps(
-                task_type_class.parse_handler(
-                    self, "TaskTypeOptions_%s_" % task_type))
-            score_type = self.get_argument("score_type", "")
-            score_type_parameters = self.get_argument("score_type_parameters",
-                                                      "")
+            self.get_time_limit(attrs, "time_limit")
+            self.get_memory_limit(attrs, "memory_limit")
+            self.get_task_type(attrs, "task_type", "TaskTypeOptions_")
+            self.get_score_type(attrs, "score_type", "score_type_parameters")
+
+            # Create the dataset.
+            attrs["autojudge"] = False
+            attrs["task"] = task
+            dataset = Dataset(**attrs)
+            self.sql_session.add(dataset)
 
         except Exception as error:
             logger.warning("Invalid field: %s" % (traceback.format_exc()))
             self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field(s)",
-                repr(error))
-            self.redirect("/add_dataset/%s/%s" % (task_id,
-                                                  dataset_id_to_copy))
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect("/add_dataset/%s/%s" % (task_id, dataset_id_to_copy))
             return
-
-        # Add new dataset.
-        autojudge = False
-        dataset = Dataset(
-            description, autojudge,
-            time_limit, memory_limit,
-            task_type, task_type_parameters,
-            score_type, score_type_parameters,
-            task=task)
-        self.sql_session.add(dataset)
 
         if original_dataset is not None:
             # If we were cloning the dataset, copy all testcases across
@@ -1095,14 +1097,14 @@ class RenameDatasetHandler(BaseHandler):
         description = self.get_argument("description", "")
 
         # Ensure description is unique.
-        for d in task.datasets:
-            if d is not dataset and d.description == description:
-                self.application.service.add_notification(
-                    make_datetime(),
-                    "Dataset name \"%s\" is already taken." % description,
-                    "Please choose a unique name for this dataset.")
-                self.redirect("/rename_dataset/%s" % dataset_id)
-                return
+        if any(description == d.description
+               for d in task.datasets if d is not dataset):
+            self.application.service.add_notification(
+                make_datetime(),
+                "Dataset name \"%s\" is already taken." % description,
+                "Please choose a unique name for this dataset.")
+            self.redirect("/rename_dataset/%s" % dataset_id)
+            return
 
         dataset.description = description
 
@@ -1330,128 +1332,66 @@ class AddTaskHandler(BaseHandler):
         self.contest = self.safe_get_item(Contest, contest_id)
 
         try:
-            name = self.get_argument("name", "")
-            assert name != "", "No task name specified."
+            attrs = dict()
 
-            title = self.get_argument("title", "")
+            self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "title")
 
-            primary_statements = self.get_argument("primary_statements", "[]")
+            assert attrs.get("name") is not None, "No task name specified."
 
-            submission_format_choice = self.get_argument(
-                "submission_format_choice", "")
+            self.get_string(attrs, "primary_statements")
 
-            if submission_format_choice == "simple":
-                submission_format = [SubmissionFormatElement("%s.%%l" % name)]
-            elif submission_format_choice == "other":
-                submission_format = self.get_argument("submission_format", "")
-                if submission_format not in ["", "[]"]:
-                    try:
-                        format_list = json.loads(submission_format)
-                        submission_format = []
-                        for element in format_list:
-                            submission_format.append(SubmissionFormatElement(
-                                str(element)))
-                    except Exception as error:
-                        # FIXME Are the following two commands really needed?
-                        self.sql_session.rollback()
-                        logger.info(repr(error))
-                        raise ValueError("Submission format not recognized.")
-            else:
-                raise ValueError("Submission format not recognized.")
+            self.get_submission_format(attrs)
 
-            token_initial = self.get_non_negative_int(
-                "token_initial",
-                None)
-            token_max = self.get_non_negative_int(
-                "token_max",
-                None)
-            token_total = self.get_non_negative_int(
-                "token_total",
-                None)
-            token_min_interval = timedelta(
-                seconds=self.get_non_negative_int(
-                    "token_min_interval",
-                    0,
-                    allow_empty=False))
-            token_gen_time = timedelta(
-                minutes=self.get_non_negative_int(
-                    "token_gen_time",
-                    0,
-                    allow_empty=False))
-            token_gen_number = self.get_non_negative_int(
-                "token_gen_number",
-                0,
-                allow_empty=False)
+            self.get_int(attrs, "token_initial")
+            self.get_int(attrs, "token_max")
+            self.get_int(attrs, "token_total")
+            self.get_timedelta_sec(attrs, "token_min_interval")
+            self.get_timedelta_min(attrs, "token_gen_time")
+            self.get_int(attrs, "token_gen_number")
 
-            max_submission_number = self.get_non_negative_int(
-                "max_submission_number",
-                None)
-            max_user_test_number = self.get_non_negative_int(
-                "max_user_test_number",
-                None)
-            min_submission_interval = self.get_non_negative_int(
-                "min_submission_interval",
-                None)
-            if min_submission_interval is not None:
-                min_submission_interval = \
-                    timedelta(seconds=min_submission_interval)
-            min_user_test_interval = self.get_non_negative_int(
-                "min_user_test_interval",
-                None)
-            if min_user_test_interval is not None:
-                min_user_test_interval = \
-                    timedelta(seconds=min_user_test_interval)
+            self.get_int(attrs, "max_submission_number")
+            self.get_int(attrs, "max_user_test_number")
+            self.get_timedelta_sec(attrs, "min_submission_interval")
+            self.get_timedelta_sec(attrs, "min_user_test_interval")
 
-            score_precision = self.get_non_negative_int(
-                "score_precision",
-                0,
-                allow_empty=False)
+            self.get_int(attrs, "score_precision")
 
-            # These belong to the first dataset.
-            time_limit = sanity_check_time_limit(
-                self.get_argument("time_limit", ""))
-            memory_limit = sanity_check_memory_limit(
-                self.get_argument("memory_limit", ""))
-            task_type = self.get_argument("task_type", "")
-            task_type_class = sanity_check_task_type_class(task_type)
-            task_type_parameters = json.dumps(
-                task_type_class.parse_handler(
-                    self, "TaskTypeOptions_%s_" % task_type))
-            score_type = self.get_argument("score_type", "")
-            score_type_parameters = self.get_argument("score_type_parameters",
-                                                      "")
+            # Create the task.
+            attrs["num"] = len(self.contest.tasks)
+            attrs["contest"] = self.contest
+            task = Task(**attrs)
+            self.sql_session.add(task)
 
         except Exception as error:
             self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field(s)",
-                repr(error))
+                make_datetime(), "Invalid field(s)", repr(error))
             self.redirect("/add_task/%s" % contest_id)
             return
 
-        task = Task(len(self.contest.tasks),
-                    name, title, primary_statements,
-                    token_initial, token_max, token_total,
-                    token_min_interval, token_gen_time, token_gen_number,
-                    max_submission_number, max_user_test_number,
-                    min_submission_interval, min_user_test_interval,
-                    score_precision, contest=self.contest,
-                    submission_format=submission_format)
-        self.sql_session.add(task)
+        try:
+            attrs = dict()
 
-        # Create its first dataset.
-        description = 'Default'
-        autojudge = True
-        dataset = Dataset(
-            description, autojudge,
-            time_limit, memory_limit,
-            task_type, task_type_parameters,
-            score_type, score_type_parameters,
-            task=task)
-        self.sql_session.add(dataset)
+            self.get_time_limit(attrs, "time_limit")
+            self.get_memory_limit(attrs, "memory_limit")
+            self.get_task_type(attrs, "task_type", "TaskTypeOptions_")
+            self.get_score_type(attrs, "score_type", "score_type_parameters")
 
-        # Make the dataset active. Life works better that way.
-        task.active_dataset = dataset
+            # Create its first dataset.
+            attrs["description"] = "Default"
+            attrs["autojudge"] = True
+            attrs["task"] = task
+            dataset = Dataset(**attrs)
+            self.sql_session.add(dataset)
+
+            # Make the dataset active. Life works better that way.
+            task.active_dataset = dataset
+
+        except Exception as error:
+            self.application.service.add_notification(
+                make_datetime(), "Invalid field(s)", repr(error))
+            self.redirect("/add_task/%s" % contest_id)
+            return
 
         if try_commit(self.sql_session, self):
             # Create the task on RWS.
@@ -1482,123 +1422,63 @@ class TaskHandler(BaseHandler):
         self.contest = task.contest
 
         try:
-            task.name = self.get_argument("name", task.name)
-            assert task.name != "", "No task name specified."
+            attrs = task.get_attrs()
 
-            task.title = self.get_argument("title", task.title)
+            self.get_string(attrs, "name", empty=None)
+            self.get_string(attrs, "title")
 
-            task.primary_statements = self.get_argument(
-                "primary_statements", task.primary_statements)
+            assert attrs.get("name") is not None, "No task name specified."
 
-            # submission_format_choice == "other"
-            submission_format = self.get_argument("submission_format", "")
-            if submission_format not in ["", "[]"] and submission_format != \
-                    json.dumps([x.filename for x in task.submission_format]):
-                try:
-                    format_list = json.loads(submission_format)
-                    for element in task.submission_format:
-                        self.sql_session.delete(element)
-                    del task.submission_format[:]
-                    for element in format_list:
-                        self.sql_session.add(
-                            SubmissionFormatElement(str(element), task=task))
-                except Exception as error:
-                    # FIXME Are the following two commands really needed?
-                    self.sql_session.rollback()
-                    logger.info(repr(error))
-                    raise ValueError("Submission format not recognized.")
+            self.get_string(attrs, "primary_statements")
 
-            for dataset in task.datasets:
-                dataset.time_limit = sanity_check_time_limit(
-                    self.get_argument(
-                        "time_limit_%d" % dataset.id,
-                        str(dataset.time_limit)
-                        if dataset.time_limit is not None else ""))
+            self.get_submission_format(attrs)
 
-                dataset.memory_limit = sanity_check_memory_limit(
-                    self.get_argument(
-                        "memory_limit_%d" % dataset.id,
-                        str(dataset.memory_limit)
-                        if dataset.memory_limit is not None else ""))
+            self.get_int(attrs, "token_initial")
+            self.get_int(attrs, "token_max")
+            self.get_int(attrs, "token_total")
+            self.get_timedelta_sec(attrs, "token_min_interval")
+            self.get_timedelta_min(attrs, "token_gen_time")
+            self.get_int(attrs, "token_gen_number")
 
-                dataset.task_type = self.get_argument(
-                    "task_type_%d" % dataset.id, "")
-                # Look for a task type with the specified name.
-                task_type_class = \
-                    sanity_check_task_type_class(dataset.task_type)
+            self.get_int(attrs, "max_submission_number")
+            self.get_int(attrs, "max_user_test_number")
+            self.get_timedelta_sec(attrs, "min_submission_interval")
+            self.get_timedelta_sec(attrs, "min_user_test_interval")
 
-                dataset.task_type_parameters = json.dumps(
-                    task_type_class.parse_handler(
-                        self, "TaskTypeOptions_%s_%d_" % (
-                            dataset.task_type, dataset.id)))
+            self.get_int(attrs, "score_precision")
 
-                dataset.score_type = self.get_argument(
-                    "score_type_%d" % dataset.id, dataset.score_type)
-                dataset.score_type_parameters = self.get_argument(
-                    "score_type_parameters_%d" % dataset.id,
-                    dataset.score_type_parameters)
-
-                for testcase in dataset.testcases.itervalues():
-                    testcase.public = bool(self.get_argument(
-                        "testcase_%s_public" % testcase.id, False))
-
-            task.token_initial = self.get_non_negative_int(
-                "token_initial",
-                task.token_initial)
-            task.token_max = self.get_non_negative_int(
-                "token_max",
-                task.token_max)
-            task.token_total = self.get_non_negative_int(
-                "token_total",
-                task.token_total)
-            task.token_min_interval = timedelta(
-                seconds=self.get_non_negative_int(
-                    "token_min_interval",
-                    task.token_min_interval.total_seconds(),
-                    allow_empty=False))
-            task.token_gen_time = timedelta(
-                minutes=self.get_non_negative_int(
-                    "token_gen_time",
-                    task.token_gen_time.total_seconds(),
-                    allow_empty=False))
-            task.token_gen_number = self.get_non_negative_int(
-                "token_gen_number",
-                task.token_gen_number,
-                allow_empty=False)
-
-            task.max_submission_number = self.get_non_negative_int(
-                "max_submission_number",
-                task.max_submission_number)
-            task.max_user_test_number = self.get_non_negative_int(
-                "max_user_test_number",
-                task.max_user_test_number)
-            task.min_submission_interval = self.get_non_negative_int(
-                "min_submission_interval",
-                task.min_submission_interval.total_seconds() if
-                task.min_submission_interval is not None else None)
-            if task.min_submission_interval is not None:
-                task.min_submission_interval = \
-                    timedelta(seconds=task.min_submission_interval)
-            task.min_user_test_interval = self.get_non_negative_int(
-                "min_user_test_interval",
-                task.min_user_test_interval.total_seconds() if
-                task.min_user_test_interval is not None else None)
-            if task.min_user_test_interval is not None:
-                task.min_user_test_interval = \
-                    timedelta(seconds=task.min_user_test_interval)
-
-            task.score_precision = self.get_non_negative_int(
-                "score_precision",
-                task.score_precision,
-                allow_empty=False)
+            # Update the task.
+            task.set_attrs(attrs)
 
         except Exception as error:
             self.application.service.add_notification(
-                make_datetime(),
-                "Invalid field(s)",
-                repr(error))
+                make_datetime(), "Invalid field(s)", repr(error))
             self.redirect("/task/%s" % task_id)
             return
+
+        for dataset in task.datasets:
+            try:
+                attrs = dataset.get_attrs()
+
+                self.get_time_limit(attrs, "time_limit_%d" % dataset.id)
+                self.get_memory_limit(attrs, "memory_limit_%d" % dataset.id)
+                self.get_task_type(attrs, "task_type_%d" % dataset.id,
+                                   "TaskTypeOptions_%d_" % dataset.id)
+                self.get_score_type(attrs, "score_type_%d" % dataset.id,
+                                    "score_type_parameters_%d" % dataset.id)
+
+                # Update the dataset.
+                dataset.set_attrs(attrs)
+
+            except Exception as error:
+                self.application.service.add_notification(
+                    make_datetime(), "Invalid field(s)", repr(error))
+                self.redirect("/task/%s" % task_id)
+                return
+
+            for testcase in dataset.testcases.itervalues():
+                testcase.public = bool(self.get_argument(
+                    "testcase_%s_public" % testcase.id, False))
 
         if try_commit(self.sql_session, self):
             # Update the task on RWS.
@@ -1718,70 +1598,35 @@ class UserViewHandler(BaseHandler):
         user = self.safe_get_item(User, user_id)
         self.contest = user.contest
 
-        user.first_name = self.get_argument("first_name", user.first_name)
-        user.last_name = self.get_argument("last_name", user.last_name)
-        user.username = self.get_argument("username", user.username)
-
-        if user.username == "":
-            self.application.service.add_notification(
-                make_datetime(),
-                "No username specified.",
-                "")
-            self.redirect("/user/%s" % user_id)
-            return
-
-        user.password = self.get_argument("password", user.password)
-        user.email = self.get_argument("email", user.email)
-
-        user.ip = self.get_argument("ip", None)
-        if user.ip == '':
-            user.ip = None
-        if user.ip is not None and not valid_ip(user.ip):
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid ip",
-                "")
-            self.redirect("/user/%s" % user_id)
-            return
-
-        user.timezone = self.get_argument("timezone", None)
-
-        starting_time = None
-        if self.get_argument("starting_time", "") not in ["", "None"]:
-            try:
-                try:
-                    starting_time = datetime.strptime(
-                        self.get_argument("starting_time"),
-                        "%Y-%m-%d %H:%M:%S")
-                except ValueError:
-                    starting_time = datetime.strptime(
-                        self.get_argument("starting_time"),
-                        "%Y-%m-%d %H:%M:%S.%f")
-            except Exception as error:
-                self.application.service.add_notification(
-                    make_datetime(),
-                    "Invalid starting time(s).",
-                    repr(error))
-                self.redirect("/user/%s" % user_id)
-                return
-        user.starting_time = starting_time
-
-        user.extra_time = self.get_argument(
-            "extra_time",
-            str(int(user.extra_time.total_seconds())))
         try:
-            user.extra_time = timedelta(seconds=int(user.extra_time))
+            attrs = user.get_attrs()
+
+            self.get_string(attrs, "first_name")
+            self.get_string(attrs, "last_name")
+            self.get_string(attrs, "username", empty=None)
+            self.get_string(attrs, "password")
+            self.get_string(attrs, "email")
+
+            assert attrs.get("username") is not None, \
+                    "No username specified."
+
+            self.get_ip_address_or_subnet(attrs, "ip")
+
+            self.get_string(attrs, "timezone", empty=None)
+            self.get_datetime(attrs, "starting_time")
+            self.get_timedelta_sec(attrs, "extra_time")
+
+            self.get_bool(attrs, "hidden")
+            self.get_string(attrs, "primary_statements")
+
+            # Update the user.
+            user.set_attrs(attrs)
+
         except Exception as error:
             self.application.service.add_notification(
-                make_datetime(),
-                "Invalid extra time.",
-                repr(error))
+                make_datetime(), "Invalid field(s)", repr(error))
             self.redirect("/user/%s" % user_id)
             return
-
-        user.hidden = bool(self.get_argument("hidden", False))
-        user.primary_statements = self.get_argument("primary_statements",
-                                                    user.primary_statements)
 
         if try_commit(self.sql_session, self):
             # Update the user on RWS.
@@ -1793,74 +1638,37 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
     def post(self, contest_id):
         self.contest = self.safe_get_item(Contest, contest_id)
 
-        first_name = self.get_argument("first_name", "")
-        last_name = self.get_argument("last_name", "")
-        username = self.get_argument("username", "")
-
-        if username == "":
-            self.application.service.add_notification(
-                make_datetime(),
-                "No username specified.",
-                "")
-            self.redirect("/add_user/%s" % contest_id)
-            return
-
-        password = self.get_argument("password", "")
-        email = self.get_argument("email", None)
-
-        ip_address = self.get_argument("ip", None)
-        if ip_address == '':
-            ip_address = None
-        if ip_address is not None and not valid_ip(ip_address):
-            self.application.service.add_notification(
-                make_datetime(),
-                "Invalid ip",
-                "")
-            self.redirect("/add_user/%s" % contest_id)
-            return
-
-        timezone = self.get_argument("timezone", None)
-
-        starting_time = None
-        if self.get_argument("starting_time", "") not in ["", "None"]:
-            try:
-                try:
-                    starting_time = datetime.strptime(
-                        self.get_argument("starting_time"),
-                        "%Y-%m-%d %H:%M:%S")
-                except ValueError:
-                    starting_time = datetime.strptime(
-                        self.get_argument("starting_time"),
-                        "%Y-%m-%d %H:%M:%S.%f")
-            except Exception as error:
-                self.application.service.add_notification(
-                    make_datetime(),
-                    "Invalid starting time(s).",
-                    repr(error))
-                self.redirect("/add_user/%s" % contest_id)
-                return
-
-        extra_time = self.get_argument("extra_time", 0)
         try:
-            extra_time = timedelta(seconds=int(extra_time))
+            attrs = dict()
+
+            self.get_string(attrs, "first_name")
+            self.get_string(attrs, "last_name")
+            self.get_string(attrs, "username", empty=None)
+            self.get_string(attrs, "password")
+            self.get_string(attrs, "email")
+
+            assert attrs.get("username") is not None, \
+                    "No username specified."
+
+            self.get_ip_address_or_subnet(attrs, "ip")
+
+            self.get_string(attrs, "timezone", empty=None)
+            self.get_datetime(attrs, "starting_time")
+            self.get_timedelta_sec(attrs, "extra_time")
+
+            self.get_bool(attrs, "hidden")
+            self.get_string(attrs, "primary_statements")
+
+            # Create the user.
+            attrs["contest"] = self.contest
+            user = User(**attrs)
+            self.sql_session.add(user)
+
         except Exception as error:
             self.application.service.add_notification(
-                make_datetime(),
-                "Invalid extra time.",
-                repr(error))
+                make_datetime(), "Invalid field(s)", repr(error))
             self.redirect("/add_user/%s" % contest_id)
             return
-
-        hidden = bool(self.get_argument("hidden", False))
-        primary_statements = self.get_argument("primary_statements", "{}")
-
-        user = User(first_name, last_name, username, password=password,
-                    email=email, ip=ip_address, hidden=hidden,
-                    primary_statements=primary_statements,
-                    timezone=timezone, starting_time=starting_time,
-                    extra_time=extra_time,
-                    contest=self.contest)
-        self.sql_session.add(user)
 
         if try_commit(self.sql_session, self):
             # Create the user on RWS.

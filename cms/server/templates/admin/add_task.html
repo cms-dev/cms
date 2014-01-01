@@ -22,6 +22,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
   <h1>New task</h1>
 </div>
 
+<!-- We use "multipart/form-data" to have Tornado distinguish between missing and empty values. -->
 <form enctype="multipart/form-data" action="{{ url_root }}/add_task/{{ contest.id }}" method="post" >
   <h2 id="title_task_information" class="toggling_on">Task information</h2>
 
@@ -94,7 +95,7 @@ $("select[name=task_type]").change(showTaskTypeOption);
             <tr>
                 <td>{{ param_def.name }}</td>
                 <td>
-                    {% raw param_def.render( "TaskTypeOptions_%s_" % task_type.__name__) %}
+                    {% raw param_def.render("TaskTypeOptions_%s_" % task_type.__name__) %}
                 </td>
             </tr>
           {% end %}
