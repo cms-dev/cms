@@ -23,6 +23,7 @@
 """
 
 from __future__ import absolute_import
+from __future__ import unicode_literals
 
 from sqlalchemy.schema import Column, ForeignKey, ForeignKeyConstraint, \
     UniqueConstraint

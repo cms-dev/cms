@@ -20,6 +20,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+
 import io
 import logging
 import os
@@ -37,6 +40,14 @@ from cmscontrib import touch
 
 
 logger = logging.getLogger(__name__)
+
+
+# Patch PyYAML to make it load all strings as unicode instead of str
+# (see http://stackoverflow.com/questions/2890146).
+def construct_yaml_str(self, node):
+    return self.construct_scalar(node)
+yaml.Loader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
+yaml.SafeLoader.add_constructor("tag:yaml.org,2002:str", construct_yaml_str)
 
 
 def load(src, dst, src_name, dst_name=None, conv=lambda i: i):
