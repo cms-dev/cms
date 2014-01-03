@@ -32,7 +32,6 @@ import pkg_resources
 import re
 import traceback
 from datetime import datetime, timedelta
-from functools import wraps
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
@@ -83,41 +82,81 @@ def try_commit(session, handler):
         return True
 
 
-def argument_reader(empty=None):
-    """Decorator factory to help reading and parsing form values.
+def argument_reader(func, empty=None):
+    """Return an helper method for reading and parsing form values.
 
-    empty (object): the value to use in place of the empty string.
-    return (function): the decorator.
+    func (function): the parser and validator for the value.
+    empty (object): the value to store if an empty string is retrieved.
+
+    return (function): a function to be used as a method of a
+        RequestHandler.
 
     """
-    def decorator(func):
-        """Decorator to help reading and parsing form values.
+    def helper(self, dest, name, empty=empty):
+        """Read the argument called "name" and save it in "dest".
 
-        func (function): a string-to-something parser.
-        return (function): the decorated function.
+        self (RequestHandler): a thing with a get_argument method.
+        dest (dict): a place to store the obtained value.
+        name (string): the name of the argument and of the item.
+        empty (object): overrides the default empty value.
 
         """
-        @wraps(func)
-        def wrapper(self, dest, name, empty=empty):
-            """Read the argument called "name" and save it in "dest".
+        value = self.get_argument(name, None)
+        if value is None:
+            return
+        if value == "":
+            dest[name] = empty
+        else:
+            dest[name] = func(value)
+    return helper
 
-            Call the decorated function for additional parsing.
 
-            self (RequestHandler): a thing with a get_argument method.
-            dest (dict): a place to store the obtained value.
-            name (string): the name of the argument and of the item.
-            empty (object): overrides the default empty value.
+def parse_int(value):
+    """Parse and validate an integer."""
+    try:
+        return int(value)
+    except:
+        raise ValueError("Can't cast %s to int." % value)
 
-            """
-            value = self.get_argument(name, None)
-            if value is None:
-                return
-            if value == "":
-                dest[name] = empty
-            else:
-                dest[name] = func(value)
-        return wrapper
-    return decorator
+
+def parse_timedelta_sec(value):
+    """Parse and validate a timedelta (as number of seconds)."""
+    try:
+        return timedelta(seconds=float(value))
+    except:
+        raise ValueError("Can't cast %s to timedelta." % value)
+
+
+def parse_timedelta_min(value):
+    """Parse and validate a timedelta (as number of minutes)."""
+    try:
+        return timedelta(minutes=float(value))
+    except:
+        raise ValueError("Can't cast %s to timedelta." % value)
+
+
+def parse_datetime(value):
+    """Parse and validate a datetime (in pseudo-ISO8601)."""
+    if '.' not in value:
+        value += ".0"
+    try:
+        return datetime.strptime(value, "%Y-%m-%d %H:%M:%S.%f")
+    except:
+        raise ValueError("Can't cast %s to datetime." % value)
+
+
+def parse_ip_address_or_subnet(value):
+    """Validate an IP address or subnet."""
+    address, sep, subnet = value.partition("/")
+    if sep != "":
+        subnet = int(subnet)
+        assert 0 <= subnet < 32
+    fields = address.split(".")
+    assert len(fields) == 4
+    for field in fields:
+        num = int(field)
+        assert 0 <= num < 256
+    return value
 
 
 class BaseHandler(CommonRequestHandler):
@@ -234,10 +273,7 @@ class BaseHandler(CommonRequestHandler):
                 self.write("A critical error has occurred :-(")
                 self.finish()
 
-    @argument_reader(empty="")
-    def get_string(value):
-        """Parse a string."""
-        return value
+    get_string = argument_reader(lambda a: a, empty="")
 
     # When a checkbox isn't active it's not sent at all, making it
     # impossible to distinguish between missing and False.
@@ -254,53 +290,15 @@ class BaseHandler(CommonRequestHandler):
         except:
             raise ValueError("Can't cast %s to bool." % value)
 
-    @argument_reader(empty=None)
-    def get_int(value):
-        """Parse an integer."""
-        try:
-            return int(value)
-        except:
-            raise ValueError("Can't cast %s to int." % value)
+    get_int = argument_reader(parse_int)
 
-    @argument_reader(empty=None)
-    def get_timedelta_sec(value):
-        """Parse a timedelta (as number of seconds)."""
-        try:
-            return timedelta(seconds=float(value))
-        except:
-            raise ValueError("Can't cast %s to timedelta." % value)
+    get_timedelta_sec = argument_reader(parse_timedelta_sec)
 
-    @argument_reader(empty=None)
-    def get_timedelta_min(value):
-        """Parse a timedelta (as number of minutes)."""
-        try:
-            return timedelta(minutes=float(value))
-        except:
-            raise ValueError("Can't cast %s to timedelta." % value)
+    get_timedelta_min = argument_reader(parse_timedelta_min)
 
-    @argument_reader(empty=None)
-    def get_datetime(value):
-        """Parse a datetime (in pseudo-ISO8601)."""
-        if '.' not in value:
-            value += ".0"
-        try:
-            return datetime.strptime(value, "%Y-%m-%d %H:%M:%S.%f")
-        except:
-            raise ValueError("Can't cast %s to datetime." % value)
+    get_datetime = argument_reader(parse_datetime)
 
-    @argument_reader(empty=None)
-    def get_ip_address_or_subnet(value):
-        """Validate an IP address or subnet."""
-        address, sep, subnet = value.partition("/")
-        if sep != "":
-            subnet = int(subnet)
-            assert 0 <= subnet < 32
-        fields = address.split(".")
-        assert len(fields) == 4
-        for field in fields:
-            num = int(field)
-            assert 0 <= num < 256
-        return value
+    get_ip_address_or_subnet = argument_reader(parse_ip_address_or_subnet)
 
     def get_submission_format(self, dest):
         """Parse the submission format.
@@ -1029,7 +1027,7 @@ class AddDatasetHandler(BaseHandler):
                    for d in task.datasets):
                 self.application.service.add_notification(
                     make_datetime(),
-                    "Dataset name \"%s\" is already taken." % description,
+                    "Dataset name %r is already taken." % attrs["description"],
                     "Please choose a unique name for this dataset.")
                 self.redirect("/add_dataset/%s/%s" % (task_id,
                                                       dataset_id_to_copy))
@@ -1608,7 +1606,7 @@ class UserViewHandler(BaseHandler):
             self.get_string(attrs, "email")
 
             assert attrs.get("username") is not None, \
-                    "No username specified."
+                "No username specified."
 
             self.get_ip_address_or_subnet(attrs, "ip")
 
@@ -1648,7 +1646,7 @@ class AddUserHandler(SimpleContestHandler("add_user.html")):
             self.get_string(attrs, "email")
 
             assert attrs.get("username") is not None, \
-                    "No username specified."
+                "No username specified."
 
             self.get_ip_address_or_subnet(attrs, "ip")
 
