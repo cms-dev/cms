@@ -244,12 +244,14 @@ class BaseHandler(CommonRequestHandler):
                       (enabled/infinite).
 
         """
-        if obj.token_initial is None:
+        if obj.token_mode == "disabled":
             return 0
-        elif obj.token_gen_number and not obj.token_gen_time:
+        elif obj.token_mode == "finite":
+            return 1
+        elif obj.token_mode == "infinite":
             return 2
         else:
-            return 1
+            raise RuntimeError("Unknown token_mode value.")
 
     def render_params(self):
         """Return the default render params used by almost all handlers.
@@ -336,8 +338,6 @@ class BaseHandler(CommonRequestHandler):
 
         # some information about token configuration
         ret["tokens_contest"] = self._get_token_status(self.contest)
-        if ret["tokens_contest"] == 2 and not self.contest.token_min_interval:
-            ret["tokens_contest"] = 3  # infinite and no min_interval
 
         t_tokens = sum(self._get_token_status(t) for t in self.contest.tasks)
         if t_tokens == 0:
@@ -346,10 +346,6 @@ class BaseHandler(CommonRequestHandler):
             ret["tokens_tasks"] = 2  # all infinite
         else:
             ret["tokens_tasks"] = 1  # all finite or mixed
-        if ret["tokens_tasks"] == 2 and \
-            all(t.token_min_interval <= self.contest.token_min_interval
-                for t in self.contest.tasks):
-            ret["tokens_tasks"] = 3  # all infinite and no min_intervals
 
         return ret
 

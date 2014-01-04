@@ -1,16 +1,16 @@
 # Italian translations for PACKAGE package.
 # Copyright (C) 2011 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# Luca Wehrstedt <luca.wehrstedt@gmail.com>, 2012, 2013.
 # Stefano Maggiolo <s.maggiolo@gmail.com>, 2011, 2013.
+# Luca Wehrstedt <luca.wehrstedt@gmail.com>, 2012, 2013, 2014.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: 0.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-01 17:32+0100\n"
-"PO-Revision-Date: 2013-12-20 12:01+0000\n"
-"Last-Translator: Stefano Maggiolo <s.maggiolo@gmail.com>\n"
+"POT-Creation-Date: 2014-01-01 18:05+0100\n"
+"PO-Revision-Date: 2014-01-01 18:06+0100\n"
+"Last-Translator: Luca Wehrstedt <luca.wehrstedt@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
@@ -349,17 +349,8 @@ msgid "You don't have %(type_pl)s available for this task."
 msgstr "Non hai %(type_pl)s disponibili per questo problema."
 
 #, python-format
-msgid "You have infinite %(type_pl)s."
-msgstr "Hai infiniti %(type_pl)s."
-
-#, python-format
-msgid "You can use a %(type_s)s every second."
-msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
-msgstr[0] "Puoi usare al massimo un %(type_s)s ogni secondo."
-msgstr[1] "Puoi usare al massimo un %(type_s)s ogni %(min_interval)g secondi."
-
-msgid "You have no limitations on how you use them."
-msgstr "Non hai limitazioni sul loro utilizzo."
+msgid "You have infinite an infinite number of %(type_pl)s for this task."
+msgstr "Hai un numero infinito di %(type_pl)s per questo problema."
 
 #, python-format
 msgid "You start with no %(type_pl)s."
@@ -367,15 +358,15 @@ msgstr "All'inizio hai zero %(type_pl)s."
 
 #, python-format
 msgid "You start with one %(type_s)s."
-msgid_plural "You start with %(initial)d %(type_pl)s."
+msgid_plural "You start with %(gen_initial)d %(type_pl)s."
 msgstr[0] "All'inizio hai un %(type_s)s."
-msgstr[1] "All'inizio hai %(initial)d %(type_pl)s."
+msgstr[1] "All'inizio hai %(gen_initial)d %(type_pl)s."
 
 #, python-format
 msgid "Every minute "
-msgid_plural "Every %(gen_time)g minutes "
+msgid_plural "Every %(gen_interval)g minutes "
 msgstr[0] "Ogni minuto "
-msgstr[1] "Ogni %(gen_time)g minuti "
+msgstr[1] "Ogni %(gen_interval)g minuti "
 
 #, python-format
 msgid "you get another %(type_s)s, "
@@ -385,9 +376,9 @@ msgstr[1] "riceverai altri %(gen_number)d %(type_pl)s, "
 
 #, python-format
 msgid "up to a maximum of one %(type_s)s."
-msgid_plural "up to a maximum of %(max)d %(type_pl)s."
+msgid_plural "up to a maximum of %(gen_max)d %(type_pl)s."
 msgstr[0] "fino ad un massimo di un %(type_s)s."
-msgstr[1] "fino ad un massimo di %(max)d %(type_pl)s."
+msgstr[1] "fino ad un massimo di %(gen_max)d %(type_pl)s."
 
 #, python-format
 msgid "you get another %(type_s)s."
@@ -407,15 +398,24 @@ msgstr[1] "Puoi usare al massimo un %(type_s)s ogni %(min_interval)g secondi "
 
 #, python-format
 msgid "and no more than one %(type_s)s in total."
-msgid_plural "and no more than %(total)d %(type_pl)s in total."
+msgid_plural "and no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "e non più di un %(type_s)s in totale."
-msgstr[1] "e non più di %(total)d %(type_pl)s in totale."
+msgstr[1] "e non più di %(max_number)d %(type_pl)s in totale."
+
+#, python-format
+msgid "You can use a %(type_s)s every second."
+msgid_plural "You can use a %(type_s)s every %(min_interval)g seconds."
+msgstr[0] "Puoi usare al massimo un %(type_s)s ogni secondo."
+msgstr[1] "Puoi usare al massimo un %(type_s)s ogni %(min_interval)g secondi."
 
 #, python-format
 msgid "You can use no more than one %(type_s)s in total."
-msgid_plural "You can use no more than %(total)d %(type_pl)s in total."
+msgid_plural "You can use no more than %(max_number)d %(type_pl)s in total."
 msgstr[0] "Non puoi usare più di un %(type_s)s in totale."
-msgstr[1] "Non puoi usare più di %(total)d %(type_pl)s in totale."
+msgstr[1] "Non puoi usare più di %(max_number)d %(type_pl)s in totale."
+
+msgid "You have no limitations on how you use them."
+msgstr "Non hai limitazioni sul loro utilizzo."
 
 #, python-format
 msgid ""
@@ -578,14 +578,13 @@ msgid "The contest started at %(start_time)s and ended at %(stop_time)s."
 msgstr ""
 "La gara è iniziata alle %(start_time)s ed è terminata alle %(stop_time)s."
 
-msgid "You have an infinite set of tokens."
-msgstr "Hai infiniti token."
+msgid "You have an infinite number of tokens."
+msgstr "Hai un numero infinito di token."
 
-msgid ""
-"You can use one of these tokens to see the detailed result of a submission."
+msgid "You can see the detailed result of a submission by using a token on it."
 msgstr ""
-"Puoi usare uno di questi token per vedere i risultati dettagliati di una tua "
-"sottoposizione."
+"Puoi vedere i risultati dettagliati di una tua sottoposizione usando un "
+"token su di essa."
 
 msgid ""
 "Your score for each task will be the maximum among the tokened submissions "
@@ -594,63 +593,18 @@ msgstr ""
 "Il tuo punteggio su un problema sarà il massimo tra le sottoposizioni su cui "
 "hai usato i token e l'ultima che hai sottoposto."
 
-msgid "You can use at most one token every second among all tasks."
-msgstr "Puoi usare al massimo un token ogni secondo tra tutti i problemi."
-
-#, python-format
-msgid ""
-"You can use at most one token every %(min_interval)d seconds among all tasks."
-msgstr ""
-"Puoi usare al massimo un token ogni %(min_interval)d secondi tra tutti i "
-"problemi."
-
-msgid "Tasks may pose further limitations on how often you can use tokens."
-msgstr ""
-"Potresti avere limitazioni ulteriori sull'utilizzo dei token per i singoli "
-"problemi."
-
-msgid "See the description page of each task for more information."
-msgstr ""
-"Consulta la pagina di descrizione di ciascun problema per maggiori "
-"informazioni."
-
-msgid "Tasks may pose some limitations on how often you can use tokens."
-msgstr ""
-"Potresti avere limitazioni sull'utilizzo dei token per i singoli problemi."
-
 msgid "You have a distinct set of tokens for each task."
 msgstr "Hai dei token, distinti, per ogni problema."
 
-msgid ""
-"You can find the rules for the tokens on the description page of each task."
-msgstr ""
-"Puoi trovare le regole sull'utilizzo dei token nella pagina di descrizione "
-"di ciascun problema."
-
-msgid ""
-"In addition to those rules, you can use at most one token every second among "
-"all tasks."
-msgstr ""
-"In aggiunta a queste regole, puoi usare al massimo un token ogni secondo tra "
-"tutti i problemi."
-
 #, python-format
 msgid ""
-"In addition to those rules, you can use at most one token every "
-"%(min_interval)d seconds among all tasks."
+"You can find the rules for the %(type_pl)s on each task's description page."
 msgstr ""
-"In aggiunta a queste regole, puoi usare al massimo un token ogni "
-"%(min_interval)d secondi tra tutti i problemi."
+"Puoi trovare le regole sull'utilizzo dei %(type_pl)s nella pagina di "
+"descrizione di ciascun problema."
 
 msgid "You have a set of tokens shared among all tasks."
 msgstr "Hai dei token, in comune, per tutti i problemi."
-
-msgid ""
-"In addition to these rules, tasks may pose some limitations on how often you "
-"can use tokens."
-msgstr ""
-"In aggiunta a queste regole, potresti avere limitazioni sull'utilizzo dei "
-"token per i singoli problemi."
 
 msgid ""
 "You have two types of tokens: a set of <em>contest-tokens</em> shared among "
@@ -665,12 +619,6 @@ msgid ""
 msgstr ""
 "Puoi vedere i risultati dettagliati di una tua sottoposizione usando due "
 "token su di essa, uno di entrambi i tipi."
-
-msgid ""
-"You can find the rules for the task-tokens on each task's description page."
-msgstr ""
-"Puoi trovare le regole sull'utilizzo dei token-problema nella pagina di "
-"descrizione di ciascun problema."
 
 #, python-format
 msgid ""
@@ -848,74 +796,13 @@ msgstr "Alcuni dettagli"
 msgid "Compilation commands"
 msgstr "Comandi di compilazione"
 
-msgid "You can use at most one token every second for this task "
-msgstr "Puoi usare al massimo un token ogni secondo per questo problema "
-
 #, python-format
 msgid ""
-"You can use at most one token every %(min_interval)d seconds for this task "
-msgstr ""
-"Puoi usare al massimo un token ogni %(min_interval)d secondi per questo "
-"problema "
-
-msgid "and at most one token every second among all tasks."
-msgstr "e al massimo un token tra tutti i problemi."
-
-#, python-format
-msgid "and at most one token every %(min_interval)d seconds among all tasks."
-msgstr ""
-"e al massimo un token ogni %(min_interval)d secondi tra tutti i problemi."
-
-msgid "You can use at most one token every second for this task."
-msgstr "Puoi usare al massimo un token ogni secondo per questo problema."
-
-#, python-format
-msgid ""
-"You can use at most one token every %(min_interval)d seconds for this task."
-msgstr ""
-"Puoi usare al massimo un token ogni %(min_interval)d secondi per questo "
-"problema."
-
-msgid "On this task you don't have additional rules."
-msgstr "Su questo problema non hai regole aggiuntive."
-
-msgid ""
-"In addition to these rules, you can use at most one token every second among "
-"all tasks."
-msgstr ""
-"In aggiunta a queste regole, puoi usare al massimo un token ogni secondo tra "
-"tutti i task "
-
-#, python-format
-msgid ""
-"In addition to these rules, you can use at most one token every "
-"%(min_interval)d seconds among all tasks."
-msgstr ""
-"In aggiunta a queste regole, puoi usare al massimo un token ogni "
-"%(min_interval)d secondi tra tutti i task "
-
-#, python-format
-msgid ""
-"You can find the rules for the tokens on the <a href=\"%(url_root)s/"
+"You can find the rules for the %(type_pl)s on the <a href=\"%(url_root)s/"
 "\">contest overview page</a>."
 msgstr ""
-"Puoi trovare le regole per i token nella <a href=\"%(url_root)s/\">pagina di "
-"panormica della gara</a>."
-
-msgid ""
-"In addition to those rules, you can use at most one token every second on "
-"this task."
-msgstr ""
-"In aggiunta a queste regole, puoi usare al massimo un token ogni secondo su "
-"questo task "
-
-#, python-format
-msgid ""
-"In addition to those rules, you can use at most one token every "
-"%(min_interval)d seconds on this task."
-msgstr ""
-"In aggiunta a queste regole, puoi usare al massimo un token ogni "
-"%(min_interval)d secondi su questo problema."
+"Puoi trovare le regole per i %(type_pl)s nella <a href=\"%(url_root)s/"
+"\">pagina di panormica della gara</a>."
 
 msgid ""
 "Remeber that to see the detailed result of a submission you need to use both "
@@ -923,14 +810,6 @@ msgid ""
 msgstr ""
 "Ricorda che per vedere i risultati dettagliati di una sottoposizione devi "
 "usare sia un token-gara che un token-problema."
-
-#, python-format
-msgid ""
-"You can find the rules for the contest-tokens on the <a href=\"%(url_root)s/"
-"\">contest overview page</a>."
-msgstr ""
-"Puoi trovare le regole per i token-gara nella <a href=\"%(url_root)s/"
-"\">pagina di panormica della gara</a>."
 
 msgid "Attachments"
 msgstr "Allegati"
