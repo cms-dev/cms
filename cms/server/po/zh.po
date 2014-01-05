@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-01 17:32+0100\n"
+"POT-Creation-Date: 2014-01-05 15:52+0000\n"
 "PO-Revision-Date: 2013-12-16 02:48+0800\n"
 "Last-Translator: magrady24 <b01902110@csie.ntu.edu.tw>\n"
 "Language-Team: TW\n"
@@ -404,8 +404,8 @@ msgstr[1] "且一旦產生總共 %(total)d 個 %(type_s)s 後將不會再增加.
 
 #, python-format
 msgid ""
-"Logged in as <strong>%(first_name)s %(last_name)s</strong> "
-"<em>(%(username)s)</em>"
+"Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)"
+"</em>"
 msgstr ""
 "使用者 <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>"
 

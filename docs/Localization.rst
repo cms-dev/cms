@@ -8,7 +8,7 @@ When you change a string in a template or in a web server, you have to generate 
 
 .. sourcecode:: bash
 
-    xgettext -o server/po/messages.pot --language=Python --no-location --keyword=_:1,2 --keyword=N_ --keyword=N_:1,2 \
+    xgettext -o server/po/messages.pot --language=Python --no-location --width=79 --keyword=_:1,2 --keyword=N_ --keyword=N_:1,2 \
       grading/__init__.py grading/ScoreType.py grading/scoretypes/*.py grading/tasktypes/*.py \
       server/*.py server/templates/admin/*.html server/templates/contest/*.html
 
@@ -28,7 +28,7 @@ To begin translating to a new language, run this command, from :gh_tree:`cms/ser
 
 .. sourcecode:: bash
 
-    msginit -l <two_letter_code_of_language>
+    msginit --width=79 -l <two_letter_code_of_language>
 
 Right after that, open :file:`<code>.po` and fill the information in the header. To translate a string, simply fill the corresponding msgstr with the translations.
 
@@ -36,6 +36,6 @@ If the developers updated the ``.pot`` file, you do not need to start from scrat
 
 .. sourcecode:: bash
 
-    msgmerge <code>.po messages.pot > <code>.new.po
+    msgmerge --width=79 <code>.po messages.pot > <code>.new.po
 
 You can now inspect :file:`<code>.new.po` and, if satisfied, move it to :file:`<code>.po` and finish the translation.
