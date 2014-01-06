@@ -29,10 +29,9 @@ import random
 from StringIO import StringIO
 import hashlib
 
-from cms import default_argument_parser, config, logger
-from cms.io import ServiceCoord
-from cms.io.TestService import TestService
+from cms import default_argument_parser, config, logger, ServiceCoord
 from cms.db.filecacher import FileCacher
+from cmstestsuite.TestService import TestService
 
 
 class RandomFile(object):

@@ -84,6 +84,7 @@ class RemoteService(object):
     def call(self, function_name, data):
         """Perform a synchronous RPC call."""
         s = json.dumps({
+            "__id": "foo",
             "__method": function_name,
             "__data": data,
         })

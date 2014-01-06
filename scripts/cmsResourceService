@@ -25,8 +25,7 @@ gevent.monkey.patch_all()
 import argparse
 import sys
 
-from cms import find_local_addresses
-from cms.io import get_shard_from_addresses
+from cms import find_local_addresses, get_shard_from_addresses
 from cms.db import ask_for_contest, is_contest_id
 from cms.service.ResourceService import ResourceService
 

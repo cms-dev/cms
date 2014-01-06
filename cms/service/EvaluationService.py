@@ -34,8 +34,8 @@ import random
 from datetime import timedelta
 from collections import namedtuple
 
-from cms.io.GeventLibrary import Service, rpc_method, rpc_callback
-from cms.io import ServiceCoord, get_service_shards
+from cms import ServiceCoord, get_service_shards
+from cms.io import Service, rpc_method
 from cms.db import SessionGen, Contest, Dataset, Submission, \
     SubmissionResult, UserTest, UserTestResult
 from cms.service import get_submission_results, get_datasets_to_judge
@@ -447,7 +447,7 @@ class WorkerPool(object):
 
             self._worker[shard].execute_job_group(
                 job_group_dict=job_group.export_to_dict(),
-                callback=self._service.action_finished.__func__,
+                callback=self._service.action_finished,
                 plus=(job_type, object_id, dataset_id, side_data, shard))
         return shard
 
@@ -947,7 +947,6 @@ class EvaluationService(Service):
             self.queue.push(job, priority, timestamp)
             return True
 
-    @rpc_callback
     def action_finished(self, data, plus, error=None):
         """Callback from a worker, to signal that is finished some
         action (compilation or evaluation).

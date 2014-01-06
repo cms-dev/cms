@@ -26,9 +26,8 @@
 import logging
 import time
 
-from cms import config
-from cms.io import ServiceCoord
-from cms.io.GeventLibrary import Service, rpc_callback
+from cms import config, ServiceCoord
+from cms.io import Service
 
 
 logger = logging.getLogger(__name__)
@@ -62,12 +61,11 @@ class Checker(Service):
                 now = time.time()
                 self.waiting_for[coordinates] = now
                 service.echo(string="%s %5.3lf" % (coordinates, now),
-                             callback=Checker.echo_callback)
+                             callback=self.echo_callback)
             else:
                 logger.info("Service %s not connected." % str(coordinates))
         return True
 
-    @rpc_callback
     def echo_callback(self, data, error=None):
         """Callback for check.
 

@@ -59,10 +59,8 @@ from sqlalchemy import func
 from werkzeug.http import parse_accept_header
 from werkzeug.datastructures import LanguageAccept
 
-from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config
-from cms.log import initialize_logging
-from cms.io.WebGeventLibrary import WebService
-from cms.io import ServiceCoord
+from cms import SOURCE_EXT_TO_LANGUAGE_MAP, config, ServiceCoord
+from cms.io import WebService
 from cms.db import Session, Contest, User, Task, Question, Submission, Token, \
     File, UserTest, UserTestFile, UserTestManager
 from cms.db.filecacher import FileCacher
@@ -403,7 +401,23 @@ class ContestWebServer(WebService):
 
     """
     def __init__(self, shard, contest):
-        initialize_logging("ContestWebServer", shard)
+        parameters = {
+            "login_url": "/",
+            "template_path": pkg_resources.resource_filename(
+                "cms.server", "templates/contest"),
+            "static_path": pkg_resources.resource_filename(
+                "cms.server", "static"),
+            "cookie_secret": base64.b64encode(config.secret_key),
+            "debug": config.tornado_debug,
+            "is_proxy_used": config.is_proxy_used,
+        }
+        super(ContestWebServer, self).__init__(
+            config.contest_listen_port[shard],
+            _cws_handlers,
+            parameters,
+            shard=shard,
+            listen_address=config.contest_listen_address[shard])
+
         self.contest = contest
 
         # This is a dictionary (indexed by username) of pending
@@ -413,23 +427,6 @@ class ContestWebServer(WebService):
         # of tuples (timestamp, subject, text).
         self.notifications = {}
 
-        parameters = {
-            "login_url": "/",
-            "template_path": pkg_resources.resource_filename(
-                "cms.server", "templates/contest"),
-            "static_path": pkg_resources.resource_filename(
-                "cms.server", "static"),
-            "cookie_secret": base64.b64encode(config.secret_key),
-            "debug": config.tornado_debug,
-        }
-        parameters["is_proxy_used"] = config.is_proxy_used
-        WebService.__init__(
-            self,
-            config.contest_listen_port[shard],
-            _cws_handlers,
-            parameters,
-            shard=shard,
-            listen_address=config.contest_listen_address[shard])
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
             ServiceCoord("EvaluationService", 0))
@@ -437,20 +434,6 @@ class ContestWebServer(WebService):
             ServiceCoord("ScoringService", 0))
         self.proxy_service = self.connect_to(
             ServiceCoord("ProxyService", 0))
-
-    @staticmethod
-    def authorized_rpc(service, method, arguments):
-        """Used by WebService to check if the browser can call a
-        certain RPC method.
-
-        service (ServiceCoord): the service called by the browser.
-        method (string): the name of the method called.
-        arguments (dict): the arguments of the call.
-        return (bool): True if ok, False if not authorized.
-
-        """
-        # Default fallback: don't authorize.
-        return False
 
     NOTIFICATION_ERROR = "error"
     NOTIFICATION_WARNING = "warning"

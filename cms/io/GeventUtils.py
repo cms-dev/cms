@@ -49,12 +49,7 @@ import sys
 from shutil import copymode, copystat, _samefile, Error, \
     SpecialFileError, _basename, WindowsError, _destinsrc
 
-from contextlib import contextmanager
-
 import gevent
-
-from cms.io.PsycoGevent import make_psycopg_green, \
-    unmake_psycopg_green, is_psycopg_green
 
 
 # XXX Use buffer_size=io.DEFAULT_BUFFER_SIZE?
@@ -278,23 +273,3 @@ def move(src, dst):
         else:
             copy2(src, real_dst)
             os.unlink(src)
-
-
-@contextmanager
-def ungreen_psycopg():
-    """Temporarily disable gevent support in psycopg.
-
-    Inside this context manager you can use psycopg's features that
-    are not compatible with coroutine support, such as large
-    objects. Of course, at the expense of being blocking, so please
-    stay inside the context manager as short as possible.
-
-    """
-    is_green = is_psycopg_green()
-    if is_green:
-        unmake_psycopg_green()
-    try:
-        yield
-    finally:
-        if is_green:
-            make_psycopg_green()

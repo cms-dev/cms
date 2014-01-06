@@ -26,17 +26,17 @@
 """
 
 import logging
-import time
 
 import gevent
 from gevent.queue import JoinableQueue
 from gevent.event import Event
 
-from cms.io import ServiceCoord
-from cms.io.GeventLibrary import Service, rpc_method
+from cms import ServiceCoord
+from cms.io import Service, rpc_method
 from cms.db import SessionGen, Submission, Dataset
 from cms.grading.scoretypes import get_score_type
 from cms.service import get_submission_results
+from cmscommon.datetime import monotonic_time
 
 
 logger = logging.getLogger(__name__)
@@ -145,6 +145,7 @@ class ScoringService(Service):
                 if submission_result.scored():
                     logger.info("Submission result %d(%d) is already scored.",
                                 submission_id, dataset_id)
+                    return
                 else:
                     raise ValueError("The state of the submission result "
                                      "%d(%d) doesn't allow scoring." %
@@ -188,7 +189,7 @@ class ScoringService(Service):
 
         """
         while True:
-            self._sweeper_start = time.time()
+            self._sweeper_start = monotonic_time()
             self._sweeper_event.clear()
 
             try:
@@ -199,7 +200,7 @@ class ScoringService(Service):
 
             self._sweeper_event.wait(max(self._sweeper_start +
                                          self.SWEEPER_TIMEOUT -
-                                         time.time(), 0))
+                                         monotonic_time(), 0))
 
     def _sweep(self):
         """Check the database for unscored submission results.
