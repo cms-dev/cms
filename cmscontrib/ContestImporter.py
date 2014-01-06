@@ -187,18 +187,22 @@ class ContestImporter(object):
                 if dump_version < model_version:
                     logger.warning(
                         "The dump you're trying to import has been created "
-                        "by an old version of CMS. It may take a while to "
-                        "adapt it to the current data model. You can use "
-                        "cmsDumpUpdater to update the on-disk dump and "
-                        "speed up future imports.")
+                        "by an old version of CMS (it declares data model "
+                        "version %d). It may take a while to adapt it to "
+                        "the current data model (which is version %d). You "
+                        "can use cmsDumpUpdater to update the on-disk dump "
+                        "and speed up future imports."
+                        % (dump_version, model_version))
 
                 if dump_version > model_version:
                     logger.critical(
                         "The dump you're trying to import has been created "
-                        "by a version of CMS newer than this one and there "
-                        "is no way to adapt it to the current data model. "
-                        "You probably need to update CMS to handle it. It's "
-                        "impossible to proceed with the importation.")
+                        "by a version of CMS newer than this one (it "
+                        "declares data model version %d) and there is no "
+                        "way to adapt it to the current data model (which "
+                        "is version %d). You probably need to update CMS to "
+                        "handle it. It is impossible to proceed with the "
+                        "importation." % (dump_version, model_version))
                     return False
 
                 for version in range(dump_version, model_version):
