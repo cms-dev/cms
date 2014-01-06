@@ -236,6 +236,8 @@ class Service(object):
         plus (object): additional data to pass to the function.
         seconds (float): the function will be called every seconds
                          seconds.
+                         If seconds is 0, the function will be called
+                         only once.
         immediately (bool): if True, func will be called also at the
                             beginning.
 
@@ -415,7 +417,7 @@ class Service(object):
                         ret = func()
                     else:
                         ret = func(plus)
-                    if ret:
+                    if ret and seconds != 0:
                         heapq.heappush(self._timeouts,
                                        (next_timeout + seconds,
                                         seconds, func, plus))
