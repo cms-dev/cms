@@ -128,4 +128,3 @@ def plugin_list(plugin_dir, plugin_family):
     modules = [ret[0].find_module(ret[1]).load_module(ret[1]) for ret in rets]
     return [module.__dict__[module.__name__]
             for module in modules if module.__name__ in module.__dict__]
-
