@@ -30,7 +30,7 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP
+from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -123,6 +123,15 @@ def get_compilation_command(language, source_filenames, executable_filename,
     elif language == LANG_PHP:
         command = ["/bin/sh", "-c"]
         command += ["cp %s %s" % (source_filenames[0], executable_filename)]
+    elif language == LANG_JAVA:
+        class_name = "Task"  # Submitted java class must be called Task.
+        command = ["/bin/sh", "-c"]
+        command += ["/bin/mv %(source)s %(class)s.java; "
+            "/usr/bin/gcj --main=%(class)s -O3 -o %(exec)s %(class)s.java" % {
+            "source": source_filenames[0],
+            "exec": executable_filename,
+            "class": class_name
+            }]
     else:
         raise ValueError("Unknown language %s." % language)
     return command
@@ -141,7 +150,7 @@ def get_evaluation_command(language, executable_filename):
     return (list): a list of string to be passed to subprocess.
 
     """
-    if language in (LANG_C, LANG_CPP, LANG_PASCAL):
+    if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA):
         command = [os.path.join(".", executable_filename)]
     elif language == LANG_PYTHON:
         command = ["/bin/sh", "-c"]
@@ -206,7 +215,7 @@ def compilation_step(sandbox, command):
     sandbox.max_processes = None
     sandbox.timeout = 10
     sandbox.wallclock_timeout = 20
-    sandbox.address_space = 256 * 1024
+    sandbox.address_space = 512 * 1024
     sandbox.stdout_file = "compiler_stdout.txt"
     sandbox.stderr_file = "compiler_stderr.txt"
 
