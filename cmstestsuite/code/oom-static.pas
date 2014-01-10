@@ -1,7 +1,7 @@
 program correct;
 
 var
-   big: array[0..67108864] of integer;
+   big: array[0..132108864] of integer;
 
 begin
     readln(big[10000]);

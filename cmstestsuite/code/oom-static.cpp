@@ -1,6 +1,6 @@
 #include <iostream>
 
-int big[67108864];
+int big[132108864];
 
 int main() {
     std::cin >> big[10000];

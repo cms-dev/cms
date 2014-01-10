@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-int big[67108864];
+int big[132108864];
 
 int main() {
     scanf("%d", &big[10000]);
