@@ -24,7 +24,6 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 from __future__ import print_function
 
-import errno
 import functools
 import json
 import logging
@@ -191,7 +190,7 @@ class RemoteServiceBase(object):
             self.finalize("Disconnection requested.")
 
     def _read(self):
-        """Recieve a message from the socket.
+        """Receive a message from the socket.
 
         Read from the socket until a "\\r\\n" is found. That is what we
         consider a "message" in the communication protocol.

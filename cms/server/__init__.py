@@ -336,7 +336,8 @@ def format_token_rules(tokens, t_type=None, locale=None):
         # This message will only be shown on tasks in case of a mixed
         # modes scenario.
         result += \
-            _("You have infinite an infinite number of %(type_pl)s for this task.") % tokens
+            _("You have infinite an infinite number of %(type_pl)s "
+              "for this task.") % tokens
     else:
         if tokens['gen_initial'] == 0:
             result += _("You start with no %(type_pl)s.") % tokens
@@ -373,7 +374,8 @@ def format_token_rules(tokens, t_type=None, locale=None):
                         "seconds ",
                         tokens['min_interval']) % tokens
             result += _("and no more than one %(type_s)s in total.",
-                        "and no more than %(max_number)d %(type_pl)s in total.",
+                        "and no more than %(max_number)d %(type_pl)s in "
+                        "total.",
                         tokens['max_number']) % tokens
         elif tokens['min_interval'] > 0:
             result += _("You can use a %(type_s)s every second.",
@@ -382,8 +384,8 @@ def format_token_rules(tokens, t_type=None, locale=None):
                         tokens['min_interval']) % tokens
         elif tokens['max_number'] is not None:
             result += _("You can use no more than one %(type_s)s in total.",
-                        "You can use no more than %(max_number)d %(type_pl)s in "
-                        "total.",
+                        "You can use no more than %(max_number)d %(type_pl)s "
+                        "in total.",
                         tokens['max_number']) % tokens
         else:
             result += \

@@ -411,7 +411,8 @@ class Contest(Base):
 
         # Compute the time in which the next token will be generated.
         next_gen_time = None
-        if token_gen_number > 0 and (token_gen_max is None or avail < token_gen_max):
+        if token_gen_number > 0 and \
+                (token_gen_max is None or avail < token_gen_max):
             next_gen_time = \
                 start + token_gen_interval * \
                 int((timestamp - start).total_seconds() /

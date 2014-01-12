@@ -37,6 +37,7 @@ import pwd
 import signal
 import socket
 import _socket
+import sys
 import time
 
 import gevent

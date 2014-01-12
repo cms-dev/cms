@@ -49,9 +49,7 @@ from __future__ import print_function
 
 import curses
 import logging
-import os.path
 import sys
-import time
 
 import gevent.coros
 
