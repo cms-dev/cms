@@ -120,7 +120,7 @@ def plugin_list(plugin_dir, plugin_family):
     raise (KeyError): if either the module or the class is not found.
 
     """
-    cms_root_path = os.path.dirname(__file__)
+    cms_root_path = os.path.dirname(os.path.dirname(__file__))
     rets = pkgutil.iter_modules([
         os.path.join(cms_root_path, plugin_dir.replace(".", "/")),
         os.path.join(config.data_dir, "plugins", plugin_family),
