@@ -25,7 +25,7 @@ gevent.monkey.patch_all()
 import argparse
 import sys
 
-from cms import find_local_addresses, get_shard_from_addresses
+from cms import get_safe_shard
 from cms.db import ask_for_contest, is_contest_id
 from cms.service.ResourceService import ResourceService
 
@@ -39,14 +39,13 @@ def main():
     parser.add_argument("-a", "--autorestart", metavar="CONTEST_ID",
                         help="restart automatically services on its machine",
                         nargs="?", type=int, const=-1)
-    parser.add_argument("shard", type=int, nargs="?", default=-1)
+    parser.add_argument("shard", type=int, nargs="?", default=None)
     args = parser.parse_args()
 
-    # If the shard is -1 (i.e., unspecified) we find it basing on the
-    # local IP addresses
-    if args.shard == -1:
-        addrs = find_local_addresses()
-        args.shard = get_shard_from_addresses("ResourceService", addrs)
+    try:
+        args.shard = get_safe_shard("ResourceService", args.shard)
+    except ValueError:
+        return False
 
     if args.autorestart is not None:
         if args.autorestart == -1:

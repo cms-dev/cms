@@ -41,9 +41,8 @@ __all__ = [
     # log
     # Nothing intended for external use, no need to advertise anything.
     # util
-    "mkdir", "Address", "ServiceCoord", "get_service_address",
-    "get_shard_from_addresses", "get_service_shards",
-    "default_argument_parser", "find_local_addresses",
+    "mkdir", "Address", "ServiceCoord", "get_safe_shard",
+    "get_service_address", "get_service_shards", "default_argument_parser",
     # conf
     "config",
     # plugin
@@ -106,8 +105,7 @@ LANGUAGE_TO_HEADER_EXT_MAP = {
     LANG_JAVA: ".java",
 }
 
-from .util import mkdir, Address, ServiceCoord, get_service_address, \
-    get_shard_from_addresses, get_service_shards, \
-    default_argument_parser, find_local_addresses
+from .util import mkdir, Address, ServiceCoord, get_safe_shard, \
+    get_service_address, get_service_shards, default_argument_parser
 from .conf import config
 from .plugin import plugin_list, plugin_lookup
