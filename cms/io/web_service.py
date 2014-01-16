@@ -67,7 +67,8 @@ class WebService(Service):
         if parameters.get('is_proxy_used', False):
             self.wsgi_app = ProxyFix(self.wsgi_app)
 
-        self.server = WSGIServer((listen_address, listen_port), self.wsgi_app)
+        self.web_server = WSGIServer((listen_address, listen_port),
+                                     self.wsgi_app)
 
     def run(self):
         """Start the WebService.
@@ -75,6 +76,6 @@ class WebService(Service):
         Both the WSGI server and the RPC server are started.
 
         """
-        self.server.start()
+        self.web_server.start()
         Service.run(self)
-        self.server.stop()
+        self.web_server.stop()

@@ -103,7 +103,7 @@ class Service(object):
                             self._my_coord)
             sys.exit(1)
 
-        self.server = StreamServer(address, self._connection_handler)
+        self.rpc_server = StreamServer(address, self._connection_handler)
         self.backdoor = None
 
     def initialize_logging(self):
@@ -217,7 +217,7 @@ class Service(object):
 
         """
         logger.warning("%r received request to shut down.", self._my_coord)
-        self.server.stop()
+        self.rpc_server.stop()
 
     def get_backdoor_path(self):
         """Return the path for a UNIX domain socket to use as backdoor.
@@ -272,7 +272,7 @@ class Service(object):
 
         """
         try:
-            self.server.start()
+            self.rpc_server.start()
 
         # This must come before socket.error, because socket.gaierror
         # extends socket.error
@@ -286,7 +286,7 @@ class Service(object):
             if error.errno == errno.EADDRINUSE:
                 logger.critical("Listening port %s for service %s is "
                                 "already in use, quitting.",
-                                self.server.address.port, self.name)
+                                self.rpc_server.address.port, self.name)
                 return False
             elif error.errno == errno.EADDRNOTAVAIL:
                 logger.critical("Service %s could not listen on "
@@ -301,8 +301,8 @@ class Service(object):
 
         logger.info("%s %d up and running!", *self._my_coord)
 
-        # This call will block until someone calls self.server.stop().
-        self.server.serve_forever()
+        # This call will block until self.rpc_server.stop() is called.
+        self.rpc_server.serve_forever()
 
         logger.info("%s %d is shutting down", *self._my_coord)
 
