@@ -3,7 +3,6 @@
 # This file is distributed under the same license as the PACKAGE package.
 # Joachim Ganseman <joachim.ganseman@be-oi.be>, 2014.
 # Floris Kint <floris.kint@gmail.com>, 2014.
-# ... add your names here
 #
 msgid ""
 msgstr ""
