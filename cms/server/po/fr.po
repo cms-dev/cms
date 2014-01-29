@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2013-09-15 19:25+0200\n"
-"PO-Revision-Date: 2014-01-02 17:15+0100\n"
+"POT-Creation-Date: 2014-01-14 18:50+0100\n"
+"PO-Revision-Date: 2014-01-29 19:54+0100\n"
 "Last-Translator: Damien Leroy <damien.leroy@be-oi.be>\n"
 "Language-Team: French\n"
 "Language: fr\n"
@@ -88,11 +88,11 @@ msgstr "Exécution échouée: code de retour différent de zéro"
 
 #: grading/__init__.py:595
 msgid "Output is correct"
-msgstr "Résultat correct"
+msgstr "Sortie correcte"
 
 #: grading/__init__.py:598
 msgid "Output isn't correct"
-msgstr "Résultat incorrect"
+msgstr "Sortie incorrecte"
 
 #: grading/__init__.py:601 grading/tasktypes/Batch.py:269
 #: grading/tasktypes/TwoSteps.py:273
@@ -177,7 +177,7 @@ msgstr "Vous avez atteint le nombre maximum de %d soumissions pour cette tâche.
 
 #: server/ContestWebServer.py:864
 msgid "Too many submissions!"
-msgstr "Trop de soumissions!"
+msgstr "Trop de soumissions !"
 
 #: server/ContestWebServer.py:882
 #, python-format
@@ -225,7 +225,7 @@ msgstr "Toutes les fichiers sources doivent être dans le même."
 
 #: server/ContestWebServer.py:1032
 msgid "Invalid submission!"
-msgstr "Soumission invalide!"
+msgstr "Soumission invalide !"
 
 #: server/ContestWebServer.py:1044
 msgid "Submission too big!"
@@ -258,7 +258,7 @@ msgstr "Demande de token refusée"
 
 #: server/ContestWebServer.py:1164
 msgid "Your request has been discarded because you have no tokens available."
-msgstr "Votre requête a été annulée car vous n'aviez plus de jetons "
+msgstr "Votre requête a été annulée car vous n'avez plus de jetons "
 "disponibles."
 
 #: server/ContestWebServer.py:1179
@@ -280,7 +280,7 @@ msgstr "Votre requête a été reçue et appliquée à la soumission."
 #: server/templates/contest/submission_row.html:10
 #: server/templates/contest/user_test_row.html:10
 msgid "Compiling..."
-msgstr "Compilation ..."
+msgstr "Compilation..."
 
 #: server/ContestWebServer.py:1236 server/ContestWebServer.py:1246
 #: server/templates/contest/submission_row.html:21
@@ -293,12 +293,12 @@ msgstr "détails"
 #: server/ContestWebServer.py:1239
 #: server/templates/contest/submission_row.html:31
 msgid "Evaluating..."
-msgstr "Evaluation ..."
+msgstr "Evaluation..."
 
 #: server/ContestWebServer.py:1242
 #: server/templates/contest/submission_row.html:41
 msgid "Scoring..."
-msgstr "Calcul des points ..."
+msgstr "Calcul des points..."
 
 #: server/ContestWebServer.py:1246
 #: server/templates/contest/submission_row.html:51
@@ -318,7 +318,7 @@ msgstr "Vous avez atteint le nombre maximal de %d tests pour cette tâche."
 
 #: server/ContestWebServer.py:1377
 msgid "Too many tests!"
-msgstr "Trop de tests"
+msgstr "Trop de tests !"
 
 #: server/ContestWebServer.py:1395
 #, python-format
@@ -359,7 +359,7 @@ msgstr "Fichier d'entrée trop gros !"
 #: server/ContestWebServer.py:1567
 #, python-format
 msgid "The input file must be at most %d bytes long."
-msgstr "Le fichier d'entée ne peut pas faire plus de %d octets."
+msgstr "Le fichier d'entrée ne peut pas faire plus de %d octets."
 
 #: server/ContestWebServer.py:1615
 msgid "Test storage failed!"
@@ -652,7 +652,7 @@ msgstr "Contest Management System"
 
 #: server/templates/contest/base.html:177
 msgid "is released under the"
-msgstr "est publié sous la "
+msgstr "est publié sous la"
 
 #: server/templates/contest/base.html:178
 msgid "GNU Affero General Public License"
@@ -704,7 +704,7 @@ msgstr "Erreur %d"
 
 #: server/templates/contest/error.html:11
 msgid "An error occured while the server was handling your request."
-msgstr "Une erreur s'est produire lors du traitement de votre requête."
+msgstr "Une erreur s'est produite lors du traitement de votre requête."
 
 #: server/templates/contest/error.html:15
 msgid ""
@@ -729,7 +729,7 @@ msgstr "Information générale"
 
 #: server/templates/contest/overview.html:22
 msgid "The contest hasn't started yet."
-msgstr "Le concours n'a pas encore commencé."
+msgstr "L'épreuve n'a pas encore commencé."
 
 #: server/templates/contest/overview.html:25
 #, python-format
@@ -748,7 +748,7 @@ msgstr "Le concours a commencé le %(start_time)s et se terminera le %(stop_time
 
 #: server/templates/contest/overview.html:32
 msgid "The contest has already ended."
-msgstr "Le concours est terminé."
+msgstr "L'épreuve est terminée."
 
 #: server/templates/contest/overview.html:35
 #, python-format
@@ -776,7 +776,7 @@ msgstr "Vous pouvez utiliser l'un de ces jetons pour obtenir les résultats "
 msgid ""
 "Your score for each task will be the maximum among the tokened submissions "
 "and the last one."
-msgstr "Votre score pour chaque tâche sera le maximum entre les soumissions"
+msgstr "Votre score pour chaque tâche sera le maximum entre les soumissions "
 "pour lesquelles vous aurez utilisé un jeton, et votre dernière soumission."
 
 #: server/templates/contest/overview.html:52
@@ -795,7 +795,7 @@ msgstr "Vous pouvez utiliser au plus un jeton toutes les %(min_interval)d"
 
 #: server/templates/contest/overview.html:57
 msgid "Tasks may pose further limitations on how often you can use tokens."
-msgstr "Chaque tâche peut définir des limitations supplémentaires en ce qui"
+msgstr "Chaque tâche peut définir des limitations supplémentaires en ce qui "
 "concerne l'utilisation de jetons."
 
 #: server/templates/contest/overview.html:58
@@ -806,7 +806,7 @@ msgstr "Consultez la description de chaque tâche pour plus d'informations."
 
 #: server/templates/contest/overview.html:63
 msgid "Tasks may pose some limitations on how often you can use tokens."
-msgstr "Chaque tâche peut définir certaines limitations sur le nombre"
+msgstr "Chaque tâche peut définir certaines limitations sur le nombre "
 "de jetons maximum qui vous pouvez utiliser."
 
 #: server/templates/contest/overview.html:69
@@ -872,13 +872,13 @@ msgid ""
 "Every user is allowed to compete (i.e. submit solutions) for a uninterrupted "
 "time frame of %(per_user_time)s."
 msgstr ""
-"Chaque utilisateur est autorisé à participer (càd soumettre des solutions) "
-"de façon ininterrompue durant %(per_user_time)s."
+"Chaque utilisateur est autorisé à participer (c.-à.-d. soumettre des "
+"solutions) de façon ininterrompue durant %(per_user_time)s."
 
 #: server/templates/contest/overview.html:126
 msgid "As soon as the contest starts you can choose to start your time frame."
-msgstr "Dès que le concours a débuté, vous pouvez choisir la fenêtre de temps "
-"pendant laquelle vous participez."
+msgstr "Dès que le concours a débuté, vous pouvez choisir la fourchette de "
+"temps pendant laquelle vous participez."
 
 #: server/templates/contest/overview.html:127
 #: server/templates/contest/overview.html:130
@@ -886,25 +886,25 @@ msgid ""
 "Once you start, you can submit solutions until the end of the time frame or "
 "until the end of the contest, whatever comes first."
 msgstr "Lorsque vous avez commencé, vous pouvez soumettre jusqu'à ce que "
-"votre fenêtre de participation soit terminée ou que le concours se termine "
-"(selon le premier ayant lieu)"
+"votre fourchette de participation soit terminée ou que le concours se "
+"termine (selon le premier ayant lieu)"
 
 #: server/templates/contest/overview.html:129
 msgid "By clicking on the button below you can start your time frame."
 msgstr "En cliquant sur le bouton ci-dessous, vous commencerez votre "
-"fenêtre de participation."
+"fourchette de participation."
 
 #: server/templates/contest/overview.html:132
 #, python-format
 msgid "You started your time frame at %(start_time)s."
-msgstr "Vous avez commencé votre fenêtre de participation à %(start_time)s."
+msgstr "Vous avez commencé votre fourchette de participation le %(start_time)s."
 
 #: server/templates/contest/overview.html:133
 msgid ""
 "You can submit solutions until the end of the time frame or until the end of "
 "the contest, whatever comes first."
 msgstr ""
-"Vous pouvez soumettre jusqu'à la fin de votre fenêtre de participation ou "
+"Vous pouvez soumettre jusqu'à la fin de votre fourchette de participation ou "
 "jusqu'à la fin du concours (selon le premier qui aura lieu)."
 
 #: server/templates/contest/overview.html:135
@@ -912,7 +912,7 @@ msgstr ""
 #, python-format
 msgid ""
 "You started your time frame at %(start_time)s and you already finished it."
-msgstr "Votre fenêtre participation a débuté à %(start_time)s "
+msgstr "Votre fourchette de participation a débuté le %(start_time)s "
 "et est maintenant terminée."
 
 #: server/templates/contest/overview.html:136
@@ -1039,7 +1039,7 @@ msgstr "Télécharger"
 
 #: server/templates/contest/submission_row.html:120
 msgid "Played"
-msgstr "Joué"
+msgstr "Utilisé"
 
 #: server/templates/contest/submission_row.html:125
 msgid "Play!"
@@ -1048,7 +1048,7 @@ msgstr "Utiliser !"
 #: server/templates/contest/submission_row.html:128
 #: server/templates/contest/user_test_row.html:59
 msgid "Wait..."
-msgstr "Attendez ..."
+msgstr "Attendez..."
 
 #: server/templates/contest/submission_row.html:130
 msgid "No tokens"
@@ -1076,7 +1076,7 @@ msgstr "L'énoncé pour cette tâche est disponible en plusieurs versions "
 
 #: server/templates/contest/task_description.html:39
 msgid "You can see (and download) all of them using the list on the right."
-msgstr "Vous pouvez les voir tous (et les télécharger) dans la liste "
+msgstr "Vous pouvez les voir toutes (et les télécharger) dans la liste "
 "sur la droite."
 
 #: server/templates/contest/task_description.html:40
@@ -1193,7 +1193,7 @@ msgid ""
 "Remeber that to see the detailed result of a submission you need to use both "
 "a contest-token and a task-token."
 msgstr "Rappelez-vous que pour voir les résultats détaillés d'une soumission, "
-"vous avez besoin d'à la fois un jeton d'épreuve et de tâche."
+"vous avez besoin à la fois d'un jeton d'épreuve et d'un jeton de tâche."
 
 #: server/templates/contest/task_description.html:221
 #, python-format
@@ -1214,7 +1214,7 @@ msgstr "%(name)s (%(short_name)s) <small>soumissions</small>"
 
 #: server/templates/contest/task_submissions.html:93
 msgid "Submit a solution"
-msgstr ""
+msgstr "Soumettre une solution"
 
 #: server/templates/contest/task_submissions.html:109
 #: server/templates/contest/task_submissions.html:128
@@ -1235,22 +1235,23 @@ msgstr "Soumissions précédentes"
 #: server/templates/contest/task_submissions.html:148
 msgid "Right now, you have infinite tokens available on this task."
 msgstr "Pour l'instant, vous avez un nombre infini de jetons "
-"pour cette tâche?"
+"pour cette tâche."
 
 #: server/templates/contest/task_submissions.html:150
 msgid "Right now, you have one token available on this task."
-msgstr "Pour l'instant, vous avez un jeton disponible pour cette tâche"
+msgstr "Pour l'instant, vous avez un jeton disponible pour cette tâche."
 
 #: server/templates/contest/task_submissions.html:152
 #, python-format
 msgid "Right now, you have %(tokens)s tokens available on this task."
 msgstr "Pour l'instant, vous avez %(tokens)s jetons disponibles pour "
-"cette tâche"
+"cette tâche."
 
 #: server/templates/contest/task_submissions.html:156
 #, python-format
 msgid "But you have to wait until %(expiration_time)s to use them."
-msgstr "Mais vous devez attendre jusqu'à %(expiration_time)s pour l'utiliser."
+msgstr "Mais vous devez attendre jusqu'à %(expiration_time)s pour les "
+"utiliser."
 
 #: server/templates/contest/task_submissions.html:160
 #: server/templates/contest/task_submissions.html:168
@@ -1351,7 +1352,7 @@ msgstr "Résultat de l'évaluation"
 
 #: server/templates/contest/user_test_row.html:23
 msgid "Executing..."
-msgstr "En cours d'exécution ..."
+msgstr "En cours d'exécution..."
 
 #: server/templates/contest/user_test_row.html:29
 msgid "Executed"
