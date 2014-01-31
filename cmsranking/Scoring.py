@@ -239,7 +239,7 @@ class ScoringStore(object):
 
         for key, value in submission_store._store.iteritems():
             self.create_submission(key, value)
-        for key, value in subchange_store._store.iteritems():
+        for key, value in sorted(subchange_store._store.iteritems()):
             self.create_subchange(key, value)
 
     def add_score_callback(self, callback):
