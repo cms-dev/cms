@@ -213,6 +213,9 @@ class YamlLoader(Loader):
 
         """
 
+        conf = yaml.safe_load(
+            io.open(os.path.join(self.path, name + ".yaml"),
+                    "rt", encoding="utf-8"))
         path = os.path.realpath(os.path.join(self.path, name))
 
         # If there is no .itime file, we assume that the task has changed
@@ -249,12 +252,13 @@ class YamlLoader(Loader):
         files.append(os.path.join(path, "cor", "correttore"))
         files.append(os.path.join(path, "check", "manager"))
         files.append(os.path.join(path, "cor", "manager"))
-        for lang in LANGUAGES:
-            files.append(os.path.join(path, "sol", "grader.%s" % lang))
-        for other_filename in os.listdir(os.path.join(path, "sol")):
-            if other_filename.endswith('.h') or \
-                    other_filename.endswith('lib.pas'):
-                files.append(os.path.join(path, "sol", other_filename))
+        if not conf.get('output_only', False):
+            for lang in LANGUAGES:
+                files.append(os.path.join(path, "sol", "grader.%s" % lang))
+            for other_filename in os.listdir(os.path.join(path, "sol")):
+                if other_filename.endswith('.h') or \
+                        other_filename.endswith('lib.pas'):
+                    files.append(os.path.join(path, "sol", other_filename))
 
         # Yaml
         files.append(os.path.join(self.path, name + ".yaml"))
