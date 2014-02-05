@@ -251,10 +251,11 @@ class YamlLoader(Loader):
         files.append(os.path.join(path, "cor", "manager"))
         for lang in LANGUAGES:
             files.append(os.path.join(path, "sol", "grader.%s" % lang))
-        for other_filename in os.listdir(os.path.join(path, "sol")):
-            if other_filename.endswith('.h') or \
-                    other_filename.endswith('lib.pas'):
-                files.append(os.path.join(path, "sol", other_filename))
+        if os.path.exists(os.path.join(path, "sol")):
+            for other_filename in os.listdir(os.path.join(path, "sol")):
+                if other_filename.endswith('.h') or \
+                        other_filename.endswith('lib.pas'):
+                    files.append(os.path.join(path, "sol", other_filename))
 
         # Yaml
         files.append(os.path.join(self.path, name + ".yaml"))
