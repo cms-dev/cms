@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -122,7 +122,7 @@ class RemoteServiceBase(object):
         """
         return "unknown service (%r)" % (self.remote_address,)
 
-    def initialize(self, sock):
+    def initialize(self, sock, plus):
         """Activate the communication on the given socket.
 
         Put this class in its "connected" state, setting up all needed
@@ -130,6 +130,7 @@ class RemoteServiceBase(object):
 
         sock (socket): the socket acting as low-level communication
             channel.
+        plus (object): object to pass to the on_connect callbacks.
 
         """
         if self.connected:
@@ -145,7 +146,7 @@ class RemoteServiceBase(object):
         logger.info("Established connection with %s.", self._repr_remote())
 
         for handler in self._on_connect_handlers:
-            gevent.spawn(handler)
+            gevent.spawn(handler, plus)
 
     def finalize(self, reason=""):
         """Deactivate the communication on the current socket.
@@ -294,7 +295,7 @@ class RemoteServiceServer(RemoteServiceBase):
         self.pending_incoming_requests_threads.clear()
 
     def handle(self, socket_):
-        self.initialize(socket_)
+        self.initialize(socket_, self.remote_address)
         gevent.spawn(self.run)
 
     def run(self):
@@ -452,7 +453,7 @@ class RemoteServiceClient(RemoteServiceBase):
             logger.debug("Couldn't connect to %s: %s.",
                          self._repr_remote(), error)
         else:
-            self.initialize(sock)
+            self.initialize(sock, self.remote_service_coord)
 
     def _run(self):
         """Maintain the connection up, if required.
