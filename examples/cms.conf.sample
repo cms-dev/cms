@@ -114,7 +114,7 @@
     "stl_path": "/usr/share/doc/stl-manual/html/",
 
     "_help": "Whether questions and messages are enabled.",
-    "allow_communication": true,
+    "allow_questions": true,
 
 
 
