@@ -63,6 +63,7 @@ particular we are aware of the following.
     - Slovenian Invitational Informatics Olympiad, May 2013;
     - [JOI Open Contest 2013]
       (http://cms.ioi-jp.org/open-2013/index.html), Japan, June 2013.
+    - beOI 2014 (Belgian Olympiad in Informatics), February 2014.
 - Local competitions:
     - ABC 2013 (Algoritmi Bergamo Contest), Bergamo. Italy, May
       2013.
