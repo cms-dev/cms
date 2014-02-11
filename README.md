@@ -68,7 +68,8 @@ particular we are aware of the following.
     - Taipei High School Programming Contest, Taiwan, October 2012;
     - ABC 2013 (Algoritmi Bergamo Contest), Bergamo, Italy, May
       2013;
-    - Taipei High School Programming Contest, Taiwan, November 2013.
+    - Taipei High School Programming Contest, Taiwan, November 2013;
+    - Taiwan High School Programming Contest, December 2013.
 - Training:
     - training camps for the selections of the national IOI teams of
       Australia, India, Italy, Japan, Latvia, Serbia and Taiwan.
