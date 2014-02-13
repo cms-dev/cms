@@ -718,3 +718,32 @@ class FileCacher(object):
 
         """
         return self.backend.list()
+
+    def check_backend_integrity(self):
+        """Check the integrity of the backend.
+
+        Purge the cache and then request all the files from the
+        backend. For each of them the digest is recomputed and checked
+        against the one recorded in the backend.
+
+        If mismatches are found, they are reported with CRITICAL
+        severity. The method returns False if at least a mismatch is
+        found, True otherwise.
+
+        """
+        self.purge_cache()
+        clean = True
+        for digest, description in self.list():
+            fobj = self.get_file(digest)
+            hasher = hashlib.sha1()
+            buf = fobj.read(self.CHUNK_SIZE)
+            while len(buf) > 0:
+                hasher.update(buf)
+                buf = fobj.read(self.CHUNK_SIZE)
+            computed_digest = hasher.hexdigest().decode("ascii")
+            if digest != computed_digest:
+                logger.critical("File with hash %s actually has hash %s" %
+                                (digest, computed_digest))
+                clean = False
+
+        return clean
