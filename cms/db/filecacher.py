@@ -719,7 +719,7 @@ class FileCacher(object):
         """
         return self.backend.list()
 
-    def check_backend_integrity(self):
+    def check_backend_integrity(self, delete=False):
         """Check the integrity of the backend.
 
         Purge the cache and then request all the files from the
@@ -729,6 +729,8 @@ class FileCacher(object):
         If mismatches are found, they are reported with CRITICAL
         severity. The method returns False if at least a mismatch is
         found, True otherwise.
+
+        delete (bool): if True, files with wrong digest are deleted.
 
         """
         self.purge_cache()
@@ -744,6 +746,8 @@ class FileCacher(object):
             if digest != computed_digest:
                 logger.critical("File with hash %s actually has hash %s" %
                                 (digest, computed_digest))
+                if delete:
+                    self.delete(digest)
                 clean = False
 
         return clean
