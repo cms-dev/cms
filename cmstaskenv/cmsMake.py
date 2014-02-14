@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Luca Versari <veluca93@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -295,11 +296,14 @@ def build_text_list(base_dir, task_type):
     return actions
 
 
-def iter_file(name):
+def iter_GEN(name):
+    st = 0
     for l in open(name, "r"):
+        if l[:4] == "#ST:":
+            st += 1
         l = (" " + l).split("#")[0][1:].strip("\n")
         if l != "":
-            yield l
+            yield (l, st)
 
 
 def build_gen_list(base_dir, task_type):
@@ -331,7 +335,7 @@ def build_gen_list(base_dir, task_type):
 
     # Count non-trivial lines in GEN
     testcase_num = 0
-    for line in iter_file(os.path.join(base_dir, gen_GEN)):
+    for line in iter_GEN(os.path.join(base_dir, gen_GEN)):
         testcase_num += 1
 
     def compile_src(src, exe, lang, assume=None):
@@ -357,16 +361,18 @@ def build_gen_list(base_dir, task_type):
             os.makedirs(input_dir)
         except OSError:
             pass
-        for line in iter_file(os.path.join(base_dir, gen_GEN)):
+        for (line, st) in iter_GEN(os.path.join(base_dir, gen_GEN)):
             print("Generating input # %d" % (n), file=sys.stderr)
             with open(os.path.join(input_dir,
                                    'input%d.txt' % (n)), 'w') as fout:
                 call(base_dir,
                      [gen_exe] + line.split(),
                      stdout=fout)
-            call(base_dir,
-                 [validator_exe, os.path.join(input_dir,
-                                              'input%d.txt' % (n))])
+            command = [validator_exe, os.path.join(input_dir,
+                                                   'input%d.txt' % (n))]
+            if st != 0:
+                command.append(str(st))
+            call(base_dir, command)
             n += 1
 
     def make_output(n, assume=None):
