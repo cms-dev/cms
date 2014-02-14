@@ -28,7 +28,7 @@ service.
 import logging
 import time
 
-from cms.io.GeventLibrary import Service
+from cms.io import Service
 
 
 logger = logging.getLogger(__name__)
