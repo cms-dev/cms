@@ -24,14 +24,18 @@
 
 """
 
+import logging
 import os
 import random
 from StringIO import StringIO
 import hashlib
 
-from cms import default_argument_parser, config, logger, ServiceCoord
+from cms import default_argument_parser, config
 from cms.db.filecacher import FileCacher
 from cmstestsuite.TestService import TestService
+
+
+logger = logging.getLogger(__name__)
 
 
 class RandomFile(object):
@@ -120,8 +124,7 @@ class TestFileCacher(TestService):
     """
 
     def __init__(self, shard):
-        logger.initialize(ServiceCoord("TestFileCacher", shard))
-        TestService.__init__(self, shard, custom_logger=logger)
+        TestService.__init__(self, shard)
 
         # Assume we store the cache in "./cache/fs-cache-TestFileCacher-0/"
         self.cache_base_path = os.path.join(config.cache_dir,
