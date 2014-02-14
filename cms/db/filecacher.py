@@ -411,8 +411,6 @@ class FileCacher(object):
         else:
             self.backend = FSBackend(path)
 
-        self.file_dir = os.path.join(config.cache_dir, "files")
-
         if service is None:
             self.file_dir = tempfile.mkdtemp(dir=config.temp_dir)
         else:
@@ -420,7 +418,10 @@ class FileCacher(object):
                 config.cache_dir,
                 "fs-cache-%s-%d" % (service.name, service.shard))
 
-        if not mkdir(config.cache_dir) or not mkdir(self.file_dir):
+        self.temp_dir = os.path.join(self.file_dir, "_temp")
+
+        if not mkdir(config.cache_dir) or not mkdir(self.file_dir) \
+                or not mkdir(self.temp_dir):
             logger.error("Cannot create necessary directories.")
             raise RuntimeError("Cannot create necessary directories.")
 
@@ -435,15 +436,23 @@ class FileCacher(object):
         raise (KeyError): if the backend cannot find the file.
 
         """
+        ftmp_handle, temp_file_path = tempfile.mkstemp(dir=self.temp_dir,
+                                                       text=False)
+        ftmp = os.fdopen(ftmp_handle, 'w')
         cache_file_path = os.path.join(self.file_dir, digest)
 
         fobj = self.backend.get_file(digest)
 
+        # Copy the file to a temporary position
         try:
-            with io.open(cache_file_path, 'wb') as dst:
-                copyfileobj(fobj, dst, self.CHUNK_SIZE)
+            copyfileobj(fobj, ftmp, self.CHUNK_SIZE)
         finally:
+            ftmp.close()
             fobj.close()
+
+        # Then move it to its real location (this operation is atomic
+        # by POSIX requirement)
+        os.rename(temp_file_path, cache_file_path)
 
     def get_file(self, digest):
         """Retrieve a file from the storage.
