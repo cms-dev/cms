@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -365,6 +365,9 @@ def evaluation_step_before_run(sandbox, command,
     if time_limit > 0:
         sandbox.timeout = time_limit
         sandbox.wallclock_timeout = 2 * time_limit + 1
+    else:
+        sandbox.timeout = 0
+        sandbox.wallclock_timeout = 0
     sandbox.address_space = memory_limit * 1024
 
     if stdin_redirect is not None:
