@@ -136,19 +136,25 @@ class TestFileCacher(unittest.TestCase):
     def tearDown(self):
         shutil.rmtree(self.cache_base_path, ignore_errors=True)
 
-### TEST 000 ###
-
-    def test_000(self):
+    def test_file_life(self):
         """Send a ~100B random binary file to the storage through
         FileCacher as a file-like object. FC should cache the content
         locally.
+
+        Then retrieve it.
+
+        Then check its size.
+
+        Then get it back.
+
+        Then delete it.
 
         """
         self.size = 100
         self.content = "".join(chr(random.randint(0, 255))
                                for unused_i in xrange(self.size))
 
-        logger.info("  I am sending the ~100B binary file to FileCacher")
+        #logger.info("  I am sending the ~100B binary file to FileCacher")
         data = self.file_cacher.put_file_from_fobj(StringIO(self.content),
                                                    u"Test #000")
 
@@ -162,13 +168,8 @@ class TestFileCacher(unittest.TestCase):
             self.cache_path = os.path.join(self.cache_base_path, data)
             self.digest = data
 
-### TEST 001 ###
-
-    def test_001(self):
-        """Retrieve the file.
-
-        """
-        logger.info("  I am retrieving the ~100B binary file from FileCacher")
+        # Retrieve the file.
+        #logger.info("  I am retrieving the ~100B binary file from FileCacher")
         self.fake_content = "Fake content.\n"
         with open(self.cache_path, "wb") as cached_file:
             cached_file.write(self.fake_content)
@@ -186,13 +187,8 @@ class TestFileCacher(unittest.TestCase):
             else:
                 self.fail("Content differ.")
 
-### TEST 002 ###
-
-    def test_002(self):
-        """Check the size of the file.
-
-        """
-        logger.info("  I am checking the size of the ~100B binary file")
+        # Check the size of the file.
+        #logger.info("  I am checking the size of the ~100B binary file")
         try:
             size = self.file_cacher.get_size(self.digest)
         except Exception as error:
@@ -203,14 +199,9 @@ class TestFileCacher(unittest.TestCase):
             self.fail("The size is wrong: %d instead of %d" %
                       (size, self.size))
 
-### TEST 003 ###
-
-    def test_003(self):
-        """Get file from FileCacher.
-
-        """
-        logger.info("  I am retrieving the file from FileCacher " +
-                    "after deleting the cache.")
+        # Get file from FileCacher.
+        #logger.info("  I am retrieving the file from FileCacher " +
+        #            "after deleting the cache.")
         os.unlink(self.cache_path)
         try:
             data = self.file_cacher.get_file(self.digest)
@@ -228,13 +219,9 @@ class TestFileCacher(unittest.TestCase):
             self.fail("Local cache's content differ " +
                       "from original file.")
 
-### TEST 004 ###
-
-    def test_004(self):
-        """Delete the file through FS and tries to get it again through FC.
-
-        """
-        logger.info("  I am deleting the file from FileCacher.")
+        # Delete the file through FS and tries to get it again through
+        # FC.
+        #logger.info("  I am deleting the file from FileCacher.")
         try:
             self.file_cacher.delete(digest=self.digest)
         except Exception as error:
@@ -242,32 +229,30 @@ class TestFileCacher(unittest.TestCase):
             return
 
         else:
-            logger.info("  File deleted correctly.")
-            logger.info("  I am getting the file from FileCacher.")
+            #logger.info("  File deleted correctly.")
+            #logger.info("  I am getting the file from FileCacher.")
             with self.assertRaises(Exception):
                 self.file_cacher.get_file(self.digest)
 
-### TEST 005 ###
-
-    def test_005(self):
+    def test_fetch_missing_file(self):
         """Get unexisting file from FileCacher.
 
         """
-        logger.info("  I am retrieving an unexisting file from FileCacher.")
+        #logger.info("  I am retrieving an unexisting file from FileCacher.")
         with self.assertRaises(Exception):
             self.file_cacher.get_file(self.digest)
 
-### TEST 006 ###
-
-    def test_006(self):
+    def test_file_as_content(self):
         """Send a ~100B random binary file to the storage through
         FileCacher as a string. FC should cache the content locally.
+
+        Then retrieve it as a string.
 
         """
         self.content = "".join(chr(random.randint(0, 255))
                                for unused_i in xrange(100))
 
-        logger.info("  I am sending the ~100B binary file to FileCacher")
+        #logger.info("  I am sending the ~100B binary file to FileCacher")
         try:
             data = self.file_cacher.put_file_content(self.content,
                                                      u"Test #005")
@@ -285,14 +270,9 @@ class TestFileCacher(unittest.TestCase):
             self.cache_path = os.path.join(self.cache_base_path, data)
             self.digest = data
 
-### TEST 007 ###
-
-    def test_007(self):
-        """Retrieve the file as a string.
-
-        """
-        logger.info("  I am retrieving the ~100B binary file from FileCacher "
-                    "using get_file_to_string()")
+        # Retrieve the file as a string.
+        #logger.info("  I am retrieving the ~100B binary file from FileCacher "
+        #            "using get_file_to_string()")
         self.fake_content = "Fake content.\n"
         with open(self.cache_path, "wb") as cached_file:
             cached_file.write(self.fake_content)
@@ -308,14 +288,14 @@ class TestFileCacher(unittest.TestCase):
             else:
                 self.fail("Content differ.")
 
-### TEST 008 ###
-
-    def test_008(self):
+    def test_big_file(self):
         """Put a ~100MB file into the storage (using a specially
         crafted file-like object).
 
+        Then get it back.
+
         """
-        logger.info("  I am sending the ~100MB binary file to FileCacher")
+        #logger.info("  I am sending the ~100MB binary file to FileCacher")
         rand_file = RandomFile(100000000)
         try:
             data = self.file_cacher.put_file_from_fobj(rand_file, u"Test #007")
@@ -335,14 +315,9 @@ class TestFileCacher(unittest.TestCase):
             self.cache_path = os.path.join(self.cache_base_path, data)
             self.digest = data
 
-### TEST 009 ###
-
-    def test_009(self):
-        """Get the ~100MB file from FileCacher.
-
-        """
-        logger.info("  I am retrieving the ~100MB file from FileCacher " +
-                    "after deleting the cache.")
+        # Get the ~100MB file from FileCacher.
+        #logger.info("  I am retrieving the ~100MB file from FileCacher " +
+        #            "after deleting the cache.")
         os.unlink(self.cache_path)
         hash_file = HashingFile()
         try:
