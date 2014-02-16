@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Fabian Gundlach <320pointsguy@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -105,7 +106,8 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         command = ["/usr/bin/g++"]
         if for_evaluation:
             command += ["-DEVAL"]
-        command += ["-static", "-O2", "-o", executable_filename]
+        command += ["-static", "-O2", "-std=c++11",
+                    "-o", executable_filename]
         command += source_filenames
         commands.append(command)
     elif language == LANG_PASCAL:
