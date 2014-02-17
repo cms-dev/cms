@@ -24,7 +24,6 @@
 
 """
 
-import logging
 import os
 import random
 from StringIO import StringIO
@@ -33,9 +32,6 @@ import shutil
 import unittest
 
 from cms.db.filecacher import FileCacher
-
-
-logger = logging.getLogger(__name__)
 
 
 class RandomFile(object):
@@ -154,7 +150,6 @@ class TestFileCacher(unittest.TestCase):
         self.content = "".join(chr(random.randint(0, 255))
                                for unused_i in xrange(self.size))
 
-        #logger.info("  I am sending the ~100B binary file to FileCacher")
         data = self.file_cacher.put_file_from_fobj(StringIO(self.content),
                                                    u"Test #000")
 
@@ -169,7 +164,6 @@ class TestFileCacher(unittest.TestCase):
             self.digest = data
 
         # Retrieve the file.
-        #logger.info("  I am retrieving the ~100B binary file from FileCacher")
         self.fake_content = "Fake content.\n"
         with open(self.cache_path, "wb") as cached_file:
             cached_file.write(self.fake_content)
@@ -188,7 +182,6 @@ class TestFileCacher(unittest.TestCase):
                 self.fail("Content differ.")
 
         # Check the size of the file.
-        #logger.info("  I am checking the size of the ~100B binary file")
         try:
             size = self.file_cacher.get_size(self.digest)
         except Exception as error:
@@ -200,8 +193,6 @@ class TestFileCacher(unittest.TestCase):
                       (size, self.size))
 
         # Get file from FileCacher.
-        #logger.info("  I am retrieving the file from FileCacher " +
-        #            "after deleting the cache.")
         os.unlink(self.cache_path)
         try:
             data = self.file_cacher.get_file(self.digest)
@@ -221,7 +212,6 @@ class TestFileCacher(unittest.TestCase):
 
         # Delete the file through FS and tries to get it again through
         # FC.
-        #logger.info("  I am deleting the file from FileCacher.")
         try:
             self.file_cacher.delete(digest=self.digest)
         except Exception as error:
@@ -229,8 +219,6 @@ class TestFileCacher(unittest.TestCase):
             return
 
         else:
-            #logger.info("  File deleted correctly.")
-            #logger.info("  I am getting the file from FileCacher.")
             with self.assertRaises(Exception):
                 self.file_cacher.get_file(self.digest)
 
@@ -238,7 +226,6 @@ class TestFileCacher(unittest.TestCase):
         """Get unexisting file from FileCacher.
 
         """
-        #logger.info("  I am retrieving an unexisting file from FileCacher.")
         with self.assertRaises(Exception):
             self.file_cacher.get_file(self.digest)
 
@@ -252,7 +239,6 @@ class TestFileCacher(unittest.TestCase):
         self.content = "".join(chr(random.randint(0, 255))
                                for unused_i in xrange(100))
 
-        #logger.info("  I am sending the ~100B binary file to FileCacher")
         try:
             data = self.file_cacher.put_file_content(self.content,
                                                      u"Test #005")
@@ -271,8 +257,6 @@ class TestFileCacher(unittest.TestCase):
             self.digest = data
 
         # Retrieve the file as a string.
-        #logger.info("  I am retrieving the ~100B binary file from FileCacher "
-        #            "using get_file_to_string()")
         self.fake_content = "Fake content.\n"
         with open(self.cache_path, "wb") as cached_file:
             cached_file.write(self.fake_content)
@@ -295,7 +279,6 @@ class TestFileCacher(unittest.TestCase):
         Then get it back.
 
         """
-        #logger.info("  I am sending the ~100MB binary file to FileCacher")
         rand_file = RandomFile(100000000)
         try:
             data = self.file_cacher.put_file_from_fobj(rand_file, u"Test #007")
@@ -316,8 +299,6 @@ class TestFileCacher(unittest.TestCase):
             self.digest = data
 
         # Get the ~100MB file from FileCacher.
-        #logger.info("  I am retrieving the ~100MB file from FileCacher " +
-        #            "after deleting the cache.")
         os.unlink(self.cache_path)
         hash_file = HashingFile()
         try:
