@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 #
@@ -836,9 +836,9 @@ class IsolateSandbox(SandboxBase):
         if self.stdout_file is not None:
             res += ["-o", self.inner_absolute_path(self.stdout_file)]
         if self.max_processes is not None:
-            res += ["-p=%d" % self.max_processes]
+            res += ["-p%d" % self.max_processes]
         else:
-            res += ["-p="]
+            res += ["-p"]
         if self.stderr_file is not None:
             res += ["-r", self.inner_absolute_path(self.stderr_file)]
         if self.timeout is not None:
