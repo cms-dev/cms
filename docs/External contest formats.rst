@@ -66,7 +66,7 @@ Each contest user (contestant) is described in one element of the ``utenti`` key
 
 - ``username`` (string): obviously, the username.
 
-- ``password`` (string): obviusly as before, the user's password.
+- ``password`` (string): obviously as before, the user's password.
 
 The following are optional keys.
 
