@@ -4,6 +4,7 @@
 # Programming contest management system
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -134,6 +135,18 @@ ALL_TESTS = [
          task=batch_fileio, filename='nonzero-return-fileio.%l',
          languages=ALL_LANGUAGES,
          checks=[CheckOverallScore(0, 100), CheckNonzeroReturn()]),
+
+    # Fork
+
+    # We can't really check for a specific error, because forking
+    # doesn't cause an exceptional stop: it just returns -1 to the
+    # caller; we rely on the fact that the test program is designed to
+    # produce output only inside the child process
+
+    Test('fork',
+         task=batch_stdio, filename='fork.%l',
+         languages=(LANG_C, LANG_CPP),
+         checks=[CheckOverallScore(0, 100)]),
 
     # OOM problems. TODO: add appropriate checks for the correct output.
 
