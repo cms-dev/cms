@@ -470,6 +470,11 @@ class StupidSandbox(SandboxBase):
         self.max_processes = 1
         self.verbosity = 0
 
+        # Set common environment variables.
+        # Specifically needed by Python, that searches the home for
+        # packages.
+        self.set_env["HOME"] = "./"
+
     # TODO - It returns wall clock time, because I have no way to
     # check CPU time (libev doesn't have wait4() support)
     def get_execution_time(self):
@@ -805,9 +810,14 @@ class IsolateSandbox(SandboxBase):
         self.wallclock_timeout = None  # -w
         self.extra_timeout = None      # -x
 
+        # Set common environment variables.
+        # Specifically needed by Python, that searches the home for
+        # packages.
+        self.set_env["HOME"] = "./"
+
         # Tell isolate to get the sandbox ready.
         box_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
-            + ["-b", str(self.box_id)] + ["--init"]
+            + ["--box-id=%d" % self.box_id] + ["--init"]
         ret = subprocess.call(box_cmd)
         if ret != 0:
             raise SandboxInterfaceException(
@@ -858,47 +868,47 @@ class IsolateSandbox(SandboxBase):
         """
         res = list()
         if self.box_id is not None:
-            res += ["-b", str(self.box_id)]
+            res += ["--box-id=%d" % self.box_id]
         if self.cgroup:
             res += ["--cg"]
         if self.chdir is not None:
-            res += ["-c", self.chdir]
+            res += ["--chdir=%s" % self.chdir]
         for in_name, out_name, options in self.dirs:
             s = in_name
             if out_name is not None:
                 s += "=" + out_name
             if options is not None:
                 s += ":" + options
-            res += ["-d", s]
+            res += ["--dir=%s" % s]
         if self.preserve_env:
-            res += ["-e"]
+            res += ["--full-env"]
         for var in self.inherit_env:
-            res += ["-E", var]
+            res += ["--env=%s" % var]
         for var, value in self.set_env.items():
-            res += ["-E", "%s=%s" % (var, value)]
+            res += ["--env=%s=%s" % (var, value)]
         if self.stdin_file is not None:
-            res += ["-i", self.inner_absolute_path(self.stdin_file)]
+            res += ["--stdin=%s" % self.inner_absolute_path(self.stdin_file)]
         if self.stack_space is not None:
-            res += ["-k", str(self.stack_space)]
+            res += ["--stack=%d" % self.stack_space]
         if self.address_space is not None:
-            res += ["-m", str(self.address_space)]
+            res += ["--mem=%d" % self.address_space]
         if self.stdout_file is not None:
-            res += ["-o", self.inner_absolute_path(self.stdout_file)]
+            res += ["--stdout=%s" % self.inner_absolute_path(self.stdout_file)]
         if self.max_processes is not None:
-            res += ["-p%d" % self.max_processes]
+            res += ["--processes=%d" % self.max_processes]
         else:
-            res += ["-p"]
+            res += ["--processes"]
         if self.stderr_file is not None:
-            res += ["-r", self.inner_absolute_path(self.stderr_file)]
+            res += ["--stderr=%s" % self.inner_absolute_path(self.stderr_file)]
         if self.timeout is not None:
-            res += ["-t", str(self.timeout)]
-        res += ["-v"] * self.verbosity
+            res += ["--time=%g" % self.timeout]
+        res += ["--verbose"] * self.verbosity
         if self.wallclock_timeout is not None:
-            res += ["-w", str(self.wallclock_timeout)]
+            res += ["--wall-time=%g" % self.wallclock_timeout]
         if self.extra_timeout is not None:
-            res += ["-x", str(self.extra_timeout)]
-        res += ["-M", self.relative_path("%s.%d" %
-                                         (self.info_basename, self.exec_num))]
+            res += ["--extra-time=%g" % self.extra_timeout]
+        res += ["--meta=%s" % self.relative_path("%s.%d" % (self.info_basename,
+                                                            self.exec_num))]
         res += ["--run"]
         return res
 
@@ -1211,7 +1221,7 @@ class IsolateSandbox(SandboxBase):
 
         # Tell isolate to cleanup the sandbox.
         box_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
-            + ["-b", str(self.box_id)]
+            + ["--box-id=%d" % self.box_id]
         subprocess.call(box_cmd + ["--cleanup"])
 
         # Delete the working directory.

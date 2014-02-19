@@ -26,7 +26,7 @@ import tempfile
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, config
 from cms.grading.Sandbox import wait_without_std
-from cms.grading import get_compilation_command, compilation_step, \
+from cms.grading import get_compilation_commands, compilation_step, \
     human_evaluation_message, is_evaluation_passed, \
     extract_outcome_and_text, evaluation_step_before_run, \
     evaluation_step_after_run
@@ -72,10 +72,10 @@ class Communication(TaskType):
             source_filenames.append("stub%s" % source_ext)
             source_filenames.append(format_filename.replace(".%l", source_ext))
             executable_filename = format_filename.replace(".%l", "")
-            command = " ".join(get_compilation_command(language,
-                                                       source_filenames,
-                                                       executable_filename))
-            res[language] = [command]
+            commands = get_compilation_commands(language,
+                                                source_filenames,
+                                                executable_filename)
+            res[language] = commands
         return res
 
     def get_user_managers(self, submission_format):
@@ -127,13 +127,13 @@ class Communication(TaskType):
 
         # Prepare the compilation command
         executable_filename = format_filename.replace(".%l", "")
-        command = get_compilation_command(language,
-                                          source_filenames,
-                                          executable_filename)
+        commands = get_compilation_commands(language,
+                                            source_filenames,
+                                            executable_filename)
 
         # Run the compilation
         operation_success, compilation_success, text, plus = \
-            compilation_step(sandbox, command)
+            compilation_step(sandbox, commands)
 
         # Retrieve the compiled executables
         job.success = operation_success
