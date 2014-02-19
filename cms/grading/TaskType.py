@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -155,17 +155,19 @@ class TaskType(object):
     testable = True
 
     def get_compilation_commands(self, submission_format):
-        """Return the compilation command for all supported languages
+        """Return the compilation commands for all supported languages
 
-        submission_format (list of str): the list of files provided by the
+        submission_format ([string]): the list of files provided by the
             user that have to be compiled (the compilation command may
             contain references to other files like graders, stubs, etc...);
             they may contain the string "%l" as a language-wildcard.
-        return (dict of list of str): a dict whose keys are language codes
-            and whose values are lists of compilation commands for that
-            language (this is because the task type may require multiple
-            compilations, e.g. encoder and decoder); return None if no
-            compilation is required (e.g. output only).
+        return ({string: [[string]]}|None): for each language (indexed
+            by its shorthand code i.e. one of the cms.LANG_* constants)
+            provide a list of commands, each as a list of tokens. That
+            is because some languages may require multiple operations
+            to compile or because some task types may require multiple
+            independent compilations (e.g. encoder and decoder); return
+            None if no compilation is required (e.g. output only).
 
         """
         raise NotImplementedError("Please subclass this class.")

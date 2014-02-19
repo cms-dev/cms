@@ -6,7 +6,7 @@
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -64,30 +64,30 @@ class JobException(Exception):
         return "JobException(\"%s\")" % (repr(self.msg))
 
 
-def get_compilation_command(language, source_filenames, executable_filename,
-                            for_evaluation=True):
-    """Return the compilation command.
+def get_compilation_commands(language, source_filenames, executable_filename,
+                             for_evaluation=True):
+    """Return the compilation commands.
 
-    The compilation command is for the specified language, source
-    filenames and executable filename. The command is a list of
+    The compilation commands are for the specified language, source
+    filenames and executable filename. Each command is a list of
     strings, suitable to be passed to the methods in subprocess
     package.
 
     language (string): one of the recognized languages.
-    source_filenames (list): a list of the string that are the
-                             filenames of the source files to compile;
-                             the order is relevant: the first file
-                             must be the one that contains the program
-                             entry point (with some langages,
-                             e.g. Pascal, only the main file must be
-                             passed to the compiler).
+    source_filenames ([string]): a list of the string that are the
+        filenames of the source files to compile; the order is
+        relevant: the first file must be the one that contains the
+        program entry point (with some langages, e.g. Pascal, only the
+        main file must be passed to the compiler).
     executable_filename (string): the output file.
     for_evaluation (bool): if True, define EVAL during the compilation;
-                           defaults to True.
+        defaults to True.
 
-    return (list): a list of string to be passed to subprocess.
+    return ([[string]]): a list of commands, each a list of strings to
+        be passed to subprocess.
 
     """
+    commands = []
     if language == LANG_C:
         command = ["/usr/bin/gcc"]
         if for_evaluation:
@@ -95,74 +95,77 @@ def get_compilation_command(language, source_filenames, executable_filename,
         command += ["-static", "-O2", "-o", executable_filename]
         command += source_filenames
         command += ["-lm"]
+        commands.append(command)
     elif language == LANG_CPP:
         command = ["/usr/bin/g++"]
         if for_evaluation:
             command += ["-DEVAL"]
         command += ["-static", "-O2", "-o", executable_filename]
         command += source_filenames
+        commands.append(command)
     elif language == LANG_PASCAL:
         command = ["/usr/bin/fpc"]
         if for_evaluation:
             command += ["-dEVAL"]
         command += ["-XS", "-O2", "-o%s" % executable_filename]
         command += [source_filenames[0]]
+        commands.append(command)
     elif language == LANG_PYTHON:
         # The executable name is fixed, and there is no way to specify
         # the name of the pyc, so we need to bundle together two
         # commands (compilation and rename).
-        command = ["/bin/sh", "-c"]
-        # Change the raw string to:
-        # "/usr/bin/python3 -m py_compile %s;mv __pycache__/%s.*.pyc %s"
-        # in order to use Python 3.
-        command += ["/usr/bin/python2 -m py_compile %s;mv %s.pyc %s" % (
-            source_filenames[0],
-            os.path.splitext(os.path.basename(source_filenames[0]))[0],
-            executable_filename,
-            )]
+        # In order to use Python 3 change them to:
+        # /usr/bin/python3 -m py_compile %s
+        # mv __pycache__/%s.*.pyc %s
+        py_command = ["/usr/bin/python2", "-m", "py_compile",
+                      source_filenames[0]]
+        mv_command = ["/bin/mv", "%s.pyc" % os.path.splitext(os.path.basename(
+                      source_filenames[0]))[0], executable_filename]
+        commands.append(py_command)
+        commands.append(mv_command)
     elif language == LANG_PHP:
-        command = ["/bin/sh", "-c"]
-        command += ["cp %s %s" % (source_filenames[0], executable_filename)]
+        command = ["/bin/cp", source_filenames[0], executable_filename]
+        commands.append(command)
     elif language == LANG_JAVA:
         class_name = "Task"  # Submitted java class must be called Task.
-        command = ["/bin/sh", "-c"]
-        command += ["/bin/mv %(source)s %(class)s.java; "
-                    "/usr/bin/gcj --main=%(class)s -O3 -o %(exec)s "
-                    "%(class)s.java" % {
-                        "source": source_filenames[0],
-                        "exec": executable_filename,
-                        "class": class_name
-                        }]
+        mv_command = ["/bin/mv", source_filenames[0], "%s.java" % class_name]
+        gcj_command = ["/usr/bin/gcj", "--main=%s" % class_name, "-O3", "-o",
+                       executable_filename, "%s.java" % class_name]
+        commands.append(mv_command)
+        commands.append(gcj_command)
     else:
         raise ValueError("Unknown language %s." % language)
-    return command
+    return commands
 
 
-def get_evaluation_command(language, executable_filename):
-    """Return the evaluation command.
+def get_evaluation_commands(language, executable_filename):
+    """Return the evaluation commands.
 
-    The evaluation command is for the given language and executable
-    filename. The command is a list of strings, suitable to be passed
+    The evaluation commands are for the given language and executable
+    filename. Each command is a list of strings, suitable to be passed
     to the methods in subprocess package.
 
     language (string): one of the recognized languages.
     executable_filename (string): the name of the executable.
 
-    return (list): a list of string to be passed to subprocess.
+    return ([[string]]): a list of string to be passed to subprocess.
 
     """
+    commands = []
     if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA):
         command = [os.path.join(".", executable_filename)]
+        commands.append(command)
     elif language == LANG_PYTHON:
-        command = ["/bin/sh", "-c"]
-        # Change "python2" to "python3" to use Python 3.
-        command += ["HOME=./ /usr/bin/python2 %s" % executable_filename]
+        # In order to use Python 3 change it to:
+        # /usr/bin/python3 %s
+        command = ["/usr/bin/python2", executable_filename]
+        commands.append(command)
     elif language == LANG_PHP:
-        command = ["/bin/sh", "-c"]
-        command += ["/usr/bin/php5 %s" % executable_filename]
+        command = ["/usr/bin/php5", executable_filename]
+        commands.append(command)
     else:
         raise ValueError("Unknown language %s." % language)
-    return command
+    return commands
 
 
 def format_status_text(status, translator=None):
@@ -199,15 +202,15 @@ def format_status_text(status, translator=None):
         return translator("N/A")
 
 
-def compilation_step(sandbox, command):
-    """Execute a compilation command in the sandbox, setting up the
+def compilation_step(sandbox, commands):
+    """Execute some compilation commands in the sandbox, setting up the
     sandbox itself with a standard configuration and doing standard
     checks at the end of the compilation.
 
     Note: this needs a sandbox already created.
 
     sandbox (Sandbox): the sandbox we consider.
-    command ([string]): the actual compilation line.
+    commands ([[string]]): the actual compilation lines.
 
     """
     # Set sandbox parameters suitable for compilation.
@@ -220,13 +223,14 @@ def compilation_step(sandbox, command):
     sandbox.stdout_file = "compiler_stdout.txt"
     sandbox.stderr_file = "compiler_stderr.txt"
 
-    # Actually run the compilation command.
+    # Actually run the compilation commands.
     logger.debug("Starting compilation step.")
-    box_success = sandbox.execute_without_std(command, wait=True)
-    if not box_success:
-        logger.error("Compilation aborted because of "
-                     "sandbox error in `%s'." % sandbox.path)
-        return False, None, None, None
+    for command in commands:
+        box_success = sandbox.execute_without_std(command, wait=True)
+        if not box_success:
+            logger.error("Compilation aborted because of "
+                         "sandbox error in `%s'." % sandbox.path)
+            return False, None, None, None
 
     # Detect the outcome of the compilation.
     exit_status = sandbox.get_exit_status()
@@ -314,16 +318,16 @@ def compilation_step(sandbox, command):
     return success, compilation_success, text, plus
 
 
-def evaluation_step(sandbox, command,
+def evaluation_step(sandbox, commands,
                     time_limit=0.0, memory_limit=0,
                     allow_dirs=None,
                     stdin_redirect=None, stdout_redirect=None):
-    """Execute an evaluation command in the sandbox. Note that in some
-    task types, there may be more than one evaluation commands (per
-    testcase) (in others there can be none, of course).
+    """Execute some evaluation commands in the sandbox. Note that in
+    some task types, there may be more than one evaluation commands
+    (per testcase) (in others there can be none, of course).
 
     sandbox (Sandbox): the sandbox we consider.
-    command ([string]): the actual evaluation line.
+    commands ([[string]]): the actual evaluation lines.
     time_limit (float): time limit in seconds.
     memory_limit (int): memory limit in MB.
 
@@ -331,12 +335,13 @@ def evaluation_step(sandbox, command,
         False; and additional data.
 
     """
-    success = evaluation_step_before_run(
-        sandbox, command, time_limit, memory_limit, allow_dirs,
-        stdin_redirect, stdout_redirect, wait=True)
-    if not success:
-        logger.debug("Job failed in evaluation_step_before_run.")
-        return False, None
+    for command in commands:
+        success = evaluation_step_before_run(
+            sandbox, command, time_limit, memory_limit, allow_dirs,
+            stdin_redirect, stdout_redirect, wait=True)
+        if not success:
+            logger.debug("Job failed in evaluation_step_before_run.")
+            return False, None
 
     success, plus = evaluation_step_after_run(sandbox)
     if not success:

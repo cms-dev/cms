@@ -27,7 +27,7 @@ import tempfile
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
     LANGUAGE_TO_HEADER_EXT_MAP, config
 from cms.grading.Sandbox import wait_without_std
-from cms.grading import get_compilation_command, compilation_step, \
+from cms.grading import get_compilation_commands, compilation_step, \
     evaluation_step_before_run, evaluation_step_after_run, \
     is_evaluation_passed, human_evaluation_message, white_diff_step
 from cms.grading.TaskType import TaskType, \
@@ -85,9 +85,9 @@ class TwoSteps(TaskType):
 
             # Get compilation command and compile.
             executable_filename = "manager"
-            command = " ".join(get_compilation_command(language,
-                                                       source_filenames,
-                                                       executable_filename))
+            commands = get_compilation_commands(language,
+                                                source_filenames,
+                                                executable_filename)
             res[language] = [command]
         return res
 
@@ -145,11 +145,11 @@ class TwoSteps(TaskType):
 
         # Get compilation command and compile.
         executable_filename = "manager"
-        command = get_compilation_command(language,
-                                          source_filenames,
-                                          executable_filename)
+        commands = get_compilation_commands(language,
+                                            source_filenames,
+                                            executable_filename)
         operation_success, compilation_success, text, plus = \
-            compilation_step(sandbox, command)
+            compilation_step(sandbox, commands)
 
         # Retrieve the compiled executables
         job.success = operation_success

@@ -23,7 +23,7 @@
 import logging
 
 from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP
-from cms.grading import get_compilation_command, get_evaluation_command, \
+from cms.grading import get_compilation_commands, get_evaluation_commands, \
     compilation_step, evaluation_step, human_evaluation_message, \
     is_evaluation_passed, extract_outcome_and_text, white_diff_step
 from cms.grading.ParameterTypes import ParameterTypeCollection, \
@@ -113,10 +113,10 @@ class Batch(TaskType):
                 source_filenames.append("grader%s" % source_ext)
             source_filenames.append(format_filename.replace(".%l", source_ext))
             executable_filename = format_filename.replace(".%l", "")
-            command = " ".join(get_compilation_command(language,
-                                                       source_filenames,
-                                                       executable_filename))
-            res[language] = [command]
+            commands = get_compilation_commands(language,
+                                                source_filenames,
+                                                executable_filename)
+            res[language] = commands
         return res
 
     def get_user_managers(self, submission_format):
@@ -178,13 +178,13 @@ class Batch(TaskType):
 
         # Prepare the compilation command
         executable_filename = format_filename.replace(".%l", "")
-        command = get_compilation_command(language,
-                                          source_filenames,
-                                          executable_filename)
+        commands = get_compilation_commands(language,
+                                            source_filenames,
+                                            executable_filename)
 
         # Run the compilation
         operation_success, compilation_success, text, plus = \
-            compilation_step(sandbox, command)
+            compilation_step(sandbox, commands)
 
         # Retrieve the compiled executables
         job.success = operation_success
@@ -210,7 +210,7 @@ class Batch(TaskType):
         # Prepare the execution
         executable_filename = job.executables.keys()[0]
         language = job.language
-        command = get_evaluation_command(language, executable_filename)
+        commands = get_evaluation_commands(language, executable_filename)
         executables_to_get = {
             executable_filename:
             job.executables[executable_filename].digest
@@ -237,7 +237,7 @@ class Batch(TaskType):
         # Actually performs the execution
         success, plus = evaluation_step(
             sandbox,
-            command,
+            commands,
             job.time_limit,
             job.memory_limit,
             stdin_redirect=stdin_redirect,
@@ -310,8 +310,8 @@ class Batch(TaskType):
                                 executable=True)
                             success, _ = evaluation_step(
                                 sandbox,
-                                ["./%s" % manager_filename,
-                                 input_filename, "res.txt", output_filename])
+                                [["./%s" % manager_filename,
+                                  input_filename, "res.txt", output_filename]])
                         if success:
                             try:
                                 outcome, text = \

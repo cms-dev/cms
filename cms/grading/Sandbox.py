@@ -470,6 +470,11 @@ class StupidSandbox(SandboxBase):
         self.max_processes = 1
         self.verbosity = 0
 
+        # Set common environment variables.
+        # Specifically needed by Python, that searches the home for
+        # packages.
+        self.set_env["HOME"] = "./"
+
     # TODO - It returns wall clock time, because I have no way to
     # check CPU time (libev doesn't have wait4() support)
     def get_execution_time(self):
@@ -804,6 +809,11 @@ class IsolateSandbox(SandboxBase):
         self.verbosity = 0             # -v
         self.wallclock_timeout = None  # -w
         self.extra_timeout = None      # -x
+
+        # Set common environment variables.
+        # Specifically needed by Python, that searches the home for
+        # packages.
+        self.set_env["HOME"] = "./"
 
         # Tell isolate to get the sandbox ready.
         box_cmd = [self.box_exec] + (["--cg"] if self.cgroup else []) \
