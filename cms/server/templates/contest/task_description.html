@@ -129,7 +129,7 @@
     <td>{{ LANGUAGE_NAMES[l] }}</td>
     <td class="compilation_command_cell">
 {% for cmd in c %}
-        <code class="compilation_command">{{ cmd }}</code>
+        <code class="compilation_command">{{ " ".join(cmd) }}</code>
 {% end %}
     </td>
     {% end %}

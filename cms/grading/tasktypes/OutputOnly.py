@@ -148,8 +148,8 @@ class OutputOnly(TaskType):
                     input_digest)
                 success, _ = evaluation_step(
                     sandbox,
-                    ["./%s" % manager_filename,
-                     "input.txt", "res.txt", "output.txt"])
+                    [["./%s" % manager_filename,
+                      "input.txt", "res.txt", "output.txt"]])
                 if success:
                     outcome, text = extract_outcome_and_text(sandbox)
 
