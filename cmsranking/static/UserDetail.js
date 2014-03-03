@@ -31,6 +31,12 @@ var UserDetail = new function () {
             self.hide();
         });
 
+        $(document).keyup(function (event) {
+            if (event.keyCode == 27) { // ESC key
+                self.hide();
+            }
+        });
+
         self.f_name_label = $('#UserDetail_f_name');
         self.l_name_label = $('#UserDetail_l_name');
         self.team_label = $('#UserDetail_team');
