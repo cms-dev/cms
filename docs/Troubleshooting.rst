@@ -20,6 +20,8 @@ Database
 
   *Possible cause.* The default configuration of PostgreSQL may allow insufficiently many incoming connections on the database engine. You can raise this limit by tweaking the ```max_connections``` parameter in ```postgresql.conf``` (`see docs <http://www.postgresql.org/docs/9.1/static/runtime-config-connection.html>`_). This, in turn, requires more shared memory for the PostgreSQL process (see ```shared_buffers``` parameter in `docs <http://www.postgresql.org/docs/9.1/static/runtime-config-resource.html>`_), which may overflow the maximum limit allowed by the operating system. In such case see the suggestions in http://www.postgresql.org/docs/9.1/static/kernel-resources.html#SYSVIPC. Users reported that another way to go is to use a connection pooler like `PgBouncer <https://wiki.postgresql.org/wiki/PgBouncer>`_.
 
+  Slightly different, but related, is another issue: CMS may be unable to create new connections to the database because its pool is exhausted. In this case you probably want to modify the ```pool_size``` argument in :gh_blob:`cms/db/__init__.py` or try to spread your users over more instances of ContestWebServer.
+
 Servers
 =======
 
