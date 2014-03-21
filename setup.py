@@ -6,6 +6,7 @@
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -304,6 +305,7 @@ def install():
             os.path.join("/", "var", "local", "cache"),
             os.path.join("/", "var", "local", "lib"),
             os.path.join("/", "var", "local", "run"),
+            os.path.join("/", "usr", "local", "include"),
             os.path.join("/", "usr", "local", "share")]
     for _dir in dirs:
         # Skip if destination is a symlink
@@ -312,6 +314,12 @@ def install():
         makedir(_dir, root, 0755)
         _dir = os.path.join(_dir, "cms")
         makedir(_dir, cmsuser, 0770)
+
+    print("copying testlib:")
+    path = os.path.join("cmscontrib", "testlib.h")
+    dest_path = os.path.join("/", "usr", "local", "include",
+                             "cms", "testlib.h")
+    copyfile(path, dest_path, root, 0644)
 
     os.umask(old_umask)
     print("done.")
