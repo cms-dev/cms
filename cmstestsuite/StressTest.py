@@ -5,6 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
+# Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -222,12 +223,13 @@ class RandomActor(Actor):
             elif choice < 0.5:
                 task = random.choice(self.tasks)
                 self.do_step(TaskRequest(self.browser,
-                                         task[0],
+                                         task[1],
                                          base_url=self.base_url))
             else:
                 task = random.choice(self.tasks)
                 self.do_step(TaskStatementRequest(self.browser,
-                                                  task[0],
+                                                  task[1],
+                                                  random.choice(task[2]),
                                                   base_url=self.base_url))
 
 
@@ -248,7 +250,7 @@ def harvest_contest_data(contest_id):
         for user in contest.users:
             users[user.username] = {'password': user.password}
         for task in contest.tasks:
-            tasks.append((task.id, task.name))
+            tasks.append((task.id, task.name, task.statements.keys()))
     return users, tasks
 
 
