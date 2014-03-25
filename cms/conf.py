@@ -67,7 +67,7 @@ class Config(object):
         self.sandbox_implementation = 'isolate'
 
         # WebServers.
-        self.secret_key = "8e045a51e4b102ea803c06f92841a1fb",
+        self.secret_key = "8e045a51e4b102ea803c06f92841a1fb"
         self.tornado_debug = False
 
         # ContestWebServer.
