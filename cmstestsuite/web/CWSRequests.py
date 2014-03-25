@@ -24,7 +24,6 @@ import re
 import os
 import random
 
-from cmscommon.crypto import decrypt_number
 from cmstestsuite.web import GenericRequest
 
 
@@ -152,7 +151,7 @@ class SubmitRequest(GenericRequest):
         # Parse submission ID out of response.
         p = self.browser.geturl().split("?")[-1]
         try:
-            submission_id = decrypt_number(p)
+            submission_id = p
         except Exception:
             return None
         return submission_id
