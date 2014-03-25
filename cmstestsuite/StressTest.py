@@ -276,9 +276,40 @@ def main():
     parser.add_option("-S", "--submissions-path",
                       help="base path for submission to send",
                       action="store", default=None, dest="submissions_path")
+    parser.add_option("-p", "--prepare",
+                      help="file to put contest info to",
+                      action="store", default=None, dest="prepare_path")
+    parser.add_option("-r", "--read-from",
+                      help="file to read contest info from",
+                      action="store", default=None, dest="read_from")
     options = parser.parse_args()[0]
 
-    users, tasks = harvest_contest_data(options.contest_id)
+    # if prepare_path is specified we only need
+    # to save some useful contest data and exit
+    if options.prepare_path is not None:
+        users, tasks = harvest_contest_data(options.contest_id)
+        contest_data = dict()
+        contest_data['users'] = users
+        contest_data['tasks'] = tasks
+        f = open(options.prepare_path, "w")
+        f.write(str(contest_data))
+        f.close()
+        return
+
+    users = []
+    tasks = []
+
+    # if read_from is not specified, read contest data from database
+    # if it is specified - read contest data from the file
+    if options.read_from is None:
+        users, tasks = harvest_contest_data(options.contest_id)
+    else:
+        f = open(options.read_from, "r")
+        contest_data = eval(f.read())
+        f.close()
+        users = contest_data['users']
+        tasks = contest_data['tasks']
+
     if options.actor_num is not None:
         user_items = users.items()
         if options.sort_actors:
