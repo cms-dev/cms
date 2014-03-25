@@ -143,8 +143,8 @@ class TestRequest(object):
             # Success
             elif success:
                 if debug:
-                    print("Request '%s' successfully completed" %
-                          (description), file=sys.stderr)
+                    print("Request '%s' successfully completed in %.3fs" %
+                          (description, self.duration), file=sys.stderr)
                 self.outcome = TestRequest.OUTCOME_SUCCESS
 
             # Failure
