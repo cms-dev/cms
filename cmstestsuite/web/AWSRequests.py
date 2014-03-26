@@ -37,7 +37,7 @@ class AWSSubmissionViewRequest(GenericRequest):
         self.url = "%ssubmission/%s" % (self.base_url, submission_id)
 
     def describe(self):
-        return "check submission %d" % self.submission_id
+        return "check submission %s" % self.submission_id
 
     def test_success(self):
         if not GenericRequest.test_success(self):
