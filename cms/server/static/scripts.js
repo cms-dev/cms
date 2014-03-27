@@ -121,10 +121,11 @@
          * subject (string): subject.
          * text (string): body of notification.
          */
-        display_notification: function(type, timestamp, subject, text, contest_id)
+        display_notification: function(type, timestamp_raw, subject, text, contest_id)
         {
-            if (this.last_notification < timestamp)
-                this.last_notification = timestamp;
+            if (this.last_notification < timestamp_raw)
+                this.last_notification = timestamp_raw;
+            var timestamp = parseInt(timestamp_raw);
             var div = document.getElementById("notifications");
             var s = '<div class="notification notification_type_' + type + '">' +
                 '<div class="notification_close" ' +
@@ -211,7 +212,7 @@
                                           {
                                               display_notification(
                                                   response[i].type,
-                                                  parseInt(response[i].timestamp),
+                                                  response[i].timestamp,
                                                   response[i].subject,
                                                   response[i].text,
                                                   response[i].contest_id);
