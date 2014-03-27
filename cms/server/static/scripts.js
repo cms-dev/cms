@@ -117,7 +117,7 @@
          *
          * type (string): can be "notification", "message", "question",
          *                "announcement".
-         * timestamp (int): time of the notification.
+         * timestamp (number): time of the notification.
          * subject (string): subject.
          * text (string): body of notification.
          */
@@ -125,14 +125,15 @@
         {
             if (this.last_notification < timestamp)
                 this.last_notification = timestamp;
+            var timestamp_int = parseInt(timestamp);
             var div = document.getElementById("notifications");
             var s = '<div class="notification notification_type_' + type + '">' +
                 '<div class="notification_close" ' +
                 'onclick="utils.close_notification(this);">&times;' +
                 '</div><div class="notification_msg">' +
                 '<div class="notification_timestamp">';
-            if (timestamp != 0)
-                s += this.format_time_or_date(timestamp);
+            if (timestamp_int != 0)
+                s += this.format_time_or_date(timestamp_int);
             s += '</div>';
 
             s += '<div class="notification_subject">'
@@ -211,7 +212,7 @@
                                           {
                                               display_notification(
                                                   response[i].type,
-                                                  parseInt(response[i].timestamp),
+                                                  response[i].timestamp,
                                                   response[i].subject,
                                                   response[i].text,
                                                   response[i].contest_id);
