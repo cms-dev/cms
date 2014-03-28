@@ -252,7 +252,8 @@ class YamlLoader(Loader):
         files.append(os.path.join(path, "cor", "correttore"))
         files.append(os.path.join(path, "check", "manager"))
         files.append(os.path.join(path, "cor", "manager"))
-        if not conf.get('output_only', False):
+        if not conf.get('output_only', False) and \
+                os.path.isdir(os.path.join(path, "sol")):
             for lang in LANGUAGES:
                 files.append(os.path.join(path, "sol", "grader.%s" % lang))
             for other_filename in os.listdir(os.path.join(path, "sol")):
