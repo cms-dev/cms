@@ -111,7 +111,7 @@ class Reimporter(object):
                 pass
 
             # Special case #2: Task.datasets
-            if _is_rel(prp, Task.datasets):
+            elif _is_rel(prp, Task.datasets):
                 old_datasets = dict((d.description, d) for d in old_value)
                 new_datasets = dict((d.description, d) for d in new_value)
 
