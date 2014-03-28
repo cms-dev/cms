@@ -100,7 +100,7 @@
 
     "_help": "Whether the CWSs are behind a (trusted) proxy (e.g.,",
     "_help": "nginx) that does load balancing. Used to know if it is",
-    "_help": "save to assume that the real source IP address is the",
+    "_help": "safe to assume that the real source IP address is the",
     "_help": "one listed in the request headers.",
     "is_proxy_used": false,
 
