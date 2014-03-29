@@ -190,6 +190,7 @@ class YamlLoader(Loader):
 
         load(conf, args, ["start", "inizio"], conv=make_datetime)
         load(conf, args, ["stop", "fine"], conv=make_datetime)
+        load(conf, args, ["per_user_time"], conv=make_timedelta)
 
         load(conf, args, "max_submission_number")
         load(conf, args, "max_user_test_number")
