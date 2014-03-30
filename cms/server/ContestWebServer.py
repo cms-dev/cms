@@ -1314,7 +1314,7 @@ class UserTestInterfaceHandler(BaseHandler):
                 .filter(UserTest.user == self.current_user)\
                 .filter(UserTest.task == task).all()
 
-        if default_task is None:
+        if default_task is None and len(self.contest.tasks) > 0:
             default_task = self.contest.tasks[0]
 
         self.render("test_interface.html", default_task=default_task,
