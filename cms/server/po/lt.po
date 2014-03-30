@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: 1.1.0pre\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2014-01-08 15:11+0100\n"
-"PO-Revision-Date: 2014-03-24 01:00+0200\n"
+"PO-Revision-Date: 2014-03-31 01:00+0300\n"
 "Last-Translator: Vytis Banaitis <vytis.banaitis@gmail.com>\n"
 "Language-Team: Lithuanian\n"
 "Language: lt\n"
@@ -70,7 +70,7 @@ msgstr "Vykdymo metu nebuvo sukurtas failas %s"
 
 #, python-format
 msgid "Subtask %d"
-msgstr ""
+msgstr "Dalinė užduotis %d"
 
 msgid "Outcome"
 msgstr "Rezultatas"
@@ -160,7 +160,7 @@ msgstr "Visi pirminiai programos tekstai turi būti ta pačia kalba."
 
 #, python-format
 msgid "Language %s not allowed in this contest."
-msgstr ""
+msgstr "Kalba %s nėra leidžiama šiose varžybose."
 
 msgid "Invalid submission!"
 msgstr "Netinkamas pateiktas sprendimas!"
