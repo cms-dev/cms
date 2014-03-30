@@ -92,7 +92,7 @@ $(document).ready(function () {
     <div class="span5">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">
             <fieldset>
-{% for idx, filename in enumerate([x.filename for x in task.submission_format] + task_type.get_user_managers(task.submission_format) + [_("input")]) %}
+{% for idx, filename in enumerate([x.filename for x in task.submission_format] + task_type.get_user_managers(task.submission_format)) %}
                 <div class="control-group">
                     <label class="control-label" for="input{{ idx }}">{{ filename.replace(".%l", "") }}</label>
                     <div class="controls">
@@ -100,6 +100,12 @@ $(document).ready(function () {
                     </div>
                 </div>
 {% end %}
+                <div class="control-group">
+                    <label class="control-label" for="input_file">{{ _("input") }}</label>
+                    <div class="controls">
+                        <input type="file" class="input-xlarge" id="input_file" name="input"/>
+                    </div>
+                </div>
                 <div class="control-group">
                     <div class="controls">
                         <button type="submit" class="btn btn-success">{{ _("Submit") }}</button>
