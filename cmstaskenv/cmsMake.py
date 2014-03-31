@@ -33,7 +33,7 @@ import shutil
 import tempfile
 import yaml
 
-from cms.grading import get_compilation_command
+from cms.grading import get_compilation_commands
 from cmstaskenv.Test import test_testcases, clean_test_env
 
 
@@ -112,11 +112,20 @@ def detect_task_name(base_dir):
 
 def parse_task_yaml(base_dir):
     parent_dir = os.path.split(os.path.realpath(base_dir))[0]
-    yaml_path = os.path.join(parent_dir, "%s.yaml" %
-                             (detect_task_name(base_dir)))
 
-    with open(yaml_path) as yaml_file:
-        conf = yaml.load(yaml_file)
+    # We first look for the yaml file inside the task folder,
+    # and eventually fallback to a yaml file in its parent folder.
+    yaml_path = os.path.join(base_dir, "task.yaml")
+
+    try:
+        with open(yaml_path) as yaml_file:
+            conf = yaml.load(yaml_file)
+    except IOError:
+        yaml_path = os.path.join(parent_dir, "%s.yaml" %
+                                 (detect_task_name(base_dir)))
+
+        with open(yaml_path) as yaml_file:
+            conf = yaml.load(yaml_file)
     return conf
 
 
@@ -178,7 +187,7 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
 
         srcs = []
         # The grader, when present, must be in the first position of
-        # srcs; see docstring of get_compilation_command().
+        # srcs; see docstring of get_compilation_commands().
         if task_type == ['Batch', 'Grad'] or \
                 task_type == ['Batch', 'GradComp']:
             srcs.append(os.path.join(SOL_DIRNAME,
@@ -193,11 +202,13 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
 
         def compile_src(srcs, exe, for_evaluation, lang, assume=None):
             if lang != 'pas' or len(srcs) == 1:
-                call(base_dir, get_compilation_command(
+                compilation_commands = get_compilation_commands(
                     lang,
                     srcs,
                     exe,
-                    for_evaluation=for_evaluation))
+                    for_evaluation=for_evaluation)
+                for command in compilation_commands:
+                    call(base_dir, command)
 
             # When using Pascal with graders, file naming conventions
             # require us to do a bit of trickery, i.e., performing the
@@ -216,11 +227,13 @@ def build_sols_list(base_dir, task_type, in_out_files, yaml_conf):
                 if os.path.exists(os.path.join(SOL_DIRNAME, lib_filename)):
                     shutil.copyfile(os.path.join(SOL_DIRNAME, lib_filename),
                                     os.path.join(tempdir, lib_filename))
-                call(tempdir, get_compilation_command(
+                compilation_commands = get_compilation_commands(
                     lang,
                     new_srcs,
                     new_exe,
-                    for_evaluation=for_evaluation))
+                    for_evaluation=for_evaluation)
+                for command in compilation_commands:
+                    call(tempdir, command)
                 shutil.copyfile(os.path.join(tempdir, new_exe),
                                 os.path.join(base_dir, exe))
                 shutil.copymode(os.path.join(tempdir, new_exe),
