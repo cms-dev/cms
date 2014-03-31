@@ -11,6 +11,7 @@ Luca Wehrstedt <luca.wehrstedt@gmail.com>
 
 OTHER CONTRIBUTORS
 
+Vytis Banaitis <vytis.banaitis@gmail.com>
 Giovanni Campagna (aka gcampax) <scampa.giovanni@gmail.com>
 Cheng, Ting-Yuan (aka magrady24) <magrady24+github@gmail.com>
 Vittorio Gambaletta (aka VittGam) <VittGam@VittGam.net>
