@@ -30,7 +30,7 @@ from collections import namedtuple
 
 from sqlalchemy.orm import joinedload
 
-from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA
+from cms import LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON, LANG_PHP, LANG_JAVA, LANG_QB
 from cms.db import Submission
 from cms.grading.Sandbox import Sandbox
 
@@ -133,6 +133,16 @@ def get_compilation_commands(language, source_filenames, executable_filename,
                        executable_filename, "%s.java" % class_name]
         commands.append(mv_command)
         commands.append(gcj_command)
+    elif language == LANG_QB:
+        command = ["/usr/local/bin/fbc"]
+        command += ["-lang","qb", source_filenames[0]]
+	exec_name = source_filenames[0][0:source_filenames[0].index(".bas")]	
+	if exec_name != executable_filename:
+   	   mv_command = ["/bin/mv", exec_name, executable_filename]		
+	commands.append(command)
+	if exec_name != executable_filename:	
+	   commands.append(mv_command)
+
     else:
         raise ValueError("Unknown language %s." % language)
     return commands
@@ -152,7 +162,7 @@ def get_evaluation_commands(language, executable_filename):
 
     """
     commands = []
-    if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA):
+    if language in (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_QB):
         command = [os.path.join(".", executable_filename)]
         commands.append(command)
     elif language == LANG_PYTHON:
