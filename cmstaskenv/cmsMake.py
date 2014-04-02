@@ -281,7 +281,9 @@ def build_checker_list(base_dir, task_type):
             lang = lang[1:]
 
             def compile_check(src, exe, assume=None):
-                call(base_dir, get_compilation_command(lang, [src], exe))
+                commands = get_compilation_commands(lang, [src], exe)
+                for command in commands:
+                    call(base_dir, command)
 
             actions.append(([src], [exe],
                             functools.partial(compile_check, src, exe),
@@ -353,8 +355,10 @@ def build_gen_list(base_dir, task_type):
 
     def compile_src(src, exe, lang, assume=None):
         if lang in ['cpp', 'c', 'pas']:
-            call(base_dir, get_compilation_command(lang, [src], exe,
-                                                   for_evaluation=False))
+            commands = get_compilation_commands(lang, [src], exe,
+                                                for_evaluation=False)
+            for command in commands:
+                call(base_dir, command)
         elif lang in ['py', 'sh']:
             os.symlink(os.path.basename(src), exe)
         else:
