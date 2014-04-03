@@ -633,6 +633,16 @@ class ContestHandler(BaseHandler):
 
             assert attrs.get("name") is not None, "No contest name specified."
 
+            allow_language_switching = \
+                self.get_arguments("allow_language_switching")
+            if not allow_language_switching:
+                allow_language_switching = 0
+            else:
+                allow_language_switching = 1
+            attrs["allow_language_switching"] = allow_language_switching
+
+            self.get_string(attrs, "gui_languages")
+
             attrs["languages"] = self.get_arguments("languages", [])
 
             self.get_string(attrs, "token_mode")

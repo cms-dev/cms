@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -187,13 +188,47 @@ class BaseHandler(CommonRequestHandler):
             localization_dir = os.path.join(os.path.dirname(__file__), "mo")
 
         # Retrieve the available translations.
-        langs = ["en-US"] + [
+        available_languages = ["en-US"] + [
             path.split("/")[-3].replace("_", "-") for path in glob.glob(
                 os.path.join(localization_dir, "*", "LC_MESSAGES", "cms.mo"))]
-        # Select the one the user likes most.
-        lang = parse_accept_header(
-            self.request.headers.get("Accept-Language", ""),
-            LanguageAccept).best_match(langs, "en-US")
+
+        try:
+            allowed_gui_languages = json.loads(self.contest.gui_languages)
+        except ValueError:
+            allowed_gui_languages = []
+
+        if len(allowed_gui_languages):
+            self.langs = [lang for lang in available_languages
+                          if lang in allowed_gui_languages]
+        else:
+            self.langs = available_languages
+
+        lang = None
+
+        if self.contest.allow_language_switching:
+            # Check, whether user just switched a language
+            lang = self.get_argument("lang", None)
+            if lang not in self.langs:
+                lang = None
+            if lang:
+                self.set_secure_cookie("language", lang)
+
+            # If the user didn't switch the language right now, check,
+            # whether he/she switched it previously
+            if not lang:
+                lang = self.get_secure_cookie("language", None)
+                if lang not in self.langs:
+                    lang = None
+
+        # If user didn't switch language at all,
+        # find the one the user browser likes most.
+        if not lang:
+            lang = parse_accept_header(
+                self.request.headers.get("Accept-Language", ""),
+                LanguageAccept).best_match(self.langs, "en-US")
+
+        self.current_lang = lang
+
         self.set_header("Content-Language", lang)
         lang = lang.replace("-", "_")
 
@@ -344,6 +379,25 @@ class BaseHandler(CommonRequestHandler):
             ret["tokens_tasks"] = 2  # all infinite
         else:
             ret["tokens_tasks"] = 1  # all finite or mixed
+
+        if self.contest.allow_language_switching:
+            ret["langs"] = self.langs
+
+            # FIXTHIS
+            # Now all language names are shown in the current language.
+            # It would be better to show them in the corresponding one.
+            ret["lang_names"] = {}
+            for lang in self.langs:
+                language_name = None
+                try:
+                    language_name = translate_language_country_code(
+                        lang.replace("-", "_"), self.locale)
+                except:
+                    language_name = translate_language_code(
+                        lang.replace("-", "_"), self.locale)
+                ret["lang_names"][lang] = language_name
+
+            ret["current_lang"] = self.current_lang
 
         return ret
 

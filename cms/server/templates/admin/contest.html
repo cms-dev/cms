@@ -17,6 +17,14 @@
       <td><textarea name="description">{{ contest.description }}</textarea></td>
     </tr>
     <tr>
+      <td>Allow contestants to switch interface language</td>
+      <td><input type="checkbox" name="allow_language_switching" {{ "checked" if contest.allow_language_switching else "" }}/></td>
+    </tr>
+    <tr>
+      <td>Allowed web interface languages (JSON-encoded list of language codes, leave empty for all available languages)</td>
+      <td><input type="text" name="gui_languages" value="{{ contest.gui_languages }}"/></td>
+    </tr>
+    <tr>
       <td>Languages allowed</td>
       <td>
         {% for lang in LANGUAGES %}

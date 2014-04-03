@@ -31,7 +31,7 @@ from __future__ import unicode_literals
 from datetime import timedelta
 
 from sqlalchemy.schema import Column, ForeignKey, CheckConstraint
-from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum
+from sqlalchemy.types import Integer, Unicode, DateTime, Interval, Enum, String
 from sqlalchemy.orm import relationship, backref
 
 from . import Base, RepeatedUnicode
@@ -64,6 +64,19 @@ class Contest(Base):
     description = Column(
         Unicode,
         nullable=False)
+
+    # Is contestant allowed to switch interface language
+    allow_language_switching = Column(
+        Integer,
+        nullable=False,
+        default="0")
+
+    # A JSON-encoded lists of strings: the language codes of the
+    # gui translations that are allowed to use by contestants
+    gui_languages = Column(
+        String,
+        nullable=False,
+        default="[]")
 
     # The list of languages shorthand allowed in the contest,
     # e.g. cpp. The codes must be the same as those in cms.LANGUAGES.
