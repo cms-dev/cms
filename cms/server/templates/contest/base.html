@@ -37,6 +37,7 @@ $(document).ready(function () {
     setInterval(Utils.update_time, 1000);
     Utils.update_notifications();
     setInterval(Utils.update_notifications, 15000);
+    $('#main').css('top', $('#navigation_bar').outerHeight());
 });
 
 {% block js %}{% end %}
@@ -45,7 +46,7 @@ $(document).ready(function () {
 
     </head>
     <body id="body">
-        <div class="navbar navbar-fixed-top">
+        <div id="navigation_bar" class="navbar navbar-fixed-top">
             <div class="navbar-inner">
                 <div class="container">
                     <a class="brand" href="{{ url_root }}/">{{ contest.description }}</a>
@@ -121,7 +122,7 @@ $(document).ready(function () {
             {{ _("Time left:") }}
         </div>
         <!-- End -->
-        <div class="container">
+        <div id="main" class="container">
             <div class="row">
                 <div class="span3">
                     <h3 id="server_time_box">
