@@ -86,9 +86,8 @@ CMS.AWSUtils.prototype.file_received = function(response, error) {
 CMS.AWSUtils.prototype.show_file = function(file_name, url) {
     this.file_asked_name = file_name;
     this.file_asked_url = url;
-    var file_received = cmsutils.bind_func(this,
-                                           this.file_received);
-    cmsutils.ajax_request(url, null, file_received);
+    var file_received = this.bind_func(this, this.file_received);
+    this.ajax_request(url, null, file_received);
 };
 
 
@@ -192,11 +191,9 @@ CMS.AWSUtils.prototype.update_unread_counts = function(delta_public, delta_priva
  * notifications.
  */
 CMS.AWSUtils.prototype.update_notifications = function() {
-    display_notification = cmsutils.bind_func(this,
-                                              this.display_notification);
-    update_unread_counts = cmsutils.bind_func(this,
-                                              this.update_unread_counts);
-    cmsutils.ajax_request(
+    var display_notification = this.bind_func(this, this.display_notification);
+    var update_unread_counts = this.bind_func(this, this.update_unread_counts);
+    this.ajax_request(
         url_root + "/notifications",
         "last_notification=" + this.last_notification,
         function(response, error) {
@@ -549,9 +546,68 @@ CMS.AWSUtils.prototype.show_page = function(item, page) {
  * HTML page.
  */
 CMS.AWSUtils.prototype.escape_html = function(data) {
+    if (!data) {
+        return "";
+    }
     return data
         .replace(/&/g,"&amp;")
         .replace(/</g,"&lt;")
         .replace(/>/g,"&gt;")
         .replace(/"/g,"&quot;");
+};
+
+
+/**
+ * Returns a function binded to an object - useful in case we need to
+ * send callback that needs to access to the "this" object.
+ *
+ * Example:
+ * var f = this.utils.bind_func(this, this.cb);
+ * function_that_needs_a_cb(function(data) { f(data); });
+ *
+ * object (object): the object to bind to
+ * method (function): the function to bind
+ * returns (function): the binded function
+ */
+CMS.AWSUtils.prototype.bind_func = function(object, method) {
+    return function() {
+        return method.apply(object, arguments);
+    };
+};
+
+/**
+ * Perform an AJAX request.
+ *
+ * url (string): the url of the resource
+ * par (string): the arguments already encoded
+ * cb (function): the function to call with the response
+ * method (string) : the HTTP method (default GET)
+ */
+CMS.AWSUtils.prototype.ajax_request = function(url, par, cb, method) {
+    // TODO: rewrite this using jquery's ajax functions.
+    var xmlhttp;
+    if (window.XMLHttpRequest) {
+        xmlhttp=new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+    } else {
+        alert("Your browser does not support XMLHTTP!");
+    }
+    xmlhttp.onreadystatechange = function() {
+        if (xmlhttp.readyState == 4) {
+            if(xmlhttp.status == 200) {
+                cb(xmlhttp.responseText, null);
+            } else {
+                cb(null, xmlhttp.status);
+            }
+        }
+    }
+    if (method == "POST") {
+        xmlhttp.open("POST", url, true);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+        xmlhttp.send(par);
+    } else {
+        xmlhttp.open("GET", url + "?" + par, true);
+        xmlhttp.send();
+    }
 };
