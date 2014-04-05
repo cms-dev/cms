@@ -2,7 +2,7 @@
  * Utility functions needed by AWS front-end.
  */
 
-CMS = {};
+var CMS = CMS || {};
 
 CMS.AWSUtils = function(timestamp, contest_start, contest_stop, phase) {
     this.last_notification = timestamp;
