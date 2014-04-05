@@ -39,11 +39,11 @@ function init()
 {
     cmsutils = new CMSUtils();
     {% if contest is None %}
-    utils = new Utils({{ make_timestamp(timestamp) }}, 0, 0, -1);
+    utils = new CMS.AWSUtils({{ make_timestamp(timestamp) }}, 0, 0, -1);
     utils.update_notifications();
     setInterval(cmsutils.bind_func(utils, utils.update_notifications), 15000);
     {% else %}
-    utils = new Utils({{ make_timestamp(timestamp) }}, {{ make_timestamp(contest.start) }}, {{ make_timestamp(contest.stop) }}, {{ phase }});
+    utils = new CMS.AWSUtils({{ make_timestamp(timestamp) }}, {{ make_timestamp(contest.start) }}, {{ make_timestamp(contest.stop) }}, {{ phase }});
 
     firstDate = new Date();
     utils.update_remaining_time();
