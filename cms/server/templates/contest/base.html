@@ -25,18 +25,17 @@ var url_root = "{{ url_root }}";
 
 {% if current_user is not None %}
         <script type="text/javascript">
+// FIXME use Date objects
+var utils = new CMS.CWSUtils({{ make_timestamp(timestamp) }},
+                             {{ make_timestamp(current_phase_begin) }},
+                             {{ make_timestamp(current_phase_end) }},
+                             {{ actual_phase }});
 $(document).ready(function () {
-    // FIXME use Date objects
-    Utils.init({{ make_timestamp(timestamp) }},
-               {{ make_timestamp(current_phase_begin) }},
-               {{ make_timestamp(current_phase_end) }},
-               {{ actual_phase }});
-
     firstDate = new Date(); // FIXME very bad: global variable
-    Utils.update_time();
-    setInterval(Utils.update_time, 1000);
-    Utils.update_notifications();
-    setInterval(Utils.update_notifications, 15000);
+    utils.update_time();
+    setInterval(function() { utils.update_time(); }, 1000);
+    utils.update_notifications();
+    setInterval(function() { utils.update_notifications(); }, 15000);
     $('#main').css('top', $('#navigation_bar').outerHeight());
 });
 
@@ -145,7 +144,7 @@ $(document).ready(function () {
     {% if unread_count is None or int(unread_count) == 0 %}
                                     <span id="unread_count" class="label label-warning no_unread">{{ _("%d unread") % 0 }}</span>
     {% else %}
-                                    <script>$(document).ready(function () {Utils.unread_count = {{ int(unread_count) }};});</script>
+                                    <script>$(document).ready(function () { utils.unread_count = {{ int(unread_count) }};});</script>
                                     <span id="unread_count" class="label label-warning">{{ _("%d unread") % int(unread_count) }}</span>
     {% end %}
                                     </a>
