@@ -160,7 +160,7 @@ var getters = [];
                 else
                 {
                     strings.push('</td><td>');
-                    strings.push(utils.repr_time_ago_2((new Date()).getTime()/1000 - response['data'][l-1][1]['services'][s]['since']));
+                    strings.push(utils.repr_time_ago_short((new Date()).getTime()/1000 - response['data'][l-1][1]['services'][s]['since']));
                     if (s.lastIndexOf("LogService,", 0) !== 0 &&
                         s.lastIndexOf("ResourceService,", 0) !== 0)
                       strings.push(" <a onclick='window.getters[" + this.shard + "].kill_service(\"" + s + "\", this);'>[Kill]</a>");
