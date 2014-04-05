@@ -1,5 +1,5 @@
 /**
- * Utility functions related to the front-end.
+ * Utility functions needed by AWS front-end.
  */
 
 (function() {
@@ -242,7 +242,7 @@
         /**
          * Update the remaining time showed in the "remaining" div.
          */
-        get_time: function()
+        update_remaining_time: function()
         {
             if (this.contest_stop != null)
                 var sec_to_end = this.contest_stop - this.timestamp ;
@@ -381,7 +381,7 @@
          * returns (string): nice representation of time as "x time
          *                   ago"
          */
-        repr_time_ago_2: function(time)
+        repr_time_ago_short: function(time)
         {
             if (time == null)
                 return "N/A";
@@ -542,11 +542,6 @@
                     selector.innerHTML += (i + "&nbsp;");
                 }
             }
-        },
-
-        escape_jquery_selectors: function (myid)
-        {
-            return '#' + myid.replace(/(:|\.)/g,'\\$1');
         },
 
         /**

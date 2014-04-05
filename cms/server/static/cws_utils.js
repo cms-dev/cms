@@ -1,11 +1,11 @@
 /**
- * Utility functions related to the front-end.
+ * Utility functions needed by CWS front-end.
  */
 
-var Utils = new function () {
+var Utils = new function() {
     var self = this;
 
-    self.init = function (timestamp, current_phase_begin, current_phase_end, phase) {
+    self.init = function(timestamp, current_phase_begin, current_phase_end, phase) {
         self.last_notification = timestamp;
         self.server_timestamp = timestamp;
         self.client_timestamp = $.now() / 1000;
@@ -16,12 +16,12 @@ var Utils = new function () {
         self.unread_count = 0;
     };
 
-    self.update_notifications = function () {
+    self.update_notifications = function() {
         $.get(
             url_root + "/notifications",
             {"last_notification": self.last_notification},
-            function (data) {
-                var counter = 0;    
+            function(data) {
+                var counter = 0;
                 for (var i = 0; i < data.length; i += 1) {
                   self.display_notification(
                       data[i].type,
@@ -37,7 +37,7 @@ var Utils = new function () {
             }, "json");
     };
 
-    self.display_notification = function (type, timestamp, subject, text, level) {
+    self.display_notification = function(type, timestamp, subject, text, level) {
         if (self.last_notification < timestamp)
             self.last_notification = timestamp;
 
@@ -69,7 +69,7 @@ var Utils = new function () {
         $("#notifications").prepend(alert);
     };
 
-    self.update_unread_counts = function (counter) {
+    self.update_unread_counts = function(counter) {
         if (counter > 0) {
             self.unread_count += counter;
             $("#unread_count").text($("#translation_unread").text().replace("%d", self.unread_count));
@@ -77,7 +77,7 @@ var Utils = new function () {
         }
     };
 
-    self.format_iso_date = function (timestamp) {
+    self.format_iso_date = function(timestamp) {
         var date = new Date(timestamp * 1000);
         var result = date.getFullYear() + "-";
         if (date.getMonth() < 9)
@@ -89,7 +89,7 @@ var Utils = new function () {
         return result;
     };
 
-    self.format_time = function (timestamp) {
+    self.format_time = function(timestamp) {
         var date = new Date(timestamp * 1000);
         var result = "";
         if (date.getHours() < 10)
@@ -104,14 +104,14 @@ var Utils = new function () {
         return result;
     };
 
-    self.format_iso_datetime = function (timestamp) {
+    self.format_iso_datetime = function(timestamp) {
         /* the result value differs from Date.toISOString() because if uses
            " " as a date/time separator (instead of "T") and because it stops
            at the seconds (and not at milliseconds) */
         return self.format_iso_date(timestamp) + " " + self.format_time(timestamp);
     };
 
-    self.format_timedelta = function (timedelta) {
+    self.format_timedelta = function(timedelta) {
         // a negative time delta does not make sense, let's show zero to the user
         if (timedelta < 0)
             timedelta = 0;
@@ -135,13 +135,15 @@ var Utils = new function () {
         return result;
     }
 
-    self.update_time = function () {
+    self.update_time = function() {
         var now = $.now() / 1000;
 
         var server_time = now - self.client_timestamp + self.server_timestamp;
         $("#server_time").text(self.format_time(server_time));
 
-        // TODO consider possible null values of self.current_phase_begin and self.current_phase_end (they mean -inf and +inf respectively)
+        // TODO consider possible null values of
+        // self.current_phase_begin and self.current_phase_end (they
+        // mean -inf and +inf respectively)
 
         switch (self.phase) {
         case -2:

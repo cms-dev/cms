@@ -15,7 +15,7 @@ var url_root = "{{ url_root }}";
     <link rel="stylesheet" type="text/css" href="{{ url_root }}/static/style.css">
     <script type="text/javascript" src="{{ url_root }}/static/utils.js"></script>
     <script type="text/javascript" src="{{ url_root }}/static/web_rpc.js"></script>
-    <script type="text/javascript" src="{{ url_root }}/static/scripts.js"></script>
+    <script type="text/javascript" src="{{ url_root }}/static/aws_utils.js"></script>
     <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.7.1.min.js"></script>
     <script type="text/javascript" src="{{ url_root }}/static/jq/jquery.jqplot.min.js"></script>
     <script type="text/javascript" src="{{ url_root }}/static/jq/jqplot.dateAxisRenderer.min.js"></script>
@@ -46,8 +46,8 @@ function init()
     utils = new Utils({{ make_timestamp(timestamp) }}, {{ make_timestamp(contest.start) }}, {{ make_timestamp(contest.stop) }}, {{ phase }});
 
     firstDate = new Date();
-    utils.get_time();
-    setInterval(cmsutils.bind_func(utils, utils.get_time), 1000);
+    utils.update_remaining_time();
+    setInterval(cmsutils.bind_func(utils, utils.update_remaining_time), 1000);
     utils.update_notifications();
     setInterval(cmsutils.bind_func(utils, utils.update_notifications), 15000);
     {% end %}
