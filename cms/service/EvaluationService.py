@@ -122,19 +122,25 @@ def submission_get_jobs(submission):
     for dataset in get_datasets_to_judge(submission.task):
         submission_result = submission.get_result_or_create(dataset)
         if submission_to_compile(submission_result):
+            priority = EvaluationService.JOB_PRIORITY_HIGH \
+                if submission_result.compilation_tries == 0 \
+                else EvaluationService.JOB_PRIORITY_MEDIUM
             yield JobQueueEntry(
                 EvaluationService.JOB_TYPE_COMPILATION,
                 submission.id,
                 dataset.id), \
-                EvaluationService.JOB_PRIORITY_HIGH, \
+                priority, \
                 submission.timestamp
 
         elif submission_to_evaluate(submission_result):
+            priority = EvaluationService.JOB_PRIORITY_MEDIUM \
+                if submission_result.evaluation_tries == 0 \
+                else EvaluationService.JOB_PRIORITY_LOW
             yield JobQueueEntry(
                 EvaluationService.JOB_TYPE_EVALUATION,
                 submission.id,
                 dataset.id), \
-                EvaluationService.JOB_PRIORITY_MEDIUM, \
+                priority, \
                 submission.timestamp
 
 
@@ -151,19 +157,25 @@ def user_test_get_jobs(user_test):
     for dataset in get_datasets_to_judge(user_test.task):
         user_test_result = user_test.get_result_or_create(dataset)
         if user_test_to_compile(user_test_result):
+            priority = EvaluationService.JOB_PRIORITY_HIGH \
+                if user_test_result.compilation_tries == 0\
+                else EvaluationService.JOB_PRIORITY_MEDIUM
             yield JobQueueEntry(
                 EvaluationService.JOB_TYPE_TEST_COMPILATION,
                 user_test.id,
                 dataset.id), \
-                EvaluationService.JOB_PRIORITY_HIGH, \
+                priority, \
                 user_test.timestamp
 
         elif user_test_to_evaluate(user_test_result):
+            priority = EvaluationService.JOB_PRIORITY_MEDIUM \
+                if user_test_result.evaluation_tries == 0 \
+                else EvaluationService.JOB_PRIORITY_LOW
             yield JobQueueEntry(
                 EvaluationService.JOB_TYPE_TEST_EVALUATION,
                 user_test.id,
                 dataset.id), \
-                EvaluationService.JOB_PRIORITY_MEDIUM, \
+                priority, \
                 user_test.timestamp
 
 
@@ -1198,49 +1210,45 @@ class EvaluationService(Service):
 
         """
         submission = submission_result.submission
-        # Compilation was ok, so we evaluate.
+
+        # If compilation was ok, we emit a satisfied log message
         if submission_result.compilation_succeeded():
-            self.push_in_queue(
-                JobQueueEntry(
-                    EvaluationService.JOB_TYPE_EVALUATION,
-                    submission_result.submission_id,
-                    submission_result.dataset_id),
-                EvaluationService.JOB_PRIORITY_MEDIUM,
-                submission.timestamp)
-        # If instead submission failed compilation, we don't evaluate,
-        # but we inform ScoringService of the new submission. We need
-        # to commit before so it has up to date information.
+            logger.info("Submission %d(%d) was compiled successfully." %
+                        (submission_result.submission_id,
+                         submission_result.dataset_id))
+
+        # If instead submission failed compilation, we inform
+        # ScoringService of the new submission. We need to commit
+        # before so it has up to date information.
         elif submission_result.compilation_failed():
-            logger.info("Submission %d(%d) did not compile. Not going to "
-                        "evaluate." %
+            logger.info("Submission %d(%d) did not compile." %
                         (submission_result.submission_id,
                          submission_result.dataset_id))
             submission_result.sa_session.commit()
             self.scoring_service.new_evaluation(
                 submission_id=submission_result.submission_id,
                 dataset_id=submission_result.dataset_id)
-        # If compilation failed for our fault, we requeue or not.
+
+        # If compilation failed for our fault, we log the error
         elif submission_result.compilation_outcome is None:
-            if submission_result.compilation_tries > \
+            logger.warning("Worker failed when compiling submission "
+                           "%d(%d)." %
+                           (submission_result.submission_id,
+                            submission_result.dataset_id))
+            if submission_result.compilation_tries >= \
                     EvaluationService.MAX_COMPILATION_TRIES:
                 logger.error("Maximum tries reached for the compilation of "
-                             "submission %d(%d). I will not try again." %
+                             "submission %d(%d)." %
                              (submission_result.submission_id,
                               submission_result.dataset_id))
-            else:
-                # Note: lower priority (MEDIUM instead of HIGH) for
-                # compilations that are probably failing again.
-                self.push_in_queue(
-                    JobQueueEntry(
-                        EvaluationService.JOB_TYPE_COMPILATION,
-                        submission_result.submission_id,
-                        submission_result.dataset_id),
-                    EvaluationService.JOB_PRIORITY_MEDIUM,
-                    submission.timestamp)
+
         # Otherwise, error.
         else:
             logger.error("Compilation outcome %r not recognized." %
                          submission_result.compilation_outcome)
+
+        # Enqueue next steps to be done
+        self.submission_enqueue_jobs(submission)
 
     def evaluation_ended(self, submission_result):
         """Actions to be performed when we have a submission that has
@@ -1251,32 +1259,35 @@ class EvaluationService(Service):
 
         """
         submission = submission_result.submission
+
         # Evaluation successful, we inform ScoringService so it can
         # update the score. We need to commit the session beforehand,
         # otherwise the ScoringService wouldn't receive the updated
         # submission.
         if submission_result.evaluated():
+            logger.info("Submission %d(%d) was evaluated successfully." %
+                        (submission_result.submission_id,
+                         submission_result.dataset_id))
             submission_result.sa_session.commit()
             self.scoring_service.new_evaluation(
                 submission_id=submission_result.submission_id,
                 dataset_id=submission_result.dataset_id)
-        # Evaluation unsuccessful, we requeue (or not).
-        elif submission_result.evaluation_tries > \
-                EvaluationService.MAX_EVALUATION_TRIES:
-            logger.error("Maximum tries reached for the evaluation of "
-                         "submission %d(%d). I will not try again." %
-                         (submission_result.submission_id,
-                          submission_result.dataset_id))
+
+        # Evaluation unsuccessful, we log the error
         else:
-            # Note: lower priority (LOW instead of MEDIUM) for
-            # evaluations that are probably failing again.
-            self.push_in_queue(
-                JobQueueEntry(
-                    EvaluationService.JOB_TYPE_EVALUATION,
-                    submission_result.submission_id,
-                    submission_result.dataset_id),
-                EvaluationService.JOB_PRIORITY_LOW,
-                submission.timestamp)
+            logger.warning("Worker failed when evaluating submission "
+                           "%d(%d)." %
+                           (submission_result.submission_id,
+                            submission_result.dataset_id))
+            if submission_result.evaluation_tries >= \
+                    EvaluationService.MAX_EVALUATION_TRIES:
+                logger.error("Maximum tries reached for the evaluation of "
+                             "submission %d(%d)." %
+                             (submission_result.submission_id,
+                              submission_result.dataset_id))
+
+        # Enqueue next steps to be done (e.g., if evaluation failed)
+        self.submission_enqueue_jobs(submission)
 
     def user_test_compilation_ended(self, user_test_result):
         """Actions to be performed when we have a user test that has
@@ -1287,43 +1298,38 @@ class EvaluationService(Service):
 
         """
         user_test = user_test_result.user_test
-        # Compilation was ok, so we evaluate
+        # If compilation was ok, we emit a satisfied log message
         if user_test_result.compilation_succeeded():
-            self.push_in_queue(
-                JobQueueEntry(
-                    EvaluationService.JOB_TYPE_TEST_EVALUATION,
-                    user_test_result.user_test_id,
-                    user_test_result.dataset_id),
-                EvaluationService.JOB_PRIORITY_MEDIUM,
-                user_test.timestamp)
-        # If instead user test failed compilation, we don't evaluatate
-        elif user_test_result.compilation_failed():
-            logger.info("User test %d(%d) did not compile. Not going to "
-                        "evaluate." %
+            logger.info("User test %d(%d) was compiled successfully." %
                         (user_test_result.user_test_id,
                          user_test_result.dataset_id))
-        # If compilation failed for our fault, we requeue or not
+
+        # If instead user test failed compilation, we don't evaluatate
+        elif user_test_result.compilation_failed():
+            logger.info("User test %d(%d) did not compile." %
+                        (user_test_result.user_test_id,
+                         user_test_result.dataset_id))
+
+        # If compilation failed for our fault, we log the error
         elif not user_test_result.compiled():
-            if user_test_result.compilation_tries > \
+            logger.warning("Worker failed when compiling user test "
+                           "%d(%d)." %
+                           (user_test_result.submission_id,
+                            user_test_result.dataset_id))
+            if user_test_result.compilation_tries >= \
                     EvaluationService.MAX_TEST_COMPILATION_TRIES:
                 logger.error("Maximum tries reached for the compilation of "
-                             "user test %d(%d). I will not try again." %
+                             "user test %d(%d)." %
                              (user_test_result.user_test_id,
                               user_test_result.dataset_id))
-            else:
-                # Note: lower priority (MEDIUM instead of HIGH) for
-                # compilations that are probably failing again
-                self.push_in_queue(
-                    JobQueueEntry(
-                        EvaluationService.JOB_TYPE_TEST_COMPILATION,
-                        user_test_result.user_test_id,
-                        user_test_result.dataset_id),
-                    EvaluationService.JOB_PRIORITY_MEDIUM,
-                    user_test.timestamp)
+
         # Otherwise, error.
         else:
             logger.error("Compilation outcome %r not recognized." %
                          user_test_result.compilation_outcome)
+
+        # Enqueue next steps to be done
+        self.user_test_enqueue_jobs(user_test)
 
     def user_test_evaluation_ended(self, user_test_result):
         """Actions to be performed when we have a user test that has
@@ -1334,23 +1340,28 @@ class EvaluationService(Service):
 
         """
         user_test = user_test_result.user_test
-        if not user_test_result.evaluated():
-            if user_test_result.evaluation_tries > \
+
+        # Evaluation successful, we emit a satisfied log message
+        if user_test_result.evaluated():
+            logger.info("User test %d(%d) was evaluated successfully." %
+                        (user_test_result.user_test_id,
+                         user_test_result.dataset_id))
+
+        # Evaluation unsuccessful, we log the error
+        else:
+            logger.warning("Worker failed when evaluating submission "
+                           "%d(%d)." %
+                           (user_test_result.submission_id,
+                            user_test_result.dataset_id))
+            if user_test_result.evaluation_tries >= \
                     EvaluationService.MAX_TEST_EVALUATION_TRIES:
                 logger.error("Maximum tries reached for the evaluation of "
-                             "user test %d(%d). I will no try again." %
+                             "user test %d(%d)." %
                              (user_test_result.user_test_id,
                               user_test_result.dataset_id))
-            else:
-                # Note: lower priority (LOW instead of MEDIUM) for
-                # evaluations that are probably failing again.
-                self.push_in_queue(
-                    JobQueueEntry(
-                        EvaluationService.JOB_TYPE_TEST_EVALUATION,
-                        user_test_result.user_test_id,
-                        user_test_result.dataset_id),
-                    EvaluationService.JOB_PRIORITY_LOW,
-                    user_test.timestamp)
+
+        # Enqueue next steps to be done (e.g., if evaluation failed)
+        self.user_test_enqueue_jobs(user_test)
 
     @rpc_method
     def new_submission(self, submission_id):
@@ -1368,17 +1379,7 @@ class EvaluationService(Service):
                              "%d in the database." % submission_id)
                 return
 
-            for dataset in get_datasets_to_judge(submission.task):
-                submission_result = submission.get_result_or_create(dataset)
-
-                if submission_to_compile(submission_result):
-                    self.push_in_queue(
-                        JobQueueEntry(
-                            EvaluationService.JOB_TYPE_COMPILATION,
-                            submission.id,
-                            dataset.id),
-                        EvaluationService.JOB_PRIORITY_HIGH,
-                        submission.timestamp)
+            self.submission_enqueue_jobs(submission)
 
             session.commit()
 
@@ -1400,17 +1401,7 @@ class EvaluationService(Service):
                              "in the database." % user_test_id)
                 return
 
-            for dataset in get_datasets_to_judge(user_test.task):
-                user_test_result = user_test.get_result_or_create(dataset)
-
-                if user_test_to_compile(user_test_result):
-                    self.push_in_queue(
-                        JobQueueEntry(
-                            EvaluationService.JOB_TYPE_TEST_COMPILATION,
-                            user_test.id,
-                            dataset.id),
-                        EvaluationService.JOB_PRIORITY_HIGH,
-                        user_test.timestamp)
+            self.user_test_enqueue_jobs(user_test)
 
             session.commit()
 
@@ -1491,23 +1482,8 @@ class EvaluationService(Service):
                 # recompute those data.
                 if level == "compilation":
                     submission_result.invalidate_compilation()
-                    if submission_to_compile(submission_result):
-                        self.push_in_queue(
-                            JobQueueEntry(
-                                EvaluationService.JOB_TYPE_COMPILATION,
-                                submission_result.submission_id,
-                                submission_result.dataset_id),
-                            EvaluationService.JOB_PRIORITY_HIGH,
-                            submission_result.submission.timestamp)
                 elif level == "evaluation":
                     submission_result.invalidate_evaluation()
-                    if submission_to_evaluate(submission_result):
-                        self.push_in_queue(
-                            JobQueueEntry(
-                                EvaluationService.JOB_TYPE_EVALUATION,
-                                submission_result.submission_id,
-                                submission_result.dataset_id),
-                            EvaluationService.JOB_PRIORITY_MEDIUM,
-                            submission_result.submission.timestamp)
+                self.submission_enqueue_jobs(submission_result.submission)
 
             session.commit()
