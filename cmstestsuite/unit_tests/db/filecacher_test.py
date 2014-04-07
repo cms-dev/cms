@@ -273,13 +273,13 @@ class TestFileCacher(unittest.TestCase):
                 self.fail("Content differ.")
 
     def test_big_file(self):
-        """Put a ~100MB file into the storage (using a specially
+        """Put a ~10MB file into the storage (using a specially
         crafted file-like object).
 
         Then get it back.
 
         """
-        rand_file = RandomFile(100000000)
+        rand_file = RandomFile(10000000)
         try:
             data = self.file_cacher.put_file_from_fobj(rand_file, u"Test #007")
         except Exception as error:
