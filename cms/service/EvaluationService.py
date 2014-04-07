@@ -53,7 +53,7 @@ from cms.grading.Job import JobGroup
 logger = logging.getLogger(__name__)
 
 
-def to_compile(submission_result):
+def submission_to_compile(submission_result):
     """Return whether ES is interested in compiling the submission.
 
     submission_result (SubmissionResult): a submission result.
@@ -67,7 +67,7 @@ def to_compile(submission_result):
          r.compilation_tries < EvaluationService.MAX_COMPILATION_TRIES)
 
 
-def to_evaluate(submission_result):
+def submission_to_evaluate(submission_result):
     """Return whether ES is interested in evaluating the submission.
 
     submission_result (SubmissionResult): a submission result.
@@ -112,7 +112,7 @@ def user_test_to_evaluate(user_test_result):
 def submission_get_jobs(submission):
     for dataset in get_datasets_to_judge(submission.task):
         submission_result = submission.get_result_or_create(dataset)
-        if to_compile(submission_result):
+        if submission_to_compile(submission_result):
             yield JobQueueEntry(
                 EvaluationService.JOB_TYPE_COMPILATION,
                 submission.id,
@@ -120,7 +120,7 @@ def submission_get_jobs(submission):
                 EvaluationService.JOB_PRIORITY_HIGH, \
                 submission.timestamp
 
-        elif to_evaluate(submission_result):
+        elif submission_to_evaluate(submission_result):
             yield JobQueueEntry(
                 EvaluationService.JOB_TYPE_EVALUATION,
                 submission.id,
@@ -1334,7 +1334,7 @@ class EvaluationService(Service):
             for dataset in get_datasets_to_judge(submission.task):
                 submission_result = submission.get_result_or_create(dataset)
 
-                if to_compile(submission_result):
+                if submission_to_compile(submission_result):
                     self.push_in_queue(
                         JobQueueEntry(
                             EvaluationService.JOB_TYPE_COMPILATION,
@@ -1454,7 +1454,7 @@ class EvaluationService(Service):
                 # recompute those data.
                 if level == "compilation":
                     submission_result.invalidate_compilation()
-                    if to_compile(submission_result):
+                    if submission_to_compile(submission_result):
                         self.push_in_queue(
                             JobQueueEntry(
                                 EvaluationService.JOB_TYPE_COMPILATION,
@@ -1464,7 +1464,7 @@ class EvaluationService(Service):
                             submission_result.submission.timestamp)
                 elif level == "evaluation":
                     submission_result.invalidate_evaluation()
-                    if to_evaluate(submission_result):
+                    if submission_to_evaluate(submission_result):
                         self.push_in_queue(
                             JobQueueEntry(
                                 EvaluationService.JOB_TYPE_EVALUATION,
