@@ -109,6 +109,64 @@ def user_test_to_evaluate(user_test_result):
         r.evaluation_tries < EvaluationService.MAX_TEST_EVALUATION_TRIES
 
 
+def submission_get_jobs(submission):
+    """Iterate over all the jobs that a submission would like to enqueue.
+
+    submission (Submission): a submission.
+
+    return (iter(JobQueueEntry, int, datetime)): an iterator providing
+        triplets consisting of a JobQueueEntry for a certain job to
+        perform, its priority and its timestamp.
+
+    """
+    for dataset in get_datasets_to_judge(submission.task):
+        submission_result = submission.get_result_or_create(dataset)
+        if to_compile(submission_result):
+            yield JobQueueEntry(
+                EvaluationService.JOB_TYPE_COMPILATION,
+                submission.id,
+                dataset.id), \
+                EvaluationService.JOB_PRIORITY_HIGH, \
+                submission.timestamp
+
+        elif to_evaluate(submission_result):
+            yield JobQueueEntry(
+                EvaluationService.JOB_TYPE_EVALUATION,
+                submission.id,
+                dataset.id), \
+                EvaluationService.JOB_PRIORITY_MEDIUM, \
+                submission.timestamp
+
+
+def user_test_get_jobs(user_test):
+    """Iterate over all the jobs that a user test would like to enqueue.
+
+    user_test (UserTest): a user test.
+
+    return (iter(JobQueueEntry, int, datetime)): an iterator providing
+        triplets consisting of a JobQueueEntry for a certain job to
+        perform, its priority and its timestamp.
+
+    """
+    for dataset in get_datasets_to_judge(user_test.task):
+        user_test_result = user_test.get_result_or_create(dataset)
+        if user_test_to_compile(user_test_result):
+            yield JobQueueEntry(
+                EvaluationService.JOB_TYPE_TEST_COMPILATION,
+                user_test.id,
+                dataset.id), \
+                EvaluationService.JOB_PRIORITY_HIGH, \
+                user_test.timestamp
+
+        elif user_test_to_evaluate(user_test_result):
+            yield JobQueueEntry(
+                EvaluationService.JOB_TYPE_TEST_EVALUATION,
+                user_test.id,
+                dataset.id), \
+                EvaluationService.JOB_PRIORITY_MEDIUM, \
+                user_test.timestamp
+
+
 # job_type is a constant defined in EvaluationService.
 JobQueueEntry = namedtuple('JobQueueEntry',
                            ['job_type', 'object_id', 'dataset_id'])
@@ -732,6 +790,42 @@ class EvaluationService(Service):
                          .total_seconds(),
                          immediately=True)
 
+    def submission_enqueue_jobs(self, submission, check_again=False):
+        """Push in queue the jobs required by a submission.
+
+        submission (Submission): a submission.
+        check_again (bool): whether or not to run jqe_check() on the
+            job.
+
+        return (int): the number of actually enqueued jobs.
+
+        """
+        new_jobs = 0
+        for job, priority, timestamp in submission_get_jobs(submission):
+            if self.push_in_queue(job, priority, timestamp,
+                                  check_again=check_again):
+                new_jobs += 1
+
+        return new_jobs
+
+    def user_test_enqueue_jobs(self, user_test, check_again=False):
+        """Push in queue the jobs required by a user test.
+
+        user_test (UserTest): a user test.
+        check_again (bool): whether or not to run jqe_check() on the
+            job.
+
+        return (int): the number of actually enqueued jobs.
+
+        """
+        new_jobs = 0
+        for job, priority, timestamp in user_test_get_jobs(user_test):
+            if self.push_in_queue(job, priority, timestamp,
+                                  check_again=check_again):
+                new_jobs += 1
+
+        return new_jobs
+
     @rpc_method
     def search_jobs_not_done(self):
         """Look in the database for submissions that have not been
@@ -744,59 +838,13 @@ class EvaluationService(Service):
             contest = session.query(Contest).\
                 filter_by(id=self.contest_id).first()
 
-            # Only adding submission not compiled/evaluated that have
-            # not yet reached the limit of tries.
+            # Scan through submissions and user tests
             for submission in contest.get_submissions():
-                for dataset in get_datasets_to_judge(submission.task):
-                    submission_result = \
-                        submission.get_result_or_create(dataset)
-                    if to_compile(submission_result):
-                        if self.push_in_queue(
-                                JobQueueEntry(
-                                    EvaluationService.JOB_TYPE_COMPILATION,
-                                    submission.id,
-                                    dataset.id),
-                                EvaluationService.JOB_PRIORITY_HIGH,
-                                submission.timestamp,
-                                check_again=True):
-                            new_jobs += 1
-                    elif to_evaluate(submission_result):
-                        if self.push_in_queue(
-                                JobQueueEntry(
-                                    EvaluationService.JOB_TYPE_EVALUATION,
-                                    submission.id,
-                                    dataset.id),
-                                EvaluationService.JOB_PRIORITY_MEDIUM,
-                                submission.timestamp,
-                                check_again=True):
-                            new_jobs += 1
-
-            # The same for user tests
+                new_jobs += self.submission_enqueue_jobs(submission,
+                                                         check_again=True)
             for user_test in contest.get_user_tests():
-                for dataset in get_datasets_to_judge(user_test.task):
-                    user_test_result = \
-                        user_test.get_result_or_create(dataset)
-                    if user_test_to_compile(user_test_result):
-                        if self.push_in_queue(
-                                JobQueueEntry(
-                                    EvaluationService.
-                                    JOB_TYPE_TEST_COMPILATION,
-                                    user_test.id,
-                                    dataset.id),
-                                EvaluationService.JOB_PRIORITY_HIGH,
-                                user_test.timestamp,
-                                check_again=True):
-                            new_jobs += 1
-                    elif user_test_to_evaluate(user_test_result):
-                        if self.push_in_queue(
-                                JobQueueEntry(
-                                    EvaluationService.JOB_TYPE_TEST_EVALUATION,
-                                    user_test.id,
-                                    dataset.id),
-                                EvaluationService.JOB_PRIORITY_MEDIUM,
-                                user_test.timestamp,
-                                check_again=True):
-                            new_jobs += 1
+                new_jobs += self.user_test_enqueue_jobs(user_test,
+                                                        check_again=True)
 
             session.commit()
 
@@ -1001,7 +1049,8 @@ class EvaluationService(Service):
         job (JobQueueEntry): the job to put in the queue.
         priority (int): the priority of the job.
         timestamp (datetime): the time of the submission.
-        check_again (bool): whether or not to run jqe_check() on the job.
+        check_again (bool): whether or not to run jqe_check() on the
+            job.
 
         return (bool): True if pushed, False if not.
 
