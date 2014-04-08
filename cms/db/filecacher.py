@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Programming contest management system
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -411,8 +411,6 @@ class FileCacher(object):
         else:
             self.backend = FSBackend(path)
 
-        self.file_dir = os.path.join(config.cache_dir, "files")
-
         if service is None:
             self.file_dir = tempfile.mkdtemp(dir=config.temp_dir)
         else:
@@ -420,7 +418,10 @@ class FileCacher(object):
                 config.cache_dir,
                 "fs-cache-%s-%d" % (service.name, service.shard))
 
-        if not mkdir(config.cache_dir) or not mkdir(self.file_dir):
+        self.temp_dir = os.path.join(self.file_dir, "_temp")
+
+        if not mkdir(config.cache_dir) or not mkdir(self.file_dir) \
+                or not mkdir(self.temp_dir):
             logger.error("Cannot create necessary directories.")
             raise RuntimeError("Cannot create necessary directories.")
 
@@ -435,15 +436,23 @@ class FileCacher(object):
         raise (KeyError): if the backend cannot find the file.
 
         """
+        ftmp_handle, temp_file_path = tempfile.mkstemp(dir=self.temp_dir,
+                                                       text=False)
+        ftmp = os.fdopen(ftmp_handle, 'w')
         cache_file_path = os.path.join(self.file_dir, digest)
 
         fobj = self.backend.get_file(digest)
 
+        # Copy the file to a temporary position
         try:
-            with io.open(cache_file_path, 'wb') as dst:
-                copyfileobj(fobj, dst, self.CHUNK_SIZE)
+            copyfileobj(fobj, ftmp, self.CHUNK_SIZE)
         finally:
+            ftmp.close()
             fobj.close()
+
+        # Then move it to its real location (this operation is atomic
+        # by POSIX requirement)
+        os.rename(temp_file_path, cache_file_path)
 
     def get_file(self, digest):
         """Retrieve a file from the storage.
@@ -722,30 +731,32 @@ class FileCacher(object):
     def check_backend_integrity(self, delete=False):
         """Check the integrity of the backend.
 
-        Purge the cache and then request all the files from the
-        backend. For each of them the digest is recomputed and checked
-        against the one recorded in the backend.
+        Request all the files from the backend. For each of them the
+        digest is recomputed and checked against the one recorded in
+        the backend.
 
-        If mismatches are found, they are reported with CRITICAL
+        If mismatches are found, they are reported with ERROR
         severity. The method returns False if at least a mismatch is
         found, True otherwise.
 
         delete (bool): if True, files with wrong digest are deleted.
 
         """
-        self.purge_cache()
         clean = True
         for digest, description in self.list():
-            fobj = self.get_file(digest)
+            fobj = self.backend.get_file(digest)
             hasher = hashlib.sha1()
-            buf = fobj.read(self.CHUNK_SIZE)
-            while len(buf) > 0:
-                hasher.update(buf)
+            try:
                 buf = fobj.read(self.CHUNK_SIZE)
+                while len(buf) > 0:
+                    hasher.update(buf)
+                    buf = fobj.read(self.CHUNK_SIZE)
+            finally:
+                fobj.close()
             computed_digest = hasher.hexdigest().decode("ascii")
             if digest != computed_digest:
-                logger.critical("File with hash %s actually has hash %s" %
-                                (digest, computed_digest))
+                logger.error("File with hash %s actually has hash %s" %
+                             (digest, computed_digest))
                 if delete:
                     self.delete(digest)
                 clean = False

@@ -349,9 +349,7 @@ def build_gen_list(base_dir, task_type):
     sol_exe = os.path.join(SOL_DIRNAME, SOL_FILENAME)
 
     # Count non-trivial lines in GEN
-    testcase_num = 0
-    for line in iter_GEN(os.path.join(base_dir, gen_GEN)):
-        testcase_num += 1
+    testcase_num = len(list(iter_GEN(os.path.join(base_dir, gen_GEN))))
 
     def compile_src(src, exe, lang, assume=None):
         if lang in ['cpp', 'c', 'pas']:

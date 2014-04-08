@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -35,7 +35,7 @@ import psutil
 from gevent import subprocess
 #import gevent_subprocess as subprocess
 
-from cms import config, ServiceCoord
+from cms import config, get_safe_shard, ServiceCoord
 from cms.io import Service, rpc_method, RemoteServiceClient
 
 
@@ -175,6 +175,48 @@ class ResourceService(Service):
                           if services[x].ip == local_machine]
         return sorted(local_services)
 
+    @staticmethod
+    def _is_service_proc(service, cmdline):
+        """Returns if cmdline can be the command line of service.
+
+        service (ServiceCoord): the service.
+        cmdline ([string]): a command line.
+
+        return (bool): whether service could have been launched with
+            the command line cmdline.
+
+        """
+        if not cmdline:
+            return False
+
+        start_index = 0
+        if cmdline[0] == "/usr/bin/env":
+            start_index = 1
+
+        if len(cmdline) - start_index < 2:
+            return False
+
+        cl_interpreter = cmdline[start_index]
+        cl_service = cmdline[start_index + 1]
+        if "python" not in cl_interpreter or \
+                not cl_service.endswith("cms%s" % service.name):
+            return False
+
+        # We assume that apart from the shard, all other
+        # options are in the form "-<something> <something>".
+        shard = None
+        for i in xrange(start_index + 2, len(cmdline), 2):
+            if cmdline[i].isdigit():
+                shard = int(cmdline[i])
+                break
+        try:
+            if get_safe_shard(service.name, shard) != service.shard:
+                return False
+        except ValueError:
+            return False
+
+        return True
+
     def _find_proc(self, service):
         """Returns the pid of a given service running on this machine.
 
@@ -186,9 +228,7 @@ class ResourceService(Service):
         logger.debug("ResourceService._find_proc")
         for proc in psutil.get_process_list():
             try:
-                if len(proc.cmdline) >= 3 and "python" in proc.cmdline[0] and \
-                        proc.cmdline[1].endswith("cms%s" % service.name) and \
-                        proc.cmdline[2] == "%d" % service.shard:
+                if ResourceService._is_service_proc(service, proc.cmdline):
                     self._services_prev_cpu_times[service] = \
                         proc.get_cpu_times()
                     return proc

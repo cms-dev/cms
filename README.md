@@ -62,9 +62,12 @@ particular we are aware of the following.
     - Slovenian Invitational Informatics Olympiad, May 2013;
     - [JOI Open Contest 2013]
       (http://cms.ioi-jp.org/open-2013/index.html), Japan, June 2013;
+    - Argentine Olympiad in Informatic, October 2013;
     - Taiwan High School Programming Contest, December 2013;
     - beOI 2014 ([Belgian Olympiad in Informatics]
-      (http://www.be-oi.be/fr/)), Belgium, February 2014.
+      (http://www.be-oi.be/fr/)), Belgium, February 2014;
+    - TOP'2014 (Tunisian Olympiad in Programming), March 2014.
+    - LMIO 2014 (Lithuanian Olympiad in Informatics), March 2014.
 - Local competitions:
     - Taipei High School Programming Contest, Taiwan, October 2012;
     - ABC 2013 (Algoritmi Bergamo Contest), Bergamo, Italy, May
@@ -72,7 +75,8 @@ particular we are aware of the following.
     - Taipei High School Programming Contest, Taiwan, November 2013.
 - Training:
     - training camps for the selections of the national IOI teams of
-      Australia, India, Italy, Japan, Latvia, Serbia and Taiwan.
+      Argentina, Australia, India, Italy, Japan, Latvia, Serbia and
+      Taiwan.
 - Other:
     - laboratory exercises and exams of the course "Algorithms and
       data structures" at University of Trento, Italy (year

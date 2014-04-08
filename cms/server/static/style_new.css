@@ -11,8 +11,9 @@ body {
  */
 
 @media (min-width: 980px) {
-    body {
-        padding-top: 60px;
+    #main {
+        position: relative;
+        padding-top: 20px;
     }
 }
 
