@@ -20,11 +20,12 @@ CMS.AWSUtils = function(timestamp, contest_start, contest_stop, phase) {
  * Displays a subpage over the current page with the specified
  * content.
  */
-CMS.AWSUtils.prototype.display_subpage = function(content) {
-    var subpage = document.getElementById("subpage");
-    var subcontent = document.getElementById("subpage_content");
-    subpage.style.display = "block";
-    subcontent.innerHTML = content;
+CMS.AWSUtils.prototype.display_subpage = function(elements) {
+    // TODO: update jQuery to allow appending of arrays of elements.
+    for (var i = 0; i < elements.length; ++i) {
+        elements[i].appendTo($("#subpage_content"));
+    }
+    $("#subpage").show();
 };
 
 
@@ -32,8 +33,8 @@ CMS.AWSUtils.prototype.display_subpage = function(content) {
  * Hides a subpage previously displayed.
  */
 CMS.AWSUtils.prototype.hide_subpage = function() {
-    var subpage = document.getElementById("subpage");
-    subpage.style.display = "none";
+    $("#subpage").hide();
+    $("#subpage_content").empty();
 };
 
 
@@ -49,18 +50,16 @@ CMS.AWSUtils.prototype.hide_subpage = function() {
 CMS.AWSUtils.prototype.file_received = function(response, error) {
     file_name = this.file_asked_name;
     url = this.file_asked_url;
-    var page = "";
+    var elements = [];
     if (error != null) {
         alert("File request failed.");
     } else {
         if (response.length > 100000) {
-            page = "<h1>" + file_name + "</h1>" +
-                "<a href=\"" + url + "\">Download</a>";
-
-            utils.display_subpage(page);
+            elements.push($('<h1>').text(file_name));
+            elements.push($('<a>').text("Download").prop("href", url));
+            utils.display_subpage(elements);
             return;
         }
-        var escaped_response = utils.escape_html(response)
         var pre_class = "";
         // TODO: add more languages.
         if (file_name.match(/.c(|pp)$/i)) {
@@ -68,12 +67,12 @@ CMS.AWSUtils.prototype.file_received = function(response, error) {
         } else if (file_name.match(/.pas$/i)) {
             pre_class = "brush: delphi";
         }
-        page = "<h1>" + file_name + "</h1>" +
-            "<a href=\"" + url + "\">Download</a>" +
-            "<pre id=\"source_container\" class=\"" + pre_class + "\">" +
-            escaped_response + "</pre>";
+        elements.push($('<h1>').text(file_name));
+        elements.push($('<a>').text("Download").prop("href", url));
+        elements.push($('<pre>').text(response).prop("id", "source_container")
+                      .prop("class", pre_class));
 
-        utils.display_subpage(page);
+        utils.display_subpage(elements);
         SyntaxHighlighter.highlight()
     }
 };
@@ -114,40 +113,44 @@ CMS.AWSUtils.prototype.toggle_visibility = function() {
  * subject (string): subject.
  * text (string): body of notification.
  */
-CMS.AWSUtils.prototype.display_notification = function(
-    type, timestamp, subject, text, contest_id) {
+CMS.AWSUtils.prototype.display_notification = function(type, timestamp,
+                                                       subject, text,
+                                                       contest_id) {
     if (this.last_notification < timestamp) {
         this.last_notification = timestamp;
     }
     var timestamp_int = parseInt(timestamp);
-    var div = document.getElementById("notifications");
-    var s = '<div class="notification notification_type_' + type + '">' +
-        '<div class="notification_close" ' +
-        'onclick="utils.close_notification(this);">&times;' +
-        '</div><div class="notification_msg">' +
-        '<div class="notification_timestamp">';
-    if (timestamp_int != 0) {
-        s += this.format_time_or_date(timestamp_int);
-    }
-    s += '</div>';
-
-    s += '<div class="notification_subject">'
+    var subject_string = $('<span>');
     if (type == "message") {
-        s += 'Private message. ';
+        subject_string = $("<span>").text("Private message. ");
     } else if (type == "announcement") {
-        s += 'Announcement. ';
+        subject_string = $("<span>").text("Announcement. ");
     } else if (type == "question") {
-        s += 'Reply to your question. ';
+        subject_string = $("<span>").text("Reply to your question. ");
     } else if (type == "new_question") {
-        s += '<a href="' + url_root + '/questions/'
-            + contest_id + '">New question</a>: ';
+        subject_string = $("<a>").text("New question: ")
+            .prop("href", url_root + '/questions/' + contest_id);
     }
 
-    s += utils.escape_html(subject) + '</div>';
-    s += '<div class="notification_text">';
-    s += utils.escape_html(text);
-    s += '</div></div></div>';
-    div.innerHTML += s;
+    var self = this;
+    var outer = $("#notifications");
+    var timestamp_div = $("<div>")
+        .addClass("notification_timestamp")
+        .text(timestamp_int != 0 ? this.format_time_or_date(timestamp_int) : "");
+    var subject_div = $("<div>")
+        .addClass("notification_subject")
+        .append(subject_string);
+    var close_div = $('<div>').html("&times;").addClass("notification_close")
+        .click(function() { self.close_notification(this); });
+    var inner =
+        $('<div>').addClass("notification").addClass("notification_type_" + type)
+            .append(close_div)
+            .append($('<div>').addClass("notification_msg")
+                    .append(timestamp_div)
+                    .append(subject_div.append($("<span>").text(subject)))
+                    .append($("<div>").addClass("notification_text").text(text))
+                   );
+    outer.append(inner);
 };
 
 
@@ -159,28 +162,28 @@ CMS.AWSUtils.prototype.display_notification = function(
  * delta_private (int): how many public unreads to add.
  */
 CMS.AWSUtils.prototype.update_unread_counts = function(delta_public, delta_private) {
-    var unread_public = document.getElementById("unread_public")
-    var unread_private = document.getElementById("unread_private")
+    var unread_public = $("#unread_public");
+    var unread_private = $("#unread_private");
     var msgs_public = "";
     var msgs_private = "";
     if (unread_public) {
-        var msg_public = parseInt(unread_public.innerHTML);
+        var msg_public = parseInt(unread_public.text());
         msgs_public += delta_public;
-        unread_public.innerHTML = msgs_public;
+        unread_public.text(msgs_public);
         if (msgs_public > 0) {
-            unread_public.style.display = "inline-block"
+            unread_public.show();
         } else {
-            unread_public.style.display = "none"
+            unread_public.hide();
         }
     }
     if (unread_private) {
-        msg_private = parseInt(unread_private.innerHTML);
+        msg_private = parseInt(unread_private.text());
         msgs_private += delta_private;
-        unread_private.innerHTML = msgs_private;
+        unread_private.text(msgs_private);
         if (msgs_private > 0) {
-            unread_private.style.display = "inline-block"
+            unread_private.show();
         } else {
-            unread_private.style.display = "none"
+            unread_private.hide();
         }
     }
 };
@@ -274,25 +277,16 @@ CMS.AWSUtils.prototype.update_remaining_time = function() {
         window.location.href = url_root + "/";
     }
 
-    countdown = nowsec_to_end;
+    var countdown = nowsec_to_end;
     if (this.phase == -1) {
         countdown = nowsec_to_start;
     }
 
-    var hours = countdown / 60 / 60;
-    var hoursR = Math.floor(hours);
-    var minutes = countdown / 60 - (60*hoursR);
-    var minutesR = Math.floor(minutes);
-    var seconds = countdown - (60*60*hoursR) - (60*minutesR);
-    var secondsR = Math.floor(seconds);
-    m = this.two_digits(minutesR);
-    s = this.two_digits(secondsR);
-
     if (this.remaining_div == null) {
-        this.remaining_div = document.getElementById("remaining");
+        this.remaining_div = $("#remaining");
     }
     if (this.remaining_div != null) {
-        this.remaining_div.innerHTML = hoursR + ":" + m + ":" + s;
+        this.remaining_div.text(this.format_countdown(countdown));
     }
 };
 
@@ -444,6 +438,25 @@ CMS.AWSUtils.prototype.format_time = function(timestamp) {
 
 
 /**
+ * Return the time difference formatted as HHHH:MM:SS.
+ *
+ * timestamp (int): a time delta in s.
+ * return (string): timestamp formatted as above.
+ */
+CMS.AWSUtils.prototype.format_countdown = function(countdown) {
+    var hours = countdown / 60 / 60;
+    var hours_rounded = Math.floor(hours);
+    var minutes = countdown / 60 - (60 * hours_rounded);
+    var minutes_rounded = Math.floor(minutes);
+    var seconds = countdown - (60 * 60 * hours_rounded)
+        - (60 * minutes_rounded);
+    var seconds_rounded = Math.floor(seconds);
+    return hours_rounded + ":" + this.two_digits(minutes_rounded) + ":"
+        + this.two_digits(seconds_rounded);
+};
+
+
+/**
  * Return timestamp formatted as HH:MM:SS, dd/mm/yyyy.
  *
  * timestamp (int): unix time.
@@ -502,8 +515,7 @@ CMS.AWSUtils.prototype.standard_response = function(response) {
 
 
 CMS.AWSUtils.prototype.switch_contest = function() {
-    var select = document.getElementById("contest_selection_select")
-    var value = select.options[select.selectedIndex].value
+    var value = $("#contest_selection_select").val()
     if (value == "null") {
         window.location = url_root + "/";
     } else {
@@ -514,46 +526,34 @@ CMS.AWSUtils.prototype.switch_contest = function() {
 
 CMS.AWSUtils.prototype.show_page = function(item, page) {
     var elements_per_page = 5;
-    var container = document.getElementById("paged_content_" + item);
-    var npages = Math.ceil(container.children.length / elements_per_page);
+    var children = $("#paged_content_" + item).children();
+    var npages = Math.ceil(children.length / elements_per_page);
     var final_page = Math.min(page, npages) - 1;
-    for (var i = 0; i < container.children.length; i++) {
+    children.each(function(i, child) {
         if (i >= elements_per_page * final_page
             && i < elements_per_page * (final_page + 1)) {
-            container.children[i].style.display = "block";
+            $(child).show();
         } else {
-            container.children[i].style.display = "none";
+            $(child).hide();
         }
-    }
+    });
 
-    var selector = document.getElementById("page_selector_"+item);
-    selector.innerHTML = "Pages: ";
+    var self = this;
+    var selector = $("#page_selector_" + item);
+    selector.empty();
+    selector.append("Pages: ");
     for (var i = 1; i <= npages; i++) {
         if (i != page) {
-            selector.innerHTML +=
-                "<a href=\"#\" onclick=\" " +
-                "utils.show_page('questions', "+ i + "); " +
-                "return false;\">" + i + "</a>&nbsp;";
+            var j = i;
+            selector.append($("<a>").text(i + " ")
+                            .click(function() {
+                                self.show_page('questions', j);
+                                return false;
+                            }));
         } else {
-            selector.innerHTML += (i + "&nbsp;");
+            selector.append(i + " ");
         }
     }
-};
-
-
-/**
- * Escape the input string so that it is suitable for rendering in a
- * HTML page.
- */
-CMS.AWSUtils.prototype.escape_html = function(data) {
-    if (!data) {
-        return "";
-    }
-    return data
-        .replace(/&/g,"&amp;")
-        .replace(/</g,"&lt;")
-        .replace(/>/g,"&gt;")
-        .replace(/"/g,"&quot;");
 };
 
 
@@ -575,6 +575,7 @@ CMS.AWSUtils.prototype.bind_func = function(object, method) {
     };
 };
 
+
 /**
  * Perform an AJAX request.
  *
@@ -595,7 +596,7 @@ CMS.AWSUtils.prototype.ajax_request = function(url, par, cb, method) {
     }
     xmlhttp.onreadystatechange = function() {
         if (xmlhttp.readyState == 4) {
-            if(xmlhttp.status == 200) {
+            if (xmlhttp.status == 200) {
                 cb(xmlhttp.responseText, null);
             } else {
                 cb(null, xmlhttp.status);
