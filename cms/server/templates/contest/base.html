@@ -50,9 +50,10 @@ $(document).ready(function () {
             <div class="navbar-inner">
                 <div class="container">
                     <a class="brand" href="{{ url_root }}/">{{ contest.description }}</a>
-{% if contest.allow_language_switching and langs is not None and len(langs) > 1 %}
+{% if langs is not None and len(langs) > 1 %}
                     <p class="navbar-text pull-right">
-                        <select id="lang" class="form-control btn btn-info" style="width:100px;" onchange="Utils.switch_lang()">
+                        <select id="lang" class="form-control btn btn-info" onchange="Utils.switch_lang()">
+                            <option value="auto">Automatic ({{ lang_names[browser_lang] }})</option>
                         {% for lang in langs %}
                             <option value="{{lang}}"{% if lang == current_lang %} selected{% end %}>{{ lang_names[lang] }}</option>
                         {% end %}

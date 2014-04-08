@@ -40,7 +40,6 @@ class Updater(object):
             if k.startswith("_"):
                 continue
             if v["_class"] == "Contest":
-                v["gui_languages"] = "[]"
-                v["allow_language_switching"] = 0
+                v["allowed_localizations"] = []
 
         return self.objs

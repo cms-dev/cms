@@ -188,44 +188,54 @@ class BaseHandler(CommonRequestHandler):
             localization_dir = os.path.join(os.path.dirname(__file__), "mo")
 
         # Retrieve the available translations.
-        available_languages = ["en-US"] + [
+        available_localizations = ["en-US"] + [
             path.split("/")[-3].replace("_", "-") for path in glob.glob(
                 os.path.join(localization_dir, "*", "LC_MESSAGES", "cms.mo"))]
 
-        try:
-            allowed_gui_languages = json.loads(self.contest.gui_languages)
-        except ValueError:
-            allowed_gui_languages = []
-
-        if len(allowed_gui_languages):
-            self.langs = [lang for lang in available_languages
-                          if lang in allowed_gui_languages]
+        # RepeatedUnicode returns [""] if the list is empty,
+        # so we need to check whether the first element is a "".
+        if self.contest.allowed_localizations and \
+           len(self.contest.allowed_localizations) and \
+           self.contest.allowed_localizations[0]:
+            self.langs = [lang for lang in available_localizations
+                          if lang in self.contest.allowed_localizations]
+            # Handle "en" separately, to not force user to type "en-US".
+            if "en" in self.contest.allowed_localizations and \
+               "en" not in self.langs:
+                self.langs = ["en-US"] + self.langs
         else:
-            self.langs = available_languages
+            self.langs = available_localizations
 
-        lang = None
+        self.browser_lang = parse_accept_header(
+            self.request.headers.get("Accept-Language", ""),
+            LanguageAccept).best_match(self.langs, "en-US")
 
-        if self.contest.allow_language_switching:
-            # Check, whether user just switched a language
-            lang = self.get_argument("lang", None)
-            if lang not in self.langs:
+        cookie_lang = self.get_secure_cookie("language", None)
+        if cookie_lang not in self.langs:
+            cookie_lang = None
+
+        # Check, whether user just switched the language.
+        lang = self.get_argument("lang", None)
+        if lang:
+            if lang == "auto":
+                self.clear_cookie("language")
                 lang = None
-            if lang:
+                cookie_lang = None
+            elif lang not in self.langs:
+                lang = None
+            else:
                 self.set_secure_cookie("language", lang)
+                cookie_lang = lang
 
-            # If the user didn't switch the language right now, check,
-            # whether he/she switched it previously
-            if not lang:
-                lang = self.get_secure_cookie("language", None)
-                if lang not in self.langs:
-                    lang = None
+        # If the user didn't switch the language right now, check,
+        # whether he/she switched it previously.
+        if not lang:
+            lang = cookie_lang
 
         # If user didn't switch language at all,
-        # find the one the user browser likes most.
+        # use the one the user browser likes most.
         if not lang:
-            lang = parse_accept_header(
-                self.request.headers.get("Accept-Language", ""),
-                LanguageAccept).best_match(self.langs, "en-US")
+            lang = self.browser_lang
 
         self.current_lang = lang
 
@@ -380,24 +390,24 @@ class BaseHandler(CommonRequestHandler):
         else:
             ret["tokens_tasks"] = 1  # all finite or mixed
 
-        if self.contest.allow_language_switching:
-            ret["langs"] = self.langs
+        ret["langs"] = self.langs
 
-            # FIXTHIS
-            # Now all language names are shown in the current language.
-            # It would be better to show them in the corresponding one.
-            ret["lang_names"] = {}
-            for lang in self.langs:
-                language_name = None
-                try:
-                    language_name = translate_language_country_code(
-                        lang.replace("-", "_"), self.locale)
-                except:
-                    language_name = translate_language_code(
-                        lang.replace("-", "_"), self.locale)
-                ret["lang_names"][lang] = language_name
+        # TODO
+        # Now all language names are shown in the current language.
+        # It would be better to show them in the corresponding one.
+        ret["lang_names"] = {}
+        for lang in self.langs:
+            language_name = None
+            try:
+                language_name = translate_language_country_code(
+                    lang.replace("-", "_"), self.locale)
+            except:
+                language_name = translate_language_code(
+                    lang.replace("-", "_"), self.locale)
+            ret["lang_names"][lang] = language_name
 
-            ret["current_lang"] = self.current_lang
+        ret["current_lang"] = self.current_lang
+        ret["browser_lang"] = self.browser_lang
 
         return ret
 
