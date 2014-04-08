@@ -67,6 +67,7 @@ particular we are aware of the following.
     - beOI 2014 ([Belgian Olympiad in Informatics]
       (http://www.be-oi.be/fr/)), Belgium, February 2014;
     - TOP'2014 (Tunisian Olympiad in Programming), March 2014.
+    - LMIO 2014 (Lithuanian Olympiad in Informatics), March 2014.
 - Local competitions:
     - Taipei High School Programming Contest, Taiwan, October 2012;
     - ABC 2013 (Algoritmi Bergamo Contest), Bergamo, Italy, May
