@@ -179,5 +179,9 @@ var Utils = new function () {
             break;
         }
     };
+
+    self.switch_lang = function () {
+        window.location = "?lang=" + $("#lang").val();
+    };
 };
 

@@ -575,6 +575,15 @@ class AddContestHandler(BaseHandler):
 
             assert attrs.get("name") is not None, "No contest name specified."
 
+            allowed_localizations = \
+                self.get_argument("allowed_localizations", "")
+            if allowed_localizations:
+                attrs["allowed_localizations"] = \
+                    [x.strip() for x in allowed_localizations.split(",")
+                        if len(x.strip())]
+            else:
+                attrs["allowed_localizations"] = []
+
             attrs["languages"] = self.get_arguments("languages", [])
 
             self.get_string(attrs, "token_mode")
@@ -632,6 +641,15 @@ class ContestHandler(BaseHandler):
             self.get_string(attrs, "description")
 
             assert attrs.get("name") is not None, "No contest name specified."
+
+            allowed_localizations = \
+                self.get_argument("allowed_localizations", "")
+            if allowed_localizations:
+                attrs["allowed_localizations"] = \
+                    [x.strip() for x in allowed_localizations.split(",")
+                        if len(x.strip())]
+            else:
+                attrs["allowed_localizations"] = []
 
             attrs["languages"] = self.get_arguments("languages", [])
 

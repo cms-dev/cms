@@ -17,6 +17,10 @@
       <td><textarea name="description">{{ contest.description }}</textarea></td>
     </tr>
     <tr>
+      <td>Allowed web interface localization (list of language codes, leave empty for all available languages)</td>
+      <td><input type="text" name="allowed_localizations" value="{{ ",".join(contest.allowed_localizations) }}"/></td>
+    </tr>
+    <tr>
       <td>Languages allowed</td>
       <td>
         {% for lang in LANGUAGES %}

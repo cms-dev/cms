@@ -955,3 +955,6 @@ td.token_rules p:last-child {
     margin: 0 auto 12px;
 }
 
+#lang {
+    width: 100px;
+}
