@@ -51,7 +51,7 @@ class RepeatedUnicode(TypeDecorator):
         # This limitation may be removed if necessary.
         if any("," in val for val in value):
             raise ValueError("Comma cannot be encoded.")
-        if any(len(val) == 0 or val.isspace() in val for val in value):
+        if any(len(val) == 0 or val.isspace() for val in value):
             raise ValueError("Cannot be only whitespace.")
         return ",".join(val.strip() for val in value)
 
