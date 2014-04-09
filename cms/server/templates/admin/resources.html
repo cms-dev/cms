@@ -192,7 +192,7 @@ var getters = [];
 
         update_resources: function()
         {
-            var f = cmsutils.bind_func(this, this.update_resources_cb);
+            var f = utils.bind_func(this, this.update_resources_cb);
             cmsrpc_request("ResourceService", this.shard,
                            "get_resources",
                            {"last_time": this.last_time},
@@ -259,7 +259,7 @@ var plotOptions = {
 for (var i = 0; i < {{ resource_shards }}; i++)
 {
     getters[i] = new RSgetter(i, plotOptions);
-    var f = cmsutils.bind_func(getters[i], getters[i].update_resources);
+    var f = utils.bind_func(getters[i], getters[i].update_resources);
     setInterval(f, 10000);
     getters[i].update_resources()
 
