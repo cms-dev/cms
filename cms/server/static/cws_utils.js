@@ -1,5 +1,7 @@
 /* Contest Management System
- * Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+ * Copyright © 2012-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
+ * Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+ * Copyright © 2013 Vittorio Gambaletta <VittGam@VittGam.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
