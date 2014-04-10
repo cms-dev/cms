@@ -17,6 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+"""Tests for RPC system.
+
+"""
+
 import unittest
 
 import gevent
@@ -57,7 +61,7 @@ class MockService(object):
         event.wait()
 
 
-class TestCmsRPC(unittest.TestCase):
+class TestRPC(unittest.TestCase):
 
     def setUp(self):
         patcher = patch("cms.io.rpc.get_service_address")
@@ -70,6 +74,17 @@ class TestCmsRPC(unittest.TestCase):
         self.spawn_listener()
 
     def spawn_listener(self, host="127.0.0.1", port=0):
+        """Start listening on the given host and port.
+
+        Each incoming connection will cause a RemoteServiceServer to be
+        instantiated (and therefore a greenlet to be spawned) and to be
+        inserted in self.servers. The listening host and port will also
+        be stored as self.host and self.port.
+
+        host (string): the hostname or IP address
+        port (int): the port (0 causes any available port to be chosen)
+
+        """
         self._server = StreamServer((host, port), self.get_server)
         self._server.start()
         self.host = self._server.server_host
@@ -77,28 +92,55 @@ class TestCmsRPC(unittest.TestCase):
         self.mock.return_value = Address(self.host, self.port)
 
     def kill_listener(self):
+        """Stop listening."""
         self._server.stop()
         del self._server
         # We leave self.host and self.port.
 
     def get_server(self, socket_, address):
+        """Obtain a new RemoteServiceServer to handle a new connection.
+
+        Instantiate a RemoteServiceServer, spawn its greenlet and add
+        it to self.servers. It will listen on the given socket, that
+        represents a connection opened by a remote host at the given
+        address.
+
+        socket_ (socket): the socket to use
+        address (tuple): the (ip address, port) of the remote part
+        return (RemoteServiceServer): a server
+
+        """
         server = RemoteServiceServer(self.service, address)
         server.handle(socket_)
         self.servers.append(server)
         return server
 
     def get_client(self, coord, auto_retry=None):
+        """Obtain a new RemoteServiceClient to connect to a server.
+
+        Instantiate a RemoteServiceClient, spawn its greenlet and add
+        it to self.clients. It will try to connect to the service at
+        the given coordinates.
+
+        coord (ServiceCoord): the (name, shard) of the service
+        auto_retry (float|None): how long to wait after a disconnection
+            before trying to reconnect
+        return (RemoteServiceClient): a client
+
+        """
         client = RemoteServiceClient(coord, auto_retry)
         client.connect()
         self.clients.append(client)
         return client
 
     def disconnect_servers(self):
+        """Disconnect all registered servers from their clients."""
         for server in self.servers:
             if server.connected:
                 server.disconnect()
 
     def disconnect_clients(self):
+        """Disconnect all registered clients from their servers."""
         for client in self.clients:
             if client.connected:
                 client.disconnect()
@@ -106,9 +148,8 @@ class TestCmsRPC(unittest.TestCase):
     def tearDown(self):
         self.kill_listener()
         self.disconnect_clients()
-        # gevent.sleep(0.005)
         self.disconnect_servers()
-        gevent.sleep(0.005)
+        gevent.sleep(0.002)
 
     def test_method_not_existent(self):
         client = self.get_client(ServiceCoord("Foo", 0))
@@ -138,11 +179,14 @@ class TestCmsRPC(unittest.TestCase):
         self.assertFalse(result.successful())
         self.assertIsInstance(result.exception, RPCError)
 
-    # XXX Are we sure? The client would wait forever...
+    # TODO Are we sure we want this to be the correct behavior? That
+    # means that if the server (by mistake?) sends unencodable data
+    # then the client will never get any data nor any error. It will
+    # get stuck until it goes in timeout.
     def test_method_return_unencodable(self):
         client = self.get_client(ServiceCoord("Foo", 0))
         result = client.return_unencodable()
-        result.wait(timeout=0.005)
+        result.wait(timeout=0.002)
         self.assertFalse(result.ready())
 
     def test_method_return_bool(self):
@@ -174,39 +218,42 @@ class TestCmsRPC(unittest.TestCase):
         self.assertEqual(result.value, ["Hello", 42, "World"])
 
     def test_autoreconnect1(self):
-        client = self.get_client(ServiceCoord("Foo", 0), 0.005)
-        gevent.sleep(0.005)
+        client = self.get_client(ServiceCoord("Foo", 0), 0.002)
+        gevent.sleep(0.002)
         self.assertTrue(client.connected)
         self.disconnect_servers()
-        gevent.sleep(0.005)
-        self.assertTrue(client.connected, "Autoreconnect didn't kick in after server disconnected")
+        gevent.sleep(0.002)
+        self.assertTrue(client.connected, "Autoreconnect didn't kick in "
+                                          "after server disconnected")
 
     def test_autoreconnect2(self):
-        client = self.get_client(ServiceCoord("Foo", 0), 0.005)
-        gevent.sleep(0.005)
+        client = self.get_client(ServiceCoord("Foo", 0), 0.002)
+        gevent.sleep(0.002)
         self.assertTrue(client.connected)
         self.disconnect_servers()
         self.kill_listener()
-        gevent.sleep(0.005)
+        gevent.sleep(0.002)
         self.assertFalse(client.connected)
         self.spawn_listener(port=self.port)
-        gevent.sleep(0.006)
-        self.assertTrue(client.connected, "Autoreconnect didn't kick in after server came back online")
+        gevent.sleep(0.002)
+        self.assertTrue(client.connected, "Autoreconnect didn't kick in "
+                                          "after server came back online")
 
     def test_autoreconnect3(self):
-        client = self.get_client(ServiceCoord("Foo", 0), 0.005)
-        gevent.sleep(0.005)
+        client = self.get_client(ServiceCoord("Foo", 0), 0.002)
+        gevent.sleep(0.002)
         self.assertTrue(client.connected)
         self.disconnect_clients()
-        gevent.sleep(0.005)
-        self.assertFalse(client.connected, "Autoreconnect still active after explicit disconnection")
+        gevent.sleep(0.002)
+        self.assertFalse(client.connected, "Autoreconnect still active "
+                                           "after explicit disconnection")
 
     def test_concurrency(self):
         client = self.get_client(ServiceCoord("Foo", 0))
         result1 = client.infinite()
-        gevent.sleep(0.005)
+        gevent.sleep(0.002)
         result2 = client.echo(value=True)
-        gevent.sleep(0.005)
+        gevent.sleep(0.002)
         self.assertTrue(result2.successful())
         self.assertIs(result2.value, True)
         self.assertFalse(result1.ready())
@@ -218,7 +265,7 @@ class TestCmsRPC(unittest.TestCase):
     def test_callbacks(self):
         coord = ServiceCoord("Foo", 0)
         client = self.get_client(coord)
-        gevent.sleep(0.005)
+        gevent.sleep(0.002)
         client.disconnect()
         on_connect_handler = Mock()
         client.add_on_connect_handler(on_connect_handler)
@@ -226,21 +273,21 @@ class TestCmsRPC(unittest.TestCase):
         client.add_on_disconnect_handler(on_disconnect_handler)
 
         client.connect()
-        gevent.sleep(0.005)
+        gevent.sleep(0.002)
         self.assertTrue(client.connected)
         on_connect_handler.assert_called_once_with(coord)
         on_connect_handler.reset_mock()
         self.assertFalse(on_disconnect_handler.called)
 
         client.disconnect()
-        gevent.sleep(0.005)
+        gevent.sleep(0.002)
         self.assertFalse(client.connected)
         self.assertFalse(on_connect_handler.called)
         on_disconnect_handler.assert_called_once_with()
         on_disconnect_handler.reset_mock()
 
         client.connect()
-        gevent.sleep(0.005)
+        gevent.sleep(0.002)
         self.assertTrue(client.connected)
         on_connect_handler.assert_called_once_with(coord)
         on_connect_handler.reset_mock()
@@ -269,46 +316,54 @@ class TestCmsRPC(unittest.TestCase):
             self.assertEqual(result.value, 42)
             self.assertTrue(client.connected)
 
-            gevent.sleep(0.001)
+            gevent.sleep(0.002)
             client.disconnect()
             self.assertFalse(client.connected)
-            gevent.sleep(0.001)
+            gevent.sleep(0.002)
             client.connect()
             self.assertTrue(client.connected)
 
-        gevent.sleep(0.005)
+        gevent.sleep(0.002)
 
         self.assertEqual(on_connect_handler.call_count, 10)
         self.assertEqual(on_disconnect_handler.call_count, 10)
 
     def test_double_connect_client(self):
+        # Check that asking an already-connected client to connect
+        # again causes an error.
         client = self.get_client(ServiceCoord("Foo", 0))
         self.assertRaises(Exception, client.connect)
 
     def test_double_connect_server(self):
+        # Check that asking an already-connected server to initialize
+        # again its connection causes an error.
         client = self.get_client(ServiceCoord("Foo", 0))
-        gevent.sleep(0.005)
+        gevent.sleep(0.002)
         self.assertRaises(Exception, self.servers[0].initialize, "foo")
 
     def test_double_disconnect_client(self):
+        # Check that asking a non-connected client to disconnect is
+        # harmless (i.e. disconnection is idempotent).
         client = self.get_client(ServiceCoord("Foo", 0))
         client.disconnect()
-        gevent.sleep(0.001)
+        gevent.sleep(0.002)
         client.disconnect()
-        gevent.sleep(0.001)
+        gevent.sleep(0.002)
 
     def test_double_disconnect_server(self):
+        # Check that asking a non-connected server to disconnect is
+        # harmless (i.e. disconnection is idempotent).
         client = self.get_client(ServiceCoord("Foo", 0))
-        gevent.sleep(0.005)
+        gevent.sleep(0.002)
         self.servers[0].disconnect()
-        gevent.sleep(0.001)
+        gevent.sleep(0.002)
         self.servers[0].disconnect()
-        gevent.sleep(0.001)
+        gevent.sleep(0.002)
 
     def test_send_invalid_json(self):
         sock = gevent.socket.create_connection((self.host, self.port))
         sock.sendall("foo\r\n")
-        gevent.sleep(0.001)
+        gevent.sleep(0.002)
         self.assertTrue(self.servers[0].connected)
         # Verify the server resumes normal operation.
         self.test_method_return_int()
@@ -316,7 +371,7 @@ class TestCmsRPC(unittest.TestCase):
     def test_send_incomplete_json(self):
         sock = gevent.socket.create_connection((self.host, self.port))
         sock.sendall('{"__id": "foo"}\r\n')
-        gevent.sleep(0.001)
+        gevent.sleep(0.002)
         self.assertTrue(self.servers[0].connected)
         # Verify the server resumes normal operation.
         self.test_method_return_int()
