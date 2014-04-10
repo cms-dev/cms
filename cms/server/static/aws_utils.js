@@ -599,38 +599,21 @@ CMS.AWSUtils.prototype.bind_func = function(object, method) {
 
 
 /**
- * Perform an AJAX request.
+ * Perform an AJAX GET request.
  *
- * url (string): the url of the resource
- * par (string): the arguments already encoded
- * cb (function): the function to call with the response
- * method (string) : the HTTP method (default GET)
+ * url (string): the url of the resource.
+ * args (string|null): the arguments already encoded.
+ * callback (function): the function to call with the response.
  */
-CMS.AWSUtils.prototype.ajax_request = function(url, par, cb, method) {
-    // TODO: rewrite this using jquery's ajax functions.
-    var xmlhttp;
-    if (window.XMLHttpRequest) {
-        xmlhttp=new XMLHttpRequest();
-    } else if (window.ActiveXObject) {
-        xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-    } else {
-        alert("Your browser does not support XMLHTTP!");
+CMS.AWSUtils.prototype.ajax_request = function(url, args, callback) {
+    if (args != null) {
+        url = url + "?" + args;
     }
-    xmlhttp.onreadystatechange = function() {
-        if (xmlhttp.readyState == 4) {
-            if (xmlhttp.status == 200) {
-                cb(xmlhttp.responseText, null);
-            } else {
-                cb(null, xmlhttp.status);
-            }
-        }
-    }
-    if (method == "POST") {
-        xmlhttp.open("POST", url, true);
-        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
-        xmlhttp.send(par);
-    } else {
-        xmlhttp.open("GET", url + "?" + par, true);
-        xmlhttp.send();
-    }
+    var jqxhr = $.get(url);
+    jqxhr.done(function(data) {
+        callback(data, null);
+    });
+    jqxhr.fail(function() {
+        callback(null, jqxhr.status);
+    });
 };
