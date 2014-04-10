@@ -56,8 +56,9 @@ particular we are aware of the following.
     - [AIIO 2012](http://orac.amt.edu.au/aiio/aiio12results.html)
       (Australian Invitational Informatics Olympiad), February 2012;
     - Croatian high school programming contest 2013, March 2013;
-    - Festival of Innovative Technologies 2013 (national high school
+    - FIT 2013 (Festival of Innovative Technologies; national high school
       programming contest), Slovenia, April 2013;
+    - FIT 2014, Slovenia, April 2014;
     - OCI 2013 (Chilean Olympiads in Informatics), May 2013;
     - Slovenian Invitational Informatics Olympiad, May 2013;
     - [JOI Open Contest 2013]
