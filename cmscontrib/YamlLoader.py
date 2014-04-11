@@ -3,7 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -116,7 +116,6 @@ class YamlLoader(Loader):
     needed (and available) child objects.
 
     """
-
     short_name = 'italy_yaml'
     description = 'Italian YAML-based format'
 
@@ -148,7 +147,9 @@ class YamlLoader(Loader):
         assert name == args["name"]
 
         # Use the new token settings format if detected.
-        if "token_mode" in conf:
+        if "token_mode" in conf or \
+                all(old_token_config not in conf
+                    for old_token_config in Loader.OLD_TOKEN_CONFIGURATIONS):
             load(conf, args, "token_mode")
             load(conf, args, "token_max_number")
             load(conf, args, "token_min_interval", conv=make_timedelta)
@@ -382,7 +383,9 @@ class YamlLoader(Loader):
             SubmissionFormatElement("%s.%%l" % name)]
 
         # Use the new token settings format if detected.
-        if "token_mode" in conf:
+        if "token_mode" in conf or \
+                all(old_token_config not in conf
+                    for old_token_config in Loader.OLD_TOKEN_CONFIGURATIONS):
             load(conf, args, "token_mode")
             load(conf, args, "token_max_number")
             load(conf, args, "token_min_interval", conv=make_timedelta)

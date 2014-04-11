@@ -3,6 +3,7 @@
 
 # Programming contest management system
 # Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -47,6 +48,16 @@ class Loader(object):
 
     # Description of this loader, meant to be human readable.
     description = None
+
+    # To ease in looging that the configuration is deprecated.
+    OLD_TOKEN_CONFIGURATIONS = [
+        "token_initial",
+        "token_min_interval",
+        "token_gen_initial",
+        "token_gen_number",
+        "token_gen_time",
+        "token_total",
+        ]
 
     def __init__(self, path, file_cacher):
         """Initialize the Loader.
