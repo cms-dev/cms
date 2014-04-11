@@ -193,7 +193,8 @@ var getters = [];
         update_resources: function()
         {
             var f = utils.bind_func(this, this.update_resources_cb);
-            cmsrpc_request("ResourceService", this.shard,
+            cmsrpc_request("{{ url_root }}",
+                           "ResourceService", this.shard,
                            "get_resources",
                            {"last_time": this.last_time},
                            f);
@@ -202,14 +203,16 @@ var getters = [];
         kill_service: function(s, link)
         {
             link.parentNode.innerHTML = '<img src="{{ url_root }}/static/loading.gif" />';
-            cmsrpc_request("ResourceService", this.shard,
+            cmsrpc_request("{{ url_root }}",
+                           "ResourceService", this.shard,
                            "kill_service",
                            {"service": s});
         },
 
         toggle_autorestart: function(s, checkbox)
         {
-            cmsrpc_request("ResourceService", this.shard,
+            cmsrpc_request("{{ url_root }}",
+                           "ResourceService", this.shard,
                            "toggle_autorestart",
                            {"service": s});
         }

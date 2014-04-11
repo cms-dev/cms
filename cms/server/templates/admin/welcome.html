@@ -144,20 +144,24 @@ function update_statuses()
 {
 
     {% if contest is not None %}
-    cmsrpc_request("EvaluationService", 0,
+    cmsrpc_request("{{ url_root }}",
+                   "EvaluationService", 0,
                    "submissions_status",
                    {},
                    update_submissions_status);
     {% end %}
-    cmsrpc_request("EvaluationService", 0,
+    cmsrpc_request("{{ url_root }}",
+                   "EvaluationService", 0,
                    "queue_status",
                    {},
                    update_queue_status);
-    cmsrpc_request("EvaluationService", 0,
+    cmsrpc_request("{{ url_root }}",
+                   "EvaluationService", 0,
                    "workers_status",
                    {},
                    update_workers_status);
-    cmsrpc_request("LogService", 0,
+    cmsrpc_request("{{ url_root }}",
+                   "LogService", 0,
                    "last_messages",
                    {},
                    update_logs);

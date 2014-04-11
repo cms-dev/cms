@@ -26,7 +26,10 @@
 
 var CMS = CMS || {};
 
-CMS.AWSUtils = function(timestamp, contest_start, contest_stop, phase) {
+CMS.AWSUtils = function(url_root, timestamp,
+                        contest_start, contest_stop, phase) {
+    this.url_root = url_root;
+    this.first_date = new Date();
     this.last_notification = timestamp;
     this.timestamp = timestamp;
     this.contest_start = contest_start;
@@ -79,7 +82,7 @@ CMS.AWSUtils.prototype.file_received = function(response, error) {
         if (response.length > 100000) {
             elements.push($('<h1>').text(file_name));
             elements.push($('<a>').text("Download").prop("href", url));
-            utils.display_subpage(elements);
+            this.display_subpage(elements);
             return;
         }
         var pre_class = "";
@@ -94,7 +97,7 @@ CMS.AWSUtils.prototype.file_received = function(response, error) {
         elements.push($('<pre>').text(response).prop("id", "source_container")
                       .prop("class", pre_class));
 
-        utils.display_subpage(elements);
+        this.display_subpage(elements);
         SyntaxHighlighter.highlight()
     }
 };
@@ -151,7 +154,7 @@ CMS.AWSUtils.prototype.display_notification = function(type, timestamp,
         subject_string = $("<span>").text("Reply to your question. ");
     } else if (type == "new_question") {
         subject_string = $("<a>").text("New question: ")
-            .prop("href", url_root + '/questions/' + contest_id);
+            .prop("href", this.url_root + '/questions/' + contest_id);
     }
 
     var self = this;
@@ -219,7 +222,7 @@ CMS.AWSUtils.prototype.update_notifications = function() {
     var display_notification = this.bind_func(this, this.display_notification);
     var update_unread_counts = this.bind_func(this, this.update_unread_counts);
     this.ajax_request(
-        url_root + "/notifications",
+        this.url_root + "/notifications",
         "last_notification=" + this.last_notification,
         function(response, error) {
             if (error == null) {
@@ -292,11 +295,11 @@ CMS.AWSUtils.prototype.update_remaining_time = function() {
     }
 
     var now = new Date();
-    var nowsec_to_end = sec_to_end - (now - firstDate) / 1000;
-    var nowsec_to_start = sec_to_start - (now - firstDate) / 1000;
+    var nowsec_to_end = sec_to_end - (now - this.first_date) / 1000;
+    var nowsec_to_start = sec_to_start - (now - this.first_date) / 1000;
     if ((nowsec_to_end <= 0 && this.phase == 0 ) ||
         (nowsec_to_start <= 0 && this.phase == -1 )) {
-        window.location.href = url_root + "/";
+        window.location.href = this.url_root + "/";
     }
 
     var countdown = nowsec_to_end;
@@ -339,6 +342,7 @@ CMS.AWSUtils.prototype.redirect_if_ok = function(url, response) {
  */
 CMS.AWSUtils.prototype.repr_job = function(job) {
     var job_type = "???";
+    var object_type = "???";
     if (job == null) {
         return "N/A";
     } else if (job == "disabled") {
@@ -358,14 +362,14 @@ CMS.AWSUtils.prototype.repr_job = function(job) {
     }
 
     if (object_type == 'submission') {
-        return job_type + ' the <a href="' + url_root + '/submission/'
-            + job[1] + '/' + job[2] + '">result</a> of <a href="' + url_root
+        return job_type + ' the <a href="' + this.url_root + '/submission/'
+            + job[1] + '/' + job[2] + '">result</a> of <a href="' + this.url_root
             + '/submission/' + job[1] + '">submission ' + job[1]
-            + '</a> on <a href="' + url_root + '/dataset/' + job[2]
+            + '</a> on <a href="' + this.url_root + '/dataset/' + job[2]
             + '">dataset ' + job[2] + '</a>';
     } else {
         return job_type + ' the result of user_test ' + job[1]
-            + ' on <a href="' + url_root + '/dataset/' + job[2]
+            + ' on <a href="' + this.url_root + '/dataset/' + job[2]
             + '">dataset ' + job[2] + '</a>';
     }
 };
@@ -539,9 +543,9 @@ CMS.AWSUtils.prototype.standard_response = function(response) {
 CMS.AWSUtils.prototype.switch_contest = function() {
     var value = $("#contest_selection_select").val()
     if (value == "null") {
-        window.location = url_root + "/";
+        window.location = this.url_root + "/";
     } else {
-        window.location = url_root + "/contest/" + value;
+        window.location = this.url_root + "/contest/" + value;
     }
 };
 

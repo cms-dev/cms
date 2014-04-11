@@ -2,7 +2,7 @@
 {% if reevaluation_par_dataset_id is not None %}
     {% set url = "%s/%s" % (url, reevaluation_par_dataset_id) %}
 {% end %}
-<button onclick="cmsrpc_request(
+<button onclick="cmsrpc_request('{{ url_root }}',
                  'EvaluationService', 0,
                  'invalidate_submission',
                  {'{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }},
@@ -13,7 +13,7 @@
                  function(response) { utils.redirect_if_ok('{{ url }}', response); }
                  );"
         title="Compilation" >C</button>
-<button onclick="cmsrpc_request(
+<button onclick="cmsrpc_request('{{ url_root }}',
                  'EvaluationService', 0,
                  'invalidate_submission',
                  {'{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }},
@@ -24,7 +24,7 @@
                  function(response) { utils.redirect_if_ok('{{ url }}', response); }
                   );"
         title="Evaluation" >E</button>
-<button onclick="cmsrpc_request(
+<button onclick="cmsrpc_request('{{ url_root }}',
                  'ScoringService', 0,
                  'invalidate_submission',
                  {'{{ reevaluation_par_name }}_id': {{ reevaluation_par_value }},
