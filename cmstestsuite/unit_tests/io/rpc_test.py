@@ -31,7 +31,8 @@ from gevent.server import StreamServer
 from mock import Mock, patch
 
 from cms import Address, ServiceCoord
-from cms.io import RPCError, rpc_method, RemoteServiceServer, RemoteServiceClient
+from cms.io import RPCError, rpc_method, RemoteServiceServer, \
+    RemoteServiceClient
 
 
 class MockService(object):
