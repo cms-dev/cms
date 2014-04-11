@@ -10,9 +10,6 @@
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <script type="text/javascript">
-<!--
-var url_root = "{{ url_root }}";
--->
         </script>
         <link rel="shortcut icon" href="{{ url_root }}/static/favicon.ico" />
         <script type="text/javascript" src="{{ url_root }}/static/jq/jquery-1.7.1.min.js"></script>
@@ -26,12 +23,12 @@ var url_root = "{{ url_root }}";
 {% if current_user is not None %}
         <script type="text/javascript">
 // FIXME use Date objects
-var utils = new CMS.CWSUtils({{ make_timestamp(timestamp) }},
+var utils = new CMS.CWSUtils("{{ url_root }}",
+                             {{ make_timestamp(timestamp) }},
                              {{ make_timestamp(current_phase_begin) }},
                              {{ make_timestamp(current_phase_end) }},
                              {{ actual_phase }});
 $(document).ready(function () {
-    firstDate = new Date(); // FIXME very bad: global variable
     utils.update_time();
     setInterval(function() { utils.update_time(); }, 1000);
     utils.update_notifications();

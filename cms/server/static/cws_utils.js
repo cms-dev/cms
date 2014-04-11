@@ -25,8 +25,9 @@
 
 var CMS = CMS || {};
 
-CMS.CWSUtils = function(timestamp,
+CMS.CWSUtils = function(url_root, timestamp,
                         current_phase_begin, current_phase_end, phase) {
+    this.url_root = url_root;
     this.last_notification = timestamp;
     this.server_timestamp = timestamp;
     this.client_timestamp = $.now() / 1000;
@@ -41,7 +42,7 @@ CMS.CWSUtils = function(timestamp,
 CMS.CWSUtils.prototype.update_notifications = function() {
     var self = this;
     $.get(
-        url_root + "/notifications",
+        this.url_root + "/notifications",
         {"last_notification": this.last_notification},
         function(data) {
             var counter = 0;
@@ -178,7 +179,7 @@ CMS.CWSUtils.prototype.update_time = function() {
     case -2:
         // Contest hasn't started yet.
         if (server_time >= this.current_phase_end) {
-            window.location.href = url_root + "/";
+            window.location.href = this.url_root + "/";
         }
         $("#countdown_label").text(
             $("#translation_until_contest_starts").text());
@@ -196,7 +197,7 @@ CMS.CWSUtils.prototype.update_time = function() {
     case 0:
         // Contest is currently running.
         if (server_time >= this.current_phase_end) {
-            window.location.href = url_root + "/";
+            window.location.href = this.url_root + "/";
         }
         $("#countdown_label").text($("#translation_time_left").text());
         $("#countdown").text(
@@ -206,7 +207,7 @@ CMS.CWSUtils.prototype.update_time = function() {
         // User has already finished its time but contest hasn't
         // finished yet.
         if (server_time >= this.current_phase_end) {
-            window.location.href = url_root + "/";
+            window.location.href = this.url_root + "/";
         }
         $("#countdown_label").text(
             $("#translation_until_contest_ends").text());

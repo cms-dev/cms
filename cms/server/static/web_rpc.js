@@ -27,7 +27,7 @@
  * args: the keyword arguments (as an Object).
  * callback: a function to call with the result of the request.
  */
-function cmsrpc_request(service, shard, method, args, callback) {
+function cmsrpc_request(url_root, service, shard, method, args, callback) {
     var url = url_root + "/rpc/" + encodeURIComponent(service) +
                              "/" + encodeURIComponent(shard) +
                              "/" + encodeURIComponent(method);
@@ -36,14 +36,14 @@ function cmsrpc_request(service, shard, method, args, callback) {
         url: url,
         data: JSON.stringify(args),
         contentType: 'application/json',
-        dataType: 'json',
+        dataType: 'json'
     });
     jqxhr.done(function(data) {
         data["status"] = "ok";
         callback(data);
     });
     jqxhr.fail(function(jqxhr) {
-        data = {};
+        var data = {};
         if (jqxhr.status == 403) {
             data["status"] = "not authorized";
         } else if (jqxhr.status == 503) {
