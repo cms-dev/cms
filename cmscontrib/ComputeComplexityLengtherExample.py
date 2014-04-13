@@ -27,6 +27,9 @@ integer in the file as the measure for the complexity of the input.
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 
 class FileLengther(object):
     """A simple file-like object to extract the first number of the

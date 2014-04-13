@@ -17,6 +17,9 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 import sys
 
 
@@ -29,10 +32,10 @@ def main():
         for piece in pieces:
             words = piece.split(' ')
             stats[words[1]] = int(words[0])
-        print "%s,%d,%d,%d" % (filename,
+        print("%s,%d,%d,%d" % (filename,
                                stats['translated'],
                                stats['untranslated'],
-                               stats['fuzzy'])
+                               stats['fuzzy']))
 
 if __name__ == '__main__':
     main()

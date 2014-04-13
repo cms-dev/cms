@@ -21,6 +21,9 @@
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 from cmscontrib.YamlLoader import YamlLoader
 
 LOADERS = dict((loader_class.short_name, loader_class)

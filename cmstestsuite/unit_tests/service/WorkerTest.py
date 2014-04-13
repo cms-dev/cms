@@ -21,6 +21,9 @@
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 import gevent
 import unittest
 from mock import Mock, call

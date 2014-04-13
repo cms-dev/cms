@@ -1,5 +1,7 @@
 #!/usr/bin/python2 -sS
 
+from __future__ import print_function
+
 import sys
 
 input_file, solution_file, output_file = sys.argv[1:]
@@ -15,12 +17,12 @@ try:
     line = f.readline().strip()
     more = f.readline()
     if line == '%s %d' % (solution_word, number) and more == '':
-        print "1.0"
-        print >>sys.stderr, "Correcto"
+        print("1.0")
+        print("Correcto", file=sys.stderr)
     else:
         assert more == ''
-        print "0.0"
-        print >>sys.stderr, "Plain wrong"
+        print("0.0")
+        print("Plain wrong", file=sys.stderr)
 except:
     # Given the file comes from the manager, it really should have been
     # correct.

@@ -29,7 +29,9 @@ bd80d0c930e25972eeda861719f96990de6e7822
 
 """
 
+from __future__ import absolute_import
 from __future__ import unicode_literals
+from __future__ import print_function
 
 
 def split_dict(src, *keys):

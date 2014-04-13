@@ -26,6 +26,9 @@ of the old supported versions to the current one.
 
 """
 
+from __future__ import absolute_import
+from __future__ import print_function
+
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey

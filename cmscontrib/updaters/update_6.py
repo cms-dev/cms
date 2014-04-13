@@ -27,7 +27,9 @@ af2338b9a22df8a19671c7fee78d9dc4b35c49ea.
 
 """
 
+from __future__ import absolute_import
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import json
 

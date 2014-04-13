@@ -1,5 +1,7 @@
 #!/usr/bin/python2 -sS
 
+from __future__ import print_function
+
 import sys
 
 fifo_path_from_user, fifo_path_to_user = sys.argv[1:]
@@ -38,6 +40,6 @@ file("output.txt", "w").write(l + "\n")
 
 # This is the final score.
 if correct:
-    print "1"
+    print("1")
 else:
-    print "0"
+    print("0")

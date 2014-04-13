@@ -26,7 +26,9 @@ db4adada08d66b4797d0569d95e8f0c028a4e5e0.
 
 """
 
+from __future__ import absolute_import
 from __future__ import unicode_literals
+from __future__ import print_function
 
 from functools import partial
 

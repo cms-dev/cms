@@ -39,6 +39,7 @@ TODO: currently only works with tasks with one file per submission
 
 """
 
+from __future__ import absolute_import
 from __future__ import print_function
 
 import sys
