@@ -5,7 +5,7 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -43,6 +43,11 @@ logger = logging.getLogger(__name__)
 
 
 B_TO_MB = 1024.0 * 1024.0
+
+# As psutil-2.0 introduced many backward-incompatible changes to its
+# API we define this global flag to make it easier later on to decide
+# which methods, properties, etc. to use.
+PSUTIL2 = psutil.version_info >= (2, 0)
 
 
 class ResourceService(Service):
@@ -228,9 +233,10 @@ class ResourceService(Service):
         logger.debug("ResourceService._find_proc")
         for proc in psutil.get_process_list():
             try:
-                if ResourceService._is_service_proc(service, proc.cmdline):
+                if ResourceService._is_service_proc(
+                        service, proc.cmdline() if PSUTIL2 else proc.cmdline):
                     self._services_prev_cpu_times[service] = \
-                        proc.get_cpu_times()
+                        proc.as_dict(attrs=["cpu_times"])["cpu_times"]
                     return proc
             except psutil.NoSuchProcess:
                 continue
@@ -275,7 +281,8 @@ class ResourceService(Service):
                                           self._prev_cpu_times[x])
                                    / delta * 100.0)))
                            for x in cpu_times)
-        data["cpu"]["num_cpu"] = psutil.NUM_CPUS
+        data["cpu"]["num_cpu"] = \
+            psutil.cpu_count() if PSUTIL2 else psutil.NUM_CPUS
         self._prev_cpu_times = cpu_times
 
         # Memory. The following relations hold (I think... I only
@@ -324,10 +331,12 @@ class ResourceService(Service):
                 continue
 
             try:
-                dic["since"] = self._last_saved_time - proc.create_time
+                proc_info = proc.as_dict(attrs=["create_time", "memory_info",
+                                                "cpu_times", "num_threads"])
+                dic["since"] = self._last_saved_time - proc_info["create_time"]
                 dic["resident"], dic["virtual"] = \
-                    (x / 1048576 for x in proc.get_memory_info())
-                cpu_times = proc.get_cpu_times()
+                    (x / 1048576 for x in proc_info["memory_info"])
+                cpu_times = proc_info["cpu_times"]
                 dic["user"] = int(
                     round((cpu_times[0] -
                            self._services_prev_cpu_times[service][0])
@@ -338,7 +347,7 @@ class ResourceService(Service):
                           / delta * 100))
                 self._services_prev_cpu_times[service] = cpu_times
                 try:
-                    dic["threads"] = proc.get_num_threads()
+                    dic["threads"] = proc_info["num_threads"]
                 except AttributeError:
                     dic["threads"] = 0  # 0 = Not implemented
 
