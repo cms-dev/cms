@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
