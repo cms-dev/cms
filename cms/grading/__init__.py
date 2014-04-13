@@ -25,7 +25,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import codecs
+import io
 import json
 import logging
 import os
@@ -538,8 +538,8 @@ def extract_outcome_and_text(sandbox):
     """
     stdout = sandbox.relative_path(sandbox.stdout_file)
     stderr = sandbox.relative_path(sandbox.stderr_file)
-    with codecs.open(stdout, "r", "utf-8") as stdout_file:
-        with codecs.open(stderr, "r", "utf-8") as stderr_file:
+    with io.open(stdout, "r", encoding="utf-8") as stdout_file:
+        with io.open(stderr, "r", encoding="utf-8") as stderr_file:
             try:
                 outcome = stdout_file.readline().strip()
             except UnicodeDecodeError as error:

@@ -27,6 +27,7 @@ losing no data in the process).
 """
 
 import hashlib
+import io
 import os
 
 
@@ -58,5 +59,5 @@ def touch(path):
     path (str): the path to be touched.
 
     """
-    with file(path, 'a'):
+    with io.file(path, 'a'):
         os.utime(path, None)

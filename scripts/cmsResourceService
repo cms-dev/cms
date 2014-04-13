@@ -59,9 +59,8 @@ def main():
             if is_contest_id(args.autorestart):
                 ResourceService(args.shard, contest_id=args.autorestart).run()
             else:
-                import sys
-                print >> sys.stderr, "There is no contest " \
-                      "with the specified id. Please try again."
+                print("There is no contest with the specified id. "
+                      "Please try again.", file=sys.stderr)
                 return False
     else:
         return ResourceService(args.shard).run()

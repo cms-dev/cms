@@ -29,10 +29,10 @@ def main():
         for piece in pieces:
             words = piece.split(' ')
             stats[words[1]] = int(words[0])
-        print "%s,%d,%d,%d" % (filename,
+        print("%s,%d,%d,%d" % (filename,
                                stats['translated'],
                                stats['untranslated'],
-                               stats['fuzzy'])
+                               stats['fuzzy']))
 
 if __name__ == '__main__':
     main()
