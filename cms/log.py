@@ -44,8 +44,8 @@
 # http://hg.python.org/cpython/file/69ee9b554eca/Lib/logging/handlers.py
 
 from __future__ import absolute_import
-from __future__ import unicode_literals
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import curses
 import logging
