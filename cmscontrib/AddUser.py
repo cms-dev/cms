@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system - utility to add a user to a contest.
+# Contest Management System - http://cms-dev.github.io/ - utility to add a user to a contest.
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
