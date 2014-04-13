@@ -136,7 +136,8 @@
   <table class="bordered">
     <thead>
       <tr>
-        <th style="width: 10%">Outcome</th>
+        <th style="width: 5%">Codename</th>
+        <th style="width: 5%">Outcome</th>
         <th style="width: 2%"></th>
         <th style="width: 45%">Details</th>
         <th style="width: 8%">Shard</th>
@@ -147,6 +148,7 @@
     <tbody>
       {% for idx, ev in sorted((ev.codename, ev) for ev in sr.evaluations) %}
       <tr>
+        <td id="eval_codename_{{ idx }}">{{ ev.codename }}</td>
         <td id="eval_outcome_{{ idx }}">{{ ev.outcome }}</td>
         {% if s.token is not None or ev.testcase.public %}
         <td style="align: center;">&bullet;</td>
