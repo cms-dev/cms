@@ -59,5 +59,5 @@ def touch(path):
     path (str): the path to be touched.
 
     """
-    with io.file(path, 'a'):
+    with io.open(path, 'a'):
         os.utime(path, None)

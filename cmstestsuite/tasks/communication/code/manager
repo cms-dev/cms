@@ -8,10 +8,10 @@ import sys
 fifo_path_from_user, fifo_path_to_user = sys.argv[1:]
 
 # The order these are opened is very important.  It must match the stub.
-fifo_to_user = io.file(fifo_path_to_user, "wb", buffering=0)
-fifo_from_user = io.file(fifo_path_from_user, "rb", buffering=0)
+fifo_to_user = io.open(fifo_path_to_user, "wb", buffering=0)
+fifo_from_user = io.open(fifo_path_from_user, "rb", buffering=0)
 
-input_value = int(io.file("input.txt", "r").readline())
+input_value = int(io.open("input.txt", "r").readline())
 
 correct = True
 
@@ -37,7 +37,7 @@ else:
     fifo_to_user.write("0\n")
 
 # This file exists just for convenience.
-io.file("output.txt", "w").write(l + "\n")
+io.open("output.txt", "w").write(l + "\n")
 
 # This is the final score.
 if correct:
