@@ -236,7 +236,7 @@ class ResourceService(Service):
                 if ResourceService._is_service_proc(
                         service, proc.cmdline() if PSUTIL2 else proc.cmdline):
                     self._services_prev_cpu_times[service] = \
-                        proc.as_dict(attrs=["cpu_times"])["cpu_times"]
+                        proc.as_dict()["cpu_times"]
                     return proc
             except psutil.NoSuchProcess:
                 continue
@@ -331,8 +331,7 @@ class ResourceService(Service):
                 continue
 
             try:
-                proc_info = proc.as_dict(attrs=["create_time", "memory_info",
-                                                "cpu_times", "num_threads"])
+                proc_info = proc.as_dict()
                 dic["since"] = self._last_saved_time - proc_info["create_time"]
                 dic["resident"], dic["virtual"] = \
                     (x / int(B_TO_MB) for x in proc_info["memory_info"])
