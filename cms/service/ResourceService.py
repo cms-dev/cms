@@ -335,7 +335,7 @@ class ResourceService(Service):
                                                 "cpu_times", "num_threads"])
                 dic["since"] = self._last_saved_time - proc_info["create_time"]
                 dic["resident"], dic["virtual"] = \
-                    (x / 1048576 for x in proc_info["memory_info"])
+                    (x / int(B_TO_MB) for x in proc_info["memory_info"])
                 cpu_times = proc_info["cpu_times"]
                 dic["user"] = int(
                     round((cpu_times[0] -
