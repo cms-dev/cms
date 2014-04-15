@@ -49,6 +49,14 @@ B_TO_MB = 1024.0 * 1024.0
 # which methods, properties, etc. to use.
 PSUTIL2 = psutil.version_info >= (2, 0)
 
+if PSUTIL2:
+    PSUTIL_PROC_ATTRS = \
+        ["cmdline", "cpu_times", "create_time", "memory_info", "num_threads"]
+else:
+    PSUTIL_PROC_ATTRS = \
+        ["cmdline", "get_cpu_times", "create_time",
+         "get_memory_info", "get_num_threads"]
+
 
 class ResourceService(Service):
     """This service looks at the resources usage (CPU, load, memory,
@@ -233,10 +241,11 @@ class ResourceService(Service):
         logger.debug("ResourceService._find_proc")
         for proc in psutil.get_process_list():
             try:
+                proc_info = proc.as_dict(attrs=PSUTIL_PROC_ATTRS)
                 if ResourceService._is_service_proc(
-                        service, proc.cmdline() if PSUTIL2 else proc.cmdline):
+                        service, proc_info["cmdline"]):
                     self._services_prev_cpu_times[service] = \
-                        proc.as_dict()["cpu_times"]
+                        proc_info["cpu_times"]
                     return proc
             except psutil.NoSuchProcess:
                 continue
@@ -331,7 +340,7 @@ class ResourceService(Service):
                 continue
 
             try:
-                proc_info = proc.as_dict()
+                proc_info = proc.as_dict(attrs=PSUTIL_PROC_ATTRS)
                 dic["since"] = self._last_saved_time - proc_info["create_time"]
                 dic["resident"], dic["virtual"] = \
                     (x / int(B_TO_MB) for x in proc_info["memory_info"])
