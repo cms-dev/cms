@@ -1343,8 +1343,7 @@ class AddTestcasesHandler(BaseHandler):
             skipped_tc = []
             overwritten_tc = []
             added_tc = []
-            for codename in tests:
-                testdata = tests[codename]
+            for codename, testdata in tests.iteritems():
                 # If input or output file isn't found, skip it.
                 if not testdata[0] or not testdata[1]:
                     continue
@@ -1360,12 +1359,8 @@ class AddTestcasesHandler(BaseHandler):
                         self.sql_session.delete(testcase)
 
                         if not try_commit(self.sql_session, self):
-                            self.application.service.add_notification(
-                                make_datetime(),
-                                "Couldn't overwrite test %s" % codename,
-                                "")
-                            self.redirect("/add_testcases/%s" % dataset_id)
-                            return
+                            skipped_tc.append(codename)
+                            continue
                         overwritten_tc.append(codename)
                     else:
                         skipped_tc.append(codename)
@@ -1398,9 +1393,6 @@ class AddTestcasesHandler(BaseHandler):
                         repr(error))
                     self.redirect("/add_testcases/%s" % dataset_id)
                     return
-                task = dataset.task
-                self.contest = task.contest
-
                 testcase = Testcase(codename, public, input_digest,
                                     output_digest, dataset=dataset)
                 self.sql_session.add(testcase)
@@ -1419,9 +1411,10 @@ class AddTestcasesHandler(BaseHandler):
             make_datetime(),
             "Successfully added %d and overwritten %d testcase(s)" %
             (len(added_tc), len(overwritten_tc)),
-            "Added codenames: %s; overwritten codenames: %s" %
+            "Added: %s; overwritten: %s; skipped: %s" %
             (", ".join(added_tc) if added_tc else "none",
-             ", ".join(overwritten_tc) if overwritten_tc else "none"))
+             ", ".join(overwritten_tc) if overwritten_tc else "none",
+             ", ".join(skipped_tc) if skipped_tc else "none"))
         self.application.service.proxy_service.reinitialize()
         self.redirect("/task/%s" % task.id)
 
