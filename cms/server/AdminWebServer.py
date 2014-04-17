@@ -1351,6 +1351,8 @@ class AddTestcasesHandler(BaseHandler):
 
                 # Check, whether current testcase already exists.
                 dataset = self.safe_get_item(Dataset, dataset_id)
+                task = dataset.task
+                self.contest = task.contest
                 if codename in dataset.testcases:
                     # If we are allowed, remove existing testcase.
                     # If not - skip this testcase.
