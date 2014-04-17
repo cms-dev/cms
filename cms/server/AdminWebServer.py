@@ -1288,21 +1288,6 @@ class AddTestcasesHandler(BaseHandler):
         self.r_params["dataset"] = dataset
         self.render("add_testcases.html", **self.r_params)
 
-    # Retrieves codenames from filenames like testcase???.in
-    def get_codename_from_filename(self, filename, template):
-        if len(filename) != len(template):
-            return None
-        index = ""
-        for i in xrange(len(filename)):
-            if template[i] == "?":
-                index += filename[i]
-        try:
-            index = int(index)
-        except ValueError:
-            return None
-        codename = "%03d" % index
-        return codename
-
     def post(self, dataset_id):
         dataset = self.safe_get_item(Dataset, dataset_id)
         task = dataset.task
@@ -1324,110 +1309,119 @@ class AddTestcasesHandler(BaseHandler):
         # Get input/output file names templates, or use default ones.
         input_template = self.get_argument("input_template", None)
         if not input_template:
-            input_template = "input.???"
+            input_template = "input.*"
         output_template = self.get_argument("output_template", None)
         if not output_template:
-            output_template = "output.???"
-        input_re = re.compile(input_template.replace("?", "[0-9]") + "$")
-        output_re = re.compile(output_template.replace("?", "[0-9]") + "$")
+            output_template = "output.*"
+        input_re = re.compile(re.escape(input_template).replace("\\*",
+                              "(.*)") + "$")
+        output_re = re.compile(re.escape(output_template).replace("\\*",
+                               "(.*)") + "$")
 
         task_name = task.name
         self.sql_session.close()
 
         fp = StringIO(archive["body"])
-        archive_zfp = zipfile.ZipFile(fp, "r")
-
-        tests = dict()
-        # Match input/output file names to testcases' codenames.
-        for filename in archive_zfp.namelist():
-            if input_re.match(filename):
-                codename = self.get_codename_from_filename(filename,
-                                                           input_template)
-                if not codename in tests:
-                    tests[codename] = [None, None]
-                tests[codename][0] = filename
-            elif output_re.match(filename):
-                codename = self.get_codename_from_filename(filename,
-                                                           output_template)
-                if not codename in tests:
-                    tests[codename] = [None, None]
-                tests[codename][1] = filename
-
-        added_testcases = []
-        for codename in tests:
-            testdata = tests[codename]
-            # If input or output file isn't found, skip it.
-            if not testdata[0] or not testdata[1]:
-                continue
-            self.sql_session = Session()
-
-            # Check, whether current testcase already exists.
-            dataset = self.safe_get_item(Dataset, dataset_id)
-            if codename in dataset.testcases:
-                # If we are allowed, remove existing testcase.
-                # If not - skip this testcase.
-                if overwrite:
-                    testcase = dataset.testcases[codename]
-                    self.sql_session.delete(testcase)
-
-                    if not try_commit(self.sql_session, self):
-                        archive_zfp.close()
-                        self.application.service.add_notification(
-                            make_datetime(),
-                            "Couldn't overwrite test %s" % codename,
-                            "")
-                        self.redirect("/add_testcases/%s" % dataset_id)
-                        return
+        with zipfile.ZipFile(fp, "r") as archive_zfp:
+            tests = dict()
+            # Match input/output file names to testcases' codenames.
+            for filename in archive_zfp.namelist():
+                match = input_re.match(filename)
+                if match:
+                    codename = match.group(1)
+                    if not codename in tests:
+                        tests[codename] = [None, None]
+                    tests[codename][0] = filename
                 else:
+                    match = output_re.match(filename)
+                    if match:
+                        codename = match.group(1)
+                        if not codename in tests:
+                            tests[codename] = [None, None]
+                        tests[codename][1] = filename
+
+            skipped_tc = []
+            overwritten_tc = []
+            added_tc = []
+            for codename in tests:
+                testdata = tests[codename]
+                # If input or output file isn't found, skip it.
+                if not testdata[0] or not testdata[1]:
+                    continue
+                self.sql_session = Session()
+
+                # Check, whether current testcase already exists.
+                dataset = self.safe_get_item(Dataset, dataset_id)
+                if codename in dataset.testcases:
+                    # If we are allowed, remove existing testcase.
+                    # If not - skip this testcase.
+                    if overwrite:
+                        testcase = dataset.testcases[codename]
+                        self.sql_session.delete(testcase)
+
+                        if not try_commit(self.sql_session, self):
+                            self.application.service.add_notification(
+                                make_datetime(),
+                                "Couldn't overwrite test %s" % codename,
+                                "")
+                            self.redirect("/add_testcases/%s" % dataset_id)
+                            return
+                        overwritten_tc.append(codename)
+                    else:
+                        skipped_tc.append(codename)
+                        continue
+
+                # Add current testcase.
+                try:
+                    input_ = archive_zfp.read(testdata[0])
+                    output = archive_zfp.read(testdata[1])
+                except Exception as error:
                     self.application.service.add_notification(
                         make_datetime(),
-                        "Testcase %s already exists, skipping" % codename,
+                        "Reading testcase %s failed" % codename,
+                        repr(error))
+                    self.redirect("/add_testcases/%s" % dataset_id)
+                    return
+                try:
+                    input_digest = \
+                        self.application.service.file_cacher.put_file_content(
+                            input_,
+                            "Testcase input for task %s" % task_name)
+                    output_digest = \
+                        self.application.service.file_cacher.put_file_content(
+                            output,
+                            "Testcase output for task %s" % task_name)
+                except Exception as error:
+                    self.application.service.add_notification(
+                        make_datetime(),
+                        "Testcase storage failed",
+                        repr(error))
+                    self.redirect("/add_testcases/%s" % dataset_id)
+                    return
+                task = dataset.task
+                self.contest = task.contest
+
+                testcase = Testcase(codename, public, input_digest,
+                                    output_digest, dataset=dataset)
+                self.sql_session.add(testcase)
+
+                if not try_commit(self.sql_session, self):
+                    self.application.service.add_notification(
+                        make_datetime(),
+                        "Couldn't add test %s" % codename,
                         "")
-                    continue
+                    self.redirect("/add_testcases/%s" % dataset_id)
+                    return
+                if not codename in overwritten_tc:
+                    added_tc.append(codename)
 
-            # Add current testcase.
-            try:
-                input_ = archive_zfp.read(testdata[0])
-                output = archive_zfp.read(testdata[1])
-                input_digest = \
-                    self.application.service.file_cacher.put_file_content(
-                        input_,
-                        "Testcase input for task %s" % task_name)
-                output_digest = \
-                    self.application.service.file_cacher.put_file_content(
-                        output,
-                        "Testcase output for task %s" % task_name)
-            except Exception as error:
-                archive_zfp.close()
-                self.application.service.add_notification(
-                    make_datetime(),
-                    "Testcase storage failed",
-                    repr(error))
-                self.redirect("/add_testcases/%s" % dataset_id)
-                return
-            task = dataset.task
-            self.contest = task.contest
-
-            testcase = Testcase(
-                codename, public, input_digest, output_digest, dataset=dataset)
-            self.sql_session.add(testcase)
-
-            if not try_commit(self.sql_session, self):
-                archive_zfp.close()
-                self.application.service.add_notification(
-                    make_datetime(),
-                    "Couldn't add test %s" % codename,
-                    "")
-                self.redirect("/add_testcases/%s" % dataset_id)
-                return
-            else:
-                added_testcases.append(codename)
-
-        archive_zfp.close()
         self.application.service.add_notification(
             make_datetime(),
-            "Successfully added %d testcase(s)" % len(added_testcases),
-            str(added_testcases))
+            "Successfully added %d and overwritten %d testcase(s)" %
+            (len(added_tc), len(overwritten_tc)),
+            "Added codenames: %s; overwritten codenames: %s" %
+            (", ".join(added_tc) if added_tc else "none",
+             ", ".join(overwritten_tc) if overwritten_tc else "none"))
         self.application.service.proxy_service.reinitialize()
         self.redirect("/task/%s" % task.id)
 
