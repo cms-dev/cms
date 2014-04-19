@@ -199,7 +199,7 @@ class PolygonLoader(Loader):
         args['password'] = user[1]
         args['first_name'] = user[2]
         args['last_name'] = user[3]
-        args['hidden'] = (len(user) >= 4 and user[4] == '1')
+        args['hidden'] = (len(user) > 4 and user[4] == '1')
 
         logger.info("User parameters loaded.")
 
@@ -292,91 +292,93 @@ class PolygonLoader(Loader):
             logger.info("Found additional CMS options for task %s." % name)
             task_cms_conf = __import__('cms_conf')
             sys.path.pop()
-        if task_cms_conf is not None:
+        if task_cms_conf is not None and hasattr(task_cms_conf, "general"):
             args.update(task_cms_conf.general)
 
         task = Task(**args)
 
-        args = {}
-        args["task"] = task
-        args["description"] = "Default"
-        args["autojudge"] = False
-
         judging = root.find('judging')
         testset = None
-        for ts in judging:
-            if ts.attrib['name'] == 'tests':
-                testset = ts
+        for testset in judging:
+            testset_name = testset.attrib["name"]
 
-        if testset is None:
-            logger.error("Testset for %s not found " % name)
+            args = {}
+            args["task"] = task
+            args["description"] = testset_name
+            args["autojudge"] = False
 
-        tl = float(testset.find('time-limit').text)
-        ml = float(testset.find('memory-limit').text)
-        args["time_limit"] = tl * 0.001
-        args["memory_limit"] = int(ml / (1024 * 1024))
+            tl = float(testset.find('time-limit').text)
+            ml = float(testset.find('memory-limit').text)
+            args["time_limit"] = tl * 0.001
+            args["memory_limit"] = int(ml / (1024 * 1024))
 
-        args["managers"] = []
-        infile_param = judging.attrib['input-file']
-        outfile_param = judging.attrib['output-file']
+            args["managers"] = []
+            infile_param = judging.attrib['input-file']
+            outfile_param = judging.attrib['output-file']
 
-        checker_src = os.path.join(task_path, "files", "check.cpp")
-        if os.path.exists(checker_src):
-            logger.info("Checker found, compiling")
-            checker_exe = os.path.join(task_path, "files", "checker")
-            os.system("cat %s | \
-                sed 's$testlib.h$/usr/local/include/cms/testlib.h$' | \
-                g++ -x c++ -O2 -static -o %s -" % (checker_src, checker_exe))
-            digest = self.file_cacher.put_file_from_path(
-                checker_exe,
-                "Manager for task %s" % name)
-            args["managers"] += [
-                Manager("checker", digest)]
-            evaluation_param = "comparator"
-        else:
-            logger.info("Checker not found, using diff")
-            evaluation_param = "diff"
+            checker_src = os.path.join(task_path, "files", "check.cpp")
+            if os.path.exists(checker_src):
+                logger.info("Checker found, compiling")
+                checker_exe = os.path.join(task_path, "files", "checker")
+                os.system("cat %s | \
+                    sed 's$testlib.h$/usr/local/include/cms/testlib.h$' | \
+                    g++ -x c++ -O2 -static -o %s -" %
+                          (checker_src, checker_exe))
+                digest = self.file_cacher.put_file_from_path(
+                    checker_exe,
+                    "Manager for task %s" % name)
+                args["managers"] += [
+                    Manager("checker", digest)]
+                evaluation_param = "comparator"
+            else:
+                logger.info("Checker not found, using diff")
+                evaluation_param = "diff"
 
-        args["task_type"] = "Batch"
-        args["task_type_parameters"] = \
-            '["%s", ["%s", "%s"], "%s"]' % \
-            ("alone", infile_param, outfile_param, evaluation_param)
+            args["task_type"] = "Batch"
+            args["task_type_parameters"] = \
+                '["%s", ["%s", "%s"], "%s"]' % \
+                ("alone", infile_param, outfile_param, evaluation_param)
 
-        args["score_type"] = "Sum"
-        total_value = 100.0
-        input_value = 0.0
+            args["score_type"] = "Sum"
+            total_value = 100.0
+            input_value = 0.0
 
-        testcases = int(testset.find('test-count').text)
+            testcases = int(testset.find('test-count').text)
 
-        n_input = testcases
-        if n_input != 0:
-            input_value = total_value / n_input
-        args["score_type_parameters"] = str(input_value)
+            n_input = testcases
+            if n_input != 0:
+                input_value = total_value / n_input
+            args["score_type_parameters"] = str(input_value)
 
-        args["testcases"] = []
+            args["testcases"] = []
 
-        for i in xrange(testcases):
-            infile = os.path.join(task_path, "tests", "%02d" % (i + 1))
-            outfile = os.path.join(task_path, "tests", "%02d.a" % (i + 1))
-            if self.dos2unix_found:
-                os.system('dos2unix -q %s' % (infile, ))
-                os.system('dos2unix -q %s' % (outfile, ))
-            input_digest = self.file_cacher.put_file_from_path(
-                infile,
-                "Input %d for task %s" % (i, name))
-            output_digest = self.file_cacher.put_file_from_path(
-                outfile,
-                "Output %d for task %s" % (i, name))
-            testcase = Testcase("%03d" % (i, ), False,
-                                input_digest, output_digest)
-            testcase.public = True
-            args["testcases"] += [testcase]
+            for i in xrange(testcases):
+                infile = os.path.join(task_path, testset_name,
+                                      "%02d" % (i + 1))
+                outfile = os.path.join(task_path, testset_name,
+                                       "%02d.a" % (i + 1))
+                if self.dos2unix_found:
+                    os.system('dos2unix -q %s' % (infile, ))
+                    os.system('dos2unix -q %s' % (outfile, ))
+                input_digest = self.file_cacher.put_file_from_path(
+                    infile,
+                    "Input %d for task %s" % (i, name))
+                output_digest = self.file_cacher.put_file_from_path(
+                    outfile,
+                    "Output %d for task %s" % (i, name))
+                testcase = Testcase("%03d" % (i, ), False,
+                                    input_digest, output_digest)
+                testcase.public = True
+                args["testcases"] += [testcase]
 
-        if task_cms_conf is not None:
-            args.update(task_cms_conf.dataset)
+            if task_cms_conf is not None and \
+               hasattr(task_cms_conf, "datasets") and \
+               testset_name in task_cms_conf.datasets:
+                args.update(task_cms_conf.datasets[testset_name])
 
-        dataset = Dataset(**args)
-        task.active_dataset = dataset
+            dataset = Dataset(**args)
+            if testset_name == "tests":
+                task.active_dataset = dataset
 
         os.remove(os.path.join(task_path, ".import_error"))
 
