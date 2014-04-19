@@ -13,5 +13,5 @@ mock>=1.0
 mechanize>=0.2
 six>=1.1
 requests>=1.1
-gevent>=1.0dev
+gevent>=1.0
 werkzeug>=0.8
