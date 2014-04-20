@@ -30,6 +30,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 
 import hashlib
+import io
 import os
 
 
@@ -61,5 +62,5 @@ def touch(path):
     path (str): the path to be touched.
 
     """
-    with file(path, 'a'):
+    with io.open(path, 'ab'):
         os.utime(path, None)

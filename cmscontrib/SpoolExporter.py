@@ -33,7 +33,7 @@ import gevent.monkey
 gevent.monkey.patch_all()
 
 import argparse
-import codecs
+import io
 import logging
 import os
 import time
@@ -46,7 +46,7 @@ from cms.grading.scoretypes import get_score_type
 logger = logging.getLogger(__name__)
 
 
-# TODO: review this file to use io instead of codecs and avoid print.
+# TODO: review this file to avoid print.
 class SpoolExporter(object):
     """This service creates a tree structure "similar" to the one used
     in Italian IOI repository for storing the results of a contest.
@@ -112,8 +112,8 @@ class SpoolExporter(object):
         """
         logger.info("Exporting submissions.")
 
-        queue_file = codecs.open(os.path.join(self.spool_dir, "queue"), "w",
-                                 encoding="utf-8")
+        queue_file = io.open(os.path.join(self.spool_dir, "queue"), "w",
+                             encoding="utf-8")
         for submission in sorted(self.submissions, key=lambda x: x.timestamp):
             logger.info("Exporting submission %s." % submission.id)
             username = submission.user.username
@@ -145,12 +145,12 @@ class SpoolExporter(object):
             active_dataset = submission.task.active_dataset
             result = submission.get_result(active_dataset)
             if result.evaluated():
-                res_file = codecs.open(os.path.join(
+                res_file = io.open(os.path.join(
                     self.spool_dir,
                     "%d.%s.%s.%s.res" % (timestamp, username,
                                          task, submission.language)),
                     "w", encoding="utf-8")
-                res2_file = codecs.open(
+                res2_file = io.open(
                     os.path.join(self.spool_dir,
                                  "%s.%s.%s.res" % (username, task,
                                                    submission.language)),
@@ -241,10 +241,10 @@ class SpoolExporter(object):
         sorted_tasks = sorted(self.contest.tasks,
                               key=lambda task: task.num)
 
-        ranking_file = codecs.open(
+        ranking_file = io.open(
             os.path.join(self.spool_dir, "classifica.txt"),
             "w", encoding="utf-8")
-        ranking_csv = codecs.open(
+        ranking_csv = io.open(
             os.path.join(self.spool_dir, "classifica.csv"),
             "w", encoding="utf-8")
 
