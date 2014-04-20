@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -27,6 +27,7 @@ losing no data in the process).
 """
 
 import hashlib
+import io
 import os
 
 
@@ -58,5 +59,5 @@ def touch(path):
     path (str): the path to be touched.
 
     """
-    with file(path, 'a'):
+    with io.open(path, 'a'):
         os.utime(path, None)

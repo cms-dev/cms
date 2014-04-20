@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -21,7 +21,11 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import codecs
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
+import io
 import json
 import logging
 import os
@@ -534,8 +538,8 @@ def extract_outcome_and_text(sandbox):
     """
     stdout = sandbox.relative_path(sandbox.stdout_file)
     stderr = sandbox.relative_path(sandbox.stderr_file)
-    with codecs.open(stdout, "r", "utf-8") as stdout_file:
-        with codecs.open(stderr, "r", "utf-8") as stderr_file:
+    with io.open(stdout, "r", encoding="utf-8") as stdout_file:
+        with io.open(stderr, "r", encoding="utf-8") as stderr_file:
             try:
                 outcome = stdout_file.readline().strip()
             except UnicodeDecodeError as error:

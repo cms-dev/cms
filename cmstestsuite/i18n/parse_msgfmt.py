@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -29,10 +29,10 @@ def main():
         for piece in pieces:
             words = piece.split(' ')
             stats[words[1]] = int(words[0])
-        print "%s,%d,%d,%d" % (filename,
+        print("%s,%d,%d,%d" % (filename,
                                stats['translated'],
                                stats['untranslated'],
-                               stats['fuzzy'])
+                               stats['fuzzy']))
 
 if __name__ == '__main__':
     main()

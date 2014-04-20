@@ -17,6 +17,10 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
 import gevent.monkey
@@ -55,9 +59,8 @@ def main():
             if is_contest_id(args.autorestart):
                 ResourceService(args.shard, contest_id=args.autorestart).run()
             else:
-                import sys
-                print >> sys.stderr, "There is no contest " \
-                      "with the specified id. Please try again."
+                print("There is no contest with the specified id. "
+                      "Please try again.", file=sys.stderr)
                 return False
     else:
         return ResourceService(args.shard).run()

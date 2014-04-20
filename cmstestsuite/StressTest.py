@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
@@ -30,7 +30,7 @@ import threading
 import optparse
 import random
 import time
-import codecs
+import io
 
 from cms import config, ServiceCoord, get_service_address
 from cms.db import Contest, SessionGen
@@ -89,7 +89,7 @@ class RequestLog(object):
                                   request.__class__.__name__)
         filepath = os.path.join(self.log_dir, filename)
         linkpath = os.path.join(self.log_dir, request.__class__.__name__)
-        with codecs.open(filepath, 'w', encoding='utf-8') as fd:
+        with io.open(filepath, 'w', encoding='utf-8') as fd:
             request.store_to_file(fd)
         try:
             os.remove(linkpath)

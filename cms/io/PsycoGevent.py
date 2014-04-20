@@ -33,6 +33,10 @@ Use `make_psycopg_green()` to enable gevent support in Psycopg.
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
+
 from contextlib import contextmanager
 
 import psycopg2

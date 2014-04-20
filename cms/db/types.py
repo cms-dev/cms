@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -23,6 +23,7 @@
 """
 
 from __future__ import absolute_import
+from __future__ import print_function
 from __future__ import unicode_literals
 
 from sqlalchemy.types import TypeDecorator, Unicode

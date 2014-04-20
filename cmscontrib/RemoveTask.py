@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Programming contest management system - utility to remove a task.
+# Contest Management System - http://cms-dev.github.io/ - utility to remove a task.
 # Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
