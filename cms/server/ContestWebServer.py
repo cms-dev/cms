@@ -5,8 +5,9 @@
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -191,13 +192,49 @@ class BaseHandler(CommonRequestHandler):
             localization_dir = os.path.join(os.path.dirname(__file__), "mo")
 
         # Retrieve the available translations.
+        # TODO This operation may be not very efficient: as we expect
+        # it to always give the same result we could perform it just
+        # once, at the start.
         langs = ["en-US"] + [
             path.split("/")[-3].replace("_", "-") for path in glob.glob(
                 os.path.join(localization_dir, "*", "LC_MESSAGES", "cms.mo"))]
+
+        if self.contest.allowed_localizations:
+            # We just check if a prefix of each language is allowed
+            # because this way one can just type "en" to include also
+            # "en-US" (and similar cases with other languages). It's
+            # the same approach promoted by HTTP in its Accept header
+            # parsing rules.
+            # TODO Be more fussy with prefix checking: validate strings
+            # (match with "[A-Za-z]+(-[A-Za-z]+)*") and verify that the
+            # prefix is on the dashes.
+            langs = [lang for lang in langs if any(
+                lang.startswith(prefix)
+                for prefix in self.contest.allowed_localizations)]
+
+        if not langs:
+            logger.warning("No allowed localization matches any installed one."
+                           "Resorting to en-US.")
+            langs = ["en-US"]
+        else:
+            # TODO Be more fussy with prefix checking: validate strings
+            # (match with "[A-Za-z]+(-[A-Za-z]+)*") and verify that the
+            # prefix is on the dashes.
+            useless = [
+                prefix for prefix in self.contest.allowed_localizations
+                if not any(lang.startswith(prefix) for lang in langs)]
+            if useless:
+                logger.warning("The following allowed localizations don't "
+                               "match any installed one: %s" %
+                               ",".join(useless))
+
+        # TODO We fallback on any available language if none matches:
+        # we could return 406 Not Acceptable instead.
         # Select the one the user likes most.
         lang = parse_accept_header(
             self.request.headers.get("Accept-Language", ""),
-            LanguageAccept).best_match(langs, "en-US")
+            LanguageAccept).best_match(langs, langs[0])
+
         self.set_header("Content-Language", lang)
         lang = lang.replace("-", "_")
 

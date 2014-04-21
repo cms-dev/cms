@@ -66,6 +66,13 @@ class Contest(Base):
         Unicode,
         nullable=False)
 
+    # The list of language codes of the localizations that contestants
+    # are allowed to use.
+    allowed_localizations = Column(
+        RepeatedUnicode(),
+        nullable=False,
+        default=[])
+
     # The list of languages shorthand allowed in the contest,
     # e.g. cpp. The codes must be the same as those in cms.LANGUAGES.
     languages = Column(
