@@ -1970,7 +1970,7 @@ class MessageHandler(BaseHandler):
 class FileFromDigestHandler(FileHandler):
 
     def get(self, digest, filename):
-        #TODO: Accept a MIME type
+        # TODO: Accept a MIME type
         self.sql_session.close()
         self.fetch(digest, "text/plain", filename)
 
