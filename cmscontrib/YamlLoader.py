@@ -32,7 +32,7 @@ import sys
 import yaml
 from datetime import timedelta
 
-from cms import LANGUAGES
+from cms import LANGUAGES, LANGUAGE_TO_HEADER_EXT_MAP
 from cmscommon.datetime import make_datetime
 from cms.db import Contest, User, Task, Statement, Attachment, \
     SubmissionFormatElement, Dataset, Manager, Testcase
@@ -264,8 +264,8 @@ class YamlLoader(Loader):
             for lang in LANGUAGES:
                 files.append(os.path.join(path, "sol", "grader.%s" % lang))
             for other_filename in os.listdir(os.path.join(path, "sol")):
-                if other_filename.endswith('.h') or \
-                        other_filename.endswith('lib.pas'):
+                if any(other_filename.endswith(header)
+                       for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
                     files.append(os.path.join(path, "sol", other_filename))
 
         # Yaml
@@ -476,8 +476,8 @@ class YamlLoader(Loader):
                     logger.warning("Grader for language %s not found " % lang)
             # Read managers with other known file extensions
             for other_filename in os.listdir(os.path.join(task_path, "sol")):
-                if other_filename.endswith('.h') or \
-                        other_filename.endswith('lib.pas'):
+                if any(other_filename.endswith(header)
+                       for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
                     digest = self.file_cacher.put_file_from_path(
                         os.path.join(task_path, "sol", other_filename),
                         "Manager %s for task %s" % (other_filename, name))
@@ -619,6 +619,15 @@ class YamlLoader(Loader):
                         else:
                             logger.warning("Stub for language %s not "
                                            "found." % lang)
+                    for other_filename in os.listdir(os.path.join(task_path,
+                                                                  "sol")):
+                        if any(other_filename.endswith(header) for header in
+                               LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
+                            digest = self.file_cacher.put_file_from_path(
+                                os.path.join(task_path, "sol", other_filename),
+                                "Stub %s for task %s" % (other_filename, name))
+                            args["managers"] += [
+                                Manager(other_filename, digest)]
                     break
 
             # Otherwise, the task type is Batch

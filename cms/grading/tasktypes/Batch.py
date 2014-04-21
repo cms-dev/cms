@@ -5,7 +5,7 @@
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
-# Copyright © 2012-2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -26,7 +26,8 @@ from __future__ import unicode_literals
 
 import logging
 
-from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP
+from cms import LANGUAGES, LANGUAGE_TO_SOURCE_EXT_MAP, \
+    LANGUAGE_TO_HEADER_EXT_MAP
 from cms.grading import get_compilation_commands, get_evaluation_commands, \
     compilation_step, evaluation_step, human_evaluation_message, \
     is_evaluation_passed, extract_outcome_and_text, white_diff_step
@@ -172,8 +173,8 @@ class Batch(TaskType):
 
         # Also copy all *.h and *lib.pas graders
         for filename in job.managers.iterkeys():
-            if filename.endswith('.h') or \
-                    filename.endswith('lib.pas'):
+            if any(filename.endswith(header)
+                   for header in LANGUAGE_TO_HEADER_EXT_MAP.itervalues()):
                 files_to_get[filename] = \
                     job.managers[filename].digest
 
