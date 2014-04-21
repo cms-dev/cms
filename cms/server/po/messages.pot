@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-08 15:11+0100\n"
+"POT-Creation-Date: 2014-04-20 14:16+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -402,6 +402,10 @@ msgstr[0] ""
 msgstr[1] ""
 
 msgid "You have no limitations on how you use them."
+msgstr ""
+
+#, python-format
+msgid "Automatic (%s)"
 msgstr ""
 
 #, python-format

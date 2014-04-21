@@ -195,7 +195,7 @@ class BaseHandler(CommonRequestHandler):
         # TODO This operation may be not very efficient: as we expect
         # it to always give the same result we could perform it just
         # once, at the start.
-        langs = ["en-US"] + [
+        self.langs = ["en-US"] + [
             path.split("/")[-3].replace("_", "-") for path in glob.glob(
                 os.path.join(localization_dir, "*", "LC_MESSAGES", "cms.mo"))]
 
@@ -208,21 +208,21 @@ class BaseHandler(CommonRequestHandler):
             # TODO Be more fussy with prefix checking: validate strings
             # (match with "[A-Za-z]+(-[A-Za-z]+)*") and verify that the
             # prefix is on the dashes.
-            langs = [lang for lang in langs if any(
+            self.langs = [lang for lang in self.langs if any(
                 lang.startswith(prefix)
                 for prefix in self.contest.allowed_localizations)]
 
-        if not langs:
+        if not self.langs:
             logger.warning("No allowed localization matches any installed one."
                            "Resorting to en-US.")
-            langs = ["en-US"]
+            self.langs = ["en-US"]
         else:
             # TODO Be more fussy with prefix checking: validate strings
             # (match with "[A-Za-z]+(-[A-Za-z]+)*") and verify that the
             # prefix is on the dashes.
             useless = [
                 prefix for prefix in self.contest.allowed_localizations
-                if not any(lang.startswith(prefix) for lang in langs)]
+                if not any(lang.startswith(prefix) for lang in self.langs)]
             if useless:
                 logger.warning("The following allowed localizations don't "
                                "match any installed one: %s" %
@@ -231,9 +231,16 @@ class BaseHandler(CommonRequestHandler):
         # TODO We fallback on any available language if none matches:
         # we could return 406 Not Acceptable instead.
         # Select the one the user likes most.
-        lang = parse_accept_header(
+        self.browser_lang = parse_accept_header(
             self.request.headers.get("Accept-Language", ""),
-            LanguageAccept).best_match(langs, langs[0])
+            LanguageAccept).best_match(self.langs, self.langs[0])
+
+        self.cookie_lang = self.get_cookie("language", None)
+
+        if self.cookie_lang in self.langs:
+            lang = self.cookie_lang
+        else:
+            lang = self.browser_lang
 
         self.set_header("Content-Language", lang)
         lang = lang.replace("-", "_")
@@ -385,6 +392,24 @@ class BaseHandler(CommonRequestHandler):
             ret["tokens_tasks"] = 2  # all infinite
         else:
             ret["tokens_tasks"] = 1  # all finite or mixed
+
+        ret["langs"] = self.langs
+
+        # TODO Now all language names are shown in the active language.
+        # It would be better to show them in the corresponding one.
+        ret["lang_names"] = {}
+        for lang in self.langs:
+            language_name = None
+            try:
+                language_name = translate_language_country_code(
+                    lang.replace("-", "_"), self.locale)
+            except ValueError:
+                language_name = translate_language_code(
+                    lang.replace("-", "_"), self.locale)
+            ret["lang_names"][lang] = language_name
+
+        ret["cookie_lang"] = self.cookie_lang
+        ret["browser_lang"] = self.browser_lang
 
         return ret
 

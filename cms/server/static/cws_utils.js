@@ -221,3 +221,15 @@ CMS.CWSUtils.prototype.update_time = function() {
     }
 };
 
+CMS.CWSUtils.switch_lang = function() {
+    var lang = $("#lang").val();
+    if (lang === "") {
+        document.cookie = "language=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    } else {
+        var expires = new Date();
+        expires.setFullYear(expires.getFullYear() + 1);
+        document.cookie = "language=" + lang
+            + "; expires=" + expires.toUTCString();
+    }
+    location.reload();
+};

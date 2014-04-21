@@ -4,6 +4,7 @@
 {% from cms import LANGUAGE_NAMES, LANGUAGE_TO_SOURCE_EXT_MAP %}
 {% from cms.server import format_amount_of_time, format_time, format_datetime, format_datetime_smart, get_score_class, encode_for_url %}
 {% from cmscommon.datetime import make_timestamp %}
+{% from cmscommon.isocodes import translate_language_country_code %}
 <!DOCTYPE html>
 <html>
     <head>
@@ -46,6 +47,16 @@ $(document).ready(function () {
             <div class="navbar-inner">
                 <div class="container">
                     <a class="brand" href="{{ url_root }}/">{{ contest.description }}</a>
+{% if len(langs) > 1 %}
+                    <p class="navbar-text pull-right">
+                        <select id="lang" class="form-control btn btn-info" onchange="CMS.CWSUtils.switch_lang()">
+                            <option value=""{% if cookie_lang is None %} selected{% end %}>{{ _("Automatic (%s)") % lang_names[browser_lang] }})</option>
+                        {% for lang_code, lang_name in sorted(lang_names.iteritems(), key=lambda x: x[1]) %}
+                            <option value="{{ lang_code }}"{% if cookie_lang == lang_code %} selected{% end %}>{{ lang_name }}</option>
+                        {% end %}
+                        </select>
+                    </p>
+{% end %}
 {% if current_user is not None %}
                     <p class="navbar-text pull-right">
                         {% raw _("Logged in as <strong>%(first_name)s %(last_name)s</strong> <em>(%(username)s)</em>") % {"first_name": current_user.first_name, "last_name": current_user.last_name, "username": current_user.username} %}
