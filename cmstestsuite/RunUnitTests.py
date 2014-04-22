@@ -21,6 +21,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import io
 import os
 import sys
 import subprocess
@@ -74,7 +75,8 @@ def run_unittests(test_list):
         results += " %s.%s\n" % (path, filename)
 
     if failures:
-        with open(FAILED_UNITTEST_FILENAME, "w") as failed_filename:
+        with io.open(FAILED_UNITTEST_FILENAME,
+                     "wt", encoding="utf-8") as failed_filename:
             for path, filename in failures:
                 failed_filename.write("%s %s\n" % (path, filename))
         results += "\n"
@@ -94,7 +96,7 @@ def load_test_list_from_file(filename):
     if not os.path.exists(filename):
         return []
     try:
-        lines = open(filename).readlines()
+        lines = io.open(filename, "rt", encoding="utf-8").readlines()
         return [line.strip().split(" ") for line in lines]
     except (IOError, OSError) as error:
         print("Failed to read test list. %s." % error)
@@ -158,7 +160,7 @@ def main():
     try:
         git_root = subprocess.check_output(
             "git rev-parse --show-toplevel", shell=True,
-            stderr=open(os.devnull, "w")).strip()
+            stderr=io.open(os.devnull, "wb")).strip()
     except subprocess.CalledProcessError:
         print("Please run the unit tests from the git repository.")
         return 1

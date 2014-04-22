@@ -26,6 +26,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import argparse
+import io
 import os
 import sys
 import subprocess
@@ -120,13 +121,13 @@ def parse_task_yaml(base_dir):
     yaml_path = os.path.join(base_dir, "task.yaml")
 
     try:
-        with open(yaml_path) as yaml_file:
+        with io.open(yaml_path, "rt", encoding="utf-8") as yaml_file:
             conf = yaml.load(yaml_file)
     except IOError:
         yaml_path = os.path.join(parent_dir, "%s.yaml" %
                                  (detect_task_name(base_dir)))
 
-        with open(yaml_path) as yaml_file:
+        with io.open(yaml_path, "rt", encoding="utf-8") as yaml_file:
             conf = yaml.load(yaml_file)
     return conf
 
@@ -315,7 +316,7 @@ def build_text_list(base_dir, task_type):
 
 def iter_GEN(name):
     st = 0
-    for l in open(name, "r"):
+    for l in io.open(name, "rt", encoding="utf-8"):
         if l[:4] == "#ST:":
             st += 1
         l = (" " + l).split("#")[0][1:].strip("\n")
@@ -380,8 +381,8 @@ def build_gen_list(base_dir, task_type):
             pass
         for (line, st) in iter_GEN(os.path.join(base_dir, gen_GEN)):
             print("Generating input # %d" % (n), file=sys.stderr)
-            with open(os.path.join(input_dir,
-                                   'input%d.txt' % (n)), 'w') as fout:
+            with io.open(os.path.join(input_dir,
+                                      'input%d.txt' % (n)), 'wb') as fout:
                 call(base_dir,
                      [gen_exe] + line.split(),
                      stdout=fout)
@@ -398,9 +399,10 @@ def build_gen_list(base_dir, task_type):
         except OSError:
             pass
         print("Generating output # %d" % (n), file=sys.stderr)
-        with open(os.path.join(input_dir, 'input%d.txt' % (n))) as fin:
-            with open(os.path.join(output_dir,
-                                   'output%d.txt' % (n)), 'w') as fout:
+        with io.open(os.path.join(input_dir,
+                                  'input%d.txt' % (n)), 'rb') as fin:
+            with io.open(os.path.join(output_dir,
+                                      'output%d.txt' % (n)), 'wb') as fout:
                 call(base_dir, [sol_exe], stdin=fin, stdout=fout)
 
     actions = []

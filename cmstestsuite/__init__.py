@@ -25,6 +25,7 @@ from __future__ import unicode_literals
 
 import atexit
 import errno
+import io
 import json
 import mechanize
 import os
@@ -112,7 +113,8 @@ class RemoteService(object):
 
 def read_cms_config():
     global cms_config
-    cms_config = json.load(open("%(CONFIG_PATH)s" % CONFIG))
+    cms_config = json.load(io.open("%(CONFIG_PATH)s" % CONFIG,
+                                   "rt", encoding="utf-8"))
 
 
 def get_cms_config():
@@ -163,7 +165,7 @@ def spawn(cmdline):
         stdout = None
         stderr = None
     else:
-        stdout = open('/dev/null', 'w')
+        stdout = io.open(os.devnull, 'wb')
         stderr = stdout
     job = subprocess.Popen(cmdline, stdout=stdout, stderr=stderr)
     atexit.register(lambda: kill(job))
@@ -183,7 +185,8 @@ def configure_cms(options):
     options (dict): mapping from parameter to textual JSON argument.
 
     """
-    f = open("%(TEST_DIR)s/examples/cms.conf.sample" % CONFIG)
+    f = io.open("%(TEST_DIR)s/examples/cms.conf.sample" % CONFIG,
+                "rt", encoding="utf-8")
     lines = f.readlines()
     unset = set(options.keys())
     for i, line in enumerate(lines):
@@ -194,7 +197,7 @@ def configure_cms(options):
                 lines[i] = '%s"%s": %s,\n' % (whitespace, key, options[key])
                 unset.remove(key)
 
-    out_file = open("%(CONFIG_PATH)s" % CONFIG, "w")
+    out_file = io.open("%(CONFIG_PATH)s" % CONFIG, "wt", encoding="utf-8")
     for l in lines:
         out_file.write(l)
     out_file.close()

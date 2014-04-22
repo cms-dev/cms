@@ -22,6 +22,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import io
 import os
 import sys
 import subprocess
@@ -209,7 +210,7 @@ def load_test_list_from_file(filename):
     if not os.path.exists(filename):
         return []
     try:
-        with open(filename) as f:
+        with io.open(filename, "rt", encoding="utf-8") as f:
             lines = f.readlines()
     except (IOError, OSError) as e:
         print("Failed to read test list. %s." % (e))
@@ -283,7 +284,7 @@ def filter_testcases(orig_test_list, regexes, languages):
 
 
 def write_test_case_list(test_list, filename):
-    with open(filename, 'w') as f:
+    with io.open(filename, 'wt', encoding="utf-8") as f:
         for test, lang in test_list:
             f.write('%s %s\n' % (test.name, lang))
 
@@ -416,7 +417,7 @@ def main():
     try:
         git_root = subprocess.check_output(
             "git rev-parse --show-toplevel", shell=True,
-            stderr=open(os.devnull, "w")).strip()
+            stderr=io.open(os.devnull, "wb")).strip()
     except subprocess.CalledProcessError:
         git_root = None
     CONFIG["TEST_DIR"] = git_root
