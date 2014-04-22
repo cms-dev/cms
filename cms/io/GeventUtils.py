@@ -44,6 +44,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import io
 import os
 import stat
 import sys
@@ -91,8 +92,8 @@ def copyfile(src, dst):
             if stat.S_ISFIFO(st.st_mode):
                 raise SpecialFileError("`%s` is a named pipe" % fn)
 
-    with open(src, 'rb') as fsrc:
-        with open(dst, 'wb') as fdst:
+    with io.open(src, 'rb') as fsrc:
+        with io.open(dst, 'wb') as fdst:
             copyfileobj(fsrc, fdst)
 
 

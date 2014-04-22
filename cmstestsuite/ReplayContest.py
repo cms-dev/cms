@@ -38,6 +38,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import io
 import os
 import shutil
 import json
@@ -117,8 +118,8 @@ class ContestReplayer(object):
         logger.info("Then press enter to start.")
         raw_input()
 
-        with open(os.path.join(self.import_source,
-                               "contest.json")) as fin:
+        with io.open(os.path.join(self.import_source, "contest.json"),
+                     "rt", encoding="utf-8") as fin:
             self.compute_events(json.load(fin))
 
         thread = Thread(target=self.replay)

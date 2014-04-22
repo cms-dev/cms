@@ -25,6 +25,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import ast
+import io
 import os
 import sys
 import mechanize
@@ -91,7 +92,7 @@ class RequestLog(object):
                                   request.__class__.__name__)
         filepath = os.path.join(self.log_dir, filename)
         linkpath = os.path.join(self.log_dir, request.__class__.__name__)
-        with io.open(filepath, 'w', encoding='utf-8') as fd:
+        with io.open(filepath, 'wt', encoding='utf-8') as fd:
             request.store_to_file(fd)
         try:
             os.remove(linkpath)
@@ -292,8 +293,8 @@ def main():
         contest_data = dict()
         contest_data['users'] = users
         contest_data['tasks'] = tasks
-        with open(options.prepare_path, "w") as file_:
-            file_.write(str(contest_data))
+        with io.open(options.prepare_path, "wt", encoding="utf-8") as file_:
+            file_.write("%s" % contest_data)
         return
 
     users = []
@@ -304,7 +305,7 @@ def main():
     if options.read_from is None:
         users, tasks = harvest_contest_data(options.contest_id)
     else:
-        with open(options.read_from, "r") as file_:
+        with io.open(options.read_from, "rt", encoding="utf-8") as file_:
             contest_data = ast.literal_eval(file_.read())
         users = contest_data['users']
         tasks = contest_data['tasks']

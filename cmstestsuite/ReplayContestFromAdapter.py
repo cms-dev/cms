@@ -43,6 +43,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import io
 import sys
 import time
 
@@ -155,7 +156,8 @@ def replay(base_url, source="./source.txt", start_from=None):
     """
     global start, speed, old_speed
 
-    content = [x.strip().split() for x in open(source).readlines()]
+    content = [x.strip().split() for x in
+               io.open(source, "rt", encoding="utf-8").readlines()]
     events = len(content)
     index = 0
     if start_from is not None:

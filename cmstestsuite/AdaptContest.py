@@ -41,6 +41,7 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import io
 import os
 import shutil
 import sys
@@ -89,7 +90,8 @@ def main():
             submissions = [os.path.splitext(os.path.basename(x))[0]
                            for x in glob("%s/*.data" % userdir)]
             for sid in submissions:
-                content = open("%s/%s.data" % (userdir, sid)).readlines()
+                content = io.open("%s/%s.data" % (userdir, sid),
+                                  "rt", encoding="utf-8").readlines()
                 submit = to_timestamp(
                     [int(x)
                      for x in content[0].strip().split()[1].split(":")])
