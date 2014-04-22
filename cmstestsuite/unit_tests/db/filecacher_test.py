@@ -26,6 +26,7 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import os
 import random
@@ -150,8 +151,8 @@ class TestFileCacher(unittest.TestCase):
 
         """
         self.size = 100
-        self.content = "".join(chr(random.randint(0, 255))
-                               for unused_i in xrange(self.size))
+        self.content = b"".join(chr(random.randint(0, 255))
+                                for unused_i in xrange(self.size))
 
         data = self.file_cacher.put_file_from_fobj(StringIO(self.content),
                                                    u"Test #000")
@@ -239,8 +240,8 @@ class TestFileCacher(unittest.TestCase):
         Then retrieve it as a string.
 
         """
-        self.content = "".join(chr(random.randint(0, 255))
-                               for unused_i in xrange(100))
+        self.content = b"".join(chr(random.randint(0, 255))
+                                for unused_i in xrange(100))
 
         try:
             data = self.file_cacher.put_file_content(self.content,

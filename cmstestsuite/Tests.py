@@ -21,6 +21,7 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import cmstestsuite.tasks.batch_stdio as batch_stdio
 import cmstestsuite.tasks.batch_fileio as batch_fileio

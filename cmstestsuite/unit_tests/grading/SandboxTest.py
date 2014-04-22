@@ -22,6 +22,7 @@
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 import unittest
 import io
@@ -38,7 +39,7 @@ class TestTruncator(unittest.TestCase):
         pass
 
     def perform_truncator_test(self, orig_len, trunc_len, read_chunk_size):
-        back_file = io.BytesIO('a' * orig_len)
+        back_file = io.BytesIO(b'a' * orig_len)
         truncator = Truncator(back_file, trunc_len)
         buf = truncator.read(read_chunk_size)
         read_len = 0

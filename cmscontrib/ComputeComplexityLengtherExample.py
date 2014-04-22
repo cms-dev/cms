@@ -29,6 +29,7 @@ integer in the file as the measure for the complexity of the input.
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 
 class FileLengther(object):

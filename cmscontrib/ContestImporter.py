@@ -29,6 +29,7 @@ again should be idempotent.
 
 from __future__ import absolute_import
 from __future__ import print_function
+from __future__ import unicode_literals
 
 # We enable monkey patching to make many libraries gevent-friendly
 # (for instance, urllib3, used by requests)
