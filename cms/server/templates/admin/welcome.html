@@ -144,17 +144,25 @@ function update_statuses()
 {
 
     {% if contest is not None %}
-    cmsrpc_request("{{ url_root }}",
-                   "EvaluationService", 0,
-                   "submissions_status",
-                   {},
-                   update_submissions_status);
+    if (!update_statuses.submissions_request
+            || update_statuses.submissions_request.state() != "pending") {
+        update_statuses.submissions_request =
+            cmsrpc_request("{{ url_root }}",
+                           "EvaluationService", 0,
+                           "submissions_status",
+                           {},
+                           update_submissions_status);
+    }
     {% end %}
-    cmsrpc_request("{{ url_root }}",
-                   "EvaluationService", 0,
-                   "queue_status",
-                   {},
-                   update_queue_status);
+    if (!update_statuses.queue_request
+            || update_statuses.queue_request.state() != "pending") {
+        update_statuses.queue_request =
+            cmsrpc_request("{{ url_root }}",
+                           "EvaluationService", 0,
+                           "queue_status",
+                           {},
+                           update_queue_status);
+    }
     cmsrpc_request("{{ url_root }}",
                    "EvaluationService", 0,
                    "workers_status",

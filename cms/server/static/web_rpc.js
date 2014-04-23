@@ -26,6 +26,7 @@
  * method: the name of the method.
  * args: the keyword arguments (as an Object).
  * callback: a function to call with the result of the request.
+ * return: the XHR object.
  */
 function cmsrpc_request(url_root, service, shard, method, args, callback) {
     var url = url_root + "/rpc/" + encodeURIComponent(service) +
@@ -53,4 +54,5 @@ function cmsrpc_request(url_root, service, shard, method, args, callback) {
         }
         callback(data);
     });
+    return jqxhr;
 };
