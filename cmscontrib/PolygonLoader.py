@@ -291,6 +291,8 @@ class PolygonLoader(Loader):
             sys.path.append(task_cms_conf_path)
             logger.info("Found additional CMS options for task %s." % name)
             task_cms_conf = __import__('cms_conf')
+            # TODO: probably should find more clever way to get rid of caching
+            task_cms_conf = reload(task_cms_conf)
             sys.path.pop()
         if task_cms_conf is not None and hasattr(task_cms_conf, "general"):
             args.update(task_cms_conf.general)
