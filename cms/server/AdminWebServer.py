@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -36,6 +37,8 @@ import pkg_resources
 import re
 import traceback
 from datetime import datetime, timedelta
+from StringIO import StringIO
+import zipfile
 
 from sqlalchemy.orm import joinedload
 from sqlalchemy.exc import IntegrityError
@@ -1275,6 +1278,153 @@ class AddTestcaseHandler(BaseHandler):
             self.redirect("/add_testcase/%s" % dataset_id)
 
 
+class AddTestcasesHandler(BaseHandler):
+    """Add several testcases to a dataset.
+
+    """
+    def get(self, dataset_id):
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
+        self.contest = task.contest
+
+        self.r_params = self.render_params()
+        self.r_params["task"] = task
+        self.r_params["dataset"] = dataset
+        self.render("add_testcases.html", **self.r_params)
+
+    def post(self, dataset_id):
+        dataset = self.safe_get_item(Dataset, dataset_id)
+        task = dataset.task
+        self.contest = task.contest
+
+        try:
+            archive = self.request.files["archive"][0]
+        except KeyError:
+            self.application.service.add_notification(
+                make_datetime(),
+                "Invalid data",
+                "Please choose tests archive.")
+            self.redirect("/add_testcases/%s" % dataset_id)
+            return
+
+        public = self.get_argument("public", None) is not None
+        overwrite = self.get_argument("overwrite", None) is not None
+
+        # Get input/output file names templates, or use default ones.
+        input_template = self.get_argument("input_template", None)
+        if not input_template:
+            input_template = "input.*"
+        output_template = self.get_argument("output_template", None)
+        if not output_template:
+            output_template = "output.*"
+        input_re = re.compile(re.escape(input_template).replace("\\*",
+                              "(.*)") + "$")
+        output_re = re.compile(re.escape(output_template).replace("\\*",
+                               "(.*)") + "$")
+
+        task_name = task.name
+        self.sql_session.close()
+
+        fp = StringIO(archive["body"])
+        with zipfile.ZipFile(fp, "r") as archive_zfp:
+            tests = dict()
+            # Match input/output file names to testcases' codenames.
+            for filename in archive_zfp.namelist():
+                match = input_re.match(filename)
+                if match:
+                    codename = match.group(1)
+                    if not codename in tests:
+                        tests[codename] = [None, None]
+                    tests[codename][0] = filename
+                else:
+                    match = output_re.match(filename)
+                    if match:
+                        codename = match.group(1)
+                        if not codename in tests:
+                            tests[codename] = [None, None]
+                        tests[codename][1] = filename
+
+            skipped_tc = []
+            overwritten_tc = []
+            added_tc = []
+            for codename, testdata in tests.iteritems():
+                # If input or output file isn't found, skip it.
+                if not testdata[0] or not testdata[1]:
+                    continue
+                self.sql_session = Session()
+
+                # Check, whether current testcase already exists.
+                dataset = self.safe_get_item(Dataset, dataset_id)
+                task = dataset.task
+                self.contest = task.contest
+                if codename in dataset.testcases:
+                    # If we are allowed, remove existing testcase.
+                    # If not - skip this testcase.
+                    if overwrite:
+                        testcase = dataset.testcases[codename]
+                        self.sql_session.delete(testcase)
+
+                        if not try_commit(self.sql_session, self):
+                            skipped_tc.append(codename)
+                            continue
+                        overwritten_tc.append(codename)
+                    else:
+                        skipped_tc.append(codename)
+                        continue
+
+                # Add current testcase.
+                try:
+                    input_ = archive_zfp.read(testdata[0])
+                    output = archive_zfp.read(testdata[1])
+                except Exception as error:
+                    self.application.service.add_notification(
+                        make_datetime(),
+                        "Reading testcase %s failed" % codename,
+                        repr(error))
+                    self.redirect("/add_testcases/%s" % dataset_id)
+                    return
+                try:
+                    input_digest = \
+                        self.application.service.file_cacher.put_file_content(
+                            input_,
+                            "Testcase input for task %s" % task_name)
+                    output_digest = \
+                        self.application.service.file_cacher.put_file_content(
+                            output,
+                            "Testcase output for task %s" % task_name)
+                except Exception as error:
+                    self.application.service.add_notification(
+                        make_datetime(),
+                        "Testcase storage failed",
+                        repr(error))
+                    self.redirect("/add_testcases/%s" % dataset_id)
+                    return
+                testcase = Testcase(codename, public, input_digest,
+                                    output_digest, dataset=dataset)
+                self.sql_session.add(testcase)
+
+                if not try_commit(self.sql_session, self):
+                    self.application.service.add_notification(
+                        make_datetime(),
+                        "Couldn't add test %s" % codename,
+                        "")
+                    self.redirect("/add_testcases/%s" % dataset_id)
+                    return
+                if not codename in overwritten_tc:
+                    added_tc.append(codename)
+
+        self.application.service.add_notification(
+            make_datetime(),
+            "Successfully added %d and overwritten %d testcase(s)" %
+            (len(added_tc), len(overwritten_tc)),
+            "Added: %s; overwritten: %s; skipped: %s" %
+            (", ".join(added_tc) if added_tc else "none",
+             ", ".join(overwritten_tc) if overwritten_tc else "none",
+             ", ".join(skipped_tc) if skipped_tc else "none"))
+        self.application.service.proxy_service.reinitialize()
+        self.redirect("/task/%s" % task.id)
+
+
 class DeleteTestcaseHandler(BaseHandler):
     """Delete a testcase.
 
@@ -1858,6 +2008,7 @@ _aws_handlers = [
     (r"/activate_dataset/([0-9]+)", ActivateDatasetHandler),
     (r"/autojudge_dataset/([0-9]+)", ToggleAutojudgeDatasetHandler),
     (r"/add_testcase/([0-9]+)", AddTestcaseHandler),
+    (r"/add_testcases/([0-9]+)", AddTestcasesHandler),
     (r"/delete_testcase/([0-9]+)", DeleteTestcaseHandler),
     (r"/user/([0-9]+)", UserViewHandler),
     (r"/add_user/([0-9]+)", AddUserHandler),
