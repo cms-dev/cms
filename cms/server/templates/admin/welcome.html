@@ -63,6 +63,38 @@ function update_queue_status(response)
     table.html(strings.join(""));
 };
 
+function enable_worker(shard) {
+    if (confirm("Do you really want to enable worker " + shard + "?")) {
+        cmsrpc_request("{{ url_root }}",
+                       "EvaluationService", 0,
+                       "enable_worker",
+                       {"shard":shard},
+                       function() {
+                          cmsrpc_request("{{ url_root }}",
+                                         "EvaluationService", 0,
+                                         "workers_status",
+                                         {},
+                                         update_workers_status);
+                       });
+    }
+}
+
+function disable_worker(shard) {
+    if (confirm("Do you really want to disable worker " + shard + "?")) {
+        cmsrpc_request("{{ url_root }}",
+                       "EvaluationService", 0,
+                       "disable_worker",
+                       {"shard":shard},
+                       function() {
+                          cmsrpc_request("{{ url_root }}",
+                                         "EvaluationService", 0,
+                                         "workers_status",
+                                         {},
+                                         update_workers_status);
+                       });
+    }
+}
+
 function update_workers_status(response)
 {
     var table = $("#workers_status_table > tbody");
@@ -91,7 +123,12 @@ function update_workers_status(response)
         strings.push('<tr><td style="text-align: center;">' + i + '</td>');
         strings.push('<td style="text-align: center;">' + connected + '</td>');
         strings.push('<td>' + job + '</td>');
-        strings.push('<td>' + start_time + '</td></tr>');
+        strings.push('<td>' + start_time + '</td>');
+        if (response['data'][i]['job'] == "disabled") {
+            strings.push('<td><button onclick="javascript:enable_worker(' + i + '); return true;">Enable</button></td></tr>');
+        } else {
+            strings.push('<td><button onclick="javascript:disable_worker(' + i + '); return true;">Disable</button></td></tr>');
+        }
     }
 
     table.html(strings.join(""));
@@ -230,10 +267,11 @@ update_statuses();
   <table id="workers_status_table" class="sub_table">
     <thead>
       <tr>
-        <th>Shard</th>
-        <th>Connected</th>
-        <th>Current job</th>
-        <th>Since</th>
+        <th style="width:5%">Shard</th>
+        <th style="width:15%">Connected</th>
+        <th style="width:50%">Current job</th>
+        <th style="width:20%">Since</th>
+        <th style="width:10%">Action</th>
       </tr>
     </thead>
     <tbody>
