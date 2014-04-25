@@ -78,7 +78,7 @@ def try_commit(session, handler):
     except IntegrityError as error:
         handler.application.service.add_notification(
             make_datetime(),
-            "Operation failed.", str(error))
+            "Operation failed.", "%s" % error)
         return False
     else:
         handler.application.service.add_notification(
@@ -234,7 +234,6 @@ class BaseHandler(CommonRequestHandler):
                 .filter(Question.ignored == False)\
                 .count()  # noqa
         params["contest_list"] = self.sql_session.query(Contest).all()
-        params["cookie"] = str(self.cookies)
         return params
 
     def finish(self, *args, **kwds):

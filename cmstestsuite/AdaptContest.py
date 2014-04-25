@@ -44,6 +44,7 @@ from __future__ import unicode_literals
 import io
 import os
 import shutil
+import six
 import sys
 import zipfile
 
@@ -71,7 +72,7 @@ def main():
     """
     parser = ArgumentParser(
         description="Translate from a filesystem format to the Replay format.")
-    parser.add_argument("source", type=str, help="source directory")
+    parser.add_argument("source", type=six.text_type, help="source directory")
     args = parser.parse_args()
 
     all_events = []
@@ -133,7 +134,7 @@ def main():
 
     all_events.sort()
     for event in all_events:
-        print(" ".join([str(x) for x in event]))
+        print(" ".join(["%s" % x for x in event]))
 
     return 0
 

@@ -205,10 +205,11 @@ def main():
     global start, speed, old_speed
 
     parser = ArgumentParser(description="Replay a contest.")
-    parser.add_argument("address", type=str, help="http address of CWS",
+    parser.add_argument("address", type=six.text_type,
+                        help="http address of CWS",
                         default="http://127.0.0.1:8888")
-    parser.add_argument("source", type=str, help="events file")
-    parser.add_argument("-r", "--resume", type=str,
+    parser.add_argument("source", type=six.text_type, help="events file")
+    parser.add_argument("-r", "--resume", type=six.text_type,
                         help="start from (%%H:%%M:%%S)")
     args = parser.parse_args()
     start_from = None

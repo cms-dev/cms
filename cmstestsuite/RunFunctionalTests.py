@@ -28,6 +28,7 @@ import sys
 import subprocess
 import datetime
 import re
+import six
 
 from argparse import ArgumentParser
 
@@ -178,7 +179,7 @@ def get_task_id(contest_id, user_id, task_module):
             in enumerate(task_module.test_cases):
         ipath = os.path.join(data_path, input_file)
         opath = os.path.join(data_path, output_file)
-        add_testcase(task_id, str(num), ipath, opath, public)
+        add_testcase(task_id, num, ipath, opath, public)
 
     task_id_map[name] = (task_id, task_module)
 
@@ -364,11 +365,11 @@ def main():
     parser = ArgumentParser(description="Runs the CMS functional test suite.")
     parser.add_argument(
         "regex", metavar="regex",
-        type=str, nargs='*',
+        type=six.text_type, nargs='*',
         help="a regex to match to run a subset of tests")
     parser.add_argument(
         "-l", "--languages",
-        type=str, action="store", default="",
+        type=six.text_type, action="store", default="",
         help="a comma-separated list of languages to test")
     parser.add_argument(
         "-c", "--contest", action="store",

@@ -177,7 +177,7 @@ class CustomFormatter(logging.Formatter):
         ANSI command.
 
         """
-        return "\033[%sm" % ';'.join([str(x)
+        return "\033[%sm" % ';'.join(["%s" % x
                                       for x in args]) if self.color else ''
 
     def formatException(self, exc_info):

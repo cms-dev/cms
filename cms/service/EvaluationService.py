@@ -544,7 +544,7 @@ class WorkerPool(object):
             s_data = (s_data[0], make_timestamp(s_data[1])) \
                 if s_data is not None else None
 
-            result[str(shard)] = {
+            result["%d" % shard] = {
                 'connected': self._worker[shard].connected,
                 'job': self._job[shard],
                 'start_time': s_time,

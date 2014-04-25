@@ -29,6 +29,7 @@ import io
 import json
 import logging
 import os
+import six
 
 from collections import namedtuple
 
@@ -194,8 +195,10 @@ def format_status_text(status, translator=None):
         translator = lambda x: x
 
     try:
-        if isinstance(status, (str, unicode)):
+        if isinstance(status, six.text_type):
             status = json.loads(status)
+        elif not isinstance(status, list):
+            raise TypeError("Invalid type: %r" % type(status))
 
         return translator(status[0]) % tuple(status[1:])
     except:

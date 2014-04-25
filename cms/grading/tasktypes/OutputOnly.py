@@ -165,7 +165,7 @@ class OutputOnly(TaskType):
 
         # Whatever happened, we conclude.
         job.success = success
-        job.outcome = str(outcome) if outcome is not None else None
+        job.outcome = "%s" % outcome if outcome is not None else None
         job.text = text
 
         delete_sandbox(sandbox)

@@ -33,6 +33,7 @@ import subprocess
 import copy
 import functools
 import shutil
+import six
 import tempfile
 import yaml
 
@@ -389,7 +390,7 @@ def build_gen_list(base_dir, task_type):
             command = [validator_exe, os.path.join(input_dir,
                                                    'input%d.txt' % (n))]
             if st != 0:
-                command.append(str(st))
+                command.append("%s" % st)
             call(base_dir, command)
             n += 1
 
@@ -613,7 +614,7 @@ def main():
                         help="enable debug messages",
                         dest="debug", action="store_true", default=False)
     parser.add_argument("targets", metavar="target", nargs="*",
-                        help="target to build", type=str)
+                        help="target to build", type=six.text_type)
     options = parser.parse_args()
 
     base_dir = options.base_dir

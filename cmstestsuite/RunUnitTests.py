@@ -23,6 +23,7 @@ from __future__ import unicode_literals
 
 import io
 import os
+import six
 import sys
 import subprocess
 import datetime
@@ -145,10 +146,10 @@ def main():
     # Unused parameters.
     parser.add_argument(
         "regex", metavar="regex",
-        type=str, nargs='*', help="unused")
+        type=six.text_type, nargs='*', help="unused")
     parser.add_argument(
         "-l", "--languages",
-        type=str, action="store", default="", help="unused")
+        type=six.text_type, action="store", default="", help="unused")
     parser.add_argument("-c", "--contest", action="store", help="unused")
 
     args = parser.parse_args()

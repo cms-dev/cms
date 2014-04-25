@@ -117,10 +117,10 @@ class TestScoringService(unittest.TestCase):
     def new_score_info():
         return (
             random.randint(1, 1000),
-            str(random.randint(1, 1000)),
+            "%d" % random.randint(1, 1000),
             random.randint(1, 1000),
-            str(random.randint(1, 1000)),
-            [str(random.randint(1, 1000)), str(random.randint(1, 1000))]
+            "%d" % random.randint(1, 1000),
+            ["%d" % random.randint(1, 1000), "%d" % random.randint(1, 1000)]
         )
 
     @staticmethod
