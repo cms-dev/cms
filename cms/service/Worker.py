@@ -90,7 +90,7 @@ class Worker(Service):
             files = contest.enumerate_files(skip_submissions=True,
                                             skip_user_tests=True)
         for digest in files:
-            self.file_cacher.load(digest)
+            self.file_cacher.load(digest, if_needed=True)
 
         logger.info("Precaching finished.")
 

@@ -427,21 +427,26 @@ class FileCacher(object):
             logger.error("Cannot create necessary directories.")
             raise RuntimeError("Cannot create necessary directories.")
 
-    def load(self, digest):
+    def load(self, digest, if_needed=False):
         """Load the file with the given digest into the cache.
 
         Ask the backend to provide the file and, if it's available,
         copy its content into the file-system cache.
 
         digest (unicode): the digest of the file to load.
+        if_needed (bool): only load the file if it is not present in
+            the local cache.
 
         raise (KeyError): if the backend cannot find the file.
 
         """
+        cache_file_path = os.path.join(self.file_dir, digest)
+        if if_needed and os.path.exists(cache_file_path):
+            return
+
         ftmp_handle, temp_file_path = tempfile.mkstemp(dir=self.temp_dir,
                                                        text=False)
         ftmp = os.fdopen(ftmp_handle, 'w')
-        cache_file_path = os.path.join(self.file_dir, digest)
 
         fobj = self.backend.get_file(digest)
 
