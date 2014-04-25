@@ -165,9 +165,9 @@ class ResourceService(Service):
                         "scripts",
                         "cms%s" % service.name)
                 process = subprocess.Popen([command,
-                                            str(service.shard),
+                                            "%d" % service.shard,
                                             "-c",
-                                            str(self.contest_id)],
+                                            "%d" % self.contest_id],
                                            stdout=devnull,
                                            stderr=subprocess.STDOUT
                                            )
@@ -340,7 +340,7 @@ class ResourceService(Service):
                     dic["running"] = False
             # If the process is not running, we have nothing to do.
             if not dic["running"]:
-                data["services"][str(service)] = dic
+                data["services"]["%s" % (service,)] = dic
                 continue
 
             try:
@@ -368,7 +368,7 @@ class ResourceService(Service):
                 # Shut down while we operated?
                 dic = {"autorestart": self._will_restart[service],
                        "running": False}
-            data["services"][str(service)] = dic
+            data["services"]["%s" % (service,)] = dic
 
         if store:
             if len(self._local_store) >= 5000:  # almost 7 hours

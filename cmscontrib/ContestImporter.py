@@ -313,7 +313,7 @@ class ContestImporter(object):
 
         if contest_id is not None:
             logger.info("Import finished (contest id: %s)." %
-                        ", ".join(str(id_) for id_ in contest_id))
+                        ", ".join("%d" % id_ for id_ in contest_id))
         else:
             logger.info("Import finished.")
 

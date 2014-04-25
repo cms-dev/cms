@@ -175,7 +175,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
         except Error, err:
             errors.extend(err.args[0])
         except EnvironmentError, why:
-            errors.append((srcname, dstname, str(why)))
+            errors.append((srcname, dstname, "%s" % why))
     try:
         copystat(src, dst)
     except OSError, why:
@@ -183,7 +183,7 @@ def copytree(src, dst, symlinks=False, ignore=None):
             # Copying file access times may fail on Windows
             pass
         else:
-            errors.extend((src, dst, str(why)))
+            errors.append((src, dst, "%s" % why))
     if errors:
         raise Error(errors)
 

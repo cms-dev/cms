@@ -217,8 +217,8 @@ class TestWorker(unittest.TestCase):
         calls = []
         for i in xrange(number_of_jobs):
             job_params = ("fake_task_type", "fake_parameters_%s" % i)
-            job = EvaluationJob(*job_params, info=prefix + str(i))
-            jobgroup_dict[str(i)] = job
+            job = EvaluationJob(*job_params, info="%s%d" % (prefix, i))
+            jobgroup_dict["%s" % i] = job
             calls.append(call(*job_params))
         return JobGroup(jobgroup_dict), calls
 

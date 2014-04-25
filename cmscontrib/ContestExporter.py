@@ -225,7 +225,7 @@ class ContestExporter(object):
         obj_key = obj.sa_identity_key
         if obj_key not in self.ids:
             # We use strings because they'll be the keys of a JSON object
-            self.ids[obj_key] = str(len(self.ids))
+            self.ids[obj_key] = "%d" % len(self.ids)
             self.queue.append(obj)
 
         return self.ids[obj_key]

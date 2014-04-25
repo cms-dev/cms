@@ -214,9 +214,9 @@ def start_prog(path, shard=0, contest=None):
     """Execute a CMS process."""
     args = [path]
     if shard is not None:
-        args.append(str(shard))
+        args.append("%s" % shard)
     if contest is not None:
-        args += ['-c', str(contest)]
+        args += ['-c', "%s" % contest]
     return spawn(args)
 
 
@@ -467,7 +467,7 @@ def add_testcase(task_id, num, input_file, output_file, public):
         ('output', output_file),
     ]
     args = {}
-    args["codename"] = str(num)
+    args["codename"] = "%03d" % num
     if public:
         args['public'] = '1'
     dataset_id = get_task_active_dataset_id(task_id)

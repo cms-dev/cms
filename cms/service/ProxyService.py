@@ -370,7 +370,7 @@ class ProxyService(Service):
         submission_result = submission.get_result()
 
         # Data to send to remote rankings.
-        submission_id = str(submission.id)
+        submission_id = "%d" % submission.id
         submission_data = {
             "user": encode_id(submission.user.username),
             "task": encode_id(submission.task.name),
@@ -406,7 +406,7 @@ class ProxyService(Service):
 
         """
         # Data to send to remote rankings.
-        submission_id = str(submission.id)
+        submission_id = "%d" % submission.id
         submission_data = {
             "user": encode_id(submission.user.username),
             "task": encode_id(submission.task.name),

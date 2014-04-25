@@ -293,7 +293,7 @@ class CustomFormatter(logging.Formatter):
         # Determine the second part (service coords) and its color.
         if hasattr(record, "service_name") and \
                 hasattr(record, "service_shard"):
-            coord_str = record.service_name + "," + str(record.service_shard)
+            coord_str = "%s,%d" % (record.service_name, record.service_shard)
         else:
             coord_str = "None"
         coord_col = get_color_hash(coord_str)

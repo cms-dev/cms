@@ -42,6 +42,7 @@ import io
 import os
 import shutil
 import json
+import six
 import sys
 import tempfile
 import time
@@ -309,13 +310,14 @@ class ContestReplayer(object):
 
 def main():
     parser = ArgumentParser(description="Replayer of CMS contests.")
-    parser.add_argument("cws_address", type=str, help="http address of CWS",
+    parser.add_argument("cws_address", type=six.text_type,
+                        help="http address of CWS",
                         default="http://127.0.0.1:8888")
     parser.add_argument("import_source",
                         help="source directory or compressed file")
     parser.add_argument("-i", "--no-import", action="store_true",
                         help="assume the contest is already in the database")
-    parser.add_argument("-r", "--resume", type=str,
+    parser.add_argument("-r", "--resume", type=six.text_type,
                         help="start from (%%H:%%M:%%S)")
     args = parser.parse_args()
     start_from = None

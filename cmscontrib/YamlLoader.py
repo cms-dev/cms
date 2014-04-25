@@ -561,13 +561,13 @@ class YamlLoader(Loader):
                     n_input = testcases
                     if n_input != 0:
                         input_value = total_value / n_input
-                    args["score_type_parameters"] = str(input_value)
+                    args["score_type_parameters"] = "%s" % input_value
                 else:
                     subtasks.append([points, testcases])
                     assert(100 == sum([int(st[0]) for st in subtasks]))
                     n_input = sum([int(st[1]) for st in subtasks])
                     args["score_type"] = "GroupMin"
-                    args["score_type_parameters"] = str(subtasks)
+                    args["score_type_parameters"] = "%s" % subtasks
 
                 if "n_input" in conf:
                     assert int(conf['n_input']) == n_input
@@ -580,7 +580,7 @@ class YamlLoader(Loader):
             n_input = int(conf['n_input'])
             if n_input != 0:
                 input_value = total_value / n_input
-            args["score_type_parameters"] = str(input_value)
+            args["score_type_parameters"] = "%s" % input_value
 
         # If output_only is set, then the task type is OutputOnly
         if conf.get('output_only', False):

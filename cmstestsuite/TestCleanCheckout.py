@@ -26,6 +26,7 @@ import atexit
 import tempfile
 import subprocess
 import shutil
+import six
 import os
 from argparse import ArgumentParser
 
@@ -94,7 +95,7 @@ if __name__ == "__main__":
         description="This utility tests a clean checkout of CMS.")
     parser.add_argument(
         "-r", "--revision",
-        type=str, default=None, action="store",
+        type=six.text_type, default=None, action="store",
         help="Test a specific git revision.")
     parser.add_argument(
         "-k", "--keep-working",

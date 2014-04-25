@@ -159,14 +159,14 @@ class Actor(threading.Thread):
         try:
             request.prepare()
         except Exception as exc:
-            print("Unhandled exception while preparing the request: %s" %
-                  (str(exc)), file=sys.stderr)
+            print("Unhandled exception while preparing the request: %s" % exc,
+                  file=sys.stderr)
             return
         try:
             request.execute()
         except Exception as exc:
-            print("Unhandled exception while executing the request %s" %
-                  (str(exc)), file=sys.stderr)
+            print("Unhandled exception while executing the request %s" % exc,
+                  file=sys.stderr)
             return
         self.log.__dict__[request.outcome] += 1
         self.log.total_time += request.duration
