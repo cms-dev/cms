@@ -91,7 +91,7 @@ class Worker(Service):
                                             skip_user_tests=True)
         for digest in files:
             try:
-                self.file_cacher.load(digest)
+                self.file_cacher.load(digest, if_needed=True)
             except KeyError:
                 # No problem (at this stage) if we cannot find the
                 # file
