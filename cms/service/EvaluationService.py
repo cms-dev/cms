@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -591,6 +592,50 @@ class WorkerPool(object):
                     self._worker[shard].quit("No response in %s." % active_for)
 
         return lost_jobs
+
+    def disable_worker(self, shard):
+        """Disables a worker.
+
+        raise (ValueError): if worker is already disabled.
+
+        return (list): list of tuples (priority, timestamp, job) of
+                       jobs assigned to the worker.
+        """
+        if self._job[shard] == WorkerPool.WORKER_DISABLED:
+            err_msg = "Trying to disable worker which is already disabled."
+            logger.error(err_msg)
+            raise ValueError(err_msg)
+        lost_jobs = []
+        if self._job[shard] != WorkerPool.WORKER_INACTIVE:
+            # We return the job so ES can do what it needs.
+            if not self._ignore[shard]:
+                job = self._job[shard]
+                priority, timestamp = self._side_data[shard]
+                lost_jobs.append((priority, timestamp, job))
+
+            # Also, we are not trusting it, so we are not
+            # assigning him new jobs even if it comes back to
+            # life.
+            self._schedule_disabling[shard] = True
+            self._ignore[shard] = True
+            self.release_worker(shard)
+        else:
+            self._job[shard] = WorkerPool.WORKER_DISABLED
+        logger.info("Worker %s is disabled by admin." % shard)
+        return lost_jobs
+
+    def enable_worker(self, shard):
+        """Enables a worker that previously was disabled.
+
+        raise (ValueError): if worker is not disabled.
+
+        """
+        if self._job[shard] != WorkerPool.WORKER_DISABLED:
+            err_msg = "Trying to enable worker which is not disabled."
+            logger.error(err_msg)
+            raise ValueError(err_msg)
+        self._job[shard] = WorkerPool.WORKER_INACTIVE
+        logger.info("Worker %s is enabled by admin." % shard)
 
     def check_connections(self):
         """Check if a worker we assigned a job to disconnects. In this
@@ -1399,3 +1444,37 @@ class EvaluationService(Service):
                             submission_result.submission.timestamp)
 
             session.commit()
+
+    @rpc_method
+    def enable_worker(self, shard):
+        """This RPC asks ES to enable a worker.
+
+        shard (int): the shard of the worker.
+
+        returns (bool): True if everything went well.
+
+        """
+        try:
+            self.pool.enable_worker(shard)
+            return True
+        except ValueError:
+            return False
+
+    @rpc_method
+    def disable_worker(self, shard):
+        """This RPC asks ES to disable a worker.
+
+        shard (int): the shard of the worker.
+
+        returns (bool): True if everything went well.
+
+        """
+        try:
+            lost_jobs = self.pool.disable_worker(shard)
+            for priority, timestamp, job in lost_jobs:
+                logger.info("Job %r put again in the queue because "
+                            "the worker was disabled." % (job,))
+                self.push_in_queue(job, priority, timestamp)
+            return True
+        except ValueError:
+            return False
