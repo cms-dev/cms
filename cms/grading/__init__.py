@@ -564,7 +564,10 @@ def extract_outcome_and_text(sandbox):
 
 ## Automatic white diff. ##
 
-WHITES = " \t\n\r"
+# We take as definition of whitespaces the intersection between ASCII
+# and Unicode White_Space characters (see
+# http://www.unicode.org/Public/6.3.0/ucd/PropList.txt)
+WHITES = b' \t\n\x0b\x0c\r'
 
 
 def white_diff_canonicalize(string):
