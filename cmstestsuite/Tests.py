@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,8 @@ import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
 
-from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON
+from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_JAVA, LANG_PASCAL, \
+    LANG_PYTHON
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
     CheckTimeout, CheckNonzeroReturn
 
@@ -35,7 +36,7 @@ from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
 ALL_LANGUAGES = tuple(LANGUAGES)
 NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL)
 COMPILED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON)
-
+ALL_NON_JAVA = tuple(l for l in LANGUAGES if l != LANG_JAVA)
 
 ALL_TESTS = [
 
@@ -88,9 +89,19 @@ ALL_TESTS = [
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
 
+    # This test uses the correct solution for stdio and ensures that
+    # it fails for the fileio task. For Java, this would fail before
+    # as the name of the class would not match the name of the file
+    # (which is come from the name of the task), hence we use a
+    # different file for it.
     Test('incorrect-readstdio',
          task=batch_fileio, filename='correct-stdio.%l',
-         languages=ALL_LANGUAGES,
+         languages=ALL_NON_JAVA,
+         checks=[CheckOverallScore(0, 100)]),
+
+    Test('incorrect-readstdio',
+         task=batch_fileio, filename='incorrect-readstdio.%l',
+         languages=(LANG_JAVA,),
          checks=[CheckOverallScore(0, 100)]),
 
     # Failed compilation.
