@@ -1,6 +1,6 @@
 import java.util.Scanner;
 
-public class Task {
+public class batchstdio {
 
     public static void main(String[] args) {
     	int[] big = new int[128 * 1024 * 1024];

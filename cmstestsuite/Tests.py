@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -35,7 +35,6 @@ from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
 ALL_LANGUAGES = tuple(LANGUAGES)
 NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL)
 COMPILED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON)
-
 
 ALL_TESTS = [
 
@@ -88,8 +87,8 @@ ALL_TESTS = [
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
 
-    Test('incorrect-readstdio',
-         task=batch_fileio, filename='correct-stdio.%l',
+    Test('incorrect-fileio-with-stdio',
+         task=batch_fileio, filename='incorrect-fileio-with-stdio.%l',
          languages=ALL_LANGUAGES,
          checks=[CheckOverallScore(0, 100)]),
 

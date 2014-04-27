@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2013-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -131,12 +131,10 @@ def get_compilation_commands(language, source_filenames, executable_filename,
         command = ["/bin/cp", source_filenames[0], executable_filename]
         commands.append(command)
     elif language == LANG_JAVA:
-        class_name = "Task"  # Submitted java class must be called Task.
-        mv_command = ["/bin/mv", source_filenames[0], "%s.java" % class_name]
-        gcj_command = ["/usr/bin/gcj", "--main=%s" % class_name, "-O3", "-o",
-                       executable_filename, "%s.java" % class_name]
-        commands.append(mv_command)
-        commands.append(gcj_command)
+        class_name = os.path.splitext(source_filenames[0])[0]
+        command = ["/usr/bin/gcj", "--main=%s" % class_name, "-O3", "-o",
+                   executable_filename] + source_filenames
+        commands.append(command)
     else:
         raise ValueError("Unknown language %s." % language)
     return commands
