@@ -167,24 +167,24 @@ ALL_TESTS = [
 
     Test('managed-correct',
          task=batch_fileio_managed, filename='managed-correct.%l',
-         languages=(LANG_C, LANG_CPP, LANG_JAVA),
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(100, 100)]),
 
     Test('managed-incorrect',
          task=batch_fileio_managed, filename='managed-incorrect.%l',
-         languages=(LANG_C, LANG_CPP, LANG_JAVA),
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(0, 100)]),
 
-    # Communication tasks. TODO: add Pascal and Python.
+    # Communication tasks. TODO: add remaining languages.
 
     Test('communication-correct',
-         task=communication, filename='managed-correct.%l',
-         languages=(LANG_C, LANG_CPP),
+         task=communication, filename='communication-correct.%l',
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL),
          checks=[CheckOverallScore(100, 100)]),
 
     Test('communication-incorrect',
-         task=communication, filename='managed-incorrect.%l',
-         languages=(LANG_C, LANG_CPP),
+         task=communication, filename='communication-incorrect.%l',
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL),
          checks=[CheckOverallScore(0, 100)]),
 
 ]

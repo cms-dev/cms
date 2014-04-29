@@ -41,6 +41,7 @@ task_info = {
 managers = [
     "grader.c",
     "grader.cpp",
+    "grader.pas",
     "grader.java",
     "checker",
 ]

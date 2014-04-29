@@ -29,7 +29,8 @@ for i in range(10,20) + [0]:
         break
     # These are the only things we expect from our stub.
     if l.strip() != 'correct %d' % x:
-        sys.exit(1)
+        correct = False
+        break
 
     correct = correct and (int(l.split()[1]) == x)
 else:
