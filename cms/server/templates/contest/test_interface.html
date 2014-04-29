@@ -88,6 +88,14 @@ $(document).ready(function () {
 
 <h2 style="margin-bottom: 10px">{{ _("Submit a test") }}</h2>
 
+{% if user_tests_left[task.id] is not None %}
+    <div class="span5">
+        <p>
+        {{ _("You can submit %(user_tests_left)s more test(s).") % {"user_tests_left": user_tests_left[task.id]} }}
+        </p>
+    </div>
+{% end %}
+
 <div class="submit_test row">
     <div class="span5">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/test" method="POST">

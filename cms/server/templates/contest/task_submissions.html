@@ -92,6 +92,14 @@ $(document).ready(function () {
 
 <h2 style="margin-bottom: 10px">{{ _("Submit a solution") }}</h2>
 
+{% if submissions_left is not None %}
+    <div class="span5">
+        <p>
+        {{ _("You can submit %(submissions_left)s more solution(s).") % {"submissions_left": submissions_left} }}
+        </p>
+    </div>
+{% end %}
+
 <div id="submit_solution" class="row">
     <div class="span5">
         <form class="form-horizontal" enctype="multipart/form-data" action="{{ url_root }}/tasks/{{ encode_for_url(task.name) }}/submit" method="POST">

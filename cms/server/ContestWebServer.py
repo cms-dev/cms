@@ -622,8 +622,30 @@ class TaskSubmissionsHandler(BaseHandler):
             .filter(Submission.user == self.current_user)\
             .filter(Submission.task == task).all()
 
+        submissions_left_contest = None
+        if self.contest.max_submission_number is not None:
+            submissions_c = self.sql_session\
+                .query(func.count(Submission.id))\
+                .join(Submission.task)\
+                .filter(Task.contest == self.contest)\
+                .filter(Submission.user == self.current_user).scalar()
+            submissions_left_contest = \
+                self.contest.max_submission_number - submissions_c
+
+        submissions_left_task = None
+        if task.max_submission_number is not None:
+            submissions_left_task = \
+                task.max_submission_number - len(submissions)
+
+        submissions_left = submissions_left_contest
+        if submissions_left_task is not None and \
+            (submissions_left_contest is None or
+             submissions_left_contest > submissions_left_task):
+            submissions_left = submissions_left_task
+
         self.render("task_submissions.html",
-                    task=task, submissions=submissions, **self.r_params)
+                    task=task, submissions=submissions,
+                    submissions_left=submissions_left, **self.r_params)
 
 
 class TaskStatementViewHandler(FileHandler):
@@ -1338,7 +1360,17 @@ class UserTestInterfaceHandler(BaseHandler):
     @actual_phase_required(0)
     def get(self):
         user_tests = dict()
+        user_tests_left = dict()
         default_task = None
+
+        user_tests_left_contest = None
+        if self.contest.max_user_test_number is not None:
+            user_test_c = self.sql_session.query(func.count(UserTest.id))\
+                .join(UserTest.task)\
+                .filter(Task.contest == self.contest)\
+                .filter(UserTest.user == self.current_user).scalar()
+            user_tests_left_contest = \
+                self.contest.max_user_test_number - user_test_c
 
         for task in self.contest.tasks:
             if self.request.query == task.name:
@@ -1346,12 +1378,22 @@ class UserTestInterfaceHandler(BaseHandler):
             user_tests[task.id] = self.sql_session.query(UserTest)\
                 .filter(UserTest.user == self.current_user)\
                 .filter(UserTest.task == task).all()
+            user_tests_left_task = None
+            if task.max_user_test_number is not None:
+                user_tests_left_task = \
+                    task.max_user_test_number - len(user_tests[task.id])
+            user_tests_left[task.id] = user_tests_left_contest
+            if user_tests_left_task is not None and \
+                (user_tests_left_contest is None or
+                 user_tests_left_contest > user_tests_left_task):
+                user_tests_left[task.id] = user_tests_left_task
 
         if default_task is None and len(self.contest.tasks) > 0:
             default_task = self.contest.tasks[0]
 
         self.render("test_interface.html", default_task=default_task,
-                    user_tests=user_tests, **self.r_params)
+                    user_tests=user_tests, user_tests_left=user_tests_left,
+                    **self.r_params)
 
 
 class UserTestHandler(BaseHandler):
