@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -185,19 +185,7 @@ class BaseHandler(CommonRequestHandler):
         return user
 
     def get_user_locale(self):
-        if config.installed:
-            localization_dir = os.path.join(
-                "/", "usr", "local", "share", "locale")
-        else:
-            localization_dir = os.path.join(os.path.dirname(__file__), "mo")
-
-        # Retrieve the available translations.
-        # TODO This operation may be not very efficient: as we expect
-        # it to always give the same result we could perform it just
-        # once, at the start.
-        self.langs = ["en-US"] + [
-            path.split("/")[-3].replace("_", "-") for path in glob.glob(
-                os.path.join(localization_dir, "*", "LC_MESSAGES", "cms.mo"))]
+        self.langs = self.application.service.langs
 
         if self.contest.allowed_localizations:
             # We just check if a prefix of each language is allowed
@@ -263,7 +251,7 @@ class BaseHandler(CommonRequestHandler):
             fallback=True)
         cms_locale = gettext.translation(
             "cms",
-            localization_dir,
+            self.application.service.localization_dir,
             [lang],
             fallback=True)
         cms_locale.add_fallback(iso_639_locale)
@@ -488,6 +476,18 @@ class ContestWebServer(WebService):
         # that are handled by the db. Each username points to a list
         # of tuples (timestamp, subject, text).
         self.notifications = {}
+
+        # Retrieve the available translations.
+        if config.installed:
+            self.localization_dir = os.path.join(
+                "/", "usr", "local", "share", "locale")
+        else:
+            self.localization_dir = os.path.join(
+                os.path.dirname(__file__), "mo")
+        self.langs = ["en-US"] + [
+            path.split("/")[-3].replace("_", "-") for path in glob.glob(
+                os.path.join(self.localization_dir,
+                             "*", "LC_MESSAGES", "cms.mo"))]
 
         self.file_cacher = FileCacher(self)
         self.evaluation_service = self.connect_to(
