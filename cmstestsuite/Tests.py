@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,8 @@ import cmstestsuite.tasks.batch_fileio as batch_fileio
 import cmstestsuite.tasks.batch_fileio_managed as batch_fileio_managed
 import cmstestsuite.tasks.communication as communication
 
-from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON
+from cms import LANGUAGES, LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, \
+    LANG_PYTHON
 from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
     CheckTimeout, CheckNonzeroReturn
 
@@ -35,7 +36,6 @@ from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
 ALL_LANGUAGES = tuple(LANGUAGES)
 NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL)
 COMPILED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON)
-
 
 ALL_TESTS = [
 
@@ -88,8 +88,8 @@ ALL_TESTS = [
          languages=(LANG_C,),
          checks=[CheckOverallScore(0, 100)]),
 
-    Test('incorrect-readstdio',
-         task=batch_fileio, filename='correct-stdio.%l',
+    Test('incorrect-fileio-with-stdio',
+         task=batch_fileio, filename='incorrect-fileio-with-stdio.%l',
          languages=ALL_LANGUAGES,
          checks=[CheckOverallScore(0, 100)]),
 
@@ -167,24 +167,24 @@ ALL_TESTS = [
 
     Test('managed-correct',
          task=batch_fileio_managed, filename='managed-correct.%l',
-         languages=(LANG_C, LANG_CPP),
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(100, 100)]),
 
     Test('managed-incorrect',
          task=batch_fileio_managed, filename='managed-incorrect.%l',
-         languages=(LANG_C, LANG_CPP),
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(0, 100)]),
 
-    # Communication tasks. TODO: add Pascal and Python.
+    # Communication tasks. TODO: add remaining languages.
 
     Test('communication-correct',
-         task=communication, filename='managed-correct.%l',
-         languages=(LANG_C, LANG_CPP),
+         task=communication, filename='communication-correct.%l',
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL),
          checks=[CheckOverallScore(100, 100)]),
 
     Test('communication-incorrect',
-         task=communication, filename='managed-incorrect.%l',
-         languages=(LANG_C, LANG_CPP),
+         task=communication, filename='communication-incorrect.%l',
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL),
          checks=[CheckOverallScore(0, 100)]),
 
 ]

@@ -1,7 +1,7 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 
-# Contest Management System - http://cms-dev.github.io/ - utility to add a user to a contest.
+# Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
 # Copyright © 2010-2011 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2011 Stefano Maggiolo <s.maggiolo@gmail.com>
@@ -19,6 +19,10 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+"""Utility to add a user to a contest.
+
+"""
 
 from __future__ import absolute_import
 from __future__ import print_function

@@ -3,7 +3,7 @@ import java.io.PrintWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-public class Task {
+public class batchfileio {
 
     public static void main(String[] args) throws FileNotFoundException {
         File file = new File("input.txt");

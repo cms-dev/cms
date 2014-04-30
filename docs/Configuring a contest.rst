@@ -125,6 +125,6 @@ Programming languages
 
 It is possible to limit the set of programming languages available to contestants by setting the appropriate configuration in the contest page in AWS. By default, the historical set of IOI programming languages is allowed (C, C++, and Pascal). These languages have been used in several contests and with many different types of tasks, and are thus fully tested and safe.
 
-Contestants may be also allowed to use Python and PHP, but these languages have only been tested for Batch tasks, and have not been thoroughly analyzed for potential security and usability issues. Being run under the sandbox, they should be reasonably safe, but, for example, the libraries available to contestants might be hard to control.
+Contestants may be also allowed to use Java, Python and PHP, but these languages have only been tested for Batch tasks, and have not been thoroughly analyzed for potential security and usability issues. Being run under the sandbox, they should be reasonably safe, but, for example, the libraries available to contestants might be hard to control.
 
-For Python, the contestants' programs are interpreted using Python 2 (you need to have ``/usr/bin/python2``). To use Python 3, you need to modify the CMS code following the instructions in :file:`cms/grading/__init__.py`. For PHP, you need to have ``/usr/bin/php5``.
+Java programs are first compiled using ``gcj``, and then run as normal executables. For Python, the contestants' programs are interpreted using Python 2 (you need to have ``/usr/bin/python2``). To use Python 3, you need to modify the CMS code following the instructions in :file:`cms/grading/__init__.py`. For PHP, you need to have ``/usr/bin/php5``.
