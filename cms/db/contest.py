@@ -206,7 +206,10 @@ class Contest(Base):
         """Return the first task in the contest with the given name.
 
         task_name (string): the name of the task we are interested in.
-        return (Task): the corresponding task object, or KeyError.
+
+        return (Task): the corresponding task object.
+
+        raise (KeyError): if no tasks with the given name are found.
 
         """
         for task in self.tasks:
@@ -220,8 +223,10 @@ class Contest(Base):
         given name.
 
         task_name (string): the name of the task we are interested in.
-        return (int): the index of the corresponding task, or
-                      KeyError.
+
+        return (int): the index of the corresponding task.
+
+        raise (KeyError): if no tasks with the given name are found.
 
         """
         for idx, task in enumerate(self.tasks):
@@ -234,7 +239,10 @@ class Contest(Base):
         """Return the first user in the contest with the given name.
 
         username (string): the name of the user we are interested in.
-        return (User): the corresponding user object, or KeyError.
+
+        return (User): the corresponding user object.
+
+        raise (KeyError): if no users with the given name are found.
 
         """
         for user in self.users:

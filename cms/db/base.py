@@ -243,7 +243,7 @@ class Base(object):
             a single int (even encoded as unicode or bytes) will work.
         session (Session): the session to query.
 
-        return (object): the wanted object, or None.
+        return (Base|None): the desired object, or None if not found.
 
         """
         try:

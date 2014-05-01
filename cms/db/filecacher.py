@@ -47,6 +47,9 @@ logger = logging.getLogger(__name__)
 
 
 class FileCacherBackend(object):
+    """Abstract base class for all FileCacher backends.
+
+    """
 
     def get_file(self, digest):
         """Retrieve a file from the storage.
@@ -119,7 +122,6 @@ class FileCacherBackend(object):
 
 
 class FSBackend(FileCacherBackend):
-
     """This class implements a backend for FileCacher that keeps all
     the files in a file system directory, named after their digest. Of
     course this directory can be shared, for example with NFS, acting
@@ -211,7 +213,6 @@ class FSBackend(FileCacherBackend):
 
 
 class DBBackend(FileCacherBackend):
-
     """This class implements an actual backend for FileCacher that
     stores the files as lobjects (encapsuled in a FSObject) into a
     PostgreSQL database.
@@ -337,7 +338,6 @@ class DBBackend(FileCacherBackend):
 
 
 class NullBackend(FileCacherBackend):
-
     """This backend is always empty, it just drops each file that
     receives. It looks mostly like /dev/null. It is useful when you
     want to just rely on the caching capabilities of FileCacher for
@@ -365,7 +365,6 @@ class NullBackend(FileCacherBackend):
 
 
 class FileCacher(object):
-
     """This class implement a local cache for files stored as FSObject
     in the database.
 
