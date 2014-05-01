@@ -51,7 +51,9 @@ def start_generic_services():
     start_service("ResourceService")
     start_service("Checker")
     start_service("Worker")
+    start_service("ScoringService")
     start_server("AdminWebServer")
+    # Just to verify it starts successfully.
     start_ranking_web_server()
 
 
@@ -80,9 +82,10 @@ def create_contest():
 
 
 def start_contest(contest_id):
-    start_service("ScoringService", contest=contest_id)
     start_service("EvaluationService", contest=contest_id)
     start_server("ContestWebServer", contest=contest_id)
+    # Just to verify it starts successfully.
+    start_service("ProxyService", contest=contest_id)
 
 
 global num_users
