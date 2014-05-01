@@ -57,7 +57,6 @@ strong {
 }
 
 #global {
-    width: 960px;
     margin: 0;
 }
 
@@ -204,7 +203,6 @@ ul.normal_list {
     margin-left: 270px;
     margin-bottom: 1em;
     padding: 0 1em;
-    width: 660px;
 }
 
 #core h1 {
@@ -222,7 +220,6 @@ ul.normal_list {
     display: none;
     margin-bottom: 1em;
     padding: 1.5em 1em 0 1em;
-    width: 660px;
     z-index: 10;
 }
 
