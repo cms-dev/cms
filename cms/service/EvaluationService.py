@@ -570,7 +570,7 @@ class WorkerPool(object):
                     # Here shard is a working worker with no sign of
                     # intelligent life for too much time.
                     logger.error("Disabling and shutting down "
-                                 "worker %d because of no reponse "
+                                 "worker %d because of no response "
                                  "in %s." %
                                  (shard, active_for))
                     assert self._job[shard] != WorkerPool.WORKER_INACTIVE \
