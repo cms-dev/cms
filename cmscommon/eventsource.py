@@ -185,7 +185,7 @@ class Subscriber(object):
         return ([objects]): the items put in the publisher, in order
             (actually, returns a generator, not a list).
 
-        raise (OutdatedError) if some of the messages it's supposed to
+        raise (OutdatedError): if some of the messages it's supposed to
             retrieve have already been removed from the cache.
 
         """
@@ -347,7 +347,7 @@ class EventSource(object):
         last_event_id = request.headers.get(b"Last-Event-ID",
                                             type=lambda x: x.decode('utf-8'))
         if last_event_id is None:
-            last_event_id = request.args.get(b"last-event-id",
+            last_event_id = request.args.get(b"last_event_id",
                                              type=lambda x: x.decode('utf-8'))
 
         # We subscribe to the publisher to receive events.
