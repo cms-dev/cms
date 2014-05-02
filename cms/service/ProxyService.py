@@ -198,7 +198,7 @@ class RankingProxy(object):
             try:
                 for i in xrange(self.TYPE_COUNT):
                     # Send entities of type i.
-                    if len(data[i]) > 0:
+                    if task_count[i] > 0:
                         # XXX We abuse the resource path as the english
                         # (plural) name for the entity type.
                         name = self.RESOURCE_PATHS[i]
