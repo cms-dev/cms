@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2012 Bernard Blackham <bernard@largestprime.net>
-# Copyright © 2013 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2013-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -182,9 +182,9 @@ def get_task_id(contest_id, user_id, task_module):
 
     info("Created task %s as id %d" % (name, task_id))
 
-    # We need to restart ScoringService to ensure it has picked up the
-    # new task.
-    restart_service("ScoringService", contest=contest_id)
+    # We need to restart ProxyService to ensure it reinitializes,
+    # picking up the new task and sending it to RWS.
+    restart_service("ProxyService", contest=contest_id)
 
     return task_id
 
