@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
@@ -152,7 +152,7 @@ class RankingProxy(object):
 
         """
         self.ranking = ranking
-        self.data_queue = gevent.queue.JoinableQueue()
+        self.data_queue = gevent.queue.Queue()
 
     def run(self):
         """Consume (i.e. send) the data put in the queue, forever.
@@ -173,22 +173,16 @@ class RankingProxy(object):
         # built by combining items in the queue.
         data = list(dict() for i in xrange(self.TYPE_COUNT))
 
-        # The number of times we will call self.data_queue.task_done()
-        # after a successful send (i.e. how many times we called .get()
-        # on the queue to build up the data we have now).
-        task_count = list(0 for i in xrange(self.TYPE_COUNT))
-
         while True:
             # If we don't have anything left to do, block until we get
             # something new.
-            if sum(task_count) == 0:
+            if sum(len(data[i]) for i in xrange(self.TYPE_COUNT)) == 0:
                 self.data_queue.peek()
 
             try:
                 while True:
                     # Get other data if it's immediately available.
                     item = self.data_queue.get_nowait()
-                    task_count[item[0]] += 1
 
                     # Merge this item with the cumulative data.
                     data[item[0]].update(item[1])
@@ -198,7 +192,7 @@ class RankingProxy(object):
             try:
                 for i in xrange(self.TYPE_COUNT):
                     # Send entities of type i.
-                    if task_count[i] > 0:
+                    if len(data[i]) > 0:
                         # XXX We abuse the resource path as the english
                         # (plural) name for the entity type.
                         name = self.RESOURCE_PATHS[i]
@@ -208,11 +202,7 @@ class RankingProxy(object):
                         logger.debug(operation.capitalize())
                         safe_put_data(
                             self.ranking, b"%s/" % name, data[i], operation)
-
                         data[i].clear()
-                        for _ in xrange(task_count[i]):
-                            self.data_queue.task_done()
-                        task_count[i] = 0
 
             except CannotSendError:
                 # A log message has already been produced.
