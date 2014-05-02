@@ -46,6 +46,8 @@ The :file:`contest.yaml` file is a plain YAML file, with at least the following 
 
 - ``users`` (list of associative arrays; also accepted: ``utenti``): each of the elements of the list describes one user of the contest; the exact structure of the record is described :ref:`below <externalcontestformats_user-description>`.
 
+- ``token_mode``: the token mode for the contest, as in :ref:`configuringacontest_tokens`; it can be ``disabled``, ``infinite`` or ``finite``.
+
 The following are optional keys.
 
 - ``start`` (integer; also accepted: ``inizio``): the UNIX timestamp of the beginning of the contest (copied in the ``start`` field); defaults to zero, meaning that contest times haven't yet been decided.
@@ -54,7 +56,7 @@ The following are optional keys.
 
 - ``per_user_time`` (integer): if set, the contest will be USACO-like (as explained in :ref:`configuringacontest_usaco-like-contests`); if unset, the contest will be traditional (not USACO-like).
 
-- ``token_*``: token parameters for the contest, see :ref:`configuringacontest_tokens` (the names of the parameters are the same as the internal names described there); by default tokens are infinite.
+- ``token_*``: additional token parameters for the contest, see :ref:`configuringacontest_tokens` (the names of the parameters are the same as the internal names described there).
 
 - ``max_*_number`` and ``min_*_interval`` (integers): limitations for the whole contest, see :ref:`configuringacontest_limitations` (the names of the parameters are the same as the internal names described there); by default they're all unset.
 
@@ -121,6 +123,8 @@ The task YAML files require the following keys.
 
 - ``n_input`` (integer): number of test cases to be evaluated for this task; the actual test cases are retrieved from the :ref:`task directory <externalcontestformats_task-directory>`.
 
+- ``token_mode``: the token mode for the task, as in :ref:`configuringacontest_tokens`; it can be ``disabled``, ``infinite`` or ``finite``.
+
 The following are optional keys.
 
 - ``time_limit`` (float; also accepted: ``timeout``): the timeout limit for this task in seconds; defaults to no limitations.
@@ -129,17 +133,17 @@ The following are optional keys.
 
 - ``public_testcases`` (string; also accepted: ``risultati``): a comma-separated list of test cases (identified by their numbers, starting from 0) that are marked as public, hence their results are available to contestants even without using tokens.
 
-- ``token_*``: token parameters for the task, see :ref:`configuringacontest_tokens` (the names of the parameters are the same as the internal names described there); by default tokens are disabled.
+- ``token_*``: additional token parameters for the task, see :ref:`configuringacontest_tokens` (the names of the parameters are the same as the internal names described there).
 
 - ``max_*_number`` and ``min_*_interval`` (integers): limitations for the task, see :ref:`configuringacontest_limitations` (the names of the parameters are the same as the internal names described there); by default they're all unset.
 
-- ``outputonly`` (boolean): if set to True, the task is created with the :ref:`tasktypes_outputonly` type; defaults to False.
+- ``output_only`` (boolean): if set to True, the task is created with the :ref:`tasktypes_outputonly` type; defaults to False.
 
 The following are optional keys that must be present for some task type or score type.
 
 - ``total_value`` (float): for tasks using the :ref:`scoretypes_sum` score type, this is the maximum score for the task and defaults to 100.0; for other score types, the maximum score is computed from the :ref:`task directory <externalcontestformats_task-directory>`.
 
-- ``infile`` and ``outfile`` (strings): for :ref:`tasktypes_batch` tasks, these are the file names for the input and output files; default to :file:`input.txt` and :file:`output.txt`.
+- ``infile`` and ``outfile`` (strings): for :ref:`tasktypes_batch` tasks, these are the file names for the input and output files; default to :file:`input.txt` and :file:`output.txt`; if left empty, :file:`stdin` and :file:`stdout` are used.
 
 - ``primary_language`` (string): the statement will be imported with this language code; defaults to ``it`` (Italian), in order to ensure backward compatibility.
 
