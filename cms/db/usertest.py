@@ -94,6 +94,16 @@ class UserTest(Base):
     # results (list of UserTestResult objects)
 
     def get_result(self, dataset=None):
+        """Return the result associated to a dataset.
+
+        dataset (Dataset|None): the dataset for which the caller wants
+            the user test result; if None, the active one is used.
+
+        return (UserTestResult|None): the user test result associated
+            to this user test and the given dataset, if it exists in
+            the database, otherwise None.
+
+        """
         if dataset is not None:
             # Use IDs to avoid triggering a lazy-load query.
             assert self.task_id == dataset.task_id
@@ -105,6 +115,16 @@ class UserTest(Base):
             (self.id, dataset_id), self.sa_session)
 
     def get_result_or_create(self, dataset=None):
+        """Return and, if necessary, create the result for a dataset.
+
+        dataset (Dataset|None): the dataset for which the caller wants
+            the user test result; if None, the active one is used.
+
+        return (UserTestResult): the user test result associated to
+            the this user test and the given dataset; if it does not
+            exists, a new one is created.
+
+        """
         if dataset is None:
             dataset = self.task.active_dataset
 
