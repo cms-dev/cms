@@ -4,6 +4,7 @@
 
 function update_submissions_status(response)
 {
+    window.submissions_updating = false;
     var table = $("#submissions_status_table > tbody");
     var msg = utils.standard_response(response);
     if (msg != "")
@@ -34,6 +35,7 @@ function update_submissions_status(response)
 
 function update_queue_status(response)
 {
+    window.queue_updating = false;
     var table = $("#queue_status_table > tbody");
     var msg = utils.standard_response(response);
     if (msg != "")
@@ -144,17 +146,23 @@ function update_statuses()
 {
 
     {% if contest is not None %}
-    cmsrpc_request("{{ url_root }}",
-                   "EvaluationService", 0,
-                   "submissions_status",
-                   {},
-                   update_submissions_status);
+    if (!window.submissions_updating) {
+        window.submissions_updating = true;
+        cmsrpc_request("{{ url_root }}",
+                       "EvaluationService", 0,
+                       "submissions_status",
+                       {},
+                       update_submissions_status);
+    }
     {% end %}
-    cmsrpc_request("{{ url_root }}",
-                   "EvaluationService", 0,
-                   "queue_status",
-                   {},
-                   update_queue_status);
+    if (!window.queue_updating) {
+        window.queue_updating = true;
+        cmsrpc_request("{{ url_root }}",
+                       "EvaluationService", 0,
+                       "queue_status",
+                       {},
+                       update_queue_status);
+    }
     cmsrpc_request("{{ url_root }}",
                    "EvaluationService", 0,
                    "workers_status",
