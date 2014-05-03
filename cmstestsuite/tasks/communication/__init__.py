@@ -25,7 +25,7 @@ task_info = {
     "name": "communication",
     "title": "Test Communication Task",
     "time_limit": "1.0",
-    "memory_limit": "64",
+    "memory_limit": "128",
     "official_language": "",
     "task_type": "Communication",
     "submission_format_choice": "simple",
@@ -38,6 +38,7 @@ managers = [
     "stub.c",
     "stub.cpp",
     "stub.pas",
+    "stub.java",
     "manager",
 ]
 

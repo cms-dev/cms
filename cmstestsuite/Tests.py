@@ -35,7 +35,7 @@ from cmstestsuite.Test import Test, CheckOverallScore, CheckCompilationFail, \
 
 ALL_LANGUAGES = tuple(LANGUAGES)
 NON_INTERPRETED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL)
-COMPILED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL, LANG_PYTHON)
+COMPILED_LANGUAGES = (LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA, LANG_PYTHON)
 
 ALL_TESTS = [
 
@@ -179,12 +179,12 @@ ALL_TESTS = [
 
     Test('communication-correct',
          task=communication, filename='communication-correct.%l',
-         languages=(LANG_C, LANG_CPP, LANG_PASCAL),
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(100, 100)]),
 
     Test('communication-incorrect',
          task=communication, filename='communication-incorrect.%l',
-         languages=(LANG_C, LANG_CPP, LANG_PASCAL),
+         languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(0, 100)]),
 
 ]
