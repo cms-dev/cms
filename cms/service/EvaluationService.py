@@ -41,12 +41,13 @@ from functools import wraps
 
 import gevent.coros
 from gevent.event import Event
+from sqlalchemy import func, not_
 
 from cms import ServiceCoord, get_service_shards
 from cms.io import Executor, PriorityQueue, QueueItem, TriggeredService, \
     rpc_method
 from cms.db import Session, SessionGen, Contest, Dataset, Submission, \
-    SubmissionResult, UserTest, UserTestResult
+    SubmissionResult, Task, UserTest, UserTestResult
 from cms.service import get_submissions, get_submission_results, \
     get_datasets_to_judge
 from cmscommon.datetime import make_datetime, make_timestamp
@@ -211,7 +212,7 @@ def user_test_get_operations(user_test, dataset):
             user_test.timestamp
 
 
-def get_relevant_operations_(self, level, submissions, dataset_id=None):
+def get_relevant_operations_(level, submissions, dataset_id=None):
     """Return all possible operations involving the submissions
 
     level (string): the starting level; if 'compilation', then we
@@ -946,41 +947,57 @@ class EvaluationService(TriggeredService):
         return (dict): statistics on the submissions.
 
         """
-        stats = {
-            "scored": 0,
-            "evaluated": 0,
-            "compilation_fail": 0,
-            "compiling": 0,
-            "evaluating": 0,
-            "max_compilations": 0,
-            "max_evaluations": 0,
-            "invalid": 0}
+        # TODO: at the moment this counts all submission results for
+        # the live datasets. It is interesting to show also numbers
+        # for the datasets with autojudge, and for all datasets.
+        stats = {}
         with SessionGen() as session:
-            contest = Contest.get_from_id(self.contest_id, session)
-            for submission_result in contest.get_submission_results():
-                if submission_result.compilation_failed():
-                    stats["compilation_fail"] += 1
-                elif not submission_result.compiled():
-                    if submission_result.compilation_tries >= \
-                            EvaluationService.MAX_COMPILATION_TRIES:
-                        stats["max_compilations"] += 1
-                    else:
-                        stats["compiling"] += 1
-                elif submission_result.compilation_succeeded():
-                    if submission_result.evaluated():
-                        if submission_result.scored():
-                            stats["scored"] += 1
-                        else:
-                            stats["evaluated"] += 1
-                    else:
-                        if submission_result.evaluation_tries >= \
-                                EvaluationService.MAX_EVALUATION_TRIES:
-                            stats["max_evaluations"] += 1
-                        else:
-                            stats["evaluating"] += 1
-                else:
-                    # Should not happen.
-                    stats["invalid"] += 1
+            base_query = session\
+                .query(func.count(SubmissionResult.submission_id))\
+                .select_from(SubmissionResult)\
+                .join(Dataset)\
+                .join(Task, Dataset.task_id == Task.id)\
+                .filter(Task.active_dataset_id == SubmissionResult.dataset_id)\
+                .filter(Task.contest_id == self.contest_id)
+
+            compiled = base_query.filter(SubmissionResult.filter_compiled())
+            evaluated = compiled.filter(SubmissionResult.filter_evaluated())
+            not_compiled = base_query.filter(
+                not_(SubmissionResult.filter_compiled()))
+            not_evaluated = compiled.filter(
+                SubmissionResult.filter_compilation_succeeded(),
+                not_(SubmissionResult.filter_evaluated()))
+
+            queries = {}
+            queries['compiling'] = not_compiled.filter(
+                SubmissionResult.compilation_tries
+                < EvaluationService.MAX_COMPILATION_TRIES)
+            queries['max_compilations'] = not_compiled.filter(
+                SubmissionResult.compilation_tries
+                >= EvaluationService.MAX_COMPILATION_TRIES)
+            queries['compilation_fail'] = base_query.filter(
+                SubmissionResult.filter_compilation_failed())
+            queries['evaluating'] = not_evaluated.filter(
+                SubmissionResult.evaluation_tries
+                < EvaluationService.MAX_EVALUATION_TRIES)
+            queries['max_evaluations'] = not_evaluated.filter(
+                SubmissionResult.evaluation_tries
+                >= EvaluationService.MAX_EVALUATION_TRIES)
+            queries['scoring'] = evaluated.filter(
+                not_(SubmissionResult.filter_scored()))
+            queries['scored'] = evaluated.filter(
+                SubmissionResult.filter_scored())
+            queries['total'] = base_query
+
+            stats = {}
+            keys = queries.keys()
+            results = queries[keys[0]].union_all(
+                *(queries[key] for key in keys[1:])).all()
+
+        for i in range(len(keys)):
+            stats[keys[i]] = results[i][0]
+        stats['invalid'] = 2 * stats['total'] - sum(stats.itervalues())
+
         return stats
 
     @rpc_method

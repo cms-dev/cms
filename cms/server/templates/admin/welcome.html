@@ -13,9 +13,9 @@ function update_submissions_status(response)
     }
 
     var strings = []
-    strings.push('<tr><td>Evaluated and scored</td><td>' + response['data']['scored'] + '</td></tr>');
-    if (response['data']['evaluated'] != 0)
-        strings.push('<tr><td>Evaluated</td><td>' + response['data']['evaluated'] + '</td></tr>');
+    strings.push('<tr><td>Scored</td><td>' + response['data']['scored'] + '</td></tr>');
+    if (response['data']['scoring'] != 0)
+        strings.push('<tr><td>Scoring...</td><td>' + response['data']['scoring'] + '</td></tr>');
     if (response['data']['compilation_fail'] != 0)
         strings.push('<tr><td>Compilation failed</td><td>' + response['data']['compilation_fail'] + '</td></tr>');
     if (response['data']['compiling'] != 0)
