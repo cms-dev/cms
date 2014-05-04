@@ -151,7 +151,7 @@ ALL_TESTS = [
          languages=(LANG_C, LANG_CPP),
          checks=[CheckOverallScore(0, 100)]),
 
-    # OOM problems. TODO: add appropriate checks for the correct output.
+    # OOM problems.
 
     Test('oom-static',
          task=batch_stdio, filename='oom-static.%l',
@@ -163,7 +163,7 @@ ALL_TESTS = [
          languages=ALL_LANGUAGES,
          checks=[CheckOverallScore(0, 100)]),
 
-    # Tasks with graders. TODO: add Pascal and Python.
+    # Tasks with graders. Python and PHP are not yet supported.
 
     Test('managed-correct',
          task=batch_fileio_managed, filename='managed-correct.%l',
@@ -175,7 +175,7 @@ ALL_TESTS = [
          languages=(LANG_C, LANG_CPP, LANG_PASCAL, LANG_JAVA),
          checks=[CheckOverallScore(0, 100)]),
 
-    # Communication tasks. TODO: add remaining languages.
+    # Communication tasks. Python and PHP are not yet supported.
 
     Test('communication-correct',
          task=communication, filename='communication-correct.%l',
