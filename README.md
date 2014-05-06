@@ -47,6 +47,8 @@ particular we are aware of the following.
       2013;
     - [FARIO 2012](http://orac.amt.edu.au/fario/fario12results.html)
       (French-Australian Regional Informatics Olympiad), March 2012.
+    - [APIO 2014](http://olympiads.kz/apio2014/) (Asia-Pacific
+      Informatics Olympiad), Almaty, Kazakhstan, May 2014.
 - National competitions:
     - OII 2011 ([Italian Olympiad in Informatics]
       (http://www.olimpiadi-informatica.it)), Sirmione, September
@@ -76,7 +78,7 @@ particular we are aware of the following.
     - Taipei High School Programming Contest, Taiwan, November 2013.
 - Training:
     - training camps for the selections of the national IOI teams of
-      Australia, India, Italy, Japan, Latvia, Serbia and Taiwan.
+      Australia, Egypt, India, Italy, Japan, Latvia, Serbia and Taiwan.
 - Other:
     - laboratory exercises and exams of the course "Algorithms and
       data structures" at University of Trento, Italy (year
