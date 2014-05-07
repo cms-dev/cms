@@ -6,6 +6,7 @@
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
+# Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -78,7 +79,7 @@ def find_root_of_archive(file_names):
 
     current_root = None
     for file_name in file_names:
-        if '/' not in file_name:
+        if '/' not in file_name or '/' not in file_name[0:-1]:
             if current_root is None:
                 current_root = file_name
             else:
@@ -116,7 +117,7 @@ class ContestImporter(object):
         if not os.path.isdir(self.import_source):
             if self.import_source.endswith(".zip"):
                 archive = zipfile.ZipFile(self.import_source, "r")
-                file_names = archive.infolist()
+                file_names = archive.namelist()
 
                 self.import_dir = tempfile.mkdtemp()
                 archive.extractall(self.import_dir)
