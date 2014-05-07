@@ -281,7 +281,6 @@ ul.normal_list {
 
 table {
     font-size: 0.875em;
-    width: 100%;
     margin-top: -0.072em;
 }
 
@@ -289,13 +288,16 @@ table th {
     font-weight: bold;
     vertical-align: bottom;
     text-align: center;
-    padding: 0.858em 0.25em;
+    padding: 0.858em 0.5em;
     border-bottom: 0.072em solid #53637D;
 }
 
 table td {
     font-size: 0.875em;
-    padding: 0 0.25em;
+    padding: 0 0.5em;
+    vertical-align: middle;
+    width: 1px;
+    white-space: nowrap;
 }
 
 table.nested th, table.nested td {
@@ -331,6 +333,7 @@ table.TaskTypeOptions {
     border: 1px solid gray;
     margin: 5px 0px;
 }
+
 
 
 
