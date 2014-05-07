@@ -7,6 +7,7 @@
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 # Copyright © 2013 Bernard Blackham <bernard@largestprime.net>
+# Copyright © 2014 Artem Iglikov <artem.iglikov@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
@@ -579,6 +580,101 @@ class Contest(Base):
                            expiration)
 
         return res
+
+    def submissions_statistics(self, session, max_compilation_tries,
+                               max_evaluation_tries):
+        """Compute how may submissions in different states there are in
+        the contest.
+
+        session (Session): SQLAlchemy session to use.
+        max_compilation_tries (int): maximal number of tries after which
+            the solution is in "Cannot compile" state.
+        max_evaluation_tries (int): maximal number of tries after which
+            the solution is in "Cannot evaluate" state.
+
+        return dict: number of submissions in each possible state.
+
+        """
+        queries = {
+            "scored": """
+select count(1) as cnt from submission_results sr
+                       join submissions s on sr.submission_id = s.id
+                       join tasks t on s.task_id = t.id
+where compilation_outcome = 'ok' and not(evaluation_outcome is null) and
+      not(score is null) and not(score_details is null) and
+      not(public_score is null) and not (public_score_details is null) and
+      not(ranking_score_details is null) and t.contest_id = :contest_id""",
+
+            "compiling": """
+select count(1) as cnt from submission_results sr
+                       join submissions s on sr.submission_id = s.id
+                       join tasks t on s.task_id = t.id
+where (compilation_outcome != 'fail' and compilation_outcome != 'ok' or
+       compilation_outcome is null) and compilation_tries < :comp_tries and
+      t.contest_id = :contest_id""",
+
+            "max_compilations": """
+select count(1) as cnt from submission_results sr
+                       join submissions s on sr.submission_id = s.id
+                       join tasks t on s.task_id = t.id
+where (compilation_outcome != 'fail' or compilation_outcome is null) and
+      compilation_tries >= :comp_tries and t.contest_id = :contest_id""",
+
+            "compilation_fail": """
+select count(1) as cnt from submission_results sr
+                       join submissions s on sr.submission_id = s.id
+                       join tasks t on s.task_id = t.id
+where compilation_outcome = 'fail' and t.contest_id = :contest_id""",
+
+            "evaluating": """
+select count(1) as cnt from submission_results sr
+                       join submissions s on sr.submission_id = s.id
+                       join tasks t on s.task_id = t.id
+where compilation_outcome = 'ok' and evaluation_outcome is null
+      and evaluation_tries < :eval_tries and t.contest_id = :contest_id""",
+
+            "max_evaluations": """
+select count(1) as cnt from submission_results sr
+                       join submissions s on sr.submission_id = s.id
+                       join tasks t on s.task_id = t.id
+where compilation_outcome = 'ok' and evaluation_outcome is null
+      and evaluation_tries >= :eval_tries and t.contest_id = :contest_id""",
+
+            "evaluated": """
+select count(1) as cnt from submission_results sr
+                       join submissions s on sr.submission_id = s.id
+                       join tasks t on s.task_id = t.id
+where compilation_outcome = 'ok' and not(evaluation_outcome is null)
+      and (score is null or score_details is null or public_score is null
+           or public_score_details is null or ranking_score_details is null)
+      and t.contest_id = :contest_id""",
+
+            "total": """
+select count(1) as cnt from submissions s
+                       join tasks t on s.task_id = t.id
+where t.contest_id = :contest_id"""
+        }
+
+        stats = {}
+
+        # We need to join all queries to not receive unsynchronized data.
+        query = " union all ".join(queries.values())
+        cnt = session.query("cnt") \
+            .from_statement(query) \
+            .params(contest_id=self.id,
+                    comp_tries=max_compilation_tries,
+                    eval_tries=max_evaluation_tries) \
+            .all()
+
+        keys = queries.keys()
+        total = 0
+        for i in xrange(len(keys)):
+            stats[keys[i]] = cnt[i][0]
+            if keys[i] != "total":
+                total += cnt[i][0]
+        stats["invalid"] = stats["total"] - total
+
+        return stats
 
 
 class Announcement(Base):
