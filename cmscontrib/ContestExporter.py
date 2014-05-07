@@ -3,7 +3,7 @@
 
 # Contest Management System - http://cms-dev.github.io/
 # Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
-# Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
+# Copyright © 2010-2014 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
 #
@@ -119,21 +119,27 @@ class ContestExporter(object):
         self.skip_generated = skip_generated
         self.skip_submissions = skip_submissions
         self.skip_user_tests = skip_user_tests
+        self.export_target = export_target
 
         # If target is not provided, we use the contest's name.
         if export_target == "":
             with SessionGen() as session:
                 contest = Contest.get_from_id(self.contest_id, session)
-                self.export_target = "dump_%s.tar.gz" % contest.name
-                logger.warning("export_target not given, using \"%s\""
-                               % self.export_target)
-        else:
-            self.export_target = export_target
+                if contest is None:
+                    logger.critical("Please specify a valid contest id.")
+                    self.contest_id = None
+                else:
+                    self.export_target = "dump_%s.tar.gz" % contest.name
+                    logger.warning("export_target not given, using \"%s\""
+                                   % self.export_target)
 
         self.file_cacher = FileCacher()
 
     def do_export(self):
         """Run the actual export code."""
+        if self.contest_id is None:
+            return
+
         logger.info("Starting export.")
 
         export_dir = self.export_target
