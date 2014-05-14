@@ -88,6 +88,9 @@ Then you require the compilation and execution environments for the languages yo
 
 All dependencies can be installed automatically on most Linux distributions.
 
+Ubuntu
+------
+
 On Ubuntu 14.04, one will need to run the following script to satisfy all dependencies:
 
 .. sourcecode:: bash
@@ -103,6 +106,9 @@ On Ubuntu 14.04, one will need to run the following script to satisfy all depend
     # sudo apt-get install nginx-full php5-cli php5-fpm phppgadmin \
     #      python-yaml python-sphinx texlive-latex-base python-cups a2ps
     # You can install PyPDF2 using Python Package Index.
+
+Arch Linux
+----------
 
 On Arch Linux, the following command will install almost all dependencies (some of them can be found in the AUR):
 
@@ -125,6 +131,55 @@ On Arch Linux, the following command will install almost all dependencies (some 
     #      texlive-core python2-pycups a2ps
     # Optionally install the following from AUR.
     # https://aur.archlinux.org/packages/python2-pypdf2/
+
+Debian
+------
+
+While Debian uses (almost) the same packages as Ubuntu, setting up cgroups is more involved.
+Debian requires the memory module of cgroups to be activated via a kernel command line parameter. Add ``cgroup_enable=memory`` to ``GRUB_CMDLINE_LINUX_DEFAULT`` in ``/etc/default/grub`` and then run ``update-grub``.
+
+Also, we need to mount the cgroup filesystems (under Ubuntu, the cgroup-lite package does this). To do this automatically, add the following file into /etc/init.d:
+
+.. sourcecode:: bash
+
+    #! /bin/sh
+    # /etc/init.d/cgroup
+
+    # The following part carries out specific functions depending on arguments.
+    case "$1" in
+      start)
+        mount -t tmpfs none /sys/fs/cgroup/
+        mkdir /sys/fs/cgroup/memory
+        mount -t cgroup none /sys/fs/cgroup/memory -o memory
+        mkdir /sys/fs/cgroup/cpuacct
+        mount -t cgroup none /sys/fs/cgroup/cpuacct -o cpuacct
+        mkdir /sys/fs/cgroup/cpuset
+        mount -t cgroup none /sys/fs/cgroup/cpuset -o cpuset
+        ;;
+      stop)
+        umount /sys/fs/cgroup/cpuset
+        umount /sys/fs/cgroup/cpuacct
+        umount /sys/fs/cgroup/memory
+        umount /sys/fs/cgroup
+        ;;
+      *)
+        echo "Usage: /etc/init.d/foobar {start|stop}"
+        exit 1
+        ;;
+    esac
+
+    exit 0
+
+Then execute ``chmod 755 /etc/init.d/cgroup`` as root and finally ``update-rc.d cgroup defaults`` to add the script to the default scripts.
+The following command should now mount the cgroup filesystem:
+
+.. sourcecode:: bash
+
+    /etc/init.d/cgroup start
+
+
+Python dependencies via pip
+---------------------------
 
 If you prefer using Python Package Index, you can retrieve all Python dependencies with this line:
 
