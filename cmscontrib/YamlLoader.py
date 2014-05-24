@@ -25,6 +25,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 import io
+import json
 import logging
 import os
 import os.path
@@ -566,8 +567,18 @@ class YamlLoader(Loader):
                     subtasks.append([points, testcases])
                     assert(100 == sum([int(st[0]) for st in subtasks]))
                     n_input = sum([int(st[1]) for st in subtasks])
-                    args["score_type"] = "GroupMin"
-                    args["score_type_parameters"] = str(subtasks)
+                    params = []
+                    accum = 0
+                    for i, subtask in enumerate(subtasks):
+                        params.append({
+                            'name': "Subtask%02d" % i,
+                            'score': subtask[0],
+                            'files': ["%03d" % j
+                                     for j in xrange(accum, accum+subtask[1])],
+                            'reduce': 'min'
+                            })
+                    args["score_type"] = "NamedGroup"
+                    args["score_type_parameters"] = json.dumps(params)
 
                 if "n_input" in conf:
                     assert int(conf['n_input']) == n_input
