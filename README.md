@@ -73,9 +73,11 @@ particular we are aware of the following.
     - Argentinian IOI Selection Contest, April 2014.
 - Local competitions:
     - Taipei High School Programming Contest, Taiwan, October 2012;
-    - ABC 2013 (Algoritmi Bergamo Contest), Bergamo, Italy, May
+    - Taipei High School Programming Contest, Taiwan, November 2013;
+    - ABC 2013 (Algoritmi Bergamo Contest), Bergamo, Italy, 18 May
       2013;
-    - Taipei High School Programming Contest, Taiwan, November 2013.
+    - ABC 2014 (Algoritmi Bergamo Contest), Bergamo, Italy, 17 May
+      2014.
 - Training:
     - training camps for the selections of the national IOI teams of
       Australia, Egypt, India, Italy, Japan, Latvia, Serbia and Taiwan.
