@@ -45,4 +45,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     args = parser.parse_args()
 
-    sys.exit(0 if drop_db() is True else 1)
+    print("Are you sure you want to DROP the database? [y/N]", end='')
+    ans = raw_input().lower()
+    if ans in ['y', 'yes']:
+        print("Dropping database.")
+        sys.exit(0 if drop_db() is True else 1)
+    else:
+        print("Not dropping database.")
+        sys.exit(0)
