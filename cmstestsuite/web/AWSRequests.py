@@ -76,10 +76,10 @@ class AWSSubmissionViewRequest(GenericRequest):
         evaluations = []
         tags = soup.findAll(id=re.compile(r"^eval_outcome_"))
         for outcome_tag in sorted(tags, key=lambda t: t['id']):
-            index = int(outcome_tag['id'][len("eval_outcome_"):])
+            codename = outcome_tag['id'][len("eval_outcome_"):]
 
             # Get evaluation text also.
-            text_tag = soup.findAll(id="eval_text_%d" % index)[0]
+            text_tag = soup.findAll(id="eval_text_%s" % codename)[0]
 
             evaluations.append({
                 'outcome': outcome_tag.text.strip(),
