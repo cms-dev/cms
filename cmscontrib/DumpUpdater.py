@@ -41,6 +41,7 @@ import json
 import logging
 import os
 
+from cms import utf8_decoder
 from cms.db import version as model_version
 
 
@@ -54,7 +55,8 @@ def main():
         "-V", "--to-version", action="store", type=int, default=-1,
         help="Update to given version number")
     parser.add_argument(
-        "path", help="location of the dump or of the 'contest.json' file")
+        "path", action="store", type=utf8_decoder,
+        help="location of the dump or of the 'contest.json' file")
 
     args = parser.parse_args()
     path = args.path

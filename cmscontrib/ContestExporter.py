@@ -46,6 +46,7 @@ import tempfile
 from sqlalchemy.types import \
     Boolean, Integer, Float, String, Unicode, DateTime, Interval, Enum
 
+from cms import utf8_decoder
 from cms.db import version as model_version
 from cms.db import SessionGen, Contest, ask_for_contest, \
     Submission, UserTest, SubmissionResult, UserTestResult, \
@@ -368,7 +369,8 @@ def main():
                         help="don't export submissions")
     parser.add_argument("-U", "--no-user-tests", action="store_true",
                         help="don't export user tests")
-    parser.add_argument("export_target", nargs='?', default="",
+    parser.add_argument("export_target", action="store",
+                        type=utf8_decoder, nargs='?', default="",
                         help="target directory or archive for export")
 
     args = parser.parse_args()

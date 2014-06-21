@@ -33,10 +33,10 @@ import subprocess
 import copy
 import functools
 import shutil
-import six
 import tempfile
 import yaml
 
+from cms import utf8_decoder
 from cms.grading import get_compilation_commands
 from cmstaskenv.Test import test_testcases, clean_test_env
 
@@ -591,30 +591,25 @@ def main():
     # Parse command line options
     parser = argparse.ArgumentParser()
     group = parser.add_mutually_exclusive_group()
-    parser.add_argument("-D", "--base-dir",
+    parser.add_argument("-D", "--base-dir", action="store", type=utf8_decoder,
                         help="base directory for problem to make "
-                        "(CWD by default)",
-                        dest="base_dir", action="store", default=None)
-    parser.add_argument("-l", "--list",
-                        help="list actions that cmsMake is aware of",
-                        dest="list", action="store_true", default=False)
-    parser.add_argument("-c", "--clean",
-                        help="clean all generated files",
-                        dest="clean", action="store_true", default=False)
-    parser.add_argument("-a", "--all",
-                        help="make all targets",
-                        dest="all", action="store_true", default=False)
+                        "(CWD by default)")
+    parser.add_argument("-l", "--list", action="store_true", default=False,
+                        help="list actions that cmsMake is aware of")
+    parser.add_argument("-c", "--clean", action="store_true", default=False,
+                        help="clean all generated files")
+    parser.add_argument("-a", "--all", action="store_true", default=False,
+                        help="make all targets")
     group.add_argument("-y", "--yes",
-                       help="answer yes to all questions", const='y',
-                       dest="assume", action="store_const", default=None)
+                       dest="assume", action="store_const", const='y',
+                       help="answer yes to all questions")
     group.add_argument("-n", "--no",
-                       help="answer no to all questions", const='n',
-                       dest="assume", action="store_const")
-    parser.add_argument("-d", "--debug",
-                        help="enable debug messages",
-                        dest="debug", action="store_true", default=False)
-    parser.add_argument("targets", metavar="target", nargs="*",
-                        help="target to build", type=six.text_type)
+                       dest="assume", action="store_const", const='n',
+                       help="answer no to all questions")
+    parser.add_argument("-d", "--debug", action="store_true", default=False,
+                        help="enable debug messages")
+    parser.add_argument("targets", action="store", type=utf8_decoder,
+                        nargs="*", metavar="target", help="target to build")
     options = parser.parse_args()
 
     base_dir = options.base_dir

@@ -40,10 +40,10 @@ def main():
     """
     parser = argparse.ArgumentParser(
         description="Resource monitor and service starter for CMS.")
-    parser.add_argument("-a", "--autorestart", metavar="CONTEST_ID",
-                        help="restart automatically services on its machine",
-                        nargs="?", type=int, const=-1)
-    parser.add_argument("shard", type=int, nargs="?", default=None)
+    parser.add_argument("-a", "--autorestart", action="store", type=int,
+                        nargs="?", const=-1, metavar="CONTEST_ID",
+                        help="restart automatically services on its machine")
+    parser.add_argument("shard", action="store", type=int, nargs="?")
     args = parser.parse_args()
 
     try:
