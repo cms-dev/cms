@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2012 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2012-2014 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -284,8 +284,13 @@ class Batch(TaskType):
                         "Output file in job %s" % job.info,
                         trunc_len=100 * 1024)
 
-                # If not asked otherwise, evaluate the output file
-                if not job.only_execution:
+                # If just asked to execute, fill dummy output and text
+                if job.only_execution:
+                    outcome = 0.0
+                    text = [N_("Execution completed successfully")]
+
+                # Otherwise evaluate the output file
+                else:
 
                     # Put the reference solution into the sandbox
                     sandbox.create_file_from_storage(
