@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2012 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -37,6 +37,9 @@ import logging
 import random
 from datetime import timedelta
 from collections import namedtuple
+from functools import wraps
+
+import gevent.coros
 
 from cms import ServiceCoord, get_service_shards
 from cms.io import Service, rpc_method
@@ -614,6 +617,14 @@ class WorkerPool(object):
         return lost_jobs
 
 
+def with_post_finish_lock(func):
+    @wraps(func)
+    def wrapped(self, *args, **kwargs):
+        with self.post_finish_lock:
+            return func(self, *args, **kwargs)
+    return wrapped
+
+
 class EvaluationService(Service):
     """Evaluation service.
 
@@ -659,6 +670,7 @@ class EvaluationService(Service):
 
         self.queue = JobQueue()
         self.pool = WorkerPool(self)
+        self.post_finish_lock = gevent.coros.RLock()
         self.scoring_service = self.connect_to(
             ServiceCoord("ScoringService", 0))
 
@@ -920,6 +932,7 @@ class EvaluationService(Service):
         ]
         return any([job in self.queue or job in self.pool for job in jobs])
 
+    @with_post_finish_lock
     def job_busy(self, job):
         """Check the entity (submission or user test) related to a job
         has other related jobs in the queue or assigned to a worker.
@@ -951,6 +964,7 @@ class EvaluationService(Service):
             self.queue.push(job, priority, timestamp)
             return True
 
+    @with_post_finish_lock
     def action_finished(self, data, plus, error=None):
         """Callback from a worker, to signal that is finished some
         action (compilation or evaluation).
