@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # Contest Management System - http://cms-dev.github.io/
-# Copyright © 2010-2013 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
+# Copyright © 2010-2014 Giovanni Mascellani <mascellani@poisson.phc.unipi.it>
 # Copyright © 2010-2013 Stefano Maggiolo <s.maggiolo@gmail.com>
 # Copyright © 2010-2012 Matteo Boscariol <boscarim@hotmail.com>
 # Copyright © 2013 Luca Wehrstedt <luca.wehrstedt@gmail.com>
@@ -130,7 +130,11 @@ class Service(object):
         # Install a file handler.
         file_handler = FileHandler(os.path.join(log_dir, log_filename),
                                    mode='w', encoding='utf-8')
-        file_handler.setLevel(logging.INFO)
+        if config.file_log_debug:
+            file_log_level = logging.DEBUG
+        else:
+            file_log_level = logging.INFO
+        file_handler.setLevel(file_log_level)
         file_handler.setFormatter(CustomFormatter(False))
         file_handler.addFilter(filter_)
         root_logger.addHandler(file_handler)
